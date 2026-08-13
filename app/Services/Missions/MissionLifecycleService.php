@@ -275,9 +275,35 @@ class MissionLifecycleService
 
         $geo = $this->verifyOnSite($mission, $lat, $lng, $accuracyM, $mocked, $requirePosition);
 
-        $this->verificationCodeService->consumeValidCode($mission, 'end', $plainCode, $user);
+        $record = $this->verificationCodeService->consumeValidCode($mission, 'end', $plainCode, $user);
 
-        return $this->completeMission($mission, $user, $lat, $lng, $geo);
+        /*
+         * UN CODE CORRECT NE DOIT PAS ÊTRE DÉTRUIT PAR UN REFUS QUI NE LE CONCERNE PAS.
+         *
+         * Le code était consommé PUIS la clôture tentée. Quand celle-ci est refusée pour une autre
+         * raison — une tâche obligatoire non cochée, de loin le cas le plus courant — le code
+         * partait avec elle. Le prestataire devait alors redemander un code au client à chaque
+         * tentative, pour un motif étranger au code, et le client se demandait pourquoi il en
+         * recevait sans arrêt.
+         *
+         * Constaté sur la base de démonstration : quatre codes de fin consommés, le dernier
+         * VALIDÉ à 21:10, et une mission restée `started` avec six tâches ouvertes.
+         *
+         * `attempts` N'EST PAS REMIS À ZÉRO : le plafond anti-force-brute compte les saisies, et
+         * une saisie a bien eu lieu. Seule la consommation est annulée, puisqu'elle atteste d'une
+         * clôture qui n'a pas eu lieu.
+         */
+        try {
+            return $this->completeMission($mission, $user, $lat, $lng, $geo);
+        } catch (\Throwable $e) {
+            $record->forceFill([
+                'is_consumed' => false,
+                'validated_at' => null,
+                'validated_by_user_id' => null,
+            ])->save();
+
+            throw $e;
+        }
     }
 
     /**

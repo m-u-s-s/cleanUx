@@ -192,6 +192,54 @@ class MissionLifecycleServiceTest extends TestCase
         Notification::assertSentTo($client, MissionCompletedNotification::class);
     }
 
+    /**
+     * UN CODE CORRECT NE DOIT PAS ÊTRE DÉTRUIT PAR UN REFUS QUI NE LE CONCERNE PAS.
+     *
+     * `validateEndCode()` consommait le code PUIS clôturait. Quand la clôture était refusée pour
+     * une autre raison — une tâche obligatoire non cochée, le cas le plus courant — le code
+     * partait avec elle. Constaté sur la base de démonstration : quatre codes de fin consommés,
+     * le dernier VALIDÉ à 21:10, et une mission toujours `started`. Le prestataire devait
+     * redemander un code au client à chaque tentative, pour un motif étranger au code.
+     */
+    public function test_un_code_correct_n_est_pas_brule_quand_la_cloture_echoue(): void
+    {
+        [, $provider, $mission] = $this->makeMission(MissionStatus::STARTED);
+        $mission->update(['actual_start_at' => now()->subHour()]);
+
+        $checklist = MissionChecklist::create([
+            'mission_id' => $mission->id,
+            'template_name' => 'Standard',
+            'status' => 'in_progress',
+        ]);
+        MissionChecklistItem::create([
+            'mission_checklist_id' => $checklist->id,
+            'label' => 'Rangement du matériel',
+            'is_required' => true,
+            'status' => 'pending',
+        ]);
+
+        $genere = $this->service()->generateEndCode($mission);
+
+        try {
+            $this->service()->validateEndCode($mission, $provider, $genere['code']);
+            $this->fail('La clôture devait être refusée : une tâche obligatoire reste ouverte.');
+        } catch (RuntimeException $e) {
+            $this->assertStringContainsString('obligatoires', $e->getMessage());
+        }
+
+        $record = $mission->verificationCodes()
+            ->where('code_type', 'end')
+            ->latest('id')
+            ->first();
+
+        $this->assertFalse(
+            (bool) $record->is_consumed,
+            'Le code était BON : le refus porte sur la checklist, pas sur lui. Le détruire oblige '
+            .'à en redemander un au client pour une raison qui ne le concerne pas.',
+        );
+        $this->assertNull($record->validated_at);
+    }
+
     public function test_complete_mission_blocks_when_required_checklist_item_pending(): void
     {
         [, $provider, $mission] = $this->makeMission(MissionStatus::STARTED);
