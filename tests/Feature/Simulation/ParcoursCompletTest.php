@@ -23,6 +23,7 @@ use App\Notifications\MissionPayoutAnnouncedNotification;
 use App\Services\Missions\MissionLifecycleService;
 use App\Services\Missions\OnSite\MissionChecklistService;
 use App\Services\Rating\RatingService;
+use App\Support\Domain\BookingStatus;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -243,12 +244,32 @@ class ParcoursCompletTest extends TestCase
     {
         $cycle = app(MissionLifecycleService::class);
 
-        // ── Départ et arrivée ────────────────────────────────────────────────
+        /*
+         * ── Départ et arrivée ────────────────────────────────────────────────
+         *
+         * LA RÉSERVATION DOIT SUIVRE LA MISSION, à chaque étape et pas seulement à la fin.
+         *
+         * Rien n'écrivait `en_route` ni `sur_place` sur une réservation : le client passait de
+         * « confirmé » à « terminé » sans jamais voir que son prestataire était en route ou chez
+         * lui. Le bouton « Scanner QR — Terminer » de l'application cliente, conditionné à
+         * `in_progress`, était donc inatteignable — et les tableaux de bord employé, missions et
+         * planning comptaient des statuts que personne n'écrivait, affichant zéro en permanence.
+         */
         $mission = $cycle->setEnRoute($mission, $intervenant);
         $this->assertSame(MissionStatus::EN_ROUTE, $mission->fresh()->status);
+        $this->assertSame(
+            BookingStatus::EN_ROUTE,
+            $mission->fresh()->booking->status,
+            'Le client ne voit pas que son prestataire est en route.',
+        );
 
         $mission = $cycle->setArrived($mission->fresh(), $intervenant);
         $this->assertSame(MissionStatus::ARRIVED, $mission->fresh()->status);
+        $this->assertSame(
+            BookingStatus::SUR_PLACE,
+            $mission->fresh()->booking->status,
+            'Le client ne voit pas que son prestataire est arrivé.',
+        );
 
         // ── Le code de DÉBUT doit avoir atteint le client ─────────────────────
         $codeDebut = $this->codeDepuisLaNotification($client, EmployeArriveNotification::class, 'startCode');

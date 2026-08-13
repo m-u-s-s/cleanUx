@@ -72,6 +72,8 @@ class MissionLifecycleService
             'accepted_at' => now(),
         ]);
 
+        $this->avancerLaReservation($mission, BookingStatus::EN_ROUTE);
+
         $mission = $mission->fresh(['assignments', 'booking.client', 'leadEmployee']);
 
         if ($mission->booking?->client) {
@@ -112,6 +114,8 @@ class MissionLifecycleService
             'arrived_at' => now(),
         ]);
 
+        $this->avancerLaReservation($mission, BookingStatus::SUR_PLACE);
+
         $generated = $this->verificationCodeService->createVerificationCode($mission, 'start');
         session()->put('mission_start_code_'.$mission->id, $generated['code']);
         app(SmsService::class)->send(
@@ -138,6 +142,40 @@ class MissionLifecycleService
         );
 
         return $mission;
+    }
+
+    /**
+     * LA RÉSERVATION SUIT LA MISSION, à chaque étape et pas seulement à la fin.
+     *
+     * Rien n'écrivait `en_route` ni `sur_place` sur une réservation. Le client passait donc de
+     * « confirmé » à « terminé » sans jamais voir que son prestataire était en route ou chez lui,
+     * alors que c'est exactement ce qu'il attend de savoir. Trois conséquences, toutes silencieuses :
+     *
+     *   — `Booking::isInProgress()` n'était JAMAIS vrai, donc l'état client normalisé ne valait
+     *     jamais `in_progress` et le bouton « Scanner QR — Terminer » de l'application cliente
+     *     était inatteignable ;
+     *   — les tableaux de bord employé, missions et planning comptent des réservations `en_route`
+     *     et `sur_place` : ils affichaient zéro en permanence ;
+     *   — `StatutRendezVousNotification` prévoit un message pour chacun de ces états, qui ne
+     *     partait jamais.
+     *
+     * UNE RÉSERVATION TERMINÉE OU ANNULÉE N'EST PAS RÉVEILLÉE : une mission qui repasserait par ces
+     * gestes après coup ne doit pas rouvrir ce que le client considère comme clos.
+     */
+    protected function avancerLaReservation(Mission $mission, string $statut): void
+    {
+        $reservation = $mission->booking;
+
+        if (! $reservation) {
+            return;
+        }
+
+        if (in_array($reservation->status, [BookingStatus::TERMINE, BookingStatus::ANNULE], true)) {
+            return;
+        }
+
+        $reservation->forceFill(['status' => $statut])->save();
+        $mission->setRelation('booking', $reservation->fresh());
     }
 
     public function generateStartCode(Mission $mission): array
