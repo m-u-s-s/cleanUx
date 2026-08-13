@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Api\Provider;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryItem;
 use App\Models\Mission;
+use App\Models\MissionChecklistItem;
 use App\Models\MissionIncident;
 use App\Models\MissionMedia;
 use App\Services\Inventory\InventoryService;
 use App\Services\Missions\MissionAssignmentStatusService;
 use App\Services\Missions\OnSite\MissionAccessSheetService;
 use App\Services\Missions\OnSite\MissionCheckInService;
+use App\Services\Missions\OnSite\MissionChecklistService;
 use App\Services\Missions\OnSite\MissionClosureService;
 use App\Services\Missions\OnSite\MissionExtraService;
 use App\Services\Missions\OnSite\MissionGuidedChecklistService;
@@ -51,8 +53,64 @@ class MissionOnSiteController extends Controller
         protected MissionClosureService $closureService,
         protected MissionCheckInService $checkInService,
         protected MissionGuidedChecklistService $guidedChecklistService,
+        protected MissionChecklistService $checklistService,
         protected InventoryService $inventoryService,
     ) {}
+
+    /**
+     * LES TÂCHES QUI BLOQUENT LA CLÔTURE, enfin lisibles depuis le mobile.
+     *
+     * `assertRequiredChecklistCompleted()` refuse de terminer une mission tant qu'une tâche
+     * obligatoire reste ouverte, et ce refus n'avait AUCUN remède dans l'application : l'écran
+     * terrain montrait la checklist du module Inspection — une autre table — et ces tâches-ci
+     * n'étaient atteignables que par des routes web à session.
+     *
+     * L'endpoint guidé voisin ne les sert pas : il exige un `sort_order` sur chaque tâche, absent
+     * des checklists issues de gabarits.
+     */
+    public function checklist(Request $request, Mission $mission): JsonResponse
+    {
+        try {
+            $this->assignmentStatusService->assertAssignedToMission($mission, $request->user());
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
+        }
+
+        return response()->json(['data' => $this->checklistService->pour($mission)]);
+    }
+
+    /** Cocher ou décocher une tâche de la checklist de mission. */
+    public function toggleChecklistItem(Request $request, Mission $mission, MissionChecklistItem $item): JsonResponse
+    {
+        try {
+            $this->assignmentStatusService->assertAssignedToMission($mission, $request->user());
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
+        }
+
+        /*
+         * LA TÂCHE DOIT APPARTENIR À CETTE MISSION.
+         *
+         * Les deux paramètres sont résolus indépendamment : sans ce rapprochement, un prestataire
+         * légitimement assigné à une mission pourrait cocher les tâches de N'IMPORTE quelle autre
+         * en changeant le second identifiant dans l'URL. L'assignation autorise l'accès à SA
+         * mission, pas à toutes.
+         */
+        if ((int) $item->checklist->mission_id !== (int) $mission->id) {
+            return response()->json(['message' => 'Cette tâche n’appartient pas à cette mission.'], 404);
+        }
+
+        $data = $request->validate([
+            'status' => ['required', 'in:pending,done'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $this->checklistService->basculer($item, $data['status'], $data['notes'] ?? null, $request->user());
+
+        // La liste complète est renvoyée : l'écran doit pouvoir redire ce qui bloque encore sans
+        // second appel, au moment précis où le prestataire s'apprête à clôturer.
+        return response()->json(['data' => $this->checklistService->pour($mission->fresh())]);
+    }
 
     /**
      * Les clichés déjà pris sur cette mission.

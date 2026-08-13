@@ -11,6 +11,8 @@ import {
   useMissionExtras,
   useMissionAccessSheet,
   useProposeMissionExtra,
+  useMissionChecklist,
+  useToggleMissionChecklistItem,
   INCIDENT_TYPES,
 } from '@/missions';
 import type { MissionExtraItem, MissionIncidentType, MissionMediaItem } from '@/missions';
@@ -48,6 +50,9 @@ export function MissionFieldScreen({ route }: Props) {
   const { data: media } = useMissionMedia(missionId);
   const { data: incidents } = useMissionIncidents(missionId);
   const toggleItem = useToggleChecklistItem();
+  // La checklist qui CONDITIONNE la clôture — distincte de l'inspection qualité ci-dessus.
+  const { data: checklist } = useMissionChecklist(missionId);
+  const toggleMissionItem = useToggleMissionChecklistItem(missionId);
   const pushPosition = usePushPosition(missionId);
   const lifecycle = useMissionLifecycle(missionId);
   const capture = useCaptureMissionMedia(missionId);
@@ -343,9 +348,69 @@ export function MissionFieldScreen({ route }: Props) {
 
       <Divider />
 
+      {/*
+        LES TÂCHES QUI CONDITIONNENT LA CLÔTURE — et qui n'étaient visibles NULLE PART.
+
+        Le serveur refuse de terminer une mission tant qu'une tâche obligatoire reste ouverte. La
+        seule checklist affichée ici venait du module Inspection, une autre table : le prestataire
+        cochait tout sans jamais débloquer quoi que ce soit, et se heurtait à un refus dont le
+        remède n'existait que sur des écrans web à session.
+
+        Elle passe AVANT la checklist d'inspection, parce que c'est elle qui bloque.
+      */}
+      {checklist && checklist.checklists.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Tâches à valider</Text>
+
+          {checklist.blocks_completion ? (
+            <Text style={styles.blocageAvis} testID="checklist-blocage">
+              {checklist.required_pending === 1
+                ? 'Une tâche obligatoire reste à cocher : la mission ne peut pas être clôturée avant.'
+                : `${checklist.required_pending} tâches obligatoires restent à cocher : la mission ne peut pas être clôturée avant.`}
+            </Text>
+          ) : (
+            <Text style={styles.blocageLeve}>
+              Toutes les tâches obligatoires sont faites — la clôture est possible.
+            </Text>
+          )}
+
+          {checklist.checklists.map((liste) => (
+            <View key={liste.id}>
+              {liste.name ? <Text style={styles.sectionHint}>{liste.name}</Text> : null}
+              {liste.items.map((item) => (
+                <View key={item.id} style={styles.checkItem}>
+                  <View style={styles.checkTexte}>
+                    <Text style={styles.checkLabel}>
+                      {item.label}
+                      {item.is_required ? ' *' : ''}
+                    </Text>
+                    {item.guidance ? (
+                      <Text style={styles.checkGuidance}>{item.guidance}</Text>
+                    ) : null}
+                  </View>
+                  <Switch
+                    value={item.done}
+                    onValueChange={(v) =>
+                      toggleMissionItem.mutate(
+                        { itemId: item.id, done: v },
+                        {
+                          onError: (e: any) =>
+                            Alert.alert('Impossible', e?.message ?? 'Réessayez dans un instant.'),
+                        },
+                      )
+                    }
+                    trackColor={{ true: colors.success[500] }}
+                  />
+                </View>
+              ))}
+            </View>
+          ))}
+        </View>
+      )}
+
       {inspection && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Checklist</Text>
+          <Text style={styles.sectionTitle}>Checklist qualité</Text>
           <FlatList
             data={inspection.items}
             scrollEnabled={false}
@@ -379,7 +444,18 @@ export function MissionFieldScreen({ route }: Props) {
         {enCours && (
           <Button
             label="Terminer la mission"
-            onPress={() => lifecycle.mutate('complete')}
+            /*
+             * LE REFUS DU SERVEUR DOIT S'AFFICHER. Sans `onError`, un 422 — « certaines tâches
+             * obligatoires ne sont pas cochées », le cas le plus courant — ne produisait
+             * strictement rien à l'écran. Même défaut que sur l'écran de détail, corrigé ici
+             * aussi : le prestataire appuyait dans le vide.
+             */
+            onPress={() =>
+              lifecycle.mutate('complete', {
+                onError: (e: any) =>
+                  Alert.alert('Impossible', e?.message ?? 'Réessayez dans un instant.'),
+              })
+            }
             variant="danger"
             fullWidth
             size="lg"
@@ -547,6 +623,25 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     fontSize: typography.fontSize.sm,
     color: t.text,
     flex: 1,
+  },
+  checkTexte: {
+    flex: 1,
+    paddingRight: spacing.sm,
+  },
+  checkGuidance: {
+    fontSize: typography.fontSize.xs,
+    color: t.textSecondary,
+    marginTop: 2,
+  },
+  blocageAvis: {
+    fontSize: typography.fontSize.sm,
+    color: colors.danger[600],
+    marginBottom: spacing.sm,
+  },
+  blocageLeve: {
+    fontSize: typography.fontSize.sm,
+    color: colors.success[600],
+    marginBottom: spacing.sm,
   },
   gpsRow: {
     flexDirection: 'row',

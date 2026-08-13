@@ -23,6 +23,8 @@ export {
   useMissionExtras,
   useMissionAccessSheet,
   useProposeMissionExtra,
+  useMissionChecklist,
+  useToggleMissionChecklistItem,
   INCIDENT_TYPES,
 } from './onsite';
 export type {
@@ -34,4 +36,7 @@ export type {
   MissionTimelineEntry,
   MissionExtraItem,
   MissionAccessSheet,
+  MissionChecklistDto,
+  MissionChecklistItemDto,
+  MissionChecklistState,
 } from './onsite';

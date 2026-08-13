@@ -287,6 +287,17 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         Route::get('/{mission}/presence-mode', [MissionOnSiteController::class, 'presenceMode']);
         // F6 — le guide pas-à-pas : une étape à la fois, dans l'ordre du métier.
         Route::get('/{mission}/guided-step', [MissionOnSiteController::class, 'guidedStep']);
+
+        /*
+         * La checklist qui CONDITIONNE la clôture — distincte du parcours guidé ci-dessus.
+         *
+         * Le guidé sert une marche ordonnée avec photos et n'existe que si chaque tâche porte un
+         * `sort_order` ; les checklists issues de gabarits n'en ont pas. Sans ces deux routes, un
+         * prestataire dont la mission porte une tâche obligatoire ouverte ne peut NI la cocher NI
+         * clôturer depuis son téléphone.
+         */
+        Route::get('/{mission}/checklist', [MissionOnSiteController::class, 'checklist']);
+        Route::post('/{mission}/checklist/{item}', [MissionOnSiteController::class, 'toggleChecklistItem']);
         // F7 — déclarer les consommables utilisés, rattachés à la mission.
         Route::get('/{mission}/consumables', [MissionOnSiteController::class, 'consumables']);
         Route::post('/{mission}/consumables', [MissionOnSiteController::class, 'storeConsumable']);

@@ -135,6 +135,68 @@ export function useMissionIncidents(missionId: number | null) {
   });
 }
 
+/**
+ * LES TÂCHES QUI EMPÊCHENT DE CLÔTURER.
+ *
+ * Le serveur refuse de terminer une mission tant qu'une tâche `is_required` reste ouverte, et ce
+ * refus n'avait aucun remède ici : l'écran terrain n'affichait que la checklist du module
+ * Inspection — une autre table — et celles-ci n'étaient cochables que depuis le web.
+ *
+ * `required_pending` est exactement la condition du serveur : l'écran peut donc dire ce qui
+ * bloque, au lieu d'opposer un refus sans explication au moment de clôturer.
+ */
+export interface MissionChecklistItemDto {
+  id: number;
+  label: string;
+  guidance: string | null;
+  is_required: boolean;
+  requires_photo: boolean;
+  status: string;
+  done: boolean;
+}
+
+export interface MissionChecklistDto {
+  id: number;
+  name: string | null;
+  status: string;
+  completion_rate: number;
+  items: MissionChecklistItemDto[];
+}
+
+export interface MissionChecklistState {
+  checklists: MissionChecklistDto[];
+  required_pending: number;
+  blocks_completion: boolean;
+}
+
+export function useMissionChecklist(missionId: number | null) {
+  return useQuery<MissionChecklistState>({
+    queryKey: ['provider', 'mission', missionId, 'checklist'],
+    queryFn: async () =>
+      (await apiClient.get(`/provider/missions/${missionId}/checklist`)).data.data,
+    enabled: missionId !== null,
+  });
+}
+
+export function useToggleMissionChecklistItem(missionId: number) {
+  const qc = useQueryClient();
+
+  return useMutation<MissionChecklistState, ApiError, { itemId: number; done: boolean }>({
+    mutationFn: async ({ itemId, done }) =>
+      (await apiClient.post(`/provider/missions/${missionId}/checklist/${itemId}`, {
+        status: done ? 'done' : 'pending',
+      })).data.data,
+    // La réponse porte déjà l'état complet : on l'écrit directement plutôt que de refaire un
+    // aller-retour, pour que la case cochée et le compteur de blocage bougent d'un seul coup.
+    onSuccess: (etat) => {
+      qc.setQueryData(['provider', 'mission', missionId, 'checklist'], etat);
+      // Le détail de mission porte `checklist_items_pending` : le laisser périmé afficherait
+      // deux comptes différents sur deux écrans de la même mission.
+      qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId] });
+    },
+  });
+}
+
 export function useMissionTimeline(missionId: number | null) {
   return useQuery<MissionTimeline>({
     queryKey: ['provider', 'mission', missionId, 'timeline'],

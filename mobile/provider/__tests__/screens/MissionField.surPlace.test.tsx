@@ -11,6 +11,7 @@
  * sans avoir été décrit.
  */
 import React from 'react';
+import { Switch as RNSwitch } from 'react-native';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
@@ -112,7 +113,42 @@ function ficheDAccesPour(status: string) {
       };
 }
 
-function rendre(status: string) {
+/**
+ * La checklist qui CONDITIONNE la clôture — distincte de l'inspection qualité.
+ *
+ * `required_pending` reproduit exactement la condition du serveur : c'est ce qui permet à l'écran
+ * de dire ce qui bloque au lieu d'opposer un refus muet au moment de terminer.
+ */
+function checklistAvec(obligatoiresOuvertes: number) {
+  return {
+    checklists: [
+      {
+        id: 8,
+        name: 'Checklist standard',
+        status: 'draft',
+        completion_rate: 0,
+        items: [
+          {
+            id: 43,
+            label: 'Vérifier accès client',
+            guidance: 'Sonner, puis appeler si personne',
+            is_required: true,
+            requires_photo: false,
+            status: obligatoiresOuvertes > 0 ? 'pending' : 'done',
+            done: obligatoiresOuvertes === 0,
+          },
+        ],
+      },
+    ],
+    required_pending: obligatoiresOuvertes,
+    blocks_completion: obligatoiresOuvertes > 0,
+  };
+}
+
+function rendre(status: string, obligatoiresOuvertes = 1) {
+  apiMock
+    .onGet(`/provider/missions/${MISSION_ID}/checklist`)
+    .reply(200, { data: checklistAvec(obligatoiresOuvertes) });
   apiMock.onGet(`/provider/missions/${MISSION_ID}`).reply(200, {
     id: MISSION_ID,
     status,
@@ -181,6 +217,47 @@ describe('MissionFieldScreen — le kit sur place', () => {
     rendre('started');
 
     await waitFor(() => expect(screen.getByLabelText('Terminer la mission')).toBeTruthy());
+  });
+
+  /**
+   * LES TÂCHES QUI BLOQUENT LA CLÔTURE N'ÉTAIENT VISIBLES NULLE PART.
+   *
+   * L'écran n'affichait que la checklist du module Inspection — une autre table. Le prestataire
+   * pouvait tout y cocher sans jamais débloquer la clôture, et le refus du serveur ne lui
+   * indiquait aucun remède atteignable depuis son téléphone.
+   */
+  describe('checklist de clôture', () => {
+    it('affiche les tâches obligatoires et dit ce qui bloque', async () => {
+      rendre('started', 1);
+
+      await waitFor(() => expect(screen.getByText('Vérifier accès client *')).toBeTruthy());
+      expect(screen.getByTestId('checklist-blocage')).toBeTruthy();
+      // La consigne fait la différence entre une case et une instruction.
+      expect(screen.getByText('Sonner, puis appeler si personne')).toBeTruthy();
+    });
+
+    it('coche une tâche et transmet le statut au serveur', async () => {
+      rendre('started', 1);
+      apiMock
+        .onPost(`/provider/missions/${MISSION_ID}/checklist/43`)
+        .reply(200, { data: checklistAvec(0) });
+
+      await waitFor(() => screen.getByText('Vérifier accès client *'));
+
+      fireEvent(screen.UNSAFE_getAllByType(RNSwitch)[0]!, 'valueChange', true);
+
+      await waitFor(() => expect(envois('checklist/43')).toHaveLength(1));
+      expect(JSON.parse(envois('checklist/43')[0]!.data)).toEqual({ status: 'done' });
+    });
+
+    it('annonce que la clôture est possible quand plus rien ne bloque', async () => {
+      rendre('started', 0);
+
+      await waitFor(() =>
+        expect(screen.getByText(/la clôture est possible/i)).toBeTruthy(),
+      );
+      expect(screen.queryByTestId('checklist-blocage')).toBeNull();
+    });
   });
 
   it('envoie la photo d’état des lieux avec sa position', async () => {
