@@ -106,11 +106,14 @@ jobs:
   money-integrity-mysql:
     name: Money/GDPR integrity (MySQL, FK enforced)
     runs-on: ubuntu-latest
-    # Non-blocking for now: this job runs the money/spine/GDPR/KYC suites on real MySQL with FK
-    # enforcement and surfaces pre-existing MySQL-only issues (the suites were written against
-    # SQLite). It reports signal but must not block merges until that backlog is burned down —
-    # tracked in issue #5. Flip to blocking once these suites are MySQL-green.
-    continue-on-error: true
+    # BLOQUANT depuis le 2026-08-13, et c'est le point de ce job.
+    #
+    # Il était non bloquant le temps d'épuiser les défauts MySQL préexistants. Ce périmètre est
+    # désormais vert sur MySQL (236 tests), et le laisser passif lui retirait sa seule utilité :
+    # il est le SEUL endroit qui voit ce que SQLite cache. La réconciliation Stripe a rendu zéro
+    # anomalie pendant trois jours parce qu'une colonne supprimée y était encore interrogée —
+    # SQLite traite un identifiant inconnu entre guillemets doubles comme une chaîne littérale et
+    # ne lève rien, MySQL refuse. Ce job l'avait signalé ; son rouge ne bloquait personne.
 
     services:
       mysql:
