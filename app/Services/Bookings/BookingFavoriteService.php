@@ -54,7 +54,7 @@ class BookingFavoriteService
                 'client_user_id' => $client->id,
                 'label' => $label ?: $this->buildDefaultLabel($booking),
                 'source_booking_id' => $booking->id,
-                'preferred_provider_user_id' => $booking->employe_id ?? $booking->assigned_employee_id ?? null,
+                'preferred_provider_user_id' => $booking->intervenantId(),
                 'trade_id' => $booking->trade_id ?? null,
                 'service_zone_id' => $booking->service_zone_id ?? null,
                 'snapshot' => $snapshot,

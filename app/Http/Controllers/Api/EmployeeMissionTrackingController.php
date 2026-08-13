@@ -26,11 +26,8 @@ class EmployeeMissionTrackingController extends Controller
         abort_unless($user instanceof User, 403);
         abort_unless($user->isEmploye(), 403);
 
-        abort_unless(
-            $mission->lead_employee_id === $user->id
-            || $mission->assignments()->where('user_id', $user->id)->exists(),
-            403
-        );
+        // Une affectation révoquée n'ouvre plus rien — voir `Mission::estIntervenant()`.
+        abort_unless($mission->estIntervenant($user), 403);
 
         $data = $request->validate([
             'lat' => ['required', 'numeric'],

@@ -98,7 +98,19 @@ class InsurancePricingEngine
         }
 
         $clientId = $row->client_id ?? $row->customer_user_id ?? null;
-        $providerUserId = $row->assigned_provider_user_id ?? $row->employe_id ?? null;
+
+        /*
+         * L'ASSURANCE COUVRE CELUI QUI EST SUR PLACE — c'est lui qui casse le vase.
+         *
+         * Cette méthode lit la table en direct, sans modèle : `Booking::intervenantId()` ne s'y
+         * applique pas, mais l'ordre de priorité doit être LE MÊME, sinon la police nomme un
+         * prestataire pendant que le portefeuille en paie un autre.
+         */
+        $providerUserId = Schema::hasTable('missions')
+            ? DB::table('missions')->where('booking_id', $bookingId)
+                ->orderByDesc('id')->value('lead_provider_user_id')
+            : null;
+        $providerUserId ??= $row->employe_id ?? $row->assigned_provider_user_id ?? null;
 
         return [
             'trade_code' => $tradeCode,

@@ -50,7 +50,7 @@ class RatingService
 
         return DB::transaction(function () use ($booking, $author, $direction, $payload, $rating, $existing) {
             $clientId = (int) ($booking->client_id ?? $booking->customer_user_id ?? 0);
-            $providerId = (int) ($booking->employe_id ?? $booking->assigned_provider_user_id ?? 0);
+            $providerId = (int) ($booking->intervenantId() ?? 0);
             $missionId = $booking->mission?->id;
 
             $data = [
@@ -142,7 +142,7 @@ class RatingService
         }
 
         $clientId = (int) ($booking->client_id ?? $booking->customer_user_id ?? 0);
-        $providerId = (int) ($booking->employe_id ?? $booking->assigned_provider_user_id ?? 0);
+        $providerId = (int) ($booking->intervenantId() ?? 0);
 
         if ($direction === Feedback::DIRECTION_CLIENT_TO_PROVIDER && (int) $author->id !== $clientId) {
             throw ValidationException::withMessages([

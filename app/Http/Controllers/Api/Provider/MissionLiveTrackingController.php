@@ -92,12 +92,10 @@ class MissionLiveTrackingController extends Controller
         $user = $request->user();
         abort_unless($user, 401);
 
-        $isLead = (int) ($mission->lead_provider_user_id ?? 0) === (int) $user->id
-               || (int) ($mission->lead_employee_id ?? 0) === (int) $user->id;
+        $isLead = (int) ($mission->intervenantId() ?? 0) === (int) $user->id;
 
-        $isAssigned = $mission->assignments()
-            ->where('user_id', $user->id)
-            ->exists();
+        // Une affectation révoquée n'ouvre plus rien — voir `Mission::estIntervenant()`.
+        $isAssigned = $mission->estIntervenant($user);
 
         abort_unless($isLead || $isAssigned, 403, 'Not assigned to this mission.');
     }

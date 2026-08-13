@@ -220,6 +220,14 @@ class OrganizationMemberAdministration
                 ->whereIn('id', $missionsAVenir)
                 ->where('lead_provider_user_id', $userId)
                 ->update(['lead_provider_user_id' => null, 'status' => MissionStatus::PLANNED]);
+
+            // `lead_employee_id` nomme la MÊME personne et n'était pas libérée : côté web, la
+            // mission restait au nom de quelqu'un qui a quitté la société — et `MissionPolicy` lui
+            // en laissait l'accès.
+            Mission::query()
+                ->whereIn('id', $missionsAVenir)
+                ->where('lead_employee_id', $userId)
+                ->update(['lead_employee_id' => null]);
         }
 
         $canaux = Channel::query()

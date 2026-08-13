@@ -98,7 +98,8 @@ class CancellationV2Controller extends Controller
         }
 
         if ($actorRole === 'provider') {
-            $assigned = (int) ($booking->employe_id ?? 0) === $uid
+            // L'intervenant, pas le nom de la commande — voir `Booking::intervenantId()`.
+            $assigned = (int) ($booking->intervenantId() ?? 0) === $uid
                 || (int) ($booking->assigned_provider_user_id ?? 0) === $uid;
             abort_unless($assigned, 403, 'Accès refusé.');
 

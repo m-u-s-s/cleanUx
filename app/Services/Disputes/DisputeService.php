@@ -57,7 +57,7 @@ class DisputeService
                 'client_id' => $client->id,
                 'rendez_vous_id' => $booking?->id,
                 'booking_id' => $booking?->id,
-                'provider_user_id' => $booking?->employe_id,
+                'provider_user_id' => $booking?->intervenantId(),
                 'organization_account_id' => $booking?->organization_account_id ?? $client->organization_account_id,
                 'category' => $category,
                 'priority' => $priority,

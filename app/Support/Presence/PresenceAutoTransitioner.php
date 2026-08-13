@@ -114,20 +114,12 @@ class PresenceAutoTransitioner
      *
      * Les colonnes de la réservation restent en repli : quand la mission ne désigne personne,
      * elles sont la seule information disponible, et le comportement des parcours qui n'ont jamais
-     * divergé est inchangé.
+     * divergé est inchangé. Cet ordre est celui de `Booking::intervenantId()`, et n'est pas
+     * recopié ici : une règle d'identité qui existe en deux exemplaires finit toujours par
+     * diverger.
      */
     protected static function resolveProvider(Booking $booking): ?User
     {
-        $providerId = $booking->missions()->latest('id')->value('lead_provider_user_id')
-            ?? $booking->employe_id
-            ?? $booking->provider_user_id
-            ?? $booking->assigned_employee_id
-            ?? null;
-
-        if (! $providerId) {
-            return null;
-        }
-
-        return User::find($providerId);
+        return $booking->intervenant();
     }
 }

@@ -31,8 +31,8 @@ class MissionExecutionBoard extends Component
     {
         abort_unless($mission->exists, 404);
 
-        $isAssigned = $mission->lead_employee_id === Auth::id()
-            || $mission->assignments()->where('user_id', Auth::id())->exists();
+        // Une affectation révoquée n'ouvre plus rien — voir `Mission::estIntervenant()`.
+        $isAssigned = $mission->estIntervenant(Auth::id());
 
         abort_unless($isAssigned, 403);
 

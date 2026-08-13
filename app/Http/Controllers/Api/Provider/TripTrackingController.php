@@ -302,7 +302,8 @@ class TripTrackingController extends Controller
     {
         $user = $request->user();
         abort_unless($user, 401);
-        $isProvider = (int) ($booking->employe_id ?? 0) === (int) $user->id
+        // Celui qui pousse sa position est celui qui SE DÉPLACE — voir `Booking::intervenantId()`.
+        $isProvider = (int) ($booking->intervenantId() ?? 0) === (int) $user->id
                    || (int) ($booking->provider_user_id ?? 0) === (int) $user->id
                    || (int) ($booking->assigned_employee_id ?? 0) === (int) $user->id;
         abort_unless($isProvider, 403, 'Not assigned to this booking.');

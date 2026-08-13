@@ -64,7 +64,7 @@ class GoogleCalendarSyncService
     public function syncRendezVous(Booking $rendezVous, ?GoogleCalendarConnection $connection = null): string
     {
         $connection ??= GoogleCalendarConnection::query()
-            ->where('user_id', $rendezVous->employe_id)
+            ->where('user_id', $rendezVous->intervenantId())
             ->where('sync_enabled', true)
             ->first();
 

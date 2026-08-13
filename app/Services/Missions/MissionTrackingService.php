@@ -23,11 +23,8 @@ class MissionTrackingService
             throw new RuntimeException('Seul un employé peut démarrer le tracking.');
         }
 
-        $isAssigned = $mission->lead_employee_id === $employee->id
-            || MissionAssignment::query()
-                ->where('mission_id', $mission->id)
-                ->where('user_id', $employee->id)
-                ->exists();
+        // Une affectation révoquée n'ouvre plus rien — voir `Mission::estIntervenant()`.
+        $isAssigned = $mission->estIntervenant($employee);
 
         if (! $isAssigned) {
             throw new RuntimeException('Cet employé n’est pas assigné à cette mission.');
@@ -47,7 +44,7 @@ class MissionTrackingService
                 ->where('user_id', $employee->id)
                 ->first();
 
-            if (! $assignment && $mission->lead_employee_id !== $employee->id) {
+            if (! $mission->estIntervenant($employee)) {
                 throw new RuntimeException('Aucune affectation mission trouvée pour cet employé.');
             }
 

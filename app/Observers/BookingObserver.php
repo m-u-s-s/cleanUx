@@ -84,7 +84,7 @@ class BookingObserver
                 'booking_id' => $booking->id,
                 'status' => $booking->status,
                 'client_id' => $booking->client_id ?? $booking->customer_user_id ?? null,
-                'provider_id' => $booking->employe_id ?? $booking->assigned_provider_user_id ?? null,
+                'provider_id' => $booking->intervenantId(),
                 'service_zone_id' => $booking->service_zone_id ?? null,
                 'service_catalog_id' => $booking->service_catalog_id ?? null,
                 'amount_cents' => $booking->total_amount_cents ?? null,
@@ -146,7 +146,8 @@ class BookingObserver
             if (! Schema::hasTable('provider_badges')) {
                 return;
             }
-            $providerId = $booking->employe_id ?? $booking->assigned_provider_user_id ?? null;
+            // Les badges récompensent CELUI QUI A FAIT LA MISSION.
+            $providerId = $booking->intervenantId();
             if (! $providerId) {
                 return;
             }
@@ -205,7 +206,8 @@ class BookingObserver
     {
         try {
             $clientId = (int) ($booking->client_id ?? $booking->customer_user_id ?? 0);
-            $providerId = (int) ($booking->employe_id ?? $booking->assigned_provider_user_id ?? 0);
+            // On demande son avis à l'intervenant réel, et le client note celui qui est venu.
+            $providerId = (int) ($booking->intervenantId() ?? 0);
 
             if ($clientId) {
                 $client = User::find($clientId);

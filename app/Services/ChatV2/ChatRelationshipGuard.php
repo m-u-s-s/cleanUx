@@ -139,14 +139,30 @@ class ChatRelationshipGuard
     }
 
     /**
-     * @param  \Illuminate\Contracts\Database\Query\Builder|Builder<Booking>  $q
+     * Le constructeur est bien celui d'Eloquent, et pas celui de la requête brute : une fermeture
+     * passée à `where()` sur un modèle en reçoit un nouveau. C'est ce qui rend `orWhereHas`
+     * disponible ici — sans quoi la relation à la mission serait hors de portée.
+     *
+     * @param  Builder<Booking>  $q
      */
     protected function filtreRoles($q, int $userId): void
     {
+        /*
+         * L'INTERVENANT OUVRE LE DROIT DE PARLER AU CLIENT, et il vit sur la mission.
+         *
+         * Ce filtre ne connaissait que les colonnes de la réservation. Après une réassignation —
+         * ou pour une mission qu'une société confie à un salarié — l'ancien prestataire gardait
+         * l'accès à la conversation d'un client chez qui il n'ira pas, pendant que celui qui y va
+         * ne pouvait pas lui écrire.
+         *
+         * Le filtre est une REQUÊTE : `Booking::intervenantId()` ne s'y applique pas, mais la même
+         * règle s'exprime par la relation.
+         */
         $q->where('client_id', $userId)
             ->orWhere('customer_user_id', $userId)
             ->orWhere('employe_id', $userId)
-            ->orWhere('assigned_provider_user_id', $userId);
+            ->orWhere('assigned_provider_user_id', $userId)
+            ->orWhereHas('missions', fn ($m) => $m->where('lead_provider_user_id', $userId));
     }
 
     protected function partagentUnLitige(int $auteurId, int $autreId, int $litigeId): bool

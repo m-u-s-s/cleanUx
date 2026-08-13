@@ -79,7 +79,7 @@ class ReportIssueTool implements AssistantTool
 
         if (method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin()) {
             $hasAccess = true;
-        } elseif ((int) $mission->lead_employee_id === (int) $user->id) {
+        } elseif ($mission->estIntervenant($user)) {
             $hasAccess = true;
         } elseif ((int) ($mission->booking?->customer_user_id ?? 0) === (int) $user->id) {
             $hasAccess = true;

@@ -252,6 +252,69 @@ class Mission extends Model
         return $this->hasMany(MissionAssignment::class);
     }
 
+    /**
+     * Les affectations qui donnent ENCORE un droit sur la mission.
+     *
+     * Une affectation n'est jamais supprimée : on la marque. `reassigned` quand quelqu'un prend la
+     * place, `released` quand la personne quitte la société, `declined` / `expired` / `cancelled`
+     * pour une offre qui n'a pas abouti. La ligne reste donc en base, et tout code qui demandait
+     * seulement « existe-t-il une affectation pour cette personne ? » répondait oui pour celle
+     * qu'on venait justement d'écarter.
+     *
+     * On EXCLUT les états terminaux au lieu d'énumérer les états actifs : un statut ajouté demain
+     * garde le comportement d'aujourd'hui plutôt que de fermer une porte en silence.
+     *
+     * @var list<string>
+     */
+    public const AFFECTATIONS_ECARTEES = ['reassigned', 'released', 'cancelled', 'declined', 'expired'];
+
+    /**
+     * QUI INTERVIENT SUR CETTE MISSION — la seule réponse qui fasse autorité.
+     *
+     * DEUX COLONNES NOMMENT LA MÊME PERSONNE. `lead_employee_id` est l'historique (le salarié
+     * désigné à la création, ce qu'écrit `MissionFromRendezVousSyncService`) ; `lead_provider_user_id`
+     * est celle qu'écrit le dispatch et, surtout, la réassignation par une société.
+     *
+     * `MissionAssignmentService` ne mettait à jour QUE la seconde : après un changement
+     * d'intervenant, `lead_employee_id` continuait de nommer la personne remplacée, et tout le
+     * terrain web la lit — la politique, les tableaux d'exécution, le suivi de trajet.
+     *
+     * Le dispatch écrit les deux, la création n'écrit que l'historique : le repli va donc du plus
+     * récent vers le plus ancien, jamais l'inverse.
+     */
+    public function intervenantId(): ?int
+    {
+        $id = $this->lead_provider_user_id ?? $this->lead_employee_id ?? null;
+
+        return $id ? (int) $id : null;
+    }
+
+    /**
+     * Cette personne a-t-elle le droit d'agir sur la mission côté terrain ?
+     *
+     * Responsable de la mission, ou porteuse d'une affectation encore valide. C'est la question que
+     * posaient une dizaine d'endroits, chacun avec sa propre formulation — et la plupart en
+     * oubliant d'écarter les affectations révoquées.
+     */
+    public function estIntervenant(User|int|null $utilisateur): bool
+    {
+        $id = $utilisateur instanceof User ? (int) $utilisateur->id : (int) ($utilisateur ?? 0);
+
+        if ($id <= 0) {
+            return false;
+        }
+
+        if ((int) ($this->lead_provider_user_id ?? 0) === $id
+            || (int) ($this->lead_employee_id ?? 0) === $id) {
+            return true;
+        }
+
+        return $this->assignments()
+            ->where('user_id', $id)
+            ->whereNotIn('assignment_status', self::AFFECTATIONS_ECARTEES)
+            ->exists();
+    }
+
     /** @return HasMany<MissionVerificationCode, $this> */
     public function verificationCodes(): HasMany
     {

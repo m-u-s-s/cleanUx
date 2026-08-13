@@ -69,15 +69,12 @@ class ProviderWalletService
      * autre. Chacune des deux moitiés, lue seule, semblait juste : c'est ce qui l'a rendue
      * invisible.
      *
-     * La réservation reste en repli — pour une mission qui ne désigne personne, elle est la seule
-     * information disponible, et les parcours qui n'ont jamais divergé gardent leur comportement.
+     * La règle vit désormais à UN SEUL endroit, `Booking::intervenantId()` : la dupliquer ici
+     * reviendrait à rouvrir l'écart le jour où l'une des deux copies évoluerait seule.
      */
     protected function intervenant(Booking $booking): int
     {
-        return (int) ($booking->missions()->latest('id')->value('lead_provider_user_id')
-            ?? $booking->employe_id
-            ?? $booking->assigned_provider_user_id
-            ?? 0);
+        return (int) ($booking->intervenantId() ?? 0);
     }
 
     public function recordEarning(Booking $booking, ?array $intent = null): ?ProviderWalletTransaction

@@ -19,7 +19,8 @@ class FeedbackPolicy
         }
 
         if ($user->isEmploye()) {
-            return $feedback->rendezVous?->employe_id === $user->id;
+            // L'intervenant, pas le prestataire de la commande — voir `Booking::intervenantId()`.
+            return $feedback->rendezVous?->intervenantId() === $user->id;
         }
 
         return false;

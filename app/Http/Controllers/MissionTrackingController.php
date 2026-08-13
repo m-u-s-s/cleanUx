@@ -97,8 +97,8 @@ class MissionTrackingController extends Controller
     {
         $userId = Auth::id();
 
-        $isAssigned = $mission->lead_employee_id === $userId
-            || $mission->assignments()->where('user_id', $userId)->exists();
+        // Une affectation révoquée n'ouvre plus rien — voir `Mission::estIntervenant()`.
+        $isAssigned = $mission->estIntervenant($userId);
 
         abort_unless($isAssigned, 403);
     }

@@ -101,7 +101,14 @@ class TipService
             return $existing;
         }
 
-        $providerId = (int) ($booking->employe_id ?? $booking->provider_user_id ?? 0);
+        /*
+         * LE POURBOIRE VA À CELUI QUI A FAIT LE TRAVAIL.
+         *
+         * Le bénéficiaire était résolu ICI, avant d'atteindre le portefeuille : corriger
+         * `ProviderWalletService` ne suffisait pas, la ligne `BookingTip` portait déjà le mauvais
+         * nom. Après une réassignation, le client remerciait quelqu'un qui n'était jamais venu.
+         */
+        $providerId = (int) ($booking->intervenantId() ?? 0);
         if ($providerId <= 0) {
             throw ValidationException::withMessages([
                 'provider' => ['Mission sans prestataire assigné.'],

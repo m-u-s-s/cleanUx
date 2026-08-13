@@ -11,8 +11,8 @@ class MissionAssignmentStatusService
 {
     public function assertAssignedToMission(Mission $mission, User $user): void
     {
-        $isAssigned = $mission->lead_employee_id === $user->id
-            || $mission->assignments()->where('user_id', $user->id)->exists();
+        // Une affectation révoquée n'ouvre plus rien — voir `Mission::estIntervenant()`.
+        $isAssigned = $mission->estIntervenant($user);
 
         if (! $isAssigned) {
             throw new RuntimeException('Utilisateur non affecté à cette mission.');

@@ -32,9 +32,14 @@ class MissionPolicy
             return true;
         }
 
-        // Assigné : la voie la plus courte, et la seule qu'un worker emprunte.
-        if ($mission->lead_employee_id === $user->id
-            || $mission->assignments()->where('user_id', $user->id)->exists()) {
+        /*
+         * Assigné : la voie la plus courte, et la seule qu'un worker emprunte.
+         *
+         * `lead_employee_id` seul laissait entrer la personne REMPLACÉE — la réassignation
+         * n'écrivait que `lead_provider_user_id` — et l'existence d'une affectation ne disait pas
+         * si elle valait encore : une ligne `reassigned` ouvrait la mission comme une active.
+         */
+        if ($mission->estIntervenant($user)) {
             return true;
         }
 
@@ -86,8 +91,7 @@ class MissionPolicy
         }
 
         if ($user->isEmploye()) {
-            return $mission->lead_employee_id === $user->id
-                || $mission->assignments()->where('user_id', $user->id)->exists();
+            return $mission->estIntervenant($user);
         }
 
         return false;
@@ -95,11 +99,7 @@ class MissionPolicy
 
     public function start(User $user, Mission $mission): bool
     {
-        return $user->isEmploye()
-            && (
-                $mission->lead_employee_id === $user->id
-                || $mission->assignments()->where('user_id', $user->id)->exists()
-            );
+        return $user->isEmploye() && $mission->estIntervenant($user);
     }
 
     public function close(User $user, Mission $mission): bool

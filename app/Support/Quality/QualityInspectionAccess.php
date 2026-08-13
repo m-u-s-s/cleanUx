@@ -61,6 +61,12 @@ class QualityInspectionAccess
                         $providers[] = (int) $booking->{$col};
                     }
                 }
+
+                // L'INTERVENANT SIGNE L'INSPECTION, et il vit sur la mission : après une
+                // réassignation, seul l'ancien prestataire était reconnu.
+                if ($intervenant = $booking->intervenantId()) {
+                    $providers[] = $intervenant;
+                }
             }
         }
 

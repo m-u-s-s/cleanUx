@@ -24,7 +24,7 @@ class BookingChatAutoCreator
         }
         try {
             $clientId = (int) ($booking->client_id ?? $booking->customer_user_id ?? 0);
-            $providerId = (int) ($booking->employe_id ?? $booking->assigned_provider_user_id ?? 0);
+            $providerId = (int) ($booking->intervenantId() ?? 0);
             if ($clientId <= 0) {
                 return null;
             }

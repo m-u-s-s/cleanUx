@@ -83,12 +83,24 @@ class MissionAssignmentService
                 ['role_on_mission' => 'lead', 'assignment_status' => 'assigned', 'assigned_at' => now()]
             );
 
-            // `lead_provider_user_id` est la source de vérité lue par le tableau de bord, la
-            // diffusion temps réel et le suivi de trajet : la laisser en arrière casse les trois.
+            /*
+             * LES DEUX COLONNES DU RESPONSABLE, ENSEMBLE.
+             *
+             * `lead_provider_user_id` est la source de vérité lue par le tableau de bord, la
+             * diffusion temps réel et le suivi de trajet : la laisser en arrière casse les trois.
+             *
+             * `lead_employee_id` nomme la MÊME personne, et n'était pas mise à jour. Tout le
+             * terrain web la lit — `MissionPolicy`, les tableaux d'exécution et d'incidents, le
+             * suivi de trajet salarié : la mission restait donc au nom de la personne remplacée
+             * partout de ce côté, pendant que le mobile affichait déjà la nouvelle.
+             */
             $mission->update([
                 'status' => 'assigned',
                 'lead_provider_user_id' => $travailleur->user_id,
+                'lead_employee_id' => $travailleur->user_id,
             ]);
+
+            $this->reporterSurLaReservation($mission, (int) $travailleur->user_id);
         });
 
         /*
@@ -102,6 +114,40 @@ class MissionAssignmentService
          * avant le commit annoncerait un changement qu'un rollback annulerait.
          */
         $this->prevenirDeLAssignation($mission, (int) $travailleur->user_id, $sortants, $motif);
+    }
+
+    /**
+     * LA RÉSERVATION SUIT LA MISSION — sinon rien ne les remet jamais d'accord.
+     *
+     * `bookings.employe_id` nomme la même personne une troisième fois, et c'est celle que lit tout
+     * le web salarié : « Mes rendez-vous », le planning, l'historique, les statistiques, la
+     * facturation. La réassignation n'écrivait que la mission : le remplaçant ne voyait donc jamais
+     * l'intervention apparaître dans son espace web, et la personne remplacée continuait de l'y
+     * voir. `Booking::intervenantId()` répare les lecteurs qu'on peut réécrire ; ceci répare la
+     * cause.
+     *
+     * ET C'EST AUSSI UNE QUESTION D'ARGENT. L'autorisation Stripe est une « destination charge » :
+     * elle désigne le compte du prestataire au moment où elle est posée. Tant que la réservation
+     * n'était pas touchée, `BookingPaymentDestinationObserver` ne se déclenchait pas — la retenue
+     * restait pointée sur la personne remplacée, et l'encaissement la payait, elle. Le refus que
+     * l'observateur oppose désormais est le comportement voulu : on libère la retenue d'abord, on
+     * réassigne ensuite. Mieux vaut une réassignation qui s'arrête net qu'un virement au mauvais
+     * compte.
+     */
+    private function reporterSurLaReservation(Mission $mission, int $intervenantId): void
+    {
+        $reservation = $mission->booking;
+
+        if ($reservation === null || (int) $reservation->employe_id === $intervenantId) {
+            return;
+        }
+
+        // `forceFill` : ces colonnes d'affectation ne sont pas toutes assignables en masse, et un
+        // écart silencieux ici redonnerait exactement le défaut qu'on ferme.
+        $reservation->forceFill([
+            'employe_id' => $intervenantId,
+            'assigned_provider_user_id' => $intervenantId,
+        ])->save();
     }
 
     /**

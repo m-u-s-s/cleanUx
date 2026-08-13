@@ -641,6 +641,53 @@ class Booking extends Model
         return $this->hasMany(Mission::class);
     }
 
+    /**
+     * QUI INTERVIENT RÉELLEMENT — la seule réponse qui fasse autorité.
+     *
+     * DEUX CHAMPS RÉPONDAIENT À LA MÊME QUESTION. `bookings.employe_id` est le prestataire de la
+     * COMMANDE : `MissionFromRendezVousSyncService` le recopie vers la mission à la création, si
+     * bien que les deux disent la même chose sur un parcours nominal. Ils ne DIVERGENT qu'à la
+     * première réassignation — et pour toute mission qu'une société confie à l'un de ses salariés.
+     *
+     * C'est ce qui a rendu le défaut invisible : il n'apparaît qu'après un changement
+     * d'intervenant, moment où plus personne ne relit le code. Dix-huit lecteurs répondaient alors
+     * faux — l'ancien prestataire gardait l'accès au client, touchait le pourboire, recevait les
+     * étoiles et l'événement d'agenda, pendant que celui qui avait travaillé n'avait rien.
+     *
+     * LA MISSION FAIT AUTORITÉ, la réservation reste en repli : avant qu'une mission existe, elle
+     * porte la seule information disponible, et les parcours qui n'ont jamais divergé gardent leur
+     * comportement.
+     *
+     * Ne PAS lire `employe_id` directement pour répondre à « qui intervient » — c'est le sens de
+     * `ReservationIntervenantTest`, qui refuse toute réapparition.
+     */
+    public function intervenantId(): ?int
+    {
+        // Quand l'appelant a déjà chargé `missions`, on ne repart pas en base : ce résolveur est
+        // lu dans des boucles d'affichage (planning, agenda), où une requête par ligne coûterait
+        // plus cher que le défaut qu'il corrige.
+        $depuisLaMission = $this->relationLoaded('missions')
+            ? $this->missions->sortByDesc('id')->first()?->lead_provider_user_id
+            : $this->missions()->latest('id')->value('lead_provider_user_id');
+
+        $id = $depuisLaMission
+            ?? $this->employe_id
+            ?? $this->assigned_provider_user_id
+            ?? $this->provider_user_id
+            ?? $this->assigned_employee_id
+            ?? null;
+
+        return $id ? (int) $id : null;
+    }
+
+    /** L'intervenant lui-même, quand on a besoin de l'utilisateur et pas de son identifiant. */
+    public function intervenant(): ?User
+    {
+        $id = $this->intervenantId();
+
+        return $id ? User::find($id) : null;
+    }
+
     /** @return HasMany<ComplaintCase, $this> */
     public function complaintCases(): HasMany
     {

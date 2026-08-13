@@ -25,7 +25,10 @@ class RendezVousPolicy
         }
 
         if ($user->isEmploye()) {
-            return $rendezVous->employe_id === $user->id;
+            // C'est L'INTERVENANT qui a le droit de regard, pas le nom resté sur la commande :
+            // après une réassignation, l'ancien conservait l'accès et le nouveau se le voyait
+            // refuser. Voir `Booking::intervenantId()`.
+            return $rendezVous->intervenantId() === $user->id;
         }
 
         return false;
