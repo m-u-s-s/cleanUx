@@ -9,6 +9,7 @@ use App\Models\MissionChecklist;
 use App\Models\MissionChecklistItem;
 use App\Models\ProviderProfile;
 use App\Models\User;
+use App\Services\Missions\MissionLifecycleService;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -187,6 +188,57 @@ class ProviderMissionLifecycleControllerCoverageBatch13Test extends TestCase
         $response->assertStatus(422);
         $response->assertJsonPath('ok', false);
         $response->assertJsonPath('message', 'Le code de fin est requis pour clôturer cette mission.');
+    }
+
+    /**
+     * LA RAISON DU REFUS DOIT ARRIVER JUSQU'AU PRESTATAIRE.
+     *
+     * Sans rattrapage, la `RuntimeException` du cycle de vie filait vers le rendu générique et le
+     * téléphone affichait « An unexpected error occurred » — un message qui ne dit rien à
+     * quelqu'un debout chez un client, alors que le serveur sait exactement quoi répondre.
+     */
+    public function test_le_refus_de_cloture_arrive_lisible_et_non_en_erreur_generique(): void
+    {
+        [, $provider, $mission] = $this->buildMission(MissionStatus::STARTED);
+
+        $checklist = MissionChecklist::create([
+            'mission_id' => $mission->id,
+            'template_name' => 'Standard',
+            'status' => 'in_progress',
+        ]);
+        MissionChecklistItem::create([
+            'mission_checklist_id' => $checklist->id,
+            'label' => 'Rangement du matériel',
+            'is_required' => true,
+            'status' => 'pending',
+        ]);
+
+        $genere = app(MissionLifecycleService::class)->generateEndCode($mission);
+
+        $reponse = $this->actingAs($provider, 'sanctum')
+            ->postJson("/api/provider/missions/{$mission->id}/complete", [
+                'end_code' => $genere['code'],
+            ]);
+
+        $reponse->assertStatus(422);
+        $reponse->assertJsonPath('ok', false);
+        $this->assertStringContainsString('obligatoires', $reponse->json('message'));
+    }
+
+    /** Un code faux se dit « Code invalide », pas « erreur inattendue ». */
+    public function test_un_code_de_fin_faux_donne_un_message_lisible(): void
+    {
+        [, $provider, $mission] = $this->buildMission(MissionStatus::STARTED);
+
+        app(MissionLifecycleService::class)->generateEndCode($mission);
+
+        $reponse = $this->actingAs($provider, 'sanctum')
+            ->postJson("/api/provider/missions/{$mission->id}/complete", [
+                'end_code' => '000000',
+            ]);
+
+        $reponse->assertStatus(422);
+        $this->assertStringContainsString('invalide', mb_strtolower((string) $reponse->json('message')));
     }
 
     public function test_complete_closes_mission_without_pending_end_code(): void

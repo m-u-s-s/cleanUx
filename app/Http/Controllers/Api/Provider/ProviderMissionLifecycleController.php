@@ -422,13 +422,19 @@ class ProviderMissionLifecycleController extends Controller
             ], 422);
         }
 
-        $mission = $this->lifecycle->validateStartCode(
-            $mission,
-            $request->user(),
-            (string) $data['start_code'],
-            $lat,
-            $lng,
-        );
+        // Même raison qu'à la clôture : « Code invalide » ou « Le code a expiré » doivent être lus
+        // par le prestataire, pas remplacés par une erreur générique.
+        try {
+            $mission = $this->lifecycle->validateStartCode(
+                $mission,
+                $request->user(),
+                (string) $data['start_code'],
+                $lat,
+                $lng,
+            );
+        } catch (\RuntimeException $e) {
+            return response()->json(['ok' => false, 'message' => $e->getMessage()], 422);
+        }
 
         return response()->json([
             'ok' => true,
@@ -462,10 +468,25 @@ class ProviderMissionLifecycleController extends Controller
         $lat = isset($data['lat']) ? (float) $data['lat'] : null;
         $lng = isset($data['lng']) ? (float) $data['lng'] : null;
 
-        if ($hasPendingEndCode && ! empty($data['end_code'])) {
-            $mission = $this->lifecycle->validateEndCode($mission, $request->user(), $data['end_code'], $lat, $lng);
-        } else {
-            $mission = $this->lifecycle->completeMission($mission, $request->user(), $lat, $lng);
+        /*
+         * LA RAISON DU REFUS DOIT ARRIVER JUSQU'AU PRESTATAIRE.
+         *
+         * Sans ce rattrapage, toute `RuntimeException` du cycle de vie filait vers le rendu
+         * générique et le téléphone affichait « An unexpected error occurred ». Or ces exceptions
+         * portent exactement ce qu'il faut faire : « certaines tâches obligatoires ne sont pas
+         * cochées », « Le code a expiré », « Code invalide ». Le prestataire lisait un message qui
+         * ne lui disait rien pendant que le serveur, lui, savait précisément quoi répondre.
+         *
+         * `completeByQr` le faisait déjà ; ce chemin-ci et `begin()` avaient été oubliés.
+         */
+        try {
+            if ($hasPendingEndCode && ! empty($data['end_code'])) {
+                $mission = $this->lifecycle->validateEndCode($mission, $request->user(), $data['end_code'], $lat, $lng);
+            } else {
+                $mission = $this->lifecycle->completeMission($mission, $request->user(), $lat, $lng);
+            }
+        } catch (\RuntimeException $e) {
+            return response()->json(['ok' => false, 'message' => $e->getMessage()], 422);
         }
 
         return response()->json([
