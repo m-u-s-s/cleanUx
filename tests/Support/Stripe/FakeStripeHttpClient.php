@@ -2,7 +2,7 @@
 
 namespace Tests\Support\Stripe;
 
-use Stripe\Exception\ApiErrorException;
+use Stripe\Exception\InvalidRequestException;
 use Stripe\HttpClient\ClientInterface;
 
 /**
@@ -107,7 +107,17 @@ class FakeStripeHttpClient implements ClientInterface
             // as it would against the real Stripe API. Non-error stubs (2xx) are
             // returned normally — existing happy-path behaviour is unchanged.
             if ($code >= 400 && isset($body['error'])) {
-                throw ApiErrorException::factory(
+                /*
+                 * UNE CLASSE CONCRÈTE, sans quoi ce double ne simulait rien.
+                 *
+                 * `ApiErrorException` est ABSTRAITE : sa fabrique fait `new static(...)` et lève
+                 * « Cannot instantiate abstract class ». Le service enveloppait alors ses appels
+                 * dans un `catch (\Throwable)` qui attrapait cette erreur PHP et la consignait
+                 * comme une anomalie Stripe — si bien que le test censé vérifier le traitement
+                 * d'une erreur d'API vérifiait en réalité le traitement d'un défaut de ce fichier.
+                 * Il passait au vert sans jamais exercer le chemin qu'il prétendait couvrir.
+                 */
+                throw InvalidRequestException::factory(
                     $body['error']['message'] ?? 'Stripe error',
                     $code,
                     json_encode(['error' => $body['error']]),

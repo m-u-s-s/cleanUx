@@ -12,6 +12,7 @@ use App\Services\Payments\StripeConnectPaymentService;
 use App\Services\Payments\StripeReconciliationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Schema;
 use Stripe\ApiRequestor;
 use Stripe\Stripe;
 use Tests\Support\Spine\SpineScenario;
@@ -546,5 +547,69 @@ class PayoutRoutingTest extends TestCase
         $mismatch = reset($missingPayoutMismatches);
         $this->assertSame('error', $mismatch['severity'], 'Missing payout must be severity=error');
         $this->assertSame($piId, $mismatch['stripe_id']);
+    }
+
+    /**
+     * UNE ERREUR DE BASE NE DOIT PAS ÊTRE MAQUILLÉE EN RÉCONCILIATION RÉUSSIE.
+     *
+     * C'est ce qui a permis au défaut du 10 août de vivre trois jours : la suppression de
+     * `missions.rendez_vous_id` a laissé une requête pointant sur une colonne disparue, l'erreur
+     * SQL a été avalée par un `catch (\Throwable)`, consignée sous l'étiquette trompeuse
+     * `stripe_api_error`, et le run s'est déclaré COMPLETED avec zéro anomalie. Un filet de
+     * sécurité sur l'argent était débranché tout en affichant qu'il fonctionnait.
+     *
+     * La distinction est délibérée : une panne de l'API Stripe est une condition ATTENDUE, qu'on
+     * consigne et qui laisse le run se terminer — la réconciliation reprendra au passage suivant.
+     * Une requête cassée est un défaut de programmation, et un contrôle d'intégrité financière
+     * qui n'a pas pu s'exécuter doit le dire.
+     */
+    public function test_une_erreur_de_base_fait_echouer_le_run_au_lieu_de_le_declarer_reussi(): void
+    {
+        $piId = 'pi_f8_db_broken';
+
+        $s = SpineScenario::make()->withDevis(100.00)->build();
+        $s->booking->forceFill([
+            'stripe_payment_intent_id' => $piId,
+            'payment_status' => 'captured',
+            'payment_captured_at' => now(),
+            'payment_amount_cents' => 10000,
+        ])->save();
+
+        $this->stripe->stub(
+            'GET',
+            '/v1/payment_intents',
+            [
+                'object' => 'list',
+                'data' => [
+                    StripeFakeResponses::paymentIntent($piId, 'succeeded'),
+                ],
+                'has_more' => false,
+                'url' => '/v1/payment_intents',
+            ]
+        );
+
+        // Panne de base provoquée SUR LE CHEMIN du contrôle des versements : la table que la
+        // réconciliation interroge pour savoir si un versement existe disparaît sous ses pieds.
+        Schema::drop('provider_payouts');
+
+        // `run()` marque le run puis RELANCE : l'appelant — commande planifiée ou job — doit
+        // échouer bruyamment. On vérifie donc l'état PERSISTÉ, pas une valeur de retour.
+        try {
+            (new StripeReconciliationService)->run(
+                StripeReconciliationRun::SCOPE_PAYMENT_INTENTS,
+                Carbon::now()->subDays(1)->startOfDay(),
+                Carbon::now()->endOfDay(),
+            );
+            $this->fail('Une erreur de base doit remonter à l’appelant, pas être absorbée.');
+        } catch (\Throwable $e) {
+            $this->assertStringContainsString('provider_payouts', $e->getMessage());
+        }
+
+        $this->assertSame(
+            StripeReconciliationRun::STATUS_FAILED,
+            StripeReconciliationRun::query()->latest('id')->first()?->status,
+            'Un contrôle d’intégrité financière qui n’a pas pu s’exécuter ne doit jamais se '
+            .'déclarer COMPLETED : c’est ainsi qu’une réconciliation aveugle passe pour saine.'
+        );
     }
 }
