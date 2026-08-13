@@ -384,6 +384,25 @@ class MissionLifecycleService
         ?float $lng = null,
         ?array $geo = null,
     ): Mission {
+        /*
+         * CLÔTURER DEUX FOIS NE REJOUE RIEN.
+         *
+         * Cette méthode n'avait aucune garde sur son propre état. Rappelée sur une mission déjà
+         * terminée — un second appui, une reprise réseau, un écran resté ouvert — elle recapturait
+         * le paiement, recréait la ligne de versement et renotifiait les deux parties.
+         *
+         * Constaté sur la mission #12 : UN seul événement `mission_completed`, mais TROIS annonces
+         * de gain au prestataire, dont la dernière portait un montant différent des deux premières.
+         * Trois promesses contradictoires pour un même travail, et rien pour départager.
+         *
+         * LE RETOUR EST SILENCIEUX, PAS UNE ERREUR : répéter une clôture qui a déjà abouti n'est
+         * pas une faute, c'est le comportement normal d'un réseau qui bégaie. Ce qui serait fautif,
+         * c'est d'en tirer un second mouvement d'argent.
+         */
+        if ($mission->status === MissionStatus::COMPLETED) {
+            return $mission->fresh(['assignments', 'verificationCodes']);
+        }
+
         $mission = app(MissionProfitService::class)
             ->calculate($mission);
         $this->assignmentStatusService->assertAssignedToMission($mission, $user);

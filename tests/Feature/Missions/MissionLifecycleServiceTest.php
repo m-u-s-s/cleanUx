@@ -240,6 +240,28 @@ class MissionLifecycleServiceTest extends TestCase
         $this->assertNull($record->validated_at);
     }
 
+    /**
+     * CLÔTURER DEUX FOIS NE DOIT RIEN REJOUER.
+     *
+     * `completeMission()` n'avait aucune garde sur son propre état : rappelée sur une mission déjà
+     * terminée, elle recapturait le paiement, recréait la ligne de versement et renotifiait les
+     * deux parties. Constaté en production sur la mission #12 : UN seul événement
+     * `mission_completed`, mais TROIS annonces de gain au prestataire — dont la dernière portait un
+     * montant différent des deux premières. Trois promesses contradictoires pour un même travail.
+     */
+    public function test_cloturer_deux_fois_ne_rejoue_rien(): void
+    {
+        Notification::fake();
+        [$client, $provider, $mission] = $this->makeMission(MissionStatus::STARTED);
+        $mission->update(['actual_start_at' => now()->subHour()]);
+
+        $this->service()->completeMission($mission, $provider);
+        $this->service()->completeMission($mission->fresh(), $provider);
+
+        Notification::assertSentToTimes($provider, MissionPayoutAnnouncedNotification::class, 1);
+        Notification::assertSentToTimes($client, MissionCompletedNotification::class, 1);
+    }
+
     public function test_complete_mission_blocks_when_required_checklist_item_pending(): void
     {
         [, $provider, $mission] = $this->makeMission(MissionStatus::STARTED);
