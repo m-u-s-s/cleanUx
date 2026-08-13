@@ -49,15 +49,51 @@
     </div>
     @endif
 
-    @if($endCodeRecord && in_array($mission->status, ['started', 'paused']))
+    {{--
+        LE CODE DE FIN, DEMANDABLE PAR LE CLIENT LUI-MÊME.
+
+        La condition portait sur l'existence d'un code EN ATTENTE : sans lui, l'encadré disparaissait
+        entièrement et le client n'avait aucun moyen d'en obtenir un. Il naissait à l'arrivée du
+        prestataire, vivait vingt minutes, et une fois périmé il ne restait qu'à espérer un SMS —
+        que le plafond de cinq envois par heure et par numéro bloque justement dans ces moments-là.
+
+        La condition ne porte donc plus que sur l'état de la mission : tant qu'elle est en cours,
+        le client peut afficher ses six chiffres.
+    --}}
+    @if(in_array($mission->status, ['started', 'paused']))
     <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 space-y-2">
-        <h4 class="font-semibold text-amber-800">Code de fin disponible</h4>
-        <p class="text-sm text-amber-700">
-            Donnez ce code à l’employé pour clôturer la mission.
-        </p>
-        <div class="inline-flex rounded-xl bg-white px-4 py-2 text-xl font-bold tracking-[0.3em] text-amber-800">
-            {{ $clientEndCode ?? 'Code en attente' }}
-        </div>
+        <h4 class="font-semibold text-amber-800">Code de fin</h4>
+
+        @if($clientEndCode)
+            <p class="text-sm text-amber-700">
+                Donnez ce code au prestataire pour qu’il puisse clôturer la mission.
+            </p>
+            <div class="inline-flex rounded-xl bg-white px-4 py-2 text-xl font-bold tracking-[0.3em] text-amber-800">
+                {{ $clientEndCode }}
+            </div>
+            @if($endCodeExpiresAt)
+                {{-- L'heure limite est DITE : un code muet qui cesse de marcher passe pour une panne. --}}
+                <p class="text-xs text-amber-700">
+                    Valable jusqu’à {{ $endCodeExpiresAt->format('H:i') }}.
+                </p>
+            @endif
+            <button type="button" wire:click="genererCodeDeFin"
+                    class="text-xs font-semibold text-amber-900 underline">
+                Ce code ne fonctionne plus ? En générer un nouveau
+            </button>
+        @else
+            <p class="text-sm text-amber-700">
+                Le prestataire a besoin de six chiffres pour clôturer. Affichez-les au moment où il
+                vous les demande : ils ne restent valables que vingt minutes.
+            </p>
+            <button type="button" wire:click="genererCodeDeFin" class="brio-btn-primary">
+                Afficher mon code de fin
+            </button>
+        @endif
+
+        @if($erreurCode)
+            <p class="text-xs font-semibold text-rose-700">{{ $erreurCode }}</p>
+        @endif
     </div>
     @endif
 

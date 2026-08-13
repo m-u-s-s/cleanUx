@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Mission;
+use App\Models\MissionVerificationCode;
 use App\Support\Notifications\InteractsWithUserNotificationPreferences;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -34,9 +35,19 @@ class MissionEndCodeNotification extends Notification
     use InteractsWithUserNotificationPreferences;
     use Queueable;
 
+    /**
+     * @param  MissionVerificationCode|null  $record  L'enregistrement auquel ce code correspond.
+     *
+     * SANS LUI, LE PORTEUR EST AMBIGU. Chaque nouvelle émission périme la précédente, et rien ne
+     * permettait de savoir si la dernière notification décrivait le code encore valide ou un code
+     * déjà mort : l'espace client affichait alors six chiffres périmés sans le dire, et le
+     * prestataire s'entendait répondre « Le code a expiré ». L'identifiant rend l'appariement
+     * exact au lieu de le déduire d'un ordre chronologique.
+     */
     public function __construct(
         public Mission $mission,
-        public string $endCode
+        public string $endCode,
+        public ?MissionVerificationCode $record = null,
     ) {}
 
     /**
@@ -75,6 +86,8 @@ class MissionEndCodeNotification extends Notification
             'service_label' => $this->mission->booking?->service_display_name,
             'status' => $this->mission->status,
             'end_code' => $this->endCode,
+            'code_id' => $this->record?->id,
+            'expires_at' => $this->record?->expires_at?->toIso8601String(),
         ];
     }
 }

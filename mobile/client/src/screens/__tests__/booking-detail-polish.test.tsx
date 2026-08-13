@@ -13,6 +13,18 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: jest.fn() }),
 }));
 
+/*
+ * L'écran demande désormais son code de fin, donc il appelle `useMutation`.
+ *
+ * Ce fichier rend le composant SANS `QueryClientProvider` — c'est son parti pris, il bouchonne les
+ * accès au serveur plutôt que de monter un client. Le bouchon est ajouté ici pour la même raison
+ * que celui de `@/booking` : ces tests portent sur le rendu, pas sur les échanges réseau.
+ */
+jest.mock('@/tracking', () => ({
+  __esModule: true,
+  useCompletionCode: () => ({ mutate: jest.fn(), isPending: false }),
+}));
+
 const route: any = { params: { bookingId: 42 } };
 const navigation: any = { navigate: jest.fn() };
 

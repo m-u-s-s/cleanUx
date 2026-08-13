@@ -228,7 +228,7 @@ class MissionLifecycleService
 
         try {
             $mission->booking?->client?->notify(
-                new MissionEndCodeNotification($mission, $generated['code'])
+                new MissionEndCodeNotification($mission, $generated['code'], $generated['record'])
             );
         } catch (\Throwable $e) {
             Log::warning('Notification du code de fin non partie', [
