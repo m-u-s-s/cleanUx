@@ -83,7 +83,7 @@ class MesRendezVous extends Component
             'mission.assignments',
             'mission.activeTrackingSession',
         ])
-            ->where('employe_id', Auth::id())
+            ->intervenantEst((int) Auth::id())
             ->when($this->search, fn ($q) => $q->searchStructured($this->search));
 
         if ($this->filtreStatus) {
@@ -120,7 +120,7 @@ class MesRendezVous extends Component
     public function selectRdv(int $id): void
     {
         $rdv = Booking::query()
-            ->where('employe_id', Auth::id())
+            ->intervenantEst((int) Auth::id())
             ->findOrFail($id);
 
         $this->selectedRdvId = $rdv->id;
@@ -147,7 +147,7 @@ class MesRendezVous extends Component
             'mission.assignments',
             'mission.activeTrackingSession',
         ])
-            ->where('employe_id', Auth::id())
+            ->intervenantEst((int) Auth::id())
             ->find($this->selectedRdvId);
     }
 

@@ -35,7 +35,7 @@ class HistoriqueEmploye extends Component
     public function render(): View
     {
         $query = Booking::with(['client', 'feedback', 'serviceCatalog', 'postalCode'])
-            ->where('employe_id', Auth::id())
+            ->intervenantEst((int) Auth::id())
             ->where('status', 'termine')
             ->when($this->search, fn ($q) => $q->searchStructured($this->search));
 

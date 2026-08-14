@@ -128,9 +128,22 @@ class DataExportService
             return [];
         }
 
+        /*
+         * ICI ON ÉLARGIT, ON NE BASCULE PAS — et c'est la seule lecture de cette famille à le faire.
+         *
+         * Ailleurs, « qui intervient » désigne UNE personne : celle qui se déplace aujourd'hui.
+         * Un export RGPD répond à une autre question — quelles données concernent cette personne —
+         * et une réservation où elle a été nommée puis remplacée la concerne toujours. Basculer sur
+         * `intervenantEst()` retrancherait de son export des données auxquelles elle a droit.
+         *
+         * On ajoute donc le lien par la mission SANS retirer la colonne : après une réassignation,
+         * l'ancien comme le nouveau retrouvent la réservation dans leur export.
+         */
         return Booking::query()
-            ->where('client_id', $user->id)
-            ->orWhere('employe_id', $user->id)
+            ->where(fn ($q) => $q
+                ->where('client_id', $user->id)
+                ->orWhere('employe_id', $user->id)
+                ->orWhereHas('missions', fn ($m) => $m->where('lead_provider_user_id', $user->id)))
             ->limit(2000)
             ->get(['id', 'booking_reference', 'date', 'heure', 'status', 'devis_estime', 'currency', 'adresse', 'ville', 'code_postal', 'created_at'])
             ->toArray();

@@ -29,7 +29,7 @@ class ValidationMultipleRdv extends Component
         }
 
         Booking::whereIn('id', $this->selection)
-            ->where('employe_id', Auth::id())
+            ->intervenantEst((int) Auth::id())
             ->update(['status' => 'confirme']);
 
         $this->selection = [];
@@ -45,7 +45,7 @@ class ValidationMultipleRdv extends Component
         }
 
         Booking::whereIn('id', $this->selection)
-            ->where('employe_id', Auth::id())
+            ->intervenantEst((int) Auth::id())
             ->update(['status' => 'refuse']);
 
         $this->selection = [];
@@ -54,7 +54,7 @@ class ValidationMultipleRdv extends Component
 
     public function render()
     {
-        $rdvs = Booking::where('employe_id', Auth::id())
+        $rdvs = Booking::query()->intervenantEst((int) Auth::id())
             ->where('status', 'en_attente')
             ->orderBy('date')
             ->get();

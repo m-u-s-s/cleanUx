@@ -28,7 +28,7 @@ class FeedbacksEmploye extends Component
     public function render()
     {
         $feedbacks = Feedback::with(['client', 'rendezVous'])
-            ->whereHas('rendezVous', fn ($q) => $q->where('employe_id', Auth::id()))
+            ->whereHas('rendezVous', fn ($q) => $q->intervenantEst((int) Auth::id()))
             ->where('note', '>=', $this->noteMin)
             ->orderBy('created_at', $this->sort)
             ->paginate(5);

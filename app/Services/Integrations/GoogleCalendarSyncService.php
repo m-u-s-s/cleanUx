@@ -35,7 +35,7 @@ class GoogleCalendarSyncService
 
         $rendezVousItems = Booking::query()
             ->with(['client', 'serviceCatalog', 'serviceZone', 'organizationSite', 'postalCode'])
-            ->where('employe_id', $user->id)
+            ->intervenantEst((int) $user->id)
             ->whereDate('date', '>=', now()->toDateString())
             ->whereDate('date', '<=', now()->addDays($futureDays)->toDateString())
             ->whereNotIn('status', [BookingStatus::ANNULE, BookingStatus::REFUSE])

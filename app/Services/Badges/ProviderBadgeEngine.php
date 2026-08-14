@@ -96,10 +96,7 @@ class ProviderBadgeEngine
     protected function countMissionsCompleted(User $provider): int
     {
         return Booking::query()
-            ->where(function ($q) use ($provider) {
-                $q->where('employe_id', $provider->id)
-                    ->orWhere('assigned_employee_id', $provider->id);
-            })
+            ->intervenantEst((int) $provider->id)
             ->whereIn('status', ['termine', 'completed', 'closed'])
             ->count();
     }

@@ -17,7 +17,7 @@ class GoogleAgendaEmploye extends Component
     public function getUpcomingCountProperty(): int
     {
         return Booking::query()
-            ->where('employe_id', auth()->id())
+            ->intervenantEst((int) auth()->id())
             ->whereDate('date', '>=', now()->toDateString())
             ->count();
     }
@@ -26,7 +26,7 @@ class GoogleAgendaEmploye extends Component
     {
         return Booking::query()
             ->with(['serviceZone:id,name', 'serviceCatalog:id,name'])
-            ->where('employe_id', auth()->id())
+            ->intervenantEst((int) auth()->id())
             ->whereDate('date', '>=', now()->toDateString())
             ->whereIn('status', ['en_attente', 'confirme', 'en_route', 'sur_place'])
             ->orderBy('date')

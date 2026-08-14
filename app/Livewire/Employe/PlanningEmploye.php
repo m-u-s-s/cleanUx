@@ -78,7 +78,7 @@ class PlanningEmploye extends Component
         [$start, $end] = $this->range();
 
         return Booking::with(['client', 'serviceZone', 'organizationSite', 'serviceCatalog', 'postalCode'])
-            ->where('employe_id', Auth::id())
+            ->intervenantEst((int) Auth::id())
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
             ->when($this->status !== '', fn ($query) => $query->where('status', $this->status))
             ->when($this->zoneId !== '', fn ($query) => $query->where('service_zone_id', $this->zoneId))

@@ -176,10 +176,7 @@ class ProviderEarningsDashboard extends Component
     protected function aggregate(int $userId, Carbon $start, Carbon $end): array
     {
         $missionsQuery = Booking::query()
-            ->where(function ($q) use ($userId) {
-                $q->where('employe_id', $userId)
-                    ->orWhere('assigned_employee_id', $userId);
-            })
+            ->intervenantEst($userId)
             ->whereIn('status', ['termine', 'completed', 'closed'])
             ->whereBetween('updated_at', [$start, $end]);
 
@@ -234,10 +231,7 @@ class ProviderEarningsDashboard extends Component
     {
         // Simple bucketization en PHP — pour scale, basculer sur SQL GROUP BY DATE_FORMAT
         $bookings = Booking::query()
-            ->where(function ($q) use ($userId) {
-                $q->where('employe_id', $userId)
-                    ->orWhere('assigned_employee_id', $userId);
-            })
+            ->intervenantEst($userId)
             ->whereIn('status', ['termine', 'completed', 'closed'])
             ->whereBetween('updated_at', [$start, $end])
             ->get(['updated_at', 'provider_amount_cents', 'payment_amount_cents', 'devis_estime']);
@@ -262,10 +256,7 @@ class ProviderEarningsDashboard extends Component
             return [];
         }
         $rows = Booking::query()
-            ->where(function ($q) use ($userId) {
-                $q->where('employe_id', $userId)
-                    ->orWhere('assigned_employee_id', $userId);
-            })
+            ->intervenantEst($userId)
             ->whereIn('status', ['termine', 'completed', 'closed'])
             ->whereBetween('updated_at', [$start, $end])
             ->whereNotNull('trade_id')

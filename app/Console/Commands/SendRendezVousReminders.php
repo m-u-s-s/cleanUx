@@ -233,7 +233,7 @@ class SendRendezVousReminders extends Command
 
         $loads = $employees->map(function ($employe) use ($today) {
             $rdvs = Booking::with('serviceZone')
-                ->where('employe_id', $employe->id)
+                ->intervenantEst((int) $employe->id)
                 ->whereDate('date', $today)
                 ->whereIn('status', ['en_attente', 'confirme', 'en_route', 'sur_place'])
                 ->get();

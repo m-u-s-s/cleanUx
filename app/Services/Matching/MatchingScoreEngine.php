@@ -211,9 +211,12 @@ class MatchingScoreEngine
             }
         }
 
-        $pastBookings = DB::table('bookings')
+        // « Ce client a déjà travaillé avec cette personne » — donc celle qui EST VENUE, pas celle
+        // qui figurait sur la commande. Le modèle plutôt que `DB::table` : c'est lui qui porte la
+        // règle.
+        $pastBookings = Booking::query()
             ->where('client_id', $clientId)
-            ->where('employe_id', $provider->id)
+            ->intervenantEst((int) $provider->id)
             ->whereIn('status', ['termine', 'completed', 'done'])
             ->count();
 
@@ -264,8 +267,10 @@ class MatchingScoreEngine
 
     protected function recentMissionsCount(int $userId, int $hours): int
     {
-        return (int) DB::table('bookings')
-            ->where('employe_id', $userId)
+        // La charge récente suit CELUI QUI SE DÉPLACE : après une réassignation, la pénalité doit
+        // peser sur le nouveau, pas sur celui qu'on vient de décharger.
+        return Booking::query()
+            ->intervenantEst($userId)
             ->where('created_at', '>=', now()->subHours($hours))
             ->count();
     }

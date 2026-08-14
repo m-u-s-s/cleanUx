@@ -27,7 +27,7 @@ class SignalerIncident extends Component
     {
         return Booking::query()
             ->with('client')
-            ->where('employe_id', auth()->id())
+            ->intervenantEst((int) auth()->id())
             ->latest('date')
             ->limit(25)
             ->get();

@@ -670,10 +670,16 @@ class Booking extends Model
             ? $this->missions->sortByDesc('id')->first()?->lead_provider_user_id
             : $this->missions()->latest('id')->value('lead_provider_user_id');
 
+        /*
+         * TROIS COLONNES DE REPLI, PAS QUATRE. `provider_user_id` figurait dans cette chaîne et
+         * n'existe pas sur `bookings` — elle appartient au portefeuille, aux conversations et à la
+         * finance. Sur un modèle Eloquent elle rendait `null` sans bruit ; recopiée dans un `where`,
+         * elle aurait fait tomber la requête en MySQL, et serait restée MUETTE sous SQLite, qui
+         * prend un identifiant inconnu pour une chaîne littérale.
+         */
         $id = $depuisLaMission
             ?? $this->employe_id
             ?? $this->assigned_provider_user_id
-            ?? $this->provider_user_id
             ?? $this->assigned_employee_id
             ?? null;
 
@@ -696,8 +702,12 @@ class Booking extends Model
      * dans un `where` est exactement ce qui a produit le défaut d'origine.
      *
      * L'ordre est celui du résolveur, et il compte : la mission d'abord, la réservation seulement
-     * quand AUCUNE mission ne désigne personne. `ReservationIntervenantTest` compare les deux
-     * formulations sur un jeu mélangé — si elles se mettaient à diverger, le test le dirait.
+     * quand AUCUNE mission ne désigne personne. LES COLONNES DE REPLI aussi sont les siennes — il
+     * manquait `assigned_employee_id`, si bien que le filtre ignorait des réservations que le
+     * résolveur reconnaissait.
+     *
+     * `ReservationIntervenantTest` compare les deux formulations sur un jeu mélangé, ces colonnes
+     * comprises : si elles se mettaient à diverger, le test le dirait.
      *
      * @param  Builder<Booking>  $query
      * @return Builder<Booking>
@@ -710,7 +720,8 @@ class Booking extends Model
                     $repli->whereDoesntHave('missions', fn ($m) => $m->whereNotNull('lead_provider_user_id'))
                         ->where(fn (Builder $colonnes) => $colonnes
                             ->where('employe_id', $userId)
-                            ->orWhere('assigned_provider_user_id', $userId));
+                            ->orWhere('assigned_provider_user_id', $userId)
+                            ->orWhere('assigned_employee_id', $userId));
                 });
         });
     }
@@ -726,7 +737,8 @@ class Booking extends Model
     {
         return $query->whereDoesntHave('missions', fn ($m) => $m->whereNotNull('lead_provider_user_id'))
             ->whereNull('employe_id')
-            ->whereNull('assigned_provider_user_id');
+            ->whereNull('assigned_provider_user_id')
+            ->whereNull('assigned_employee_id');
     }
 
     /** @return HasMany<ComplaintCase, $this> */

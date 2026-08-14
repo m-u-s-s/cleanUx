@@ -133,7 +133,7 @@ class ProviderPerformanceCalculator
     protected function missionsStats(User $provider, Carbon $start, Carbon $end): array
     {
         $base = Booking::query()
-            ->where('employe_id', $provider->id)
+            ->intervenantEst((int) $provider->id)
             ->whereBetween('updated_at', [$start, $end]);
 
         $completed = (clone $base)

@@ -78,10 +78,7 @@ class EmployeeRateClient extends Component
         $booking = $this->bookingId
             ? Booking::query()
                 ->where('id', $this->bookingId)
-                ->where(function ($q) use ($user) {
-                    $q->where('employe_id', $user->id)
-                        ->orWhere('assigned_employee_id', $user->id);
-                })
+                ->intervenantEst((int) $user->id)
                 ->first()
             : null;
 

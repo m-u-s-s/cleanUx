@@ -411,6 +411,16 @@ class ReservationIntervenantTest extends TestCase
         [$reservationSeule, $m4] = $this->missionAssigneeA($a);
         Mission::query()->whereKey($m4->id)->update(['lead_provider_user_id' => null]);
 
+        // Le repli le plus lointain : ni mission, ni `employe_id`, seulement `assigned_employee_id`.
+        // Cette colonne manquait au filtre SQL pendant que le résolveur la lisait.
+        [$repliLointain, $m6] = $this->missionAssigneeA($a);
+        Booking::query()->whereKey($repliLointain->id)->update([
+            'employe_id' => null,
+            'assigned_provider_user_id' => null,
+            'assigned_employee_id' => $b->id,
+        ]);
+        Mission::query()->whereKey($m6->id)->update(['lead_provider_user_id' => null, 'lead_employee_id' => null]);
+
         // Personne.
         [$personne, $m5] = $this->missionAssigneeA($a);
         Booking::query()->whereKey($personne->id)->update(['employe_id' => null, 'assigned_provider_user_id' => null]);
@@ -447,6 +457,7 @@ class ReservationIntervenantTest extends TestCase
         $this->assertSame($b->id, $missionSeule->fresh()->intervenantId());
         $this->assertSame($b->id, $divergente->fresh()->intervenantId());
         $this->assertSame($a->id, $reservationSeule->fresh()->intervenantId());
+        $this->assertSame($b->id, $repliLointain->fresh()->intervenantId());
         $this->assertNull($personne->fresh()->intervenantId());
     }
 
@@ -489,6 +500,63 @@ class ReservationIntervenantTest extends TestCase
             $fautifs,
             'Ces fichiers déduisent l’intervenant d’une seule colonne au lieu de passer par '.
             "Booking::intervenantId() ou Mission::estIntervenant() :\n".implode("\n", $fautifs),
+        );
+    }
+
+    /**
+     * ET AUCUN FILTRE NE CHERCHE UN INTERVENANT SUR LA SEULE COLONNE.
+     *
+     * `where('employe_id', $id)` sur des réservations pose la même question que `intervenantEst()`
+     * et y répond moins bien : elle rate la mission réassignée. C'est ce qui faisait qu'un salarié
+     * remplaçant ne voyait pas l'intervention dans son espace, que la détection de conflit le
+     * croyait libre, et que les badges créditaient l'autre.
+     *
+     * Deux familles échappent à la règle, et pour deux raisons distinctes.
+     */
+    public function test_aucun_filtre_ne_cherche_un_intervenant_sur_la_seule_colonne(): void
+    {
+        $autorises = [
+            /*
+             * `feedback.employe_id` est une AUTRE COLONNE, sur une autre table : elle nomme le
+             * destinataire d'un avis déjà déposé, pas qui doit se rendre quelque part. Le nom
+             * identique est un piège, pas une parenté.
+             */
+            'app/Models/Feedback.php',
+            'app/Services/Badges/ProviderBadgeEngine.php',
+            'app/Services/Matching/ProviderPerformanceCalculator.php',
+            'app/Services/Quality/WorkerQualityScoreService.php',
+            'app/Services/Rating/RatingAggregationService.php',
+
+            // La règle elle-même.
+            'app/Models/Booking.php',
+
+            // Vise la personne QUI PART, pas celle qui intervient : le filtre doit rester sur la
+            // colonne, c'est elle qu'on vient nettoyer.
+            'app/Services/Organizations/OrganizationMemberAdministration.php',
+
+            // Export RGPD : ÉLARGIT au lieu de basculer — une réservation où la personne a été
+            // nommée puis remplacée la concerne toujours.
+            'app/Services/Gdpr/DataExportService.php',
+        ];
+
+        $fautifs = [];
+
+        foreach ($this->fichiersPhpDeLApplication() as $chemin) {
+            $relatif = str_replace('\\', '/', substr($chemin, strlen(base_path()) + 1));
+
+            if (in_array($relatif, $autorises, true)) {
+                continue;
+            }
+
+            if (preg_match("/->where\('employe_id'/", (string) file_get_contents($chemin))) {
+                $fautifs[] = $relatif;
+            }
+        }
+
+        $this->assertSame(
+            [],
+            $fautifs,
+            "Ces fichiers filtrent sur `employe_id` au lieu du scope `intervenantEst()` :\n".implode("\n", $fautifs),
         );
     }
 

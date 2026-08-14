@@ -16,14 +16,14 @@ class FeedbackStats extends Component
     {
         $average = Feedback::whereHas(
             'rendezVous',
-            fn ($q) => $q->where('employe_id', Auth::id())
+            fn ($q) => $q->intervenantEst((int) Auth::id())
         )->avg('note');
 
         $this->moyenne = $average !== null ? round((float) $average, 2) : 0;
 
         $this->total = Feedback::whereHas(
             'rendezVous',
-            fn ($q) => $q->where('employe_id', Auth::id())
+            fn ($q) => $q->intervenantEst((int) Auth::id())
         )->count();
     }
 

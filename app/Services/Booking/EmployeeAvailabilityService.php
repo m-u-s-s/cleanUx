@@ -145,7 +145,7 @@ class EmployeeAvailabilityService
         $activeStatuses = ['en_attente', 'confirme', 'en_route', 'sur_place'];
 
         return ! Booking::query()
-            ->where('employe_id', $employeeId)
+            ->intervenantEst((int) $employeeId)
             ->whereDate('date', $date)
             ->whereIn('status', $activeStatuses)
             ->get()
