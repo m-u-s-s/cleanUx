@@ -13,6 +13,7 @@ import {
   useProposeMissionExtra,
   useMissionChecklist,
   useToggleMissionChecklistItem,
+  useDeclareNoShow,
   INCIDENT_TYPES,
 } from '@/missions';
 import type { MissionExtraItem, MissionIncidentType, MissionMediaItem } from '@/missions';
@@ -107,6 +108,29 @@ export function MissionFieldScreen({ route }: Props) {
    * troisième règle à tenir. Le prestataire garde l'interrupteur.
    */
   const enCours = mission ? ['started', 'paused'].includes(mission.status) : false;
+
+  /*
+   * LE PARCOURS À DÉROULER, tranché par le serveur.
+   *
+   * Le deviner ici — coordonnées de dépose présentes ? nom du métier ? — ferait deviner chaque
+   * écran à sa façon, et le premier à se tromper afficherait un champ de code à un conducteur au
+   * volant.
+   */
+  const estUneCourse = mission?.is_ride === true;
+
+  /*
+   * L'attente au point de prise en charge. `null` quand la question ne se pose pas.
+   *
+   * Recalculé à chaque rendu depuis une DATE serveur : une durée reçue en secondes se remettrait à
+   * zéro à chaque retour sur l'écran, et il suffirait de quitter puis revenir pour déclarer un
+   * passager absent au bout de trois secondes.
+   */
+  const echeanceAbsence = mission?.no_show_available_at ?? null;
+  const absenceDeclarable = echeanceAbsence === null ? null : Date.parse(echeanceAbsence) <= Date.now();
+  const minutesAvantAbsence = echeanceAbsence === null
+    ? 0
+    : Math.max(0, Math.ceil((Date.parse(echeanceAbsence) - Date.now()) / 60000));
+  const declarerAbsence = useDeclareNoShow(missionId);
 
   useGpsWatcher(
     gpsActive && enCours,
@@ -453,7 +477,79 @@ export function MissionFieldScreen({ route }: Props) {
       </View>
 
       <View style={styles.actions}>
-        {enCours && (
+        {/*
+          LE PARCOURS COURSE : deux gestes, aucun code.
+
+          Le bouton de clôture ordinaire ci-dessous appelle `complete`, que le serveur REFUSE par un
+          409 sur une course — il y chercherait un code de fin qui n'a jamais existé. Les deux
+          parcours sont donc distingués ici aussi, et pas seulement côté serveur : afficher la
+          mauvaise action produirait un refus que le conducteur ne peut pas comprendre.
+        */}
+        {estUneCourse && mission?.status === 'arrived' && (
+          <Button
+            label="Client à bord"
+            onPress={() =>
+              lifecycle.mutate('ride/start', {
+                onError: (e: any) =>
+                  Alert.alert('Impossible', e?.message ?? 'Réessayez dans un instant.'),
+              })
+            }
+            fullWidth
+            size="lg"
+          />
+        )}
+
+        {estUneCourse && mission?.status === 'arrived' && absenceDeclarable !== null && (
+          absenceDeclarable ? (
+            <Button
+              label="Client absent"
+              variant="secondary"
+              onPress={() =>
+                Alert.alert(
+                  'Client absent ?',
+                  'La course sera close et des frais lui seront appliqués.',
+                  [
+                    { text: 'Annuler', style: 'cancel' },
+                    {
+                      text: 'Confirmer',
+                      style: 'destructive',
+                      onPress: () =>
+                        declarerAbsence.mutate(undefined, {
+                          onError: (e: any) =>
+                            Alert.alert('Impossible', e?.message ?? 'Réessayez dans un instant.'),
+                        }),
+                    },
+                  ],
+                )
+              }
+              fullWidth
+              size="lg"
+            />
+          ) : (
+            // Le décompte VIENT DU SERVEUR : un minuteur local se remettrait à zéro d'un
+            // rechargement, et il suffirait de quitter l'écran pour déclarer une absence immédiate.
+            <Text style={styles.gpsLabel} testID="attente-client">
+              Attente du client — encore {minutesAvantAbsence} min avant de pouvoir déclarer son absence.
+            </Text>
+          )
+        )}
+
+        {estUneCourse && enCours && (
+          <Button
+            label="Terminer la course"
+            onPress={() =>
+              lifecycle.mutate('ride/complete', {
+                onError: (e: any) =>
+                  Alert.alert('Impossible', e?.message ?? 'Réessayez dans un instant.'),
+              })
+            }
+            variant="danger"
+            fullWidth
+            size="lg"
+          />
+        )}
+
+        {! estUneCourse && enCours && (
           <Button
             label="Terminer la mission"
             /*

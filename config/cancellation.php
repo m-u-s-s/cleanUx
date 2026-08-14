@@ -60,6 +60,20 @@ return [
         // Délai après planned_start_at où on considère un no-show
         'grace_minutes' => 15,
 
+        /*
+         * L'ATTENTE AU POINT DE PRISE EN CHARGE, sur une course.
+         *
+         * Cinq minutes, comme chez Uber, Bolt et Heetch dans la plupart des villes. Le repère n'est
+         * PAS l'horaire prévu — une course immédiate n'en a pas — mais le moment où le conducteur
+         * signale son arrivée. C'est de là que le passager en retard vit le décompte comme
+         * équitable, et c'est le seul instant horodaté dont on dispose.
+         *
+         * Quinze minutes conviennent à un ménage : la personne est chez elle et cherche ses clés.
+         * Les appliquer à une voiture arrêtée en double file, moteur tournant, reviendrait à faire
+         * travailler le conducteur gratuitement pendant un quart d'heure.
+         */
+        'ride_grace_minutes' => (int) env('CANCELLATION_RIDE_GRACE_MINUTES', 5),
+
         // Si client no-show : fee = 100% du prix
         'client_fee_percent' => 100,
 

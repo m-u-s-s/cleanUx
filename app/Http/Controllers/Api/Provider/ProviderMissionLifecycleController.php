@@ -10,8 +10,10 @@ use App\Services\Missions\MissionVerificationCodeService;
 use App\Services\Missions\RideLifecycleService;
 use App\Services\Notifications\SmsService;
 use App\Services\Payments\PayoutAnnouncementService;
+use App\Support\Domain\MissionStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -40,7 +42,16 @@ class ProviderMissionLifecycleController extends Controller
      * Colonnes de réservation nécessaires au payload plat. Chargées sur LES DEUX chaînes de
      * résolution unique : `booking()`, la seule relation depuis la fusion des deux colonnes.
      */
-    private const BOOKING_COLUMNS = 'id,booking_reference,address,city,postal_code,scheduled_date,scheduled_time,service_catalog_id,destination_lat,destination_lng,customer_comment,client_id,customer_user_id';
+    /**
+     * Colonnes de réservation nécessaires au payload plat.
+     *
+     * ⚠️ UNE COLONNE ABSENTE D'ICI VAUT `null`, EN SILENCE. C'est ce qui a fait passer les premières
+     * courses pour des interventions ordinaires : `estUneCourse()` lit les coordonnées de dépose,
+     * elles n'étaient pas dans cette liste, et la réponse rendait donc `is_ride: false` sans qu'une
+     * seule exception soit levée. Ajouter une colonne au modèle ne suffit pas — il faut l'ajouter
+     * ICI aussi.
+     */
+    private const BOOKING_COLUMNS = 'id,booking_reference,address,city,postal_code,scheduled_date,scheduled_time,service_catalog_id,destination_lat,destination_lng,dropoff_address,dropoff_lat,dropoff_lng,route_distance_m,customer_comment,client_id,customer_user_id';
 
     public function __construct(
         protected MissionLifecycleService $lifecycle,
@@ -656,6 +667,33 @@ class ProviderMissionLifecycleController extends Controller
      * ProviderMissionAssignmentController::serializeForList() pour l'inbox : la structure
      * imbriquée { booking: {...}, client: {...} } rendait chacune de ces lectures `undefined`.
      */
+    /**
+     * Quand le conducteur pourra déclarer que le client ne s'est pas présenté.
+     *
+     * `null` tant que la question ne se pose pas : pas une course, ou pas encore arrivé au point de
+     * prise en charge. Le repère est l'ARRIVÉE, pas l'horaire prévu — une course immédiate n'en a
+     * pas, et c'est précisément pour cela que le geste était impossible jusqu'ici.
+     */
+    protected function absenceDeclarableA(Mission $mission): ?string
+    {
+        if (! $mission->booking?->estUneCourse() || $mission->status !== MissionStatus::ARRIVED) {
+            return null;
+        }
+
+        $arrivee = $mission->assignments
+            ->whereNotNull('arrived_at')
+            ->sortByDesc('arrived_at')
+            ->first()?->arrived_at;
+
+        if (! $arrivee) {
+            return null;
+        }
+
+        return Carbon::parse($arrivee)
+            ->addMinutes((int) config('cancellation.no_show.ride_grace_minutes', 5))
+            ->toIso8601String();
+    }
+
     protected function serialize(Mission $mission, bool $detailed = false): array
     {
         // `missions` n'a plus qu'une clé vers `bookings`. La relation choisissait auparavant sa
@@ -689,6 +727,29 @@ class ProviderMissionLifecycleController extends Controller
             'actual_end_at' => $mission->actual_end_at?->toIso8601String(),
             'estimated_duration_minutes' => $mission->estimated_duration_minutes,
             'actual_duration_minutes' => $mission->actual_duration_minutes,
+            /*
+             * CE QUI DIT À L'ÉCRAN QUEL PARCOURS DÉROULER.
+             *
+             * Sans ce drapeau, l'application devrait le deviner — par la présence de coordonnées de
+             * dépose, par le nom du métier — et chaque écran devinerait à sa façon. Le serveur
+             * tranche une fois, et les deux plateformes lisent la même réponse.
+             */
+            'is_ride' => (bool) $booking?->estUneCourse(),
+            // Le point de dépose, pour la carte et pour l'annonce « vous allez à… ».
+            'dropoff' => $booking?->estUneCourse() ? [
+                'address' => $booking->dropoff_address,
+                'latitude' => $this->toFloat($booking->dropoff_lat),
+                'longitude' => $this->toFloat($booking->dropoff_lng),
+                'distance_m' => $booking->route_distance_m,
+            ] : null,
+            /*
+             * L'INSTANT À PARTIR DUQUEL L'ABSENCE PEUT ÊTRE DÉCLARÉE.
+             *
+             * Une date SERVEUR, pas une durée : un décompte envoyé en secondes se remettrait à zéro
+             * à chaque rechargement de l'écran, et il suffirait d'actualiser pour déclarer un
+             * passager absent au bout de trois secondes.
+             */
+            'no_show_available_at' => $this->absenceDeclarableA($mission),
         ];
 
         if ($detailed) {

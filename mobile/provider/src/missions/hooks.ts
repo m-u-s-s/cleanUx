@@ -133,6 +133,28 @@ export function useMissionLifecycle(missionId: number) {
   });
 }
 
+/**
+ * « LE CLIENT NE S'EST PAS PRÉSENTÉ. »
+ *
+ * Ce geste n'existait sur AUCUNE surface pour une course : la détection d'absence exigeait un
+ * horaire prévu, et une commande immédiate n'en a pas — un conducteur devant une porte fermée
+ * n'avait donc littéralement rien à faire, ni pour partir, ni pour être payé de son déplacement.
+ *
+ * Le serveur refuse tant que l'attente n'est pas écoulée : le bouton peut être pressé trop tôt
+ * sans conséquence, et c'est bien lui qui décide, pas le minuteur affiché.
+ */
+export function useDeclareNoShow(missionId: number) {
+  const qc = useQueryClient();
+
+  return useMutation<{ ok?: boolean; fee_amount?: number }, ApiError, void>({
+    mutationFn: async () => (await apiClient.post(`/provider/missions/${missionId}/no-show`)).data ?? {},
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId] });
+      qc.invalidateQueries({ queryKey: ['provider', 'missions', 'active'] });
+    },
+  });
+}
+
 export function useLiveMissionUpdates(
   missionId: number | null,
   onUpdate: () => void,

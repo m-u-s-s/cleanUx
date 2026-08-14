@@ -62,10 +62,48 @@ export interface Mission {
   scheduled_time: string;
   total_price?: number;
   notes?: string;
+  /**
+   * QUEL PARCOURS DÉROULER — tranché par le serveur, une fois.
+   *
+   * Sans ce drapeau, chaque écran devrait le deviner (coordonnées de dépose présentes ? nom du
+   * métier ?) et chacun devinerait à sa façon. Le premier à se tromper afficherait un champ de
+   * code à un conducteur au volant.
+   */
+  is_ride?: boolean;
+  /** Le point de dépose, pour la carte et pour dire au conducteur où il va. */
+  dropoff?: {
+    address: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    distance_m: number | null;
+  } | null;
+  /**
+   * L'INSTANT à partir duquel l'absence du client peut être déclarée.
+   *
+   * Une date, pas une durée : un décompte envoyé en secondes se remettrait à zéro à chaque
+   * rechargement de l'écran, et il suffirait d'actualiser pour déclarer un passager absent au bout
+   * de trois secondes.
+   */
+  no_show_available_at?: string | null;
 }
 
 /**
  * `start` met EN ROUTE (setEnRoute côté serveur), il ne démarre pas la mission.
  * `begin` fait arrived → started, contre le code communiqué au client par SMS à l'arrivée.
  */
-export type MissionLifecycleAction = 'start' | 'arrive' | 'begin' | 'complete';
+/**
+ * `start` met EN ROUTE, `arrive` signale l'arrivée, `begin` démarre contre le code, `complete`
+ * clôture contre le code.
+ *
+ * `ride/start` et `ride/complete` sont l'autre parcours : celui des courses, où le client monte
+ * dans la voiture et où il n'y a AUCUN code. Les deux jeux sont mutuellement exclusifs, et le
+ * serveur répond 409 à qui se trompe de porte — plutôt que d'échouer en silence sur un code
+ * inexistant.
+ */
+export type MissionLifecycleAction =
+  | 'start'
+  | 'arrive'
+  | 'begin'
+  | 'complete'
+  | 'ride/start'
+  | 'ride/complete';

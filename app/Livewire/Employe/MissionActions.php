@@ -3,8 +3,10 @@
 namespace App\Livewire\Employe;
 
 use App\Models\Mission;
+use App\Services\Cancellation\CancelBookingService;
 use App\Services\Missions\MissionLifecycleService;
 use App\Services\Missions\RideLifecycleService;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -53,6 +55,64 @@ class MissionActions extends Component
     public function estUneCourse(): bool
     {
         return app(RideLifecycleService::class)->estUneCourse($this->mission);
+    }
+
+    /**
+     * L'ATTENTE AU POINT DE PRISE EN CHARGE, en secondes restantes.
+     *
+     * `null` quand la question ne se pose pas — pas une course, pas encore arrivé, ou déjà
+     * démarrée. `0` quand l'attente est écoulée et que l'absence peut être déclarée.
+     *
+     * Le décompte est calculé par le SERVEUR, jamais par un minuteur de page : un compte à rebours
+     * client seul se remet à zéro d'un rechargement, et il suffirait alors d'actualiser pour
+     * déclarer un passager absent au bout de trois secondes.
+     */
+    public function secondesAvantAbsence(): ?int
+    {
+        $reservation = $this->mission->booking;
+
+        if (! $reservation?->estUneCourse() || $this->mission->status !== 'arrived') {
+            return null;
+        }
+
+        $arrivee = $this->mission->assignments()
+            ->whereNotNull('arrived_at')
+            ->orderByDesc('arrived_at')
+            ->value('arrived_at');
+
+        if (! $arrivee) {
+            return null;
+        }
+
+        $echeance = Carbon::parse($arrivee)
+            ->addMinutes((int) config('cancellation.no_show.ride_grace_minutes', 5));
+
+        return max(0, (int) now()->diffInSeconds($echeance, false));
+    }
+
+    /**
+     * « Le client n'est pas venu. »
+     *
+     * Ce geste n'existait pas sur une course : la détection d'absence exigeait un horaire prévu, et
+     * une commande immédiate n'en a pas — le conducteur devant une porte fermée n'avait donc
+     * littéralement aucune action disponible, ni pour partir, ni pour être payé de son
+     * déplacement.
+     */
+    public function declarerClientAbsent(): void
+    {
+        $this->resetMessages();
+
+        try {
+            app(CancelBookingService::class)->markClientNoShow(
+                $this->mission->fresh()->booking,
+                Auth::user(),
+            );
+
+            $this->mission = $this->mission->fresh(['assignments', 'verificationCodes', 'booking']);
+            $this->successMessage = 'Absence du client enregistrée. La course est close.';
+        } catch (\Throwable $e) {
+            $this->errorMessage = $e->getMessage();
+        }
     }
 
     /** Le client est monté : la course démarre, sans code. */

@@ -78,6 +78,35 @@
                     Terminer la course
                 </button>
             </div>
+
+            {{--
+                L'ATTENTE AU POINT DE PRISE EN CHARGE.
+
+                Le décompte vient du SERVEUR : un minuteur de page se remettrait à zéro d'un
+                rechargement, et il suffirait d'actualiser pour déclarer un passager absent au bout
+                de trois secondes. `wire:poll` rafraîchit la valeur ; c'est elle qui décide.
+            --}}
+            @php $attente = $this->secondesAvantAbsence(); @endphp
+            @if ($attente !== null)
+                <div class="rounded-xl bg-slate-50 px-4 py-3" wire:poll.15s>
+                    @if ($attente > 0)
+                        <p class="text-sm text-slate-600">
+                            Attente du client — encore
+                            <span class="font-semibold tabular-nums">{{ (int) ceil($attente / 60) }} min</span>
+                            avant de pouvoir déclarer son absence.
+                        </p>
+                    @else
+                        <p class="text-sm text-slate-700">Le client ne s’est pas présenté ?</p>
+                        <button
+                            wire:click="declarerClientAbsent"
+                            wire:confirm="Déclarer que le client ne s’est pas présenté ? La course sera close et des frais lui seront appliqués."
+                            type="button"
+                            class="mt-2 rounded-xl border border-amber-400 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-900 transition hover:bg-amber-100">
+                            Client absent
+                        </button>
+                    @endif
+                </div>
+            @endif
         </div>
     @else
     <form
