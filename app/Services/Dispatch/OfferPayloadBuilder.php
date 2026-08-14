@@ -69,6 +69,23 @@ class OfferPayloadBuilder
             'payout_cents' => $this->payoutCents($booking),
             'distance_m' => $distanceM,
             'distance_km' => $distanceM !== null ? round($distanceM / 1000, 1) : null,
+            /*
+             * SUR UNE COURSE, DEUX DISTANCES DÉCIDENT — et une seule voyageait.
+             *
+             * `distance_km` dit combien il faut rouler pour ALLER CHERCHER le client. La longueur
+             * de la course elle-même n'était nulle part : un chauffeur voyait « 4,81 € » sans
+             * savoir s'il s'engageait pour deux kilomètres ou pour quarante. C'est pourtant la
+             * question qui décide d'accepter, et la réservation porte la réponse depuis sa
+             * création.
+             */
+            'is_ride' => (bool) $booking?->estUneCourse(),
+            'ride_distance_m' => $booking?->route_distance_m,
+            'ride_distance_km' => $booking?->route_distance_m !== null
+                ? round(((int) $booking->route_distance_m) / 1000, 1)
+                : null,
+            'ride_duration_minutes' => $booking?->route_duration_s !== null
+                ? (int) ceil(((int) $booking->route_duration_s) / 60)
+                : null,
             'latitude' => $destLat,
             'longitude' => $destLng,
             /*

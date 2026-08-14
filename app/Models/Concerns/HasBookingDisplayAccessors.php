@@ -31,8 +31,21 @@ trait HasBookingDisplayAccessors
     {
         $serviceName = $this->serviceCatalog?->display_name
             ?: $this->serviceCatalog?->name
+            /*
+             * LE MÉTIER DU MOTEUR DE COMMANDE — le maillon qui manquait.
+             *
+             * Cette chaîne ne connaissait que l'ANCIEN catalogue. Une commande passée par le
+             * moteur actuel fige pourtant le nom de son métier dans son instantané de devis, et
+             * s'affichait quand même « Service non précisé » sur tous les écrans : le tableau de
+             * bord du prestataire, sa fiche terrain, l'offre qu'on lui propose d'accepter.
+             *
+             * L'instantané d'abord : il fige le nom tel qu'il était au moment du clic. La relation
+             * ensuite, pour les réservations antérieures à cette recopie — et seulement là, pour ne
+             * pas payer une requête par ligne sur les listes.
+             */
             ?: data_get($this->pricing_snapshot, 'service_name')
             ?: data_get($this->pricing_snapshot, 'service.name')
+            ?: $this->trade?->name
             ?: $this->motif;
 
         if (! filled($serviceName)) {

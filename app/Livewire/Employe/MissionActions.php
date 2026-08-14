@@ -40,9 +40,48 @@ class MissionActions extends Component
 
     public ?float $accuracyM = null;
 
+    /**
+     * Le statut au moment où la requête a commencé — jamais envoyé au navigateur.
+     *
+     * Il ne sert qu'à répondre, en fin de requête, à une seule question : « le statut a-t-il
+     * changé ? » {@see self::dehydrate()}
+     */
+    protected ?string $statutAvantLAction = null;
+
     public function mount(Mission $mission): void
     {
         $this->mission = $mission->load(['assignments', 'verificationCodes', 'booking']);
+        $this->statutAvantLAction = $this->mission->status;
+    }
+
+    public function hydrate(): void
+    {
+        $this->statutAvantLAction = $this->mission->status;
+    }
+
+    /**
+     * PRÉVENIR LA PAGE QUE LE STATUT A CHANGÉ.
+     *
+     * Les blocs voisins — suivi de trajet, exécution — sont ouverts ou fermés par la page parente,
+     * d'après un statut qu'elle a lu au chargement. Ce composant le faisait avancer sans le lui
+     * dire : le prestataire passait « en route » et lisait, juste en dessous, « le tracking
+     * devient disponible quand la mission passe en route ». Il fallait recharger la page pour que
+     * la phrase cesse de se contredire, et rien ne le disait.
+     *
+     * L'annonce est posée ICI plutôt que dans chaque action : il y en a sept aujourd'hui, et celle
+     * qu'on ajoutera demain n'aurait pas eu à y penser.
+     *
+     * Elle part depuis `render()` et non depuis `dehydrate()` : ce dernier s'exécute une fois les
+     * effets de la réponse déjà rassemblés, et l'événement n'atteignait jamais le navigateur.
+     */
+    protected function annoncerSiLeStatutAChange(): void
+    {
+        if ($this->statutAvantLAction === null || $this->statutAvantLAction === $this->mission->status) {
+            return;
+        }
+
+        $this->dispatch('mission-statut-change', missionId: $this->mission->id);
+        $this->statutAvantLAction = $this->mission->status;
     }
 
     /**
@@ -291,6 +330,8 @@ class MissionActions extends Component
 
     public function render()
     {
+        $this->annoncerSiLeStatutAChange();
+
         return view('livewire.employe.mission-actions');
     }
 }

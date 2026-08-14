@@ -59,11 +59,28 @@
 
                 <dl class="mt-4 space-y-2 rounded-xl bg-slate-50 p-4 text-sm dark:bg-white/5">
                     <div class="flex items-center justify-between gap-4">
-                        <dt class="text-slate-500 dark:text-slate-400">Distance</dt>
+                        {{-- Sur une course, préciser DE QUELLE distance on parle : celle qui reste
+                             à faire pour aller chercher le client, pas celle de la course. --}}
+                        <dt class="text-slate-500 dark:text-slate-400">
+                            {{ ($offre['is_ride'] ?? false) ? 'Pour aller le chercher' : 'Distance' }}
+                        </dt>
                         <dd class="font-semibold text-slate-900 dark:text-white">
                             {{ $offre['distance_km'] !== null ? $offre['distance_km'].' km' : '—' }}
                         </dd>
                     </div>
+
+                    {{-- La longueur de la course : la question qui décide d'accepter. --}}
+                    @if (($offre['is_ride'] ?? false) && ($offre['ride_distance_km'] ?? null) !== null)
+                    <div class="flex items-center justify-between gap-4">
+                        <dt class="text-slate-500 dark:text-slate-400">Course</dt>
+                        <dd class="font-semibold text-slate-900 dark:text-white">
+                            {{ str_replace('.', ',', (string) $offre['ride_distance_km']) }} km
+                            @if (($offre['ride_duration_minutes'] ?? null) !== null)
+                                · {{ $offre['ride_duration_minutes'] }} min
+                            @endif
+                        </dd>
+                    </div>
+                    @endif
                     <div class="flex items-center justify-between gap-4">
                         <dt class="text-slate-500 dark:text-slate-400">Secteur</dt>
                         <dd class="text-right font-semibold text-slate-900 dark:text-white">

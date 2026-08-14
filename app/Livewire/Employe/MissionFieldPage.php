@@ -3,6 +3,7 @@
 namespace App\Livewire\Employe;
 
 use App\Models\Mission;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class MissionFieldPage extends Component
@@ -11,7 +12,24 @@ class MissionFieldPage extends Component
 
     public function mount(Mission $mission): void
     {
-        $this->mission = $mission->load([
+        $this->mission = $this->recharger($mission);
+    }
+
+    /**
+     * Le statut a bougé dans le bloc d'actions : cette page en dépend pour ouvrir ses volets.
+     *
+     * Sans cette écoute, « en route » n'ouvrait le suivi qu'après un rechargement manuel, et
+     * l'écran affirmait entre-temps le contraire de ce qu'il venait de faire.
+     */
+    #[On('mission-statut-change')]
+    public function rafraichirDepuisLeStatut(): void
+    {
+        $this->mission = $this->recharger($this->mission->fresh() ?? $this->mission);
+    }
+
+    private function recharger(Mission $mission): Mission
+    {
+        return $mission->load([
             'booking.client',
             'leadEmployee',
             'checklists.items',

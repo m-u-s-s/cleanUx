@@ -61,7 +61,19 @@ class PayoutAnnouncementService
             'montant_prestataire' => round($commission['provider_payout_cents'] / 100, 2),
             'commission_plateforme' => round($commission['platform_fee_cents'] / 100, 2),
             'total' => round($commission['total_cents'] / 100, 2),
-            'taux_commission' => $commission['commission_rate'],
+            /*
+             * LE TAUX ANNONCÉ EST CELUI QUI A ÉTÉ RETENU.
+             *
+             * Ce champ portait le taux de la grille. À côté d'un montant issu du plancher, il se
+             * contredisait tout seul : « commission 2,00 € · total 4,81 € · taux 20 % ». Le
+             * prestataire fait la division, trouve 41 %, et c'est lui qui a raison.
+             *
+             * Le taux de grille reste publié, sous son propre nom, pour les écrans qui expliquent
+             * le contrat plutôt que ce versement-ci.
+             */
+            'taux_commission' => $commission['effective_commission_rate'],
+            'taux_grille' => $commission['commission_rate'],
+            'plancher_applique' => $commission['minimum_applied'],
             'devise' => $commission['currency'],
             'date_transfert' => Carbon::now()->addDays($jours)->toDateString(),
             'delai_jours' => $jours,

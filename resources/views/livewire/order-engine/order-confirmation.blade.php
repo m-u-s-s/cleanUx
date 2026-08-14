@@ -41,11 +41,45 @@
                     Où et quand
                 </h2>
 
+                {{-- Sur une course, « Adresse » ne veut plus rien dire tout seul : il y en a deux,
+                     et c'est la seconde que le client vient vérifier ici.
+
+                     Le commentaire est ICI et pas dans le bloc @php : Blade réduit ce bloc à une
+                     seule ligne à la compilation, et un `//` y avalerait l'affectation qui suit. --}}
+                @php($estUnTrajet = $this->draft->dropoff_lat !== null && $this->draft->dropoff_lng !== null)
+
                 <dl class="mt-3 space-y-2 text-sm">
                     <div class="flex gap-3">
-                        <dt class="w-24 shrink-0 text-slate-500">Adresse</dt>
+                        <dt class="w-24 shrink-0 text-slate-500">{{ $estUnTrajet ? 'Départ' : 'Adresse' }}</dt>
                         <dd class="min-w-0 text-slate-900">{{ $this->draft->address ?: '—' }}</dd>
                     </div>
+
+                    {{--
+                        LA DESTINATION, sur l'écran dont le seul rôle est « vérifiez, puis confirmez ».
+
+                        Elle n'y figurait pas : on demandait à quelqu'un de valider une course sans
+                        jamais lui redire où elle l'emmène. Une erreur de saisie au point d'arrivée
+                        ne se découvrait donc qu'une fois dans la voiture.
+                    --}}
+                    @if ($estUnTrajet)
+                    <div class="flex gap-3">
+                        <dt class="w-24 shrink-0 text-slate-500">Arrivée</dt>
+                        <dd class="min-w-0 text-slate-900">{{ $this->draft->dropoff_address ?: '—' }}</dd>
+                    </div>
+
+                    @if ($this->draft->route_distance_m)
+                    <div class="flex gap-3">
+                        <dt class="w-24 shrink-0 text-slate-500">Trajet</dt>
+                        <dd class="min-w-0 text-slate-900">
+                            {{ str_replace('.', ',', (string) round($this->draft->route_distance_m / 1000, 1)) }} km
+                            @if ($this->draft->route_duration_s)
+                                · environ {{ (int) ceil($this->draft->route_duration_s / 60) }} min
+                            @endif
+                        </dd>
+                    </div>
+                    @endif
+                    @endif
+
                     <div class="flex gap-3">
                         <dt class="w-24 shrink-0 text-slate-500">Date</dt>
                         <dd class="min-w-0 text-slate-900">

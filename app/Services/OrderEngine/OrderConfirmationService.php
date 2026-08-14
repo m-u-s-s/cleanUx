@@ -422,6 +422,19 @@ class OrderConfirmationService
              * par ligne, six mois plus tard, sans dépendre d'un catalogue qui aura changé.
              */
             'pricing_snapshot' => [
+                /*
+                 * LE NOM DU MÉTIER, FIGÉ AVEC LE RESTE.
+                 *
+                 * Tous les écrans qui nomment un service lisent `service_display_name`, qui ne
+                 * consultait que l'ANCIEN catalogue : une commande passée par le moteur actuel
+                 * s'affichait « Service non précisé » partout — jusque sur la fiche terrain du
+                 * prestataire, qui ne savait donc pas ce qu'on lui demandait de faire.
+                 *
+                 * Sa place est ici et pas dans une colonne : cet instantané existe précisément pour
+                 * retenir ce qui était vrai au moment du clic. Un métier renommé demain ne doit pas
+                 * réécrire ce qu'un client a commandé hier.
+                 */
+                'service_name' => $item->trade?->name,
                 'currency' => $draft->currency ?? 'EUR',
                 'min_cents' => $quote->minCents,
                 'max_cents' => $quote->maxCents,

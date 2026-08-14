@@ -117,12 +117,25 @@ export function OfferModal({ offer, onDismiss }: Props) {
 
           <View style={styles.details}>
             <View style={styles.row}>
-              <Text style={styles.label}>Distance</Text>
+              {/* Sur une course, dire DE QUELLE distance on parle. */}
+              <Text style={styles.label}>{offer.is_ride ? 'Pour aller le chercher' : 'Distance'}</Text>
               <Text style={styles.value} testID="offer-distance">
                 {offer.distance_km != null ? `${offer.distance_km} km` : '—'}
               </Text>
             </View>
             <Divider />
+            {offer.is_ride && offer.ride_distance_km != null ? (
+              <>
+                <View style={styles.row}>
+                  <Text style={styles.label}>Course</Text>
+                  <Text style={styles.value} testID="offer-ride-distance">
+                    {`${String(offer.ride_distance_km).replace('.', ',')} km`}
+                    {offer.ride_duration_minutes != null ? ` · ${offer.ride_duration_minutes} min` : ''}
+                  </Text>
+                </View>
+                <Divider />
+              </>
+            ) : null}
             <View style={styles.row}>
               <Text style={styles.label}>Secteur</Text>
               <Text style={styles.value}>{offer.approximate_address ?? '—'}</Text>

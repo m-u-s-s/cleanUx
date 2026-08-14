@@ -20,8 +20,19 @@ export interface MissionOffer {
   scheduled_at: string | null;
   estimated_duration_minutes: number | null;
   payout_cents: number | null;
+  /** Ce qu'il reste à rouler pour ALLER CHERCHER le client. */
   distance_m: number | null;
   distance_km: number | null;
+  /**
+   * SUR UNE COURSE, DEUX DISTANCES DÉCIDENT — et une seule voyageait.
+   *
+   * Un chauffeur voyait la rémunération sans savoir s'il s'engageait pour deux kilomètres ou pour
+   * quarante. C'est pourtant la question qui décide d'accepter.
+   */
+  is_ride?: boolean;
+  ride_distance_m?: number | null;
+  ride_distance_km?: number | null;
+  ride_duration_minutes?: number | null;
   latitude: number | null;
   longitude: number | null;
   /**

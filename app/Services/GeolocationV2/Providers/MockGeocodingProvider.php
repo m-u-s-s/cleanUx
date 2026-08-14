@@ -41,7 +41,7 @@ class MockGeocodingProvider implements GeocodingProviderContract
             if ($countryCode && strcasecmp($entry['country'], $countryCode) !== 0) {
                 continue;
             }
-            if (str_contains($key, $norm) || str_contains($this->normalize($entry['formatted']), $norm)) {
+            if ($this->correspond($norm, $key, $entry)) {
                 $results[] = new AddressSuggestion(
                     description: $entry['formatted'],
                     placeId: 'mock_'.Str::slug($key),
@@ -69,7 +69,7 @@ class MockGeocodingProvider implements GeocodingProviderContract
             if ($countryCode && strcasecmp($entry['country'], $countryCode) !== 0) {
                 continue;
             }
-            if (str_contains($key, $norm) || str_contains($this->normalize($entry['formatted']), $norm)) {
+            if ($this->correspond($norm, $key, $entry)) {
                 return $this->toGeocodingResult($entry);
             }
         }
@@ -113,6 +113,39 @@ class MockGeocodingProvider implements GeocodingProviderContract
             provider: 'mock',
             isFallbackHaversine: false,
         );
+    }
+
+    /**
+     * LA CORRESPONDANCE VA DANS LES DEUX SENS — elle n'allait que dans un.
+     *
+     * On ne testait que « le texte tapé est-il contenu dans l'entrée ? ». Taper « Bruxelles »
+     * marchait donc, et taper « Rue Neuve 12, 1000 Bruxelles » ne marchait pas : la requête est
+     * plus longue que l'entrée. Autrement dit, plus l'adresse était réaliste, moins elle
+     * fonctionnait.
+     *
+     * Conséquence concrète : en développement — où ce fournisseur est le défaut — on ne pouvait
+     * commander une course qu'en tapant exactement l'un des sept libellés du catalogue, et rien
+     * ne le disait. Le champ restait vide, sans suggestion et sans erreur.
+     *
+     * On accepte donc aussi l'inverse, et la ville ou le code postal seuls. C'est un bouchon de
+     * développement : sa générosité ne coûte rien, son silence coûtait une demi-heure.
+     *
+     * @param  array{lat:float,lng:float,postal:string,locality:string,country:string,formatted:string}  $entry
+     */
+    private function correspond(string $requeteNormalisee, string $key, array $entry): bool
+    {
+        if ($requeteNormalisee === '') {
+            return false;
+        }
+
+        foreach ([$key, $this->normalize((string) $entry['formatted'])] as $reference) {
+            if (str_contains($reference, $requeteNormalisee) || str_contains($requeteNormalisee, $reference)) {
+                return true;
+            }
+        }
+
+        return str_contains($requeteNormalisee, $this->normalize((string) $entry['locality']))
+            || str_contains($requeteNormalisee, $this->normalize((string) $entry['postal']));
     }
 
     private function normalize(string $s): string

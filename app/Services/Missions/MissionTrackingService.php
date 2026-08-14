@@ -9,6 +9,7 @@ use App\Models\MissionTrackingPoint;
 use App\Models\MissionTrackingSession;
 use App\Models\User;
 use App\Services\Geo\RoutingService;
+use App\Services\TripTracking\TripTrackingService;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -83,8 +84,54 @@ class MissionTrackingService
                 'status' => 'en_route',
             ]);
 
+            $this->ouvrirAussiLeSuiviV2($mission, $employee, $lat, $lng);
+
             return $session->fresh(['points']);
         });
+    }
+
+    /**
+     * SUR UNE COURSE, OUVRIR AUSSI LA SESSION v2 — sinon l'approche est invisible ailleurs.
+     *
+     * Deux systèmes de suivi coexistent. Celui-ci, historique, alimente les écrans web. Le v2
+     * (`trip_tracking_sessions`) alimente l'application cliente et le lien de suivi partagé, et
+     * c'est le seul que la course rouvre vers le point de dépose une fois le client à bord.
+     *
+     * Le bouton du web n'ouvrait que l'historique : une course conduite depuis le navigateur
+     * n'apparaissait donc nulle part côté client tant que le trajet n'avait pas commencé — le
+     * passager attendait sans voir personne arriver, ce qui est exactement le moment où il regarde.
+     *
+     * Réservé aux courses À DESSEIN : pour une intervention ordinaire, ouvrir une seconde session
+     * ne montrerait rien de plus et doublerait les écritures de position.
+     *
+     * Soft-fail : un suivi qui ne s'ouvre pas ne doit pas empêcher un prestataire de partir.
+     */
+    protected function ouvrirAussiLeSuiviV2(Mission $mission, User $employee, float $lat, float $lng): void
+    {
+        $reservation = $mission->booking;
+
+        if (! $reservation?->estUneCourse()) {
+            return;
+        }
+
+        try {
+            app(TripTrackingService::class)->startSession(
+                $employee,
+                $reservation,
+                $lat,
+                $lng,
+                destination: [
+                    (float) ($reservation->destination_lat ?? $lat),
+                    (float) ($reservation->destination_lng ?? $lng),
+                ],
+                metadata: ['leg' => 'approach'],
+            );
+        } catch (\Throwable $e) {
+            Log::warning('[course] suivi v2 de l’approche non ouvert', [
+                'mission_id' => $mission->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function pushPoint(MissionTrackingSession $session, array $payload): MissionTrackingSession

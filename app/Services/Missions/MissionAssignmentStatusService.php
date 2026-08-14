@@ -38,8 +38,35 @@ class MissionAssignmentStatusService
 
         $assignment->update([
             'assignment_status' => $status,
-            ...$extra,
+            ...$this->sansEcraserLAcceptation($assignment, $extra),
         ]);
+    }
+
+    /**
+     * `accepted_at` S'ÉCRIT UNE FOIS. C'est une date, pas un compteur d'activité.
+     *
+     * Chaque transition — en route, arrivé, client à bord — passe `accepted_at => now()`, avec une
+     * intention défendable : « en faisant cela, le prestataire a forcément accepté ». Mais appliqué
+     * sans garde, cela réécrivait la date à chaque geste. Une ligne finissait par affirmer que le
+     * chauffeur avait accepté APRÈS être arrivé, ce qui n'est pas seulement faux, c'est impossible.
+     *
+     * Ce que ça coûte : le délai de réponse d'un prestataire, son taux d'acceptation, et toute
+     * reconstitution après litige — « à quelle heure a-t-il pris la course ? » — reposent sur cette
+     * colonne. Aucune exception n'était levée, aucun test ne regardait : la donnée se dégradait en
+     * silence à chaque mission.
+     *
+     * On garde donc l'intention (stamper si personne ne l'a jamais fait) et on retire l'écrasement.
+     *
+     * @param  array<string, mixed>  $extra
+     * @return array<string, mixed>
+     */
+    protected function sansEcraserLAcceptation(MissionAssignment $assignment, array $extra): array
+    {
+        if (array_key_exists('accepted_at', $extra) && $assignment->accepted_at !== null) {
+            unset($extra['accepted_at']);
+        }
+
+        return $extra;
     }
 
     public function syncLeadAssignment(Mission $mission, ?int $leadEmployeeId): void

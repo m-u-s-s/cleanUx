@@ -3,6 +3,18 @@
 return [
     'platform_fee_percent' => (int) env('BRIO_PLATFORM_FEE_PERCENT', 15),
 
+    /*
+     * PLANCHER DE COMMISSION, en centimes.
+     *
+     * Il couvre les frais fixes d'un encaissement, que 15 % d'une petite prestation ne paient pas.
+     * Il a été pensé pour des interventions de 80 à 200 €, où il ne mord jamais.
+     *
+     * DEPUIS LES COURSES, IL MORD PRESQUE TOUJOURS : sur un trajet urbain de 4,81 €, il prélève
+     * 2 €, soit 41 %. Le chiffre reste peut-être le bon — c'est un arbitrage commercial, pas une
+     * erreur de calcul — mais il doit se régler ici, pas dans une constante privée du code.
+     */
+    'minimum_commission_cents' => (int) env('BRIO_MINIMUM_COMMISSION_CENTS', 200),
+
     // Décision produit 2026-06-11 : commission = TAUX UNIQUE au lancement.
     // L'infra de taux négocié par prestataire (ProviderProfile.commission_rate) reste
     // en base mais n'est appliquée que si ce flag est activé. Tant qu'il est off,
