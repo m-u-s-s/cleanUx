@@ -314,11 +314,36 @@ class CarnetBeneficiaireEtProtectionTest extends TestCase
          * VOLONTAIREMENT PAUVRE. Le destinataire du lien n'est pas le client : il n'a pas à
          * connaître le montant, ni l'adresse exacte. Une position et une heure suffisent à ce pour
          * quoi le lien a été envoyé.
+         *
+         * ON ÉNUMÈRE LES CHAMPS AUTORISÉS, plutôt que de chercher des valeurs interdites dans le
+         * JSON. La version précédente cherchait la chaîne « 189 » — le montant — dans la charge
+         * entière, et tombait le jour où la référence tirée au hasard en contenait les chiffres
+         * (`CUX-20260814-CK189KS`). Un échec par coïncidence, sur une assertion trop large.
+         *
+         * La liste blanche dit mieux ce qu'on protège : ce n'est pas « le nombre 189 n'apparaît
+         * pas », c'est « cette charge ne porte QUE ces champs-là ». Elle refusera aussi le jour où
+         * quelqu'un ajoutera un champ sans y penser — ce qui est exactement le but.
          */
+        $this->assertSame(
+            [
+                'reference',
+                'provider_first_name',
+                'scheduled_at',
+                'status',
+                'city',
+                'beneficiary_name',
+                'tracking',
+                'expires_in_hours',
+            ],
+            array_keys($apercu),
+            'La charge du lien partagé a changé de forme : vérifier qu’aucun champ sensible n’y entre.',
+        );
+
         $encode = json_encode($apercu, JSON_UNESCAPED_UNICODE);
 
-        $this->assertStringNotContainsString('189', $encode);
+        // Le complément d'adresse, lui, ne peut coïncider avec rien d'autre.
         $this->assertStringNotContainsString('appartement 3B', $encode);
+        $this->assertStringNotContainsString('Rue Haute', $encode);
         $this->assertSame('Bruxelles', $apercu['city']);
     }
 

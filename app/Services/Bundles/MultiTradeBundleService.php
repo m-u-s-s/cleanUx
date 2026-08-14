@@ -450,10 +450,26 @@ class MultiTradeBundleService
                         'status' => MultiTradeBundleItem::STATUS_ACCEPTED,
                     ]);
                 } catch (\Throwable $e) {
-                    Log::warning('[multi_trade] booking create failed', [
+                    /*
+                     * UN CHANTIER ACCEPTÉ SANS TOUS SES MÉTIERS EST UN MENSONGE AU CLIENT.
+                     *
+                     * Cette erreur était journalisée puis avalée : le chantier passait en
+                     * « accepté », le client voyait son projet confirmé, et il y manquait un corps
+                     * de métier. Personne ne le lui disait — ni l'écran, ni une notification. Il
+                     * l'aurait découvert le jour où le carreleur ne serait pas venu.
+                     *
+                     * ON RELANCE, et l'acceptation entière est annulée : la transaction qui entoure
+                     * la boucle rend l'opération tout-ou-rien. Un chantier qui refuse de s'accepter
+                     * se voit et se corrige ; un chantier accepté à moitié, non.
+                     */
+                    Log::error('[multi_trade] création de rendez-vous impossible — acceptation annulée', [
                         'bundle' => $bundle->code,
                         'item_id' => $item->id,
                         'error' => $e->getMessage(),
+                    ]);
+
+                    throw ValidationException::withMessages([
+                        'items' => ["Le lot « {$item->label} » n’a pas pu être planifié : le chantier n’a pas été accepté."],
                     ]);
                 }
             }

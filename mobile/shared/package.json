@@ -4,5 +4,8 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "private": true,
+  "scripts": {
+    "test": "node -e \"console.error('Les suites de shared/ sont exécutées par le workspace client, qui déclare ../shared/src dans les roots de son jest.config.ts.\\n\\nCet espace n a volontairement ni preset Babel ni configuration Jest : en ajouter une créerait une TROISIEME table d alias, à côté de celles de tsconfig et de Babel, vouées à diverger.\\n\\n  npm test --workspace client\\n'); process.exit(1)\""
+  },
   "dependencies": {}
 }

@@ -5,6 +5,7 @@ namespace App\Livewire\ClientCompany;
 use App\Models\OrganizationSite;
 use App\Models\Trade;
 use App\Services\Bookings\MultiSiteRequestService;
+use App\Services\Enterprise\MemberSiteAccessService;
 use App\Services\PermissionService;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Contracts\View\View;
@@ -72,11 +73,28 @@ class MultiSiteRequest extends Component
             return;
         }
 
+        /*
+         * LA SÉLECTION VIENT DU NAVIGATEUR, et `siteIds` est une propriété publique : elle se
+         * réécrit par un simple `$set`, quelle que soit la liste affichée. Filtrer l'affichage ne
+         * garde donc rien — c'est ICI que la restriction par local doit tenir.
+         *
+         * Sans cela, un responsable restreint à une agence engageait la société sur des
+         * interventions dans les autres : des réservations créées à des adresses qu'il n'a pas le
+         * droit de connaître, et facturées à la société.
+         */
+        $retenus = $this->filtrerAuxLocauxAutorises(array_map('intval', $this->siteIds));
+
+        if ($retenus === []) {
+            $this->addError('siteIds', 'Aucun local valide dans la sélection.');
+
+            return;
+        }
+
         $demande = app(MultiSiteRequestService::class)->creer(
             $acteur,
             $acteur->currentOrganization,
             $trade,
-            array_map('intval', $this->siteIds),
+            $retenus,
             Carbon::parse($this->date.' '.$this->heure),
             [
                 'duree_estimee' => $this->dureeEstimee,
@@ -96,14 +114,39 @@ class MultiSiteRequest extends Component
         $this->reset(['siteIds', 'commentaire']);
     }
 
+    /**
+     * Ne garder que les locaux que ce membre a le droit de piloter.
+     *
+     * `null` veut dire « aucune restriction déclarée » — et non « aucun accès ». Confondre les deux
+     * viderait la liste de toutes les entreprises qui n'ont jamais restreint personne.
+     *
+     * @param  list<int>  $siteIds
+     * @return list<int>
+     */
+    protected function filtrerAuxLocauxAutorises(array $siteIds): array
+    {
+        $autorises = app(MemberSiteAccessService::class)->sitesAutorises(Auth::user());
+
+        if ($autorises === null) {
+            return $siteIds;
+        }
+
+        return array_values(array_intersect($siteIds, $autorises));
+    }
+
     public function render(): View
     {
         $orgId = Auth::user()->current_organization_id;
+        $autorises = app(MemberSiteAccessService::class)->sitesAutorises(Auth::user());
 
         return view('livewire.client-company.multi-site-request', [
             'sites' => OrganizationSite::query()
                 ->where('organization_account_id', $orgId)
                 ->where('is_active', true)
+                // La liste proposée suit la même restriction que l'écriture : offrir un local
+                // qu'on refusera ensuite serait une invitation à l'erreur, et révélerait au passage
+                // l'existence des agences voisines.
+                ->when($autorises !== null, fn ($q) => $q->whereIn('id', $autorises))
                 ->orderBy('name')
                 ->get(['id', 'name', 'site_code', 'city']),
             'trades' => Trade::query()->orderBy('name')->get(['id', 'name']),
