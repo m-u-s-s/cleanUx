@@ -4,6 +4,7 @@ namespace App\Livewire\Provider\Onboarding;
 
 use App\Models\ProviderOnboardingDocument;
 use App\Models\ServiceZone;
+use App\Services\Onboarding\ProviderDocumentRequirements;
 use App\Services\Onboarding\ProviderOnboardingService;
 use App\Services\Payments\StripeConnectService;
 use App\Support\Validation\ImagesTeleversees;
@@ -99,6 +100,52 @@ class ProviderOnboardingWizard extends Component
     public function getProgressProperty(): array
     {
         return app(ProviderOnboardingService::class)->getProgress(Auth::user());
+    }
+
+    /**
+     * LES PIÈCES DE CONDUITE QUI MANQUENT ENCORE — nommées, pas devinées.
+     *
+     * Cet assistant a ses cinq étapes écrites en dur : profil, identité, fiscal, assurance,
+     * compétences. Les justificatifs qui dépendent du MÉTIER déclaré — permis, carte grise,
+     * assurance du véhicule — n'y figurent nulle part, et il annonçait donc « dossier complet » à un
+     * chauffeur qui n'avait rien déposé de tout cela.
+     *
+     * Le parcours de vérification v2 et l'écran de conduite les réclament bien, eux. Le trou n'était
+     * pas dans le verrou : il était dans ce que CET écran laisse croire, et c'est ce qui compte pour
+     * quelqu'un qui pense avoir fini.
+     *
+     * On ne renumérote AUCUNE étape : ajouter une sixième case ici décalerait `getProgress()`, les
+     * libellés et les gardes de navigation, pour une exigence qui ne concerne qu'une minorité de
+     * métiers. La liste renvoie vers l'écran dédié, qui sait déjà tout faire.
+     *
+     * @return list<string>
+     */
+    public function getPiecesDeConduiteManquantesProperty(): array
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return [];
+        }
+
+        $exigences = app(ProviderDocumentRequirements::class);
+        $typesDeConduite = [
+            ProviderOnboardingDocument::TYPE_DRIVING_LICENSE,
+            ProviderOnboardingDocument::TYPE_VEHICLE_REGISTRATION,
+            ProviderOnboardingDocument::TYPE_VEHICLE_INSURANCE,
+        ];
+
+        $deposees = ProviderOnboardingDocument::forUser($user->id)
+            ->whereNot('status', ProviderOnboardingDocument::STATUS_REJECTED)
+            ->pluck('document_type')
+            ->all();
+
+        return collect($exigences->for($user))
+            ->filter(fn (array $e): bool => in_array($e['type'], $typesDeConduite, true))
+            ->reject(fn (array $e): bool => in_array($e['type'], $deposees, true))
+            ->map(fn (array $e): string => (string) $e['label'])
+            ->values()
+            ->all();
     }
 
     public function getDocumentsProperty()

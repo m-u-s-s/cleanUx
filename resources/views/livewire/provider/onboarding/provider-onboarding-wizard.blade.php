@@ -9,6 +9,34 @@
         </p>
     </div>
 
+    {{--
+        CE QUE CET ASSISTANT NE DEMANDE PAS.
+
+        Ses six cases sont écrites en dur : profil, identité, fiscal, assurance, compétences,
+        Stripe. Les justificatifs qui dépendent du MÉTIER déclaré — permis, carte grise, assurance
+        du véhicule — n'y figurent nulle part, et l'écran annonçait donc « dossier complet » à un
+        chauffeur qui n'avait rien déposé de tout cela.
+
+        Le bandeau ne renumérote rien : il NOMME ce qui manque et mène là où on le dépose. Un
+        prestataire qui croit avoir fini ne revient pas de lui-même.
+    --}}
+    @if (count($this->piecesDeConduiteManquantes))
+        <div class="rounded-3xl border border-amber-200 bg-amber-50 p-5">
+            <p class="text-sm font-semibold text-amber-900">
+                Vos métiers demandent des pièces supplémentaires
+            </p>
+            <p class="mt-1 text-sm text-amber-900">
+                Il manque&nbsp;: {{ implode(', ', $this->piecesDeConduiteManquantes) }}. Sans elles,
+                les missions concernées ne vous seront pas proposées, même une fois ces étapes
+                terminées.
+            </p>
+            <a href="{{ route('employe.driving') }}"
+                class="mt-2 inline-block text-sm font-semibold text-amber-900 underline underline-offset-4">
+                Déposer mes pièces de conduite
+            </a>
+        </div>
+    @endif
+
     {{-- Progress bar --}}
     @php
         $stepLabels = [
