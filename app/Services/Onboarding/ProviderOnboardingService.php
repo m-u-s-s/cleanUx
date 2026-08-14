@@ -106,8 +106,23 @@ class ProviderOnboardingService
     /**
      * Étape 1, 3, 6, 7 — Upload d'un document.
      */
-    public function uploadDocument(User $user, string $type, UploadedFile $file): ProviderOnboardingDocument
-    {
+    /**
+     * @param  string|null  $expiresAt  La date de fin de validité, quand la pièce en porte une —
+     *                                  permis, assurance, contrôle technique. La colonne
+     *                                  `expires_at` EXISTAIT et n'était écrite par personne :
+     *                                  `isExpired()` n'était donc jamais vrai, et une pièce
+     *                                  d'identité approuvée le restait indéfiniment.
+     * @param  array<string, mixed>  $metadata  Ce que la pièce atteste — la plaque déclarée sur une
+     *                                          assurance, par exemple. Même histoire : la colonne
+     *                                          existait, castée, et vide.
+     */
+    public function uploadDocument(
+        User $user,
+        string $type,
+        UploadedFile $file,
+        ?string $expiresAt = null,
+        array $metadata = [],
+    ): ProviderOnboardingDocument {
         $this->validateDocumentType($type);
 
         $profile = $this->ensureProfile($user);
@@ -125,7 +140,7 @@ class ProviderOnboardingService
 
         $path = $file->store("providers/{$user->id}/onboarding/{$type}", 'private');
 
-        $document = DB::transaction(function () use ($user, $type, $file, $path, $existing, $profile) {
+        $document = DB::transaction(function () use ($user, $type, $file, $path, $existing, $profile, $expiresAt, $metadata) {
             $doc = ProviderOnboardingDocument::create([
                 'user_id' => $user->id,
                 'document_type' => $type,
@@ -134,6 +149,8 @@ class ProviderOnboardingService
                 'file_name' => $file->getClientOriginalName(),
                 'mime_type' => $file->getMimeType(),
                 'file_size' => $file->getSize(),
+                'expires_at' => $expiresAt,
+                'metadata' => $metadata !== [] ? $metadata : null,
             ]);
 
             // Si on remplace, on archive l'ancien
@@ -447,6 +464,11 @@ class ProviderOnboardingService
             ProviderOnboardingDocument::TYPE_INSURANCE,
             ProviderOnboardingDocument::TYPE_DIPLOMA,
             ProviderOnboardingDocument::TYPE_CRIMINAL_RECORD,
+            // Les pièces de la conduite : sans elles dans cette liste, l'upload lèverait
+            // « Type de document invalide » pour une exigence que le dossier réclame par ailleurs.
+            ProviderOnboardingDocument::TYPE_DRIVING_LICENSE,
+            ProviderOnboardingDocument::TYPE_VEHICLE_REGISTRATION,
+            ProviderOnboardingDocument::TYPE_VEHICLE_INSURANCE,
             ProviderOnboardingDocument::TYPE_OTHER,
         ];
 

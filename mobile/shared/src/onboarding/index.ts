@@ -72,6 +72,51 @@ export function useOnboardingDocuments(enabled: boolean = true) {
   });
 }
 
+/**
+ * LE DOSSIER VÉHICULE, verdict compris.
+ *
+ * `required` est ce qui rend l'étape supportable pour tout le monde : le parcours d'inscription est
+ * UNIQUE — le même pour le peintre, la garde d'enfants et le chauffeur — et une étape « déclarez
+ * votre véhicule » qui bloquerait un jardinier empêcherait des inscriptions parfaitement légitimes.
+ *
+ * `reason` porte le motif exact d'un refus : « aucun véhicule déclaré », « date manquante », « six
+ * ans, la limite est de quatre ». Un refus qui ne dit pas lequel des trois fait recommencer au
+ * hasard.
+ */
+export interface VehicleDossier {
+  required: boolean;
+  compliant: boolean;
+  reason: string | null;
+  max_age_years: number;
+  age_years: number | null;
+  registration_document_uploaded: boolean;
+  trades: string[];
+  vehicle: {
+    id: number;
+    plate: string | null;
+    brand: string | null;
+    model: string | null;
+    vehicle_type: string | null;
+    registered_at: string | null;
+    registered_country: string | null;
+  } | null;
+}
+
+export const VEHICLE_DOSSIER_QUERY_KEY = ['provider', 'onboarding', 'vehicle'] as const;
+
+export function useVehicleDossier(enabled: boolean = true) {
+  return useQuery<VehicleDossier>({
+    queryKey: VEHICLE_DOSSIER_QUERY_KEY,
+    queryFn: async () => {
+      const { data } = await apiClient.get('/provider/onboarding/vehicle');
+
+      return data.data;
+    },
+    enabled,
+    staleTime: 0,
+  });
+}
+
 export interface OnboardingProgress {
   progress: {
     id: number;

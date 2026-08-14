@@ -66,6 +66,12 @@
                     <option value="insurance">Assurance pro</option>
                     <option value="diploma">Diplôme</option>
                     <option value="criminal_record">Casier judiciaire</option>
+                    {{-- Les pièces de la conduite : sans elles dans ce filtre, un permis déposé
+                         n'apparaît que dans « Tous », et la file de relecture d'un métier de
+                         transport devient impossible à isoler. --}}
+                    <option value="driving_license">Permis de conduire</option>
+                    <option value="vehicle_registration">Carte grise</option>
+                    <option value="vehicle_insurance">Assurance véhicule</option>
                     <option value="other">Autre</option>
                 </select>
             </div>

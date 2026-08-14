@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Api\Provider;
 use App\Http\Controllers\Controller;
 use App\Models\ProviderOnboardingDocument;
 use App\Models\ServiceZone;
+use App\Models\User;
 use App\Services\Onboarding\ProviderDocumentRequirements;
 use App\Services\Onboarding\ProviderOnboardingService;
+use App\Services\Onboarding\ProviderVehicleService;
 use App\Support\Validation\ImagesTeleversees;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
@@ -175,6 +178,14 @@ class ProviderOnboardingController extends Controller
         $data = $request->validate([
             'document_type' => ['required', 'string', 'max:50'],
             'file' => ['required', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png'], // 10 Mo
+            /*
+             * La date de validité est saisie par le prestataire au moment du dépôt, comme le font
+             * les plateformes de transport : c'est le seul instant où il a la pièce sous les yeux.
+             * La redemander plus tard revient à ne jamais l'obtenir.
+             *
+             * `after:today` : une pièce déjà périmée n'est pas un dossier, c'est un refus déguisé.
+             */
+            'expires_at' => ['nullable', 'date', 'after:today'],
         ]);
 
         try {
@@ -182,6 +193,7 @@ class ProviderOnboardingController extends Controller
                 $request->user(),
                 $data['document_type'],
                 $request->file('file'),
+                $data['expires_at'] ?? null,
             );
         } catch (\InvalidArgumentException $e) {
             return response()->json(['ok' => false, 'error' => $e->getMessage()], 422);
@@ -197,6 +209,63 @@ class ProviderOnboardingController extends Controller
                 'uploaded_at' => $doc->created_at->toIso8601String(),
             ],
         ], 201);
+    }
+
+    /**
+     * LE VÉHICULE DÉCLARÉ — marque, modèle, plaque, et surtout PREMIÈRE immatriculation.
+     *
+     * Cette dernière date est la seule qui permette de calculer un âge. L'année du modèle ne dit
+     * pas quand la voiture a pris la route, et c'est pourtant elle qu'on trouve sur la plupart des
+     * fiches : s'y fier accepterait des véhicules trop vieux et en refuserait de conformes.
+     */
+    public function declareVehicle(Request $request, ProviderVehicleService $vehicules): JsonResponse
+    {
+        $data = $request->validate([
+            'plate' => ['required', 'string', 'max:24'],
+            'brand' => ['nullable', 'string', 'max:64'],
+            'model' => ['nullable', 'string', 'max:64'],
+            'vehicle_type' => ['nullable', 'string', Rule::in((array) config('fleet_v2.vehicle_types', []))],
+            // Pas dans le futur : une immatriculation à venir n'existe pas, et la laisser passer
+            // donnerait un âge négatif — donc conforme, pour un véhicule qui n'est pas encore là.
+            'registered_at' => ['nullable', 'date', 'before_or_equal:today'],
+            'registered_country' => ['nullable', 'string', 'size:2'],
+        ]);
+
+        $vehicules->declarer($request->user(), $data);
+
+        return response()->json(['ok' => true, 'data' => $this->payloadVehicule($request->user(), $vehicules)]);
+    }
+
+    /** L'état du dossier véhicule, verdict compris — c'est lui que l'écran affiche. */
+    public function vehicle(Request $request, ProviderVehicleService $vehicules): JsonResponse
+    {
+        return response()->json(['ok' => true, 'data' => $this->payloadVehicule($request->user(), $vehicules)]);
+    }
+
+    /** @return array<string, mixed> */
+    private function payloadVehicule(User $user, ProviderVehicleService $vehicules): array
+    {
+        $dossier = $vehicules->dossier($user);
+        $vehicule = $dossier['vehicule'];
+
+        return [
+            'required' => $dossier['requis'],
+            'compliant' => $dossier['conforme'],
+            'reason' => $dossier['motif'],
+            'max_age_years' => $dossier['limite'],
+            'age_years' => $dossier['age'],
+            'registration_document_uploaded' => $vehicules->carteGriseDeposee($user),
+            'trades' => $vehicules->metiersConcernes($user),
+            'vehicle' => $vehicule ? [
+                'id' => $vehicule->id,
+                'plate' => $vehicule->plate,
+                'brand' => $vehicule->brand,
+                'model' => $vehicule->model,
+                'vehicle_type' => $vehicule->vehicle_type,
+                'registered_at' => $vehicule->registered_at?->toDateString(),
+                'registered_country' => $vehicule->registered_country,
+            ] : null,
+        ];
     }
 
     public function setTax(Request $request): JsonResponse

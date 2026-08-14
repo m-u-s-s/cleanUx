@@ -342,6 +342,14 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         // toujours, mais rien ne permettait de savoir quelles zones existent : aucun écran ne
         // pouvait donc en proposer, et le matching géographique restait sans données.
         Route::get('/service-zones', [ProviderOnboardingController::class, 'serviceZones']);
+        /*
+         * Le VÉHICULE, pour les métiers sous règles taxi. Il n'existait aucune saisie côté
+         * prestataire : `fleet_certifications` porte bien un type « permis de conduire », mais la
+         * seule voie de création était un administrateur via l'API d'administration. Personne ne
+         * pouvait donc déclarer sa voiture, ni déposer sa carte grise.
+         */
+        Route::get('/vehicle', [ProviderOnboardingController::class, 'vehicle']);
+        Route::post('/vehicle', [ProviderOnboardingController::class, 'declareVehicle']);
     });
 });
 

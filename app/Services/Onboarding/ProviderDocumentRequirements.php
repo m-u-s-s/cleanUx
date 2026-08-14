@@ -5,6 +5,7 @@ namespace App\Services\Onboarding;
 use App\Models\ProviderOnboardingDocument;
 use App\Models\Trade;
 use App\Models\User;
+use App\Support\Domain\TradeRouteRules;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
@@ -58,7 +59,47 @@ class ProviderDocumentRequirements
             $requirements[] = $this->describe(ProviderOnboardingDocument::TYPE_CRIMINAL_RECORD);
         }
 
+        /*
+         * ON NE CONDUIT PAS SANS PERMIS.
+         *
+         * Un métier dont le parcours pose un départ ET une arrivée emmène quelqu'un : le permis
+         * devient exigible, exactement comme l'assurance l'est déjà pour les métiers qui la
+         * déclarent. La règle se DÉRIVE du parcours, elle n'est pas cochée à côté — voir
+         * {@see TradeRouteRules}.
+         */
+        if ($trades->contains(fn (Trade $trade) => TradeRouteRules::estUnTrajet($trade))) {
+            $requirements[] = $this->describe(ProviderOnboardingDocument::TYPE_DRIVING_LICENSE);
+            $requirements[] = $this->describe(ProviderOnboardingDocument::TYPE_VEHICLE_INSURANCE);
+        }
+
+        /*
+         * ET SOUS RÈGLES TAXI, on prouve aussi l'ÂGE du véhicule.
+         *
+         * Le certificat d'immatriculation est la pièce qui porte la date de première mise en
+         * circulation — la seule qui compte. L'âge lui-même n'est pas jugé à l'œil sur cette photo :
+         * il est CALCULÉ depuis le véhicule déclaré, et re-contrôlé, parce qu'une voiture vieillit.
+         */
+        if ($trades->contains(fn (Trade $trade) => (bool) $trade->taxi_rules)) {
+            $requirements[] = $this->describe(ProviderOnboardingDocument::TYPE_VEHICLE_REGISTRATION);
+        }
+
         return $requirements;
+    }
+
+    /**
+     * Les métiers déclarés qui exigent un permis de conduire.
+     *
+     * Rendu plutôt que résumé en booléen : c'est de là que sortent la date de bascule — donc la fin
+     * de la période de grâce — et le nom du métier à citer quand on explique au prestataire ce qui
+     * lui manque. « Il vous manque une pièce » sans dire pour quel métier laisse chercher.
+     *
+     * @return Collection<int, Trade>
+     */
+    public function tradesExigeantLaConduite(User $user): Collection
+    {
+        return $this->declaredTrades($user)
+            ->filter(fn (Trade $trade) => TradeRouteRules::estUnTrajet($trade) || (bool) $trade->taxi_rules)
+            ->values();
     }
 
     /**
@@ -102,7 +143,25 @@ class ProviderDocumentRequirements
             return collect();
         }
 
-        return $user->trades()->get(['trades.id', 'trades.code', 'trades.requires_insurance_proof', 'trades.requires_certification']);
+        /*
+         * `questions` est chargée AVEC les métiers, et ce n'est pas une commodité : `TradeRouteRules`
+         * la relit sinon métier par métier, soit une requête par ligne de `trade_user`. Un
+         * prestataire à six métiers paierait six allers-retours à chaque affichage de son dossier.
+         *
+         * Les colonnes sont listées EN DUR plutôt que découvertes : PHPStan ne lit pas les tableaux
+         * de `load()`, et une colonne oubliée ici sort silencieusement `null` — ce qui ferait passer
+         * un métier de trajet pour un métier ordinaire.
+         */
+        return $user->trades()
+            ->with(['questions' => fn ($q) => $q->select([
+                'questions.id', 'questions.trade_id', 'questions.type',
+                'questions.location_role', 'questions.is_active',
+            ])])
+            ->get([
+                'trades.id', 'trades.code', 'trades.name',
+                'trades.requires_insurance_proof', 'trades.requires_certification',
+                'trades.taxi_rules', 'trades.taxi_rules_since', 'trades.route_rules_since',
+            ]);
     }
 
     /**

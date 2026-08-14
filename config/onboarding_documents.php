@@ -59,6 +59,35 @@ return [
             'label' => 'Justificatif fiscal',
             'help' => 'Avis de situation SIRENE, extrait BCE ou équivalent.',
         ],
+        ProviderOnboardingDocument::TYPE_DRIVING_LICENSE => [
+            'label' => 'Permis de conduire',
+            'help' => 'Recto ET verso, en cours de validité. Les quatre coins visibles, sans reflet sur la photo.',
+        ],
+        ProviderOnboardingDocument::TYPE_VEHICLE_REGISTRATION => [
+            'label' => 'Certificat d’immatriculation (carte grise)',
+            'help' => 'Au nom du conducteur ou de sa société. C’est la date de PREMIÈRE immatriculation qui fait foi pour l’âge du véhicule.',
+        ],
+        ProviderOnboardingDocument::TYPE_VEHICLE_INSURANCE => [
+            'label' => 'Assurance du véhicule',
+            'help' => 'Attestation en cours de validité, portant la plaque d’immatriculation déclarée.',
+        ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Délai laissé aux prestataires déjà inscrits
+    |--------------------------------------------------------------------------
+    |
+    | Quand un métier devient un service de trajet, ou qu'un administrateur y coche « règles taxi »,
+    | de nouvelles pièces deviennent exigibles. Les réclamer le jour même couperait tous les
+    | prestataires du métier avant même qu'ils sachent ce qu'on leur demande — et le premier signe
+    | serait, pour eux, un téléphone qui cesse de sonner.
+    |
+    | Le délai court depuis `trades.route_rules_since` / `trades.taxi_rules_since`, jamais depuis
+    | « maintenant » : sans quoi il se réarmerait à chaque enregistrement du catalogue.
+    |
+    | À zéro, l'exigence s'applique immédiatement.
+    */
+    'trade_requirements_grace_days' => (int) env('ONBOARDING_TRADE_REQUIREMENTS_GRACE_DAYS', 30),
 
 ];

@@ -8,6 +8,7 @@ use App\Services\OnboardingV2\Validators\KycCheckValidator;
 use App\Services\OnboardingV2\Validators\PayoutsSetupValidator;
 use App\Services\OnboardingV2\Validators\ProfileCompleteValidator;
 use App\Services\OnboardingV2\Validators\SkillDeclareValidator;
+use App\Services\OnboardingV2\Validators\VehicleDeclarationValidator;
 
 return [
     'enabled' => env('ONBOARDING_V2_ENABLED', true),
@@ -40,6 +41,8 @@ return [
         'profile_complete' => ProfileCompleteValidator::class,
         'skill_declare' => SkillDeclareValidator::class,
         'document_upload' => DocumentUploadValidator::class,
+        // Ne concerne que les métiers sous règles taxi ; il passe trivialement pour tous les autres.
+        'vehicle_declare' => VehicleDeclarationValidator::class,
     ],
 
     /*

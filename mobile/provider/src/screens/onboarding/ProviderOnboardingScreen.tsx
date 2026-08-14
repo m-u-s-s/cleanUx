@@ -11,7 +11,7 @@ import {
 import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { ContractStep, DocumentsStep, KycStep, ProfileStep, SkillsStep, type StepProps } from './steps';
+import { ContractStep, DocumentsStep, KycStep, ProfileStep, SkillsStep, VehicleStep, type StepProps } from './steps';
 
 /**
  * Cockpit de vérification : le dossier du prestataire, carte par carte.
@@ -33,6 +33,13 @@ const STEP_COMPONENTS: Record<string, React.ComponentType<StepProps>> = {
   contract_sign: ContractStep,
   kyc_check: KycStep,
   document_upload: DocumentsStep,
+  /*
+   * Une étape absente de cette table s'affiche « non disponible » et rend le parcours
+   * infranchissable — c'est déjà arrivé sur ce dépôt, et un test verrouille désormais la
+   * correspondance. Ajouter une étape au parcours serveur SANS l'ajouter ici bloquerait toutes les
+   * inscriptions, y compris celles qui n'ont rien à voir avec un véhicule.
+   */
+  vehicle_declare: VehicleStep,
   skill_declare: SkillsStep,
 };
 
@@ -45,6 +52,7 @@ const STEP_PRESENTATION: Record<string, { icon: string; duration: string }> = {
   contract_sign: { icon: 'document-text-outline', duration: '~2 min' },
   kyc_check: { icon: 'finger-print-outline', duration: '~3 min' },
   document_upload: { icon: 'folder-open-outline', duration: '~3 min' },
+  vehicle_declare: { icon: 'car-outline', duration: '~1 min' },
   skill_declare: { icon: 'construct-outline', duration: '~1 min' },
 };
 

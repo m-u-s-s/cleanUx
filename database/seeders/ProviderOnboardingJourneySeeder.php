@@ -9,6 +9,7 @@ use App\Services\OnboardingV2\Validators\DocumentUploadValidator;
 use App\Services\OnboardingV2\Validators\KycCheckValidator;
 use App\Services\OnboardingV2\Validators\ProfileCompleteValidator;
 use App\Services\OnboardingV2\Validators\SkillDeclareValidator;
+use App\Services\OnboardingV2\Validators\VehicleDeclarationValidator;
 use Illuminate\Database\Seeder;
 
 /**
@@ -129,6 +130,30 @@ class ProviderOnboardingJourneySeeder extends Seeder
                 // (ProviderDocumentRequirements). Elle était figée sur la seule pièce d'identité,
                 // si bien qu'un électricien n'était jamais invité à déposer sa certification ni un
                 // peintre son assurance — que la validation finale du dossier exige pourtant.
+                'metadata' => [],
+            ],
+            [
+                /*
+                 * LE VÉHICULE — pour les seuls métiers sous règles taxi.
+                 *
+                 * L'étape est dans le parcours de TOUT LE MONDE, et son validateur passe
+                 * trivialement quand aucun métier ne l'exige. C'est le seul montage possible : le
+                 * parcours est unique et partagé, et fabriquer un second parcours « chauffeur »
+                 * ferait deux suites d'étapes à tenir à jour — dont l'une finirait par oublier une
+                 * exigence que l'autre applique.
+                 *
+                 * Elle dépend des justificatifs : la carte grise est ce qui rend la date
+                 * d'immatriculation opposable, et la réclamer avant de l'avoir demandée n'aurait
+                 * aucun sens.
+                 */
+                'code' => 'vehicle_declare',
+                'label' => 'Déclarer votre véhicule',
+                'description' => 'Marque, modèle, plaque et date de première immatriculation — exigé pour les services de transport de personnes.',
+                'step_type' => 'vehicle_declare',
+                'required' => true,
+                'is_skippable' => false,
+                'validator_class' => VehicleDeclarationValidator::class,
+                'depends_on' => ['document_upload'],
                 'metadata' => [],
             ],
             [

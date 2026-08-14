@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\TradeUser;
 use App\Services\Audit\Concerns\AuditsEloquentEvents;
 use App\Support\Domain\OrderMode;
 use App\Support\Domain\TradeRouteRules;
@@ -26,6 +27,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $name
  * @property bool $is_active
  * @property int $sort_order
+ *
+ * La ligne de rattachement `trade_user`, présente UNIQUEMENT quand le métier a été chargé depuis un
+ * prestataire (`$user->trades`). Elle porte `is_primary`, `proficiency` et `notes` — le niveau
+ * déclaré sur CE métier, qui n'a de sens que pour cette personne-là.
+ * @property-read TradeUser|null $pivot
  */
 class Trade extends Model
 {

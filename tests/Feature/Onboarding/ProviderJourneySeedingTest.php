@@ -34,6 +34,13 @@ class ProviderJourneySeedingTest extends TestCase
         'contract_sign',
         'kyc_check',
         'document_upload',
+        /*
+         * `vehicle_declare` ne concerne que les métiers sous règles taxi, mais elle est dans le
+         * parcours de TOUT LE MONDE — le parcours est unique et partagé. C'est son validateur qui
+         * passe trivialement quand personne n'a de véhicule à déclarer ; une seconde suite d'étapes
+         * « chauffeur » ferait deux parcours à tenir à jour, dont l'un oublierait une exigence.
+         */
+        'vehicle_declare',
         'skill_declare',
     ];
 

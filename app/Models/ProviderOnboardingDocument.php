@@ -40,6 +40,24 @@ class ProviderOnboardingDocument extends Model
 
     public const TYPE_CRIMINAL_RECORD = 'criminal_record';
 
+    /**
+     * LES TROIS PIÈCES DE LA CONDUITE.
+     *
+     * Elles n'existaient nulle part : `fleet_certifications` connaît bien un type `driver_license`,
+     * mais aucun code n'écrit son `document_path` et aucun écran ne le propose — la seule voie de
+     * création est un administrateur via l'API. Un prestataire ne pouvait donc PAS déposer son
+     * permis, sur aucune surface.
+     *
+     * Le certificat d'immatriculation est ce qu'Uber, Bolt et Heetch réclament pour l'âge du
+     * véhicule : c'est lui qui porte la date de PREMIÈRE immatriculation, la seule qui compte —
+     * l'année du modèle ne dit rien de la date de mise en circulation.
+     */
+    public const TYPE_DRIVING_LICENSE = 'driving_license';
+
+    public const TYPE_VEHICLE_REGISTRATION = 'vehicle_registration';
+
+    public const TYPE_VEHICLE_INSURANCE = 'vehicle_insurance';
+
     public const TYPE_OTHER = 'other';
 
     /**

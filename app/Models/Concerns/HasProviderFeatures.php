@@ -7,6 +7,7 @@ use App\Models\AvailabilitySlot;
 use App\Models\EmployeeZoneAssignment;
 use App\Models\FieldTeam;
 use App\Models\Mission;
+use App\Models\Pivots\TradeUser;
 use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
 use App\Models\Trade;
@@ -44,10 +45,20 @@ trait HasProviderFeatures
         return $this->hasMany(AvailabilityException::class, 'provider_user_id');
     }
 
-    /** @return BelongsToMany<EmployeeZoneAssignment, $this> */
+    /**
+     * Les métiers déclarés par ce prestataire.
+     *
+     * L'annotation disait `EmployeeZoneAssignment` — recopiée de `serviceZones()` juste en dessous.
+     * L'analyse statique décrivait donc ces lignes comme des affectations de zone : toute lecture
+     * d'une colonne de métier y était signalée comme inexistante, et une vraie erreur s'y serait
+     * cachée au milieu du bruit.
+     *
+     * @return BelongsToMany<Trade, $this, TradeUser, 'pivot'>
+     */
     public function trades(): BelongsToMany
     {
         return $this->belongsToMany(Trade::class, 'trade_user')
+            ->using(TradeUser::class)
             ->withPivot(['is_primary', 'proficiency', 'notes'])
             ->withTimestamps();
     }

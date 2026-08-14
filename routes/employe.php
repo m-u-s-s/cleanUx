@@ -18,6 +18,7 @@ use App\Livewire\Provider\BundleQuoteRequests;
 use App\Livewire\Provider\DemandHeatmap;
 use App\Livewire\Provider\ProviderBadgesPage;
 use App\Livewire\Provider\ProviderDisputesPage;
+use App\Livewire\Provider\ProviderDrivingDossier;
 use App\Livewire\Provider\ProviderEarningsDashboard;
 use App\Livewire\Provider\ProviderKycPage;
 use App\Livewire\Provider\ProviderRatingsPage;
@@ -66,6 +67,16 @@ Route::middleware(['role:employe'])
 
         if (class_exists(ProviderKycPage::class)) {
             Route::get('/verification', ProviderKycPage::class)->name('kyc');
+        }
+
+        /*
+         * Le dossier de CONDUITE — permis, assurance du véhicule, carte grise, et la voiture.
+         *
+         * Distinct de `/verification`, qui traite l'identité : ce sont deux questions différentes,
+         * et les mêler ferait chercher un permis dans un écran qui parle de pièce d'identité.
+         */
+        if (class_exists(ProviderDrivingDossier::class)) {
+            Route::get('/conduite', ProviderDrivingDossier::class)->name('driving');
         }
 
         if (class_exists(MissionsEmploye::class)) {

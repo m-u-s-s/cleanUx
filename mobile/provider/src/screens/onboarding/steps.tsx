@@ -15,6 +15,7 @@ import {
   isKycRefused,
   isKycUnderReview,
   useSyncKycStatus,
+  useVehicleDossier,
   type DocumentRequirement,
 } from '@/onboarding';
 import { useAuth } from '@/auth';
@@ -667,6 +668,123 @@ export function SkillsStep({ onDone, submitting, error }: StepProps) {
       <StepError error={localError ?? error} />
       <Button
         label="Confirmer mes métiers"
+        onPress={submit}
+        fullWidth
+        size="lg"
+        loading={submitting || save.isPending}
+      />
+    </StepShell>
+  );
+}
+
+/**
+ * VOTRE VÉHICULE — pour les seuls métiers sous règles taxi.
+ *
+ * L'étape est présentée à TOUT LE MONDE, comme toutes les autres du parcours, et se replie d'elle-
+ * même quand personne n'est concerné : le serveur dit `required: false`, et l'écran propose de
+ * passer plutôt que de réclamer une voiture à un jardinier.
+ *
+ * LA DATE DE PREMIÈRE IMMATRICULATION est le champ qui compte. C'est elle qui donne l'âge, et c'est
+ * pour elle qu'Uber, Bolt et Heetch réclament la carte grise : l'année du modèle ne dit pas quand
+ * la voiture a pris la route.
+ */
+export function VehicleStep({ onDone, submitting, error }: StepProps) {
+  const styles = stylesFor(useThemeColors());
+
+  const { data, isLoading, refetch } = useVehicleDossier();
+  const [plate, setPlate] = useState('');
+  const [brand, setBrand] = useState('');
+  const [model, setModel] = useState('');
+  const [registeredAt, setRegisteredAt] = useState('');
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!data?.vehicle) return;
+    setPlate(data.vehicle.plate ?? '');
+    setBrand(data.vehicle.brand ?? '');
+    setModel(data.vehicle.model ?? '');
+    setRegisteredAt(data.vehicle.registered_at ?? '');
+  }, [data?.vehicle]);
+
+  const save = useMutation({
+    mutationFn: async () =>
+      apiClient.post('/provider/onboarding/vehicle', {
+        plate,
+        brand: brand || null,
+        model: model || null,
+        registered_at: registeredAt || null,
+      }),
+    onSuccess: () => { void refetch(); onDone(); },
+    onError: () => setLocalError("L'enregistrement a échoué. Vérifiez la plaque et la date, puis réessayez."),
+  });
+
+  if (isLoading) {
+    return (
+      <StepShell title="Votre véhicule">
+        <Text style={styles.stepHint}>Chargement…</Text>
+      </StepShell>
+    );
+  }
+
+  if (data && !data.required) {
+    return (
+      <StepShell
+        title="Votre véhicule"
+        hint="Aucun de vos métiers n’exige de véhicule déclaré. Vous pouvez passer cette étape."
+      >
+        <Button label="Continuer" onPress={() => onDone()} fullWidth size="lg" loading={submitting} />
+      </StepShell>
+    );
+  }
+
+  const submit = () => {
+    setLocalError(null);
+
+    if (plate.trim().length < 4) {
+      setLocalError('Indiquez la plaque d’immatriculation du véhicule.');
+
+      return;
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(registeredAt.trim())) {
+      setLocalError('Indiquez la date de première immatriculation au format AAAA-MM-JJ (elle figure sur la carte grise).');
+
+      return;
+    }
+
+    save.mutate();
+  };
+
+  return (
+    <StepShell
+      title="Votre véhicule"
+      hint={`Exigé pour : ${(data?.trades ?? []).join(', ') || 'vos métiers de transport'}. Le véhicule doit avoir moins de ${data?.max_age_years ?? 4} ans.`}
+    >
+      <TextInput label="Plaque d’immatriculation" value={plate} onChangeText={setPlate} autoCapitalize="characters" />
+      <TextInput label="Marque" value={brand} onChangeText={setBrand} />
+      <TextInput label="Modèle" value={model} onChangeText={setModel} />
+      <TextInput
+        label="Première immatriculation (AAAA-MM-JJ)"
+        value={registeredAt}
+        onChangeText={setRegisteredAt}
+        placeholder="2023-04-17"
+      />
+
+      {/* Le verdict est affiché AVANT l'envoi : découvrir un refus après coup fait recommencer. */}
+      {data && !data.compliant && data.reason ? (
+        <Text style={styles.stepHint}>{data.reason}</Text>
+      ) : null}
+
+      {data && !data.registration_document_uploaded ? (
+        <Text style={styles.stepHint}>
+          Pensez à déposer le certificat d’immatriculation à l’étape « justificatifs » : c’est lui qui
+          atteste la date.
+        </Text>
+      ) : null}
+
+      <StepError error={localError ?? error} />
+      <Button
+        label="Enregistrer mon véhicule"
         onPress={submit}
         fullWidth
         size="lg"
