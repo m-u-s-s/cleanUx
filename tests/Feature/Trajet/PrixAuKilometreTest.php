@@ -7,6 +7,7 @@ use App\Models\Trade;
 use App\Models\TradeZonePricing;
 use App\Services\OrderEngine\PricingEngine;
 use App\Services\OrderEngine\ZonePricingResolver;
+use App\Support\Domain\OrderMode;
 use Database\Seeders\OrderEngineCatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -148,6 +149,118 @@ class PrixAuKilometreTest extends TestCase
         ]);
 
         $this->assertSame($this->devis($peinture)['min'], $sansRoute['min']);
+    }
+
+    /**
+     * LA MAJORATION DE L'IMMÉDIAT PORTE AUSSI SUR LES KILOMÈTRES — c'est voulu.
+     *
+     * C'est le modèle Heetch/Bolt/Uber : quand la demande fait monter les prix, elle fait monter la
+     * course entière. Majorer la seule prise en charge reviendrait à dire qu'un trajet de nuit de
+     * trente kilomètres coûte à peu près comme le même trajet en plein après-midi.
+     *
+     * Ce test existe pour que ce choix soit une DÉCISION et non un effet de bord : quelqu'un qui
+     * jugerait plus tard qu'on ne majore pas des kilomètres le verra tomber, et lira pourquoi.
+     */
+    public function test_la_majoration_de_l_immediat_porte_sur_les_kilometres(): void
+    {
+        $peinture = $this->peinture();
+
+        $distance = [
+            'distance_pricing_enabled' => true,
+            'route_distance_m' => 10_000,
+            'pickup_fee_cents' => 250,
+            'price_per_km_cents' => 100,
+            'included_km' => 0,
+        ];
+
+        // 2,50 € + 10 km × 1,00 € = 12,50 € de trajet brut.
+        $immediat = $this->devis($peinture, $distance + ['mode' => OrderMode::ASAP])['min']
+            - $this->devis($peinture, ['mode' => OrderMode::ASAP])['min'];
+
+        // LE TÉMOIN : le même trajet, en rendez-vous programmé, n'est pas majoré.
+        $programme = $this->devis($peinture, $distance)['min']
+            - $this->devis($peinture)['min'];
+
+        $this->assertSame(1_250, $programme);
+        $this->assertSame(1_625, $immediat, '12,50 € × 1,30 : la majoration de l’immédiat porte sur toute la course.');
+    }
+
+    /**
+     * L'ÉLARGISSEMENT D'INCERTITUDE NE TOUCHE PAS UNE DISTANCE MESURÉE.
+     *
+     * Le questionnaire de l'immédiat est volontairement raccourci, alors le moteur élargit le haut
+     * de la fourchette de 15 % pour ne pas donner une fausse précision. Cet élargissement dit ce
+     * que nous IGNORONS de la prestation — il n'a rien à dire sur des kilomètres que nous avons
+     * mesurés, et il s'appliquait pourtant : une course de vingt kilomètres était annoncée « entre
+     * 34,45 € et 39,62 € » alors que les deux bornes portaient exactement les mêmes kilomètres.
+     * Cinq euros de risque affichés là où il n'y en avait pas un centime.
+     */
+    public function test_l_elargissement_d_incertitude_ne_touche_pas_les_kilometres_mesures(): void
+    {
+        $peinture = $this->peinture();
+
+        $sans = $this->devis($peinture, ['mode' => OrderMode::ASAP]);
+        $avec = $this->devis($peinture, [
+            'mode' => OrderMode::ASAP,
+            'distance_pricing_enabled' => true,
+            'route_distance_m' => 20_000,
+            'pickup_fee_cents' => 250,
+            'price_per_km_cents' => 120,
+            'included_km' => 0,
+        ]);
+
+        // LE TÉMOIN, sans lequel ce test passerait au vert en mesurant un élargissement en panne :
+        // la prestation, elle, est bien élargie.
+        $this->assertGreaterThan(0, $sans['max'] - $sans['min'], 'Sans fourchette sur la prestation, ce test ne prouve rien.');
+
+        $this->assertSame(
+            $sans['max'] - $sans['min'],
+            $avec['max'] - $avec['min'],
+            'Ajouter une distance mesurée ne doit pas élargir la fourchette d’un seul centime.'
+        );
+        $this->assertSame($avec['max'] - $sans['max'], $avec['min'] - $sans['min']);
+    }
+
+    /** Un « je ne sais pas » élargit la prestation, jamais le trajet. */
+    public function test_un_je_ne_sais_pas_n_elargit_pas_le_trajet(): void
+    {
+        $peinture = $this->peinture();
+        $reponses = ['surface_m2' => '__unknown__'];
+
+        $sans = $this->devis($peinture, [], $reponses);
+        $avec = $this->devis($peinture, [
+            'distance_pricing_enabled' => true,
+            'route_distance_m' => 15_000,
+            'price_per_km_cents' => 200,
+        ], $reponses);
+
+        $this->assertGreaterThan(0, $sans['max'] - $sans['min'], 'Sans porte de sortie effective, ce test ne prouve rien.');
+        $this->assertSame($avec['max'] - $sans['max'], $avec['min'] - $sans['min']);
+    }
+
+    /**
+     * UN MULTIPLICATEUR DE PRIX, LUI, PORTE BIEN SUR LES KILOMÈTRES.
+     *
+     * C'est la contrepartie du test précédent, et ce qui rend la règle tenable : le trajet prend
+     * tout ce qui dit combien la prestation COÛTE, et rien de ce qui dit à quel point nous
+     * l'ignorons. Sans ce contrôle, « ne pas élargir » pourrait dériver en « ne rien multiplier »,
+     * et une option facturée une fois et demie ne s'appliquerait plus qu'à la moitié du prix.
+     */
+    public function test_un_multiplicateur_de_reponse_porte_sur_les_kilometres(): void
+    {
+        $peinture = $this->peinture();
+        $reponses = ['surface_m2' => 40, 'etat_support' => 'a_decaper']; // × 1,35
+
+        $sans = $this->devis($peinture, [], $reponses);
+        $avec = $this->devis($peinture, [
+            'distance_pricing_enabled' => true,
+            'route_distance_m' => 10_000,
+            'price_per_km_cents' => 100,
+            'included_km' => 0,
+        ], $reponses);
+
+        // 10,00 € de trajet × 1,35
+        $this->assertSame(1_350, $avec['min'] - $sans['min']);
     }
 
     /**

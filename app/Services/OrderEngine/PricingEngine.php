@@ -20,13 +20,15 @@ use Illuminate\Support\Facades\Config;
  *                  × Π multiplicateurs des réponses
  *                  × coefficient de mode      (majoration du service immédiat)
  *                  × coefficient de zone      (déplacement, zone tarifaire)
+ *                  [ × élargissement d'incertitude, sur le MAXIMUM seulement ]
+ *                  + trajet mesuré × (mêmes multiplicateurs de PRIX, aucun élargissement)
  *
  *     prix_commande = Σ prix_lignes − remise multi-services
  *
  * L'ORDRE n'est pas négociable : on additionne d'abord, on multiplie ensuite. L'inverser donne un
  * autre prix, et les deux paraissent également plausibles à la lecture — d'où ce rappel.
  *
- * Trois règles tenues bout à bout :
+ * Quatre règles tenues bout à bout :
  *
  * 1. Tout est en CENTIMES ENTIERS. Les multiplicateurs travaillent en flottant, mais l'arrondi
  *    n'a lieu qu'une fois, à la toute fin. Arrondir à chaque étape fait dériver le total de
@@ -39,6 +41,12 @@ use Illuminate\Support\Facades\Config;
  *    n'offre aucune borne exploitable.
  *
  * 3. Le serveur fait autorité. Rien de ce que le navigateur annonce comme prix n'est lu ici.
+ *
+ * 4. Un MULTIPLICATEUR DE PRIX et un ÉLARGISSEMENT D'INCERTITUDE ne sont pas la même chose, même
+ *    s'ils se ressemblent : les deux multiplient. Le premier dit combien la prestation coûte —
+ *    majoration de l'immédiat, coefficient de zone, option « avec véhicule ». Le second dit
+ *    seulement à quel point nous ignorons ce qui nous attend. Le trajet, lui, est MESURÉ : il prend
+ *    les premiers et jamais les seconds. {@see self::quoteItem()}
  */
 class PricingEngine
 {
@@ -111,16 +119,14 @@ class PricingEngine
         /*
          * LA DISTANCE, quand — et SEULEMENT quand — la zone a ouvert le tarif au kilomètre.
          *
-         * Elle entre AVANT les multiplicateurs, comme les autres composantes de somme : c'est ce
-         * qui fait qu'une course de nuit majore aussi ses kilomètres, et non la seule prise en
-         * charge. Le drapeau est éteint par défaut sur toutes les lignes existantes : la sortie du
-         * moteur reste donc identique au centime pour tous les métiers d'aujourd'hui.
+         * Elle n'est pas versée dans la somme du service : elle a son propre chemin plus bas, parce
+         * qu'elle ne rencontre pas les mêmes multiplicateurs. Le drapeau est éteint par défaut sur
+         * toutes les lignes existantes — la sortie du moteur reste identique au centime pour tous
+         * les métiers d'aujourd'hui.
          */
         $distance = $this->distanceImpact($context);
 
         if ($distance !== null) {
-            $sumMin += $distance['cents'];
-            $sumMax += $distance['cents'];
             $lines[] = $this->line('_distance', 'Trajet', $distance['detail'], $distance['cents'], $distance['cents']);
         }
 
@@ -147,11 +153,46 @@ class PricingEngine
         }
 
         /*
+         * LE TRAJET MESURÉ ENTRE ICI — après les élargissements, jamais avant.
+         *
+         * Ce qu'il PREND : la majoration du mode immédiat, le coefficient de zone et les
+         * multiplicateurs venus des réponses. C'est le modèle Heetch/Bolt/Uber, et c'est le bon :
+         * une course de nuit majore ses kilomètres, pas seulement sa prise en charge. Facturer la
+         * majoration sur le seul premier mètre reviendrait à dire qu'un trajet de nuit de trente
+         * kilomètres coûte à peu près comme le même trajet en plein après-midi.
+         *
+         * Ce qu'il NE PREND PAS : les élargissements d'incertitude — les +15 % du questionnaire
+         * raccourci de l'immédiat, et le repli d'un « je ne sais pas » sans borne exploitable. Ils
+         * ont un sens sur une prestation qu'on découvrira sur place ; aucun sur une distance qu'on
+         * a mesurée. Ils s'appliquaient pourtant : une course de vingt kilomètres était annoncée
+         * « entre 34,45 € et 39,62 € » alors que les deux chiffres portaient les MÊMES kilomètres,
+         * et le client lisait cinq euros de risque là où il n'y en avait pas un centime.
+         *
+         * D'où `$multMin` et non `$multMax` : le premier ne porte que des multiplicateurs de prix
+         * réels, le second y mêle l'élargissement du repli. Deux notions dans un même champ — c'est
+         * ce que ce passage démêle.
+         *
+         * Minimum et maximum reçoivent donc le MÊME montant : sur ce qui est mesuré, il n'y a pas
+         * de fourchette à annoncer.
+         */
+        if ($distance !== null) {
+            $trajet = (int) round($distance['cents'] * $multMin * $modeMultiplier * $zoneMultiplier);
+            $min += $trajet;
+            $max += $trajet;
+        }
+
+        /*
          * PLANCHER ET PLAFOND DE LA ZONE, appliqués APRÈS l'arrondi.
          *
          * Ce sont des engagements commerciaux — « on ne se déplace pas sous 45 € à Bruxelles » —
          * pas des composantes du calcul. Les faire entrer plus tôt les laisserait multiplier par
          * la majoration du mode immédiat, et le plancher annoncé ne serait pas celui appliqué.
+         *
+         * Ils portent sur le total TRAJET COMPRIS, et c'est délibéré : ce plancher existe pour
+         * couvrir un déplacement, et l'appliquer avant le trajet le facturerait deux fois. La
+         * contrepartie tient dans la même phrase — un plafond posé sur un métier tarifé au
+         * kilomètre écrête aussi les longues courses. C'est le sens littéral d'un plafond, et
+         * l'administrateur qui ouvre le kilomètre décide donc aussi de ce qu'il laisse en face.
          */
         $floor = $context['zone_min_cents'] ?? null;
         $ceiling = $context['zone_max_cents'] ?? null;

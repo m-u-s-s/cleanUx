@@ -110,6 +110,22 @@ Objectif : l'admin choisit, métier par métier et zone par zone, entre le forfa
 
 **Acceptation** : **test de devis témoin — la sortie de `PricingEngine` est identique au centime** pour tous les métiers dont la distance n'est pas activée ; un métier de trajet avec la distance activée facture prise en charge + kilomètres (+ minutes le cas échéant) et l'affiche AVANT confirmation ; basculer le drapeau depuis l'admin change le prix sans déploiement.
 
+**Tranché après coup (2026-08-14) — le trajet et les multiplicateurs.** La première implémentation
+versait la distance dans la somme du service, donc elle rencontrait TOUS les multiplicateurs, y
+compris ceux qui n'expriment que notre ignorance. La règle retenue sépare les deux notions :
+
+- le trajet prend les **multiplicateurs de prix** — majoration de l'immédiat, coefficient de zone,
+  multiplicateurs venus des réponses. C'est le modèle Heetch/Bolt/Uber : une course de nuit majore
+  ses kilomètres, pas seulement sa prise en charge ;
+- le trajet ne prend **aucun élargissement d'incertitude** — ni les +15 % du questionnaire raccourci
+  de l'immédiat, ni le repli d'un « je ne sais pas » sans borne. Une distance mesurée n'a pas de
+  fourchette, et le contraire s'affichait : une course de 20 km était annoncée « entre 34,45 € et
+  39,62 € » quand les deux bornes portaient les mêmes kilomètres.
+
+C'est exactement ce que demandait déjà le tiret « fourchette d'estimation » ci-dessus ; le code en
+avait dérivé. Plancher et plafond de zone portent sur le total **trajet compris** : ce plancher
+existe pour couvrir un déplacement, l'appliquer avant le trajet le facturerait deux fois.
+
 ## Lot 4 — Le second parcours mission : la course (consignes 3, 4, 5)
 
 Objectif : une course se déroule sans aucun code, et le parcours terrain actuel n'est jamais emprunté par une course — ni l'inverse.
