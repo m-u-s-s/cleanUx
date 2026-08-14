@@ -40,6 +40,46 @@
             Arrivé
         </button>
     </div>
+
+    {{--
+        DEUX PARCOURS, ET ILS NE SE MÉLANGENT PAS.
+
+        Une intervention se démarre et se clôture contre un code à six chiffres que le client donne :
+        les deux personnes sont face à face, et le code atteste de cette rencontre. Une COURSE n'a
+        rien de tel — le client est monté dans la voiture, et la preuve est la trace GPS qu'il suit
+        lui-même. Afficher un champ de code à un conducteur au volant, c'est lui demander quelque
+        chose que personne ne lui donnera.
+    --}}
+    @if ($this->estUneCourse())
+        <div class="rounded-2xl border border-slate-200 p-4 space-y-3">
+            <h4 class="font-medium text-slate-900">Course</h4>
+            <p class="text-sm text-slate-500">
+                Aucun code : la course démarre quand le client monte, et se termine à l’arrivée.
+            </p>
+
+            <div class="grid gap-3 md:grid-cols-2">
+                <button
+                    wire:click="demarrerLaCourse"
+                    type="button"
+                    class="rounded-xl bg-emerald-600 px-4 py-3 text-sm font-medium text-white disabled:opacity-50"
+                    @disabled($mission->status !== 'arrived')
+                    >
+                    Client à bord
+                </button>
+
+                {{-- Le relevé précède l'appel : terminer encaisse, et le serveur confronte la
+                     position au point de DÉPOSE. --}}
+                <button
+                    onclick="finishRideWithPosition(this)"
+                    type="button"
+                    class="rounded-xl bg-red-600 px-4 py-3 text-sm font-medium text-white disabled:opacity-50"
+                    @disabled(! in_array($mission->status, ['started', 'paused']))
+                    >
+                    Terminer la course
+                </button>
+            </div>
+        </div>
+    @else
     <form
         onsubmit="startMissionWithCode(event, {{ $mission->id }})"
         enctype="multipart/form-data"
@@ -150,6 +190,7 @@
         <p class="text-sm text-red-600">{{ $message }}</p>
         @enderror
     </div>
+    @endif
 </div>
 <script>
     /**
@@ -208,6 +249,35 @@
             await component.set('accuracyM', position ? position.accuracy_m : null, true);
 
             await component.call('finishMission');
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    /**
+     * Même relevé, autre clôture : celle d'une course.
+     *
+     * La position part de la même façon — c'est le SERVEUR qui sait qu'il doit la confronter au
+     * point de dépose et non au point de départ. Décider ici quel lieu comparer mettrait cette
+     * règle sur l'appareil de la personne contrôlée.
+     */
+    async function finishRideWithPosition(button) {
+        const root = button.closest('[wire\\:id]');
+        const component = root ? window.Livewire.find(root.getAttribute('wire:id')) : null;
+
+        if (!component) {
+            return;
+        }
+
+        button.disabled = true;
+
+        try {
+            const position = await readBrowserPosition();
+
+            await component.set('lat', position ? position.lat : null, true);
+            await component.set('lng', position ? position.lng : null, true);
+
+            await component.call('terminerLaCourse');
         } finally {
             button.disabled = false;
         }

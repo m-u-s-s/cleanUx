@@ -4,6 +4,7 @@ namespace App\Livewire\Employe;
 
 use App\Models\Mission;
 use App\Services\Missions\MissionLifecycleService;
+use App\Services\Missions\RideLifecycleService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -40,6 +41,61 @@ class MissionActions extends Component
     public function mount(Mission $mission): void
     {
         $this->mission = $mission->load(['assignments', 'verificationCodes', 'booking']);
+    }
+
+    /**
+     * CETTE MISSION EST-ELLE UNE COURSE ?
+     *
+     * La vue s'en sert pour proposer « Client à bord » et « Terminer la course » à la place des
+     * champs de code. Recalculé à chaque appel plutôt que figé au montage : Livewire ne rejoue pas
+     * `mount()`, et un état retenu là deviendrait faux dès que la réservation change.
+     */
+    public function estUneCourse(): bool
+    {
+        return app(RideLifecycleService::class)->estUneCourse($this->mission);
+    }
+
+    /** Le client est monté : la course démarre, sans code. */
+    public function demarrerLaCourse(): void
+    {
+        $this->resetMessages();
+
+        try {
+            $this->mission = app(RideLifecycleService::class)->demarrerLaCourse(
+                $this->mission->fresh(),
+                Auth::user(),
+                $this->lat,
+                $this->lng,
+            );
+
+            $this->successMessage = 'Course démarrée. Bonne route.';
+        } catch (\Throwable $e) {
+            $this->errorMessage = $e->getMessage();
+        }
+    }
+
+    /**
+     * Arrivé à destination : la course se termine et le paiement est capturé.
+     *
+     * La position part avec l'appel, comme pour une clôture ordinaire — elle sera confrontée au
+     * point de DÉPOSE, pas au point de départ.
+     */
+    public function terminerLaCourse(): void
+    {
+        $this->resetMessages();
+
+        try {
+            $this->mission = app(RideLifecycleService::class)->terminerLaCourse(
+                $this->mission->fresh(),
+                Auth::user(),
+                $this->lat,
+                $this->lng,
+            );
+
+            $this->successMessage = 'Course terminée.';
+        } catch (\Throwable $e) {
+            $this->errorMessage = $e->getMessage();
+        }
     }
 
     public function setEnRoute(): void

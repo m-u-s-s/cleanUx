@@ -261,6 +261,17 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         Route::post('/{mission}/complete', [ProviderMissionLifecycleController::class, 'complete']);
         // Clôture par le code que le client affiche : un SMS voyage, un écran non.
         Route::post('/{mission}/complete-by-qr', [ProviderMissionLifecycleController::class, 'completeByQr']);
+
+        /*
+         * LE SECOND PARCOURS : la course, d'un point à un autre.
+         *
+         * Deux gestes, aucun code. Le client monte — la course démarre ; on arrive — elle se
+         * termine. Ces routes REFUSENT une mission ordinaire, et `begin`/`complete` ci-dessus
+         * refusent une course : les deux parcours ne peuvent pas se croiser, et chaque refus dit
+         * pourquoi plutôt que d'échouer en silence.
+         */
+        Route::post('/{mission}/ride/start', [ProviderMissionLifecycleController::class, 'startRide']);
+        Route::post('/{mission}/ride/complete', [ProviderMissionLifecycleController::class, 'completeRide']);
     });
 
     /*

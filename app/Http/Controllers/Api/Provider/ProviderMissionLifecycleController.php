@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Mission;
 use App\Services\Missions\MissionLifecycleService;
 use App\Services\Missions\MissionVerificationCodeService;
+use App\Services\Missions\RideLifecycleService;
 use App\Services\Notifications\SmsService;
 use App\Services\Payments\PayoutAnnouncementService;
 use Illuminate\Http\JsonResponse;
@@ -190,6 +191,10 @@ class ProviderMissionLifecycleController extends Controller
     public function completeByQr(Request $request, Mission $mission): JsonResponse
     {
         $this->authorizeProvider($request, $mission);
+
+        if ($refus = $this->refuseSiCourse($mission)) {
+            return $refus;
+        }
 
         $data = $request->validate([
             'code' => ['required', 'string', 'max:191'],
@@ -388,9 +393,101 @@ class ProviderMissionLifecycleController extends Controller
             .mb_substr($telephone, -2);
     }
 
+    /**
+     * LE CLIENT EST À BORD — la course démarre.
+     *
+     * Aucun code : ni Uber, ni Bolt, ni Heetch n'en demandent, et pour une raison qui tient. Les six
+     * chiffres attestent qu'un prestataire est face au client devant sa porte ; ici le client est
+     * assis à l'arrière, et la preuve est la trace GPS qu'il suit lui-même sur sa carte.
+     */
+    public function startRide(Request $request, Mission $mission): JsonResponse
+    {
+        $this->authorizeProvider($request, $mission);
+
+        $data = $request->validate([
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
+        ]);
+
+        try {
+            $mission = app(RideLifecycleService::class)->demarrerLaCourse(
+                $mission,
+                $request->user(),
+                isset($data['lat']) ? (float) $data['lat'] : null,
+                isset($data['lng']) ? (float) $data['lng'] : null,
+            );
+        } catch (\RuntimeException $e) {
+            return response()->json(['ok' => false, 'message' => $e->getMessage()], 409);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'mission_id' => $mission->id,
+            'status' => $mission->status,
+        ]);
+    }
+
+    /**
+     * ARRIVÉ À DESTINATION — la course se termine, et le paiement est capturé.
+     *
+     * La position est confrontée au point de DÉPOSE, pas au point de départ : c'est le seul endroit
+     * du cycle de vie où les deux diffèrent, et c'est celui-là qui compte ici.
+     */
+    public function completeRide(Request $request, Mission $mission): JsonResponse
+    {
+        $this->authorizeProvider($request, $mission);
+
+        $data = $request->validate([
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
+        ]);
+
+        try {
+            $mission = app(RideLifecycleService::class)->terminerLaCourse(
+                $mission,
+                $request->user(),
+                isset($data['lat']) ? (float) $data['lat'] : null,
+                isset($data['lng']) ? (float) $data['lng'] : null,
+            );
+        } catch (\RuntimeException $e) {
+            return response()->json(['ok' => false, 'message' => $e->getMessage()], 409);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'mission_id' => $mission->id,
+            'status' => $mission->status,
+            'duration_minutes' => $mission->actual_duration_minutes,
+            'payout' => $this->annoncePayout($mission),
+        ]);
+    }
+
+    /**
+     * LES DEUX PARCOURS NE SE CROISENT PAS — et le refus DIT pourquoi.
+     *
+     * Sans cette garde, `begin()` chercherait un code de début sur une course qui n'en a jamais eu,
+     * et répondrait « marquez d'abord votre arrivée » à un conducteur déjà sur place : un message
+     * faux, pour une raison qu'il ne peut pas deviner.
+     */
+    private function refuseSiCourse(Mission $mission): ?JsonResponse
+    {
+        if (! app(RideLifecycleService::class)->estUneCourse($mission)) {
+            return null;
+        }
+
+        return response()->json([
+            'ok' => false,
+            'message' => 'Cette mission est une course : utilisez « client à bord » puis « terminer la course ». Elle n’a pas de code.',
+        ], 409);
+    }
+
     public function begin(Request $request, Mission $mission): JsonResponse
     {
         $this->authorizeProvider($request, $mission);
+
+        if ($refus = $this->refuseSiCourse($mission)) {
+            return $refus;
+        }
 
         $data = $request->validate([
             'lat' => ['nullable', 'numeric', 'between:-90,90'],
@@ -446,6 +543,10 @@ class ProviderMissionLifecycleController extends Controller
     public function complete(Request $request, Mission $mission): JsonResponse
     {
         $this->authorizeProvider($request, $mission);
+
+        if ($refus = $this->refuseSiCourse($mission)) {
+            return $refus;
+        }
 
         $data = $request->validate([
             'lat' => ['nullable', 'numeric', 'between:-90,90'],

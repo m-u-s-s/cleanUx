@@ -116,20 +116,45 @@ class MissionLifecycleService
 
         $this->avancerLaReservation($mission, BookingStatus::SUR_PLACE);
 
-        $generated = $this->verificationCodeService->createVerificationCode($mission, 'start');
-        session()->put('mission_start_code_'.$mission->id, $generated['code']);
-        app(SmsService::class)->send(
-            $mission->booking?->client?->phone ?? $mission->booking?->telephone_client,
-            'Brio : votre employé est arrivé. Code de début : '.$generated['code']
-        );
+        /*
+         * UNE COURSE N'ÉMET AUCUN CODE — et la branche est posée AVANT la génération, pas après.
+         *
+         * Les six chiffres attestent qu'un prestataire est bien face au client, devant sa porte.
+         * Sur une course, la preuve est ailleurs : le client monte dans la voiture, et la trace GPS
+         * de A à B dit le reste. Uber, Bolt et Heetch n'en demandent aucun, pour cette raison.
+         *
+         * Nettoyer après coup ne suffirait pas : `createVerificationCode()` envoie un SMS, et un SMS
+         * parti ne se rattrape pas. Pire, le module plafonne à cinq messages par heure et par
+         * numéro — deux codes inutiles consommeraient le quota du client sans que rien ne le
+         * signale.
+         */
+        $estUneCourse = (bool) $mission->booking?->estUneCourse();
+        $generated = null;
+        // Le destinataire est résolu UNE fois : les deux branches écrivent au même client, et deux
+        // expressions parallèles finiraient par diverger sur un repli.
+        $destinataire = $mission->booking?->client?->phone ?? $mission->booking?->telephone_client;
 
-        $this->issueEndCode($mission);
+        if (! $estUneCourse) {
+            $generated = $this->verificationCodeService->createVerificationCode($mission, 'start');
+            session()->put('mission_start_code_'.$mission->id, $generated['code']);
+            app(SmsService::class)->send(
+                $destinataire,
+                'Brio : votre employé est arrivé. Code de début : '.$generated['code']
+            );
+
+            $this->issueEndCode($mission);
+        } else {
+            app(SmsService::class)->send(
+                $destinataire,
+                'Brio : votre chauffeur est arrivé au point de prise en charge.'
+            );
+        }
 
         $mission = $mission->fresh(['assignments', 'verificationCodes', 'booking.client', 'leadEmployee']);
 
         if ($mission->booking?->client) {
             $mission->booking->client->notify(
-                new EmployeArriveNotification($mission, $generated['code'])
+                new EmployeArriveNotification($mission, $generated['code'] ?? null)
             );
         }
 
@@ -311,7 +336,7 @@ class MissionLifecycleService
     ): Mission {
         $this->assignmentStatusService->assertAssignedToMission($mission, $user);
 
-        $geo = $this->verifyOnSite($mission, $lat, $lng, $accuracyM, $mocked, $requirePosition);
+        $geo = $this->verifyOnSite($mission, $lat, $lng, $accuracyM, $mocked, $requirePosition, $this->lieuDeCloture($mission));
 
         $record = $this->verificationCodeService->consumeValidCode($mission, 'end', $plainCode, $user);
 
@@ -345,11 +370,25 @@ class MissionLifecycleService
     }
 
     /**
-     * Confronte une position au lieu de l'intervention, ou lève.
+     * Confronte une position AU LIEU OÙ LE GESTE EST CENSÉ AVOIR LIEU, ou lève.
      *
      * La politique est partagée avec la preuve de présence — même question, même réponse : la
      * clôture ne doit pas finir plus permissive que l'arrivée alors que c'est elle qui encaisse.
      *
+     * CE LIEU N'EST PAS TOUJOURS CELUI DE L'INTERVENTION. Sur une intervention ordinaire, les deux
+     * bouts se passent au même endroit et `mission.destination_*` répond à tout. Sur une COURSE, la
+     * clôture a lieu au point de DÉPOSE, à des kilomètres du départ : comparer au lieu
+     * d'intervention refuserait toute fin de course pour éloignement, avec le message « vous
+     * semblez être à 8,3 km du lieu de l'intervention » — techniquement vrai, et complètement à
+     * côté.
+     *
+     * D'où le paramètre explicite, plutôt qu'une seconde politique de proximité : deux copies de
+     * cette règle dériveraient, et c'est la plus permissive qui finirait par décider.
+     *
+     * @param  array{0: float, 1: float}|null  $lieuAttendu  Le lieu du geste. `null` s'en remet à
+     *                                                       `mission.destination_*`, qui est le
+     *                                                       comportement historique et reste celui
+     *                                                       de toutes les interventions ordinaires.
      * @return array{failure: array<string, list<string>>|null, verdict: string|null, distance_m: int|null}
      */
     protected function verifyOnSite(
@@ -359,12 +398,18 @@ class MissionLifecycleService
         ?float $accuracyM,
         bool $mocked,
         bool $requirePosition,
+        ?array $lieuAttendu = null,
     ): array {
+        $destLat = $lieuAttendu[0]
+            ?? ($mission->destination_lat !== null ? (float) $mission->destination_lat : null);
+        $destLng = $lieuAttendu[1]
+            ?? ($mission->destination_lng !== null ? (float) $mission->destination_lng : null);
+
         $geo = app(OnSiteVerifier::class)->verify(
             $lat,
             $lng,
-            $mission->destination_lat !== null ? (float) $mission->destination_lat : null,
-            $mission->destination_lng !== null ? (float) $mission->destination_lng : null,
+            $destLat,
+            $destLng,
             $accuracyM,
             $mocked,
             $requirePosition,
@@ -375,6 +420,27 @@ class MissionLifecycleService
         }
 
         return $geo;
+    }
+
+    /**
+     * OÙ LA CLÔTURE EST CENSÉE AVOIR LIEU.
+     *
+     * Une intervention se termine là où elle a commencé ; une course se termine au point de dépose.
+     * La règle vit ici, en un seul endroit, et sert autant la clôture par code que la clôture sans
+     * code — deux copies finiraient par diverger, et l'une des deux refuserait des clôtures
+     * légitimes pendant que l'autre les accepterait.
+     *
+     * @return array{0: float, 1: float}|null
+     */
+    public function lieuDeCloture(Mission $mission): ?array
+    {
+        $reservation = $mission->booking;
+
+        if (! $reservation?->estUneCourse()) {
+            return null;
+        }
+
+        return [(float) $reservation->dropoff_lat, (float) $reservation->dropoff_lng];
     }
 
     public function validateStartCodeFromQr(Mission $mission, User $user, ?float $lat = null, ?float $lng = null): Mission
@@ -448,8 +514,9 @@ class MissionLifecycleService
 
         // Clôturer sans code de fin reste possible — c'est un autre geste, pas celui du scan. La
         // position fournie est vérifiée quand même : personne ne doit pouvoir clôturer depuis
-        // 40 km en annonçant où il se trouve.
-        $geo ??= $this->verifyOnSite($mission, $lat, $lng, null, false, false);
+        // 40 km en annonçant où il se trouve. Sur une course, le lieu attendu est le point de
+        // DÉPOSE : comparer au point de départ refuserait toute fin de course.
+        $geo ??= $this->verifyOnSite($mission, $lat, $lng, null, false, false, $this->lieuDeCloture($mission));
 
         $mission->update([
             'status' => MissionStatus::COMPLETED,

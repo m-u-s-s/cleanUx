@@ -38,11 +38,25 @@ class TripTrackingService
      * Démarre une session tracking pour un booking.
      * Idempotent : retourne la session active existante si présente.
      */
+    /**
+     * @param  array{0: float, 1: float}|null  $destination  Le point visé, quand ce n'est PAS celui
+     *                                                       de la réservation. Une course en compte
+     *                                                       deux successifs : l'approche vers le
+     *                                                       client, puis le trajet vers la dépose.
+     *                                                       Détourner la première session en
+     *                                                       changeant sa destination effacerait
+     *                                                       l'histoire de l'approche — dont on a
+     *                                                       besoin pour justifier une attente.
+     * @param  array<string, mixed>  $metadata  Ce que ce segment représente (`leg`), pour que les
+     *                                          deux se distinguent après coup.
+     */
     public function startSession(
         User $provider,
         Booking $booking,
         ?float $startLat = null,
         ?float $startLng = null,
+        ?array $destination = null,
+        array $metadata = [],
     ): TripTrackingSession {
         // Idempotency : pas plus d'une session active par (provider, booking)
         $existing = TripTrackingSession::query()
@@ -54,8 +68,8 @@ class TripTrackingService
             return $existing;
         }
 
-        // Snapshot destination depuis booking
-        [$destLat, $destLng] = $this->resolveBookingDestination($booking);
+        // Snapshot destination depuis booking, sauf si l'appelant en désigne une autre.
+        [$destLat, $destLng] = $destination ?? $this->resolveBookingDestination($booking);
         $radiusM = (int) Config::get('trip_tracking.geofence_radius_m', 150);
 
         return TripTrackingSession::query()->create([
@@ -69,6 +83,7 @@ class TripTrackingService
             'start_lat' => $startLat,
             'start_lng' => $startLng,
             'started_at' => now(),
+            'metadata' => $metadata !== [] ? $metadata : null,
         ]);
     }
 

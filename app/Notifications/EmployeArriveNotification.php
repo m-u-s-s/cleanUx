@@ -13,9 +13,16 @@ class EmployeArriveNotification extends Notification
 {
     use Queueable;
 
+    /**
+     * @param  string|null  $startCode  Nul sur une COURSE : elle démarre quand le client monte, pas
+     *                                  contre six chiffres. Le client reçoit alors la même
+     *                                  notification d'arrivée, sans code à communiquer — une
+     *                                  seconde notification pour le même événement finirait par
+     *                                  diverger de celle-ci.
+     */
     public function __construct(
         public Mission $mission,
-        public string $startCode
+        public ?string $startCode = null
     ) {}
 
     use InteractsWithUserNotificationPreferences;
@@ -61,8 +68,9 @@ class EmployeArriveNotification extends Notification
             ->subject('Votre employé est arrivé')
             ->greeting('Bonjour,')
             ->line('Votre employé est arrivé pour la mission '.$this->mission->booking?->booking_reference.'.')
-            ->line('Code de début de mission : '.$this->startCode)
-            ->line('Donnez ce code à l’employé pour démarrer la mission.')
+            ->when($this->startCode !== null, fn (MailMessage $message) => $message
+                ->line('Code de début de mission : '.$this->startCode)
+                ->line('Donnez ce code à l’employé pour démarrer la mission.'))
             ->action('Voir le suivi', url('/client/dashboard'));
     }
 
