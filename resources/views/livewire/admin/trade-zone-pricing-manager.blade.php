@@ -136,6 +136,45 @@
                                     <input type="checkbox" wire:model="form_is_active" class="rounded text-blue-600"/>
                                     <span class="text-xs text-gray-600 dark:text-gray-400">Actif</span>
                                 </label>
+
+                                {{--
+                                    LE PRIX AU KILOMÈTRE, replié sous l'activation.
+
+                                    Il ne sert qu'aux métiers de trajet, et l'immense majorité des
+                                    lignes n'en aura jamais besoin — mais l'administrateur qui ouvre
+                                    une course dans une nouvelle zone doit le trouver LÀ OÙ il règle
+                                    déjà le tarif, pas sur un troisième écran.
+                                --}}
+                                <label class="mt-2 inline-flex items-center gap-1.5">
+                                    <input type="checkbox" wire:model.live="form_distance_pricing_enabled" class="rounded text-emerald-600"/>
+                                    <span class="text-xs text-gray-600 dark:text-gray-400">Prix au km</span>
+                                </label>
+
+                                @if ($form_distance_pricing_enabled)
+                                    <div class="mt-2 grid grid-cols-2 gap-1">
+                                        <label class="block">
+                                            <span class="block text-[10px] uppercase tracking-wide text-gray-500">Prise en charge (c)</span>
+                                            <input type="number" min="0" wire:model="form_pickup_fee_cents"
+                                                class="w-full rounded border-gray-300 py-1 text-xs dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-[10px] uppercase tracking-wide text-gray-500">Km inclus</span>
+                                            <input type="number" min="0" wire:model="form_included_km"
+                                                class="w-full rounded border-gray-300 py-1 text-xs dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-[10px] uppercase tracking-wide text-gray-500">c / km</span>
+                                            <input type="number" min="0" wire:model="form_price_per_km_cents" placeholder="—"
+                                                class="w-full rounded border-gray-300 py-1 text-xs dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
+                                        </label>
+                                        <label class="block">
+                                            <span class="block text-[10px] uppercase tracking-wide text-gray-500">c / min</span>
+                                            <input type="number" min="0" wire:model="form_price_per_minute_cents" placeholder="—"
+                                                class="w-full rounded border-gray-300 py-1 text-xs dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
+                                        </label>
+                                    </div>
+                                    @error('form_price_per_km_cents') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                                @endif
                             </td>
                             <td class="px-4 py-3 align-middle text-right">
                                 <div class="flex justify-end gap-2">
@@ -185,6 +224,23 @@
                                 >
                                     {{ $zp->is_active ? 'Actif' : 'Inactif' }}
                                 </button>
+
+                                {{-- Un tarif au kilomètre actif doit se VOIR sans ouvrir l'édition :
+                                     c'est lui qui décide du montant final sur une course. --}}
+                                @if ($zp->distance_pricing_enabled)
+                                    <span class="mt-1 block text-[11px] text-emerald-700 dark:text-emerald-400">
+                                        {{ number_format($zp->pickup_fee_cents / 100, 2) }} €
+                                        @if ($zp->price_per_km_cents !== null)
+                                            + {{ number_format($zp->price_per_km_cents / 100, 2) }} €/km
+                                        @endif
+                                        @if ($zp->price_per_minute_cents !== null)
+                                            + {{ number_format($zp->price_per_minute_cents / 100, 2) }} €/min
+                                        @endif
+                                        @if ($zp->included_km > 0)
+                                            ({{ $zp->included_km }} km inclus)
+                                        @endif
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-4 py-3 align-middle text-right">
                                 <div class="flex justify-end gap-2">

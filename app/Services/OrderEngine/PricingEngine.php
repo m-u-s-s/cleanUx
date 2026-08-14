@@ -108,6 +108,22 @@ class PricingEngine
             }
         }
 
+        /*
+         * LA DISTANCE, quand — et SEULEMENT quand — la zone a ouvert le tarif au kilomètre.
+         *
+         * Elle entre AVANT les multiplicateurs, comme les autres composantes de somme : c'est ce
+         * qui fait qu'une course de nuit majore aussi ses kilomètres, et non la seule prise en
+         * charge. Le drapeau est éteint par défaut sur toutes les lignes existantes : la sortie du
+         * moteur reste donc identique au centime pour tous les métiers d'aujourd'hui.
+         */
+        $distance = $this->distanceImpact($context);
+
+        if ($distance !== null) {
+            $sumMin += $distance['cents'];
+            $sumMax += $distance['cents'];
+            $lines[] = $this->line('_distance', 'Trajet', $distance['detail'], $distance['cents'], $distance['cents']);
+        }
+
         $modeMultiplier = $mode === OrderMode::ASAP
             ? (float) Config::get('order_engine.asap_multiplier', 1.30)
             : 1.0;
@@ -211,6 +227,72 @@ class PricingEngine
         }
 
         return $applicable;
+    }
+
+    /**
+     * Le prix du TRAJET : prise en charge, kilomètres au-delà du forfait, minutes le cas échéant.
+     *
+     * Rend `null` — et non zéro — quand la tarification à la distance n'est pas ouverte sur ce
+     * couple (métier, zone), ou quand aucune route n'a été mesurée. La différence n'est pas
+     * cosmétique : zéro produirait une ligne « Trajet — 0,00 € » sur le devis d'un ménage, et
+     * ferait douter le client de ce qu'il lit.
+     *
+     * IL N'Y A PAS DE FOURCHETTE ICI. La distance est MESURÉE, pas estimée à partir d'une réponse
+     * incertaine : min et max sont donc le même nombre, et l'élargir donnerait une fausse
+     * impression d'approximation là où le chiffre est exact.
+     *
+     * @param  array<string, mixed>  $context
+     * @return array{cents: int, detail: string}|null
+     */
+    protected function distanceImpact(array $context): ?array
+    {
+        if (! ($context['distance_pricing_enabled'] ?? false)) {
+            return null;
+        }
+
+        $metres = $context['route_distance_m'] ?? null;
+
+        if ($metres === null) {
+            return null;
+        }
+
+        $parKm = $context['price_per_km_cents'] ?? null;
+        $parMinute = $context['price_per_minute_cents'] ?? null;
+        $priseEnCharge = (int) ($context['pickup_fee_cents'] ?? 0);
+        $inclus = (int) ($context['included_km'] ?? 0);
+
+        if ($parKm === null && $parMinute === null && $priseEnCharge === 0) {
+            return null;
+        }
+
+        $km = $metres / 1000;
+        // Les kilomètres compris dans la prise en charge ne se refacturent pas : sans eux, une
+        // course de huit cents mètres se paierait au compteur, pour un montant qui ne couvre même
+        // pas le déplacement du conducteur.
+        $kmFactures = max(0.0, $km - $inclus);
+
+        $cents = $priseEnCharge + (int) round($kmFactures * (int) ($parKm ?? 0));
+        $details = [];
+
+        if ($priseEnCharge > 0) {
+            $details[] = sprintf('prise en charge %s €', number_format($priseEnCharge / 100, 2, ',', ' '));
+        }
+
+        if ($parKm !== null) {
+            $details[] = sprintf(
+                '%s km × %s €',
+                str_replace('.', ',', (string) round($kmFactures, 1)),
+                number_format($parKm / 100, 2, ',', ' '),
+            );
+        }
+
+        if ($parMinute !== null && ($context['route_duration_s'] ?? null) !== null) {
+            $minutes = (int) ceil(((int) $context['route_duration_s']) / 60);
+            $cents += (int) round($minutes * $parMinute);
+            $details[] = sprintf('%d min × %s €', $minutes, number_format($parMinute / 100, 2, ',', ' '));
+        }
+
+        return ['cents' => $cents, 'detail' => implode(' · ', $details)];
     }
 
     /**

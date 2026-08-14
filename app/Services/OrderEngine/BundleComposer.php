@@ -292,7 +292,7 @@ class BundleComposer
                     // LA MÊME GRILLE QU'À L'ÉCRAN. C'est ce devis-ci qui est FIGÉ à la
                     // confirmation : le calculer sans la zone donnerait au client un prix affiché
                     // et un prix facturé différents.
-                    ['mode' => $draft->mode] + $resolver->pricingContext((int) $item->trade_id, $zoneId),
+                    ['mode' => $draft->mode] + $resolver->pricingContext((int) $item->trade_id, $zoneId, $draft),
                 ),
             ];
         });

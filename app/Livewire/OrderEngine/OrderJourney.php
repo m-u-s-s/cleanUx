@@ -12,6 +12,7 @@ use App\Models\Sector;
 use App\Models\Trade;
 use App\Services\Ai\OrderIntentInterpreter;
 use App\Services\Client\ClientPlaceService;
+use App\Services\Geo\RoutingService;
 use App\Services\GeolocationV2\AddressSuggestion;
 use App\Services\GeolocationV2\GeocodingService;
 use App\Services\OrderEngine\AvailabilitySnapshot;
@@ -24,7 +25,9 @@ use App\Services\OrderEngine\ProviderAvailabilityLookup;
 use App\Services\OrderEngine\ProviderShortlist;
 use App\Services\OrderEngine\SlotFinder;
 use App\Services\OrderEngine\ZonePricingResolver;
+use App\Support\Domain\LocationRole;
 use App\Support\Domain\OrderMode;
+use App\Support\Domain\TradeRouteRules;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -782,7 +785,7 @@ class OrderJourney extends Component
         // Le prix de la ZONE, quand elle est connue. Sans ce contexte, la grille locale existait en
         // base et n'atteignait jamais le calcul : le client de Bruxelles payait le tarif de base.
         $context = ['mode' => $this->mode]
-            + app(ZonePricingResolver::class)->pricingContext((int) $trade->id, $this->serviceZoneId);
+            + app(ZonePricingResolver::class)->pricingContext((int) $trade->id, $this->serviceZoneId, $this->draft());
 
         return app(PricingEngine::class)->quoteItem($trade, $this->questions, $this->answers, $context);
     }
@@ -1685,8 +1688,160 @@ class OrderJourney extends Component
     public function recordAnswer(string $code, mixed $value, bool $valid): void
     {
         $this->answers[$code] = $value;
+
+        // AVANT `persist()`, et l'ordre compte : le point de départ résout la zone, et c'est la
+        // zone qui décide de la grille tarifaire. Enregistrée après, la ligne serait chiffrée au
+        // tarif national puis corrigée au coup suivant — le client verrait deux prix.
+        $this->enregistrerLaLocalisation($code, $value);
+
         $this->persist();
         $this->refreshDerived();
+    }
+
+    // ─── Trajet : les deux points, et la route entre eux ─────────────────────────────────────
+
+    /**
+     * Ce métier décrit-il un trajet ?
+     *
+     * Lu par l'écran pour ne pas redemander l'adresse : sur un trajet, la question de DÉPART EST
+     * l'adresse d'intervention. La poser deux fois donnerait à croire qu'on en attend deux
+     * différentes.
+     */
+    #[Computed]
+    public function estUnTrajet(): bool
+    {
+        $trade = $this->trade;
+
+        return $trade !== null && TradeRouteRules::estUnTrajet($trade->loadMissing('questions'));
+    }
+
+    /**
+     * La route retenue pour cette commande, telle qu'on l'annonce au client.
+     *
+     * `null` tant que les deux points ne sont pas situés : on ne promet ni distance ni durée avant
+     * de pouvoir les mesurer.
+     *
+     * @return array{distance_km: float, duration_min: int|null, source: string|null, approximatif: bool}|null
+     */
+    #[Computed]
+    public function route(): ?array
+    {
+        $draft = $this->draft();
+
+        if ($draft->route_distance_m === null) {
+            return null;
+        }
+
+        return [
+            'distance_km' => round($draft->route_distance_m / 1000, 1),
+            'duration_min' => $draft->route_duration_s === null
+                ? null
+                : (int) ceil($draft->route_duration_s / 60),
+            'source' => $draft->route_source,
+            // Une ligne droite ne doit pas se faire passer pour un trajet routier : le dire permet
+            // à l'écran de nuancer « environ » plutôt que d'annoncer une durée qu'on ne tiendra pas.
+            'approximatif' => $draft->route_source === RoutingService::SOURCE_STRAIGHT,
+        ];
+    }
+
+    /**
+     * Une réponse de localisation vient d'arriver : elle alimente la géographie de la commande.
+     *
+     * LE DÉPART ÉCRIT LES COLONNES D'ADRESSE QUI EXISTENT DÉJÀ. C'est le choix central de ce lot :
+     * zone, catalogue, preuve de disponibilité, dispatch de proximité et geofence continuent de
+     * lire exactement ce qu'ils lisaient, sans une ligne de modification. Le point de dépose, lui,
+     * va dans des colonnes qui portent son nom.
+     */
+    protected function enregistrerLaLocalisation(string $code, mixed $value): void
+    {
+        $question = $this->questions->firstWhere('code', $code);
+
+        if (! $question || ! $question->isLocation() || ! is_array($value)) {
+            return;
+        }
+
+        $lat = $value['lat'] ?? null;
+        $lng = $value['lng'] ?? null;
+
+        if ($lat === null || $lng === null) {
+            return;
+        }
+
+        if ($question->location_role === LocationRole::DROPOFF) {
+            $this->draft()->update([
+                'dropoff_address' => $value['label'] ?? null,
+                'dropoff_lat' => (float) $lat,
+                'dropoff_lng' => (float) $lng,
+                'dropoff_postal_code' => $value['postal_code'] ?? null,
+            ]);
+
+            $this->mesurerLaRoute();
+
+            return;
+        }
+
+        if ($question->location_role !== LocationRole::PICKUP) {
+            return;
+        }
+
+        $this->address = (string) ($value['label'] ?? $this->address);
+        $this->addressUnresolved = false;
+        $this->lat = (float) $lat;
+        $this->lng = (float) $lng;
+
+        $this->draft()->update([
+            'address' => $this->address ?: null,
+            'lat' => $this->lat,
+            'lng' => $this->lng,
+        ]);
+
+        // Le code postal de la réponse est une commodité : la zone, elle, se résout par le chemin
+        // unique déjà en place — trois résolutions séparées finiraient par diverger, et le prix
+        // dépendrait de la façon dont le client a saisi son adresse.
+        if (filled($value['postal_code'] ?? null)) {
+            $this->postalCode = (string) $value['postal_code'];
+        }
+
+        $this->resolveGeographyFromCoordinates($this->lat, $this->lng);
+        $this->mesurerLaRoute();
+    }
+
+    /**
+     * Mesure la route dès que les deux points sont connus, et l'écrit sur le panier.
+     *
+     * À LA COMMANDE, pas après : c'est ce qui permet d'annoncer un prix au kilomètre AVANT que le
+     * client valide. Un tarif découvert à l'arrivée est exactement ce qu'on reproche aux taxis.
+     *
+     * Soft-fail comme le géocodage : un fournisseur d'itinéraire en panne fait perdre une
+     * estimation de durée, jamais une commande.
+     */
+    protected function mesurerLaRoute(): void
+    {
+        $draft = $this->draft();
+
+        if ($draft->lat === null || $draft->lng === null
+            || $draft->dropoff_lat === null || $draft->dropoff_lng === null) {
+            return;
+        }
+
+        try {
+            $route = app(RoutingService::class)->route(
+                (float) $draft->lat,
+                (float) $draft->lng,
+                (float) $draft->dropoff_lat,
+                (float) $draft->dropoff_lng,
+            );
+
+            $draft->update([
+                'route_distance_m' => $route->distanceMeters,
+                'route_duration_s' => $route->durationSeconds,
+                'route_source' => $route->source,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('[order_engine] itinéraire indisponible', ['error' => $e->getMessage()]);
+        }
+
+        unset($this->route);
     }
 
     protected function persist(): void
@@ -1729,7 +1884,7 @@ class OrderJourney extends Component
             $this->quote, $this->lastChange, $this->availableModes, $this->availability, $this->steps, $this->allVisibleQuestions,
             $this->slots, $this->providerOptions, $this->readyToConfirm, $this->dayOptions,
             $this->timeline, $this->bundleSuggestions, $this->bundleQuote,
-            $this->addressSuggestions,
+            $this->addressSuggestions, $this->estUnTrajet, $this->route,
         );
     }
 

@@ -76,18 +76,36 @@ class ZonePricingResolver
      * de « l'activation et le prix sont la même ligne ». `surge_multiplier` s'applique ensuite,
      * comme les autres coefficients.
      *
-     * @return array{zone_multiplier: float, zone_base_cents: int|null, zone_min_cents: int|null, zone_max_cents: int|null}
+     * @param  OrderDraft|null  $draft  La commande, quand elle est connue : elle seule porte la
+     *                                  ROUTE mesurée, sans laquelle un tarif au kilomètre n'a rien
+     *                                  à multiplier. Facultative — les appelants qui n'en ont pas
+     *                                  (l'aperçu du constructeur de parcours, par exemple) obtiennent
+     *                                  le contexte de zone seul, exactement comme avant.
+     * @return array<string, mixed>
      */
-    public function pricingContext(int $tradeId, ?int $zoneId): array
+    public function pricingContext(int $tradeId, ?int $zoneId, ?OrderDraft $draft = null): array
     {
         $line = $this->lineFor($tradeId, $zoneId);
 
+        /*
+         * La route voyage AVEC le contexte plutôt que d'être relue par le moteur.
+         *
+         * Le moteur tarifaire ne connaît ni panier ni réservation : lui donner à chercher la
+         * distance quelque part le rattacherait à un schéma, et l'aperçu d'administration — qui
+         * calcule un prix sans aucune commande — cesserait de fonctionner.
+         */
+        $route = $draft === null ? [] : [
+            'route_distance_m' => $draft->route_distance_m,
+            'route_duration_s' => $draft->route_duration_s,
+        ];
+
         if (! $line) {
-            return [
+            return $route + [
                 'zone_multiplier' => 1.0,
                 'zone_base_cents' => null,
                 'zone_min_cents' => null,
                 'zone_max_cents' => null,
+                'distance_pricing_enabled' => false,
             ];
         }
 
@@ -99,11 +117,25 @@ class ZonePricingResolver
         $min = $line->getRawOriginal('min_price_cents');
         $max = $line->getRawOriginal('max_price_cents');
 
-        return [
+        /*
+         * Même précaution que pour le plancher : `price_per_km_cents` n'est PAS casté en entier sur
+         * le modèle, précisément pour que « aucun tarif au kilomètre » reste distinct de « zéro
+         * centime le kilomètre ». Le premier laisse le forfait décider, le second facturerait la
+         * distance gratuitement.
+         */
+        $parKm = $line->getRawOriginal('price_per_km_cents');
+        $parMinute = $line->getRawOriginal('price_per_minute_cents');
+
+        return $route + [
             'zone_multiplier' => (float) ($line->surge_multiplier ?: 1.0),
             'zone_base_cents' => (int) $line->base_rate_cents,
             'zone_min_cents' => $min === null ? null : (int) $min,
             'zone_max_cents' => $max === null ? null : (int) $max,
+            'distance_pricing_enabled' => (bool) $line->distance_pricing_enabled,
+            'pickup_fee_cents' => (int) $line->pickup_fee_cents,
+            'price_per_km_cents' => $parKm === null ? null : (int) $parKm,
+            'price_per_minute_cents' => $parMinute === null ? null : (int) $parMinute,
+            'included_km' => (int) $line->included_km,
         ];
     }
 

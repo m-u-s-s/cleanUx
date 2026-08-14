@@ -25,6 +25,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?string $beneficiary_phone
  * @property ?string $beneficiary_note
  * @property ?int $client_place_id
+ * @property ?string $dropoff_address
+ * @property ?float $dropoff_lat
+ * @property ?float $dropoff_lng
+ * @property ?string $dropoff_postal_code
+ * @property ?string $dropoff_place_id
+ * @property ?int $route_distance_m
+ * @property ?int $route_duration_s
+ * @property ?string $route_source
  */
 class OrderDraft extends Model
 {
@@ -36,6 +44,17 @@ class OrderDraft extends Model
         // La géographie résolue PENDANT le parcours : c'est elle qui donne au prix sa grille de
         // zone, et au dispatch un point de départ au lieu d'une adresse à redeviner.
         'postal_code', 'service_zone_id',
+        /*
+         * LE POINT D'ARRIVÉE, sur les seuls métiers de trajet.
+         *
+         * `address`/`lat`/`lng` ci-dessus restent le point de PRISE EN CHARGE — c'est-à-dire le lieu
+         * de l'intervention, celui qui résout la zone et fait partir le dispatch. Le point de dépose
+         * porte son propre nom : réutiliser les colonnes d'adresse pour lui ferait dire deux choses
+         * à une même donnée selon le métier.
+         */
+        'dropoff_address', 'dropoff_lat', 'dropoff_lng', 'dropoff_postal_code', 'dropoff_place_id',
+        // Mesurés à la commande, pour annoncer un prix au kilomètre AVANT que le client valide.
+        'route_distance_m', 'route_duration_s', 'route_source',
         'scheduled_at', 'asap_requested_at',
         'estimate_min_cents', 'estimate_max_cents', 'total_cents', 'currency',
         'client_notes', 'source',
@@ -54,6 +73,10 @@ class OrderDraft extends Model
     protected $casts = [
         'lat' => 'float',
         'lng' => 'float',
+        'dropoff_lat' => 'float',
+        'dropoff_lng' => 'float',
+        'route_distance_m' => 'integer',
+        'route_duration_s' => 'integer',
         'scheduled_at' => 'datetime',
         'asap_requested_at' => 'datetime',
         'converted_at' => 'datetime',

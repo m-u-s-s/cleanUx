@@ -199,6 +199,8 @@ class OrderDraftManager
         ] + app(ZonePricingResolver::class)->pricingContext(
             (int) $item->trade_id,
             $item->draft->service_zone_id ? (int) $item->draft->service_zone_id : null,
+            // Le panier porte la ROUTE : sans lui, un tarif au kilometre n'aurait rien a multiplier.
+            $item->draft,
         ));
 
         // Le montant de chaque ligne, indexé par code : c'est ce qui rend le devis explicable.
@@ -258,7 +260,7 @@ class OrderDraftManager
             $item->trade,
             $item->trade->questions()->with(['options.translations', 'conditions', 'translations'])->get(),
             $this->answersOf($item),
-            ['mode' => $draft->mode] + $resolver->pricingContext((int) $item->trade_id, $zoneId),
+            ['mode' => $draft->mode] + $resolver->pricingContext((int) $item->trade_id, $zoneId, $draft),
         ))->all();
 
         $order = $this->pricing->quoteOrder($breakdowns, $draft->mode);

@@ -10,10 +10,52 @@
     premier client qui attend.
 --}}
 <section class="rounded-2xl border border-slate-200 bg-white p-5" aria-labelledby="adresse-titre">
-    <h2 id="adresse-titre" class="text-lg font-semibold text-slate-900">Où intervenons-nous ?</h2>
+    <h2 id="adresse-titre" class="text-lg font-semibold text-slate-900">
+        {{ $this->estUnTrajet ? 'Votre trajet' : 'Où intervenons-nous ?' }}
+    </h2>
     <p class="mt-0.5 text-sm text-slate-500">
-        L’adresse nous sert à trouver les professionnels les plus proches.
+        {{ $this->estUnTrajet
+            ? 'Le départ et l’arrivée sont demandés dans le formulaire ci-dessus.'
+            : 'L’adresse nous sert à trouver les professionnels les plus proches.' }}
     </p>
+
+    {{--
+        SUR UN TRAJET, L'ADRESSE EST DÉJÀ POSÉE — c'est la question de DÉPART.
+
+        La redemander ici donnerait à croire qu'on en attend une seconde, différente, et le client
+        finirait par saisir deux lieux pour la même prise en charge. Ce bloc-ci ne montre donc que
+        le RÉSULTAT : les deux points et la route entre eux.
+    --}}
+    @if ($this->estUnTrajet)
+        <div class="mt-4 space-y-2">
+            <p class="flex items-start gap-2 text-sm text-slate-700">
+                <span aria-hidden="true" class="mt-0.5 text-slate-400">◎</span>
+                <span>{{ $address ?: 'Point de départ à renseigner ci-dessus.' }}</span>
+            </p>
+            <p class="flex items-start gap-2 text-sm text-slate-700">
+                <span aria-hidden="true" class="mt-0.5 text-slate-400">⚑</span>
+                <span>{{ $this->draft()->dropoff_address ?: 'Point d’arrivée à renseigner ci-dessus.' }}</span>
+            </p>
+
+            @if ($this->route)
+                {{-- La distance est annoncée AVANT le paiement : un tarif au kilomètre découvert à
+                     l'arrivée est exactement ce qu'on reproche aux taxis. --}}
+                <p class="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                    <span class="font-semibold tabular-nums">{{ str_replace('.', ',', (string) $this->route['distance_km']) }} km</span>
+                    @if ($this->route['duration_min'])
+                        · environ {{ $this->route['duration_min'] }} min de trajet
+                    @endif
+                    @if ($this->route['approximatif'])
+                        <span class="mt-1 block text-xs text-slate-500">
+                            Distance estimée à vol d’oiseau : le trajet réel sera un peu plus long.
+                        </span>
+                    @endif
+                </p>
+            @endif
+        </div>
+    @endif
+
+    @unless ($this->estUnTrajet)
 
     {{--
         LE CARNET DE LIEUX (E2), quand il y en a un.
@@ -104,7 +146,10 @@
             Nous n’avons pas pu vous localiser. Saisissez l’adresse ci-dessus, cela fonctionne aussi bien.
         </p>
     </div>
+    @endunless
 
+    {{-- La preuve de disponibilité vaut pour les DEUX parcours : elle se calcule sur le point de
+         prise en charge, que celui-ci vienne du champ ci-dessus ou de la question de départ. --}}
     <div id="adresse-etat" class="mt-3" aria-live="polite">
 
         <p wire:loading wire:target="address" class="text-sm text-slate-500">Recherche des professionnels…</p>

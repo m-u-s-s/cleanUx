@@ -14,6 +14,7 @@ use App\Support\Domain\BookingStatus;
 use App\Support\Domain\OrderDraftStatus;
 use App\Support\Domain\OrderMode;
 use App\Support\Domain\PaymentPlan;
+use App\Support\Domain\TradeRouteRules;
 use App\Support\HumanReference;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -201,21 +202,34 @@ class OrderConfirmationService
          * recherche partirait pour un service qu'on ne vend pas à cette adresse.
          */
         $zoneId = $draft->service_zone_id ? (int) $draft->service_zone_id : null;
+        $resolver = app(ZonePricingResolver::class);
 
-        if ($zoneId) {
-            $resolver = app(ZonePricingResolver::class);
+        foreach ($draft->items()->with('trade.questions')->get() as $item) {
+            if (! $item->trade) {
+                continue;
+            }
 
-            foreach ($draft->items()->with('trade')->get() as $item) {
-                if (! $item->trade) {
-                    continue;
-                }
+            if ($zoneId && ! $resolver->isOpen((int) $item->trade_id, $zoneId)) {
+                $blockers[] = sprintf(
+                    'Le service « %s » n’est pas encore disponible dans cette zone.',
+                    $item->trade->name,
+                );
+            }
 
-                if (! $resolver->isOpen((int) $item->trade_id, $zoneId)) {
-                    $blockers[] = sprintf(
-                        'Le service « %s » n’est pas encore disponible dans cette zone.',
-                        $item->trade->name,
-                    );
-                }
+            /*
+             * UN TRAJET SANS POINT D'ARRIVÉE N'EST PAS UNE COMMANDE SERVABLE.
+             *
+             * Sans lui, le prestataire accepterait une course dont personne ne sait où elle va : ni
+             * itinéraire à tracer, ni distance à facturer, et à la clôture aucun lieu où confronter
+             * sa position. Le refus est posé ICI, où il reste une décision à corriger, plutôt qu'au
+             * moment où quelqu'un attend déjà sur le trottoir.
+             */
+            if (TradeRouteRules::estUnTrajet($item->trade)
+                && ($draft->dropoff_lat === null || $draft->dropoff_lng === null)) {
+                $blockers[] = sprintf(
+                    'Indiquez le point d’arrivée pour « %s » : nous ne pouvons pas envoyer quelqu’un sans savoir où aller.',
+                    $item->trade->name,
+                );
             }
         }
 
@@ -339,6 +353,24 @@ class OrderConfirmationService
             'address' => $draft->address,
             'destination_lat' => $draft->lat,
             'destination_lng' => $draft->lng,
+            /*
+             * LE POINT D'ARRIVÉE SUIT LA RÉSERVATION — et c'est LUI qui en fait une course.
+             *
+             * `destination_lat/lng` ci-dessus reste le point A, le lieu de la prise en charge : le
+             * nom trompe, mais tout ce qui le lit (geofence, suivi, dispatch de proximité) désigne
+             * cet endroit-là. Le point de dépose porte son propre nom, et sa présence est ce que
+             * `Booking::estUneCourse()` interroge pour choisir le cycle de vie de la mission.
+             *
+             * La route est FIGÉE ICI, comme le devis : le catalogue peut changer demain, la
+             * distance facturée est celle qu'on a annoncée au client avant qu'il valide.
+             */
+            'dropoff_address' => $draft->dropoff_address,
+            'dropoff_lat' => $draft->dropoff_lat,
+            'dropoff_lng' => $draft->dropoff_lng,
+            'dropoff_postal_code' => $draft->dropoff_postal_code,
+            'route_distance_m' => $draft->route_distance_m,
+            'route_duration_s' => $draft->route_duration_s,
+            'route_source' => $draft->route_source,
             /*
              * LA GÉOGRAPHIE ET LE MÉTIER SUIVENT LA RÉSERVATION.
              *

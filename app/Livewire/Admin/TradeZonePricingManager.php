@@ -40,6 +40,24 @@ class TradeZonePricingManager extends Component
 
     public bool $form_is_active = true;
 
+    /*
+     * LE PRIX AU KILOMETRE — eteint par defaut, y compris ici.
+     *
+     * Ces champs ne s'appliquent qu'aux metiers de trajet : ailleurs, ils resteraient a zero sans
+     * rien changer. Les afficher partout est volontaire — un administrateur qui ouvre un metier de
+     * course dans une nouvelle zone doit trouver le reglage la ou il regle deja le tarif, pas sur
+     * un troisieme ecran.
+     */
+    public bool $form_distance_pricing_enabled = false;
+
+    public string $form_pickup_fee_cents = '0';
+
+    public string $form_price_per_km_cents = '';
+
+    public string $form_price_per_minute_cents = '';
+
+    public string $form_included_km = '0';
+
     // ── Add zone dropdown ──
     public ?int $addZoneId = null;
 
@@ -64,6 +82,17 @@ class TradeZonePricingManager extends Component
         $this->form_min_price_cents = $pricing->min_price_cents !== null ? (string) $pricing->min_price_cents : '';
         $this->form_max_price_cents = $pricing->max_price_cents !== null ? (string) $pricing->max_price_cents : '';
         $this->form_is_active = (bool) $pricing->is_active;
+        $this->form_distance_pricing_enabled = (bool) $pricing->distance_pricing_enabled;
+        $this->form_pickup_fee_cents = (string) $pricing->pickup_fee_cents;
+        // Chaine vide, pas zero : « aucun tarif au kilometre » et « zero centime le kilometre » ne
+        // disent pas la meme chose, et le second facturerait la distance gratuitement.
+        $this->form_price_per_km_cents = $pricing->getRawOriginal('price_per_km_cents') !== null
+            ? (string) $pricing->getRawOriginal('price_per_km_cents')
+            : '';
+        $this->form_price_per_minute_cents = $pricing->getRawOriginal('price_per_minute_cents') !== null
+            ? (string) $pricing->getRawOriginal('price_per_minute_cents')
+            : '';
+        $this->form_included_km = (string) $pricing->included_km;
     }
 
     public function cancelEdit(): void
@@ -80,6 +109,11 @@ class TradeZonePricingManager extends Component
             'form_min_price_cents' => ['nullable', 'integer', 'min:0', 'max:9999900'],
             'form_max_price_cents' => ['nullable', 'integer', 'min:0', 'max:9999900'],
             'form_is_active' => ['boolean'],
+            'form_distance_pricing_enabled' => ['boolean'],
+            'form_pickup_fee_cents' => ['nullable', 'integer', 'min:0', 'max:9999900'],
+            'form_price_per_km_cents' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'form_price_per_minute_cents' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'form_included_km' => ['nullable', 'integer', 'min:0', 'max:1000'],
         ]);
 
         $data = [
@@ -88,6 +122,11 @@ class TradeZonePricingManager extends Component
             'min_price_cents' => $this->form_min_price_cents !== '' ? (int) $this->form_min_price_cents : null,
             'max_price_cents' => $this->form_max_price_cents !== '' ? (int) $this->form_max_price_cents : null,
             'is_active' => $this->form_is_active,
+            'distance_pricing_enabled' => $this->form_distance_pricing_enabled,
+            'pickup_fee_cents' => $this->form_pickup_fee_cents !== '' ? (int) $this->form_pickup_fee_cents : 0,
+            'price_per_km_cents' => $this->form_price_per_km_cents !== '' ? (int) $this->form_price_per_km_cents : null,
+            'price_per_minute_cents' => $this->form_price_per_minute_cents !== '' ? (int) $this->form_price_per_minute_cents : null,
+            'included_km' => $this->form_included_km !== '' ? (int) $this->form_included_km : 0,
         ];
 
         $pricing = TradeZonePricing::findOrFail($this->editingId);
@@ -185,6 +224,11 @@ class TradeZonePricingManager extends Component
         $this->form_min_price_cents = '';
         $this->form_max_price_cents = '';
         $this->form_is_active = true;
+        $this->form_distance_pricing_enabled = false;
+        $this->form_pickup_fee_cents = '0';
+        $this->form_price_per_km_cents = '';
+        $this->form_price_per_minute_cents = '';
+        $this->form_included_km = '0';
         $this->resetErrorBag();
     }
 }

@@ -84,6 +84,14 @@ use Illuminate\Support\Facades\Schema;
  * @property string $devis_estime
  * @property string $destination_lat
  * @property string $destination_lng
+ * @property ?string $dropoff_address
+ * @property ?string $dropoff_lat
+ * @property ?string $dropoff_lng
+ * @property ?string $dropoff_postal_code
+ * @property ?string $dropoff_place_id
+ * @property ?int $route_distance_m
+ * @property ?int $route_duration_s
+ * @property ?string $route_source
  * @property int $estimated_duration_minutes
  * @property int $duree_estimee
  * @property int $surface_m2
@@ -183,8 +191,25 @@ class Booking extends Model
         'postal_code',
         'country',
         'address_components',
+        /*
+         * ⚠️ `destination_*` EST LE POINT A — le lieu de l'intervention, où le prestataire se rend.
+         * Sur une course, c'est le point de PRISE EN CHARGE. Le nom trompe ; tout ce qui lit ces
+         * colonnes (geofence, suivi, dispatch de proximité, preuve de présence) désigne cet
+         * endroit-là et pas un autre.
+         */
         'destination_lat',
         'destination_lng',
+
+        // Le point de DÉPOSE — renseigné sur les seules courses, et c'est lui qui les distingue.
+        'dropoff_address',
+        'dropoff_lat',
+        'dropoff_lng',
+        'dropoff_postal_code',
+        'dropoff_place_id',
+        // La route mesurée à la commande, figée avec la réservation.
+        'route_distance_m',
+        'route_duration_s',
+        'route_source',
 
         // Contact
         'contact_name',
@@ -374,10 +399,14 @@ class Booking extends Model
         'devis_estime' => 'decimal:2',
         'destination_lat' => 'decimal:7',
         'destination_lng' => 'decimal:7',
+        'dropoff_lat' => 'decimal:7',
+        'dropoff_lng' => 'decimal:7',
 
         // Entiers
         'estimated_duration_minutes' => 'integer',
         'duree_estimee' => 'integer',
+        'route_distance_m' => 'integer',
+        'route_duration_s' => 'integer',
         'surface_m2' => 'integer',
 
         // JSON / arrays
@@ -932,6 +961,22 @@ class Booking extends Model
             'on_route',
             'on_site',
         ], true);
+    }
+
+    /**
+     * CETTE RÉSERVATION EMMÈNE-T-ELLE QUELQU'UN D'UN POINT À UN AUTRE ?
+     *
+     * C'est le discriminant du second parcours mission — celui sans code de début ni de fin, qui se
+     * termine ailleurs qu'il n'a commencé. Il se lit sur la RÉSERVATION, jamais sur le catalogue :
+     * un métier peut cesser d'être un trajet demain, et une course déjà vendue ne doit pas changer
+     * de nature au milieu de son exécution. Ce qui a été commandé fait foi.
+     *
+     * Les COORDONNÉES font autorité, pas le libellé : sans elles, il n'y a ni itinéraire à tracer,
+     * ni lieu où confronter la position à la clôture — c'est-à-dire pas de course exécutable.
+     */
+    public function estUneCourse(): bool
+    {
+        return $this->dropoff_lat !== null && $this->dropoff_lng !== null;
     }
 
     public function isCancelled(): bool

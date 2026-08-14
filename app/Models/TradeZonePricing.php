@@ -23,6 +23,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $max_price_cents
  * @property bool $is_active
  * @property bool $asap_enabled
+ * @property bool $distance_pricing_enabled
+ * @property int $pickup_fee_cents
+ * @property int|null $price_per_km_cents
+ * @property int|null $price_per_minute_cents
+ * @property int $included_km
  * @property array|null $metadata
  */
 class TradeZonePricing extends Model
@@ -41,6 +46,16 @@ class TradeZonePricing extends Model
         'max_price_cents',
         'is_active',
         'asap_enabled',
+        /*
+         * LE PRIX AU KILOMETRE — meme ligne que l'activation, parce que c'est la meme nature de
+         * decision : ce metier est ouvert ICI, a ce tarif-la. Une course coute plus cher au
+         * kilometre en centre-ville qu'en peripherie, et personne ne devrait deployer pour le dire.
+         */
+        'distance_pricing_enabled',
+        'pickup_fee_cents',
+        'price_per_km_cents',
+        'price_per_minute_cents',
+        'included_km',
         'metadata',
     ];
 
@@ -51,6 +66,9 @@ class TradeZonePricing extends Model
         'max_price_cents' => 'integer',
         'is_active' => 'boolean',
         'asap_enabled' => 'boolean',
+        'distance_pricing_enabled' => 'boolean',
+        'pickup_fee_cents' => 'integer',
+        'included_km' => 'integer',
         'metadata' => 'array',
     ];
 
