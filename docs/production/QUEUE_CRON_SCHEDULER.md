@@ -156,6 +156,7 @@ job courant).
 | `gdpr:enforce-retention` | Quotidien 04:00 | Rétention légale non appliquée |
 | `gdpr:execute-erasures` | Quotidien 04:30 | Droit à l'oubli non exécuté |
 | `fleet:scan-expiring` | Quotidien 05:00 | Certificats/assurances véhicules expirés non signalés |
+| `provider:scan-expiring-documents` | Quotidien 05:15 | Permis/carte grise/assurance qui périment **sans prévenir** : le dispatch écarte le prestataire du jour au lendemain, dossier « tout vert » à l'écran |
 | `stripe:reconcile --scope=all --days=1` | Quotidien 05:30 | Écarts Stripe ↔ base non détectés |
 | `currencies:refresh` | Quotidien 06:00 | Taux de change figés (tous les prix convertis) |
 | `finance:sync-documents --reminders` | Quotidien 09:00 | Relances de factures impayées |
