@@ -83,6 +83,22 @@ class SharedTrackingService
             'status' => $session->status,
             'lat' => $session->last_lat !== null ? (float) $session->last_lat : null,
             'lng' => $session->last_lng !== null ? (float) $session->last_lng : null,
+            /*
+             * LA DESTINATION ET LE TRACÉ — pauvres, comme le reste de cette page.
+             *
+             * Ce sont des COORDONNÉES, pas une adresse : le destinataire voit vers où la voiture se
+             * dirige sans jamais lire une rue ni un numéro. C'est exactement ce que montre le lien
+             * de suivi d'un taxi, et c'est ce qui rend la page utile plutôt que rassurante en
+             * paroles.
+             *
+             * Elles viennent de la SESSION : sur une course, elle bascule d'elle-même vers le point
+             * de dépose quand le passager monte.
+             */
+            'destination' => [
+                'lat' => $session->destination_lat !== null ? (float) $session->destination_lat : null,
+                'lng' => $session->destination_lng !== null ? (float) $session->destination_lng : null,
+            ],
+            'route' => app(TripTrackingService::class)->routePayload($session),
             'eta_seconds' => $session->current_eta_seconds,
             'arrived_at' => $session->arrived_at?->toIso8601String(),
             'in_mission_at' => $session->in_mission_at?->toIso8601String(),

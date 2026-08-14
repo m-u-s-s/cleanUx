@@ -234,6 +234,9 @@
             lastLng: null,
             destinationLat: null,
             destinationLng: null,
+            /* Le tracé rendu par le serveur, ou `null` quand aucun fournisseur d'itinéraire
+               n'a répondu — auquel cas on retombe sur le segment droit. */
+            routePoints: null,
             lastRefreshAt: null,
 
             get arrivalSentence() {
@@ -339,6 +342,9 @@
                     this.lastLng = data.employee_position?.lng ?? null;
                     this.destinationLat = data.destination?.lat ?? null;
                     this.destinationLng = data.destination?.lng ?? null;
+                    // Le tracé réel, quand un fournisseur d'itinéraire a répondu. Sans lui, on
+                    // garde le segment droit — approximatif, mais plus utile que rien.
+                    this.routePoints = data.route?.points ?? null;
                     this.lastRefreshAt = new Date();
 
                     this.syncMap();
@@ -388,10 +394,20 @@
                 }
 
                 if (this.lastLat && this.lastLng && this.destinationLat && this.destinationLng) {
-                    const points = [
-                        [this.lastLat, this.lastLng],
-                        [this.destinationLat, this.destinationLng]
-                    ];
+                    /*
+                        LE VRAI TRAJET QUAND ON L'A, LE SEGMENT DROIT SINON.
+
+                        Ce trait reliait la voiture à sa destination en ligne droite. Sur une
+                        approche de trois rues, l'écart se voit à peine ; sur une course de quinze
+                        kilomètres, il traverse la ville en diagonale et ne ressemble à aucun
+                        itinéraire possible — le passager, lui, regarde la route par la fenêtre.
+                    */
+                    const points = (this.routePoints && this.routePoints.length > 1)
+                        ? this.routePoints.map(p => [p.lat, p.lng])
+                        : [
+                            [this.lastLat, this.lastLng],
+                            [this.destinationLat, this.destinationLng]
+                        ];
 
                     if (!this.line) {
                         this.line = L.polyline(points).addTo(this.map);
