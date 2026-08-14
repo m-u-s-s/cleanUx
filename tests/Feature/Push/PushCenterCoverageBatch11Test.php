@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Push\Providers\PushMockProvider;
 use App\Services\Push\PushProviderInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -118,15 +119,29 @@ class PushCenterCoverageBatch11Test extends TestCase
             'locale' => 'fr',
         ]);
 
-        Livewire::actingAs($admin)
-            ->test(PushCenter::class)
-            ->call('retry', $notif->id)
-            ->assertDispatched('toast');
+        /*
+         * L'HORLOGE EST FIGÉE, sinon ce test tombe une fois de temps en temps.
+         *
+         * La clé d'idempotence est bâtie sur `now()->timestamp` — côté code au moment du renvoi,
+         * côté test au moment de l'assertion. Quand la seconde change entre les deux, le test
+         * attend `retry:1:…585` là où la base porte `retry:1:…584`, et l'échec n'apprend rien sur
+         * le produit : il dit seulement que la suite a franchi une frontière de seconde.
+         */
+        Carbon::setTestNow(Carbon::now());
 
-        $this->assertDatabaseHas('push_notifications', [
-            'device_token_id' => $token->id,
-            'idempotency_key' => 'retry:'.$notif->id.':'.now()->timestamp,
-        ]);
+        try {
+            Livewire::actingAs($admin)
+                ->test(PushCenter::class)
+                ->call('retry', $notif->id)
+                ->assertDispatched('toast');
+
+            $this->assertDatabaseHas('push_notifications', [
+                'device_token_id' => $token->id,
+                'idempotency_key' => 'retry:'.$notif->id.':'.now()->timestamp,
+            ]);
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 
     public function test_retry_rejects_non_failed_status(): void
