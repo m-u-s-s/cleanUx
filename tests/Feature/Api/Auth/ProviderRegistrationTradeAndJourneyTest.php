@@ -35,10 +35,18 @@ class ProviderRegistrationTradeAndJourneyTest extends TestCase
         $progress = OnboardingProgress::where('user_id', $user->id)->firstOrFail();
 
         $this->assertSame(OnboardingProgress::STATUS_IN_PROGRESS, $progress->status);
+        /*
+         * SIX depuis l'ajout de la déclaration de véhicule.
+         *
+         * L'étape est dans le parcours de TOUT LE MONDE — le parcours est unique et partagé — et
+         * son validateur passe trivialement quand aucun métier déclaré n'exige de véhicule. Fabriquer
+         * un second parcours « chauffeur » aurait donné deux suites d'étapes à tenir à jour, dont
+         * l'une finirait par oublier une exigence que l'autre applique.
+         */
         $this->assertSame(
-            5,
+            6,
             $progress->completions()->count(),
-            'Les cinq vérifications obligatoires doivent être ouvertes dès la création du compte.'
+            'Les six vérifications obligatoires doivent être ouvertes dès la création du compte.'
         );
     }
 

@@ -44,6 +44,15 @@ class ReferencePlatformSeeder extends Seeder
              * APRÈS le catalogue et les zones : elle est le produit cartésien des deux.
              */
             TradeZonePricingSeeder::class,
+            /*
+             * LE MÉTIER DE COURSE — point A vers point B.
+             *
+             * APRÈS la grille : il ouvre lui-même ses lignes (métier, zone) avec un tarif au
+             * kilomètre, ce que la grille générique ne sait pas faire. Ajout pur : aucun métier
+             * existant n'est touché, et sans lui tout le parcours de trajet n'existerait qu'en
+             * tests — le piège maison d'un module complet dont personne ne crée les lignes.
+             */
+            CourseCatalogSeeder::class,
         ]);
 
         $this->command?->info('✅ Référentiel plateforme chargé (géographie, trades, services multi-métiers, modules, zones, paramètres, parcours prestataire, catalogue de commande, grille métier × zone).');

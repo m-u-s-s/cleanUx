@@ -191,6 +191,13 @@ return [
         ['key' => 'employe:employe.disputes', 'label' => 'Mes litiges', 'icon' => '⚠️', 'route' => 'employe.disputes', 'context' => 'employe', 'category' => 'qualite', 'primary' => false],
         ['key' => 'employe:employe.incident', 'label' => 'Incident', 'icon' => '⚠️', 'route' => 'employe.incident', 'context' => 'employe', 'category' => 'qualite', 'primary' => false],
         ['key' => 'employe:employe.kyc', 'label' => 'KYC / Identité', 'icon' => '🛡️', 'route' => 'employe.kyc', 'context' => 'employe', 'category' => 'conformite', 'primary' => false],
+        /*
+         * Distinct de « KYC / Identité » juste au-dessus, et il faut que ça se voie : l'un vérifie
+         * QUI vous êtes, l'autre CE QUE vous avez le droit de conduire. Les fondre ferait chercher
+         * un permis dans un écran qui parle de carte d'identité — et un prestataire qui ne trouve
+         * pas où déposer sa pièce ne la dépose pas.
+         */
+        ['key' => 'employe:employe.driving', 'label' => 'Conduite et véhicule', 'icon' => '🚗', 'route' => 'employe.driving', 'context' => 'employe', 'category' => 'conformite', 'primary' => false],
         ['key' => 'employe:employe.validation.multiple', 'label' => 'Validation multiple', 'icon' => '✅', 'route' => 'employe.validation.multiple', 'context' => 'employe', 'category' => 'conformite', 'primary' => false],
         ['key' => 'employe:employe.badges', 'label' => 'Mes badges', 'icon' => '🏆', 'route' => 'employe.badges', 'context' => 'employe', 'category' => 'croissance', 'primary' => false],
         // « Ce que je fais, et où » : les deux tables que lit la requête candidate du dispatch.

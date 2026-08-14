@@ -18,6 +18,16 @@ const TYPES = [
   { valeur: 'counter', libelle: 'Compteur' },
   { valeur: 'surface', libelle: 'Surface' },
   { valeur: 'text', libelle: 'Texte' },
+  /*
+   * LES DEUX LOCALISATIONS QUI FONT UN TRAJET.
+   *
+   * Un parcours qui pose un départ ET une arrivée bascule le métier entier : distance calculée à la
+   * commande, mission sans code, permis de conduire exigé du prestataire. Le laisser au web
+   * signifierait qu'un métier de transport créé en déplacement part sans ses règles — et que
+   * personne ne s'en aperçoive avant qu'un conducteur sans permis reçoive une course.
+   */
+  { valeur: 'location:pickup', libelle: 'Départ (carte)' },
+  { valeur: 'location:dropoff', libelle: 'Arrivée (carte)' },
 ] as const;
 
 /**
@@ -78,6 +88,15 @@ export function JourneyBuilderScreen() {
       return;
     }
 
+    /*
+     * Le rôle d'une localisation voyage DANS le choix de type, puis se sépare ici.
+     *
+     * Deux listes — un type, puis un rôle — feraient deux gestes pour une seule décision, et le
+     * second serait oublié : une localisation sans rôle ne décrit rien, et le métier ne
+     * basculerait pas en trajet sans que rien ne l'explique.
+     */
+    const [type, role] = nouveauType.split(':');
+
     agir.mutate({
       type: 'question.create',
       values: {
@@ -85,7 +104,8 @@ export function JourneyBuilderScreen() {
         // Le code se déduit du libellé : c'est un identifiant technique, et le demander à qui écrit
         // une question l'oblige à inventer une convention.
         code: label.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 60) || 'question',
-        type: nouveauType,
+        type,
+        ...(role ? { location_role: role } : {}),
       },
     });
 
@@ -116,6 +136,20 @@ export function JourneyBuilderScreen() {
             : 'Ce parcours n’est pas encore publiable — il manque des éléments.'}
         </Text>
       </View>
+
+      {/*
+        Un parcours à deux localisations ne change pas qu'un formulaire : il change le cycle de vie
+        de la mission, les documents exigés du prestataire et le calcul du prix. L'écrire ici évite
+        qu'un administrateur bascule tout cela sans le savoir.
+      */}
+      {data?.trade.is_route_service ? (
+        <View style={[styles.verdict, styles.verdictOk]}>
+          <Text style={styles.verdictTexte} testID="verdict-trajet">
+            Service de trajet : départ et arrivée posés. La mission se déroulera sans code, et le
+            prestataire devra fournir son permis de conduire.
+          </Text>
+        </View>
+      ) : null}
 
       <View style={styles.ajout}>
         <TextInput

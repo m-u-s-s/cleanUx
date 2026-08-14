@@ -17,6 +17,15 @@ export interface JourneyQuestion {
   label: string;
   help_text: string | null;
   type: string;
+  /**
+   * Départ ou arrivée, pour les seules questions de localisation.
+   *
+   * C'est de ce champ que se déduit « ce métier est un trajet » — et donc la mission sans code, la
+   * distance calculée à la commande et le permis exigé du prestataire. La console doit pouvoir le
+   * lire, sans quoi elle afficherait deux questions identiques là où l'une emmène et l'autre
+   * ramène.
+   */
+  location_role?: string | null;
   is_required: boolean;
   sort_order: number;
   pricing: Record<string, unknown> | null;
@@ -24,7 +33,20 @@ export interface JourneyQuestion {
 }
 
 export interface Journey {
-  trade: { id: number; name: string; slug: string };
+  trade: {
+    id: number;
+    name: string;
+    slug: string;
+    /**
+     * Ce parcours décrit-il DÉJÀ un trajet complet ?
+     *
+     * Le verdict vient du serveur, comme celui de publication : le recalculer côté mobile
+     * donnerait une seconde règle, et le jour où elles divergeraient, l'écran annoncerait un
+     * basculement qui n'a pas eu lieu.
+     */
+    is_route_service?: boolean;
+    taxi_rules?: boolean;
+  };
   data: JourneyQuestion[];
   publication: { can_publish: boolean; issues: unknown };
 }

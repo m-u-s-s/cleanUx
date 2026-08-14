@@ -26,6 +26,25 @@ class TradeUser extends Pivot
 {
     protected $table = 'trade_user';
 
+    /**
+     * Les deux clés sont déclarées, et pas seulement les attributs « métier ».
+     *
+     * `attach()` les pose lui-même sans passer par l'affectation de masse, si bien qu'un pivot sans
+     * `$fillable` fonctionne — jusqu'au jour où quelqu'un écrit `TradeUser::create([...])` et
+     * découvre une violation de contrainte NOT NULL. Le garde-fou de dérive de schéma du dépôt le
+     * signale précisément pour cette raison.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'user_id',
+        'trade_id',
+        'is_primary',
+        'proficiency',
+        'notes',
+        'created_by',
+    ];
+
     protected $casts = [
         'is_primary' => 'boolean',
     ];

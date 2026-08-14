@@ -29,7 +29,8 @@
             qu'il doit trouver la réponse, pas dans un écran de réglages qu'il n'a aucune raison
             d'ouvrir.
         --}}
-        @livewire('provider.provider-driving-banner')
+        <livewire:provider.provider-driving-banner />
+
 
         @include('livewire.employe.dashboard.hero')
 
