@@ -7,6 +7,7 @@ use App\Models\MissionAssignment;
 use App\Models\MissionChecklistItem;
 use App\Models\MissionMedia;
 use App\Models\User;
+use App\Services\Missions\MissionChecklistService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -36,7 +37,16 @@ class MissionExecutionBoardCoverageBatch10Test extends TestCase
         $this->assertGreaterThan(0, MissionChecklistItem::query()->count());
     }
 
-    public function test_toggle_checklist_item_marks_completed_then_pending(): void
+    /**
+     * Ce test figeait `completed` / `pending` — c'est-à-dire exactement le défaut.
+     *
+     * La colonne déclare son vocabulaire dans sa propre migration (« todo, done ») et c'est `done`
+     * que lit la porte de clôture. Cet écran écrivait `completed` : un prestataire pouvait cocher
+     * ses six tâches, lire 100 %, et ne jamais pouvoir terminer sa mission. Le test passait au vert
+     * parce qu'il vérifiait que l'écran écrit ce que l'écran écrit, sans jamais demander si
+     * quelqu'un d'autre le comprenait.
+     */
+    public function test_toggle_checklist_item_marks_done_then_todo(): void
     {
         $scenario = $this->createMissionPortalContext(['status' => 'assigned']);
         $this->actingAs($scenario['employee']);
@@ -53,7 +63,7 @@ class MissionExecutionBoardCoverageBatch10Test extends TestCase
 
         $this->assertDatabaseHas('mission_checklist_items', [
             'id' => $item->id,
-            'status' => 'completed',
+            'status' => MissionChecklistService::FAITE,
             'completed_by_user_id' => $scenario['employee']->id,
         ]);
 
@@ -61,7 +71,7 @@ class MissionExecutionBoardCoverageBatch10Test extends TestCase
 
         $this->assertDatabaseHas('mission_checklist_items', [
             'id' => $item->id,
-            'status' => 'pending',
+            'status' => MissionChecklistService::A_FAIRE,
             'completed_by_user_id' => null,
         ]);
     }

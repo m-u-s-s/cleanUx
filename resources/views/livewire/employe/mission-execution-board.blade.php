@@ -29,13 +29,15 @@
                         type="button"
                         wire:click="toggleChecklistItem({{ $item->id }})"
                         class="flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left
-                            {{ $item->status === 'completed'
+                            {{ $item->status === \App\Services\Missions\MissionChecklistService::FAITE
                                 ? 'border-emerald-200 bg-emerald-50'
                                 : 'border-slate-200 bg-white' }}"
                     >
                         <span class="text-sm font-medium text-slate-800">{{ $item->label }}</span>
-                        <span class="text-xs font-semibold {{ $item->status === 'completed' ? 'text-emerald-700' : 'text-slate-500' }}">
-                            {{ $item->status === 'completed' ? 'Fait' : 'À faire' }}
+                        {{-- « Fait » doit désigner LE MÊME état que celui qui ouvre la clôture, sinon
+                             l'écran affiche six tâches vertes et la mission refuse de se terminer. --}}
+                        <span class="text-xs font-semibold {{ $item->status === \App\Services\Missions\MissionChecklistService::FAITE ? 'text-emerald-700' : 'text-slate-500' }}">
+                            {{ $item->status === \App\Services\Missions\MissionChecklistService::FAITE ? 'Fait' : 'À faire' }}
                         </span>
                     </button>
                 @endforeach

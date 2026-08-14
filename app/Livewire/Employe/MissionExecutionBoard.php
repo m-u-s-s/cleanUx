@@ -48,10 +48,13 @@ class MissionExecutionBoard extends Component
             ->whereHas('checklist', fn ($q) => $q->where('mission_id', $this->mission->id))
             ->findOrFail($itemId);
 
-        $completed = $item->status === 'completed';
+        // `done` / `todo` : le vocabulaire de la colonne, et celui que lit la porte de clôture.
+        // Cet écran écrivait `completed`, que personne ne reconnaît — cocher toutes les tâches
+        // laissait donc la mission impossible à terminer. {@see MissionChecklistService}
+        $completed = $item->status === MissionChecklistService::FAITE;
 
         $item->update([
-            'status' => $completed ? 'pending' : 'completed',
+            'status' => $completed ? MissionChecklistService::A_FAIRE : MissionChecklistService::FAITE,
             'completed_by_user_id' => $completed ? null : Auth::id(),
             'completed_at' => $completed ? null : now(),
         ]);

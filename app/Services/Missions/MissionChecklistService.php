@@ -8,9 +8,37 @@ use App\Models\MissionChecklistItem;
 
 class MissionChecklistService
 {
-    public function ensureChecklist(Mission $mission): MissionChecklist
+    /**
+     * LE VOCABULAIRE DE `mission_checklist_items.status`, écrit une fois pour toutes.
+     *
+     * La colonne le déclare dans sa propre migration — « todo, done » — et c'est `done` que la
+     * porte de clôture attend ({@see MissionLifecycleService::assertRequiredChecklistCompleted()}).
+     * Ce service écrivait `pending`, l'écran terrain basculait vers `completed`, et la porte ne
+     * reconnaissait ni l'un ni l'autre : cocher toutes les tâches laissait la mission bloquée,
+     * avec un avancement à 100 % affiché juste à côté du refus.
+     */
+    public const A_FAIRE = 'todo';
+
+    public const FAITE = 'done';
+
+    /**
+     * La checklist d'une mission — ou AUCUNE, quand la mission n'en appelle pas.
+     *
+     * UNE COURSE N'A PAS DE CHECKLIST DE MÉNAGE. Sans service au catalogue, le gabarit par défaut
+     * s'appliquait, et un chauffeur arrivé à destination devait cocher « Nettoyer surfaces clés »
+     * pour terminer. Comme ces tâches sont obligatoires, la course ne se terminait JAMAIS : ni
+     * encaissement, ni avis client, et un prestataire qui reste « occupé » indéfiniment.
+     *
+     * Le refus vit ici, pas chez les appelants : les deux qui existent créeraient sinon chacun la
+     * leur, et le troisième qu'on ajoutera un jour n'y penserait pas.
+     */
+    public function ensureChecklist(Mission $mission): ?MissionChecklist
     {
-        $mission->loadMissing('serviceCatalog');
+        $mission->loadMissing(['serviceCatalog', 'booking']);
+
+        if ($mission->booking?->estUneCourse()) {
+            return null;
+        }
 
         $template = $this->resolveTemplate($mission);
 
@@ -31,7 +59,7 @@ class MissionChecklistService
                     'label' => $label,
                     'item_type' => 'checkbox',
                     'is_required' => true,
-                    'status' => 'pending',
+                    'status' => self::A_FAIRE,
                 ]);
             }
         }
@@ -42,7 +70,9 @@ class MissionChecklistService
     public function refreshProgress(MissionChecklist $checklist): MissionChecklist
     {
         $total = $checklist->items()->count();
-        $done = $checklist->items()->where('status', 'completed')->count();
+        // `done`, comme la porte de clôture : un avancement qui compte autre chose annonce 100 %
+        // pendant que la clôture refuse, et c'est le refus que le prestataire croit faux.
+        $done = $checklist->items()->where('status', self::FAITE)->count();
 
         $rate = $total > 0 ? (int) round(($done / $total) * 100) : 0;
 
