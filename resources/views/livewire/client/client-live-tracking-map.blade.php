@@ -96,6 +96,15 @@
         providerMarker: null,
         destMarker: null,
         trailLine: null,
+        /*
+         * LA ROUTE PRÉVUE, distincte de la TRACE PARCOURUE.
+         *
+         * `trailLine` dit d'où l'on vient ; `routeLine` dit où l'on va. Les confondre ferait
+         * disparaître l'itinéraire à chaque rafraîchissement de la trace — et sur une course, c'est
+         * justement ce trait-là qui rassure le passager assis dans la voiture.
+         */
+        routeLine: null,
+        dropoffMarker: null,
         status: null,
         etaMin: null,
         speedKmh: null,
@@ -159,6 +168,26 @@
                 if (!data) return;
                 this.status = data.status;
                 this.etaMin = data.eta_minutes;
+
+                // Le tracé est FIGÉ pour la session : on le pose une fois et on n'y revient pas.
+                // Le redessiner à chaque sondage ferait clignoter la carte toutes les 15 secondes.
+                if (!this.routeLine && data.route?.points?.length >= 2) {
+                    this.routeLine = L.polyline(
+                        data.route.points.map(p => [p.lat, p.lng]),
+                        { color: '#0f172a', weight: 5, opacity: 0.55, dashArray: data.route.source === 'straight_line' ? '8 8' : null },
+                    ).addTo(this.map);
+                }
+
+                // La destination de la session courante peut être le point de DÉPOSE : sur une
+                // course, elle change au moment où le client monte. Le marqueur suit.
+                if (data.destination?.lat && data.destination?.lng) {
+                    const dest = [data.destination.lat, data.destination.lng];
+                    if (!this.dropoffMarker) {
+                        this.dropoffMarker = L.marker(dest, { title: 'Destination' }).addTo(this.map).bindPopup('⚑ Destination');
+                    } else {
+                        this.dropoffMarker.setLatLng(dest);
+                    }
+                }
                 this.lastPing = data.last_ping_at ? new Date(data.last_ping_at).toLocaleTimeString() : null;
                 this.speedKmh = data.provider?.speed_mps !== null ? Math.round((data.provider.speed_mps || 0) * 3.6) : null;
 

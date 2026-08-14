@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
@@ -6,6 +6,9 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen, Button, Badge } from '@/ui';
 import { useMissionDetail } from '@/missions';
 import { useGpsWatcher, useStartTracking, useMarkInMission, haversineMeters, formatDistance } from '@/tracking';
+import type { TrackingSession } from '@/tracking/hooks';
+import { OsmMap } from '@/maps';
+import type { OsmMarker } from '@/maps';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
@@ -34,6 +37,7 @@ export function TrackingScreen({ route }: Props) {
 
   const startTracking = useStartTracking(bookingId);
   const [sessionId, setSessionId] = useState<number | null>(null);
+  const [session, setSession] = useState<TrackingSession | null>(null);
   const markInMission = useMarkInMission(sessionId);
   const [currentPos, setCurrentPos] = useState<Position | null>(null);
   const [distanceMeters, setDistanceMeters] = useState<number | null>(null);
@@ -42,9 +46,39 @@ export function TrackingScreen({ route }: Props) {
 
   useEffect(() => {
     startTracking.mutate(undefined, {
-      onSuccess: (session) => setSessionId(session.id),
+      onSuccess: (ouverte) => {
+        setSessionId(ouverte.id);
+        setSession(ouverte);
+      },
     });
   }, []);
+
+  /*
+   * Le tracé et la destination viennent de la SESSION quand elle les porte, de la mission sinon.
+   *
+   * L'ordre compte : sur une course, la session sait que la destination est devenue le point de
+   * dépose, alors que la mission continue de désigner le lieu de prise en charge. Lire la mission
+   * d'abord afficherait un drapeau à l'endroit qu'on vient de quitter.
+   */
+  const destinationMarker: OsmMarker | null = useMemo(() => {
+    const lat = session?.destination?.lat ?? mission?.latitude ?? null;
+    const lng = session?.destination?.lng ?? mission?.longitude ?? null;
+
+    if (lat === null || lng === null) return null;
+
+    return {
+      id: 1,
+      latitude: Number(lat),
+      longitude: Number(lng),
+      title: 'Destination',
+      subtitle: mission ? `${mission.address}, ${mission.city}` : null,
+    };
+  }, [session, mission]);
+
+  const routeTrail = useMemo(
+    () => (session?.route?.points ?? []).map((p) => ({ latitude: p.lat, longitude: p.lng })),
+    [session],
+  );
 
   const updateDistance = useCallback(
     (pos: Position) => {
@@ -127,13 +161,27 @@ export function TrackingScreen({ route }: Props) {
         </View>
       )}
 
-      {/* Map placeholder — real MapView requires expo-maps or react-native-maps */}
-      <View style={styles.mapPlaceholder}>
-        <Text style={styles.mapPlaceholderText}>
-          {currentPos
-            ? `Position: ${currentPos.latitude.toFixed(5)}, ${currentPos.longitude.toFixed(5)}`
-            : 'Acquisition GPS...'}
-        </Text>
+      {/*
+        LA CARTE, ENFIN.
+
+        Cet écran affichait deux nombres à cinq décimales là où un conducteur attend un trait qui
+        lui dit où aller. `OsmMap` est déjà partagé avec l'application cliente : tuiles
+        OpenStreetMap, aucune clé à facturer, et il sait tracer une polyligne — ce qui est
+        exactement ce qu'il fallait pour montrer la route vers le point d'arrivée.
+
+        La destination vient de la SESSION, pas de la mission : sur une course, elle bascule du
+        point de prise en charge vers le point de dépose au moment où le client monte, et c'est ce
+        mouvement-là qu'il faut suivre.
+      */}
+      <View style={styles.mapFrame}>
+        <OsmMap
+          markers={destinationMarker ? [destinationMarker] : []}
+          position={currentPos ? { latitude: currentPos.latitude, longitude: currentPos.longitude } : null}
+          trail={routeTrail}
+          fallbackCenter={{ latitude: 50.8467, longitude: 4.3525, zoom: 12 }}
+          onMarkerPress={() => {}}
+          testID="tracking-map"
+        />
       </View>
 
       {/* Stats row */}
@@ -204,21 +252,18 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     color: t.text,
   },
   missionService: { fontSize: typography.fontSize.sm, color: colors.brand[600], marginTop: 2 },
-  mapPlaceholder: {
-    height: 200,
-    backgroundColor: t.inputBg,
+  /*
+   * `overflow: hidden` avec un rayon : sans lui, les tuiles de la carte débordent des coins
+   * arrondis sur Android, et le cadre paraît cassé alors qu'il ne l'est pas.
+   */
+  mapFrame: {
+    height: 240,
     borderRadius: radius.md,
-    justifyContent: 'center',
-    alignItems: 'center',
+    overflow: 'hidden',
     marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: t.border,
-  },
-  mapPlaceholderText: {
-    fontSize: typography.fontSize.xs,
-    color: t.textSecondary,
-    textAlign: 'center',
-    paddingHorizontal: spacing.md,
+    backgroundColor: t.inputBg,
   },
   statsRow: {
     flexDirection: 'row',

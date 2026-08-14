@@ -22,11 +22,25 @@ export interface ApiTrackingPoint {
   at: string;
 }
 
+/**
+ * Le tracé à afficher : par où l'on passe, et non seulement d'où l'on vient.
+ *
+ * À distinguer de la TRACE (`/trail`), qui est le chemin déjà parcouru. Sur une course, ce
+ * tracé-ci est ce qui rassure le passager assis dans la voiture : il voit qu'on l'emmène au bon
+ * endroit avant d'y être.
+ */
+export interface ApiRoute {
+  points: { lat: number; lng: number }[];
+  source: string | null;
+  distance_m: number | null;
+}
+
 /** Ce que renvoie `/client/bookings/{id}/tracking`, littéralement. */
 export interface ApiTrackingSession {
   code: string;
   status: TrackingStatus;
   destination: { lat: number | null; lng: number | null };
+  route: ApiRoute | null;
   provider: { lat: number | null; lng: number | null; speed_mps: number | null };
   eta_seconds: number | null;
   eta_minutes: number | null;
@@ -73,8 +87,17 @@ export interface TrackingPoint extends LivePosition {
 export interface TrackingSession {
   code: string;
   status: TrackingStatus;
-  /** Là où se rend le prestataire — absent tant que la réservation n'est pas géocodée. */
+  /**
+   * Là où se rend le prestataire — absent tant que la réservation n'est pas géocodée.
+   *
+   * Sur une COURSE, cette valeur CHANGE en cours de route : elle vaut le point de prise en charge
+   * pendant l'approche, puis le point de dépose une fois le client à bord. C'est voulu — la carte
+   * doit suivre ce mouvement, sans quoi elle continuerait de pointer l'endroit qu'on vient de
+   * quitter.
+   */
   destination: LivePosition | null;
+  /** Le tracé prévu, quand un itinéraire a pu être calculé. */
+  route: { points: LivePosition[]; source: string | null; distanceM: number | null } | null;
   /** Sa dernière position connue. Fait foi quand la trace est vide. */
   provider: LivePosition | null;
   eta_seconds: number | null;

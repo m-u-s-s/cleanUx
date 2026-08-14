@@ -67,6 +67,12 @@ class TripTrackingController extends Controller
                     'lat' => $session->destination_lat,
                     'lng' => $session->destination_lng,
                 ],
+                /*
+                 * LE TRACÉ, quand il existe. Une carte qui montre un véhicule avancer sans montrer
+                 * où il va laisse le client deviner : sur une course, il est DANS la voiture, et
+                 * c'est précisément ce trait qui lui dit qu'on l'emmène au bon endroit.
+                 */
+                'route' => $service->routePayload($session),
                 'provider' => [
                     'lat' => $session->last_lat,
                     'lng' => $session->last_lng,

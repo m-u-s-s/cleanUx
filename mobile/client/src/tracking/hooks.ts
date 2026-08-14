@@ -41,6 +41,19 @@ function toSession(raw: ApiTrackingSession): TrackingSession {
     code: raw.code,
     status: raw.status,
     destination: toPosition(raw.destination?.lat ?? null, raw.destination?.lng ?? null),
+    /*
+     * La traduction se fait ICI, une seule fois. Le serveur parle `lat`/`lng`, les cartes parlent
+     * `latitude`/`longitude` : une conversion oubliée en chemin donne des points valides pour
+     * TypeScript et vides à l'affichage — c'est exactement le défaut qui avait empêché la carte de
+     * s'afficher pendant des semaines.
+     */
+    route: raw.route
+      ? {
+          points: raw.route.points.map((p) => ({ latitude: p.lat, longitude: p.lng })),
+          source: raw.route.source ?? null,
+          distanceM: raw.route.distance_m ?? null,
+        }
+      : null,
     provider: toPosition(raw.provider?.lat ?? null, raw.provider?.lng ?? null, raw.provider?.speed_mps),
     eta_seconds: raw.eta_seconds ?? null,
     eta_minutes: raw.eta_minutes ?? null,

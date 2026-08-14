@@ -4,7 +4,27 @@ import { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import type { ScanPosition } from './scanPosition';
 
-interface TrackingSession { id: number; status: string; }
+/**
+ * La session de suivi telle que le serveur la rend.
+ *
+ * `route` porte le tracé à afficher : la plateforme savait mesurer une distance, elle ne savait pas
+ * dire PAR OÙ l'on passe. C'est ce qui manquait pour que l'écran de trajet ait autre chose qu'un
+ * couple de coordonnées à montrer.
+ *
+ * `destination` change AU COURS d'une course : elle vaut le point de prise en charge pendant
+ * l'approche, puis le point de dépose une fois le client à bord. La lire depuis la session — et non
+ * depuis la mission — est ce qui fait que la carte suit ce mouvement.
+ */
+export interface TrackingSession {
+  id: number;
+  status: string;
+  destination?: { lat: number | null; lng: number | null } | null;
+  route?: {
+    points: { lat: number; lng: number }[];
+    source: string | null;
+    distance_m: number | null;
+  } | null;
+}
 
 export function useStartTracking(bookingId: number) {
   return useMutation<TrackingSession, ApiError>({

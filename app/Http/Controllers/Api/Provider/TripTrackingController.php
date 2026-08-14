@@ -281,6 +281,10 @@ class TripTrackingController extends Controller
                 'lat' => $s->destination_lat,
                 'lng' => $s->destination_lng,
             ],
+            // Le MÊME tracé que celui servi au client : deux formes différentes selon la surface
+            // afficheraient deux itinéraires, et l'écart ne se verrait qu'en comparant deux
+            // téléphones côte à côte.
+            'route' => app(TripTrackingService::class)->routePayload($s),
             'last_position' => [
                 'lat' => $s->last_lat,
                 'lng' => $s->last_lng,

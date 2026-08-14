@@ -10,6 +10,7 @@ use App\Models\TripTrackingPoint;
 use App\Models\TripTrackingSession;
 use App\Models\User;
 use App\Realtime\RealtimeBroadcastService;
+use App\Services\Geo\RoutingService;
 use App\Services\GeolocationV2\DistanceCalculator;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -72,7 +73,7 @@ class TripTrackingService
         [$destLat, $destLng] = $destination ?? $this->resolveBookingDestination($booking);
         $radiusM = (int) Config::get('trip_tracking.geofence_radius_m', 150);
 
-        return TripTrackingSession::query()->create([
+        $session = TripTrackingSession::query()->create([
             'code' => TripTrackingSession::generateCode(),
             'booking_id' => $booking->id,
             'provider_user_id' => $provider->id,
@@ -85,6 +86,77 @@ class TripTrackingService
             'started_at' => now(),
             'metadata' => $metadata !== [] ? $metadata : null,
         ]);
+
+        $this->tracerLaRoute($session);
+
+        return $session;
+    }
+
+    /**
+     * LA ROUTE À AFFICHER, calculée UNE FOIS et rangée avec la session.
+     *
+     * Les cartes de suivi n'avaient rien à tracer : la plateforme savait mesurer une distance, pas
+     * dire par où l'on passe. Le client voyait une voiture avancer sans savoir où elle allait, et
+     * l'écran de trajet du prestataire n'avait même pas de carte.
+     *
+     * ELLE NE SE RECALCULE PAS À CHAQUE RELEVÉ. C'est le parti pris d'Uber : un trait figé, et un
+     * véhicule qui avance dessus. Recalculer à chaque ping ferait un appel de fournisseur toutes
+     * les quinze secondes par course, pour un tracé qui n'a pas bougé.
+     *
+     * Soft-fail intégral : sans route, la carte affiche les deux points et la position. C'est moins
+     * bien, ce n'est pas cassé.
+     */
+    protected function tracerLaRoute(TripTrackingSession $session): void
+    {
+        if ($session->destination_lat === null || $session->destination_lng === null
+            || $session->start_lat === null || $session->start_lng === null) {
+            return;
+        }
+
+        try {
+            $route = app(RoutingService::class)->route(
+                (float) $session->start_lat,
+                (float) $session->start_lng,
+                (float) $session->destination_lat,
+                (float) $session->destination_lng,
+            );
+
+            $session->forceFill([
+                'metadata' => array_merge($session->metadata ?? [], [
+                    'route_points' => $route->points,
+                    'route_source' => $route->source,
+                    'route_distance_m' => $route->distanceMeters,
+                ]),
+            ])->save();
+        } catch (\Throwable $e) {
+            Log::warning('[trip_tracking] route non tracée', [
+                'session_id' => $session->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Le tracé servi aux cartes — client et prestataire lisent la MÊME chose.
+     *
+     * Deux formes différentes selon la surface donneraient deux itinéraires à l'écran, et c'est
+     * précisément la sorte d'écart qu'on ne voit qu'en comparant deux téléphones côte à côte.
+     *
+     * @return array{points: list<array{lat: float, lng: float}>, source: string|null, distance_m: int|null}|null
+     */
+    public function routePayload(TripTrackingSession $session): ?array
+    {
+        $points = $session->metadata['route_points'] ?? null;
+
+        if (! is_array($points) || $points === []) {
+            return null;
+        }
+
+        return [
+            'points' => $points,
+            'source' => $session->metadata['route_source'] ?? null,
+            'distance_m' => $session->metadata['route_distance_m'] ?? null,
+        ];
     }
 
     /**

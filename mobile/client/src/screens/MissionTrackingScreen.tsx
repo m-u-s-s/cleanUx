@@ -128,20 +128,52 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
               strokeColor={colors.brand[400]}
             />
           )}
+
+          {/*
+            LA ROUTE PRÉVUE, distincte de la trace parcourue.
+
+            La trace dit d'où l'on vient ; celle-ci dit où l'on va. Sur une course, c'est ce
+            trait-là qui compte pour le passager assis dans la voiture : il voit qu'on l'emmène au
+            bon endroit avant d'y être arrivé.
+          */}
+          {mapModule.Polyline && session?.route && session.route.points.length > 1 && (
+            <mapModule.Polyline
+              coordinates={session.route.points}
+              strokeWidth={5}
+              strokeColor={colors.brand[700] ?? colors.brand[500]}
+            />
+          )}
+
+          {session?.destination && (
+            <mapModule.Marker
+              coordinate={session.destination}
+              title="Destination"
+              pinColor={colors.brand[700] ?? colors.brand[500]}
+            />
+          )}
         </mapModule.MapView>
       ) : (
         // Repli sans clé : OpenStreetMap en WebView, qui n'en exige aucune. Le trajet y est
         // tracé aussi — sur un écran de suivi, un point seul ne montrerait rien d'utile.
         <View style={styles.map}>
           <OsmMap
-            markers={currentPos ? [{
-              id: bookingId,
-              latitude: currentPos.latitude,
-              longitude: currentPos.longitude,
-              title: 'Prestataire',
-            }] : []}
+            markers={[
+              ...(currentPos ? [{
+                id: bookingId,
+                latitude: currentPos.latitude,
+                longitude: currentPos.longitude,
+                title: 'Prestataire',
+              }] : []),
+              ...(session?.destination ? [{
+                id: -bookingId,
+                latitude: session.destination.latitude,
+                longitude: session.destination.longitude,
+                title: 'Destination',
+              }] : []),
+            ]}
             position={currentPos ? { latitude: currentPos.latitude, longitude: currentPos.longitude } : null}
-            trail={trail?.map(p => ({ latitude: p.latitude, longitude: p.longitude }))}
+            // La route prévue prime sur la trace parcourue : c'est elle qui montre où l'on va.
+            trail={session?.route?.points ?? trail?.map(p => ({ latitude: p.latitude, longitude: p.longitude }))}
             fallbackCenter={{
               latitude: initialRegion.latitude,
               longitude: initialRegion.longitude,
