@@ -3,6 +3,7 @@
 namespace App\Services\Organizations;
 
 use App\Enums\OrganizationRole;
+use App\Models\Booking;
 use App\Models\Channel;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
@@ -11,6 +12,7 @@ use App\Models\User;
 use App\Services\PermissionService;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * CHANGER LE RÔLE OU LE STATUT D'UN MEMBRE — LES RÈGLES, EN UN SEUL EXEMPLAIRE.
@@ -184,6 +186,59 @@ class OrganizationMemberAdministration
     }
 
     /**
+     * LA RÉSERVATION AUSSI DOIT OUBLIER LA PERSONNE PARTIE.
+     *
+     * Libérer les missions ne suffisait pas : `bookings.employe_id` continuait de la nommer, et
+     * c'est cette colonne que lisent les listes d'administration — « rendez-vous sans employé », le
+     * compteur de non-assignés du planning, l'agenda hebdomadaire. L'intervention à venir
+     * n'apparaissait donc nulle part comme à réattribuer : personne n'irait, et personne ne le
+     * verrait avant le jour dit.
+     *
+     * ON PASSE PAR LE MODÈLE, pas par une mise à jour de masse : `BookingPaymentDestinationObserver`
+     * doit voir l'écriture.
+     *
+     * UNE RETENUE ACTIVE ARRÊTE LE NETTOYAGE, et ce n'est pas de la prudence. L'autorisation Stripe
+     * désigne le compte de la personne qui part. La délier ici produirait une réservation
+     * « autorisée » sans personne — précisément l'état où la garde d'argent s'efface, parce qu'une
+     * telle ligne est censée n'avoir jamais eu de professionnel. On offrirait alors un
+     * contournement en deux temps : le départ libère, l'attribution suivante passe sans contrôle,
+     * et l'encaissement part chez quelqu'un qui a quitté la société.
+     *
+     * Ces réservations-là demandent une décision humaine — libérer la retenue, puis réattribuer —,
+     * et le journal les nomme pour qu'on puisse aller les chercher.
+     *
+     * @param  list<int>  $missionIds
+     */
+    private function libererLesReservations(array $missionIds, int $userId): void
+    {
+        if ($missionIds === []) {
+            return;
+        }
+
+        $reservations = Booking::query()
+            ->whereIn('id', Mission::query()->whereIn('id', $missionIds)->pluck('booking_id')->filter())
+            ->where('employe_id', $userId)
+            ->get();
+
+        foreach ($reservations as $reservation) {
+            if ($reservation->payment_status === 'authorized' && filled($reservation->stripe_payment_intent_id)) {
+                Log::warning('Réservation laissée au nom d’un partant : une retenue bancaire la bloque', [
+                    'booking_id' => $reservation->id,
+                    'user_id' => $userId,
+                    'assigned_provider_organization_id' => $reservation->assigned_provider_organization_id,
+                ]);
+
+                continue;
+            }
+
+            $reservation->forceFill([
+                'employe_id' => null,
+                'assigned_provider_user_id' => null,
+            ])->save();
+        }
+    }
+
+    /**
      * Défaire ce qui n'a pas encore eu lieu, et rien d'autre.
      *
      * Les missions PASSÉES gardent leur intervenant : c'est l'historique de la société, et la
@@ -228,6 +283,8 @@ class OrganizationMemberAdministration
                 ->whereIn('id', $missionsAVenir)
                 ->where('lead_employee_id', $userId)
                 ->update(['lead_employee_id' => null]);
+
+            $this->libererLesReservations($missionsAVenir->all(), $userId);
         }
 
         $canaux = Channel::query()

@@ -96,8 +96,29 @@ class ProductionHealthReport
         $this->pushCheck($checks, 'Secret de webhook Stripe défini', $webhookSecret, 'error', $webhookSecret ? 'OK' : 'missing');
         $this->pushCheck($checks, 'Au moins un prestataire encaissable', ($stripe['prestataires_encaissables'] ?? 0) > 0, 'error', $stripe['prestataires_encaissables'] === null ? 'unknown' : (string) $stripe['prestataires_encaissables']);
 
+        /*
+         * L'INTERVENANT DIT DEUX FOIS LA MÊME CHOSE : ON VÉRIFIE QU'IL DIT PAREIL.
+         *
+         * `bookings.employe_id` et `missions.lead_provider_user_id` sont tenus en accord par la
+         * réassignation et par `BookingObserver`. Une divergence signifie donc qu'une écriture est
+         * passée à côté des deux — un chemin ajouté depuis, ou une ligne antérieure au correctif.
+         *
+         * ON COMPTE, ON NE RÉPARE PAS. La donnée seule ne dit pas laquelle des deux décisions est
+         * la plus récente : réaligner au jugé nommerait un intervenant que personne n'a choisi. Un
+         * nombre non nul est une invitation à regarder, pas un incident : d'où `warning`.
+         */
+        $intervenantsDivergents = $this->intervenantsDivergents();
+        $this->pushCheck(
+            $checks,
+            'Réservations et missions d’accord sur l’intervenant',
+            ($intervenantsDivergents ?? 0) === 0,
+            'warning',
+            $intervenantsDivergents === null ? 'unknown' : (string) $intervenantsDivergents,
+        );
+
         $metrics = [
             'app_env' => $appEnv,
+            'bookings_intervenant_divergent' => $intervenantsDivergents,
             'app_url' => $appUrl,
             'queue' => $queueDefault,
             'queue_backlog' => $queueBacklog,
@@ -146,6 +167,31 @@ class ProductionHealthReport
             'label' => $label,
             'value' => is_scalar($value) || $value === null ? $value : json_encode($value),
         ];
+    }
+
+    /**
+     * Combien de réservations nomment un intervenant que leur mission contredit.
+     *
+     * `null` quand la question ne peut pas être posée — tables absentes, base injoignable : un
+     * rapport de santé ne tombe pas parce qu'une de ses mesures manque.
+     */
+    protected function intervenantsDivergents(): ?int
+    {
+        if (! $this->safeHasTable('bookings') || ! $this->safeHasTable('missions')) {
+            return null;
+        }
+
+        try {
+            return (int) $this->db->table('missions')
+                ->join('bookings', 'bookings.id', '=', 'missions.booking_id')
+                ->whereNotNull('missions.lead_provider_user_id')
+                ->whereNotNull('bookings.employe_id')
+                ->whereColumn('missions.lead_provider_user_id', '!=', 'bookings.employe_id')
+                ->distinct()
+                ->count('bookings.id');
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     protected function storageLinkExists(): bool

@@ -24,7 +24,7 @@ class StatsGlobale extends Component
     public function render()
     {
         $rdvs = Booking::whereYear('date', $this->year)
-            ->when($this->employe_id, fn ($q) => $q->where('employe_id', $this->employe_id))
+            ->when($this->employe_id, fn ($q) => $q->intervenantEst((int) $this->employe_id))
             ->get();
 
         $feedbacks = Feedback::whereYear('created_at', $this->year)
@@ -32,7 +32,7 @@ class StatsGlobale extends Component
                 $this->employe_id,
                 fn ($q) => $q->whereHas(
                     'rendezVous',
-                    fn ($r) => $r->where('employe_id', $this->employe_id)
+                    fn ($r) => $r->intervenantEst((int) $this->employe_id)
                 )
             )
             ->get();
@@ -40,7 +40,7 @@ class StatsGlobale extends Component
         $dataMonthly = collect(range(1, 12))->map(function ($month) {
             return Booking::whereYear('date', $this->year)
                 ->whereMonth('date', $month)
-                ->when($this->employe_id, fn ($q) => $q->where('employe_id', $this->employe_id))
+                ->when($this->employe_id, fn ($q) => $q->intervenantEst((int) $this->employe_id))
                 ->count();
         });
 

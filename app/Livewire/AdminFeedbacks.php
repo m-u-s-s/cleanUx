@@ -110,7 +110,7 @@ class AdminFeedbacks extends Component
                 $this->employe_id !== '',
                 fn (Builder $query) => $query->whereHas(
                     'rendezVous',
-                    fn (Builder $rdvQuery) => $rdvQuery->where('employe_id', $this->employe_id)
+                    fn (Builder $rdvQuery) => $rdvQuery->intervenantEst((int) $this->employe_id)
                 )
             )
             ->when(

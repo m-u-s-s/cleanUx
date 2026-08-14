@@ -126,7 +126,7 @@ class AnalyticsCenter extends Component
             ->when(filled($this->status), fn (Builder $q) => $q->where('status', $this->status))
             ->when(filled($this->zoneId), fn (Builder $q) => $q->where('service_zone_id', $this->zoneId))
             ->when(filled($this->serviceId), fn (Builder $q) => $q->where('service_catalog_id', $this->serviceId))
-            ->when(filled($this->employeeId), fn (Builder $q) => $q->where('employe_id', $this->employeeId))
+            ->when(filled($this->employeeId), fn (Builder $q) => $q->intervenantEst((int) $this->employeeId))
             ->when($this->market === 'entreprise', fn (Builder $q) => $q->whereNotNull('organization_account_id'))
             ->when($this->market === 'particulier', fn (Builder $q) => $q->whereNull('organization_account_id'))
             ->when(filled($this->search), fn (Builder $query) => $query->searchStructured($this->search));

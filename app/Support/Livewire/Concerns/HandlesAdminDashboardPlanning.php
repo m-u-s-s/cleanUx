@@ -112,7 +112,7 @@ trait HandlesAdminDashboardPlanning
 
         $conflict = $this->scopedRendezVousQuery(false)
             ->where('id', '!=', $rdv->id)
-            ->where('employe_id', $this->planningEmployeId)
+            ->intervenantEst((int) $this->planningEmployeId)
             ->whereDate('date', $this->planningDate)
             ->whereIn('status', ['confirme', 'en_attente', 'en_route', 'sur_place'])
             ->get()
@@ -235,7 +235,7 @@ trait HandlesAdminDashboardPlanning
         $end = $start->copy()->addMinutes($duration + $bufferMinutes);
 
         $rdvsJour = $this->scopedRendezVousQuery(false)
-            ->where('employe_id', $employeId)
+            ->intervenantEst($employeId)
             ->whereDate('date', $date)
             ->whereIn('status', ['confirme', 'en_attente', 'en_route', 'sur_place'])
             ->get();
@@ -323,7 +323,7 @@ trait HandlesAdminDashboardPlanning
     {
         return $this->scopedRendezVousQuery(false)
             ->with(['client', 'serviceZone'])
-            ->whereNull('employe_id')
+            ->sansIntervenant()
             ->whereIn('status', ['en_attente', 'confirme'])
             ->orderBy('date')
             ->orderBy('heure')

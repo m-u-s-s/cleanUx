@@ -113,12 +113,20 @@ class VolumeEtReassignationTest extends TestCase
                 'devis_estime' => 120,
             ]);
 
-        return Mission::factory()->create([
-            'booking_id' => $reservation->id,
+        /*
+         * LA MISSION EXISTE DÉJÀ : `RendezVousObserver` la crée avec la réservation, en
+         * `updateOrCreate` sur `booking_id`. En fabriquer une seconde donnait deux missions pour
+         * une réservation — un état hors de portée de la production, et qui faussait ce que ce
+         * test croyait mesurer.
+         */
+        $mission = $reservation->missions()->latest('id')->firstOrFail();
+        $mission->forceFill([
             'provider_organization_id' => $societe->id,
             'status' => MissionStatus::ASSIGNED,
             'planned_start_at' => now()->addHour(),
-        ]);
+        ])->save();
+
+        return $mission;
     }
 
     private function membre(OrganizationAccount $societe, User $user): OrganizationMember

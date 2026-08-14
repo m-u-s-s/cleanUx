@@ -688,6 +688,47 @@ class Booking extends Model
         return $id ? User::find($id) : null;
     }
 
+    /**
+     * LA MÊME RÈGLE, EN SQL — pour les écrans qui filtrent au lieu de parcourir.
+     *
+     * Le planning et l'agenda d'administration ne lisent pas une réservation à la fois : ils
+     * filtrent une semaine entière. `intervenantId()` leur est inaccessible, et recopier la règle
+     * dans un `where` est exactement ce qui a produit le défaut d'origine.
+     *
+     * L'ordre est celui du résolveur, et il compte : la mission d'abord, la réservation seulement
+     * quand AUCUNE mission ne désigne personne. `ReservationIntervenantTest` compare les deux
+     * formulations sur un jeu mélangé — si elles se mettaient à diverger, le test le dirait.
+     *
+     * @param  Builder<Booking>  $query
+     * @return Builder<Booking>
+     */
+    public function scopeIntervenantEst(Builder $query, int $userId): Builder
+    {
+        return $query->where(function (Builder $q) use ($userId) {
+            $q->whereHas('missions', fn ($m) => $m->where('lead_provider_user_id', $userId))
+                ->orWhere(function (Builder $repli) use ($userId) {
+                    $repli->whereDoesntHave('missions', fn ($m) => $m->whereNotNull('lead_provider_user_id'))
+                        ->where(fn (Builder $colonnes) => $colonnes
+                            ->where('employe_id', $userId)
+                            ->orWhere('assigned_provider_user_id', $userId));
+                });
+        });
+    }
+
+    /**
+     * Les réservations que PERSONNE ne prend en charge — celles qu'une administration doit voir
+     * pour les attribuer.
+     *
+     * @param  Builder<Booking>  $query
+     * @return Builder<Booking>
+     */
+    public function scopeSansIntervenant(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('missions', fn ($m) => $m->whereNotNull('lead_provider_user_id'))
+            ->whereNull('employe_id')
+            ->whereNull('assigned_provider_user_id');
+    }
+
     /** @return HasMany<ComplaintCase, $this> */
     public function complaintCases(): HasMany
     {

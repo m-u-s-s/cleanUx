@@ -80,10 +80,13 @@ class PlanningAdmin extends Component
         $this->semaine = now()->startOfWeek()->format('Y-m-d');
     }
 
+    /** @return Builder<Booking> */
     protected function baseQuery(): Builder
     {
+        // `missions` est chargée EXPRÈS : les compteurs et le groupement ci-dessous demandent
+        // l'intervenant ligne par ligne, et sans elle chacun repartirait en base.
         $query = Booking::query()
-            ->with(['client', 'employe', 'serviceCatalog', 'serviceZone', 'organizationAccount', 'organizationSite']);
+            ->with(['client', 'employe', 'serviceCatalog', 'serviceZone', 'organizationAccount', 'organizationSite', 'missions']);
 
         /** @var User|null $user */
         $user = auth()->user();
@@ -94,11 +97,12 @@ class PlanningAdmin extends Component
 
         return $query
             ->when($this->recherche !== '', fn (Builder $q) => $q->searchStructured($this->recherche))
-            ->when($this->filtreEmploye !== '', fn (Builder $q) => $q->where('employe_id', $this->filtreEmploye))
+            ->when($this->filtreEmploye !== '', fn (Builder $q) => $q->intervenantEst((int) $this->filtreEmploye))
             ->when($this->filtreStatus !== '', fn (Builder $q) => $q->where('status', $this->filtreStatus))
             ->when($this->filtrePriorite !== '', fn (Builder $q) => $q->where('priorite', $this->filtrePriorite));
     }
 
+    /** @return Builder<Booking> */
     protected function planningWindowQuery(): Builder
     {
         $query = $this->baseQuery();
@@ -113,6 +117,7 @@ class PlanningAdmin extends Component
         ]);
     }
 
+    /** @return Builder<Booking> */
     protected function focusDayQuery(): Builder
     {
         $focusDate = $this->focusDate()->toDateString();
@@ -142,7 +147,7 @@ class PlanningAdmin extends Component
         $query = $this->planningWindowQuery();
         $rows = $query->get();
 
-        $assignedCount = $rows->filter(fn (Booking $rdv) => filled($rdv->employe_id))->count();
+        $assignedCount = $rows->filter(fn (Booking $rdv) => filled($rdv->intervenantId()))->count();
         $totalMinutes = $rows->sum(fn (Booking $rdv) => ($rdv->duree ?? $rdv->duree_estimee ?? 90) + 30);
         $activeCount = $rows->whereIn('status', BookingStatus::active())->count();
 
@@ -153,7 +158,7 @@ class PlanningAdmin extends Component
             'attente' => $rows->where('status', BookingStatus::EN_ATTENTE)->count(),
             'termine' => $rows->where('status', BookingStatus::TERMINE)->count(),
             'urgentes' => $rows->where('priorite', 'urgente')->count(),
-            'sans_employe' => $rows->filter(fn (Booking $rdv) => blank($rdv->employe_id))->count(),
+            'sans_employe' => $rows->filter(fn (Booking $rdv) => blank($rdv->intervenantId()))->count(),
             'assigned_rate' => $rows->count() > 0 ? (int) round(($assignedCount / $rows->count()) * 100) : 0,
             'total_minutes' => $totalMinutes,
             'total_hours' => round($totalMinutes / 60, 1),
@@ -182,7 +187,7 @@ class PlanningAdmin extends Component
                     })
                     ->orWhere(function (Builder $unassigned) {
                         $unassigned->whereIn('status', BookingStatus::active())
-                            ->whereNull('employe_id');
+                            ->sansIntervenant();
                     })
                     ->orWhere(function (Builder $late) use ($now) {
                         $late->whereIn('status', BookingStatus::active())
@@ -205,7 +210,12 @@ class PlanningAdmin extends Component
 
     public function getChargeEmployesProperty(): Collection
     {
-        $rows = $this->planningWindowQuery()->get()->groupBy('employe_id');
+        // Groupé sur L'INTERVENANT, pas sur la colonne : la charge affichée en face d'un employé
+        // doit être celle des missions où il se rend, pas celle des commandes à son ancien nom.
+        // Clé en chaîne : une réservation sans intervenant tombe sous `''`, qui ne peut entrer en
+        // collision avec aucun identifiant d'employé.
+        $rows = $this->planningWindowQuery()->get()
+            ->mapToGroups(fn (Booking $rdv) => [(string) $rdv->intervenantId() => $rdv]);
 
         return $this->employes->map(function (User $employe) use ($rows) {
             $rdvs = $rows->get($employe->id, collect());
@@ -230,7 +240,14 @@ class PlanningAdmin extends Component
     public function getWeekSummaryProperty(): array
     {
         $rows = $this->planningWindowQuery()->get();
-        $daysWithWork = $rows->groupBy(fn (Booking $rdv) => optional($rdv->date)->toDateString() ?? (string) $rdv->date)->count();
+        // `unique()` plutôt que `groupBy()` : on compte des jours distincts, pas des paquets. Et
+        // `optional()` rendait `mixed`, ce qui empêchait de vérifier que la clé est bien une chaîne.
+        $daysWithWork = $rows
+            ->map(fn (Booking $rdv) => $rdv->date instanceof \DateTimeInterface
+                ? $rdv->date->format('Y-m-d')
+                : (string) $rdv->date)
+            ->unique()
+            ->count();
         $entrepriseCount = $rows->filter(fn (Booking $rdv) => filled($rdv->organization_account_id))->count();
 
         return [

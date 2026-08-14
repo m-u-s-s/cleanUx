@@ -61,7 +61,7 @@ trait ComputesAdminDashboardScopes
         $query = Booking::query();
 
         if ($withEmployeeFilter && $this->filtreEmploye) {
-            $query->where('employe_id', $this->filtreEmploye);
+            $query->intervenantEst((int) $this->filtreEmploye);
         }
 
         $zoneIds = $this->scopeZoneIds();

@@ -152,6 +152,20 @@ class MissionFromRendezVousSyncService
                 $countryCode
             );
 
+            /*
+             * CE QUI EST DÉJÀ DÉCIDÉ SUR LA MISSION NE SE DÉDUIT PAS À NOUVEAU.
+             *
+             * `societeExecutante()` et `equipeExecutante()` répondent `null` quand la réservation ne
+             * porte pas la décision — cas normal d'un indépendant. Mais la mission, elle, peut
+             * l'avoir reçue par ailleurs : une société prestataire assignée par le dispatch interne,
+             * une équipe posée à la main. Réécrire `null` par-dessus effaçait cette décision au
+             * premier enregistrement de la réservation, et la mission sortait alors du périmètre de
+             * sa société — ses renforts perdaient l'accès, le tableau de bord la perdait de vue.
+             *
+             * Une déduction absente n'est pas une décision de retirer.
+             */
+            $existante = Mission::query()->where('booking_id', $rendezVous->id)->latest('id')->first();
+
             /** @var Mission $mission */
             /*
               * LA CLÉ D'UNICITÉ EST `booking_id`, la seule que porte encore `missions`.
@@ -168,8 +182,10 @@ class MissionFromRendezVousSyncService
                     'service_catalog_id' => $rendezVous->service_catalog_id,
                     'service_zone_id' => $rendezVous->service_zone_id,
                     'lead_employee_id' => $rendezVous->employe_id,
-                    'provider_organization_id' => $this->societeExecutante($rendezVous),
-                    'provider_team_id' => $this->equipeExecutante($rendezVous),
+                    'provider_organization_id' => $this->societeExecutante($rendezVous)
+                        ?? $existante?->provider_organization_id,
+                    'provider_team_id' => $this->equipeExecutante($rendezVous)
+                        ?? $existante?->provider_team_id,
                     'organization_contract_id' => $rendezVous->organization_contract_id,
                     'status' => MissionStatus::initialFor((bool) $rendezVous->employe_id),
                     'mission_type' => $rendezVous->organization_account_id ? 'enterprise' : 'standard',

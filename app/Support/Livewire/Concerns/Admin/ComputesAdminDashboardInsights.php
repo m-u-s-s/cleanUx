@@ -35,7 +35,7 @@ trait ComputesAdminDashboardInsights
             ->get()
             ->map(function ($employe) {
                 $rdvsJour = $this->scopedRendezVousQuery(false)
-                    ->where('employe_id', $employe->id)
+                    ->intervenantEst((int) $employe->id)
                     ->whereDate('date', today())
                     ->whereIn('status', ['confirme', 'en_attente', 'en_route', 'sur_place'])
                     ->get();
@@ -176,12 +176,14 @@ trait ComputesAdminDashboardInsights
 
     public function getPerformanceEmployesProperty()
     {
-        return Cache::remember($this->cacheKey('performanceEmployes'), now()->addMinutes(10), function () {
+        // ON MET EN CACHE UN TABLEAU, PAS UNE COLLECTION : c'est ce qui traverse un cache sans
+        // sérialiser un objet, et la vue reçoit la collection comme avant.
+        $lignes = Cache::remember($this->cacheKey('performanceEmployes'), now()->addMinutes(10), function (): array {
             return $this->scopedEmployeesQuery()
                 ->get()
                 ->map(function ($employe) {
                     $missions = $this->scopedRendezVousQuery(false)
-                        ->where('employe_id', $employe->id)
+                        ->intervenantEst((int) $employe->id)
                         ->where('status', 'termine')
                         ->with('feedback')
                         ->get();
@@ -207,8 +209,11 @@ trait ComputesAdminDashboardInsights
                 })
                 ->sortByDesc('missions_terminees')
                 ->values()
-                ->take(6);
+                ->take(6)
+                ->all();
         });
+
+        return collect($lignes);
     }
 
     public function getFeedbackRateProperty()

@@ -27,10 +27,29 @@ class BookingPaymentDestinationObserver
             return;
         }
 
-        $previous = $booking->getOriginal('employe_id');
+        /*
+         * LIBÉRER N'ENVOIE L'ARGENT NULLE PART : on retire le nom sans en désigner un autre, la
+         * retenue reste où elle est et rien ne sera encaissé au profit de quelqu'un d'autre.
+         */
+        if (blank($booking->employe_id)) {
+            return;
+        }
 
-        // Première attribution : il n'y a personne à qui retirer quoi que ce soit.
-        if (blank($previous)) {
+        /*
+         * PREMIÈRE ATTRIBUTION : il n'y a personne à qui retirer quoi que ce soit.
+         *
+         * Une réservation « autorisée » sans aucun prestataire ne devrait pas exister —
+         * l'autorisation en exige un, `transfer_data.destination` étant posé à sa création. Mais
+         * une ligne ancienne ou réparée à la main peut porter cet état, et refuser d'y attribuer
+         * qui que ce soit la condamnerait définitivement.
+         *
+         * CETTE SORTIE N'EST SÛRE QUE PARCE QUE RIEN NE LA FABRIQUE. Le seul chemin qui retire un
+         * nom sans en mettre un autre — le départ d'un salarié — laisse délibérément la réservation
+         * intacte quand une retenue est active, faute de quoi on obtiendrait ici un contournement
+         * en deux temps : libérer, puis attribuer sur une réservation devenue « vierge ». Voir
+         * `OrganizationMemberAdministration::libererLesReservations()`.
+         */
+        if (blank($booking->getOriginal('employe_id'))) {
             return;
         }
 

@@ -84,7 +84,7 @@ class CalendrierInterne extends Component
             ->when($this->status, fn (Builder $q) => $q->where('status', $this->status))
             ->when($this->zoneId, fn (Builder $q) => $q->where('service_zone_id', $this->zoneId))
             ->when($this->serviceId, fn (Builder $q) => $q->where('service_catalog_id', $this->serviceId))
-            ->when($this->employeId, fn (Builder $q) => $q->where('employe_id', $this->employeId))
+            ->when($this->employeId, fn (Builder $q) => $q->intervenantEst((int) $this->employeId))
             ->when($this->search, fn (Builder $q) => $q->searchStructured($this->search));
     }
 

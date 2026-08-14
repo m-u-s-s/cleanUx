@@ -18,7 +18,7 @@ class EmployeePerformanceService
             $completed = $missions->where('status', 'completed')->count();
 
             $rating = Feedback::whereHas('rendezVous', function ($q) use ($employee) {
-                $q->where('employe_id', $employee->id);
+                $q->intervenantEst((int) $employee->id);
             })->avg('note');
 
             $late = $missions->filter(function ($m) {

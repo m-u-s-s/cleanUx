@@ -14,6 +14,7 @@ use App\Services\Promotion\ReferralService;
 use App\Support\Accounting\BookingAutoPoster;
 use App\Support\Chat\BookingChatAutoCreator;
 use App\Support\Domain\BookingStatus;
+use App\Support\Domain\MissionStatus;
 use App\Support\Presence\PresenceAutoTransitioner;
 use App\Support\TripTracking\TripTrackingAutoCloser;
 use App\Support\Webhooks\BusinessEventEmitter;
@@ -24,6 +25,8 @@ class BookingObserver
 {
     public function saved(Booking $booking): void
     {
+        $this->propagerLIntervenantAuxMissions($booking);
+
         if ($booking->customer_organization_id) {
             // Invalider toutes les clés analytics:* pour cette org
             // (avec Redis : SCAN + DEL ; avec file/db : laisser expirer naturellement)
@@ -53,6 +56,76 @@ class BookingObserver
                 PresenceAutoTransitioner::bookingEnded($booking);
             }
         }
+    }
+
+    /**
+     * LA MISSION SUIT LA RÉSERVATION — l'autre moitié de la fusion.
+     *
+     * `MissionAssignmentService` a appris à reporter la mission sur la réservation. Le chemin
+     * INVERSE restait ouvert, et c'est le plus fréquent : le planning d'administration écrit
+     * `bookings.employe_id` et sauvegarde, sans rien dire à la mission. Deux des trois chemins
+     * d'assignation admin appelaient bien `MissionFromRendezVousSyncService` — `MissionsAdmin` et
+     * `AiDispatchCenter` —, le troisième non. Réassigner depuis le planning laissait donc la
+     * mission au nom de la personne précédente : le mobile, le dispatch, le portefeuille, la
+     * présence et `MissionPolicy` continuaient tous de la désigner.
+     *
+     * ON NE CORRIGE PAS LES APPELANTS UN PAR UN. Un chemin d'assignation qu'on ajouterait demain
+     * oublierait la synchronisation exactement comme celui-ci l'a oubliée. La règle vit donc là où
+     * l'écriture passe forcément.
+     *
+     * Pas de boucle : le report inverse écrit les mêmes valeurs, et la mise à jour d'une mission ne
+     * réécrit jamais la réservation d'elle-même.
+     */
+    protected function propagerLIntervenantAuxMissions(Booking $booking): void
+    {
+        if (! $booking->wasChanged('employe_id')) {
+            return;
+        }
+
+        $intervenantId = $booking->employe_id ? (int) $booking->employe_id : null;
+
+        /*
+         * LA DERNIÈRE MISSION, ET ELLE SEULE — le même choix que `Booking::intervenantId()`.
+         *
+         * En production une réservation n'a qu'une mission : `MissionFromRendezVousSyncService`
+         * travaille en `updateOrCreate` sur `booking_id`, et `RendezVousObserver` l'appelle à
+         * chaque enregistrement. Plusieurs lignes n'apparaissent que lorsqu'un appelant court-circuite
+         * ce service.
+         *
+         * Écrire sur TOUTES serait pourtant un choix, et un mauvais : le résolveur, lui, ne lit que
+         * la plus récente. Une écriture plus large que la lecture rouvre précisément l'écart que
+         * cette fusion referme.
+         */
+        $mission = $booking->missions()->latest('id')->first();
+
+        if ($mission === null) {
+            return;
+        }
+
+        $aJour = (int) ($mission->lead_employee_id ?? 0) === (int) ($intervenantId ?? 0)
+            && (int) ($mission->lead_provider_user_id ?? 0) === (int) ($intervenantId ?? 0);
+
+        if ($aJour) {
+            return;
+        }
+
+        $champs = [
+            'lead_employee_id' => $intervenantId,
+            'lead_provider_user_id' => $intervenantId,
+        ];
+
+        /*
+         * Le statut ne suit QUE depuis et vers l'attente. Une mission en route ou commencée a
+         * dépassé la question : lui réécrire `assigned` la ferait reculer dans son cycle de vie et
+         * disparaître des écrans terrain.
+         */
+        if ($intervenantId !== null && $mission->status === MissionStatus::PLANNED) {
+            $champs['status'] = MissionStatus::ASSIGNED;
+        } elseif ($intervenantId === null && $mission->status === MissionStatus::ASSIGNED) {
+            $champs['status'] = MissionStatus::PLANNED;
+        }
+
+        $mission->forceFill($champs)->save();
     }
 
     public function created(Booking $booking): void

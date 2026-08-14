@@ -119,7 +119,7 @@ class MissionsAdmin extends Component
     {
         $query = Booking::with(['client', 'employe', 'serviceCatalog', 'postalCode'])
             ->when($this->search, fn ($q) => $q->searchStructured($this->search))
-            ->when($this->filtreEmploye, fn ($q) => $q->where('employe_id', $this->filtreEmploye))
+            ->when($this->filtreEmploye, fn ($q) => $q->intervenantEst((int) $this->filtreEmploye))
             ->when($this->filtreStatus, fn ($q) => $q->where('status', $this->filtreStatus))
             ->when($this->filtrePriorite, fn ($q) => $q->where('priorite', $this->filtrePriorite));
 
