@@ -4,6 +4,7 @@ namespace App\Services\Dispatch;
 
 use App\Enums\ProviderType;
 use App\Models\Booking;
+use App\Models\Trade;
 use App\Models\User;
 use App\Services\Matching\MatchingScoreEngine;
 use App\Services\OrderEngine\ZonePricingResolver;
@@ -257,6 +258,25 @@ class CandidateFinder
 
         if ($excluded !== []) {
             $query->whereNotIn('users.id', $excluded);
+        }
+
+        /*
+         * ON NE CONDUIT PAS SANS PERMIS — et la règle vaut MÉTIER PAR MÉTIER.
+         *
+         * C'est ce qui distingue ce verrou de `verification_status` juste au-dessus : celui-là
+         * porte sur le compte entier, celui-ci sur ce métier-ci. Un prestataire peintre et
+         * chauffeur, sans permis, garde ses missions de peinture et perd ses courses — le couper
+         * partout pour une pièce qui ne concerne que la moitié de son activité serait une punition
+         * qu'aucune règle ne demande.
+         *
+         * Comme le filtre de métier, elle vit DANS le SQL : un contrôle appliqué après coup se
+         * rattrape par un repli le jour où il vide la liste, et ce dépôt en a déjà fait
+         * l'expérience.
+         */
+        $trade = Trade::with('questions')->find($tradeId);
+
+        if ($trade) {
+            app(ConduiteRequirements::class)->appliquerAuxCandidats($query, $trade);
         }
 
         /*

@@ -359,6 +359,38 @@ class MissionDispatchService
                 "Acceptation impossible : votre vérification d'identité (KYC) n'est pas (plus) validée."
             );
         }
+
+        $this->guardConduite($assignment);
+    }
+
+    /**
+     * LE PERMIS EST REVÉRIFIÉ À L'ACCEPTATION, pas seulement à l'offre.
+     *
+     * Une offre part et reste acceptable tant qu'elle n'a pas expiré. Entre les deux, un permis peut
+     * arriver à échéance, une pièce être refusée à la relecture, un véhicule franchir sa limite
+     * d'âge. Sans ce second contrôle, la seule garde serait celle du moment où l'offre est
+     * fabriquée — et c'est exactement l'écart qu'exploite quiconque garde une modale ouverte.
+     *
+     * Le refus NOMME ce qui manque : « acceptation impossible » sans dire quoi fait rappeler le
+     * support, et ce que le prestataire comprend alors, c'est que l'application est cassée.
+     */
+    protected function guardConduite(MissionAssignment $assignment): void
+    {
+        $trade = $assignment->mission?->booking?->trade;
+        $user = $assignment->user;
+
+        if (! $trade || ! $user) {
+            return;
+        }
+
+        $manquants = app(ConduiteRequirements::class)->manquantsPour($user, $trade->loadMissing('questions'));
+
+        if ($manquants !== []) {
+            throw new \DomainException(
+                'Acceptation impossible : il vous manque '.implode(', ', $manquants).
+                '. Complétez votre dossier de conduite pour recevoir ces missions.'
+            );
+        }
     }
 
     protected function guardDeclinable(MissionAssignment $assignment): void

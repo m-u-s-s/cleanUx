@@ -23,6 +23,14 @@
     <div class="mx-auto max-w-7xl space-y-8 px-4 pb-10 pt-6 sm:px-6 lg:px-8">
         <x-active-sessions />
 
+        {{--
+            Ce qui empêche — ou empêchera — de recevoir des courses. Placé AVANT le reste : un
+            prestataire qui ne reçoit plus rien ouvre son tableau de bord en premier, et c'est là
+            qu'il doit trouver la réponse, pas dans un écran de réglages qu'il n'a aucune raison
+            d'ouvrir.
+        --}}
+        @livewire('provider.provider-driving-banner')
+
         @include('livewire.employe.dashboard.hero')
 
         @include('livewire.employe.dashboard.kpis')
