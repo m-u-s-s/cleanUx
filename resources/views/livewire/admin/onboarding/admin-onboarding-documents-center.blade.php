@@ -114,10 +114,56 @@
                                     'insurance' => 'Assurance',
                                     'diploma' => 'Diplôme',
                                     'criminal_record' => 'Casier judiciaire',
+                                    'driving_license' => 'Permis de conduire',
+                                    'vehicle_registration' => 'Carte grise',
+                                    'vehicle_insurance' => 'Assurance véhicule',
                                     'other' => 'Autre',
                                 ];
+                                $vehicule = $doc->document_type === 'vehicle_registration'
+                                    ? ($vehicules[$doc->user_id] ?? null)
+                                    : null;
                             @endphp
                             <span class="text-slate-700">{{ $typeLabels[$doc->document_type] ?? $doc->document_type }}</span>
+
+                            {{--
+                                LE VÉHICULE DÉCLARÉ, EN FACE DE LA PIÈCE À RELIRE.
+
+                                L'administrateur devait juger l'âge sur une photo de certificat, en
+                                lisant une date en petits caractères et en la soustrayant de tête.
+                                Le calcul existe déjà côté serveur, et c'est LUI qui décide du
+                                dispatch : ne pas le montrer ici laissait la revue humaine et le
+                                verrou automatique juger séparément.
+                            --}}
+                            @if ($doc->document_type === 'vehicle_registration')
+                                @if ($vehicule)
+                                    <div class="mt-1 text-xs text-slate-600">
+                                        {{ $vehicule['label'] ?? 'Véhicule' }} · {{ $vehicule['plate'] }}
+                                        @if ($vehicule['registered_at'])
+                                            · 1<sup>re</sup> immat. {{ $vehicule['registered_at'] }}
+                                        @endif
+                                    </div>
+                                    @if ($vehicule['age'] !== null)
+                                        <div @class([
+                                            'text-xs font-semibold',
+                                            'text-red-600' => $vehicule['age'] > $vehicule['limite'],
+                                            'text-emerald-700' => $vehicule['age'] <= $vehicule['limite'],
+                                        ])>
+                                            {{ str_replace('.', ',', (string) round($vehicule['age'], 1)) }} ans
+                                            (limite {{ $vehicule['limite'] }})
+                                        </div>
+                                    @else
+                                        <div class="text-xs font-semibold text-amber-700">
+                                            Date de 1<sup>re</sup> immatriculation manquante
+                                        </div>
+                                    @endif
+                                @else
+                                    {{-- Une carte grise sans véhicule déclaré : la pièce ne prouve
+                                         rien tant qu'on ne sait pas à quoi la rattacher. --}}
+                                    <div class="mt-1 text-xs font-semibold text-amber-700">
+                                        Aucun véhicule déclaré par ce prestataire
+                                    </div>
+                                @endif
+                            @endif
                         </td>
                         <td class="px-4 py-3">
                             <span class="text-xs text-slate-600 font-mono truncate max-w-[180px] inline-block">
@@ -146,9 +192,31 @@
                                     'rejected' => '✕ Rejeté',
                                 ];
                             @endphp
-                            <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $badge }}">
-                                {{ $statusLabels[$doc->status] ?? $doc->status }}
-                            </span>
+                            {{--
+                                LA PÉREMPTION PASSE DEVANT LE STATUT.
+
+                                Une pièce périmée est APPROUVÉE — c'est son état normal : relue et
+                                acceptée, il y a deux ans. Afficher « ✓ Approuvé » à un
+                                administrateur pendant que le dispatch l'exclut donnait deux
+                                verdicts opposés sur la même ligne, et personne pour les relier.
+                            --}}
+                            @if ($doc->isExpired())
+                                <span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                                    ⧗ Périmé
+                                </span>
+                                <div class="mt-1 text-xs italic text-red-600">
+                                    Expiré le {{ $doc->expires_at?->format('d/m/Y') }} — à redéposer
+                                </div>
+                            @else
+                                <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $badge }}">
+                                    {{ $statusLabels[$doc->status] ?? $doc->status }}
+                                </span>
+                                @if ($doc->expires_at)
+                                    <div class="mt-1 text-xs text-slate-500">
+                                        Valide jusqu’au {{ $doc->expires_at->format('d/m/Y') }}
+                                    </div>
+                                @endif
+                            @endif
                             @if ($doc->status === 'rejected' && $doc->rejection_reason)
                                 <div class="mt-1 text-xs text-red-600 italic max-w-[200px]">
                                     {{ Str::limit($doc->rejection_reason, 60) }}

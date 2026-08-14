@@ -6,6 +6,8 @@ use App\Models\KycVerification;
 use App\Models\OnboardingProgress;
 use App\Models\ProviderOnboardingDocument;
 use App\Models\User;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -77,6 +79,21 @@ class ProviderDossierSummary
             $blockers[] = "Justificatif refusé : {$label}";
         }
 
+        /*
+         * UNE PIÈCE PÉRIMÉE NE VAUT PAS UNE PIÈCE FOURNIE.
+         *
+         * Le dossier ne regardait que le STATUT de relecture, jamais la date de validité. Un permis
+         * approuvé en 2026 restait donc « approuvé » indéfiniment, et le dossier se déclarait
+         * complet — pendant que le dispatch, lui, l'excluait déjà pour péremption. Deux verdicts
+         * opposés sur la même pièce : le prestataire cessait de recevoir des missions alors que son
+         * dossier affichait tout au vert, et personne ne pouvait faire le lien.
+         *
+         * C'est un BLOQUANT, comme un refus : dans les deux cas il faut redéposer.
+         */
+        foreach ($documents['expired'] as $label) {
+            $blockers[] = "Justificatif périmé : {$label}";
+        }
+
         if (! $identity['verified']) {
             $blockers[] = 'Identité non vérifiée';
         }
@@ -85,6 +102,10 @@ class ProviderDossierSummary
 
         foreach ($documents['pending'] as $label) {
             $warnings[] = "Justificatif à relire : {$label}";
+        }
+
+        foreach ($documents['expiring'] as $label) {
+            $warnings[] = "Justificatif bientôt périmé : {$label}";
         }
 
         if (! $payouts['ready']) {
@@ -142,12 +163,12 @@ class ProviderDossierSummary
     }
 
     /**
-     * @return array{required: array<int, string>, missing: array<int, string>, rejected: array<int, string>, pending: array<int, string>}
+     * @return array{required: array<int, string>, missing: array<int, string>, rejected: array<int, string>, pending: array<int, string>, expired: array<int, string>, expiring: array<int, string>}
      */
     private function documentState(User $user): array
     {
         if (! Schema::hasTable('provider_onboarding_documents')) {
-            return ['required' => [], 'missing' => [], 'rejected' => [], 'pending' => []];
+            return ['required' => [], 'missing' => [], 'rejected' => [], 'pending' => [], 'expired' => [], 'expiring' => []];
         }
 
         $documents = ProviderOnboardingDocument::query()
@@ -160,6 +181,9 @@ class ProviderDossierSummary
         $missing = [];
         $rejected = [];
         $pending = [];
+        $expired = [];
+        $expiring = [];
+        $preavis = (int) Config::get('onboarding_documents.expiring_soon_days', 30);
 
         foreach ($this->requirements->for($user) as $requirement) {
             $required[] = $requirement['label'];
@@ -174,15 +198,48 @@ class ProviderDossierSummary
                 continue;
             }
 
+            /*
+             * LA PÉREMPTION PASSE AVANT LE STATUT, et l'ordre n'est pas indifférent.
+             *
+             * Une pièce périmée est APPROUVÉE — c'est même son état normal : elle a été relue et
+             * acceptée, il y a deux ans. Tester le statut d'abord la classerait donc comme
+             * satisfaite, et le dossier resterait au vert pendant que le dispatch l'exclut.
+             */
+            if ($document->isExpired()) {
+                $expired[] = $requirement['label'];
+
+                continue;
+            }
+
             // Un refus ne vaut pas dépôt : la pièce doit être remplacée avant l'approbation.
             match ($document->status) {
                 ProviderOnboardingDocument::STATUS_REJECTED => $rejected[] = $requirement['label'],
                 ProviderOnboardingDocument::STATUS_APPROVED => null,
                 default => $pending[] = $requirement['label'],
             };
+
+            /*
+             * L'ÉCHÉANCE PROCHE est un AVERTISSEMENT, pas un blocage.
+             *
+             * Elle sert à prévenir pendant qu'il est encore temps. Bloquer un mois à l'avance
+             * priverait de missions quelqu'un dont la pièce est parfaitement valable aujourd'hui —
+             * ce serait sanctionner la prévoyance de la plateforme, pas un manquement.
+             */
+            if ($preavis > 0
+                && $document->expires_at !== null
+                && $document->expires_at->isBefore(Carbon::now()->addDays($preavis))) {
+                $expiring[] = $requirement['label'];
+            }
         }
 
-        return ['required' => $required, 'missing' => $missing, 'rejected' => $rejected, 'pending' => $pending];
+        return [
+            'required' => $required,
+            'missing' => $missing,
+            'rejected' => $rejected,
+            'pending' => $pending,
+            'expired' => $expired,
+            'expiring' => $expiring,
+        ];
     }
 
     /**

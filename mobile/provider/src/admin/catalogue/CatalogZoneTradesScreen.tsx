@@ -1,13 +1,13 @@
-import React, { useMemo } from 'react';
-import { Pressable, SectionList, StyleSheet, Switch, Text, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { Alert, Modal, Pressable, ScrollView, SectionList, StyleSheet, Switch, Text, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { EmptyState, ErrorState, Icon, Screen, Skeleton } from '@/ui';
+import { Button, EmptyState, ErrorState, Icon, Screen, Skeleton, TextInput } from '@/ui';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { messageDErreur } from './erreur';
 import { useResourceAction } from '../console/hooks';
-import { useToggleTradeInZone, useZoneTrades } from './hooks';
+import { useToggleTradeInZone, useUpdateDistancePricing, useZoneTrades } from './hooks';
 import { LigneActions } from './LigneActions';
 import type { ZoneTrade } from './types';
 
@@ -32,6 +32,16 @@ export function CatalogZoneTradesScreen() {
   const { data, isLoading, isError, error, refetch } = useZoneTrades(zoneId);
   const bascule = useToggleTradeInZone(zoneId);
   const agir = useResourceAction('trades');
+
+  /*
+   * Le métier dont on règle le prix au kilomètre. `null` = le formulaire est fermé.
+   *
+   * L'état vit ICI et non dans la ligne : ouvrir un second formulaire alors qu'un premier est en
+   * cours de saisie ferait perdre ce qui vient d'être tapé, et on ne saurait pas lequel des deux
+   * on enregistre.
+   */
+  const [tarifDe, setTarifDe] = useState<ZoneTrade | null>(null);
+  const reglerLeTarif = useUpdateDistancePricing(zoneId);
 
   /*
    * Groupés par SECTEUR, comme le carrousel client. Une liste à plat empêcherait de vérifier ce
@@ -120,6 +130,7 @@ export function CatalogZoneTradesScreen() {
             onParcours={() =>
               navigation.navigate('AdminTradeJourney', { tradeId: item.id, title: item.name })
             }
+            onTarifDistance={() => setTarifDe(item)}
             onMonter={() => {
               agir.mutate({ id: item.id, action: 'move-up' });
               void refetch();
@@ -134,7 +145,145 @@ export function CatalogZoneTradesScreen() {
           <EmptyState title="Aucun métier" message="Le catalogue de la plateforme est vide." />
         }
       />
+
+      {tarifDe ? (
+        <FormulaireTarifDistance
+          metier={tarifDe}
+          enCours={reglerLeTarif.isPending}
+          onFermer={() => setTarifDe(null)}
+          onEnregistrer={(valeurs) =>
+            reglerLeTarif.mutate(
+              { tradeId: tarifDe.id, valeurs },
+              {
+                onSuccess: () => setTarifDe(null),
+                // Le refus du serveur — métier fermé dans la zone, compte en lecture seule —
+                // doit s'afficher : sans cela, le bouton semble ne rien faire.
+                onError: (erreur) =>
+                  Alert.alert('Impossible', messageDErreur(erreur, 'Le tarif n’a pas été enregistré.')),
+              },
+            )
+          }
+        />
+      ) : null}
     </Screen>
+  );
+}
+
+/**
+ * LE PRIX AU KILOMÈTRE, réglé d'un seul geste.
+ *
+ * Les cinq valeurs partent ENSEMBLE : prise en charge, kilomètres inclus, prix au kilomètre et à la
+ * minute n'ont de sens que les uns par rapport aux autres. Les enregistrer une par une laisserait,
+ * entre deux appels, une grille qui facture des kilomètres sans prise en charge — sur des commandes
+ * en cours.
+ *
+ * LES MONTANTS SONT EN CENTIMES, comme partout dans le moteur tarifaire. Saisir en euros ici
+ * imposerait une conversion de plus, et c'est exactement là que naissent les écarts d'un centime
+ * que personne ne sait expliquer trois mois plus tard.
+ */
+function FormulaireTarifDistance({
+  metier,
+  enCours,
+  onFermer,
+  onEnregistrer,
+}: {
+  metier: ZoneTrade;
+  enCours: boolean;
+  onFermer: () => void;
+  onEnregistrer: (valeurs: {
+    distance_pricing_enabled: boolean;
+    pickup_fee_cents: number;
+    price_per_km_cents: number | null;
+    price_per_minute_cents: number | null;
+    included_km: number;
+  }) => void;
+}) {
+  const styles = stylesFor(useThemeColors());
+
+  const [actif, setActif] = useState(metier.distance_pricing_enabled ?? false);
+  const [priseEnCharge, setPriseEnCharge] = useState(String(metier.pickup_fee_cents ?? 0));
+  const [parKm, setParKm] = useState(
+    metier.price_per_km_cents != null ? String(metier.price_per_km_cents) : '',
+  );
+  const [parMinute, setParMinute] = useState(
+    metier.price_per_minute_cents != null ? String(metier.price_per_minute_cents) : '',
+  );
+  const [inclus, setInclus] = useState(String(metier.included_km ?? 0));
+
+  // Chaîne vide → `null`, et non `0` : « aucun tarif au kilomètre » laisse le forfait décider,
+  // « zéro centime le kilomètre » facturerait la distance gratuitement.
+  const entierOuNul = (valeur: string): number | null => {
+    const nettoye = valeur.trim();
+
+    return nettoye === '' ? null : Math.max(0, Number.parseInt(nettoye, 10) || 0);
+  };
+
+  return (
+    <Modal visible transparent animationType="slide" onRequestClose={onFermer}>
+      <View style={styles.modalFond}>
+        <View style={styles.modalCarte}>
+          <ScrollView keyboardShouldPersistTaps="handled">
+            <Text style={styles.modalTitre}>Prix au kilomètre — {metier.name}</Text>
+            <Text style={styles.modalAide}>
+              Montants en CENTIMES. Laisser vide « c/km » revient à ne pas facturer la distance.
+            </Text>
+
+            <View style={styles.modalLigne}>
+              <Text style={styles.modalLigneTexte}>Facturer à la distance</Text>
+              <Switch
+                value={actif}
+                onValueChange={setActif}
+                accessibilityLabel="Activer le prix au kilomètre"
+                trackColor={{ true: colors.brand[500], false: colors.surface[300] }}
+              />
+            </View>
+
+            <TextInput
+              label="Prise en charge (centimes)"
+              value={priseEnCharge}
+              onChangeText={setPriseEnCharge}
+              keyboardType="number-pad"
+            />
+            <TextInput
+              label="Kilomètres inclus"
+              value={inclus}
+              onChangeText={setInclus}
+              keyboardType="number-pad"
+            />
+            <TextInput
+              label="Centimes par kilomètre"
+              value={parKm}
+              onChangeText={setParKm}
+              keyboardType="number-pad"
+              placeholder="—"
+            />
+            <TextInput
+              label="Centimes par minute"
+              value={parMinute}
+              onChangeText={setParMinute}
+              keyboardType="number-pad"
+              placeholder="—"
+            />
+
+            <Button
+              label="Enregistrer"
+              loading={enCours}
+              fullWidth
+              onPress={() =>
+                onEnregistrer({
+                  distance_pricing_enabled: actif,
+                  pickup_fee_cents: entierOuNul(priseEnCharge) ?? 0,
+                  price_per_km_cents: entierOuNul(parKm),
+                  price_per_minute_cents: entierOuNul(parMinute),
+                  included_km: entierOuNul(inclus) ?? 0,
+                })
+              }
+            />
+            <Button label="Annuler" variant="secondary" fullWidth onPress={onFermer} />
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
@@ -143,6 +292,7 @@ function TradeRow({
   onToggle,
   onEdit,
   onParcours,
+  onTarifDistance,
   onMonter,
   onDescendre,
 }: {
@@ -150,6 +300,7 @@ function TradeRow({
   onToggle: () => void;
   onEdit: () => void;
   onParcours: () => void;
+  onTarifDistance: () => void;
   onMonter: () => void;
   onDescendre: () => void;
 }) {
@@ -167,6 +318,28 @@ function TradeRow({
           */}
           {metier.has_zone_price ? ' · tarif de la zone' : ' · tarif du métier'}
         </Text>
+
+        {/*
+          CE QUI CHANGE LE PRIX DOIT SE VOIR SANS OUVRIR UN MENU.
+
+          Un métier de trajet facturé au forfait vend deux kilomètres au prix de vingt : c'est le
+          genre d'erreur qu'on ne découvre qu'à la première facture contestée. La ligne le dit.
+        */}
+        {metier.is_route_service ? (
+          <Text
+            style={[styles.rowMeta, metier.distance_pricing_enabled ? styles.rowMetaOk : styles.rowMetaAlerte]}
+            testID={`tarif-distance-${metier.id}`}
+          >
+            {metier.distance_pricing_enabled
+              ? `Trajet · ${((metier.pickup_fee_cents ?? 0) / 100).toFixed(2).replace('.', ',')} €`
+                + (metier.price_per_km_cents != null
+                  ? ` + ${(metier.price_per_km_cents / 100).toFixed(2).replace('.', ',')} €/km`
+                  : '')
+                + ((metier.included_km ?? 0) > 0 ? ` (${metier.included_km} km inclus)` : '')
+              : 'Trajet · aucun prix au kilomètre — facturé au forfait'}
+            {metier.taxi_rules ? ' · règles taxi' : ''}
+          </Text>
+        ) : null}
       </View>
 
       <LigneActions
@@ -175,6 +348,14 @@ function TradeRow({
           { cle: 'edit', libelle: 'Modifier le métier', executer: onEdit },
           // Ce que le métier DEMANDE au client, et ce que chaque réponse ajoute au prix.
           { cle: 'parcours', libelle: 'Parcours de questions', executer: onParcours },
+          /*
+            Proposé pour les SEULS métiers de trajet. L'offrir partout ferait régler un tarif au
+            kilomètre sur un ménage — réglage qui ne s'appliquerait jamais, et que le suivant
+            croirait actif.
+          */
+          ...(metier.is_route_service
+            ? [{ cle: 'tarif-distance', libelle: 'Prix au kilomètre', executer: onTarifDistance }]
+            : []),
           /*
             L'ordre des métiers est celui du DOCK client : le premier est ce qu'on propose
             d'abord. Monter et descendre plutôt qu'un glisser-déposer, qui se confond avec le
@@ -247,4 +428,39 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   rowTexte: { flex: 1 },
   rowTitre: { ...typography.preset.bodyReadable, color: t.text },
   rowMeta: { fontSize: typography.fontSize.xs, color: t.textMuted, marginTop: 2 },
+  rowMetaOk: { color: colors.success[600] },
+  // Un métier de trajet vendu au forfait n'est pas une panne : c'est une décision qui n'a pas été
+  // prise. La couleur d'alerte le signale sans crier au défaut.
+  rowMetaAlerte: { color: colors.warning[700] },
+
+  modalFond: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  modalCarte: {
+    maxHeight: '85%',
+    padding: spacing.lg,
+    gap: spacing.sm,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    backgroundColor: t.card,
+  },
+  modalTitre: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: t.text,
+  },
+  modalAide: {
+    fontSize: typography.fontSize.xs,
+    color: t.textSecondary,
+    marginBottom: spacing.sm,
+  },
+  modalLigne: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+  },
+  modalLigneTexte: { fontSize: typography.fontSize.sm, color: t.text },
 });

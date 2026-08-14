@@ -68,3 +68,41 @@ export function useToggleTradeInZone(zoneId: number) {
     onSettled: () => qc.invalidateQueries({ queryKey: cle }),
   });
 }
+
+/** Les cinq réglages du prix au kilomètre, tels qu'on les enregistre ENSEMBLE. */
+export interface DistancePricing {
+  distance_pricing_enabled: boolean;
+  pickup_fee_cents: number;
+  price_per_km_cents: number | null;
+  price_per_minute_cents: number | null;
+  included_km: number;
+}
+
+/**
+ * Règle le prix au kilomètre d'un métier dans une zone.
+ *
+ * UN SEUL APPEL POUR LES CINQ VALEURS, et pas cinq bascules : prise en charge, prix au kilomètre et
+ * kilomètres inclus n'ont de sens qu'ensemble. Les envoyer séparément laisserait, entre deux
+ * requêtes, une grille qui facture des kilomètres sans prise en charge — un état qu'aucun exploitant
+ * n'a décidé, sur des commandes en cours.
+ *
+ * PAS DE MISE À JOUR OPTIMISTE ici, contrairement à l'interrupteur d'ouverture : celui-ci bascule un
+ * booléen qu'on sait annuler, celle-là engage un montant. Afficher un tarif avant que le serveur
+ * l'ait accepté ferait croire à une grille qui n'existe pas.
+ */
+export function useUpdateDistancePricing(zoneId: number) {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ tradeId, valeurs }: { tradeId: number; valeurs: DistancePricing }) => {
+      const { data } = await apiClient.post(
+        `/admin/catalogue/zones/${zoneId}/trades/${tradeId}/distance-pricing`,
+        valeurs,
+      );
+
+      return data.data as DistancePricing & { id: number };
+    },
+
+    onSettled: () => qc.invalidateQueries({ queryKey: ['admin', 'catalogue', 'zone', zoneId] }),
+  });
+}

@@ -40,6 +40,13 @@ class Kernel extends ConsoleKernel
         $schedule->command('subscriptions:tick --limit=500')->dailyAt('03:00')->withoutOverlapping();
         $schedule->command('accounting:close-previous-month')->monthlyOn(6, '04:00')->withoutOverlapping();
         $schedule->command('fleet:scan-expiring')->dailyAt('05:00')->withoutOverlapping();
+        /*
+         * L'autre moitié du dossier : la flotte savait prévenir qu'un contrôle technique arrivait à
+         * terme, les pièces du prestataire — permis, assurance — ne le savaient pas. Juste après
+         * elle, pour que les deux préavis d'une même personne partent le même matin plutôt qu'à
+         * deux moments qu'elle ne relierait pas.
+         */
+        $schedule->command('provider:scan-expiring-documents')->dailyAt('05:15')->withoutOverlapping();
         $schedule->command('bundles:scan-quote-requests')->hourly()->withoutOverlapping();
 
         // SP4 — contract SLA monitor (mark met / breached + escalate once)

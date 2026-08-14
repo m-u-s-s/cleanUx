@@ -262,6 +262,13 @@ Route::middleware(['auth:sanctum', 'api_admin'])->group(function () {
             Route::post('/zones/{zone}/trades/{trade}/toggle', [ZoneCatalogController::class, 'toggle']);
             // L'immédiat se décide zone par zone, comme le prix — et sur la même ligne.
             Route::post('/zones/{zone}/trades/{trade}/toggle-asap', [ZoneCatalogController::class, 'toggleAsap']);
+            /*
+             * Le prix au kilomètre, sur la MÊME ligne (métier, zone) que l'activation. Un seul appel
+             * pour les cinq réglages : prise en charge, prix au km, prix à la minute et kilomètres
+             * inclus n'ont de sens qu'ensemble, et les enregistrer un par un laisserait entre deux
+             * requêtes une grille que personne n'a décidée — sur des commandes en cours.
+             */
+            Route::post('/zones/{zone}/trades/{trade}/distance-pricing', [ZoneCatalogController::class, 'updateDistancePricing']);
 
             /*
              * Le constructeur de parcours. Il ne réimplémente aucune règle : la validation vient de

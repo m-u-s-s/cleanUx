@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * Phase 14 — Document KYC uploadé par un prestataire.
@@ -132,8 +133,19 @@ class ProviderOnboardingDocument extends Model
         return $this->status === self::STATUS_REJECTED;
     }
 
+    /**
+     * UNE PIÈCE VALABLE « JUSQU'AU 14 » L'EST ENCORE LE 14.
+     *
+     * `isPast()` compare à l'instant courant, et la colonne est castée en DATE — donc à minuit. Une
+     * pièce arrivant à échéance aujourd'hui serait ainsi périmée dès 00 h 01, alors que le verrou
+     * de dispatch, lui, compare en SQL avec `>= aujourd'hui` et la laisse passer toute la journée.
+     *
+     * Deux verdicts opposés sur la même pièce le même jour : le prestataire recevrait des missions
+     * pendant que son dossier le déclare hors règle, ou l'inverse — et personne ne saurait lequel a
+     * raison. La comparaison est donc alignée sur celle du dispatch, à la journée.
+     */
     public function isExpired(): bool
     {
-        return $this->expires_at !== null && $this->expires_at->isPast();
+        return $this->expires_at !== null && $this->expires_at->lt(Carbon::today());
     }
 }

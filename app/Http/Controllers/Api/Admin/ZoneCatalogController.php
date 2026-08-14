@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\TradeZonePricing;
+use App\Support\Domain\TradeRouteRules;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -62,6 +64,29 @@ class ZoneCatalogController extends Controller
                      */
                     'allows_asap' => (bool) $metier->allows_asap,
                     'asap_enabled' => $ligne !== null && (bool) $ligne->asap_enabled,
+                    /*
+                     * LE TRAJET ET SON PRIX AU KILOMÈTRE — la même donnée que l'écran web.
+                     *
+                     * Sans eux, un administrateur en déplacement ouvre un métier de course dans une
+                     * zone et repart sans avoir pu y poser un tarif : la course s'y vend alors au
+                     * forfait, c'est-à-dire au même prix pour deux kilomètres que pour vingt.
+                     *
+                     * `is_route_service` se dérive du parcours, jamais d'un drapeau — voir
+                     * TradeRouteRules. Il est servi ici pour que l'écran sache quoi proposer.
+                     */
+                    'is_route_service' => TradeRouteRules::estUnTrajet($metier),
+                    'taxi_rules' => (bool) $metier->taxi_rules,
+                    'distance_pricing_enabled' => $ligne !== null && (bool) $ligne->distance_pricing_enabled,
+                    'pickup_fee_cents' => $ligne !== null ? (int) $ligne->pickup_fee_cents : 0,
+                    // `getRawOriginal` : le cast entier ferait d'un NULL un zéro, et « aucun tarif au
+                    // kilomètre » deviendrait « zéro centime le kilomètre » — donc gratuit.
+                    'price_per_km_cents' => $ligne !== null && $ligne->getRawOriginal('price_per_km_cents') !== null
+                        ? (int) $ligne->getRawOriginal('price_per_km_cents')
+                        : null,
+                    'price_per_minute_cents' => $ligne !== null && $ligne->getRawOriginal('price_per_minute_cents') !== null
+                        ? (int) $ligne->getRawOriginal('price_per_minute_cents')
+                        : null,
+                    'included_km' => $ligne !== null ? (int) $ligne->included_km : 0,
                 ];
             });
 
@@ -167,6 +192,75 @@ class ZoneCatalogController extends Controller
                 'id' => $trade->id,
                 'is_open' => (bool) $ligne->is_active,
                 'asap_enabled' => (bool) $ligne->asap_enabled,
+            ],
+        ]);
+    }
+
+    /**
+     * LE PRIX AU KILOMÈTRE d'un métier dans cette zone.
+     *
+     * Une seule route pour les cinq réglages, et non cinq bascules : la prise en charge, le prix au
+     * kilomètre et les kilomètres inclus n'ont de sens qu'ENSEMBLE. Les enregistrer séparément
+     * laisserait, entre deux appels, une grille qui facture des kilomètres sans prise en charge — un
+     * état qu'aucun exploitant n'a décidé, sur des commandes en cours.
+     */
+    public function updateDistancePricing(Request $request, ServiceZone $zone, Trade $trade): JsonResponse
+    {
+        if (! Gate::allows('update', Trade::class)) {
+            return response()->json([
+                'ok' => false,
+                'error' => 'forbidden_readonly',
+                'error_code' => 'forbidden_readonly',
+            ], 403);
+        }
+
+        $data = $request->validate([
+            'distance_pricing_enabled' => ['required', 'boolean'],
+            'pickup_fee_cents' => ['nullable', 'integer', 'min:0', 'max:9999900'],
+            'price_per_km_cents' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'price_per_minute_cents' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'included_km' => ['nullable', 'integer', 'min:0', 'max:1000'],
+        ]);
+
+        $ligne = TradeZonePricing::query()
+            ->where('trade_id', $trade->id)
+            ->where('service_zone_id', $zone->id)
+            ->first();
+
+        // Même refus que pour l'immédiat : régler un prix dans une zone où le métier est fermé
+        // écrirait une grille que personne n'appliquera, et ferait croire le service ouvert.
+        if (! $ligne || ! $ligne->is_active) {
+            return response()->json([
+                'ok' => false,
+                'error' => 'trade_closed_in_zone',
+                'error_code' => 'trade_closed_in_zone',
+                'message' => 'Ouvrez d’abord ce métier dans la zone.',
+            ], 422);
+        }
+
+        $ligne->update([
+            'distance_pricing_enabled' => (bool) $data['distance_pricing_enabled'],
+            'pickup_fee_cents' => (int) ($data['pickup_fee_cents'] ?? 0),
+            // `null` et `0` ne disent pas la même chose : l'un laisse le forfait décider, l'autre
+            // facture la distance gratuitement.
+            'price_per_km_cents' => $data['price_per_km_cents'] ?? null,
+            'price_per_minute_cents' => $data['price_per_minute_cents'] ?? null,
+            'included_km' => (int) ($data['included_km'] ?? 0),
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'data' => [
+                'id' => $trade->id,
+                'distance_pricing_enabled' => (bool) $ligne->distance_pricing_enabled,
+                'pickup_fee_cents' => (int) $ligne->pickup_fee_cents,
+                'price_per_km_cents' => $ligne->getRawOriginal('price_per_km_cents') !== null
+                    ? (int) $ligne->getRawOriginal('price_per_km_cents')
+                    : null,
+                'price_per_minute_cents' => $ligne->getRawOriginal('price_per_minute_cents') !== null
+                    ? (int) $ligne->getRawOriginal('price_per_minute_cents')
+                    : null,
+                'included_km' => (int) $ligne->included_km,
             ],
         ]);
     }

@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Admin\Onboarding;
 
+use App\Models\FleetVehicle;
 use App\Models\ProviderOnboardingDocument;
 use App\Services\Onboarding\ProviderOnboardingService;
+use App\Services\Onboarding\ProviderVehicleService;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -86,6 +88,54 @@ class AdminOnboardingDocumentsCenter extends Component
             })
             ->orderByDesc('created_at')
             ->paginate(20);
+    }
+
+    /**
+     * LE VÉHICULE DÉCLARÉ, EN FACE DE LA CARTE GRISE À RELIRE.
+     *
+     * L'administrateur devait juger l'âge du véhicule sur une photo de certificat, en lisant une
+     * date en petits caractères et en la soustrayant de tête. Le calcul existe pourtant déjà côté
+     * serveur, et c'est LUI qui décide du dispatch : ne pas le montrer ici laissait la revue humaine
+     * et le verrou automatique juger séparément — avec la possibilité qu'ils divergent.
+     *
+     * Chargé pour la PAGE COURANTE seulement, en une requête : un appel par ligne ferait vingt
+     * allers-retours pour un écran qu'on parcourt en trois secondes.
+     *
+     * @param  iterable<int, ProviderOnboardingDocument>  $documents  La page affichée. Passée en
+     *                                                                paramètre plutôt que relue :
+     *                                                                la requête est paginée et
+     *                                                                filtrée, la rejouer ici
+     *                                                                pourrait rendre une autre page.
+     * @return array<int, array<string, mixed>>
+     */
+    public function vehiculesDes(iterable $documents): array
+    {
+        $userIds = collect($documents)
+            ->filter(fn (ProviderOnboardingDocument $doc): bool => $doc->document_type === ProviderOnboardingDocument::TYPE_VEHICLE_REGISTRATION)
+            ->pluck('user_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($userIds->isEmpty()) {
+            return [];
+        }
+
+        $service = app(ProviderVehicleService::class);
+
+        return FleetVehicle::query()
+            ->whereIn('current_provider_id', $userIds)
+            ->whereNot('status', FleetVehicle::STATUS_RETIRED)
+            ->get()
+            ->keyBy('current_provider_id')
+            ->map(fn (FleetVehicle $vehicule) => [
+                'plate' => $vehicule->plate,
+                'label' => trim(($vehicule->brand ?? '').' '.($vehicule->model ?? '')) ?: null,
+                'registered_at' => $vehicule->registered_at?->format('d/m/Y'),
+                'age' => $service->ageEnAnnees($vehicule),
+                'limite' => $service->limiteDAge($vehicule->registered_country),
+            ])
+            ->all();
     }
 
     public function getCountsProperty(): array
@@ -199,9 +249,14 @@ class AdminOnboardingDocumentsCenter extends Component
     #[Layout('layouts.app')]
     public function render(): View
     {
+        $documents = $this->documents;
+
         return view('livewire.admin.onboarding.admin-onboarding-documents-center', [
-            'documents' => $this->documents,
+            'documents' => $documents,
             'counts' => $this->counts,
+            // Résolus pour la page affichée, en une requête : un appel par ligne ferait vingt
+            // allers-retours sur un écran qu'on parcourt en trois secondes.
+            'vehicules' => $this->vehiculesDes($documents->items()),
         ]);
     }
 }

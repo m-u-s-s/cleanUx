@@ -90,4 +90,21 @@ return [
     */
     'trade_requirements_grace_days' => (int) env('ONBOARDING_TRADE_REQUIREMENTS_GRACE_DAYS', 30),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Préavis avant péremption d'une pièce
+    |--------------------------------------------------------------------------
+    |
+    | Un permis ou une assurance qui expire ne prévient personne. Le prestataire découvre la chose
+    | au silence de son téléphone, plusieurs jours plus tard, et le support l'apprend par un appel
+    | agacé — c'est l'angle mort connu de cette plateforme, transposé aux dates.
+    |
+    | Trente jours, comme la flotte (`fleet_v2.expiring_soon_days`) : assez pour prendre un
+    | rendez-vous en préfecture ou renouveler un contrat d'assurance, assez court pour que l'alerte
+    | reste liée à une action à faire plutôt qu'à une échéance lointaine qu'on oublie.
+    |
+    | À zéro, aucun préavis n'est envoyé — la péremption reste bloquante le jour venu.
+    */
+    'expiring_soon_days' => (int) env('ONBOARDING_DOCUMENT_EXPIRING_SOON_DAYS', 30),
+
 ];
