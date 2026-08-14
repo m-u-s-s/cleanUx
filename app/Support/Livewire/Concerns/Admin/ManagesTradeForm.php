@@ -62,6 +62,15 @@ trait ManagesTradeForm
 
     public bool $requires_quote_by_default = false;
 
+    /**
+     * Règles du transport de personnes : véhicule récent, carte grise, assurance.
+     *
+     * Indépendante du fait que le parcours décrive un trajet — une dépanneuse va d'un point à un
+     * autre sans obéir aux règles taxi. Les confondre reviendrait à réclamer une voiture de moins
+     * de quatre ans à une remorqueuse.
+     */
+    public bool $taxi_rules = false;
+
     public ?string $sla_response_minutes = null;
 
     public string $booking_form_schema_json = '';
@@ -111,6 +120,7 @@ trait ManagesTradeForm
         $this->weekend_multiplier = '1.00';
         $this->quote_validity_days = null;
         $this->requires_quote_by_default = false;
+        $this->taxi_rules = false;
         $this->sla_response_minutes = null;
         $this->booking_form_schema_json = '';
         $this->showFormSchemaPreview = false;
@@ -140,6 +150,7 @@ trait ManagesTradeForm
         $this->weekend_multiplier = (string) ($trade->weekend_multiplier ?? '1.00');
         $this->quote_validity_days = $trade->quote_validity_days !== null ? (string) $trade->quote_validity_days : null;
         $this->requires_quote_by_default = (bool) $trade->requires_quote_by_default;
+        $this->taxi_rules = (bool) $trade->taxi_rules;
         $this->sla_response_minutes = $trade->sla_response_minutes !== null ? (string) $trade->sla_response_minutes : null;
         $this->booking_form_schema_json = $trade->booking_form_schema !== null
             ? (string) json_encode($trade->booking_form_schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
@@ -170,6 +181,7 @@ trait ManagesTradeForm
             'weekend_multiplier' => ['required', 'numeric', 'min:1', 'max:10'],
             'quote_validity_days' => ['nullable', 'integer', 'min:1', 'max:365'],
             'requires_quote_by_default' => ['boolean'],
+            'taxi_rules' => ['boolean'],
             'sla_response_minutes' => ['nullable', 'integer', 'min:1', 'max:43200'],
             'booking_form_schema_json' => ['nullable', 'string', 'max:50000'],
         ];
@@ -239,6 +251,12 @@ trait ManagesTradeForm
             return null;
         }
 
+        /*
+         * `taxi_rules_since` n'est PAS posé ici. Ce formulaire n'est qu'une des portes qui écrivent
+         * `taxi_rules` — la console mobile en est une autre, les seeders une troisième — et une date
+         * posée dans chacune finirait par manquer dans la quatrième. Elle est stampée par
+         * {@see \App\Observers\TradeTaxiRulesObserver}, qui suit la colonne qu'elle décrit.
+         */
         if ($this->tradeId !== null) {
             $trade = Trade::findOrFail($this->tradeId);
             $trade->update($validated);

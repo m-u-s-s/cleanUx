@@ -105,9 +105,10 @@ class QuestionnaireValidator
         $issues = [];
 
         foreach ($questions as $question) {
-            // Une photo et une adresse n'ont pas de « je ne sais pas » : l'une est facultative par
-            // nature, l'autre est indispensable pour trouver un prestataire.
-            if (in_array($question->type, [QuestionType::PHOTO, QuestionType::ADDRESS], true)) {
+            // Une photo, une adresse et une localisation n'ont pas de « je ne sais pas » : la
+            // première est facultative par nature, les deux autres sont indispensables pour trouver
+            // un prestataire — et, sur un trajet, pour savoir où l'emmener.
+            if (in_array($question->type, [QuestionType::PHOTO, QuestionType::ADDRESS, QuestionType::LOCATION], true)) {
                 continue;
             }
 

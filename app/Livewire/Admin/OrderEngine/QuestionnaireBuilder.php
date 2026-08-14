@@ -18,9 +18,11 @@ use App\Services\OrderEngine\QuestionnaireValidator;
 use App\Services\OrderEngine\TradeFormPublisher;
 use App\Support\Domain\ConditionAction;
 use App\Support\Domain\ConditionOperator;
+use App\Support\Domain\LocationRole;
 use App\Support\Domain\OrderMode;
 use App\Support\Domain\PriceImpactMode;
 use App\Support\Domain\QuestionType;
+use App\Support\Domain\TradeRouteRules;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -28,6 +30,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -211,7 +214,24 @@ class QuestionnaireBuilder extends Component
             'step' => $question->validation['step'] ?? null,
             'pricing_mode' => $question->pricing['mode'] ?? PriceImpactMode::NONE,
             'pricing_coefficient' => $question->pricing['coefficient'] ?? null,
+            'location_role' => $question->location_role ?? LocationRole::PICKUP,
         ];
+    }
+
+    /**
+     * Deux départs ne décrivent pas un trajet, ils décrivent une erreur.
+     *
+     * Le refus est posé ICI plutôt que dans une contrainte de base : l'administrateur doit lire
+     * pourquoi son enregistrement est refusé, et une violation d'unicité SQL ne dit rien
+     * d'exploitable. La question déjà en place est nommée, pour qu'il sache laquelle modifier.
+     */
+    private function roleDejaPris(string $role): ?Question
+    {
+        return $this->questions()
+            ->first(fn (Question $question) => $question->id !== $this->editingId
+                && $question->type === QuestionType::LOCATION
+                && $question->location_role === $role
+                && (bool) $question->is_active);
     }
 
     public function cancel(): void
@@ -286,14 +306,31 @@ class QuestionnaireBuilder extends Component
             'form.max' => ['nullable', 'numeric'],
             'form.step' => ['nullable', 'numeric', 'min:0'],
             'form.pricing_coefficient' => ['nullable', 'numeric'],
+            'form.location_role' => ['nullable', 'string', Rule::in(LocationRole::all())],
         ], [
             'form.code.regex' => 'Le code ne peut contenir que des minuscules, des chiffres et des tirets bas.',
         ])['form'];
+
+        $estUneLocalisation = $data['type'] === QuestionType::LOCATION;
+        $role = $estUneLocalisation ? ($data['location_role'] ?? LocationRole::PICKUP) : null;
+
+        if ($role !== null && ($occupee = $this->roleDejaPris($role))) {
+            $this->addError('form.location_role', sprintf(
+                '« %s » est déjà posé par la question « %s ». Un parcours ne décrit qu’un seul trajet.',
+                LocationRole::label($role),
+                $occupee->label,
+            ));
+
+            return;
+        }
 
         $payload = [
             'label' => $data['label'],
             'help_text' => $data['help_text'] ?? null,
             'type' => $data['type'],
+            // Remis à nul dès que le type change : un rôle de trajet resté accroché à une question
+            // devenue un compteur ferait passer le métier pour un trajet qu'il n'est plus.
+            'location_role' => $role,
             'is_required' => (bool) ($this->form['is_required'] ?? false),
             'allows_unknown' => (bool) ($this->form['allows_unknown'] ?? true),
             'is_essential' => (bool) ($this->form['is_essential'] ?? false),
@@ -1195,18 +1232,50 @@ class QuestionnaireBuilder extends Component
             'step' => null,
             'pricing_mode' => PriceImpactMode::NONE,
             'pricing_coefficient' => null,
+            // Ne vaut que pour une question de type `location`. Départ par défaut : c'est celle
+            // qu'on pose en premier, et un métier de trajet en a forcément une.
+            'location_role' => LocationRole::PICKUP,
         ];
     }
 
     /** Les propriétés calculées sont mises en cache par Livewire : il faut les invalider à la main. */
     protected function refreshDerived(): void
     {
-        unset($this->questions, $this->issues, $this->canPublish, $this->quote, $this->currentRevision, $this->hasUnpublishedChanges);
+        unset($this->questions, $this->issues, $this->canPublish, $this->quote, $this->currentRevision, $this->hasUnpublishedChanges, $this->estUnTrajet);
+
+        // La relation est rechargée à la demande : `estUnTrajet` la relit, et une collection restée
+        // en mémoire ferait dire à l'écran qu'un métier est encore un trajet après la suppression
+        // de sa question d'arrivée.
+        $this->trade->unsetRelation('questions');
     }
 
     public function questionTypes(): array
     {
         return QuestionType::all();
+    }
+
+    /** @return list<string> */
+    public function locationRoles(): array
+    {
+        return LocationRole::all();
+    }
+
+    public function locationRoleLabel(?string $role): string
+    {
+        return LocationRole::label($role);
+    }
+
+    /**
+     * Ce parcours décrit-il déjà un trajet complet ?
+     *
+     * Sert à l'écran : tant qu'il manque une des deux localisations, l'administrateur doit savoir
+     * que son métier n'a PAS encore basculé sur le parcours mission des courses — sans quoi il
+     * croirait avoir activé quelque chose qui n'existe pas.
+     */
+    #[Computed]
+    public function estUnTrajet(): bool
+    {
+        return TradeRouteRules::estUnTrajet($this->trade->load('questions'));
     }
 
     public function render()

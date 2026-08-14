@@ -75,4 +75,27 @@ return [
     */
     'damage_conditions' => ['ok', 'damaged', 'lost', 'needs_maintenance'],
     'auto_schedule_maintenance_on_damage' => true,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Règles du transport de personnes
+    |--------------------------------------------------------------------------
+    |
+    | S'appliquent aux seuls métiers dont l'administrateur a coché « règles taxi »
+    | (`trades.taxi_rules`). C'est la règle que posent Uber, Bolt et Heetch dans la plupart des
+    | villes : un véhicule trop ancien n'est pas accepté en transport de personnes.
+    |
+    | L'âge est CALCULÉ depuis la date de première immatriculation déclarée par le prestataire et
+    | attestée par sa carte grise — jamais saisi, et jamais jugé à l'œil sur une photo. Un véhicule
+    | vieillit : le contrôle doit donc pouvoir être rejoué, pas seulement passé une fois.
+    |
+    | Le plafond varie d'une ville à l'autre chez tous les concurrents ; `by_country` permet de le
+    | dire sans déploiement, et l'absence de clé retombe sur la valeur générale.
+    */
+    'taxi_rules' => [
+        'max_vehicle_age_years' => (int) env('FLEET_TAXI_MAX_VEHICLE_AGE_YEARS', 4),
+        'by_country' => [
+            // 'BE' => 5,
+        ],
+    ],
 ];

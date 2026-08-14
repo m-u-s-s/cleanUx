@@ -16,7 +16,9 @@ use App\Observers\BookingObserver;
 use App\Observers\BookingPaymentDestinationObserver;
 use App\Observers\BookingTipObserver;
 use App\Observers\MissionTrackingPointObserver;
+use App\Observers\QuestionRouteRulesObserver;
 use App\Observers\RendezVousObserver;
+use App\Observers\TradeTaxiRulesObserver;
 use App\Observers\TripTrackingSessionObserver;
 use App\Policies\CatalogPolicy;
 use App\Policies\ChannelPolicy;
@@ -167,6 +169,18 @@ class AppServiceProvider extends ServiceProvider
         if (class_exists(MissionTrackingPoint::class) && class_exists(MissionTrackingPointObserver::class)) {
             MissionTrackingPoint::observe(MissionTrackingPointObserver::class);
         }
+
+        /*
+         * Un métier devient — ou cesse d'être — un service de trajet quand ses questions de
+         * localisation changent. La DATE de cette bascule fait courir le délai laissé aux
+         * prestataires déjà inscrits : elle suit donc la table qui la décide, et non les trois
+         * écrans qui l'écrivent.
+         */
+        Question::observe(QuestionRouteRulesObserver::class);
+
+        // Même raison, autre colonne : « règles taxi » s'écrit depuis le web, depuis la console
+        // mobile et depuis les seeders. La date de bascule suit la colonne, pas ses écrivains.
+        Trade::observe(TradeTaxiRulesObserver::class);
 
         Gate::policy(Channel::class, ChannelPolicy::class);
 

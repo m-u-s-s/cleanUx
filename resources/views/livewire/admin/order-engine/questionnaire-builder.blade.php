@@ -29,6 +29,21 @@
     @endif
 
     {{--
+        Un parcours à deux localisations ne change pas qu'un formulaire : il change le cycle de vie
+        de la mission, les documents exigés du prestataire et le mode de calcul du prix. L'écrire ici
+        évite qu'un administrateur bascule tout cela sans s'en rendre compte — ou croie l'avoir fait
+        alors qu'il manque encore une des deux questions.
+    --}}
+    @if ($this->estUnTrajet())
+        <p class="rounded-xl bg-sky-50 px-4 py-3 text-sm text-sky-900">
+            <span class="font-medium">Service de trajet.</span>
+            Ce parcours pose un départ et une arrivée : la distance est calculée dès la commande, la
+            mission se déroule sans code de début ni de fin, et le prestataire doit fournir son permis
+            de conduire.
+        </p>
+    @endif
+
+    {{--
         Les avertissements du validateur. Ils ne sont pas décoratifs : ce sont eux qui empêchent un
         parcours de dériver vers quinze questions sans échappatoire, une à la fois, chacune
         justifiable prise isolément.
@@ -537,6 +552,27 @@
                         @endforeach
                     </select>
                 </label>
+
+                @if (($form['type'] ?? null) === 'location')
+                    {{--
+                        Le rôle est DÉCLARÉ, jamais déduit de l'ordre d'affichage : un administrateur
+                        qui réordonne ses questions inverserait sinon le sens du trajet sans le voir.
+                    --}}
+                    <label>
+                        <span class="mb-1 block text-sm font-medium text-slate-700">Rôle dans le trajet</span>
+                        <select wire:model.live="form.location_role"
+                            class="w-full rounded-xl border-slate-300 focus:border-slate-900 focus:ring-0">
+                            @foreach ($this->locationRoles() as $role)
+                                <option value="{{ $role }}">{{ $this->locationRoleLabel($role) }}</option>
+                            @endforeach
+                        </select>
+                        <span class="mt-1 block text-xs text-slate-500">
+                            Un parcours qui pose un départ ET une arrivée devient un service de trajet :
+                            distance calculée à la commande, mission sans code, permis de conduire exigé.
+                        </span>
+                        @error('form.location_role') <span class="mt-1 block text-sm text-rose-700">{{ $message }}</span> @enderror
+                    </label>
+                @endif
 
                 <label class="sm:col-span-2">
                     <span class="mb-1 block text-sm font-medium text-slate-700">Aide affichée sous la question</span>

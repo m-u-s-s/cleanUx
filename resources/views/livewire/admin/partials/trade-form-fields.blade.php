@@ -149,5 +149,26 @@
                             <label class="inline-flex items-center gap-2"><input type="checkbox" wire:model="is_b2b_default" class="rounded text-blue-600"/> <span>Disponible B2B par défaut</span></label>
                             <label class="inline-flex items-center gap-2"><input type="checkbox" wire:model="is_personal_default" class="rounded text-green-600"/> <span>Disponible particuliers par défaut</span></label>
                         </div>
+
+                        {{--
+                            Séparé des autres drapeaux, parce qu'il n'a pas la même portée : il ne
+                            décrit pas le service vendu au client mais ce qu'on exige du prestataire
+                            avant de lui confier une mission de ce métier.
+                        --}}
+                        <div class="mt-3 border-t border-gray-200 pt-3 dark:border-gray-700">
+                            <label class="inline-flex items-start gap-2">
+                                <input type="checkbox" wire:model="taxi_rules" class="mt-1 rounded text-rose-600"/>
+                                <span class="text-sm text-gray-700 dark:text-gray-200">
+                                    <span class="font-medium">Règles taxi</span> — le prestataire doit déclarer son véhicule
+                                    et prouver qu'il a moins de {{ (int) config('fleet_v2.taxi_rules.max_vehicle_age_years', 4) }} ans
+                                    (carte grise + assurance).
+                                    <span class="mt-1 block text-xs text-gray-500">
+                                        Indépendant du fait que le parcours décrive un trajet : une dépanneuse va d'un point
+                                        à un autre sans obéir aux règles du transport de personnes.
+                                    </span>
+                                </span>
+                            </label>
+                            @error('taxi_rules') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                        </div>
                     </fieldset>
 

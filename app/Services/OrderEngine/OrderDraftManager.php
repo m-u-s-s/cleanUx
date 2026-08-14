@@ -307,6 +307,16 @@ class OrderDraftManager
             return $labels->isNotEmpty() ? $labels->implode(', ') : (string) (is_array($value) ? implode(', ', $value) : $value);
         }
 
+        /*
+         * Une localisation se lit par son ADRESSE, pas par ses coordonnées.
+         *
+         * Sans ce cas, le devis afficherait `{"label":"…","lat":50.84,"lng":4.35,…}` à la ligne
+         * « Point de départ » — un objet JSON là où un médiateur attend une rue et un numéro.
+         */
+        if ($question->isLocation() && is_array($value)) {
+            return (string) ($value['label'] ?? '');
+        }
+
         $unit = $question->validation['unit'] ?? null;
 
         return trim((is_array($value) ? json_encode($value) : (string) $value).' '.$unit);

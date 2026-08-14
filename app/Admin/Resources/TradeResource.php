@@ -70,6 +70,7 @@ class TradeResource extends EloquentResource
             'estimated_duration_min' => 'Durée estimée (min)',
             'requires_certification' => 'Certification requise',
             'requires_insurance_proof' => 'Assurance requise',
+            'taxi_rules' => 'Règles taxi (véhicule récent exigé)',
         ];
     }
 
@@ -96,6 +97,15 @@ class TradeResource extends EloquentResource
             Field::make('base_price_cents', 'Prix de base (centimes)', Field::TYPE_NUMBER)
                 ->rules(['nullable', 'integer', 'min:0', 'max:100000000']),
             Field::make('sort_order', 'Ordre', Field::TYPE_NUMBER)->rules(['nullable', 'integer', 'min:0', 'max:9999']),
+            /*
+             * Celui-ci fait exception à la règle « le nécessaire seulement » ci-dessus, et pour une
+             * raison précise : il ne règle pas un prix, il décide de ce qu'on exige d'un prestataire
+             * avant de lui confier une mission. Le laisser au web signifierait qu'un métier créé en
+             * déplacement part sans sa règle, et que personne ne s'en aperçoive avant qu'un
+             * conducteur sans permis reçoive une course.
+             */
+            Field::make('taxi_rules', 'Règles taxi (véhicule de moins de 4 ans)', Field::TYPE_BOOL)
+                ->rules(['nullable', 'boolean']),
         ];
     }
 

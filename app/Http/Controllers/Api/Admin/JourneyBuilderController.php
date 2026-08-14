@@ -10,7 +10,9 @@ use App\Models\User;
 use App\Services\Catalog\CatalogOrdering;
 use App\Services\OrderEngine\QuestionnaireValidator;
 use App\Services\OrderEngine\TradeFormPublisher;
+use App\Support\Domain\LocationRole;
 use App\Support\Domain\QuestionType;
+use App\Support\Domain\TradeRouteRules;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -70,6 +72,9 @@ class JourneyBuilderController extends Controller
                 'label' => $question->label,
                 'help_text' => $question->help_text,
                 'type' => $question->type,
+                // Départ ou arrivée — nul pour tout autre type. C'est ce champ qui fait d'un
+                // parcours un trajet, la console mobile doit donc pouvoir le lire ET l'écrire.
+                'location_role' => $question->location_role,
                 'is_required' => (bool) $question->is_required,
                 'sort_order' => (int) $question->sort_order,
                 // Le prix porté par la QUESTION — mode et coefficient — distinct de celui des
@@ -88,7 +93,15 @@ class JourneyBuilderController extends Controller
 
         return response()->json([
             'ok' => true,
-            'trade' => ['id' => $trade->id, 'name' => $trade->name, 'slug' => $trade->slug],
+            'trade' => [
+                'id' => $trade->id,
+                'name' => $trade->name,
+                'slug' => $trade->slug,
+                // Le verdict, servi avec le parcours : la console mobile doit dire, comme le web,
+                // qu'un métier vient de basculer sur le cycle de vie des courses.
+                'is_route_service' => TradeRouteRules::estUnTrajet($trade->load('questions')),
+                'taxi_rules' => (bool) $trade->taxi_rules,
+            ],
             'data' => $questions->values()->all(),
             /*
              * Le verdict, servi AVEC le parcours. Sans lui, on règle des questions sans savoir si
@@ -118,7 +131,26 @@ class JourneyBuilderController extends Controller
             'type' => ['required', Rule::in(QuestionType::all())],
             'help_text' => ['nullable', 'string', 'max:500'],
             'is_required' => ['nullable', 'boolean'],
+            'location_role' => ['nullable', Rule::in(LocationRole::all())],
         ]);
+
+        // Le rôle n'a de sens que sur une localisation ; accroché à un compteur, il ferait passer
+        // le métier pour un trajet qu'il n'est pas.
+        $valide['location_role'] = $valide['type'] === QuestionType::LOCATION
+            ? ($valide['location_role'] ?? LocationRole::PICKUP)
+            : null;
+
+        if ($valide['location_role'] !== null
+            && $conflit = $this->roleDejaPris($trade, $valide['location_role'], null)) {
+            return response()->json([
+                'ok' => false,
+                'error' => sprintf(
+                    '« %s » est déjà posé par la question « %s ». Un parcours ne décrit qu’un seul trajet.',
+                    LocationRole::label($valide['location_role']),
+                    $conflit->label,
+                ),
+            ], 422);
+        }
 
         $question = Question::create($valide + [
             'trade_id' => $trade->id,
@@ -142,7 +174,26 @@ class JourneyBuilderController extends Controller
             'help_text' => ['sometimes', 'nullable', 'string', 'max:500'],
             'is_required' => ['sometimes', 'boolean'],
             'is_active' => ['sometimes', 'boolean'],
+            'location_role' => ['sometimes', 'nullable', Rule::in(LocationRole::all())],
         ]);
+
+        if (array_key_exists('location_role', $valide)) {
+            $valide['location_role'] = $question->type === QuestionType::LOCATION
+                ? $valide['location_role']
+                : null;
+
+            if ($valide['location_role'] !== null
+                && $conflit = $this->roleDejaPris($question->trade, $valide['location_role'], $question->id)) {
+                return response()->json([
+                    'ok' => false,
+                    'error' => sprintf(
+                        '« %s » est déjà posé par la question « %s ». Un parcours ne décrit qu’un seul trajet.',
+                        LocationRole::label($valide['location_role']),
+                        $conflit->label,
+                    ),
+                ], 422);
+            }
+        }
 
         /*
          * LE CODE N'EST PAS MODIFIABLE ICI, et c'est volontaire. Il est cité par les commandes
@@ -152,6 +203,27 @@ class JourneyBuilderController extends Controller
         $question->forceFill($valide)->save();
 
         return response()->json(['ok' => true, 'data' => ['id' => $question->id]]);
+    }
+
+    /**
+     * Une autre question active tient-elle déjà ce rôle sur ce métier ?
+     *
+     * Le contrôle est ici ET dans l'écran web, parce que ce sont deux portes distinctes sur la même
+     * table : garder la règle d'un seul côté laisserait l'autre écrire un parcours à deux départs.
+     */
+    private function roleDejaPris(?Trade $trade, string $role, ?int $sauf): ?Question
+    {
+        if (! $trade) {
+            return null;
+        }
+
+        return Question::query()
+            ->where('trade_id', $trade->id)
+            ->where('type', QuestionType::LOCATION)
+            ->where('location_role', $role)
+            ->where('is_active', true)
+            ->when($sauf !== null, fn ($q) => $q->whereKeyNot($sauf))
+            ->first();
     }
 
     public function moveQuestion(Request $request, Question $question, CatalogOrdering $ordre): JsonResponse

@@ -32,13 +32,25 @@ final class QuestionType
 
     public const ADDRESS = 'address';
 
+    /**
+     * Un POINT sur la carte, pas une ligne de texte.
+     *
+     * `address` existe déjà et reste ce qu'il est : un champ libre, sans coordonnées, dont aucun
+     * métier en production n'attend autre chose. Le transformer en champ géocodé changerait le
+     * comportement de tous les parcours qui l'emploient — un type neuf ne change celui de personne.
+     *
+     * Ce type-ci rend une réponse structurée : libellé, latitude, longitude, code postal. C'est ce
+     * qui permet d'en poser DEUX (départ et arrivée) et d'en tirer une distance.
+     */
+    public const LOCATION = 'location';
+
     /** @return list<string> */
     public static function all(): array
     {
         return [
             self::SINGLE_CHOICE, self::MULTI_CHOICE, self::BOOLEAN, self::COUNTER,
             self::NUMBER, self::SURFACE, self::RANGE, self::DATE, self::TIME,
-            self::TEXT, self::TEXTAREA, self::PHOTO, self::ADDRESS,
+            self::TEXT, self::TEXTAREA, self::PHOTO, self::ADDRESS, self::LOCATION,
         ];
     }
 

@@ -3,7 +3,12 @@
 namespace App\Livewire\OrderEngine;
 
 use App\Models\Question;
+use App\Services\GeolocationV2\AddressSuggestion;
+use App\Services\GeolocationV2\GeocodingService;
 use App\Support\Domain\QuestionType;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 /**
@@ -51,6 +56,16 @@ class QuestionRenderer extends Component
 
     public ?float $helperWidth = null;
 
+    /**
+     * Ce que le client TAPE dans un champ de localisation, distinct de ce qu'il a CHOISI.
+     *
+     * Les deux ne se confondent pas : la réponse d'une localisation est un point — libellé,
+     * latitude, longitude — et une frappe en cours n'en est pas un. Les mélanger produirait une
+     * réponse à moitié écrite, sans coordonnées, que la commande accepterait puis que le dispatch
+     * ne saurait pas servir.
+     */
+    public string $locationQuery = '';
+
     public function mount(Question $question, mixed $value = null, bool $unknown = false, bool $preview = false): void
     {
         $this->question = $question->loadMissing('options');
@@ -65,6 +80,146 @@ class QuestionRenderer extends Component
          * qu'on vient de saisir, ce qui est précisément ce que la loi 10 interdit.
          */
         $this->value = $value ?? $this->defaultValue();
+
+        // Revenir en arrière doit retrouver le lieu déjà choisi, écrit dans le champ : le laisser
+        // vide donnerait à croire que la réponse a été perdue, et ferait tout ressaisir.
+        if ($this->question->isLocation() && is_array($this->value)) {
+            $this->locationQuery = (string) ($this->value['label'] ?? '');
+        }
+    }
+
+    // ─── Localisation ────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Les propositions d'adresse, pendant la frappe.
+     *
+     * Le géocodage échoue EN SILENCE sur ce produit, par conception : une faute de frappe ne doit
+     * jamais bloquer une commande. Mais sur un trajet, une adresse mal située ne coûte pas une
+     * phrase rassurante — elle envoie une voiture au mauvais endroit. Les propositions sont donc le
+     * chemin normal, et la saisie libre le repli.
+     *
+     * @return list<AddressSuggestion>
+     */
+    #[Computed]
+    public function locationSuggestions(): array
+    {
+        $tape = trim($this->locationQuery);
+
+        if (! $this->question->isLocation() || mb_strlen($tape) < 3) {
+            return [];
+        }
+
+        try {
+            return array_values(array_filter(
+                app(GeocodingService::class)->autocomplete(
+                    $tape,
+                    Config::get('order_engine.geocoding_country', 'BE'),
+                    5,
+                ),
+                fn (AddressSuggestion $s) => $s->description !== ($this->value['label'] ?? null),
+            ));
+        } catch (\Throwable $e) {
+            // Un service de suggestions en panne fait perdre un confort, jamais la commande.
+            Log::warning('[order_engine] suggestions de localisation indisponibles', ['error' => $e->getMessage()]);
+
+            return [];
+        }
+    }
+
+    public function updatedLocationQuery(): void
+    {
+        unset($this->locationSuggestions);
+    }
+
+    /**
+     * Le client retient une proposition : elle porte déjà sa position.
+     *
+     * Quand elle ne la porte pas — certains fournisseurs ne renvoient qu'un libellé —, on géocode.
+     * Sans coordonnées, une localisation n'est qu'une chaîne de caractères, et tout ce qui suit
+     * (distance, prix au kilomètre, itinéraire, zone) devient impossible.
+     */
+    public function chooseLocation(string $description, ?float $lat = null, ?float $lng = null, ?string $postalCode = null): void
+    {
+        $this->locationQuery = $description;
+        $this->touched = true;
+        $this->unknown = false;
+
+        if ($lat === null || $lng === null) {
+            try {
+                $resultat = app(GeocodingService::class)->geocode(
+                    $description,
+                    Config::get('order_engine.geocoding_country', 'BE'),
+                );
+
+                $lat = $resultat?->latitude;
+                $lng = $resultat?->longitude;
+                $postalCode ??= $resultat?->postalCode;
+            } catch (\Throwable $e) {
+                Log::warning('[order_engine] localisation non géocodée', ['error' => $e->getMessage()]);
+            }
+        }
+
+        $this->applyLocation($description, $lat, $lng, $postalCode);
+    }
+
+    /**
+     * « Utiliser ma position » — sur un trajet, c'est le geste principal, pas un raccourci.
+     *
+     * Le départ d'une course est presque toujours là où se trouve le téléphone. Les coordonnées sont
+     * retenues MÊME si le serveur ne sait pas les nommer : ce sont elles qui comptent, le libellé
+     * n'est qu'un confort de lecture.
+     */
+    public function useMyLocation(float $lat, float $lng): void
+    {
+        $libelle = null;
+        $codePostal = null;
+
+        try {
+            $resultat = app(GeocodingService::class)->reverseGeocode($lat, $lng);
+            $libelle = $resultat?->formattedAddress;
+            $codePostal = $resultat?->postalCode;
+        } catch (\Throwable $e) {
+            Log::warning('[order_engine] position non nommable', ['error' => $e->getMessage()]);
+        }
+
+        $libelle ??= sprintf('Position (%.5f, %.5f)', $lat, $lng);
+        $this->locationQuery = $libelle;
+        $this->touched = true;
+        $this->unknown = false;
+
+        $this->applyLocation($libelle, $lat, $lng, $codePostal);
+    }
+
+    /** Effacer un lieu choisi — pour en désigner un autre, sans avoir à sélectionner le texte. */
+    public function clearLocation(): void
+    {
+        $this->locationQuery = '';
+        $this->value = null;
+        $this->touched = true;
+        unset($this->locationSuggestions);
+        $this->validateAnswer();
+        $this->emitAnswer();
+    }
+
+    /**
+     * La forme d'une réponse de localisation — c'est un CONTRAT.
+     *
+     * `lat` et `lng` sont ce que lisent le calcul de distance, la résolution de zone et le suivi de
+     * mission. Changer ces clés ici sans les changer là-bas ferait silencieusement disparaître le
+     * point de la carte, sans qu'aucune validation ne s'en plaigne.
+     */
+    private function applyLocation(string $label, ?float $lat, ?float $lng, ?string $postalCode): void
+    {
+        $this->value = [
+            'label' => $label,
+            'lat' => $lat,
+            'lng' => $lng,
+            'postal_code' => $postalCode,
+        ];
+
+        unset($this->locationSuggestions);
+        $this->validateAnswer();
+        $this->emitAnswer();
     }
 
     /** Livewire appelle ceci à chaque frappe : c'est le moment où la question devient « touchée ». */
@@ -148,6 +303,27 @@ class QuestionRenderer extends Component
             return;
         }
 
+        /*
+         * UNE LOCALISATION SANS COORDONNÉES N'EST PAS UNE RÉPONSE.
+         *
+         * Un libellé seul passerait la garde du « champ rempli » et laisserait la commande aller
+         * jusqu'au bout — puis le calcul de distance rendrait zéro, le prix au kilomètre serait
+         * gratuit et la carte n'aurait aucun point à afficher. Le refus est posé ici, au moment où
+         * la personne peut encore corriger, plutôt qu'à la confirmation où il ne reste qu'à
+         * recommencer.
+         */
+        if ($this->question->isLocation()) {
+            $situee = is_array($this->value)
+                && ($this->value['lat'] ?? null) !== null
+                && ($this->value['lng'] ?? null) !== null;
+
+            if (! $situee && ($this->question->is_required || is_array($this->value))) {
+                $this->error = 'Choisissez une adresse dans la liste, ou utilisez votre position : nous avons besoin du point exact.';
+            }
+
+            return;
+        }
+
         $empty = $this->value === null || $this->value === '' || $this->value === [];
 
         if ($this->question->is_required && $empty) {
@@ -227,6 +403,7 @@ class QuestionRenderer extends Component
             QuestionType::DATE, QuestionType::TIME => 'datetime',
             QuestionType::PHOTO => 'photo',
             QuestionType::ADDRESS => 'address',
+            QuestionType::LOCATION => 'location',
             default => 'text',
         };
     }

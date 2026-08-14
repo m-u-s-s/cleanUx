@@ -31,6 +31,9 @@ class Question extends Model implements TranslatesCatalogLabels
 
     protected $fillable = [
         'trade_id', 'step_id', 'code', 'label', 'help_text', 'placeholder', 'type',
+        // Départ ou arrivée, pour les seules questions de type `location`. C'est de ce champ que
+        // se déduit « ce métier est un trajet » — cf. App\Support\Domain\TradeRouteRules.
+        'location_role',
         'is_required', 'sort_order', 'default_value', 'validation', 'pricing',
         'duration_impact_min', 'display', 'allows_unknown', 'is_essential', 'is_active',
     ];
@@ -112,6 +115,12 @@ class Question extends Model implements TranslatesCatalogLabels
     public function isOptionBased(): bool
     {
         return in_array($this->type, QuestionType::optionBased(), true);
+    }
+
+    /** Un point sur la carte, avec ses coordonnées — distinct du champ texte `address`. */
+    public function isLocation(): bool
+    {
+        return $this->type === QuestionType::LOCATION;
     }
 
     /**

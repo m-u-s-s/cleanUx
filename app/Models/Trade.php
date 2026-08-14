@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\Audit\Concerns\AuditsEloquentEvents;
 use App\Support\Domain\OrderMode;
+use App\Support\Domain\TradeRouteRules;
 use Database\Factories\TradeFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -80,6 +81,16 @@ class Trade extends Model
         'allows_asap',
         'allows_bundle',
         'published_at',
+        /*
+         * Règles du transport de personnes — véhicule récent, carte grise, assurance. Décision
+         * d'exploitation, indépendante du fait que le parcours décrive un trajet : une dépanneuse
+         * fait un trajet sans obéir aux règles taxi.
+         */
+        'taxi_rules',
+        // Quand chaque exigence est née. La période de grâce laissée aux prestataires déjà
+        // inscrits part de ces dates, jamais de « maintenant ».
+        'route_rules_since',
+        'taxi_rules_since',
     ];
 
     protected $casts = [
@@ -108,6 +119,9 @@ class Trade extends Model
         'allows_asap' => 'boolean',
         'allows_bundle' => 'boolean',
         'published_at' => 'datetime',
+        'taxi_rules' => 'boolean',
+        'route_rules_since' => 'datetime',
+        'taxi_rules_since' => 'datetime',
     ];
 
     /**
@@ -161,6 +175,28 @@ class Trade extends Model
     public function allowsMode(string $mode): bool
     {
         return (bool) $this->getAttribute(OrderMode::tradeFlag($mode));
+    }
+
+    /**
+     * Ce métier emmène-t-il quelqu'un d'un point à un autre ?
+     *
+     * La réponse se dérive du PARCOURS — deux questions de localisation, un départ et une arrivée —
+     * et jamais d'un drapeau posé à côté. La règle vit dans {@see TradeRouteRules} et n'est pas
+     * recopiée ici : une règle d'identité qui existe en deux exemplaires finit toujours par diverger.
+     */
+    public function estUnTrajet(): bool
+    {
+        return TradeRouteRules::estUnTrajet($this);
+    }
+
+    /**
+     * Les métiers dont le parcours décrit un trajet.
+     *
+     * @param  Builder<Trade>  $query
+     */
+    public function scopeTrajet(Builder $query): void
+    {
+        TradeRouteRules::scopeTrajet($query);
     }
 
     // ──────────────────────────────────────────────────────
