@@ -153,7 +153,14 @@ class ProviderMissionLifecycleControllerCoverageBatch13Test extends TestCase
         $response->assertStatus(422);
     }
 
-    public function test_arrive_generates_verification_codes(): void
+    /**
+     * L'ARRIVÉE ÉMET LE CODE DE DÉBUT — et lui seul.
+     *
+     * Elle émettait les deux : le client recevait le code de FIN avant que le travail commence.
+     * Détenu depuis le début, il n'attestait plus rien de la fin. Il naît désormais à la demande,
+     * mission démarrée.
+     */
+    public function test_arrive_generates_the_start_code_only(): void
     {
         Notification::fake();
         [, $provider, $mission] = $this->buildMission(MissionStatus::EN_ROUTE);
@@ -168,7 +175,11 @@ class ProviderMissionLifecycleControllerCoverageBatch13Test extends TestCase
         $response->assertJsonPath('status', MissionStatus::ARRIVED);
         $this->assertSame(
             1,
-            $mission->verificationCodes()->where('code_type', 'end')->where('is_consumed', false)->count()
+            $mission->verificationCodes()->where('code_type', 'start')->where('is_consumed', false)->count()
+        );
+        $this->assertSame(
+            0,
+            $mission->verificationCodes()->where('code_type', 'end')->count()
         );
     }
 
@@ -177,10 +188,14 @@ class ProviderMissionLifecycleControllerCoverageBatch13Test extends TestCase
         Notification::fake();
         [, $provider, $mission] = $this->buildMission(MissionStatus::EN_ROUTE);
 
-        // Arrive first to generate a pending end verification code.
+        // Arriver, démarrer, PUIS demander le code de fin : c'est la séquence réelle depuis que
+        // l'arrivée ne l'émet plus.
         $this->actingAs($provider, 'sanctum')
             ->postJson("/api/provider/missions/{$mission->id}/arrive")
             ->assertOk();
+
+        $mission->fresh()->update(['status' => MissionStatus::STARTED]);
+        app(MissionLifecycleService::class)->generateEndCode($mission->fresh());
 
         $response = $this->actingAs($provider, 'sanctum')
             ->postJson("/api/provider/missions/{$mission->id}/complete");
