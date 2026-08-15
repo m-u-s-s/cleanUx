@@ -13,6 +13,7 @@ import { SavedPaymentMethodsScreen } from '@/screens/SavedPaymentMethodsScreen';
 import { ChatScreen } from '@/screens/ChatScreen';
 import { ChatListScreen } from '@/screens/ChatListScreen';
 import { NotificationsScreen } from '@/screens/NotificationsScreen';
+import { NotificationDetailScreen } from '@/screens/NotificationDetailScreen';
 // Sprint 9
 import { RatingScreen } from '@/screens/RatingScreen';
 import { LoyaltyScreen } from '@/screens/LoyaltyScreen';
@@ -229,6 +230,11 @@ export function RootNavigator() {
               name="Notifications"
               component={NotificationsScreen}
               options={{ title: 'Notifications', headerShown: true }}
+            />
+            <Stack.Screen
+              name="NotificationDetail"
+              component={NotificationDetailScreen}
+              options={{ title: 'Notification', headerShown: true }}
             />
             {/* Sprint 9 */}
             <Stack.Screen

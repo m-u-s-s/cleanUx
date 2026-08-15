@@ -22,6 +22,7 @@ export const linking: LinkingOptions<RootStackParamList> = {
       Referral: 'referral',
       ProfileEdit: 'profile/edit',
       Notifications: 'notifications',
+      NotificationDetail: 'notifications/:id',
       Tips: 'booking/:bookingId/tips',
       Rating: 'booking/:bookingId/rate',
       Disputes: 'disputes',

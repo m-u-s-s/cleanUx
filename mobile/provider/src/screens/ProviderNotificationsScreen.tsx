@@ -1,16 +1,18 @@
 import React, { useCallback } from 'react';
-import { FlatList, View, Text, StyleSheet, RefreshControl } from 'react-native';
-import { Screen, Button, Skeleton, EmptyState, AnimatedListItem, a11y } from '@/ui';
-import { useNotifications, useMarkAllRead } from '@/notifications';
+import { FlatList, View, Text, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Screen, Badge, Button, Skeleton, EmptyState, AnimatedListItem, a11y } from '@/ui';
+import { useNotifications, useMarkAllRead, severityVariant, formatNotificationDate } from '@/notifications';
 import type { AppNotification } from '@/notifications';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-
-const NOTIF_ITEM_HEIGHT = 70;
+import type { RootStackParamList } from '@/navigation/types';
 
 export function ProviderNotificationsScreen() {
   const styles = stylesFor(useThemeColors());
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { data: notifs, isLoading, refetch, isRefetching } = useNotifications();
   const markAll = useMarkAllRead();
@@ -22,27 +24,41 @@ export function ProviderNotificationsScreen() {
     });
   }, [refetch, notifs?.length]);
 
-  const renderNotifItem = useCallback(({ item, index }: { item: AppNotification; index: number }) => (
-    <AnimatedListItem index={index}>
-      <View
-        style={[styles.notif, !item.read_at && styles.unread]}
-        accessible
-        accessibilityLabel={`${item.title}. ${item.body}${!item.read_at ? '. Non lu' : ''}`}
-      >
-        <Text style={styles.notifTitle}>{item.title}</Text>
-        <Text style={styles.notifBody}>{item.body}</Text>
-        <Text style={styles.notifTime}>
-          {new Date(item.created_at).toLocaleDateString()}
-        </Text>
-      </View>
-    </AnimatedListItem>
-  ), []);
+  /*
+   * `styles` ET `navigation` DOIVENT ÊTRE DANS LES DÉPENDANCES.
+   *
+   * Ce rendu était mémoïsé sur `[]` tout en capturant `styles`, recalculé à chaque changement de
+   * thème : la liste gardait donc les couleurs du PREMIER rendu et ne suivait pas le passage en
+   * sombre. Rien ne plantait, la liste restait simplement claire au milieu d'un écran nuit.
+   */
+  const renderNotifItem = useCallback(({ item, index }: { item: AppNotification; index: number }) => {
+    const nonLue = !item.read_at;
+    const contexte = Object.values(item.context ?? {}).map(String);
 
-  const getItemLayout = useCallback((_: any, index: number) => ({
-    length: NOTIF_ITEM_HEIGHT,
-    offset: NOTIF_ITEM_HEIGHT * index,
-    index,
-  }), []);
+    return (
+      <AnimatedListItem index={index}>
+        <TouchableOpacity
+          style={[styles.notif, nonLue && styles.unread]}
+          onPress={() => navigation.navigate('ProviderNotificationDetail', { id: item.id })}
+          accessibilityRole="button"
+          accessibilityLabel={`${item.label} : ${item.title}. ${item.body}${nonLue ? '. Non lue' : ''}`}
+          accessibilityHint="Ouvre le détail de la notification"
+        >
+          <View style={styles.badges}>
+            <Badge label={item.label} variant={severityVariant(item.severity)} />
+            {nonLue && <Badge label="Nouveau" variant="brand" />}
+          </View>
+
+          <Text style={styles.notifTitle}>{item.title}</Text>
+          {item.body !== item.title && <Text style={styles.notifBody}>{item.body}</Text>}
+
+          <Text style={styles.notifTime}>
+            {[...contexte, formatNotificationDate(item.created_at)].filter(Boolean).join(' · ')}
+          </Text>
+        </TouchableOpacity>
+      </AnimatedListItem>
+    );
+  }, [styles, navigation]);
 
   return (
     <Screen>
@@ -59,14 +75,13 @@ export function ProviderNotificationsScreen() {
       </View>
       {isLoading ? (
         <View style={styles.skeletons}>
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} width="100%" height={60} />)}
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} width="100%" height={72} />)}
         </View>
       ) : (
         <FlatList
           data={notifs ?? []}
           keyExtractor={item => item.id}
           renderItem={renderNotifItem}
-          getItemLayout={getItemLayout}
           accessibilityLabel="Liste des notifications"
           refreshControl={
             <RefreshControl
@@ -102,6 +117,12 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderBottomColor: t.border,
   },
   unread: { backgroundColor: t.tint.brand },
+  badges: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    marginBottom: 4,
+  },
   notifTitle: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
@@ -116,11 +137,5 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     fontSize: 10,
     color: t.textSecondary,
     marginTop: 4,
-  },
-  empty: {
-    fontSize: typography.fontSize.sm,
-    color: t.textSecondary,
-    textAlign: 'center',
-    marginTop: spacing.xl,
   },
 });

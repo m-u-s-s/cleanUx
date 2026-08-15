@@ -72,6 +72,7 @@ export type RootStackParamList = {
   ProviderChatList: undefined;
   ProviderChat: { threadId: number; title: string };
   ProviderNotifications: undefined;
+  ProviderNotificationDetail: { id: string };
   /**
    * Un module web servi dans l'hôte WebView partagé.
    *

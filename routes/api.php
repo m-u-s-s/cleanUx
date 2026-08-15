@@ -43,8 +43,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Notifications
     Route::get('/notifications', [ApiNotificationController::class, 'index']);
-    Route::post('/notifications/{id}/read', [ApiNotificationController::class, 'markAsRead']);
+    // `read-all` AVANT `{id}` : sinon la chaîne « read-all » serait prise pour un identifiant.
     Route::post('/notifications/read-all', [ApiNotificationController::class, 'markAllAsRead']);
+    Route::get('/notifications/{id}', [ApiNotificationController::class, 'show']);
+    Route::post('/notifications/{id}/read', [ApiNotificationController::class, 'markAsRead']);
 
     // Quick user shortcut (Laravel default)
     Route::get('/user', fn (Request $request) => $request->user());

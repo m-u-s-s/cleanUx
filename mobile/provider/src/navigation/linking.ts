@@ -36,6 +36,7 @@ export const linking: LinkingOptions<RootStackParamList> = {
       ProviderChatList: 'chat',
       ProviderChat: 'chat/:threadId',
       ProviderNotifications: 'notifications',
+      ProviderNotificationDetail: 'notifications/:id',
       Badges: 'badges',
       Availability: 'availability',
       StripeOnboarding: 'stripe-onboarding',

@@ -15,6 +15,7 @@ export type RootStackParamList = {
   Chat: { threadId: number; title: string };
   ChatList: undefined;
   Notifications: undefined;
+  NotificationDetail: { id: string };
   // Sprint 9
   Rating: { bookingId: number };
   /**

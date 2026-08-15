@@ -21,6 +21,7 @@ import { ProviderRatingsScreen } from '@/screens/ProviderRatingsScreen';
 import { ProviderChatListScreen } from '@/screens/ProviderChatListScreen';
 import { ProviderChatScreen } from '@/screens/ProviderChatScreen';
 import { ProviderNotificationsScreen } from '@/screens/ProviderNotificationsScreen';
+import { ProviderNotificationDetailScreen } from '@/screens/ProviderNotificationDetailScreen';
 import { ForgotPasswordScreen } from '@/screens/ForgotPasswordScreen';
 import { LegalScreen } from '@/screens/LegalScreen';
 import { EmbeddedModuleRoute } from '@/screens/EmbeddedModuleRoute';
@@ -243,6 +244,11 @@ export function RootNavigator() {
             name="ProviderNotifications"
             component={ProviderNotificationsScreen}
             options={{ headerShown: true, title: 'Notifications' }}
+          />
+          <Stack.Screen
+            name="ProviderNotificationDetail"
+            component={ProviderNotificationDetailScreen}
+            options={{ headerShown: true, title: 'Notification' }}
           />
           {/*
             L'ISSUE VERS L'ESPACE TERRAIN EST UN ONGLET, PAS UNE ROUTE DÉCLARÉE ICI.
@@ -537,6 +543,11 @@ export function RootNavigator() {
               name="ProviderNotifications"
               component={ProviderNotificationsScreen}
               options={{ headerShown: true, title: 'Notifications' }}
+            />
+            <Stack.Screen
+              name="ProviderNotificationDetail"
+              component={ProviderNotificationDetailScreen}
+              options={{ headerShown: true, title: 'Notification' }}
             />
             {/*
               L'espace société, servi par l'hôte WebView partagé. Le titre natif est posé par
