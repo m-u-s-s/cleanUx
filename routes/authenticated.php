@@ -4,6 +4,7 @@ use App\Http\Controllers\Assistant\AssistantStreamController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\Messaging\AttachmentDownloadController;
 use App\Http\Controllers\PresenceController;
+use App\Livewire\NotificationDetail;
 use App\Livewire\NotificationsCenter;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -44,6 +45,15 @@ Route::middleware(['auth', 'signed'])->group(function () {
 
 Route::get('/notifications', NotificationsCenter::class)
     ->name('notifications.index');
+
+/*
+ * La fiche complète d'une notification : tout son payload, et le lien vers la page où régler le
+ * problème. `{notification}` reste une CHAÎNE — pas de liaison implicite de modèle, qui
+ * résoudrait l'identifiant sans regarder à qui la notification appartient. Le composant la
+ * cherche dans `$user->notifications()` : celle d'autrui n'existe pas.
+ */
+Route::get('/notifications/{notification}', NotificationDetail::class)
+    ->name('notifications.show');
 
 Route::put('/current-team', function (Request $request) {
     $user = $request->user();

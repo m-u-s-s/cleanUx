@@ -109,6 +109,33 @@ class NotificationPresenter
         ])));
     }
 
+    /**
+     * CE QUE PROMET LE BOUTON DE RÉSOLUTION.
+     *
+     * `actionUrl()` sait OÙ aller ; il ne disait pas ce qu'on y trouve. « Ouvrir » sur une
+     * notification de virement et sur un rappel de mission menaient à deux pages très
+     * différentes derrière le même mot. Le libellé nomme la destination.
+     *
+     * Un `action_url` posé dans le payload vise une page arbitraire : le type ne la décrit plus,
+     * donc le libellé reste générique — mentir sur la destination serait pire que de rester vague.
+     */
+    public function actionLabel(DatabaseNotification $notification, ?User $user): string
+    {
+        $payload = (array) ($notification->data ?? []);
+
+        if (! empty($payload['action_url']) || ! $user) {
+            return __('ui.notifications.action.generic');
+        }
+
+        return match ($this->typeKey($notification)) {
+            'feedback' => __('ui.notifications.action.feedback'),
+            'finance' => __('ui.notifications.action.finance'),
+            'calendar' => __('ui.notifications.action.calendar'),
+            'rendezvous' => __('ui.notifications.action.rendezvous'),
+            default => __('ui.notifications.action.dashboard'),
+        };
+    }
+
     public function actionUrl(DatabaseNotification $notification, ?User $user): string
     {
         $payload = (array) ($notification->data ?? []);

@@ -93,7 +93,18 @@
                 $libelle = $presenter->label($notification);
                 $message = $presenter->message($notification);
                 $contexte = $presenter->context($notification);
-                $lien = $presenter->actionUrl($notification, auth()->user());
+
+                /*
+                 * LA CARTE MÈNE À LA FICHE, PAS DIRECTEMENT À LA RÉSOLUTION.
+                 *
+                 * Une ligne de liste ne peut pas porter tout un payload : références, montants,
+                 * zone, horodatages, source. Cliquer ouvre donc la fiche complète, d'où part le
+                 * lien de résolution — nommé par sa destination, et non par un « Ouvrir » qui
+                 * voulait dire deux choses différentes selon le type.
+                 *
+                 * Une seule destination par carte : le titre et le bouton mènent au même endroit.
+                 */
+                $fiche = route('notifications.show', $notification->id);
 
                 /*
                  * SANS `title` DANS LE PAYLOAD, `title()` RETOMBE SUR LE LIBELLÉ DU TYPE — et la
@@ -136,7 +147,7 @@
                             @endif
                         </div>
 
-                        <a href="{{ $lien }}"
+                        <a href="{{ $fiche }}"
                            class="block text-sm font-semibold text-slate-900 underline-offset-2 transition hover:text-brand-700 hover:underline dark:text-slate-100 dark:hover:text-brand-300">
                             {{ $entete }}
                         </a>
@@ -184,10 +195,10 @@
                     </div>
 
                     <div class="flex shrink-0 flex-wrap gap-1.5">
-                        <a href="{{ $lien }}"
+                        <a href="{{ $fiche }}"
                            class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600">
                             <x-ui.icon name="arrow-right" class="w-3.5 h-3.5" />
-                            <span class="hidden sm:inline">{{ __('ui.notifications.open') }}</span>
+                            <span class="hidden sm:inline">{{ __('ui.notifications.details') }}</span>
                         </a>
 
                         @if($estNonLue)

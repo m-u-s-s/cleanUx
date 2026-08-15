@@ -225,7 +225,15 @@
                             $donnees = $notification->data ?? [];
                             $message = $donnees['message'] ?? __('ui.notifications.item_fallback');
                             @endphp
-                            <a href="{{ route('notifications.index') }}" class="block px-4 py-3 transition hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                            {{--
+                                CHAQUE LIGNE MÈNE À SA NOTIFICATION, pas au centre.
+
+                                Les cinq entrées de l'aperçu pointaient toutes vers la même page :
+                                on cliquait sur une notification précise et on retombait sur la
+                                liste, à la retrouver soi-même. Elles mènent maintenant à sa fiche,
+                                comme les cartes du centre.
+                            --}}
+                            <a href="{{ route('notifications.show', $notification->id) }}" class="block px-4 py-3 transition hover:bg-slate-50 dark:hover:bg-slate-700/50">
                                 <p class="text-sm text-slate-800 dark:text-slate-100">{{ $message }}</p>
                                 <p class="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
                                     {{ $notification->created_at?->diffForHumans() }}
