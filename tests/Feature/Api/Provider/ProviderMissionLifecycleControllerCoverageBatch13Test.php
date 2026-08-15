@@ -206,6 +206,73 @@ class ProviderMissionLifecycleControllerCoverageBatch13Test extends TestCase
     }
 
     /**
+     * ON NE CLÔTURE PAS SANS L'ACCORD DU CLIENT — MÊME QUAND AUCUN CODE N'A ENCORE ÉTÉ ÉMIS.
+     *
+     * La garde portait sur « existe-t-il un code de fin en attente ? ». Elle tenait tant que le
+     * code était émis d'office à l'arrivée. Depuis qu'il n'est émis qu'à la demande, l'absence de
+     * code la faisait SAUTER : le prestataire clôturait seul, déclenchait l'encaissement et
+     * terminait l'intervention sans que le client ait rien confirmé.
+     *
+     * Constaté en déroulant le parcours à la main : « Mission terminée », confirmer, clôturée.
+     * `missions.requires_end_code` porte la vraie règle et n'était lu nulle part.
+     */
+    public function test_complete_refuses_without_end_code_even_when_none_was_issued(): void
+    {
+        Notification::fake();
+        [, $provider, $mission] = $this->buildMission(MissionStatus::STARTED);
+
+        $this->assertSame(
+            0,
+            $mission->verificationCodes()->where('code_type', 'end')->count(),
+            'Le témoin de départ : aucun code de fin n’a été émis.'
+        );
+
+        $response = $this->actingAs($provider, 'sanctum')
+            ->postJson("/api/provider/missions/{$mission->id}/complete");
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('ok', false);
+        $this->assertSame(MissionStatus::STARTED, $mission->fresh()->status);
+    }
+
+    /**
+     * SIX CHIFFRES AU HASARD NE CLÔTURENT PAS NON PLUS.
+     *
+     * La branche de validation était conditionnée à l'existence d'un code en attente : sans code
+     * émis, un `end_code` quelconque tombait dans `completeMission()` et n'était confronté à rien.
+     */
+    public function test_complete_refuses_an_unverified_end_code(): void
+    {
+        Notification::fake();
+        [, $provider, $mission] = $this->buildMission(MissionStatus::STARTED);
+
+        $response = $this->actingAs($provider, 'sanctum')
+            ->postJson("/api/provider/missions/{$mission->id}/complete", ['end_code' => '123456']);
+
+        $response->assertStatus(422);
+        $this->assertSame(MissionStatus::STARTED, $mission->fresh()->status);
+    }
+
+    /**
+     * LE TÉMOIN : avec le vrai code, la clôture passe.
+     *
+     * Sans lui, les deux refus ci-dessus resteraient verts le jour où plus rien ne clôturerait.
+     */
+    public function test_complete_succeeds_with_the_real_end_code(): void
+    {
+        Notification::fake();
+        [, $provider, $mission] = $this->buildMission(MissionStatus::STARTED);
+
+        $genere = app(MissionLifecycleService::class)->generateEndCode($mission->fresh());
+
+        $response = $this->actingAs($provider, 'sanctum')
+            ->postJson("/api/provider/missions/{$mission->id}/complete", ['end_code' => $genere['code']]);
+
+        $response->assertOk();
+        $this->assertSame(MissionStatus::COMPLETED, $mission->fresh()->status);
+    }
+
+    /**
      * LA RAISON DU REFUS DOIT ARRIVER JUSQU'AU PRESTATAIRE.
      *
      * Sans rattrapage, la `RuntimeException` du cycle de vie filait vers le rendu générique et le
@@ -256,11 +323,24 @@ class ProviderMissionLifecycleControllerCoverageBatch13Test extends TestCase
         $this->assertStringContainsString('invalide', mb_strtolower((string) $reponse->json('message')));
     }
 
-    public function test_complete_closes_mission_without_pending_end_code(): void
+    /**
+     * CE TEST FIGEAIT LE TROU.
+     *
+     * Il affirmait qu'une mission SANS code de fin en attente se clôture — ce qui décrivait
+     * fidèlement le code, et ce que ce code avait de faux. Tant que le code était émis d'office à
+     * l'arrivée, la situation « aucun code en attente » n'existait pas en vrai et le test ne
+     * décrivait qu'un cas de laboratoire. Depuis que le code n'est émis qu'à la demande, c'est le
+     * cas NORMAL — et il ouvrait la clôture sans l'accord du client.
+     *
+     * La règle est portée par `missions.requires_end_code`. Une mission qui n'en exige pas se
+     * clôture sans code : c'est ce que ce test vérifie désormais, et c'est le témoin des deux
+     * refus ci-dessus.
+     */
+    public function test_complete_closes_a_mission_that_requires_no_end_code(): void
     {
         Notification::fake();
         [, $provider, $mission] = $this->buildMission(MissionStatus::STARTED);
-        $mission->update(['actual_start_at' => now()->subHour()]);
+        $mission->update(['actual_start_at' => now()->subHour(), 'requires_end_code' => false]);
 
         $response = $this->actingAs($provider, 'sanctum')
             ->postJson("/api/provider/missions/{$mission->id}/complete", [

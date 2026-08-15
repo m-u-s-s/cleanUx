@@ -565,15 +565,35 @@ class ProviderMissionLifecycleController extends Controller
             'end_code' => ['nullable', 'string', 'size:6'],
         ]);
 
-        $hasPendingEndCode = $mission->verificationCodes()
+        /*
+         * L'ACCORD DU CLIENT EST EXIGÉ PARCE QUE LA MISSION L'EXIGE — pas parce qu'un code traîne.
+         *
+         * La garde portait sur « existe-t-il un code de fin en attente ? ». Elle tenait tant que le
+         * code était émis d'office à l'arrivée : il y en avait toujours un, la condition mordait
+         * toujours. Depuis qu'il n'est plus émis qu'à la demande — pour qu'il atteste vraiment de
+         * la FIN —, l'absence de code faisait sauter la garde : le prestataire clôturait seul,
+         * déclenchait l'encaissement et terminait l'intervention SANS l'accord du client.
+         *
+         * Constaté en déroulant le parcours à la main : « Mission terminée », confirmer, clôturée.
+         * Aucun code, aucun refus.
+         *
+         * `missions.requires_end_code` porte la vraie règle, est posé à la création et n'était lu
+         * NULLE PART. C'est lui qui décide désormais ; un code qui n'existe pas encore devient une
+         * étape à franchir, plus une garde qui disparaît.
+         */
+        $exigeUnCodeDeFin = (bool) $mission->requires_end_code;
+
+        $codeDeFinEnAttente = $mission->verificationCodes()
             ->where('code_type', 'end')
             ->where('is_consumed', false)
             ->exists();
 
-        if ($hasPendingEndCode && empty($data['end_code'])) {
+        if ($exigeUnCodeDeFin && empty($data['end_code'])) {
             return response()->json([
                 'ok' => false,
-                'message' => 'Le code de fin est requis pour clôturer cette mission.',
+                'message' => $codeDeFinEnAttente
+                    ? 'Le code de fin est requis pour clôturer cette mission.'
+                    : 'Demandez au client son code de fin — il l’obtient depuis son espace, ou par SMS via « Renvoyer le SMS ».',
             ], 422);
         }
 
@@ -592,7 +612,17 @@ class ProviderMissionLifecycleController extends Controller
          * `completeByQr` le faisait déjà ; ce chemin-ci et `begin()` avaient été oubliés.
          */
         try {
-            if ($hasPendingEndCode && ! empty($data['end_code'])) {
+            /*
+             * SIX CHIFFRES FOURNIS SE VALIDENT — TOUJOURS.
+             *
+             * La condition portait aussi sur l'existence d'un code en attente : sans code émis, un
+             * `end_code` quelconque tombait dans la branche `completeMission()` et n'était jamais
+             * confronté à quoi que ce soit. Six chiffres au hasard clôturaient la mission.
+             *
+             * `consumeValidCode()` sait déjà refuser proprement quand aucun code n'a été émis, et
+             * son message dit quoi faire. C'est donc lui qui tranche, pas une condition d'appel.
+             */
+            if (! empty($data['end_code'])) {
                 $mission = $this->lifecycle->validateEndCode($mission, $request->user(), $data['end_code'], $lat, $lng);
             } else {
                 $mission = $this->lifecycle->completeMission($mission, $request->user(), $lat, $lng);

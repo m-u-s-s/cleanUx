@@ -78,16 +78,41 @@ class MissionEndCodeFlowTest extends TestCase
         $response->assertJsonPath('status', 'completed');
     }
 
-    public function test_complete_without_end_code_works_when_no_pending_code(): void
+    /**
+     * CE TEST FIGEAIT LE TROU — comme son jumeau dans le lot 13.
+     *
+     * Il affirmait qu'une mission sans code de fin EN ATTENTE se clôture. Tant que le code était
+     * émis d'office à l'arrivée, cette situation n'existait pas en vrai. Depuis qu'il n'est émis
+     * qu'à la demande, c'est le cas normal — et il ouvrait la clôture sans l'accord du client :
+     * encaissement compris.
+     *
+     * La règle vit dans `missions.requires_end_code`. Sans exigence, la clôture passe ; avec, elle
+     * réclame les six chiffres. Ce test couvre les deux versants.
+     */
+    public function test_complete_refuses_without_end_code_when_the_mission_requires_one(): void
     {
         [$provider, $mission] = $this->makeStartedMission();
 
-        $response = $this->actingAs($provider, 'sanctum')
-            ->postJson("/api/provider/missions/{$mission->id}/complete");
+        // `fresh()` et pas le modèle en mémoire : `requires_end_code` vient du DÉFAUT de la
+        // colonne (`true`), que l'objet créé ne porte pas tant qu'on ne l'a pas relu.
+        $this->assertTrue(
+            (bool) $mission->fresh()->requires_end_code,
+            'Témoin : la mission exige bien un code.'
+        );
 
-        $response->assertOk();
-        $response->assertJsonPath('ok', true);
-        $response->assertJsonPath('status', 'completed');
+        $this->actingAs($provider, 'sanctum')
+            ->postJson("/api/provider/missions/{$mission->id}/complete")
+            ->assertStatus(422);
+
+        $this->assertSame('started', $mission->fresh()->status);
+
+        // LE TÉMOIN : sans exigence, la même clôture passe.
+        $mission->update(['requires_end_code' => false]);
+
+        $this->actingAs($provider, 'sanctum')
+            ->postJson("/api/provider/missions/{$mission->id}/complete")
+            ->assertOk()
+            ->assertJsonPath('status', 'completed');
     }
 
     protected function makeStartedMission(): array
