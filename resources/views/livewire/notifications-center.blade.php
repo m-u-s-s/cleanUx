@@ -90,10 +90,19 @@
                  * pas. On trouvait par un numéro de facture une carte qui ne le montrait pas.
                  */
                 $estNonLue = is_null($notification->read_at);
-                $titre = $presenter->title($notification);
+                $libelle = $presenter->label($notification);
                 $message = $presenter->message($notification);
                 $contexte = $presenter->context($notification);
                 $lien = $presenter->actionUrl($notification, auth()->user());
+
+                /*
+                 * SANS `title` DANS LE PAYLOAD, `title()` RETOMBE SUR LE LIBELLÉ DU TYPE — et la
+                 * carte affichait alors « SYSTÈME » en pastille puis « Système » en titre, deux
+                 * fois le même mot, avant le seul texte utile. Toutes les notifications n'ont pas
+                 * de titre : dans ce cas c'est le MESSAGE qui porte le lien, pas un doublon.
+                 */
+                $titre = $presenter->title($notification);
+                $entete = $titre === $libelle ? $message : $titre;
 
                 /*
                  * L'accent porte SA propre variante sombre. Sans elle, `dark:border-brand-500/40`
@@ -117,7 +126,7 @@
                     <div class="min-w-0 space-y-1.5">
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                                {{ $presenter->label($notification) }}
+                                {{ $libelle }}
                             </span>
                             @if($estNonLue)
                                 <span class="inline-flex items-center gap-1 rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
@@ -129,10 +138,10 @@
 
                         <a href="{{ $lien }}"
                            class="block text-sm font-semibold text-slate-900 underline-offset-2 transition hover:text-brand-700 hover:underline dark:text-slate-100 dark:hover:text-brand-300">
-                            {{ $titre }}
+                            {{ $entete }}
                         </a>
 
-                        @if($message !== $titre)
+                        @if($message !== $entete)
                             <p class="text-sm text-slate-700 dark:text-slate-300">{{ $message }}</p>
                         @endif
 
@@ -156,6 +165,15 @@
 
                             @isset($contexte['zone'])
                                 <span class="inline-flex items-center gap-1">{{ $contexte['zone'] }}</span>
+                            @endisset
+
+                            {{-- `context()` expose cinq champs ; les cinq sont rendus, sinon la
+                                 recherche continue d'indexer ce que la carte cache. --}}
+                            @isset($contexte['google_email'])
+                                <span class="inline-flex items-center gap-1">
+                                    <x-ui.icon name="envelope" class="w-3 h-3" />
+                                    {{ $contexte['google_email'] }}
+                                </span>
                             @endisset
 
                             <span class="inline-flex items-center gap-1">
