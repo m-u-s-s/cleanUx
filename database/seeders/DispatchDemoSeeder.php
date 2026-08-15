@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\ProviderType;
+use App\Models\AvailabilitySlot;
 use App\Models\EmployeeZoneAssignment;
 use App\Models\ProviderPresence;
 use App\Models\ProviderProfile;
@@ -179,6 +180,39 @@ class DispatchDemoSeeder extends Seeder
             ['user_id' => $utilisateur->id, 'service_zone_id' => $zone->id],
             ['assignment_type' => 'primary', 'is_active' => true, 'status' => 'active', 'coverage_priority' => 100],
         );
+
+        /*
+         * DISPONIBLE À L'AGENDA, PAS SEULEMENT EN LIGNE.
+         *
+         * `provider_presence` sert le dispatch IMMÉDIAT — « qui est en ligne, là, maintenant ». Le
+         * parcours « prendre rendez-vous » pose une tout autre question — « qui travaille lundi à
+         * 10 h » — et la réponse vit dans `availability_slots`.
+         *
+         * Ces trois prestataires sont précisément ceux qui couvrent l'adresse de démonstration.
+         * Sans créneaux, l'écran de commande annonçait « 3 professionnels à moins de 8 km » et,
+         * juste dessous, « Aucun professionnel disponible sur ce créneau » — tous les jours. Être
+         * en ligne et être réservable sont deux notions distinctes ; les semer séparément, c'est
+         * n'en semer qu'une.
+         *
+         * ⚠️ `weekday` suit la convention de `date('w')` : 0 = dimanche, 1 = lundi.
+         */
+        foreach (range(1, 5) as $jourDeSemaine) {
+            foreach ([['09:00:00', '12:00:00'], ['14:00:00', '17:00:00']] as [$debut, $fin]) {
+                AvailabilitySlot::query()->updateOrCreate(
+                    [
+                        'provider_user_id' => $utilisateur->id,
+                        'weekday' => $jourDeSemaine,
+                        'start_time' => $debut,
+                    ],
+                    [
+                        'end_time' => $fin,
+                        'is_active' => true,
+                        'timezone' => 'Europe/Brussels',
+                        'metadata' => ['seeded' => true],
+                    ],
+                );
+            }
+        }
 
         $this->boucleLeDossier($utilisateur);
     }

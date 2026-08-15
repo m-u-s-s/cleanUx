@@ -84,7 +84,14 @@ class MissionLifecycleServiceTest extends TestCase
         Notification::assertSentTo($client, EmployeEnRouteNotification::class);
     }
 
-    public function test_set_arrived_generates_codes_stores_session_and_notifies(): void
+    /**
+     * L'ARRIVÉE N'ÉMET QUE LE CODE DE DÉBUT.
+     *
+     * Elle émettait les deux : le client recevait le code de FIN avant que le travail commence.
+     * Un code de fin détenu depuis le début n'atteste plus rien de la fin — et il consommait un
+     * deuxième SMS sur un quota plafonné à cinq par heure et par numéro.
+     */
+    public function test_set_arrived_generates_start_code_only_stores_session_and_notifies(): void
     {
         Notification::fake();
         [$client, $provider, $mission] = $this->makeMission(MissionStatus::EN_ROUTE);
@@ -96,10 +103,18 @@ class MissionLifecycleServiceTest extends TestCase
         $this->assertEquals(50.85, (float) $fresh->start_lat);
         $this->assertEquals(4.35, (float) $fresh->start_lng);
 
-        // Both a start and an end verification code are created.
         $this->assertSame(1, $mission->verificationCodes()->where('code_type', 'start')->count());
-        $this->assertSame(1, $mission->verificationCodes()->where('code_type', 'end')->count());
+        $this->assertSame(
+            0,
+            $mission->verificationCodes()->where('code_type', 'end')->count(),
+            'Le code de fin ne doit naître qu’à la demande, mission démarrée.'
+        );
         $this->assertNotNull(session('mission_start_code_'.$mission->id));
+
+        // LE TÉMOIN : demandé au bon moment, il est bien émis.
+        $mission->fresh()->update(['status' => MissionStatus::STARTED]);
+        $this->service()->generateEndCode($mission->fresh());
+        $this->assertSame(1, $mission->verificationCodes()->where('code_type', 'end')->count());
 
         Notification::assertSentTo($client, EmployeArriveNotification::class);
     }

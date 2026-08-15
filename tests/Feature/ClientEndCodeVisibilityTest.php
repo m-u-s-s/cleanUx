@@ -42,13 +42,16 @@ class ClientEndCodeVisibilityTest extends TestCase
     {
         $scenario = $this->createMissionPortalContext(['status' => 'assigned']);
 
-        // Le geste « je suis arrivé » fait naître le code de fin — PAS la clôture. Au moment de
-        // clôturer, le code doit déjà être entre les mains du client.
+        /*
+         * Le code de fin naît quand le prestataire le DEMANDE, mission démarrée — plus à
+         * l'arrivée. Émis dès l'arrivée, il arrivait chez le client avant que le travail
+         * commence : détenu depuis le début, il n'attestait plus rien de la fin.
+         */
         app(MissionLifecycleService::class)->setArrived($scenario['mission'], $scenario['employee']);
 
-        // L'encadré « Code de fin disponible » ne s'affiche qu'une fois la mission démarrée.
         $mission = $scenario['mission']->fresh();
         $mission->update(['status' => 'started']);
+        app(MissionLifecycleService::class)->generateEndCode($mission->fresh());
 
         $porteur = $scenario['client']->fresh()->notifications()
             ->where('type', MissionEndCodeNotification::class)
@@ -86,6 +89,7 @@ class ClientEndCodeVisibilityTest extends TestCase
 
         $mission = $scenario['mission']->fresh();
         $mission->update(['status' => 'started']);
+        app(MissionLifecycleService::class)->generateEndCode($mission->fresh());
 
         $code = $mission->verificationCodes()
             ->where('code_type', 'end')->where('is_consumed', false)->latest('id')->first();

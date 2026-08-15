@@ -33,6 +33,30 @@ interface Props {
  * dialogue : la demander ferait expirer l'offre pendant qu'on la lit, ce qui compte comme un
  * silence et non comme un refus dans le taux d'acceptation.
  */
+/**
+ * La date de l'intervention, lisible d'un coup d'œil : « lun. 24 août à 10h00 ».
+ *
+ * Une chaîne ISO illisible vaut mieux qu'un plantage : si la date ne se parse pas, on ne montre
+ * rien plutôt que « Invalid Date » sur une modale qui expire en vingt secondes.
+ */
+function formatQuand(iso: string): string {
+  const date = new Date(iso);
+
+  if (Number.isNaN(date.getTime())) {
+    return '—';
+  }
+
+  return date
+    .toLocaleString('fr-BE', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+    .replace(':', 'h');
+}
+
 export function OfferModal({ offer, onDismiss }: Props) {
   const theme = useThemeColors();
   const styles = stylesFor(theme);
@@ -131,6 +155,18 @@ export function OfferModal({ offer, onDismiss }: Props) {
                   <Text style={styles.value} testID="offer-ride-distance">
                     {`${String(offer.ride_distance_km).replace('.', ',')} km`}
                     {offer.ride_duration_minutes != null ? ` · ${offer.ride_duration_minutes} min` : ''}
+                  </Text>
+                </View>
+                <Divider />
+              </>
+            ) : null}
+            {/* QUAND : sur une mission planifiée, la première question — et elle manquait. */}
+            {offer.scheduled_at ? (
+              <>
+                <View style={styles.row}>
+                  <Text style={styles.label}>Quand</Text>
+                  <Text style={styles.value} testID="offer-scheduled-at">
+                    {formatQuand(offer.scheduled_at)}
                   </Text>
                 </View>
                 <Divider />

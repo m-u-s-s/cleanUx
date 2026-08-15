@@ -35,8 +35,25 @@
         @php $slots = $this->slots; @endphp
 
         @if (! count($slots))
+            {{--
+                LE MESSAGE NOMME LE VRAI OBSTACLE.
+
+                Il disait « indiquez d'abord l'adresse » dans tous les cas — y compris à quelqu'un
+                qui venait de choisir son adresse enregistrée et dont la zone était résolue. On
+                reprochait au client ce qu'il venait de faire, sans autre issue que la retaper.
+
+                Il n'y a pas de créneau pour deux raisons distinctes, et elles n'appellent pas le
+                même geste : soit on ne sait pas OÙ, soit on sait où mais on n'a pas su PLACER
+                l'adresse sur la carte.
+            --}}
             <p class="mt-4 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                Indiquez d’abord l’adresse : les créneaux dépendent des professionnels qui couvrent votre zone.
+                @if (blank($address))
+                    Indiquez d’abord l’adresse : les créneaux dépendent des professionnels qui couvrent votre zone.
+                @else
+                    Nous n’avons pas réussi à situer cette adresse sur la carte. Précisez-la — le
+                    code postal et la commune suffisent — pour que nous puissions chercher les
+                    professionnels autour.
+                @endif
             </p>
         @else
             <div class="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4" role="radiogroup" aria-label="Créneau">

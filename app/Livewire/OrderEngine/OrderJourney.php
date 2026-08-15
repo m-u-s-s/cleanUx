@@ -374,8 +374,57 @@ class OrderJourney extends Component
         return app(ClientPlaceService::class)->pour(Auth::user());
     }
 
+    /**
+     * UN LIEU ENREGISTRÉ SANS COORDONNÉES EST UN CUL-DE-SAC — on le géocode au lieu de le subir.
+     *
+     * Ce lieu a pu être enregistré avant que le géocodage existe, ou saisi par un import. Sans
+     * latitude ni longitude, tout ce qui suit s'éteint : les créneaux, la liste des professionnels,
+     * la distance. Et l'écran affichait alors « Indiquez d'abord l'adresse » — au client qui venait
+     * précisément d'appuyer sur son adresse enregistrée, sans autre issue que la retaper.
+     *
+     * On résout, puis on RÉÉCRIT sur le lieu : la prochaine fois, il n'y aura plus rien à réparer.
+     * Soft-fail — un géocodeur indisponible ne doit pas empêcher de retenir l'adresse.
+     */
+    protected function completerLesCoordonnees(ClientPlace $lieu): ClientPlace
+    {
+        if ($lieu->lat !== null && $lieu->lng !== null) {
+            return $lieu;
+        }
+
+        $texte = trim($lieu->address.' '.($lieu->postal_code ?? ''));
+
+        if ($texte === '') {
+            return $lieu;
+        }
+
+        try {
+            $resultat = app(GeocodingService::class)->geocode(
+                $texte,
+                (string) Config::get('order_engine.geocoding_country', 'BE'),
+            );
+
+            if ($resultat === null) {
+                return $lieu;
+            }
+
+            $lieu->forceFill([
+                'lat' => $resultat->latitude,
+                'lng' => $resultat->longitude,
+                'postal_code' => $lieu->postal_code ?: $resultat->postalCode,
+            ])->save();
+        } catch (\Throwable $e) {
+            Log::warning('[order_engine] lieu enregistré non géocodable', [
+                'client_place_id' => $lieu->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $lieu->fresh() ?? $lieu;
+    }
+
     protected function appliquerLeLieu(ClientPlace $lieu): void
     {
+        $lieu = $this->completerLesCoordonnees($lieu);
         $draft = $this->draft();
 
         $draft->forceFill([
@@ -1575,15 +1624,28 @@ class OrderJourney extends Component
         }
 
         /*
-         * En MULTI-SERVICES, choisir un métier le place immédiatement au chantier.
+         * CHOISIR UN MÉTIER L'INSCRIT AU PANIER — désormais dans tous les modes.
          *
-         * Ailleurs, une ligne de panier n'apparaît qu'à la première réponse — regarder un métier
-         * n'est pas le commander. Mais ici le client vient d'appuyer sur « ajouter un autre
-         * service » : le métier doit figurer au plan tout de suite, sinon il compose son chantier
-         * et n'y voit rien apparaître tant qu'il n'a pas répondu à une question.
+         * La règle précédente était « une ligne n'apparaît qu'à la première réponse : regarder un
+         * métier n'est pas le commander ». L'intention se défend, mais l'écran ne la tenait pas :
+         * dès la sélection, il ouvre le questionnaire, affiche « Nettoyage à domicile » et annonce
+         * « 45 € » dans le panneau d'estimation, bouton « Continuer » actif.
+         *
+         * Un client qui choisit son service, saisit son adresse, retient son créneau et clique
+         * Continuer sans avoir touché une seule question — toutes facultatives, la surface ayant
+         * même une valeur affichée par défaut — atterrissait sur « Votre panier est vide ». Sans
+         * explication, et sans autre issue que tout recommencer.
+         *
+         * Deux notions de « la commande » cohabitaient : la sélection portée par l'écran, et les
+         * lignes portées par le panier. Le prix venait de la première, le récapitulatif lisait la
+         * seconde. On les réunit ici, au moment où le client a effectivement choisi.
+         *
+         * `itemFor()` est idempotent : revenir sur un métier déjà retenu ne crée pas de doublon.
          */
         if ($this->mode === OrderMode::BUNDLE) {
             app(BundleComposer::class)->addTrade($this->draft(), $trade);
+        } else {
+            app(OrderDraftManager::class)->itemFor($this->draft(), $trade);
         }
 
         $this->answers = $this->loadAnswers($trade);

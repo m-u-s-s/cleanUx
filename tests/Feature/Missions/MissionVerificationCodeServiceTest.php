@@ -65,14 +65,30 @@ class MissionVerificationCodeServiceTest extends TestCase
         app(MissionVerificationCodeService::class)->consumeValidCode($mission, 'end', '000000', $user);
     }
 
+    /**
+     * Le refus DIT QUOI FAIRE. Le code de fin n'étant plus émis à l'arrivée mais à la demande, son
+     * absence est une étape pas encore franchie — pas une anomalie. « Aucun code valide trouvé »
+     * laissait le prestataire devant un mur alors que le bouton qui le débloque est au-dessus.
+     */
     public function test_no_unconsumed_code_throws(): void
     {
         [$mission] = $this->makeCode(['is_consumed' => true]);
         $user = User::factory()->employe()->create();
 
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Aucun code valide');
+        $this->expectExceptionMessage('Générer code fin');
         app(MissionVerificationCodeService::class)->consumeValidCode($mission, 'end', '123456', $user);
+    }
+
+    /** LE TÉMOIN : sur un code de DÉBUT, le message d'origine est conservé. */
+    public function test_no_unconsumed_start_code_keeps_the_generic_message(): void
+    {
+        [$mission] = $this->makeCode(['is_consumed' => true, 'code_type' => 'start']);
+        $user = User::factory()->employe()->create();
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Aucun code valide');
+        app(MissionVerificationCodeService::class)->consumeValidCode($mission, 'start', '123456', $user);
     }
 
     public function test_brute_force_is_blocked_after_max_attempts(): void

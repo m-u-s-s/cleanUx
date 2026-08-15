@@ -81,6 +81,21 @@
                         </dd>
                     </div>
                     @endif
+                    {{--
+                        QUAND. La modale disait où, combien et à quelle distance — jamais à quelle
+                        date. Sur une mission planifiée dans dix jours, c'est pourtant la première
+                        question : le prestataire acceptait un engagement sans savoir pour quel
+                        jour. La charge utile portait `scheduled_at` depuis toujours.
+                    --}}
+                    @if (($offre['scheduled_at'] ?? null) !== null)
+                    <div class="flex items-center justify-between gap-4">
+                        <dt class="text-slate-500 dark:text-slate-400">Quand</dt>
+                        <dd class="text-right font-semibold text-slate-900 dark:text-white">
+                            {{ \Illuminate\Support\Carbon::parse($offre['scheduled_at'])->translatedFormat('D j M à H\hi') }}
+                        </dd>
+                    </div>
+                    @endif
+
                     <div class="flex items-center justify-between gap-4">
                         <dt class="text-slate-500 dark:text-slate-400">Secteur</dt>
                         <dd class="text-right font-semibold text-slate-900 dark:text-white">

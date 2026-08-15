@@ -295,7 +295,14 @@ class ParcoursCompletTest extends TestCase
             'Toutes les tâches cochées, la clôture devrait être possible.',
         );
 
-        // ── Le code de FIN doit avoir atteint le client ───────────────────────
+        /*
+         * ── Le code de FIN est DEMANDÉ, puis doit atteindre le client ─────────
+         *
+         * Il n'est plus émis à l'arrivée : détenu depuis le début, il n'attestait rien de la fin.
+         * Le prestataire le réclame quand il a terminé — c'est le geste que reproduit cette ligne.
+         */
+        $cycle->generateEndCode($mission->fresh());
+
         $codeFin = $this->codeDepuisLaNotification($client, MissionEndCodeNotification::class, 'endCode');
         $this->assertNotNull($codeFin, 'Le client n’a reçu aucun code de fin.');
 

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\AvailabilitySlot;
 use App\Models\EmployeeZoneAssignment;
 use App\Models\ServiceZone;
 use App\Models\Trade;
@@ -461,26 +462,39 @@ class DemoPlatformSeeder extends Seeder
         ]);
     }
 
+    /**
+     * LES DISPONIBILITÉS QUE LA PLATEFORME LIT VRAIMENT.
+     *
+     * Ce seeder remplissait `provider_availabilities` — quarante-deux lignes dans une table que
+     * RIEN ne lit, hors sa propre migration. Les créneaux du parcours de réservation viennent de
+     * `availability_slots`, via `AvailabilityService::getAvailableWindows()`, et cette table-là
+     * restait vide.
+     *
+     * Le résultat était un cul-de-sac silencieux : sur une plateforme fraîchement semée, l'écran
+     * de commande annonçait « 3 professionnels à moins de 8 km » et, juste en dessous, « Aucun
+     * professionnel disponible sur ce créneau » — tous les jours, pour tous les métiers. Aucune
+     * exception, aucun journal : des données semées qui donnaient l'illusion d'être configurées.
+     *
+     * ⚠️ `availability_slots.weekday` suit la convention de `date('w')` — 0 = dimanche, 6 =
+     * samedi — et non `dayOfWeekIso`. {@see AvailabilitySlot::appliesOn()}
+     */
     protected function seedAvailability(?int $userId, ?int $organizationId): void
     {
-        if (! $userId || ! $this->hasTable('provider_availabilities')) {
+        if (! $userId || ! $this->hasTable('availability_slots')) {
             return;
         }
 
-        foreach (range(0, 6) as $day) {
-            $date = now()->startOfWeek()->addDays($day)->toDateString();
-
+        // Du lundi au vendredi, matin et après-midi.
+        foreach (range(1, 5) as $weekday) {
             foreach ([['09:00:00', '12:00:00'], ['14:00:00', '17:00:00']] as [$start, $end]) {
-                $this->updateOrInsertTable('provider_availabilities', [
-                    'user_id' => $userId,
-                    'date' => $date,
+                $this->updateOrInsertTable('availability_slots', [
+                    'provider_user_id' => $userId,
+                    'weekday' => $weekday,
                     'start_time' => $start,
                 ], [
-                    'organization_account_id' => $organizationId,
                     'end_time' => $end,
-                    'weekday' => now()->startOfWeek()->addDays($day)->dayOfWeekIso,
-                    'type' => 'available',
-                    'is_available' => true,
+                    'is_active' => true,
+                    'timezone' => 'Europe/Brussels',
                     'metadata' => ['seeded' => true],
                 ]);
             }

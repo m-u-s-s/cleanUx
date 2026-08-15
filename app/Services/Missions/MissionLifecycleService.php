@@ -142,7 +142,21 @@ class MissionLifecycleService
                 'Brio : votre employé est arrivé. Code de début : '.$generated['code']
             );
 
-            $this->issueEndCode($mission);
+            /*
+             * LE CODE DE FIN N'EST PLUS ÉMIS ICI.
+             *
+             * Il l'était, dans la foulée du code de début : le client recevait les deux dans la
+             * même minute, avant que le travail ait commencé. Un code de fin qu'on détient depuis
+             * le début n'atteste plus rien de la fin — il ne prouve que sa propre existence. Et il
+             * consommait un deuxième SMS sur un quota plafonné à cinq par heure et par numéro.
+             *
+             * Il est désormais émis quand il veut dire quelque chose : à la demande du
+             * prestataire, mission démarrée, par le bouton « Générer code fin » qui existait déjà
+             * et faisait double emploi. {@see self::generateEndCode()}
+             *
+             * L'affichage côté client attendait DÉJÀ le statut « démarrée » — c'est l'émission qui
+             * était en avance sur ce que l'écran montrait.
+             */
         } else {
             app(SmsService::class)->send(
                 $destinataire,

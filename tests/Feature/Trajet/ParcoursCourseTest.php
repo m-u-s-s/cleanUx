@@ -107,12 +107,25 @@ class ParcoursCourseTest extends TestCase
     }
 
     /** LE TÉMOIN : sur une intervention ordinaire, les deux codes sont toujours émis. */
-    public function test_arriver_sur_une_intervention_emet_toujours_ses_deux_codes(): void
+    /**
+     * LE TÉMOIN DU PARCOURS CLASSIQUE : une intervention ordinaire exige toujours ses codes.
+     *
+     * L'arrivée n'en émet plus qu'UN. Le code de fin, lui, naît quand le prestataire le demande,
+     * mission démarrée : émis dès l'arrivée, le client le détenait avant que le travail commence
+     * et il n'attestait plus rien de la fin. Ce qui compte ici reste inchangé — une intervention
+     * ordinaire passe par des codes, une course par aucun.
+     */
+    public function test_arriver_sur_une_intervention_emet_toujours_son_code_de_debut(): void
     {
         Notification::fake();
         [, $prestataire, $mission] = $this->mission(MissionStatus::EN_ROUTE, course: false);
 
         app(MissionLifecycleService::class)->setArrived($mission, $prestataire, 50.8467, 4.3525);
+
+        $this->assertSame(1, $this->codes($mission));
+
+        $mission->fresh()->update(['status' => MissionStatus::STARTED]);
+        app(MissionLifecycleService::class)->generateEndCode($mission->fresh());
 
         $this->assertSame(2, $this->codes($mission));
     }

@@ -10,6 +10,7 @@ use App\Services\Contracts\ContractSlaService;
 use App\Services\Geocoding\GeocodingService;
 use App\Services\Organizations\ProviderOrganisationResolver;
 use App\Support\Domain\MissionStatus;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -93,9 +94,11 @@ class MissionFromRendezVousSyncService
                     'status' => MissionStatus::initialFor((bool) $rendezVous->employe_id),
                     'mission_type' => $rendezVous->organization_account_id ? 'enterprise' : 'standard',
                     'planned_start_at' => $this->combineDateAndTime($rendezVous->date, $rendezVous->heure),
+                    // Même règle que dans `syncFromRendezVous()` : les deux points créent des
+                    // missions, et l'un des deux gardait le repli à zéro.
                     'planned_end_at' => $this->combineDateAndTime(
                         $rendezVous->date,
-                        $this->addMinutesToTime($rendezVous->heure, (int) ($rendezVous->duree_estimee ?? $rendezVous->duree ?? 0))
+                        $this->addMinutesToTime($rendezVous->heure, $this->dureeEstimee($rendezVous))
                     ),
                     'requires_start_code' => true,
                     'requires_end_code' => true,
@@ -136,7 +139,7 @@ class MissionFromRendezVousSyncService
             $plannedStartAt = $this->combineDateAndTime($rendezVous->date, $rendezVous->heure);
             $plannedEndAt = $this->combineDateAndTime(
                 $rendezVous->date,
-                $this->addMinutesToTime($rendezVous->heure, (int) ($rendezVous->duree_estimee ?? $rendezVous->duree ?? 0))
+                $this->addMinutesToTime($rendezVous->heure, $this->dureeEstimee($rendezVous))
             );
 
             $countryCode = strtoupper((string) (
@@ -254,6 +257,37 @@ class MissionFromRendezVousSyncService
                 'raison' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * COMBIEN DE TEMPS CETTE INTERVENTION VA-T-ELLE DURER ?
+     *
+     * Le repli était `0` — et c'est ce zéro qui donnait des missions dont la fin tombait à la
+     * minute du début. Une fenêtre de durée nulle ne chevauche rien : la détection de conflit ne
+     * pouvait plus protéger le créneau du prestataire, et son planning affichait « 10:00 → 10:00 ».
+     *
+     * L'ordre importe : la durée de la RÉSERVATION d'abord — elle tient compte des réponses, une
+     * surface de 80 m² ne prend pas le même temps que 20 —, puis celle déclarée au catalogue pour
+     * le métier, et seulement en dernier recours une valeur de configuration. Zéro n'est plus une
+     * réponse acceptable.
+     */
+    protected function dureeEstimee(Booking $rendezVous): int
+    {
+        $candidats = [
+            (int) ($rendezVous->duree_estimee ?? 0),
+            (int) ($rendezVous->estimated_duration_minutes ?? 0),
+            (int) ($rendezVous->duree ?? 0),
+            (int) ($rendezVous->trade_id ? ($rendezVous->trade->estimated_duration_min ?? 0) : 0),
+            (int) Config::get('order_engine.default_duration_minutes', 60),
+        ];
+
+        foreach ($candidats as $minutes) {
+            if ($minutes > 0) {
+                return $minutes;
+            }
+        }
+
+        return 60;
     }
 
     protected function combineDateAndTime($date, $time): ?string

@@ -417,6 +417,19 @@ class OrderConfirmationService
             'estimated_price' => $quote->quoteOnly ? null : $quote->minCents / 100,
             'devis_estime' => $quote->quoteOnly ? null : $quote->minCents / 100,
             /*
+             * LA DURÉE ESTIMÉE VOYAGE AVEC LE PRIX — elle ne le faisait pas.
+             *
+             * Le moteur la calcule pourtant question par question : 80 m² ne prennent pas le même
+             * temps que 20. Sans elle sur la réservation, la mission naissait avec une fin égale à
+             * son début — une intervention de zéro minute, quand le métier en déclare 120.
+             *
+             * Ce n'est pas cosmétique : le planning du prestataire, la détection de chevauchement
+             * et les réservations de créneau lisent cette fenêtre. Longue de rien, elle
+             * n'empêchait aucun double-booking.
+             */
+            'duree_estimee' => $quote->durationMin > 0 ? $quote->durationMin : null,
+            'estimated_duration_minutes' => $quote->durationMin > 0 ? $quote->durationMin : null,
+            /*
              * L'instantané du devis voyage avec la réservation : les libellés, les montants et la
              * révision du questionnaire employée. C'est ce qui rend la facture explicable ligne
              * par ligne, six mois plus tard, sans dépendre d'un catalogue qui aura changé.

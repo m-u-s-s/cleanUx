@@ -52,7 +52,27 @@ trait HasBookingDisplayAccessors
             return 'Service non précisé';
         }
 
-        return (string) str($serviceName)->replace('_', ' ')->headline();
+        /*
+         * ON NE RÉÉCRIT QUE CE QUI EN A BESOIN.
+         *
+         * `headline()` existe pour rendre lisible un identifiant technique — `cleaning_residential`
+         * devient « Cleaning Residential ». Appliqué à un libellé déjà rédigé par un
+         * administrateur, il le déforme : « Nettoyage à domicile » ressortait « Nettoyage À
+         * Domicile », sur tous les écrans, jusque sur la fiche terrain du prestataire.
+         *
+         * Le défaut dormait tant que cette chaîne ne trouvait jamais de nom et rendait « Service
+         * non précisé » ; il est apparu le jour où elle a enfin su en trouver un.
+         *
+         * Le discriminant est l'apparence d'un identifiant : underscores, ou aucune majuscule ni
+         * espace. Un nom qui ressemble déjà à un nom sort tel qu'il a été écrit.
+         */
+        $serviceName = (string) $serviceName;
+        $ressembleAUnIdentifiant = str_contains($serviceName, '_')
+            || ! preg_match('/[\s\p{Lu}]/u', $serviceName);
+
+        return $ressembleAUnIdentifiant
+            ? (string) str($serviceName)->replace('_', ' ')->headline()
+            : $serviceName;
     }
 
     public function getPostalCodeDisplayAttribute(): string

@@ -48,7 +48,20 @@ class MissionVerificationCodeService
             ->first();
 
         if (! $record) {
-            throw new RuntimeException('Aucun code valide trouvé pour cette mission.', 422);
+            /*
+             * Le message DIT QUOI FAIRE, et ce n'est pas la même chose selon le code.
+             *
+             * Le code de fin n'est plus émis à l'arrivée mais à la demande, mission démarrée : son
+             * absence n'est donc pas une anomalie, c'est une étape pas encore franchie. « Aucun
+             * code valide trouvé » laissait un prestataire devant un refus sans issue, alors que le
+             * bouton qui le débloque est juste au-dessus.
+             */
+            throw new RuntimeException(
+                $type === 'end'
+                    ? 'Aucun code de fin n’a encore été envoyé au client. Utilisez « Générer code fin », puis demandez-lui les six chiffres.'
+                    : 'Aucun code valide trouvé pour cette mission.',
+                422
+            );
         }
 
         $record->increment('attempts');
