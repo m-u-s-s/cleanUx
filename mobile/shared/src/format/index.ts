@@ -137,23 +137,47 @@ export function formatDelai(secondes: number | null | undefined): string {
  * puis le code HTTP traduit, puis un repli fourni par l'appelant qui sait de quel geste il parle.
  */
 export function messageDErreur(erreur: any, repli = 'Une erreur est survenue. Réessayez dans un instant.'): string {
+  /*
+   * DEUX FORMES D'ERREUR COHABITENT, et ne pas le savoir rend cette aide inopérante.
+   *
+   * L'intercepteur des applications convertit les échecs axios en `ApiError` : `status`,
+   * `message`, `errors`, `payload` — et AUCUN champ `response`. Une première version de cette
+   * fonction ne lisait que `response.data` : elle ne s'appliquait donc jamais sur le chemin
+   * principal, et retombait silencieusement sur le repli de l'appelant.
+   *
+   * On lit les deux : l'objet converti d'abord, l'erreur axios brute ensuite — celle qui subsiste
+   * partout où l'appel court-circuite l'intercepteur.
+   */
   const corps = erreur?.response?.data;
-  const duServeur = corps?.message;
 
-  if (typeof duServeur === 'string' && duServeur.trim() !== '') {
+  const duServeur = erreur?.message ?? corps?.message;
+
+  /*
+   * « Request failed with status code 422 » est le texte INTERNE d'axios. Il ne doit jamais
+   * atteindre un écran — c'est précisément ce qu'on a vu s'afficher, en rouge, dans les deux
+   * applications. Le reconnaître explicitement est le seul moyen de le distinguer d'un message de
+   * serveur, puisque l'intercepteur le recopie dans le même champ.
+   */
+  const estDuJargonAxios = typeof duServeur === 'string'
+    && (/^Request failed with status code/.test(duServeur)
+      || /^Network Error$/.test(duServeur)
+      || /^timeout of /.test(duServeur));
+
+  if (typeof duServeur === 'string' && duServeur.trim() !== '' && ! estDuJargonAxios) {
     return duServeur;
   }
 
   // Les erreurs de validation de Laravel : `{ errors: { champ: ["…"] } }`.
-  const premiere = corps?.errors && typeof corps.errors === 'object'
-    ? (Object.values(corps.errors as Record<string, unknown>).flat() as unknown[])[0]
+  const validation = erreur?.errors ?? corps?.errors;
+  const premiere = validation && typeof validation === 'object'
+    ? (Object.values(validation as Record<string, unknown>).flat() as unknown[])[0]
     : undefined;
 
   if (typeof premiere === 'string' && premiere.trim() !== '') {
     return premiere;
   }
 
-  switch (erreur?.response?.status) {
+  switch (erreur?.status ?? erreur?.response?.status) {
     case 401:
       return 'Votre session a expiré. Reconnectez-vous.';
     case 403:

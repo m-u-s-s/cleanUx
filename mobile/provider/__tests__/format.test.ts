@@ -95,6 +95,44 @@ describe('messageDErreur', () => {
       'Ce code n’est pas valide.',
     );
   });
+
+  /**
+   * LA FORME RÉELLE DES ERREURS DE CES APPLICATIONS.
+   *
+   * L'intercepteur convertit les échecs axios en `ApiError` : `status`, `message`, `errors` — et
+   * AUCUN champ `response`. Une première version de cette aide ne lisait que `response.data` :
+   * elle ne s'appliquait donc jamais sur le chemin principal et retombait en silence sur le repli.
+   */
+  it('lit l’ApiError des applications, pas seulement l’erreur axios brute', () => {
+    const apiError = Object.assign(new Error('Ce code a expiré. Demandez-en un nouveau.'), {
+      name: 'ApiError',
+      status: 422,
+      errorCode: 'invalid_code',
+    });
+
+    expect(messageDErreur(apiError)).toBe('Ce code a expiré. Demandez-en un nouveau.');
+  });
+
+  /** Le jargon d'axios recopié par l'intercepteur dans `message` doit être reconnu et écarté. */
+  it('écarte le jargon d’axios même quand il arrive dans `message`', () => {
+    const apiError = Object.assign(new Error('Request failed with status code 422'), {
+      name: 'ApiError',
+      status: 422,
+      errorCode: 'http_error',
+    });
+
+    expect(messageDErreur(apiError)).toBe('Cette valeur n’a pas été acceptée. Vérifiez et réessayez.');
+  });
+
+  /** Les erreurs de validation portées par l'ApiError, pas par `response.data`. */
+  it('remonte les erreurs de validation portées par l’ApiError', () => {
+    const apiError = Object.assign(new Error('Request failed with status code 422'), {
+      status: 422,
+      errors: { code: ['Ce code n’est plus valable.'] },
+    });
+
+    expect(messageDErreur(apiError)).toBe('Ce code n’est plus valable.');
+  });
 });
 
 describe('formatDateHeure', () => {

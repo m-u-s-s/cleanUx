@@ -10,7 +10,7 @@ import { useLiveBookingIds } from '@/tracking';
 import { HomeActionsSheet } from '@/screens/components/HomeActionsSheet';
 import { HomeMissionMap } from '@/screens/components/HomeMissionMap';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
-import { libelleStatut, formatDateHeure } from '@/lib/format';
+import { formatAdresse, formatDateHeure, libelleStatut } from '@/lib/format';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -111,7 +111,7 @@ export function HomeScreen() {
               {formatDateHeure(focus.scheduled_date, focus.scheduled_time)}
             </Text>
             <Text style={[styles.focusAddress, { color: themeColors.textMuted }]}>
-              {focus.address}, {focus.city}
+              {formatAdresse(focus.address, focus.city)}
             </Text>
 
             {/* La carte apparaît dès que le prestataire a pris la route : c'est là qu'il y a

@@ -5,6 +5,7 @@ import { Button, TextInput } from '@/ui';
 import { apiClient, ApiError } from '@/api';
 import { colors, spacing, typography } from '@/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { messageDErreur } from '@brio/shared/format';
 
 type Props = NativeStackScreenProps<any, 'ForgotPassword'>;
 
@@ -22,7 +23,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (e: any) {
-      Alert.alert('Erreur', e.message ?? "Impossible d'envoyer le lien.");
+      Alert.alert('Erreur', messageDErreur(e, "Impossible d'envoyer le lien."));
     }
   };
 

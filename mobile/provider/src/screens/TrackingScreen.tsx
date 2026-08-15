@@ -156,7 +156,7 @@ export function TrackingScreen({ route }: Props) {
         <View style={styles.destinationCard}>
           <Text style={styles.cardLabel}>Destination</Text>
           <Text style={styles.destinationAddress}>
-            {mission.address}, {mission.city}
+            {formatAdresse(mission.address, mission.city)}
           </Text>
           <Text style={styles.missionService}>{mission.service_name}</Text>
         </View>

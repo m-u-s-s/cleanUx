@@ -24,6 +24,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
+import { formatAdresse, messageDErreur } from '@brio/shared/format';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionField'>;
 
@@ -155,7 +156,7 @@ export function MissionFieldScreen({ route }: Props) {
             'Elle est horodatée, géolocalisée et visible par le client.',
           ),
         onError: (e: any) =>
-          Alert.alert('Envoi impossible', e?.message ?? 'Réessayez dans un instant.'),
+          Alert.alert('Envoi impossible', messageDErreur(e, 'Réessayez dans un instant.')),
       },
     );
   };
@@ -176,7 +177,7 @@ export function MissionFieldScreen({ route }: Props) {
           Alert.alert('Signalé', 'Le client vient d’être prévenu.');
         },
         onError: (e: any) =>
-          Alert.alert('Signalement impossible', e?.message ?? 'Réessayez dans un instant.'),
+          Alert.alert('Signalement impossible', messageDErreur(e, 'Réessayez dans un instant.')),
       },
     );
   };
@@ -195,7 +196,7 @@ export function MissionFieldScreen({ route }: Props) {
 
       <View style={styles.clientCard}>
         <Text style={styles.clientName}>{mission.client_name}</Text>
-        <Text style={styles.clientAddress}>{mission.address}, {mission.city}</Text>
+        <Text style={styles.clientAddress}>{formatAdresse(mission.address, mission.city)}</Text>
       </View>
 
       {/* ── ÉTAT DES LIEUX ─────────────────────────────────────────────── */}
@@ -431,7 +432,7 @@ export function MissionFieldScreen({ route }: Props) {
                         { itemId: item.id, done: v },
                         {
                           onError: (e: any) =>
-                            Alert.alert('Impossible', e?.message ?? 'Réessayez dans un instant.'),
+                            Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
                         },
                       )
                     }
@@ -491,7 +492,7 @@ export function MissionFieldScreen({ route }: Props) {
             onPress={() =>
               lifecycle.mutate('ride/start', {
                 onError: (e: any) =>
-                  Alert.alert('Impossible', e?.message ?? 'Réessayez dans un instant.'),
+                  Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
               })
             }
             fullWidth
@@ -516,7 +517,7 @@ export function MissionFieldScreen({ route }: Props) {
                       onPress: () =>
                         declarerAbsence.mutate(undefined, {
                           onError: (e: any) =>
-                            Alert.alert('Impossible', e?.message ?? 'Réessayez dans un instant.'),
+                            Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
                         }),
                     },
                   ],
@@ -540,7 +541,7 @@ export function MissionFieldScreen({ route }: Props) {
             onPress={() =>
               lifecycle.mutate('ride/complete', {
                 onError: (e: any) =>
-                  Alert.alert('Impossible', e?.message ?? 'Réessayez dans un instant.'),
+                  Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
               })
             }
             variant="danger"
@@ -561,7 +562,7 @@ export function MissionFieldScreen({ route }: Props) {
             onPress={() =>
               lifecycle.mutate('complete', {
                 onError: (e: any) =>
-                  Alert.alert('Impossible', e?.message ?? 'Réessayez dans un instant.'),
+                  Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
               })
             }
             variant="danger"

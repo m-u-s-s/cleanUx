@@ -147,6 +147,39 @@ describe('MissionDetailScreen — cycle de vie', () => {
     expect(lifecycleCalls('start')).toHaveLength(0);
   });
 
+  /**
+   * LE DÉMARRAGE AUSSI DIT SON REFUS.
+   *
+   * Le test voisin couvrait déjà la CLÔTURE ; le démarrage était le seul appel de cycle de vie
+   * sans `onError`. Un code périmé — le cas courant, le TTL est de vingt minutes — laissait donc
+   * l'écran rigoureusement identique : ni erreur, ni progression, aucun moyen de deviner qu'il
+   * fallait en redemander un. Constaté en déroulant le parcours sur émulateur.
+   */
+  it('affiche le refus du serveur quand le code de début est rejeté', async () => {
+    // Pas de boîte de confirmation sur ce bouton : une simple sonde sur Alert suffit.
+    const alerte = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    apiMock
+      .onPost(`/provider/missions/${MISSION_ID}/begin`)
+      .reply(422, { ok: false, message: 'Ce code a expiré. Demandez-en un nouveau.' });
+
+    renderWithStatus('arrived');
+    await waitFor(() => screen.getByLabelText('Code de début (donné au client par SMS)'));
+
+    fireEvent.changeText(screen.getByLabelText('Code de début (donné au client par SMS)'), '482915');
+    fireEvent.press(screen.getByLabelText('Démarrer mission'));
+
+    await waitFor(() => expect(lifecycleCalls('begin')).toHaveLength(1));
+    await waitFor(() =>
+      expect(
+        alerte.mock.calls.some(
+          ([titre, message]) => titre === 'Impossible' && String(message).includes('expiré'),
+        ),
+      ).toBe(true),
+    );
+
+    alerte.mockRestore();
+  });
+
   it("n'appelle pas le serveur avec un code incomplet", async () => {
     renderWithStatus('arrived');
     await waitFor(() => screen.getByLabelText('Code de début (donné au client par SMS)'));

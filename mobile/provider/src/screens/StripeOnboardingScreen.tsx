@@ -7,6 +7,7 @@ import { apiClient } from '@/api';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { messageDErreur } from '@brio/shared/format';
 
 export function StripeOnboardingScreen() {
   const styles = stylesFor(useThemeColors());
@@ -21,7 +22,7 @@ export function StripeOnboardingScreen() {
       const res = await onboard.mutateAsync();
       if (res.url) await Linking.openURL(res.url);
     } catch (e: any) {
-      Alert.alert('Erreur', e.message);
+      Alert.alert('Erreur', messageDErreur(e));
     }
   };
 

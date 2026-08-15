@@ -9,7 +9,7 @@ import { useArriveOnSite } from '@/tracking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
-import { formatAdresse, formatDateHeure } from '@brio/shared/format';
+import { formatAdresse, formatDateHeure, messageDErreur } from '@brio/shared/format';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionDetail'>;
 
@@ -37,7 +37,7 @@ export function MissionDetailScreen({ route }: Props) {
             ? `Un nouveau code vient d’être envoyé au ${r.sent_to}. L’ancien n’est plus valide.`
             : 'Un nouveau code vient d’être envoyé. L’ancien n’est plus valide.',
         ),
-      onError: (e: any) => Alert.alert('Impossible', e?.message ?? 'Réessayez dans un instant.'),
+      onError: (e: any) => Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
     });
   };
   const arriveOnSite = useArriveOnSite(mission?.booking_id ?? null, missionId);
@@ -90,7 +90,7 @@ export function MissionDetailScreen({ route }: Props) {
               Alert.alert('Félicitations 🎉', messageDeCloture(resultat?.payout));
             },
             onError: (e: any) =>
-              Alert.alert('Impossible', e?.message ?? 'Réessayez dans un instant.'),
+              Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
           }),
       },
     ]);
@@ -109,7 +109,7 @@ export function MissionDetailScreen({ route }: Props) {
 
     arriveOnSite.mutate(undefined, {
       onSuccess: (session) => navigation.navigate('PresenceScan', { sessionId: session.id }),
-      onError: (e: any) => Alert.alert('Impossible', e?.message ?? 'Réessayez.'),
+      onError: (e: any) => Alert.alert('Impossible', messageDErreur(e, 'Réessayez.')),
     });
   };
 
@@ -219,7 +219,21 @@ export function MissionDetailScreen({ route }: Props) {
               label="Démarrer mission"
               onPress={() =>
                 startCode.length === 6
-                  ? lifecycle.mutate({ action: 'begin', code: startCode })
+                  ? lifecycle.mutate(
+                      { action: 'begin', code: startCode },
+                      {
+                        /*
+                         * SANS CECI, UN CODE REFUSÉ NE DISAIT RIEN.
+                         *
+                         * C'était le SEUL appel de cycle de vie sans `onError` : le prestataire
+                         * saisissait six chiffres périmés, appuyait, et l'écran restait
+                         * rigoureusement identique. Aucune erreur, aucune progression, aucun moyen
+                         * de deviner qu'il fallait redemander un code. Constaté à l'écran.
+                         */
+                        onError: (e: any) =>
+                          Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
+                      },
+                    )
                   : Alert.alert('Code requis', 'Demandez au client le code à six chiffres reçu par SMS.')
               }
               fullWidth

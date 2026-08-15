@@ -8,7 +8,7 @@ import type { MissionAssignment } from '@/missions';
 import { useCurrentPosition, distanceKmTo } from '@/tracking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { formatDateHeure } from '@brio/shared/format';
+import { formatAdresse, formatDateHeure } from '@brio/shared/format';
 
 const MISSION_CARD_HEIGHT = 120;
 
@@ -49,7 +49,7 @@ export function MissionInboxScreen() {
         <Text style={styles.service}>{item.service_name}</Text>
         <Text style={styles.client}>{item.client_name}</Text>
         <Text style={styles.address}>
-          {item.address}, {item.city}
+          {formatAdresse(item.address, item.city)}
         </Text>
         <Text style={styles.schedule}>
           {formatDateHeure(item.scheduled_date, item.scheduled_time)}

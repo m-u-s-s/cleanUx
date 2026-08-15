@@ -9,6 +9,7 @@ import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { formatAdresse, messageDErreur } from '@brio/shared/format';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionField'>;
 
@@ -90,7 +91,7 @@ export function MissionExecutionScreen({ route }: Props) {
               { action: 'complete', code: endCode.trim() || undefined },
               {
                 onError: (e) =>
-                  Alert.alert('Erreur', e.message ?? 'Impossible de terminer la mission.'),
+                  Alert.alert('Erreur', messageDErreur(e, 'Impossible de terminer la mission.')),
               },
             ),
         },
@@ -126,7 +127,7 @@ export function MissionExecutionScreen({ route }: Props) {
         <Divider />
         <Text style={styles.infoTitle}>Adresse</Text>
         <Text style={styles.infoValue}>
-          {mission.address}, {mission.city}
+          {formatAdresse(mission.address, mission.city)}
         </Text>
         {mission.client_phone && (
           <>
