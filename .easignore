@@ -1,0 +1,96 @@
+# Fichiers exclus de l'archive envoyée à EAS Build.
+#
+# POURQUOI CE FICHIER EST À LA RACINE DU DÉPÔT, ET PAS DANS mobile/client.
+#
+# EAS construit l'archive depuis la racine du dépôt git — ici `CleanUx/`, pas `mobile/` ni
+# `mobile/client`. Un `.easignore` posé plus bas dans l'arborescence n'est jamais lu. C'est ce qui
+# a fait échouer deux tentatives de build : les `.easignore` de `mobile/client` et `mobile/provider`
+# n'avaient aucun effet, et l'archive atteignait 2,8 Go pour un plafond de 2,0 Go.
+#
+#   Reason: Project archive is too big. Maximum allowed size is 2.0 GB.
+#
+# ATTENTION — CE FICHIER REMPLACE `.gitignore`, IL NE S'Y AJOUTE PAS.
+#
+# Dès qu'un `.easignore` existe, EAS cesse entièrement de lire `.gitignore`. Tout ce qui n'est pas
+# listé ici part dans l'archive, même si git l'ignore. Toute nouvelle entrée volumineuse de
+# `.gitignore` doit donc AUSSI être ajoutée ici.
+#
+# Ne JAMAIS exclure `mobile/shared/` : c'est une dépendance de workspace des deux apps mobiles,
+# le build échoue sans elle.
+
+# ---------------------------------------------------------------------------
+# Le poids : projets natifs générés localement par `expo run:android`
+# ---------------------------------------------------------------------------
+# ~5 Go par app (caches Gradle, `app/build`, `.cxx`). EAS régénère son propre projet natif via
+# prebuild à partir d'app.json et app.config.js — embarquer le nôtre est inutile, et risquerait
+# même de figer une configuration native périmée.
+android/
+ios/
+.gradle/
+.cxx/
+
+# ---------------------------------------------------------------------------
+# Dépendances — réinstallées par EAS depuis les lockfiles
+# ---------------------------------------------------------------------------
+node_modules/
+vendor/
+
+# ---------------------------------------------------------------------------
+# Backend Laravel : sans objet pour un build mobile
+# ---------------------------------------------------------------------------
+storage/
+bootstrap/cache/
+public/build/
+public/hot
+database/*.sqlite
+
+# `public/storage` est une JONCTION Windows vers `storage/app/public`, posée par
+# `php artisan storage:link`. EAS recopie l'arborescence dans un dossier temporaire et tente de
+# recréer le lien, ce que Windows refuse tant que le mode développeur est désactivé :
+#
+#   EPERM: operation not permitted, symlink '...\storage\app\public' -> '...\public\storage'
+#
+# L'exclure règle le problème sans toucher au poste : un build mobile n'a que faire des médias
+# téléversés du backend.
+public/storage
+
+# ---------------------------------------------------------------------------
+# Caches, sorties de build et outillage local
+# ---------------------------------------------------------------------------
+.git/
+.github/
+.claude/
+.scribe/
+.superpowers/
+.expo/
+dist/
+coverage/
+tools/
+*.hbc
+*.log
+mobile/ruvector.db
+mobile/package-lock.json.bak
+
+# ---------------------------------------------------------------------------
+# Tests et documentation — inutiles au build natif
+# ---------------------------------------------------------------------------
+__tests__/
+__mocks__/
+*.test.ts
+*.test.tsx
+jest.config.ts
+jest.setup.ts
+mobile/e2e/
+tests/
+docs/
+
+# ---------------------------------------------------------------------------
+# Variables d'environnement locales
+# ---------------------------------------------------------------------------
+# Gitignorées : elles n'ont rien à faire sur un serveur de build. Le build dev-client n'en a pas
+# besoin — c'est Metro, sur ta machine, qui lit `.env` et inline les EXPO_PUBLIC_* au moment du
+# bundle. Les profils preview/production tirent leurs valeurs du bloc `env` d'eas.json.
+.env
+.env.local
+.env.backup
+.env.production

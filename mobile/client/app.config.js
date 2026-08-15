@@ -19,6 +19,24 @@
  *   3. l'exposer en EXPO_PUBLIC_GOOGLE_MAPS_API_KEY (localement, et comme secret EAS pour les
  *      builds : `eas secret:create --name EXPO_PUBLIC_GOOGLE_MAPS_API_KEY --value <clé>`) ;
  *   4. RECONSTRUIRE — c'est de la configuration native, un rechargement JS ne suffit pas.
+ *
+ * ---
+ *
+ * Pourquoi `slug` vaut « cleanux-client » alors que la marque est Brio — NE PAS « corriger ».
+ *
+ * Le slug d'un projet EAS est figé à sa création : expo.dev laisse renommer le nom d'affichage,
+ * jamais le slug. Le projet a été créé sous CleanUx, il gardera ce slug à vie. Or EAS compare le
+ * slug d'app.json à celui du serveur et REFUSE toute commande en cas d'écart :
+ *
+ *   Slug for project identified by "extra.eas.projectId" (cleanux-client) does not match
+ *   the "slug" field (brio-client)
+ *
+ * Le renommage vers Brio l'avait aligné sur la marque, ce qui a bloqué tous les builds. Le seul
+ * moyen d'avoir « brio-client » serait de créer un nouveau projet EAS — au prix de l'historique
+ * de builds et de la clé de signature Android, donc de la capacité à mettre à jour les APK déjà
+ * installées. Le slug ne se voit nulle part côté utilisateur : le nom affiché sur le téléphone
+ * vient de `expo.name` (« Brio ») et l'identité du binaire de `android.package`
+ * (`com.brio.client`). Seule l'URL du projet sur expo.dev porte encore l'ancien nom.
  */
 module.exports = ({ config }) => {
   const googleMapsApiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';

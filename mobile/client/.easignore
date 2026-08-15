@@ -1,13 +1,42 @@
-# Reduce EAS upload size — only client app code needed
-.git
-.claude
-.scribe
-.superpowers
-__mocks__
-__tests__
+# Doublon défensif — LE fichier qui fait autorité est `/.easignore`, à la racine du dépôt.
+#
+# EAS construit l'archive depuis la racine du dépôt git (`CleanUx/`), et c'est là qu'il lit le
+# `.easignore`. Un fichier posé ici n'a probablement aucun effet : la version précédente ne listait
+# ni `node_modules` ni `android/`, et l'archive atteignait 2,8 Go pour un plafond de 2,0 Go — poser
+# un `.easignore` complet dans `mobile/` n'a rien changé (2,8 Go à l'identique), alors que le même
+# contenu à la racine a fait tomber l'archive à 22 Mo.
+#
+# Ce fichier est conservé par prudence, au cas où une version future d'EAS lirait aussi le niveau
+# projet. Il ne doit contenir qu'un sous-ensemble de `/.easignore` — jamais une règle qui le
+# contredit. Toute vraie modification se fait à la racine.
+#
+# ATTENTION, dans tous les cas : un `.easignore` REMPLACE `.gitignore`, il ne s'y ajoute pas.
+
+# Le poids : projets natifs générés localement par `expo run:android` (~5 Go de caches Gradle).
+# EAS régénère le sien via prebuild à partir d'app.json + app.config.js.
+android/
+ios/
+.gradle/
+.cxx/
+
+# Dépendances — EAS les réinstalle depuis le lockfile
+node_modules/
+
+# Caches et sorties de build
+.expo/
+dist/
+coverage/
+*.hbc
+*.log
+
+# Tests — inutiles au build natif
+__tests__/
+__mocks__/
 *.test.ts
 *.test.tsx
 jest.config.ts
-coverage/
-docs/
-scripts/
+jest.setup.ts
+
+# Variables d'environnement locales : lues par Metro sur ta machine, jamais par le serveur de build
+.env
+.env.local
