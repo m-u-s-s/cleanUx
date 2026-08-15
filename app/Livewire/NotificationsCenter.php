@@ -113,17 +113,48 @@ class NotificationsCenter extends Component
         return $user?->unreadNotifications()->count() ?? 0;
     }
 
+    /**
+     * LE VIDE N'ACCUSE PLUS LE FILTRE.
+     *
+     * La vue affichait « Aucune notification ne correspond au filtre actuel » même pour un compte
+     * qui n'a strictement aucune notification et aucun filtre actif — le message désignait un
+     * coupable inexistant. La clé `ui.notifications.none` existait déjà, sans appelant.
+     */
+    public function hasAnyNotifications(): bool
+    {
+        return (bool) $this->currentUser()?->notifications()->exists();
+    }
+
+    public function hasActiveFilters(): bool
+    {
+        return $this->filter !== 'all' || $this->type !== 'all' || $this->search !== '';
+    }
+
+    /**
+     * `type` est lié au queryString mais n'avait AUCUN contrôle dans la vue : arriver sur
+     * `/notifications?type=finance` vidait la liste pendant que le sélecteur visible affichait
+     * toujours « Toutes ». On ne pouvait s'en sortir qu'en éditant l'URL. La vue rend désormais le
+     * sélecteur de type, et ce bouton désarme tout d'un coup.
+     */
+    public function resetFilters(): void
+    {
+        $this->filter = 'all';
+        $this->type = 'all';
+        $this->search = '';
+        $this->resetPage();
+    }
+
     public function typeOptions(): array
     {
         return [
-            'all' => __('Tout'),
-            'rendezvous' => __('Rendez-vous'),
-            'feedback' => __('Feedback'),
-            'finance' => __('Finance'),
-            'calendar' => __('Agenda'),
-            'admin' => __('Admin'),
-            'urgent' => __('Urgent'),
-            'system' => __('Système'),
+            'all' => __('ui.notifications.types.all'),
+            'rendezvous' => __('ui.notifications.types.rendezvous'),
+            'feedback' => __('ui.notifications.types.feedback'),
+            'finance' => __('ui.notifications.types.finance'),
+            'calendar' => __('ui.notifications.types.calendar'),
+            'admin' => __('ui.notifications.types.admin'),
+            'urgent' => __('ui.notifications.types.urgent'),
+            'system' => __('ui.notifications.types.system'),
         ];
     }
 
@@ -136,13 +167,23 @@ class NotificationsCenter extends Component
             return collect();
         }
 
-        $notifications = $user->notifications()->latest()->take(250)->get();
+        /*
+         * LU / NON LU SE TRANCHE EN SQL, PAS APRÈS LA TRONCATURE.
+         *
+         * Le filtre s'appliquait en PHP sur les 250 dernières lignes déjà chargées : au-delà de
+         * 250 notifications, demander « Lues » ne cherchait que dans les 250 plus récentes et
+         * taisait le reste. `read_at` est une colonne — la base sait répondre exactement. Le type
+         * et la recherche, eux, dépendent du presenter et restent en PHP, sur un plafond assumé.
+         */
+        $requete = $user->notifications()->latest();
 
         if ($this->filter === 'unread') {
-            $notifications = $notifications->whereNull('read_at');
+            $requete->whereNull('read_at');
         } elseif ($this->filter === 'read') {
-            $notifications = $notifications->whereNotNull('read_at');
+            $requete->whereNotNull('read_at');
         }
+
+        $notifications = $requete->take(250)->get();
 
         if ($this->type !== 'all') {
             $notifications = $notifications->filter(
@@ -187,6 +228,8 @@ class NotificationsCenter extends Component
             'unreadCount' => $this->unreadCount,
             'presenter' => $presenter,
             'typeOptions' => $this->typeOptions(),
+            'hasAnyNotifications' => $this->hasAnyNotifications(),
+            'hasActiveFilters' => $this->hasActiveFilters(),
         ]);
     }
 }

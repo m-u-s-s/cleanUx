@@ -121,9 +121,29 @@ class NotificationPresenter
             return '#';
         }
 
+        /*
+         * TROIS RÔLES, TROIS DESTINATIONS — Y COMPRIS POUR `feedback` ET `finance`.
+         *
+         * Ces deux branches ne testaient que `isAdmin()` et envoyaient TOUT le reste sur des
+         * routes client. Un prestataire qui ouvrait une notification de virement atterrissait sur
+         * `/dashboard/client`, gardé par `CheckRole:client` : 403 constaté à l'écran. Le défaut
+         * était resté invisible parce que la vue du centre n'appelait jamais `actionUrl()` — et
+         * parce que le test unitaire créait bien un `$employe` mais ne l'exerçait que sur
+         * `calendar` et `system`, les deux seules branches déjà correctes.
+         *
+         * Le prestataire a ses propres pages : `employe.feedbacks` et `employe.wallet`.
+         */
         return match ($this->typeKey($notification)) {
-            'feedback' => $user->isAdmin() ? route('admin.feedbacks') : route('client.historique'),
-            'finance' => $user->isAdmin() ? route('admin.finance') : route('client.dashboard'),
+            'feedback' => match (true) {
+                $user->isAdmin() => route('admin.feedbacks'),
+                $user->isEmploye() => route('employe.feedbacks'),
+                default => route('client.historique'),
+            },
+            'finance' => match (true) {
+                $user->isAdmin() => route('admin.finance'),
+                $user->isEmploye() => route('employe.wallet'),
+                default => route('client.dashboard'),
+            },
             'calendar' => $user->isAdmin() ? route('admin.calendar.settings') : ($user->isEmploye() ? route('employe.google.calendar') : route('client.dashboard')),
             default => $user->isAdmin()
                 ? route('admin.dashboard')

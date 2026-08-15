@@ -151,6 +151,16 @@ class NotificationPresenterCoverageBatch16Test extends TestCase
         $this->assertSame(route('client.historique'), $presenter->actionUrl($this->makeNotification(['type' => 'feedback']), $client));
         $this->assertSame(route('admin.finance'), $presenter->actionUrl($this->makeNotification(['type' => 'finance']), $admin));
         $this->assertSame(route('client.dashboard'), $presenter->actionUrl($this->makeNotification(['type' => 'finance']), $client));
+
+        /*
+         * LE PRESTATAIRE SUR CES DEUX TYPES — le trou que ce test laissait ouvert.
+         *
+         * `$employe` n'était exercé que sur `calendar` et `system`. `feedback` et `finance`
+         * renvoyaient donc un prestataire sur `client.historique` / `client.dashboard`, deux
+         * routes gardées par `CheckRole:client` : 403 à l'arrivée.
+         */
+        $this->assertSame(route('employe.feedbacks'), $presenter->actionUrl($this->makeNotification(['type' => 'feedback']), $employe));
+        $this->assertSame(route('employe.wallet'), $presenter->actionUrl($this->makeNotification(['type' => 'finance']), $employe));
         $this->assertSame(route('admin.calendar.settings'), $presenter->actionUrl($this->makeNotification(['type' => 'calendar']), $admin));
         $this->assertSame(route('employe.google.calendar'), $presenter->actionUrl($this->makeNotification(['type' => 'calendar']), $employe));
         $this->assertSame(route('client.dashboard'), $presenter->actionUrl($this->makeNotification(['type' => 'calendar']), $client));
