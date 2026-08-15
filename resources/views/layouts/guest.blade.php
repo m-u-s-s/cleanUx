@@ -187,12 +187,21 @@
 
     <main id="main-content" role="main" aria-label="Contenu principal">{{ $slot }}</main>
 
-    {{-- CTA flottant permanent --}}
-    @guest
-    <a href="{{ route('booking.create') }}" class="cx-fab" aria-label="Réserver une prestation">
-        <span class="cx-fab__dot"></span> Réserver maintenant
-    </a>
-    @endguest
+    {{--
+        CTA flottant — sur les pages de vitrine SEULEMENT.
+
+        Il est en position fixe : sur une page de formulaire il se pose PAR-DESSUS les champs.
+        `$cta` vaut faux par défaut ({@see \App\View\Components\GuestLayout}) ; les pages où l'on
+        flâne le demandent explicitement. Le `?? false` couvre les composants Livewire qui rendent
+        cette mise en page directement, sans passer par le composant de classe.
+    --}}
+    @if ($cta ?? false)
+        @guest
+        <a href="{{ route('booking.create') }}" class="cx-fab" aria-label="Réserver une prestation">
+            <span class="cx-fab__dot"></span> Réserver maintenant
+        </a>
+        @endguest
+    @endif
 
     <footer class="cx-footer" role="contentinfo">
         <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">

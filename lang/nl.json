@@ -362,5 +362,10 @@
   "🔒 Verrouillé par admin": "🔒 Vergrendeld door admin",
   "🕘 Historique": "🕘 Historiek",
   "🕘 Historique employé": "🕘 Historiek werknemer",
-  "🕘 Mon historique": "🕘 Mijn historiek"
+  "🕘 Mon historique": "🕘 Mijn historiek",
+  "Before continuing, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another.": "Bevestig je e-mailadres door op de link te klikken die we je zojuist hebben gestuurd. Heb je de e-mail niet ontvangen? Dan sturen we je graag een nieuwe.",
+  "A new verification link has been sent to the email address you provided in your profile settings.": "Er is een nieuwe bevestigingslink verstuurd naar je e-mailadres.",
+  "Resend Verification Email": "Bevestigingsmail opnieuw versturen",
+  "Edit Profile": "Mijn profiel bewerken",
+  "Log Out": "Afmelden"
 }

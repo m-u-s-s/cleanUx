@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout :cta="true">
     {{-- ============================================================
          Brio — Landing page (refonte Stripe/Linear-light, 21/05/2026)
          Direction : sérieux SaaS multi-métiers B2B + B2C.

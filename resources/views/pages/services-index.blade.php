@@ -1,4 +1,5 @@
 <x-guest-layout
+    :cta="true"
     :seoTitle="'Tous nos services a domicile — Brio Belgique'"
     :seoDescription="'Decouvrez 30+ metiers de services a domicile : nettoyage, peinture, plomberie, jardinage, babysitting et plus. Providers verifies, paiement securise, suivi en temps reel.'"
 >

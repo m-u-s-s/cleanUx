@@ -1,4 +1,5 @@
 <x-guest-layout
+    :cta="true"
     :seoTitle="$seoTitle ?? 'Blog — Brio | Conseils, actualités, guides'"
     :seoDescription="$seoDescription ?? 'Découvrez nos articles sur les services à domicile, conseils nettoyage, guides travaux, et actualités Brio.'"
 >

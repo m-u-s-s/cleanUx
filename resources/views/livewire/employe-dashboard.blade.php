@@ -29,6 +29,15 @@
             qu'il doit trouver la réponse, pas dans un écran de réglages qu'il n'a aucune raison
             d'ouvrir.
         --}}
+        {{--
+            LE DOSSIER D'ABORD, LA CONDUITE ENSUITE — l'ordre n'est pas décoratif.
+
+            Tant que le compte n'est pas vérifié, AUCUNE mission n'arrive, quel que soit le métier :
+            c'est la première chose à dire. Les exigences de conduite ne concernent qu'une partie
+            des métiers et n'ont de sens qu'une fois cette porte franchie.
+        --}}
+        <livewire:provider.provider-dossier-banner />
+
         <livewire:provider.provider-driving-banner />
 
 

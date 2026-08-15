@@ -45,7 +45,10 @@ class ProviderPublicProfile extends Component
         $this->resetPage();
     }
 
-    #[Layout('layouts.guest')]
+    // Page de vitrine : on y consulte un prestataire, le bouton flottant y mène au bon geste.
+    // Il est désormais explicite — la mise en page ne l'affiche plus d'office, pour ne pas le poser
+    // par-dessus les formulaires d'authentification qu'elle sert aussi.
+    #[Layout('layouts.guest', ['cta' => true])]
     public function render(): View
     {
         $profile = $this->provider->providerProfile;

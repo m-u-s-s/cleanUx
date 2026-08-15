@@ -1,4 +1,4 @@
-<x-guest-layout :title="$seoTitle" :description="$seoDescription">
+<x-guest-layout :cta="true" :title="$seoTitle" :description="$seoDescription">
 
     {{-- Schema.org SoftwareApplication / Product markup for each tier --}}
     @push('head')

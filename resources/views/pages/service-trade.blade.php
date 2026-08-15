@@ -1,4 +1,5 @@
 <x-guest-layout
+    :cta="true"
     :seoTitle="$seoTitle"
     :seoDescription="$seoDescription"
 >

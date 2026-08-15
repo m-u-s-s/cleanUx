@@ -362,5 +362,10 @@
   "🔒 Verrouillé par admin": "🔒 Locked by admin",
   "🕘 Historique": "🕘 History",
   "🕘 Historique employé": "🕘 Employee history",
-  "🕘 Mon historique": "🕘 My history"
+  "🕘 Mon historique": "🕘 My history",
+  "Before continuing, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another.": "Bestätigen Sie bitte Ihre E-Mail-Adresse über den Link, den wir Ihnen soeben gesendet haben. Falls Sie die E-Mail nicht erhalten haben, senden wir Ihnen gerne eine neue.",
+  "A new verification link has been sent to the email address you provided in your profile settings.": "Ein neuer Bestätigungslink wurde an Ihre E-Mail-Adresse gesendet.",
+  "Resend Verification Email": "Bestätigungsmail erneut senden",
+  "Edit Profile": "Profil bearbeiten",
+  "Log Out": "Abmelden"
 }
