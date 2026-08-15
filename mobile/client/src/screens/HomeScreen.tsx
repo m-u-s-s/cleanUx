@@ -10,6 +10,7 @@ import { useLiveBookingIds } from '@/tracking';
 import { HomeActionsSheet } from '@/screens/components/HomeActionsSheet';
 import { HomeMissionMap } from '@/screens/components/HomeMissionMap';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
+import { libelleStatut, formatDateHeure } from '@/lib/format';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -102,10 +103,12 @@ export function HomeScreen() {
           >
             <View style={styles.focusHeader}>
               <Text style={[styles.focusService, { color: themeColors.text }]}>{focus.service_name}</Text>
-              <Badge label={focus.status} variant={focusIsLive ? 'success' : 'brand'} />
+              {/* Le statut technique de l'API ne s'affiche pas tel quel : « pending » n'est pas
+                  une promesse qu'on fait à un client. */}
+              <Badge label={libelleStatut(focus.status)} variant={focusIsLive ? 'success' : 'brand'} />
             </View>
             <Text style={[styles.focusDate, { color: themeColors.textSecondary }]}>
-              {focus.scheduled_date} à {focus.scheduled_time}
+              {formatDateHeure(focus.scheduled_date, focus.scheduled_time)}
             </Text>
             <Text style={[styles.focusAddress, { color: themeColors.textMuted }]}>
               {focus.address}, {focus.city}
@@ -169,7 +172,7 @@ export function HomeScreen() {
                     {b.service_name}
                   </Text>
                   <Text style={[styles.otherMeta, { color: themeColors.textMuted }]} numberOfLines={1}>
-                    {b.scheduled_date} à {b.scheduled_time} — {b.city}
+                    {formatDateHeure(b.scheduled_date, b.scheduled_time)} — {b.city}
                   </Text>
                 </View>
                 <Icon

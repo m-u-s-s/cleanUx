@@ -12,16 +12,35 @@
 
         <div class="space-y-6">
 
-            {{-- ─── Intention ───────────────────────────────────────────────────────────── --}}
+            {{--
+                ─── Intention ─────────────────────────────────────────────────────────────
+
+                LA QUESTION NE SE POSE PAS DEUX FOIS.
+
+                Dans l'application mobile, l'écran natif demande déjà « Quel type de mission ? » et
+                ouvre cette page avec le mode retenu (`/commander?mode=asap`). Elle reposait
+                pourtant les mêmes quatre cartes, juste en dessous du titre de l'écran qui venait
+                de trancher — et la seconde réponse pouvait contredire la première sans que rien ne
+                le signale.
+
+                On ne masque que la RÉPÉTITION : quand le mode est déjà décidé et qu'on est
+                embarqué. Sur le web, où personne n'a rien choisi en amont, les cartes restent le
+                point d'entrée du parcours. Et le sélecteur compact de la fiche métier — juste
+                sous le nom du service — permet toujours d'en changer d'un geste.
+            --}}
+            @php($modeDejaChoisi = ($embedded ?? false) && filled(request()->query('mode')))
+
             <section aria-labelledby="intention-titre">
                 <h1 id="intention-titre" class="text-2xl font-semibold leading-tight text-slate-900">
                     De quoi avez-vous besoin ?
                 </h1>
                 <p class="mt-1 text-sm text-slate-500">Estimation immédiate, sans créer de compte.</p>
 
-                <div class="mt-4">
-                    @include('livewire.order-engine.partials.mode-cards')
-                </div>
+                @unless ($modeDejaChoisi)
+                    <div class="mt-4">
+                        @include('livewire.order-engine.partials.mode-cards')
+                    </div>
+                @endunless
             </section>
 
             {{--

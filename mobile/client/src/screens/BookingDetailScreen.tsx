@@ -12,9 +12,36 @@ import type { CompletionCode } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { libelleStatut, formatDateHeure } from '@/lib/format';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BookingDetail'>;
+
+/**
+ * Ce qu'on montre au client quand le code de fin est refusé.
+ *
+ * Le message du SERVEUR d'abord : lui seul sait pourquoi il refuse, et il le dit en français.
+ * Ensuite le code HTTP, traduit. JAMAIS `error.message` : c'est le texte interne de la
+ * bibliothèque HTTP, en anglais — « Request failed with status code 404 » s'affichait tel quel.
+ */
+function messageDeRefus(erreur: any): string {
+  const duServeur = erreur?.response?.data?.message;
+
+  if (typeof duServeur === 'string' && duServeur.trim() !== '') {
+    return duServeur;
+  }
+
+  switch (erreur?.response?.status) {
+    case 404:
+      return 'Aucun code n’est disponible pour le moment : le prestataire n’a pas encore démarré l’intervention.';
+    case 403:
+      return 'Ce code ne vous est pas destiné.';
+    case 429:
+      return 'Trop de demandes coup sur coup. Réessayez dans une minute.';
+    default:
+      return 'Impossible d’obtenir le code pour le moment. Réessayez dans un instant.';
+  }
+}
 
 export function BookingDetailScreen({ route }: Props) {
   const styles = stylesFor(useThemeColors());
@@ -42,17 +69,16 @@ export function BookingDetailScreen({ route }: Props) {
     demandeCode.mutate(undefined, {
       onSuccess: setCodeDeFin,
       /*
-       * LE REFUS DU SERVEUR EST AFFICHÉ TEL QUEL, et c'est délibéré : il sait, lui, que la mission
-       * n'a pas démarré. Reconstruire ici une condition sur le statut de la RÉSERVATION serait
-       * faux — elle reste `confirme` pendant que la mission est en cours, et la carte ne
-       * s'afficherait jamais.
+       * LE REFUS DU SERVEUR EST AFFICHÉ QUAND IL EST LISIBLE — jamais celui d'axios.
+       *
+       * Le repli était `e.message`, c'est-à-dire le texte interne de la bibliothèque HTTP. Quand
+       * le serveur répond 404 sans corps, le client lisait « Request failed with status code
+       * 404 » — en rouge, en anglais, au milieu d'une app française. Vu à l'écran en déroulant le
+       * parcours.
+       *
+       * On garde le message du serveur, qui sait pourquoi il refuse, et on traduit le silence.
        */
-      onError: (e: any) =>
-        setRefusCode(
-          e?.response?.data?.message
-            ?? e?.message
-            ?? 'Impossible d’obtenir le code pour le moment.',
-        ),
+      onError: (e: any) => setRefusCode(messageDeRefus(e)),
     });
   };
 
@@ -102,7 +128,7 @@ export function BookingDetailScreen({ route }: Props) {
     <Screen scroll>
       <View style={styles.header}>
         <Text style={styles.title}>{booking.service_name}</Text>
-        <Badge label={booking.status} variant={statusVariant} />
+        <Badge label={libelleStatut(booking.status)} variant={statusVariant} />
       </View>
 
       {booking.contract_covered ? (
@@ -114,7 +140,7 @@ export function BookingDetailScreen({ route }: Props) {
       <View style={styles.card}>
         <DetailRow
           label="Date"
-          value={`${booking.scheduled_date} à ${booking.scheduled_time}`}
+          value={formatDateHeure(booking.scheduled_date, booking.scheduled_time)}
         />
         <Divider />
         <DetailRow
@@ -139,11 +165,16 @@ export function BookingDetailScreen({ route }: Props) {
         LE CODE DE FIN, ICI ET PAS AILLEURS.
 
         C'est cet écran que le client ouvre quand le prestataire lui demande ses six chiffres. La
-        carte reste visible tant que la réservation n'est ni terminée ni annulée : le serveur, lui,
-        sait si la mission a démarré et refuse proprement sinon. Reconstruire cette condition ici
-        serait faux — la réservation reste `confirme` pendant toute la mission.
+        carte reste visible pendant toute la mission : le serveur, lui, sait si elle a démarré et
+        refuse proprement sinon. Reconstruire cette condition ici serait faux — la réservation
+        reste `confirme` pendant toute la durée de l'intervention.
+
+        MAIS PAS SUR UNE DEMANDE QUE PERSONNE N'A ENCORE ACCEPTÉE. `pending` signifie qu'aucun
+        prestataire n'est assigné : il n'existe alors ni mission, ni code, et le bouton ne pouvait
+        que échouer. Ce n'est pas deviner la règle du serveur, c'est ne pas proposer un geste dont
+        on sait qu'il n'a pas d'objet.
       */}
-      {!isCompleted && booking.status !== 'cancelled' && (
+      {!isCompleted && booking.status !== 'cancelled' && booking.status !== 'pending' && (
         <View style={styles.card} testID="carte-code-de-fin">
           <Text style={styles.codeTitre}>Code de fin</Text>
 

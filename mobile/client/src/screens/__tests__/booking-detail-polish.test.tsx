@@ -61,7 +61,9 @@ describe('BookingDetailScreen polish', () => {
     expect(getByTestId('contract-coverage-badge')).toBeTruthy();
     // a DetailRow renders its label and value
     expect(getByText('Date')).toBeTruthy();
-    expect(getByText('2026-06-10 à 09:00')).toBeTruthy();
+    // La date est écrite en français, plus recopiée depuis l'API : « 2026-06-10 à 09:00 »
+    // s'affichait tel quel au client, au milieu d'une app par ailleurs francophone.
+    expect(getByText('10 juin 2026 à 09h00')).toBeTruthy();
   });
 
   it('shows the error state when the query errors', () => {

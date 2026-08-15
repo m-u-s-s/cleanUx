@@ -7,6 +7,7 @@ import { Screen, Badge, Skeleton, EmptyState, ErrorState, AnimatedListItem, a11y
 import { useBookings } from '@/booking';
 import type { Booking } from '@/booking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
+import { libelleStatut, formatDateHeure } from '@/lib/format';
 import type { RootStackParamList } from '@/navigation/types';
 
 const BOOKING_CARD_HEIGHT = 120;
@@ -94,9 +95,9 @@ const BookingCard = React.memo(function BookingCard({ booking }: { booking: Book
       <View style={[styles.card, { backgroundColor: themeColors.card }]}>
         <View style={styles.cardHeader}>
           <Text style={[styles.serviceName, { color: themeColors.text }]}>{booking.service_name}</Text>
-          <Badge label={booking.status} variant={statusVariant[booking.status] ?? 'neutral'} />
+          <Badge label={libelleStatut(booking.status)} variant={statusVariant[booking.status] ?? 'neutral'} />
         </View>
-        <Text style={[styles.cardDate, { color: themeColors.textSecondary }]}>{booking.scheduled_date} à {booking.scheduled_time}</Text>
+        <Text style={[styles.cardDate, { color: themeColors.textSecondary }]}>{formatDateHeure(booking.scheduled_date, booking.scheduled_time)}</Text>
         <Text style={[styles.cardAddress, { color: themeColors.textMuted }]}>{booking.address}, {booking.city}</Text>
         {booking.provider_name && (
           <Text style={styles.cardProvider}>Prestataire: {booking.provider_name}</Text>

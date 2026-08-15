@@ -45,10 +45,23 @@
         {{-- Le nom est porte par le controle lui-meme : la legende du groupe situe la question,
              elle ne dit pas ce que ce curseur regle. Sans cela, le lecteur d'ecran annonce
              « curseur » et rien d'autre. --}}
+        {{--
+            `touch-action: pan-y` — LE DOIGT QUI FAIT DÉFILER NE DOIT PAS DÉPLACER LE CURSEUR.
+
+            Un `range` natif capte le geste dans les DEUX axes. Sur mobile, la page est longue et ce
+            curseur se trouve en plein milieu : faire simplement défiler pour lire la suite le
+            traînait au passage. Constaté en déroulant la commande à la main — le devis est passé de
+            45 € à 140 € sans que rien ne soit touché volontairement, et rien ne le signalait.
+
+            `pan-y` rend le défilement vertical au navigateur et ne laisse au curseur que
+            l'horizontal — le seul axe où il veut dire quelque chose. Le glissement au doigt, les
+            flèches du clavier et le lecteur d'écran continuent de fonctionner.
+        --}}
         <input type="range" wire:model.live.debounce.400ms="value"
             id="{{ $question->code }}"
             aria-label="{{ $question->translate('label') }}{{ $unit ? ' ('.$unit.')' : '' }}"
             min="{{ $min ?? 0 }}" max="{{ $max ?? 100 }}" step="{{ $step }}"
+            style="touch-action: pan-y;"
             class="h-11 w-full cursor-pointer accent-slate-900">
 
         {{-- Saisie directe : le curseur est bon pour approcher, mauvais pour viser. --}}
