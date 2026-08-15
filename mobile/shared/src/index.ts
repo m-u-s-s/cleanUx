@@ -75,3 +75,10 @@ export type { EmbeddedModuleScreenProps, BridgeMessage } from './webview';
 // Parity
 export { fetchParityMap } from './parity';
 export type { ParityModule } from './parity';
+
+/*
+ * Format — PARTAGÉ à dessein. Ces défauts d'affichage ont été corrigés côté client puis
+ * redécouverts à l'identique côté prestataire le lendemain : statut technique, date ISO, message
+ * interne d'axios. Une seule copie évite une troisième découverte.
+ */
+export { libelleStatut, formatDateHeure, formatAdresse, formatDelai, messageDErreur } from './format';

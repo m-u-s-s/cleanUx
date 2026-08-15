@@ -11,6 +11,7 @@ import { useAcceptOffer, useDeclineOffer, useServerCountdown } from './hooks';
 import { jouerCarillonDOffre } from './sound';
 import { AnneauDeDecompte } from './CountdownRing';
 import type { MissionOffer } from './types';
+import { formatDelai } from '@brio/shared/format';
 
 interface Props {
   offer: MissionOffer;
@@ -129,8 +130,13 @@ export function OfferModal({ offer, onDismiss }: Props) {
         <View style={styles.card}>
           <View style={styles.timerRow}>
             <AnneauDeDecompte ratio={ratio} secondes={secondsLeft} />
+            {/*
+              Un délai se LIT. « 1658 s pour répondre » — vu sur une offre planifiée — demande une
+              division mentale ; sous la minute, les secondes restent la bonne unité, c'est là
+              qu'elles pressent.
+            */}
             <Text style={styles.timerText} testID="offer-countdown">
-              {secondsLeft} s pour répondre
+              {formatDelai(secondsLeft)} pour répondre
             </Text>
           </View>
 

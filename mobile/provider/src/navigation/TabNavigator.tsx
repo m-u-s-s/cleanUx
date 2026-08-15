@@ -33,25 +33,48 @@ export function TabNavigator() {
         ...apparenceDeBarre(theme),
       }}
     >
+      {/*
+        LE LIBELLÉ EST FRANÇAIS, LE NOM DE ROUTE RESTE ANGLAIS.
+
+        Sans `tabBarLabel`, la barre affiche le nom de la route : « Dashboard / Missions /
+        Earnings / Profile » sous une application par ailleurs entièrement française. Le même
+        défaut existait côté client et avait été corrigé là-bas seulement — celui-ci est resté un
+        jour de plus, jusqu'à ce qu'on ouvre l'application.
+
+        On ne renomme PAS les routes : elles sont typées dans `TabParamList` et citées par tous les
+        `navigate(...)`. Le libellé est de l'affichage, le nom est une adresse.
+      */}
       <Tab.Screen
         name="Dashboard"
         component={DashboardScreen}
-        options={{ tabBarIcon: ({ color, size }) => <Icon name="grid-outline" size={size} color={color} /> }}
+        options={{
+          tabBarLabel: 'Accueil',
+          tabBarIcon: ({ color, size }) => <Icon name="grid-outline" size={size} color={color} />,
+        }}
       />
       <Tab.Screen
         name="Missions"
         component={MissionsScreen}
-        options={{ tabBarIcon: ({ color, size }) => <Icon name="briefcase-outline" size={size} color={color} /> }}
+        options={{
+          tabBarLabel: 'Missions',
+          tabBarIcon: ({ color, size }) => <Icon name="briefcase-outline" size={size} color={color} />,
+        }}
       />
       <Tab.Screen
         name="Earnings"
         component={EarningsScreen}
-        options={{ tabBarIcon: ({ color, size }) => <Icon name="wallet-outline" size={size} color={color} /> }}
+        options={{
+          tabBarLabel: 'Revenus',
+          tabBarIcon: ({ color, size }) => <Icon name="wallet-outline" size={size} color={color} />,
+        }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ tabBarIcon: ({ color, size }) => <Icon name="person-outline" size={size} color={color} /> }}
+        options={{
+          tabBarLabel: 'Profil',
+          tabBarIcon: ({ color, size }) => <Icon name="person-outline" size={size} color={color} />,
+        }}
       />
     </Tab.Navigator>
     {/*

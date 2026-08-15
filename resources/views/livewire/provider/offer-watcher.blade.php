@@ -18,6 +18,16 @@
                 expiresAt: new Date(@js($offre['expires_at'])).getTime(),
                 total: {{ max(1, (int) ($offre['ttl_seconds'] ?? 20)) }},
                 restant: 0,
+
+                /* « 18 s », « 27 min », « 1 h 05 min » — jamais « 1658 s ». */
+                get delaiLisible() {
+                    if (this.restant < 60) { return this.restant + ' s'; }
+                    const minutes = Math.floor(this.restant / 60);
+                    if (minutes < 60) { return minutes + ' min'; }
+                    const heures = Math.floor(minutes / 60);
+                    const reste = minutes % 60;
+                    return reste === 0 ? heures + ' h' : heures + ' h ' + reste + ' min';
+                },
                 minuteur: null,
                 init() {
                     this.calculer();
@@ -46,8 +56,14 @@
                         :style="`width: ${Math.min(100, (restant / total) * 100)}%`"
                     ></div>
                 </div>
+                {{--
+                    UN DÉLAI SE LIT. Il s'affichait en secondes brutes : « 1506 s pour répondre »
+                    sur une offre planifiée, ce qui demande une division mentale. Sous la minute on
+                    garde les secondes — c'est là qu'elles pressent, et c'est le cas d'une offre
+                    immédiate de vingt secondes.
+                --}}
                 <p class="mt-1 text-right text-xs text-slate-500 dark:text-slate-400">
-                    <span x-text="restant">—</span> s pour répondre
+                    <span x-text="delaiLisible">—</span> pour répondre
                 </p>
 
                 <p class="mt-4 text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400">

@@ -8,6 +8,7 @@ import type { MissionAssignment } from '@/missions';
 import { useCurrentPosition, distanceKmTo } from '@/tracking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { formatDateHeure } from '@brio/shared/format';
 
 const MISSION_CARD_HEIGHT = 120;
 
@@ -51,7 +52,7 @@ export function MissionInboxScreen() {
           {item.address}, {item.city}
         </Text>
         <Text style={styles.schedule}>
-          {item.scheduled_date} à {item.scheduled_time}
+          {formatDateHeure(item.scheduled_date, item.scheduled_time)}
         </Text>
         {(() => {
           const km = distanceKmTo(position, item);
@@ -84,7 +85,10 @@ export function MissionInboxScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title} accessibilityRole="header">Missions disponibles</Text>
+      {/*
+        PAS DE TITRE ICI : la route `MissionInbox` en affiche déjà un, natif, avec le même texte.
+        L'écran montrait donc « Missions disponibles » deux fois, l'un sous l'autre.
+      */}
       {isLoading ? (
         <Skeleton width="100%" height={120} />
       ) : (

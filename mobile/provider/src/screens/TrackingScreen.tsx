@@ -13,6 +13,7 @@ import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { formatAdresse } from '@brio/shared/format';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionTracking'>;
 
@@ -71,7 +72,7 @@ export function TrackingScreen({ route }: Props) {
       latitude: Number(lat),
       longitude: Number(lng),
       title: 'Destination',
-      subtitle: mission ? `${mission.address}, ${mission.city}` : null,
+      subtitle: mission ? formatAdresse(mission.address, mission.city) : null,
     };
   }, [session, mission]);
 

@@ -10,6 +10,7 @@ import { missionStatusLabel } from '@/missions';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { formatDateHeure } from '@brio/shared/format';
 
 interface ActiveMission {
   id: number;
@@ -65,7 +66,7 @@ export function MissionsListScreen() {
             {item.address}, {item.city}
           </Text>
           <Text style={styles.schedule}>
-            {item.scheduled_date} à {item.scheduled_time}
+            {formatDateHeure(item.scheduled_date, item.scheduled_time)}
           </Text>
         </TouchableOpacity>
       </AnimatedListItem>

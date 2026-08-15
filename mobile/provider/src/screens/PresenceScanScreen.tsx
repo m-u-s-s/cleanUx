@@ -9,6 +9,7 @@ import {spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { messageDErreur } from '@brio/shared/format';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PresenceScan'>;
 
@@ -76,9 +77,11 @@ export function PresenceScanScreen({ route }: Props) {
         const errors = e?.response?.data?.errors ?? {};
         const position = errors.position?.[0];
 
+        // `messageDErreur` ne rend JAMAIS `e.message` : c'est le texte interne de la bibliothèque
+        // HTTP, et « Request failed with status code 422 » s'affichait tel quel dans cette alerte.
         Alert.alert(
           position ? 'Position refusée' : 'Code refusé',
-          position ?? errors.code?.[0] ?? e?.message ?? 'Ce code n’est pas valide.',
+          position ?? errors.code?.[0] ?? messageDErreur(e, 'Ce code n’est pas valide.'),
         );
         setScanned(false);
       },
@@ -176,13 +179,26 @@ export function PresenceScanScreen({ route }: Props) {
 
   return (
     <View style={styles.container} testID="presence-scan-screen">
-      <CameraView
-        style={styles.camera}
-        facing="back"
-        barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-        onBarcodeScanned={scanned ? undefined : handleScan}
-      >
-        <View style={styles.overlay}>
+      {/*
+        LA VISÉE EST POSÉE À CÔTÉ DE LA CAMÉRA, PLUS DEDANS.
+
+        `CameraView` n'accepte plus d'enfants depuis la nouvelle version d'`expo-camera` : elle
+        émet « The <CameraView> component does not support children » — un bandeau d'avertissement
+        qui s'affichait PAR-DESSUS l'interface et recouvrait le champ de saisie de repli, celui
+        qu'on utilise justement quand la caméra ne suffit pas.
+
+        La caméra remplit donc son conteneur, et la visée se superpose en position absolue.
+        `pointerEvents="box-none"` laisse passer les gestes vers ce qui est en dessous : sans lui,
+        le cadre avalerait les touches destinées à la caméra.
+      */}
+      <View style={styles.camera}>
+        <CameraView
+          style={StyleSheet.absoluteFill}
+          facing="back"
+          barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+          onBarcodeScanned={scanned ? undefined : handleScan}
+        />
+        <View style={[StyleSheet.absoluteFill, styles.overlay]} pointerEvents="box-none">
           <View style={styles.frame} />
           <Text style={styles.instruction}>
             {isCompletion
@@ -198,7 +214,7 @@ export function PresenceScanScreen({ route }: Props) {
             <Button label="Scanner à nouveau" onPress={() => setScanned(false)} variant="secondary" />
           )}
         </View>
-      </CameraView>
+      </View>
 
       {/* Saisie de repli : une caméra sale, un écran fêlé ou une lumière rasante ne doivent pas
           bloquer une intervention. L'écran du client invite d'ailleurs à dicter ces six

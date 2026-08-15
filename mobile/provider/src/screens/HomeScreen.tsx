@@ -12,6 +12,7 @@ import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { formatDateHeure } from '@brio/shared/format';
 
 export function HomeScreen() {
   const styles = stylesFor(useThemeColors());
@@ -91,7 +92,7 @@ export function HomeScreen() {
                 </Text>
                 <View style={styles.missionMeta}>
                   <Text style={styles.missionDate}>
-                    {a.scheduled_date} à {a.scheduled_time}
+                    {formatDateHeure(a.scheduled_date, a.scheduled_time)}
                   </Text>
                   {distanceKm != null && (
                     <Badge label={`${distanceKm.toFixed(1)} km`} variant="brand" />

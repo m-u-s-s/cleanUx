@@ -9,6 +9,7 @@ import { useArriveOnSite } from '@/tracking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { formatAdresse, formatDateHeure } from '@brio/shared/format';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionDetail'>;
 
@@ -128,11 +129,11 @@ export function MissionDetailScreen({ route }: Props) {
       <View style={[styles.card, { backgroundColor: themeColors.card }]}>
         <DetailRow label="Client" value={mission.client_name} />
         <Divider />
-        <DetailRow label="Adresse" value={`${mission.address}, ${mission.city}`} />
+        <DetailRow label="Adresse" value={formatAdresse(mission.address, mission.city)} />
         <Divider />
         <DetailRow
           label="Date"
-          value={`${mission.scheduled_date} à ${mission.scheduled_time}`}
+          value={formatDateHeure(mission.scheduled_date, mission.scheduled_time)}
         />
         {mission.total_price != null && (
           <>
