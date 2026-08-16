@@ -225,15 +225,35 @@ class CreateNewUser implements CreatesNewUsers
      */
     private function createProviderIndependent(User $user, array $input): void
     {
-        ProviderProfile::create([
+        $profile = ProviderProfile::create([
             'user_id' => $user->id,
             'provider_type' => ProviderType::INDEPENDENT->value,
             'status' => 'pending',
             'verification_status' => 'unverified',
         ]);
 
+        $this->marquerLInscriptionEnLibreService($profile);
+
         $this->attachTrades($user, $input);
         $this->provisionDefaultAvailability($user);
+    }
+
+    /**
+     * `self_registered_at` — LA COLONNE QUI PORTE L'ATTENTE D'APPROBATION.
+     *
+     * `EnsureProviderIsApproved` ne restreint QUE les profils qui la portent : c'est délibéré, les
+     * prestataires antérieurs à l'inscription en libre-service la laissent vide et traversent sans
+     * condition. Or seule l'inscription mobile la posait. Mesuré le 2026-08-16 : même état en base
+     * (`status = pending`), inscrit depuis l'app → 403 `provider_pending_approval` sur les trois
+     * routes prestataire ; inscrit sur le web → 200 sur les trois. Le formulaire promet pourtant
+     * « Votre compte sera vérifié par notre équipe avant d'être activé ».
+     *
+     * `forceFill` : la colonne n'est pas assignable en masse, et c'est précisément ce qui l'empêche
+     * d'être levée depuis un formulaire — la rendre `fillable` rendrait la restriction optionnelle.
+     */
+    private function marquerLInscriptionEnLibreService(ProviderProfile $profile): void
+    {
+        $profile->forceFill(['self_registered_at' => now()])->save();
     }
 
     // ──────────────────────────────────────────────────────
@@ -248,13 +268,15 @@ class CreateNewUser implements CreatesNewUsers
             email: $input['email'],
         );
 
-        ProviderProfile::create([
+        $profile = ProviderProfile::create([
             'user_id' => $user->id,
             'organization_account_id' => $org->id,
             'provider_type' => ProviderType::COMPANY_WORKER->value,
             'status' => 'pending',
             'verification_status' => 'unverified',
         ]);
+
+        $this->marquerLInscriptionEnLibreService($profile);
 
         $this->attachTrades($user, $input);
         $this->provisionDefaultAvailability($user);

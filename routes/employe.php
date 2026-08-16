@@ -28,12 +28,28 @@ use App\Livewire\Provider\TradesAndZones;
 use App\Livewire\Shared\ModulesDirectory;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['role:employe'])
+/*
+| L'ATTENTE D'APPROBATION VAUT AUSSI DANS LE NAVIGATEUR.
+|
+| `provider.approved` ne gardait que les routes d'API : la même personne était bloquée dans
+| l'application et servie ici (mesuré le 2026-08-16), alors que le formulaire d'inscription promet
+| « Votre compte sera vérifié par notre équipe avant d'être activé ». Le middleware ne vise que les
+| comptes portant `self_registered_at` — les prestataires antérieurs traversent sans condition.
+|
+| CINQ ROUTES S'EN EXCLUENT, et la liste n'est pas arbitraire : ce sont celles par lesquelles on
+| COMPLÈTE le dossier. Les garder sous la garde enfermerait le compte dehors — il lui faudrait une
+| approbation pour fournir ce qui permet de l'approuver. Le tableau de bord reste ouvert parce
+| qu'il est la page d'atterrissage après connexion et qu'il porte l'avancement du dossier ; un 403
+| là serait la première chose que voit un nouveau prestataire.
+*/
+Route::middleware(['role:employe', 'provider.approved'])
     ->prefix('dashboard/employe')
     ->name('employe.')
     ->group(function () {
 
-        Route::get('/', EmployeDashboard::class)->name('dashboard');
+        Route::get('/', EmployeDashboard::class)
+            ->withoutMiddleware('provider.approved')
+            ->name('dashboard');
 
         /*
          * « CE QUE JE FAIS, ET OÙ » — l'écran qui décide de ce qu'un prestataire reçoit.
@@ -42,7 +58,9 @@ Route::middleware(['role:employe'])
          * plus, les zones ne se déclaraient nulle part. Un prestataire qui déménageait devait
          * écrire au support et attendre qu'un administrateur touche la base.
          */
-        Route::get('/metiers-zones', TradesAndZones::class)->name('trades-zones');
+        Route::get('/metiers-zones', TradesAndZones::class)
+            ->withoutMiddleware('provider.approved')
+            ->name('trades-zones');
 
         // Le répertoire des modules — voir `config/modules.php`. La garde reste `role:employe`.
         Route::get('/modules', ModulesDirectory::class)
@@ -66,7 +84,9 @@ Route::middleware(['role:employe'])
         }
 
         if (class_exists(ProviderKycPage::class)) {
-            Route::get('/verification', ProviderKycPage::class)->name('kyc');
+            Route::get('/verification', ProviderKycPage::class)
+                ->withoutMiddleware('provider.approved')
+                ->name('kyc');
         }
 
         /*
@@ -76,7 +96,9 @@ Route::middleware(['role:employe'])
          * et les mêler ferait chercher un permis dans un écran qui parle de pièce d'identité.
          */
         if (class_exists(ProviderDrivingDossier::class)) {
-            Route::get('/conduite', ProviderDrivingDossier::class)->name('driving');
+            Route::get('/conduite', ProviderDrivingDossier::class)
+                ->withoutMiddleware('provider.approved')
+                ->name('driving');
         }
 
         if (class_exists(MissionsEmploye::class)) {
@@ -155,15 +177,22 @@ Route::middleware(['role:employe'])
             ->middleware('field.team.lead')
             ->name('teamlead.operations');
 
+        /*
+         * L'ouverture du compte de paiement fait PARTIE du dossier : sans compte Connect actif, la
+         * plateforme refuse de prélever un client faute de pouvoir reverser. Ces trois routes
+         * s'excluent donc de l'attente d'approbation, comme la vérification d'identité.
+         */
         if (class_exists(StripeConnectController::class)) {
-            Route::get('/stripe-connect/start', [StripeConnectController::class, 'start'])
-                ->name('stripe-connect.start');
+            Route::withoutMiddleware('provider.approved')->group(function () {
+                Route::get('/stripe-connect/start', [StripeConnectController::class, 'start'])
+                    ->name('stripe-connect.start');
 
-            Route::get('/stripe-connect/refresh', [StripeConnectController::class, 'refresh'])
-                ->name('stripe-connect.refresh');
+                Route::get('/stripe-connect/refresh', [StripeConnectController::class, 'refresh'])
+                    ->name('stripe-connect.refresh');
 
-            Route::get('/stripe-connect/return', [StripeConnectController::class, 'return'])
-                ->name('stripe-connect.return');
+                Route::get('/stripe-connect/return', [StripeConnectController::class, 'return'])
+                    ->name('stripe-connect.return');
+            });
         }
 
         if (class_exists(FeedbacksEmploye::class)) {
