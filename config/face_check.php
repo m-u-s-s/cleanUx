@@ -85,11 +85,24 @@ return [
     */
     'liveness_required' => env('FACE_CHECK_LIVENESS_REQUIRED', true),
 
-    // Nombre de tentatives dans un même contrôle avant blocage dur.
+    /*
+    | Deux compteurs, deux rôles — ne pas les confondre :
+    |
+    |   `max_attempts`      : essais DANS UN MÊME contrôle. Un mauvais éclairage, un contre-jour,
+    |                         une main devant l'objectif : on réessaie. Épuiser les essais fait
+    |                         échouer LE CONTRÔLE.
+    |
+    |   `failure_threshold` : contrôles échoués D'AFFILÉE avant le blocage dur. À 2, un prestataire
+    |                         a droit à six selfies ratés avant qu'un administrateur doive
+    |                         intervenir — et dès le PREMIER contrôle échoué il ne peut de toute
+    |                         façon plus travailler, puisque `dueTrigger` exige aussitôt un nouveau
+    |                         contrôle. Le blocage n'ouvre donc pas de fenêtre ; il ferme la porte
+    |                         à clé et appelle un humain.
+    */
+
     'max_attempts' => (int) env('FACE_CHECK_MAX_ATTEMPTS', 3),
 
-    // Échecs consécutifs (contrôles distincts) avant blocage dur.
-    'failure_threshold' => (int) env('FACE_CHECK_FAILURE_THRESHOLD', 3),
+    'failure_threshold' => (int) env('FACE_CHECK_FAILURE_THRESHOLD', 2),
 
     /*
     |--------------------------------------------------------------------------

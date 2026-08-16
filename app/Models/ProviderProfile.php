@@ -7,7 +7,20 @@ use Database\Factories\ProviderProfileFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * Colonnes KYC ajoutées par `2026_05_18_140003_add_kyc_fields_to_provider_profiles`. Elles
+ * existent en base et sont écrites par `KycVerificationService`, mais n'étaient déclarées nulle
+ * part : toute lecture depuis un autre module était donc invisible à l'analyse statique.
+ *
+ * @property ?string $kyc_provider
+ * @property ?string $kyc_external_applicant_id
+ * @property ?int $kyc_last_verification_id
+ * @property ?Carbon $kyc_completed_at
+ * @property ?string $kyc_score
+ * @property ?Carbon $self_registered_at
+ */
 class ProviderProfile extends Model
 {
     /** @use HasFactory<ProviderProfileFactory> */

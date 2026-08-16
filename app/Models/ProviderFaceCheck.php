@@ -95,6 +95,25 @@ class ProviderFaceCheck extends Model
         'review_notes',
     ];
 
+    /**
+     * LE DÉFAUT SQL NE REMPLIT PAS L'OBJET EN MÉMOIRE.
+     *
+     * `status` n'est pas assignable en masse — c'est voulu, c'est la colonne de verdict. Mais du
+     * coup `create()` rend un modèle dont `status` vaut `null` en PHP alors que la ligne vaut bien
+     * `pending` en base : la valeur par défaut est posée par le moteur, pas par Eloquent.
+     *
+     * Conséquence mesurée : le contrôle qu'on venait d'ouvrir était refusé à la soumission avec
+     * « ce contrôle est déjà clos », parce que `null !== 'pending'`. Le défaut appartient donc au
+     * code, la colonne n'en garde qu'une copie de sécurité.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (self $controle): void {
+            $controle->status ??= self::STATUS_PENDING;
+            $controle->attempt_number ??= 1;
+        });
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {

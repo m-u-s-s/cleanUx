@@ -70,6 +70,20 @@ class ProviderFaceIncident extends Model
         'resolution_note',
     ];
 
+    /**
+     * Le défaut SQL ne remplit pas l'objet en mémoire : `status` n'est pas assignable en masse,
+     * `create()` le rendrait donc à `null` et `isOpen()` répondrait faux sur un incident qu'on
+     * vient d'ouvrir. Voir le même commentaire sur `ProviderFaceCheck`.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (self $incident): void {
+            $incident->status ??= self::STATUS_OPEN;
+            $incident->severity ??= self::SEVERITY_INFO;
+            $incident->occurrence_count ??= 1;
+        });
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\FaceCheck\FaceCheckRequirement;
+use App\Services\FaceCheck\FaceCheckSettings;
 use App\Services\FaceCheck\FaceMatchProviderInterface;
 use App\Services\FaceCheck\Providers\FaceMatchMockProvider;
 use App\Services\FaceCheck\Providers\OnfidoFaceMatchProvider;
@@ -13,6 +15,15 @@ class FaceCheckServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(FaceMatchProviderInterface::class, fn () => $this->resolveProvider());
+
+        /*
+         * Singletons volontaires : les deux mémoïsent une lecture de base — la ligne du module et
+         * la liste des métiers soumis. Le dispatch les interroge une fois par candidat ; en
+         * instances neuves, une recherche de trente prestataires ferait soixante requêtes pour
+         * deux réponses qui ne bougent pas dans la requête.
+         */
+        $this->app->singleton(FaceCheckSettings::class);
+        $this->app->singleton(FaceCheckRequirement::class);
     }
 
     /**

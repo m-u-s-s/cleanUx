@@ -90,6 +90,20 @@ class ProviderFaceProfile extends Model
         'metadata',
     ];
 
+    /**
+     * Le défaut SQL ne remplit pas l'objet en mémoire : `status` et `id_match_status` ne sont pas
+     * assignables en masse, `create()` les rendrait donc à `null` en PHP alors que la ligne porte
+     * bien sa valeur. Voir le même commentaire sur `ProviderFaceCheck`.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (self $profil): void {
+            $profil->status ??= self::STATUS_PENDING;
+            $profil->id_match_status ??= self::MATCH_PENDING;
+            $profil->consecutive_failures ??= 0;
+        });
+    }
+
     /** @return array<string, string> */
     protected function casts(): array
     {
