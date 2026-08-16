@@ -3,8 +3,9 @@
 namespace App\Livewire\Employe;
 
 use App\Models\AvailabilityException;
+use App\Models\User;
+use App\Services\Availability\AvailabilityEditor;
 use App\Models\AvailabilitySlot;
-use App\Support\ActivityLogger;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -95,46 +96,28 @@ class DisponibilitesEmploye extends Component
         ]);
 
         /*
-         * LE CHEVAUCHEMENT SE VÉRIFIE AUSSI À LA MODIFICATION.
+         * L'ECRITURE VIT DANS `AvailabilityEditor`, PAS ICI.
          *
-         * L'ancienne version ne testait que la création : éditer un créneau pour le faire recouvrir
-         * un autre passait sans un mot. Le créneau en cours d'édition est exclu de la comparaison,
-         * sinon il se chevaucherait lui-même.
+         * L'administration fait exactement les memes gestes sur les memes tables depuis son
+         * propre ecran. Deux implementations divergeraient : la regle de chevauchement se
+         * durcirait d'un cote, la fermeture d'un jour se remettrait a supprimer des creneaux de
+         * l'autre, et plus personne ne saurait laquelle fait foi.
          */
-        $chevauche = AvailabilitySlot::query()
-            ->where('provider_user_id', Auth::id())
-            ->where('weekday', $this->weekday)
-            ->when($this->editingId, fn ($q) => $q->whereKeyNot($this->editingId))
-            ->where('start_time', '<', $this->heure_fin.':00')
-            ->where('end_time', '>', $this->heure_debut.':00')
-            ->exists();
+        $resultat = app(AvailabilityEditor::class)->saveSlot(
+            $this->utilisateur(),
+            $this->weekday,
+            $this->heure_debut,
+            $this->heure_fin,
+            $this->editingId,
+        );
 
-        if ($chevauche) {
-            $this->addError('heure_debut', __('Ce créneau en recouvre un autre le même jour.'));
+        if ($resultat === AvailabilityEditor::CHEVAUCHEMENT) {
+            $this->addError('heure_debut', __('Ce creneau en recouvre un autre le meme jour.'));
 
             return;
         }
 
-        $donnees = [
-            'weekday' => $this->weekday,
-            'start_time' => $this->heure_debut.':00',
-            'end_time' => $this->heure_fin.':00',
-        ];
-
-        if ($this->editingId) {
-            $slot = AvailabilitySlot::where('provider_user_id', Auth::id())->findOrFail($this->editingId);
-            $slot->update($donnees);
-            ActivityLogger::log('disponibilite_modifiee', $slot, $donnees);
-            $message = __('Créneau mis à jour.');
-        } else {
-            $slot = AvailabilitySlot::create($donnees + [
-                'provider_user_id' => Auth::id(),
-                'timezone' => config('availability.default_timezone', config('app.timezone')),
-                'is_active' => true,
-            ]);
-            ActivityLogger::log('disponibilite_creee', $slot, $donnees);
-            $message = __('Créneau ajouté.');
-        }
+        $message = $this->editingId ? __('Creneau mis a jour.') : __('Creneau ajoute.');
 
         $this->resetForm();
         $this->dispatch('toast', $message, 'success');
@@ -152,21 +135,13 @@ class DisponibilitesEmploye extends Component
 
     public function delete(int $id): void
     {
-        $slot = AvailabilitySlot::where('provider_user_id', Auth::id())->findOrFail($id);
-
-        ActivityLogger::log('disponibilite_supprimee', $slot, [
-            'weekday' => $slot->weekday,
-            'start_time' => $slot->start_time,
-            'end_time' => $slot->end_time,
-        ]);
-
-        $slot->delete();
+        app(AvailabilityEditor::class)->deleteSlot($this->utilisateur(), $id);
 
         if ($this->editingId === $id) {
             $this->resetForm();
         }
 
-        $this->dispatch('toast', __('Créneau retiré de la semaine type.'), 'success');
+        $this->dispatch('toast', __('Creneau retire de la semaine type.'), 'success');
     }
 
     // ─── Exceptions datées ───────────────────────────────────────────────────────────────────
@@ -180,46 +155,27 @@ class DisponibilitesEmploye extends Component
      */
     public function closeDay(string $date): void
     {
-        $jour = Carbon::parse($date)->toDateString();
-
-        /*
-         * `whereDate`, PAS `firstOrCreate` SUR UNE EGALITE DE DATE.
-         *
-         * `date` est caste sur le modele : la colonne porte `2026-08-18 00:00:00` et la recherche
-         * comparait la chaine `2026-08-18`. L'egalite echouait a chaque fois, `firstOrCreate`
-         * creait donc une exception de plus A CHAQUE clic. Constate au test : deux fermetures du
-         * meme jour donnaient deux lignes.
-         */
-        $exception = AvailabilityException::query()
-            ->where('provider_user_id', Auth::id())
-            ->where('exception_type', AvailabilityException::TYPE_CLOSED)
-            ->whereDate('date', $jour)
-            ->first();
-
-        $exception ??= AvailabilityException::create([
-            'provider_user_id' => Auth::id(),
-            'date' => $jour,
-            'exception_type' => AvailabilityException::TYPE_CLOSED,
-            'reason' => $this->exceptionReason !== '' ? $this->exceptionReason : null,
-        ]);
-
-        ActivityLogger::log('disponibilite_jour_ferme', $exception, ['date' => $jour]);
+        app(AvailabilityEditor::class)->closeDay($this->utilisateur(), $date, $this->exceptionReason);
 
         $this->exceptionReason = '';
-        $this->dispatch('toast', __('Journée fermée. Votre semaine type reste inchangée.'), 'success');
+        $this->dispatch('toast', __('Journee fermee. Votre semaine type reste inchangee.'), 'success');
     }
 
     public function reopenDay(int $id): void
     {
-        $exception = AvailabilityException::where('provider_user_id', Auth::id())->findOrFail($id);
-        // `date` est casté en Carbon par le modèle : pas d'instanceof défensif à écrire.
-        $date = $exception->date->format('Y-m-d');
+        app(AvailabilityEditor::class)->reopenDay($this->utilisateur(), $id);
 
-        ActivityLogger::log('disponibilite_jour_rouvert', $exception, ['date' => $date]);
+        $this->dispatch('toast', __('Journee rouverte.'), 'success');
+    }
 
-        $exception->delete();
+    /** Le compte connecte, type : l'editeur veut un `User`, pas un identifiant. */
+    protected function utilisateur(): User
+    {
+        $user = Auth::user();
 
-        $this->dispatch('toast', __('Journée rouverte.'), 'success');
+        abort_unless($user instanceof User, 403);
+
+        return $user;
     }
 
     // ─── Lectures ────────────────────────────────────────────────────────────────────────────

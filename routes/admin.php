@@ -12,6 +12,7 @@ use App\Livewire\Admin\Analytics\CancellationReasonsCenter;
 use App\Livewire\Admin\ApiTokensV2\ApiTokensCenter;
 use App\Livewire\Admin\Audit\AuditCenter;
 use App\Livewire\Admin\Availability\AvailabilityCenter;
+use App\Livewire\Admin\Availability\ProviderAvailabilityDetail;
 use App\Livewire\Admin\B2BMonthlyInvoicesCenter;
 use App\Livewire\Admin\Badges\BadgesCenter;
 use App\Livewire\Admin\Bundles\BundlesCenter;
@@ -326,6 +327,17 @@ Route::middleware(['role:admin', 'enforce_2fa'])
         if (class_exists(AvailabilityCenter::class)) {
             Route::get('/availability', AvailabilityCenter::class)
                 ->name('availability.center');
+        }
+
+        /*
+         * La fiche d'un prestataire, ouverte en cliquant son nom dans le centre.
+         *
+         * Le centre listait des comptes sans permettre d'en ouvrir aucun : voir qu'un prestataire
+         * n'a aucune disponibilite et ne rien pouvoir y faire est une information sans issue.
+         */
+        if (class_exists(ProviderAvailabilityDetail::class)) {
+            Route::get('/availability/{user}', ProviderAvailabilityDetail::class)
+                ->name('availability.provider');
         }
 
         // Risk v2 — Centre anti-fraude (évaluations + holds + review)
