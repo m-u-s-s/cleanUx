@@ -28,14 +28,14 @@
                 l'était pas : sa requête n'en listait aucun. C'est pourtant le seul chiffre qui
                 appelle une action.
             --}}
-            <a href="#" wire:click.prevent="$set('filtre', 'sans_creneau')"
-               class="rounded-2xl border p-4 shadow-sm transition {{ $kpis['providers_without_slots'] > 0 ? 'border-red-200 bg-red-50 dark:border-red-500/40 dark:bg-red-500/10' : 'bg-white dark:border-slate-700 dark:bg-slate-800' }}">
+            <button type="button" wire:click="$set('filtre', 'sans_creneau')"
+               class="rounded-2xl border p-4 text-left shadow-sm transition {{ $kpis['providers_without_slots'] > 0 ? 'border-red-200 bg-red-50 dark:border-red-500/40 dark:bg-red-500/10' : 'bg-white dark:border-slate-700 dark:bg-slate-800' }}">
                 <p class="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">{{ __('Sans disponibilité') }}</p>
                 <p class="text-2xl font-black {{ $kpis['providers_without_slots'] > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600' }}">
                     {{ number_format($kpis['providers_without_slots']) }}
                 </p>
                 <p class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{{ __('injoignables à la planification') }}</p>
-            </a>
+            </button>
             <div class="rounded-2xl border bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                 <p class="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">{{ __('Jours fermés 30j') }}</p>
                 <p class="text-2xl font-black text-amber-600">{{ number_format($kpis['exceptions_30d']) }}</p>
@@ -46,16 +46,49 @@
             </div>
         </div>
 
-        <div class="flex flex-col gap-2 md:flex-row">
-            <input type="text" wire:model.live.debounce.300ms="search"
-                   placeholder="{{ __('Nom ou e-mail du prestataire…') }}"
-                   class="flex-1 rounded-xl border-gray-300 text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100" />
-            <select wire:model.live="filtre" class="rounded-xl border-gray-300 text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100">
-                <option value="tous">{{ __('Tous les prestataires') }}</option>
-                <option value="sans_creneau">{{ __('Sans disponibilité') }}</option>
-                <option value="configures">{{ __('Avec disponibilité') }}</option>
-            </select>
+        {{--
+            LA BARRE DE FILTRES, SUR LA CLASSE DU DESIGN SYSTEM.
+
+            Elle etait ecrite en Tailwind brut : `rounded-xl border-gray-300 text-sm`, sans etat de
+            focus, sans hauteur commune entre le champ et la liste, et avec ses variantes sombres
+            recopiees a la main. `.ui-input` porte deja tout cela — bordure, ombre, anneau de
+            focus, mode sombre — et c'est ce qu'emploie le reste de l'application. Deux habillages
+            pour un meme controle finissent toujours par diverger.
+
+            Et les deux controles ont un LIBELLE. Sans lui, un lecteur d'ecran annonce « liste
+            deroulante, Tous les prestataires » sans jamais dire de quoi il s'agit.
+        --}}
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div class="md:col-span-2">
+                <label for="recherche-presta" class="ui-label">{{ __('Rechercher') }}</label>
+                <input id="recherche-presta" type="search" wire:model.live.debounce.300ms="search"
+                       placeholder="{{ __('Nom ou e-mail du prestataire…') }}"
+                       class="ui-input" />
+            </div>
+
+            <div>
+                <label for="filtre-dispo" class="ui-label">{{ __('Disponibilité') }}</label>
+                <select id="filtre-dispo" wire:model.live="filtre" class="ui-input">
+                    <option value="tous">{{ __('Tous les prestataires') }}</option>
+                    <option value="sans_creneau">{{ __('Sans disponibilité') }}</option>
+                    <option value="configures">{{ __('Avec disponibilité') }}</option>
+                </select>
+            </div>
         </div>
+
+        @if($search !== '' || $filtre !== 'tous')
+            <div class="flex items-center gap-3">
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    {{ trans_choice(':count resultat|:count resultats', $providers->total(), ['count' => $providers->total()]) }}
+                </p>
+                {{-- Un filtre qu'on ne peut pas desarmer est un piege : c'est le defaut deja
+                     rencontre sur le centre de notifications. --}}
+                <button type="button" wire:click="resetFiltres"
+                        class="text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
+                    {{ __('Reinitialiser les filtres') }}
+                </button>
+            </div>
+        @endif
 
         <div class="overflow-x-auto rounded-2xl border bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
             <table class="min-w-full text-sm">

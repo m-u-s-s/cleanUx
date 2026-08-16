@@ -96,6 +96,36 @@ class AdminAvailabilityTest extends TestCase
             ->assertSee(route('admin.availability.provider', $presta), false);
     }
 
+    /**
+     * Un filtre qu'on ne peut pas desarmer est un piege : on arrive sur « Sans disponibilite »
+     * depuis l'indicateur, on ne trouve rien, et il faut deviner comment revenir.
+     */
+    public function test_le_bouton_reinitialiser_desarme_les_deux_filtres(): void
+    {
+        $this->creneau($this->prestataire('Configure'));
+
+        Livewire::actingAs($this->admin())
+            ->test(AvailabilityCenter::class)
+            ->set('search', 'introuvable')
+            ->set('filtre', 'sans_creneau')
+            ->assertDontSee('Configure')
+            ->call('resetFiltres')
+            ->assertSet('search', '')
+            ->assertSet('filtre', 'tous')
+            ->assertSee('Configure');
+    }
+
+    /** Les deux controles de filtre portent un libelle : sans lui, ils ne s'annoncent pas. */
+    public function test_la_barre_de_filtres_est_etiquetee(): void
+    {
+        Livewire::actingAs($this->admin())
+            ->test(AvailabilityCenter::class)
+            ->assertSeeHtml('for="recherche-presta"')
+            ->assertSeeHtml('for="filtre-dispo"')
+            ->assertSeeHtml('id="recherche-presta"')
+            ->assertSeeHtml('id="filtre-dispo"');
+    }
+
     // ─── La fiche ────────────────────────────────────────────────────────────────────────────
 
     public function test_l_admin_ajoute_un_creneau_pour_un_prestataire(): void

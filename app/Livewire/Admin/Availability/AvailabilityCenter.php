@@ -47,6 +47,20 @@ class AvailabilityCenter extends Component
     }
 
     /**
+     * Desarmer les deux filtres d'un coup.
+     *
+     * Un filtre qu'on ne peut pas retirer est un piege : arriver sur « Sans disponibilite » depuis
+     * l'indicateur, ne rien trouver, et devoir deviner comment revenir. Le defaut existait deja au
+     * centre de notifications, ou seul un passage par l'URL en sortait.
+     */
+    public function resetFiltres(): void
+    {
+        $this->search = '';
+        $this->filtre = 'tous';
+        $this->resetPage();
+    }
+
+    /**
      * Qui est prestataire — la même définition que `DefaultAvailabilityProvisioner`.
      *
      * `whereHas('providerProfile')` seul écarterait les comptes dont seule la colonne héritée

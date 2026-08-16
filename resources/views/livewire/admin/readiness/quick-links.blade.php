@@ -29,8 +29,35 @@
         ];
     @endphp
 
+    @php
+        /*
+         * `Route::has()` DIT QUE LA PORTE EXISTE, PAS QU'ON A LA CLE.
+         *
+         * Trois ecrans d'administration portent une permission granulaire en plus du role :
+         * `manage-modules`, `manage-services`, `manage-entreprises`. Un administrateur sans elles
+         * voyait la carte, cliquait, et tombait sur un 403 nu. Meme defaut que le bandeau de
+         * communication, meme correctif : la visibilite se decide sur le MEME test que le
+         * middleware qui garde la route.
+         */
+        $permissionParRoute = [
+            'admin.modules' => 'manage-modules',
+            'admin.services' => 'manage-services',
+            'admin.teams.partners' => 'manage-entreprises',
+        ];
+
+        $estAccessible = function (string $route) use ($permissionParRoute): bool {
+            if (! Route::has($route)) {
+                return false;
+            }
+
+            $permission = $permissionParRoute[$route] ?? null;
+
+            return $permission === null || Gate::allows($permission);
+        };
+    @endphp
+
     @foreach ($readinessLinks as $link)
-        @if (Route::has($link['route']))
+        @if ($estAccessible($link['route']))
             <a href="{{ route($link['route']) }}"
                class="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md">
                 <div class="flex items-start justify-between gap-4">
