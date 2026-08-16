@@ -308,6 +308,14 @@ class Booking extends Model
         'commentaire_client',
         'devis_estime',
         'duree_estimee',
+        /*
+         * LE TEMPS ACHETE, distinct du temps ESTIME juste au-dessus.
+         *
+         * `duree_estimee` dit combien de temps on pense que ca prendra ; celle-ci dit combien le
+         * client a paye. Elles partent egales sur une reservation horaire, puis divergent des la
+         * premiere prolongation -- et c'est la que les fondre aurait menti.
+         */
+        'purchased_minutes',
 
         // Timestamps explicites (autorisés pour fixtures de tests rétro-datées)
         'created_at',
@@ -405,6 +413,7 @@ class Booking extends Model
         // Entiers
         'estimated_duration_minutes' => 'integer',
         'duree_estimee' => 'integer',
+        'purchased_minutes' => 'integer',
         'route_distance_m' => 'integer',
         'route_duration_s' => 'integer',
         'surface_m2' => 'integer',

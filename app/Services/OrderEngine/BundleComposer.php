@@ -292,7 +292,13 @@ class BundleComposer
                     // LA MÊME GRILLE QU'À L'ÉCRAN. C'est ce devis-ci qui est FIGÉ à la
                     // confirmation : le calculer sans la zone donnerait au client un prix affiché
                     // et un prix facturé différents.
-                    ['mode' => $draft->mode] + $resolver->pricingContext((int) $item->trade_id, $zoneId, $draft),
+                    /*
+                     * `purchased_minutes` voyage AVEC le contexte, depuis la ligne de panier.
+                     * C'est ce que le client a choisi sur CE metier-la : deux heures de menage et
+                     * trois de repassage dans la meme commande sont deux lignes, deux durees.
+                     */
+                    ['mode' => $draft->mode, 'purchased_minutes' => $item->purchased_minutes]
+                        + $resolver->pricingContext((int) $item->trade_id, $zoneId, $draft),
                 ),
             ];
         });

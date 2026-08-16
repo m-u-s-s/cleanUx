@@ -33,6 +33,14 @@ return [
     | commandée. Trois heures achetées, trois heures de dépassement au maximum.
     | Sans lui, un compteur laissé tourner facture ce qu'il veut.
     */
+    /*
+    | Les bornes du sélecteur d'heures. En bas : descendre sous une heure vend un déplacement à
+    | perte, et le prestataire refusera. En haut : une limite qu'un doigt resté sur « + »
+    | atteindrait seul, et qui produirait un devis que personne ne peut honorer.
+    */
+    'hourly_min_hours' => (float) env('ORDER_ENGINE_HOURLY_MIN_HOURS', 1.0),
+    'hourly_max_hours' => (float) env('ORDER_ENGINE_HOURLY_MAX_HOURS', 12.0),
+
     'overtime_multiplier' => (float) env('ORDER_ENGINE_OVERTIME_MULTIPLIER', 1.30),
     'overtime_grace_minutes' => (int) env('ORDER_ENGINE_OVERTIME_GRACE_MINUTES', 15),
     'overtime_billing_increment_minutes' => (int) env('ORDER_ENGINE_OVERTIME_INCREMENT_MINUTES', 15),

@@ -18,6 +18,7 @@ use App\Services\GeolocationV2\GeocodingService;
 use App\Services\OrderEngine\AvailabilitySnapshot;
 use App\Services\OrderEngine\BundleComposer;
 use App\Services\OrderEngine\ConditionEvaluator;
+use App\Services\OrderEngine\HourlyRateResolver;
 use App\Services\OrderEngine\OrderDraftManager;
 use App\Services\OrderEngine\PriceBreakdown;
 use App\Services\OrderEngine\PricingEngine;
@@ -102,6 +103,19 @@ class OrderJourney extends Component
      * @var array<string, mixed>
      */
     public array $answers = [];
+
+    /**
+     * LES HEURES ACHETÉES, sur un métier facturé au temps passé.
+     *
+     * PAS `#[Locked]`, et c'est délibéré : c'est un champ de saisie, le navigateur DOIT pouvoir le
+     * changer. Ce qu'il ne peut pas changer, c'est le TARIF — il vient du catalogue et de la zone,
+     * résolus côté serveur à chaque calcul. Le pire qu'un client puisse faire en forgeant cette
+     * valeur, c'est acheter plus d'heures qu'il n'en voulait, et les payer.
+     *
+     * Bornée à l'écriture par `choisirLesHeures()` : sans borne, un `0` produirait une prestation
+     * gratuite et un nombre démesuré un devis absurde que personne ne pourrait honorer.
+     */
+    public ?float $heuresChoisies = null;
 
     public string $mode = OrderMode::SCHEDULED;
 
@@ -833,7 +847,7 @@ class OrderJourney extends Component
 
         // Le prix de la ZONE, quand elle est connue. Sans ce contexte, la grille locale existait en
         // base et n'atteignait jamais le calcul : le client de Bruxelles payait le tarif de base.
-        $context = ['mode' => $this->mode]
+        $context = ['mode' => $this->mode, 'purchased_minutes' => $this->heuresEnMinutes()]
             + app(ZonePricingResolver::class)->pricingContext((int) $trade->id, $this->serviceZoneId, $this->draft());
 
         return app(PricingEngine::class)->quoteItem($trade, $this->questions, $this->answers, $context);
@@ -1920,6 +1934,114 @@ class OrderJourney extends Component
 
         $manager->saveAnswers($item, $this->questions, $this->answers);
         $manager->reprice($draft);
+    }
+
+    /**
+     * Le métier courant se facture-t-il au temps passé ?
+     *
+     * C'est cette réponse qui fait apparaître le sélecteur d'heures dans le parcours — et elle se
+     * lit sur le métier, jamais sur une copie.
+     */
+    public function estFactureALHeure(): bool
+    {
+        return (bool) $this->trade?->hourly_billing;
+    }
+
+    /**
+     * Le tarif horaire applicable ici — métier, ou surcharge de la zone quand elle existe.
+     */
+    public function tarifHoraireCents(): ?int
+    {
+        $trade = $this->trade;
+
+        if (! $trade) {
+            return null;
+        }
+
+        return app(HourlyRateResolver::class)->tarifCatalogue($trade, $this->serviceZoneId);
+    }
+
+    /**
+     * Les heures choisies, en minutes — la forme que le moteur attend.
+     *
+     * Rend `null` hors métier horaire : le moteur garde alors le forfait, et un métier
+     * forfaitaire ne doit surtout pas voir arriver des minutes achetées.
+     */
+    public function heuresEnMinutes(): ?int
+    {
+        if (! $this->estFactureALHeure() || $this->heuresChoisies === null) {
+            return null;
+        }
+
+        return (int) round($this->heuresChoisies * 60);
+    }
+
+    /**
+     * Le client choisit sa durée.
+     *
+     * BORNÉE DES DEUX CÔTÉS. En bas, le minimum du métier — descendre sous une heure sur un ménage
+     * vend un déplacement à perte, et le prestataire refusera. En haut, une limite qui empêche
+     * un devis que personne ne peut honorer, et qu'un doigt sur un bouton « + » atteindrait seul.
+     *
+     * Le pas d'une demi-heure : un client qui veut « environ deux heures et demie » ne doit pas
+     * avoir à choisir entre deux et trois.
+     */
+    public function choisirLesHeures(float $heures): void
+    {
+        $min = (float) Config::get('order_engine.hourly_min_hours', 1.0);
+        $max = (float) Config::get('order_engine.hourly_max_hours', 12.0);
+
+        $this->heuresChoisies = max($min, min($max, round($heures * 2) / 2));
+
+        $this->enregistrerLesHeures();
+        $this->refreshDerived();
+    }
+
+    public function ajouterUneDemiHeure(): void
+    {
+        $this->choisirLesHeures(($this->heuresChoisies ?? $this->heuresParDefaut()) + 0.5);
+    }
+
+    public function retirerUneDemiHeure(): void
+    {
+        $this->choisirLesHeures(($this->heuresChoisies ?? $this->heuresParDefaut()) - 0.5);
+    }
+
+    /**
+     * La durée proposée d'entrée : celle que le métier estime, arrondie à la demi-heure.
+     *
+     * Proposer une valeur plutôt que de laisser le champ vide évite le prix à zéro et donne au
+     * client un point de départ crédible — il ajuste, il ne devine pas.
+     */
+    public function heuresParDefaut(): float
+    {
+        $estimation = (int) ($this->trade->estimated_duration_min ?? 0);
+        $min = (float) Config::get('order_engine.hourly_min_hours', 1.0);
+
+        if ($estimation <= 0) {
+            return $min;
+        }
+
+        return max($min, round(($estimation / 60) * 2) / 2);
+    }
+
+    /**
+     * Les heures voyagent sur la LIGNE DE PANIER, pas sur le panier.
+     *
+     * Une commande peut porter deux heures de ménage et trois de repassage : les ranger au niveau
+     * du panier écraserait l'une par l'autre.
+     */
+    protected function enregistrerLesHeures(): void
+    {
+        $trade = $this->trade;
+
+        if (! $trade || $this->heuresChoisies === null) {
+            return;
+        }
+
+        $item = $this->draft()->items()->where('trade_id', $trade->id)->first();
+
+        $item?->forceFill(['purchased_minutes' => $this->heuresEnMinutes()])->save();
     }
 
     /** @return array<string, mixed> */

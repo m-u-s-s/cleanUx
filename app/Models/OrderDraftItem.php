@@ -22,7 +22,7 @@ class OrderDraftItem extends Model
         'order_draft_id', 'trade_id', 'trade_form_revision_id', 'provider_id',
         'sequence', 'depends_on_item_id', 'sequence_gap_min',
         'status', 'scheduled_at',
-        'estimate_min_cents', 'estimate_max_cents', 'duration_min', 'metadata',
+        'estimate_min_cents', 'estimate_max_cents', 'duration_min', 'purchased_minutes', 'metadata',
     ];
 
     protected $casts = [
@@ -32,6 +32,7 @@ class OrderDraftItem extends Model
         'estimate_min_cents' => 'integer',
         'estimate_max_cents' => 'integer',
         'duration_min' => 'integer',
+        'purchased_minutes' => 'integer',
         'metadata' => 'array',
     ];
 

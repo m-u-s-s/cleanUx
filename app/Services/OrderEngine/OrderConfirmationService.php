@@ -430,6 +430,16 @@ class OrderConfirmationService
             'duree_estimee' => $quote->durationMin > 0 ? $quote->durationMin : null,
             'estimated_duration_minutes' => $quote->durationMin > 0 ? $quote->durationMin : null,
             /*
+             * LE TEMPS ACHETE SUIT LA RESERVATION, et c'est lui qui engage.
+             *
+             * Il part de la ligne de panier, pas de `$quote->durationMin` : sur un metier horaire
+             * les deux valent la meme chose, mais sur un metier forfaitaire la seconde porte une
+             * estimation qu'il ne faut surtout pas confondre avec du temps paye. `null` dit « ce
+             * service n'est pas vendu au temps » -- et c'est ce que le chronometre lira pour savoir
+             * s'il a quelque chose a mesurer.
+             */
+            'purchased_minutes' => $item->purchased_minutes,
+            /*
              * L'instantané du devis voyage avec la réservation : les libellés, les montants et la
              * révision du questionnaire employée. C'est ce qui rend la facture explicable ligne
              * par ligne, six mois plus tard, sans dépendre d'un catalogue qui aura changé.
