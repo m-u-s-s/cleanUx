@@ -61,7 +61,16 @@ class PlatformModuleSeeder extends Seeder
      * effacerait sans rien dire — et un module de sécurité qui se réinitialise en silence est pire
      * que pas de module du tout.
      *
-     * Désactivé à la création : un module de contrôle d'identité s'allume quand un humain le décide.
+     * EN SERVICE À LA CRÉATION, sur la stratégie `global`.
+     *
+     * `global` et non `zone` : avec `zone`, une liste de zones vide ne couvre PERSONNE, et surtout
+     * une zone créée plus tard n'y entre jamais — le module cesserait silencieusement de
+     * s'appliquer sur les nouvelles villes, ce qui est le pire des états pour un contrôle de
+     * sécurité. En `global`, il couvre tout ; l'administrateur qui veut restreindre bascule sur
+     * `zone` et choisit, geste explicite et visible.
+     *
+     * Le périmètre réel reste étroit : seuls les métiers qui cochent `requires_face_check` sont
+     * concernés, et `TradeSeeder` n'en coche que deux.
      */
     private function seedFaceCheckModule(): void
     {
@@ -80,8 +89,8 @@ class PlatformModuleSeeder extends Seeder
                     ."d'aller chez un client, appariement avec la pièce d'identité et revue "
                     .'manuelle par un administrateur.',
                 'category' => 'ops',
-                'rollout_strategy' => 'zone',
-                'is_enabled' => false,
+                'rollout_strategy' => 'global',
+                'is_enabled' => true,
                 'is_locked' => false,
                 'sort_order' => 110,
                 /*

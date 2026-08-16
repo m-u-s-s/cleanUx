@@ -24,6 +24,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Metiers soumis a l'installation
+    |--------------------------------------------------------------------------
+    |
+    | LE MEME CRITERE QUE LE CASIER JUDICIAIRE, ET C'EST DELIBERE.
+    |
+    | `config/onboarding_documents.php` exige deja un extrait de casier pour CHD et SEC, avec cette
+    | justification ecrite : « intervention aupres de mineurs, au domicile, sans temoin » et « acces
+    | aux locaux et aux biens du client ». C'est exactement la population ou l'identite de la
+    | personne qui se presente compte le plus -- et c'est la fraude que visent Bolt et Deliveroo :
+    | le compte prete a quelqu'un qui n'a passe aucun controle.
+    |
+    | Reprendre ce critere plutot que d'en inventer un autre evite deux listes qui divergent, et
+    | rend la decision explicable : on ne demande pas un selfie a un couvreur qui travaille sur un
+    | toit, on le demande a qui entre chez les gens.
+    |
+    | Ces codes ne sont qu'un POINT DE DEPART pose par le seeder. Ensuite, c'est la case
+    | « verification faciale » de chaque fiche metier qui fait foi.
+    |
+    */
+
+    'default_trade_codes' => ['CHD', 'SEC'],
+
+    /*
+    |--------------------------------------------------------------------------
     | Fournisseur de comparaison faciale
     |--------------------------------------------------------------------------
     |

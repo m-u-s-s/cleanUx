@@ -24,7 +24,7 @@ class FaceCheckRequiredException extends DomainException
 {
     public function __construct(public readonly FaceCheckDecision $decision)
     {
-        parent::__construct($decision->message ?? "Un contrôle d'identité est nécessaire avant de continuer.");
+        parent::__construct($decision->message ?? __('face_check.errors.default'));
     }
 
     public function render(Request $request): Response

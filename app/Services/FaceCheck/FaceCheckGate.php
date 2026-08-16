@@ -72,8 +72,7 @@ class FaceCheckGate
         if ($profil->isBlocked()) {
             return new FaceCheckDecision(
                 code: FaceCheckDecision::BLOCKED,
-                message: "Votre compte est suspendu à la suite d'un contrôle d'identité. "
-                    ."Un administrateur doit lever la suspension : signalez-le depuis l'écran de vérification.",
+                message: __('face_check.gate.blocked'),
             );
         }
 
@@ -95,14 +94,14 @@ class FaceCheckGate
             if ($ouvert->answered_at !== null) {
                 return new FaceCheckDecision(
                     code: FaceCheckDecision::CHECK_PENDING,
-                    message: 'Votre contrôle est en cours de vérification. Encore quelques secondes.',
+                    message: __('face_check.gate.check_pending'),
                     checkId: $ouvert->id,
                 );
             }
 
             return new FaceCheckDecision(
                 code: FaceCheckDecision::CHECK_REQUIRED,
-                message: 'Un contrôle de votre identité est nécessaire avant de continuer.',
+                message: __('face_check.gate.check_required'),
                 checkId: $ouvert->id,
                 trigger: $ouvert->triggered_by,
             );
@@ -113,7 +112,7 @@ class FaceCheckGate
         if ($motif !== null) {
             return new FaceCheckDecision(
                 code: FaceCheckDecision::CHECK_REQUIRED,
-                message: 'Un contrôle de votre identité est nécessaire avant de continuer.',
+                message: __('face_check.gate.check_required'),
                 trigger: $motif,
             );
         }
@@ -146,7 +145,7 @@ class FaceCheckGate
 
         return new FaceCheckDecision(
             code: FaceCheckDecision::ENROLMENT_REQUIRED,
-            message: "Enregistrez votre visage pour pouvoir intervenir chez des clients. C'est l'affaire de trente secondes.",
+            message: __('face_check.gate.enrolment_required'),
         );
     }
 }

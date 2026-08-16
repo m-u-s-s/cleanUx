@@ -149,16 +149,51 @@ class SocleDuControleFacialTest extends TestCase
         $this->assertFalse($profil->fresh()->hasActiveConsent());
     }
 
-    public function test_le_module_plateforme_est_seme_eteint_et_par_zone(): void
+    /**
+     * LE MODULE EST EN SERVICE, EN STRATÉGIE `global`.
+     *
+     * `global` et non `zone` : avec `zone`, une liste de zones vide ne couvre personne, et surtout
+     * une zone créée plus tard n'y entre jamais — le module cesserait silencieusement de
+     * s'appliquer aux nouvelles villes. Un contrôle de sécurité qui se désactive tout seul quand on
+     * grandit est pire que pas de contrôle du tout, parce qu'on croit l'avoir.
+     *
+     * Le périmètre réel reste étroit : seuls les métiers qui cochent `requires_face_check` sont
+     * concernés, et le seeder n'en coche que deux.
+     */
+    public function test_le_module_plateforme_est_en_service_et_global(): void
     {
         $this->seed(PlatformModuleSeeder::class);
 
         $module = PlatformModule::query()->where('key', 'security.face_check')->first();
 
         $this->assertNotNull($module);
-        $this->assertFalse($module->is_enabled, 'Un module de contrôle d\'identité ne s\'allume pas tout seul.');
-        $this->assertSame('zone', $module->rollout_strategy);
-        $this->assertSame(24, $module->settingsValue('face_check.min_hours'));
+        $this->assertTrue($module->is_enabled);
+        $this->assertSame('global', $module->rollout_strategy);
+    }
+
+    /**
+     * LES RÉGLAGES SEMÉS SONT CEUX DE LA CONFIG, pas une copie qui dérive.
+     *
+     * Le seeder écrivait `failure_threshold: 3` quand `config/face_check.php` en annonçait 2, et
+     * c'est la base qui gagne : deux chiffres également plausibles pour un même réglage, donc une
+     * divergence que personne ne remarque.
+     */
+    public function test_les_reglages_semes_suivent_la_config(): void
+    {
+        $this->seed(PlatformModuleSeeder::class);
+
+        $module = PlatformModule::query()->where('key', 'security.face_check')->firstOrFail();
+
+        foreach ([
+            'min_hours' => config('face_check.interval.min_hours'),
+            'max_hours' => config('face_check.interval.max_hours'),
+            'max_attempts' => config('face_check.max_attempts'),
+            'failure_threshold' => config('face_check.failure_threshold'),
+            'abandon_threshold' => config('face_check.abandon.threshold'),
+            'selfie_retention_days' => config('face_check.selfie_retention_days'),
+        ] as $cle => $attendu) {
+            $this->assertSame((int) $attendu, (int) $module->settingsValue("face_check.{$cle}"), $cle);
+        }
     }
 
     public function test_le_seeder_nefface_pas_les_reglages_deja_poses(): void

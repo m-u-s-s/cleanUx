@@ -54,6 +54,11 @@ class NotificationChannelResolver
         'mission_started' => 'transactional',
         'mission_completed' => 'transactional',
         'presence_code' => 'verification',
+        // Controle facial : `verification` comme le code de presence -- c'est la meme famille,
+        // et cette categorie est forcee a ON sur l'e-mail (voir notification_preferences.forced_on).
+        'face_check_blocked' => 'verification',
+        'face_check_unblocked' => 'verification',
+        'face_check_incident' => 'support',
         // Un imprévu chez soi n'est pas une nouvelle du service : c'est la mission qui bouge.
         'mission_incident' => 'transactional',
         // Un supplément proposé sur place attend une réponse pour que le travail continue.

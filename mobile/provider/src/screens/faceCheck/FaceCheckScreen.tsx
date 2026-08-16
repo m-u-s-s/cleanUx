@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Easing, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import Constants from 'expo-constants';
 import {
@@ -47,6 +47,7 @@ export default function FaceCheckScreen() {
   const [erreur, setErreur] = useState<string | null>(null);
   const [reussi, setReussi] = useState(false);
   const [signalementOuvert, setSignalementOuvert] = useState(false);
+  const [consentementDonne, setConsentementDonne] = useState(false);
 
   const etat = statut?.state ?? 'ok';
   const enrolement = etat === 'face_enrolment_required';
@@ -91,6 +92,20 @@ export default function FaceCheckScreen() {
 
   const capturer = useCallback(async () => {
     if (enCours || camera.current === null) {
+      return;
+    }
+
+    /*
+     * LE CONSENTEMENT SE DONNE AVANT LA CAPTURE, PAS APRES.
+     *
+     * L'ecran envoyait `consent: 1` sans jamais montrer le texte : le serveur enregistrait donc un
+     * consentement que personne n'avait lu. Pour une donnee de l'article 9, un consentement non
+     * affiche n'est pas un consentement -- c'est une case cochee par le code a la place de la
+     * personne.
+     */
+    if (enrolement && !consentementDonne) {
+      setErreur(texteDuRefusDeConsentement);
+
       return;
     }
 
@@ -146,7 +161,7 @@ export default function FaceCheckScreen() {
     } finally {
       setEnCours(false);
     }
-  }, [enCours, enrolement, controle, enroler, soumettre, refetch]);
+  }, [enCours, enrolement, consentementDonne, controle, enroler, soumettre, refetch]);
 
   // ── États qui ne montrent pas la caméra ──────────────────────────────────
 
@@ -263,6 +278,33 @@ export default function FaceCheckScreen() {
               </Text>
             ) : null}
 
+            {/*
+              LE TEXTE DE CONSENTEMENT VIENT DU SERVEUR, déjà traduit dans la langue du prestataire.
+              L'application ne le recopie pas : deux versions d'un texte relu une seule fois, et
+              c'est celle qu'on n'aurait pas relue qui s'afficherait.
+            */}
+            {enrolement && statut?.consent_text ? (
+              <Pressable
+                onPress={() => setConsentementDonne((v) => !v)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: consentementDonne }}
+                style={styles.consentement}
+              >
+                <View style={[styles.case, consentementDonne ? styles.caseCochee : null]}>
+                  <Text style={styles.caseMarque}>{consentementDonne ? '✓' : ''}</Text>
+                </View>
+                <View style={styles.consentementTexte}>
+                  <Text style={styles.precisionClaire}>{statut.consent_text}</Text>
+                  {statut.consent_legal_note ? (
+                    <Text style={styles.mentionLegale}>
+                      {statut.consent_legal_note}
+                      {statut.consent_version ? ` · v${statut.consent_version}` : ''}
+                    </Text>
+                  ) : null}
+                </View>
+              </Pressable>
+            ) : null}
+
             {erreur ? <Text style={styles.erreur}>{erreur}</Text> : null}
 
             <View style={styles.actions}>
@@ -270,7 +312,7 @@ export default function FaceCheckScreen() {
                 label={enrolement ? 'Enregistrer mon visage' : 'Prendre la photo'}
                 onPress={capturer}
                 loading={enCours}
-                disabled={enCours}
+                disabled={enCours || (enrolement && !consentementDonne)}
                 fullWidth
               />
               <Button
@@ -400,6 +442,9 @@ function FeuilleDeSignalement({
 
 const MESSAGE_RESEAU = 'Connexion perdue. Vérifiez votre réseau et réessayez.';
 
+const texteDuRefusDeConsentement =
+  'Lisez et acceptez l’enregistrement de votre visage avant de prendre la photo.';
+
 function messageDEchec(controle: FaceCheck): string {
   if (controle.liveness_result === 'fail') {
     return `Photo d’écran détectée. Prenez la photo en direct. Essai ${controle.attempt_number} sur ${controle.attempt_number + controle.attempts_left - 1}.`;
@@ -429,6 +474,22 @@ function stylesFor(t: ThemeTokens) {
     texte: { color: nuit.muted, fontSize: 15, lineHeight: 22, textAlign: 'center' },
     precision: { color: 'rgba(147,164,198,0.75)', fontSize: 13, lineHeight: 19, textAlign: 'center', marginTop: 12 },
     actions: { marginTop: 24, width: '100%', gap: 10 },
+
+    consentement: { marginTop: 14, flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+    consentementTexte: { flex: 1 },
+    case: {
+      width: 22,
+      height: 22,
+      borderRadius: 6,
+      borderWidth: 1.5,
+      borderColor: 'rgba(255,255,255,0.5)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 2,
+    },
+    caseCochee: { backgroundColor: 'rgba(255,255,255,0.92)', borderColor: 'rgba(255,255,255,0.92)' },
+    caseMarque: { color: 'rgba(5,7,13,0.9)', fontSize: 13, fontWeight: '900', lineHeight: 16 },
+    mentionLegale: { color: 'rgba(255,255,255,0.42)', fontSize: 11, lineHeight: 16, marginTop: 6 },
 
     viseeConteneur: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     visee: {

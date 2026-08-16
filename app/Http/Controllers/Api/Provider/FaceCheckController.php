@@ -69,6 +69,18 @@ class FaceCheckController extends Controller
                 'block_reason' => $profil?->block_reason,
                 'id_match_status' => $profil?->id_match_status,
                 'consent_version' => $settings->consentVersion(),
+                /*
+                 * LE TEXTE DE CONSENTEMENT EST SERVI PAR LE SERVEUR, traduit dans la langue du
+                 * prestataire.
+                 *
+                 * C'est le seul texte du module qui engage juridiquement, et l'application mobile
+                 * n'a AUCUN systeme de traduction : le recopier dans le code natif donnerait deux
+                 * versions d'un texte relu une seule fois, et c'est celle qu'on n'aurait pas relue
+                 * qui s'afficherait. Une seule source -- lang/<code>/face_check.php -- et les deux
+                 * surfaces affichent le meme.
+                 */
+                'consent_text' => __('face_check.consent.text', ['days' => $settings->selfieRetentionDays()]),
+                'consent_legal_note' => __('face_check.consent.legal_note'),
                 'max_attempts' => $settings->maxAttempts(),
                 'liveness_required' => $settings->livenessRequired(),
                 'pending_check' => $verdict->checkId,
@@ -267,7 +279,7 @@ class FaceCheckController extends Controller
                 'status' => $incident->status,
                 // Dit clairement ce que ce geste ne fait pas, pour ne pas le laisser espérer.
                 'unblocks' => false,
-                'message' => 'Un administrateur a été prévenu. Votre compte reste en attente de vérification.',
+                'message' => __('face_check.incident.sent_body'),
             ],
         ], 201);
     }
@@ -288,8 +300,7 @@ class FaceCheckController extends Controller
         return response()->json([
             'ok' => true,
             'data' => [
-                'message' => 'Votre visage de référence a été supprimé. Vous ne pourrez plus intervenir '
-                    ."sur les métiers qui exigent un contrôle d'identité tant que vous ne l'aurez pas ré-enregistré.",
+                'message' => __('face_check.consent.withdraw_done'),
             ],
         ]);
     }

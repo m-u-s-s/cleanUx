@@ -6,6 +6,8 @@ use App\Jobs\FaceCheck\CompareFaceWithIdDocumentJob;
 use App\Models\ProviderFaceCheck;
 use App\Models\ProviderFaceProfile;
 use App\Models\User;
+use App\Notifications\FaceCheck\FaceCheckBlockedNotification;
+use App\Notifications\FaceCheck\FaceCheckUnblockedNotification;
 use App\Services\FaceCheck\Data\FaceEnrollRequest;
 use App\Services\FaceCheck\Data\FaceVerifyRequest;
 use App\Services\FaceCheck\Data\FaceVerifyResult;
@@ -65,11 +67,11 @@ class FaceCheckService
         array $contexte = [],
     ): ProviderFaceProfile {
         if (! $consentement) {
-            throw new DomainException("L'enregistrement de votre visage exige votre accord explicite.");
+            throw new DomainException(__('face_check.errors.consent_required'));
         }
 
         if (trim($contents) === '') {
-            throw new DomainException('Image vide.');
+            throw new DomainException(__('face_check.errors.empty_image'));
         }
 
         $profil = $this->ensureProfile($provider);
@@ -204,20 +206,20 @@ class FaceCheckService
         array $contexte = [],
     ): ProviderFaceCheck {
         if ($controle->status !== ProviderFaceCheck::STATUS_PENDING) {
-            throw new DomainException('Ce contrôle est déjà clos.');
+            throw new DomainException(__('face_check.errors.check_closed'));
         }
 
         if ($controle->isExpired()) {
             $this->marquerExpire($controle);
 
-            throw new DomainException('Ce contrôle a expiré. Recommencez.');
+            throw new DomainException(__('face_check.errors.check_expired'));
         }
 
         $profil = $controle->profile;
         $provider = $controle->user;
 
         if ($profil === null || $provider === null) {
-            throw new DomainException('Contrôle orphelin.');
+            throw new DomainException(__('face_check.errors.orphan_check'));
         }
 
         $reference = $this->store->get($profil->reference_path);
@@ -329,6 +331,7 @@ class FaceCheckService
         ])->save();
 
         $this->journaliser('face_check.blocked', $profil, $profil->user);
+        $this->prevenir($profil, new FaceCheckBlockedNotification($raison));
 
         return $profil;
     }
@@ -357,6 +360,13 @@ class FaceCheckService
         ])->save();
 
         $this->journaliser('face_check.unblocked', $profil, $profil->user);
+
+        /*
+         * ON PREVIENT LE PRESTATAIRE. Sans ce message, il decouvrait la levee en reessayant,
+         * parfois des jours plus tard : une decision d'administrateur qui change la journee de
+         * quelqu'un doit lui parvenir, et le silence transforme une bonne nouvelle en temps perdu.
+         */
+        $this->prevenir($profil, new FaceCheckUnblockedNotification);
 
         return $profil;
     }
@@ -547,6 +557,22 @@ class FaceCheckService
     private function hachageIp(?string $ip): ?string
     {
         return filled($ip) ? hash('sha256', (string) $ip) : null;
+    }
+
+    /**
+     * Prevenir le prestataire -- et ne JAMAIS faire echouer la decision si l'envoi tombe.
+     *
+     * Le blocage est deja ecrit quand on arrive ici. Laisser remonter une panne de messagerie
+     * annulerait la transaction d'un geste de securite pour un e-mail : c'est le mauvais arbitrage,
+     * et c'est exactement ce que fait deja `SafetyAlertService`.
+     */
+    private function prevenir(ProviderFaceProfile $profil, mixed $notification): void
+    {
+        try {
+            $profil->user?->notify($notification);
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     private function journaliser(string $evenement, mixed $sujet, ?User $provider): void

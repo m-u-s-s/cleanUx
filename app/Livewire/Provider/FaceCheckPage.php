@@ -88,7 +88,7 @@ class FaceCheckPage extends Component
             'selfie' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:8192'],
             'consentement' => ['accepted'],
         ], [
-            'consentement.accepted' => "L'enregistrement de votre visage exige votre accord explicite.",
+            'consentement.accepted' => __('face_check.errors.consent_required'),
         ]);
 
         try {
@@ -102,7 +102,7 @@ class FaceCheckPage extends Component
 
             $this->reset('selfie');
             $this->rafraichir();
-            $this->dispatch('toast', 'Votre visage a été enregistré.', 'success');
+            $this->dispatch('toast', __('face_check.result.enrolled'), 'success');
         } catch (\Throwable $e) {
             report($e);
             $this->dispatch('toast', 'Erreur : '.$e->getMessage(), 'error');
@@ -118,7 +118,7 @@ class FaceCheckPage extends Component
         $controle = $this->controleCourant();
 
         if ($controle === null) {
-            $this->dispatch('toast', 'Aucun contrôle en cours. Rechargez la page.', 'error');
+            $this->dispatch('toast', __('face_check.errors.no_open_check'), 'error');
 
             return;
         }
@@ -133,9 +133,9 @@ class FaceCheckPage extends Component
             $this->reset('selfie');
 
             $message = match ($resultat->status) {
-                ProviderFaceCheck::STATUS_PASSED => 'Identité confirmée. Bonne journée.',
-                ProviderFaceCheck::STATUS_FAILED => "Nous n'avons pas pu vous reconnaître. Un administrateur va examiner votre dossier.",
-                default => 'Photo non reconnue. Placez-vous face à la lumière et réessayez.',
+                ProviderFaceCheck::STATUS_PASSED => __('face_check.result.passed'),
+                ProviderFaceCheck::STATUS_FAILED => __('face_check.result.failed_final'),
+                default => __('face_check.result.failed_retry', ['left' => max(0, $this->essaisRestants($resultat))]),
             };
 
             $this->dispatch(
@@ -186,7 +186,15 @@ class FaceCheckPage extends Component
             'controle' => $this->controleCourant(),
             'vivaciteExigee' => $reglages->livenessRequired(),
             'versionDuConsentement' => $reglages->consentVersion(),
+            // Le MÊME texte que celui servi par l'API au mobile : une seule source relue une fois.
+            'texteDuConsentement' => __('face_check.consent.text', ['days' => $reglages->selfieRetentionDays()]),
+            'noteJuridique' => __('face_check.consent.legal_note'),
         ])->layout('layouts.app');
+    }
+
+    private function essaisRestants(ProviderFaceCheck $controle): int
+    {
+        return max(0, app(FaceCheckSettings::class)->maxAttempts() - $controle->attempt_number + 1);
     }
 
     private function verdict(): FaceCheckDecision

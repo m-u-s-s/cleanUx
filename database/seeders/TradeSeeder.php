@@ -19,6 +19,9 @@ class TradeSeeder extends Seeder
         $hasBillingUnit = Schema::hasColumn('trades', 'billing_unit');
         $hasRequiresSiteVisit = Schema::hasColumn('trades', 'requires_site_visit');
 
+        /** @var list<string> $nouveaux */
+        $nouveaux = [];
+
         foreach (self::trades() as $payload) {
             $core = [
                 'code' => $payload['code'],
@@ -44,8 +47,15 @@ class TradeSeeder extends Seeder
                 $core['requires_site_visit'] = $payload['requires_site_visit'];
             }
 
-            Trade::updateOrCreate(['slug' => $payload['slug']], $core);
+            $metier = Trade::updateOrCreate(['slug' => $payload['slug']], $core);
+
+            // On ne retient que ce que CE passage vient de creer : voir la methode ci-dessous.
+            if ($metier->wasRecentlyCreated) {
+                $nouveaux[] = (string) $metier->code;
+            }
         }
+
+        $this->exigerLeControleFacialLaOuIlCompte($nouveaux);
 
         // Back-compat: if a 'nettoyage' slug exists, ensure 'cleaning' also exists
         // so migration A1 backfill can find it by either slug.
@@ -604,6 +614,43 @@ class TradeSeeder extends Seeder
                 ],
             ],
         ];
+    }
+
+    /**
+     * LE CONTROLE FACIAL, POSE SUR LES MEMES METIERS QUE LE CASIER JUDICIAIRE.
+     *
+     * `config/onboarding_documents.php` exige deja un extrait de casier pour la garde d'enfants et
+     * le gardiennage, avec sa justification ecrite : intervention aupres de mineurs au domicile
+     * sans temoin, et acces aux locaux et aux biens du client. C'est exactement la population ou
+     * l'identite de la personne qui SE PRESENTE compte le plus -- et c'est la fraude que visent
+     * Bolt et Deliveroo : le compte prete a quelqu'un qui n'a passe aucun controle.
+     *
+     * Reprendre ce critere plutot que d'en inventer un autre evite deux listes qui divergent.
+     *
+     * ON NE POSE LA VALEUR QU'A LA CREATION DU METIER, et `wasRecentlyCreated` est la seule
+     * mesure fiable de « cree par CE passage ». Comparer `created_at` a `updated_at` aurait semble
+     * equivalent et ne l'est pas : un metier ancien que personne n'a jamais modifie porte les deux
+     * dates identiques, et se verrait donc re-coche a chaque passage du seeder -- effacant le choix
+     * d'un administrateur qui l'avait decoche, sans que rien ne le signale.
+     *
+     * @param  list<string>  $codesCreesMaintenant
+     */
+    private function exigerLeControleFacialLaOuIlCompte(array $codesCreesMaintenant): void
+    {
+        if (! Schema::hasColumn('trades', 'requires_face_check')) {
+            return;
+        }
+
+        $codes = array_intersect(
+            (array) config('face_check.default_trade_codes', []),
+            $codesCreesMaintenant,
+        );
+
+        if ($codes === []) {
+            return;
+        }
+
+        Trade::query()->whereIn('code', $codes)->update(['requires_face_check' => true]);
     }
 
     public static function childcareBookingFormSchema(): array

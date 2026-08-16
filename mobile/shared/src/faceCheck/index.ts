@@ -28,6 +28,15 @@ export interface FaceCheckStatus {
   block_reason?: string | null;
   id_match_status?: string | null;
   consent_version?: string;
+  /**
+   * LE TEXTE DE CONSENTEMENT VIENT DU SERVEUR, déjà traduit.
+   *
+   * L'application n'a aucun système de traduction, et c'est le seul texte du module qui engage
+   * juridiquement : le recopier ici donnerait deux versions d'un texte relu une seule fois, et
+   * c'est celle qu'on n'aurait pas relue qui s'afficherait. Une seule source, côté serveur.
+   */
+  consent_text?: string;
+  consent_legal_note?: string;
   max_attempts?: number;
   liveness_required?: boolean;
   pending_check?: number | null;

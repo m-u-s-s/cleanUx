@@ -8,28 +8,25 @@
     La capture passe par `getUserMedia` et un canevas, puis remonte par le téléversement Livewire.
     Aucune image ne transite par un service tiers depuis le navigateur : c'est le serveur qui parle
     au fournisseur, jamais la page.
+
+    TOUS LES TEXTES VIENNENT DE `lang/<code>/face_check.php`. Le texte de consentement en
+    particulier : c'est le seul du module qui engage juridiquement, et l'API sert EXACTEMENT le
+    même à l'application mobile.
 --}}
 <div class="mx-auto max-w-3xl space-y-6 py-8" wire:key="face-check-page">
 
     @if(! $soumis)
-        <x-app-card title="Vérification d'identité">
-            <p class="text-sm text-slate-600">
-                Aucun de vos métiers n'exige de vérification faciale dans votre zone. Rien à faire ici.
-            </p>
+        <x-app-card :title="__('face_check.screen.eyebrow_check')">
+            <p class="text-sm text-slate-600">{{ __('face_check.screen.not_concerned') }}</p>
         </x-app-card>
     @elseif($verdict->code === \App\Services\FaceCheck\Data\FaceCheckDecision::BLOCKED)
 
         <x-app-card>
             <div class="text-center">
                 <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-50 text-3xl">⛔</div>
-                <h2 class="mt-4 text-2xl font-black tracking-tight text-slate-900">Compte suspendu</h2>
-                <p class="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">
-                    {{ $verdict->message }}
-                </p>
-                <p class="mx-auto mt-4 max-w-lg text-xs leading-5 text-slate-400">
-                    Signaler un problème n'annule pas la suspension : cela ouvre un dossier qu'un
-                    administrateur traitera.
-                </p>
+                <h2 class="mt-4 text-2xl font-black tracking-tight text-slate-900">{{ __('face_check.screen.blocked_title') }}</h2>
+                <p class="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">{{ $verdict->message }}</p>
+                <p class="mx-auto mt-4 max-w-lg text-xs leading-5 text-slate-400">{{ __('face_check.screen.blocked_note') }}</p>
             </div>
         </x-app-card>
 
@@ -39,10 +36,10 @@
 
         <x-app-card>
             <div class="text-center">
-                <h2 class="text-2xl font-black tracking-tight text-slate-900">Vérification en cours</h2>
-                <p class="mt-2 text-sm text-slate-600">Encore quelques secondes.</p>
+                <h2 class="text-2xl font-black tracking-tight text-slate-900">{{ __('face_check.screen.pending_title') }}</h2>
+                <p class="mt-2 text-sm text-slate-600">{{ __('face_check.screen.pending_body') }}</p>
                 <div class="mt-6">
-                    <button type="button" wire:click="rafraichir" class="brio-btn-primary">Actualiser</button>
+                    <button type="button" wire:click="rafraichir" class="brio-btn-primary">{{ __('face_check.screen.refresh') }}</button>
                 </div>
             </div>
         </x-app-card>
@@ -52,14 +49,12 @@
         <x-app-card>
             <div class="text-center">
                 <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 text-3xl">✅</div>
-                <h2 class="mt-4 text-2xl font-black tracking-tight text-slate-900">Tout est en règle</h2>
-                <p class="mt-2 text-sm text-slate-600">
-                    Votre identité est vérifiée. Vous pouvez travailler normalement.
-                </p>
+                <h2 class="mt-4 text-2xl font-black tracking-tight text-slate-900">{{ __('face_check.screen.all_good_title') }}</h2>
+                <p class="mt-2 text-sm text-slate-600">{{ __('face_check.screen.all_good_body') }}</p>
                 @if($profil?->captured_at)
                     <p class="mt-3 text-xs text-slate-400">
-                        Visage enregistré {{ $profil->captured_at->diffForHumans() }} ·
-                        consentement v{{ $profil->consent_version }}
+                        {{ __('face_check.screen.enrolled_since', ['when' => $profil->captured_at->diffForHumans()]) }}
+                        · {{ __('face_check.consent.version_label', ['version' => $profil->consent_version]) }}
                     </p>
                 @endif
             </div>
@@ -87,39 +82,36 @@
                                 x-on:click="capturer()"
                                 x-bind:disabled="occupe"
                                 class="w-full rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-900 transition hover:bg-slate-100 disabled:opacity-50">
-                            <span x-show="!occupe">{{ $enrolement ? 'Enregistrer mon visage' : 'Prendre la photo' }}</span>
-                            <span x-show="occupe">Envoi…</span>
+                            <span x-show="!occupe">{{ $enrolement ? __('face_check.screen.capture_enrolment') : __('face_check.screen.capture_check') }}</span>
+                            <span x-show="occupe">{{ __('face_check.incident.send') }}…</span>
                         </button>
                     </div>
                 </div>
 
                 <div class="space-y-3 p-6">
                     <p class="text-xs font-bold uppercase tracking-[0.15em] text-slate-400">
-                        {{ $enrolement ? 'Première étape' : 'Vérification d’identité' }}
+                        {{ $enrolement ? __('face_check.screen.eyebrow_enrolment') : __('face_check.screen.eyebrow_check') }}
                     </p>
                     <h2 class="text-xl font-black tracking-tight text-white">
-                        {{ $enrolement ? 'Enregistrez votre visage' : 'Confirmez que c’est bien vous' }}
+                        {{ $enrolement ? __('face_check.screen.title_enrolment') : __('face_check.screen.title_check') }}
                     </h2>
                     <p class="text-sm leading-6 text-slate-300">
-                        {{ $enrolement
-                            ? 'Cette photo servira de référence. Elle reste privée : ni vos clients ni votre société ne la voient.'
-                            : 'Regardez l’objectif, sans lunettes de soleil ni masque. Aucun client ne verra cette photo.' }}
+                        {{ $enrolement ? __('face_check.screen.help_enrolment') : __('face_check.screen.help_check') }}
                     </p>
 
                     @if($vivaciteExigee)
-                        <p class="text-xs leading-5 text-slate-400">
-                            Prenez la photo en direct : une photo d'écran ne passe pas le contrôle.
-                        </p>
+                        <p class="text-xs leading-5 text-slate-400">{{ __('face_check.screen.liveness_hint') }}</p>
                     @endif
 
                     @if($enrolement)
                         <label class="mt-2 flex items-start gap-3 rounded-2xl bg-white/5 p-4">
                             <input type="checkbox" wire:model="consentement" class="mt-0.5 rounded text-emerald-500" />
                             <span class="text-xs leading-5 text-slate-300">
-                                J'accepte que mon visage soit enregistré et comparé à ma pièce d'identité pour
-                                vérifier que je suis bien la personne qui intervient chez les clients
-                                <span class="text-slate-500">(consentement v{{ $versionDuConsentement }}, article 9 du RGPD).</span>
-                                Je peux le retirer à tout moment, ce qui suspendra mon accès aux métiers concernés.
+                                {{ $texteDuConsentement }}
+                                <span class="mt-1 block text-slate-500">
+                                    {{ $noteJuridique }}
+                                    {{ __('face_check.consent.version_label', ['version' => $versionDuConsentement]) }}
+                                </span>
                             </span>
                         </label>
                     @endif
@@ -129,7 +121,7 @@
 
                     @if($controle && $controle->attempt_number > 1)
                         <p class="text-xs text-amber-300">
-                            Essai {{ $controle->attempt_number }} · motif précédent : {{ $controle->failure_reason }}
+                            {{ __('face_check.screen.attempt_recap', ['number' => $controle->attempt_number, 'reason' => $controle->failure_reason]) }}
                         </p>
                     @endif
                 </div>
@@ -155,8 +147,7 @@
                                 });
                                 this.$refs.video.srcObject = this.flux;
                             } catch (e) {
-                                this.erreur = "Impossible d'ouvrir la caméra. Autorisez-la dans votre navigateur, "
-                                    + 'ou signalez le problème ci-dessous.';
+                                this.erreur = @js(__('face_check.camera.unavailable'));
                             }
                         },
 
@@ -194,7 +185,7 @@
 
                                 await @this.call('{{ $enrolement ? 'enregistrerLeVisage' : 'envoyerLeSelfie' }}');
                             } catch (e) {
-                                this.erreur = "L'envoi a échoué. Vérifiez votre connexion et réessayez.";
+                                this.erreur = @js(__('face_check.result.upload_failed'));
                             } finally {
                                 this.occupe = false;
                             }
