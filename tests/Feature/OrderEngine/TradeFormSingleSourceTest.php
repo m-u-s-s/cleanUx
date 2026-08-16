@@ -86,6 +86,14 @@ class TradeFormSingleSourceTest extends TestCase
             base_path('resources/views/livewire/admin/partials/trade-form-fields.blade.php'),
         );
 
+        /*
+         * LA LISTE ÉTAIT EN RETARD DE DEUX CHAMPS.
+         *
+         * `requires_face_check` et `taxi_rules` vivaient dans la partial sans y figurer : ce test
+         * ne vérifie pas l'exhaustivité, seulement que les champs listés sont présents. Un champ
+         * oublié ici n'est donc jamais signalé — il faut l'ajouter à la main, et c'est ce qui n'a
+         * pas été fait deux fois de suite. Les trois manquants sont réintégrés.
+         */
         $attendus = [
             'name', 'slug', 'code', 'icon', 'color', 'sort_order',
             'short_description', 'description', 'default_hourly_rate',
@@ -93,12 +101,23 @@ class TradeFormSingleSourceTest extends TestCase
             'quote_validity_days', 'sla_response_minutes', 'requires_quote_by_default',
             'booking_form_schema_json', 'is_active', 'requires_certification',
             'requires_insurance_proof', 'is_b2b_default', 'is_personal_default',
+            'requires_face_check', 'taxi_rules', 'hourly_billing',
         ];
 
+        /*
+         * TOUTES LES VARIANTES DE `wire:model`, pas seulement deux.
+         *
+         * L'ancienne version n'acceptait que `wire:model=` et `wire:model.live.debounce.500ms=`.
+         * Un champ parfaitement correct en `wire:model.live` — nécessaire dès qu'une case pilote un
+         * affichage conditionnel — était donc compté comme manquant. Le test mesurait la forme de
+         * la liaison, pas la présence du champ, ce qu'il est censé vérifier.
+         */
         $manquants = array_values(array_filter(
             $attendus,
-            fn (string $champ) => ! str_contains($partial, 'wire:model="'.$champ.'"')
-                && ! str_contains($partial, 'wire:model.live.debounce.500ms="'.$champ.'"'),
+            fn (string $champ) => preg_match(
+                '/wire:model(\.[a-z0-9.]+)?="'.preg_quote($champ, '/').'"/',
+                $partial,
+            ) !== 1,
         ));
 
         $this->assertSame([], $manquants);

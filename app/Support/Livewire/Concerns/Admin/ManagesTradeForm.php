@@ -64,6 +64,21 @@ trait ManagesTradeForm
 
     public ?string $default_hourly_rate = null;
 
+    /**
+     * LE METIER SE FACTURE AU TEMPS PASSE.
+     *
+     * Coche cette case et le client choisira son nombre d'heures a la commande : le prix devient
+     * `tarif horaire x heures` au lieu d'un forfait. Sans elle, `default_hourly_rate` juste
+     * au-dessus n'est qu'un chiffre d'affichage -- c'est d'ailleurs l'etat dans lequel la
+     * plateforme se trouvait : la vitrine annoncait « a partir de 45 EUR/heure » et le parcours
+     * facturait 45 EUR forfaitaires, quelle que soit la duree.
+     *
+     * Sa place ici, et pas dans les drapeaux operationnels : ceux-la disent ce qu'on EXIGE DU
+     * PRESTATAIRE (certification, assurance, visage, vehicule). Celui-ci dit comment le service
+     * est VENDU AU CLIENT, et il pilote le champ situe juste au-dessus.
+     */
+    public bool $hourly_billing = false;
+
     public string $emergency_multiplier = '1.00';
 
     public string $night_multiplier = '1.00';
@@ -128,6 +143,7 @@ trait ManagesTradeForm
         $this->is_personal_default = true;
         $this->sort_order = 0;
         $this->default_hourly_rate = null;
+        $this->hourly_billing = false;
         $this->emergency_multiplier = '1.00';
         $this->night_multiplier = '1.00';
         $this->weekend_multiplier = '1.00';
@@ -159,6 +175,7 @@ trait ManagesTradeForm
         $this->is_personal_default = (bool) $trade->is_personal_default;
         $this->sort_order = (int) $trade->sort_order;
         $this->default_hourly_rate = $trade->default_hourly_rate !== null ? (string) $trade->default_hourly_rate : null;
+        $this->hourly_billing = (bool) $trade->hourly_billing;
         $this->emergency_multiplier = (string) ($trade->emergency_multiplier ?? '1.00');
         $this->night_multiplier = (string) ($trade->night_multiplier ?? '1.00');
         $this->weekend_multiplier = (string) ($trade->weekend_multiplier ?? '1.00');
@@ -190,7 +207,13 @@ trait ManagesTradeForm
             'is_b2b_default' => ['boolean'],
             'is_personal_default' => ['boolean'],
             'sort_order' => ['integer', 'min:0', 'max:9999'],
-            'default_hourly_rate' => ['nullable', 'numeric', 'min:0', 'max:99999.99'],
+            /*
+             * `required_if` : cocher « facture a l'heure » sans donner de tarif produirait un
+             * metier qui multiplie des heures par rien. Le refus tombe ici plutot qu'a la premiere
+             * commande, ou il serait vecu comme une panne.
+             */
+            'default_hourly_rate' => ['nullable', 'numeric', 'min:0', 'max:99999.99', 'required_if:hourly_billing,true'],
+            'hourly_billing' => ['boolean'],
             'emergency_multiplier' => ['required', 'numeric', 'min:1', 'max:10'],
             'night_multiplier' => ['required', 'numeric', 'min:1', 'max:10'],
             'weekend_multiplier' => ['required', 'numeric', 'min:1', 'max:10'],

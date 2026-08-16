@@ -56,6 +56,12 @@ class TradeZonePricing extends Model
         'price_per_km_cents',
         'price_per_minute_cents',
         'included_km',
+        /*
+         * LE PRIX DE L'HEURE, meme raison que le prix du kilometre juste au-dessus : le tarif vendu
+         * vit par zone. Une heure de menage ne vaut pas la meme chose a Bruxelles et dans un
+         * village, et `trades.default_hourly_rate` n'est qu'une reference.
+         */
+        'price_per_hour_cents',
         'metadata',
     ];
 
@@ -69,6 +75,12 @@ class TradeZonePricing extends Model
         'distance_pricing_enabled' => 'boolean',
         'pickup_fee_cents' => 'integer',
         'included_km' => 'integer',
+        /*
+         * PAS DE CAST `integer`, deliberement -- comme `price_per_km_cents` et
+         * `price_per_minute_cents` juste au-dessus, qui n'y figurent pas non plus. Le cast
+         * ecraserait `null` en `0`, et le resolveur ne pourrait plus distinguer « cette zone ne
+         * surcharge rien » de « une heure y est gratuite ».
+         */
         'metadata' => 'array',
     ];
 

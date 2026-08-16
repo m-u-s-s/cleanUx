@@ -13,6 +13,33 @@ return [
 
     /*
     |---------------------------------------------------------------------------
+    | Facturation au temps passé — dépassement des heures commandées
+    |---------------------------------------------------------------------------
+    |
+    | Sur un métier facturé à l'heure, le client achète un nombre d'heures. S'il
+    | PROLONGE avant la fin, les heures ajoutées sont au tarif normal. Si le
+    | prestataire dépasse SANS prolongation, les heures dépassées sont facturées au
+    | tarif horaire × `overtime_multiplier`.
+    |
+    | LE MULTIPLICATEUR S'EMPILE sur ceux déjà appliqués (immédiat, zone, options).
+    | C'est ce qui le rend dissuasif : s'il les remplaçait, une course majorée à
+    | 1,30 ne coûterait pas un centime de plus en dépassant qu'en prolongeant, et
+    | personne n'aurait de raison de prolonger.
+    |
+    | La FRANCHISE existe pour que cinq minutes de rangement ne coûtent pas une
+    | pénalité — sans elle, le prestataire clôture avant d'avoir fini.
+    |
+    | Le PLAFOND borne l'abus : un dépassement ne peut pas excéder la durée
+    | commandée. Trois heures achetées, trois heures de dépassement au maximum.
+    | Sans lui, un compteur laissé tourner facture ce qu'il veut.
+    */
+    'overtime_multiplier' => (float) env('ORDER_ENGINE_OVERTIME_MULTIPLIER', 1.30),
+    'overtime_grace_minutes' => (int) env('ORDER_ENGINE_OVERTIME_GRACE_MINUTES', 15),
+    'overtime_billing_increment_minutes' => (int) env('ORDER_ENGINE_OVERTIME_INCREMENT_MINUTES', 15),
+    'overtime_cap_ratio' => (float) env('ORDER_ENGINE_OVERTIME_CAP_RATIO', 1.0),
+
+    /*
+    |---------------------------------------------------------------------------
     | Pays qui oriente le géocodage de l'adresse
     |---------------------------------------------------------------------------
     |

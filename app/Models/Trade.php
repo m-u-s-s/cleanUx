@@ -62,6 +62,15 @@ class Trade extends Model
         'metadata',
         // Chantier A — propriétés métier exploitées par le pricing/workflow
         'default_hourly_rate',
+        /*
+         * LE SEUL DRAPEAU D'UNITÉ QUI PILOTE UN PRIX.
+         *
+         * `billing_unit` et `pricing_unit` existent plus bas et décrivent la même chose ; ni l'une
+         * ni l'autre n'entre dans un calcul (`pricing_unit` n'est testée que contre `QUOTE_ONLY`).
+         * Elles restent pour l'affichage. Quand il faut savoir si un métier se facture au temps
+         * passé, c'est CETTE colonne qu'on lit — et aucune autre.
+         */
+        'hourly_billing',
         'emergency_multiplier',
         'night_multiplier',
         'weekend_multiplier',
@@ -111,6 +120,7 @@ class Trade extends Model
         'settings' => 'array',
         'metadata' => 'array',
         'default_hourly_rate' => 'decimal:2',
+        'hourly_billing' => 'boolean',
         'emergency_multiplier' => 'decimal:2',
         'night_multiplier' => 'decimal:2',
         'weekend_multiplier' => 'decimal:2',

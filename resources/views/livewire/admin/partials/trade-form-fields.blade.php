@@ -92,6 +92,36 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                                 @error('sla_response_minutes') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                             </div>
+                            {{--
+                                LA FACTURATION AU TEMPS PASSÉ.
+
+                                Placée dans « Tarification & SLA » et non dans les drapeaux opérationnels :
+                                ceux-là disent ce qu'on exige du PRESTATAIRE, celui-ci dit comment le service
+                                est vendu au CLIENT — et il pilote le tarif horaire saisi juste au-dessus.
+
+                                `wire:model.live` et non `wire:model` : la case doit faire apparaître
+                                immédiatement l'aide qui la suit, sinon l'admin coche et ne voit rien changer.
+                            --}}
+                            <div class="md:col-span-3">
+                                <label class="inline-flex items-start gap-2">
+                                    <input type="checkbox" wire:model.live="hourly_billing" class="mt-1 rounded text-emerald-600"/>
+                                    <span class="text-sm text-gray-700 dark:text-gray-200">
+                                        <strong>Paiement à l'heure</strong> — le client choisit son nombre d'heures et paie
+                                        le tarif horaire ci-dessus, au lieu d'un forfait.
+                                    </span>
+                                </label>
+                                @error('hourly_billing') <span class="block text-xs text-red-600">{{ $message }}</span> @enderror
+
+                                @if($hourly_billing)
+                                    <p class="mt-2 rounded-md bg-emerald-50 p-2 text-xs text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200">
+                                        Le tarif horaire devient obligatoire. Il peut être surchargé zone par zone depuis
+                                        <em>Tarifs par zone</em>. Les heures dépassées sans prolongation du client sont
+                                        facturées au tarif horaire &times;{{ number_format((float) config('order_engine.overtime_multiplier', 1.30), 2) }},
+                                        après une franchise de {{ (int) config('order_engine.overtime_grace_minutes', 15) }} minutes.
+                                    </p>
+                                @endif
+                            </div>
+
                             <div class="md:col-span-3">
                                 <label class="inline-flex items-center gap-2">
                                     <input type="checkbox" wire:model="requires_quote_by_default" class="rounded text-blue-600"/>
