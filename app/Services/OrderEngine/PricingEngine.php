@@ -59,7 +59,7 @@ class PricingEngine
      *
      * @param  Collection<int, Question>  $questions  chargées avec `options` et `conditions`
      * @param  array<string, mixed>  $answers  indexées par code de question
-     * @param  array{mode?: string, zone_multiplier?: float, zone_base_cents?: int|null, zone_min_cents?: int|null, zone_max_cents?: int|null}  $context
+     * @param  array{mode?: string, zone_multiplier?: float, zone_base_cents?: int|null, zone_min_cents?: int|null, zone_max_cents?: int|null, hourly_rate_cents?: int|null, purchased_minutes?: int|null}  $context
      */
     public function quoteItem(Trade $trade, Collection $questions, array $answers, array $context = []): PriceBreakdown
     {
@@ -92,7 +92,43 @@ class PricingEngine
         $duration = (int) ($trade->estimated_duration_min ?? 0);
         $lines = [];
 
-        if ($base > 0) {
+        /*
+         * LE TEMPS ACHETÉ REMPLACE LE FORFAIT — c'est tout le propos de la facturation à l'heure.
+         *
+         * Trois conséquences, et la troisième est la plus importante :
+         *
+         * 1. La base devient `tarif horaire × heures choisies`. Le forfait du métier et celui de la
+         *    zone sont IGNORÉS : sur un métier horaire ils ne veulent plus rien dire, et les
+         *    additionner ferait payer deux fois la même prestation.
+         *
+         * 2. La ligne de devis nomme le calcul (« 3 h × 45,00 € ») au lieu de « Prestation de base ».
+         *    Un client qui voit son total sans voir d'où viennent les heures conteste, et il a raison.
+         *
+         * 3. La durée n'est plus une ESTIMATION mais un ENGAGEMENT : le client a acheté ces
+         *    minutes-là. C'est elle qui servira de repère au dépassement, et l'estimation du métier
+         *    n'a plus voix au chapitre — sinon un métier estimé à 2 h ferait basculer en dépassement
+         *    un client qui en a acheté 4.
+         *
+         * Les modificateurs des questions, eux, continuent de s'ajouter par-dessus : un supplément
+         * « produits fournis » reste un montant, pas des heures.
+         */
+        $tarifHoraire = $context['hourly_rate_cents'] ?? null;
+        $heuresAchetees = $this->heuresAchetees($context);
+
+        if ($trade->hourly_billing && $tarifHoraire !== null && $heuresAchetees !== null) {
+            $base = (int) round($tarifHoraire * $heuresAchetees);
+            $sumMin = $base;
+            $sumMax = $base;
+            $duration = (int) round($heuresAchetees * 60);
+
+            $lines[] = $this->line(
+                '_hourly',
+                $trade->name,
+                $this->libelleDesHeures($heuresAchetees, $tarifHoraire),
+                $base,
+                $base,
+            );
+        } elseif ($base > 0) {
             $lines[] = $this->line('_base', $trade->name, 'Prestation de base', $base, $base);
         }
 
@@ -496,6 +532,38 @@ class PricingEngine
         }
 
         return $value === '__unknown__';
+    }
+
+    /**
+     * Les heures achetées par le client, telles qu'elles arrivent du parcours.
+     *
+     * Rend `null` — et non zéro — quand rien n'a été choisi : le moteur doit alors garder le
+     * forfait plutôt que d'annoncer 0 €. Un prix nul affiché sur un métier horaire ferait
+     * commander une prestation gratuite.
+     *
+     * @param  array<string, mixed>  $context
+     */
+    protected function heuresAchetees(array $context): ?float
+    {
+        $minutes = $context['purchased_minutes'] ?? null;
+
+        if ($minutes === null || (int) $minutes <= 0) {
+            return null;
+        }
+
+        return ((int) $minutes) / 60;
+    }
+
+    /**
+     * « 3 h × 45,00 € » — le calcul écrit en toutes lettres sur la ligne de devis.
+     */
+    protected function libelleDesHeures(float $heures, int $tarifCents): string
+    {
+        $heuresLisibles = fmod($heures, 1.0) === 0.0
+            ? (string) (int) $heures
+            : number_format($heures, 1, ',', ' ');
+
+        return $heuresLisibles.' h × '.number_format($tarifCents / 100, 2, ',', ' ').' €';
     }
 
     /** @return array{code: string, label: string, detail: string|null, min_cents: int, max_cents: int} */

@@ -106,6 +106,12 @@ class ZonePricingResolver
                 'zone_min_cents' => null,
                 'zone_max_cents' => null,
                 'distance_pricing_enabled' => false,
+                /*
+                 * Sans ligne de zone, le tarif horaire du METIER fait foi. On le resout quand meme :
+                 * une zone qui n'a pas encore de grille locale doit pouvoir vendre a l'heure, sinon
+                 * cocher la case ne produirait aucun prix la ou personne n'a rien parametre.
+                 */
+                'hourly_rate_cents' => $this->tarifHoraire($tradeId, null),
             ];
         }
 
@@ -136,7 +142,30 @@ class ZonePricingResolver
             'price_per_km_cents' => $parKm === null ? null : (int) $parKm,
             'price_per_minute_cents' => $parMinute === null ? null : (int) $parMinute,
             'included_km' => (int) $line->included_km,
+            'hourly_rate_cents' => $this->tarifHoraire($tradeId, $zoneId),
         ];
+    }
+
+    /**
+     * Le tarif horaire applicable, delegue a la source unique.
+     *
+     * Il ne se resout PAS ici a la main : `HourlyRateResolver` porte deja la regle « la zone
+     * surcharge le metier » et la nuance entre « aucune surcharge » et « une heure offerte ».
+     * La recopier produirait deux verites sur le meme prix.
+     */
+    protected function tarifHoraire(?int $tradeId, ?int $zoneId): ?int
+    {
+        if ($tradeId === null) {
+            return null;
+        }
+
+        $trade = Trade::query()->find($tradeId);
+
+        if ($trade === null) {
+            return null;
+        }
+
+        return app(HourlyRateResolver::class)->tarifCatalogue($trade, $zoneId);
     }
 
     /**
