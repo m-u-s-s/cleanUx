@@ -12,6 +12,7 @@ import {
   type FaceCheck,
 } from '@/faceCheck';
 import { Button, GlassSurface, SuccessOverlay, TextInput, useReducedMotion } from '@/ui';
+import { colors } from '@/theme';
 import { useThemeColors, type ThemeTokens } from '@/theme/useThemeColors';
 
 /**
@@ -407,14 +408,26 @@ function messageDEchec(controle: FaceCheck): string {
   return `Nous ne vous avons pas reconnu. Placez-vous face à la lumière. Il vous reste ${controle.attempts_left} essai${controle.attempts_left > 1 ? 's' : ''}.`;
 }
 
+/**
+ * LA PALETTE DE CET ÉCRAN NE SUIT PAS LE THÈME, ET C'EST VOULU.
+ *
+ * Un viseur de caméra n'a pas de mode clair : le noir n'y est pas une couleur d'interface, c'est
+ * l'absence d'image. Le scanner de présence a tranché la même question avant nous.
+ *
+ * Mais « hors thème » ne veut pas dire « couleurs inventées ». Tout vient de `colors.mode.showcase`
+ * — la palette nuit du design system — et les voiles sont des `rgba`, pas des aplats. Un
+ * hexadécimal figé ici aurait rouvert exactement la dette que le garde-fou couleur surveille.
+ */
 function stylesFor(t: ThemeTokens) {
+  const nuit = colors.mode.showcase;
+
   return StyleSheet.create({
-    plein: { flex: 1, backgroundColor: '#05070d' },
+    plein: { flex: 1, backgroundColor: nuit.night },
     centre: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 8 },
     emoji: { fontSize: 48, marginBottom: 8 },
-    titre: { color: '#e8eefc', fontSize: 24, fontWeight: '700', textAlign: 'center' },
-    texte: { color: '#93a4c6', fontSize: 15, lineHeight: 22, textAlign: 'center' },
-    precision: { color: '#6f7f9f', fontSize: 13, lineHeight: 19, textAlign: 'center', marginTop: 12 },
+    titre: { color: nuit.text, fontSize: 24, fontWeight: '700', textAlign: 'center' },
+    texte: { color: nuit.muted, fontSize: 15, lineHeight: 22, textAlign: 'center' },
+    precision: { color: 'rgba(147,164,198,0.75)', fontSize: 13, lineHeight: 19, textAlign: 'center', marginTop: 12 },
     actions: { marginTop: 24, width: '100%', gap: 10 },
 
     viseeConteneur: { flex: 1, alignItems: 'center', justifyContent: 'center' },
@@ -438,10 +451,12 @@ function stylesFor(t: ThemeTokens) {
       textTransform: 'uppercase',
       fontWeight: '700',
     },
-    titreClair: { color: '#ffffff', fontSize: 21, fontWeight: '700', marginTop: 6 },
+    titreClair: { color: 'rgba(255,255,255,0.98)', fontSize: 21, fontWeight: '700', marginTop: 6 },
     texteClair: { color: 'rgba(255,255,255,0.78)', fontSize: 14, lineHeight: 21, marginTop: 8 },
     precisionClaire: { color: 'rgba(255,255,255,0.55)', fontSize: 12, lineHeight: 18, marginTop: 10 },
-    erreur: { color: '#ffb4b4', fontSize: 14, lineHeight: 20, marginTop: 12, fontWeight: '600' },
+    // `danger[50]` : le rouge le plus clair de la rampe sémantique — lisible sur nuit, et il reste
+    // du rouge. Un neutre clair aurait dit « information » là où il faut dire « ça n'a pas marché ».
+    erreur: { color: colors.danger[50], fontSize: 14, lineHeight: 20, marginTop: 12, fontWeight: '600' },
 
     feuille: {
       position: 'absolute',
@@ -450,7 +465,7 @@ function stylesFor(t: ThemeTokens) {
       bottom: 0,
       top: 0,
       justifyContent: 'flex-end',
-      backgroundColor: 'rgba(5,7,13,0.75)',
+      backgroundColor: 'rgba(7,11,20,0.78)',
       padding: 16,
       paddingBottom: 28,
     },
