@@ -367,5 +367,7 @@
   "A new verification link has been sent to the email address you provided in your profile settings.": "A new verification link has been sent to the email address you provided in your profile settings.",
   "Resend Verification Email": "Resend Verification Email",
   "Edit Profile": "Edit Profile",
-  "Log Out": "Log Out"
+  "Log Out": "Log Out",
+  "Un champ doit être corrigé :": "One field needs fixing:",
+  "Quelques champs doivent être corrigés :": "A few fields need fixing:"
 }

@@ -367,5 +367,7 @@
   "A new verification link has been sent to the email address you provided in your profile settings.": "Un nouveau lien de confirmation vient d’être envoyé à votre adresse e-mail.",
   "Resend Verification Email": "Renvoyer l’e-mail de confirmation",
   "Edit Profile": "Modifier mon profil",
-  "Log Out": "Se déconnecter"
+  "Log Out": "Se déconnecter",
+  "Un champ doit être corrigé :": "Un champ doit être corrigé :",
+  "Quelques champs doivent être corrigés :": "Quelques champs doivent être corrigés :"
 }

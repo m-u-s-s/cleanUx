@@ -367,5 +367,7 @@
   "A new verification link has been sent to the email address you provided in your profile settings.": "Er is een nieuwe bevestigingslink verstuurd naar je e-mailadres.",
   "Resend Verification Email": "Bevestigingsmail opnieuw versturen",
   "Edit Profile": "Mijn profiel bewerken",
-  "Log Out": "Afmelden"
+  "Log Out": "Afmelden",
+  "Un champ doit être corrigé :": "Eén veld moet worden aangepast:",
+  "Quelques champs doivent être corrigés :": "Enkele velden moeten worden aangepast:"
 }
