@@ -164,6 +164,7 @@ return [
         // ── Plateforme ──────────────────────────────────────────────────────────────────────
         ['key' => 'audit', 'title' => 'Audit', 'group' => 'plateforme', 'icon' => 'shield-checkmark-outline', 'coverage' => 'descriptor', 'routes' => ['admin/audit', 'admin/audit/logs']],
         ['key' => 'gdpr', 'title' => 'RGPD', 'group' => 'plateforme', 'icon' => 'lock-closed-outline', 'coverage' => 'descriptor', 'routes' => ['admin/gdpr']],
+        ['key' => 'face-check', 'title' => 'Vérification faciale', 'group' => 'plateforme', 'icon' => 'scan-outline', 'coverage' => 'pending', 'routes' => ['admin/verification-faciale', 'admin/verification-faciale/profils/{profile}/reference', 'admin/verification-faciale/controles/{faceCheck}/selfie']],
         ['key' => 'feature-flags', 'title' => 'Feature flags', 'group' => 'plateforme', 'icon' => 'flag-outline', 'coverage' => 'descriptor', 'routes' => ['admin/feature-flags']],
         ['key' => 'api-tokens', 'title' => 'Jetons d’API', 'group' => 'plateforme', 'icon' => 'key-outline', 'coverage' => 'descriptor', 'routes' => ['admin/api-tokens-v2'], 'resources' => ['api-tokens-list']],
         ['key' => 'webhooks', 'title' => 'Webhooks sortants', 'group' => 'plateforme', 'icon' => 'git-network-outline', 'coverage' => 'descriptor', 'routes' => ['admin/webhooks-v2']],

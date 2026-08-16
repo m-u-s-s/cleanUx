@@ -267,6 +267,7 @@ return [
         ['key' => 'admin:admin.kyb-v2.center', 'label' => 'KYB entreprises', 'icon' => '🏢', 'route' => 'admin.kyb-v2.center', 'context' => 'admin', 'category' => 'conformite', 'primary' => false],
         ['key' => 'admin:admin.kyc.center', 'label' => 'KYC providers', 'icon' => '🪪', 'route' => 'admin.kyc.center', 'context' => 'admin', 'category' => 'conformite', 'primary' => false],
         ['key' => 'admin:admin.risk.center', 'label' => 'Risk scoring', 'icon' => '🚨', 'route' => 'admin.risk.center', 'context' => 'admin', 'category' => 'conformite', 'primary' => false],
+        ['key' => 'admin:admin.face-check.center', 'label' => 'Vérification faciale', 'icon' => '🪞', 'route' => 'admin.face-check.center', 'context' => 'admin', 'category' => 'conformite', 'primary' => false, 'permission' => 'manage-face-check'],
         ['key' => 'admin:admin.loyalty.center', 'label' => 'Programme fidélité', 'icon' => '🎖️', 'route' => 'admin.loyalty.center', 'context' => 'admin', 'category' => 'croissance', 'primary' => false],
         ['key' => 'admin:admin.loyalty.rewards.center', 'label' => 'Récompenses loyalty', 'icon' => '🎁', 'route' => 'admin.loyalty.rewards.center', 'context' => 'admin', 'category' => 'croissance', 'primary' => false],
         ['key' => 'admin:admin.marketing.center', 'label' => 'Marketing automation', 'icon' => '📣', 'route' => 'admin.marketing.center', 'context' => 'admin', 'category' => 'croissance', 'primary' => false],

@@ -39,6 +39,7 @@ trait HasAdminCapabilities
             'manage-premium' => 'Clients premium',
             'manage-audit-logs' => 'Logs d\'audit',
             'manage-modules' => 'Modules plateforme',
+            'manage-face-check' => 'Vérification faciale',
             'manage-international' => 'Opérations internationales',
             'manage-orchestration' => 'Orchestration terrain',
             'manage-automation' => 'Automatisation',

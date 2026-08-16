@@ -44,6 +44,18 @@ trait ManagesTradeForm
 
     public bool $requires_insurance_proof = false;
 
+    /**
+     * LE CONTROLE FACIAL SE DECIDE METIER PAR METIER.
+     *
+     * Un babysitting ou une aide a domicile mettent quelqu'un seul face a une personne
+     * vulnerable ; un nettoyage de bureaux la nuit, non. Imposer le controle partout serait une
+     * friction que rien ne justifie sur la moitie du catalogue -- et la friction inutile est
+     * precisement ce qui fait desinstaller une application prestataire.
+     *
+     * La zone, elle, se regle dans /admin/modules : les deux conditions doivent etre vraies.
+     */
+    public bool $requires_face_check = false;
+
     public bool $is_b2b_default = true;
 
     public bool $is_personal_default = true;
@@ -111,6 +123,7 @@ trait ManagesTradeForm
         $this->is_active = true;
         $this->requires_certification = false;
         $this->requires_insurance_proof = false;
+        $this->requires_face_check = false;
         $this->is_b2b_default = true;
         $this->is_personal_default = true;
         $this->sort_order = 0;
@@ -141,6 +154,7 @@ trait ManagesTradeForm
         $this->is_active = (bool) $trade->is_active;
         $this->requires_certification = (bool) $trade->requires_certification;
         $this->requires_insurance_proof = (bool) $trade->requires_insurance_proof;
+        $this->requires_face_check = (bool) $trade->requires_face_check;
         $this->is_b2b_default = (bool) $trade->is_b2b_default;
         $this->is_personal_default = (bool) $trade->is_personal_default;
         $this->sort_order = (int) $trade->sort_order;
@@ -172,6 +186,7 @@ trait ManagesTradeForm
             'is_active' => ['boolean'],
             'requires_certification' => ['boolean'],
             'requires_insurance_proof' => ['boolean'],
+            'requires_face_check' => ['boolean'],
             'is_b2b_default' => ['boolean'],
             'is_personal_default' => ['boolean'],
             'sort_order' => ['integer', 'min:0', 'max:9999'],

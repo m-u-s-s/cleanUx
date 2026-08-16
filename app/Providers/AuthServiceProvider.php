@@ -45,6 +45,7 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-premium', fn (User $user) => $user->canAccessAdminModule('manage-premium'));
         Gate::define('manage-audit-logs', fn (User $user) => $user->canAccessAdminModule('manage-audit-logs'));
         Gate::define('manage-modules', fn (User $user) => $user->canAccessAdminModule('manage-modules'));
+        Gate::define('manage-face-check', fn (User $user) => $user->canAccessAdminModule('manage-face-check'));
 
         Gate::define('access-team-lead-ops', fn (User $user) => $user->isEmploye() && $user->is_active && $user->isFieldTeamLead());
 

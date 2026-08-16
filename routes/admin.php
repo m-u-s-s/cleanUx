@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\FaceCheckImageController;
 use App\Http\Controllers\Admin\MissionAdminController;
 use App\Http\Controllers\Admin\OnboardingDocumentController;
 use App\Livewire\Admin\AccountingV2\AccountingCenter;
@@ -25,6 +26,7 @@ use App\Livewire\Admin\DispatchCenter;
 use App\Livewire\Admin\Disputes\DisputesCenter;
 use App\Livewire\Admin\EditRecurringBooking;
 use App\Livewire\Admin\EnterpriseApprovalsCenter;
+use App\Livewire\Admin\FaceCheck\FaceCheckCenter;
 use App\Livewire\Admin\FeatureFlagsManager;
 use App\Livewire\Admin\FleetV2\FleetCenter;
 use App\Livewire\Admin\Fx\FxCenter;
@@ -339,6 +341,26 @@ Route::middleware(['role:admin', 'enforce_2fa'])
             Route::get('/availability/{user}', ProviderAvailabilityDetail::class)
                 ->name('availability.provider');
         }
+
+        /*
+         * VÉRIFICATION FACIALE — la file d'attente d'un humain.
+         *
+         * La permission posée ici doit être RIGOUREUSEMENT la même que celle de la tuile dans
+         * `config/modules.php` : `CoherenceDesTuilesEtDesEcransTest` frappe les deux pour onze
+         * sous-rôles et compare. Une tuile visible menant à un 403 est pire qu'une tuile absente.
+         */
+        Route::get('/verification-faciale', FaceCheckCenter::class)
+            ->middleware('can:manage-face-check')
+            ->name('face-check.center');
+
+        // Les images de visage : URL signée, dix minutes, et chaque consultation journalisée.
+        Route::get('/verification-faciale/profils/{profile}/reference', [FaceCheckImageController::class, 'reference'])
+            ->middleware('signed')
+            ->name('face-check.reference');
+
+        Route::get('/verification-faciale/controles/{faceCheck}/selfie', [FaceCheckImageController::class, 'selfie'])
+            ->middleware('signed')
+            ->name('face-check.selfie');
 
         // Risk v2 — Centre anti-fraude (évaluations + holds + review)
         if (class_exists(RiskCenter::class)) {

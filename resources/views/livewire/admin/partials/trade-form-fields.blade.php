@@ -146,6 +146,7 @@
                             <label class="inline-flex items-center gap-2"><input type="checkbox" wire:model="is_active" class="rounded text-blue-600"/> <span>Actif</span></label>
                             <label class="inline-flex items-center gap-2"><input type="checkbox" wire:model="requires_certification" class="rounded text-amber-600"/> <span>Certification requise (ex: CACES)</span></label>
                             <label class="inline-flex items-center gap-2"><input type="checkbox" wire:model="requires_insurance_proof" class="rounded text-purple-600"/> <span>Assurance pro requise</span></label>
+                            <label class="inline-flex items-center gap-2"><input type="checkbox" wire:model="requires_face_check" class="rounded text-rose-600"/> <span>Vérification faciale du prestataire</span></label>
                             <label class="inline-flex items-center gap-2"><input type="checkbox" wire:model="is_b2b_default" class="rounded text-blue-600"/> <span>Disponible B2B par défaut</span></label>
                             <label class="inline-flex items-center gap-2"><input type="checkbox" wire:model="is_personal_default" class="rounded text-green-600"/> <span>Disponible particuliers par défaut</span></label>
                         </div>
