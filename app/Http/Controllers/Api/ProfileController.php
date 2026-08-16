@@ -75,15 +75,10 @@ class ProfileController extends Controller
          * changer son mot de passe depuis l'application laissait l'ordinateur du voleur connecté.
          */
         if ($motDePasseChange) {
-            /*
-             * `TransientToken` n'a pas de clé : c'est ce que rend `currentAccessToken()` quand la
-             * session vient du cookie web (ou d'un `Sanctum::actingAs` en test). Lui demander son
-             * identifiant lèverait une erreur là où il n'y a simplement rien à épargner.
-             */
-            $jetonCourant = $user->currentAccessToken();
-            $jetonConserve = $jetonCourant instanceof Model ? (int) $jetonCourant->getKey() : null;
-
-            app(RevocationDesAcces::class)->apresChangementDeMotDePasse($user, $jetonConserve);
+            app(RevocationDesAcces::class)->apresChangementDeMotDePasse(
+                $user,
+                $this->jetonAConserver($user->currentAccessToken()),
+            );
         }
         $user->loadMissing('providerProfile');
 
@@ -91,6 +86,24 @@ class ProfileController extends Controller
             'ok' => true,
             'user' => $this->serialize($user),
         ]);
+    }
+
+    /**
+     * L'identifiant du jeton courant, ou `null` s'il n'en a pas.
+     *
+     * `currentAccessToken()` ne rend PAS toujours une ligne de la table : quand la session vient du
+     * cookie web — ou d'un `Sanctum::actingAs` en test — c'est un `TransientToken`, un objet sans
+     * clé. Lui demander son identifiant lèverait une erreur là où il n'y a simplement rien à
+     * épargner.
+     *
+     * Le paramètre est typé `?object` À DESSEIN : la signature de Sanctum annonce un modèle, si bien
+     * qu'un `instanceof` écrit au point d'appel est déclaré « toujours vrai » par l'analyse statique
+     * alors qu'il est faux à l'exécution. Le contrôle vit donc ici, où le type large le rend lisible
+     * plutôt que suspect.
+     */
+    private function jetonAConserver(?object $jeton): ?int
+    {
+        return $jeton instanceof Model ? (int) $jeton->getKey() : null;
     }
 
     protected function serialize($user): array

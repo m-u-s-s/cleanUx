@@ -42,7 +42,7 @@ class UpdateUserPassword implements UpdatesUserPasswords
 
         $this->revocation->apresChangementDeMotDePasse(
             $user,
-            sessionConservee: request()?->hasSession() ? request()->session()->getId() : null,
+            sessionConservee: request()->hasSession() ? request()->session()->getId() : null,
         );
     }
 }
