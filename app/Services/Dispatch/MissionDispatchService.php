@@ -6,6 +6,8 @@ use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\ProviderProfile;
 use App\Models\User;
+use App\Services\FaceCheck\Exceptions\FaceCheckRequiredException;
+use App\Services\FaceCheck\FaceCheckGate;
 use App\Services\Safety\MaskedCallService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -361,6 +363,37 @@ class MissionDispatchService
         }
 
         $this->guardConduite($assignment);
+        $this->guardControleFacial($assignment);
+    }
+
+    /**
+     * LE VISAGE EST REVÉRIFIÉ À L'ACCEPTATION, pour la même raison que le permis.
+     *
+     * Entre l'offre et l'acceptation, une échéance peut tomber, un blocage être posé par
+     * l'appariement avec la pièce d'identité, un consentement être retiré. Sans ce second contrôle,
+     * la seule garde serait celle du moment où l'offre est fabriquée — et c'est exactement l'écart
+     * qu'exploite quiconque garde une modale ouverte.
+     *
+     * On interroge la RÉSERVATION autant que le prestataire : une mission d'un métier soumis doit
+     * être portée par quelqu'un de contrôlé, même si aucun des métiers de cet intervenant-là ne
+     * l'exigeait.
+     */
+    protected function guardControleFacial(MissionAssignment $assignment): void
+    {
+        $user = $assignment->user;
+        $booking = $assignment->mission?->booking;
+
+        if (! $user) {
+            return;
+        }
+
+        $verdict = $booking !== null
+            ? app(FaceCheckGate::class)->inspectForBooking($user, $booking)
+            : app(FaceCheckGate::class)->inspectProvider($user);
+
+        if (! $verdict->allowed()) {
+            throw new FaceCheckRequiredException($verdict);
+        }
     }
 
     /**

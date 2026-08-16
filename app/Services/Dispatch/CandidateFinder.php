@@ -6,6 +6,7 @@ use App\Enums\ProviderType;
 use App\Models\Booking;
 use App\Models\Trade;
 use App\Models\User;
+use App\Services\FaceCheck\FaceCheckDispatchFilter;
 use App\Services\Matching\MatchingScoreEngine;
 use App\Services\OrderEngine\ZonePricingResolver;
 use App\Services\Safety\UserSafetyService;
@@ -278,6 +279,17 @@ class CandidateFinder
         if ($trade) {
             app(ConduiteRequirements::class)->appliquerAuxCandidats($query, $trade);
         }
+
+        /*
+         * LE VISAGE, POUR LES MÉTIERS QUI L'EXIGENT.
+         *
+         * Même logique que la conduite juste au-dessus : la règle vaut MÉTIER PAR MÉTIER et ZONE
+         * PAR ZONE, elle ne coupe pas un compte entier. Ne sont écartés que les états définitifs —
+         * jamais enrôlé, consentement retiré, bloqué. Celui dont le contrôle est simplement dû
+         * reste candidat : il sera arrêté à la porte qu'il traverse vraiment, où on peut le lui
+         * dire, plutôt que privé de missions en silence.
+         */
+        app(FaceCheckDispatchFilter::class)->appliquerAuxCandidats($query, $booking);
 
         /*
          * UNE SEULE OFFRE À LA FOIS. Celui qui a déjà une offre vivante en main est hors jeu :

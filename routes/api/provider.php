@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Provider\AvailabilityController;
 use App\Http\Controllers\Api\Provider\BadgesController;
 use App\Http\Controllers\Api\Provider\CommerceController as ProviderCommerceController;
 use App\Http\Controllers\Api\Provider\CompanyController as ProviderCompanyController;
+use App\Http\Controllers\Api\Provider\FaceCheckController;
 use App\Http\Controllers\Api\Provider\FleetProviderController;
 use App\Http\Controllers\Api\Provider\GrowthController;
 use App\Http\Controllers\Api\Provider\KycController;
@@ -99,7 +100,7 @@ Route::middleware('auth:sanctum')->prefix('provider/safety')->group(function () 
 // ne les a pas approuvés. Les routes nécessaires à ce dossier s'en excluent explicitement
 // (withoutMiddleware ci-dessous), sans quoi le compte serait enfermé hors de tout — c'est
 // exactement le défaut que ce lot corrige.
-Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved', 'face.verified'])->group(function () {
 
     // Phase 0 — Mission tracking (existant)
     Route::post('/missions/{mission}/tracking/start', [EmployeeMissionTrackingController::class, 'start']);
@@ -212,7 +213,25 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved'])->group(
         // attente d'approbation. Vérifier son identité, renseigner son profil et brancher ses
         // paiements sont précisément les étapes qui mènent à l'approbation — les fermer
         // rendrait le compte impossible à faire avancer.
-        Route::withoutMiddleware('provider.approved')->group(function () {
+        Route::withoutMiddleware(['provider.approved', 'face.verified'])->group(function () {
+
+            /*
+             * LE CONTROLE FACIAL — le parcours de remediation, donc hors de sa propre porte.
+             *
+             * Le soumettre au middleware `face.verified` enfermerait le compte dans une boucle :
+             * on exigerait un controle sans jamais laisser le passer. C'est la meme raison qui
+             * exclut deja le KYC de `provider.approved` juste en dessous.
+             */
+            Route::prefix('face-check')->group(function () {
+                Route::get('/status', [FaceCheckController::class, 'status']);
+                Route::post('/enroll', [FaceCheckController::class, 'enroll']);
+                Route::post('/start', [FaceCheckController::class, 'start']);
+                Route::post('/incidents', [FaceCheckController::class, 'reportIncident']);
+                Route::post('/consent/withdraw', [FaceCheckController::class, 'withdrawConsent']);
+                Route::get('/{faceCheck}', [FaceCheckController::class, 'show']);
+                Route::post('/{faceCheck}/submit', [FaceCheckController::class, 'submit']);
+                Route::post('/{faceCheck}/abandon', [FaceCheckController::class, 'abandon']);
+            });
 
             // Phase KYC v2 — Vérification d'identité
             Route::post('/kyc/start', [KycController::class, 'start']);

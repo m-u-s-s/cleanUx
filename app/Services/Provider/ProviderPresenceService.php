@@ -5,6 +5,8 @@ namespace App\Services\Provider;
 use App\Events\Dispatch\ProviderPresenceChanged;
 use App\Models\ProviderProfile;
 use App\Models\User;
+use App\Services\FaceCheck\Exceptions\FaceCheckRequiredException;
+use App\Services\FaceCheck\FaceCheckGate;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -35,6 +37,20 @@ class ProviderPresenceService
      */
     public function goOnline(User $user, float $lat, float $lng, array $meta = []): ProviderProfile
     {
+        /*
+         * LA MEME PORTE SUR LES DEUX SERVICES DE PRESENCE.
+         *
+         * Deux services de presence coexistent -- celui-ci (historique, `provider_profiles`) et la
+         * version 2 (`provider_presence`) -- et chacun a sa route d'API. Ne garder que l'un des
+         * deux laisserait la porte ouverte par l'autre : c'est le genre d'oubli qui rend un module
+         * de securite decoratif.
+         */
+        $verdict = app(FaceCheckGate::class)->inspectProvider($user, $meta['device_name'] ?? null);
+
+        if (! $verdict->allowed()) {
+            throw new FaceCheckRequiredException($verdict);
+        }
+
         $profile = $this->ensureProfile($user);
 
         return DB::transaction(function () use ($profile, $lat, $lng, $meta) {

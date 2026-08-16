@@ -7,6 +7,8 @@ use App\Models\FieldTeamMember;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\OrganizationMember;
+use App\Services\FaceCheck\Exceptions\FaceCheckRequiredException;
+use App\Services\FaceCheck\FaceCheckGate;
 use App\Services\Organizations\OrganizationNotifier;
 use Illuminate\Support\Facades\DB;
 
@@ -37,6 +39,27 @@ class MissionAssignmentService
         ?int $parUtilisateurId = null,
         ?string $motif = null,
     ): void {
+        /*
+         * LE SEUL CHEMIN QUI ÉCHAPPAIT À TOUTE GARDE.
+         *
+         * L'affectation interne d'une société ne passe ni par `CandidateFinder`, ni par
+         * `createOffer()`, ni par `guardAcceptable()` : un dispatcher désigne un salarié, et la
+         * mission part. Ni le KYC ni les pièces de conduite n'y étaient vérifiés — et c'est
+         * précisément le cas que visent Bolt et Deliveroo avec leurs contrôles faciaux : le compte
+         * prêté à quelqu'un d'autre au sein d'une même société.
+         *
+         * On interroge la RÉSERVATION : c'est elle qui porte le métier et la zone, donc l'exigence.
+         */
+        $intervenant = $travailleur->user;
+
+        if ($intervenant !== null && $mission->booking !== null) {
+            $verdict = app(FaceCheckGate::class)->inspectForBooking($intervenant, $mission->booking);
+
+            if (! $verdict->allowed()) {
+                throw new FaceCheckRequiredException($verdict);
+            }
+        }
+
         // Qui perd la mission — relevé AVANT la libération, sinon il n'y a plus rien à lire.
         $sortants = $this->responsablesActifsAutresQue($mission, (int) $travailleur->user_id);
 

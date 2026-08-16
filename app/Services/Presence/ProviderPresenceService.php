@@ -5,6 +5,8 @@ namespace App\Services\Presence;
 use App\Models\ProviderPresence;
 use App\Models\ProviderProfile;
 use App\Models\User;
+use App\Services\FaceCheck\Exceptions\FaceCheckRequiredException;
+use App\Services\FaceCheck\FaceCheckGate;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -41,6 +43,23 @@ class ProviderPresenceService
         ?int $radiusKm = null,
         ?string $deviceInfo = null,
     ): ProviderPresence {
+
+        /*
+         * LA PORTE DE LA MISE EN LIGNE — celle que Bolt a choisie, et c'est la bonne.
+         *
+         * « Passer en ligne » est le moment ou le prestataire declare vouloir travailler : c'est
+         * la qu'il faut savoir qui il est, pas a la connexion. Se connecter pour consulter ses
+         * revenus n'engage personne ; se declarer disponible envoie quelqu'un chez un client.
+         *
+         * `deviceInfo` sert de signal d'appareil : un telephone jamais vu declenche un controle
+         * hors cadence, exactement comme Uber le fait sur les comptes multi-appareils.
+         */
+        $verdict = app(FaceCheckGate::class)->inspectProvider($provider, $deviceInfo);
+
+        if (! $verdict->allowed()) {
+            throw new FaceCheckRequiredException($verdict);
+        }
+
         $presence = $this->presenceFor($provider);
         $now = now();
 

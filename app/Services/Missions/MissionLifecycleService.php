@@ -13,6 +13,8 @@ use App\Notifications\MissionCompletedNotification;
 use App\Notifications\MissionEndCodeNotification;
 use App\Notifications\MissionPayoutAnnouncedNotification;
 use App\Notifications\MissionStartedNotification;
+use App\Services\FaceCheck\Exceptions\FaceCheckRequiredException;
+use App\Services\FaceCheck\FaceCheckGate;
 use App\Services\Geo\OnSiteVerifier;
 use App\Services\Missions\OnSite\MissionClosureService;
 use App\Services\Notifications\SmsService;
@@ -62,6 +64,22 @@ class MissionLifecycleService
     public function setEnRoute(Mission $mission, User $user): Mission
     {
         $this->assignmentStatusService->assertAssignedToMission($mission, $user);
+
+        /*
+         * « JE PARS CHEZ LE CLIENT » — LE MOMENT EXACT QUE LE MODULE PROTÈGE.
+         *
+         * Les trois surfaces (API mobile, session web, écran Livewire) convergent ici : c'est le
+         * seul endroit où la garde couvre les trois d'un coup. Elle est posée APRÈS le contrôle
+         * d'affectation, pour qu'un intervenant étranger à la mission reçoive toujours le refus
+         * qui le concerne — et non un contrôle d'identité qui n'a pas lieu d'être.
+         */
+        $verdict = $mission->booking !== null
+            ? app(FaceCheckGate::class)->inspectForBooking($user, $mission->booking)
+            : app(FaceCheckGate::class)->inspectProvider($user);
+
+        if (! $verdict->allowed()) {
+            throw new FaceCheckRequiredException($verdict);
+        }
 
         $mission->update([
             'status' => MissionStatus::EN_ROUTE,

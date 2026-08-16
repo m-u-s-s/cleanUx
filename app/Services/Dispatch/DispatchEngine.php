@@ -10,6 +10,7 @@ use App\Models\MissionAssignment;
 use App\Models\OrderDraftItem;
 use App\Models\User;
 use App\Notifications\Dispatch\MissionOfferNotification;
+use App\Services\FaceCheck\FaceCheckGate;
 use App\Services\Missions\MissionLifecycleService;
 use App\Services\Organizations\OrganizationNotifier;
 use App\Services\Presence\ProviderPresenceService;
@@ -502,6 +503,20 @@ class DispatchEngine
     // ─── Fabrication d'une offre ─────────────────────────────────────────────────────────────
 
     /**
+     * Le prestataire est-il en règle côté contrôle facial pour CETTE mission ?
+     */
+    protected function passeLeControleFacial(User $provider, Mission $mission): bool
+    {
+        $booking = $mission->booking;
+
+        $verdict = $booking !== null
+            ? app(FaceCheckGate::class)->inspectForBooking($provider, $booking)
+            : app(FaceCheckGate::class)->inspectProvider($provider);
+
+        return $verdict->allowed();
+    }
+
+    /**
      * Une offre, une ligne, trois canaux.
      *
      * L'écriture en base précède l'envoi : si la diffusion échoue, l'offre existe quand même et
@@ -515,6 +530,20 @@ class DispatchEngine
         ?AsapDispatchRequest $search = null,
     ): ?MissionAssignment {
         if (! $provider->hasClearedKyc()) {
+            return null;
+        }
+
+        /*
+         * LE CONTRÔLE FACIAL, AU MÊME ENDROIT QUE LE KYC ET POUR LA MÊME RAISON.
+         *
+         * `CandidateFinder` écarte déjà les visages bloqués dans le SQL, mais toutes les offres ne
+         * viennent pas de lui : `assignByDefault()` et le forçage administrateur fabriquent des
+         * offres sans passer par la recherche de candidats. Cette garde-ci est la seule que TOUTE
+         * offre traverse.
+         *
+         * `null` et non une exception : c'est un chemin automatique, l'appelant passe au suivant.
+         */
+        if (! $this->passeLeControleFacial($provider, $mission)) {
             return null;
         }
 

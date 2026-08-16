@@ -17,6 +17,7 @@ use App\Http\Middleware\Enforce2FA;
 use App\Http\Middleware\EnforceTokenGrace;
 use App\Http\Middleware\EnsureActiveAccount;
 use App\Http\Middleware\EnsureApiAdmin;
+use App\Http\Middleware\EnsureFaceCheckPassed;
 use App\Http\Middleware\EnsureFieldTeamLead;
 use App\Http\Middleware\EnsureOrganizationType;
 use App\Http\Middleware\EnsurePhoneVerified;
@@ -120,6 +121,7 @@ class Kernel extends HttpKernel
         'verified' => EnsureEmailIsVerified::class,
         'role' => CheckRole::class,
         'provider.approved' => EnsureProviderIsApproved::class,
+        'face.verified' => EnsureFaceCheckPassed::class,
         'active.account' => EnsureActiveAccount::class,
         'org.type' => EnsureOrganizationType::class,
         /*
