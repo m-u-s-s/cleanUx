@@ -159,7 +159,22 @@ class PermissionService
             'bookings.view_all',
             'bookings.approve',
             'bookings.cancel',
+            /*
+             * DEUX ÉCRITURES SANS LEUR LECTURE — le même défaut que `sites.edit` chez le
+             * responsable de site, corrigé plus bas dans ce fichier.
+             *
+             * Mesuré le 2026-08-16 en parcourant les onze sous-rôles : un « gestionnaire général »
+             * invité dans une société prestataire recevait 403 sur l'accueil de sa société
+             * (`missions.view_all`) et sur l'effectif (`team.view`), là où un répartiteur et un chef
+             * d'équipe passaient. Il pouvait donc INVITER dans une équipe qu'il ne pouvait pas
+             * ouvrir, et DÉCALER une mission qu'il ne pouvait pas lister — deux clés mortes.
+             *
+             * Ce n'est pas un élargissement de spécialité : `missions.dispatch` reste au répartiteur
+             * et aux opérations. On ajoute la lecture que ses propres écritures supposent.
+             */
+            'missions.view_all',
             'missions.reschedule',
+            'team.view',
             'sites.create',
             'sites.edit',
             'sites.view_all',
