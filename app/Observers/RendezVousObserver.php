@@ -26,10 +26,19 @@ class RendezVousObserver
             return;
         }
 
-        // On CRÉE la manquante, on ne resynchronise pas l'existante. `syncFromRendezVous`
-        // réécrit le statut de la mission avec sa valeur initiale (`assigned` ou `planned`) :
-        // l'appeler pendant l'exécution ramènerait une mission démarrée à son point de départ,
-        // effaçant sa progression à chaque sauvegarde de la réservation.
+        /*
+         * ON CRÉE LA MANQUANTE, ON NE RESYNCHRONISE PAS L'EXISTANTE.
+         *
+         * Ce garde-fou protégeait la progression de la mission : la synchronisation réécrivait son
+         * statut à sa valeur initiale, et l'appeler pendant l'exécution ramenait une mission
+         * démarrée à son point de départ. Cette cause est traitée à la racine — voir
+         * `MissionFromRendezVousSyncService::statutASynchroniser()` — et ce garde-fou n'est donc
+         * plus ce qui préserve la justesse.
+         *
+         * Il reste, pour son COÛT : une resynchronisation complète géocode l'adresse, reconstruit
+         * la checklist, arme le SLA et tente une auto-assignation. Rien de tout cela n'a de sens
+         * pour une mission déjà en route.
+         */
         if (Mission::query()->where('booking_id', $rendezVous->id)->exists()) {
             return;
         }

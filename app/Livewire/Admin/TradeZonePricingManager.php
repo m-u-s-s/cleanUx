@@ -58,6 +58,19 @@ class TradeZonePricingManager extends Component
 
     public string $form_included_km = '0';
 
+    /*
+     * LE TARIF HORAIRE DE LA ZONE — la surcharge que le formulaire du métier promettait déjà.
+     *
+     * La colonne existait, `HourlyRateResolver::tarifCatalogue()` la lisait, et AUCUN écran ne
+     * l'écrivait : la promesse « surchargeable zone par zone » n'était tenue par personne, et une
+     * heure de ménage coûtait le même prix à Bruxelles et dans un village.
+     *
+     * CHAÎNE VIDE, PAS ZÉRO — exactement comme le tarif au kilomètre juste au-dessus. « Cette zone
+     * n'a pas de tarif horaire propre » et « cette zone facture zéro euro de l'heure » sont deux
+     * réponses différentes, et la seconde offrirait le travail.
+     */
+    public string $form_price_per_hour_cents = '';
+
     // ── Add zone dropdown ──
     public ?int $addZoneId = null;
 
@@ -93,6 +106,9 @@ class TradeZonePricingManager extends Component
             ? (string) $pricing->getRawOriginal('price_per_minute_cents')
             : '';
         $this->form_included_km = (string) $pricing->included_km;
+        $this->form_price_per_hour_cents = $pricing->getRawOriginal('price_per_hour_cents') !== null
+            ? (string) $pricing->getRawOriginal('price_per_hour_cents')
+            : '';
     }
 
     public function cancelEdit(): void
@@ -114,6 +130,10 @@ class TradeZonePricingManager extends Component
             'form_price_per_km_cents' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'form_price_per_minute_cents' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'form_included_km' => ['nullable', 'integer', 'min:0', 'max:1000'],
+            // Meme plafond que le tarif de base : 99 999 EUR de l'heure est absurde, mais c'est la
+            // borne que le reste de cet ecran applique deja, et en poser une autre ici ferait
+            // accepter par un champ ce qu'un autre refuse.
+            'form_price_per_hour_cents' => ['nullable', 'integer', 'min:0', 'max:9999900'],
         ]);
 
         $data = [
@@ -127,6 +147,9 @@ class TradeZonePricingManager extends Component
             'price_per_km_cents' => $this->form_price_per_km_cents !== '' ? (int) $this->form_price_per_km_cents : null,
             'price_per_minute_cents' => $this->form_price_per_minute_cents !== '' ? (int) $this->form_price_per_minute_cents : null,
             'included_km' => $this->form_included_km !== '' ? (int) $this->form_included_km : 0,
+            'price_per_hour_cents' => $this->form_price_per_hour_cents !== ''
+                ? (int) $this->form_price_per_hour_cents
+                : null,
         ];
 
         $pricing = TradeZonePricing::findOrFail($this->editingId);
@@ -214,6 +237,16 @@ class TradeZonePricingManager extends Component
         return view('livewire.admin.trade-zone-pricing-manager', [
             'zonePricings' => $zonePricings,
             'availableZones' => $availableZones,
+            /*
+             * LE TARIF HORAIRE NE S'AFFICHE QUE S'IL VEUT DIRE QUELQUE CHOSE.
+             *
+             * Contrairement au prix au kilomètre — que cet écran montre partout, à dessein, parce
+             * qu'une même zone peut porter des métiers de trajet et d'autres non — le mode de
+             * facturation est une propriété du MÉTIER, et cette page n'en traite qu'un. Le champ
+             * serait donc soit utile sur toutes les lignes, soit inutile sur toutes. Le montrer sur
+             * un métier au forfait donnerait un réglage que rien ne lit.
+             */
+            'factureALHeure' => (bool) Trade::query()->whereKey($this->tradeId)->value('hourly_billing'),
         ]);
     }
 
@@ -229,6 +262,7 @@ class TradeZonePricingManager extends Component
         $this->form_price_per_km_cents = '';
         $this->form_price_per_minute_cents = '';
         $this->form_included_km = '0';
+        $this->form_price_per_hour_cents = '';
         $this->resetErrorBag();
     }
 }

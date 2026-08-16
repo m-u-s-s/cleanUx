@@ -73,6 +73,45 @@ class MissionFromRendezVousSyncService
         return $existe ? (int) $equipeId : null;
     }
 
+    /**
+     * LE STATUT D'UNE MISSION N'EST PAS UN REFLET DE LA RÉSERVATION — c'est sa vie propre.
+     *
+     * Tout le reste de cette synchronisation recopie la réservation : l'adresse, l'horaire, le
+     * contrat, les notes. Le statut, lui, raconte ce que le prestataire a FAIT — en route, arrivé,
+     * démarré, terminé — et rien de cela ne se déduit d'une réservation. Le réécrire à sa valeur
+     * initiale à chaque sauvegarde effaçait cette histoire.
+     *
+     * LE DÉFAUT ÉTAIT MUET ET GLOBAL. `RendezVousObserver::saved()` appelle cette synchronisation à
+     * CHAQUE sauvegarde d'une réservation `confirme`. Écrire n'importe quelle colonne d'une
+     * réservation confirmée — une note interne, une durée réelle, un champ de facturation — faisait
+     * donc retomber à `assigned` une mission en cours. Le prestataire perdait son écran de terrain,
+     * le client voyait « en attente » alors que quelqu'un travaillait chez lui, et rien dans les
+     * journaux ne reliait les deux : la cause était une écriture sur un AUTRE objet.
+     *
+     * CE QUI RESTE PERMIS, et qui est la raison pour laquelle cette ligne existait. Tant que la
+     * mission n'a pas commencé, la valeur initiale reste juste : nommer un salarié fait passer de
+     * `planned` à `assigned`, le retirer fait le chemin inverse. On garde ce va-et-vient et on
+     * s'arrête net dès que l'exécution démarre.
+     *
+     * C'est exactement la règle déjà posée un cran plus bas dans
+     * `MissionAssignmentStatusService::syncLeadAssignment()` — « on ne rétrograde pas une offre déjà
+     * acceptée ». Le statut de la mission avait échappé au même traitement.
+     */
+    protected function statutASynchroniser(?Mission $existante, Booking $rendezVous): string
+    {
+        $initial = MissionStatus::initialFor((bool) $rendezVous->employe_id);
+
+        if ($existante === null) {
+            return $initial;
+        }
+
+        $courant = (string) $existante->status;
+
+        return in_array($courant, [MissionStatus::PLANNED, MissionStatus::ASSIGNED], true)
+            ? $initial
+            : $courant;
+    }
+
     public function createFromRendezVous(Booking $rendezVous): Mission
     {
         return DB::transaction(function () use ($rendezVous) {
@@ -190,7 +229,7 @@ class MissionFromRendezVousSyncService
                     'provider_team_id' => $this->equipeExecutante($rendezVous)
                         ?? $existante?->provider_team_id,
                     'organization_contract_id' => $rendezVous->organization_contract_id,
-                    'status' => MissionStatus::initialFor((bool) $rendezVous->employe_id),
+                    'status' => $this->statutASynchroniser($existante, $rendezVous),
                     'mission_type' => $rendezVous->organization_account_id ? 'enterprise' : 'standard',
                     'planned_start_at' => $plannedStartAt,
                     'planned_end_at' => $plannedEndAt,

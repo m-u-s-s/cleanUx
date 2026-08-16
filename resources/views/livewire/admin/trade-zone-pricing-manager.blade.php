@@ -137,6 +137,22 @@
                                     <span class="text-xs text-gray-600 dark:text-gray-400">Actif</span>
                                 </label>
 
+                                @if ($factureALHeure)
+                                    {{--
+                                        LE TARIF HORAIRE DE CETTE ZONE.
+
+                                        Vide veut dire « suivre le tarif du métier », et c'est le cas
+                                        courant. Zéro veut dire « une heure est offerte ici » — deux
+                                        réponses distinctes, que le résolveur distingue déjà.
+                                    --}}
+                                    <label class="mt-2 block">
+                                        <span class="block text-[10px] uppercase tracking-wide text-gray-500">€/heure de cette zone (c)</span>
+                                        <input type="number" min="0" max="9999900" wire:model="form_price_per_hour_cents" placeholder="Tarif du métier"
+                                            class="w-full rounded border-gray-300 py-1 text-xs dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
+                                    </label>
+                                    @error('form_price_per_hour_cents') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                                @endif
+
                                 {{--
                                     LE PRIX AU KILOMÈTRE, replié sous l'activation.
 
@@ -224,6 +240,17 @@
                                 >
                                     {{ $zp->is_active ? 'Actif' : 'Inactif' }}
                                 </button>
+
+                                {{-- Même raison que le prix au kilomètre : un tarif horaire propre à
+                                     la zone décide du montant final, il doit se voir sans ouvrir
+                                     l'édition. Sans cette ligne, une surcharge saisie une fois
+                                     devenait invisible et personne ne savait plus quelle zone en
+                                     portait une. --}}
+                                @if ($factureALHeure && $zp->price_per_hour_cents !== null)
+                                    <span class="mt-1 block text-[11px] text-indigo-700 dark:text-indigo-400">
+                                        {{ number_format($zp->price_per_hour_cents / 100, 2) }} €/h
+                                    </span>
+                                @endif
 
                                 {{-- Un tarif au kilomètre actif doit se VOIR sans ouvrir l'édition :
                                      c'est lui qui décide du montant final sur une course. --}}

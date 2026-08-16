@@ -498,20 +498,18 @@ class MissionLifecycleService
         }
 
         /*
-         * ÉCRITURE SANS ÉVÉNEMENT, ET C'EST INDISPENSABLE ICI.
+         * ÉCRITURE SANS ÉVÉNEMENT — pour le coût, désormais, et non plus pour la correction.
          *
-         * `RendezVousObserver::saved()` appelle `syncFromRendezVous()` sur TOUTE sauvegarde d'une
-         * réservation `confirme` — et cette synchronisation réécrit le statut de la mission avec sa
-         * valeur INITIALE. Le fichier de l'observateur le documente lui-même : « l'appeler pendant
-         * l'exécution ramènerait une mission démarrée à son point de départ, effaçant sa
-         * progression ». Le garde-fou n'a été posé que sur la branche `en_route`/`sur_place` ; la
-         * branche `confirme`, elle, resynchronise sans condition.
+         * Historiquement, un `$booking->save()` posé ici faisait retomber à `assigned` la mission
+         * qu'on venait de clôturer : `RendezVousObserver::saved()` resynchronise sur toute
+         * sauvegarde d'une réservation `confirme`, et la synchronisation réécrivait le statut à sa
+         * valeur initiale. Cette cause est traitée à la racine dans
+         * `MissionFromRendezVousSyncService::statutASynchroniser()`, qui ne rétrograde plus une
+         * mission engagée.
          *
-         * Mesuré : un `$booking->save()` posé ici faisait retomber à `assigned` une mission qu'on
-         * venait de clôturer, et le client recevait « assigned » en réponse à sa validation.
-         *
-         * Une durée mesurée n'a aucune raison de déclencher une resynchronisation de mission. On
-         * écrit la colonne, et rien d'autre.
+         * L'écriture directe reste néanmoins la bonne : une resynchronisation complète coûte un
+         * géocodage, une reconstruction de checklist, un armement de SLA et une tentative
+         * d'auto-assignation. Une durée mesurée n'a aucune raison de déclencher tout cela.
          */
         $booking->forceFill(['duree_reelle' => $minutes]);
 
