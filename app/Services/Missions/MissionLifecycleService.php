@@ -464,6 +464,66 @@ class MissionLifecycleService
      *
      * @return array{0: float, 1: float}|null
      */
+    /**
+     * LE TEMPS RÉELLEMENT PASSÉ, ÉCRIT SUR LA RÉSERVATION.
+     *
+     * `bookings.duree_reelle` existe depuis mai et n'était écrite QUE par un employé tapant un
+     * nombre à la main dans le rapport de fin web. Une mission clôturée depuis le mobile — donc
+     * l'immense majorité — la laissait vide. Or elle est lue par `FinanceDocumentCalculator` pour
+     * établir le coût interne et la marge : le calcul retombait sur la durée ESTIMÉE, et une
+     * intervention qui déborde d'une heure paraissait aussi rentable qu'une autre.
+     *
+     * On n'écrase PAS une valeur déjà saisie : si un employé a corrigé la durée à la main, il a vu
+     * quelque chose que l'horloge ignore — une pause non enregistrée, un départ anticipé.
+     */
+    protected function reporterLaDureeReelle(Mission $mission): void
+    {
+        $booking = $mission->booking;
+
+        if (! $booking || $booking->duree_reelle !== null) {
+            return;
+        }
+
+        $debut = $mission->actual_start_at;
+        $fin = $mission->actual_end_at;
+
+        if ($debut === null || $fin === null) {
+            return;
+        }
+
+        $minutes = (int) round(abs($debut->diffInSeconds($fin)) / 60);
+
+        if ($minutes <= 0) {
+            return;
+        }
+
+        /*
+         * ÉCRITURE SANS ÉVÉNEMENT, ET C'EST INDISPENSABLE ICI.
+         *
+         * `RendezVousObserver::saved()` appelle `syncFromRendezVous()` sur TOUTE sauvegarde d'une
+         * réservation `confirme` — et cette synchronisation réécrit le statut de la mission avec sa
+         * valeur INITIALE. Le fichier de l'observateur le documente lui-même : « l'appeler pendant
+         * l'exécution ramènerait une mission démarrée à son point de départ, effaçant sa
+         * progression ». Le garde-fou n'a été posé que sur la branche `en_route`/`sur_place` ; la
+         * branche `confirme`, elle, resynchronise sans condition.
+         *
+         * Mesuré : un `$booking->save()` posé ici faisait retomber à `assigned` une mission qu'on
+         * venait de clôturer, et le client recevait « assigned » en réponse à sa validation.
+         *
+         * Une durée mesurée n'a aucune raison de déclencher une resynchronisation de mission. On
+         * écrit la colonne, et rien d'autre.
+         */
+        $booking->forceFill(['duree_reelle' => $minutes]);
+
+        Booking::query()->whereKey($booking->getKey())->update(['duree_reelle' => $minutes]);
+    }
+
+    /**
+     * Le couple `[latitude, longitude]` attendu à la clôture — la même forme que `verifyOnSite()`
+     * consomme, et non un tableau nommé.
+     *
+     * @return array{float, float}|null
+     */
     public function lieuDeCloture(Mission $mission): ?array
     {
         $reservation = $mission->booking;
@@ -539,8 +599,6 @@ class MissionLifecycleService
             return $mission->fresh(['assignments', 'verificationCodes']);
         }
 
-        $mission = app(MissionProfitService::class)
-            ->calculate($mission);
         $this->assignmentStatusService->assertAssignedToMission($mission, $user);
         $this->assertRequiredChecklistCompleted($mission);
 
@@ -559,6 +617,22 @@ class MissionLifecycleService
             'end_distance_m' => $geo['distance_m'],
             'end_geo_verdict' => $geo['verdict'],
         ]);
+
+        /*
+         * LA RENTABILITÉ SE CALCULE APRÈS LA CLÔTURE, jamais avant.
+         *
+         * Elle était appelée treize lignes plus haut, avant que `actual_end_at` ne soit écrit :
+         * `MissionProfitService::calculateDuration()` rend 0 quand cette date est nulle, donc
+         * `actual_duration_minutes` valait 0 sur TOUTE mission clôturée par le chemin normal.
+         * `employee_cost` valait 0 dans la foulée, et `margin` égalait le prix client — une marge
+         * de 100 % affichée à l'administrateur, et ce zéro renvoyé au mobile en fin de mission.
+         *
+         * C'est aussi la durée dont le dépassement a besoin : sans elle, aucune heure
+         * supplémentaire ne pourrait être constatée.
+         */
+        $mission = app(MissionProfitService::class)->calculate($mission->refresh());
+
+        $this->reporterLaDureeReelle($mission);
 
         event(new MissionStatusUpdated($mission));
 
