@@ -62,7 +62,9 @@ Route::middleware(['auth', 'verified', 'active.account', 'phone.verified'])->gro
         ->name('provider.onboarding');
 });
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
+// `enforce_2fa` comme les autres pages d'administration : la page ne montre pas de données, mais une
+// exception sans raison est une exception qu'on recopiera ailleurs en croyant qu'elle est la règle.
+Route::middleware(['auth', 'role:admin', 'enforce_2fa'])->group(function () {
     Route::get('/design-system', DesignSystem::class)->name('design-system');
 });
 

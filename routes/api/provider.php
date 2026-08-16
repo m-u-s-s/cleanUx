@@ -393,7 +393,15 @@ Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
  *    le vrai blocage du cache de routes — pas les closures, que Laravel sérialise depuis la 8.
  *    Autrement dit : aucun déploiement ne pouvait aboutir à cause de ce doublon.
  */
-Route::middleware(['auth', 'role:admin'])->group(function () {
+/*
+ * `enforce_2fa` MANQUAIT ICI — relevé le 2026-08-16 en repassant les surfaces d'administration.
+ *
+ * C'est la SEULE route d'administration hors de `routes/admin.php` et de `routes/api/admin.php`, et
+ * elle sert des pièces d'identité et des justificatifs de dossier : exactement ce que la 2FA
+ * obligatoire protège en premier. Un administrateur non enrôlé était renvoyé vers l'activation
+ * partout ailleurs, et téléchargeait ces documents ici.
+ */
+Route::middleware(['auth', 'role:admin', 'enforce_2fa'])->group(function () {
     Route::get('/admin/onboarding-documents/{document}/file', [ProviderOnboardingController::class, 'downloadDocument'])
         ->name('api.admin.onboarding.document.file');
 });

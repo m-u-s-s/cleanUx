@@ -79,7 +79,13 @@ class CreateNewUserCoverageBatch8Test extends TestCase
             'password_confirmation' => 'password123',
             'account_type' => 'client_company',
             'company_name' => 'Acme Cleaning SARL',
-            'tva_number' => 'BE0123456789',
+            /*
+             * NUMÉRO RÉEL — « BE0123456789 » n'a jamais eu une clé de contrôle valide, et
+             * l'inscription web l'acceptait sans examen là où l'API le refusait depuis longtemps.
+             * Depuis le 2026-08-16 les deux canaux appliquent la même règle, donc ce jeu d'essai
+             * doit porter un vrai numéro. Le même remplacement avait déjà eu lieu côté API.
+             */
+            'tva_number' => 'BE0202239951',
         ]);
 
         $profile = CustomerProfile::where('user_id', $user->id)->first();
@@ -89,7 +95,7 @@ class CreateNewUserCoverageBatch8Test extends TestCase
         $org = OrganizationAccount::where('email', 'company-client@example.test')->first();
         $this->assertNotNull($org);
         $this->assertSame('Acme Cleaning SARL', $org->name);
-        $this->assertSame('BE0123456789', $org->tva_number);
+        $this->assertSame('BE0202239951', $org->tva_number);
 
         $fresh = $user->fresh();
         $this->assertSame($org->id, $fresh->current_organization_id);

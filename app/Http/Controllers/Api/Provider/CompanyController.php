@@ -1781,11 +1781,24 @@ class CompanyController extends Controller
      * Un compte sans organisation n'a rien à faire sur cette API : 403 explicite plutôt qu'une
      * requête vide qui laisserait croire à une société sans membres.
      */
+    /**
+     * LE REFUS DOIT SE LIRE — il annonçait « HTTP error. ».
+     *
+     * `abort(403)` sans message laisse `ApiJsonRenderer` retomber sur sa phrase par défaut : vingt et
+     * un refus de permission, tous rendus « HTTP error. » dans l'application. Mesuré le 2026-08-16 en
+     * pressant les écritures société avec un compte `viewer`. Le même refus, sur les membres, dit
+     * pourtant « Vous n'avez pas le droit d'effectuer cette action » — deux formes pour une seule
+     * situation, et c'est la moins claire qui répondait le plus souvent.
+     *
+     * Le message ne nomme PAS la permission manquante : « il vous manque `agencies.manage` » ne
+     * s'adresse à personne, tandis que « demandez ce droit à un responsable » indique quoi faire.
+     */
     private function exige(string $permission, OrganizationAccount $organisation): void
     {
         abort_unless(
             app(PermissionService::class)->can(Auth::user(), $permission, $organisation),
-            403
+            403,
+            "Vous n'avez pas le droit d'effectuer cette action dans cette société. Demandez-le à un responsable."
         );
     }
 }

@@ -21,6 +21,7 @@ use App\Observers\QuestionRouteRulesObserver;
 use App\Observers\RendezVousObserver;
 use App\Observers\TradeTaxiRulesObserver;
 use App\Observers\TripTrackingSessionObserver;
+use App\Observers\UserObserver;
 use App\Policies\CatalogPolicy;
 use App\Policies\ChannelPolicy;
 use App\Services\Assistant\Llm\AnthropicProvider;
@@ -153,6 +154,9 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Carbon::setLocale('fr');
+        // Changer de numéro perd la vérification du numéro — voir `UserObserver`, et le pendant
+        // e-mail qui faisait déjà cela dans `UpdateUserProfileInformation`.
+        User::observe(UserObserver::class);
         Booking::observe(RendezVousObserver::class);
         Booking::observe(BookingObserver::class);
         // Garde d'argent : une retenue bancaire désigne un compte prestataire précis.

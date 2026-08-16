@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Api\Auth;
 
+use App\Enums\OrganizationType;
 use App\Models\Trade;
+use App\Rules\NumeroDEntrepriseNonRevendique;
 use App\Rules\ValidBusinessNumber;
 use App\Support\Validation\TradeFormSchema;
 use Illuminate\Foundation\Http\FormRequest;
@@ -53,7 +55,19 @@ class RegisterRequest extends FormRequest
             // Ce numéro n'est pas décoratif : la vérification KYB le soumettra à l'INSEE et à
             // VIES. Accepté sans contrôle, il n'échouait qu'à la revue du dossier, plusieurs
             // jours plus tard — la clé est donc vérifiée dès la saisie.
-            'vat_number' => ['nullable', 'string', 'max:32', new ValidBusinessNumber],
+            /*
+             * Deux règles, deux questions différentes : `ValidBusinessNumber` demande « ce numéro
+             * est-il un numéro » (clé de contrôle), `NumeroDEntrepriseNonRevendique` demande « est-il
+             * déjà celui d'une société inscrite ». La seconde manquait, et deux sociétés prestataires
+             * distinctes ont pu s'inscrire avec le même numéro — public, donc connu de n'importe qui.
+             */
+            'vat_number' => [
+                'nullable',
+                'string',
+                'max:32',
+                new ValidBusinessNumber,
+                new NumeroDEntrepriseNonRevendique($this->typeDOrganisationDemande()),
+            ],
             // Métier visé et réponses aux questions propres à ce métier
             // (trades.provider_form_schema). Sans métier déclaré, le matching n'a rien sur quoi
             // travailler : le prestataire ne recevrait jamais la moindre mission.
@@ -72,6 +86,20 @@ class RegisterRequest extends FormRequest
             'zone_ids' => ['nullable', 'array'],
             'zone_ids.*' => ['integer'],
         ], TradeFormSchema::rulesFor($this->declaredTradeSchema()));
+    }
+
+    /**
+     * Le type d'organisation que cette inscription créerait.
+     *
+     * La portée du contrôle d'unicité, donc : une même entreprise peut être cliente ET prestataire
+     * chez nous — deux organisations, une par casquette. Ce qui n'existe pas, c'est deux sociétés du
+     * MÊME type pour un seul numéro.
+     */
+    private function typeDOrganisationDemande(): string
+    {
+        return $this->input('provider_kind') === 'company'
+            ? OrganizationType::PROVIDER_COMPANY->value
+            : OrganizationType::CLIENT_COMPANY->value;
     }
 
     /**

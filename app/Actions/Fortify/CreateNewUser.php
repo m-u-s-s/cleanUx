@@ -11,6 +11,8 @@ use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\ProviderProfile;
 use App\Models\User;
+use App\Rules\NumeroDEntrepriseNonRevendique;
+use App\Rules\ValidBusinessNumber;
 use App\Services\Availability\DefaultAvailabilityProvisioner;
 use App\Services\Catalog\ProviderCoverageWriter;
 use App\Services\Promotion\ReferralService;
@@ -43,7 +45,29 @@ class CreateNewUser implements CreatesNewUsers
                 'max:255',
             ],
 
-            'tva_number' => ['nullable', 'string', 'max:50'],
+            /*
+             * LA MÊME RÈGLE QUE SUR L'INSCRIPTION MOBILE, ET C'EST TOUT LE POINT.
+             *
+             * Un numéro d'entreprise désigne une seule société et il est PUBLIC : sans ce contrôle,
+             * n'importe qui inscrivait une société au nom d'une autre, et la vérification KYB la
+             * déclarait conforme — elle contrôle le numéro, pas qui le saisit. Le poser d'un seul
+             * côté ne servirait à rien : c'est exactement ainsi que l'attente d'approbation se
+             * contournait, en changeant de canal.
+             *
+             * Le numéro n'était même pas validé ici, là où l'API en vérifie la clé de contrôle
+             * depuis longtemps.
+             */
+            'tva_number' => [
+                'nullable',
+                'string',
+                'max:50',
+                new ValidBusinessNumber,
+                new NumeroDEntrepriseNonRevendique(
+                    ($input['account_type'] ?? null) === 'provider_company'
+                        ? OrganizationType::PROVIDER_COMPANY->value
+                        : OrganizationType::CLIENT_COMPANY->value
+                ),
+            ],
 
             // Champs prestataire société
             'provider_company_name' => [

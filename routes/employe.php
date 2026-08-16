@@ -36,8 +36,9 @@ use Illuminate\Support\Facades\Route;
 | « Votre compte sera vérifié par notre équipe avant d'être activé ». Le middleware ne vise que les
 | comptes portant `self_registered_at` — les prestataires antérieurs traversent sans condition.
 |
-| CINQ ROUTES S'EN EXCLUENT, et la liste n'est pas arbitraire : ce sont celles par lesquelles on
-| COMPLÈTE le dossier. Les garder sous la garde enfermerait le compte dehors — il lui faudrait une
+| SEPT ROUTES S'EN EXCLUENT — tableau de bord, métiers-zones, vérification d'identité, dossier de
+| conduite, et les trois de l'ouverture du compte de paiement. La liste n'est pas arbitraire : ce
+| sont celles par lesquelles on COMPLÈTE le dossier. Les garder sous la garde enfermerait le compte dehors — il lui faudrait une
 | approbation pour fournir ce qui permet de l'approuver. Le tableau de bord reste ouvert parce
 | qu'il est la page d'atterrissage après connexion et qu'il porte l'avancement du dossier ; un 403
 | là serait la première chose que voit un nouveau prestataire.
