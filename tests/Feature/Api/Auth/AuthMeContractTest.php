@@ -48,4 +48,44 @@ class AuthMeContractTest extends TestCase
             ->assertJsonPath('id', $user->id)
             ->assertJsonPath('is_premium', false);
     }
+
+    /**
+     * L'ÉTAT DE VÉRIFICATION DE L'ADRESSE, DIT AUX DEUX ENDROITS.
+     *
+     * Le web bloque tant que l'adresse n'est pas confirmée ; l'API ne porte pas cette garde — c'est
+     * un choix, l'imposer déconnecterait tout le parc déjà inscrit. Mais l'application ne pouvait
+     * même pas SAVOIR : ni le dire, ni proposer de renvoyer l'e-mail, et la même personne se
+     * retrouvait bloquée sans explication le jour où elle ouvrait le site.
+     *
+     * Les deux réponses doivent porter la MÊME clé : c'est leur divergence qui a produit, un par un,
+     * tous les drapeaux d'identité de ce contrat.
+     */
+    public function test_les_deux_reponses_annoncent_la_verification_de_l_adresse(): void
+    {
+        $nonVerifie = User::factory()->client()->create([
+            'email_verified_at' => null,
+            'password' => bcrypt('password'),
+        ]);
+
+        $this->postJson('/api/auth/login', [
+            'email' => $nonVerifie->email,
+            'password' => 'password',
+        ])->assertOk()->assertJsonPath('user.email_verified', false);
+
+        Sanctum::actingAs($nonVerifie);
+        $this->getJson('/api/auth/me')
+            ->assertOk()
+            ->assertJsonPath('email_verified', false)
+            ->assertJsonPath('user.email_verified', false);
+
+        $verifie = User::factory()->client()->create([
+            'email_verified_at' => now(),
+            'password' => bcrypt('password'),
+        ]);
+
+        $this->postJson('/api/auth/login', [
+            'email' => $verifie->email,
+            'password' => 'password',
+        ])->assertOk()->assertJsonPath('user.email_verified', true);
+    }
 }

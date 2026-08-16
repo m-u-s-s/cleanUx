@@ -715,6 +715,20 @@ class ApiAuthController extends Controller
             'is_admin' => method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin(),
             'is_client' => method_exists($user, 'isClient') && $user->isClient(),
             'is_entreprise' => method_exists($user, 'isEntreprise') && $user->isEntreprise(),
+            /*
+             * L'ÉTAT DE VÉRIFICATION DE L'ADRESSE, ANNONCÉ — parce qu'il ne l'était nulle part.
+             *
+             * Le web est bloqué par `verified` tant que l'adresse n'est pas confirmée ; l'API ne
+             * porte pas cette garde, et c'est un choix (l'imposer déconnecterait tout le parc déjà
+             * inscrit). Mais l'application ne pouvait même pas SAVOIR : elle ne pouvait donc ni le
+             * dire, ni proposer de renvoyer l'e-mail, et la même personne se retrouvait bloquée
+             * sans explication le jour où elle ouvrait le site.
+             *
+             * `/auth/me` l'expose depuis toujours par `toArray()` ; la connexion, non. Deux réponses
+             * qui divergent sur l'identité, c'est le motif exact qui a produit les drapeaux
+             * ci-dessus, un par un.
+             */
+            'email_verified' => $user->hasVerifiedEmail(),
         ],
             /*
              * LA PARITÉ N'EST PLUS UNE INTENTION, C'EST LE MÊME CODE.

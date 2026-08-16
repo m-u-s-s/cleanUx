@@ -141,6 +141,16 @@ class AuthMeController extends Controller
         $payload['role'] = $user->roleCanonique()->value;
         $payload['is_super_admin'] = $user->roleCanonique() === Role::SUPER_ADMIN;
 
+        /*
+         * La même clé qu'à la connexion, sous la même forme.
+         *
+         * `toArray()` porte déjà `email_verified_at`, mais c'est une DATE nullable : chaque écran
+         * devait la comparer lui-même, et la connexion n'en disait rien du tout. Le booléen est
+         * calculé une fois, au même nom des deux côtés — deux réponses qui divergent sur l'identité
+         * est le motif qui a produit tous les drapeaux ci-dessus, un par un.
+         */
+        $payload['email_verified'] = $user->hasVerifiedEmail();
+
         $payload['user'] = $payload;
 
         return response()->json($payload);
