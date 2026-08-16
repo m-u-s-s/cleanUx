@@ -36,6 +36,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 
 /**
  * Phase 12 — Authentification API mobile (Sanctum tokens).
@@ -109,6 +110,31 @@ class ApiAuthController extends Controller
         }
 
         /*
+         * LE SECOND FACTEUR VAUT AUSSI PAR L'API.
+         *
+         * Mesuré le 2026-08-16, avec `ENFORCE_2FA_FOR_ADMINS=true` — la configuration de
+         * production : le web renvoyait l'administrateur vers l'activation de la 2FA avant tout
+         * accès à la console, et `/api/auth/login` rendait un jeton sur le seul mot de passe, avec
+         * lequel `/api/admin/overview` et les écritures comptables répondaient 200. La console
+         * d'administration étant entièrement native, ce n'était pas un chemin théorique : c'était le
+         * chemin normal.
+         *
+         * Le contrôle vaut pour TOUT compte qui a activé la 2FA, pas seulement les
+         * administrateurs : quelqu'un qui a pris la peine de l'activer ne s'attend pas à ce qu'un
+         * mot de passe seul suffise depuis un téléphone.
+         *
+         * Il vient APRÈS le mot de passe : réclamer un code avant de savoir si le mot de passe est
+         * bon dirait à un inconnu que ce compte existe et qu'il porte une 2FA.
+         */
+        if ($user->hasEnabledTwoFactorAuthentication()) {
+            $refus = $this->refuserSansSecondFacteur($user, $request, $key);
+
+            if ($refus !== null) {
+                return $refus;
+            }
+        }
+
+        /*
          * Chaque application n'accepte que le public qu'elle sert.
          *
          * Le contrôle vient APRÈS la vérification du mot de passe et AVANT l'émission du jeton :
@@ -137,6 +163,64 @@ class ApiAuthController extends Controller
             'token' => $token,
             'user' => $this->serializeUser($user),
         ]);
+    }
+
+    /**
+     * Rend une réponse de refus si le second facteur manque ou ne convient pas, `null` s'il passe.
+     *
+     * DEUX FORMES DE CODE, ET IL FAUT LES DEUX. Le code à six chiffres de l'application
+     * d'authentification, et un code de secours pour qui a perdu son téléphone — sans le second, la
+     * 2FA transforme un téléphone cassé en compte définitivement perdu. Le code de secours est
+     * remplacé après usage, comme sur le web.
+     *
+     * `two_factor_required` est un code d'erreur distinct de l'échec d'identifiants : c'est lui qui
+     * dit à l'application d'afficher le champ du code plutôt que « identifiants incorrects ».
+     *
+     * Chaque code refusé compte comme une tentative : sans cela, six chiffres se devineraient en
+     * boucle sur un mot de passe déjà connu.
+     */
+    private function refuserSansSecondFacteur(User $user, Request $request, string $cleDeLimite): ?JsonResponse
+    {
+        $code = trim((string) $request->input('two_factor_code', ''));
+        $codeDeSecours = trim((string) $request->input('recovery_code', ''));
+
+        if ($code === '' && $codeDeSecours === '') {
+            return response()->json([
+                'ok' => false,
+                'error_code' => 'two_factor_required',
+                'message' => "Ce compte est protégé par l'authentification à deux facteurs. Saisissez le code affiché par votre application d'authentification.",
+            ], 403);
+        }
+
+        if ($codeDeSecours !== '') {
+            $codeValide = collect($user->recoveryCodes())->first(
+                fn (string $enregistre): bool => hash_equals($enregistre, $codeDeSecours)
+            );
+
+            if ($codeValide === null) {
+                RateLimiter::hit($cleDeLimite, 60);
+
+                throw ValidationException::withMessages([
+                    'recovery_code' => 'Ce code de secours est invalide ou a déjà été utilisé.',
+                ]);
+            }
+
+            $user->replaceRecoveryCode($codeValide);
+
+            return null;
+        }
+
+        $verificateur = app(TwoFactorAuthenticationProvider::class);
+
+        if (! $verificateur->verify(decrypt($user->two_factor_secret), $code)) {
+            RateLimiter::hit($cleDeLimite, 60);
+
+            throw ValidationException::withMessages([
+                'two_factor_code' => "Ce code d'authentification est invalide.",
+            ]);
+        }
+
+        return null;
     }
 
     /**

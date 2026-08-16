@@ -1,6 +1,6 @@
 export { AuthProvider } from './AuthProvider';
 export { useAuth } from './useAuth';
-export { useLogin } from './useLogin';
+export { useLogin, SECOND_FACTEUR_REQUIS } from './useLogin';
 export { useRegister } from './useRegister';
 export {
   useRequestPhoneCode,

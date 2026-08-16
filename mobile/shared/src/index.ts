@@ -3,7 +3,7 @@ export { apiClient, ApiError } from './api';
 export type { User, ApiResponse } from './api';
 
 // Auth
-export { AuthProvider, useAuth, useLogin, useRegister, useMe, authenticateWithBiometrics } from './auth';
+export { AuthProvider, useAuth, useLogin, useRegister, useMe, authenticateWithBiometrics, SECOND_FACTEUR_REQUIS } from './auth';
 
 // Chat
 export { useChatThreads, useChatMessages, useSendMessage, useMarkThreadRead, useLiveChat } from './chat';

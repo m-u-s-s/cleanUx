@@ -44,6 +44,26 @@ class Enforce2FA
                 return $next($request);
             }
 
+            /*
+             * LA CONSOLE NATIVE PASSE PAR ICI AUSSI — et une redirection n'y veut rien dire.
+             *
+             * Ce middleware ne gardait que les routes web : le web renvoyait l'administrateur vers
+             * l'activation de la 2FA, pendant que `/api/admin/*` répondait 200 à un jeton obtenu sur
+             * le seul mot de passe. La console d'administration étant entièrement native, la 2FA
+             * obligatoire ne gardait, en pratique, rien.
+             *
+             * L'enrôlement lui-même reste un geste web (QR code, codes de secours) : le message le
+             * dit, sinon l'administrateur chercherait dans son application un écran qui n'existe pas.
+             */
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'ok' => false,
+                    'error' => 'two_factor_enrollment_required',
+                    'error_code' => 'two_factor_enrollment_required',
+                    'message' => "L'accès administrateur exige l'authentification à deux facteurs. Activez-la depuis votre profil sur le site, puis reconnectez-vous.",
+                ], 403);
+            }
+
             // Fall back to a route that is NOT itself behind this middleware,
             // so a missing profile.show can never produce a redirect loop
             // (dashboard → admin.dashboard → enforce_2fa → …).

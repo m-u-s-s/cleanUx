@@ -41,7 +41,18 @@ use Illuminate\Support\Facades\Route;
  * jetons d'API. La garde de rôle est le verrou qui manquait — le scope reste en place, il filtre
  * ce qu'un jeton d'intégration a le droit de faire une fois le rôle établi.
  */
-Route::middleware(['auth:sanctum', 'api_admin'])->group(function () {
+/*
+| `enforce_2fa` VAUT ICI AUSSI.
+|
+| Il ne gardait que les routes web : mesuré le 2026-08-16 avec la configuration de production, le web
+| renvoyait l'administrateur vers l'activation de la 2FA tandis que ce groupe répondait 200 à un
+| jeton obtenu sur le seul mot de passe — écritures comptables comprises. La console
+| d'administration étant entièrement native, la 2FA obligatoire ne gardait rien.
+|
+| Le second facteur est réclamé à la connexion (`ApiAuthController::login`) ; ce middleware exige en
+| plus que l'administrateur l'ait ACTIVÉE, ce qu'un mot de passe seul ne peut pas contourner.
+*/
+Route::middleware(['auth:sanctum', 'api_admin', 'enforce_2fa'])->group(function () {
 
     // Phase Matching v2 — Simulation admin
     Route::prefix('admin/matching')->middleware('api_scope:admin:read,admin:everything')->group(function () {
