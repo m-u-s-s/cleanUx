@@ -11,6 +11,7 @@ use App\Models\Pivots\TradeUser;
 use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
 use App\Models\Trade;
+use App\Services\FaceCheck\FaceCheckRequirement;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -233,6 +234,26 @@ trait HasProviderFeatures
         return ! empty($source->stripe_connect_account_id)
             && (($source->stripe_connect_status ?? null) === 'active'
                 || ($source->stripe_connect_onboarded_at ?? null) !== null);
+    }
+
+    /**
+     * CE PRESTATAIRE EST-IL SOUMIS AU CONTRÔLE FACIAL ?
+     *
+     * Sert la visibilité de la case de menu, et rien d'autre : la garde, elle, vit dans
+     * `FaceCheckGate`, appelé par le middleware et par les six autres points de passage. Une
+     * condition d'affichage n'est jamais une autorisation — le menu dit ce qu'on peut voir, pas ce
+     * qu'on peut faire.
+     *
+     * Soft-fail : un module absent, une table pas encore migrée, une config cassée ne doivent pas
+     * faire tomber le rendu de la navigation entière pour une case sur trente.
+     */
+    public function estSoumisAuControleFacial(): bool
+    {
+        try {
+            return app(FaceCheckRequirement::class)->appliesToProvider($this);
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     /**

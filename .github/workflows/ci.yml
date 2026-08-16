@@ -173,6 +173,10 @@ jobs:
           php artisan db:seed --force
           php artisan db:seed --force
 
+      # `FaceCheck` entre ici pour la raison qui a fait naître ce job : la suite par défaut tourne
+      # avec `DB_FOREIGN_KEYS=false`, et ce module pose six clés étrangères — dont deux
+      # `nullOnDelete` sur `users` et une sur `provider_onboarding_documents`. Une contrainte mal
+      # posée y resterait invisible jusqu'au jour où quelqu'un supprime un compte en production.
       - name: Money / GDPR / spine suites with FK enforcement
         run: |
           php artisan test \
@@ -181,7 +185,8 @@ jobs:
             tests/Feature/PayoutFlowTest.php \
             tests/Feature/CancellationV2 \
             tests/Feature/Gdpr \
-            tests/Feature/Kyc
+            tests/Feature/Kyc \
+            tests/Feature/FaceCheck
 
   # E2E par rôle (Playwright) — boote l'app sur SQLite fichier + comptes QA, et
   # vérifie en navigateur que chaque rôle se connecte et atteint son espace.

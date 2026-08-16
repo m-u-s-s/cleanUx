@@ -56,6 +56,15 @@ class AdminParityInventoryTest extends TestCase
         'missions' => 'Sa page web agit sur des RÉSERVATIONS, pas sur des missions — la table '
             .'`missions` est vide et le dispatch vit dans le module ia-dispatch, où il est porté. '
             .'Y ajouter une action porterait sur un modèle que personne n’alimente.',
+
+        'face-check' => 'Le geste central de cet écran est de COMPARER DEUX VISAGES À L’ŒIL : lever '
+            .'un blocage sans avoir regardé les deux images n’est pas une décision, c’est un clic. '
+            .'Porter ces gestes sur mobile obligerait à servir des images biométriques (RGPD art. 9) '
+            .'à une seconde surface, avec son propre cache, ses propres captures d’écran et sa '
+            .'propre journalisation à écrire — pour un gain nul, puisqu’un administrateur qui '
+            .'instruit un dossier d’usurpation d’identité le fait devant un écran, pas dans un '
+            .'couloir. La décision est la même que pour la console en lecture seule : le mobile '
+            .'montre, il ne tranche pas.',
     ];
 
     public function test_l_inventaire_de_parite_ne_recule_pas(): void

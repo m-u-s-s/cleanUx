@@ -154,6 +154,18 @@ return [
          * peuvent faire, et qu'aucun menu ne citait.
          */
         ['key' => 'employe:provider.onboarding', 'label' => 'Mon dossier', 'icon' => '🚀', 'route' => 'provider.onboarding', 'context' => 'employe', 'category' => 'conformite', 'primary' => false],
+        /*
+         * VÉRIFICATION FACIALE — visible SEULEMENT quand elle concerne la personne qui regarde.
+         *
+         * Sans `visible_si`, la case s'afficherait à tout prestataire, y compris à l'immense
+         * majorité dont aucun métier ne l'exige : une case qui mène à « rien à faire ici » apprend
+         * à ne plus lire le menu.
+         *
+         * Et sans case du tout, la page ne serait atteignable qu'en tapant son URL — ce que
+         * `ToutePageEstAtteignableTest` refuse à juste titre, puisque c'est la cible d'une
+         * redirection que le prestataire doit aussi pouvoir rouvrir de lui-même.
+         */
+        ['key' => 'employe:provider.face-check', 'label' => 'Vérification d’identité', 'icon' => '🪞', 'route' => 'provider.face-check', 'context' => 'employe', 'category' => 'conformite', 'primary' => false, 'visible_si' => 'estSoumisAuControleFacial'],
         ['key' => 'employe:presence.me', 'label' => 'Ma présence', 'icon' => '🟢', 'route' => 'presence.me', 'context' => 'employe', 'category' => 'missions', 'primary' => false],
         ['key' => 'employe:employe.disponibilites', 'label' => 'Disponibilités', 'icon' => '🕒', 'route' => 'employe.disponibilites', 'context' => 'employe', 'category' => 'rendez-vous', 'primary' => true],
         ['key' => 'employe:employe.google.calendar', 'label' => 'Google Agenda', 'icon' => '🗓️', 'route' => 'employe.google.calendar', 'context' => 'employe', 'category' => 'rendez-vous', 'primary' => false],

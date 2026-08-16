@@ -84,19 +84,28 @@ class PlatformModuleSeeder extends Seeder
                 'is_enabled' => false,
                 'is_locked' => false,
                 'sort_order' => 110,
+                /*
+                 * LES VALEURS VIENNENT DE LA CONFIG, elles ne sont pas recopiees.
+                 *
+                 * Les ecrire en dur ici creait deja une divergence : le seeder posait un seuil
+                 * d'echec de 3 quand `config/face_check.php` en annoncait 2, et c'est la base qui
+                 * gagne. Deux sources plausibles pour un meme reglage, c'est le defaut dominant de
+                 * ce depot -- et il ne se voit pas, les deux chiffres etant tous deux credibles.
+                 */
                 'settings' => [
                     'allowed_zone_ids' => [],
                     'face_check' => [
-                        'min_hours' => 24,
-                        'max_hours' => 72,
-                        'match_threshold' => 75.0,
-                        'liveness_required' => true,
-                        'max_attempts' => 3,
-                        'failure_threshold' => 3,
-                        'abandon_threshold' => 3,
-                        'abandon_window_days' => 7,
-                        'abandon_fraud_threshold' => 6,
-                        'selfie_retention_days' => 30,
+                        'min_hours' => (int) config('face_check.interval.min_hours'),
+                        'max_hours' => (int) config('face_check.interval.max_hours'),
+                        'match_threshold' => (float) config('face_check.match_threshold'),
+                        'id_match_threshold' => (float) config('face_check.id_match_threshold'),
+                        'liveness_required' => (bool) config('face_check.liveness_required'),
+                        'max_attempts' => (int) config('face_check.max_attempts'),
+                        'failure_threshold' => (int) config('face_check.failure_threshold'),
+                        'abandon_threshold' => (int) config('face_check.abandon.threshold'),
+                        'abandon_window_days' => (int) config('face_check.abandon.window_days'),
+                        'abandon_fraud_threshold' => (int) config('face_check.abandon.fraud_threshold'),
+                        'selfie_retention_days' => (int) config('face_check.selfie_retention_days'),
                     ],
                 ],
             ]
