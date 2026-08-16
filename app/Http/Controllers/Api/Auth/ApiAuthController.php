@@ -15,6 +15,7 @@ use App\Models\CustomerProfile;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\ProviderProfile;
+use App\Services\Availability\DefaultAvailabilityProvisioner;
 use App\Models\Trade;
 use App\Models\User;
 use App\Services\Catalog\ProviderCoverageWriter;
@@ -361,6 +362,14 @@ class ApiAuthController extends Controller
 
         $this->attachDeclaredTrade($user, $data);
         $this->attachDeclaredCoverage($user, $data);
+
+        /*
+         * Sans le moindre créneau, le compte est INVISIBLE à la planification : aucune fenêtre
+         * calculée, aucune mission planifiée proposée, et rien à l'écran qui l'explique. Le
+         * provisionneur est idempotent — il ne touche jamais un prestataire qui a déjà choisi.
+         */
+        app(DefaultAvailabilityProvisioner::class)->provision($user);
+
         $this->openVerificationJourney($user);
     }
 

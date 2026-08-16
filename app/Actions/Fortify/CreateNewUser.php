@@ -11,6 +11,7 @@ use App\Models\OrganizationAccount;
 use App\Models\OrganizationMember;
 use App\Models\ProviderProfile;
 use App\Models\User;
+use App\Services\Availability\DefaultAvailabilityProvisioner;
 use App\Services\Catalog\ProviderCoverageWriter;
 use App\Services\Promotion\ReferralService;
 use Illuminate\Support\Facades\DB;
@@ -232,6 +233,7 @@ class CreateNewUser implements CreatesNewUsers
         ]);
 
         $this->attachTrades($user, $input);
+        $this->provisionDefaultAvailability($user);
     }
 
     // ──────────────────────────────────────────────────────
@@ -255,6 +257,7 @@ class CreateNewUser implements CreatesNewUsers
         ]);
 
         $this->attachTrades($user, $input);
+        $this->provisionDefaultAvailability($user);
 
         $this->addOwner($user, $org);
 
@@ -269,6 +272,19 @@ class CreateNewUser implements CreatesNewUsers
     /**
      * @param  array<string, mixed>  $input
      */
+    /**
+     * LA SEMAINE PAR DÉFAUT, POSÉE À L'INSCRIPTION.
+     *
+     * Un prestataire sans créneau est invisible à la planification : aucune fenêtre calculée,
+     * aucun rendez-vous proposé, et aucun écran qui le lui dise. Les deux inscriptions web
+     * appellent le même écrivain que l'inscription mobile — trois chemins pour une seule règle
+     * finiraient par diverger, et c'est déjà arrivé sur les métiers et les zones.
+     */
+    private function provisionDefaultAvailability(User $user): void
+    {
+        app(DefaultAvailabilityProvisioner::class)->provision($user);
+    }
+
     /**
      * La couverture déclarée à l'inscription : métiers ET zones.
      *
