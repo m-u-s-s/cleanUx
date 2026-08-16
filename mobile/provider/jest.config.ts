@@ -66,6 +66,7 @@ const config: Config = {
     // L'ordre compte : ces entrées doivent précéder le motif générique `^@/(.*)$`, qui les
     // capterait sinon et les ferait pointer vers src/ — où elles n'existent pas.
     '^@/onboarding(.*)$': '<rootDir>/../shared/src/onboarding$1',
+    '^@/faceCheck(.*)$': '<rootDir>/../shared/src/faceCheck$1',
     '^@/trades(.*)$': '<rootDir>/../shared/src/trades$1',
     '^@/catalog(.*)$': '<rootDir>/../shared/src/catalog$1',
     '^@/modules(.*)$': '<rootDir>/../shared/src/modules$1',

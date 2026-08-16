@@ -3,6 +3,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '@/auth';
 import { useOnboardingProgress, isJourneyComplete } from '@/onboarding';
+import { useFaceCheckStatus, faceCheckBloqueLeTerrain } from '@/faceCheck';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { MissionDetailScreen } from '@/screens/MissionDetailScreen';
 import { MissionInboxScreen } from '@/screens/MissionInboxScreen';
@@ -47,6 +48,7 @@ import { NotificationPreferencesScreen } from '@/screens/NotificationPreferences
 import { LanguageScreen } from '@/screens/LanguageScreen';
 import { AppearanceScreen } from '@/screens/AppearanceScreen';
 import { ProviderOnboardingScreen } from '@/screens/onboarding/ProviderOnboardingScreen';
+import FaceCheckScreen from '@/screens/faceCheck/FaceCheckScreen';
 // Espace d'administration — l'application prestataire sert deux publics depuis le lot A.
 import { SpaceSwitcherScreen } from '@/screens/SpaceSwitcherScreen';
 // Espace société — le troisième public : celui qui pilote une société prestataire.
@@ -93,11 +95,26 @@ export function RootNavigator() {
   const onboardingComplete =
     onboardingLoading || onboardingError ? undefined : isJourneyComplete(onboarding);
 
+  /*
+   * L'état du contrôle facial, réduit lui aussi à ce que l'aiguillage doit en savoir.
+   *
+   * Même règle que le dossier : `undefined` tant qu'on charge ou qu'on a échoué, et l'inconnu
+   * laisse passer. La requête n'est lancée qu'une fois authentifié — l'endpoint l'exige — et elle
+   * rend `required: false` en une seule ligne pour les prestataires hors périmètre, ce qui est le
+   * cas de l'immense majorité d'entre eux.
+   */
+  const { data: faceStatus, isLoading: faceLoading, isError: faceError } =
+    useFaceCheckStatus(isAuthenticated);
+
+  const faceCheckBlocks =
+    faceLoading || faceError ? undefined : faceCheckBloqueLeTerrain(faceStatus);
+
   const space = resolveSpace({
     isLoading: isLoading || spaceLoading,
     isAuthenticated,
     user,
     onboardingComplete,
+    faceCheckBlocks,
     chosenSpace,
   });
 
@@ -444,6 +461,19 @@ export function RootNavigator() {
           // en revanche passer — mieux vaut un dashboard partiellement bloqué par le serveur
           // qu'un utilisateur enfermé hors de son app parce qu'une requête a échoué.
           <Stack.Screen name="ProviderOnboarding" component={ProviderOnboardingScreen} />
+        ) : space === 'faceCheck' ? (
+          /*
+           * CONTRÔLE D'IDENTITÉ EN COURS : le MÊME court-circuit de pile.
+           *
+           * Un seul écran monté, donc littéralement nulle part où aller. Une modale par-dessus les
+           * onglets se contournerait en changeant d'onglet ; c'est la pile elle-même qui doit être
+           * vide, comme pour le dossier incomplet.
+           *
+           * Et comme lui : l'inconnu laisse passer. Une requête de statut qui échoue ne doit pas
+           * enfermer un prestataire hors de son application — le serveur refusera de toute façon
+           * la mise en ligne, l'acceptation et le départ.
+           */
+          <Stack.Screen name="FaceCheck" component={FaceCheckScreen} />
         ) : isAuthenticated ? (
           <>
             <Stack.Screen name="MainTabs" component={TabNavigator} />

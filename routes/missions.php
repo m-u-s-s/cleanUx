@@ -6,7 +6,18 @@ use App\Models\Mission;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['role:employe'])->group(function () {
+/*
+ * LES GESTES DE TERRAIN DU WEB — la meme porte que l'API.
+ *
+ * `face.verified` ne couvre PAS tout le tableau de bord prestataire : consulter ses revenus
+ * n'envoie personne chez un client, et rediriger quelqu'un vers un selfie parce qu'il regarde sa
+ * paie serait une friction que rien ne justifie. Ce sont ces routes-ci qui comptent -- partir,
+ * arriver, cloturer -- et elles sont les memes que celles de l'application mobile.
+ *
+ * Les gardes de service posees dans `MissionLifecycleService` tiennent de toute facon la ligne :
+ * ce middleware est la pour EXPLIQUER le refus a un navigateur, pas pour l'imposer.
+ */
+Route::middleware(['role:employe', 'face.verified'])->group(function () {
     Route::post('/missions/offline-sync', [MissionFieldActionController::class, 'offlineSync'])
         ->name('missions.offline-sync');
 

@@ -38,6 +38,7 @@
       "@/parity": ["../shared/src/parity"],
       "@/parity/*": ["../shared/src/parity/*"],
       "@/onboarding": ["../shared/src/onboarding"],
+      "@/faceCheck": ["../shared/src/faceCheck"],
       "@/trades": ["../shared/src/trades"],
       "@/catalog": ["../shared/src/catalog"],
       "@/finance": ["../shared/src/finance"],

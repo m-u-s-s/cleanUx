@@ -8,6 +8,7 @@ export type RootStackParamList = {
   MainTabs: NavigatorScreenParams<TabParamList> | undefined;
   // Parcours de vérification : seul écran atteignable tant que le dossier est incomplet.
   ProviderOnboarding: undefined;
+  FaceCheck: undefined;
   /**
    * Console d'administration. Rendue dans une pile SÉPARÉE de celle du prestataire : aucun écran
    * prestataire ne concerne un administrateur, et les y laisser atteignables donnerait des routes

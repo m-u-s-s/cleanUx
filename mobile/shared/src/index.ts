@@ -12,6 +12,20 @@ export type { ChatThread, ChatMessage } from './chat/types';
 // Config
 export { env } from './config/env';
 
+// Face check
+export {
+  useFaceCheckStatus,
+  useEnrollFace,
+  useStartFaceCheck,
+  useSubmitFaceCheck,
+  useFaceCheck,
+  useAbandonFaceCheck,
+  useReportFaceIncident,
+  useWithdrawFaceConsent,
+  faceCheckBloqueLeTerrain,
+} from './faceCheck';
+export type { FaceCheckStatus, FaceCheck, FaceCheckState } from './faceCheck';
+
 // Notifications
 export { useNotifications, useMarkAllRead } from './notifications';
 export type { AppNotification } from './notifications/hooks';

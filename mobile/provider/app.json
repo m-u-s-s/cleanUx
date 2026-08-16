@@ -19,7 +19,7 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.brio.provider",
       "infoPlist": {
-        "NSCameraUsageDescription": "brio Provider uses the camera to scan and display QR codes.",
+        "NSCameraUsageDescription": "brio Provider utilise l'appareil photo pour scanner les codes QR de présence, photographier vos justificatifs et vos missions, et vérifier votre identité par un selfie avant intervention.",
         "NSLocationWhenInUseUsageDescription": "brio Provider uses your location to navigate to clients and share your ETA.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "brio Provider tracks your location during missions to show clients your progress.",
         "UIBackgroundModes": [

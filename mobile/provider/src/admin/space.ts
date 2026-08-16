@@ -23,6 +23,7 @@ export type Space =
   | 'provider'
   | 'providerCompany'
   | 'providerOnboarding'
+  | 'faceCheck'
   | 'switcher';
 
 /** L'espace qu'un compte à plusieurs casquettes a choisi, quand il en a choisi un. */
@@ -60,11 +61,19 @@ export interface SpaceInput {
    * qu'un utilisateur enfermé hors de son application parce qu'une requête a échoué.
    */
   onboardingComplete?: boolean;
+  /**
+   * `true` un contrôle facial barre la route, `false` non, `undefined` inconnu.
+   *
+   * Même règle que `onboardingComplete` : L'INCONNU LAISSE PASSER. Une requête qui échoue ne doit
+   * pas enfermer un prestataire hors de son application ; le serveur, lui, refusera de toute façon
+   * la mise en ligne, l'acceptation et le départ. La sécurité se joue là, pas dans la navigation.
+   */
+  faceCheckBlocks?: boolean;
   chosenSpace?: ChosenSpace;
 }
 
 export function resolveSpace(input: SpaceInput): Space {
-  const { isLoading, isAuthenticated, user, onboardingComplete, chosenSpace } = input;
+  const { isLoading, isAuthenticated, user, onboardingComplete, faceCheckBlocks, chosenSpace } = input;
 
   if (isLoading) {
     return 'loading';
@@ -133,6 +142,21 @@ export function resolveSpace(input: SpaceInput): Space {
   // sans drapeau, le compte est traité en prestataire — c'est ce qu'il est dans cet APK.
   if (onboardingComplete === false) {
     return 'providerOnboarding';
+  }
+
+  /*
+   * LE CONTRÔLE FACIAL SE TESTE EN DERNIER, ET L'EMPLACEMENT EST LE PROPOS.
+   *
+   * APRÈS l'administration et la société : ni un administrateur ni un gérant ne vont chez un
+   * client, et leur imposer un selfie les enfermerait hors de leur propre espace — c'est
+   * exactement l'erreur que le parcours prestataire avait déjà commise avec l'administrateur.
+   *
+   * APRÈS le dossier d'inscription : un prestataire dont le dossier est incomplet ne peut de toute
+   * façon pas travailler. Lui demander son visage avant sa pièce d'identité inverserait l'ordre
+   * naturel, et l'appariement des deux n'aurait rien à comparer.
+   */
+  if (faceCheckBlocks === true) {
+    return 'faceCheck';
   }
 
   return 'provider';

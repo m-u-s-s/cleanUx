@@ -9,6 +9,7 @@ use App\Livewire\DesignSystem;
 use App\Livewire\OrderEngine\AsapSearch;
 use App\Livewire\OrderEngine\OrderConfirmation;
 use App\Livewire\OrderEngine\OrderJourney;
+use App\Livewire\Provider\FaceCheckPage;
 use App\Livewire\Provider\MissionOfferPage;
 use App\Livewire\Provider\Onboarding\ProviderOnboardingWizard;
 use Illuminate\Support\Facades\Route;
@@ -60,6 +61,20 @@ Route::middleware(['auth', 'verified', 'active.account', 'phone.verified'])->gro
 
     Route::get('/provider/onboarding', ProviderOnboardingWizard::class)
         ->name('provider.onboarding');
+
+    /*
+     * LE PARCOURS DE REMEDIATION DU CONTROLE FACIAL — et il doit exister.
+     *
+     * `EnsureFaceCheckPassed` et `FaceCheckRequiredException` redirigent une session web vers
+     * `provider.face-check`. Sans cette route, la redirection retombe sur l'accueil et le
+     * prestataire tourne en rond sans jamais comprendre ce qu'on lui demande.
+     *
+     * Hors de `face.verified`, evidemment : l'y soumettre enfermerait le compte dans une boucle ou
+     * l'on exige un controle sans jamais laisser le passer. Meme raison que le KYC hors de
+     * `provider.approved`.
+     */
+    Route::get('/provider/verification-faciale', FaceCheckPage::class)
+        ->name('provider.face-check');
 });
 
 // `enforce_2fa` comme les autres pages d'administration : la page ne montre pas de données, mais une
