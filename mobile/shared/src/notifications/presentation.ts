@@ -1,3 +1,4 @@
+import { colors } from '@/theme';
 import type { NotificationSeverity } from './hooks';
 
 /**
@@ -22,6 +23,31 @@ export function severityVariant(severity: NotificationSeverity): 'neutral' | 'in
       return 'info';
     default:
       return 'neutral';
+  }
+}
+
+/**
+ * LE LISERÉ DE GAUCHE D'UNE CARTE.
+ *
+ * La liste empilait des lignes séparées par un filet d'un pixel : rien ne disait où finissait une
+ * notification et où commençait la suivante, et l'urgence ne se voyait nulle part. Chaque carte
+ * porte maintenant sa sévérité sur son bord gauche, comme le centre web.
+ *
+ * Les teintes 500 tiennent sur fond clair ET sur fond nuit — c'est un aplat de 3 px, pas du
+ * texte : le contraste de lecture n'est pas en jeu, seule la lisibilité de la couleur l'est.
+ */
+export function severityAccent(severity: NotificationSeverity, bordureParDefaut: string): string {
+  switch (severity) {
+    case 'danger':
+      return colors.danger[500];
+    case 'warning':
+      return colors.warning[500];
+    case 'success':
+      return colors.success[500];
+    case 'info':
+      return colors.brand[500];
+    default:
+      return bordureParDefaut;
   }
 }
 

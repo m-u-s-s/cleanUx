@@ -103,6 +103,31 @@ describe('NotificationsScreen', () => {
     expect(getByText(/Bruxelles 1000/)).toBeTruthy();
   });
 
+  /*
+   * DEMANDE EXPLICITE : des cartes, et de l'air entre elles.
+   *
+   * La liste empilait des lignes séparées par un filet d'un pixel — « trop collées ». Ces deux
+   * assertions sont cosmétiques et c'est assumé : sans elles, un aplatissement du style repasserait
+   * sans bruit, et personne ne relit une liste pour vérifier qu'elle respire encore.
+   */
+  it('rend chaque notification dans une carte espacée', () => {
+    const { getByLabelText, UNSAFE_getByType } = render(<NotificationsScreen />);
+
+    const carte = getByLabelText(/Rappel de mission/);
+    const styleCarte = Object.assign({}, ...[carte.props.style].flat(Infinity).filter(Boolean));
+
+    expect(styleCarte.borderRadius).toBeGreaterThan(0);
+    expect(styleCarte.padding).toBeGreaterThan(0);
+    // Le liséré de sévérité, à gauche.
+    expect(styleCarte.borderLeftWidth).toBeGreaterThan(0);
+
+    const { FlatList } = require('react-native');
+    const liste = UNSAFE_getByType(FlatList);
+    const styleListe = Object.assign({}, ...[liste.props.contentContainerStyle].flat(Infinity).filter(Boolean));
+
+    expect(styleListe.gap).toBeGreaterThan(0);
+  });
+
   it('ouvre la fiche au lieu de sauter sur la page de résolution', () => {
     const { getByLabelText } = render(<NotificationsScreen />);
 

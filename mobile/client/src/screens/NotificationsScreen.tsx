@@ -4,15 +4,16 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen, Badge, Button, Skeleton, EmptyState, AnimatedListItem, a11y } from '@/ui';
-import { useNotifications, useMarkAllRead, severityVariant, formatNotificationDate } from '@/notifications';
+import { useNotifications, useMarkAllRead, severityVariant, severityAccent, formatNotificationDate } from '@/notifications';
 import type { AppNotification } from '@/notifications';
-import { colors, spacing, typography } from '@/theme';
+import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 
 export function NotificationsScreen() {
-  const styles = stylesFor(useThemeColors());
+  const t = useThemeColors();
+  const styles = stylesFor(t);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { data: notifs, isLoading, refetch, isRefetching } = useNotifications();
@@ -37,7 +38,11 @@ export function NotificationsScreen() {
     return (
       <AnimatedListItem index={index}>
         <TouchableOpacity
-          style={[styles.notif, nonLue && styles.unread]}
+          style={[
+            styles.notif,
+            { borderLeftColor: severityAccent(item.severity, t.border) },
+            nonLue && styles.unread,
+          ]}
           onPress={() => navigation.navigate('NotificationDetail', { id: item.id })}
           accessibilityRole="button"
           accessibilityLabel={`${item.label} : ${item.title}. ${item.body}${nonLue ? '. Non lue' : ''}`}
@@ -57,7 +62,7 @@ export function NotificationsScreen() {
         </TouchableOpacity>
       </AnimatedListItem>
     );
-  }, [styles, navigation]);
+  }, [styles, navigation, t]);
 
   return (
     <Screen>
@@ -80,6 +85,7 @@ export function NotificationsScreen() {
         <Animated.View entering={FadeIn.duration(280)} style={{ flex: 1 }}>
           <FlatList
             data={notifs ?? []}
+            contentContainerStyle={styles.liste}
             keyExtractor={item => item.id}
             renderItem={renderNotifItem}
             accessibilityLabel="Liste des notifications"
@@ -112,10 +118,25 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     color: t.text,
   },
   skeletons: { gap: spacing.sm },
+  /*
+   * UNE CARTE PAR NOTIFICATION, ET DE L'AIR ENTRE ELLES.
+   *
+   * La liste empilait des lignes séparées par un filet d'un pixel : rien ne disait où finissait
+   * une notification et où commençait la suivante. L'espace vient de `contentContainerStyle`
+   * plutôt que d'une marge sur la carte — une marge basse laisserait un vide sous la dernière.
+   */
+  liste: {
+    gap: spacing.sm,
+    paddingBottom: spacing.md,
+  },
   notif: {
-    paddingVertical: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: t.border,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: t.border,
+    borderLeftWidth: 3,
+    backgroundColor: t.card,
+    ...shadows.xs,
   },
   unread: { backgroundColor: t.tint.brand },
   badges: {
