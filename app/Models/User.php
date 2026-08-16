@@ -290,6 +290,32 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         return $this->phone_verified_at !== null;
     }
 
+    /**
+     * LE COMPTE EST-IL EN ÉTAT DE SERVIR — la définition unique de « suspendu ».
+     *
+     * Elle vivait dans `EnsureActiveAccount`, un middleware posé sur tous les groupes web et sur
+     * AUCUNE route d'API : un compte suspendu obtenait un jeton neuf et gardait l'application
+     * mobile entière — sa boîte d'offres, ses réservations, son portefeuille. Bannir quelqu'un ne
+     * l'arrêtait que dans le navigateur.
+     *
+     * Trois lecteurs, une seule règle : le middleware web, l'authentification par jeton Sanctum
+     * (`AppServiceProvider`) et la porte de connexion mobile (`ApiAuthController::login`). Deux
+     * copies de cette condition finiraient par diverger, et c'est la moitié oubliée qui décide.
+     *
+     * `status` est comparé en minuscules : la colonne est libre et des seeders y ont écrit des
+     * majuscules.
+     */
+    public function compteActif(): bool
+    {
+        if (! $this->is_active) {
+            return false;
+        }
+
+        $statut = strtolower((string) ($this->status ?? 'active'));
+
+        return ! in_array($statut, ['inactive', 'disabled', 'suspended', 'blocked'], true);
+    }
+
     public function isAdmin(): bool
     {
         if (in_array($this->platform_role ?? null, ['admin', 'super_admin'], true)) {

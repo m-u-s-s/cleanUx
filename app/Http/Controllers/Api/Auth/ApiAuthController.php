@@ -90,6 +90,25 @@ class ApiAuthController extends Controller
         }
 
         /*
+         * UN COMPTE SUSPENDU NE REÇOIT PAS DE JETON.
+         *
+         * Le contrôle vient APRÈS le mot de passe — on ne révèle pas à un inconnu qu'une adresse
+         * existe, ni dans quel état elle est. `Sanctum::authenticateAccessTokensUsing` invalide déjà
+         * les jetons d'un compte suspendu sur toutes les routes ; sans le refus ici, la connexion
+         * réussirait quand même et l'application recevrait un jeton mort-né, puis des 401 partout
+         * sans jamais dire pourquoi.
+         *
+         * La limite de tentatives n'est PAS remise à zéro sur ce chemin, même raison qu'en dessous.
+         */
+        if (! $user->compteActif()) {
+            return response()->json([
+                'ok' => false,
+                'error_code' => 'compte_inactif',
+                'message' => 'Ce compte est suspendu. Contactez le support pour le réactiver.',
+            ], 403);
+        }
+
+        /*
          * Chaque application n'accepte que le public qu'elle sert.
          *
          * Le contrôle vient APRÈS la vérification du mot de passe et AVANT l'émission du jeton :

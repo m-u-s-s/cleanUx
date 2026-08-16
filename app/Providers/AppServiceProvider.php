@@ -12,6 +12,7 @@ use App\Models\QuestionOption;
 use App\Models\Sector;
 use App\Models\Trade;
 use App\Models\TripTrackingSession;
+use App\Models\User;
 use App\Observers\BookingObserver;
 use App\Observers\BookingPaymentDestinationObserver;
 use App\Observers\BookingTipObserver;
@@ -41,6 +42,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Sanctum\Sanctum;
 use RuntimeException;
 
 class AppServiceProvider extends ServiceProvider
@@ -128,6 +130,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->refuserLaFileSynchroneEnProduction();
+        $this->refuserLesJetonsDesComptesSuspendus();
 
         Builder::macro('clientFacing', function () {
             /** @var Builder $this */
@@ -262,5 +265,43 @@ class AppServiceProvider extends ServiceProvider
         }
 
         throw new RuntimeException(self::MESSAGE_FILE_SYNCHRONE);
+    }
+
+    /**
+     * UN COMPTE SUSPENDU N'A PLUS DE JETON VALIDE — sur toutes les routes, y compris futures.
+     *
+     * Mesuré le 2026-08-16 : `active.account` était posé sur chaque groupe web et sur AUCUNE route
+     * d'API. Un compte `is_active=false` obtenait un jeton neuf par `/api/auth/login` et gardait
+     * l'application entière — offres, réservations, disponibilités. La suspension ne valait que
+     * dans le navigateur.
+     *
+     * POURQUOI ICI ET PAS EN MIDDLEWARE SUR CHAQUE GROUPE. Les routes d'API sont réparties sur une
+     * douzaine de groupes `auth:sanctum` dans huit fichiers ; en ajouter un par groupe, c'est
+     * accepter qu'on en oublie un — et le groupe oublié est exactement celui qu'on ne testera pas.
+     * Ce point de passage est celui que Sanctum traverse pour CHAQUE requête portant un jeton :
+     * la règle vaut donc aussi pour la route écrite demain.
+     *
+     * Le jeton devient invalide, donc la réponse est 401 « Unauthenticated » et non 403. C'est le
+     * bon signal pour un client mobile : il déconnecte et renvoie à l'écran de connexion, où le 403
+     * explicite de `ApiAuthController::login` nomme la raison. Un 403 en cours de session laisserait
+     * l'application afficher des écrans vides sans savoir pourquoi.
+     */
+    private function refuserLesJetonsDesComptesSuspendus(): void
+    {
+        Sanctum::authenticateAccessTokensUsing(function ($accessToken, bool $estValide): bool {
+            if (! $estValide) {
+                return false;
+            }
+
+            $porteur = $accessToken->tokenable;
+
+            // Un porteur qui n'est pas un utilisateur (jeton de service) ne relève pas de cette
+            // règle : on ne lui invente pas un état de compte qu'il n'a pas.
+            if (! $porteur instanceof User) {
+                return true;
+            }
+
+            return $porteur->compteActif();
+        });
     }
 }
