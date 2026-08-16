@@ -30,6 +30,10 @@ export type { FaceCheckStatus, FaceCheck, FaceCheckState } from './faceCheck';
 export { useNotifications, useMarkAllRead } from './notifications';
 export type { AppNotification } from './notifications/hooks';
 
+// Mission clock — le compteur des missions vendues au temps, identique des deux côtés
+export { useMissionClock, MissionClockBar, formatChronometre, formatDureeCourte } from './missionClock';
+export type { MissionClock, MissionClockPhase, LiveMissionClock, ClockAudience } from './missionClock';
+
 // Push
 export { useRegisterPushToken } from './push';
 export { setupForegroundNotifications } from './push/foreground';

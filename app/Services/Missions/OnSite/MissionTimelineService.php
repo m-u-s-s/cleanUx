@@ -5,6 +5,7 @@ namespace App\Services\Missions\OnSite;
 use App\Models\InspectionItem;
 use App\Models\Mission;
 use App\Models\MissionEvent;
+use App\Services\Missions\HourlyMissionClock;
 use Illuminate\Support\Carbon;
 
 /**
@@ -27,6 +28,7 @@ class MissionTimelineService
     public function __construct(
         protected MissionMediaService $mediaService,
         protected MissionIncidentService $incidentService,
+        protected HourlyMissionClock $horloge,
     ) {}
 
     /**
@@ -37,6 +39,7 @@ class MissionTimelineService
      *     status: string|null,
      *     started_at: string|null,
      *     estimated_end_at: string|null,
+     *     clock: array<string, mixed>,
      *     progress: array{done: int, total: int, percent: int},
      *     entries: list<array<string, mixed>>
      * }
@@ -60,6 +63,14 @@ class MissionTimelineService
             'status' => $mission->status,
             'started_at' => $mission->actual_start_at?->toIso8601String(),
             'estimated_end_at' => $this->finEstimee($mission)?->toIso8601String(),
+            /*
+             * L'HEURE ESTIMÉE ET LE TEMPS ACHETÉ SONT DEUX NOTIONS DISTINCTES, et ce fil porte
+             * désormais les deux. `estimated_end_at` dit « on pense finir vers » — une prévision,
+             * sans conséquence. L'horloge dit « vous avez payé jusqu'à », et au-delà ça coûte.
+             * Les afficher sous le même libellé ferait passer une échéance contractuelle pour une
+             * estimation, et personne ne comprendrait la ligne supplémentaire sur sa facture.
+             */
+            'clock' => $this->horloge->etat($mission),
             'progress' => $avancement,
             'entries' => $entrees,
         ];

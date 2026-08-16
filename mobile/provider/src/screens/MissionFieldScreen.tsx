@@ -25,6 +25,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 import { formatAdresse, messageDErreur } from '@brio/shared/format';
+import { MissionClockBar, useMissionClock } from '@brio/shared';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionField'>;
 
@@ -62,6 +63,14 @@ export function MissionFieldScreen({ route }: Props) {
   const [gpsActive, setGpsActive] = useState(true);
   const [incidentType, setIncidentType] = useState<MissionIncidentType | null>(null);
   const [incidentDescription, setIncidentDescription] = useState('');
+
+  /*
+   * Le compteur bat à la seconde sur l'appareil, mais l'ÉCHÉANCE et le MONTANT viennent du
+   * serveur, rafraîchis par `useMissionDetail`. C'est voulu : le montant affiché est donc
+   * légèrement en retard sur le chronomètre, et c'est infiniment préférable à un écran qui
+   * calculerait lui-même ce que le client va payer.
+   */
+  const horloge = useMissionClock(mission?.clock);
 
   const { data: extras } = useMissionExtras(missionId);
   const { data: ficheDAcces } = useMissionAccessSheet(missionId);
@@ -198,6 +207,16 @@ export function MissionFieldScreen({ route }: Props) {
         <Text style={styles.clientName}>{mission.client_name}</Text>
         <Text style={styles.clientAddress}>{formatAdresse(mission.address, mission.city)}</Text>
       </View>
+
+      {/*
+        LE COMPTEUR, JUSTE SOUS L'IDENTITÉ DU CLIENT.
+
+        Il se rend nul de lui-même quand la mission n'est pas vendue au temps — inutile de le
+        conditionner ici, et surtout inutile que cet écran sache ce qui décide. Placé plus bas, il
+        aurait fallu défiler pour savoir combien de temps il reste : c'est la première question du
+        prestataire sur place, elle mérite le haut de l'écran.
+      */}
+      <MissionClockBar clock={horloge} audience="provider" style={styles.horloge} />
 
       {/* ── ÉTAT DES LIEUX ─────────────────────────────────────────────── */}
       <View style={styles.section}>
@@ -632,6 +651,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     ...shadows.xs,
     marginBottom: spacing.md,
   },
+  horloge: { marginBottom: spacing.md },
   clientName: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,

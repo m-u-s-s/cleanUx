@@ -24,6 +24,14 @@ module.exports = function (api) {
             '@/webview': '../shared/src/webview',
             '@/finance': '../shared/src/finance',
             '@/ErrorBoundary': '../shared/src/ErrorBoundary',
+            /*
+             * Déclaré dans tsconfig.json, absent d'ici et de jest.config.ts : le typage passait,
+             * et l'exécution reposait sur le lien symbolique d'espace de travail — qui résout le
+             * paquet racine mais PAS ses sous-chemins (`@brio/shared/format` pointe alors sur un
+             * dossier qui n'existe pas). L'application prestataire l'épingle depuis toujours ; le
+             * client vivait sur un accident d'installation.
+             */
+            '@brio/shared': '../shared/src',
             // Client-only modules — resolve to local src/
             '@': './src',
           },

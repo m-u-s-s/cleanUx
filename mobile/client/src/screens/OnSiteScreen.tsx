@@ -10,6 +10,7 @@ import {
   useLiveOnSite,
 } from '@/booking/onsite';
 import type { OnSiteExtra, OnSiteMedia, OnSiteTimelineEntry } from '@/booking/onsite';
+import { MissionClockBar, useMissionClock } from '@brio/shared';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
@@ -39,6 +40,12 @@ export function OnSiteScreen({ route }: Props) {
   const { data: imprevus } = useOnSiteIncidents(bookingId);
   const { data: supplements } = useOnSiteExtras(bookingId);
   const repondre = useRepondreAuSupplement(bookingId);
+
+  /*
+   * Le compteur défile sur l'appareil ; l'échéance et le montant viennent du fil, qui se
+   * rafraîchit déjà toutes les minutes et à chaque événement temps réel.
+   */
+  const horloge = useMissionClock(fil?.clock);
 
   // Le canal est indexé sur la MISSION : son identifiant vient du fil, le client n'en dispose pas
   // autrement.
@@ -95,11 +102,23 @@ export function OnSiteScreen({ route }: Props) {
       {fil.progress.total > 0 && (
         <ProgressBar step={fil.progress.done} totalSteps={fil.progress.total} />
       )}
+      {/*
+        L'ESTIMATION ET L'ENGAGEMENT SONT DEUX PHRASES DISTINCTES, et l'ordre compte.
+
+        « Fin estimée vers 16 h » est une prévision sans conséquence. Le compteur en dessous dit ce
+        qui a été ACHETÉ, et au-delà de quoi ça coûte. Les fondre en une seule ligne ferait passer
+        une échéance contractuelle pour une estimation — et personne ne comprendrait la ligne
+        supplémentaire sur sa facture.
+
+        Le compteur se rend nul de lui-même sur toute prestation au forfait.
+      */}
       {fil.estimated_end_at && (
         <Text style={styles.finEstimee}>
           Fin estimée vers {heure(fil.estimated_end_at)}
         </Text>
       )}
+
+      <MissionClockBar clock={horloge} audience="client" style={styles.horloge} />
 
       {/*
         LES SUPPLÉMENTS EN PREMIER, avant l'avancement et les photos (F12).
@@ -253,6 +272,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     color: t.textSecondary,
     marginTop: spacing.xs,
   },
+  horloge: { marginTop: spacing.md },
   section: { marginTop: spacing.lg },
   sectionTitre: {
     fontSize: typography.fontSize.lg,

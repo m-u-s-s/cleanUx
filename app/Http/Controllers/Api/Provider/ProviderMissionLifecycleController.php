@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Provider;
 use App\Http\Controllers\Api\Concerns\FormatsBookingSchedule;
 use App\Http\Controllers\Controller;
 use App\Models\Mission;
+use App\Services\Missions\HourlyMissionClock;
 use App\Services\Missions\MissionLifecycleService;
 use App\Services\Missions\MissionVerificationCodeService;
 use App\Services\Missions\RideLifecycleService;
@@ -55,6 +56,7 @@ class ProviderMissionLifecycleController extends Controller
 
     public function __construct(
         protected MissionLifecycleService $lifecycle,
+        protected HourlyMissionClock $horloge,
     ) {}
 
     /**
@@ -780,6 +782,16 @@ class ProviderMissionLifecycleController extends Controller
              * passager absent au bout de trois secondes.
              */
             'no_show_available_at' => $this->absenceDeclarableA($mission),
+            /*
+             * LE COMPTEUR D'UNE MISSION VENDUE AU TEMPS.
+             *
+             * Même principe que `no_show_available_at` juste au-dessus : ce sont des DATES serveur
+             * qui partent, jamais un nombre de secondes restantes. Le téléphone fait défiler
+             * l'affichage entre deux rafraîchissements, mais l'échéance et le montant du
+             * dépassement ne sont pas à lui — son horloge est réglable par son porteur, et c'est
+             * précisément le porteur que le compteur surveille.
+             */
+            'clock' => $this->horloge->etat($mission),
         ];
 
         if ($detailed) {

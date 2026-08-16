@@ -2,26 +2,24 @@ import fs from 'fs';
 import path from 'path';
 
 /**
- * Le tsconfig déclarait des alias que le résolveur Babel ignorait.
+ * TROIS TABLES DÉCRIVENT LES MÊMES CHEMINS SANS SE VÉRIFIER.
  *
- * `tsc` passait, l'application plantait à l'import — un mode d'échec qu'aucun typage ne signale,
- * et que Jest ne signale pas non plus puisqu'il résout par sa propre table. Trois tables décrivent
- * la même chose ; ce test refuse qu'elles divergent.
+ * L'application prestataire tenait ce garde-fou depuis longtemps ; la cliente ne l'avait pas — et
+ * c'est chez elle que la divergence s'est installée. `@brio/shared` était déclaré dans le tsconfig
+ * et ABSENT de `babel.config.js` comme de `jest.config.ts`. Rien ne cassait : le lien symbolique
+ * de l'espace de travail résout le paquet par son nom, `tsc` reste vert, l'application démarre.
+ *
+ * Ce que ce lien ne résout PAS, ce sont les sous-chemins. `@brio/shared/format` — importé depuis
+ * `src/lib/format.ts` — pointait vers `mobile/shared/format`, un dossier qui n'existe pas. Le
+ * défaut n'attendait que le premier test qui traverse ce fichier.
+ *
+ * Ce test refuse la divergence dans les deux applications, pour les deux formes d'alias.
  */
 describe('alias de modules partagés', () => {
   const root = path.join(__dirname, '..', '..');
   const read = (p: string) => fs.readFileSync(path.join(root, p), 'utf8');
 
-  /**
-   * Les alias que le tsconfig fait pointer vers le paquet partagé.
-   *
-   * DEUX FORMES, et la seconde manquait. `@/x` est l'alias de dossier ; `@brio/shared` est le
-   * paquet par son NOM. La première version de ce test ne capturait que `@/x` — donc le jour où
-   * `@brio/shared` a disparu des tables Babel et Jest de l'application cliente, il n'a rien vu.
-   * L'import continuait de fonctionner par le lien symbolique de l'espace de travail, qui résout
-   * le paquet racine mais PAS ses sous-chemins : `@brio/shared/format` pointait sur un dossier
-   * inexistant, et seul un test qui l'importe l'aurait révélé.
-   */
+  /** Les alias `@/x` ET le paquet `@brio/shared` que le tsconfig fait pointer vers `../shared`. */
   const sharedAliases = (): string[] => {
     const tsconfig = read('tsconfig.json');
     const dossiers = [...tsconfig.matchAll(/"(@\/[a-zA-Z]+)":\s*\["\.\.\/shared/g)].map((m) => m[1]!);
@@ -31,9 +29,14 @@ describe('alias de modules partagés', () => {
   };
 
   it('le tsconfig déclare bien une famille d’alias partagés', () => {
-    // Garde-fou du test lui-même : une expression régulière qui ne capture plus rien rendrait
-    // les deux assertions suivantes vraies pour une mauvaise raison.
+    // Garde-fou du test lui-même : une expression régulière qui ne capture plus rien rendrait les
+    // assertions suivantes vraies pour une mauvaise raison.
     expect(sharedAliases().length).toBeGreaterThan(10);
+  });
+
+  it('le paquet partagé est déclaré par son nom', () => {
+    // C'est l'entrée précise qui manquait, et que l'ancienne expression régulière ne voyait pas.
+    expect(sharedAliases()).toContain('@brio/shared');
   });
 
   it('babel résout tous les alias partagés du tsconfig', () => {

@@ -46,6 +46,19 @@ export function useMissionDetail(missionId: number | null) {
       return res.data.data ?? res.data;
     },
     enabled: missionId !== null,
+    /*
+     * ON NE SONDE QUE PENDANT L'INTERVENTION, et uniquement quand elle est vendue au temps.
+     *
+     * Le compteur bat à la seconde sur l'appareil, mais le MONTANT du dépassement vient d'ici : un
+     * écran jamais rafraîchi afficherait indéfiniment le montant du premier chargement, soit zéro
+     * euro pendant qu'il en coûte cinquante. Sonder toutes les mission ouvertes, en revanche,
+     * réveillerait le réseau pour un forfait qui n'a rien à décompter.
+     */
+    refetchInterval: (query) => {
+      const mission = query.state.data as Mission | undefined;
+
+      return mission?.clock?.applies && mission.status === 'started' ? 60000 : false;
+    },
   });
 }
 

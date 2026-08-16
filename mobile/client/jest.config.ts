@@ -69,6 +69,9 @@ const config: Config = {
     '^@/modules(.*)$': '<rootDir>/../shared/src/modules$1',
     '^@/parity(.*)$': '<rootDir>/../shared/src/parity$1',
     '^@/finance(.*)$': '<rootDir>/../shared/src/finance$1',
+    // Le paquet partagé par son nom. Il manquait ici comme dans babel.config.js : sous jest, le
+    // lien symbolique résout `@brio/shared` mais pas `@brio/shared/format`.
+    '^@brio/shared(.*)$': '<rootDir>/../shared/src$1',
     // Client-only modules
     '^@/(.*)$': '<rootDir>/src/$1',
     // react-native-reanimated v4 requires native worklets — use local stub to avoid WorkletsError

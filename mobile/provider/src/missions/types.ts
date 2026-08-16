@@ -1,3 +1,5 @@
+import type { MissionClock } from '@brio/shared';
+
 export interface MissionAssignment {
   id: number;
   mission_id: number;
@@ -85,6 +87,14 @@ export interface Mission {
    * de trois secondes.
    */
   no_show_available_at?: string | null;
+  /**
+   * LE COMPTEUR DES MISSIONS VENDUES AU TEMPS.
+   *
+   * Absent ou `applies: false` sur tout le reste — un forfait n'a pas d'échéance à décompter. Les
+   * montants qu'il porte viennent du serveur et n'y sont jamais recalculés ici : c'est ce que le
+   * client verra sur sa facture.
+   */
+  clock?: MissionClock | null;
 }
 
 /**

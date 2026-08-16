@@ -30,10 +30,13 @@ const APP = path.resolve(__dirname, '../../App.tsx');
  * cette liste n'est pas une permission durable : chaque entrée est une dette.
  */
 const SANS_ENTREE: Record<string, string> = {
-  'MissionExecutionScreen.tsx':
-    'Écran hérité : aucune route, aucun type de navigation, aucun appelant. `MissionFieldScreen` ' +
-    'occupe sa place. À supprimer une fois vérifié qu’il n’en reste rien à reprendre — aucun code ' +
-    'neuf ne doit y être ajouté d’ici là.',
+  /*
+   * `MissionExecutionScreen.tsx` a occupé cette liste et a été SUPPRIMÉ le 2026-08-16, la
+   * condition posée ici étant remplie : `MissionFieldScreen` porte désormais le compteur, et
+   * l'ancien écran en tenait un faux — un chronomètre parti de zéro à chaque montage, qui
+   * repartait à zéro dès qu'on quittait l'écran. Le laisser dormant, c'était garantir qu'on le
+   * recopie le jour où il faudrait afficher un temps écoulé quelque part.
+   */
   'MoreScreen.tsx':
     'Aucun appelant : la navigation secondaire passe par `ModulesRoute`. Même dette, même ' +
     'traitement.',

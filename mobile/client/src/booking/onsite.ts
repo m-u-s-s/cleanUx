@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient, ApiError } from '@/api';
 import { useChannel } from '@/realtime';
+import type { MissionClock } from '@brio/shared';
 
 /**
  * CE QUI SE PASSE CHEZ MOI — le suivi qui continue après la sonnette.
@@ -40,7 +41,15 @@ export interface OnSiteTimeline {
   mission_id: number | null;
   status: string | null;
   started_at: string | null;
+  /**
+   * UNE PRÉVISION, sans conséquence : le démarrage réel plus la durée du devis.
+   *
+   * À ne pas confondre avec `clock.deadline_at`, qui est un ENGAGEMENT — l'instant où le temps
+   * acheté s'épuise et au-delà duquel le dépassement se facture.
+   */
   estimated_end_at: string | null;
+  /** Le compteur des prestations vendues au temps. `applies: false` partout ailleurs. */
+  clock?: MissionClock | null;
   progress: { done: number; total: number; percent: number };
   entries: OnSiteTimelineEntry[];
 }
