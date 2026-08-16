@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Database\Seeders\Concerns\SeedsOnlyExistingColumns;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class PlatformModuleSeeder extends Seeder
 {
@@ -45,6 +46,60 @@ class PlatformModuleSeeder extends Seeder
             );
         }
 
+        $this->seedFaceCheckModule();
+
         $this->command?->info('✅ Modules de plateforme initialisés.');
+    }
+
+    /**
+     * LE CONTRÔLE FACIAL — semé UNE SEULE FOIS, jamais réécrit.
+     *
+     * La boucle ci-dessus fait un `updateOrInsert` et REMPLACE `settings` à chaque passage : pour
+     * les modules historiques c'est sans conséquence, ils n'y rangent qu'un écho de leurs propres
+     * colonnes. Ici, `settings` porte les réglages métier du module (intervalles, seuils, durée de
+     * conservation) et l'audience par zone décidée par un administrateur. Repasser le seeder les
+     * effacerait sans rien dire — et un module de sécurité qui se réinitialise en silence est pire
+     * que pas de module du tout.
+     *
+     * Désactivé à la création : un module de contrôle d'identité s'allume quand un humain le décide.
+     */
+    private function seedFaceCheckModule(): void
+    {
+        $key = (string) config('face_check.module_key', 'security.face_check');
+
+        if (DB::table('platform_modules')->where('key', $key)->exists()) {
+            return;
+        }
+
+        $this->updateOrInsertTable(
+            'platform_modules',
+            ['key' => $key],
+            [
+                'name' => 'Vérification faciale des prestataires',
+                'description' => "Enrôlement du visage à l'inscription, contrôles aléatoires avant "
+                    ."d'aller chez un client, appariement avec la pièce d'identité et revue "
+                    .'manuelle par un administrateur.',
+                'category' => 'ops',
+                'rollout_strategy' => 'zone',
+                'is_enabled' => false,
+                'is_locked' => false,
+                'sort_order' => 110,
+                'settings' => [
+                    'allowed_zone_ids' => [],
+                    'face_check' => [
+                        'min_hours' => 24,
+                        'max_hours' => 72,
+                        'match_threshold' => 75.0,
+                        'liveness_required' => true,
+                        'max_attempts' => 3,
+                        'failure_threshold' => 3,
+                        'abandon_threshold' => 3,
+                        'abandon_window_days' => 7,
+                        'abandon_fraud_threshold' => 6,
+                        'selfie_retention_days' => 30,
+                    ],
+                ],
+            ]
+        );
     }
 }

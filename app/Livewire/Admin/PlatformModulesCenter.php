@@ -108,26 +108,48 @@ class PlatformModulesCenter extends Component
 
         $module = PlatformModule::query()->findOrFail($this->editingModuleId);
 
-        if ($module->is_locked && ! $this->is_locked) {
-            // unlock allowed, no-op
+        /*
+         * LE VERROU DOIT VERROUILLER PAR LES DEUX PORTES.
+         *
+         * `toggleEnabled()` refuse d'agir sur un module verrouillé — mais le formulaire, lui,
+         * postait `is_enabled` sans rien vérifier : il suffisait d'ouvrir la fiche et d'enregistrer
+         * pour éteindre un module qu'on venait de verrouiller. Un verrou contournable par l'autre
+         * bouton du même écran n'est pas un verrou.
+         *
+         * Déverrouiller reste permis dans le même geste : c'est la seule façon d'en sortir.
+         */
+        $enabled = $module->is_locked ? $module->is_enabled : $this->is_enabled;
+
+        if ($module->is_locked && $this->is_enabled !== $module->is_enabled) {
+            session()->flash('error', "Ce module est verrouillé : son activation n'a pas été modifiée. Déverrouillez-le d'abord.");
         }
+
+        /*
+         * FUSIONNER, JAMAIS REMPLACER.
+         *
+         * `settings` ne porte pas que l'audience : les modules qui ont des réglages métier les
+         * rangent ici sous leur propre clé (voir `security.face_check`). Réécrire le tableau entier
+         * effaçait ces réglages au premier enregistrement d'audience — sans erreur, sans trace, et
+         * le module repartait sur les valeurs par défaut de la config.
+         */
+        $settings = array_merge($module->settings ?? [], [
+            'allowed_roles' => $this->normalizeStringArray($this->allowed_roles),
+            'allowed_plans' => $this->normalizeStringArray($this->allowed_plans),
+            'allowed_zone_ids' => $this->normalizeIntArray($this->allowed_zone_ids),
+            'allowed_organization_ids' => $this->normalizeIntArray($this->allowed_organization_ids),
+            'denied_roles' => $this->normalizeStringArray($this->denied_roles),
+            'denied_plans' => $this->normalizeStringArray($this->denied_plans),
+            'allow_all_organizations' => $this->allow_all_organizations,
+        ]);
 
         $module->update([
             'name' => $validated['name'],
             'description' => $validated['description'],
             'category' => $validated['category_value'],
             'rollout_strategy' => $validated['rollout_strategy'],
-            'is_enabled' => $this->is_enabled,
+            'is_enabled' => $enabled,
             'is_locked' => $this->is_locked,
-            'settings' => [
-                'allowed_roles' => $this->normalizeStringArray($this->allowed_roles),
-                'allowed_plans' => $this->normalizeStringArray($this->allowed_plans),
-                'allowed_zone_ids' => $this->normalizeIntArray($this->allowed_zone_ids),
-                'allowed_organization_ids' => $this->normalizeIntArray($this->allowed_organization_ids),
-                'denied_roles' => $this->normalizeStringArray($this->denied_roles),
-                'denied_plans' => $this->normalizeStringArray($this->denied_plans),
-                'allow_all_organizations' => $this->allow_all_organizations,
-            ],
+            'settings' => $settings,
         ]);
 
         ActivityLogger::log('platform_module.updated', $module, [

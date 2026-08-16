@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 use Laravel\Fortify\RecoveryCode;
+use PragmaRX\Google2FA\Google2FA;
 use Tests\TestCase;
 
 /**
@@ -200,6 +201,6 @@ class SecondFacteurParLApiTest extends TestCase
         // Le fournisseur de Fortify enveloppe pragmarx/google2fa : on lui demande le code courant
         // plutôt que d'en recalculer un à la main — deux implémentations de TOTP finiraient par
         // diverger d'une fenêtre de trente secondes, et le test échouerait une fois sur deux.
-        return app(\PragmaRX\Google2FA\Google2FA::class)->getCurrentOtp($secret);
+        return app(Google2FA::class)->getCurrentOtp($secret);
     }
 }

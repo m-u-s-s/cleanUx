@@ -3,12 +3,12 @@
 namespace App\Livewire\Employe;
 
 use App\Models\AvailabilityException;
+use App\Models\AvailabilitySlot;
 use App\Models\User;
 use App\Services\Availability\AvailabilityEditor;
-use App\Models\AvailabilitySlot;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
