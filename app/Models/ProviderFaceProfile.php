@@ -21,6 +21,16 @@ use Illuminate\Support\Carbon;
  *
  * @property string $status
  * @property ?string $reference_path
+ * @property ?Carbon $captured_at
+ * @property ?Carbon $consent_given_at
+ * @property ?string $consent_version
+ * @property ?Carbon $consent_withdrawn_at
+ * @property ?string $id_match_status
+ * @property ?string $id_match_score
+ * @property ?Carbon $id_match_checked_at
+ * @property ?Carbon $last_check_at
+ * @property int $consecutive_failures
+ * @property ?string $block_reason
  * @property ?Carbon $next_check_due_at
  * @property ?Carbon $blocked_at
  * @property ?array<string, mixed> $metadata

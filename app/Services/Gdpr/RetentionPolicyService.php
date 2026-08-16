@@ -3,6 +3,9 @@
 namespace App\Services\Gdpr;
 
 use App\Models\GdprDataRequest;
+use App\Models\ProviderFaceCheck;
+use App\Services\FaceCheck\FaceCheckSettings;
+use App\Services\FaceCheck\FaceImageStore;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -45,6 +48,9 @@ class RetentionPolicyService
 
         // M13 — delete expired GDPR export files (full PII dumps) from disk + null the path.
         $stats['gdpr_exports'] = $this->purgeExpiredExports();
+
+        // Donnee biometrique (RGPD art. 9) : duree la plus courte possible, et le FICHIER part.
+        $stats['face_check_selfies'] = $this->purgeFaceCheckSelfies();
 
         ActivityLogger::system('gdpr.retention_enforced', null, [
             'stats' => $stats,
@@ -111,6 +117,60 @@ class RetentionPolicyService
             });
 
         return $deleted;
+    }
+
+    /**
+     * LES SELFIES DE CONTROLE SONT EPHEMERES — et purger la ligne ne suffit pas.
+     *
+     * Un visage releve de l'article 9 du RGPD : sa conservation doit etre la plus courte possible.
+     * Ce qui compte ici, c'est que le FICHIER disparaisse du disque ; effacer la colonne en
+     * laissant l'image en place donnerait un registre de traitement conforme et un disque qui ne
+     * l'est pas. C'est exactement le defaut de `DataErasureService` sur les pieces d'identite,
+     * qu'on corrige par ailleurs.
+     *
+     * La ligne, elle, SURVIT : le verdict, le score et l'horodatage restent, sans l'image. C'est
+     * ce qui permet a un administrateur d'expliquer une decision six mois plus tard sans conserver
+     * de biometrie.
+     */
+    protected function purgeFaceCheckSelfies(): int
+    {
+        if (! Schema::hasTable('provider_face_checks')) {
+            return 0;
+        }
+
+        /*
+         * LA DUREE VIENT DES REGLAGES DU MODULE, PAS DE LA CONFIG.
+         *
+         * L'administrateur peut la changer depuis /admin/verification-faciale ; lire
+         * `config()` ici donnerait une interface qui affiche sept jours pendant que la purge
+         * en applique trente -- et personne ne s'en apercevrait, les deux valeurs etant
+         * parfaitement plausibles. `FaceCheckSettings` est le point de passage unique.
+         */
+        $jours = app(FaceCheckSettings::class)->selfieRetentionDays();
+        $magasin = app(FaceImageStore::class);
+        $purges = 0;
+
+        ProviderFaceCheck::query()
+            ->whereNotNull('selfie_path')
+            ->where('requested_at', '<', now()->subDays($jours))
+            ->chunkById(200, function ($controles) use ($magasin, &$purges) {
+                foreach ($controles as $controle) {
+                    try {
+                        $magasin->forget($controle->selfie_path);
+
+                        $controle->forceFill([
+                            'selfie_path' => null,
+                            'selfie_purged_at' => now(),
+                        ])->save();
+
+                        $purges++;
+                    } catch (\Throwable $e) {
+                        report($e);
+                    }
+                }
+            });
+
+        return $purges;
     }
 
     protected function purgeNotifications(): int

@@ -7,6 +7,8 @@ use App\Models\ComplaintCase;
 use App\Models\Feedback;
 use App\Models\GdprDataRequest;
 use App\Models\KycVerification;
+use App\Models\ProviderFaceCheck;
+use App\Models\ProviderFaceProfile;
 use App\Models\ProviderPayout;
 use App\Models\ProviderWalletTransaction;
 use App\Models\Referral;
@@ -84,10 +86,58 @@ class DataExportService
             'disputes' => $this->collectDisputes($user),
             'referrals' => $this->collectReferrals($user),
             'kyc_verifications' => $this->collectKyc($user),
+            'face_checks' => $this->collectFaceChecks($user),
             'wallet_transactions' => $this->collectWallet($user),
             'payouts' => $this->collectPayouts($user),
             'notifications' => $this->collectNotifications($user),
             'login_history' => $this->collectLoginHistory($user),
+        ];
+    }
+
+    /**
+     * LES METADONNEES, JAMAIS LES IMAGES.
+     *
+     * L'article 20 porte sur la portabilite des donnees fournies par la personne ; il ne demande
+     * pas de reexpedier un gabarit biometrique dans un fichier JSON qui transitera par un e-mail,
+     * un telephone et une corbeille. Le prestataire a droit de savoir QUAND on l'a controle, avec
+     * quel verdict et quel score -- pas de recevoir une copie exploitable de son propre visage.
+     *
+     * @return array<string, mixed>
+     */
+    protected function collectFaceChecks(User $user): array
+    {
+        if (! Schema::hasTable('provider_face_profiles')) {
+            return [];
+        }
+
+        $profil = ProviderFaceProfile::query()->where('user_id', $user->id)->first();
+
+        return [
+            'enrolment' => $profil === null ? null : [
+                'status' => $profil->status,
+                'enrolled_at' => $profil->captured_at?->toIso8601String(),
+                'consent_given_at' => $profil->consent_given_at?->toIso8601String(),
+                'consent_version' => $profil->consent_version,
+                'consent_withdrawn_at' => $profil->consent_withdrawn_at?->toIso8601String(),
+                'id_match_status' => $profil->id_match_status,
+                'id_match_score' => $profil->id_match_score,
+                'blocked_at' => $profil->blocked_at?->toIso8601String(),
+                'block_reason' => $profil->block_reason,
+            ],
+            'checks' => ProviderFaceCheck::query()
+                ->where('user_id', $user->id)
+                ->orderByDesc('requested_at')
+                ->get(['triggered_by', 'status', 'score', 'liveness_result', 'failure_reason', 'requested_at', 'answered_at'])
+                ->map(fn ($c) => [
+                    'trigger' => $c->triggered_by,
+                    'status' => $c->status,
+                    'score' => $c->score,
+                    'liveness' => $c->liveness_result,
+                    'failure_reason' => $c->failure_reason,
+                    'requested_at' => $c->requested_at?->toIso8601String(),
+                    'answered_at' => $c->answered_at?->toIso8601String(),
+                ])
+                ->all(),
         ];
     }
 

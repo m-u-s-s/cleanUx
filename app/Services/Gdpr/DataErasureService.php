@@ -3,7 +3,10 @@
 namespace App\Services\Gdpr;
 
 use App\Models\GdprDataRequest;
+use App\Models\ProviderFaceCheck;
+use App\Models\ProviderFaceProfile;
 use App\Models\User;
+use App\Services\FaceCheck\FaceImageStore;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -153,8 +156,56 @@ class DataErasureService
                 ->delete();
         }
 
+        $this->eraseBiometrics($user);
         $this->anonymizeCorePii($user);
         $this->anonymizeV2Modules($user);
+    }
+
+    /**
+     * LA BIOMETRIE SE SUPPRIME, ELLE NE S'ANONYMISE PAS.
+     *
+     * Partout ailleurs dans ce service, la strategie est l'anonymisation : une reservation doit
+     * survivre a l'effacement de son client, parce que la comptabilite l'exige. Un visage, non.
+     * Aucune obligation legale ne demande de le conserver, et un gabarit biometrique « anonymise »
+     * n'existe pas : c'est l'image elle-meme qui identifie.
+     *
+     * On efface donc les DEUX fichiers -- le visage de reference et les selfies de controle -- puis
+     * on vide les colonnes qui les designent. Les verdicts restent : ils ne portent aucun visage.
+     */
+    protected function eraseBiometrics(User $user): void
+    {
+        if (! Schema::hasTable('provider_face_profiles')) {
+            return;
+        }
+
+        try {
+            $magasin = app(FaceImageStore::class);
+
+            ProviderFaceCheck::query()
+                ->where('user_id', $user->id)
+                ->whereNotNull('selfie_path')
+                ->each(function ($controle) use ($magasin) {
+                    $magasin->forget($controle->selfie_path);
+                    $controle->forceFill(['selfie_path' => null, 'selfie_purged_at' => now()])->save();
+                });
+
+            $profil = ProviderFaceProfile::query()->where('user_id', $user->id)->first();
+
+            if ($profil !== null) {
+                $magasin->forget($profil->reference_path);
+
+                $profil->forceFill([
+                    'status' => ProviderFaceProfile::STATUS_REVOKED,
+                    'reference_path' => null,
+                    'reference_hash' => null,
+                    'external_face_id' => null,
+                    'consent_withdrawn_at' => now(),
+                    'metadata' => null,
+                ])->save();
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     /**

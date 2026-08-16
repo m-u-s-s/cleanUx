@@ -34,6 +34,13 @@ class Kernel extends ConsoleKernel
         $schedule->command('masked-calls:scan-expired')->hourly()->withoutOverlapping();
         $schedule->command('presence:scan-stale --threshold=5')->everyTwoMinutes()->withoutOverlapping();
         $schedule->command('surge:recompute')->everyMinute()->withoutOverlapping();
+
+        /*
+         * Un contrôle facial ouvert et jamais répondu bloque la réouverture du suivant : le
+         * prestataire resterait devant un écran mort. Cinq minutes, comme le balayage de présence
+         * — la durée de vie d'un contrôle est de quinze minutes par défaut.
+         */
+        $schedule->command('face-check:maintenance')->everyFiveMinutes()->withoutOverlapping();
         $schedule->command('gdpr:enforce-retention')->dailyAt('04:00')->withoutOverlapping();
         $schedule->command('gdpr:execute-erasures')->dailyAt('04:30')->withoutOverlapping();
         $schedule->command('ops:check-providers --strict')->everyThirtyMinutes()->withoutOverlapping();

@@ -147,11 +147,60 @@ class OnfidoProviderUnitTest extends TestCase
         $this->assertSame(KycVerification::DECISION_APPROVED, $result->decision);
         $this->assertNull($result->rejectionReason);
         $this->assertCount(2, $result->checks);
-        $this->assertSame(KycCheck::TYPE_DOCUMENT, $result->checks[0]['type']);
+        /*
+         * CETTE ASSERTION DISAIT `TYPE_DOCUMENT`, ET ELLE FIGEAIT UN DEFAUT.
+         *
+         * `/checks/{id}` ne rend que `report_ids` : une liste d'identifiants, sans nature.
+         * L'adaptateur les rangeait TOUS en `document`, y compris le rapport de similarite faciale
+         * que `config/kyc.php` demande a chaque verification -- son resultat etait donc perdu a
+         * l'ecriture. Ici, les rapports ne sont pas lisibles (le faux ne repond pas a `/reports`),
+         * et le bon comportement est de dire qu'on ne sait pas plutot que d'inventer un type.
+         */
+        $this->assertSame(KycCheck::TYPE_UNKNOWN, $result->checks[0]['type']);
         $this->assertSame(KycCheck::RESULT_CLEAR, $result->checks[0]['result']);
         $this->assertSame('rep_1', $result->checks[0]['external_id']);
 
         Http::assertSent(fn ($req) => str_contains($req->url(), 'api.eu.onfido.com/v3.6/checks/check_1'));
+    }
+
+    /**
+     * TEMOIN DU CORRECTIF : quand les rapports SONT lisibles, chacun garde sa nature -- et le
+     * resultat facial atterrit enfin sur `TYPE_FACIAL_SIMILARITY`, la constante que personne
+     * n'ecrivait jamais.
+     */
+    public function test_fetch_status_reads_report_types_when_available(): void
+    {
+        Http::fake([
+            'api.eu.onfido.com/v3.6/checks/*' => Http::response([
+                'id' => 'check_7',
+                'result' => 'consider',
+                'status' => 'complete',
+                'report_ids' => ['rep_a', 'rep_b'],
+            ], 200),
+            'api.eu.onfido.com/v3.6/reports*' => Http::response([
+                'reports' => [
+                    ['id' => 'rep_a', 'name' => 'document', 'result' => 'clear'],
+                    [
+                        'id' => 'rep_b',
+                        'name' => 'facial_similarity_photo',
+                        'result' => 'consider',
+                        'sub_result' => 'rejected',
+                        'properties' => ['score' => 0.31],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $result = $this->provider->fetchStatus(new KycVerification(['external_check_id' => 'check_7']));
+
+        $this->assertCount(2, $result->checks);
+        $this->assertSame(KycCheck::TYPE_DOCUMENT, $result->checks[0]['type']);
+        $this->assertSame(KycCheck::RESULT_CLEAR, $result->checks[0]['result']);
+
+        $this->assertSame(KycCheck::TYPE_FACIAL_SIMILARITY, $result->checks[1]['type']);
+        $this->assertSame(KycCheck::RESULT_CONSIDER, $result->checks[1]['result']);
+        $this->assertSame('rejected', $result->checks[1]['sub_result']);
+        $this->assertSame(0.31, $result->checks[1]['confidence']);
     }
 
     public function test_fetch_status_consider_check_maps_to_manual_review_with_sub_result(): void
