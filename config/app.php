@@ -7,6 +7,7 @@ use App\Providers\AuthServiceProvider;
 use App\Providers\BroadcastServiceProvider;
 use App\Providers\EmailV2ServiceProvider;
 use App\Providers\EventServiceProvider;
+use App\Providers\FaceCheckServiceProvider;
 use App\Providers\FortifyServiceProvider;
 use App\Providers\FxServiceProvider;
 use App\Providers\GeolocationV2ServiceProvider;
@@ -185,6 +186,7 @@ return [
         AppServiceProvider::class,
         I18nServiceProvider::class,
         KycServiceProvider::class,
+        FaceCheckServiceProvider::class,
         SmsServiceProvider::class,
         PushServiceProvider::class,
         InsuranceServiceProvider::class,

@@ -153,14 +153,7 @@ class OnfidoProvider implements KycProviderInterface
             default => KycVerification::DECISION_PENDING,
         };
 
-        $checks = [];
-        foreach ((array) ($body['report_ids'] ?? []) as $reportId) {
-            $checks[] = [
-                'type' => KycCheck::TYPE_DOCUMENT,
-                'result' => $result === 'clear' ? KycCheck::RESULT_CLEAR : KycCheck::RESULT_CONSIDER,
-                'external_id' => (string) $reportId,
-            ];
-        }
+        $checks = $this->mapReports($body, $result);
 
         return new KycStatusResult(
             status: $mappedStatus,
@@ -170,6 +163,147 @@ class OnfidoProvider implements KycProviderInterface
             rejectionReason: $result === 'consider' ? ($body['sub_result'] ?? 'Manual review required by Onfido') : null,
             raw: $body,
         );
+    }
+
+    /**
+     * LE TYPE D'UN RAPPORT SE LIT SUR LE RAPPORT, PAS SUR LA VÉRIFICATION.
+     *
+     * `/checks/{id}` ne rend que `report_ids` : une liste d'identifiants, sans nature. L'adaptateur
+     * les rangeait tous en `document`. Conséquence directe : `config/kyc.php` demande bien un
+     * rapport `facial_similarity` à chaque vérification, Onfido le rend, et il était enregistré
+     * comme un contrôle de document — le seul résultat facial de la plateforme était perdu à
+     * l'écriture, et le type `KycCheck::TYPE_FACIAL_SIMILARITY` n'était jamais posé par personne.
+     *
+     * On lit donc les rapports. Trois sources, dans l'ordre : ceux déjà présents dans la charge
+     * utile (certains webhooks les embarquent), sinon un appel à `/reports?check_id=…`, sinon —
+     * réseau coupé, jeton absent — les identifiants seuls, typés `unknown`. Ne pas savoir se dit ;
+     * ça ne s'invente pas.
+     *
+     * @param  array<string, mixed>  $body
+     * @return list<array<string, mixed>>
+     */
+    protected function mapReports(array $body, ?string $checkResult): array
+    {
+        $reports = $body['reports'] ?? null;
+
+        if (! is_array($reports) || $reports === []) {
+            $reports = $this->fetchReports($body);
+        }
+
+        if ($reports !== []) {
+            $checks = [];
+
+            foreach ($reports as $report) {
+                if (! is_array($report)) {
+                    continue;
+                }
+
+                $ligne = [
+                    'type' => $this->reportType((string) ($report['name'] ?? '')),
+                    'result' => $this->reportResult($report['result'] ?? null),
+                    'external_id' => (string) ($report['id'] ?? ''),
+                ];
+
+                if (filled($report['sub_result'] ?? null)) {
+                    $ligne['sub_result'] = (string) $report['sub_result'];
+                }
+
+                if (is_array($report['breakdown'] ?? null)) {
+                    $ligne['breakdown'] = $report['breakdown'];
+                }
+
+                $score = $report['properties']['score'] ?? null;
+                if (is_numeric($score)) {
+                    $ligne['confidence'] = (float) $score;
+                }
+
+                $checks[] = $ligne;
+            }
+
+            return $checks;
+        }
+
+        // Repli : on connaît les identifiants, pas la nature. On le dit.
+        $checks = [];
+        foreach ((array) ($body['report_ids'] ?? []) as $reportId) {
+            $checks[] = [
+                'type' => KycCheck::TYPE_UNKNOWN,
+                'result' => $this->reportResult($checkResult),
+                'external_id' => (string) $reportId,
+            ];
+        }
+
+        return $checks;
+    }
+
+    /**
+     * @param  array<string, mixed>  $body
+     * @return list<array<string, mixed>>
+     */
+    protected function fetchReports(array $body): array
+    {
+        $checkId = $body['id'] ?? null;
+
+        if (! filled($checkId)) {
+            return [];
+        }
+
+        /*
+         * Soft-fail volontaire : l'appel des rapports enrichit le résultat, il ne le conditionne
+         * pas. Une panne réseau ne doit pas transformer une vérification aboutie en échec — le
+         * repli ci-dessus enregistre alors les identifiants sans leur inventer de nature.
+         */
+        try {
+            $response = $this->client()->get('/reports', ['check_id' => (string) $checkId]);
+
+            if ($response->failed()) {
+                return [];
+            }
+
+            $reports = $response->json('reports');
+
+            return is_array($reports) ? array_values($reports) : [];
+        } catch (\Throwable $e) {
+            report($e);
+
+            return [];
+        }
+    }
+
+    /**
+     * Noms de rapports Onfido → types de contrôle CleanUx.
+     *
+     * Onfido décline la similarité faciale en trois variantes (`_photo`, `_video`, `_motion`) et
+     * les listes de surveillance en cinq : on compare donc par préfixe, sinon la prochaine variante
+     * repartirait en `unknown` sans que rien ne le signale.
+     */
+    protected function reportType(string $name): string
+    {
+        $name = strtolower(trim($name));
+
+        return match (true) {
+            $name === 'document' => KycCheck::TYPE_DOCUMENT,
+            str_starts_with($name, 'facial_similarity') => KycCheck::TYPE_FACIAL_SIMILARITY,
+            str_starts_with($name, 'known_faces') => KycCheck::TYPE_FACIAL_SIMILARITY,
+            str_starts_with($name, 'watchlist') => KycCheck::TYPE_WATCHLIST_AML,
+            $name === 'right_to_work' => KycCheck::TYPE_RIGHT_TO_WORK,
+            str_contains($name, 'criminal') => KycCheck::TYPE_CRIMINAL_RECORD,
+            str_contains($name, 'address') => KycCheck::TYPE_ADDRESS,
+            $name === 'tax_id' => KycCheck::TYPE_TAX_ID,
+            default => KycCheck::TYPE_UNKNOWN,
+        };
+    }
+
+    protected function reportResult(mixed $result): string
+    {
+        return match ((string) $result) {
+            'clear' => KycCheck::RESULT_CLEAR,
+            'consider' => KycCheck::RESULT_CONSIDER,
+            'unidentified' => KycCheck::RESULT_UNIDENTIFIED,
+            'caution' => KycCheck::RESULT_CAUTION,
+            'rejected' => KycCheck::RESULT_REJECTED,
+            default => KycCheck::RESULT_PENDING,
+        };
     }
 
     protected function firstName($user): string

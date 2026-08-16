@@ -24,6 +24,16 @@ class KycCheck extends Model
 
     public const TYPE_TAX_ID = 'tax_id';
 
+    /**
+     * LE TYPE QU'ON N'A PAS PU LIRE.
+     *
+     * Un fournisseur peut rendre un rapport dont on ne connaît pas le nom, ou ne pas le rendre du
+     * tout. Le nommer `document` par défaut — ce que faisait l'adaptateur Onfido pour TOUS les
+     * rapports — était pire que de dire qu'on ne sait pas : un résultat de similarité faciale
+     * finissait rangé comme un contrôle de document, et plus personne ne pouvait le retrouver.
+     */
+    public const TYPE_UNKNOWN = 'unknown';
+
     public const RESULT_PENDING = 'pending';
 
     public const RESULT_CLEAR = 'clear';
