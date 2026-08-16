@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\Auth\RevocationDesAcces;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -43,6 +45,8 @@ class ProfileController extends Controller
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
+        $motDePasseChange = false;
+
         if (! empty($data['password'])) {
             if (! Hash::check($data['current_password'], $user->password)) {
                 return response()->json([
@@ -51,6 +55,7 @@ class ProfileController extends Controller
                 ], 422);
             }
             $user->password = Hash::make($data['password']);
+            $motDePasseChange = true;
         }
 
         foreach (['name', 'phone', 'locale'] as $field) {
@@ -60,6 +65,26 @@ class ProfileController extends Controller
         }
 
         $user->save();
+
+        /*
+         * UN CHANGEMENT DE MOT DE PASSE COUPE LES AUTRES ACCÈS.
+         *
+         * Ce chemin-là est celui du téléphone : on épargne le jeton COURANT — se faire déconnecter
+         * du geste qu'on vient de faire ferait croire à un échec — et on révoque tous les autres,
+         * plus les sessions web enregistrées et le cookie « se souvenir de moi ». Sans cela,
+         * changer son mot de passe depuis l'application laissait l'ordinateur du voleur connecté.
+         */
+        if ($motDePasseChange) {
+            /*
+             * `TransientToken` n'a pas de clé : c'est ce que rend `currentAccessToken()` quand la
+             * session vient du cookie web (ou d'un `Sanctum::actingAs` en test). Lui demander son
+             * identifiant lèverait une erreur là où il n'y a simplement rien à épargner.
+             */
+            $jetonCourant = $user->currentAccessToken();
+            $jetonConserve = $jetonCourant instanceof Model ? (int) $jetonCourant->getKey() : null;
+
+            app(RevocationDesAcces::class)->apresChangementDeMotDePasse($user, $jetonConserve);
+        }
         $user->loadMissing('providerProfile');
 
         return response()->json([
