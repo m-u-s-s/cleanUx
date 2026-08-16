@@ -369,5 +369,8 @@
   "Edit Profile": "Profil bearbeiten",
   "Log Out": "Abmelden",
   "Un champ doit être corrigé :": "Ein Feld muss korrigiert werden:",
-  "Quelques champs doivent être corrigés :": "Einige Felder müssen korrigiert werden:"
+  "Quelques champs doivent être corrigés :": "Einige Felder müssen korrigiert werden:",
+  "I agree to the :terms_of_service and :privacy_policy": "Ich akzeptiere die :terms_of_service und die :privacy_policy",
+  "Terms of Service": "Allgemeinen Geschäftsbedingungen",
+  "Privacy Policy": "Datenschutzerklärung"
 }

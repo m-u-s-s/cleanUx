@@ -369,5 +369,8 @@
   "Edit Profile": "Edit Profile",
   "Log Out": "Log Out",
   "Un champ doit être corrigé :": "One field needs fixing:",
-  "Quelques champs doivent être corrigés :": "A few fields need fixing:"
+  "Quelques champs doivent être corrigés :": "A few fields need fixing:",
+  "I agree to the :terms_of_service and :privacy_policy": "I agree to the :terms_of_service and the :privacy_policy",
+  "Terms of Service": "Terms of Service",
+  "Privacy Policy": "Privacy Policy"
 }

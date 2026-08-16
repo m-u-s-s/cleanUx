@@ -369,5 +369,8 @@
   "Edit Profile": "Modifica il mio profilo",
   "Log Out": "Disconnetti",
   "Un champ doit être corrigé :": "Un campo va corretto:",
-  "Quelques champs doivent être corrigés :": "Alcuni campi vanno corretti:"
+  "Quelques champs doivent être corrigés :": "Alcuni campi vanno corretti:",
+  "I agree to the :terms_of_service and :privacy_policy": "Accetto i :terms_of_service e la :privacy_policy",
+  "Terms of Service": "termini di servizio",
+  "Privacy Policy": "informativa sulla privacy"
 }

@@ -369,5 +369,8 @@
   "Edit Profile": "Editar mi perfil",
   "Log Out": "Cerrar sesión",
   "Un champ doit être corrigé :": "Hay que corregir un campo:",
-  "Quelques champs doivent être corrigés :": "Hay que corregir algunos campos:"
+  "Quelques champs doivent être corrigés :": "Hay que corregir algunos campos:",
+  "I agree to the :terms_of_service and :privacy_policy": "Acepto los :terms_of_service y la :privacy_policy",
+  "Terms of Service": "términos y condiciones",
+  "Privacy Policy": "política de privacidad"
 }

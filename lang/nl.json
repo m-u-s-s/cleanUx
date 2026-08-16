@@ -369,5 +369,8 @@
   "Edit Profile": "Mijn profiel bewerken",
   "Log Out": "Afmelden",
   "Un champ doit être corrigé :": "Eén veld moet worden aangepast:",
-  "Quelques champs doivent être corrigés :": "Enkele velden moeten worden aangepast:"
+  "Quelques champs doivent être corrigés :": "Enkele velden moeten worden aangepast:",
+  "I agree to the :terms_of_service and :privacy_policy": "Ik ga akkoord met de :terms_of_service en het :privacy_policy",
+  "Terms of Service": "algemene voorwaarden",
+  "Privacy Policy": "privacybeleid"
 }
