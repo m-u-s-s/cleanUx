@@ -3,6 +3,7 @@
 namespace App\Services\Missions\OnSite;
 
 use App\Events\Missions\MissionExtraProposed;
+use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\MissionExtra;
 use App\Models\User;
@@ -205,27 +206,78 @@ class MissionExtraService
     }
 
     /**
+     * Rejouer un prélèvement qui n'avait pas abouti.
+     *
+     * Même chemin que le prélèvement d'origine — surtout pas une seconde implémentation : deux
+     * façons de débiter la même créance finiraient par appliquer deux commissions différentes.
+     * Cette méthode n'existe que pour donner un point d'entrée public à la commande de reprise.
+     */
+    public function reprendreLePrelevement(MissionExtra $extra): void
+    {
+        if ($extra->status !== MissionExtra::STATUS_APPROVED) {
+            return;
+        }
+
+        $this->prelever($extra);
+    }
+
+    /**
      * PRÉLÈVEMENT INCRÉMENTAL — même mécanique que le paiement principal.
      *
-     * Charge à destination du compte Connect du prestataire, commission de la plateforme retenue par
-     * le même calcul que le devis d'origine : sans cela, le supplément échapperait à la commission
-     * et le portefeuille interne divergerait de ce que Stripe a réellement transféré.
+     * Charge à destination du compte Connect du prestataire, commission retenue par le même calcul
+     * que le devis d'origine : sans cela, le supplément échapperait à la commission et le
+     * portefeuille interne divergerait de ce que Stripe a réellement transféré.
      *
-     * L'ÉCHEC EST SILENCIEUX POUR L'UTILISATEUR ET BRUYANT DANS LES JOURNAUX. Le client vient de
-     * dire oui ; lui montrer une erreur de paiement à cet instant ferait annuler un accord qui est
-     * acquis. L'extra reste `approved`, la créance existe, et la reprise se fait plus tard.
+     * CE QUE CETTE MÉTHODE NE FAISAIT PAS, ET QUI EST LE PROPOS DE SA RÉÉCRITURE.
+     *
+     * Elle créait l'intention avec `confirm: false`, sans moyen de paiement et sans `off_session` :
+     * l'intention naissait en `requires_payment_method`, AUCUN euro ne bougeait — puis l'extra était
+     * marqué `charged` quoi qu'il arrive. Tout supplément accepté par un client était donc
+     * enregistré comme encaissé sans l'être, et rien nulle part ne pouvait le rattraper : ni la
+     * comptabilité, ni le portefeuille du prestataire, ni le webhook, qui ne connaît pas
+     * `mission_extra_id`.
+     *
+     * Trois corrections, indissociables :
+     *   1. la carte du client est celle de SA réservation, reprise sur l'intention d'origine ;
+     *   2. l'intention est confirmée hors session ;
+     *   3. `charged` n'est écrit QUE si Stripe a dit `succeeded`.
+     *
+     * L'ÉCHEC RESTE SILENCIEUX POUR L'UTILISATEUR ET BRUYANT DANS LES JOURNAUX. Le client vient de
+     * dire oui ; lui montrer une erreur de paiement à cet instant ferait annuler un accord acquis.
+     * L'extra reste `approved` — la créance existe, et `extras:reprendre-les-prelevements` la
+     * reprend. Cette phrase était déjà écrite ici ; elle est désormais vraie.
      */
     protected function prelever(MissionExtra $extra): void
     {
         $mission = $extra->mission;
         $booking = $mission?->booking;
-        $prestataire = $booking?->employe;
 
-        if (! $booking || ! $prestataire?->canReceiveStripeConnectPayments() || ! $booking->client?->stripe_id) {
-            Log::info('Extra approuvé sans prélèvement immédiat', [
-                'extra_id' => $extra->id,
-                'raison' => 'compte Connect ou client Stripe indisponible',
-            ]);
+        if (! $booking) {
+            $this->noterLEchec($extra, 'réservation introuvable');
+
+            return;
+        }
+
+        /*
+         * LE MÊME PRESTATAIRE QUE LA COMMISSION, pas `employe` tout seul.
+         *
+         * `employe_id` est la colonne historique : une réservation moderne porte
+         * `assigned_provider_user_id` et laisse la première vide. En ne lisant qu'elle, ce
+         * prélèvement sortait par un `Log::info` sur toutes les réservations récentes — donc sur
+         * celles qui comptent.
+         */
+        $prestataire = $booking->assignedProvider ?? $booking->employe;
+
+        if (! $prestataire?->canReceiveStripeConnectPayments() || ! $booking->client?->stripe_id) {
+            $this->noterLEchec($extra, 'compte Connect ou client Stripe indisponible');
+
+            return;
+        }
+
+        $carte = $this->carteDuClient($booking);
+
+        if ($carte === null) {
+            $this->noterLEchec($extra, 'aucun moyen de paiement réutilisable sur la réservation');
 
             return;
         }
@@ -237,7 +289,14 @@ class MissionExtraService
                 'amount' => $extra->price_cents,
                 'currency' => strtolower($extra->currency),
                 'customer' => $booking->client->stripe_id,
-                'confirm' => false,
+                'payment_method' => $carte,
+                /*
+                 * `confirm` + `off_session` : le client n'est plus devant son écran, il a accepté
+                 * le supplément et l'intervention continue. C'est exactement le cas d'usage que
+                 * Stripe nomme « off-session » — et sans les deux, rien n'est débité.
+                 */
+                'confirm' => true,
+                'off_session' => true,
                 'application_fee_amount' => $commission['platform_fee_cents'],
                 'transfer_data' => ['destination' => (string) $prestataire->stripe_connect_account_id],
                 'metadata' => [
@@ -247,6 +306,20 @@ class MissionExtraService
                 ],
             ]);
 
+            /*
+             * `charged` SEULEMENT SI STRIPE L'A DIT.
+             *
+             * Une carte peut réclamer une authentification forte hors session : l'intention part
+             * alors en `requires_action` et rien n'est encaissé. L'écrire `charged` reviendrait à
+             * refaire exactement le défaut qu'on corrige.
+             */
+            if (($intent->status ?? null) !== 'succeeded') {
+                $extra->forceFill(['stripe_payment_intent_id' => $intent->id])->save();
+                $this->noterLEchec($extra, 'intention non aboutie : '.($intent->status ?? 'statut inconnu'));
+
+                return;
+            }
+
             $extra->forceFill([
                 'status' => MissionExtra::STATUS_CHARGED,
                 'charged_at' => now(),
@@ -254,12 +327,55 @@ class MissionExtraService
             ])->save();
         } catch (\Throwable $e) {
             report($e);
-
-            Log::warning('Prélèvement du supplément impossible', [
-                'extra_id' => $extra->id,
-                'message' => $e->getMessage(),
-            ]);
+            $this->noterLEchec($extra, $e->getMessage());
         }
+    }
+
+    /**
+     * La carte à débiter : celle que le client a déjà utilisée pour CETTE réservation.
+     *
+     * On la relit sur l'intention d'origine plutôt que de deviner un moyen de paiement par défaut
+     * sur le compte client. C'est la carte pour laquelle il a donné son accord sur cette
+     * intervention-là, et celle qu'il verra sur son relevé à côté du montant principal.
+     */
+    protected function carteDuClient(Booking $booking): ?string
+    {
+        if (! filled($booking->stripe_payment_intent_id)) {
+            return null;
+        }
+
+        try {
+            $origine = PaymentIntent::retrieve((string) $booking->stripe_payment_intent_id);
+
+            $carte = $origine->payment_method ?? null;
+
+            return filled($carte) ? (string) $carte : null;
+        } catch (\Throwable $e) {
+            report($e);
+
+            return null;
+        }
+    }
+
+    /**
+     * La créance reste, et elle est datée.
+     *
+     * `metadata` porte le motif et l'horodatage : sans eux, un administrateur voyant un extra
+     * `approved` depuis trois jours n'a aucun moyen de savoir si le prélèvement a été tenté.
+     */
+    protected function noterLEchec(MissionExtra $extra, string $motif): void
+    {
+        Log::warning('Prélèvement du supplément impossible', [
+            'extra_id' => $extra->id,
+            'motif' => $motif,
+        ]);
+
+        $extra->forceFill([
+            'metadata' => array_merge((array) ($extra->metadata ?? []), [
+                'derniere_tentative_de_prelevement' => now()->toIso8601String(),
+                'motif_du_dernier_echec' => $motif,
+            ]),
+        ])->save();
     }
 
     protected function prevenirLeClient(Mission $mission, MissionExtra $extra): void
