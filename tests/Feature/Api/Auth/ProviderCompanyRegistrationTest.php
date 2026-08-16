@@ -66,6 +66,42 @@ class ProviderCompanyRegistrationTest extends TestCase
         $this->assertNotNull($profile->self_registered_at);
     }
 
+    /**
+     * LE FONDATEUR ATTEINT SA PROPRE SOCIÉTÉ — mesuré le 2026-08-16, il ne l'atteignait pas.
+     *
+     * L'inscription créait l'organisation, le membre `owner` et le profil rattaché, mais n'écrivait
+     * jamais les deux colonnes que TOUT le reste lit : `organization_account_id` et
+     * `current_organization_id`. Le patron obtenait donc 403 « Aucune organisation active » sur
+     * chaque écran de son espace, et sa connexion annonçait `organization_account_id: null` —
+     * l'application n'avait même pas de quoi savoir quel espace ouvrir.
+     *
+     * Le test presse les deux : les colonnes ET une route de l'espace société. Les colonnes seules
+     * prouveraient une écriture, pas un accès ; la route seule ne dirait pas laquelle des quatre
+     * sources de contexte a servi.
+     */
+    public function test_the_founder_reaches_the_company_space_right_after_registering(): void
+    {
+        $reponse = $this->postJson('/api/auth/register', $this->payload([
+            'provider_kind' => 'company',
+            'company_name' => 'Nettoyage Dupont SPRL',
+        ]))->assertCreated();
+
+        $user = User::where('email', 'nouveau@prestataire.test')->firstOrFail();
+        $org = OrganizationAccount::where('name', 'Nettoyage Dupont SPRL')->firstOrFail();
+
+        $this->assertSame($org->id, $user->organization_account_id);
+        $this->assertSame($org->id, $user->current_organization_id);
+
+        // La réponse de connexion porte le contexte : c'est elle qui décide de l'espace ouvert.
+        $reponse->assertJsonPath('user.organization_account_id', $org->id)
+            ->assertJsonPath('user.organization_type', 'provider_company')
+            ->assertJsonPath('user.can_manage_company', true);
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/provider/company/overview')
+            ->assertOk();
+    }
+
     public function test_registering_as_an_independent_creates_no_organization(): void
     {
         $this->postJson('/api/auth/register', $this->payload([

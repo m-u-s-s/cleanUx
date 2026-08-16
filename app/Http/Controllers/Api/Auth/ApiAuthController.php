@@ -348,6 +348,25 @@ class ApiAuthController extends Controller
 
             $organizationId = $organization->id;
 
+            /*
+             * L'ORGANISATION ACTIVE DU COMPTE — les deux colonnes que TOUT le reste lit.
+             *
+             * Elles manquaient ici, et seulement ici : `createClientIdentity()` les pose, et
+             * l'inscription web les pose aussi (`CreateNewUser::createProviderCompany`). Le
+             * fondateur inscrit depuis l'application obtenait donc une organisation, un rôle
+             * `owner` en base, un profil rattaché — et 403 « Aucune organisation active » sur
+             * chaque écran de sa propre société. `organizationContextId()` a quatre replis, aucun
+             * ne regarde la table des membres : une adhésion ne fait pas un contexte.
+             *
+             * `forceFill` : ces colonnes désignent l'organisation dont le compte lira les données,
+             * elles ne sont pas assignables en masse. L'identifiant vient de l'organisation qu'on
+             * vient de créer, jamais du corps de la requête.
+             */
+            $user->forceFill([
+                'organization_account_id' => $organization->id,
+                'current_organization_id' => $organization->id,
+            ])->save();
+
             $this->openBusinessVerification($user, $data);
         }
 
