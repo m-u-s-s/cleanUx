@@ -68,7 +68,14 @@ return [
         ['key' => 'missions', 'title' => 'Missions', 'group' => 'operations', 'icon' => 'briefcase-outline', 'coverage' => 'descriptor', 'routes' => ['admin/missions', 'admin/missions/{mission}', 'admin/missions/export/pdf']],
         ['key' => 'planning', 'title' => 'Planning', 'group' => 'operations', 'icon' => 'calendar-number-outline', 'coverage' => 'descriptor', 'routes' => ['admin/planning']],
         ['key' => 'calendar', 'title' => 'Calendrier', 'group' => 'operations', 'icon' => 'calendar-outline', 'coverage' => 'descriptor', 'routes' => ['admin/calendar', 'admin/calendar/settings']],
-        ['key' => 'availability', 'title' => 'Disponibilités', 'group' => 'operations', 'icon' => 'time-outline', 'coverage' => 'descriptor', 'routes' => ['admin/availability']],
+        /*
+         * La fiche d'UN prestataire s'est ajoutée le 2026-08-15 (`ddf1520f`) sans entrer ici, et
+         * `AdminConsoleInventoryTest` le disait depuis : « Pages admin absentes de
+         * config/admin_console.php : admin/availability/{user} ». C'était le seul rouge de la suite.
+         * Le registre décrit la couverture mobile — une page absente d'ici est une page dont
+         * personne ne sait si l'application la sert.
+         */
+        ['key' => 'availability', 'title' => 'Disponibilités', 'group' => 'operations', 'icon' => 'time-outline', 'coverage' => 'descriptor', 'routes' => ['admin/availability', 'admin/availability/{user}']],
         ['key' => 'presence', 'title' => 'Présence', 'group' => 'operations', 'icon' => 'radio-outline', 'coverage' => 'descriptor', 'routes' => ['admin/presence']],
         ['key' => 'trip-tracking', 'title' => 'Suivi de trajet', 'group' => 'operations', 'icon' => 'navigate-outline', 'coverage' => 'descriptor', 'routes' => ['admin/trip-tracking']],
         ['key' => 'ia-dispatch', 'title' => 'Dispatch IA', 'group' => 'operations', 'icon' => 'sparkles-outline', 'coverage' => 'descriptor', 'routes' => ['admin/ia-dispatch']],
