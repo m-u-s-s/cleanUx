@@ -34,9 +34,14 @@ class ProviderWalletController extends Controller
     {
         $this->abortIfNotProvider($request->user());
 
-        $currency = (string) $request->query('currency', 'EUR');
+        // SANS PARAMETRE, ON REND SA MONNAIE A LUI. Le defaut `'EUR'` filtrait les ecritures
+        // d'un prestataire paye en dirhams jusqu'a n'en trouver aucune : solde a zero, en silence.
+        $currency = $request->query('currency');
 
-        return response()->json($wallet->balance($request->user()->id, $currency));
+        return response()->json($wallet->balance(
+            $request->user()->id,
+            is_string($currency) ? $currency : null,
+        ));
     }
 
     public function transactions(Request $request): JsonResponse
@@ -87,7 +92,10 @@ class ProviderWalletController extends Controller
             $payout = $wallet->requestWithdraw(
                 $request->user(),
                 (float) $data['amount'],
-                strtoupper($data['currency'] ?? 'EUR'),
+                // Sans devise demandee, le service prend celle du portefeuille. Imposer `EUR`
+                // ici faisait refuser tout retrait d'un prestataire paye dans une autre monnaie,
+                // au motif d'un solde insuffisant qui ne l'etait pas.
+                isset($data['currency']) ? strtoupper((string) $data['currency']) : null,
             );
         } catch (ValidationException $e) {
             return response()->json([

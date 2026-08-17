@@ -2,6 +2,7 @@
 
 namespace App\Services\Analytics;
 
+use App\Support\International\Devise;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -42,7 +43,7 @@ class KpiFormatter
     {
         return [
             'value' => round($current, 2),
-            'currency' => 'EUR',
+            'currency' => Devise::plateforme(),
             'trend' => $trend,
             'label' => "Chiffre d'affaires",
         ];

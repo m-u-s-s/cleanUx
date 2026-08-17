@@ -52,7 +52,9 @@
 
             <label class="block">
                 <span class="text-xs font-medium text-slate-600">Code ISO (2 lettres)</span>
-                <input type="text" wire:model="formulaire.iso_code" maxlength="2" placeholder="FR"
+                {{-- `blur` et non `live` : on propose la devise quand le code est COMPLET, pas
+                     a chaque lettre. `M` seul ne designe aucun pays. --}}
+                <input type="text" wire:model="formulaire.iso_code" wire:blur="deduireLaDevise" maxlength="2" placeholder="FR"
                     class="mt-1 w-full min-h-[44px] rounded-xl border-slate-300 text-sm uppercase">
                 @error('formulaire.iso_code')
                     <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span>
@@ -61,7 +63,7 @@
 
             <label class="block">
                 <span class="text-xs font-medium text-slate-600">Devise</span>
-                <input type="text" wire:model="formulaire.currency_code" maxlength="3" placeholder="EUR"
+                <input type="text" wire:model="formulaire.currency_code" maxlength="3" placeholder="proposee depuis le pays"
                     class="mt-1 w-full min-h-[44px] rounded-xl border-slate-300 text-sm uppercase">
                 @error('formulaire.currency_code')
                     <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span>

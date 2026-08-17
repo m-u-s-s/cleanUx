@@ -34,7 +34,7 @@
         </div>
 
         <div class="flex flex-nowrap gap-2 overflow-x-auto border-b border-slate-200">
-            @foreach(['ledger' => 'Ledger', 'periods' => 'Périodes', 'exports' => 'Exports'] as $key => $label)
+            @foreach(['ledger' => 'Ledger', 'periods' => 'Périodes', 'exports' => 'Exports', 'fiscalite' => 'Fiscalité'] as $key => $label)
                 <button wire:click="$set('tab', '{{ $key }}')"
                         @class([
                             'px-4 py-2 min-h-[44px] inline-flex shrink-0 items-center whitespace-nowrap text-sm font-semibold',
@@ -148,6 +148,12 @@
                                     @if(! $p->is_closed)
                                         <button wire:click="closePeriod({{ $p->period_year }}, {{ $p->period_month }})" class="text-indigo-600 hover:underline"
                                             onclick="return confirm('Clôturer {{ $p->label() }} ? Action figée.')">Clôturer</button>
+                                    @else
+                                        {{-- LE MOTIF EST DEMANDÉ AVANT L'APPEL, jamais après : rouvrir un exercice
+                                             clos se justifie devant un contrôle, et le service le refuse sans raison
+                                             écrite. `prompt` rend `null` si on annule — le composant refuse le vide. --}}
+                                        <button type="button" class="text-amber-700 hover:underline"
+                                            onclick="const m = prompt('Motif de réouverture de {{ $p->label() }} ?'); if (m) { @this.call('reopenPeriod', {{ $p->id }}, m); }">Rouvrir</button>
                                     @endif
                                 </td>
                             </tr>
@@ -200,7 +206,70 @@
                     </tbody>
                 </table>
             @endif
-            <div class="p-3">{{ $items->links() }}</div>
+
+            @if($tab === 'fiscalite')
+                <div class="p-6 space-y-8">
+                    <div>
+                        <h2 class="text-lg font-black text-slate-900">Position fiscale &amp; postage</h2>
+                        <p class="text-sm text-slate-500">
+                            Ces réglages décident de ce qui entre au journal et sous quel régime de TVA.
+                            Ils vivaient dans la configuration du serveur ; ils se changent désormais ici.
+                        </p>
+                    </div>
+
+                    <label class="flex items-start gap-3">
+                        <input type="checkbox" wire:model="postageAutomatique" class="mt-1 rounded border-gray-300" />
+                        <span>
+                            <span class="block text-sm font-semibold text-slate-900">Écrire les écritures automatiquement</span>
+                            <span class="block text-xs text-slate-500">
+                                Coupé par défaut, exprès : tant qu'il l'est, aucun événement métier n'alimente le
+                                grand livre. À lever une fois le plan comptable validé.
+                            </span>
+                        </span>
+                    </label>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-900" for="tva-frais-annulation">
+                            TVA sur les frais d'annulation
+                        </label>
+                        <p class="mb-2 text-xs text-slate-500">
+                            Laisser <strong>vide</strong> applique le taux du pays de la réservation, comme pour un
+                            produit ordinaire. Saisir <strong>0</strong> les traite comme une indemnité
+                            <strong>hors champ</strong> de la TVA. Ce sont deux positions différentes, et le vide
+                            n'est pas un zéro.
+                        </p>
+                        <input id="tva-frais-annulation" type="text" inputmode="decimal" wire:model="tvaFraisAnnulation"
+                               placeholder="vide = taux du pays"
+                               class="w-40 rounded-xl border-gray-300 text-sm" />
+                        @error('tvaFraisAnnulation')
+                            <p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-900" for="modele-revenu">Modèle de revenu</label>
+                        <p class="mb-2 text-xs text-slate-500">
+                            <strong>Principal</strong> : le TTC complet est porté en ventes. <strong>Agent</strong> :
+                            seule la commission est un produit, la part prestataire reste une dette jusqu'au
+                            versement. Le choix change la base taxable — il vous revient.
+                        </p>
+                        <select id="modele-revenu" wire:model="modeleRevenu" class="rounded-xl border-gray-300 text-sm">
+                            <option value="principal">Principal — TTC complet en ventes</option>
+                            <option value="agent">Agent — commission seule en produit</option>
+                        </select>
+                        @error('modeleRevenu')
+                            <p class="mt-1 text-xs font-semibold text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <button type="button" wire:click="enregistrerLaFiscalite"
+                            class="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-700">
+                        Enregistrer
+                    </button>
+                </div>
+            @else
+                <div class="p-3">{{ $items->links() }}</div>
+            @endif
         </div>
     </div>
 </div>

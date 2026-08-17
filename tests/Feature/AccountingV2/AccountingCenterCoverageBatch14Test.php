@@ -27,7 +27,7 @@ class AccountingCenterCoverageBatch14Test extends TestCase
 
     public function test_mount_seeds_period_filters_to_current_month(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = $this->comptable();
 
         Livewire::actingAs($admin)
             ->test(AccountingCenter::class)
@@ -41,7 +41,7 @@ class AccountingCenterCoverageBatch14Test extends TestCase
 
     public function test_ledger_tab_renders_filtered_entries(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = $this->comptable();
 
         $this->makeEntry(['journal_code' => 'VEN', 'account_code' => '411000', 'debit_cents' => 5000, 'credit_cents' => 0]);
         $this->makeEntry(['journal_code' => 'ACH', 'account_code' => '401000', 'debit_cents' => 0, 'credit_cents' => 2000]);
@@ -57,7 +57,7 @@ class AccountingCenterCoverageBatch14Test extends TestCase
 
     public function test_periods_and_exports_tabs_render(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = $this->comptable();
 
         AccountingPeriod::query()->create([
             'period_year' => (int) now()->year,
@@ -90,7 +90,7 @@ class AccountingCenterCoverageBatch14Test extends TestCase
 
     public function test_close_period_dispatches_success_toast_for_balanced_period(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = $this->comptable();
         $year = (int) now()->year;
         $month = (int) now()->month;
 
@@ -111,7 +111,7 @@ class AccountingCenterCoverageBatch14Test extends TestCase
 
     public function test_close_period_dispatches_error_toast_when_already_closed(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = $this->comptable();
         $year = (int) now()->year;
         $month = (int) now()->month;
 
@@ -132,7 +132,7 @@ class AccountingCenterCoverageBatch14Test extends TestCase
     public function test_generate_export_creates_ready_export(): void
     {
         Storage::fake('local');
-        $admin = User::factory()->admin()->create();
+        $admin = $this->comptable();
 
         $this->makeEntry(['debit_cents' => 1000, 'credit_cents' => 0]);
 
@@ -152,7 +152,7 @@ class AccountingCenterCoverageBatch14Test extends TestCase
     public function test_generate_export_dispatches_error_toast_on_unsupported_format(): void
     {
         Storage::fake('local');
-        $admin = User::factory()->admin()->create();
+        $admin = $this->comptable();
 
         Livewire::actingAs($admin)
             ->test(AccountingCenter::class)
@@ -180,5 +180,25 @@ class AccountingCenterCoverageBatch14Test extends TestCase
             'exchange_rate' => 1.0,
             'metadata' => [],
         ], $overrides));
+    }
+
+    /**
+     * LE CENTRE COMPTABLE EXIGE DÉSORMAIS UNE CAPACITÉ, ET PLUS SEULEMENT « ÊTRE ADMINISTRATEUR ».
+     *
+     * `manage-accounting` a été introduite pour qu'on puisse confier le grand livre, les clôtures
+     * et les exports légaux à un comptable extérieur SANS lui ouvrir l'exploitation. Ces tests
+     * employaient `User::factory()->admin()`, qui ne porte aucune capacité : ils recevaient donc un
+     * 403 — le garde faisait exactement son travail.
+     *
+     * On accorde la capacité plutôt que de faire un super-administrateur : un super-admin passe
+     * TOUS les gardes, et ces tests cesseraient de mesurer celui-ci.
+     */
+    private function comptable(): User
+    {
+        $admin = User::factory()->admin()->create();
+
+        $admin->forceFill(['permissions' => ['manage-accounting']])->save();
+
+        return $admin->refresh();
     }
 }

@@ -13,6 +13,7 @@ use App\Services\Contracts\ContractSlaService;
 use App\Services\Dispatch\DispatchEngine;
 use App\Services\Dispatch\MissionDispatchService;
 use App\Services\Enterprise\EnterpriseBookingApprovalService;
+use App\Services\International\CountryMarketResolver;
 use App\Services\OrderEngine\ZonePricingResolver;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
@@ -115,7 +116,21 @@ final class CreateBookingFromApiAction
             'contact_phone' => $data['contact_phone'] ?? ($user->phone ?? null),
             'destination_lat' => $data['destination_lat'] ?? null,
             'destination_lng' => $data['destination_lng'] ?? null,
-            'currency' => $user->preferred_currency ?? 'EUR',
+            /*
+             * LA DEVISE VIENT DE LA POSITION, PLUS DE LA PREFERENCE DU COMPTE.
+             *
+             * `$user->preferred_currency` decrit ce que le client AIME VOIR, pas ce dans quoi la
+             * prestation se paie. Un compte regle sur l'euro commandant a Casablanca produisait une
+             * reservation libellee en euros alors que le prix venait du marche marocain : deux
+             * nombres, deux monnaies, aucune alerte. La zone et le code postal sont deja resolus
+             * quelques lignes plus haut pour le filtrage des candidats -- c'est la meme position.
+             */
+            'currency' => app(CountryMarketResolver::class)->deviseAttendue(
+                client: $user,
+                postalCode: $codePostal,
+                zone: $zone,
+                isoPays: $data['country'] ?? 'BE',
+            ),
             'created_by' => $user->id,
             'asap_requested_at' => $isAsap ? $now : null,
             'asap_deadline_at' => $isAsap ? $now->copy()->addHours(2) : null,

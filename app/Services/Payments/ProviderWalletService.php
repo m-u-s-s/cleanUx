@@ -7,6 +7,7 @@ use App\Models\ProviderPayout;
 use App\Models\ProviderWalletTransaction;
 use App\Models\User;
 use App\Support\ActivityLogger;
+use App\Support\International\Devise;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -23,8 +24,26 @@ class ProviderWalletService
 {
     public const MIN_WITHDRAW_AMOUNT = 10.0;
 
-    public function balance(int $providerUserId, string $currency = 'EUR'): array
+    /**
+     * LE SOLDE D'UN PRESTATAIRE, DANS SA MONNAIE — PLUS DANS LA NOTRE.
+     *
+     * Le parametre valait `'EUR'` par defaut, et deux appelants sur trois ne le passaient pas. Le
+     * filtre `where('currency', 'EUR')` ne trouvait alors AUCUNE ligne pour un prestataire paye en
+     * dirhams : son portefeuille s'affichait a zero. Pas d'erreur, pas de trace — juste un
+     * professionnel a qui l'on montre qu'on ne lui doit rien.
+     *
+     * `null` demande desormais « sa monnaie a lui », deduite de ses propres ecritures. Passer une
+     * devise explicitement reste possible et inchange : c'est ce que fait le versement express, qui
+     * sait deja dans quelle monnaie il travaille.
+     *
+     * LIMITE ASSUMEE : un portefeuille qui melangerait deux monnaies rend le solde de la PLUS
+     * RECENTE, et le dit dans la cle `currency` du retour. Rendre un total unique melangeant des
+     * monnaies serait un faux, et convertir ici ferait dependre un solde du taux du jour.
+     */
+    public function balance(int $providerUserId, ?string $currency = null): array
     {
+        $currency = Devise::normaliser($currency) ?? $this->deviseDuPortefeuille($providerUserId);
+
         $base = ProviderWalletTransaction::query()
             ->forProvider($providerUserId)
             ->where('currency', $currency);
@@ -75,6 +94,24 @@ class ProviderWalletService
     protected function intervenant(Booking $booking): int
     {
         return (int) ($booking->intervenantId() ?? 0);
+    }
+
+    /**
+     * LA MONNAIE DANS LAQUELLE CE PRESTATAIRE EST REELLEMENT PAYE.
+     *
+     * On la lit dans ses ecritures plutot que dans une preference ou une constante : c'est le seul
+     * endroit qui dit la verite, puisque c'est la que l'argent a ete inscrit. Le repli sur la
+     * devise de la plateforme ne sert qu'au portefeuille encore vide, ou l'affichage n'a de toute
+     * facon rien a montrer.
+     */
+    public function deviseDuPortefeuille(int $providerUserId): string
+    {
+        $derniere = ProviderWalletTransaction::query()
+            ->forProvider($providerUserId)
+            ->latest('id')
+            ->value('currency');
+
+        return Devise::premiereRenseignee(is_string($derniere) ? $derniere : null);
     }
 
     public function recordEarning(Booking $booking, ?array $intent = null): ?ProviderWalletTransaction
@@ -346,8 +383,21 @@ class ProviderWalletService
             ]);
     }
 
-    public function requestWithdraw(User $provider, float $amount, string $currency = 'EUR'): ProviderPayout
+    /**
+     * LE RETRAIT SE FAIT DANS LA MONNAIE DU PORTEFEUILLE.
+     *
+     * Le defaut `'EUR'` traversait toute la methode : il servait au message d'erreur, au filtre du
+     * solde, ET a la ligne de versement creee. Pour un prestataire paye en dirhams, `balance()`
+     * rendait donc zero et le retrait etait refuse pour « solde insuffisant » -- alors que l'argent
+     * etait bien la. Le seul recours aurait ete de deviner qu'il fallait passer `MAD` a une API qui
+     * ne le documente nulle part.
+     *
+     * `null` demande sa monnaie a lui. `ExpressPayoutService` continue de passer la sienne.
+     */
+    public function requestWithdraw(User $provider, float $amount, ?string $currency = null): ProviderPayout
     {
+        $currency = Devise::normaliser($currency) ?? $this->deviseDuPortefeuille((int) $provider->id);
+
         if ($amount < self::MIN_WITHDRAW_AMOUNT) {
             throw ValidationException::withMessages([
                 'amount' => sprintf('Le montant minimum de retrait est %.2f %s.', self::MIN_WITHDRAW_AMOUNT, $currency),

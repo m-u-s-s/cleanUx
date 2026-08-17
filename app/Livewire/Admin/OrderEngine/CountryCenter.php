@@ -4,11 +4,13 @@ namespace App\Livewire\Admin\OrderEngine;
 
 use App\Models\Country;
 use App\Services\Catalog\GeoGuard;
+use App\Support\International\DeviseParPays;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -101,6 +103,31 @@ class CountryCenter extends Component
         $valide['iso_code'] = strtoupper((string) $valide['iso_code']);
         $valide['currency_code'] = strtoupper((string) $valide['currency_code']);
 
+        /*
+         * LA DEVISE DOIT CORRESPONDRE AU PAYS, ET LE FORMULAIRE PROPOSAIT `EUR` A TOUT LE MONDE.
+         *
+         * Ajouter le Maroc laissait donc `EUR` en place a moins d'y penser, et toutes les commandes
+         * marocaines etaient libellees en euros -- silencieusement, puisque rien ne compare les
+         * deux champs. Une valeur pre-remplie juste vingt fois sur vingt-cinq est le pire des cas :
+         * on cesse de la lire.
+         *
+         * ON AVERTIT SANS INTERDIRE. Certaines plateformes facturent legitimement dans une autre
+         * monnaie que celle du pays, et refuser en bloc empecherait un choix valable. Mais poser
+         * MAD sur le Maroc par distraction n'est plus possible sans l'avoir vu.
+         */
+        $attendue = DeviseParPays::pour($valide['iso_code']);
+
+        if ($attendue !== null && $attendue !== $valide['currency_code'] && ! $this->devisePeuDefaut) {
+            $this->devisePeuDefaut = true;
+            $this->blocage = "La devise de {$valide['iso_code']} est normalement {$attendue}, "
+                ."et vous avez saisi {$valide['currency_code']}. Enregistrez de nouveau pour "
+                .'confirmer ce choix.';
+
+            return;
+        }
+
+        $this->devisePeuDefaut = false;
+
         if ($this->editionId) {
             Country::findOrFail($this->editionId)->update($valide);
             $this->flash = 'Pays mis à jour.';
@@ -155,12 +182,43 @@ class CountryCenter extends Component
         unset($this->pays);
     }
 
+    /**
+     * Une devise inattendue a-t-elle deja ete signalee pour cette saisie ?
+     *
+     * `#[Locked]` parce que le navigateur peut retourner toute propriete publique de Livewire par
+     * `$set` : sans cela, l'avertissement se contournerait depuis la console, ce qui en ferait un
+     * ornement. Le piege est documente dans ce depot.
+     */
+    #[Locked]
+    public bool $devisePeuDefaut = false;
+
+    /**
+     * LA DEVISE ATTENDUE POUR LE CODE ISO EN COURS DE SAISIE.
+     *
+     * Sert a proposer -- MAD des qu'on tape MA -- sans jamais ecraser ce que l'administrateur a
+     * pose lui-meme : `deduireLaDevise()` ne remplit que le champ VIDE.
+     */
+    public function deduireLaDevise(): void
+    {
+        if (trim((string) ($this->formulaire['currency_code'] ?? '')) !== '') {
+            return;
+        }
+
+        $attendue = DeviseParPays::pour($this->formulaire['iso_code'] ?? null);
+
+        if ($attendue !== null) {
+            $this->formulaire['currency_code'] = $attendue;
+        }
+    }
+
     private function reinitialiserFormulaire(): void
     {
         $this->formulaire = [
             'iso_code' => '',
             'name' => '',
-            'currency_code' => 'EUR',
+            // Vide, et non `EUR` : voir `deduireLaDevise()`. Une valeur pre-remplie qui se trouve
+            // etre juste vingt fois sur vingt-cinq est le pire des defauts -- on cesse de la lire.
+            'currency_code' => '',
             'default_locale' => '',
             'timezone' => '',
             'phone_code' => '',

@@ -6,9 +6,11 @@ use App\Models\Booking;
 use App\Models\MultiTradeBundle;
 use App\Models\MultiTradeBundleItem;
 use App\Models\MultiTradeBundleItemQuote;
+use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\User;
 use App\Notifications\Bundles\BundleQuoteRequestedNotification;
+use App\Services\International\CountryMarketResolver;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -53,7 +55,11 @@ class MultiTradeBundleService
                 'service_zone_id' => $serviceZoneId,
                 'status' => MultiTradeBundle::STATUS_DRAFT,
                 'address' => $address,
-                'currency' => 'EUR',
+                // La zone porte le pays, donc la monnaie du marche. Un forfait est un panier de
+                // prestations : il ne peut pas etre dans une autre monnaie que ses lignes.
+                'currency' => app(CountryMarketResolver::class)->deviseAttendue(
+                    zone: ServiceZone::query()->find($serviceZoneId),
+                ),
             ]);
 
             $totalEstimate = 0;

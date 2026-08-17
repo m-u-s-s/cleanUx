@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\ServiceCatalog;
 use App\Models\User;
 use App\Services\Assistant\Tools\Contracts\AssistantTool;
+use App\Services\International\CountryMarketResolver;
 use App\Services\PermissionService;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -147,7 +148,13 @@ class CreateBookingTool implements AssistantTool
             'status' => 'pending',
             'booking_mode' => 'assistant',
             'created_by' => $user->id,
-            'currency' => 'EUR',
+            // Meme autorite que les deux autres chemins de creation : la devise se deduit de la
+            // position, jamais d'une constante. L'assistant n'a pas de zone resolue sous la main,
+            // il passe donc le code pays de l'adresse -- le resolveur sait quoi en faire.
+            'currency' => app(CountryMarketResolver::class)->deviseAttendue(
+                client: $user,
+                isoPays: $input['country'] ?? 'BE',
+            ),
             'customer_organization_id' => $user->organization_account_id,
         ]);
 

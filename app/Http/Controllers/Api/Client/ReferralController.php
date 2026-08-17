@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Referral;
 use App\Services\Promotion\ReferralService;
+use App\Support\International\Devise;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -36,7 +37,7 @@ class ReferralController extends Controller
             'rewards' => [
                 'per_qualified_referrer' => ReferralService::DEFAULT_REFERRER_REWARD,
                 'per_qualified_referee' => ReferralService::DEFAULT_REFEREE_REWARD,
-                'currency' => 'EUR',
+                'currency' => Devise::plateforme(),
             ],
         ]);
     }
@@ -59,7 +60,7 @@ class ReferralController extends Controller
             'status' => Referral::STATUS_INVITED,
             'invited_at' => now(),
             'expires_at' => now()->addDays(ReferralService::REFERRAL_EXPIRY_DAYS),
-            'currency' => 'EUR',
+            'currency' => Devise::plateforme(),
             'source_channel' => 'api_invite',
             'referrer_reward_amount' => ReferralService::DEFAULT_REFERRER_REWARD,
             'referee_reward_amount' => ReferralService::DEFAULT_REFEREE_REWARD,

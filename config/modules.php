@@ -229,7 +229,7 @@ return [
         ['key' => 'admin:admin.orchestration', 'label' => 'Orchestration', 'icon' => '🧭', 'route' => 'admin.orchestration', 'context' => 'admin', 'category' => 'missions', 'primary' => false],
         ['key' => 'admin:admin.presence.center', 'label' => 'Presence providers', 'icon' => '🟢', 'route' => 'admin.presence.center', 'context' => 'admin', 'category' => 'missions', 'primary' => false],
         ['key' => 'admin:admin.trip-tracking.center', 'label' => 'Trip Tracking GPS', 'icon' => '📍', 'route' => 'admin.trip-tracking.center', 'context' => 'admin', 'category' => 'missions', 'primary' => false],
-        ['key' => 'admin:admin.accounting-v2.center', 'label' => 'Comptabilité (FEC/Sage)', 'icon' => '📒', 'route' => 'admin.accounting-v2.center', 'context' => 'admin', 'category' => 'documents', 'primary' => false],
+        ['key' => 'admin:admin.accounting-v2.center', 'label' => 'Comptabilité (FEC/Sage)', 'icon' => '📒', 'route' => 'admin.accounting-v2.center', 'context' => 'admin', 'category' => 'documents', 'primary' => false, 'gate' => 'manage-accounting'],
         ['key' => 'admin:admin.contracts-v2.center', 'label' => 'Contrats v2', 'icon' => '📜', 'route' => 'admin.contracts-v2.center', 'context' => 'admin', 'category' => 'documents', 'primary' => false],
         ['key' => 'admin:admin.b2b.monthly-invoices', 'label' => 'Factures B2B', 'icon' => '🧾', 'route' => 'admin.b2b.monthly-invoices', 'context' => 'admin', 'category' => 'finance', 'primary' => false],
         ['key' => 'admin:admin.business.dashboard', 'label' => 'Business', 'icon' => '🏢', 'route' => 'admin.business.dashboard', 'context' => 'admin', 'category' => 'finance', 'primary' => false],

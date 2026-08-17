@@ -2,6 +2,7 @@
 
 namespace App\Services\Analytics;
 
+use App\Support\International\Devise;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -67,7 +68,7 @@ class AnalyticsKpiService
         return [
             'revenue' => [
                 'value' => round($revenue, 2),
-                'currency' => 'EUR',
+                'currency' => Devise::plateforme(),
                 'trend' => null,
                 'label' => 'Chiffre d\'affaires',
             ],

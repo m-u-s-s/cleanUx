@@ -310,30 +310,120 @@ class StripeWebhookHandlers
                 ?? data_get($intent, 'application_fee_amount')
                 ?? 0);
 
-            if ($previousStatus !== 'captured') {
-                // Only emit the business event and accounting post on the first
-                // transition to 'captured' to avoid duplicate downstream effects.
-                BusinessEventEmitter::emit(
-                    eventCode: 'payment.succeeded',
-                    payload: [
-                        'booking_id' => $booking->id,
-                        'amount_cents' => (int) ($intent['amount'] ?? 0),
-                        'currency' => $intent['currency'] ?? null,
-                        'stripe_payment_intent_id' => $piId,
-                        'fees_cents' => $feeCents,
-                    ],
-                    idempotencyKey: 'payment.succeeded:'.$piId,
-                    sourceType: Booking::class,
-                    sourceId: (int) $booking->id,
-                );
-                BookingAutoPoster::postPayment($booking, $feeCents);
-            }
+            /*
+             * LA MÊME GARDE QUE POUR `recordEarning`, ET LE MÊME DÉFAUT — ELLE EST TOMBÉE ICI AUSSI.
+             *
+             * Le commentaire juste au-dessus raconte que `$previousStatus !== 'captured'` empêchait
+             * le crédit du portefeuille quand `captureMissionPayment()` avait déjà posé `captured`
+             * avant l'arrivée du webhook. La correction n'a porté que sur `recordEarning` : ces
+             * deux appels-ci sont restés derrière la garde cassée.
+             *
+             * Or c'est le chemin ORDINAIRE. `captureMissionPayment()` écrit `payment_status =
+             * 'captured'` puis Stripe notifie : le statut précédent vaut donc déjà `captured`, et
+             * ni l'événement métier ni l'écriture comptable n'avaient lieu. Seules les confirmations
+             * ASYNCHRONES — celles où Stripe capture sans passer par notre appel — franchissaient la
+             * garde. Autrement dit, le grand livre ne recevait que les encaissements minoritaires.
+             *
+             * Un TÉMOIN l'a découvert : il affirmait qu'un encaissement normal écrit toujours sa
+             * ligne, et il était rouge. Écrit pour prouver qu'on n'avait rien cassé, il a montré ce
+             * qui était déjà cassé.
+             *
+             * RIEN NE SE DUPLIQUE POUR AUTANT, ET C'EST VÉRIFIÉ : `WebhookDispatcher::emit()` rend
+             * l'événement existant quand la clé d'idempotence a déjà servi, et `postIdempotent()`
+             * rend le lot existant. La garde protégeait d'un risque que les deux appelés écartent
+             * déjà eux-mêmes.
+             */
+            BusinessEventEmitter::emit(
+                eventCode: 'payment.succeeded',
+                payload: [
+                    'booking_id' => $booking->id,
+                    'amount_cents' => (int) ($intent['amount'] ?? 0),
+                    'currency' => $intent['currency'] ?? null,
+                    'stripe_payment_intent_id' => $piId,
+                    'fees_cents' => $feeCents,
+                ],
+                idempotencyKey: 'payment.succeeded:'.$piId,
+                sourceType: Booking::class,
+                sourceId: (int) $booking->id,
+            );
+            BookingAutoPoster::postPayment($booking, $feeCents);
+        }
+
+        /*
+         * DES FRAIS D'ANNULATION SONT DE L'ARGENT ENCAISSÉ, ET ILS N'ENTRAIENT DANS AUCUN LIVRE.
+         *
+         * Tout le reste était prêt : le plan comptable déclare `708 Produits annexes (frais
+         * d'annulation)` et `ChartOfAccounts::salesAccount('cancellation_fee')` le renvoie. Rien ne
+         * l'appelait. La garde `payment_status === 'captured'` juste au-dessus — indispensable pour
+         * que le prestataire ne soit pas crédité d'une prestation jamais faite — écartait du même
+         * geste l'écriture comptable, qui, elle, devait avoir lieu.
+         *
+         * ── PAS DE GARDE SUR `$previousStatus`, ET C'EST DÉLIBÉRÉ ─────────────────────────────
+         *
+         * `capturerLesFraisDAnnulation()` pose `fee_captured` AVANT que le webhook n'arrive : au
+         * moment où l'on passe ici, le statut précédent vaut déjà `fee_captured`. Le motif
+         * `$previousStatus !== …` employé quelques lignes plus haut sauterait donc l'écriture à
+         * tous les coups. C'est exactement le défaut que le commentaire de `recordEarning` raconte,
+         * et l'imiter par symétrie le reproduirait. L'idempotence est portée par
+         * `postIdempotent()`, sur une clé qui lui est propre.
+         */
+        if ($booking->payment_status === MissionPaymentService::STATUT_FRAIS_CAPTURES) {
+            [$fraisCents, $partPrestataireCents] = $this->partagerLesFraisDAnnulation($booking, $intent);
+
+            BookingAutoPoster::postCancellationFee(
+                $booking,
+                $fraisCents,
+                (int) (data_get($intent, 'charges.data.0.balance_transaction.fee') ?? 0),
+                $partPrestataireCents,
+            );
         }
 
         return ['status' => StripeWebhookEvent::STATUS_PROCESSED, 'details' => [
             'booking_id' => $booking->id,
             'transitioned_to_captured' => $booking->payment_status === 'captured' && $previousStatus !== 'captured',
         ]];
+    }
+
+    /**
+     * COMBIEN A ÉTÉ PRIS, ET COMBIEN EN EST REPARTI CHEZ LE PRESTATAIRE.
+     *
+     * LE MONTANT vient d'abord de notre propre trace : `capturerLesFraisDAnnulation()` écrit
+     * `metadata.frais_annulation.captures_cents`, qui EST la définition des frais. On se rabat sur
+     * `amount_received` quand elle manque — une capture faite hors de ce code, depuis le tableau de
+     * bord Stripe par exemple.
+     *
+     * LE PARTAGE SE LIT, IL NE SE DEVINE PAS. L'empreinte est une charge à destination : elle porte
+     * `transfer_data.destination` et une `application_fee_amount` calculée sur la commande entière.
+     * Ce que Stripe fait de cette commission lors d'une capture PARTIELLE décide si la plateforme
+     * garde tout ou si une part file chez le prestataire — et cela ne s'exerce nulle part ici, la
+     * clé du dépôt faisant onze caractères. On lit donc la commission RÉELLEMENT appliquée sur la
+     * charge et on en déduit le reste.
+     *
+     * L'ABSENCE DE `application_fee_amount` VAUT « LA PLATEFORME GARDE TOUT », et c'est le choix
+     * prudent dans les deux cas réels : soit l'intention n'a pas de destinataire — la variante sans
+     * prestataire n'en pose aucun — soit la charge n'expose pas le champ, et fabriquer une dette
+     * prestataire depuis un champ manquant inventerait un passif.
+     *
+     * @param  array<string, mixed>  $intent
+     * @return array{0: int, 1: int} Frais encaissés, part partie chez le prestataire.
+     */
+    private function partagerLesFraisDAnnulation(Booking $booking, array $intent): array
+    {
+        $fraisCents = (int) (data_get($booking->metadata, 'frais_annulation.captures_cents')
+            ?? data_get($intent, 'amount_received')
+            ?? 0);
+
+        if ($fraisCents <= 0) {
+            return [0, 0];
+        }
+
+        $commissionPlateforme = data_get($intent, 'application_fee_amount');
+
+        if ($commissionPlateforme === null) {
+            return [$fraisCents, 0];
+        }
+
+        return [$fraisCents, max(0, $fraisCents - (int) $commissionPlateforme)];
     }
 
     /**

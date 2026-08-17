@@ -34,6 +34,20 @@ trait HasAdminCapabilities
             'manage-services' => 'Gestion services',
             'manage-entreprises' => 'Gestion entreprises',
             'manage-finance' => 'Gestion finance',
+
+            /*
+             * COMPTABILITÉ ET FISCALITÉ — une capacité À PART de « Gestion finance », et ce n'est
+             * pas un doublon.
+             *
+             * « Finance » ouvre les flux d'exploitation : versements, litiges, gestes commerciaux,
+             * crédits clients. La comptabilité, elle, ouvre le grand livre, la clôture des
+             * périodes, les exports légaux et la position de TVA — un métier différent, exercé par
+             * quelqu'un d'extérieur à l'exploitation.
+             *
+             * Les séparer permet de donner un compte au comptable SANS lui ouvrir la trésorerie
+             * opérationnelle, et sans obliger à faire de lui un super-administrateur.
+             */
+            'manage-accounting' => 'Comptabilité & fiscalité',
             'manage-analytics' => 'Analytics',
             'manage-quality' => 'Qualité',
             'manage-premium' => 'Clients premium',

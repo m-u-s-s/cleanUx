@@ -8,6 +8,7 @@ use App\Models\FinancePayment;
 use App\Models\FinanceQuote;
 use App\Models\FinanceReminder;
 use App\Notifications\FinanceReminderNotification;
+use App\Support\International\Devise;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +27,9 @@ trait SynchronizesFinanceDocuments
                     'organization_account_id' => $rdv->organization_account_id,
                     'quote_number' => FinanceQuote::query()->where('rendez_vous_id', $rdv->id)->value('quote_number') ?: $this->nextQuoteNumber($rdv),
                     'status' => $this->quoteStatusFor($rdv),
-                    'currency' => 'EUR',
+                    // Un document financier dit ce que le client doit : il ne peut pas etre
+                    // libelle dans une autre monnaie que la reservation qu'il chiffre.
+                    'currency' => Devise::premiereRenseignee($rdv->currency),
                     'subtotal' => $amounts['subtotal'],
                     'tax_rate' => $amounts['tax_rate'],
                     'tax_amount' => $amounts['tax_amount'],
@@ -73,7 +76,9 @@ trait SynchronizesFinanceDocuments
                     'organization_account_id' => $rdv->organization_account_id,
                     'invoice_number' => FinanceInvoice::query()->where('rendez_vous_id', $rdv->id)->value('invoice_number') ?: $this->nextInvoiceNumber($rdv),
                     'status' => $this->invoiceStatusFor($rdv),
-                    'currency' => 'EUR',
+                    // Un document financier dit ce que le client doit : il ne peut pas etre
+                    // libelle dans une autre monnaie que la reservation qu'il chiffre.
+                    'currency' => Devise::premiereRenseignee($rdv->currency),
                     'subtotal' => $amounts['subtotal'],
                     'tax_rate' => $amounts['tax_rate'],
                     'tax_amount' => $amounts['tax_amount'],

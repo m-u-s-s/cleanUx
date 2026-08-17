@@ -18,6 +18,7 @@ use App\Models\WorkOrderApproval;
 use App\Models\WorkOrderLine;
 use App\Services\Contracts\WorkOrderContractService;
 use App\Support\ActivityLogger;
+use App\Support\International\Devise;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -358,7 +359,7 @@ class B2BOperationsCenter extends Component
     {
         $card = ContractRateCard::updateOrCreate(
             ['organization_contract_id' => $contractId, 'service_catalog_id' => $serviceCatalogId],
-            ['negotiated_unit_price_cents' => $unitPriceCents, 'currency' => 'EUR'],
+            ['negotiated_unit_price_cents' => $unitPriceCents, 'currency' => Devise::plateforme()],
         );
 
         ActivityLogger::log('contract_rate_card_saved', $card, [

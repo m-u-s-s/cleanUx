@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\ComplaintCase;
 use App\Services\Payments\CommissionService;
 use App\Services\Payments\ProviderWalletService;
+use App\Support\International\Devise;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -213,10 +214,21 @@ class ProcessProviderPayouts extends Command
                     $transfer = Transfer::create(
                         [
                             'amount' => $payoutCents,
-                            'currency' => 'eur',
+                            /*
+                             * LA DEVISE DU TRANSFERT EST CELLE DE LA RESERVATION.
+                             *
+                             * C'est le seul endroit de ce lot ou de l'argent BOUGE reellement.
+                             * Envoyer `eur` sur un encaissement en dirhams fait convertir Stripe au
+                             * taux du jour, ou refuser le transfert selon le compte destinataire :
+                             * dans les deux cas le prestataire ne recoit pas ce qu'on lui doit.
+                             */
+                            'currency' => Devise::pourStripe($booking->currency),
                             'destination' => $connectId,
                             'metadata' => [
-                                'booking_id' => $booking->id,
+                                // Stripe n'accepte QUE des chaines en metadonnee. Un entier
+                                // passait jusqu'ici parce que la devise litterale figeait la
+                                // forme du tableau ; l'analyse statique le voit desormais.
+                                'booking_id' => (string) $booking->id,
                                 'type' => 'manual_payout',
                             ],
                         ],

@@ -5,6 +5,7 @@ namespace App\Livewire\Client;
 use App\Models\Referral;
 use App\Models\ReferralReward;
 use App\Services\Promotion\ReferralService;
+use App\Support\International\Devise;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -62,7 +63,7 @@ class ReferralProgramPage extends Component
                 'status' => Referral::STATUS_INVITED,
                 'invited_at' => now(),
                 'expires_at' => now()->addDays(ReferralService::REFERRAL_EXPIRY_DAYS),
-                'currency' => 'EUR',
+                'currency' => Devise::plateforme(),
                 'source_channel' => 'email_invite',
                 'referrer_reward_amount' => ReferralService::DEFAULT_REFERRER_REWARD,
                 'referee_reward_amount' => ReferralService::DEFAULT_REFEREE_REWARD,

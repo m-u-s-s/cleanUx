@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Provider;
 
 use App\Http\Controllers\Controller;
 use App\Models\ProviderPayout;
+use App\Services\Payments\ProviderWalletService;
+use App\Support\International\Devise;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Stripe\Balance;
@@ -85,7 +87,14 @@ class ProviderPayoutsController extends Controller
 
         return response()->json([
             'ok' => true,
-            'currency' => 'EUR',
+            /*
+             * LA MONNAIE DE CES TOTAUX EST CELLE DU PRESTATAIRE.
+             *
+             * Les sommes ci-dessus agregent SES versements ; les annoncer en euros a un prestataire
+             * paye en dirhams affichait un montant juste avec un symbole faux -- pire qu'une erreur
+             * franche, parce que le chiffre a l'air bon.
+             */
+            'currency' => app(ProviderWalletService::class)->deviseDuPortefeuille((int) $request->user()->id),
             'this_month' => [
                 'paid_amount' => round((float) $thisMonthPaid, 2),
                 'pending_amount' => round((float) $thisMonthPending, 2),
@@ -174,7 +183,9 @@ class ProviderPayoutsController extends Controller
     {
         $result = [];
         foreach ($items as $item) {
-            $currency = strtoupper($item->currency ?? 'EUR');
+            // Ce tableau est deja indexe PAR devise : le repli ne sert qu'a une ligne dont la
+            // colonne serait vide, et il vaut la devise de la plateforme, pas un litteral.
+            $currency = Devise::premiereRenseignee(is_string($item->currency ?? null) ? $item->currency : null);
             $result[$currency] = round(((float) ($item->amount ?? 0)) / 100, 2);
         }
 

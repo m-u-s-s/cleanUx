@@ -7,6 +7,7 @@ use App\Models\BookingTip;
 use App\Models\User;
 use App\Services\Loyalty\LoyaltyService;
 use App\Support\Accounting\BookingAutoPoster;
+use App\Support\International\Devise;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -125,7 +126,14 @@ class TipService
                 'client_user_id' => $client->id,
                 'provider_user_id' => $providerId,
                 'amount_cents' => $amountCents,
-                'currency' => 'EUR',
+                /*
+                 * LE POURBOIRE SUIT LA MONNAIE DE LA MISSION, pas une constante.
+                 *
+                 * Il est encaisse sur la meme carte, le meme jour, pour la meme prestation : le
+                 * libeller en euros sur une mission payee en dirhams produisait une dette
+                 * prestataire dans une monnaie que le client n'a jamais versee.
+                 */
+                'currency' => Devise::premiereRenseignee($booking->currency),
                 'status' => BookingTip::STATUS_PENDING,
                 'preset_label' => $presetLabel,
                 'preset_percent' => $presetPercent,

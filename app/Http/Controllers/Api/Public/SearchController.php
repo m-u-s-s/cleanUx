@@ -7,6 +7,7 @@ use App\Services\Search\AddressAutocompleteService;
 use App\Services\Search\ProviderSearchCriteria;
 use App\Services\Search\ProviderSearchService;
 use App\Services\Search\ServiceCatalogSearchService;
+use App\Support\International\Devise;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -131,7 +132,7 @@ class SearchController extends Controller
                 'count' => (int) ($profile?->rating_count ?? 0),
             ],
             'hourly_rate' => $profile?->hourly_rate !== null ? (float) $profile->hourly_rate : null,
-            'currency' => 'EUR',
+            'currency' => Devise::plateforme(),
             'is_online' => (bool) ($profile?->is_online ?? false),
             'trades' => $u->trades?->map(fn ($t) => [
                 'id' => $t->id,

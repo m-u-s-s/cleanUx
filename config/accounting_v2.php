@@ -100,6 +100,18 @@ return [
         // pass-through à l'assureur revendu (dette fournisseur). À confirmer comptable.
         'tips_payable_account' => env('ACCOUNTING_TIPS_PAYABLE_ACCOUNT', '467'),
         'insurer_payable_account' => env('ACCOUNTING_INSURER_PAYABLE_ACCOUNT', '401'),
+        /*
+         * Frais d'annulation : position TVA, à trancher avec le comptable.
+         *
+         * `null` (défaut) = taux du pays de la réservation, soit le traitement d'un produit
+         * ordinaire. `0` = hors champ de la TVA, la lecture « indemnité qui répare un préjudice ».
+         * Les deux se défendent : la CJUE a jugé qu'un montant retenu sur un billet non utilisé
+         * rémunère un droit et reste taxable (C-250/14, Air France-KLM), mais tout dépend de la
+         * qualification retenue par les conditions générales. Ce n'est pas une décision technique.
+         *
+         * Zéro est une valeur VOULUE et non une absence : le code teste `null`, pas la vacuité.
+         */
+        'cancellation_fee_vat_rate' => env('ACCOUNTING_CANCELLATION_FEE_VAT_RATE'),
     ],
 
     /*
