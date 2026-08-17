@@ -6,6 +6,7 @@ use App\Models\DeviceToken;
 use App\Models\PushNotification;
 use App\Models\User;
 use App\Services\Push\Providers\ApnsPushProvider;
+use App\Services\Push\Providers\ExpoPushProvider;
 use App\Services\Push\Providers\FcmPushProvider;
 use App\Support\ActivityLogger;
 use Illuminate\Database\Eloquent\Model;
@@ -40,6 +41,22 @@ class PushService
     protected function providerFor(DeviceToken $token): PushProviderInterface
     {
         try {
+            /*
+             * LE FOURNISSEUR DU JETON PASSE AVANT SA PLATEFORME.
+             *
+             * Un jeton Expo — `ExponentPushToken[…]` — n'est ni un jeton FCM ni un jeton APNs :
+             * Expo garde la correspondance de son côté et route lui-même vers Google et Apple.
+             * L'aiguillage par plateforme ci-dessous l'enverrait donc à FCM, qui le rejetterait.
+             *
+             * On lit `device_tokens.provider`, écrit à l'enregistrement par l'application
+             * elle-même. C'est elle qui sait de quel service vient son jeton ; le deviner depuis la
+             * plateforme rouvrirait l'écart que ce lot vient de fermer.
+             */
+            if (strtolower((string) ($token->provider ?? '')) === 'expo'
+                && class_exists(ExpoPushProvider::class)) {
+                return app(ExpoPushProvider::class);
+            }
+
             $platform = strtolower((string) ($token->platform ?? ''));
             $apnsConfigured = (bool) config('push.apns.key_path') || (bool) config('push.apns.key_id');
             $fcmConfigured = (bool) config('push.fcm.credentials_path') || (bool) config('push.fcm.project_id');

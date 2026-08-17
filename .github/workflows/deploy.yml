@@ -144,6 +144,22 @@ jobs:
             # Refuse queue=sync, cache=file, broadcast=null… et les secrets Stripe manquants.
             php artisan config:parity-check
 
+            # ─── 6 bis. Aucun fournisseur bouchonné ne part en production ───────────────
+            # ICI, ET PAS APRÈS LA MIGRATION. La commande annonce elle-même « bloque le
+            # déploiement » depuis toujours, et elle était planifiée toutes les trente minutes —
+            # c'est-à-dire qu'elle constatait le problème une demi-heure APRÈS sa mise en ligne, sur
+            # une plateforme déjà en train de tourner sur des bouchons.
+            #
+            # Ce qu'elle attrape et que le contrôle de parité ne voit pas : le conteneur peut très
+            # bien résoudre `SmsProviderInterface` ou `PushProviderInterface` vers un Mock alors que
+            # toutes les variables d'environnement sont présentes. Les SMS partent alors dans le
+            # vide, les notifications aussi, et RIEN ne le signale — c'est le propre d'un bouchon
+            # de réussir silencieusement.
+            #
+            # Sa place est avant la sauvegarde et la migration : bloquer après avoir migré n'est
+            # pas bloquer, c'est constater.
+            php artisan ops:check-providers --strict
+
             # ─── 7. Lien de stockage public ─────────────────────────────────────────────
             # Idempotent : quand public/storage existe déjà, la commande le signale et rend 0
             # (vérifié dans StorageLinkCommand::handle, qui ne rend aucun code d'erreur).

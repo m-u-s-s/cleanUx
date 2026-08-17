@@ -69,8 +69,29 @@ Route::get('/health', function () {
         $checks['reverb'] = false;
     }
 
-    // Only non-null checks (hard dependencies) affect healthy status
-    $hardChecks = array_filter($checks, fn ($v) => $v !== null);
+    /*
+     * LES SONDES SOUPLES SONT NOMMEES, ET NON DEDUITES D'UNE VALEUR NULLE.
+     *
+     * L'intention etait bonne et le code la contredisait : `stripe` et `reverb` etaient declares a
+     * `null` avec le commentaire « soft-fail », puis les blocs `try` ci-dessus leur ASSIGNAIENT un
+     * booleen. Au moment du filtre, plus une seule n'etait nulle -- une cle Stripe absente
+     * produisait donc `false`, comptait comme dependance dure, et l'application repondait 503.
+     *
+     * Un repartiteur de charge qui lit cette route retire alors du service une application
+     * parfaitement capable de servir : elle ne peut simplement pas encaisser. Ce n'est pas la meme
+     * chose, et c'est precisement ce que « souple » voulait dire.
+     *
+     * La liste par NOM ne peut pas etre contredite par une affectation : c'est la seule forme qui
+     * survive au prochain qui touchera ces blocs.
+     */
+    $souples = ['stripe', 'reverb'];
+
+    $hardChecks = array_filter(
+        $checks,
+        fn ($cle) => ! in_array($cle, $souples, true),
+        ARRAY_FILTER_USE_KEY,
+    );
+
     $healthy = ! in_array(false, $hardChecks, true);
 
     return response()->json(

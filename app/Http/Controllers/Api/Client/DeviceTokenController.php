@@ -23,7 +23,15 @@ class DeviceTokenController extends Controller
         $data = $request->validate([
             'token' => ['required', 'string', 'max:4000'],
             'platform' => ['required', 'in:ios,android,web'],
-            'provider' => ['required', 'in:fcm,apns,mock'],
+            /*
+             * `expo` FAIT PARTIE DU CONTRAT, et son absence le rompait a ses deux extremites.
+             *
+             * Les deux applications envoient `provider: 'expo'` -- c'est ce que rend
+             * `expo-notifications`. Cette validation repondait 422 : aucun appareil ne
+             * s'enregistrait, donc aucune notification ne pouvait partir, alors que six
+             * notifications routaient deja par `PushChannel`.
+             */
+            'provider' => ['required', 'in:expo,fcm,apns,mock'],
             'app_version' => ['nullable', 'string', 'max:32'],
             'locale' => ['nullable', 'string', 'max:8'],
             'timezone' => ['nullable', 'string', 'max:64'],

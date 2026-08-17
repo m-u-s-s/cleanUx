@@ -28,7 +28,12 @@ class DeviceTokenService
             throw ValidationException::withMessages(['platform' => 'Plateforme non supportée.']);
         }
 
-        if (! in_array($provider, [DeviceToken::PROVIDER_FCM, DeviceToken::PROVIDER_APNS, DeviceToken::PROVIDER_MOCK], true)) {
+        if (! in_array($provider, [
+            DeviceToken::PROVIDER_EXPO,
+            DeviceToken::PROVIDER_FCM,
+            DeviceToken::PROVIDER_APNS,
+            DeviceToken::PROVIDER_MOCK,
+        ], true)) {
             throw ValidationException::withMessages(['provider' => 'Provider push inconnu.']);
         }
 

@@ -11,6 +11,20 @@ export function useChatThreads() {
       const res = await apiClient.get('/v2/chat/threads');
       return res.data.data ?? res.data;
     },
+    /*
+     * LE FILET, comme sur le suivi d'intervention.
+     *
+     * La messagerie ne vivait QUE de la socket. Un ascenseur, un tunnel, une application mise en
+     * veille par le systeme : la socket tombe, plus rien n'arrive, et rien ne le rattrape tant que
+     * l'utilisateur ne quitte pas l'ecran pour y revenir. Il voit une conversation figee et croit
+     * que personne ne repond.
+     *
+     * Une minute sur la LISTE : elle sert a voir qu'un fil a bouge, pas a suivre un echange.
+     * `focusManager` est branche sur `AppState` (voir `api/appFocus.ts`), donc ce sondage
+     * s'interrompt de lui-meme quand l'application passe en arriere-plan -- il ne coute rien a la
+     * batterie de quelqu'un qui ne regarde pas.
+     */
+    refetchInterval: 60000,
   });
 }
 
@@ -22,6 +36,14 @@ export function useChatMessages(threadId: number | null) {
       return res.data.data ?? res.data;
     },
     enabled: threadId !== null,
+    /*
+     * PLUS SERRE QUE LA LISTE, et c'est voulu : ici quelqu'un ATTEND une reponse, l'ecran ouvert.
+     * Quinze secondes de silence sur une conversation en cours se remarquent ; sur une liste de
+     * fils, non.
+     *
+     * Ce sondage ne remplace pas la socket, qui reste instantanee. Il rattrape ce qu'elle perd.
+     */
+    refetchInterval: 15000,
   });
 }
 

@@ -265,6 +265,7 @@ class ConfigParityCheckTest extends TestCase
                 'php artisan view:cache',
                 'php artisan event:cache',
                 'php artisan config:parity-check',
+                'php artisan ops:check-providers --strict',
                 'php artisan storage:link',
                 'php artisan backup:run',
             ];
@@ -288,6 +289,26 @@ class ConfigParityCheckTest extends TestCase
                 'php artisan config:parity-check',
                 $this->contenuExecutable($chemin),
                 "{$chemin} : le contrôle de parité n'est pas câblé dans le déploiement.",
+            );
+        }
+    }
+
+    /**
+     * H12 — la commande annonçait « bloque le déploiement » et n'y était pas câblée.
+     *
+     * Elle était planifiée toutes les trente minutes : elle CONSTATAIT donc le problème une
+     * demi-heure après la mise en ligne, sur une plateforme déjà en train de tourner sur des
+     * bouchons. Un bouchon réussit silencieusement — les SMS partent dans le vide, les
+     * notifications aussi — et c'est précisément ce que le contrôle de parité ne voit pas :
+     * le conteneur peut résoudre vers un Mock alors que toutes les variables sont présentes.
+     */
+    public function test_les_flux_de_deploiement_refusent_les_fournisseurs_bouchonnes(): void
+    {
+        foreach ($this->fluxDeDeploiement() as $chemin) {
+            $this->assertStringContainsString(
+                'php artisan ops:check-providers --strict',
+                $this->contenuExecutable($chemin),
+                "{$chemin} : rien n'empêche un déploiement de partir sur des fournisseurs bouchonnés.",
             );
         }
     }

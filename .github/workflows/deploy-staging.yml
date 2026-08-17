@@ -139,6 +139,12 @@ jobs:
             # C'est ici, sur staging, qu'un secret Stripe oublié doit être découvert.
             php artisan config:parity-check
 
+            # ─── 6 bis. Aucun fournisseur bouchonné ne part en préproduction non plus ───
+            # Une préproduction qui tourne sur des bouchons ne préproduit rien : les SMS ne
+            # partent pas, les notifications non plus, et la recette valide un parcours qui
+            # n'existe pas en production. Voir le commentaire du flux de production.
+            php artisan ops:check-providers --strict
+
             # ─── 7. Lien de stockage public ─────────────────────────────────────────────
             # Idempotent : quand public/storage existe déjà, la commande le signale et rend 0
             # (vérifié dans StorageLinkCommand::handle, qui ne rend aucun code d'erreur).

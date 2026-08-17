@@ -10,6 +10,22 @@ return [
             'driver' => 'mock',
         ],
 
+        /*
+        | LE SERVICE PUSH D'EXPO, celui que les deux applications utilisent reellement.
+        |
+        | `expo-notifications` rend un jeton `ExponentPushToken[...]` qu'Expo route lui-meme vers
+        | APNs et FCM. Aucune cle n'est requise : le jeton d'acces ne devient necessaire que si le
+        | projet active « Enhanced Security for Push Notifications » dans sa console. C'est pour
+        | cela qu'Expo est le fournisseur par defaut ici -- il fonctionne sans configuration, ce
+        | qu'aucun des deux autres ne fait.
+        */
+        'expo' => [
+            'driver' => 'expo',
+            'access_token' => env('EXPO_ACCESS_TOKEN'),
+            'endpoint' => env('EXPO_PUSH_ENDPOINT', 'https://exp.host/--/api/v2/push/send'),
+            'http_timeout' => (int) env('EXPO_HTTP_TIMEOUT', 10),
+        ],
+
         'fcm' => [
             'driver' => 'fcm',
             'credentials_path' => env('FCM_CREDENTIALS_PATH'),
