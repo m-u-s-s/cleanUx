@@ -42,6 +42,7 @@ export function MissionClockBar({
 }: MissionClockBarProps) {
   const theme = useThemeColors();
   const styles = stylesFor(theme);
+  const [regleOuverte, setRegleOuverte] = React.useState(false);
 
   if (!clock.applies) return null;
 
@@ -49,6 +50,7 @@ export function MissionClockBar({
   const { titre, detail } = discours(clock, audience);
   const facturees = clock.server.billable_overtime_minutes ?? 0;
   const montant = clock.server.overtime_amount_cents ?? 0;
+  const texteDeLaRegle = audience === 'provider' ? clock.server.rule?.provider : clock.server.rule?.short;
 
   return (
     <GlassSurface style={[styles.plaque, style]} radius={radius.lg} testID={testID}>
@@ -97,6 +99,29 @@ export function MissionClockBar({
           <Text testID={`${testID}-amount`} style={[styles.montant, { color: accent }]}>
             {formatDureeCourte(facturees * 60)} facturé{facturees > 60 ? 'es' : 'e'} · {formatEuros(montant)}
             {clock.server.capped ? ' · plafond atteint' : ''}
+          </Text>
+        ) : null}
+
+        {/*
+          LA RÈGLE COMPLÈTE, DÉPLIABLE — présente sans encombrer.
+
+          Elle vient du SERVEUR : c'est la même phrase que les conditions générales et que l'écran
+          de commande. Repliée par défaut parce qu'un compteur doit se lire d'un coup d'œil ; mais
+          présente sur l'écran même où la majoration se joue, et non renvoyée à un document que
+          personne n'ouvre.
+
+          Le prestataire lit sa version — ce qu'il déclenche et ce qu'il touche — le client la
+          sienne. Deux conséquences opposées d'une seule règle.
+        */}
+        {texteDeLaRegle ? (
+          <Text
+            testID={`${testID}-rule`}
+            accessibilityRole="button"
+            onPress={() => setRegleOuverte((ouverte) => !ouverte)}
+            style={styles.regle}
+            numberOfLines={regleOuverte ? undefined : 1}
+          >
+            {texteDeLaRegle}
           </Text>
         ) : null}
       </View>
@@ -217,4 +242,14 @@ const stylesFor = (t: ThemeTokens) =>
     remplissage: { height: '100%', borderRadius: radius.pill },
     detail: { fontSize: typography.fontSize.sm, lineHeight: 19, color: t.textSecondary },
     montant: { fontSize: typography.fontSize.sm, fontWeight: '600' },
+    /*
+     * Repliée sur une ligne, dépliée à l'appui. `numberOfLines` tronque avec des points de
+     * suspension, ce qui SE VOIT — une règle coupée net se lirait comme une règle complète.
+     */
+    regle: {
+      fontSize: typography.fontSize.xs,
+      lineHeight: 16,
+      color: t.textMuted,
+      marginTop: spacing['2xs'],
+    },
   });

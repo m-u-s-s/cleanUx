@@ -139,6 +139,7 @@ job courant).
 | `presence:scan-stale --threshold=5` | Toutes les 2 min | « En ligne » faux, dont dépend `CandidateFinder` |
 | `face-check:maintenance` | Toutes les 5 min | Contrôle facial ouvert et jamais répondu : il bloque la réouverture du suivant, et le prestataire reste devant un écran mort |
 | `extras:reprendre-les-prelevements` | Toutes les heures | Supplément accepté par le client et jamais encaissé : le prestataire a fait le travail, la créance existe, et rien ne la rejouait |
+| `temps:reprendre-les-reglements` | Toutes les heures | Temps supplémentaire constaté et jamais encaissé : la clôture prélève en échec doux pour ne pas bloquer un prestataire devant la porte du client, et sans cette reprise la créance resterait constatée pour l'éternité |
 | `app:ops-heartbeat` | Toutes les 5 min | La sonde ci-dessus n'a plus rien à lire |
 | `app:send-rendezvous-reminders` | Toutes les 15 min | Rappels client/prestataire |
 | `google-calendar:sync --future-days=30` | Toutes les 15 min | Agendas Google désynchronisés |

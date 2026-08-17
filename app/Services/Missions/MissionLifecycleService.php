@@ -642,6 +642,24 @@ class MissionLifecycleService
         if ($mission->booking) {
             app(MissionPaymentService::class)
                 ->capture($mission->booking);
+
+            /*
+             * LE TEMPS SUPPLÉMENTAIRE, APRÈS LA CAPTURE ET JAMAIS AVANT.
+             *
+             * L'empreinte ne couvre que ce qui a été autorisé à la commande. Les heures ajoutées en
+             * cours de route — prolongation décidée par le client, dépassement subi — se règlent par
+             * un prélèvement distinct, hors session, sur la carte déjà utilisée.
+             *
+             * ÉCHEC DOUX, ET C'EST DÉLIBÉRÉ. Une carte refusée ne doit pas empêcher un prestataire
+             * de clôturer une mission qu'il a faite : il est devant la porte du client, l'écran doit
+             * répondre. La créance reste constatée et la reprise horaire s'en charge — c'est
+             * exactement le traitement des suppléments, pour la même raison.
+             */
+            try {
+                app(HourlySettlementService::class)->regler($mission);
+            } catch (\Throwable $e) {
+                report($e);
+            }
         }
 
         // Wire payout ledger: calculate commission + create ProviderPayout record after capture

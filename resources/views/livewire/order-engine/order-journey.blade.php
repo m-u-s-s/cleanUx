@@ -153,6 +153,16 @@
                     @endif
 
                     {{--
+                        COMBIEN DE TEMPS ? — avant les questions, parce que sur une prestation
+                        horaire la durée EST le prix. La placer après ferait découvrir le montant au
+                        bout du parcours, alors que c'est la première chose que le client arbitre.
+
+                        Ce bloc ne s'affiche que sur les métiers facturés à l'heure ; il se rend nul
+                        de lui-même partout ailleurs.
+                    --}}
+                    @include('livewire.order-engine.partials.hours')
+
+                    {{--
                         L'indicateur de progression, et il est HONNÊTE.
 
                         Il compte les étapes réellement visibles à cet instant, pas celles qui

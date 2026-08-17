@@ -5,6 +5,7 @@ namespace App\Services\Missions;
 use App\Models\Booking;
 use App\Models\Mission;
 use App\Services\OrderEngine\HourlyRateResolver;
+use App\Support\Pricing\HourlyRuleText;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 
@@ -72,6 +73,21 @@ class HourlyMissionClock
         $echeance = $debut->copy()->addMinutes($achetees);
         $franchise = $this->franchiseEnMinutes();
 
+        /*
+         * UNE MISSION TERMINÉE A UNE HORLOGE ARRÊTÉE.
+         *
+         * Sans cette borne, le compteur d'une intervention close continuerait de monter
+         * indéfiniment : le lendemain, l'écran du client annoncerait vingt heures de dépassement
+         * sur un ménage de trois heures, et le règlement calculé sur `now()` facturerait le temps
+         * écoulé depuis. C'est la même date qui sert au règlement et à l'affichage — sans quoi le
+         * montant réclamé ne serait pas celui qui a été montré.
+         */
+        $fin = $mission->actual_end_at;
+
+        if ($fin !== null && $fin->lessThan($maintenant)) {
+            $maintenant = $fin;
+        }
+
         $ecoulees = max(0, (int) round(abs($debut->diffInSeconds($maintenant)) / 60));
         $depassement = max(0, $ecoulees - $achetees);
 
@@ -110,6 +126,19 @@ class HourlyMissionClock
             'overtime_multiplier' => $this->multiplicateur(),
             'effective_hourly_rate_cents' => $tarif,
             'overtime_amount_cents' => $this->montantDuDepassement($booking, $facturables),
+            /*
+             * LA RÈGLE, SERVIE AVEC LE COMPTEUR — même principe que le texte de consentement du
+             * contrôle facial : une seule source, `lang/<code>/pricing.php`, et les deux surfaces
+             * affichent la même phrase.
+             *
+             * Sans cela, l'application mobile porterait sa propre rédaction, qui divergerait des
+             * conditions générales dès la première modification — et c'est la copie non relue qui
+             * serait lue par le client au moment où ça coûte.
+             */
+            'rule' => [
+                'short' => HourlyRuleText::courte(),
+                'provider' => HourlyRuleText::prestataire(),
+            ],
         ];
     }
 

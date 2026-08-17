@@ -47,6 +47,13 @@ class Kernel extends ConsoleKernel
          * 14 h peut passer à 15 h, et le prestataire a déjà fait le travail.
          */
         $schedule->command('extras:reprendre-les-prelevements')->hourly()->withoutOverlapping();
+
+        /*
+         * Le temps supplémentaire constaté mais jamais encaissé. Toutes les heures, comme les
+         * suppléments : c'est le même mécanisme hors session, avec les mêmes causes d'échec
+         * passager — carte momentanément indisponible, authentification forte réclamée.
+         */
+        $schedule->command('temps:reprendre-les-reglements')->hourly()->withoutOverlapping();
         $schedule->command('gdpr:enforce-retention')->dailyAt('04:00')->withoutOverlapping();
         $schedule->command('gdpr:execute-erasures')->dailyAt('04:30')->withoutOverlapping();
         $schedule->command('ops:check-providers --strict')->everyThirtyMinutes()->withoutOverlapping();

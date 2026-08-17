@@ -15,7 +15,14 @@ class ContractTemplatesSeeder extends Seeder
                 'name' => 'Conditions générales client',
                 'type' => ContractTemplate::TYPE_TOS,
                 'role' => ContractTemplate::ROLE_CLIENT,
-                'version' => '2026-05-v1',
+                /*
+                 * VERSION INCRÉMENTÉE : la §2.1 ajoute une règle de facturation.
+                 *
+                 * Un consentement donné sur la version précédente ne couvre pas une majoration
+                 * qu'elle ne mentionnait pas. Garder le même numéro laisserait croire que les
+                 * clients déjà signataires l'ont acceptée.
+                 */
+                'version' => '2026-08-v2',
                 'body_markdown' => <<<'MD'
 # Conditions générales d'utilisation
 
@@ -30,6 +37,21 @@ En utilisant nos services, vous, **{{name}}** ({{email}}), acceptez les présent
 - Vous pouvez réserver des prestations via notre plateforme.
 - Les prix sont calculés selon notre grille tarifaire en vigueur.
 - Toute réservation entraîne acceptation du tarif affiché.
+
+### 2.1 Prestations facturées au temps passé
+
+Certaines prestations sont vendues à l'heure. Vous en choisissez la durée à la commande et pouvez
+la prolonger à tout moment — avant comme pendant l'intervention — au tarif horaire normal ; seules
+les heures réellement prestées sont dues.
+
+Si l'intervention se prolonge au-delà du temps acheté sans que vous l'ayez étendu, les premières
+minutes de tolérance sont offertes, puis chaque quart d'heure entamé est facturé au tarif horaire
+majoré. Cette majoration s'ajoute aux majorations éventuellement déjà appliquées (intervention
+immédiate, nuit, week-end). Le dépassement facturable ne peut jamais excéder la durée initialement
+commandée.
+
+Le montant exact de la majoration, la durée de tolérance et le plafond vous sont indiqués au moment
+où vous choisissez la durée, et rappelés sur l'écran de confirmation de commande.
 
 ## 3. Annulation
 
@@ -49,7 +71,8 @@ MD,
                 'name' => 'Contrat prestataire',
                 'type' => ContractTemplate::TYPE_PROVIDER_AGREEMENT,
                 'role' => ContractTemplate::ROLE_PROVIDER,
-                'version' => '2026-05-v1',
+                // Même raison : la §3.1 dit comment le temps supplémentaire est rémunéré.
+                'version' => '2026-08-v2',
                 'body_markdown' => <<<'MD'
 # Contrat de prestation indépendante
 
@@ -70,6 +93,19 @@ Le prestataire fournit des services via la plateforme aux clients enregistrés.
 
 - Reversement via Stripe Connect.
 - Commission plateforme selon grille en vigueur.
+
+### 3.1 Prestations facturées au temps passé
+
+Les prestations vendues à l'heure le sont pour une durée précise, que le client peut prolonger à
+tout moment. Au-delà de cette durée, et passé le délai de tolérance, le temps supplémentaire est
+facturé au client à un tarif majoré.
+
+Vous êtes rémunéré à votre tarif horaire NORMAL sur ce temps supplémentaire : la majoration revient
+à la plateforme. Elle existe pour inciter le client à prolonger en temps voulu, et non pour
+rémunérer un dépassement.
+
+Il vous appartient de prévenir le client avant la fin du temps acheté : il peut alors prolonger sans
+majoration, ce qui sert son intérêt comme le vôtre.
 
 ## 4. Résiliation
 

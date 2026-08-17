@@ -63,6 +63,21 @@ export interface MissionClock {
    * mission, et c'est celui de l'appareil que le client aurait lu.
    */
   overtime_amount_cents?: number;
+
+  /**
+   * LA RÈGLE, ÉCRITE PAR LE SERVEUR — jamais par l'application.
+   *
+   * Même principe que le texte de consentement du contrôle facial : une seule source
+   * (`lang/<code>/pricing.php`) et les deux surfaces affichent la même phrase, dans la langue du
+   * compte. Une rédaction locale divergerait des conditions générales dès la première modification,
+   * et c'est la copie non relue qui serait lue au moment où ça coûte.
+   */
+  rule?: {
+    /** Pour le client : ce qu'il peut décider. */
+    short?: string;
+    /** Pour le prestataire : ce qu'il déclenche, et ce qu'il touche. */
+    provider?: string;
+  };
 }
 
 /**

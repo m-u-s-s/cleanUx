@@ -154,6 +154,27 @@
                             règle après l’intervention, sur constat.
                         </p>
                     @endunless
+
+                    {{--
+                        LA RÈGLE DU TEMPS, RAPPELÉE AU MOMENT DE CONFIRMER.
+
+                        Elle a déjà été montrée sous le sélecteur d'heures. La répéter ici n'est pas
+                        une redondance : c'est le dernier écran avant l'engagement, et c'est celui
+                        qu'on relit quand on conteste. La version COMPLÈTE, qui nomme la franchise et
+                        le plafond — pas la version courte du sélecteur, qui les tait.
+
+                        Rien ne s'affiche si aucune prestation du panier n'est vendue au temps.
+                    --}}
+                    @if ($this->panierContientDuTemps())
+                        <details class="mt-3 rounded-xl bg-slate-50 p-3">
+                            <summary class="cursor-pointer text-xs font-medium text-slate-700">
+                                Comment le temps est facturé
+                            </summary>
+                            <p class="mt-2 text-xs leading-relaxed text-slate-600">
+                                {{ \App\Support\Pricing\HourlyRuleText::complete() }}
+                            </p>
+                        </details>
+                    @endif
                 </section>
             @endif
 

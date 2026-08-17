@@ -27,6 +27,7 @@ const canaux: (string | null)[] = [];
  * a déjà buté trois fois sur cette règle.
  */
 const mockRepondre = jest.fn();
+const mockProlonger = jest.fn();
 
 const etat: {
   fil: unknown;
@@ -41,6 +42,15 @@ jest.mock('@/booking/onsite', () => ({
   useOnSiteIncidents: () => ({ data: etat.imprevus }),
   useOnSiteExtras: () => ({ data: etat.supplements }),
   useRepondreAuSupplement: () => ({ mutate: mockRepondre, isPending: false }),
+  /*
+    UN BOUCHON DE MODULE DOIT SUIVRE SON MODULE.
+
+    `jest.mock` d'un module entier remplace TOUT ce qu'il exporte : un hook ajouté au vrai fichier
+    et absent d'ici ne vaut pas `undefined` par accident, il n'existe simplement pas — et l'écran
+    tombe avec « is not a function ». Neuf tests sont morts d'un coup pour cette ligne manquante,
+    alors qu'aucun d'eux ne parle de prolongation.
+  */
+  useProlongerLesHeures: () => ({ mutate: mockProlonger, isPending: false }),
   useLiveOnSite: (_bookingId: number | null, missionId: number | null) => {
     canaux.push(missionId === null ? null : `private-mission.${missionId}`);
   },
@@ -79,6 +89,7 @@ beforeEach(() => {
   etat.imprevus = [];
   etat.supplements = [];
   mockRepondre.mockClear();
+  mockProlonger.mockClear();
 });
 
 describe('OnSiteScreen', () => {
@@ -201,5 +212,91 @@ describe('OnSiteScreen', () => {
 
     // Redemander une réponse déjà donnée ferait douter de ce qu'on a validé.
     expect(screen.queryByText('Accepter')).toBeNull();
+  });
+  /*
+    LE COMPTEUR ET LA PROLONGATION.
+
+    Le bouton n'apparaît QUE si le serveur l'autorise, et il OUVRE un choix au lieu de prolonger
+    d'un coup : ce geste engage de l'argent, il ne doit pas se déclencher par un appui distrait sur
+    un écran qu'on consulte d'une main.
+  */
+  const horlogeEnCours = {
+    applies: true,
+    server_now: '2026-08-11T10:05:00+00:00',
+    started_at: '2026-08-11T09:05:00+00:00',
+    purchased_minutes: 180,
+    grace_minutes: 15,
+    deadline_at: '2026-08-11T12:05:00+00:00',
+    overtime_amount_cents: 0,
+  };
+
+  const prolongationOuverte = {
+    allowed: true,
+    reason: null,
+    max_minutes: 240,
+    increment_minutes: 30,
+    options: [
+      { minutes: 30, label: '30 min', amount_cents: 2925 },
+      { minutes: 60, label: '1 h', amount_cents: 5850 },
+    ],
+  };
+
+  it('le bouton prolonger ouvre un choix chiffre par le serveur', () => {
+    etat.fil = { ...filComplet, clock: horlogeEnCours, extension: prolongationOuverte };
+
+    render(<OnSiteScreen route={route} navigation={{} as never} />);
+
+    // Rien n'est ouvert tant qu'on n'a pas appuye : le panneau ne doit pas encombrer le suivi.
+    expect(screen.queryByTestId('panneau-prolongation')).toBeNull();
+
+    fireEvent.press(screen.getByTestId('mission-clock-bar-extend'));
+
+    expect(screen.getByTestId('panneau-prolongation')).toBeTruthy();
+    // Le montant vient du SERVEUR : l'ecran n'a aucune multiplication a faire.
+    expect(screen.getByTestId('prolonger-60')).toBeTruthy();
+  });
+
+  it('choisir une duree envoie les minutes, pas un montant', () => {
+    etat.fil = { ...filComplet, clock: horlogeEnCours, extension: prolongationOuverte };
+
+    render(<OnSiteScreen route={route} navigation={{} as never} />);
+
+    fireEvent.press(screen.getByTestId('mission-clock-bar-extend'));
+    fireEvent.press(screen.getByTestId('prolonger-60'));
+
+    expect(mockProlonger).toHaveBeenCalledWith(60, expect.anything());
+  });
+
+  /*
+    LE MOTIF DU REFUS SE MONTRE. Un client qui deborde doit comprendre pourquoi il ne peut plus
+    prolonger, sinon la ligne majoree sur sa facture arrive sans explication -- et c'est un litige.
+  */
+  it('quand la prolongation est fermee, le motif est affiche et le bouton absent', () => {
+    etat.fil = {
+      ...filComplet,
+      clock: horlogeEnCours,
+      extension: {
+        allowed: false,
+        reason: 'Le temps supplementaire est deja en cours de facturation.',
+        max_minutes: 240,
+        increment_minutes: 30,
+        options: [],
+      },
+    };
+
+    render(<OnSiteScreen route={route} navigation={{} as never} />);
+
+    expect(screen.queryByTestId('mission-clock-bar-extend')).toBeNull();
+    expect(screen.getByText(/deja en cours de facturation/)).toBeTruthy();
+  });
+
+  /* TEMOIN : sur une prestation au forfait, il n'y a ni compteur ni bouton. */
+  it('un forfait naffiche aucun compteur', () => {
+    etat.fil = { ...filComplet, clock: { applies: false }, extension: null };
+
+    render(<OnSiteScreen route={route} navigation={{} as never} />);
+
+    expect(screen.queryByTestId('mission-clock-bar')).toBeNull();
+    expect(screen.queryByTestId('mission-clock-bar-extend')).toBeNull();
   });
 });

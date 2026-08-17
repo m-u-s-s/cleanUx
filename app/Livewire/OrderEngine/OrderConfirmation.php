@@ -5,6 +5,7 @@ namespace App\Livewire\OrderEngine;
 use App\Models\AsapDispatchRequest;
 use App\Models\Booking;
 use App\Models\OrderDraft;
+use App\Models\Trade;
 use App\Services\OrderEngine\BundleComposer;
 use App\Services\OrderEngine\OrderConfirmationService;
 use App\Services\OrderEngine\OrderDraftManager;
@@ -77,6 +78,31 @@ class OrderConfirmation extends Component
         $draft = app(OrderDraftManager::class)->resumeOrCreate($this->sessionToken, Auth::user());
 
         return $draft->items()->exists() ? $draft : null;
+    }
+
+    /**
+     * AU MOINS UNE PRESTATION DU PANIER EST-ELLE VENDUE AU TEMPS ?
+     *
+     * C'est la condition d'affichage de la règle de dépassement sur cet écran. Le panier peut être
+     * mixte — un ménage horaire et une pose de meuble au forfait — et il n'y a alors qu'une raison
+     * de montrer la règle : elle s'applique à l'un d'eux.
+     *
+     * NON MIS EN CACHE PAR `#[Computed]` À DESSEIN : la méthode est appelée une fois par rendu et
+     * lit un métier par ligne du panier. Le cache d'une propriété calculée ne fonctionne que sur
+     * l'accès propriété (`$this->truc`), jamais sur l'appel (`$this->truc()`) — piège vérifié sur
+     * ce dépôt. La déclarer `#[Computed]` puis l'appeler ici donnerait l'illusion d'un cache.
+     */
+    public function panierContientDuTemps(): bool
+    {
+        $draft = $this->draft;
+
+        if ($draft === null) {
+            return false;
+        }
+
+        return $draft->items()
+            ->whereIn('trade_id', Trade::query()->where('hourly_billing', true)->select('id'))
+            ->exists();
     }
 
     /** Le devis consolidé : un total, et le détail par métier. */
