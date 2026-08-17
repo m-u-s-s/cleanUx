@@ -53,7 +53,13 @@ class MissionPaymentService
 
         $intent = PaymentIntent::create([
             'amount' => $amount,
-            'currency' => strtolower($rendezVous->pricing_snapshot['currency'] ?? 'eur'),
+            // L'instantane de prix d'abord -- c'est lui qui a fixe le montant --, puis la
+            // devise de la reservation, puis celle de la plateforme. Jamais un « eur » ecrit ici.
+            'currency' => strtolower(
+                $rendezVous->pricing_snapshot['currency']
+                    ?? $rendezVous->currency
+                    ?? (string) config('fx.base_currency', 'EUR')
+            ),
             'customer' => $rendezVous->client->stripe_id,
             'payment_method' => $paymentMethodId,
             'confirm' => true,
@@ -158,7 +164,13 @@ class MissionPaymentService
 
         $intent = PaymentIntent::create([
             'amount' => $amount,
-            'currency' => strtolower($rendezVous->pricing_snapshot['currency'] ?? 'eur'),
+            // L'instantane de prix d'abord -- c'est lui qui a fixe le montant --, puis la
+            // devise de la reservation, puis celle de la plateforme. Jamais un « eur » ecrit ici.
+            'currency' => strtolower(
+                $rendezVous->pricing_snapshot['currency']
+                    ?? $rendezVous->currency
+                    ?? (string) config('fx.base_currency', 'EUR')
+            ),
             'customer' => $clientStripeId,
             // Capture MANUELLE : on autorise à la commande, on encaisse à la fin. Une capture
             // automatique prendrait l'argent avant que le travail soit fait, et rendrait toute

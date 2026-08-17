@@ -65,6 +65,8 @@ class CommissionService
      * qu'au rapprochement comptable, des mois plus tard.
      *
      * @param  User|null  $provider  pour son éventuel taux négocié
+     * @param  string|null  $currency  La devise de la reservation. `null` retombe sur la devise de
+     *                                 BASE de la plateforme -- jamais sur un « eur » ecrit ici.
      * @return array{
      *   total_cents: int,
      *   platform_fee_cents: int,
@@ -75,7 +77,7 @@ class CommissionService
      *   currency: string
      * }
      */
-    public function calculateForAmount(int $totalCents, ?User $provider = null): array
+    public function calculateForAmount(int $totalCents, ?User $provider = null, ?string $currency = null): array
     {
         $totalCents = max(0, $totalCents);
 
@@ -115,7 +117,18 @@ class CommissionService
                 : 0.0,
             'minimum_applied' => $totalCents > 0
                 && $platformFeeCents > (int) round($totalCents * $commissionRate),
-            'currency' => 'eur',
+            /*
+             * LA DEVISE VIENT DE LA RESERVATION, PAS D'UNE CONSTANTE.
+             *
+             * Elle etait ecrite « eur » en dur : une commande en francs suisses produisait une
+             * ligne de commission libellee en euros, pour un montant qui n'en etait pas. Le
+             * module FX existe et la colonne `bookings.currency` aussi ; la seule chose qui
+             * manquait etait de les lire.
+             *
+             * Le repli est la devise de BASE de la plateforme (`fx.base_currency`), pas une
+             * valeur reinventee ici : deux defauts differents finiraient par diverger.
+             */
+            'currency' => strtolower($currency ?: (string) config('fx.base_currency', 'EUR')),
         ];
     }
 
@@ -156,6 +169,6 @@ class CommissionService
          * configurable ici et oublié là aurait donné deux commissions différentes pour un même
          * montant, l'une sur la réservation et l'autre sur le supplément de la même intervention.
          */
-        return $this->calculateForAmount($totalCents, $provider);
+        return $this->calculateForAmount($totalCents, $provider, $booking->currency);
     }
 }

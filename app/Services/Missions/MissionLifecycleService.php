@@ -693,7 +693,10 @@ class MissionLifecycleService
                     ProviderPayout::create([
                         'provider_user_id' => $providerId,
                         'amount' => $commission['provider_payout_cents'] / 100,
-                        'currency' => 'eur',
+                        // La devise du VERSEMENT est celle de la reservation, et le calcul de
+                        // commission la porte deja : la reecrire en dur ferait dire « euros » a un
+                        // versement qui n'en est pas.
+                        'currency' => $commission['currency'],
                         'status' => ProviderPayout::STATUS_PENDING,
                         'provider' => 'stripe_connect',
                         'period_start' => now()->toDateString(),
