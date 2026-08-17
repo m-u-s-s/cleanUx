@@ -1097,15 +1097,13 @@ class OrderJourney extends Component
          * Ces photos finissent sur le disque `public`, servi tel quel par le serveur web ; un SVG
          * accepté ici s'exécuterait dans notre origine.
          *
-         * CE QUE L'ALIGNEMENT NE PERD PAS, contrairement aux apparences. L'ancienne liste
-         * mentionnait `heic`, le format des iPhone — mais la règle `image` qui la précédait vaut
-         * `jpg, jpeg, png, gif, bmp, webp` chez Laravel et rejetait le HEIC AVANT que `mimes:` ne
-         * soit lu. Cette mention était donc décorative : aucune photo iPhone n'est jamais passée
-         * par ce champ. L'alignement ne retire rien de réel, et ajoute `gif` et `bmp`, que la règle
-         * partagée accepte pour les vieux appareils.
-         *
-         * Prendre en charge le HEIC est une décision de produit distincte, qui vaudrait pour les
-         * trois parcours d'un coup — c'est précisément l'intérêt d'avoir une seule liste.
+         * LE HEIC, LUI, EST DEVENU VRAI. L'ancienne liste écrite ici le mentionnait déjà, mais la
+         * règle `image` qui la précédait vaut `jpg, jpeg, png, gif, bmp, webp` chez Laravel et
+         * rejetait le fichier AVANT que `mimes:` ne soit lu : la mention était décorative, et
+         * aucune photo d'iPhone n'est jamais passée par ce champ. La règle partagée n'emploie plus
+         * `image` et liste `heic`/`heif` explicitement — le format par défaut des iPhone passe donc
+         * réellement, ici comme sur les deux autres parcours, ce qui est tout l'intérêt d'avoir une
+         * seule liste. L'alignement ajoute aussi `gif` et `bmp`, pour les vieux appareils.
          */
         $this->validate(
             ['photos.*' => ImagesTeleversees::regles(tailleMaxKo: 8192)],

@@ -25,6 +25,19 @@ namespace App\Support\Validation;
  * un document XML, qui porte `<script>` et `onload=` sans rien perdre de sa validité. Servi avec
  * `Content-Type: image/svg+xml`, il s'exécute.
  *
+ * heic et heif SONT AJOUTÉS À LA RÈGLE NATIVE, et c'est le seul ajout volontaire.
+ *
+ * C'est le format par défaut de l'appareil photo des iPhone depuis iOS 11, et `image` de Laravel ne
+ * le connaît pas : jusqu'ici, un client photographiant son logement avec un iPhone recevait
+ * « format non accepté » sur les trois parcours. Le parcours de commande MENTIONNAIT `heic` dans sa
+ * liste, mais la règle `image` qui la précédait le rejetait avant que `mimes:` ne soit lu — la
+ * mention était décorative, et personne ne s'en était aperçu.
+ *
+ * Ce sont des conteneurs matriciels (ISOBMFF), pas des documents : ils ne portent ni script ni
+ * gestionnaire d'événement. Vérifié de bout en bout avant l'ajout : `finfo` rend `image/heic` sur
+ * un en-tête `ftyp/heic`, et cette famille MIME se traduit bien en extension `heic` — sans quoi la
+ * règle aurait accepté sur le papier et refusé en pratique.
+ *
  * gif et bmp restent acceptés. Ce ne sont pas des vecteurs de script — ce sont des formats
  * matriciels que produisent encore des téléphones anciens et de vieux scanners, exactement le parc
  * des prestataires qu'on veut inscrire. Les refuser n'aurait fermé aucune faille et aurait cassé
@@ -47,7 +60,7 @@ final class ImagesTeleversees
      *
      * @var list<string>
      */
-    public const EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+    public const EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'heic', 'heif'];
 
     /**
      * Jeu de règles complet pour un champ image.

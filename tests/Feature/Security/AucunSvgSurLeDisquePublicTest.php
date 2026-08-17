@@ -31,9 +31,11 @@ use Tests\TestCase;
  * Laravel `image` ACCEPTE le svg ; s'y fier rouvrirait la porte sans que personne le remarque.
  *
  * Mesuré au moment de l'écriture : trois chemins écrivent sur ce disque — l'avatar client, la
- * photo d'onboarding prestataire, et les photos du parcours de commande. Les deux premiers passent
- * par la règle partagée ; le troisième porte sa propre liste, sûre mais recopiée. C'est
- * précisément cette divergence-là que le test structurel surveille.
+ * photo d'onboarding prestataire, et les photos du parcours de commande. Les trois passent
+ * désormais par la règle partagée ; le troisième portait sa propre copie, sûre mais divergente, et
+ * c'est précisément cette divergence-là que le test structurel surveille. Elle n'était pas
+ * théorique : la copie mentionnait `heic` sans jamais l'accepter, et refusait `gif` et `bmp` que
+ * les deux autres acceptaient.
  */
 class AucunSvgSurLeDisquePublicTest extends TestCase
 {
@@ -133,24 +135,51 @@ class AucunSvgSurLeDisquePublicTest extends TestCase
     }
 
     /**
-     * LE HEIC EST REFUSÉ — et le dire ici évite qu'on le croie accepté.
+     * LE HEIC DES IPHONE PASSE — et il ne passait nulle part avant.
      *
-     * Le parcours de commande MENTIONNAIT `heic` dans sa liste avant l'alignement. C'était
-     * décoratif : la règle `image` de Laravel qui la précédait vaut `jpg, jpeg, png, gif, bmp,
-     * webp` et rejetait le fichier AVANT que `mimes:` ne soit lu. Aucune photo iPhone n'est jamais
-     * passée par ce champ, et aucune ne passe par les deux autres.
+     * Le parcours de commande MENTIONNAIT `heic` dans sa liste, mais la règle `image` de Laravel
+     * qui la précédait vaut `jpg, jpeg, png, gif, bmp, webp` et rejetait le fichier AVANT que
+     * `mimes:` ne soit lu. La mention était décorative : aucune photo d'iPhone n'est jamais passée
+     * par ce champ, ni par les deux autres. C'est le format par défaut de l'appareil photo depuis
+     * iOS 11 — le refus tombait donc sur une grande partie des clients, en leur disant seulement
+     * « format non accepté ».
      *
-     * Ce test fixe l'état RÉEL plutôt qu'une intention. Prendre en charge le HEIC est une décision
-     * de produit — elle vaudrait alors pour les trois parcours d'un coup, ce qui est tout l'intérêt
-     * d'une liste unique.
+     * Ce test l'éprouve SUR LE CONTENU, avec un vrai en-tête `ftyp`, parce que c'est là qu'un
+     * ajout de ce genre échoue en silence : lister `heic` dans `mimes:` ne sert à rien si la base
+     * `magic` du serveur ne sait pas nommer ces octets. `mimes:` compare `guessExtension()`,
+     * dérivée de `finfo` — un serveur trop ancien rendrait `application/octet-stream` et
+     * refuserait, alors que la liste, elle, paraîtrait juste.
      */
-    public function test_le_heic_des_iphone_est_refuse_partout(): void
+    public function test_le_heic_des_iphone_est_accepte(): void
     {
         Sanctum::actingAs(User::factory()->create());
 
+        // En-tete ISOBMFF de 24 octets, marque `heic` : c'est ce que `finfo` lit.
+        $heic = (string) base64_decode('AAAAGGZ0eXBoZWljAAAAAGhlaWNtaWYx', true);
+
         $this->postJson('/api/client/profile/avatar', [
-            'avatar' => UploadedFile::fake()->createWithContent('photo.heic', 'contenu-heic'),
-        ])->assertStatus(422);
+            'avatar' => UploadedFile::fake()->createWithContent('photo.heic', $heic),
+        ])->assertSuccessful();
+    }
+
+    /**
+     * LA MARQUE GÉNÉRIQUE PASSE AUSSI, et c'est une entrée distincte de la précédente.
+     *
+     * Tous les appareils n'écrivent pas la marque `heic` : beaucoup posent `mif1`, que `finfo`
+     * nomme `image/heif` et non `image/heic`. Les deux types se traduisent en DEUX extensions
+     * différentes, donc `heif` doit figurer dans la liste au même titre que `heic`. Sans ce
+     * second témoin, on refuserait la moitié du parc sans jamais s'en apercevoir ici — le refus
+     * tomberait sur des appareils qu'on n'a pas sous la main pour le reproduire.
+     */
+    public function test_le_heif_a_marque_generique_est_accepte_lui_aussi(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $heif = (string) base64_decode('AAAAGGZ0eXBtaWYxAAAAAG1pZjFoZWlj', true);
+
+        $this->postJson('/api/client/profile/avatar', [
+            'avatar' => UploadedFile::fake()->createWithContent('photo.heif', $heif),
+        ])->assertSuccessful();
     }
 
     /**

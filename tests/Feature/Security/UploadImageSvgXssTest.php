@@ -33,7 +33,7 @@ use Tests\TestCase;
  * CE QUE CE FICHIER VERROUILLE, ET DANS LES DEUX SENS :
  *
  *   1. le SVG est refusé aux TROIS points — durcir deux portes sur trois ne ferme rien ;
- *   2. les six formats matriciels de {@see ImagesTeleversees} passent encore, aux trois points —
+ *   2. TOUS les formats matriciels de {@see ImagesTeleversees} passent encore, aux trois points —
  *      un durcissement qui refuse un gif de vieux téléphone n'est pas un correctif, c'est une
  *      panne. C'est exactement ce qui était arrivé : l'API mobile refusait gif et bmp que le
  *      wizard web acceptait.
@@ -82,6 +82,22 @@ class UploadImageSvgXssTest extends TestCase
             'gif' => ['gif', 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'gif'],
             'bmp' => ['bmp', 'Qk1GAAAAAAAAADYAAAAoAAAAAQAAAAEAAAABABgAAAAAABAAAADDDgAAww4AAAAAAAAAAAAA////AA==', 'bmp'],
             'webp' => ['webp', 'UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==', 'webp'],
+
+            /*
+             * LE HEIC ET LE HEIF SONT DEUX ENTREES DISTINCTES, ET LES DEUX PORTENT.
+             *
+             * Ce sont des boites ISOBMFF : `finfo` lit la MARQUE declaree dans l'en-tete `ftyp`, pas
+             * l'extension. Une photo d'iPhone se presente en marque `heic` et rend `image/heic` ;
+             * d'autres appareils ecrivent la marque generique `mif1`, qui rend `image/heif`. Les
+             * deux types se traduisent en DEUX extensions differentes -- n'en lister qu'une
+             * refuserait la moitie du parc, et le refus tomberait sur des appareils qu'on n'a pas
+             * sous la main pour le reproduire.
+             *
+             * Les octets ci-dessous sont de vrais en-tetes `ftyp` de 24 octets, pas des chaines
+             * baptisees : c'est `finfo` qui doit les reconnaitre, comme en production.
+             */
+            'heic' => ['heic', 'AAAAGGZ0eXBoZWljAAAAAGhlaWNtaWYx', 'heic'],
+            'heif' => ['heif', 'AAAAGGZ0eXBtaWYxAAAAAG1pZjFoZWlj', 'heif'],
         ];
     }
 
@@ -449,17 +465,53 @@ class UploadImageSvgXssTest extends TestCase
 
     /**
      * Le pendant du test précédent : notre liste ne doit rien REFUSER que `image` accepte, sans
-     * quoi on casse des téléversements légitimes sans rien fermer. La seule différence voulue avec
-     * la règle native est le retrait du svg.
+     * quoi on casse des téléversements légitimes sans rien fermer. Le svg est le seul RETRAIT ;
+     * les ajouts, eux, sont permis mais doivent être déclarés.
      */
-    public function test_notre_liste_est_exactement_image_moins_le_svg(): void
+    public function test_notre_liste_couvre_image_sans_le_svg(): void
     {
+        /*
+         * ON VERROUILLE LE RAISONNEMENT, PAS LA VALEUR DU JOUR.
+         *
+         * Ce test comparait la liste a un tableau litteral. Il refusait donc aussi les ajouts
+         * VOLONTAIRES, alors que son propre intitule ne garde que contre le RETRAIT : « notre liste
+         * ne doit rien REFUSER que `image` accepte ». Un instantane fige la valeur ; ce qu'on veut
+         * figer, c'est la regle.
+         *
+         * Deux clauses, donc. Tout ce que Laravel appelle image reste accepte -- et le svg mis a
+         * part, c'est la clause qui empeche de casser des televersements legitimes. Et rien
+         * d'autre n'entre sans figurer dans la liste des ajouts assumes : une addition distraite
+         * echoue toujours.
+         */
+        $natifs = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+
+        foreach ($natifs as $format) {
+            $this->assertContains(
+                $format,
+                ImagesTeleversees::EXTENSIONS,
+                "Le format « {$format} » a disparu de la liste partagee. Refuser un format "
+                .'matriciel legitime ne ferme aucune faille : ca empeche juste un prestataire de '
+                ."s'inscrire.",
+            );
+        }
+
+        /*
+         * LES AJOUTS ASSUMES, et le motif de chacun.
+         *
+         * `heic`/`heif` : format par defaut de l'appareil photo des iPhone depuis iOS 11, que la
+         * regle `image` de Laravel ne connait pas. Sans eux, un client qui photographie son
+         * logement avec un iPhone recoit « format non accepte ». Ce sont des conteneurs matriciels
+         * ISOBMFF : ils ne portent ni script ni gestionnaire d'evenement, contrairement au svg.
+         */
+        $ajoutsAssumes = ['heic', 'heif'];
+
         $this->assertSame(
-            ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'],
-            ImagesTeleversees::EXTENSIONS,
-            'La liste partagée a changé. Si c\'est un durcissement, vérifier d\'abord qu\'aucun '.
-            'format retiré n\'est un format matriciel légitime : refuser un gif de vieux téléphone '.
-            "ne ferme aucune faille, ça empêche juste un prestataire de s'inscrire.",
+            [],
+            array_values(array_diff(ImagesTeleversees::EXTENSIONS, $natifs, $ajoutsAssumes)),
+            'Un format est entre dans la liste partagee sans etre declare ici. Chaque ajout doit '
+            .'etre un conteneur matriciel -- pas un document capable de porter un script -- et '
+            .'doit etre reconnu par `finfo`, sans quoi la regle accepte sur le papier et refuse en '
+            .'pratique.',
         );
 
         $this->assertNotContains(
