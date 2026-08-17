@@ -9,6 +9,29 @@ use function Knuckles\Scribe\Config\removeStrategies;
 
 // Only the most common configs are shown. See the https://scribe.knuckles.wtf/laravel/reference/config for all.
 
+/*
+ * SANS LE PAQUET, PAS DE CONFIGURATION — et surtout pas une erreur fatale.
+ *
+ * `knuckleswtf/scribe` est une dépendance de DÉVELOPPEMENT : elle génère la documentation d'API et
+ * n'a rien à faire en production. Mais Laravel charge TOUS les fichiers de `config/`, et celui-ci
+ * évalue `AuthIn::BEARER->value`, `Defaults::…`, `Strategies::…` et deux fonctions du paquet dès sa
+ * lecture. Sans le paquet, c'est une erreur fatale.
+ *
+ * CE QUE ÇA COÛTAIT. `composer install --no-dev` casse sur `package:discover`, donc le workflow de
+ * déploiement échouait à sa quatrième étape — bien avant la connexion SSH et les secrets. Le défaut
+ * est resté invisible des mois : la CI était rouge pour une autre raison, le job `Deploy` était donc
+ * toujours `skipped`, et personne n'a jamais vu ce mur. Il n'est apparu qu'à la première CI verte.
+ *
+ * ON REND UN TABLEAU VIDE plutôt qu'une configuration de repli : aucune valeur n'a de sens sans le
+ * paquet qui la lit, et `scribe:generate` n'est jamais exécuté en production. Un repli inventé ici
+ * donnerait l'illusion d'une documentation configurée là où il n'y a pas de générateur.
+ *
+ * Les `use` ci-dessus ne déclenchent aucun chargement : ce sont des alias résolus à l'appel.
+ */
+if (! class_exists(AuthIn::class)) {
+    return [];
+}
+
 return [
     // The HTML <title> for the generated documentation.
     'title' => 'Brio API',

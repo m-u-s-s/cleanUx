@@ -7,6 +7,7 @@ use App\Models\ProviderPayout;
 use App\Models\ProviderWalletTransaction;
 use App\Models\StripeWebhookEvent;
 use App\Models\User;
+use App\Services\Payments\ProviderWalletService;
 use App\Services\Payments\Webhooks\StripeWebhookHandlers;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
@@ -157,6 +158,13 @@ class StripeWebhookHandlersCoverageBatch8Test extends TestCase
             'provider_amount_cents' => 10000,
         ])->save();
 
+        /*
+         * LE GAIN D'ABORD : la reprise est plafonnee au montant reellement verse au
+         * prestataire. Sans cette ligne, le montage decrit un etat impossible -- une reprise
+         * sur un portefeuille jamais credite -- et ne mesure plus le comportement du webhook.
+         */
+        app(ProviderWalletService::class)->recordEarning($booking->fresh());
+
         $res = $this->handlers()->handleChargeRefunded([
             'id' => 'ch_total',
             'payment_intent' => 'pi_ref_total',
@@ -181,6 +189,13 @@ class StripeWebhookHandlersCoverageBatch8Test extends TestCase
             'employe_id' => User::factory()->employe()->create()->id,
             'provider_amount_cents' => 10000,
         ])->save();
+
+        /*
+         * LE GAIN D'ABORD : la reprise est plafonnee au montant reellement verse au
+         * prestataire. Sans cette ligne, le montage decrit un etat impossible -- une reprise
+         * sur un portefeuille jamais credite -- et ne mesure plus le comportement du webhook.
+         */
+        app(ProviderWalletService::class)->recordEarning($booking->fresh());
 
         $res = $this->handlers()->handleChargeRefunded([
             'id' => 'ch_partial',

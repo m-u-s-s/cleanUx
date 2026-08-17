@@ -410,6 +410,16 @@ class RefundClawbackTest extends TestCase
         $walletService = app(ProviderWalletService::class);
         $booking = $s->booking->fresh();
 
+        /*
+         * LE GAIN D'ABORD — sans lui, ce montage décrivait un état impossible.
+         *
+         * Le test reprenait 80 € à un prestataire dont le portefeuille n'avait jamais été crédité.
+         * La reprise est désormais plafonnée au montant réellement versé : on ne reprend pas ce
+         * qu'on n'a pas donné. L'idempotence, qui est l'objet de ce test, se vérifie exactement de
+         * la même façon — sur un état, cette fois, qui peut exister en production.
+         */
+        $walletService->recordEarning($booking);
+
         // First call
         $tx1 = $walletService->recordRefundClawback($booking, 80.00, 're_idem_1');
         // Second call — must return the existing row, not create a new one

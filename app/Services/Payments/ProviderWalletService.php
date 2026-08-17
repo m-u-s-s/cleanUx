@@ -176,6 +176,14 @@ class ProviderWalletService
 
         $idempotencyKey = sprintf('refund:booking:%d:%s', $booking->id, $stripeChargeId ?? 'manual');
 
+        /*
+         * L'IDEMPOTENCE PASSE AVANT LE PLAFOND, et l'ordre n'est pas cosmetique.
+         *
+         * Un webhook Stripe est re-livre : le meme remboursement repasse ici avec la meme cle. Si
+         * le plafond etait evalue en premier, la reprise deja enregistree aurait epuise le
+         * reprenable, la seconde livraison rendrait `null` -- et l'appelant, qui attend sa ligne,
+         * lirait une propriete sur du vide. Mesure sur `RefundClawbackTest`.
+         */
         $existing = ProviderWalletTransaction::query()
             ->where('idempotency_key', $idempotencyKey)
             ->first();
@@ -183,6 +191,47 @@ class ProviderWalletService
         if ($existing) {
             return $existing;
         }
+
+        /*
+         * ON NE REPREND PAS CE QU'ON N'A JAMAIS VERSÉ.
+         *
+         * La reprise était calculée depuis le montant remboursé et la part prestataire de la
+         * COMMANDE, sans jamais regarder si ce prestataire avait effectivement été crédité. Un
+         * portefeuille pouvait donc partir en négatif sur une mission jamais payée.
+         *
+         * LE CAS QUI L'A RÉVÉLÉ. Quand une empreinte est partiellement capturée — les frais
+         * d'annulation encaissés, le reste libéré —, Stripe fait revenir le solde relâché sous
+         * forme de REMBOURSEMENT sur la charge, objet `re_…` compris. Le webhook ne peut pas
+         * distinguer cette libération d'un vrai remboursement client, et facturait au prestataire
+         * une reprise sur une prestation qu'il n'avait jamais été payé pour faire.
+         *
+         * Plafonner au crédit réel règle les deux d'un coup, et ne demande de deviner aucune
+         * sémantique Stripe : sans gain enregistré, il n'y a rien à reprendre.
+         *
+         * LE PLAFOND EST NET DES REPRISES DÉJÀ FAITES : deux remboursements partiels successifs
+         * doivent pouvoir reprendre chacun leur part, mais jamais plus que le total versé.
+         */
+        $creditee = (float) ProviderWalletTransaction::query()
+            ->where('source_type', 'booking')
+            ->where('source_id', $booking->id)
+            ->where('provider_user_id', $providerId)
+            ->where('type', ProviderWalletTransaction::TYPE_EARNING)
+            ->sum('amount');
+
+        $dejaReprise = (float) ProviderWalletTransaction::query()
+            ->where('source_type', 'booking')
+            ->where('source_id', $booking->id)
+            ->where('provider_user_id', $providerId)
+            ->where('type', ProviderWalletTransaction::TYPE_REFUND_CLAWBACK)
+            ->sum('amount');
+
+        $reprenable = round($creditee - $dejaReprise, 2);
+
+        if ($reprenable <= 0) {
+            return null;
+        }
+
+        $amount = min($amount, $reprenable);
 
         return ProviderWalletTransaction::create([
             'provider_user_id' => $providerId,

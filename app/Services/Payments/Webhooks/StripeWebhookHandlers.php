@@ -31,6 +31,45 @@ class StripeWebhookHandlers
         protected ProviderWalletService $walletService,
     ) {}
 
+    /** Le volet « solde » d'un plan à acompte — et le seul intent des réservations ordinaires. */
+    private const VOLET_SOLDE = 'balance';
+
+    /** Le volet « acompte » : déjà débité à la commande, sur sa propre intention Stripe. */
+    private const VOLET_ACOMPTE = 'deposit';
+
+    /**
+     * QUELLE RÉSERVATION, ET QUEL VOLET DE SON PAIEMENT ?
+     *
+     * Une réservation à acompte porte DEUX intentions Stripe : `deposit_payment_intent_id`, débitée
+     * à la commande, et `stripe_payment_intent_id`, le solde bloqué jusqu'à la fin. Les webhooks ne
+     * cherchaient que la seconde : tout événement portant sur l'acompte — encaissement,
+     * remboursement, échec — ne trouvait aucune réservation et sortait en `ignored`. La colonne
+     * était écrite par le planificateur de paiement et relue par PERSONNE.
+     *
+     * LE VOLET EST RENDU AVEC LA RÉSERVATION, et ce n'est pas un confort. `payment_status` décrit
+     * le SOLDE, pas l'acompte : le rattacher sans le dire ferait écrire « remboursé » sur une
+     * réservation dont le solde n'est qu'autorisé, et ce solde deviendrait définitivement non
+     * capturable. Chaque appelant doit savoir de quel volet on lui parle.
+     *
+     * @return array{0: Booking|null, 1: string}
+     */
+    private function reservationPourIntent(?string $piId): array
+    {
+        if (! $piId) {
+            return [null, self::VOLET_SOLDE];
+        }
+
+        $booking = Booking::query()->where('stripe_payment_intent_id', $piId)->first();
+
+        if ($booking) {
+            return [$booking, self::VOLET_SOLDE];
+        }
+
+        $booking = Booking::query()->where('deposit_payment_intent_id', $piId)->first();
+
+        return [$booking, $booking ? self::VOLET_ACOMPTE : self::VOLET_SOLDE];
+    }
+
     public function handleAccountUpdated(array $account): array
     {
         $accountId = $account['id'] ?? null;
@@ -107,7 +146,8 @@ class StripeWebhookHandlers
             return ['status' => StripeWebhookEvent::STATUS_IGNORED];
         }
 
-        $booking = Booking::query()->where('stripe_payment_intent_id', $pi)->first();
+        [$booking, $volet] = $this->reservationPourIntent($pi);
+
         if (! $booking) {
             return ['status' => StripeWebhookEvent::STATUS_IGNORED];
         }
@@ -117,7 +157,15 @@ class StripeWebhookHandlers
 
         $alreadyHandled = $booking->payment_status === ($isTotal ? 'refunded' : 'partially_refunded');
 
-        if (! $alreadyHandled) {
+        /*
+         * `payment_status` DECRIT LE SOLDE, JAMAIS L'ACOMPTE.
+         *
+         * Rembourser un acompte et ecrire « partiellement rembourse » sur la reservation rendrait
+         * le solde -- qui n'est qu'AUTORISE -- definitivement non capturable : la capture refuse
+         * tout statut autre que `authorized`. Le remboursement de l'acompte est reel et se
+         * comptabilise ; il ne dit simplement rien de l'autre volet.
+         */
+        if (! $alreadyHandled && $volet === self::VOLET_SOLDE) {
             $booking->forceFill([
                 'payment_status' => $isTotal ? 'refunded' : 'partially_refunded',
                 'payment_refunded_at' => now(),
@@ -203,9 +251,31 @@ class StripeWebhookHandlers
         // 1) Si c'est un payment intent de TIP, confirmCharge le tip
         $this->maybeConfirmTipCharge($intent, $piId);
 
-        $booking = Booking::query()->where('stripe_payment_intent_id', $piId)->first();
+        [$booking, $volet] = $this->reservationPourIntent($piId);
+
         if (! $booking) {
             return ['status' => StripeWebhookEvent::STATUS_IGNORED];
+        }
+
+        /*
+         * L'ACOMPTE EST DEJA ENCAISSE, ET SA PART PRESTATAIRE DEJA TRANSFEREE.
+         *
+         * Il est cree en capture automatique avec sa propre `application_fee_amount` et sa
+         * destination Connect : Stripe a deja fait le partage au moment de la commande. Le
+         * reprendre ici creditrait `provider_amount_cents` -- la part du TOTAL -- pour un
+         * encaissement partiel, et une seconde fois a la capture du solde, la cle d'idempotence
+         * portant l'identifiant de l'intention.
+         *
+         * On reconnait donc l'evenement au lieu de l'ignorer -- il concerne bien une reservation
+         * connue, et le journal doit pouvoir le dire -- sans toucher ni au statut du solde ni au
+         * portefeuille.
+         */
+        if ($volet === self::VOLET_ACOMPTE) {
+            return ['status' => StripeWebhookEvent::STATUS_PROCESSED, 'details' => [
+                'booking_id' => $booking->id,
+                'volet' => self::VOLET_ACOMPTE,
+                'reason' => 'acompte deja encaisse a la commande',
+            ]];
         }
 
         $previousStatus = $booking->payment_status;
@@ -292,12 +362,15 @@ class StripeWebhookHandlers
             return ['status' => StripeWebhookEvent::STATUS_IGNORED];
         }
 
-        $booking = Booking::query()->where('stripe_payment_intent_id', $piId)->first();
+        [$booking, $volet] = $this->reservationPourIntent($piId);
+
         if (! $booking) {
             return ['status' => StripeWebhookEvent::STATUS_IGNORED];
         }
 
-        $alreadyFailed = $booking->payment_status === 'failed';
+        // Meme raison que ci-dessus : un acompte en echec ne dit rien du solde, et ecrire
+        // `failed` sur la reservation ferait passer pour perdu un solde parfaitement autorise.
+        $alreadyFailed = $booking->payment_status === 'failed' || $volet === self::VOLET_ACOMPTE;
 
         if (! $alreadyFailed) {
             $booking->forceFill([
