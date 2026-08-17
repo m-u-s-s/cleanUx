@@ -1,5 +1,5 @@
 /**
- * Tests for the booking flow — hooks (useCreateBooking, useBookings, useBookingDetail)
+ * Tests for the booking flow — hooks (useBookings, useBookingDetail)
  * and the BookingProvider/useBooking context.
  */
 import React from 'react';
@@ -15,7 +15,7 @@ jest.mock('expo-secure-store', () => ({
 }));
 
 import { apiClient } from '@/api';
-import { useCreateBooking, useBookings, useBookingDetail, useEligibleCompanies } from '../hooks';
+import { useBookings, useBookingDetail, useEligibleCompanies } from '../hooks';
 import type { Booking } from '../types';
 
 const mock = new MockAdapter(apiClient);
@@ -40,63 +40,16 @@ const MOCK_BOOKING: Booking = {
   created_at: '2025-01-01T00:00:00Z',
 };
 
-const BOOKING_INPUT = {
-  serviceId: 1,
-  details: { options: [], comment: '' },
-  coordinates: { address: '12 rue de la Paix', city: 'Paris', postalCode: '75001' },
-  scheduling: { date: '2025-06-01', time: '10:00', isAsap: false },
-};
-
 beforeEach(() => {
   mock.reset();
   jest.clearAllMocks();
 });
 
-describe('useCreateBooking', () => {
-  it('returns the created booking on success', async () => {
-    mock.onPost('/client/bookings').replyOnce(200, { data: MOCK_BOOKING });
-
-    const { result } = renderHook(() => useCreateBooking(), { wrapper: queryWrapper });
-
-    act(() => { result.current.mutate(BOOKING_INPUT); });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    expect(result.current.data?.id).toBe(42);
-    expect(result.current.data?.status).toBe('confirmed');
-  });
-
-  it('exposes ApiError on booking creation failure', async () => {
-    mock.onPost('/client/bookings').replyOnce(422, {
-      ok: false,
-      error_code: 'slot_unavailable',
-      message: 'The requested slot is no longer available.',
-    });
-
-    const { result } = renderHook(() => useCreateBooking(), { wrapper: queryWrapper });
-
-    act(() => { result.current.mutate(BOOKING_INPUT); });
-
-    await waitFor(() => expect(result.current.isError).toBe(true));
-
-    expect(result.current.error?.errorCode).toBe('slot_unavailable');
-  });
-
-  it('sends service_catalog_id and scheduling fields in request body', async () => {
-    mock.onPost('/client/bookings').replyOnce(200, { data: MOCK_BOOKING });
-
-    const { result } = renderHook(() => useCreateBooking(), { wrapper: queryWrapper });
-
-    act(() => { result.current.mutate(BOOKING_INPUT); });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-
-    const body = JSON.parse(mock.history['post']![0]!.data as string) as Record<string, unknown>;
-    expect(body['service_catalog_id']).toBe(1);
-    expect(body['scheduled_date']).toBe('2025-06-01');
-    expect(body['city']).toBe('Paris');
-  });
-});
+/*
+ * Le bloc `useCreateBooking` a disparu avec le hook : il n'avait aucun appelant, tous les points
+ * d'entree de reservation ouvrant la WebView `/commander`. Trois tests verts prouvaient qu'un
+ * parcours natif inexistant fonctionnait -- la forme la plus trompeuse d'une suite verte.
+ */
 
 describe('useBookings', () => {
   it('returns the list of bookings', async () => {

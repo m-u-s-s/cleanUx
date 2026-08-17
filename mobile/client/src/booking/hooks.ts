@@ -124,50 +124,22 @@ export function useBookingFavorites() {
   });
 }
 
-type CreateBookingInput = Omit<
-  BookingState,
-  | 'serviceName'
-  | 'categorySlug'
-  | 'providerTypePreference'
-  | 'preferredProviderUserId'
-  | 'assignedProviderOrganizationId'
-> & {
-  serviceId: number;
-  // SP2 — optional so existing callers keep working; default to 'any'/null.
-  providerTypePreference?: BookingState['providerTypePreference'];
-  preferredProviderUserId?: BookingState['preferredProviderUserId'];
-  // SP3 Task 9 — optional company pick; defaults to null.
-  assignedProviderOrganizationId?: BookingState['assignedProviderOrganizationId'];
-};
-
-export function useCreateBooking() {
-  return useMutation<Booking, ApiError, CreateBookingInput>({
-    mutationFn: async (input) => {
-      const res = await apiClient.post('/client/bookings', {
-        service_catalog_id: input.serviceId,
-        address: input.coordinates.address,
-        city: input.coordinates.city,
-        postal_code: input.coordinates.postalCode,
-        latitude: input.coordinates.latitude,
-        longitude: input.coordinates.longitude,
-        scheduled_date: input.scheduling.date,
-        scheduled_time: input.scheduling.time,
-        is_asap: input.scheduling.isAsap,
-        recurrence: input.scheduling.recurrence,
-        surface: input.details.surface,
-        frequency: input.details.frequency,
-        options: input.details.options,
-        comment: input.details.comment,
-        // SP2 — client provider selection. The backend reads these 2 keys.
-        provider_type_preference: input.providerTypePreference ?? 'any',
-        preferred_provider_user_id: input.preferredProviderUserId ?? null,
-        // SP3 Task 9 — premium company pick (mutually exclusive with the worker).
-        assigned_provider_organization_id: input.assignedProviderOrganizationId ?? null,
-      });
-      return res.data.data ?? res.data;
-    },
-  });
-}
+/*
+ * `useCreateBooking` A ETE SUPPRIME, ET C'EST UNE INFORMATION.
+ *
+ * Il postait sur `/client/bookings` et n'avait AUCUN APPELANT : tous les points d'entree de
+ * reservation ouvrent la WebView `/commander` (`EmbeddedModule`), conformement a la strategie
+ * hybride. Le hook, son type d'entree et ses trois tests donnaient donc l'illusion d'un parcours
+ * de reservation natif qui n'existe nulle part -- exactement le genre de code mort qui trompe le
+ * prochain lecteur, et que `tsc` comme jest declaraient sains.
+ *
+ * Le PAIEMENT, lui, est bien natif et joignable : `BookingDetailScreen` mene a `PaymentCheckout`,
+ * qui passe par `BookingPaymentController` et le meme service que le web. Ne pas confondre les
+ * deux -- l'un etait mort, l'autre porte de l'argent reel.
+ *
+ * Le jour ou la reservation native sera decidee, elle se reecrira contre l'API d'alors. Garder une
+ * version jamais appelee ne fait pas gagner ce travail : elle vieillit sans que rien ne le dise.
+ */
 
 export function useBookings() {
   return useQuery<Booking[]>({

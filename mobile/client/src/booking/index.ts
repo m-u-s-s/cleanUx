@@ -7,7 +7,6 @@ export {
   useEligibleCompanies,
   useAddressAutocomplete,
   usePostalAutocomplete,
-  useCreateBooking,
   useBookings,
   useBookingDetail,
   useBookingFavorites,
