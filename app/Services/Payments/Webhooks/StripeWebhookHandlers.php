@@ -9,6 +9,7 @@ use App\Models\ProviderWalletTransaction;
 use App\Models\StripeWebhookEvent;
 use App\Models\User;
 use App\Notifications\Payments\PaymentFailedNotification;
+use App\Services\Payments\MissionPaymentService;
 use App\Services\Payments\ProviderWalletService;
 use App\Services\Payments\StripeConnectPaymentService;
 use App\Services\Payments\StripeConnectService;
@@ -165,7 +166,21 @@ class StripeWebhookHandlers
          * tout statut autre que `authorized`. Le remboursement de l'acompte est reel et se
          * comptabilise ; il ne dit simplement rien de l'autre volet.
          */
-        if (! $alreadyHandled && $volet === self::VOLET_SOLDE) {
+        /*
+         * LE SOLDE LIBÉRÉ N'EST PAS UN REMBOURSEMENT.
+         *
+         * Après une capture partielle des frais d'annulation, Stripe rend le reste de l'empreinte
+         * — et il le rend sous forme de REMBOURSEMENT sur la charge, objet `re_…` compris. Rien
+         * dans la charge ne permet de le distinguer d'un vrai remboursement client.
+         *
+         * Écrire « partiellement remboursé » par-dessus `fee_captured` effacerait la seule trace
+         * disant que ces euros sont des frais et non une prestation. La reprise sur le portefeuille
+         * est déjà neutralisée en amont — sans gain enregistré, il n'y a rien à reprendre — mais le
+         * statut, lui, se défend ici.
+         */
+        $fraisEncaisses = $booking->payment_status === MissionPaymentService::STATUT_FRAIS_CAPTURES;
+
+        if (! $alreadyHandled && ! $fraisEncaisses && $volet === self::VOLET_SOLDE) {
             $booking->forceFill([
                 'payment_status' => $isTotal ? 'refunded' : 'partially_refunded',
                 'payment_refunded_at' => now(),

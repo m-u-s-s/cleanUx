@@ -13,6 +13,7 @@ use App\Models\Mission;
 use App\Models\User;
 use App\Services\Booking\ProviderSelectionResolver;
 use App\Services\Booking\ZoneCoverageService;
+use App\Services\Cancellation\CancelBookingService;
 use App\Services\Missions\MissionLifecycleService;
 use App\Services\Missions\MissionVerificationCodeService;
 use Carbon\Carbon;
@@ -235,15 +236,45 @@ class ClientBookingController extends Controller
             throw BookingException::notCancellable();
         }
 
-        $booking->update([
-            'status' => 'annule',
-            'cancelled_at' => now(),
-            'cancelled_by' => $request->user()->id,
-            'cancellation_reason' => $data['reason'] ?? null,
-        ]);
+        /*
+         * ANNULER PASSE PAR LE SERVICE, ET NON PLUS PAR UN `update()` NU.
+         *
+         * Cette méthode écrivait le statut, la date et l'auteur — puis s'arrêtait là. Aucun frais
+         * calculé, aucun remboursement, aucune libération d'empreinte, aucun redispatch. Annuler
+         * depuis l'application mobile ne touchait PAS À L'ARGENT : le client voyait « annulé », son
+         * empreinte restait posée jusqu'à expiration, et les frais d'annulation prévus au contrat
+         * n'étaient jamais réclamés. Le même geste depuis le web, lui, passait par le service.
+         *
+         * Deux chemins pour une même décision, dont un seul comptait — le défaut dominant de ce
+         * dépôt, sous une autre forme.
+         *
+         * LES GARDES CI-DESSUS RESTENT, et ne font pas doublon avec celles du service : elles sont
+         * plus strictes (`sur_place` n'est pas annulable depuis un téléphone) et produisent les
+         * erreurs d'API que l'application sait présenter. Celle du service est un filet, et son
+         * `DomainException` deviendrait un 500 : on la traduit.
+         */
+        try {
+            $resultat = app(CancelBookingService::class)
+                ->cancelByClient($booking, $request->user(), $data['reason'] ?? null);
+        } catch (\DomainException $e) {
+            throw BookingException::notCancellable();
+        }
 
         return response()->json([
             'ok' => true,
+            /*
+             * LES FRAIS SONT DITS AU CLIENT, dans la réponse même de son annulation.
+             *
+             * Il vient d'être débité — ou de l'être en partie. Le lui apprendre par son relevé
+             * bancaire, alors que l'écran affichait « annulé » sans un chiffre, est exactement la
+             * façon de transformer une règle acceptée en réclamation.
+             */
+            'cancellation' => [
+                'fee_amount' => $resultat['fee_details']['fee_amount'] ?? 0,
+                'fee_percent' => $resultat['fee_details']['fee_percent'] ?? 0,
+                'reason_code' => $resultat['fee_details']['reason_code'] ?? null,
+                'is_free' => (bool) ($resultat['is_free'] ?? false),
+            ],
             'data' => $this->serialize($booking->fresh()),
         ]);
     }

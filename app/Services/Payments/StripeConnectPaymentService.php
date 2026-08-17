@@ -300,6 +300,22 @@ class StripeConnectPaymentService
             'succeeded' => 'captured',
         ];
 
+        /*
+         * UNE CAPTURE DE FRAIS N'EST PAS UN ENCAISSEMENT DE PRESTATION.
+         *
+         * Stripe ne connaît qu'un statut : après une capture PARTIELLE des frais d'annulation, il
+         * répond « succeeded », exactement comme après l'encaissement d'une mission accomplie. La
+         * table de correspondance ci-dessus écrirait donc `captured`, et
+         * `handlePaymentIntentSucceeded` créditerait au prestataire la part de la commande entière
+         * — 96 € pour une prestation jamais faite sur une commande de 120 € annulée à 24 € de frais.
+         *
+         * La distinction n'existe que chez nous : c'est donc à nous de la défendre. Voir
+         * `MissionPaymentService::STATUT_FRAIS_CAPTURES`.
+         */
+        if ($booking->payment_status === MissionPaymentService::STATUT_FRAIS_CAPTURES) {
+            return;
+        }
+
         $newStatus = $statusMap[$intent->status] ?? $booking->payment_status;
 
         $booking->forceFill([

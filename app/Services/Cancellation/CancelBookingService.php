@@ -4,6 +4,7 @@ namespace App\Services\Cancellation;
 
 use App\Models\Booking;
 use App\Models\User;
+use App\Services\Payments\MissionPaymentService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -175,6 +176,27 @@ class CancelBookingService
             return;
         }
 
+        /*
+         * DEUX ÉTATS, DEUX GESTES — et les confondre ne facturait rien du tout.
+         *
+         * `captured` : l'argent est encaissé, on en rend une partie. C'est le chemin historique,
+         * inchangé.
+         *
+         * `authorized` : rien n'est encaissé, une empreinte est posée. `refundMissionPayment()`
+         * LÈVE sur cet état — « Cannot refund booking with payment_status=authorized » — et
+         * l'exception était attrapée quinze lignes plus bas puis journalisée. L'annulation
+         * répondait `ok: true` au client, les frais n'étaient jamais pris, et l'empreinte tenait
+         * sur sa carte jusqu'à expiration, environ sept jours.
+         *
+         * On capture donc partiellement les frais : Stripe libère le solde dans le même appel.
+         * Décision du 2026-08-12, voir `MissionPaymentService::capturerLesFraisDAnnulation()`.
+         */
+        if ($booking->payment_status === 'authorized') {
+            $this->encaisserLesFraisSurLEmpreinte($booking, $feeDetails);
+
+            return;
+        }
+
         $service = '\App\Services\Payments\StripeConnectPaymentService';
         if (! class_exists($service)) {
             Log::info('CancelBookingService: pas de Phase 13 — refund manuel requis', [
@@ -199,6 +221,31 @@ class CancelBookingService
         } catch (\Throwable $e) {
             Log::error('CancelBookingService: refund échoué', [
                 'booking_id' => $booking->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Les frais d'annulation, pris sur l'empreinte non capturée.
+     *
+     * SOFT-FAIL COMME LE RESTE DE CE SERVICE. Une carte indisponible ne doit pas empêcher un client
+     * d'annuler : il a le droit de renoncer, et le refuser au motif que Stripe ne répond pas
+     * transformerait un problème de paiement en séquestration de rendez-vous. La créance reste
+     * visible — l'empreinte est toujours là, et son statut n'a pas bougé.
+     *
+     * @param  array{fee_amount: float|int, fee_percent?: mixed, reason_code?: mixed, is_free?: bool}  $feeDetails
+     */
+    protected function encaisserLesFraisSurLEmpreinte(Booking $booking, array $feeDetails): void
+    {
+        $fraisCents = (int) round(((float) $feeDetails['fee_amount']) * 100);
+
+        try {
+            app(MissionPaymentService::class)->capturerLesFraisDAnnulation($booking, $fraisCents);
+        } catch (\Throwable $e) {
+            Log::error('CancelBookingService: frais d’annulation non encaissés', [
+                'booking_id' => $booking->id,
+                'frais_cents' => $fraisCents,
                 'error' => $e->getMessage(),
             ]);
         }
