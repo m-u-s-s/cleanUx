@@ -133,6 +133,27 @@ class AucunSvgSurLeDisquePublicTest extends TestCase
     }
 
     /**
+     * LE HEIC EST REFUSÉ — et le dire ici évite qu'on le croie accepté.
+     *
+     * Le parcours de commande MENTIONNAIT `heic` dans sa liste avant l'alignement. C'était
+     * décoratif : la règle `image` de Laravel qui la précédait vaut `jpg, jpeg, png, gif, bmp,
+     * webp` et rejetait le fichier AVANT que `mimes:` ne soit lu. Aucune photo iPhone n'est jamais
+     * passée par ce champ, et aucune ne passe par les deux autres.
+     *
+     * Ce test fixe l'état RÉEL plutôt qu'une intention. Prendre en charge le HEIC est une décision
+     * de produit — elle vaudrait alors pour les trois parcours d'un coup, ce qui est tout l'intérêt
+     * d'une liste unique.
+     */
+    public function test_le_heic_des_iphone_est_refuse_partout(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $this->postJson('/api/client/profile/avatar', [
+            'avatar' => UploadedFile::fake()->createWithContent('photo.heic', 'contenu-heic'),
+        ])->assertStatus(422);
+    }
+
+    /**
      * LA RÈGLE PARTAGÉE EXCLUT LE SVG — et le dire ici évite qu'on l'y remette « pour dépanner ».
      */
     public function test_la_regle_partagee_exclut_le_svg(): void
@@ -140,6 +161,7 @@ class AucunSvgSurLeDisquePublicTest extends TestCase
         $regles = implode(' ', ImagesTeleversees::regles(tailleMaxKo: 5120));
 
         $this->assertStringNotContainsString('svg', $regles);
+
         // Témoin : la règle liste bien des formats, elle n'est pas vide.
         $this->assertStringContainsString('png', $regles);
     }

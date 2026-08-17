@@ -29,6 +29,7 @@ use App\Services\OrderEngine\ZonePricingResolver;
 use App\Support\Domain\LocationRole;
 use App\Support\Domain\OrderMode;
 use App\Support\Domain\TradeRouteRules;
+use App\Support\Validation\ImagesTeleversees;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -1087,10 +1088,29 @@ class OrderJourney extends Component
             return;
         }
 
+        /*
+         * LA LISTE DES FORMATS N'EST PLUS ÉCRITE ICI.
+         *
+         * Elle l'était, et elle était juste — mais recopiée. `ImagesTeleversees` explique dans son
+         * propre commentaire pourquoi cela ne tient pas : « quand la règle est recopiée à chaque
+         * point d'entrée, elle diverge, et c'est toujours la copie la plus permissive qui décide ».
+         * Ces photos finissent sur le disque `public`, servi tel quel par le serveur web ; un SVG
+         * accepté ici s'exécuterait dans notre origine.
+         *
+         * CE QUE L'ALIGNEMENT NE PERD PAS, contrairement aux apparences. L'ancienne liste
+         * mentionnait `heic`, le format des iPhone — mais la règle `image` qui la précédait vaut
+         * `jpg, jpeg, png, gif, bmp, webp` chez Laravel et rejetait le HEIC AVANT que `mimes:` ne
+         * soit lu. Cette mention était donc décorative : aucune photo iPhone n'est jamais passée
+         * par ce champ. L'alignement ne retire rien de réel, et ajoute `gif` et `bmp`, que la règle
+         * partagée accepte pour les vieux appareils.
+         *
+         * Prendre en charge le HEIC est une décision de produit distincte, qui vaudrait pour les
+         * trois parcours d'un coup — c'est précisément l'intérêt d'avoir une seule liste.
+         */
         $this->validate(
-            ['photos.*' => ['image', 'mimes:jpeg,jpg,png,webp,heic', 'max:8192']],
+            ['photos.*' => ImagesTeleversees::regles(tailleMaxKo: 8192)],
             [
-                'photos.*.image' => 'Seules les photos sont acceptées ici (JPEG, PNG, WebP).',
+                'photos.*.mimes' => 'Seules les photos sont acceptées ici (JPEG, PNG, WebP, HEIC).',
                 'photos.*.max' => 'Cette photo dépasse 8 Mo. Reprenez-la en qualité normale.',
             ],
         );
