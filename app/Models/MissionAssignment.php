@@ -15,9 +15,7 @@ class MissionAssignment extends Model
     protected $fillable = [
         'mission_id',
         'user_id',
-        'role',
         'role_on_mission',
-        'status',
         'assignment_status',
         'assigned_at',
         'notification_sent_at',

@@ -6,6 +6,7 @@ use App\Models\OrganizationAccount;
 use App\Services\PermissionService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Route;
  * Toute la navigation du web passe par ici : la page Modules, la navbar et les deux layouts
  * société. C'est ce qui remplace les quatre registres inline qui vivaient chacun dans sa vue.
  *
- * @phpstan-type Module array{key: string, label: string, icon: string, route: string, context: string, category: string, primary: bool, visible_si?: string, permission?: string|list<string>}
+ * @phpstan-type Module array{key: string, label: string, icon: string, route: string, context: string, category: string, primary: bool, visible_si?: string, permission?: string|list<string>, gate?: string}
  * Le groupe porte `non-empty-array` et non `array` : `pourContexte()` retire les catégories vides,
  * donc un groupe rendu a forcément au moins une case. `Collection` n'étant pas covariante en
  * PHPStan, le type déclaré doit être exactement celui qui sort.
@@ -95,6 +96,7 @@ class ModuleCatalogue
             ->filter(fn (array $module): bool => Route::has($module['route']))
             ->filter(fn (array $module): bool => self::autoriseeParSaCondition($module))
             ->filter(fn (array $module): bool => self::autoriseeParSaPermission($module))
+            ->filter(fn (array $module): bool => self::autoriseeParSonGateAdmin($module))
             ->values();
     }
 
@@ -195,5 +197,38 @@ class ModuleCatalogue
         }
 
         return $utilisateur->{$condition}() === true;
+    }
+
+    /**
+     * LE GATE D'ADMINISTRATION — la troisieme cle, et elle manquait.
+     *
+     * Ce catalogue filtrait sur trois choses : le contexte, l'existence de la route, et la
+     * permission d'ORGANISATION. Aucune ne dit ce qu'un administrateur a le droit de faire :
+     * `platform_role` porte quinze capacites distinctes -- `manage-finance`, `manage-users`,
+     * `manage-face-check`... -- et un administrateur au perimetre restreint voyait donc les
+     * quatre-vingt-six tuiles de l'espace, y compris celles qui lui repondent 403.
+     *
+     * C'est exactement ce que dit le commentaire de `autoriseeParSaPermission()` quelques lignes
+     * plus haut : « une case qui mene a un 403 est pire qu'une case absente ». La regle etait
+     * ecrite, elle n'etait appliquee qu'aux permissions d'organisation.
+     *
+     * `Route::has()` NE SUFFIT PAS, et ce depot le sait : la porte existe ne veut pas dire qu'on a
+     * la cle.
+     *
+     * LE GATE EST DECLARE PAR LE MODULE, pas devine depuis sa categorie. Une correspondance
+     * approximative masquerait des ecrans a des administrateurs qui y ont droit -- une regression
+     * silencieuse, et bien pire que le defaut qu'on corrige.
+     *
+     * @param  Module  $module
+     */
+    private static function autoriseeParSonGateAdmin(array $module): bool
+    {
+        $gate = $module['gate'] ?? null;
+
+        if ($gate === null) {
+            return true;
+        }
+
+        return Gate::allows($gate);
     }
 }
