@@ -8,6 +8,21 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+  # COMPOSER TÉLÉCHARGEAIT EN ANONYME, ET CELA A RENDU LA CI ROUGE TROIS FOIS DE SUITE.
+  #
+  # `codeload.github.com` limite les téléchargements anonymes PAR ADRESSE IP, et les exécuteurs
+  # GitHub partagent des plages d'adresses : il suffit d'une pointe de charge globale pour que le
+  # quota soit épuisé par d'autres. Le 2026-08-17, `composer install` est sorti en code 100 sur les
+  # trois jobs avec « HTTP/2 429 » sur une quarantaine de paquets, avant qu'un seul test ne démarre.
+  #
+  # `GITHUB_TOKEN` est fourni d'office par Actions — aucun secret à configurer, et ce dépôt n'en a
+  # aucun. Authentifier relève nettement le quota.
+  #
+  # CE QUE CELA NE COUVRE PAS, ET IL FAUT LE DIRE : le premier échec de la journée portait sur le
+  # téléchargement de l'ACTION `setup-php` elle-même, à l'étape « Set up job », avant que la moindre
+  # ligne de ce dépôt ne s'exécute. Aucun réglage ici n'y peut quoi que ce soit.
+  COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ secrets.GITHUB_TOKEN }}"}}'
+
 jobs:
   quality:
     name: Quality gate (validate, pint, phpstan, tests, build)
@@ -42,8 +57,42 @@ jobs:
       - name: Copy env
         run: cp .env.testing .env
 
+      # ON DEMANDE LE CHEMIN À COMPOSER PLUTÔT QUE DE LE DEVINER : il dépend de `COMPOSER_HOME`
+      # et des variables XDG de l'image, et un cache posé au mauvais endroit rate en silence —
+      # le job resterait vert tout en retéléchargeant tout, c'est-à-dire sans rien corriger.
+      - name: Où Composer range ses téléchargements
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      # LE CACHE EST LA VRAIE PARADE AU 429 : sur succès, `composer install` ne demande RIEN à
+      # `codeload.github.com`. L'authentification relève le quota, le cache évite d'y toucher.
+      # La clé porte le verrou : elle change dès qu'une dépendance bouge, et la clé de repli
+      # récupère le cache de la version précédente plutôt que de repartir de zéro.
+      - name: Cache des téléchargements Composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
       - name: Install PHP dependencies
-        run: composer install --no-interaction --prefer-dist
+        # TROIS TENTATIVES ESPACÉES, PARCE QU'UN 429 EST TRANSITOIRE PAR DÉFINITION.
+        #
+        # Sans cela, une pointe de charge chez GitHub rend la CI rouge pour une raison qui n'a rien
+        # à voir avec le code — et c'est ainsi qu'un rouge devient du bruit qu'on cesse de lire.
+        # L'attente croît entre les essais : réessayer aussitôt frapperait le même quota épuisé.
+        #
+        # La boucle ne masque pas une panne réelle : après trois échecs, l'étape sort en erreur.
+        run: |
+          for tentative in 1 2 3; do
+            if composer install --no-interaction --prefer-dist; then
+              exit 0
+            fi
+            echo "::warning::composer install a échoué (tentative ${tentative}/3) — nouvel essai dans $((tentative * 20))s"
+            sleep $((tentative * 20))
+          done
+          echo "::error::composer install a échoué après 3 tentatives"
+          exit 1
 
       # ---- Fast static gates first (fail fast before the slow suite) ----
       - name: Composer manifest is valid and in sync with the lock file
@@ -150,8 +199,42 @@ jobs:
       - name: Copy env
         run: cp .env.testing .env
 
+      # ON DEMANDE LE CHEMIN À COMPOSER PLUTÔT QUE DE LE DEVINER : il dépend de `COMPOSER_HOME`
+      # et des variables XDG de l'image, et un cache posé au mauvais endroit rate en silence —
+      # le job resterait vert tout en retéléchargeant tout, c'est-à-dire sans rien corriger.
+      - name: Où Composer range ses téléchargements
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      # LE CACHE EST LA VRAIE PARADE AU 429 : sur succès, `composer install` ne demande RIEN à
+      # `codeload.github.com`. L'authentification relève le quota, le cache évite d'y toucher.
+      # La clé porte le verrou : elle change dès qu'une dépendance bouge, et la clé de repli
+      # récupère le cache de la version précédente plutôt que de repartir de zéro.
+      - name: Cache des téléchargements Composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
       - name: Install PHP dependencies
-        run: composer install --no-interaction --prefer-dist
+        # TROIS TENTATIVES ESPACÉES, PARCE QU'UN 429 EST TRANSITOIRE PAR DÉFINITION.
+        #
+        # Sans cela, une pointe de charge chez GitHub rend la CI rouge pour une raison qui n'a rien
+        # à voir avec le code — et c'est ainsi qu'un rouge devient du bruit qu'on cesse de lire.
+        # L'attente croît entre les essais : réessayer aussitôt frapperait le même quota épuisé.
+        #
+        # La boucle ne masque pas une panne réelle : après trois échecs, l'étape sort en erreur.
+        run: |
+          for tentative in 1 2 3; do
+            if composer install --no-interaction --prefer-dist; then
+              exit 0
+            fi
+            echo "::warning::composer install a échoué (tentative ${tentative}/3) — nouvel essai dans $((tentative * 20))s"
+            sleep $((tentative * 20))
+          done
+          echo "::error::composer install a échoué après 3 tentatives"
+          exit 1
 
       - name: Generate app key
         run: php artisan key:generate --force
@@ -190,11 +273,25 @@ jobs:
 
   # E2E par rôle (Playwright) — boote l'app sur SQLite fichier + comptes QA, et
   # vérifie en navigateur que chaque rôle se connecte et atteint son espace.
-  # Non-bloquant au départ (signal d'abord) ; passer en bloquant une fois stable.
+  #
+  # BLOQUANT DEPUIS LE 2026-08-17, et c'est la condition que ce commentaire posait lui-même :
+  # « non-bloquant au départ (signal d'abord) ; passer en bloquant une fois stable ».
+  #
+  # STABILITÉ MESURÉE, PAS SUPPOSÉE : cinq exécutions vertes d'affilée sur main
+  # (32029068668, 32031003557, 32032340155, 32033133325, 32038472780). Les trois rouges qui
+  # suivent n'ont pas exercé une seule ligne de Playwright — `composer install` y sort en code 100
+  # sur des « HTTP/2 429 » de `codeload.github.com`, une panne de quota chez GitHub que le cache
+  # et les tentatives ajoutés le même jour visent précisément.
+  #
+  # POURQUOI CELA COMPTE PLUS QUE LE RESTE DU PORTAIL. C'est la SEULE vérification qui ouvre un
+  # navigateur et prouve qu'un rôle se connecte et atteint son espace : ni PHPStan ni la suite ne
+  # voient un écran injoignable, et ce dépôt l'a payé plusieurs fois — des méthodes Livewire
+  # qu'aucune vue n'appelait, des écrans mobiles que rien ne relie. Laissée passive, elle pouvait
+  # rester rouge des semaines sans que personne le remarque : c'est exactement le mécanisme qui a
+  # gardé cette CI structurellement rouge pendant des mois.
   e2e:
     name: E2E (Playwright, per role)
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     env:
       DB_CONNECTION: sqlite
@@ -240,8 +337,42 @@ jobs:
       - name: Copy env
         run: cp .env.testing .env
 
+      # ON DEMANDE LE CHEMIN À COMPOSER PLUTÔT QUE DE LE DEVINER : il dépend de `COMPOSER_HOME`
+      # et des variables XDG de l'image, et un cache posé au mauvais endroit rate en silence —
+      # le job resterait vert tout en retéléchargeant tout, c'est-à-dire sans rien corriger.
+      - name: Où Composer range ses téléchargements
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      # LE CACHE EST LA VRAIE PARADE AU 429 : sur succès, `composer install` ne demande RIEN à
+      # `codeload.github.com`. L'authentification relève le quota, le cache évite d'y toucher.
+      # La clé porte le verrou : elle change dès qu'une dépendance bouge, et la clé de repli
+      # récupère le cache de la version précédente plutôt que de repartir de zéro.
+      - name: Cache des téléchargements Composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
       - name: Install PHP dependencies
-        run: composer install --no-interaction --prefer-dist
+        # TROIS TENTATIVES ESPACÉES, PARCE QU'UN 429 EST TRANSITOIRE PAR DÉFINITION.
+        #
+        # Sans cela, une pointe de charge chez GitHub rend la CI rouge pour une raison qui n'a rien
+        # à voir avec le code — et c'est ainsi qu'un rouge devient du bruit qu'on cesse de lire.
+        # L'attente croît entre les essais : réessayer aussitôt frapperait le même quota épuisé.
+        #
+        # La boucle ne masque pas une panne réelle : après trois échecs, l'étape sort en erreur.
+        run: |
+          for tentative in 1 2 3; do
+            if composer install --no-interaction --prefer-dist; then
+              exit 0
+            fi
+            echo "::warning::composer install a échoué (tentative ${tentative}/3) — nouvel essai dans $((tentative * 20))s"
+            sleep $((tentative * 20))
+          done
+          echo "::error::composer install a échoué après 3 tentatives"
+          exit 1
 
       - name: Install Node dependencies
         run: npm ci
