@@ -239,8 +239,9 @@ class SecuriteEtProgressionTest extends TestCase
         MissionAssignment::query()->create([
             'mission_id' => $mission->id,
             'user_id' => $prestataire->id,
-            'status' => 'pending',
-            // Ni acceptée, ni refusée, échéance passée.
+            // Ni acceptée, ni refusée, échéance passée — et c'est bien ainsi que le service
+            // reconnaît une expiration, jamais par un statut : `assignment_status` reste sur son
+            // défaut ici, exprès.
             'expires_at' => Carbon::now()->subHour(),
         ]);
 
@@ -263,7 +264,6 @@ class SecuriteEtProgressionTest extends TestCase
             MissionAssignment::query()->create([
                 'mission_id' => Mission::factory()->create()->id,
                 'user_id' => $prestataire->id,
-                'status' => 'accepted',
                 'accepted_at' => now(),
                 'response_seconds' => $secondes,
             ]);

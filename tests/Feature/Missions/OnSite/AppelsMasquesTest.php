@@ -61,9 +61,7 @@ class AppelsMasquesTest extends TestCase
         MissionAssignment::query()->create([
             'mission_id' => $mission->id,
             'user_id' => $prestataire->id,
-            'role' => 'lead',
             'role_on_mission' => 'lead',
-            'status' => 'accepted',
             'assignment_status' => 'accepted',
             'assigned_at' => now()->subHour(),
             'accepted_at' => now()->subHour(),

@@ -230,9 +230,7 @@ class CompletionGeoProofTest extends TestCase
         MissionAssignment::query()->create([
             'mission_id' => $mission->id,
             'user_id' => $provider->id,
-            'role' => 'lead',
             'role_on_mission' => 'lead',
-            'status' => 'accepted',
             'assignment_status' => 'accepted',
             'assigned_at' => now()->subHours(2),
             'accepted_at' => now()->subHours(2),

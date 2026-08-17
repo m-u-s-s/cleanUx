@@ -39,7 +39,20 @@ class OfferStatsService
         $lignes = MissionAssignment::query()
             ->where('user_id', $prestataire->id)
             ->whereBetween('created_at', [$depuis, $jusqua])
-            ->get(['id', 'status', 'assignment_status', 'accepted_at', 'declined_at', 'response_seconds', 'decline_reason', 'expires_at', 'created_at']);
+            /*
+             * `status` A ÉTÉ RETIRÉE DE CETTE LISTE PARCE QUE LA COLONNE N'EXISTE PLUS.
+             *
+             * C'était une colonne dormante — NOT NULL, défaut « assigned », jamais écrite par une
+             * ligne de code — supprimée avec `role` le 2026-09-01. La retirer de la table sans la
+             * retirer d'ici laissait une sélection explicite sur un identifiant inconnu : MySQL
+             * refuse la requête, et cet écran est celui des statistiques d'offres du prestataire.
+             *
+             * Rien ne se perd : aucun calcul de ce fichier ne lisait `status`. Ils s'appuient tous
+             * sur `accepted_at` et `declined_at`, et son propre commentaire dit pourquoi —
+             * « plusieurs vocabulaires de statut coexistent dans cette table, et aucun ne dit
+             * "le temps a passé" ».
+             */
+            ->get(['id', 'assignment_status', 'accepted_at', 'declined_at', 'response_seconds', 'decline_reason', 'expires_at', 'created_at']);
 
         $total = $lignes->count();
         $acceptees = $lignes->whereNotNull('accepted_at')->count();

@@ -96,9 +96,16 @@ class ProviderPerformanceCalculator
             ->where('user_id', $provider->id)
             ->whereBetween('assigned_at', [$start, $end]);
 
-        $statusColumn = Schema::hasColumn('mission_assignments', 'assignment_status')
-            ? 'assignment_status'
-            : 'status';
+        /*
+         * PLUS DE REPLI SUR `status` : LA COLONNE N'EXISTE PLUS.
+         *
+         * Ce ternaire retombait sur elle quand `assignment_status` manquait. Elle a été supprimée
+         * le 2026-09-01 — dormante, NOT NULL, défaut « assigned », jamais écrite. Le repli ne
+         * protégeait donc plus de rien : il visait désormais un identifiant inconnu, et n'aurait pu
+         * s'emprunter que dans le cas où la vraie colonne aurait disparu, c'est-à-dire pour
+         * remplacer une panne par une autre.
+         */
+        $statusColumn = 'assignment_status';
 
         $received = (clone $base)->count();
         $accepted = (clone $base)->whereNotNull('accepted_at')->count();

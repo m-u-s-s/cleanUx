@@ -133,7 +133,7 @@ class ClientQrFlowTest extends TestCase
         // (mission, personne) est unique en base.
         MissionAssignment::updateOrCreate(
             ['mission_id' => $mission->id, 'user_id' => $provider->id],
-            ['assignment_status' => 'accepted', 'status' => 'accepted', 'assigned_at' => now(), 'accepted_at' => now()],
+            ['assignment_status' => 'accepted', 'assigned_at' => now(), 'accepted_at' => now()],
         );
 
         return [$client, $provider, $mission];

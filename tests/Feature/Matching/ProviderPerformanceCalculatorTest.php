@@ -46,7 +46,6 @@ class ProviderPerformanceCalculatorTest extends TestCase
             'assigned_at' => now()->subDays(5),
             'accepted_at' => now()->subDays(5),
             'response_seconds' => 45,
-            'status' => 'accepted',
         ]);
 
         MissionAssignment::create([
@@ -55,7 +54,6 @@ class ProviderPerformanceCalculatorTest extends TestCase
             'assigned_at' => now()->subDays(3),
             'declined_at' => now()->subDays(3),
             'response_seconds' => 120,
-            'status' => 'declined',
         ]);
 
         $metric = $this->calc->calculate($this->provider, 30);
