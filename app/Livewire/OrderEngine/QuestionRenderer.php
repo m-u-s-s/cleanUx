@@ -9,6 +9,7 @@ use App\Support\Domain\QuestionType;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
@@ -188,6 +189,28 @@ class QuestionRenderer extends Component
         $this->unknown = false;
 
         $this->applyLocation($libelle, $lat, $lng, $codePostal);
+    }
+
+    /**
+     * UN POINT POSÉ SUR LA CARTE, arrivé depuis le parcours.
+     *
+     * Le même traitement que « utiliser ma position », et c'est délibéré : géocodage inverse pour
+     * le libellé, coordonnées retenues même si le serveur ne sait pas les nommer, validation,
+     * remontée de la réponse. Réécrire ces quatre étapes ici en ferait une seconde version qui
+     * divergerait — et deux façons d'enregistrer un lieu, c'est deux façons de le perdre.
+     *
+     * LE FILTRAGE PAR CODE EST INDISPENSABLE. Chaque question du parcours est une instance du même
+     * composant : l'événement leur parvient à toutes. Sans ce garde, poser le point d'arrivée
+     * écraserait aussi le point de départ, et le client verrait ses deux marqueurs se superposer.
+     */
+    #[On('place-location')]
+    public function placerDepuisLaCarte(string $code, float $lat, float $lng): void
+    {
+        if ($code !== $this->question->code) {
+            return;
+        }
+
+        $this->useMyLocation($lat, $lng);
     }
 
     /** Effacer un lieu choisi — pour en désigner un autre, sans avoir à sélectionner le texte. */

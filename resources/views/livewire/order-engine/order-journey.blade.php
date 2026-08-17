@@ -256,6 +256,18 @@
                     @endif
                 </section>
 
+                {{--
+                    LA CARTE DU TRAJET, juste après les questions qui posent ses deux points.
+
+                    Elle vient APRÈS, jamais avant : elle montre ce qui a été répondu et permet de
+                    l'affiner. Placée au-dessus, elle demanderait au client de désigner sur une
+                    carte vide un départ qu'il n'a pas encore nommé — le geste le plus lent des
+                    deux, imposé avant le plus rapide.
+
+                    Elle se rend nulle d'elle-même hors des métiers de trajet.
+                --}}
+                @include('livewire.order-engine.partials.route-map')
+
                 {{-- La photo est un RACCOURCI, offert avant l'adresse : elle remplace des questions,
                      elle ne s'ajoute pas à la file. --}}
                 @include('livewire.order-engine.partials.photos')

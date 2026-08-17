@@ -83,6 +83,9 @@ use Livewire\WithFileUploads;
  * @property-read array<string, mixed>|null $bundleQuote
  * @property-read Collection<int, Question> $allVisibleQuestions
  * @property-read Collection<int, Collection<int, Question>> $steps
+ * @property-read bool $estUnTrajet
+ * @property-read array{distance_km: float, duration_min: int|null, source: string|null, approximatif: bool}|null $route
+ * @property-read list<array{lat: float, lng: float}> $pointsDeLaRoute
  */
 #[Layout('layouts.app')]
 class OrderJourney extends Component
@@ -1828,6 +1831,85 @@ class OrderJourney extends Component
      * lire exactement ce qu'ils lisaient, sans une ligne de modification. Le point de dépose, lui,
      * va dans des colonnes qui portent son nom.
      */
+    /**
+     * PLACER UN POINT DEPUIS LA CARTE — le geste que le champ d'adresse ne remplace pas.
+     *
+     * Taper une adresse est plus rapide ; la carte sert à la PRÉCISION. « Rue de la Loi 1 » désigne
+     * un bâtiment, pas la porte de service ni le côté du terre-plein où le conducteur doit
+     * s'arrêter. Sur une course, ces trente mètres décident si le client trouve sa voiture.
+     *
+     * ELLE NE RÉÉCRIT RIEN ELLE-MÊME. Le point part vers la question concernée, qui applique la
+     * même logique que « utiliser ma position » — géocodage inverse, libellé, validation — puis
+     * remonte la réponse par le chemin normal. Écrire directement le panier depuis ici créerait un
+     * SECOND écrivain de la même donnée : le brouillon dirait une chose, la question afficherait
+     * l'autre, et le client verrait son adresse changer toute seule au coup suivant.
+     *
+     * LE RÔLE VIENT DU NAVIGATEUR, donc il est vérifié. Un rôle inconnu ne fait rien ; des
+     * coordonnées hors du monde non plus. Ce sont des paramètres de méthode publique Livewire —
+     * c'est-à-dire une porte ouverte sur Internet.
+     */
+    public function placerSurLaCarte(string $role, float $lat, float $lng): void
+    {
+        $trade = $this->trade;
+
+        if ($trade === null || $lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
+            return;
+        }
+
+        $trade->loadMissing('questions');
+
+        $question = match ($role) {
+            LocationRole::PICKUP => TradeRouteRules::questionDepart($trade),
+            LocationRole::DROPOFF => TradeRouteRules::questionArrivee($trade),
+            default => null,
+        };
+
+        if ($question === null) {
+            return;
+        }
+
+        /*
+         * Diffusé à TOUTES les questions, filtré par code à l'arrivée : les rendus de question sont
+         * autant d'instances du même composant, `->to()` ne saurait pas laquelle viser.
+         */
+        $this->dispatch('place-location', code: $question->code, lat: $lat, lng: $lng);
+    }
+
+    /**
+     * La géométrie de la route, pour que la carte trace un trajet et non une corde tendue.
+     *
+     * Lue au service plutôt que stockée sur le panier : elle est déjà mise en cache là-bas, et une
+     * colonne de plus serait une seconde vérité à tenir à jour à chaque déplacement d'un point.
+     *
+     * Deux points seulement veut dire « personne n'a su calculer d'itinéraire » — la carte doit
+     * alors le montrer en pointillé plutôt que de faire passer une ligne droite pour une route.
+     *
+     * @return list<array{lat: float, lng: float}>
+     */
+    #[Computed]
+    public function pointsDeLaRoute(): array
+    {
+        $draft = $this->draft();
+
+        if ($draft->lat === null || $draft->lng === null
+            || $draft->dropoff_lat === null || $draft->dropoff_lng === null) {
+            return [];
+        }
+
+        try {
+            return app(RoutingService::class)->geometry(
+                (float) $draft->lat,
+                (float) $draft->lng,
+                (float) $draft->dropoff_lat,
+                (float) $draft->dropoff_lng,
+            ) ?? [];
+        } catch (\Throwable $e) {
+            Log::warning('[order_engine] géométrie de route indisponible', ['error' => $e->getMessage()]);
+
+            return [];
+        }
+    }
+
     protected function enregistrerLaLocalisation(string $code, mixed $value): void
     {
         $question = $this->questions->firstWhere('code', $code);
@@ -1852,6 +1934,7 @@ class OrderJourney extends Component
             ]);
 
             $this->mesurerLaRoute();
+            $this->annoncerLeTrajet();
 
             return;
         }
@@ -1880,6 +1963,40 @@ class OrderJourney extends Component
 
         $this->resolveGeographyFromCoordinates($this->lat, $this->lng);
         $this->mesurerLaRoute();
+        $this->annoncerLeTrajet();
+    }
+
+    /**
+     * DIRE À LA CARTE QUE LES POINTS ONT BOUGÉ.
+     *
+     * La carte vit sous `wire:ignore` — Leaflet possède son nœud et refuse qu'on le remplace sous
+     * lui. Elle ne peut donc RIEN apprendre du rendu : ni un point déplacé, ni un itinéraire
+     * recalculé, ni une adresse corrigée au clavier dans le champ voisin. Sans cet événement, elle
+     * afficherait indéfiniment l'état du premier chargement — et le client verrait son marqueur
+     * rester en place après avoir changé d'adresse.
+     *
+     * UN SEUL POINT D'ÉMISSION, appelé par tous les chemins qui touchent un point. En dispersant
+     * l'annonce, celui qu'on oublierait produirait exactement ce silence-là.
+     */
+    protected function annoncerLeTrajet(): void
+    {
+        if (! $this->estUnTrajet) {
+            return;
+        }
+
+        $draft = $this->draft();
+        $itineraire = $this->route;
+
+        $this->dispatch('trajet-mis-a-jour', trajet: [
+            'depart' => $draft->lat !== null && $draft->lng !== null
+                ? ['lat' => (float) $draft->lat, 'lng' => (float) $draft->lng]
+                : null,
+            'arrivee' => $draft->dropoff_lat !== null && $draft->dropoff_lng !== null
+                ? ['lat' => (float) $draft->dropoff_lat, 'lng' => (float) $draft->dropoff_lng]
+                : null,
+            'trace' => $this->pointsDeLaRoute,
+            'approximatif' => (bool) ($itineraire['approximatif'] ?? true),
+        ]);
     }
 
     /**
