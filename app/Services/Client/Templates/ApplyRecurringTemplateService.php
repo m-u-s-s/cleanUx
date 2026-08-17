@@ -71,32 +71,28 @@ class ApplyRecurringTemplateService
                 ];
             }
 
+            /*
+             * LA PREMIÈRE ÉCHÉANCE EST POSÉE ICI, ET PAR PERSONNE D'AUTRE.
+             *
+             * `ProcessRecurringBookings` filtre sur `whereNotNull('next_occurrence_at')` et ne fait
+             * qu'AVANCER cette date une fois la série entamée. Aucun chemin ne l'initialisait :
+             * la colonne est `nullable` et sans valeur par défaut, si bien que TOUTE série créée
+             * était invisible à la commande. Aucune réservation récurrente n'a jamais été générée —
+             * la fonctionnalité existait de bout en bout, et ne produisait rien.
+             *
+             * L'HEURE VIENT DU PAYLOAD, pas d'un défaut réinventé. C'est `buildTemplatePayload()`
+             * qui arbitre déjà entre l'heure demandée par le client et celle du modèle ; en
+             * recalculer une seconde ici ferait deux vérités, et la réservation générée tomberait à
+             * une heure que le client n'a pas choisie. La commande relit d'ailleurs les deux moitiés
+             * de cette date — `toDateString()` et `format('H:i')` — pour dater la réservation.
+             */
+            $data['next_occurrence_at'] = $startsAt
+                ->copy()
+                ->setTimeFromTimeString($this->normalizeTemplateTime($payload['time'] ?? null))
+                ->toDateTimeString();
+
             $series = RecurringBookingSeries::create($data);
 
-            $payload = [
-                'customer_user_id' => $user->id,
-                'customer_organization_id' => $user->organization_account_id,
-                'organization_site_id' => $params['organization_site_id'] ?? null,
-                'frequency' => $template->frequency,
-                'interval' => $template->interval ?? 1,
-                'days' => $template->days,
-                'starts_at' => $startsAt->toDateString(),
-                'ends_at' => $endsAt?->toDateString(),
-                'occurrence_count' => $params['occurrence_count'] ?? null,
-                'status' => RecurringBookingSeries::STATUS_ACTIVE,
-            ];
-
-            $templatePayload = $this->buildTemplatePayload($template, $params);
-
-            if (Schema::hasColumn('recurring_booking_series', 'template_payload')) {
-                $payload['template_payload'] = $templatePayload;
-            } elseif (Schema::hasColumn('recurring_booking_series', 'metadata')) {
-                $payload['metadata'] = [
-                    'template_payload' => $templatePayload,
-                ];
-            }
-
-            $series = RecurringBookingSeries::create($payload);
             $template->incrementUsage();
 
             return $series;
