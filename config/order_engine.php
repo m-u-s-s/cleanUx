@@ -41,6 +41,16 @@ return [
     'hourly_min_hours' => (float) env('ORDER_ENGINE_HOURLY_MIN_HOURS', 1.0),
     'hourly_max_hours' => (float) env('ORDER_ENGINE_HOURLY_MAX_HOURS', 12.0),
 
+    /*
+    | LE PAS DU SÉLECTEUR — et celui de la prolongation, qui doivent être LE MÊME.
+    |
+    | Il vivait en dur dans `OrderJourney::ajouterUneDemiHeure()`. Le sortir ici n'est pas de la
+    | configuration pour la configuration : la prolongation en cours de mission achète du temps
+    | dans la même unité, et deux constantes séparées auraient fini par diverger — on aurait
+    | commandé par demi-heures et prolongé par quarts d'heure, sur la même prestation.
+    */
+    'hourly_step_hours' => (float) env('ORDER_ENGINE_HOURLY_STEP_HOURS', 0.5),
+
     'overtime_multiplier' => (float) env('ORDER_ENGINE_OVERTIME_MULTIPLIER', 1.30),
     'overtime_grace_minutes' => (int) env('ORDER_ENGINE_OVERTIME_GRACE_MINUTES', 15),
     'overtime_billing_increment_minutes' => (int) env('ORDER_ENGINE_OVERTIME_INCREMENT_MINUTES', 15),

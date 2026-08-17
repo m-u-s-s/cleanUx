@@ -1990,8 +1990,9 @@ class OrderJourney extends Component
     {
         $min = (float) Config::get('order_engine.hourly_min_hours', 1.0);
         $max = (float) Config::get('order_engine.hourly_max_hours', 12.0);
+        $pas = $this->pasDuSelecteur();
 
-        $this->heuresChoisies = max($min, min($max, round($heures * 2) / 2));
+        $this->heuresChoisies = max($min, min($max, round($heures / $pas) * $pas));
 
         $this->enregistrerLesHeures();
         $this->refreshDerived();
@@ -1999,12 +2000,27 @@ class OrderJourney extends Component
 
     public function ajouterUneDemiHeure(): void
     {
-        $this->choisirLesHeures(($this->heuresChoisies ?? $this->heuresParDefaut()) + 0.5);
+        $this->choisirLesHeures(($this->heuresChoisies ?? $this->heuresParDefaut()) + $this->pasDuSelecteur());
     }
 
     public function retirerUneDemiHeure(): void
     {
-        $this->choisirLesHeures(($this->heuresChoisies ?? $this->heuresParDefaut()) - 0.5);
+        $this->choisirLesHeures(($this->heuresChoisies ?? $this->heuresParDefaut()) - $this->pasDuSelecteur());
+    }
+
+    /**
+     * LE MEME PAS QUE LA PROLONGATION, et c'est la raison pour laquelle il vient de la
+     * configuration : acheter du temps a la commande et en acheter pendant la mission sont le meme
+     * geste. Deux constantes separees auraient fini par diverger -- on aurait commande par
+     * demi-heures et prolonge par quarts d'heure, sur la meme prestation.
+     */
+    public function pasDuSelecteur(): float
+    {
+        $pas = (float) Config::get('order_engine.hourly_step_hours', 0.5);
+
+        // Un pas nul ou negatif ferait une division par zero dans l'arrondi ci-dessus : la valeur
+        // vient d'une variable d'environnement, elle n'est pas garantie.
+        return $pas > 0 ? $pas : 0.5;
     }
 
     /**
@@ -2022,7 +2038,9 @@ class OrderJourney extends Component
             return $min;
         }
 
-        return max($min, round(($estimation / 60) * 2) / 2);
+        $pas = $this->pasDuSelecteur();
+
+        return max($min, round(($estimation / 60) / $pas) * $pas);
     }
 
     /**

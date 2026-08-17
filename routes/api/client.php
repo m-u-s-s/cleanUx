@@ -139,6 +139,14 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     Route::post('/bookings/{booking}/onsite/absence', [ClientMissionOnSiteController::class, 'declarerAbsence']);
     // F15 — répondre au « tout va bien ? » en un geste.
     Route::post('/bookings/{booking}/onsite/checkin', [ClientMissionOnSiteController::class, 'repondreAuPing']);
+    /*
+     * PROLONGER — acheter du temps en plus, au tarif normal.
+     *
+     * Sur le chemin `onsite` et non sur celui de la réservation : la prolongation se décide le plus
+     * souvent PENDANT l'intervention, depuis l'écran de suivi, quand le client voit le compteur
+     * approcher de la fin. La fenêtre se ferme à la fin de la franchise de dépassement.
+     */
+    Route::post('/bookings/{booking}/onsite/extend', [ClientMissionOnSiteController::class, 'prolonger']);
     // F16 — la clôture guidée : rapport, puis pourboire, puis avis.
     Route::get('/bookings/{booking}/onsite/closure', [ClientMissionOnSiteController::class, 'closureFlow']);
     Route::post('/bookings/{booking}/onsite/extras/{extra}/approve', [ClientMissionOnSiteController::class, 'approveExtra']);

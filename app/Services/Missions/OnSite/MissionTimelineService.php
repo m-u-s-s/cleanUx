@@ -5,6 +5,7 @@ namespace App\Services\Missions\OnSite;
 use App\Models\InspectionItem;
 use App\Models\Mission;
 use App\Models\MissionEvent;
+use App\Services\Missions\HourlyExtensionService;
 use App\Services\Missions\HourlyMissionClock;
 use Illuminate\Support\Carbon;
 
@@ -29,6 +30,7 @@ class MissionTimelineService
         protected MissionMediaService $mediaService,
         protected MissionIncidentService $incidentService,
         protected HourlyMissionClock $horloge,
+        protected HourlyExtensionService $extensions,
     ) {}
 
     /**
@@ -40,6 +42,7 @@ class MissionTimelineService
      *     started_at: string|null,
      *     estimated_end_at: string|null,
      *     clock: array<string, mixed>,
+     *     extension: array<string, mixed>|null,
      *     progress: array{done: int, total: int, percent: int},
      *     entries: list<array<string, mixed>>
      * }
@@ -71,6 +74,16 @@ class MissionTimelineService
              * estimation, et personne ne comprendrait la ligne supplémentaire sur sa facture.
              */
             'clock' => $this->horloge->etat($mission),
+            /*
+             * PEUT-ON ENCORE PROLONGER, ET JUSQU'OÙ.
+             *
+             * L'écran doit le savoir AVANT que le client appuie : un bouton qu'on découvre inactif
+             * en appuyant dessus est un bouton cassé. La réponse est `null` sur tout ce qui n'est
+             * pas vendu au temps — le bouton n'existe alors pas du tout.
+             */
+            'extension' => $mission->booking !== null
+                ? $this->extensions->etatDeLaProlongation($mission->booking)
+                : null,
             'progress' => $avancement,
             'entries' => $entrees,
         ];

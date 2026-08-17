@@ -7,6 +7,7 @@ import {
   useOnSiteIncidents,
   useOnSiteExtras,
   useRepondreAuSupplement,
+  useProlongerLesHeures,
   useLiveOnSite,
 } from '@/booking/onsite';
 import type { OnSiteExtra, OnSiteMedia, OnSiteTimelineEntry } from '@/booking/onsite';
@@ -46,6 +47,24 @@ export function OnSiteScreen({ route }: Props) {
    * rafraîchit déjà toutes les minutes et à chaque événement temps réel.
    */
   const horloge = useMissionClock(fil?.clock);
+  const prolongation = fil?.extension ?? null;
+  const prolonge = useProlongerLesHeures(bookingId);
+  const [choixOuvert, setChoixOuvert] = React.useState(false);
+
+  /**
+   * PROLONGER — et DIRE pourquoi quand ça ne passe pas.
+   *
+   * Le serveur répond 422 avec une phrase écrite pour le client (« le temps supplémentaire est
+   * déjà en cours de facturation »). L'afficher telle quelle est tout l'intérêt : un « une erreur
+   * est survenue » sur un bouton qui engage de l'argent fait appuyer une deuxième fois.
+   */
+  const prolonger = (minutes: number) => {
+    prolonge.mutate(minutes, {
+      onSuccess: () => setChoixOuvert(false),
+      onError: (erreur: { message?: string }) =>
+        Alert.alert('Impossible', erreur.message ?? 'La prolongation n’a pas pu être enregistrée.'),
+    });
+  };
 
   // Le canal est indexé sur la MISSION : son identifiant vient du fil, le client n'en dispose pas
   // autrement.
@@ -118,7 +137,52 @@ export function OnSiteScreen({ route }: Props) {
         </Text>
       )}
 
-      <MissionClockBar clock={horloge} audience="client" style={styles.horloge} />
+      <MissionClockBar
+        clock={horloge}
+        audience="client"
+        style={styles.horloge}
+        /*
+          LE BOUTON N'APPARAÎT QUE SI LE SERVEUR L'AUTORISE, et il OUVRE un choix au lieu de
+          prolonger d'un coup : ce geste engage de l'argent, il ne se déclenche pas par un appui
+          distrait sur un écran qu'on consulte d'une main.
+        */
+        onExtend={prolongation?.allowed ? () => setChoixOuvert((ouvert) => !ouvert) : undefined}
+        extendLabel={choixOuvert ? 'Fermer' : 'Prolonger'}
+      />
+
+      {choixOuvert && prolongation?.allowed ? (
+        <View style={styles.prolongation} testID="panneau-prolongation">
+          <Text style={styles.prolongationTitre}>Ajouter du temps</Text>
+          <Text style={styles.prolongationNote}>
+            Au tarif normal, sans majoration. Le montant s’ajoute à votre facture ; seules les
+            heures réellement prestées sont dues.
+          </Text>
+
+          <View style={styles.prolongationChoix}>
+            {prolongation.options.map((option) => (
+              <Text
+                key={option.minutes}
+                testID={`prolonger-${option.minutes}`}
+                accessibilityRole="button"
+                onPress={() => prolonger(option.minutes)}
+                style={[styles.prolongationOption, prolonge.isPending && styles.prolongationOptionInactive]}
+              >
+                +{option.label}
+                {option.amount_cents !== null ? `  ·  ${euros(option.amount_cents)}` : ''}
+              </Text>
+            ))}
+          </View>
+        </View>
+      ) : null}
+
+      {/*
+        LE MOTIF DU REFUS SE MONTRE, il ne se tait pas. Un client qui déborde doit comprendre
+        pourquoi il ne peut plus prolonger — sinon la ligne majorée sur sa facture arrive sans
+        explication, et c'est un litige.
+      */}
+      {horloge.applies && prolongation && !prolongation.allowed && prolongation.reason ? (
+        <Text style={styles.prolongationRefus}>{prolongation.reason}</Text>
+      ) : null}
 
       {/*
         LES SUPPLÉMENTS EN PREMIER, avant l'avancement et les photos (F12).
@@ -254,6 +318,14 @@ function heure(iso: string): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
+/**
+ * Un montant EN PROVENANCE DU SERVEUR, mis en forme. Rien n'est calculé ici — cette fonction ne
+ * fait que placer une virgule et un symbole sur des centimes reçus tels quels.
+ */
+function euros(centimes: number): string {
+  return new Intl.NumberFormat('fr-BE', { style: 'currency', currency: 'EUR' }).format(centimes / 100);
+}
+
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   entete: {
     flexDirection: 'row',
@@ -273,6 +345,48 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     marginTop: spacing.xs,
   },
   horloge: { marginTop: spacing.md },
+  prolongation: {
+    marginTop: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: t.tint.brand,
+    gap: spacing.xs,
+  },
+  prolongationTitre: {
+    fontSize: typography.fontSize.base,
+    fontWeight: '600',
+    color: t.text,
+  },
+  prolongationNote: {
+    fontSize: typography.fontSize.sm,
+    lineHeight: 19,
+    color: t.textSecondary,
+  },
+  prolongationChoix: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.xs,
+  },
+  prolongationOption: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: '600',
+    color: t.text,
+    backgroundColor: t.card,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    overflow: 'hidden',
+  },
+  // Pendant l'envoi : on estompe SANS retirer le choix de l'ecran, pour qu'il ne saute pas sous
+  // le doigt de quelqu'un qui hesitait entre deux options.
+  prolongationOptionInactive: { opacity: 0.5 },
+  prolongationRefus: {
+    marginTop: spacing.sm,
+    fontSize: typography.fontSize.sm,
+    lineHeight: 19,
+    color: t.textSecondary,
+  },
   section: { marginTop: spacing.lg },
   sectionTitre: {
     fontSize: typography.fontSize.lg,

@@ -37,6 +37,25 @@ export interface OnSiteTimelineEntry {
   media_type?: MissionMediaType;
 }
 
+/** Ce que le serveur autorise en matière de prolongation, à cet instant. */
+export interface OnSiteExtension {
+  allowed: boolean;
+  /** La phrase à MONTRER quand `allowed` est faux. Écrite pour le client, pas pour le journal. */
+  reason: string | null;
+  /** Ce qu'il reste d'achetable avant le plafond de la prestation. */
+  max_minutes: number;
+  /** Le pas d'achat — le même qu'à la commande, décidé par la configuration du serveur. */
+  increment_minutes: number;
+  /**
+   * LES CHOIX, AVEC LEUR PRIX, CALCULÉS PAR LE SERVEUR.
+   *
+   * L'écran n'a aucune multiplication à faire. Le client décide sur ce montant : le fabriquer ici
+   * créerait un second prix pour la même prestation, et c'est celui de l'appareil qu'il aurait lu
+   * au moment de dire oui.
+   */
+  options: Array<{ minutes: number; label: string; amount_cents: number | null }>;
+}
+
 export interface OnSiteTimeline {
   mission_id: number | null;
   status: string | null;
@@ -50,6 +69,14 @@ export interface OnSiteTimeline {
   estimated_end_at: string | null;
   /** Le compteur des prestations vendues au temps. `applies: false` partout ailleurs. */
   clock?: MissionClock | null;
+  /**
+   * Peut-on encore prolonger, et jusqu'où.
+   *
+   * `null` sur tout ce qui n'est pas vendu au temps — le bouton n'existe alors pas. L'écran doit
+   * le savoir AVANT que le client appuie : un bouton qu'on découvre inactif en appuyant dessus est
+   * un bouton cassé.
+   */
+  extension?: OnSiteExtension | null;
   progress: { done: number; total: number; percent: number };
   entries: OnSiteTimelineEntry[];
 }
@@ -152,6 +179,33 @@ export function useRepondreAuSupplement(bookingId: number) {
       return res.data.data;
     },
     onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['client', 'booking', bookingId, 'onsite'] });
+    },
+  });
+}
+
+/**
+ * PROLONGER — acheter du temps en plus, au tarif normal.
+ *
+ * LE MONTANT N'EST PAS CALCULÉ ICI, et l'écran n'en propose aucun : le serveur répond avec
+ * l'horloge à jour, qui porte le nouveau temps acheté et le nouveau montant. Une application qui
+ * multiplierait elle-même un tarif par une durée créerait un second prix pour la même prestation
+ * — et c'est le sien que le client aurait lu avant de confirmer.
+ *
+ * LE REFUS EST UNE RÉPONSE. Le serveur renvoie 422 avec une phrase lisible — « le temps
+ * supplémentaire est déjà en cours de facturation », « la durée maximale est atteinte » — et c'est
+ * cette phrase qui doit être montrée, pas un « une erreur est survenue » générique.
+ */
+export function useProlongerLesHeures(bookingId: number | null) {
+  const qc = useQueryClient();
+
+  return useMutation<{ clock: MissionClock; extension: OnSiteExtension | null }, ApiError, number>({
+    mutationFn: async (additionalMinutes) =>
+      (await apiClient.post(`/client/bookings/${bookingId}/onsite/extend`, {
+        additional_minutes: additionalMinutes,
+      })).data,
+    onSuccess: () => {
+      // Le fil porte l'horloge ET l'état de la prolongation : les deux ont changé.
       void qc.invalidateQueries({ queryKey: ['client', 'booking', bookingId, 'onsite'] });
     },
   });

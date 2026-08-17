@@ -12,6 +12,7 @@ use App\Models\MissionExtra;
 use App\Models\MissionIncident;
 use App\Models\MissionMedia;
 use App\Models\MissionReport;
+use App\Services\Missions\HourlyExtensionService;
 use App\Services\Missions\OnSite\MissionCheckInService;
 use App\Services\Missions\OnSite\MissionExtraService;
 use App\Services\Missions\OnSite\MissionIncidentService;
@@ -21,6 +22,7 @@ use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use RuntimeException;
 
 /**
  * CE QUI SE PASSE CHEZ MOI, PENDANT QUE ÇA SE PASSE.
@@ -50,6 +52,7 @@ class MissionOnSiteController extends Controller
         protected MissionTimelineService $timelineService,
         protected MissionExtraService $extraService,
         protected MissionCheckInService $checkInService,
+        protected HourlyExtensionService $extensionService,
     ) {}
 
     /**
@@ -192,6 +195,48 @@ class MissionOnSiteController extends Controller
         }
 
         return response()->json(['data' => $this->extraService->presenter($extra)]);
+    }
+
+    /**
+     * PROLONGER — acheter du temps en plus, avant ou pendant l'intervention.
+     *
+     * LE CLIENT DÉCIDE SEUL, sans passer par le prestataire : c'est son argent et son logement.
+     * Faire transiter la demande par une acceptation ferait perdre les minutes qui comptent — la
+     * fenêtre se ferme à la fin de la franchise.
+     *
+     * LE REFUS EST UNE RÉPONSE, PAS UNE PANNE. `422` avec un message lisible : « la durée maximale
+     * est atteinte », « le temps supplémentaire est déjà facturé ». Un `500` laisserait le client
+     * appuyer trois fois sur un bouton qui ne dit rien.
+     *
+     * @response 200 {"clock": {"applies": true, "purchased_minutes": 240, "deadline_at": "..."}}
+     */
+    public function prolonger(Request $request, Booking $booking): JsonResponse
+    {
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
+
+        $donnees = $request->validate([
+            /*
+             * BORNE HAUTE ICI AUSSI, et pas seulement dans le service : sans elle, un entier
+             * démesuré traverserait la validation avant d'être refusé plus loin — et un entier
+             * négatif tenterait une RÉDUCTION du temps acheté, ce que personne n'a autorisé.
+             */
+            'additional_minutes' => ['required', 'integer', 'min:1', 'max:1440'],
+        ]);
+
+        try {
+            $horloge = $this->extensionService->prolonger(
+                $booking,
+                (int) $donnees['additional_minutes'],
+                $request->user(),
+            );
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'clock' => $horloge,
+            'extension' => $this->extensionService->etatDeLaProlongation($booking->refresh()),
+        ]);
     }
 
     /**
