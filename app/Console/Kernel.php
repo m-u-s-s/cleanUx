@@ -33,6 +33,31 @@ class Kernel extends ConsoleKernel
         // surtout un prestataire rappeler une cliente des semaines après l'intervention.
         $schedule->command('masked-calls:scan-expired')->hourly()->withoutOverlapping();
         $schedule->command('presence:scan-stale --threshold=5')->everyTwoMinutes()->withoutOverlapping();
+
+        /*
+         * LE FILET SOUS LES OFFRES DE MISSION.
+         *
+         * L'expiration repose sur un job DIFFÉRÉ à `tries = 1` : un worker redémarré pendant qu'il
+         * attend, une file vidée, un échec unique, et l'offre reste `assigned` pour toujours. La
+         * mission n'est alors JAMAIS proposée au suivant, et le client attend quelqu'un qui ne
+         * viendra pas — sans que rien nulle part ne soit en erreur.
+         *
+         * Toutes les deux minutes, comme le balayage de présence : c'est un délai de dispatch, pas
+         * une tâche de nuit. Une offre oubliée pendant une heure est une mission perdue.
+         */
+        $schedule->command('dispatch:balayer-les-offres-expirees')->everyTwoMinutes()->withoutOverlapping();
+
+        /*
+         * LA SONDE QUI NE TOURNAIT NULLE PART.
+         *
+         * `spine:check-stuck-missions` existe, rend 1 quand une mission dépasse son démarrage prévu
+         * sans être terminée — et n'était appelée par personne. Une commande qu'aucun ordonnanceur
+         * n'exécute ne signale rien : elle documente une intention.
+         *
+         * Toutes les heures : le seuil par défaut est de six heures, la surveiller à la minute
+         * n'apporterait rien qu'un journal plus bavard.
+         */
+        $schedule->command('spine:check-stuck-missions')->hourly()->withoutOverlapping();
         $schedule->command('surge:recompute')->everyMinute()->withoutOverlapping();
 
         /*
