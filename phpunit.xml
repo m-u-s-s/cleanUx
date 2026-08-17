@@ -31,10 +31,28 @@
         </include>
     </source>
     <php>
-        <!-- DomPDF (devis/factures/contrats PDF) dépasse les 512M par défaut de
-             PHP sur certains postes → OOM. Plafond confortable appliqué au
-             process de test par PHPUnit (memory_limit est PHP_INI_ALL). -->
-        <ini name="memory_limit" value="2048M"/>
+        <!-- AUCUN PLAFOND, ET C'EST UN CHOIX MESURÉ.
+
+             L'intention d'origine était de RELEVER le défaut de PHP (512M), que DomPDF dépasse en
+             générant devis, factures et contrats. Elle valait 2048M — et cette valeur est devenue
+             un PLAFOND pour la CI : PHPUnit applique ses `<ini>` à son démarrage, donc APRÈS le
+             `memory_limit=-1` que le workflow pose dans php.ini. Le `-1` était annulé sans bruit.
+
+             Conséquence mesurée sur la CI du 2026-08-14 : la suite passait entière — 6391 tests,
+             20681 assertions — puis PHPUnit mourait en SÉRIALISANT le rapport de couverture
+             (`php-code-coverage/src/Report/PHP.php`), 304 Mo demandés au-delà des 2 Go. Le seuil
+             de couverture n'était jamais évalué, `coverage.xml` n'existait pas, et le déploiement
+             restait `skipped`. Deux poussées de suite, sans que rien ne signale que les TESTS,
+             eux, étaient verts.
+
+             POURQUOI PAS SIMPLEMENT UN NOMBRE PLUS GRAND. Parce que 2048M était déjà « un plafond
+             confortable » le jour où il a été écrit. Toute valeur fixe expire quand la suite
+             grandit, et elle expire de la même façon : un vert qui devient rouge pour une raison
+             qui n'a rien à voir avec le code. `-1` ne se périme pas.
+
+             Le garde-fou contre une fuite mémoire n'a jamais été cette ligne : c'est la durée du
+             job côté CI, et le système d'exploitation côté poste de travail. -->
+        <ini name="memory_limit" value="-1"/>
         <env name="APP_ENV" value="testing"/>
         <!-- <env name="APP_KEY" value="base64:base64encoded32charstringhere="/> -->
         <env name="BCRYPT_ROUNDS" value="4"/>

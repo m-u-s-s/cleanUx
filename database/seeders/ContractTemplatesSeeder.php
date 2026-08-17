@@ -140,9 +140,26 @@ MD,
             ],
         ];
 
+        /*
+         * LA CLÉ EST `code` SEUL, ET C'EST LA SEULE QUI TIENNE.
+         *
+         * `contract_templates` porte DEUX contraintes d'unicité : `(code, version)` et `code` tout
+         * court. La seconde rend la première inopérante — deux versions d'un même contrat ne
+         * peuvent pas coexister, quoi qu'en laisse croire la colonne `supersedes_template_id`.
+         *
+         * Chercher sur `(code, version)` marchait tant que la version ne bougeait jamais : sur une
+         * base vierge, on insère. Le jour où l'on incrémente — ce qui vient d'arriver avec la règle
+         * de facturation au temps —, aucune ligne ne correspond, l'insertion part, et MySQL la
+         * refuse sur l'unicité de `code`. La CI ne l'aurait jamais vu : sa base est neuve à chaque
+         * exécution. Staging et production, elles, l'auraient vu au premier déploiement.
+         *
+         * METTRE À JOUR EN PLACE NE RÉÉCRIT PAS CE QUI A ÉTÉ SIGNÉ : `contract_documents` conserve
+         * son propre `body_rendered_html`. Un signataire garde donc le texte exact qu'il a accepté,
+         * et c'est ce qui rend cette clé acceptable.
+         */
         foreach ($templates as $tpl) {
             ContractTemplate::query()->updateOrCreate(
-                ['code' => $tpl['code'], 'version' => $tpl['version']],
+                ['code' => $tpl['code']],
                 $tpl,
             );
         }
