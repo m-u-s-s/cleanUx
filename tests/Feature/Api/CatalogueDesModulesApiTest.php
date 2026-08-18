@@ -48,12 +48,42 @@ class CatalogueDesModulesApiTest extends TestCase
 
     public function test_l_admin_recoit_les_siens(): void
     {
+        /*
+         * LA CAPACITE EST ACCORDEE, ET C'EST LE SUJET.
+         *
+         * « Feature flags » declare desormais `manage-modules`, comme les quatre-vingt-trois autres
+         * modules d'administration. `User::factory()->admin()` ne porte aucune capacite : le
+         * catalogue la lui cachait donc, a juste titre.
+         *
+         * Ce test verifie que l'API rend bien SES modules a un administrateur -- il faut donc lui
+         * en donner au moins un. Le suivant, en sens inverse, prouve qu'un client n'en recoit
+         * aucun.
+         */
         $admin = User::factory()->admin()->create();
+        $admin->forceFill(['permissions' => ['manage-modules']])->save();
 
-        $reponse = $this->actingAs($admin, 'sanctum')->getJson('/api/modules');
+        $reponse = $this->actingAs($admin->refresh(), 'sanctum')->getJson('/api/modules');
 
         $reponse->assertJsonPath('context', 'admin');
         $this->assertStringContainsString('Feature flags', $reponse->getContent() ?: '');
+    }
+
+    /**
+     * TEMOIN EN SENS INVERSE — sans la capacite, le module disparait de l'API aussi.
+     *
+     * L'API et la navigation web lisent le meme catalogue ; si l'une filtrait et pas l'autre, le
+     * client mobile afficherait des cases qui repondent 403. Ce test fixe le fait que les deux
+     * disent la meme chose.
+     */
+    public function test_un_admin_sans_la_capacite_ne_recoit_pas_le_module(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $admin->forceFill(['permissions' => ['manage-users']])->save();
+
+        $reponse = $this->actingAs($admin->refresh(), 'sanctum')->getJson('/api/modules');
+
+        $reponse->assertJsonPath('context', 'admin');
+        $this->assertStringNotContainsString('Feature flags', $reponse->getContent() ?: '');
     }
 
     public function test_le_contexte_ne_se_dicte_pas_depuis_la_requete(): void

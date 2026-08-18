@@ -76,6 +76,7 @@ use App\Admin\Resources\PushNotificationResource;
 use App\Admin\Resources\QualityInspectionResource;
 use App\Admin\Resources\RatingReportResource;
 use App\Admin\Resources\ReferralResource;
+use App\Admin\Resources\RentalVehicleResource;
 use App\Admin\Resources\RiskEvaluationResource;
 use App\Admin\Resources\RiskHoldResource;
 use App\Admin\Resources\SectorResource;
@@ -214,6 +215,9 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('insurance', InsuranceClaimResource::class);
             $registry->register('cancellations', CancellationPolicyResource::class);
             $registry->register('fleet', FleetEquipmentResource::class);
+
+            // NOS LOCATIONS -- le parc vendu aux clients, distinct de la flotte interne ci-dessus.
+            $registry->register('rentals', RentalVehicleResource::class);
             $registry->register('platform-modules', PlatformModuleResource::class);
             $registry->register('international', CountrySettingResource::class);
             $registry->register('b2b-operations', ContractRateCardResource::class);

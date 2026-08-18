@@ -172,5 +172,28 @@ return [
         ['key' => 'translations', 'title' => 'Traductions', 'group' => 'plateforme', 'icon' => 'language-outline', 'coverage' => 'descriptor', 'routes' => ['admin/translations']],
         ['key' => 'chat', 'title' => 'Chat et modération', 'group' => 'plateforme', 'icon' => 'chatbubbles-outline', 'coverage' => 'descriptor', 'routes' => ['admin/chat-v2']],
         ['key' => 'fleet', 'title' => 'Flotte et équipements', 'group' => 'plateforme', 'icon' => 'car-outline', 'coverage' => 'descriptor', 'routes' => ['admin/fleet-v2']],
+
+        /*
+         * NOS LOCATIONS — DISTINCT DE « FLOTTE ET EQUIPEMENTS », juste au-dessus.
+         *
+         * Fleet est le registre d'un employeur : ce qu'une societe confie a ses executants pour
+         * aller travailler, sans transaction. Ici chaque vehicule est un PRODUIT vendu a un client,
+         * avec un prix par jour, une caution et une garantie. Les ranger sous la meme entree ferait
+         * croire a un doublon et pousserait tot ou tard a les fusionner.
+         *
+         * Le groupe est `argent` parce qu'une location est une vente ; « Flotte et equipements »
+         * vit sous `plateforme` parce qu'elle ne vend rien.
+         *
+         * `descriptor` : RentalVehicleResource porte sur mobile la consultation du parc et
+         * l'interrupteur de vitrine — le geste qu'on fait depuis le parking quand une voiture
+         * rentre accidentee. Les tarifs et les medias restent au web : composer une grille de prix
+         * sur un telephone n'est pas un service qu'on rend a quelqu'un.
+         *
+         * Fleet est le registre d'un employeur : ce qu'une société confie à ses exécutants pour
+         * aller travailler, sans transaction. Ici, chaque véhicule est un PRODUIT vendu à un
+         * client, avec un prix par jour, une caution et une garantie. Les ranger sous la même
+         * entrée ferait croire à un doublon et pousserait tôt ou tard à les fusionner.
+         */
+        ['key' => 'rentals', 'title' => 'Nos locations', 'group' => 'argent', 'icon' => 'car-sport-outline', 'coverage' => 'descriptor', 'routes' => ['admin/nos-locations'], 'resources' => ['rentals']],
     ],
 ];

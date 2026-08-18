@@ -12,7 +12,7 @@ class AdminMissionsCenterExperienceTest extends TestCase
 
     public function test_admin_can_render_missions_center(): void
     {
-        $admin = User::factory()->admin()->create(['is_active' => true]);
+        $admin = User::factory()->adminComplet()->create(['is_active' => true]);
 
         $response = $this->actingAs($admin)->get('/admin/missions');
 

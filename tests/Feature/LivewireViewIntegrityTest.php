@@ -15,9 +15,8 @@ class LivewireViewIntegrityTest extends TestCase
 
     public function test_admin_countries_route_renders(): void
     {
-        $admin = User::factory()->admin()->create([
+        $admin = User::factory()->adminComplet()->create([
             'access_scope' => 'all',
-            'permissions' => [],
             'is_active' => true,
         ]);
 
@@ -52,9 +51,8 @@ class LivewireViewIntegrityTest extends TestCase
     public function test_admin_recurring_edit_route_renders(): void
     {
         $scenario = $this->createRecurringPortalContext();
-        $admin = User::factory()->admin()->create([
+        $admin = User::factory()->adminComplet()->create([
             'access_scope' => 'all',
-            'permissions' => [],
             'is_active' => true,
         ]);
 

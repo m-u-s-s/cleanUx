@@ -67,7 +67,7 @@ class PageModulesTest extends TestCase
 
     public function test_l_admin_voit_les_modules_de_pilotage(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
 
         $reponse = $this->actingAs($admin)->get(route('admin.modules.directory'));
 

@@ -49,13 +49,28 @@ class SanteDuMarcheTest extends TestCase
         Notification::fake();
     }
 
+    /**
+     * L'ECRAN DEMANDE DESORMAIS `manage-analytics`.
+     *
+     * La sante du marche est un tableau de donnees ; comme les quatre-vingt-trois autres modules
+     * d'administration, il declare la capacite qui lui correspond, et `EnforceModuleGate` la fait
+     * appliquer. Un `platform_role = 'admin'` sans capacite recevait donc un 403 -- le garde
+     * faisait son travail.
+     *
+     * On accorde la capacite plutot que de faire un super-administrateur : celui-ci passe TOUS les
+     * gardes, et ce test cesserait de mesurer celui-la.
+     */
     private function admin(): User
     {
-        return User::factory()->create([
+        $admin = User::factory()->create([
             'platform_role' => 'admin',
             'email_verified_at' => now(),
             'is_active' => true,
         ]);
+
+        $admin->forceFill(['permissions' => ['manage-analytics']])->save();
+
+        return $admin->refresh();
     }
 
     /** Une recherche épuisée sur une zone donnée. */

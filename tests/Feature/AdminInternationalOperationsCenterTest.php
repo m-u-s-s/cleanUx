@@ -16,9 +16,8 @@ class AdminInternationalOperationsCenterTest extends TestCase
 
     protected function makeAdmin(): User
     {
-        return User::factory()->admin()->create([
+        return User::factory()->adminComplet()->create([
             'access_scope' => 'all',
-            'permissions' => [],
             'is_active' => true,
         ]);
     }

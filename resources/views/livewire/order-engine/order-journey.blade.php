@@ -78,6 +78,25 @@
                         @include('livewire.order-engine.partials.sector-carousel')
                     @endif
                 </div>
+
+                {{--
+                    LA CASE « LOCATION » — un composant AUTONOME, et c'est la seule ligne que ce
+                    module ajoute au parcours de commande.
+
+                    Elle n'est pas un secteur : un secteur mène à des MÉTIERS puis à un dispatch de
+                    prestataires, alors qu'une location n'a ni l'un ni l'autre. Créer une ligne
+                    `Sector` « Location » aurait envoyé ce parcours chercher des métiers qui
+                    n'existent pas. `OrderJourney.php` n'est donc pas modifié d'un caractère.
+
+                    ELLE DISPARAÎT D'ELLE-MÊME quand aucune voiture n'est disponible : le composant
+                    ne rend rien. Une porte qui promet du choix devant une vitrine vide apprend au
+                    client que la plateforme annonce ce qu'elle ne sait pas faire.
+                --}}
+                @if (! $sectorId && ! $tradeId)
+                    <div class="mt-6">
+                        @livewire(\App\Livewire\Rental\LocationEntryTile::class)
+                    </div>
+                @endif
             </section>
 
             {{-- ─── Métiers ─────────────────────────────────────────────────────────────── --}}

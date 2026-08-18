@@ -26,7 +26,7 @@ class AdminAvailabilityTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->admin()->create();
+        return User::factory()->adminComplet()->create();
     }
 
     private function prestataire(string $nom = 'Presta'): User

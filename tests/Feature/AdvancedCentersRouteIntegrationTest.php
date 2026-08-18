@@ -12,10 +12,9 @@ class AdvancedCentersRouteIntegrationTest extends TestCase
 
     public function test_admin_can_access_integrated_advanced_centers(): void
     {
-        $admin = User::factory()->admin()->create([
-            'permissions' => ['manage-entreprises', 'manage-services'],
-            'is_active' => true,
-        ]);
+        // Ce test balaie plusieurs centres a la fois : la liste etroite d'origine n'en couvrait
+        // que deux, et `EnforceModuleGate` refuse desormais les autres.
+        $admin = User::factory()->adminComplet()->create(['is_active' => true]);
 
         $this->actingAs($admin);
 

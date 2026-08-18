@@ -17,7 +17,7 @@ class HandlesAdminDashboardPlanningTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->admin()->create();
+        return User::factory()->adminComplet()->create();
     }
 
     public function test_ouvrir_mission_opens_modal_and_computes_suggestions(): void

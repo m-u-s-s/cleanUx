@@ -15,9 +15,8 @@ class AdminCountriesPageTest extends TestCase
 
     public function test_admin_can_open_countries_page(): void
     {
-        $admin = User::factory()->admin()->create([
+        $admin = User::factory()->adminComplet()->create([
             'access_scope' => 'all',
-            'permissions' => [],
             'is_active' => true,
         ]);
 
@@ -42,9 +41,8 @@ class AdminCountriesPageTest extends TestCase
 
     public function test_country_operations_center_can_update_selected_country(): void
     {
-        $admin = User::factory()->admin()->create([
+        $admin = User::factory()->adminComplet()->create([
             'access_scope' => 'all',
-            'permissions' => [],
             'is_active' => true,
         ]);
 

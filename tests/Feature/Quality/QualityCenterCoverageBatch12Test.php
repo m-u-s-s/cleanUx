@@ -17,7 +17,7 @@ class QualityCenterCoverageBatch12Test extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->admin()->create();
+        return User::factory()->adminComplet()->create();
     }
 
     private function checklist(string $phase = 'post'): QualityChecklist

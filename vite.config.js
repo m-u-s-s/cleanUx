@@ -14,6 +14,10 @@ export default defineConfig({
                 'resources/js/fullcalendar.js',
                 // Home "parcours d'une mission" : GSAP ScrollTrigger + globe 3D Three.js.
                 // Chargé uniquement sur la home via @push('scripts') dans home.blade.php.
+                // Nos locations : visualiseur 3D glTF des vehicules. Charge UNIQUEMENT sur la
+                // fiche d'une voiture qui porte un modele, et three.js n'arrive qu'a l'entree en
+                // vue -- le catalogue peut montrer vingt voitures sans payer un octet de WebGL.
+                'resources/js/rental-3d.js',
                 'resources/js/home-journey.js',
                 // Home luxury hero : GSAP entrance + Motion scroll effects.
                 'resources/js/luxury-hero.js',

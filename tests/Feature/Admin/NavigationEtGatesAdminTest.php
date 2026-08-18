@@ -64,20 +64,36 @@ class NavigationEtGatesAdminTest extends TestCase
     }
 
     /**
-     * TÉMOIN DE PORTÉE — les modules SANS clé `gate` ne sont pas devenus invisibles.
+     * TÉMOIN DE PORTÉE — ce qui ne déclare RIEN reste visible.
      *
-     * Le filtre laisse passer ce qui ne déclare rien. Une erreur ici viderait la navigation
-     * d'administration entière, ce qui se verrait — mais seulement après la mise en ligne.
+     * CE TEST MESURAIT AUTRE CHOSE AVANT, et son ancienne forme mérite d'être racontée : il
+     * exigeait plus de cinquante tuiles visibles pour un administrateur ne portant qu'une
+     * capacité. C'était juste tant qu'UN SEUL module en déclarait une — la vérification faciale —
+     * mais cela ne mesurait pas le filtre : cela mesurait le fait que presque rien n'était gardé.
+     *
+     * Les quatre-vingt-quatre modules d'administration déclarent désormais la leur. Le même
+     * administrateur en voit donc une poignée, ce qui est le comportement voulu. Ce qu'il faut
+     * encore garantir, c'est que le filtre laisse passer ce qui ne déclare RIEN : les modules
+     * universels — profil, notifications, aide, mentions légales — et les deux pages d'arrivée de
+     * l'espace. Une erreur ici enfermerait dehors un administrateur au périmètre restreint.
      */
     public function test_les_modules_sans_gate_restent_visibles(): void
     {
         $this->actingAs($this->admin(superAdmin: false, capacites: ['manage-users']));
 
-        $this->assertGreaterThan(
-            50,
-            count($this->modulesAdmin()),
-            'Le filtre ne doit masquer que ce qui déclare une capacité.',
-        );
+        $visibles = collect($this->modulesAdmin())->pluck('key')->all();
+
+        foreach (['*:profile.show', 'admin:admin.dashboard', 'admin:admin.home'] as $ouvert) {
+            $this->assertContains(
+                $ouvert,
+                $visibles,
+                "« {$ouvert} » ne déclare aucune capacité et a pourtant disparu : un administrateur "
+                .'au périmètre restreint n’a plus de porte d’entrée.',
+            );
+        }
+
+        // Et le filtre mord toujours : ce qui déclare une capacité qu'il n'a pas reste caché.
+        $this->assertNotContains('admin:admin.finance', $visibles);
     }
 
     /**

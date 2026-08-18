@@ -47,6 +47,13 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-audit-logs', fn (User $user) => $user->canAccessAdminModule('manage-audit-logs'));
         Gate::define('manage-modules', fn (User $user) => $user->canAccessAdminModule('manage-modules'));
         Gate::define('manage-face-check', fn (User $user) => $user->canAccessAdminModule('manage-face-check'));
+        Gate::define('manage-international', fn (User $user) => $user->canAccessAdminModule('manage-international'));
+        Gate::define('manage-orchestration', fn (User $user) => $user->canAccessAdminModule('manage-orchestration'));
+        Gate::define('manage-automation', fn (User $user) => $user->canAccessAdminModule('manage-automation'));
+        Gate::define('manage-compliance', fn (User $user) => $user->canAccessAdminModule('manage-compliance'));
+        Gate::define('manage-communication', fn (User $user) => $user->canAccessAdminModule('manage-communication'));
+        Gate::define('manage-platform', fn (User $user) => $user->canAccessAdminModule('manage-platform'));
+        Gate::define('manage-rentals', fn (User $user) => $user->canAccessAdminModule('manage-rentals'));
 
         Gate::define('access-team-lead-ops', fn (User $user) => $user->isEmploye() && $user->is_active && $user->isFieldTeamLead());
 

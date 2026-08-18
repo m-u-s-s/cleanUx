@@ -17,9 +17,14 @@ class OrphanPageRoutingTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create([
-            'platform_role' => 'admin',
-            'role' => 'admin',
+        /*
+         * LES CAPACITES SONT ACCORDEES, et c'est ce que `EnforceModuleGate` exige desormais.
+         *
+         * Les quatre-vingt-quatre modules d'administration declarent la leur, et la porte les fait
+         * appliquer. Un compte `platform_role = 'admin'` sans capacite recevait donc un 403 sur ces
+         * ecrans -- le garde faisait son travail.
+         */
+        return User::factory()->adminComplet()->create([
             'email_verified_at' => now(),
             'is_active' => true,
         ]);

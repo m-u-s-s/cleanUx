@@ -13,9 +13,8 @@ class AdminPlanningCenterExperienceTest extends TestCase
 
     public function test_admin_planning_page_renders_new_operational_sections(): void
     {
-        $admin = User::factory()->admin()->create([
+        $admin = User::factory()->adminComplet()->create([
             'access_scope' => 'all',
-            'permissions' => [],
             'is_active' => true,
         ]);
 
@@ -30,9 +29,8 @@ class AdminPlanningCenterExperienceTest extends TestCase
 
     public function test_admin_planning_page_can_render_focus_intervention_cards(): void
     {
-        $admin = User::factory()->admin()->create([
+        $admin = User::factory()->adminComplet()->create([
             'access_scope' => 'all',
-            'permissions' => [],
             'is_active' => true,
         ]);
 

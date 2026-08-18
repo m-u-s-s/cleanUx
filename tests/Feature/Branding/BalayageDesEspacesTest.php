@@ -43,7 +43,7 @@ class BalayageDesEspacesTest extends TestCase
         return match ($contexte) {
             'client' => [User::factory()->create(['role' => User::ROLE_CLIENT, 'is_active' => true]), BrandMark::CLIENT],
             'employe' => [$this->prestataire(), BrandMark::PROVIDER],
-            'admin' => [User::factory()->create(['role' => User::ROLE_ADMIN, 'is_active' => true]), BrandMark::PROVIDER],
+            'admin' => [User::factory()->adminComplet()->create(['is_active' => true]), BrandMark::PROVIDER],
             'client-company' => [$this->membreDeSociete(OrganizationType::CLIENT_COMPANY, User::ROLE_ENTREPRISE), BrandMark::CLIENT],
             'provider-company' => [$this->membreDeSociete(OrganizationType::PROVIDER_COMPANY, User::ROLE_EMPLOYE), BrandMark::PROVIDER],
         };

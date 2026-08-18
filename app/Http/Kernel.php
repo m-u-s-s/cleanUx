@@ -14,6 +14,7 @@ use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\EmbedMode;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\Enforce2FA;
+use App\Http\Middleware\EnforceModuleGate;
 use App\Http\Middleware\EnforceTokenGrace;
 use App\Http\Middleware\EnsureActiveAccount;
 use App\Http\Middleware\EnsureApiAdmin;
@@ -141,6 +142,7 @@ class Kernel extends HttpKernel
         'cache.api' => CacheApiResponse::class,
         'premium' => PremiumGate::class,
         'enforce_2fa' => Enforce2FA::class,
+        'module_gate' => EnforceModuleGate::class,
         'phone.verified' => EnsurePhoneVerified::class,
     ];
 }

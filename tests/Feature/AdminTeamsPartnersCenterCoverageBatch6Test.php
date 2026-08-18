@@ -20,7 +20,7 @@ class AdminTeamsPartnersCenterCoverageBatch6Test extends TestCase
 
     protected function admin(): User
     {
-        return User::factory()->admin()->create([
+        return User::factory()->adminComplet()->create([
             'permissions' => ['manage-entreprises'],
         ]);
     }

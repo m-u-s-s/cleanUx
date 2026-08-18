@@ -66,6 +66,7 @@ use App\Livewire\Admin\Push\PushCenter;
 use App\Livewire\Admin\Quality\QualityCenter;
 use App\Livewire\Admin\Ratings\RatingModerationCenter;
 use App\Livewire\Admin\Realtime\RealtimeCenter;
+use App\Livewire\Admin\Rental\NosLocationsCenter;
 use App\Livewire\Admin\Risk\RiskCenter;
 use App\Livewire\Admin\Safety\SafetyCenter;
 use App\Livewire\Admin\Sms\SmsCenter;
@@ -89,7 +90,19 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Request;
 
-Route::middleware(['role:admin', 'enforce_2fa'])
+/*
+ * `module_gate` FAIT APPLIQUER CE QUE `config/modules.php` DECLARE.
+ *
+ * Les capacites de `platform_role` existaient depuis toujours et n'interdisaient presque rien :
+ * UNE seule route d'administration sur quatre-vingt-six portait un `can:`, et trois composants
+ * Livewire sur cent trois verifiaient une capacite. La navigation, elle, savait deja lire la cle
+ * `gate` du catalogue -- si bien que masquer une tuile l'aurait rendue invisible SANS fermer son
+ * ecran, ce qui est un trou de securite et non une gene d'usage.
+ *
+ * Une seule declaration, donc, et elle vaut pour les deux. Un module sans cle `gate` reste ouvert
+ * a tout administrateur, exactement comme avant.
+ */
+Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
@@ -462,6 +475,11 @@ Route::middleware(['role:admin', 'enforce_2fa'])
         if (class_exists(AccountingCenter::class)) {
             Route::get('/accounting-v2', AccountingCenter::class)
                 ->name('accounting-v2.center');
+
+            // NOS LOCATIONS -- le comptoir de location de vehicules. Distinct de Fleet, qui gere
+            // ce qu'une societe confie a ses executants ; ici les vehicules sont des produits.
+            Route::get('/nos-locations', NosLocationsCenter::class)
+                ->name('rentals.center');
         }
 
         // KYB v2 — Compliance entreprises

@@ -14,7 +14,7 @@ class ProductEmailsCenterTest extends TestCase
 
     public function test_admin_can_access_product_emails_center_and_generate_preview(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.emails'))

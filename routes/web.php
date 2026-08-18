@@ -12,6 +12,9 @@ use App\Livewire\OrderEngine\OrderJourney;
 use App\Livewire\Provider\FaceCheckPage;
 use App\Livewire\Provider\MissionOfferPage;
 use App\Livewire\Provider\Onboarding\ProviderOnboardingWizard;
+use App\Livewire\Rental\LocationCatalogue;
+use App\Livewire\Rental\LocationConfirmation;
+use App\Livewire\Rental\LocationVehicle;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -79,7 +82,7 @@ Route::middleware(['auth', 'verified', 'active.account', 'phone.verified'])->gro
 
 // `enforce_2fa` comme les autres pages d'administration : la page ne montre pas de données, mais une
 // exception sans raison est une exception qu'on recopiera ailleurs en croyant qu'elle est la règle.
-Route::middleware(['auth', 'role:admin', 'enforce_2fa'])->group(function () {
+Route::middleware(['auth', 'role:admin', 'enforce_2fa', 'module_gate'])->group(function () {
     Route::get('/design-system', DesignSystem::class)->name('design-system');
 });
 
@@ -90,6 +93,30 @@ Route::middleware(['auth', 'role:admin', 'enforce_2fa'])->group(function () {
  * identité ici replacerait le formulaire d'inscription devant l'estimation, c'est-à-dire devant la
  * première cause d'abandon. Le panier vit sur un jeton de session jusqu'à la confirmation.
  */
+/*
+ * NOS LOCATIONS -- un parcours ENTIEREMENT SEPARE du moteur de commande.
+ *
+ * Le parcours de commande va du secteur au metier puis aux questions, et cherche ensuite un
+ * professionnel disponible. Une location ne fonctionne pas ainsi : l'objet est visible des la
+ * premiere seconde, il n'y a aucun prestataire a trouver, et c'est le client qui se deplace.
+ *
+ * Aucune ligne d'`OrderJourney` ni d'`OrderConfirmation` n'est touchee. Les deux catalogues
+ * evoluent separement, et c'est ce qui permet de faire bouger l'un sans risquer l'autre.
+ *
+ * COMME LE PARCOURS DE COMMANDE, CES PAGES SONT PUBLIQUES : le client voit une voiture et son prix
+ * AVANT qu'on lui demande un compte. Exiger une identite ici replacerait l'inscription devant
+ * l'estimation, c'est-a-dire devant la premiere cause d'abandon.
+ *
+ * DECLAREE AVANT `/location/{vehicle}` : sinon « recapitulatif » serait pris pour un identifiant de
+ * vehicule, et le dernier ecran deviendrait injoignable. Meme piege que pour `/commander`.
+ */
+Route::get('/location/recapitulatif/{reference}', LocationConfirmation::class)
+    ->name('location.recapitulatif');
+
+Route::get('/location', LocationCatalogue::class)->name('location.catalogue');
+
+Route::get('/location/{vehicle}', LocationVehicle::class)->name('location.vehicule');
+
 /*
  * DÉCLARÉE AVANT le parcours : `/commander/{sector?}` attraperait sinon « recapitulatif » comme un
  * nom de secteur, et le dernier écran deviendrait injoignable.

@@ -31,7 +31,7 @@ class ZoneCenterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->actingAs($this->adminComplet());
+        $this->actingAs($this->adminQuiPeutAgir());
     }
 
     /**
@@ -42,8 +42,17 @@ class ZoneCenterTest extends TestCase
      * `User::factory()->create(['role' => 'admin'])` franchit la porte du composant et échoue
      * ensuite en silence sur chaque action — le test échouait sans rien dire de la cause.
      */
-    private function adminComplet(): User
+    private function adminQuiPeutAgir(): User
     {
+        /*
+         * LA LISTE EST EXPLICITE, ET PLUS ETROITE QUE `adminComplet()` DE LA FABRIQUE.
+         *
+         * C'est voulu : ce test eprouve un administrateur qui a EXACTEMENT le droit d'agir sur les
+         * zones, pas un compte tout-puissant. `EnforceModuleGate` exige desormais `manage-services`
+         * pour atteindre l'ecran, et `perform-critical-admin-actions` reste necessaire pour que ses
+         * actions aboutissent -- deux portes distinctes, et le test les franchit toutes les deux
+         * sans en ouvrir d'autres.
+         */
         return User::factory()->admin()->create([
             'access_scope' => User::ACCESS_SCOPE_ALL,
             'is_active' => true,

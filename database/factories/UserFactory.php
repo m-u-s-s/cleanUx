@@ -47,6 +47,30 @@ class UserFactory extends Factory
         ]);
     }
 
+    /**
+     * UN ADMINISTRATEUR QUI PEUT REELLEMENT TOUT FAIRE, sans etre super-administrateur.
+     *
+     * `admin()` ne pose AUCUNE capacite. C'etait sans consequence tant que rien ne les verifiait --
+     * une seule route d'administration sur quatre-vingt-six portait un `can:`. Depuis que
+     * `EnforceModuleGate` fait appliquer ce que `config/modules.php` declare, ce compte se voit
+     * refuser quinze ecrans, et une quinzaine de tests d'acces sont tombes en 403.
+     *
+     * DEUX FACONS DE REPARER, ET UNE SEULE EST HONNETE. Faire de `admin()` un compte tout-puissant
+     * aurait rendu vert d'un coup, et aurait silencieusement desarme tout test verifiant qu'une
+     * capacite MANQUANTE ferme une porte. On ajoute donc un etat qui DIT ce qu'il est : les tests
+     * qui balaient l'espace l'emploient, ceux qui mesurent une restriction construisent leur compte
+     * a la main.
+     *
+     * On n'en fait pas un super-administrateur non plus : celui-la passe TOUS les gardes, y compris
+     * ceux qu'un test voudrait eprouver.
+     */
+    public function adminComplet(): static
+    {
+        return $this->admin()->state(fn (array $attributes) => [
+            'permissions' => array_keys(User::allowedAdminPermissions()),
+        ]);
+    }
+
     public function admin(): static
     {
         return $this->state(fn (array $attributes) => [

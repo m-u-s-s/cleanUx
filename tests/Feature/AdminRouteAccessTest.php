@@ -24,7 +24,7 @@ class AdminRouteAccessTest extends TestCase
 
     public function test_admin_can_access_admin_pages(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
 
         $this->actingAs($admin);
 

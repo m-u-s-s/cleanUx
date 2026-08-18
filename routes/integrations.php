@@ -14,7 +14,12 @@ Route::get('/google/calendar/callback', [GoogleCalendarAuthController::class, 'c
 Route::match(['POST', 'DELETE'], '/google/calendar/disconnect', [GoogleCalendarAuthController::class, 'disconnect'])
     ->name('google.calendar.disconnect');
 
-Route::middleware(['role:admin'])->group(function () {
+// `module_gate` : meme porte que le groupe principal de `routes/admin.php`. Ce fichier sert des
+// modules CATALOGUES -- `admin.finance` en est un -- et l'oublier ici laissait leur ecran ouvert
+// pendant que la navigation cachait leur tuile : une porte invisible mais deverrouillee, c'est-a-dire
+// l'inverse exact du defaut qu'on corrige. L'intermediaire est sans effet sur une route qui ne
+// declare aucune capacite.
+Route::middleware(['role:admin', 'module_gate'])->group(function () {
     $googleAgendaSettings = class_exists(GoogleAgendaSettings::class)
         ? GoogleAgendaSettings::class
         : function () {
