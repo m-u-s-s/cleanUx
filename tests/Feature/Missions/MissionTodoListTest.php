@@ -9,12 +9,14 @@ use App\Models\MissionChecklistItem;
 use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Services\Missions\MissionTodoService;
+use App\Services\Missions\OnSite\MissionChecklistService as OnSiteChecklistService;
 use App\Support\Domain\BookingStatus;
 use App\Support\Domain\MissionStatus;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 /**
@@ -243,5 +245,103 @@ class MissionTodoListTest extends TestCase
 
         $this->assertNotNull($item->fresh()->locked_at);
         Carbon::setTestNow();
+    }
+
+    // ── L'API, TELLE QUE L'APPLICATION L'APPELLE ──────────────────────────────
+
+    public function test_le_proprietaire_lit_sa_liste(): void
+    {
+        $mission = $this->mission();
+        Sanctum::actingAs($this->client);
+
+        $this->getJson('/api/client/bookings/'.$mission->booking_id.'/onsite/todo')
+            ->assertOk()
+            ->assertJsonPath('ok', true)
+            ->assertJsonPath('engine', 'domicile')
+            ->assertJsonPath('window.open', true)
+            ->assertJsonStructure(['items', 'suggestions', 'window' => ['open', 'closes_at', 'minutes_left']]);
+    }
+
+    /** LE TÉMOIN de la garde : un tiers ne lit pas la liste de quelqu'un d'autre. */
+    public function test_un_tiers_ne_lit_pas_la_liste(): void
+    {
+        $mission = $this->mission();
+        Sanctum::actingAs(User::factory()->client()->create());
+
+        $this->getJson('/api/client/bookings/'.$mission->booking_id.'/onsite/todo')
+            ->assertForbidden();
+    }
+
+    public function test_le_client_ajoute_et_retire_par_l_api(): void
+    {
+        $mission = $this->mission();
+        Sanctum::actingAs($this->client);
+
+        $reponse = $this->postJson('/api/client/bookings/'.$mission->booking_id.'/onsite/todo', [
+            'label' => 'Nettoyer la hotte',
+        ])->assertOk()->assertJsonPath('items.0.label', 'Nettoyer la hotte');
+
+        $id = $reponse->json('items.0.id');
+        $this->assertTrue($reponse->json('items.0.removable'));
+
+        $this->deleteJson('/api/client/bookings/'.$mission->booking_id.'/onsite/todo/'.$id)
+            ->assertOk()
+            ->assertJsonCount(0, 'items');
+    }
+
+    public function test_l_api_rend_le_motif_du_refus_et_non_une_erreur_muette(): void
+    {
+        Carbon::setTestNow('2026-08-18 10:00:00');
+        $mission = $this->mission(demarree: Carbon::parse('2026-08-18 10:00:00'));
+        Sanctum::actingAs($this->client);
+
+        Carbon::setTestNow('2026-08-18 10:31:00');
+
+        $this->postJson('/api/client/bookings/'.$mission->booking_id.'/onsite/todo', [
+            'label' => 'Trop tard',
+        ])->assertStatus(422)->assertJsonPath('message', 'La liste est figée depuis 10:30.');
+
+        Carbon::setTestNow();
+    }
+
+    /**
+     * CÔTÉ PRESTATAIRE, la tâche du client doit se reconnaître.
+     *
+     * Elle se discute avec lui — il est dans la pièce. Une tâche générique, non. Sans la source à
+     * l'écran, les deux se ressemblent et la demande du client devient une case de plus.
+     */
+    public function test_le_prestataire_voit_qui_a_demande_chaque_tache(): void
+    {
+        $mission = $this->mission();
+        $this->service()->ajouter($mission, $this->client, 'Nettoyer la hotte');
+
+        $charge = app(OnSiteChecklistService::class)->pour($mission->fresh());
+        $item = $charge['checklists'][0]['items'][0];
+
+        $this->assertSame('client', $item['source']);
+        $this->assertSame($this->client->name, $item['added_by']);
+        $this->assertTrue($charge['blocks_completion'], 'une tâche du client barre la clôture');
+    }
+
+    /** LE TÉMOIN : une tâche qui ne vient pas du client ne porte aucun nom. */
+    public function test_une_tache_de_gabarit_ne_porte_aucun_demandeur(): void
+    {
+        $mission = $this->mission();
+        $this->service()->ajouter($mission, $this->client, 'La sienne');
+
+        MissionChecklistItem::create([
+            'mission_checklist_id' => $mission->fresh('checklists')->checklists->first()->id,
+            'label' => 'Contrôle qualité',
+            'item_type' => 'checkbox',
+            'is_required' => false,
+            'status' => 'todo',
+            'source' => 'template',
+        ]);
+
+        $items = app(OnSiteChecklistService::class)->pour($mission->fresh())['checklists'][0]['items'];
+        $gabarit = collect($items)->firstWhere('label', 'Contrôle qualité');
+
+        $this->assertSame('template', $gabarit['source']);
+        $this->assertNull($gabarit['added_by']);
     }
 }

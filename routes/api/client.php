@@ -147,6 +147,16 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
      * approcher de la fin. La fenêtre se ferme à la fin de la franchise de dépassement.
      */
     Route::post('/bookings/{booking}/onsite/extend', [ClientMissionOnSiteController::class, 'prolonger']);
+    /*
+     * MA LISTE DE TÂCHES — ce que le client veut qu'on fasse chez lui.
+     *
+     * Sur le chemin `onsite` comme la prolongation, et pour la même raison : elle se décide
+     * souvent PENDANT l'intervention, depuis l'écran de suivi, quand le client voit le prestataire
+     * arriver et se rappelle la hotte. La fenêtre se ferme trente minutes après le démarrage.
+     */
+    Route::get('/bookings/{booking}/onsite/todo', [ClientMissionOnSiteController::class, 'todo']);
+    Route::post('/bookings/{booking}/onsite/todo', [ClientMissionOnSiteController::class, 'ajouterUneTache']);
+    Route::delete('/bookings/{booking}/onsite/todo/{item}', [ClientMissionOnSiteController::class, 'retirerUneTache']);
     // F16 — la clôture guidée : rapport, puis pourboire, puis avis.
     Route::get('/bookings/{booking}/onsite/closure', [ClientMissionOnSiteController::class, 'closureFlow']);
     Route::post('/bookings/{booking}/onsite/extras/{extra}/approve', [ClientMissionOnSiteController::class, 'approveExtra']);

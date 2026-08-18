@@ -8,11 +8,13 @@ use App\Models\Booking;
 use App\Models\BookingTip;
 use App\Models\Feedback;
 use App\Models\Mission;
+use App\Models\MissionChecklistItem;
 use App\Models\MissionExtra;
 use App\Models\MissionIncident;
 use App\Models\MissionMedia;
 use App\Models\MissionReport;
 use App\Services\Missions\HourlyExtensionService;
+use App\Services\Missions\MissionTodoService;
 use App\Services\Missions\OnSite\MissionCheckInService;
 use App\Services\Missions\OnSite\MissionExtraService;
 use App\Services\Missions\OnSite\MissionIncidentService;
@@ -53,6 +55,7 @@ class MissionOnSiteController extends Controller
         protected MissionExtraService $extraService,
         protected MissionCheckInService $checkInService,
         protected HourlyExtensionService $extensionService,
+        protected MissionTodoService $todoService,
     ) {}
 
     /**
@@ -237,6 +240,85 @@ class MissionOnSiteController extends Controller
             'clock' => $horloge,
             'extension' => $this->extensionService->etatDeLaProlongation($booking->refresh()),
         ]);
+    }
+
+    /**
+     * MA LISTE DE TÂCHES — ce que je veux qu'on fasse chez moi.
+     *
+     * Elle porte AUSSI la fenêtre et les suggestions : l'écran doit pouvoir afficher le minuteur
+     * et proposer le gabarit sans un second aller-retour. Une seule lecture, un seul instant.
+     *
+     * @response 200 {"ok": true, "engine": "domicile", "window": {"open": true, "closes_at": null, "minutes_left": null, "reason": null}, "items": [], "suggestions": ["Vérifier accès client"]}
+     */
+    public function todo(Request $request, Booking $booking): JsonResponse
+    {
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
+
+        $mission = $this->missionDe($booking);
+
+        if ($mission === null) {
+            // Pas encore de mission : la liste n'a pas d'objet, et le dire vaut mieux qu'un 404 —
+            // le client consulte souvent son suivi avant que le prestataire ne soit assigné.
+            return response()->json([
+                'ok' => true,
+                'engine' => null,
+                'window' => ['open' => false, 'closes_at' => null, 'minutes_left' => 0,
+                    'reason' => 'L’intervention n’est pas encore ouverte.'],
+                'items' => [],
+                'suggestions' => [],
+            ]);
+        }
+
+        return response()->json(['ok' => true] + $this->todoService->pourLeClient($mission));
+    }
+
+    /**
+     * AJOUTER UNE TÂCHE. Elle conditionnera la clôture du prestataire — c'est dit à l'écran avant
+     * l'écriture, et redit ici par la réponse.
+     */
+    public function ajouterUneTache(Request $request, Booking $booking): JsonResponse
+    {
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
+
+        $donnees = $request->validate([
+            'label' => ['required', 'string', 'max:191'],
+        ]);
+
+        $mission = $this->missionDe($booking);
+
+        if ($mission === null) {
+            return response()->json(['message' => 'L’intervention n’est pas encore ouverte.'], 422);
+        }
+
+        try {
+            $this->todoService->ajouter($mission, $request->user(), (string) $donnees['label']);
+        } catch (DomainException $e) {
+            // 422 et le MESSAGE DU DOMAINE : « la liste est figée depuis 10:30 » explique ce qu'un
+            // « une erreur est survenue » laisserait deviner, et fait réessayer pour rien.
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['ok' => true] + $this->todoService->pourLeClient($mission->refresh()));
+    }
+
+    /** RETIRER UNE TÂCHE — la sienne, et pas encore faite. */
+    public function retirerUneTache(Request $request, Booking $booking, MissionChecklistItem $item): JsonResponse
+    {
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
+
+        $mission = $this->missionDe($booking);
+
+        if ($mission === null) {
+            return response()->json(['message' => 'L’intervention n’est pas encore ouverte.'], 422);
+        }
+
+        try {
+            $this->todoService->retirer($mission, $request->user(), $item);
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['ok' => true] + $this->todoService->pourLeClient($mission->refresh()));
     }
 
     /**

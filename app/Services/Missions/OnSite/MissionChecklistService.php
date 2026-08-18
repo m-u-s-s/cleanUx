@@ -31,7 +31,9 @@ class MissionChecklistService
      */
     public function pour(Mission $mission): array
     {
-        $mission->loadMissing('checklists.items');
+        // `createdBy` chargé d'avance : sans lui, une liste de douze tâches produit douze
+        // requêtes, une par nom d'auteur.
+        $mission->loadMissing('checklists.items.createdBy');
 
         $checklists = $mission->checklists->map(fn (MissionChecklist $checklist) => [
             'id' => $checklist->id,
@@ -51,6 +53,18 @@ class MissionChecklistService
                     'requires_photo' => (bool) $item->requires_photo,
                     'status' => $item->status,
                     'done' => $item->status === 'done',
+                    /*
+                     * QUI A DEMANDÉ CETTE TÂCHE — et c'est loin d'être décoratif.
+                     *
+                     * Une tâche écrite par le client se discute AVEC LUI : il est dans la pièce, il
+                     * peut l'expliquer, la retirer ou la préciser. Une tâche générique, non. Sans
+                     * cette distinction à l'écran, le prestataire ne sait pas laquelle des deux il
+                     * a devant les yeux, et traite la demande du client comme une case de plus.
+                     */
+                    'source' => $item->source ?? 'template',
+                    'added_by' => $item->source === 'client'
+                        ? ($item->createdBy?->name)
+                        : null,
                 ])->all(),
         ])->values()->all();
 
