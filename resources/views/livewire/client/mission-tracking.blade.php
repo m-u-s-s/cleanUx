@@ -37,6 +37,20 @@
     <livewire:client.mission-live-tracking :mission="$mission" :key="'mission-live-tracking-'.$mission->id" />
     @endif
 
+    {{--
+        « GÉRER MA MISSION » — le web fait ce que le mobile fait.
+
+        Placé JUSTE SOUS LA CARTE et avant les codes : c'est ce qui attend une réponse, et le
+        client doit le voir sans faire défiler. Les codes, eux, se cherchent au moment où le
+        prestataire les demande.
+
+        La garde de propriété vit dans le composant : un composant Livewire est une porte HTTP à
+        part entière, et l'inclure depuis une page déjà gardée ne le garde pas lui-même.
+    --}}
+    @if($mission->booking && in_array($mission->status, ['assigned', 'en_route', 'arrived', 'started', 'paused']))
+    <livewire:client.gerer-ma-mission :booking="$mission->booking" :key="'gerer-'.$mission->id" />
+    @endif
+
     @if($startCodeRecord && in_array($mission->status, ['arrived']))
     <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 space-y-2">
         <h4 class="font-semibold text-emerald-800">Code de début disponible</h4>
