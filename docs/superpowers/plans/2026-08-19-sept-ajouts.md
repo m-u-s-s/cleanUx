@@ -63,3 +63,36 @@ Le travail n'est donc pas de construire, mais de **brancher**. C'est la même fa
 - Toutes les pages de mission, de l'offre reçue à la clôture, des deux côtés, web et mobile.
 
 ### Task 9 : suites ciblées, `tsc`, jest ×2, PHPStan sans chemin
+
+---
+
+## État — 2026-08-19
+
+**Vert :** 369 tests PHP mission · 460 mobile client · 650 mobile prestataire · `tsc` propre des
+deux côtés · PHPStan sans argument de chemin : 0 erreur.
+
+| Ajout | État |
+|---|---|
+| ① Appel masqué | ✅ **branché** mobile + web, des deux côtés. Rien à écrire côté serveur : tout existait |
+| ② Renfort depuis le terrain | ✅ service, API, boutons mobile + web, côte à côte avec la révision |
+| ③ Navigation externe | ✅ bouton **secondaire** — la carte de la plateforme reste principale |
+| ③ Route active sur la carte d'accueil | ❌ `ProviderMap` affiche encore les seuls marqueurs |
+| ④ File d'attente hors-ligne | ❌ **en dernier** : touche le chemin de l'argent |
+| ⑤ Partage du suivi à un tiers | ❌ |
+| ⑥ Consigne d'accès de dernière minute | ❌ |
+| ⑦ Minuteur de retard | ❌ le retard est déjà mesurable, l'annonce manque |
+| ⑧ Passe graphique | ❌ |
+
+### Le constat confirmé
+
+**Trois modules complets et injoignables**, découverts en trois passes : le SOS (plan 4), le renfort
+et l'appel masqué (ici). Aucun ne demandait d'être écrit — tous demandaient d'être **branchés**.
+C'est la famille de défaut la plus coûteuse de ce dépôt : du travail livré, testé, payé, et que
+personne ne peut atteindre.
+
+### Une colonne réveillée au passage
+
+`mission_reinforcement_requests.required_people` est **NOT NULL** et absente de `$fillable` : toute
+demande posée par ce chemin échouait au niveau SQL. Elle n'avait jamais servi parce que le seul
+écrivain — le centre du chef d'équipe — la laissait vide. Avec `provider_team_id` et `needed_at`,
+qui se perdaient en silence, ce sont trois colonnes qui reprennent du service.
