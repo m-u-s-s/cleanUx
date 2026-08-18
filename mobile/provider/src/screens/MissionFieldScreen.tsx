@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, FlatList, Switch, StyleSheet, Alert, Image, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, Switch, StyleSheet, Alert, Image, ScrollView, TouchableOpacity, Linking, Platform } from 'react-native';
 import { Screen, Button, Badge, Divider, TextInput, ProgressBar } from '@/ui';
 import {
   useMissionDetail,
@@ -548,6 +548,34 @@ export function MissionFieldScreen({ route, navigation }: Props) {
           de nulle part : ni le mobile ni le web ne l'atteignaient.
         */}
         <BoutonAppelMasque role="provider" missionId={missionId} testID="terrain-appeler" />
+
+        {/*
+          OUVRIR DANS UNE APPLICATION DE NAVIGATION — un bouton SECONDAIRE, et c'est une décision.
+
+          La carte de la plateforme reste la carte principale : c'est elle qui porte la route, le
+          géo-repère d'arrivée et la position partagée avec le client. Celui-ci n'existe que pour
+          ceux qui préfèrent leur application habituelle, et il évite de recopier une adresse à la
+          main — le geste le plus fréquent et le plus bête de la journée.
+        */}
+        <TouchableOpacity
+          onPress={() => {
+            const destination = mission.latitude != null && mission.longitude != null
+              ? `${mission.latitude},${mission.longitude}`
+              : formatAdresse(mission.address, mission.city);
+
+            void Linking.openURL(
+              Platform.OS === 'ios'
+                ? `maps://?daddr=${encodeURIComponent(destination)}`
+                : `geo:0,0?q=${encodeURIComponent(destination)}`,
+            );
+          }}
+          accessibilityRole="button"
+          accessibilityLabel="Ouvrir l’itinéraire dans une application de navigation"
+          style={styles.secoursCase}
+          testID="terrain-itineraire"
+        >
+          <Text style={styles.secoursTexte}>Itinéraire</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => navigation.navigate('ProviderChatList')}
