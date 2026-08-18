@@ -70,6 +70,19 @@ jest.mock('@/booking/onsite', () => ({
   }),
 }));
 
+/*
+ * LA FEUILLE EST BOUCHONNÉE, comme l'accueil bouchonne la sienne.
+ *
+ * Elle s'appuie sur `@gorhom/bottom-sheet`, dont le rendu réel n'apporte rien à un test qui vérifie
+ * une carte et un canal temps réel. Son propre comportement est couvert par `MissionSheet.test.tsx`.
+ */
+jest.mock('@/screens/components/MissionSheet', () => {
+  const { View } = require('react-native');
+  const ReactLocal = require('react');
+
+  return { MissionSheet: ReactLocal.forwardRef(() => <View />) };
+});
+
 jest.mock('@/screens/components/PresenceCodeCard', () => {
   const { View } = require('react-native');
 
@@ -88,12 +101,22 @@ describe('Suivi de l’intervention chez le client', () => {
     evenementsLies.length = 0;
   });
 
-  it('mène au déroulé de l’intervention en appuyant', () => {
+  /**
+   * LA PORTE D'ENTRÉE EXISTE SOUS LA CARTE.
+   *
+   * Elle s'appelait « Voir le déroulé de l'intervention », en secondaire, et menait directement à
+   * l'écran. Elle s'appelle « Ma mission », elle est principale, et elle ouvre une feuille qui DIT
+   * ce qui attend une réponse avant d'y conduire.
+   *
+   * Ce test garde l'invariant — le client peut atteindre le détail depuis son suivi — et le second
+   * maillon, « Gérer ma mission » qui appelle `onGerer`, est couvert par `MissionSheet.test.tsx`.
+   * La feuille est bouchonnée ici, comme l'accueil bouchonne la sienne.
+   */
+  it('offre la porte d’entrée « Ma mission » sous la carte', () => {
     render(<MissionTrackingScreen route={route} navigation={navigation} />);
 
-    fireEvent.press(screen.getByText('Voir le déroulé de l’intervention'));
-
-    expect(mockNavigate).toHaveBeenCalledWith('OnSite', { bookingId: 77 });
+    expect(screen.getByTestId('ouvrir-ma-mission')).toBeTruthy();
+    expect(screen.getByText('Ma mission')).toBeTruthy();
   });
 
   /** Le canal porte le numéro de MISSION, jamais celui de la réservation. */

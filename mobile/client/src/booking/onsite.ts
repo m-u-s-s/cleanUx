@@ -227,3 +227,142 @@ export function useLiveOnSite(bookingId: number | null, missionId: number | null
     MissionStatusUpdated: rafraichir,
   });
 }
+
+/* ───────────────────────────────────────────────────────────────────────────────────────────────
+ * MA LISTE DE TÂCHES
+ *
+ * Elle écrit dans la checklist QUI BARRE DÉJÀ LA CLÔTURE du prestataire : ce que le client demande
+ * ici est exactement ce qui l'empêchera de partir. C'est tout l'objet du module, et c'est pourquoi
+ * l'écran le DIT avant qu'on écrive.
+ *
+ * La fenêtre vient du SERVEUR, jamais calculée ici : une échéance calculée sur l'horloge du
+ * téléphone se remettrait à zéro d'un rechargement, et il suffirait de quitter l'écran pour écrire
+ * après la fermeture.
+ * ─────────────────────────────────────────────────────────────────────────────────────────────── */
+
+export interface TodoWindow {
+  open: boolean;
+  closes_at: string | null;
+  minutes_left: number | null;
+  reason: string | null;
+}
+
+export interface TodoItem {
+  id: number;
+  label: string;
+  source: 'client' | 'template' | 'provider';
+  done: boolean;
+  is_required: boolean;
+  /** Ce que le client a le droit de retirer — tranché par le serveur, jamais deviné ici. */
+  removable: boolean;
+}
+
+export interface TodoList {
+  engine: string | null;
+  window: TodoWindow;
+  items: TodoItem[];
+  suggestions: string[];
+}
+
+export function useTodoList(bookingId: number | null) {
+  return useQuery<TodoList>({
+    queryKey: ['client', 'booking', bookingId, 'onsite', 'todo'],
+    queryFn: async () => (await apiClient.get(`/client/bookings/${bookingId}/onsite/todo`)).data,
+    enabled: bookingId !== null,
+    // Le minuteur défile sur l'appareil ; l'échéance se recale à chaque rafraîchissement.
+    refetchInterval: 60000,
+  });
+}
+
+export function useAjouterTache(bookingId: number | null) {
+  const qc = useQueryClient();
+
+  return useMutation<TodoList, ApiError, string>({
+    mutationFn: async (label) =>
+      (await apiClient.post(`/client/bookings/${bookingId}/onsite/todo`, { label })).data,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['client', 'booking', bookingId, 'onsite'] });
+    },
+  });
+}
+
+export function useRetirerTache(bookingId: number | null) {
+  const qc = useQueryClient();
+
+  return useMutation<TodoList, ApiError, number>({
+    mutationFn: async (itemId) =>
+      (await apiClient.delete(`/client/bookings/${bookingId}/onsite/todo/${itemId}`)).data,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['client', 'booking', bookingId, 'onsite'] });
+    },
+  });
+}
+
+/* ───────────────────────────────────────────────────────────────────────────────────────────────
+ * LE NOUVEAU DEVIS
+ *
+ * À ne pas confondre avec le SUPPLÉMENT juste au-dessus : celui-ci AJOUTE une ligne à un devis
+ * juste, celui-là REMPLACE le prix parce qu'il était faux dès le départ. Deux notions, deux
+ * réponses, deux endroits à l'écran — les confondre ferait accepter l'une en croyant l'autre.
+ *
+ * LES DEUX TOTAUX ARRIVENT DU SERVEUR, remises réappliquées. L'application n'en calcule aucun :
+ * un total calculé ici serait un second prix pour la même prestation, et c'est le sien que le
+ * client aurait lu avant d'accepter.
+ * ─────────────────────────────────────────────────────────────────────────────────────────────── */
+
+export interface QuoteRevision {
+  id: number;
+  status: string;
+  awaiting_client: boolean;
+  original_total: number;
+  revised_total: number;
+  currency: string;
+  breakdown: Record<string, unknown> | null;
+  reason_text: string;
+  evidence_media_ids: number[];
+  window_closes_at: string | null;
+}
+
+export function useRevisionDeDevis(bookingId: number | null) {
+  return useQuery<QuoteRevision | null>({
+    queryKey: ['client', 'booking', bookingId, 'onsite', 'quote-revision'],
+    queryFn: async () =>
+      (await apiClient.get(`/client/bookings/${bookingId}/onsite/quote-revision`)).data.revision ?? null,
+    enabled: bookingId !== null,
+    // Le prestataire est chez le client, à l'instant : une proposition qui met une minute à
+    // apparaître est une minute où il attend devant lui sans rien dire.
+    refetchInterval: 30000,
+  });
+}
+
+/**
+ * ACCEPTER OU REFUSER — et, sur un refus, DIRE ce qu'on veut ensuite.
+ *
+ * Le serveur ne choisit pas à la place du client : « continuez au prix d'origine » et « arrêtez »
+ * n'ont pas le même coût pour lui. Sur un arrêt, la réponse porte `must_cancel` : l'intervention
+ * est annulée, gratuitement les deux premières fois.
+ */
+export function useRepondreALaRevision(bookingId: number | null) {
+  const qc = useQueryClient();
+
+  return useMutation<
+    { revision: QuoteRevision; must_cancel?: boolean },
+    ApiError,
+    { revisionId: number; accepte: boolean; decision?: 'continue' | 'stop' }
+  >({
+    mutationFn: async ({ revisionId, accepte, decision }) => {
+      const chemin = `/client/bookings/${bookingId}/onsite/quote-revision/${revisionId}`;
+
+      const res = accepte
+        ? await apiClient.post(`${chemin}/accept`)
+        : await apiClient.post(`${chemin}/decline`, { decision: decision ?? 'continue' });
+
+      return res.data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['client', 'booking', bookingId, 'onsite'] });
+      // Le devis accepté réécrit le prix de la réservation : la liste doit le refléter.
+      void qc.invalidateQueries({ queryKey: ['client', 'bookings'] });
+    },
+  });
+}

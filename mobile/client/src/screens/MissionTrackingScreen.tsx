@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import type GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { Screen, Badge, Button, Skeleton, OsmMap, loadMapModule, isMapRenderable } from '@/ui';
+import { MissionSheet } from '@/screens/components/MissionSheet';
 import { useTrackingSession, useTrackingTrail, useLiveTracking } from '@/tracking';
 import { useOnSiteTimeline } from '@/booking/onsite';
 import { PresenceCodeCard } from '@/screens/components/PresenceCodeCard';
@@ -41,6 +43,7 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
   const { data: filSurPlace } = useOnSiteTimeline(bookingId);
   const { position: livePos, eta: liveEta } = useLiveTracking(filSurPlace?.mission_id ?? null);
   const mapRef = useRef<any>(null);
+  const sheetRef = useRef<GorhomBottomSheet>(null);
 
   /**
    * Le module natif n'est chargé QUE si la carte peut réellement s'afficher. C'est la correction
@@ -223,14 +226,29 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
             </View>
           </View>
         )}
+        {/*
+          « MA MISSION » — la porte d'entrée qui manquait.
+
+          C'était « Voir le déroulé de l'intervention », en petit, en secondaire, et personne ne
+          l'ouvrait : le nom décrivait une page d'archive alors qu'elle porte tout ce qui attend une
+          réponse. Le bouton est désormais principal, et il ouvre une feuille qui DIT ce qui attend.
+        */}
         <Button
-          label="Voir le déroulé de l’intervention"
-          onPress={() => navigation.navigate('OnSite', { bookingId })}
-          variant="secondary"
-          size="sm"
+          label="Ma mission"
+          onPress={() => sheetRef.current?.expand()}
           fullWidth
+          size="lg"
+          testID="ouvrir-ma-mission"
         />
       </View>
+
+      <MissionSheet
+        ref={sheetRef}
+        bookingId={bookingId}
+        onGerer={() => navigation.navigate('OnSite', { bookingId })}
+        onMessage={() => navigation.navigate('ChatList')}
+        onLitige={() => navigation.navigate('Disputes')}
+      />
     </View>
   );
 }
@@ -254,8 +272,15 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
    * vue absolue imbriquée dans une autre se recale sur son parent et se serait superposée au lien
    * qui la suit.
    */
+  /*
+   * LE VOILE VIENT DU THÈME, PAS D'UN BLANC ÉCRIT EN DUR.
+   *
+   * `rgba(255,255,255,0.92)` donnait un rectangle blanc posé au milieu d'une carte de nuit — le
+   * seul élément clair de tout l'écran, et illisible pour son propre texte, qui est sombre en mode
+   * clair et clair en mode sombre.
+   */
   infoCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    backgroundColor: t.card,
     borderRadius: radius.xl,
     padding: spacing.lg,
     ...shadows.lg,

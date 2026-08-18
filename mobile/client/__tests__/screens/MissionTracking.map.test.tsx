@@ -47,6 +47,19 @@ jest.mock('@/booking/onsite', () => ({
   useOnSiteTimeline: () => ({ data: { mission_id: 4242 }, isLoading: false }),
 }));
 
+/*
+ * LA FEUILLE EST BOUCHONNÉE, comme l'accueil bouchonne la sienne.
+ *
+ * Elle s'appuie sur `@gorhom/bottom-sheet`, dont le rendu réel n'apporte rien à un test qui vérifie
+ * une carte et un canal temps réel. Son propre comportement est couvert par `MissionSheet.test.tsx`.
+ */
+jest.mock('@/screens/components/MissionSheet', () => {
+  const { View } = require('react-native');
+  const ReactLocal = require('react');
+
+  return { MissionSheet: ReactLocal.forwardRef(() => <View />) };
+});
+
 jest.mock('@/tracking', () => ({
   useTrackingSession: () => ({
     data: { code: 'TRK-1', status: 'enroute', destination: null, provider: null, eta_minutes: 12, eta_seconds: 720 },
