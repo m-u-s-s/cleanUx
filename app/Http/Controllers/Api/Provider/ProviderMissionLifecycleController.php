@@ -11,6 +11,7 @@ use App\Services\Missions\MissionVerificationCodeService;
 use App\Services\Missions\RideLifecycleService;
 use App\Services\Notifications\SmsService;
 use App\Services\Payments\PayoutAnnouncementService;
+use App\Support\Domain\MissionEngine;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -780,6 +781,18 @@ class ProviderMissionLifecycleController extends Controller
              * tranche une fois, et les deux plateformes lisent la même réponse.
              */
             'is_ride' => (bool) $booking?->estUneCourse(),
+            /*
+             * LE MOTEUR, TRANCHÉ PAR LE SERVEUR — et c'est ce qui décide de la page à dérouler.
+             *
+             * `is_ride` juste au-dessus ne répond qu'à une moitié de la question : il distingue la
+             * course du reste, sans dire si ce reste est vendu au temps. L'écran devrait alors
+             * deviner — présence d'un compteur ? nom du métier ? — et chaque écran devinerait à sa
+             * façon. Le premier à se tromper afficherait un formulaire de nouveau devis à quelqu'un
+             * dont le prix est déjà fixé par l'horloge.
+             *
+             * `is_ride` reste servi : des écrans le lisent déjà, et le retirer les casserait.
+             */
+            'engine' => MissionEngine::pourMission($mission),
             // Le point de dépose, pour la carte et pour l'annonce « vous allez à… ».
             'dropoff' => $booking?->estUneCourse() ? [
                 'address' => $booking->dropoff_address,

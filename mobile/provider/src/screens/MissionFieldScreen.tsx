@@ -26,6 +26,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 import { formatAdresse, messageDErreur } from '@brio/shared/format';
 import { MissionClockBar, useMissionClock } from '@brio/shared';
+import { FieldQuoteRevision } from '@/screens/components/FieldQuoteRevision';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionField'>;
 
@@ -43,7 +44,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'MissionField'>;
  * photo utile est celle qu'on prend au moment où on voit la trace, pas celle qu'un formulaire
  * réclame à la clôture.
  */
-export function MissionFieldScreen({ route }: Props) {
+export function MissionFieldScreen({ route, navigation }: Props) {
   const t = useThemeColors();
   const styles = stylesFor(t);
 
@@ -127,6 +128,19 @@ export function MissionFieldScreen({ route }: Props) {
    * volant.
    */
   const estUneCourse = mission?.is_ride === true;
+
+  /*
+   * LE MOTEUR — trois parcours, et c'est lui qui décide des sections à dérouler.
+   *
+   * `is_ride` ne répondait qu'à une moitié de la question : il distingue la course du reste, sans
+   * dire si ce reste est vendu au temps. Le nouveau devis n'a de sens que là où le prix vient d'une
+   * estimation — ni sur une course, dont le trajet fixe le prix, ni sur une mission horaire, dont
+   * l'horloge le fixe. Le serveur tranche une fois ; l'écran lit.
+   *
+   * Repli sur `domicile` : c'est le parcours le plus complet, et une section de trop se referme
+   * d'elle-même sur son propre refus — une section manquante, elle, ne se rattrape pas.
+   */
+  const moteur = mission?.engine ?? (estUneCourse ? 'vehicule' : 'domicile');
 
   /*
    * L'attente au point de prise en charge. `null` quand la question ne se pose pas.
@@ -351,7 +365,28 @@ export function MissionFieldScreen({ route }: Props) {
 
       <Divider />
 
-      {/* ── SUPPLÉMENTS PROPOSÉS SUR PLACE (F3) ────────────────────────── */}
+      {/*
+        ── NOUVEAU DEVIS (moteur À DOMICILE seulement) ─────────────────────
+
+        AVANT le supplément à l'écran, parce que c'est avant lui dans le temps : la révision se
+        décide en arrivant, le supplément se découvre en travaillant. Les mettre dans l'autre ordre
+        ferait proposer un supplément à quelqu'un qui n'a pas encore constaté l'écart.
+      */}
+      {moteur === 'domicile' && (
+        <>
+          <FieldQuoteRevision missionId={missionId} photosAvant={avant} />
+          <Divider />
+        </>
+      )}
+
+      {/*
+        ── SUPPLÉMENTS PROPOSÉS SUR PLACE (F3) ─────────────────────────────
+
+        Rien à ajouter sur une course : son prix est fixé par le trajet, pas par la prestation.
+        Le bloc n'est pas grisé, il n'est pas monté — un formulaire visible et inerte se remplit
+        quand même, et le refus arrive après la saisie.
+      */}
+      {moteur !== 'vehicule' && (
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Proposer un supplément</Text>
         <Text style={styles.sectionHint}>
@@ -401,6 +436,7 @@ export function MissionFieldScreen({ route }: Props) {
           </View>
         ))}
       </View>
+      )}
 
       <Divider />
 
@@ -486,6 +522,46 @@ export function MissionFieldScreen({ route }: Props) {
           />
         </View>
       )}
+
+      {/*
+        ── SÉCURITÉ ET LITIGE, À PORTÉE DE POUCE ───────────────────────────
+
+        Le module SOS existe depuis toujours et vit dans le menu « Plus » : son propre commentaire
+        dit qu'il sert « au moment où les mains tremblent », et il demandait de sortir de la mission,
+        d'ouvrir un menu et de faire défiler. C'était un défaut de joignabilité, pas de
+        fonctionnalité — et le pire endroit où en avoir un.
+      */}
+      <View style={styles.secours}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Safety')}
+          accessibilityRole="button"
+          accessibilityLabel="Ouvrir le mode sécurité et l’alerte d’urgence"
+          style={[styles.secoursCase, styles.secoursUrgence]}
+          testID="terrain-securite"
+        >
+          <Text style={styles.secoursTexte}>Sécurité / SOS</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => navigation.navigate('ProviderChatList')}
+          accessibilityRole="button"
+          accessibilityLabel="Écrire au client"
+          style={styles.secoursCase}
+          testID="terrain-message"
+        >
+          <Text style={styles.secoursTexte}>Message</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => navigation.navigate('ProviderDisputes')}
+          accessibilityRole="button"
+          accessibilityLabel="Signaler un litige sur cette mission"
+          style={styles.secoursCase}
+          testID="terrain-litige"
+        >
+          <Text style={styles.secoursTexte}>Litige</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.gpsRow}>
         <Text style={styles.gpsLabel}>Partage GPS actif</Text>
@@ -786,4 +862,28 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     color: t.text,
   },
   actions: { marginTop: spacing.lg },
+  secours: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  // La case entière est la cible tactile, gants aux mains.
+  secoursCase: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+    borderRadius: radius.md,
+    backgroundColor: t.card,
+    paddingHorizontal: spacing.sm,
+  },
+  // L'urgence se distingue par sa TEINTE, jamais par sa seule position : une rangée de trois cases
+  // identiques se choisit au hasard quand les mains tremblent.
+  secoursUrgence: { backgroundColor: t.tint.danger },
+  secoursTexte: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    color: t.text,
+    textAlign: 'center',
+  },
 });

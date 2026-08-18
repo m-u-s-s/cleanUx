@@ -24,6 +24,11 @@ export {
   useMissionExtras,
   useMissionAccessSheet,
   useProposeMissionExtra,
+  // Le nouveau devis : il REMPLACE le prix, la ligne au-dessus l'AUGMENTE.
+  useQuoteRevision,
+  useSimulerLaRevision,
+  useProposerLaRevision,
+  useRetirerLaRevision,
   useMissionChecklist,
   useToggleMissionChecklistItem,
   INCIDENT_TYPES,
@@ -40,4 +45,6 @@ export type {
   MissionChecklistDto,
   MissionChecklistItemDto,
   MissionChecklistState,
+  QuoteRevisionWindow,
+  ProviderQuoteRevision,
 } from './onsite';

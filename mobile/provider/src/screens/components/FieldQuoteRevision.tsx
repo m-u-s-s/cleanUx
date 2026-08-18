@@ -1,0 +1,232 @@
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Alert } from 'react-native';
+import { Button, TextInput } from '@/ui';
+import {
+  useQuoteRevision,
+  useSimulerLaRevision,
+  useProposerLaRevision,
+  useRetirerLaRevision,
+} from '@/missions';
+import type { MissionMediaItem } from '@/missions';
+import { spacing, typography, radius } from '@/theme';
+import { useThemeColors } from '@/theme/useThemeColors';
+import type { ThemeTokens } from '@/theme/useThemeColors';
+
+/**
+ * LE NOUVEAU DEVIS, DEPUIS LE TERRAIN.
+ *
+ * ── QUAND, ET SEULEMENT QUAND ────────────────────────────────────────────────────────────────
+ *
+ * Au début, avant d'avoir touché à quoi que ce soit. Un imprévu découvert en travaillant — le
+ * siphon démonté qui révèle les tuyaux — passe par le SUPPLÉMENT, qui s'ajoute au devis au lieu de
+ * le remplacer. Le serveur ferme la fenêtre dès la première tâche cochée ou la première photo
+ * « après », et DIT pourquoi : l'écran affiche ce motif plutôt qu'un formulaire inerte.
+ *
+ * ── ON SAISIT UN PRIX DE SERVICE, JAMAIS UN TOTAL ────────────────────────────────────────────
+ *
+ * Le serveur réapplique les remises du client. La simulation montre ce qu'il verra AVANT
+ * d'engager : sans elle, le prestataire annoncerait de vive voix un chiffre qui ne serait pas celui
+ * du téléphone, et le client se sentirait trompé en lisant l'écran.
+ *
+ * ── LA PREUVE EST OBLIGATOIRE ────────────────────────────────────────────────────────────────
+ *
+ * Au moins une photo « avant ». Sans elle, le client doit croire sur parole et l'arbitre doit
+ * trancher sans matière — c'est-à-dire que l'abus devient gratuit.
+ */
+export function FieldQuoteRevision({
+  missionId,
+  photosAvant,
+}: {
+  missionId: number;
+  photosAvant: MissionMediaItem[];
+}) {
+  const t = useThemeColors();
+  const styles = stylesFor(t);
+
+  const { data } = useQuoteRevision(missionId);
+  const simuler = useSimulerLaRevision(missionId);
+  const proposer = useProposerLaRevision(missionId);
+  const retirer = useRetirerLaRevision(missionId);
+
+  const [prix, setPrix] = useState('');
+  const [motif, setMotif] = useState('');
+
+  const revision = data?.revision ?? null;
+  const fenetre = data?.window;
+
+  const enCentimes = (saisie: string): number | null => {
+    const valeur = Number(saisie.replace(',', '.'));
+
+    return Number.isFinite(valeur) && valeur > 0 ? Math.round(valeur * 100) : null;
+  };
+
+  // Une proposition vit déjà : on montre son état, pas un second formulaire. Le serveur refuserait
+  // de toute façon — deux propositions concurrentes rendraient le total indéterminé.
+  if (revision && revision.awaiting_client) {
+    return (
+      <View style={styles.section} testID="revision-en-attente">
+        <Text style={styles.titre}>Nouveau devis envoyé</Text>
+        <Text style={styles.montant}>{euros(revision.revised_total_cents, revision.currency)}</Text>
+        <Text style={styles.note}>
+          Le client répond depuis son téléphone. Son devis d’origine était de{' '}
+          {euros(revision.original_total_cents, revision.currency)}.
+        </Text>
+        <Button
+          label="Retirer ma proposition"
+          variant="secondary"
+          onPress={() =>
+            retirer.mutate(revision.id, {
+              onError: (e: { message?: string }) =>
+                Alert.alert('Impossible', e.message ?? 'La proposition n’a pas pu être retirée.'),
+            })
+          }
+          loading={retirer.isPending}
+          testID="retirer-revision"
+        />
+      </View>
+    );
+  }
+
+  if (!fenetre?.open) {
+    return (
+      <View style={styles.section} testID="revision-fermee">
+        <Text style={styles.titre}>Nouveau devis</Text>
+        {/* LE MOTIF, PAS UN FORMULAIRE GRISÉ : il dit quel geste employer à la place. */}
+        <Text style={styles.note}>{fenetre?.reason ?? 'Indisponible sur cette mission.'}</Text>
+      </View>
+    );
+  }
+
+  const envoyer = () => {
+    const centimes = enCentimes(prix);
+
+    if (centimes === null) {
+      Alert.alert('Incomplet', 'Indiquez ce que vaut réellement la prestation.');
+
+      return;
+    }
+
+    if (motif.trim().length < 3) {
+      Alert.alert('Incomplet', 'Dites au client ce qui justifie ce prix.');
+
+      return;
+    }
+
+    if (photosAvant.length === 0) {
+      Alert.alert(
+        'Photo obligatoire',
+        'Prenez d’abord une photo « avant » : sans preuve, le client doit vous croire sur parole.',
+      );
+
+      return;
+    }
+
+    proposer.mutate(
+      { serviceCents: centimes, reasonText: motif.trim(), mediaIds: photosAvant.map((p) => p.id) },
+      {
+        onSuccess: () => {
+          setPrix('');
+          setMotif('');
+        },
+        onError: (e: { message?: string }) =>
+          Alert.alert('Impossible', e.message ?? 'La révision n’a pas pu être envoyée.'),
+      },
+    );
+  };
+
+  const simulation = () => {
+    const centimes = enCentimes(prix);
+
+    if (centimes === null) {
+      Alert.alert('Incomplet', 'Indiquez un prix à simuler.');
+
+      return;
+    }
+
+    simuler.mutate(centimes, {
+      onSuccess: (quote) =>
+        Alert.alert(
+          'Ce que le client verra',
+          `${euros(quote.total_cents, 'EUR')} — remises du client réappliquées.`,
+        ),
+      onError: (e: { message?: string }) =>
+        Alert.alert('Impossible', e.message ?? 'La simulation a échoué.'),
+    });
+  };
+
+  return (
+    <View style={styles.section} testID="revision-formulaire">
+      <Text style={styles.titre}>Nouveau devis</Text>
+      <Text style={styles.note}>
+        À faire maintenant, avant de commencer. Un imprévu découvert en travaillant se propose en
+        supplément.
+      </Text>
+
+      <TextInput
+        label="Ce que vaut la prestation (€)"
+        value={prix}
+        onChangeText={setPrix}
+        placeholder="300"
+        keyboardType="decimal-pad"
+        testID="revision-prix"
+      />
+
+      <TextInput
+        label="Ce que vous constatez"
+        value={motif}
+        onChangeText={setMotif}
+        placeholder="Deux cents mètres carrés annoncés vingt."
+        multiline
+        testID="revision-motif"
+      />
+
+      <Text style={styles.preuve}>
+        {photosAvant.length === 0
+          ? 'Aucune photo « avant » : ajoutez-en une plus haut, elle est obligatoire.'
+          : `${photosAvant.length} photo(s) « avant » jointe(s).`}
+      </Text>
+
+      <View style={styles.actions}>
+        <Button
+          label="Simuler"
+          variant="secondary"
+          onPress={simulation}
+          loading={simuler.isPending}
+          testID="revision-simuler"
+        />
+        <Button
+          label="Envoyer au client"
+          onPress={envoyer}
+          loading={proposer.isPending}
+          testID="revision-envoyer"
+        />
+      </View>
+    </View>
+  );
+}
+
+/** Un montant EN PROVENANCE DU SERVEUR, mis en forme. Rien n'est calculé ici. */
+function euros(centimes: number, devise: string): string {
+  return new Intl.NumberFormat('fr-BE', { style: 'currency', currency: devise || 'EUR' }).format(
+    centimes / 100,
+  );
+}
+
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
+  section: { marginBottom: spacing.md, gap: spacing.sm },
+  titre: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.semibold,
+    color: t.text,
+  },
+  note: { fontSize: typography.fontSize.xs, color: t.textSecondary, lineHeight: 17 },
+  montant: { fontSize: typography.fontSize.xl, fontWeight: '700', color: t.text },
+  preuve: {
+    fontSize: typography.fontSize.xs,
+    color: t.textSecondary,
+    backgroundColor: t.tint.warning,
+    borderRadius: radius.sm,
+    padding: spacing.sm,
+  },
+  actions: { flexDirection: 'row', gap: spacing.sm },
+});

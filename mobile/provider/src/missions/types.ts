@@ -72,6 +72,15 @@ export interface Mission {
    * code à un conducteur au volant.
    */
   is_ride?: boolean;
+  /**
+   * LE MOTEUR — trois parcours, trois pages terrain, et le serveur tranche.
+   *
+   * `is_ride` ci-dessus ne répond qu'à une moitié de la question : il distingue la course du reste,
+   * sans dire si ce reste est vendu au temps. Deviner ici — présence d'un compteur ? nom du
+   * métier ? — ferait deviner chaque écran à sa façon, et le premier à se tromper afficherait un
+   * formulaire de nouveau devis à quelqu'un dont le prix est déjà fixé par l'horloge.
+   */
+  engine?: 'domicile' | 'horaire' | 'vehicule';
   /** Le point de dépose, pour la carte et pour dire au conducteur où il va. */
   dropoff?: {
     address: string | null;

@@ -375,3 +375,109 @@ export function useMissionAccessSheet(missionId: number | null) {
     enabled: missionId !== null,
   });
 }
+
+/* ───────────────────────────────────────────────────────────────────────────────────────────────
+ * LE NOUVEAU DEVIS
+ *
+ * À ne pas confondre avec le SUPPLÉMENT juste au-dessus : celui-ci AJOUTE une ligne à un devis
+ * juste, pour un imprévu découvert EN TRAVAILLANT. Celui-là dit que le devis était faux DÈS LE
+ * DÉPART, et il remplace le prix.
+ *
+ * La fenêtre se ferme dès que le prestataire a touché à quelque chose — une tâche cochée, une photo
+ * « après ». Le serveur en décide et le dit ; l'écran ne calcule rien.
+ * ─────────────────────────────────────────────────────────────────────────────────────────────── */
+
+export interface QuoteRevisionWindow {
+  open: boolean;
+  closes_at: string | null;
+  reason: string | null;
+}
+
+export interface ProviderQuoteRevision {
+  id: number;
+  status: string;
+  original_total_cents: number;
+  revised_total_cents: number;
+  top_up_cents: number;
+  currency: string;
+  breakdown: Record<string, unknown> | null;
+  reason_code: string;
+  reason_text: string;
+  awaiting_client: boolean;
+  client_decision: string | null;
+  window_closes_at: string | null;
+  last_error: string | null;
+}
+
+export function useQuoteRevision(missionId: number) {
+  return useQuery<{ window: QuoteRevisionWindow; revision: ProviderQuoteRevision | null }>({
+    queryKey: ['provider', 'mission', missionId, 'quote-revision'],
+    queryFn: async () => {
+      const res = await apiClient.get(`/provider/missions/${missionId}/quote-revision`);
+
+      return { window: res.data.window, revision: res.data.revision ?? null };
+    },
+    // Le client répond depuis son téléphone pendant que le prestataire attend devant lui : une
+    // minute de retard est une minute d'attente inexpliquée.
+    refetchInterval: 20000,
+  });
+}
+
+/**
+ * SIMULER — « si j'annonce ce prix de service, que paiera le client ? »
+ *
+ * Le prestataire ne saisit JAMAIS le total : le serveur réapplique les remises. Sans cette
+ * simulation, il annoncerait de vive voix un chiffre qui ne serait pas celui du téléphone, et le
+ * client se sentirait trompé au moment de lire l'écran.
+ */
+export function useSimulerLaRevision(missionId: number) {
+  return useMutation<{ total_cents: number; breakdown: Record<string, unknown> }, ApiError, number>({
+    mutationFn: async (serviceCents) => {
+      const res = await apiClient.post(`/provider/missions/${missionId}/quote-revision/simulate`, {
+        service_cents: serviceCents,
+      });
+
+      return res.data.quote;
+    },
+  });
+}
+
+export function useProposerLaRevision(missionId: number) {
+  const qc = useQueryClient();
+
+  return useMutation<
+    ProviderQuoteRevision,
+    ApiError,
+    { serviceCents: number; reasonText: string; mediaIds: number[] }
+  >({
+    mutationFn: async ({ serviceCents, reasonText, mediaIds }) => {
+      const res = await apiClient.post(`/provider/missions/${missionId}/quote-revision`, {
+        service_cents: serviceCents,
+        reason_text: reasonText,
+        media_ids: mediaIds,
+      });
+
+      return res.data.revision;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId] });
+    },
+  });
+}
+
+export function useRetirerLaRevision(missionId: number) {
+  const qc = useQueryClient();
+
+  return useMutation<ProviderQuoteRevision, ApiError, number>({
+    mutationFn: async (revisionId) => {
+      const res = await apiClient.delete(
+        `/provider/missions/${missionId}/quote-revision/${revisionId}`,
+      );
+
+      return res.data.revision;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId] });
+    },
+  });
+}
