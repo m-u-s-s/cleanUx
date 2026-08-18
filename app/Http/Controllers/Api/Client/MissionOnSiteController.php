@@ -10,10 +10,12 @@ use App\Models\Feedback;
 use App\Models\Mission;
 use App\Models\MissionChecklistItem;
 use App\Models\MissionExtra;
+use App\Models\MissionQuoteRevision;
 use App\Models\MissionIncident;
 use App\Models\MissionMedia;
 use App\Models\MissionReport;
 use App\Services\Missions\HourlyExtensionService;
+use App\Services\Missions\MissionQuoteRevisionService;
 use App\Services\Missions\MissionTodoService;
 use App\Services\Missions\OnSite\MissionCheckInService;
 use App\Services\Missions\OnSite\MissionExtraService;
@@ -319,6 +321,109 @@ class MissionOnSiteController extends Controller
         }
 
         return response()->json(['ok' => true] + $this->todoService->pourLeClient($mission->refresh()));
+    }
+
+    /**
+     * LE NOUVEAU DEVIS QUE LE PRESTATAIRE PROPOSE — vu du salon.
+     *
+     * Les DEUX totaux, ligne à ligne, avec le nom du code de réduction s'il y en a un. Sans cela,
+     * le client verrait un chiffre plus élevé sans comprendre où est passée sa remise, et refuserait
+     * par réflexe.
+     */
+    public function revisionDeDevis(Request $request, Booking $booking): JsonResponse
+    {
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
+
+        $mission = $this->missionDe($booking);
+        $revision = $mission === null ? null : app(MissionQuoteRevisionService::class)->vivante($mission);
+
+        return response()->json([
+            'ok' => true,
+            'revision' => $revision === null ? null : $this->presenterLaRevision($revision),
+        ]);
+    }
+
+    /** Le client accepte : le complément est autorisé, puis le devis est réécrit. Dans cet ordre. */
+    public function accepterLaRevision(
+        Request $request,
+        Booking $booking,
+        MissionQuoteRevision $revision,
+    ): JsonResponse {
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
+
+        abort_if((int) $revision->booking_id !== (int) $booking->id, 404);
+
+        $donnees = $request->validate([
+            'payment_method_id' => ['nullable', 'string', 'max:191'],
+        ]);
+
+        try {
+            $acceptee = app(MissionQuoteRevisionService::class)->accepter(
+                $revision,
+                $request->user(),
+                $donnees['payment_method_id'] ?? null,
+            );
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['ok' => true, 'revision' => $this->presenterLaRevision($acceptee)]);
+    }
+
+    /**
+     * Le client refuse — et DIT ce qu'il veut ensuite.
+     *
+     * `continue` garde la prestation au prix d'origine, `stop` l'arrête. Le serveur ne choisit pas
+     * à sa place : les deux issues n'ont pas le même coût pour lui.
+     */
+    public function refuserLaRevision(
+        Request $request,
+        Booking $booking,
+        MissionQuoteRevision $revision,
+    ): JsonResponse {
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
+
+        abort_if((int) $revision->booking_id !== (int) $booking->id, 404);
+
+        $donnees = $request->validate([
+            'decision' => ['required', 'string', 'in:continue,stop'],
+        ]);
+
+        try {
+            $refusee = app(MissionQuoteRevisionService::class)->refuser(
+                $revision,
+                $request->user(),
+                (string) $donnees['decision'],
+            );
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'revision' => $this->presenterLaRevision($refusee),
+            // L'écran doit savoir s'il enchaîne sur l'annulation, sans la déclencher lui-même.
+            'must_cancel' => $refusee->doitEtreAnnulee(),
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function presenterLaRevision(MissionQuoteRevision $revision): array
+    {
+        return [
+            'id' => $revision->id,
+            'status' => $revision->status,
+            'awaiting_client' => $revision->attendLeClient(),
+            'original_total' => round($revision->original_total_cents / 100, 2),
+            'revised_total' => round($revision->revised_total_cents / 100, 2),
+            'currency' => $revision->currency,
+            'breakdown' => $revision->discount_breakdown,
+            'reason_text' => $revision->reason_text,
+            'evidence_media_ids' => $revision->evidence_media_ids,
+            'window_closes_at' => $revision->window_closes_at->toIso8601String(),
+        ];
     }
 
     /**

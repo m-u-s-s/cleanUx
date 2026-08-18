@@ -157,6 +157,15 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     Route::get('/bookings/{booking}/onsite/todo', [ClientMissionOnSiteController::class, 'todo']);
     Route::post('/bookings/{booking}/onsite/todo', [ClientMissionOnSiteController::class, 'ajouterUneTache']);
     Route::delete('/bookings/{booking}/onsite/todo/{item}', [ClientMissionOnSiteController::class, 'retirerUneTache']);
+    /*
+     * LE NOUVEAU DEVIS — le client voit les DEUX totaux et tranche lui-meme la suite.
+     *
+     * Le refus ne declenche pas l'annulation depuis ici : `must_cancel` la propose, et c'est le
+     * parcours d'annulation, avec ses motifs exemptes, qui decide ce qu'elle coute.
+     */
+    Route::get('/bookings/{booking}/onsite/quote-revision', [ClientMissionOnSiteController::class, 'revisionDeDevis']);
+    Route::post('/bookings/{booking}/onsite/quote-revision/{revision}/accept', [ClientMissionOnSiteController::class, 'accepterLaRevision']);
+    Route::post('/bookings/{booking}/onsite/quote-revision/{revision}/decline', [ClientMissionOnSiteController::class, 'refuserLaRevision']);
     // F16 — la clôture guidée : rapport, puis pourboire, puis avis.
     Route::get('/bookings/{booking}/onsite/closure', [ClientMissionOnSiteController::class, 'closureFlow']);
     Route::post('/bookings/{booking}/onsite/extras/{extra}/approve', [ClientMissionOnSiteController::class, 'approveExtra']);

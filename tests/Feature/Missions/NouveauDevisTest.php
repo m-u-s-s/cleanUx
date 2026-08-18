@@ -26,6 +26,7 @@ use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 /**
@@ -477,4 +478,89 @@ class NouveauDevisTest extends TestCase
         $this->revisions()->refuser($revision, User::factory()->client()->create(), MissionQuoteRevision::DECISION_POURSUIVRE);
     }
 
+
+    // ── LES API ───────────────────────────────────────────────────────────────
+
+    public function test_le_prestataire_lit_sa_fenetre_et_simule_un_prix(): void
+    {
+        $mission = $this->mission();
+        $this->remise($mission->booking, 'percent', 20);
+        Sanctum::actingAs($this->prestataire);
+
+        $this->getJson('/api/provider/missions/'.$mission->id.'/quote-revision')
+            ->assertOk()
+            ->assertJsonPath('window.open', true)
+            ->assertJsonPath('revision', null);
+
+        $this->postJson('/api/provider/missions/'.$mission->id.'/quote-revision/simulate', [
+            'service_cents' => 30000,
+        ])->assertOk()->assertJsonPath('quote.total_cents', 24000);
+    }
+
+    /** LE TÉMOIN de la garde : un prestataire étranger à la mission ne voit rien. */
+    public function test_un_prestataire_etranger_est_refuse(): void
+    {
+        $mission = $this->mission();
+        $autre = User::factory()->employe()->create();
+        ProviderProfile::create(['user_id' => $autre->id, 'status' => 'active']);
+        Sanctum::actingAs($autre);
+
+        $this->getJson('/api/provider/missions/'.$mission->id.'/quote-revision')->assertForbidden();
+    }
+
+    public function test_le_parcours_complet_par_l_api(): void
+    {
+        $mission = $this->mission();
+
+        Sanctum::actingAs($this->prestataire);
+        $reponse = $this->postJson('/api/provider/missions/'.$mission->id.'/quote-revision', [
+            'service_cents' => 30000,
+            'reason_text' => 'Deux cents mètres carrés, pas vingt.',
+            'media_ids' => [1],
+        ])->assertCreated()
+            ->assertJsonPath('revision.revised_total_cents', 30000)
+            ->assertJsonPath('revision.top_up_cents', 25000);
+
+        $id = $reponse->json('revision.id');
+
+        Sanctum::actingAs($this->client);
+        $this->getJson('/api/client/bookings/'.$mission->booking_id.'/onsite/quote-revision')
+            ->assertOk()
+            ->assertJsonPath('revision.original_total', 50)
+            ->assertJsonPath('revision.revised_total', 300)
+            ->assertJsonPath('revision.awaiting_client', true);
+
+        $this->postJson(
+            '/api/client/bookings/'.$mission->booking_id.'/onsite/quote-revision/'.$id.'/decline',
+            ['decision' => 'stop'],
+        )->assertOk()->assertJsonPath('must_cancel', true);
+
+        $this->assertSame(50.0, (float) $mission->booking->fresh()->devis_estime);
+    }
+
+    public function test_l_api_refuse_une_proposition_sans_preuve(): void
+    {
+        $mission = $this->mission();
+        Sanctum::actingAs($this->prestataire);
+
+        $this->postJson('/api/provider/missions/'.$mission->id.'/quote-revision', [
+            'service_cents' => 30000,
+            'reason_text' => 'Plus grand',
+            'media_ids' => [],
+        ])->assertStatus(422);
+    }
+
+    /** Un client tiers ne répond pas à la place du propriétaire. */
+    public function test_un_client_tiers_ne_repond_pas(): void
+    {
+        $mission = $this->mission();
+        $revision = $this->revisions()->proposer($mission, $this->prestataire, 30000, 'Plus grand', [1]);
+
+        Sanctum::actingAs(User::factory()->client()->create());
+
+        $this->postJson(
+            '/api/client/bookings/'.$mission->booking_id.'/onsite/quote-revision/'.$revision->id.'/decline',
+            ['decision' => 'continue'],
+        )->assertForbidden();
+    }
 }

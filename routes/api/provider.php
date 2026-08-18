@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\Provider\ProviderCancellationController;
 use App\Http\Controllers\Api\Provider\ProviderCoverageController;
 use App\Http\Controllers\Api\Provider\ProviderDisputeController;
 use App\Http\Controllers\Api\Provider\ProviderMissionLifecycleController;
+use App\Http\Controllers\Api\Provider\ProviderQuoteRevisionController;
 use App\Http\Controllers\Api\Provider\ProviderOfferController;
 use App\Http\Controllers\Api\Provider\ProviderOnboardingController;
 use App\Http\Controllers\Api\Provider\ProviderPayoutsController;
@@ -263,6 +264,20 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved', 'face.ve
 
         // Fleet — Provider return assignment
         Route::post('/fleet/assignments/{assignment}/return', [FleetProviderController::class, 'returnAssignment']);
+    });
+
+    /*
+     * LE NOUVEAU DEVIS — quand la demande etait sous-dotee DES LE DEPART.
+     *
+     * A ne pas confondre avec le supplement, un cran plus bas : celui-ci ajoute une ligne a un
+     * devis juste, pour un imprevu decouvert EN TRAVAILLANT. Ici, le devis lui-meme etait faux, et
+     * la fenetre se ferme des que le prestataire a touche a quelque chose.
+     */
+    Route::prefix('provider/missions/{mission}/quote-revision')->group(function () {
+        Route::get('/', [ProviderQuoteRevisionController::class, 'show']);
+        Route::post('/simulate', [ProviderQuoteRevisionController::class, 'simulate']);
+        Route::post('/', [ProviderQuoteRevisionController::class, 'store']);
+        Route::delete('/{revision}', [ProviderQuoteRevisionController::class, 'destroy']);
     });
 
     // Phase 12 — Mission lifecycle (start/arrive/complete)
