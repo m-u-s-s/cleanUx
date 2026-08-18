@@ -137,3 +137,40 @@ Verdict : ≥ 3 occurrences ET ≥ 2 contreparties distinctes. Sanctions 14 j / 
 - [ ] Step 3 : commit
 
 ### Task 9 : suite ciblée, PHPStan sans chemin, `migrate --pretend`
+
+---
+
+## État à la fin du plan — 2026-08-18
+
+**Terminé, vert, PHPStan propre.** 331 tests sur le périmètre mission, 450 sur les API.
+
+| Tâche | État | Fichiers |
+|---|---|---|
+| 1 · table + modèle | ✅ | `2026_09_04_090000_creer_les_revisions_de_devis.php` · `MissionQuoteRevision` |
+| 2 · fenêtre | ✅ | `QuoteRevisionWindow` |
+| 3 · tarification | ✅ | `QuoteRevisionPricing` |
+| 4 · proposer | ✅ | `MissionQuoteRevisionService::proposer()` · `retirer()` |
+| 5 · accepter | ✅ | `accepter()` + `QuoteRevisionTopUp` (seul point réseau, remplaçable en test) |
+| 6 · refuser | ✅ | `refuser()` + `MissionQuoteRevision::doitEtreAnnulee()` |
+| 7 · arbitre | ✅ | `2026_09_05_090000_creer_l_arbitrage_des_revisions.php` · `QuoteRevisionArbiter` · `MissionDisputeSignal` · `MissionFeatureSuspension` · `SanctionAutomatiqueNotification` |
+| 8 · API | ✅ | `ProviderQuoteRevisionController` (4 routes) · 3 routes client sur `onsite` |
+
+### Ce qui est reporté au plan 3, et pourquoi
+
+**`refuser(stop)` n'annule pas la réservation.** Le drapeau `doitEtreAnnulee()` porte l'intention et
+l'API la rend dans `must_cancel`, mais rien n'est annulé. `CancellationFeeCalculator` calcule sur
+des fenêtres de temps et ne sait pas dire « gratuit parce que le devis était abusif » : annuler ici
+facturerait des frais à un client de bonne foi face à un prestataire abusif. Le motif exempté arrive
+avec le questionnaire d'annulation — c'est lui qui referme la boucle.
+
+**Les trois sanctions client autres que le blocage** — quote-part due, frais au palier supérieur,
+empreinte au haut de la fourchette — attendent le même lot : les deux premières vivent dans la
+politique d'annulation, la troisième dans le moteur de commande.
+
+### Deux règles de l'arbitre que le code seul ne dit pas
+
+- Le palier de sanction se lit sur le nombre de **sanctions déjà posées**, jamais sur le nombre de
+  signaux. Deux mesures donneraient deux paliers pour une même personne.
+- `S2 — écart au pair` de la spec (taux de révision comparé à la médiane des confrères) n'est **pas
+  implémenté** : il est corroboratif, et la règle primaire — 3 occurrences chez 2 contreparties
+  distinctes — suffit à établir un motif. À ajouter le jour où le volume le rendra mesurable.
