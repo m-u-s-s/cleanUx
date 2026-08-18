@@ -7,10 +7,13 @@ use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\MissionChecklistItem;
 use App\Models\MissionMedia;
+use App\Models\PromoCode;
+use App\Models\PromoCodeRedemption;
 use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Services\Missions\MissionTodoService;
 use App\Services\Missions\OnSite\MissionChecklistService as OnSiteChecklistService;
+use App\Services\Missions\QuoteRevisionPricing;
 use App\Services\Missions\QuoteRevisionWindow;
 use App\Support\Domain\BookingStatus;
 use App\Support\Domain\MissionStatus;
@@ -201,5 +204,73 @@ class NouveauDevisTest extends TestCase
 
         $this->assertFalse($etat['open']);
         $this->assertStringContainsString('temps', $etat['reason']);
+    }
+
+    // ── LA TARIFICATION RÉVISÉE ───────────────────────────────────────────────
+
+    /** LE TÉMOIN : sans remise, le total révisé est exactement le prix du service. */
+    public function test_sans_remise_le_total_est_le_prix_du_service(): void
+    {
+        $mission = $this->mission();
+
+        $prix = app(QuoteRevisionPricing::class)->recalculer($mission->booking, 30000);
+
+        $this->assertSame(30000, $prix['total_cents']);
+        $this->assertNull($prix['breakdown']['promo']);
+    }
+
+    /**
+     * UNE REMISE AU POURCENTAGE GRANDIT AVEC LE PRIX — c'est le terme même du code, et c'est en
+     * faveur du client, qui n'a pas demandé cette augmentation.
+     */
+    public function test_une_remise_au_pourcentage_se_recalcule(): void
+    {
+        $mission = $this->mission();
+        $this->remise($mission->booking, 'percent', 20);
+
+        $prix = app(QuoteRevisionPricing::class)->recalculer($mission->booking, 30000);
+
+        $this->assertSame(24000, $prix['total_cents']);
+        $this->assertSame(6000, $prix['breakdown']['promo']['discount_cents']);
+        $this->assertSame('REMISE20', $prix['breakdown']['promo']['code']);
+    }
+
+    /** UN BON DE 10 € RESTE UN BON DE 10 €, quel que soit le montant. */
+    public function test_une_remise_en_montant_reste_fixe(): void
+    {
+        $mission = $this->mission();
+        $this->remise($mission->booking, 'fixed_amount', 10);
+
+        $this->assertSame(29000, app(QuoteRevisionPricing::class)->recalculer($mission->booking, 30000)['total_cents']);
+    }
+
+    /** Le plafond du code tient : « -50 % jusqu'à 30 € » ne devient pas 150 € de remise. */
+    public function test_le_plafond_de_la_remise_tient(): void
+    {
+        $mission = $this->mission();
+        $this->remise($mission->booking, 'percent', 50, plafond: 30);
+
+        $this->assertSame(27000, app(QuoteRevisionPricing::class)->recalculer($mission->booking, 30000)['total_cents']);
+    }
+
+    private function remise(Booking $booking, string $type, float $valeur, ?float $plafond = null): void
+    {
+        $code = PromoCode::create([
+            'code' => 'REMISE20',
+            'discount_type' => $type,
+            'discount_value' => $valeur,
+            'max_discount_amount' => $plafond,
+        ]);
+
+        PromoCodeRedemption::create([
+            'promo_code_id' => $code->id,
+            'user_id' => $this->client->id,
+            'booking_id' => $booking->id,
+            'status' => 'applied',
+            'booking_amount_before' => 50,
+            'discount_amount' => 10,
+            'booking_amount_after' => 40,
+            'currency' => 'EUR',
+        ]);
     }
 }
