@@ -56,6 +56,26 @@ jest.mock('@/booking/onsite', () => ({
   },
 }));
 
+/*
+ * LES DEUX BLOCS NEUFS SONT BOUCHONNÉS, comme le suivi bouchonne sa feuille.
+ *
+ * Ils lisent leurs propres sources et portent leur propre logique de décision ; les monter ici
+ * ferait tomber l'écran sur un crochet absent, et le test mesurerait une panne de montage au lieu
+ * du déroulé qu'il vérifie. Leur comportement est couvert par
+ * `MissionQuoteRevisionCard.test.tsx` et `MissionTodoCard.test.tsx`.
+ */
+jest.mock('@/screens/components/MissionQuoteRevisionCard', () => {
+  const { View } = require('react-native');
+
+  return { MissionQuoteRevisionCard: () => <View testID="bouchon-revision" /> };
+});
+
+jest.mock('@/screens/components/MissionTodoCard', () => {
+  const { View } = require('react-native');
+
+  return { MissionTodoCard: () => <View testID="bouchon-todo" /> };
+});
+
 import { OnSiteScreen } from '@/screens/OnSiteScreen';
 
 const route = { params: { bookingId: 77 } } as never;

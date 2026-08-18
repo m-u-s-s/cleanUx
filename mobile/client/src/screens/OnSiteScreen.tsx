@@ -12,6 +12,8 @@ import {
 } from '@/booking/onsite';
 import type { OnSiteExtra, OnSiteMedia, OnSiteTimelineEntry } from '@/booking/onsite';
 import { MissionClockBar, useMissionClock } from '@brio/shared';
+import { MissionQuoteRevisionCard } from '@/screens/components/MissionQuoteRevisionCard';
+import { MissionTodoCard } from '@/screens/components/MissionTodoCard';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
@@ -185,7 +187,16 @@ export function OnSiteScreen({ route }: Props) {
       ) : null}
 
       {/*
-        LES SUPPLÉMENTS EN PREMIER, avant l'avancement et les photos (F12).
+        LE NOUVEAU DEVIS AVANT TOUT LE RESTE.
+ 
+        C'est la seule chose de cet écran qui engage le PRIX de la prestation, et elle attend une
+        réponse pendant que le prestataire est devant la porte. Les suppléments, juste en dessous,
+        ajoutent une ligne ; celui-ci remplace le total.
+      */}
+      <MissionQuoteRevisionCard bookingId={bookingId} />
+
+      {/*
+        LES SUPPLÉMENTS ENSUITE, avant l'avancement et les photos (F12).
 
         C'est la seule chose de cet écran qui ATTEND quelque chose du client, et elle l'attend
         maintenant : le prestataire est chez lui, à l'instant. Une réponse qui arrive après son
@@ -220,6 +231,14 @@ export function OnSiteScreen({ route }: Props) {
           </View>
         </View>
       ))}
+
+      {/*
+        MA LISTE — après ce qui attend une réponse, avant ce qui se contemple.
+ 
+        Elle se modifie pendant que le prestataire travaille, et c'est elle qui décide de sa
+        clôture : elle a sa place au milieu de l'écran, pas en bas avec les photos.
+      */}
+      <MissionTodoCard bookingId={bookingId} />
 
       {(imprevus ?? []).length > 0 && (
         <View style={styles.section}>
