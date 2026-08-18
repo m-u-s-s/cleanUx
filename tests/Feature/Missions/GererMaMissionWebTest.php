@@ -119,6 +119,44 @@ class GererMaMissionWebTest extends TestCase
         $this->assertSame(50.0, (float) $mission->booking->fresh()->devis_estime);
     }
 
+    /**
+     * LA CONSIGNE DE DERNIÈRE MINUTE N'A PAS DE FENÊTRE, contrairement à la liste : un digicode qui
+     * change à 17 h doit pouvoir se dire à 17 h. Elle ne remplace pas le carnet du client — elle
+     * s'ajoute, et c'est la plus récente qui fait foi.
+     */
+    public function test_le_client_pose_une_consigne_de_derniere_minute(): void
+    {
+        $mission = $this->mission();
+
+        Livewire::actingAs($this->client)
+            ->test(GererMaMission::class, ['booking' => $mission->booking])
+            ->set('consigne', 'Le digicode est 4589.')
+            ->call('enregistrerLaConsigne')
+            ->assertSet('erreur', null);
+
+        $booking = $mission->booking->fresh();
+
+        $this->assertSame('Le digicode est 4589.', $booking->live_access_note);
+        $this->assertNotNull($booking->live_access_note_at, 'une consigne périme : on garde sa date');
+    }
+
+    /** LE TÉMOIN : une chaîne vide EFFACE — le client s'est trompé, ou la situation est revenue. */
+    public function test_une_consigne_vide_efface(): void
+    {
+        $mission = $this->mission();
+        $mission->booking->forceFill([
+            'live_access_note' => 'Ancien code',
+            'live_access_note_at' => now(),
+        ])->save();
+
+        Livewire::actingAs($this->client)
+            ->test(GererMaMission::class, ['booking' => $mission->booking->fresh()])
+            ->set('consigne', '  ')
+            ->call('enregistrerLaConsigne');
+
+        $this->assertNull($mission->booking->fresh()->live_access_note);
+    }
+
     /** L'identifiant vient du navigateur : une révision d'une autre réservation est refusée. */
     public function test_une_revision_etrangere_est_refusee(): void
     {

@@ -18,6 +18,14 @@
         <h3 class="font-black text-slate-900">Accéder au lieu</h3>
 
         @if($ficheDAcces['available'] ?? false)
+            @if($ficheDAcces['live_note'] ?? null)
+                {{-- LA CONSIGNE DE DERNIÈRE MINUTE, EN TÊTE ET DÉTACHÉE : c'est la plus récente,
+                     et la seule qui puisse contredire ce qui est écrit juste en dessous. --}}
+                <p class="rounded-lg bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900">
+                    {{ $ficheDAcces['live_note'] }}
+                </p>
+            @endif
+
             @if($ficheDAcces['floor'] ?? null)
                 <p class="text-sm text-slate-600">Étage : {{ $ficheDAcces['floor'] }}</p>
             @endif

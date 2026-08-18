@@ -129,6 +129,27 @@
         chercher, mais après ce qui peut encore sauver l'intervention : le devis à accepter, la
         liste à corriger.
     --}}
+    {{--
+        LA CONSIGNE DE DERNIÈRE MINUTE — sans fenêtre, contrairement à la liste.
+
+        Un digicode qui change à 17 h doit pouvoir se dire à 17 h, même si la liste est figée depuis
+        longtemps : c'est le prestataire qu'elle dépanne, pas le client qu'elle avantage.
+    --}}
+    @if($mission)
+    <form wire:submit="enregistrerLaConsigne"
+          class="rounded-2xl border border-slate-200 bg-white p-5 space-y-3">
+        <h3 class="font-semibold text-slate-900">Consigne d’accès de dernière minute</h3>
+        <p class="text-xs text-slate-500">
+            Elle s’ajoute à ce que le prestataire sait déjà, sans remplacer les consignes de votre
+            carnet de lieux.
+        </p>
+        <textarea wire:model="consigne" rows="2" placeholder="Le digicode est 4589."
+                  class="w-full rounded-xl border-slate-300 text-sm"></textarea>
+        @error('consigne') <p class="text-xs text-rose-600">{{ $message }}</p> @enderror
+        <button type="submit" class="brio-btn-primary">Envoyer au prestataire</button>
+    </form>
+    @endif
+
     @if($mission)
     <div class="flex flex-wrap items-center gap-3 pt-2">
         @if($ligne)

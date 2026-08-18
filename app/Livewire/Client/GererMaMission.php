@@ -37,6 +37,8 @@ class GererMaMission extends Component
 
     public string $nouvelleTache = '';
 
+    public string $consigne = '';
+
     #[Locked]
     public ?string $erreur = null;
 
@@ -47,6 +49,14 @@ class GererMaMission extends Component
         abort_unless((int) $booking->client_id === (int) Auth::id(), 403);
 
         $this->bookingId = $booking->id;
+        // Préremplie : le client doit VOIR ce que le prestataire lit, sinon il la réécrit à
+        // l'identique en croyant que rien n'est parti.
+        $this->consigne = (string) ($booking->live_access_note ?? '');
+    }
+
+    private function booking(): Booking
+    {
+        return Booking::query()->findOrFail($this->bookingId);
     }
 
     public function ajouterUneTache(): void
@@ -89,6 +99,27 @@ class GererMaMission extends Component
         } catch (DomainException $e) {
             $this->erreur = $e->getMessage();
         }
+    }
+
+    /**
+     * LA CONSIGNE DE DERNIÈRE MINUTE — « le digicode a changé ce matin ».
+     *
+     * Sans fenêtre, contrairement à la to-do list : un digicode qui change à 17 h doit pouvoir se
+     * dire à 17 h, même si la liste est figée depuis longtemps. C'est le prestataire qu'elle
+     * dépanne, pas le client qu'elle avantage.
+     */
+    public function enregistrerLaConsigne(): void
+    {
+        $this->erreur = null;
+
+        $this->validate(['consigne' => ['nullable', 'string', 'max:500']]);
+
+        $note = trim($this->consigne);
+
+        $this->booking()->forceFill([
+            'live_access_note' => $note !== '' ? $note : null,
+            'live_access_note_at' => $note !== '' ? now() : null,
+        ])->save();
     }
 
     public function accepterLaRevision(int $revisionId): void
