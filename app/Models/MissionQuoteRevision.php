@@ -89,6 +89,20 @@ class MissionQuoteRevision extends Model
         return $this->status === self::STATUT_PROPOSEE;
     }
 
+    /**
+     * L'intervention doit-elle s'arrêter ? Portée par la révision, exécutée par l'annulation.
+     *
+     * Ce drapeau existe parce que le refus et l'annulation sont deux gestes : le client dit
+     * « arrêtez », et c'est le parcours d'annulation — avec son questionnaire et ses motifs
+     * exemptés — qui décide ce que cela coûte. Les fondre facturerait des frais à un client de
+     * bonne foi face à un prestataire abusif.
+     */
+    public function doitEtreAnnulee(): bool
+    {
+        return $this->status === self::STATUT_REFUSEE
+            && $this->client_decision === self::DECISION_ARRETER;
+    }
+
     /** Ce que le complément doit encaisser — jamais négatif : une baisse se règle par capture partielle. */
     public function complementCents(): int
     {

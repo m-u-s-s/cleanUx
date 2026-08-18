@@ -107,12 +107,136 @@ class MissionQuoteRevisionService
             'currency' => strtoupper((string) ($reservation->currency ?: 'EUR')),
             'reason_code' => $codeMotif,
             'reason_text' => trim($motif),
-            'evidence_media_ids' => array_values(array_map('intval', $mediaIds)),
+            'evidence_media_ids' => array_map('intval', $mediaIds),
             'status' => MissionQuoteRevision::STATUT_PROPOSEE,
             'window_closes_at' => $etat['closes_at'] !== null
                 ? Carbon::parse($etat['closes_at'])
                 : Carbon::now()->addMinutes(30),
         ]);
+    }
+
+    /**
+     * LE CLIENT ACCEPTE — et le contrat est renégocié, pas complété.
+     *
+     * ── L'ORDRE DES DEUX ÉCRITURES, ET POURQUOI IL EST CELUI-LÀ ──────────────────────────────
+     *
+     * Le complément est autorisé D'ABORD. Le devis de la réservation n'est réécrit QUE si la carte
+     * a répondu oui. L'ordre inverse annoncerait 300 € au prestataire et à la comptabilité pour un
+     * argent que personne ne détient — et la commission, qui se calcule sur `devis_estime`, lui
+     * créditerait une part de ce vide.
+     *
+     * ── POURQUOI ON A LE DROIT DE RÉÉCRIRE `devis_estime` ICI ────────────────────────────────
+     *
+     * `HourlySettlementService` l'interdit, et il a raison DANS SON CAS : le temps supplémentaire
+     * est constaté APRÈS coup, sur un contrat déjà exécuté. Ici, le client accepte AVANT que le
+     * travail commence — c'est le contrat lui-même qui change, avec son consentement explicite.
+     * La commission se recalcule alors sur un montant réellement autorisé.
+     */
+    public function accepter(
+        MissionQuoteRevision $revision,
+        User $client,
+        ?string $paymentMethodId = null,
+    ): MissionQuoteRevision {
+        if (! $revision->attendLeClient()) {
+            throw new DomainException('Cette révision a déjà reçu une réponse.');
+        }
+
+        $reservation = $revision->booking;
+
+        if ((int) $reservation?->client_id !== (int) $client->id) {
+            throw new DomainException('Cette révision ne vous concerne pas.');
+        }
+
+        $complement = app(QuoteRevisionTopUp::class)->autoriser($revision, $paymentMethodId);
+
+        if ($complement['ok'] !== true) {
+            $revision->forceFill([
+                'status' => MissionQuoteRevision::STATUT_PAIEMENT_ECHOUE,
+                'top_up_payment_intent_id' => $complement['intent_id'],
+                'last_error' => mb_substr((string) $complement['error'], 0, 1000),
+            ])->save();
+
+            // L'EMPREINTE D'ORIGINE N'A PAS ÉTÉ TOUCHÉE : le prestataire garde sa garantie, et le
+            // client lit pourquoi son paiement n'est pas passé.
+            throw new DomainException(
+                'Le complément n’a pas pu être autorisé : '.$complement['error']
+            );
+        }
+
+        return DB::transaction(function () use ($revision, $reservation, $complement) {
+            $instantane = (array) ($reservation->pricing_snapshot ?? []);
+            $instantane['quote_revision'] = [
+                'revision_id' => $revision->id,
+                'original_total_cents' => $revision->original_total_cents,
+                'revised_total_cents' => $revision->revised_total_cents,
+                'breakdown' => $revision->discount_breakdown,
+                'accepted_at' => Carbon::now()->toIso8601String(),
+            ];
+
+            $reservation->forceFill([
+                'devis_estime' => round($revision->revised_total_cents / 100, 2),
+                'estimated_price' => round($revision->revised_total_cents / 100, 2),
+                // Ce qui est RÉELLEMENT autorisé : l'empreinte d'origine plus le complément.
+                'payment_amount_cents' => $revision->revised_total_cents,
+                'pricing_snapshot' => $instantane,
+            ])->save();
+
+            $revision->forceFill([
+                'status' => MissionQuoteRevision::STATUT_ACCEPTEE,
+                'responded_at' => Carbon::now(),
+                'client_decision' => null,
+                'top_up_payment_intent_id' => $complement['intent_id'],
+                'charged_at' => null,
+            ])->save();
+
+            return $revision->fresh();
+        });
+    }
+
+    /**
+     * LE CLIENT REFUSE — et c'est LUI qui choisit la suite.
+     *
+     * `continue` : la mission va au bout au prix d'origine. Le prestataire n'est pas tenu de faire
+     * 300 € de travail pour 50 € — il peut clôturer en l'état, et le dossier explique pourquoi.
+     *
+     * `stop` : l'intervention s'arrête. Le prestataire n'a rien commencé — la fenêtre le garantit —
+     * et ne touche donc RIEN.
+     *
+     * ── CE QUE CETTE MÉTHODE NE FAIT PAS, ET C'EST DÉLIBÉRÉ ──────────────────────────────────
+     *
+     * Elle n'annule pas la réservation elle-même. Le calcul des frais d'annulation se fait sur des
+     * fenêtres de temps et ne sait pas encore dire « gratuit parce que le devis était abusif » :
+     * annuler ici facturerait des frais à un client de bonne foi face à un prestataire abusif.
+     * Le motif exempté arrive avec le questionnaire d'annulation, et c'est lui qui refermera la
+     * boucle. En attendant, `doitEtreAnnulee()` porte l'intention sans facturer personne.
+     */
+    public function refuser(
+        MissionQuoteRevision $revision,
+        User $client,
+        string $decision,
+    ): MissionQuoteRevision {
+        if (! $revision->attendLeClient()) {
+            throw new DomainException('Cette révision a déjà reçu une réponse.');
+        }
+
+        if ((int) $revision->booking?->client_id !== (int) $client->id) {
+            throw new DomainException('Cette révision ne vous concerne pas.');
+        }
+
+        if (! in_array($decision, [
+            MissionQuoteRevision::DECISION_POURSUIVRE,
+            MissionQuoteRevision::DECISION_ARRETER,
+        ], true)) {
+            throw new DomainException('Dites si l’intervention continue au prix d’origine, ou s’arrête.');
+        }
+
+        $revision->forceFill([
+            'status' => MissionQuoteRevision::STATUT_REFUSEE,
+            'responded_at' => Carbon::now(),
+            'client_decision' => $decision,
+        ])->save();
+
+        return $revision->fresh();
     }
 
     /** La révision qui attend encore une réponse, s'il y en a une. */
@@ -184,10 +308,11 @@ class MissionQuoteRevisionService
     {
         $reservation = $mission->booking;
 
-        $devis = (float) ($reservation?->devis_estime ?? $reservation?->estimated_price ?? 0);
+        // `->` et non `?->` a gauche d'un `??` : l'operateur absorbe deja l'acces sur null.
+        $devis = (float) ($reservation->devis_estime ?? $reservation->estimated_price ?? 0);
 
         $cents = (int) round($devis * 100);
 
-        return $cents > 0 ? $cents : (int) ($reservation?->payment_amount_cents ?? 0);
+        return $cents > 0 ? $cents : (int) ($reservation->payment_amount_cents ?? 0);
     }
 }

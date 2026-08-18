@@ -83,11 +83,13 @@ class QuoteRevisionPricing
 
         $valeur = (float) ($code->discount_value ?? 0);
 
+        // `free_first_booking` en dernier recours plutot qu'en branche nommee : le type est un
+        // enum a trois valeurs, et une branche explicite pour la troisieme laisserait un `default`
+        // que rien ne peut atteindre.
         $remise = match ((string) $code->discount_type) {
             'percent' => (int) round($base * $valeur / 100),
             'fixed_amount' => (int) round($valeur * 100),
-            'free_first_booking' => $base,
-            default => 0,
+            default => $base,
         };
 
         // Le plafond du code, quand il en porte un : un « -50 % jusqu'à 30 € » ne doit pas devenir

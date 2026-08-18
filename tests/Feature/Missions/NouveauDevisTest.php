@@ -17,9 +17,12 @@ use App\Services\Missions\MissionQuoteRevisionService;
 use App\Services\Missions\MissionTodoService;
 use App\Services\Missions\OnSite\MissionChecklistService as OnSiteChecklistService;
 use App\Services\Missions\QuoteRevisionPricing;
+use App\Services\Missions\QuoteRevisionTopUp;
+use App\Services\Payments\CommissionService;
 use App\Services\Missions\QuoteRevisionWindow;
 use App\Support\Domain\BookingStatus;
 use App\Support\Domain\MissionStatus;
+use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -375,4 +378,103 @@ class NouveauDevisTest extends TestCase
     {
         return app(MissionQuoteRevisionService::class);
     }
+
+    // ── ACCEPTER ET REFUSER ───────────────────────────────────────────────────
+
+    /**
+     * L'ÉCHEC DU COMPLÉMENT NE TOUCHE PAS L'EMPREINTE D'ORIGINE.
+     *
+     * C'est la garantie centrale du choix « garder et compléter » : le prestataire est sur place,
+     * et un paiement refusé ne doit jamais le laisser sans garantie. Aucun compte Stripe n'existe
+     * dans ce scénario — l'autorisation échoue donc pour de bon, ce qui est exactement le cas à
+     * prouver.
+     */
+    public function test_un_complement_refuse_laisse_le_devis_d_origine_intact(): void
+    {
+        $mission = $this->mission();
+        $revision = $this->revisions()->proposer($mission, $this->prestataire, 30000, 'Plus grand', [1]);
+
+        try {
+            $this->revisions()->accepter($revision, $this->client);
+            $this->fail('le complément ne pouvait pas aboutir sans compte de paiement');
+        } catch (DomainException $e) {
+            $this->assertStringContainsString('complément', $e->getMessage());
+        }
+
+        $this->assertSame(
+            MissionQuoteRevision::STATUT_PAIEMENT_ECHOUE,
+            $revision->fresh()->status,
+        );
+        $this->assertSame(
+            50.0,
+            (float) $mission->booking->fresh()->devis_estime,
+            'le devis d’origine n’a pas bougé',
+        );
+    }
+
+    /** LE TÉMOIN : quand le complément aboutit, le devis est réécrit et la commission suit. */
+    public function test_un_complement_autorise_reecrit_le_devis(): void
+    {
+        $mission = $this->mission();
+        $revision = $this->revisions()->proposer($mission, $this->prestataire, 30000, 'Plus grand', [1]);
+
+        // Le seul point du module qui parle au réseau est isolé : on le remplace, tout le reste
+        // s'exécute pour de vrai.
+        $this->app->instance(QuoteRevisionTopUp::class, new class extends QuoteRevisionTopUp
+        {
+            public function __construct() {}
+
+            public function autoriser(MissionQuoteRevision $revision, ?string $paymentMethodId = null): array
+            {
+                return ['ok' => true, 'intent_id' => 'pi_complement_test', 'error' => null];
+            }
+        });
+
+        $acceptee = $this->revisions()->accepter($revision, $this->client);
+
+        $this->assertSame(MissionQuoteRevision::STATUT_ACCEPTEE, $acceptee->status);
+        $this->assertSame('pi_complement_test', $acceptee->top_up_payment_intent_id);
+
+        $reservation = $mission->booking->fresh();
+        $this->assertSame(300.0, (float) $reservation->devis_estime);
+        $this->assertSame(30000, (int) $reservation->payment_amount_cents);
+        $this->assertSame(
+            30000,
+            (int) app(CommissionService::class)->calculateForBooking($reservation)['total_cents'],
+            'la commission se recalcule sur le montant réellement autorisé',
+        );
+    }
+
+    public function test_le_client_refuse_et_choisit_de_continuer(): void
+    {
+        $mission = $this->mission();
+        $revision = $this->revisions()->proposer($mission, $this->prestataire, 30000, 'Plus grand', [1]);
+
+        $refusee = $this->revisions()->refuser($revision, $this->client, MissionQuoteRevision::DECISION_POURSUIVRE);
+
+        $this->assertSame(MissionQuoteRevision::STATUT_REFUSEE, $refusee->status);
+        $this->assertFalse($refusee->doitEtreAnnulee());
+        $this->assertSame(50.0, (float) $mission->booking->fresh()->devis_estime);
+    }
+
+    public function test_le_client_refuse_et_choisit_d_arreter(): void
+    {
+        $mission = $this->mission();
+        $revision = $this->revisions()->proposer($mission, $this->prestataire, 30000, 'Plus grand', [1]);
+
+        $refusee = $this->revisions()->refuser($revision, $this->client, MissionQuoteRevision::DECISION_ARRETER);
+
+        $this->assertTrue($refusee->doitEtreAnnulee());
+        $this->assertSame(50.0, (float) $mission->booking->fresh()->devis_estime);
+    }
+
+    public function test_un_tiers_ne_repond_pas_a_la_place_du_client(): void
+    {
+        $mission = $this->mission();
+        $revision = $this->revisions()->proposer($mission, $this->prestataire, 30000, 'Plus grand', [1]);
+
+        $this->expectExceptionMessage('ne vous concerne pas');
+        $this->revisions()->refuser($revision, User::factory()->client()->create(), MissionQuoteRevision::DECISION_POURSUIVRE);
+    }
+
 }
