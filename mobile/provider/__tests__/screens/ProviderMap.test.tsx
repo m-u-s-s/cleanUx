@@ -40,6 +40,9 @@ const mockGpsEnabled = { current: null as boolean | null };
 // puisse simuler l'arrivée d'une position GPS (`mockOnPosition.current?.({ ... })`) sans
 // dépendre du vrai module expo-location.
 const mockOnPosition = { current: null as ((pos: { latitude: number; longitude: number; speed: number | null; heading: number | null }) => void) | null };
+/** La session de suivi rendue au composant : `null` = aucune mission en cours, donc aucune route. */
+const mockSession = { current: null as unknown };
+
 jest.mock('@/tracking', () => ({
   useGpsWatcher: (enabled: boolean, onPosition: (pos: any) => void) => {
     mockGpsEnabled.current = enabled;
@@ -48,6 +51,11 @@ jest.mock('@/tracking', () => ({
   },
   distanceKmTo: jest.requireActual('../../src/tracking/distance').distanceKmTo,
   formatDistance: jest.requireActual('../../src/tracking/distance').formatDistance,
+  /*
+   * LA SESSION ACTIVE, pour la route tracée sur cette carte. Sans ce bouchon, le composant tombe
+   * sur un crochet absent et le test mesurerait une panne de montage au lieu de la carte.
+   */
+  useSessionActive: () => ({ data: mockSession.current }),
 }));
 
 // `react-native-maps` est déjà redirigé vers __mocks__/react-native-maps par moduleNameMapper :
@@ -59,7 +67,17 @@ jest.mock('@/maps', () => ({
   loadMapModule: () => {
     if (!mockMapModule.current) return null;
     const maps = require('react-native-maps');
-    return { MapView: maps.default, Marker: maps.Marker, Callout: maps.Callout };
+    /*
+     * `Polyline` DOIT FIGURER ICI : la carte trace désormais la route de la mission en cours, et un
+     * module bouchonné sans elle rendrait le trait invisible — le test conclurait à un défaut de
+     * rendu là où il n'y a qu'un bouchon incomplet.
+     */
+    return {
+      MapView: maps.default,
+      Marker: maps.Marker,
+      Callout: maps.Callout,
+      Polyline: maps.Polyline,
+    };
   },
   // Sur Android, la carte n'est affichable qu'avec une clé Google Maps dans le manifeste natif ;
   // sans elle le rendu LÈVE au lieu de dégrader. `mockMapRenderable` pilote ce second verrou,
@@ -347,5 +365,40 @@ describe('ProviderMap', () => {
     });
 
     await waitFor(() => expect(screen.getByText('49.8 km')).toBeTruthy());
+  });
+
+  /**
+   * LA ROUTE ACTIVE SUR LA CARTE D'ACCUEIL.
+   *
+   * Elle n'affichait que les marqueurs des missions en attente : un prestataire déjà en route y
+   * voyait des points sans trajet, et devait ouvrir un autre écran pour savoir par où passer —
+   * alors que c'est l'écran qu'il a sous les yeux en conduisant.
+   */
+  it('trace la route de la mission en cours', () => {
+    mockSession.current = {
+      id: 3,
+      status: 'enroute',
+      route: {
+        points: [
+          { lat: 50.84, lng: 4.35 },
+          { lat: 50.85, lng: 4.36 },
+        ],
+        source: 'osrm',
+        distance_m: 1400,
+      },
+    };
+
+    render(<ProviderMap />, { wrapper: makeWrapper() });
+
+    expect(screen.getByTestId('provider-map-route')).toBeTruthy();
+  });
+
+  /** LE TÉMOIN : sans mission en cours, aucun trait n'est dessiné. */
+  it('ne trace rien sans session active', () => {
+    mockSession.current = null;
+
+    render(<ProviderMap />, { wrapper: makeWrapper() });
+
+    expect(screen.queryByTestId('provider-map-route')).toBeNull();
   });
 });

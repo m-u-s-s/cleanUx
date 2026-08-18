@@ -57,6 +57,34 @@ class TripTrackingController extends Controller
     }
 
     /**
+     * LA SESSION ACTIVE DE CETTE RÉSERVATION — la seule lecture du module, et elle manquait.
+     *
+     * Tout ce contrôleur était en écriture : démarrer, pinguer, terminer. Le prestataire ne pouvait
+     * donc RELIRE nulle part la session qu'il avait ouverte — son écran de suivi la gardait en
+     * mémoire locale, et une application relancée l'oubliait. Sa carte d'accueil, elle, ne pouvait
+     * afficher aucune route : elle n'avait aucun moyen de la demander.
+     *
+     * `null` plutôt qu'un 404 : « aucune session ouverte » est une réponse normale — la plupart des
+     * réservations n'en ont pas — et un 404 se lit comme une panne côté application.
+     *
+     * @response 200 {"data": {"id": 12, "status": "enroute", "route": {"points": [], "source": "osrm", "distance_m": 4200}}}
+     */
+    public function active(Request $request, Booking $booking): JsonResponse
+    {
+        $this->authorizeProvider($request, $booking);
+
+        $session = TripTrackingSession::query()
+            ->where('booking_id', $booking->id)
+            ->active()
+            ->latest('id')
+            ->first();
+
+        return response()->json([
+            'data' => $session === null ? null : $this->presentSession($session),
+        ]);
+    }
+
+    /**
      * Record a GPS ping for an active tracking session.
      *
      * Call every 5-15 seconds while en route. Pings with duplicate `sequence` numbers are

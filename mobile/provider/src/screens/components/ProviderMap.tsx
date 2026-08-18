@@ -2,8 +2,10 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { View, Text, StyleSheet } from 'react-native';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { Button } from '@/ui';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/api';
 import { useMissionInbox } from '@/missions';
-import { useGpsWatcher, distanceKmTo, formatDistance } from '@/tracking';
+import { useGpsWatcher, useSessionActive, distanceKmTo, formatDistance } from '@/tracking';
 import { loadMapModule, isMapRenderable, OsmMap } from '@/maps';
 import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -46,6 +48,36 @@ export function ProviderMap() {
     useCallback((pos) => setPosition({ latitude: pos.latitude, longitude: pos.longitude }), []),
   );
   const { data: assignments, isError, refetch } = useMissionInbox();
+
+  /*
+   * LA ROUTE ACTIVE SUR LA CARTE D'ACCUEIL.
+   *
+   * Cette carte n'affichait que les MARQUEURS des missions en attente. Un prestataire déjà en route
+   * y voyait des points sans trajet, et devait ouvrir un autre écran pour savoir par où passer —
+   * alors que c'est l'écran qu'il a sous les yeux en conduisant.
+   *
+   * MÊME CLÉ DE CACHE que `TripTrackingHost` : deux requêtes distinctes pour la même chose feraient
+   * battre l'API deux fois pour un seul besoin.
+   */
+  const { data: missionsActives } = useQuery<{ status: string; booking_id: number | null }[]>({
+    queryKey: ['provider', 'missions', 'active'],
+    queryFn: async () => {
+      const res = await apiClient.get('/provider/missions/active');
+
+      return res.data.data ?? res.data ?? [];
+    },
+    refetchInterval: 30000,
+  });
+
+  const enCours = (missionsActives ?? []).find(
+    (m) => ['en_route', 'arrived', 'started', 'paused'].includes(m.status) && m.booking_id != null,
+  );
+  const { data: session } = useSessionActive(enCours?.booking_id ?? null);
+
+  const route = useMemo(
+    () => (session?.route?.points ?? []).map((p) => ({ latitude: p.lat, longitude: p.lng })),
+    [session],
+  );
 
   // Mémoïsé sur `assignments` : sans cela, `located` serait un tableau neuf à chaque
   // rendu, ce qui ferait tourner l'effet de centrage sur mission (dépendant de `located`)
@@ -135,6 +167,8 @@ export function ProviderMap() {
             })(),
           }))}
           position={position}
+          // La route PRÉVUE, quand une mission est en cours : c'est elle qui dit par où passer.
+          trail={route.length > 1 ? route : undefined}
           fallbackCenter={{ latitude: FALLBACK_REGION.latitude, longitude: FALLBACK_REGION.longitude, zoom: 7 }}
           // mission_id, PAS booking_id — même raison que pour la carte native : l'écran de détail
           // appelle GET /provider/missions/{missionId}.
@@ -165,6 +199,16 @@ export function ProviderMap() {
   return (
     <View style={styles.container}>
       <MapView ref={mapRef} style={styles.map} testID="provider-map" initialRegion={region}>
+        {/* La route prévue de la mission en cours, tracée sous les marqueurs. */}
+        {maps.Polyline && route.length > 1 && (
+          <maps.Polyline
+            coordinates={route}
+            strokeWidth={5}
+            strokeColor={colors.brand[600] ?? colors.brand[500]}
+            testID="provider-map-route"
+          />
+        )}
+
         {located.map(a => {
           // Distance vive depuis la position GPS actuelle jusqu'à la mission — recalculée
           // à chaque rendu (pas mémoïsée), sa dépendance `position` change de toute façon

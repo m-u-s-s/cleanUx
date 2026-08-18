@@ -1,5 +1,7 @@
 export { TripTrackingHost } from './TripTrackingHost';
 export {
+  // La seule LECTURE du module : sans elle, la route ne pouvait etre dessinee qu'au suivi.
+  useSessionActive,
   useStartTracking,
   useSendPing,
   useMarkInMission,

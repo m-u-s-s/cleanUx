@@ -158,6 +158,14 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved', 'face.ve
         Route::post('/missions/{mission}/live/eta', [MissionLiveTrackingController::class, 'pushEta']);
 
         // Trip Tracking v2 — sessions GPS persistées + auto-ETA + geofence
+        /*
+         * LA SEULE LECTURE DU MODULE, et elle manquait.
+         *
+         * Tout le reste est en ecriture : demarrer, pinguer, terminer. Le prestataire ne pouvait
+         * donc pas RELIRE la session qu'il avait ouverte — son ecran de suivi la gardait en memoire
+         * locale, et une application relancee l'oubliait.
+         */
+        Route::get('/bookings/{booking}/tracking', [TripTrackingController::class, 'active']);
         Route::post('/bookings/{booking}/tracking/start', [TripTrackingController::class, 'start']);
         Route::post('/tracking/{session}/ping', [TripTrackingController::class, 'ping']);
         Route::post('/tracking/{session}/in-mission', [TripTrackingController::class, 'markInMission']);

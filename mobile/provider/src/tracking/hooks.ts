@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient, ApiError } from '@/api';
 import { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
@@ -24,6 +24,24 @@ export interface TrackingSession {
     source: string | null;
     distance_m: number | null;
   } | null;
+}
+
+/**
+ * LA SESSION ACTIVE, EN LECTURE — ce qui manquait pour dessiner la route ailleurs qu'au suivi.
+ *
+ * L'écran de suivi gardait sa session en mémoire locale : une application relancée l'oubliait, et
+ * la carte d'accueil n'avait aucun moyen de demander la route. `null` est une réponse normale — la
+ * plupart des réservations n'ont aucune session ouverte.
+ */
+export function useSessionActive(bookingId: number | null) {
+  return useQuery<TrackingSession | null>({
+    queryKey: ['provider', 'booking', bookingId, 'tracking'],
+    queryFn: async () =>
+      (await apiClient.get(`/provider/bookings/${bookingId}/tracking`)).data.data ?? null,
+    enabled: bookingId !== null,
+    // La route ne change qu'aux transitions ; le point mobile, lui, vient du GPS de l'appareil.
+    refetchInterval: 60000,
+  });
 }
 
 export function useStartTracking(bookingId: number) {
