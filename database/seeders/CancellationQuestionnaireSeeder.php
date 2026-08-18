@@ -68,6 +68,15 @@ class CancellationQuestionnaireSeeder extends Seeder
         $definitions = [
             ['policy' => $client, 'reason_code' => 'provider_late', 'label' => 'Prestataire en retard', 'requires_proof' => false, 'max_per_user_per_30d' => null],
             ['policy' => $client, 'reason_code' => 'provider_asked_cancel', 'label' => 'Le prestataire m’a demandé d’annuler', 'requires_proof' => false, 'max_per_user_per_30d' => null],
+            /*
+             * LE REFUS D'UN NOUVEAU DEVIS, SUIVI D'UN ARRÊT.
+             *
+             * Gratuit deux fois : un client qui refuse un devis révisé abusif ne doit rien payer, et
+             * le prestataire n'a rien commencé — la fenêtre de révision le garantit. Au-delà, le
+             * plafond mord et le palier normal s'applique : c'est exactement « pas la première fois,
+             * mais si c'est fréquent », et c'est la première des quatre sanctions client.
+             */
+            ['policy' => $client, 'reason_code' => 'quote_revision_declined', 'label' => 'Nouveau devis refusé, intervention arrêtée', 'requires_proof' => false, 'max_per_user_per_30d' => 2],
             ['policy' => $prestataire, 'reason_code' => 'provider_unable', 'label' => 'Empêchement du prestataire (panne, maladie, accident)', 'requires_proof' => true, 'max_per_user_per_30d' => 2],
             ['policy' => $prestataire, 'reason_code' => 'address_unreachable', 'label' => 'Adresse introuvable ou inaccessible', 'requires_proof' => false, 'max_per_user_per_30d' => 3],
             ['policy' => $prestataire, 'reason_code' => 'client_asked_cancel', 'label' => 'Le client m’a demandé d’annuler', 'requires_proof' => false, 'max_per_user_per_30d' => null],

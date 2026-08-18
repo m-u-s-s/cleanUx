@@ -3,6 +3,7 @@
 namespace Tests\Feature\Missions;
 
 use App\Models\Booking;
+use App\Models\BookingCancellationV2;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\MissionChecklistItem;
@@ -23,6 +24,8 @@ use App\Services\Missions\QuoteRevisionWindow;
 use App\Support\Domain\BookingStatus;
 use App\Support\Domain\MissionStatus;
 use DomainException;
+use Database\Seeders\CancellationPoliciesSeeder;
+use Database\Seeders\CancellationQuestionnaireSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -458,8 +461,18 @@ class NouveauDevisTest extends TestCase
         $this->assertSame(50.0, (float) $mission->booking->fresh()->devis_estime);
     }
 
+    /**
+     * L'ARRÊT ANNULE VRAIMENT, ET IL EST GRATUIT.
+     *
+     * Le motif `quote_revision_declined` est exempté : un client de bonne foi face à un devis
+     * abusif ne paie rien, pas même la pénalité « prestataire déjà en route ». Le prestataire, lui,
+     * n'a rien commencé — la fenêtre de révision le garantit — et ne touche donc rien.
+     */
     public function test_le_client_refuse_et_choisit_d_arreter(): void
     {
+        $this->seed(CancellationPoliciesSeeder::class);
+        $this->seed(CancellationQuestionnaireSeeder::class);
+
         $mission = $this->mission();
         $revision = $this->revisions()->proposer($mission, $this->prestataire, 30000, 'Plus grand', [1]);
 
@@ -467,6 +480,26 @@ class NouveauDevisTest extends TestCase
 
         $this->assertTrue($refusee->doitEtreAnnulee());
         $this->assertSame(50.0, (float) $mission->booking->fresh()->devis_estime);
+
+        $annulation = BookingCancellationV2::query()->where('booking_id', $mission->booking_id)->firstOrFail();
+
+        $this->assertSame('quote_revision_declined', $annulation->reason_code);
+        $this->assertTrue($annulation->exempt_applied, 'le refus d’un devis abusif est gratuit');
+        $this->assertSame(0, $annulation->fee_amount_cents);
+    }
+
+    /** LE TÉMOIN : « continuez » n'annule rien du tout. */
+    public function test_continuer_n_annule_pas(): void
+    {
+        $this->seed(CancellationPoliciesSeeder::class);
+        $this->seed(CancellationQuestionnaireSeeder::class);
+
+        $mission = $this->mission();
+        $revision = $this->revisions()->proposer($mission, $this->prestataire, 30000, 'Plus grand', [1]);
+
+        $this->revisions()->refuser($revision, $this->client, MissionQuoteRevision::DECISION_POURSUIVRE);
+
+        $this->assertSame(0, BookingCancellationV2::query()->where('booking_id', $mission->booking_id)->count());
     }
 
     public function test_un_tiers_ne_repond_pas_a_la_place_du_client(): void

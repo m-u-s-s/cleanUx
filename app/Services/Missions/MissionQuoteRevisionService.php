@@ -6,6 +6,7 @@ use App\Models\Mission;
 use App\Models\MissionFeatureSuspension;
 use App\Models\MissionQuoteRevision;
 use App\Models\User;
+use App\Services\CancellationV2\CancellationEngine;
 use App\Support\Domain\MissionEngine;
 use DomainException;
 use Illuminate\Support\Carbon;
@@ -204,13 +205,21 @@ class MissionQuoteRevisionService
      * `stop` : l'intervention s'arrête. Le prestataire n'a rien commencé — la fenêtre le garantit —
      * et ne touche donc RIEN.
      *
-     * ── CE QUE CETTE MÉTHODE NE FAIT PAS, ET C'EST DÉLIBÉRÉ ──────────────────────────────────
+     * ── L'ARRÊT ANNULE, ET IL EST GRATUIT DEUX FOIS ──────────────────────────────────────────
      *
-     * Elle n'annule pas la réservation elle-même. Le calcul des frais d'annulation se fait sur des
-     * fenêtres de temps et ne sait pas encore dire « gratuit parce que le devis était abusif » :
-     * annuler ici facturerait des frais à un client de bonne foi face à un prestataire abusif.
-     * Le motif exempté arrive avec le questionnaire d'annulation, et c'est lui qui refermera la
-     * boucle. En attendant, `doitEtreAnnulee()` porte l'intention sans facturer personne.
+     * Le motif `quote_revision_declined` est un motif EXEMPTÉ : les frais tombent à zéro, y compris
+     * la pénalité « prestataire déjà en route ». Un client de bonne foi face à un devis abusif ne
+     * paie donc rien.
+     *
+     * Son plafond est de deux par trente jours. Au-delà, l'exemption cesse et le palier normal
+     * s'applique — « pas la première fois, mais si c'est fréquent ». C'est la première des quatre
+     * sanctions client, et elle se règle depuis la console sans toucher au code.
+     *
+     * ── L'ANNULATION NE CONDITIONNE PAS LE REFUS ─────────────────────────────────────────────
+     *
+     * Le refus est enregistré AVANT. Si l'annulation échoue — réservation déjà close, réseau —,
+     * la réponse du client reste acquise et `doitEtreAnnulee()` continue de porter l'intention :
+     * l'écran peut réessayer sans que le client ait à refuser une seconde fois.
      */
     public function refuser(
         MissionQuoteRevision $revision,
@@ -240,7 +249,40 @@ class MissionQuoteRevisionService
 
         $this->arbitrer($revision->fresh());
 
+        if ($decision === MissionQuoteRevision::DECISION_ARRETER) {
+            $this->arreterLIntervention($revision->fresh(), $client);
+        }
+
         return $revision->fresh();
+    }
+
+    /**
+     * ARRÊTER — par le tuyau commun d'annulation, avec son motif exempté.
+     *
+     * Une seule voie d'annulation, quel qu'en soit le déclencheur : politiques, paliers, capture
+     * partielle de l'empreinte, journal. En écrire une seconde ici donnerait deux façons d'annuler
+     * la même réservation, et l'une des deux finirait par diverger sur les frais.
+     */
+    private function arreterLIntervention(MissionQuoteRevision $revision, User $client): void
+    {
+        try {
+            app(CancellationEngine::class)->execute(
+                bookingId: (int) $revision->booking_id,
+                actor: $client,
+                actorRole: 'client',
+                reasonCode: 'quote_revision_declined',
+                reasonText: 'Nouveau devis refusé : '.mb_substr($revision->reason_text, 0, 500),
+                // IDEMPOTENT SUR LA RÉVISION, pas sur la réservation : deux appels du même écran ne
+                // produisent qu'une annulation, et une révision ultérieure garderait la sienne.
+                idempotencyKey: 'quote_revision:'.$revision->id,
+            );
+        } catch (\Throwable $e) {
+            report($e);
+
+            $revision->forceFill([
+                'last_error' => mb_substr('Arrêt non enregistré : '.$e->getMessage(), 0, 1000),
+            ])->save();
+        }
     }
 
     /**
