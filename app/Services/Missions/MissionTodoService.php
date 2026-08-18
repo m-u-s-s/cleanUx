@@ -83,7 +83,9 @@ class MissionTodoService
             'closes_at' => $echeance->toIso8601String(),
             // Arrondi au SUPÉRIEUR : annoncer « 0 min » alors qu'il reste quarante secondes ferait
             // renoncer quelqu'un qui avait encore le temps d'écrire.
-            'minutes_left' => (int) ceil($maintenant->floatDiffInMinutes($echeance)),
+            // `abs()` parce que la différence est SIGNÉE : l'idiome du dépôt, déjà employé par
+            // `HourlyMissionClock`. Sans lui, un compteur rendrait des minutes négatives.
+            'minutes_left' => (int) ceil(abs($maintenant->diffInMinutes($echeance))),
             'reason' => null,
         ];
     }
@@ -137,7 +139,9 @@ class MissionTodoService
     {
         $this->assertModifiable($mission);
 
-        if (! $mission->checklists()->pluck('id')->contains($item->mission_checklist_id)) {
+        // Interrogé EN BASE plutôt que chargé puis filtré : une mission peut porter plusieurs
+        // listes, et les ramener toutes pour en tester une est un aller-retour de trop.
+        if (! $mission->checklists()->whereKey($item->mission_checklist_id)->exists()) {
             throw new DomainException('Cette tâche n’appartient pas à cette intervention.');
         }
 
