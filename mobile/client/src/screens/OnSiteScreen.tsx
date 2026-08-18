@@ -11,7 +11,7 @@ import {
   useLiveOnSite,
 } from '@/booking/onsite';
 import type { OnSiteExtra, OnSiteMedia, OnSiteTimelineEntry } from '@/booking/onsite';
-import { MissionClockBar, useMissionClock } from '@brio/shared';
+import { MissionClockBar, useMissionClock, AnnulerLaMissionSheet } from '@brio/shared';
 import { MissionQuoteRevisionCard } from '@/screens/components/MissionQuoteRevisionCard';
 import { MissionTodoCard } from '@/screens/components/MissionTodoCard';
 import { spacing, typography, radius } from '@/theme';
@@ -52,6 +52,7 @@ export function OnSiteScreen({ route }: Props) {
   const prolongation = fil?.extension ?? null;
   const prolonge = useProlongerLesHeures(bookingId);
   const [choixOuvert, setChoixOuvert] = React.useState(false);
+  const [annulationOuverte, setAnnulationOuverte] = React.useState(false);
 
   /**
    * PROLONGER — et DIRE pourquoi quand ça ne passe pas.
@@ -262,6 +263,32 @@ export function OnSiteScreen({ route }: Props) {
           <Text style={styles.vide}>Rien à afficher pour l’instant.</Text>
         ) : (
           fil.entries.map((entree) => <LigneDeFil key={entree.key} entree={entree} />)
+        )}
+      </View>
+
+      {/*
+        ANNULER — en dernier, et c'est voulu.
+
+        C'est le geste dont on ne veut pas qu'il soit le premier vu. Il reste atteignable sans
+        chercher, mais après tout ce qui peut encore sauver l'intervention : le devis à accepter, la
+        liste à corriger, le supplément à valider.
+      */}
+      <View style={styles.section}>
+        {annulationOuverte ? (
+          <AnnulerLaMissionSheet
+            audience="client"
+            bookingId={bookingId}
+            onAnnulee={() => setAnnulationOuverte(false)}
+            onFermer={() => setAnnulationOuverte(false)}
+          />
+        ) : (
+          <Button
+            label="Annuler la mission"
+            variant="secondary"
+            onPress={() => setAnnulationOuverte(true)}
+            fullWidth
+            testID="ouvrir-annulation"
+          />
         )}
       </View>
     </Screen>

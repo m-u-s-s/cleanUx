@@ -62,6 +62,15 @@ export interface Mission {
   longitude?: number;
   scheduled_date: string;
   scheduled_time: string;
+  /**
+   * L'INSTANT DU DÉMARRAGE — servi depuis toujours, ignoré par ce type.
+   *
+   * C'est lui qui sépare « annuler » d'« abandonner » : après le démarrage, un prestataire ne
+   * peut plus annuler, il laisserait le client avec un chantier ouvert. Sans ce champ, l'écran
+   * offrait le bouton dans les deux cas, et le refus du serveur arrivait après le geste.
+   */
+  actual_start_at?: string | null;
+  actual_end_at?: string | null;
   total_price?: number;
   notes?: string;
   /**

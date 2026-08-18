@@ -37,6 +37,7 @@ export { loadMapModule, isMapRenderable } from './mapModule';
 export { OsmMap } from './OsmMap';
 export { LuxeBackground } from './LuxeBackground';
 export { GlassSurface } from './GlassSurface';
+export { AnnulerLaMissionSheet } from './AnnulerLaMissionSheet';
 export { NightShell, themeDeNavigation, useThemeDeNavigation } from './NightShell';
 export { apparenceDeBarre, fondDeFeuille } from './glassBars';
 export type { OsmMarker } from './OsmMap';

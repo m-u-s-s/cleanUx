@@ -9,6 +9,19 @@ export { AuthProvider, useAuth, useLogin, useRegister, useMe, authenticateWithBi
 export { useChatThreads, useChatMessages, useSendMessage, useMarkThreadRead, useLiveChat } from './chat';
 export type { ChatThread, ChatMessage } from './chat/types';
 
+// Annulation — questionnaire, devis et exécution, partagés par les deux applications.
+export {
+  useQuestionnaireDAnnulation,
+  useDevisDAnnulation,
+  useAnnulerLaReservation,
+} from './cancellation';
+export type {
+  AudienceAnnulation,
+  QuestionDAnnulation,
+  OptionDAnnulation,
+  DevisDAnnulation,
+} from './cancellation';
+
 // Config
 export { env } from './config/env';
 
@@ -32,6 +45,10 @@ export type { AppNotification } from './notifications/hooks';
 
 // Mission clock — le compteur des missions vendues au temps, identique des deux côtés
 export { useMissionClock, MissionClockBar, formatChronometre, formatDureeCourte } from './missionClock';
+
+// La feuille d'annulation questionnee — partagee, parce que les deux roles empruntent le meme
+// tuyau : deux copies auraient fini par diverger sur les frais.
+export { AnnulerLaMissionSheet } from './ui/AnnulerLaMissionSheet';
 export type { MissionClock, MissionClockPhase, LiveMissionClock, ClockAudience } from './missionClock';
 
 // Push

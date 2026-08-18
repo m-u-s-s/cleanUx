@@ -25,7 +25,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 import { formatAdresse, messageDErreur } from '@brio/shared/format';
-import { MissionClockBar, useMissionClock } from '@brio/shared';
+import { MissionClockBar, useMissionClock, AnnulerLaMissionSheet } from '@brio/shared';
 import { FieldQuoteRevision } from '@/screens/components/FieldQuoteRevision';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionField'>;
@@ -64,6 +64,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
   const [gpsActive, setGpsActive] = useState(true);
   const [incidentType, setIncidentType] = useState<MissionIncidentType | null>(null);
   const [incidentDescription, setIncidentDescription] = useState('');
+  const [annulationOuverte, setAnnulationOuverte] = useState(false);
 
   /*
    * Le compteur bat à la seconde sur l'appareil, mais l'ÉCHÉANCE et le MONTANT viennent du
@@ -562,6 +563,34 @@ export function MissionFieldScreen({ route, navigation }: Props) {
           <Text style={styles.secoursTexte}>Litige</Text>
         </TouchableOpacity>
       </View>
+
+      {/*
+        ANNULER — et SEULEMENT avant le démarrage.
+
+        Après, ce n'est plus une annulation mais un abandon : deux faits différents pour le client,
+        l'un le laisse libre de recommander, l'autre le laisse avec un chantier ouvert. Le serveur
+        refuse de toute façon ; ne pas montrer le bouton évite un refus qu'on n'aurait pas compris.
+      */}
+      {!mission.actual_start_at && mission.booking_id ? (
+        <View style={styles.section}>
+          {annulationOuverte ? (
+            <AnnulerLaMissionSheet
+              audience="provider"
+              bookingId={mission.booking_id}
+              onAnnulee={() => setAnnulationOuverte(false)}
+              onFermer={() => setAnnulationOuverte(false)}
+            />
+          ) : (
+            <Button
+              label="Annuler la mission"
+              variant="secondary"
+              onPress={() => setAnnulationOuverte(true)}
+              fullWidth
+              testID="ouvrir-annulation"
+            />
+          )}
+        </View>
+      ) : null}
 
       <View style={styles.gpsRow}>
         <Text style={styles.gpsLabel}>Partage GPS actif</Text>
