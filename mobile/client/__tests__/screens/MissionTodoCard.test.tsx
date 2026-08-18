@@ -20,6 +20,9 @@ jest.mock('@/booking/onsite', () => ({
   useTodoList: () => ({ data: mockListe }),
   useAjouterTache: () => ({ mutate: mockAjouter, isPending: false }),
   useRetirerTache: () => ({ mutate: mockRetirer, isPending: false }),
+  // La consigne d'acces vit dans la meme carte : sans ce bouchon, le composant tombe sur un
+  // crochet absent et le test mesurerait une panne de montage au lieu de la liste.
+  useConsigneDAcces: () => ({ mutate: jest.fn(), isPending: false }),
 }));
 
 jest.mock('@/ui', () => {

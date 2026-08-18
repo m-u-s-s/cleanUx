@@ -268,6 +268,19 @@ export function MissionFieldScreen({ route, navigation }: Props) {
 
         {ficheDAcces?.available ? (
           <>
+            {/*
+              LA CONSIGNE DE DERNIÈRE MINUTE, EN PREMIER ET DÉTACHÉE.
+ 
+              C'est la plus récente et la seule qui puisse contredire les autres — un digicode
+              changé ce matin. La noyer dans le paragraphe d'accès la ferait sauter, parce qu'on
+              relit rarement un texte qu'on croit connaître.
+            */}
+            {ficheDAcces.live_note ? (
+              <Text style={styles.consigneVive} testID="fiche-acces-consigne-vive">
+                {ficheDAcces.live_note}
+              </Text>
+            ) : null}
+
             {ficheDAcces.floor ? (
               <Text style={styles.sectionHint}>Étage : {ficheDAcces.floor}</Text>
             ) : null}
@@ -900,6 +913,17 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     fontSize: typography.fontSize.xs,
     color: t.textSecondary,
     marginTop: 2,
+  },
+  // Teinte d'alerte : elle contredit parfois ce qui est écrit juste en dessous, et c'est le seul
+  // champ de cette fiche qui puisse changer pendant que le prestataire roule.
+  consigneVive: {
+    fontSize: typography.fontSize.sm,
+    lineHeight: 19,
+    color: t.text,
+    backgroundColor: t.tint.warning,
+    borderRadius: radius.sm,
+    padding: spacing.sm,
+    marginBottom: spacing.xs,
   },
   blocageAvis: {
     fontSize: typography.fontSize.sm,

@@ -427,6 +427,40 @@ class MissionOnSiteController extends Controller
     }
 
     /**
+     * LA CONSIGNE DE DERNIÈRE MINUTE — « le digicode a changé ce matin ».
+     *
+     * Elle se pose pendant que le prestataire est en route, et elle prime sur les consignes du
+     * carnet parce qu'elle est la plus récente. Elle ne les REMPLACE pas : écrire dans le carnet
+     * ferait lire un code du jour à quelqu'un d'autre la semaine suivante.
+     *
+     * Une chaîne vide EFFACE la consigne — le client s'est trompé, ou la situation est revenue à
+     * la normale, et lui refuser l'effacement le laisserait avec une fausse consigne affichée.
+     *
+     * @bodyParam note string La consigne, ou une chaîne vide pour l'effacer. Example: Le digicode est 4589.
+     */
+    public function consigneDAcces(Request $request, Booking $booking): JsonResponse
+    {
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
+
+        $donnees = $request->validate([
+            'note' => ['present', 'nullable', 'string', 'max:500'],
+        ]);
+
+        $note = trim((string) ($donnees['note'] ?? ''));
+
+        $booking->forceFill([
+            'live_access_note' => $note !== '' ? $note : null,
+            'live_access_note_at' => $note !== '' ? now() : null,
+        ])->save();
+
+        return response()->json([
+            'ok' => true,
+            'live_note' => $booking->live_access_note,
+            'live_note_at' => $booking->live_access_note_at?->toIso8601String(),
+        ]);
+    }
+
+    /**
      * DÉCLARER SON ABSENCE (F14).
      *
      * La déclaration vient du CLIENT, jamais du prestataire : si celui qui doit prouver sa présence

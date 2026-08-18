@@ -81,6 +81,14 @@ export interface MissionAccessSheet {
   access_instructions: string | null;
   alarm_code_required: boolean;
   access_window: string | null;
+  /**
+   * LA CONSIGNE DE DERNIÈRE MINUTE — « le digicode a changé ce matin ».
+   *
+   * Dans son propre champ, et pas fondue dans `access_instructions` : l'écran doit pouvoir la
+   * DISTINGUER, sinon elle se perd au milieu d'un paragraphe qu'on a déjà lu la fois d'avant.
+   */
+  live_note?: string | null;
+  live_note_at?: string | null;
   notes: string | null;
   message?: string | null;
 }

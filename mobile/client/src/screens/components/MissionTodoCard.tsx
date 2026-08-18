@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { Button, TextInput, Icon } from '@/ui';
-import { useTodoList, useAjouterTache, useRetirerTache } from '@/booking/onsite';
+import { useTodoList, useAjouterTache, useRetirerTache, useConsigneDAcces } from '@/booking/onsite';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
@@ -29,6 +29,8 @@ export function MissionTodoCard({ bookingId }: { bookingId: number }) {
   const ajouter = useAjouterTache(bookingId);
   const retirer = useRetirerTache(bookingId);
   const [saisie, setSaisie] = useState('');
+  const [consigne, setConsigne] = useState('');
+  const envoyerLaConsigne = useConsigneDAcces(bookingId);
 
   // Une course n'a rien à cocher : le serveur ne rend alors aucun moteur exploitable.
   if (!liste || liste.engine === null || liste.engine === 'vehicule') {
@@ -96,6 +98,36 @@ export function MissionTodoCard({ bookingId }: { bookingId: number }) {
           Rien pour l’instant. Sans liste, le prestataire termine dès qu’il a fini.
         </Text>
       ) : null}
+
+      {/*
+        ── LA CONSIGNE D'ACCÈS DE DERNIÈRE MINUTE ──────────────────────────
+ 
+        Elle vit à côté de la liste parce que ce sont les deux seules choses que le client écrit
+        pendant l'intervention. Mais elle n'a PAS de fenêtre : un digicode qui change à 17 h doit
+        pouvoir se dire à 17 h, même si la liste est figée depuis longtemps — c'est le prestataire
+        qu'elle dépanne, pas le client qu'elle avantage.
+      */}
+      <View style={styles.consigne}>
+        <TextInput
+          label="Consigne d’accès de dernière minute"
+          value={consigne}
+          onChangeText={setConsigne}
+          placeholder="Le digicode est 4589."
+          testID="consigne-saisie"
+        />
+        <Button
+          label="Envoyer au prestataire"
+          variant="secondary"
+          onPress={() =>
+            envoyerLaConsigne.mutate(consigne.trim(), {
+              onError: (e: { message?: string }) =>
+                Alert.alert('Impossible', e.message ?? 'La consigne n’a pas pu être envoyée.'),
+            })
+          }
+          loading={envoyerLaConsigne.isPending}
+          testID="consigne-envoyer"
+        />
+      </View>
 
       {fenetre.open ? (
         <>
@@ -173,6 +205,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   labelFaite: { color: t.textSecondary, textDecorationLine: 'line-through' },
   vide: { fontSize: typography.fontSize.sm, color: t.textSecondary },
   figee: { fontSize: typography.fontSize.sm, color: t.textSecondary, fontStyle: 'italic' },
+  consigne: { gap: spacing.xs, marginTop: spacing.sm },
   suggestions: { gap: spacing.xs, marginTop: spacing.xs },
   suggestionsTitre: { fontSize: typography.fontSize.xs, color: t.textSecondary },
   puces: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },

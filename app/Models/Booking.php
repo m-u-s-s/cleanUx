@@ -361,6 +361,15 @@ class Booking extends Model
 
         // F14 / F15 — déclaration d'absence, contact de secours, et ping de mi-mission.
         'client_absent',
+        /*
+         * LA CONSIGNE DE DERNIÈRE MINUTE — « le digicode a changé ce matin ».
+         *
+         * Distincte des consignes du carnet de lieux, écrites des semaines avant : celle-ci se pose
+         * pendant que le prestataire est en route et ne vaut que pour cette intervention. Les
+         * confondre ferait lire un code périmé à quelqu'un d'autre la semaine suivante.
+         */
+        'live_access_note',
+        'live_access_note_at',
         'client_absent_instructions',
         'backup_contact_name',
         'backup_contact_phone',
@@ -374,6 +383,7 @@ class Booking extends Model
         'date' => 'date',
         'approved_at' => 'datetime',
         'cancelled_at' => 'datetime',
+        'live_access_note_at' => 'datetime',
         'mission_started_at' => 'datetime',
         'mission_arrived_at' => 'datetime',
         'mission_finished_at' => 'datetime',

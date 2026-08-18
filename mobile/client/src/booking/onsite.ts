@@ -366,3 +366,25 @@ export function useRepondreALaRevision(bookingId: number | null) {
     },
   });
 }
+
+
+/**
+ * LA CONSIGNE D'ACCÈS DE DERNIÈRE MINUTE — « le digicode a changé ce matin ».
+ *
+ * Elle se pose pendant que le prestataire est en route, et elle prime sur les consignes du carnet
+ * SANS les remplacer : écrire dans le carnet ferait lire un code du jour à quelqu'un d'autre la
+ * semaine suivante.
+ *
+ * Une chaîne vide efface — le client s'est trompé, ou la situation est revenue à la normale.
+ */
+export function useConsigneDAcces(bookingId: number | null) {
+  const qc = useQueryClient();
+
+  return useMutation<{ live_note: string | null }, ApiError, string>({
+    mutationFn: async (note) =>
+      (await apiClient.post(`/client/bookings/${bookingId}/onsite/access-note`, { note })).data,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['client', 'booking', bookingId, 'onsite'] });
+    },
+  });
+}

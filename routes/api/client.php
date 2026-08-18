@@ -166,6 +166,13 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     Route::get('/bookings/{booking}/onsite/quote-revision', [ClientMissionOnSiteController::class, 'revisionDeDevis']);
     Route::post('/bookings/{booking}/onsite/quote-revision/{revision}/accept', [ClientMissionOnSiteController::class, 'accepterLaRevision']);
     Route::post('/bookings/{booking}/onsite/quote-revision/{revision}/decline', [ClientMissionOnSiteController::class, 'refuserLaRevision']);
+    /*
+     * LA CONSIGNE DE DERNIERE MINUTE — « le digicode a change ce matin ».
+     *
+     * Sur le chemin `onsite` comme la to-do list : elle se pose pendant que le prestataire est en
+     * route, et elle prime sur les consignes du carnet sans les remplacer.
+     */
+    Route::post('/bookings/{booking}/onsite/access-note', [ClientMissionOnSiteController::class, 'consigneDAcces']);
     // F16 — la clôture guidée : rapport, puis pourboire, puis avis.
     Route::get('/bookings/{booking}/onsite/closure', [ClientMissionOnSiteController::class, 'closureFlow']);
     Route::post('/bookings/{booking}/onsite/extras/{extra}/approve', [ClientMissionOnSiteController::class, 'approveExtra']);

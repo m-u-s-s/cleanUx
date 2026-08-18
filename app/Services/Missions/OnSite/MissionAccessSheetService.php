@@ -78,6 +78,19 @@ class MissionAccessSheetService
             'access_instructions' => $site?->access_instructions
                 ?: ($lieu?->access_instructions
                     ?: ($booking?->commentaire_client ?: $booking?->customer_comment)),
+            /*
+             * LA CONSIGNE DE DERNIÈRE MINUTE, À PART ET AU-DESSUS.
+             *
+             * Les trois sources ci-dessus sont écrites avant l'intervention, souvent des semaines
+             * avant. Celle-ci se pose pendant que le prestataire est en route — « le digicode a
+             * changé ce matin » — et c'est la plus récente qui fait foi.
+             *
+             * Rendue dans SON PROPRE champ et non fondue dans les consignes : l'écran doit pouvoir
+             * la distinguer visuellement, sinon elle se perd au milieu d'un paragraphe qu'on a déjà
+             * lu la fois d'avant.
+             */
+            'live_note' => $booking?->live_access_note,
+            'live_note_at' => $booking?->live_access_note_at?->toIso8601String(),
             // Un code d'alarme demande une manœuvre chronométrée : le prestataire doit le savoir
             // AVANT d'ouvrir la porte, pas en entendant la sirène.
             'alarm_code_required' => (bool) ($site->alarm_code_required ?? $lieu->alarm_code_required ?? false),
@@ -120,6 +133,8 @@ class MissionAccessSheetService
             'address' => null,
             'floor' => null,
             'access_instructions' => null,
+            'live_note' => null,
+            'live_note_at' => null,
             'alarm_code_required' => false,
             'access_window' => null,
             // MÊMES CLÉS QUE LA FICHE OUVERTE : un appelant qui doit tester la présence d'une clé
