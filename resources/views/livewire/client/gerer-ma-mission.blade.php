@@ -121,4 +121,18 @@
             @endif
         </div>
     @endif
+
+    {{--
+        ANNULER — en bas, et c'est voulu.
+
+        C'est le geste dont on ne veut pas qu'il soit le premier vu. Il reste atteignable sans
+        chercher, mais après ce qui peut encore sauver l'intervention : le devis à accepter, la
+        liste à corriger.
+    --}}
+    @if($mission)
+    <div class="pt-2">
+        <livewire:shared.annuler-la-mission :booking="$mission->booking" role="client"
+                                            :key="'annuler-client-'.$mission->id" />
+    </div>
+    @endif
 </div>

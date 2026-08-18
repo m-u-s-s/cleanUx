@@ -198,4 +198,18 @@
         @endif
     </div>
     @endif
+
+    {{--
+        ANNULER — en dernier, et seulement AVANT le démarrage.
+
+        Après, ce n'est plus une annulation mais un abandon : deux faits différents pour le client,
+        l'un le laisse libre de recommander, l'autre le laisse avec un chantier ouvert. Le composant
+        refuse de se monter une fois la mission démarrée.
+    --}}
+    @if($mission->actual_start_at === null)
+    <div class="pt-1">
+        <livewire:shared.annuler-la-mission :booking="$mission->booking" role="provider"
+                                            :key="'annuler-presta-'.$mission->id" />
+    </div>
+    @endif
 </section>
