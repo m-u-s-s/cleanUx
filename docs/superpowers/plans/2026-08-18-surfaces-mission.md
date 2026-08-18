@@ -72,3 +72,37 @@ mobile des deux côtés.
 - Le questionnaire servi par l'API reçoit ses écrans, des deux côtés, web et mobile.
 
 ### Task 9 : suite ciblée, `tsc`, jest mobile, PHPStan sans chemin
+
+---
+
+## État à l'issue de cette passe — 2026-08-18
+
+**Vert :** 348 tests mission (PHP) · 453 mobile client · 650 mobile provider · `tsc` propre des deux
+côtés · PHPStan sans argument de chemin : 0 erreur.
+
+| Tâche | État | Détail |
+|---|---|---|
+| 1 · hooks client | ✅ | to-do list et révision de devis dans `booking/onsite.ts` |
+| 2 · feuille « Ma mission » | ✅ | `MissionSheet` + 6 tests |
+| 3 · bouton sous la carte | ✅ | + correction de la couleur en dur de l'encart ETA |
+| 4 · « Gérer ma mission » | ✅ | `MissionQuoteRevisionCard` + `MissionTodoCard`, 12 tests |
+| 5 · terrain prestataire | ⚠️ **partiel** | voir ci-dessous |
+| 6 · web client | ✅ | `GererMaMission` + 5 tests, garde et `#[Locked]` |
+| 7 · web prestataire | ❌ | les cinq blocs manquants |
+| 8 · annuler par rôle | ❌ | le questionnaire est servi, il lui manque ses écrans |
+
+### Tâche 5 — ce qui a été fait, et ce qui a été écarté
+
+**Fait :** le moteur est servi par le payload (`engine`), la page terrain le lit, le nouveau devis
+y arrive — moteur à domicile seulement, et AVANT le supplément parce qu'il est avant lui dans le
+temps. Le supplément n'est plus **monté** sur une course. Le SOS, la messagerie et le litige
+deviennent atteignables depuis le terrain.
+
+**Écarté, et c'est un choix :** la spec disait « trois écrans ». La page fait 789 lignes et porte
+huit outils que le porteur veut tous conserver ; la découper en trois fichiers aurait déplacé du
+code sans rien ajouter, avec le risque d'en perdre en route. Une page **composée par moteur** donne
+le même résultat visible — chaque moteur voit ses options et seulement les siennes — sans toucher à
+ce qui marche. Les sections neuves, elles, naissent en fichiers séparés.
+
+**Le renfort depuis le terrain** appartient au plan 5 : c'est la proposition ② des sept ajouts, et
+elle demande une API que le prestataire n'a pas encore.
