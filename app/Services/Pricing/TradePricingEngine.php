@@ -4,6 +4,7 @@ namespace App\Services\Pricing;
 
 use App\Models\ServiceCatalog;
 use App\Models\TradeZonePricing;
+use App\Support\International\Devise;
 
 /**
  * TradePricingEngine — calculates booking price estimates per trade billing model.
@@ -47,7 +48,8 @@ class TradePricingEngine
     public function estimate(
         ServiceCatalog $service,
         array $formAnswers = [],
-        ?int $serviceZoneId = null
+        ?int $serviceZoneId = null,
+        ?string $currency = null,
     ): array {
         $trade = $service->trade;
         $billingUnit = $this->normaliseUnit(
@@ -89,7 +91,26 @@ class TradePricingEngine
             'quantity' => $quantity,
             'surge_multiplier' => $surgeMultiplier,
             'subtotal' => round($subtotal, 2),
-            'currency' => 'EUR',
+            /*
+             * LA DEVISE EST FOURNIE PAR L'APPELANT, ELLE N'EST PAS DEVINEE ICI.
+             *
+             * Ce tableau alimente l'estimation montree au client et le devis du prestataire. Le
+             * montant venait deja du bon marche -- `TradeZonePricing` est resolu par zone quelques
+             * lignes plus haut -- mais l'etiquette valait `'EUR'` en dur : un chantier marocain
+             * chiffre au tarif marocain, presente en euros. Un prix juste avec la mauvaise monnaie
+             * est pire qu'un prix faux, parce qu'on le lit sans se mefier.
+             *
+             * PREMIERE TENTATIVE, ECARTEE : resoudre la zone ici pour en tirer le pays. Elle
+             * fonctionnait, et elle etait mauvaise. Ce moteur est un CALCUL -- ses tests unitaires
+             * tournent sans base, et quatre d'entre eux sont tombes sur « no such table:
+             * service_zones ». Lui faire interroger la geographie le couplait a une couche qui
+             * n'est pas la sienne, et posait une requete sur le chemin chaud de l'estimation.
+             *
+             * L'appelant, lui, connait deja la position : c'est lui qui a fourni la zone. Il
+             * resout la devise par l'autorite commune et la passe. Le repli sur la devise de la
+             * plateforme ne sert qu'aux appels qui ne savent rien du lieu.
+             */
+            'currency' => Devise::premiereRenseignee($currency),
             'zone_pricing_applied' => $zonePricing !== null,
             'price_source' => $priceSource,
         ];

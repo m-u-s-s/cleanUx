@@ -6,6 +6,7 @@ use App\Models\Referral;
 use App\Models\User;
 use App\Services\Loyalty\LoyaltyService;
 use App\Services\Push\PushService;
+use App\Support\International\Devise;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -109,7 +110,7 @@ class ReferralViralTierEngine
                 DB::table('customer_credits')->insert([
                     'user_id' => $referrer->id,
                     'amount_cents' => (int) $tier['credit_cents'],
-                    'currency' => 'EUR',
+                    'currency' => Devise::plateforme(),
                     'source' => 'referral_tier_'.$tier['code'],
                     'expires_at' => now()->addMonths(6),
                     'created_at' => now(),

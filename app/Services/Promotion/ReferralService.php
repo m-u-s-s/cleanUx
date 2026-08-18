@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Notifications\Promotion\ReferralRewardGrantedNotification;
 use App\Services\Loyalty\LoyaltyService;
 use App\Support\ActivityLogger;
+use App\Support\International\Devise;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -96,7 +97,7 @@ class ReferralService
                 'expires_at' => now()->addDays($this->referralExpiryDays()),
                 'referrer_reward_amount' => $this->referrerRewardAmount(),
                 'referee_reward_amount' => $this->refereeRewardAmount(),
-                'currency' => 'EUR',
+                'currency' => Devise::plateforme(),
                 'source_channel' => $sourceChannel,
                 'ip_signup' => $ip,
             ]);
@@ -285,7 +286,7 @@ class ReferralService
             'rewards' => [
                 'referrer_amount' => $this->referrerRewardAmount(),
                 'referee_amount' => $this->refereeRewardAmount(),
-                'currency' => 'EUR',
+                'currency' => Devise::plateforme(),
             ],
             'stats' => $stats,
             'current_tier' => $currentTier,

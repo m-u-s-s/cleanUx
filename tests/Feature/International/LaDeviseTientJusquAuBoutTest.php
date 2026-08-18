@@ -40,6 +40,23 @@ class LaDeviseTientJusquAuBoutTest extends TestCase
 {
     use RefreshDatabase;
 
+    /*
+     * LES DEUX MOTIFS SONT DES CONSTANTES, ET LE TEMOIN EMPLOIE LES MEMES.
+     *
+     * Ils etaient recopies : le balayage et son temoin portaient deux versions de la meme
+     * expression, dont l'une mal echappee -- `"\$currency"` interpole la variable au lieu de
+     * chercher le texte, et le test tombait sur « Undefined variable ». Le temoin, lui, restait
+     * vert : il eprouvait une expression que le code n'utilisait pas.
+     *
+     * Un temoin qui mesure une COPIE ne prouve rien de l'original. Une seule definition, donc.
+     */
+
+    /** `'currency' => 'EUR'` — l'affectation d'un litteral. */
+    private const MOTIF_AFFECTATION = "/'currency'\s*=>\s*'[A-Za-z]{3}'/";
+
+    /** `$currency = 'EUR'` — le defaut de parametre ou de propriete. */
+    private const MOTIF_DEFAUT = "/\\\$currency\s*=\s*'[A-Za-z]{3}'/";
+
     // ── Le portefeuille ──────────────────────────────────────────────────
 
     public function test_un_prestataire_paye_en_dirhams_voit_son_solde(): void
@@ -132,7 +149,7 @@ class LaDeviseTientJusquAuBoutTest extends TestCase
         $this->assertStringContainsString('Devise::premiereRenseignee($booking->currency)', $source);
         $this->assertSame(
             0,
-            preg_match("/'currency'\s*=>\s*'[A-Za-z]{3}'/", $source),
+            preg_match(self::MOTIF_AFFECTATION, $source),
             'Le pourboire fixe encore une devise en dur.',
         );
 
@@ -141,45 +158,79 @@ class LaDeviseTientJusquAuBoutTest extends TestCase
     }
 
     /**
-     * AUCUN OBJET D'ARGENT NE FIXE PLUS DE DEVISE EN DUR.
+     * PLUS AUCUNE DEVISE LITTÉRALE DANS `app/` — ON BALAIE TOUT, PLUS UNE LISTE BLANCHE.
      *
-     * On relit les sources parce que c'est la seule façon de couvrir d'un coup les huit écrivains
-     * remontés — et parce que le neuvième naîtra de la même manière que les huit premiers : une
-     * ligne raisonnable, écrite seule, dans un fichier qu'on ne relit pas.
+     * LA PREMIÈRE VERSION DE CE TEST ÉNUMÉRAIT HUIT FICHIERS, ceux qu'on venait de reprendre. Elle
+     * était verte pendant que `TradePricingEngine` continuait d'étiqueter « EUR » le prix affiché
+     * au client et le devis du prestataire — un chantier marocain chiffré au tarif marocain et
+     * présenté en euros. Une liste blanche ne protège que de ce qu'on a déjà vu ; c'est un
+     * inventaire, pas un garde.
+     *
+     * On balaie donc `app/` en entier. Deux exceptions, et les deux sont des TABLES par pays où
+     * chaque `'eur'` est la donnée juste de sa ligne, pas un repli : {@see StripeCountryMapper} et
+     * {@see CountryConfigService}. Les inscrire ici les rend visibles ; les
+     * omettre du balayage les aurait rendues invisibles.
      */
-    public function test_aucun_ecrivain_dargent_ne_fixe_de_devise(): void
+    public function test_aucune_devise_litterale_ne_subsiste_dans_app(): void
     {
-        $ecrivains = [
-            'app/Services/Tips/TipService.php',
-            'app/Services/Finance/Concerns/SynchronizesFinanceDocuments.php',
-            'app/Services/Bundles/MultiTradeBundleService.php',
-            'app/Console/Commands/ProcessProviderPayouts.php',
-            'app/Http/Controllers/Api/Provider/ProviderPayoutsController.php',
-            'app/Http/Controllers/Api/Provider/ProviderWalletController.php',
-            'app/Services/Payments/ProviderWalletService.php',
-            'app/Livewire/Admin/B2BOperationsCenter.php',
+        /*
+         * LES TABLES PAR PAYS, où un code de devise EST la donnée.
+         *
+         * `StripeCountryMapper` dit dans quelle monnaie chaque pays règle chez Stripe ;
+         * `CountryConfigService` porte le socle servi quand la base est vide. Y remplacer les
+         * littéraux par un appel ferait dire à toutes les lignes la même chose, c'est-à-dire
+         * détruirait l'information.
+         */
+        $tablesParPays = [
+            'app/Services/Payments/StripeCountryMapper.php',
+            'app/Services/Country/CountryConfigService.php',
         ];
 
         $coupables = [];
 
-        foreach ($ecrivains as $chemin) {
-            $source = (string) file_get_contents(base_path($chemin));
+        foreach ($this->sourcesDeApp() as $chemin => $source) {
+            if (in_array($chemin, $tablesParPays, true)) {
+                continue;
+            }
 
-            $this->assertNotSame('', $source, "{$chemin} est introuvable : le test ne mesure plus rien.");
-
-            // On cherche l'AFFECTATION d'un littéral, dans les deux casses — Stripe attend des
-            // minuscules, et c'est sous cette forme que le transfert se trompait.
-            if (preg_match("/'currency'\s*=>\s*'[A-Za-z]{3}'/", $source) === 1) {
+            // L'AFFECTATION d'un littéral, dans les deux casses : Stripe attend des minuscules, et
+            // c'est sous cette forme que le transfert de versement se trompait.
+            if (preg_match(self::MOTIF_AFFECTATION, $source) === 1) {
                 $coupables[] = "{$chemin} affecte une devise littérale";
             }
 
-            // Et le repli `= 'EUR'` d'un paramètre, qui est ce qui vidait le portefeuille.
-            if (preg_match("/\\\$currency\s*=\s*'[A-Za-z]{3}'/", $source) === 1) {
+            // Et le défaut de paramètre, qui est ce qui vidait le portefeuille d'un prestataire
+            // payé dans une autre monnaie.
+            if (preg_match(self::MOTIF_DEFAUT, $source) === 1) {
                 $coupables[] = "{$chemin} impose une devise par défaut";
             }
         }
 
-        $this->assertSame([], $coupables, implode("\n", $coupables));
+        $this->assertSame(
+            [],
+            $coupables,
+            'Une devise est écrite en dur. Employer `Devise::plateforme()` pour un montant émis par '
+            .'la plateforme, ou `CountryMarketResolver::deviseAttendue()` quand une position est '
+            .'connue.
+'.implode('
+', $coupables),
+        );
+    }
+
+    /**
+     * TÉMOIN DE PORTÉE — le balayage lit bien tout `app/`.
+     *
+     * Sans lui, le test précédent serait vert sur un chemin faux ou un itérateur vide : il
+     * compterait zéro coupable parmi zéro fichier, et n'annoncerait rien d'autre que sa propre
+     * impuissance. C'est exactement ce qui rend une liste blanche dangereuse.
+     */
+    public function test_temoin_le_balayage_lit_bien_tout_app(): void
+    {
+        $sources = $this->sourcesDeApp();
+
+        $this->assertGreaterThan(500, count($sources));
+        $this->assertArrayHasKey('app/Services/Pricing/TradePricingEngine.php', $sources);
+        $this->assertArrayHasKey('app/Services/Payments/ProviderWalletService.php', $sources);
     }
 
     /**
@@ -189,11 +240,11 @@ class LaDeviseTientJusquAuBoutTest extends TestCase
      */
     public function test_temoin_les_motifs_reconnaissent_les_formes_fautives(): void
     {
-        $this->assertSame(1, preg_match("/'currency'\s*=>\s*'[A-Za-z]{3}'/", "['currency' => 'eur']"));
-        $this->assertSame(1, preg_match("/\\\$currency\s*=\s*'[A-Za-z]{3}'/", "\$currency = 'EUR';"));
+        $this->assertSame(1, preg_match(self::MOTIF_AFFECTATION, "['currency' => 'eur']"));
+        $this->assertSame(1, preg_match(self::MOTIF_DEFAUT, "\$currency = 'EUR';"));
 
-        $this->assertSame(0, preg_match("/'currency'\s*=>\s*'[A-Za-z]{3}'/", "['currency' => Devise::plateforme()]"));
-        $this->assertSame(0, preg_match("/\\\$currency\s*=\s*'[A-Za-z]{3}'/", '$currency = $booking->currency;'));
+        $this->assertSame(0, preg_match(self::MOTIF_AFFECTATION, "['currency' => Devise::plateforme()]"));
+        $this->assertSame(0, preg_match(self::MOTIF_DEFAUT, '$currency = $booking->currency;'));
     }
 
     // ── La liste publique des pays ───────────────────────────────────────
@@ -269,6 +320,36 @@ class LaDeviseTientJusquAuBoutTest extends TestCase
     }
 
     // ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * Toutes les sources de `app/`, chemin relatif => contenu.
+     *
+     * @return array<string, string>
+     */
+    private function sourcesDeApp(): array
+    {
+        $sources = [];
+
+        $iterateur = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator(base_path('app'), \FilesystemIterator::SKIP_DOTS),
+        );
+
+        foreach ($iterateur as $fichier) {
+            if ($fichier->getExtension() !== 'php') {
+                continue;
+            }
+
+            $chemin = str_replace(
+                DIRECTORY_SEPARATOR,
+                '/',
+                str_replace(base_path().DIRECTORY_SEPARATOR, '', $fichier->getPathname()),
+            );
+
+            $sources[$chemin] = (string) file_get_contents($fichier->getPathname());
+        }
+
+        return $sources;
+    }
 
     private function crediter(User $prestataire, float $montant, string $devise): void
     {

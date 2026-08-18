@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\ServiceCatalog;
+use App\Models\ServiceZone;
+use App\Services\International\CountryMarketResolver;
 use App\Services\Pricing\TradePricingEngine;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -47,10 +49,26 @@ class BookingEstimateController extends Controller
             return response()->json(['message' => 'Service not found.'], 404);
         }
 
+        /*
+         * C'EST ICI QUE LA DEVISE SE DECIDE, PAS DANS LE MOTEUR.
+         *
+         * Le moteur de tarification est un calcul : lui faire resoudre la geographie le couplerait
+         * a une couche qui n'est pas la sienne, et poserait une requete sur le chemin chaud de
+         * l'estimation. Ce controleur, lui, a deja la zone sous la main -- c'est le client qui la
+         * lui a donnee -- et il la passe a l'autorite commune.
+         *
+         * Sans cela, le montant venait du marche marocain et l'etiquette disait « EUR ».
+         */
+        $zoneId = $validated['service_zone_id'] ?? null;
+
         $estimate = $this->engine->estimate(
             $service,
             $validated['trade_form_answers'] ?? [],
-            $validated['service_zone_id'] ?? null,
+            $zoneId,
+            app(CountryMarketResolver::class)->deviseAttendue(
+                client: $request->user(),
+                zone: $zoneId ? ServiceZone::query()->find($zoneId) : null,
+            ),
         );
 
         return response()->json(['ok' => true, 'data' => $estimate]);

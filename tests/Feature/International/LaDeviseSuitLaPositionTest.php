@@ -194,6 +194,9 @@ class LaDeviseSuitLaPositionTest extends TestCase
             'app/Actions/Booking/CreateBookingFromApiAction.php',
             'app/Services/Booking/CreateBookingAction.php',
             'app/Services/Assistant/Tools/Implementations/CreateBookingTool.php',
+            // L'estimation rendue au client porte une devise : elle doit venir de la position, et
+            // c'est ce controleur qui la resout depuis la zone, pas le moteur de calcul.
+            'app/Http/Controllers/Api/Client/BookingEstimateController.php',
         ];
 
         foreach ($ecrivains as $chemin) {

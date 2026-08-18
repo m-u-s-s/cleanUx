@@ -4,6 +4,7 @@ namespace App\Livewire\SuperAdmin;
 
 use App\Models\PlatformSettlementAccount;
 use App\Services\Payments\PlatformSettlementService;
+use App\Support\International\Devise;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -25,7 +26,12 @@ class PlatformSettlement extends Component
 {
     public string $label = '';
 
-    public string $currency = 'eur';
+    /**
+     * Vide a l'initialisation, posee au montage : une propriete PHP ne peut pas appeler de
+     * fonction dans sa valeur par defaut, et `'eur'` en dur ferait creer des comptes de secours
+     * libelles en euros sur une plateforme qui n'y regle pas.
+     */
+    public string $currency = '';
 
     public string $country = 'BE';
 
@@ -40,6 +46,11 @@ class PlatformSettlement extends Component
     public string $notes = '';
 
     public ?string $avis = null;
+
+    public function mount(): void
+    {
+        $this->currency = strtolower(Devise::plateforme());
+    }
 
     protected function service(): PlatformSettlementService
     {
