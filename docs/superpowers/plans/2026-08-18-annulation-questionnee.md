@@ -69,3 +69,42 @@ entrée `admin:admin.cancellation-questions.center` dans `config/modules.php`.
 `refuser(stop)` peut désormais annuler avec un motif exempté : le client de bonne foi ne paie rien.
 
 ### Task 9 : suite ciblée, PHPStan sans chemin, `migrate --pretend`
+
+---
+
+## État à la fin du plan — 2026-08-18
+
+**Terminé, vert, PHPStan propre.** 343 tests sur le périmètre mission, 137 sur l'annulation,
+94 sur les annuaires de modules.
+
+| Tâche | État | Fichiers |
+|---|---|---|
+| 1 · tables | ✅ | `2026_09_06_090000_creer_le_questionnaire_d_annulation.php` · `CancellationQuestion` · `CancellationQuestionOption` |
+| 2 · service, seule porte d'écriture | ✅ | `CancellationQuestionnaireService` |
+| 3 · vérifications | ✅ | `CancellationAnswerVerifier` (retard, déplacement, client injoignable) |
+| 4 · plafond des motifs exemptés | ✅ | `CancellationExemptQuota` + 5 lignes dans `CancellationEngine::quote()` |
+| 5 · questionnaire servi par l'API | ✅ | 2 routes `cancellation-questionnaire`, client et prestataire |
+| 6 · questionnaire par défaut | ✅ | `CancellationQuestionnaireSeeder` — 3 questions, 11 réponses, 6 motifs exemptés |
+| 7 · module admin | ✅ | `CancellationQuestionResource` · `QuestionnaireCenter` + vue · les deux annuaires |
+| 8 · refermer le report du plan 2 | ✅ | `refuser(stop)` annule par le tuyau commun, gratuitement, plafonné à 2/30 j |
+
+### Ce que le plan a réveillé
+
+`max_per_user_per_30d` était déclarée, semée à 2 pour l'urgence médicale, et **appliquée par
+personne** : le motif le plus généreux du barème exonérait autant de fois que voulu. Il mord
+désormais — et le dépassement retire l'exemption, jamais le motif : on doit pouvoir relire qu'une
+personne l'a invoqué six fois en un mois.
+
+Et l'aperçu consulte le même plafond que l'exécution. Sans cela, l'écran aurait annoncé « 0 € »
+pendant que le débit tombait : un montant montré doit être celui qu'on prélève.
+
+### Ce qui reste au plan 4
+
+Les **boutons** d'annulation par rôle, sur les écrans. Le questionnaire est servi par l'API des
+deux côtés ; il lui manque ses surfaces — web et mobile, client et prestataire. C'est le lot des
+surfaces, pas celui-ci.
+
+**L'édition des OPTIONS** reste sur l'API de la console (mobile) : la page web liste, active,
+désactive et retire, mais n'édite pas une réponse ligne à ligne. Une question porte un arbre —
+vérification, issue, exemption, signal — que le rendu générique d'une liste ne sait pas montrer sans
+mentir sur sa structure. Même choix que la grille tarifaire d'un métier, qui reste sur sa page.
