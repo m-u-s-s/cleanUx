@@ -4,7 +4,7 @@ namespace App\Services\Missions;
 
 use App\Models\Mission;
 use App\Models\MissionChecklist;
-use App\Models\MissionChecklistItem;
+use App\Support\Domain\MissionEngine;
 
 class MissionChecklistService
 {
@@ -52,19 +52,47 @@ class MissionChecklistService
             ]
         );
 
-        if (! $checklist->items()->exists()) {
-            foreach ($template['items'] as $label) {
-                MissionChecklistItem::query()->create([
-                    'mission_checklist_id' => $checklist->id,
-                    'label' => $label,
-                    'item_type' => 'checkbox',
-                    'is_required' => true,
-                    'status' => self::A_FAIRE,
-                ]);
-            }
-        }
+        /*
+         * LA LISTE NAÎT VIDE — et c'est le renversement du module.
+         *
+         * Elle posait ici les six tâches du gabarit, toutes OBLIGATOIRES. Le prestataire cochait
+         * donc six cases que personne ne lui avait demandées, pendant que ce que le CLIENT voulait
+         * n'existait nulle part : il n'avait aucun moyen de dire « la hotte, surtout », et la seule
+         * liste qui barre la clôture ignorait sa demande.
+         *
+         * Le savoir-faire du gabarit n'est pas jeté : il vit dans `suggestionsPour()`, que le
+         * client ajoute d'un tap. Ce qui change, c'est QUI DÉCIDE.
+         *
+         * Conséquence assumée : une mission dont le client n'a rien listé se clôture sans cocher
+         * quoi que ce soit. C'est le comportement voulu — on ne bloque un prestataire que sur une
+         * demande réelle.
+         */
 
         return $checklist->fresh('items');
+    }
+
+    /**
+     * LE GABARIT, RENDU COMME PROPOSITIONS.
+     *
+     * Ce sont les mêmes libellés qu'avant, au même endroit, tirés du même arbre de décision par
+     * métier. Seul leur statut change : ils ne s'imposent plus, ils s'offrent. Le client les
+     * ajoute d'un tap depuis « Gérer ma mission », et ils deviennent alors des tâches `client`
+     * comme les autres.
+     *
+     * Une course n'en reçoit aucune, pour la raison qui lui refuse déjà la checklist : il n'y a
+     * rien à cocher sur un trajet.
+     *
+     * @return list<string>
+     */
+    public function suggestionsPour(Mission $mission): array
+    {
+        $mission->loadMissing(['serviceCatalog', 'booking']);
+
+        if (! MissionEngine::accepteLaToDoList(MissionEngine::pourMission($mission))) {
+            return [];
+        }
+
+        return array_values($this->resolveTemplate($mission)['items']);
     }
 
     public function refreshProgress(MissionChecklist $checklist): MissionChecklist

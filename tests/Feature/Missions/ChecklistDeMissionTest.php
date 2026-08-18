@@ -11,6 +11,7 @@ use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Services\Missions\MissionChecklistService;
 use App\Services\Missions\MissionLifecycleService;
+use App\Services\Missions\MissionTodoService;
 use App\Support\Domain\BookingStatus;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -94,7 +95,14 @@ class ChecklistDeMissionTest extends TestCase
         $this->assertSame(0, MissionChecklist::where('mission_id', $mission->id)->count());
     }
 
-    /** LE TÉMOIN : une intervention ordinaire garde bien sa checklist et ses tâches. */
+    /**
+     * LE TÉMOIN : une intervention ordinaire garde bien sa checklist.
+     *
+     * Elle assertait aussi « et ses tâches », ce qui n'est plus vrai depuis que le gabarit propose
+     * au lieu d'imposer — la liste naît vide et c'est le CLIENT qui la remplit. L'assertion est
+     * donc déplacée là où elle a désormais un sens : la liste existe, et elle accueille bien ce
+     * que le client y met.
+     */
     public function test_une_intervention_ordinaire_garde_sa_checklist(): void
     {
         [, $mission] = $this->mission(course: false);
@@ -102,7 +110,10 @@ class ChecklistDeMissionTest extends TestCase
         $checklist = app(MissionChecklistService::class)->ensureChecklist($mission);
 
         $this->assertNotNull($checklist);
-        $this->assertGreaterThan(0, $checklist->items()->count());
+
+        app(MissionTodoService::class)->ajouter($mission, $mission->booking->client, 'Nettoyer la hotte');
+
+        $this->assertSame(1, $checklist->fresh()->items()->count());
     }
 
     /**
@@ -114,6 +125,11 @@ class ChecklistDeMissionTest extends TestCase
     {
         [$prestataire, $mission] = $this->mission(course: false);
         $checklist = app(MissionChecklistService::class)->ensureChecklist($mission);
+
+        // La tâche vient du CLIENT désormais, et non plus d'un gabarit imposé. Ce que ce test
+        // protège est inchangé : le vocabulaire écrit par l'écran doit ouvrir la porte de clôture.
+        app(MissionTodoService::class)->ajouter($mission, $mission->booking->client, 'Nettoyer la hotte');
+        $checklist = $checklist->fresh('items');
 
         $this->actingAs($prestataire);
         $composant = Livewire::test(MissionExecutionBoard::class, ['mission' => $mission]);
@@ -144,6 +160,7 @@ class ChecklistDeMissionTest extends TestCase
     {
         [$prestataire, $mission] = $this->mission(course: false);
         app(MissionChecklistService::class)->ensureChecklist($mission);
+        app(MissionTodoService::class)->ajouter($mission, $mission->booking->client, 'Nettoyer la hotte');
 
         $this->expectException(RuntimeException::class);
 
