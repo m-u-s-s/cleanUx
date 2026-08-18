@@ -114,15 +114,48 @@ export function TradePicker({
 }) {
   const styles = stylesFor(useThemeColors());
 
-  const { data: options, isLoading, isError } = useRegistrationOptions();
+  const { data: options, isLoading, isError, refetch } = useRegistrationOptions();
   const trades = flattenTrades(options);
 
   if (isLoading) {
     return <Text style={styles.kindPrompt}>Chargement des métiers…</Text>;
   }
 
-  if (isError || trades.length === 0) {
-    return <Text style={styles.fieldError}>Impossible de charger la liste des métiers.</Text>;
+  /*
+   * « LA REQUÊTE A ÉCHOUÉ » ET « LA LISTE EST VIDE » SONT DEUX CHOSES.
+   *
+   * Les deux partageaient le message « Impossible de charger la liste des métiers », et la
+   * différence n'est pas cosmétique : dans un cas réessayer résout, dans l'autre réessayer ne
+   * résoudra JAMAIS. Un candidat prestataire devant une liste vide relançait donc indéfiniment un
+   * écran qui ne pouvait pas changer — et l'étape suivante lui refuse d'avancer, puisque sans
+   * métier déclaré aucune mission ne peut lui être proposée.
+   */
+  if (isError) {
+    return (
+      <View>
+        <Text style={styles.fieldError}>
+          La liste des métiers n’a pas pu être chargée. Vérifiez votre connexion.
+        </Text>
+        <TouchableOpacity
+          onPress={() => void refetch()}
+          accessibilityRole="button"
+          testID="register-trades-retry"
+        >
+          <Text style={styles.retryLink}>Réessayer</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (trades.length === 0) {
+    // PAS DE BOUTON « RÉESSAYER » ICI, et c'est le point : il n'y a rien à recharger. Le message
+    // dit ce qui se passe réellement plutôt que de suggérer un geste sans effet.
+    return (
+      <Text style={styles.fieldHint} testID="register-trades-empty">
+        Aucun métier n’est ouvert à l’inscription pour le moment. Notre équipe ouvre les métiers
+        zone par zone — réessayez plus tard ou contactez-nous.
+      </Text>
+    );
   }
 
   return (
@@ -174,15 +207,44 @@ export function ZonePicker({
 }) {
   const styles = stylesFor(useThemeColors());
 
-  const { data: options, isLoading, isError } = useRegistrationOptions();
+  const { data: options, isLoading, isError, refetch } = useRegistrationOptions();
   const zones = zonesPourMetier(options, tradeId);
 
   if (isLoading) {
     return <Text style={styles.kindPrompt}>Chargement des zones…</Text>;
   }
 
-  if (isError || zones.length === 0) {
-    return <Text style={styles.fieldError}>Impossible de charger la liste des zones.</Text>;
+  if (isError) {
+    return (
+      <View>
+        <Text style={styles.fieldError}>
+          La liste des zones n’a pas pu être chargée. Vérifiez votre connexion.
+        </Text>
+        <TouchableOpacity
+          onPress={() => void refetch()}
+          accessibilityRole="button"
+          testID="register-zones-retry"
+        >
+          <Text style={styles.retryLink}>Réessayer</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (zones.length === 0) {
+    /*
+     * UNE LISTE VIDE ICI NE DIT PAS LA MÊME CHOSE QUE POUR LES MÉTIERS.
+     *
+     * Les zones sont filtrées PAR MÉTIER : zéro zone signifie que le métier choisi n'est ouvert
+     * nulle part, pas que la plateforme n'a aucune zone. Renvoyer vers le choix du métier est le
+     * seul geste qui puisse débloquer — proposer « réessayer » ferait tourner en rond.
+     */
+    return (
+      <Text style={styles.fieldHint} testID="register-zones-empty">
+        Ce métier n’est ouvert dans aucune zone pour l’instant. Choisissez un autre métier, ou
+        revenez plus tard.
+      </Text>
+    );
   }
 
   return (
@@ -374,6 +436,17 @@ export const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   tradeChipTextSelected: { color: colors.brand[600], fontWeight: typography.fontWeight.semibold },
   fieldHelp: { fontSize: typography.fontSize.xs, color: colors.mode.tool.muted, marginTop: 2 },
   fieldError: { fontSize: typography.fontSize.xs, color: colors.danger[600] },
+  // Une liste vide n'est pas une erreur : elle se dit dans le ton d'une information, pas d'une alerte.
+  fieldHint: { fontSize: typography.fontSize.xs, color: colors.mode.tool.muted, lineHeight: 18 },
+  retryLink: {
+    fontSize: typography.fontSize.sm,
+    color: colors.brand[600],
+    fontWeight: '600',
+    // 44 points de haut : une cible tactile plus petite se rate, et c'est le seul geste utile
+    // de l'ecran quand le reseau a lache.
+    minHeight: 44,
+    lineHeight: 44,
+  },
   formError: {
     flexDirection: 'row',
     alignItems: 'flex-start',
