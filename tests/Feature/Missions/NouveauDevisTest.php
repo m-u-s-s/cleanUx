@@ -9,8 +9,11 @@ use App\Models\MissionChecklistItem;
 use App\Models\MissionMedia;
 use App\Models\PromoCode;
 use App\Models\PromoCodeRedemption;
+use App\Models\MissionFeatureSuspension;
+use App\Models\MissionQuoteRevision;
 use App\Models\ProviderProfile;
 use App\Models\User;
+use App\Services\Missions\MissionQuoteRevisionService;
 use App\Services\Missions\MissionTodoService;
 use App\Services\Missions\OnSite\MissionChecklistService as OnSiteChecklistService;
 use App\Services\Missions\QuoteRevisionPricing;
@@ -272,5 +275,104 @@ class NouveauDevisTest extends TestCase
             'booking_amount_after' => 40,
             'currency' => 'EUR',
         ]);
+    }
+
+    // ── PROPOSER ──────────────────────────────────────────────────────────────
+
+    /** LE TÉMOIN : sur une mission à domicile, à l'arrivée, avec motif et preuve, ça passe. */
+    public function test_le_prestataire_propose_un_prix_revise(): void
+    {
+        $mission = $this->mission();
+
+        $revision = $this->revisions()->proposer(
+            $mission, $this->prestataire, 30000, 'Deux cents mètres carrés, pas vingt.', [1],
+        );
+
+        $this->assertSame(5000, $revision->original_total_cents);
+        $this->assertSame(30000, $revision->revised_total_cents);
+        $this->assertSame(25000, $revision->complementCents());
+        $this->assertTrue($revision->attendLeClient());
+    }
+
+    public function test_sans_preuve_la_revision_est_refusee(): void
+    {
+        $this->expectExceptionMessage('photo');
+        $this->revisions()->proposer($this->mission(), $this->prestataire, 30000, 'Plus grand', []);
+    }
+
+    public function test_sans_motif_la_revision_est_refusee(): void
+    {
+        $this->expectExceptionMessage('justifie');
+        $this->revisions()->proposer($this->mission(), $this->prestataire, 30000, '   ', [1]);
+    }
+
+    public function test_une_seule_revision_vivante_a_la_fois(): void
+    {
+        $mission = $this->mission();
+        $this->revisions()->proposer($mission, $this->prestataire, 30000, 'Plus grand', [1]);
+
+        $this->expectExceptionMessage('attend déjà');
+        $this->revisions()->proposer($mission, $this->prestataire, 40000, 'Encore plus', [1]);
+    }
+
+    public function test_un_prix_identique_n_est_pas_une_revision(): void
+    {
+        $this->expectExceptionMessage('rien à réviser');
+        $this->revisions()->proposer($this->mission(), $this->prestataire, 5000, 'Pareil', [1]);
+    }
+
+    public function test_un_prestataire_suspendu_ne_revise_plus(): void
+    {
+        $mission = $this->mission();
+
+        MissionFeatureSuspension::create([
+            'user_id' => $this->prestataire->id,
+            'feature' => MissionFeatureSuspension::OPTION_REVISION,
+            'level' => 1,
+            'starts_at' => Carbon::now()->subDay(),
+            'ends_at' => Carbon::now()->addDays(13),
+            'reason' => 'Trois verdicts',
+        ]);
+
+        $this->expectExceptionMessage('suspendue');
+        $this->revisions()->proposer($mission, $this->prestataire, 30000, 'Plus grand', [1]);
+    }
+
+    /** LE TÉMOIN de la suspension : une fois levée, la proposition repasse. */
+    public function test_une_suspension_levee_rouvre_l_option(): void
+    {
+        $mission = $this->mission();
+
+        MissionFeatureSuspension::create([
+            'user_id' => $this->prestataire->id,
+            'feature' => MissionFeatureSuspension::OPTION_REVISION,
+            'level' => 1,
+            'starts_at' => Carbon::now()->subDay(),
+            'ends_at' => Carbon::now()->addDays(13),
+            'reason' => 'Trois verdicts',
+            'lifted_at' => Carbon::now(),
+            'lifted_by_user_id' => $this->prestataire->id,
+            'lift_reason' => 'Rétablie par l’administrateur',
+        ]);
+
+        $this->assertNotNull(
+            $this->revisions()->proposer($mission, $this->prestataire, 30000, 'Plus grand', [1]),
+        );
+    }
+
+    public function test_le_prestataire_retire_sa_proposition(): void
+    {
+        $mission = $this->mission();
+        $revision = $this->revisions()->proposer($mission, $this->prestataire, 30000, 'Plus grand', [1]);
+
+        $retiree = $this->revisions()->retirer($revision, $this->prestataire);
+
+        $this->assertSame(MissionQuoteRevision::STATUT_RETIREE, $retiree->status);
+        $this->assertNull($this->revisions()->vivante($mission->fresh()));
+    }
+
+    private function revisions(): MissionQuoteRevisionService
+    {
+        return app(MissionQuoteRevisionService::class);
     }
 }
