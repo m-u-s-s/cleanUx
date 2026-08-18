@@ -19,6 +19,7 @@ use App\Livewire\Admin\Badges\BadgesCenter;
 use App\Livewire\Admin\Bundles\BundlesCenter;
 use App\Livewire\Admin\BusinessDashboard;
 use App\Livewire\Admin\CancellationV2\CancellationsCenter;
+use App\Livewire\Admin\CancellationV2\QuestionnaireCenter;
 use App\Livewire\Admin\ChatV2\ChatCenter;
 use App\Livewire\Admin\ContractsV2\ContractsCenter;
 use App\Livewire\Admin\CustomerCreditsManager;
@@ -421,6 +422,19 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
         if (class_exists(CancellationsCenter::class)) {
             Route::get('/cancellations-v2', CancellationsCenter::class)
                 ->name('cancellations-v2.center');
+        }
+
+        /*
+         * LE QUESTIONNAIRE — module distinct de la page ci-dessus, et pas un onglet.
+         *
+         * Celle-ci REGARDE ce qui s'est passé : les annulations, leurs frais, les dérogations.
+         * Celui-ci DÉCIDE ce qu'on demandera demain. Deux gestes d'administration différents, deux
+         * moments différents, et un administrateur qui vient régler le questionnaire n'a pas à
+         * traverser une liste d'annulations pour l'atteindre.
+         */
+        if (class_exists(QuestionnaireCenter::class)) {
+            Route::get('/cancellation-questions', QuestionnaireCenter::class)
+                ->name('cancellation-questions.center');
         }
 
         // Onboarding v2 — Journeys + progress per user

@@ -145,6 +145,13 @@ return [
         ['key' => 'subscriptions', 'title' => 'Abonnements', 'group' => 'argent', 'icon' => 'refresh-circle-outline', 'coverage' => 'report', 'routes' => ['admin/subscriptions-v2']],
         ['key' => 'insurance', 'title' => 'Assurance', 'group' => 'argent', 'icon' => 'umbrella-outline', 'coverage' => 'descriptor', 'routes' => ['admin/insurance']],
         ['key' => 'cancellations', 'title' => 'Annulations', 'group' => 'argent', 'icon' => 'close-circle-outline', 'coverage' => 'descriptor', 'routes' => ['admin/cancellations-v2']],
+        /*
+         * LE QUESTIONNAIRE est un module A PART de la ligne ci-dessus, et pas une de ses ressources
+         * secondaires : celle-la REGARDE ce qui s'est passe, celui-ci DECIDE ce qu'on demandera
+         * demain. Un administrateur qui vient regler une question n'a pas a traverser une liste
+         * d'annulations pour l'atteindre.
+         */
+        ['key' => 'cancellation-questions', 'title' => 'Questionnaire d’annulation', 'group' => 'argent', 'icon' => 'help-circle-outline', 'coverage' => 'descriptor', 'routes' => ['admin/cancellation-questions']],
         ['key' => 'disputes', 'title' => 'Litiges', 'group' => 'argent', 'icon' => 'alert-circle-outline', 'coverage' => 'descriptor', 'routes' => ['admin/disputes']],
         ['key' => 'risk', 'title' => 'Risque et fraude', 'group' => 'argent', 'icon' => 'shield-half-outline', 'coverage' => 'descriptor', 'routes' => ['admin/risk'], 'resources' => ['risk-holds']],
         ['key' => 'contracts', 'title' => 'Contrats', 'group' => 'argent', 'icon' => 'document-text-outline', 'coverage' => 'descriptor', 'routes' => ['admin/contracts-v2'], 'resources' => ['contract-signatures']],

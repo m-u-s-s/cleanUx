@@ -245,6 +245,9 @@ return [
         ['key' => 'admin:admin.b2b.monthly-invoices', 'label' => 'Factures B2B', 'icon' => '🧾', 'route' => 'admin.b2b.monthly-invoices', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'manage-entreprises'],
         ['key' => 'admin:admin.business.dashboard', 'label' => 'Business', 'icon' => '🏢', 'route' => 'admin.business.dashboard', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'manage-finance'],
         ['key' => 'admin:admin.cancellations-v2.center', 'label' => 'Annulations v2', 'icon' => '🚫', 'route' => 'admin.cancellations-v2.center', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'manage-finance'],
+        // Meme categorie et meme garde que son voisin : qui administre les politiques d'annulation
+        // administre leur questionnaire.
+        ['key' => 'admin:admin.cancellation-questions.center', 'label' => 'Questionnaire d’annulation', 'icon' => '❓', 'route' => 'admin.cancellation-questions.center', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'manage-finance'],
         ['key' => 'admin:admin.customer.credits', 'label' => 'Crédits clients', 'icon' => '💰', 'route' => 'admin.customer.credits', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'manage-finance'],
         ['key' => 'admin:admin.enterprise.approvals', 'label' => 'Approbations', 'icon' => '📑', 'route' => 'admin.enterprise.approvals', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'manage-entreprises'],
         ['key' => 'admin:admin.finance', 'label' => 'Finance', 'icon' => '💶', 'route' => 'admin.finance', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'manage-finance'],

@@ -29,6 +29,7 @@ use App\Admin\Resources\BroadcastEventResource;
 use App\Admin\Resources\BundleResource;
 use App\Admin\Resources\CalendarResource;
 use App\Admin\Resources\CancellationPolicyResource;
+use App\Admin\Resources\CancellationQuestionResource;
 use App\Admin\Resources\CancellationReasonResource;
 use App\Admin\Resources\ChatThreadResource;
 use App\Admin\Resources\CompanyResource;
@@ -235,6 +236,12 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('calendar', CalendarResource::class);
             $registry->register('ia-dispatch', DispatchResource::class);
             $registry->register('cancellation-reasons', CancellationReasonResource::class);
+            /*
+             * LE QUESTIONNAIRE, distinct de la liste des motifs juste au-dessus : celle-ci REGARDE
+             * ce qui s'est passé, celui-là DÉCIDE ce qu'on demandera demain. Ses écritures passent
+             * par `CancellationQuestionnaireService`, jamais par la colonne.
+             */
+            $registry->register('cancellation-questions', CancellationQuestionResource::class);
             $registry->register('provider-registrations', ProviderRegistrationResource::class);
             $registry->register('onboarding-providers', ProviderOnboardingResource::class);
             $registry->register('stripe-connect', StripeConnectResource::class);
