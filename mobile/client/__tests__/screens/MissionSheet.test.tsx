@@ -14,6 +14,23 @@ let mockSupplements: unknown[] = [];
 let mockRevision: unknown = null;
 let mockTaches: unknown[] = [];
 
+/*
+ * LE BOUTON D'APPEL EST BOUCHONNÉ : il interroge le serveur pour son numéro relais, et ce test-ci
+ * porte sur ce que la feuille ANNONCE, pas sur la téléphonie. Son propre comportement — le message
+ * quand la ligne est fermée — se teste là où il vit.
+ */
+jest.mock('@brio/shared', () => {
+  const { Text, TouchableOpacity } = require('react-native');
+
+  return {
+    BoutonAppelMasque: ({ testID }: any) => (
+      <TouchableOpacity testID={testID}>
+        <Text>Appeler</Text>
+      </TouchableOpacity>
+    ),
+  };
+});
+
 jest.mock('@/booking/onsite', () => ({
   useOnSiteTimeline: () => ({ data: { progress: { done: 1, total: 3, percent: 33 } } }),
   useOnSiteExtras: () => ({ data: mockSupplements }),

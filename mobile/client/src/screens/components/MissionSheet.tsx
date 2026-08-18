@@ -2,6 +2,7 @@ import React, { forwardRef, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import type GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { BottomSheet, Button, Icon, Badge } from '@/ui';
+import { BoutonAppelMasque } from '@brio/shared';
 import { useOnSiteTimeline, useOnSiteExtras, useTodoList, useRevisionDeDevis } from '@/booking/onsite';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -109,6 +110,12 @@ export const MissionSheet = forwardRef<GorhomBottomSheet, MissionSheetProps>(
             moment pour naviguer dans un menu. Le litige s'ouvre pré-rempli avec la mission.
           */}
           <View style={styles.raccourcis}>
+            {/*
+              APPELER — par le numéro relais, jamais par celui du prestataire. Le service existait
+              et n'était atteignable de nulle part.
+            */}
+            <BoutonAppelMasque role="client" bookingId={bookingId} testID="mission-sheet-appeler" />
+
             <TouchableOpacity
               style={[styles.raccourci, { backgroundColor: t.card }]}
               onPress={onMessage}

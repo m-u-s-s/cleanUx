@@ -25,7 +25,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 import { formatAdresse, messageDErreur } from '@brio/shared/format';
-import { MissionClockBar, useMissionClock, AnnulerLaMissionSheet } from '@brio/shared';
+import { MissionClockBar, useMissionClock, AnnulerLaMissionSheet, BoutonAppelMasque } from '@brio/shared';
 import { FieldQuoteRevision } from '@/screens/components/FieldQuoteRevision';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionField'>;
@@ -542,6 +542,12 @@ export function MissionFieldScreen({ route, navigation }: Props) {
         >
           <Text style={styles.secoursTexte}>Sécurité / SOS</Text>
         </TouchableOpacity>
+
+        {/*
+          APPELER — par le numéro relais. Le service existait depuis longtemps et n'était appelé
+          de nulle part : ni le mobile ni le web ne l'atteignaient.
+        */}
+        <BoutonAppelMasque role="provider" missionId={missionId} testID="terrain-appeler" />
 
         <TouchableOpacity
           onPress={() => navigation.navigate('ProviderChatList')}

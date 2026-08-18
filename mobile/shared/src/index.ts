@@ -49,6 +49,11 @@ export { useMissionClock, MissionClockBar, formatChronometre, formatDureeCourte 
 // La feuille d'annulation questionnee — partagee, parce que les deux roles empruntent le meme
 // tuyau : deux copies auraient fini par diverger sur les frais.
 export { AnnulerLaMissionSheet } from './ui/AnnulerLaMissionSheet';
+
+// L'appel masque : le service existait et n'etait appele de nulle part.
+export { useLigneMasqueeClient, useLigneMasqueePrestataire } from './cancellation/appelMasque';
+export type { LigneMasquee } from './cancellation/appelMasque';
+export { BoutonAppelMasque } from './ui/BoutonAppelMasque';
 export type { MissionClock, MissionClockPhase, LiveMissionClock, ClockAudience } from './missionClock';
 
 // Push
