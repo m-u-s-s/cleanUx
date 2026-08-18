@@ -189,6 +189,8 @@ class MissionQuoteRevisionService
                 'charged_at' => null,
             ])->save();
 
+            $this->arbitrer($revision->fresh());
+
             return $revision->fresh();
         });
     }
@@ -236,7 +238,31 @@ class MissionQuoteRevisionService
             'client_decision' => $decision,
         ])->save();
 
+        $this->arbitrer($revision->fresh());
+
         return $revision->fresh();
+    }
+
+    /**
+     * ENREGISTRER LE FAIT, PUIS ARBITRER — et jamais l'inverse.
+     *
+     * SOFT-FAIL DÉLIBÉRÉ. L'arbitrage est une conséquence, pas une condition : une panne de
+     * l'arbitre ne doit pas empêcher un client d'accepter un devis ni de le refuser. Le signal
+     * reste en base et une reprise pourra le rejuger — c'est le traitement déjà appliqué au
+     * règlement du temps supplémentaire, pour la même raison.
+     */
+    private function arbitrer(MissionQuoteRevision $revision): void
+    {
+        try {
+            $arbitre = app(QuoteRevisionArbiter::class);
+            $signal = $arbitre->enregistrer($revision);
+
+            if ($signal !== null) {
+                $arbitre->arbitrer($signal);
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     /** La révision qui attend encore une réponse, s'il y en a une. */

@@ -25,4 +25,13 @@ return [
      * arme entre ses mains.
      */
     'requote_reopen_minutes' => (int) env('MISSION_REQUOTE_REOPEN_MINUTES', 6),
+
+    /*
+     * SUR COMBIEN DE TEMPS L'ARBITRE REGARDE EN ARRIERE.
+     *
+     * Trop court, un tricheur regulier repart a zero entre deux campagnes. Trop long, une erreur
+     * d'il y a deux ans pese encore. Quatre-vingt-dix jours : assez pour qu'un motif se dessine,
+     * assez court pour qu'on puisse se corriger.
+     */
+    'arbitration_window_days' => (int) env('MISSION_ARBITRATION_WINDOW_DAYS', 90),
 ];
