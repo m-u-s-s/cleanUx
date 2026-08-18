@@ -76,10 +76,10 @@ deux côtés · PHPStan sans argument de chemin : 0 erreur.
 | ① Appel masqué | ✅ **branché** mobile + web, des deux côtés. Rien à écrire côté serveur : tout existait |
 | ② Renfort depuis le terrain | ✅ service, API, boutons mobile + web, côte à côte avec la révision |
 | ③ Navigation externe | ✅ bouton **secondaire** — la carte de la plateforme reste principale |
-| ③ Route active sur la carte d'accueil | ❌ `ProviderMap` affiche encore les seuls marqueurs |
+| ③ Route active sur la carte d'accueil | ✅ + **le GET qui manquait** au module de suivi |
 | ④ File d'attente hors-ligne | ❌ **en dernier** : touche le chemin de l'argent |
 | ⑤ Partage du suivi à un tiers | ❌ |
-| ⑥ Consigne d'accès de dernière minute | ❌ |
+| ⑥ Consigne d'accès de dernière minute | ✅ mobile + web, sans fenêtre et détachée en tête de fiche |
 | ⑦ Minuteur de retard | ❌ le retard est déjà mesurable, l'annonce manque |
 | ⑧ Passe graphique | ❌ |
 
@@ -96,3 +96,25 @@ personne ne peut atteindre.
 demande posée par ce chemin échouait au niveau SQL. Elle n'avait jamais servi parce que le seul
 écrivain — le centre du chef d'équipe — la laissait vide. Avec `provider_team_id` et `needed_at`,
 qui se perdaient en silence, ce sont trois colonnes qui reprennent du service.
+
+
+### Seconde passe — 2026-08-19
+
+**Quatre ajouts sur sept.** 371 tests PHP mission · 460 mobile client · 652 mobile prestataire ·
+`tsc` propre · PHPStan : 0 erreur.
+
+**Un quatrième trou de lecture trouvé** : le module de suivi n'avait **que des écritures** —
+démarrer, pinguer, terminer. Le prestataire ne pouvait relire nulle part la session qu'il avait
+ouverte : son écran la gardait en mémoire locale, et une application relancée l'oubliait. Le `GET`
+sert deux besoins d'un coup — la route sur la carte d'accueil, et la reprise après relance.
+
+**Deux décisions notées dans le code**, parce qu'elles ne se devinent pas :
+
+- la consigne de dernière minute **n'a pas de fenêtre**, contrairement à la to-do list. Un digicode
+  qui change à 17 h doit pouvoir se dire à 17 h : c'est le prestataire qu'elle dépanne, pas le
+  client qu'elle avantage ;
+- elle vit dans **sa propre colonne**. Écrire dans le carnet de lieux ferait lire un code du jour à
+  quelqu'un d'autre la semaine suivante.
+
+**Restent :** ⑤ partage du suivi, ⑦ minuteur de retard, ④ file d'attente hors-ligne, ⑧ passe
+graphique.
