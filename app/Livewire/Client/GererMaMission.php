@@ -3,6 +3,7 @@
 namespace App\Livewire\Client;
 
 use App\Models\Booking;
+use App\Models\MaskedCallSession;
 use App\Models\MissionChecklistItem;
 use App\Models\MissionQuoteRevision;
 use App\Services\Missions\MissionQuoteRevisionService;
@@ -110,8 +111,40 @@ class GererMaMission extends Component
             'revision' => $mission === null
                 ? null
                 : app(MissionQuoteRevisionService::class)->vivante($mission),
+            'ligne' => $mission?->booking === null ? null : $this->ligneMasquee(
+                (int) $mission->booking->client_id,
+                (int) ($mission->lead_provider_user_id ?? $mission->booking->employe_id),
+                (int) $mission->booking->id,
+            ),
         ]);
     }
+
+    /**
+     * LA LIGNE MASQUÉE — un numéro relais, jamais celui de l'autre.
+     *
+     * Le service existait depuis longtemps et n'était appelé de NULLE PART, ni mobile ni web. Il
+     * rend `available: false` avec son motif quand la ligne n'est pas ouverte : on affiche ce motif
+     * plutôt que de faire disparaître le bouton, qui ferait chercher puis appeler le support.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function ligneMasquee(int $clientId, int $prestataireId, int $bookingId): ?array
+    {
+        $session = MaskedCallSession::query()
+            ->where('booking_id', $bookingId)
+            ->where('client_user_id', $clientId)
+            ->where('provider_user_id', $prestataireId)
+            ->where('status', MaskedCallSession::STATUS_ACTIVE)
+            ->latest('id')
+            ->first();
+
+        if ($session === null || ! $session->isActive() || $session->proxy_phone_number === null) {
+            return null;
+        }
+
+        return ['numero' => $session->proxy_phone_number];
+    }
+
 
     private function repondre(int $revisionId, bool $accepte, ?string $decision = null): void
     {

@@ -206,10 +206,19 @@
         l'un le laisse libre de recommander, l'autre le laisse avec un chantier ouvert. Le composant
         refuse de se monter une fois la mission démarrée.
     --}}
-    @if($mission->actual_start_at === null)
-    <div class="pt-1">
-        <livewire:shared.annuler-la-mission :booking="$mission->booking" role="provider"
-                                            :key="'annuler-presta-'.$mission->id" />
+    <div class="flex flex-wrap items-center gap-3 pt-1">
+        @if($ligne)
+            {{-- APPELER PAR LE NUMÉRO RELAIS : celui de la plateforme, jamais celui de l'autre. --}}
+            <a href="tel:{{ $ligne['numero'] }}"
+               class="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm
+                      font-semibold text-slate-700 hover:bg-slate-50">
+                Appeler
+            </a>
+        @endif
+
+        @if($mission->actual_start_at === null)
+            <livewire:shared.annuler-la-mission :booking="$mission->booking" role="provider"
+                                                :key="'annuler-presta-'.$mission->id" />
+        @endif
     </div>
-    @endif
 </section>

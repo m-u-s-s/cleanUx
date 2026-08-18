@@ -130,7 +130,16 @@
         liste à corriger.
     --}}
     @if($mission)
-    <div class="pt-2">
+    <div class="flex flex-wrap items-center gap-3 pt-2">
+        @if($ligne)
+            {{-- APPELER PAR LE NUMÉRO RELAIS : celui de la plateforme, jamais celui de l'autre. --}}
+            <a href="tel:{{ $ligne['numero'] }}"
+               class="inline-flex items-center rounded-lg border border-slate-300 px-4 py-2 text-sm
+                      font-semibold text-slate-700 hover:bg-slate-50">
+                Appeler
+            </a>
+        @endif
+
         <livewire:shared.annuler-la-mission :booking="$mission->booking" role="client"
                                             :key="'annuler-client-'.$mission->id" />
     </div>

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Employe;
 
+use App\Models\MaskedCallSession;
 use App\Models\Mission;
 use App\Models\MissionIncident;
 use App\Models\MissionMedia;
@@ -204,8 +205,40 @@ class MissionFieldTools extends Component
                 ? app(QuoteRevisionWindow::class)->etat($mission)
                 : null,
             'revision' => app(MissionQuoteRevisionService::class)->vivante($mission),
+            'ligne' => $mission->booking === null ? null : $this->ligneMasquee(
+                (int) $mission->booking->client_id,
+                (int) Auth::id(),
+                (int) $mission->booking->id,
+            ),
         ]);
     }
+
+    /**
+     * LA LIGNE MASQUÉE — un numéro relais, jamais celui de l'autre.
+     *
+     * Le service existait depuis longtemps et n'était appelé de NULLE PART, ni mobile ni web. Il
+     * rend `available: false` avec son motif quand la ligne n'est pas ouverte : on affiche ce motif
+     * plutôt que de faire disparaître le bouton, qui ferait chercher puis appeler le support.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function ligneMasquee(int $clientId, int $prestataireId, int $bookingId): ?array
+    {
+        $session = MaskedCallSession::query()
+            ->where('booking_id', $bookingId)
+            ->where('client_user_id', $clientId)
+            ->where('provider_user_id', $prestataireId)
+            ->where('status', MaskedCallSession::STATUS_ACTIVE)
+            ->latest('id')
+            ->first();
+
+        if ($session === null || ! $session->isActive() || $session->proxy_phone_number === null) {
+            return null;
+        }
+
+        return ['numero' => $session->proxy_phone_number];
+    }
+
 
     /**
      * LA FICHE D'ACCÈS NE S'AFFICHE QU'UNE FOIS L'ARRIVÉE CONFIRMÉE — le service le décide, et il
