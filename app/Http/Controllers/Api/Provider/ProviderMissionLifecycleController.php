@@ -52,7 +52,7 @@ class ProviderMissionLifecycleController extends Controller
      * seule exception soit levée. Ajouter une colonne au modèle ne suffit pas — il faut l'ajouter
      * ICI aussi.
      */
-    private const BOOKING_COLUMNS = 'id,booking_reference,address,city,postal_code,scheduled_date,scheduled_time,service_catalog_id,destination_lat,destination_lng,dropoff_address,dropoff_lat,dropoff_lng,route_distance_m,customer_comment,client_id,customer_user_id';
+    private const BOOKING_COLUMNS = 'id,booking_reference,address,city,postal_code,scheduled_date,scheduled_time,service_catalog_id,trade_id,destination_lat,destination_lng,dropoff_address,dropoff_lat,dropoff_lng,route_distance_m,customer_comment,client_id,customer_user_id';
 
     public function __construct(
         protected MissionLifecycleService $lifecycle,
@@ -69,6 +69,11 @@ class ProviderMissionLifecycleController extends Controller
         foreach (['booking'] as $relation) {
             $loads[] = $relation.':'.self::BOOKING_COLUMNS;
             $loads[] = $relation.'.serviceCatalog:id,name';
+            // LE MÉTIER, PARCE QUE LE CATALOGUE NE RÉPOND PLUS. Le moteur de commande écrit
+            // `trade_id` et laisse `service_catalog_id` vide ; seules les réservations d'archive
+            // portent encore un service au catalogue. Sans cette relation, `service_name` valait
+            // `null` pour TOUTE mission née du moteur — et l'écran terrain affichait un titre vide.
+            $loads[] = $relation.'.trade:id,name';
             $loads[] = $relation.'.client:id,name,phone';
             $loads[] = $relation.'.customer:id,name,phone';
         }
@@ -738,7 +743,15 @@ class ProviderMissionLifecycleController extends Controller
         $base = [
             'id' => $mission->id,
             'status' => $mission->status,
-            'service_name' => $booking?->serviceCatalog?->name,
+            /*
+             * LE CATALOGUE D'ABORD, LE MÉTIER ENSUITE — le même ordre que `OfferPayloadBuilder`.
+             *
+             * L'offre acceptée annonçait « Nettoyage à domicile » et l'écran de mission ouvrait sur
+             * un titre vide : les deux constructeurs répondaient à la même question, un seul
+             * connaissait les deux sources. La décision était déjà prise là-bas, elle est reportée
+             * ici plutôt que reprise autrement.
+             */
+            'service_name' => $booking?->serviceCatalog->name ?? $booking?->trade?->name,
             'client_name' => $client?->name,
             'address' => $booking?->address,
             'city' => $booking?->city,
