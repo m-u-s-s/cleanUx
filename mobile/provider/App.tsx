@@ -17,7 +17,7 @@ import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { NightShell, useThemeDeNavigation } from '@/ui/NightShell';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -82,7 +82,7 @@ function AppInner() {
 
   if (showWalkthrough) {
     return (
-      <SafeAreaProvider>
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <WalkthroughScreen onComplete={() => setShowWalkthrough(false)} />
         <StatusBar style="light" />
       </SafeAreaProvider>
@@ -90,7 +90,32 @@ function AppInner() {
   }
 
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+      {/*
+        `initialMetrics` N'EST PAS UNE OPTIMISATION : C'EST CE QUI EMPECHE UN PREMIER RENDU FAUX.
+
+        VU EN VRAI sur l'emulateur : le titre du tableau de bord prestataire, « Bonjour, B. »,
+        rendu PAR-DESSUS l'horloge systeme. L'ecran passe pourtant par `Screen`, qui pose une
+        marge haute tiree de `SafeAreaView`. Sonde posee dans le composant : l'encart haut valait
+        bien 53 px une fois etabli. Il valait donc zero au moment du rendu fautif.
+
+        La raison tient au montage juste au-dessus. Le drapeau du walkthrough se lit de facon
+        ASYNCHRONE ; tant qu'il vaut `null` on rend une `View` nue, SANS fournisseur. Le
+        `SafeAreaProvider` ne se monte donc qu'apres cette lecture — et un fournisseur qui vient
+        de se monter n'a pas encore recu l'evenement natif qui lui apprend les encarts. Ses
+        enfants rendent une premiere passe a zero, puis se recalent. D'ordinaire cela dure une
+        image et personne ne le voit ; sous charge — bundle de developpement, carte, requete de
+        connexion — la fausse mise en page tient assez longtemps pour etre vue, et la carte, qui
+        mesure une fois, garde la mauvaise hauteur.
+
+        `initialWindowMetrics` est lu SYNCHRONEMENT depuis les constantes du module natif, au
+        demarrage du JS. Le fournisseur connait donc les encarts des sa toute premiere passe : il
+        n'existe plus d'image a zero, quel que soit le moment ou il se monte.
+
+        C'est aussi pour cela que le correctif est ici et non dans `Screen` : forcer une marge
+        minimale la-bas aurait masque le symptome sur un ecran en laissant les autres exposes, et
+        aurait fait double marge le jour ou l'encart arrive.
+      */}
       <NightShell>
         <NavigationContainer linking={linking} theme={themeNavigation}>
           <NavigationEffects />

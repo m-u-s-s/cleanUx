@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Button, Icon } from '@/ui';
 import { ApiError } from '@/api';
@@ -91,6 +92,20 @@ function stepErrorMessage(error: unknown): string {
 export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => void }) {
   const theme = useThemeColors();
   const styles = stylesFor(theme);
+  /*
+   * CET ECRAN EST MONTE SANS EN-TETE DE NAVIGATION.
+   *
+   * `RootNavigator` court-circuite la pile pendant l'onboarding : un seul ecran, aucun en-tete
+   * pour absorber la barre d'etat. Les autres ecrans passent par `Screen`, qui s'en charge ; celui
+   * -ci rend un `ScrollView` nu, ancre en haut, avec 24 dp de marge pour toute protection.
+   *
+   * 24 dp, c'est exactement la hauteur d'une barre d'etat ordinaire — et moins que celle d'un
+   * telephone a poincon, qui monte jusqu'a 48 dp. Le titre s'y colle donc, ou passe dessous. Si
+   * personne ne l'avait vu, c'est que l'emulateur de test a une barre de 17,7 dp : le seul format
+   * ou la marge codee en dur suffit.
+   */
+  const encarts = useSafeAreaInsets();
+  const margeHaute = { paddingTop: spacing.lg + encarts.top };
   const presentations = statePresentation(theme);
   const { data, isLoading, isError, refetch } = useOnboardingProgress();
   const { data: documents } = useOnboardingDocuments();
@@ -169,7 +184,7 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
 
   if (steps.length > 0 && doneCount === steps.length) {
     return (
-      <ScrollView contentContainerStyle={styles.container} testID="onboarding-complete">
+      <ScrollView contentContainerStyle={[styles.container, margeHaute]} testID="onboarding-complete">
         <View style={styles.doneBadge}>
           <Icon name="checkmark-circle-outline" size={40} color={colors.success[600]} />
         </View>
@@ -184,7 +199,7 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={[styles.container, margeHaute]} keyboardShouldPersistTaps="handled">
       <View>
         <Text style={styles.title}>Votre dossier de vérification</Text>
         <Text style={styles.subtitle}>
