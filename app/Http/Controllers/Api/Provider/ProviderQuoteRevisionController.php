@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Mission;
 use App\Models\MissionQuoteRevision;
 use App\Services\Missions\MissionQuoteRevisionService;
+use App\Services\Missions\MissionReinforcementService;
 use App\Services\Missions\QuoteRevisionPricing;
 use App\Services\Missions\QuoteRevisionWindow;
 use DomainException;
@@ -127,6 +128,51 @@ class ProviderQuoteRevisionController extends Controller
         }
 
         return response()->json(['ok' => true, 'revision' => $this->presenter($retiree)]);
+    }
+
+    /**
+     * DEMANDER DU RENFORT — la troisième issue, celle qui manquait.
+     *
+     * Un prestataire devant un chantier deux fois plus gros n'avait que deux sorties : réviser le
+     * devis, ou abandonner. Le renfort est souvent la bonne — le travail se fait, le client garde
+     * son intervention, et personne ne renégocie sous pression.
+     *
+     * @bodyParam reason string required Ce qui justifie le renfort. Example: Deux cents mètres carrés à deux.
+     * @bodyParam people integer Nombre de personnes demandées. Example: 1
+     *
+     * @response 201 {"ok": true, "reinforcement": {"id": 3, "status": "open"}}
+     */
+    public function renfort(Request $request, Mission $mission): JsonResponse
+    {
+        $this->authorizeProvider($request, $mission);
+
+        $donnees = $request->validate([
+            'reason' => ['required', 'string', 'max:2000'],
+            'people' => ['nullable', 'integer', 'min:1', 'max:20'],
+            'minutes' => ['nullable', 'integer', 'min:15', 'max:1440'],
+        ]);
+
+        try {
+            $demande = app(MissionReinforcementService::class)->demander(
+                $mission,
+                $request->user(),
+                (string) $donnees['reason'],
+                (int) ($donnees['people'] ?? 1),
+                (int) ($donnees['minutes'] ?? 60),
+            );
+        } catch (DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'reinforcement' => [
+                'id' => $demande->id,
+                'status' => $demande->status,
+                'required_people' => $demande->required_people,
+                'reason' => $demande->reason,
+            ],
+        ], 201);
     }
 
     /**

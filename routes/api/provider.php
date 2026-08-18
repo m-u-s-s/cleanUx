@@ -280,6 +280,15 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved', 'face.ve
         Route::delete('/{revision}', [ProviderQuoteRevisionController::class, 'destroy']);
     });
 
+    /*
+     * LE RENFORT — la troisieme issue quand le chantier est plus gros que prevu.
+     *
+     * Elle vit a cote de la revision de devis, et pas par hasard : ce sont les deux reponses au
+     * meme constat, et le questionnaire d'annulation renvoie vers l'une ou l'autre plutot que de
+     * laisser abandonner.
+     */
+    Route::post('provider/missions/{mission}/reinforcement', [ProviderQuoteRevisionController::class, 'renfort']);
+
     // Phase 12 — Mission lifecycle (start/arrive/complete)
     Route::prefix('provider/missions')->group(function () {
         Route::get('/active', [ProviderMissionLifecycleController::class, 'active']);
