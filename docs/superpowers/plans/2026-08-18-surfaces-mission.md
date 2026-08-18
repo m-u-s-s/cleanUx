@@ -106,3 +106,31 @@ ce qui marche. Les sections neuves, elles, naissent en fichiers séparés.
 
 **Le renfort depuis le terrain** appartient au plan 5 : c'est la proposition ② des sept ajouts, et
 elle demande une API que le prestataire n'a pas encore.
+
+---
+
+## Plan 4 terminé côté web — 2026-08-18 (seconde passe)
+
+**Vert :** 821 tests PHP (API + missions + moteur) · 453 mobile client · 650 mobile prestataire ·
+`tsc` propre des deux côtés · PHPStan sans argument de chemin : 0 erreur.
+
+| Tâche | État |
+|---|---|
+| 1 → 6 | ✅ *(première passe)* |
+| 7 · web prestataire | ✅ les cinq blocs : fiche d'accès, imprévu, supplément, compteur, nouveau devis |
+| 8 · annuler par rôle | ✅ **web** — un composant pour les deux rôles, avec l'aiguillage |
+| 8 · annuler par rôle | ❌ **mobile** — l'API sert le questionnaire, il manque les écrans |
+
+### Ce que le dépôt a rattrapé tout seul
+
+`ReservationIntervenantTest` a refusé `MissionFieldTools` : *« qui intervient » ne se déduit pas
+d'une colonne*. Trois colonnes ont porté cette question et ont été fusionnées ; les relire à la main
+aurait recréé une quatrième réponse, qui aurait divergé au premier renfort de société.
+`Mission::estIntervenant()` fait autorité — le garde-fou a fait exactement son travail.
+
+### Le choix confirmé par le porteur
+
+**Une seule page terrain**, composée par moteur, plutôt que trois fichiers. Chaque moteur voit ses
+options et seulement les siennes : le supplément et le nouveau devis ne sont pas **rendus** sur une
+course, le compteur se rend nul de lui-même hors mission horaire. Pas grisés — pas montés : un
+formulaire visible et inerte se remplit quand même, et le refus arrive après la saisie.
