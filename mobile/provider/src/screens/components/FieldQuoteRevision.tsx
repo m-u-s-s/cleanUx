@@ -6,6 +6,7 @@ import {
   useSimulerLaRevision,
   useProposerLaRevision,
   useRetirerLaRevision,
+  useDemanderDuRenfort,
 } from '@/missions';
 import type { MissionMediaItem } from '@/missions';
 import { spacing, typography, radius } from '@/theme';
@@ -47,6 +48,7 @@ export function FieldQuoteRevision({
   const simuler = useSimulerLaRevision(missionId);
   const proposer = useProposerLaRevision(missionId);
   const retirer = useRetirerLaRevision(missionId);
+  const renfort = useDemanderDuRenfort(missionId);
 
   const [prix, setPrix] = useState('');
   const [motif, setMotif] = useState('');
@@ -134,6 +136,26 @@ export function FieldQuoteRevision({
     );
   };
 
+  const demanderDuRenfort = () => {
+    if (motif.trim().length < 3) {
+      Alert.alert('Incomplet', 'Dites ce qui justifie le renfort : c’est ce que lira celui qui viendra.');
+
+      return;
+    }
+
+    renfort.mutate(
+      { reason: motif.trim() },
+      {
+        onSuccess: () => {
+          setMotif('');
+          Alert.alert('Renfort demandé', 'Votre demande est ouverte : quelqu’un va la prendre.');
+        },
+        onError: (e: { message?: string }) =>
+          Alert.alert('Impossible', e.message ?? 'La demande n’a pas pu être ouverte.'),
+      },
+    );
+  };
+
   const simulation = () => {
     const centimes = enCentimes(prix);
 
@@ -201,6 +223,22 @@ export function FieldQuoteRevision({
           testID="revision-envoyer"
         />
       </View>
+
+      {/*
+        DEUX RÉPONSES AU MÊME CONSTAT, et c'est pourquoi elles vivent côte à côte.
+
+        Le chantier est plus gros que prévu : soit le prix change, soit quelqu'un vient. Séparer les
+        deux gestes à l'écran ferait choisir le premier trouvé — et le premier trouvé serait la
+        renégociation, celle qui met le client sous pression.
+      */}
+      <Button
+        label="Ou demander du renfort"
+        variant="secondary"
+        onPress={demanderDuRenfort}
+        loading={renfort.isPending}
+        fullWidth
+        testID="revision-renfort"
+      />
     </View>
   );
 }

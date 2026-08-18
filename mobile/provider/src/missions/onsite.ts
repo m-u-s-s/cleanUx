@@ -481,3 +481,32 @@ export function useRetirerLaRevision(missionId: number) {
     },
   });
 }
+
+/**
+ * DEMANDER DU RENFORT — la troisième issue, quand le chantier est plus gros que prévu.
+ *
+ * Elle vit à côté de la révision de devis, et pas par hasard : ce sont les deux réponses au même
+ * constat. Réviser le prix, ou faire venir quelqu'un. Le questionnaire d'annulation renvoie vers
+ * l'une ou l'autre plutôt que de laisser abandonner.
+ */
+export function useDemanderDuRenfort(missionId: number) {
+  const qc = useQueryClient();
+
+  return useMutation<
+    { id: number; status: string; required_people: number },
+    ApiError,
+    { reason: string; people?: number }
+  >({
+    mutationFn: async ({ reason, people }) => {
+      const res = await apiClient.post(`/provider/missions/${missionId}/reinforcement`, {
+        reason,
+        people: people ?? 1,
+      });
+
+      return res.data.reinforcement;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId] });
+    },
+  });
+}

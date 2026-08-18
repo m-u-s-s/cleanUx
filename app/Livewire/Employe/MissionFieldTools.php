@@ -9,6 +9,7 @@ use App\Models\MissionMedia;
 use App\Models\MissionQuoteRevision;
 use App\Services\Missions\HourlyMissionClock;
 use App\Services\Missions\MissionQuoteRevisionService;
+use App\Services\Missions\MissionReinforcementService;
 use App\Services\Missions\QuoteRevisionWindow;
 use App\Services\Missions\OnSite\MissionAccessSheetService;
 use App\Services\Missions\OnSite\MissionExtraService;
@@ -170,6 +171,30 @@ class MissionFieldTools extends Component
         }
     }
 
+    /**
+     * DEMANDER DU RENFORT — l'autre réponse au même constat.
+     *
+     * Le chantier est plus gros que prévu : soit le prix change, soit quelqu'un vient. Le bouton vit
+     * à côté de la révision, et pas ailleurs : séparer les deux gestes ferait choisir le premier
+     * trouvé, et le premier trouvé serait la renégociation, celle qui met le client sous pression.
+     */
+    public function demanderDuRenfort(): void
+    {
+        $this->reinitialiser();
+
+        $this->validate(['revisionMotif' => ['required', 'string', 'min:3', 'max:2000']]);
+
+        try {
+            app(MissionReinforcementService::class)
+                ->demander($this->mission(), Auth::user(), $this->revisionMotif);
+
+            $this->reset(['revisionMotif']);
+            $this->succes = 'Renfort demandé : votre demande est ouverte.';
+        } catch (DomainException $e) {
+            $this->erreur = $e->getMessage();
+        }
+    }
+
     public function retirerLeNouveauDevis(int $revisionId): void
     {
         $this->reinitialiser();
@@ -205,6 +230,7 @@ class MissionFieldTools extends Component
                 ? app(QuoteRevisionWindow::class)->etat($mission)
                 : null,
             'revision' => app(MissionQuoteRevisionService::class)->vivante($mission),
+            'renfort' => app(MissionReinforcementService::class)->ouverte($mission),
             'ligne' => $mission->booking === null ? null : $this->ligneMasquee(
                 (int) $mission->booking->client_id,
                 (int) Auth::id(),

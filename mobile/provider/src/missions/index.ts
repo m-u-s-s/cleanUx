@@ -29,6 +29,8 @@ export {
   useSimulerLaRevision,
   useProposerLaRevision,
   useRetirerLaRevision,
+  // Le renfort : l'autre reponse au meme constat — faire venir quelqu'un plutot que renegocier.
+  useDemanderDuRenfort,
   useMissionChecklist,
   useToggleMissionChecklistItem,
   INCIDENT_TYPES,

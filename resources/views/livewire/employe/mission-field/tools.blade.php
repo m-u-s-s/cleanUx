@@ -192,6 +192,20 @@
 
                 <button type="submit" class="brio-btn-primary">Envoyer au client</button>
             </form>
+
+            {{-- DEUX RÉPONSES AU MÊME CONSTAT, côte à côte : soit le prix change, soit quelqu'un
+                 vient. Les séparer ferait choisir le premier trouvé — la renégociation, celle qui
+                 met le client sous pression. --}}
+            @if($renfort)
+                <p class="text-sm text-indigo-800">
+                    Un renfort est déjà demandé sur cette mission.
+                </p>
+            @else
+                <button type="button" wire:click="demanderDuRenfort"
+                        class="rounded-lg border border-indigo-300 px-4 py-2 text-sm font-semibold text-indigo-800">
+                    Ou demander du renfort
+                </button>
+            @endif
         @else
             {{-- LE MOTIF, PAS UN FORMULAIRE GRISÉ : il dit quel geste employer à la place. --}}
             <p class="text-sm italic text-indigo-800">{{ $fenetreRevision['reason'] }}</p>

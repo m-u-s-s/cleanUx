@@ -185,6 +185,27 @@ class TerrainWebPrestataireTest extends TestCase
             ->assertDontSee('Nouveau devis');
     }
 
+    /**
+     * LES DEUX RÉPONSES AU MÊME CONSTAT vivent côte à côte. Le renfort se demande depuis le même
+     * bloc que la révision : les séparer ferait choisir le premier trouvé, et le premier trouvé
+     * serait la renégociation — celle qui met le client sous pression.
+     */
+    public function test_le_prestataire_demande_du_renfort_depuis_le_web(): void
+    {
+        $mission = $this->mission('domicile');
+
+        Livewire::actingAs($this->prestataire)
+            ->test(MissionFieldTools::class, ['mission' => $mission])
+            ->set('revisionMotif', 'Deux cents mètres carrés à faire à deux.')
+            ->call('demanderDuRenfort')
+            ->assertSet('erreur', null);
+
+        $this->assertSame(
+            1,
+            \App\Models\MissionReinforcementRequest::query()->where('mission_id', $mission->id)->count(),
+        );
+    }
+
     /** Un composant Livewire est une porte HTTP à part entière. */
     public function test_un_prestataire_etranger_est_refuse(): void
     {
