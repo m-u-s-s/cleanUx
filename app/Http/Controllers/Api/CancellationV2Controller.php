@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\BookingCancellationV2;
+use App\Services\Cancellation\CancellationQuestionnaireService;
 use App\Services\CancellationV2\CancellationEngine;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -36,6 +37,10 @@ class CancellationV2Controller extends Controller
                 bookingId: $booking,
                 actorRole: $actorRole,
                 reasonCode: $data['reason_code'] ?? null,
+                // L'AUTEUR, SUR L'APERÇU AUSSI. Sans lui, le plafond d'exemptions ne serait
+                // consulté qu'à l'exécution : l'écran annoncerait « 0 € » et le débit tomberait
+                // quand même. Un montant montré doit être celui qu'on prélève.
+                actorUserId: $request->user()?->id,
             );
         } catch (ValidationException $e) {
             return response()->json(['ok' => false, 'errors' => $e->errors()], 422);
@@ -106,6 +111,40 @@ class CancellationV2Controller extends Controller
             return;
         }
         // Other roles (e.g. admin) are reached via separately-gated routes.
+    }
+
+    /**
+     * LE QUESTIONNAIRE — les questions de cette audience, et les seules réponses SOUTENUES.
+     *
+     * Sans cette route, l'écran devrait connaître les codes de motif en dur : la première option
+     * qu'un administrateur ajoute serait invisible, et la première qu'il retire produirait un code
+     * que le moteur ne reconnaît plus.
+     */
+    public function questionnaire(Request $request, int $booking, string $actorRole): JsonResponse
+    {
+        $this->authorizeBooking($request, $booking, $actorRole);
+
+        $reservation = Booking::query()->find($booking);
+
+        if ($reservation === null) {
+            return response()->json(['ok' => false, 'errors' => ['booking_id' => 'Réservation introuvable.']], 404);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'questions' => app(CancellationQuestionnaireService::class)
+                ->pour($request->user(), $reservation, $actorRole),
+        ]);
+    }
+
+    public function clientQuestionnaire(Request $request, int $booking): JsonResponse
+    {
+        return $this->questionnaire($request, $booking, 'client');
+    }
+
+    public function providerQuestionnaire(Request $request, int $booking): JsonResponse
+    {
+        return $this->questionnaire($request, $booking, 'provider');
     }
 
     public function clientQuote(Request $request, int $booking): JsonResponse

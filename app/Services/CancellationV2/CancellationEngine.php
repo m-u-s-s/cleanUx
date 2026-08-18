@@ -5,6 +5,7 @@ namespace App\Services\CancellationV2;
 use App\Models\BookingCancellationV2;
 use App\Models\CancellationAudit;
 use App\Models\User;
+use App\Services\Cancellation\CancellationExemptQuota;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
 use Carbon\CarbonImmutable;
@@ -31,7 +32,12 @@ class CancellationEngine
         protected CancellationIntegrationsRunner $integrations,
     ) {}
 
-    public function quote(int $bookingId, string $actorRole, ?string $reasonCode = null, ?\DateTimeInterface $at = null): CancellationQuote
+    /**
+     * @param  ?int  $actorUserId  L'auteur, quand on le connaît : sans lui, le plafond d'exemptions
+     *                             par personne ne peut pas être consulté et un motif généreux
+     *                             exonérerait autant de fois que voulu.
+     */
+    public function quote(int $bookingId, string $actorRole, ?string $reasonCode = null, ?\DateTimeInterface $at = null, ?int $actorUserId = null): CancellationQuote
     {
         $this->ensureActorRole($actorRole);
 
@@ -80,10 +86,23 @@ class CancellationEngine
                 ->where('reason_code', $reasonCode)
                 ->where('is_active', true)
                 ->first();
-            if ($reason) {
+
+            /*
+             * LE PLAFOND PAR PERSONNE MORD ICI — « pas la première fois, mais si c'est fréquent ».
+             *
+             * `max_per_user_per_30d` était déclarée sur la table, semée à 2 pour l'urgence médicale,
+             * et appliquée par PERSONNE : le motif le plus généreux du barème exonérait donc autant
+             * de fois que voulu.
+             *
+             * Le dépassement retire l'EXEMPTION, pas le motif : `reason_code` reste enregistré,
+             * précisément pour qu'on puisse relire qu'une personne l'a invoqué six fois en un mois.
+             */
+            if ($reason && app(CancellationExemptQuota::class)->exonereEncore($reason, $actorUserId)) {
                 $feePercent = 0.0;
                 $feeFlat = 0;
                 $exemptApplied = true;
+            } elseif ($reason) {
+                $warnings[] = 'exempt_quota_exceeded';
             }
         }
 
@@ -150,7 +169,7 @@ class CancellationEngine
             return $existing;
         }
 
-        $quote = $this->quote($bookingId, $actorRole, $reasonCode, $at);
+        $quote = $this->quote($bookingId, $actorRole, $reasonCode, $at, $actor->id);
 
         $bookingMeta = $this->fetchBookingMeta($bookingId);
         $statusBefore = $bookingMeta['status'] ?? null;

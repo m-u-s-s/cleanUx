@@ -34,4 +34,14 @@ return [
      * assez court pour qu'on puisse se corriger.
      */
     'arbitration_window_days' => (int) env('MISSION_ARBITRATION_WINDOW_DAYS', 90),
+
+    /*
+     * LES TROIS SEUILS QUI RENDENT LE QUESTIONNAIRE D'ANNULATION VERIFIABLE.
+     *
+     * Sans eux, chaque option se declarerait — et un formulaire entierement declaratif n'est pas un
+     * questionnaire, c'est une liste de raisons de ne rien payer.
+     */
+    'late_tolerance_minutes' => (int) env('MISSION_LATE_TOLERANCE_MINUTES', 15),
+    'movement_threshold_m' => (int) env('MISSION_MOVEMENT_THRESHOLD_M', 300),
+    'no_answer_wait_minutes' => (int) env('MISSION_NO_ANSWER_WAIT_MINUTES', 10),
 ];

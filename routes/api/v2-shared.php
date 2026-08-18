@@ -97,10 +97,20 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Phase Cancellation v2 — Quote + execute (client/provider)
     Route::prefix('v2/client/bookings')->group(function () {
+        /*
+         * LE QUESTIONNAIRE AVANT LE DEVIS, ET DANS CET ORDRE.
+         *
+         * L'ecran demande d'abord ce qui se passe, puis chiffre. Sans cette route il devrait
+         * connaitre les codes de motif en dur : la premiere option qu'un administrateur ajoute
+         * serait invisible, et la premiere qu'il retire produirait un code que le moteur ne
+         * reconnait plus.
+         */
+        Route::get('/{booking}/cancellation-questionnaire', [CancellationV2Controller::class, 'clientQuestionnaire']);
         Route::get('/{booking}/cancellation-quote', [CancellationV2Controller::class, 'clientQuote']);
         Route::post('/{booking}/cancel', [CancellationV2Controller::class, 'clientExecute']);
     });
     Route::prefix('v2/provider/bookings')->group(function () {
+        Route::get('/{booking}/cancellation-questionnaire', [CancellationV2Controller::class, 'providerQuestionnaire']);
         Route::get('/{booking}/cancellation-quote', [CancellationV2Controller::class, 'providerQuote']);
         Route::post('/{booking}/cancel', [CancellationV2Controller::class, 'providerExecute']);
     });
