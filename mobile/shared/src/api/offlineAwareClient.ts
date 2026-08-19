@@ -22,11 +22,19 @@ export async function offlineAwareMutation(
   url: string,
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   body: unknown,
+  /*
+   * CE QUE LA PERSONNE CROIT AVOIR FAIT.
+   *
+   * Il voyage avec l'action pour une seule raison : le jour ou le serveur la REFUSE
+   * definitivement, il faut pouvoir dire « votre case “vitres” n'a pas ete enregistree » plutot
+   * que « une action a echoue ». Sans ce libelle, un abandon est un silence.
+   */
+  label?: string,
 ): Promise<MutationResult> {
   const state = await NetInfo.fetch();
 
   if (!state.isConnected) {
-    await offlineQueue.enqueue({ url, method, body });
+    await offlineQueue.enqueue({ url, method, body, label });
     return { queued: true };
   }
 
@@ -48,7 +56,7 @@ export async function offlineAwareMutation(
     if (hasAxiosResponse) {
       throw error;
     }
-    await offlineQueue.enqueue({ url, method, body });
+    await offlineQueue.enqueue({ url, method, body, label });
     return { queued: true };
   }
 }

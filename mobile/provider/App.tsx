@@ -19,6 +19,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { NightShell, useThemeDeNavigation } from '@/ui/NightShell';
+import { OfflineBanner } from '@/ui';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
@@ -122,6 +123,14 @@ function AppInner() {
           <RootNavigator />
         </NavigationContainer>
       </NightShell>
+      {/*
+        « PAS DE CONNEXION INTERNET » — le bandeau existait, complet et anime, monte NULLE PART.
+
+        Sans lui, une personne dans une cave voit ses gestes ne rien faire et recommence : elle
+        n'a aucun moyen de distinguer une application en panne d'un reseau absent. Au-dessus de
+        la navigation, parce qu'il doit se voir quel que soit l'ecran ouvert.
+      */}
+      <OfflineBanner />
       <StatusBar style="auto" />
     </SafeAreaProvider>
   );

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient, ApiError } from '@/api';
+import { apiClient, ApiError, offlineAwareMutation } from '@/api';
 import { readScanPosition } from '@/tracking';
 import { pickImage } from '@/screens/onboarding/documentPicker';
 
@@ -186,17 +186,78 @@ export function useMissionChecklist(missionId: number | null) {
   });
 }
 
+/**
+ * Recalcule l'état local d'une checklist après une case cochée.
+ *
+ * Pure et locale : `required_pending` et `blocks_completion` doivent suivre la case, sinon le
+ * bouton de clôture resterait bloqué à l'écran alors que tout est fait.
+ */
+function coche(etat: MissionChecklistState, itemId: number, done: boolean): MissionChecklistState {
+  const checklists = etat.checklists.map((liste) => ({
+    ...liste,
+    items: liste.items.map((item) =>
+      item.id === itemId ? { ...item, done, status: done ? 'done' : 'pending' } : item,
+    ),
+  }));
+
+  const restants = checklists
+    .flatMap((liste) => liste.items)
+    .filter((item) => item.is_required && !item.done).length;
+
+  return { ...etat, checklists, required_pending: restants, blocks_completion: restants > 0 };
+}
+
+/**
+ * COCHER UNE TÂCHE — LA SEULE ACTION DU TERRAIN QUI SUPPORTE LE HORS-LIGNE.
+ *
+ * ── POURQUOI CELLE-CI, ET PAS LA CLÔTURE ─────────────────────────────────────────────────────
+ *
+ * L'appel envoie une VALEUR ABSOLUE (`done` / `pending`), jamais une bascule. Le rejouer deux
+ * fois donne exactement le même résultat que le jouer une fois : c'est ce qui le rend sûr dans
+ * une file qui, par construction, peut renvoyer.
+ *
+ * La clôture, elle, n'entre PAS dans cette file, et ce n'est pas un oubli. Elle consomme un code
+ * de fin à usage unique et déclenche l'encaissement : rejouée plus tard, elle échouerait sur un
+ * code déjà consommé après avoir laissé croire au prestataire qu'il avait termine. Clôturer
+ * demande du réseau, et l'écran le dit au lieu d'échouer sur un message générique.
+ *
+ * ── L'ÉTAT LOCAL BOUGE TOUT DE SUITE ─────────────────────────────────────────────────────────
+ *
+ * Hors-ligne il n'y a pas de réponse à écrire dans le cache. Sans mise à jour optimiste, la case
+ * se décocherait sous le doigt — et un prestataire dans une cave la recocherait dix fois.
+ */
 export function useToggleMissionChecklistItem(missionId: number) {
   const qc = useQueryClient();
 
-  return useMutation<MissionChecklistState, ApiError, { itemId: number; done: boolean }>({
-    mutationFn: async ({ itemId, done }) =>
-      (await apiClient.post(`/provider/missions/${missionId}/checklist/${itemId}`, {
-        status: done ? 'done' : 'pending',
-      })).data.data,
+  return useMutation<MissionChecklistState | null, ApiError, { itemId: number; done: boolean }>({
+    mutationFn: async ({ itemId, done }) => {
+      const resultat = await offlineAwareMutation(
+        `/provider/missions/${missionId}/checklist/${itemId}`,
+        'POST',
+        { status: done ? 'done' : 'pending' },
+        done ? 'Cocher une tâche' : 'Décocher une tâche',
+      );
+
+      if (resultat.queued) {
+        return null;
+      }
+
+      return (resultat.response as { data: MissionChecklistState }).data;
+    },
+    // Hors-ligne, c'est la SEULE chose qui bouge : la file partira à la reconnexion.
+    onMutate: ({ itemId, done }) => {
+      qc.setQueryData<MissionChecklistState>(
+        ['provider', 'mission', missionId, 'checklist'],
+        (etat) => (etat === undefined ? etat : coche(etat, itemId, done)),
+      );
+    },
     // La réponse porte déjà l'état complet : on l'écrit directement plutôt que de refaire un
     // aller-retour, pour que la case cochée et le compteur de blocage bougent d'un seul coup.
     onSuccess: (etat) => {
+      if (etat === null) {
+        return;
+      }
+
       qc.setQueryData(['provider', 'mission', missionId, 'checklist'], etat);
       // Le détail de mission porte `checklist_items_pending` : le laisser périmé afficherait
       // deux comptes différents sur deux écrans de la même mission.

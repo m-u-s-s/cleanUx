@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, ApiError } from '@/api';
+import NetInfo from '@react-native-community/netinfo';
 import { useChannel } from '@/realtime';
 import type { MissionAssignment, Mission, MissionLifecycleAction } from './types';
 
@@ -127,6 +128,29 @@ export function useMissionLifecycle(missionId: number) {
             ? { start_code: code }
             : undefined
         : undefined;
+      /*
+       * CLÔTURER EXIGE DU RÉSEAU, ET ON LE DIT AVANT D'ESSAYER.
+       *
+       * La clôture n'entre PAS dans la file hors-ligne, et ce n'est pas un oubli : elle consomme
+       * un code de fin à usage unique et déclenche l'encaissement. Rejouée à la reconnexion, elle
+       * échouerait sur un code déjà consommé — après avoir laissé croire au prestataire qu'il
+       * avait terminé, rangé son matériel et quitté les lieux.
+       *
+       * Sans ce contrôle, l'échec réseau remonte en « Une erreur inattendue est survenue », et
+       * quelqu'un dans une cave réessaie six fois avant de comprendre.
+       */
+      if (action === 'complete' || action === 'ride/complete') {
+        const reseau = await NetInfo.fetch();
+
+        if (!reseau.isConnected) {
+          throw new ApiError(
+            0,
+            'offline',
+            'Clôturer demande une connexion : le code de fin ne peut être validé hors-ligne. Vos tâches cochées, elles, sont enregistrées et partiront toutes seules.',
+          );
+        }
+      }
+
       // La réponse est RENDUE : elle porte l'annonce de gain que l'écran affiche aussitôt.
       return (await apiClient.post(`/provider/missions/${missionId}/${action}`, body)).data ?? {};
     },

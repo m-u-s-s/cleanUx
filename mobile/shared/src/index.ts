@@ -122,3 +122,10 @@ export type { ParityModule } from './parity';
  * interne d'axios. Une seule copie évite une troisième découverte.
  */
 export { libelleStatut, formatDateHeure, formatAdresse, formatDelai, messageDErreur } from './format';
+
+/*
+ * LA FILE HORS-LIGNE fait desormais partie de la surface publique : les ecrans dependent de son
+ * comportement (ce qui attend, ce qui est abandonne), et leurs tests doivent pouvoir la lire.
+ */
+export { offlineQueue } from './lib/offlineQueue';
+export type { QueuedAction, DroppedAction } from './lib/offlineQueue';
