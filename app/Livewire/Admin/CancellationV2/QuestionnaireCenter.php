@@ -5,6 +5,7 @@ namespace App\Livewire\Admin\CancellationV2;
 use App\Models\CancellationQuestion;
 use App\Models\CancellationQuestionOption;
 use App\Services\Cancellation\CancellationQuestionnaireService;
+use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use DomainException;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Locked;
@@ -25,9 +26,18 @@ use Livewire\Component;
  * Une propriété publique Livewire est retournable par le navigateur avec `$set`. Sans le verrou,
  * n'importe qui pourrait désactiver la question d'un autre périmètre en changeant un nombre dans
  * la console de son navigateur — c'est un piège déjà payé par ce dépôt.
+ *
+ * ── ET POURQUOI LE TRAIT D'ACCÈS ─────────────────────────────────────────────────────────────
+ *
+ * La route porte déjà la middleware admin. Ce dépôt exige en plus la garde au niveau COMPOSANT,
+ * parce qu'un composant Livewire s'atteint par son point d'entrée propre : la protection de la
+ * route ne le suit pas. Ce fichier avait été écrit sans, et c'est le test de complétude — pas une
+ * relecture — qui l'a dit.
  */
 class QuestionnaireCenter extends Component
 {
+    use EnforcesAdminAccess;
+
     #[Locked]
     public ?string $erreur = null;
 
