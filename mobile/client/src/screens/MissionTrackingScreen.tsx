@@ -1,11 +1,11 @@
 import React, { useRef, useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Share, Alert } from 'react-native';
 import type GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { Screen, Badge, Button, Skeleton, OsmMap, loadMapModule, isMapRenderable } from '@/ui';
 import { MissionSheet } from '@/screens/components/MissionSheet';
 import { MissionRetardCard } from '@/screens/components/MissionRetardCard';
 import { AnnulerLaMissionSheet } from '@brio/shared';
-import { useTrackingSession, useTrackingTrail, useLiveTracking } from '@/tracking';
+import { useTrackingSession, useTrackingTrail, useLiveTracking, usePartagerLeSuivi } from '@/tracking';
 import { useOnSiteTimeline } from '@/booking/onsite';
 import { PresenceCodeCard } from '@/screens/components/PresenceCodeCard';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
@@ -44,6 +44,25 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
    */
   const { data: filSurPlace } = useOnSiteTimeline(bookingId);
   const [annulationOuverte, setAnnulationOuverte] = useState(false);
+  const partager = usePartagerLeSuivi(bookingId);
+
+  /*
+   * PARTAGER LE SUIVI — tout existait sauf le bouton.
+   *
+   * Le lien signe, sa validite de douze heures et la page publique volontairement pauvre (une
+   * position, une heure, un prenom) sont en place depuis longtemps ; le web les expose. Sur
+   * mobile, l'appel n'avait AUCUN appelant.
+   */
+  const envoyerLeLien = () =>
+    partager.mutate(undefined, {
+      onSuccess: ({ url, expires_in_hours }) => {
+        void Share.share({
+          message: `Suivez l’arrivée du prestataire : ${url}
+(lien valable ${expires_in_hours} h)`,
+        });
+      },
+      onError: () => Alert.alert('Impossible', 'Le lien de suivi n’a pas pu être créé.'),
+    });
   const { position: livePos, eta: liveEta } = useLiveTracking(filSurPlace?.mission_id ?? null);
   const mapRef = useRef<any>(null);
   const sheetRef = useRef<GorhomBottomSheet>(null);
@@ -260,6 +279,19 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
           fullWidth
           size="lg"
           testID="ouvrir-ma-mission"
+        />
+
+        {/*
+          EN SECONDAIRE, ET SOUS LA PORTE PRINCIPALE. Partager sert quand on n'est PAS chez soi :
+          c'est un cas frequent, jamais le premier geste de celui qui regarde son suivi.
+        */}
+        <Button
+          label="Partager le suivi"
+          variant="secondary"
+          onPress={envoyerLeLien}
+          disabled={partager.isPending}
+          fullWidth
+          testID="partager-le-suivi"
         />
       </View>
 

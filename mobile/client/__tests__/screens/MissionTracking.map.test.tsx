@@ -83,6 +83,8 @@ jest.mock('@/tracking', () => ({
   }),
   useTrackingTrail: () => ({ data: TRAIL }),
   useLiveTracking: () => ({ position: null, eta: null }),
+  // Ce test regarde la carte : le partage est bouchonne, son comportement a son propre fichier.
+  usePartagerLeSuivi: () => ({ mutate: jest.fn(), isPending: false }),
 }));
 
 /** Pilote la garde depuis chaque test : avec ou sans clé cartographique utilisable. */

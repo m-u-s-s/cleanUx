@@ -53,6 +53,14 @@ jest.mock('@/tracking', () => {
       isLoading: false,
     }),
     useTrackingTrail: () => ({ data: [] }),
+    /*
+     * LE PARTAGE EST BOUCHONNE, comme les deux crochets au-dessus.
+     *
+     * `...reel` rend ici le VRAI `useMutation`, qui exige un `QueryClientProvider` — absent de ce
+     * test, qui ne regarde ni le partage ni le reseau. Sans ce bouchon, les trois cas tombent sur
+     * un defaut de contexte et ne mesurent plus le canal temps reel qu'ils surveillent.
+     */
+    usePartagerLeSuivi: () => ({ mutate: jest.fn(), isPending: false }),
   };
 });
 

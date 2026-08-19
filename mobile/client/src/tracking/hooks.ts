@@ -245,3 +245,25 @@ export function useLiveTracking(missionId: number | null) {
 
   return { position, eta };
 }
+
+/**
+ * PARTAGER LE SUIVI AVEC QUELQU'UN QUI N'A PAS DE COMPTE.
+ *
+ * ── LE CAS QUE ÇA RÈGLE ──────────────────────────────────────────────────────────────────────
+ *
+ * On commande un ménage pour sa mère et on n'est pas sur place. Elle doit savoir quand ouvrir,
+ * elle n'a pas de compte, et aujourd'hui on l'appelle — puis on la rappelle vingt minutes plus
+ * tard parce que le prestataire est dans un embouteillage.
+ *
+ * ── TOUT EXISTAIT, SAUF LE BOUTON ────────────────────────────────────────────────────────────
+ *
+ * Le lien signé, la page publique et sa charge volontairement pauvre — position, heure, prénom —
+ * sont en place depuis longtemps, et le web les expose. Sur mobile, `POST /tracking/share`
+ * n'avait AUCUN appelant : la fonction existait pour personne.
+ */
+export function usePartagerLeSuivi(bookingId: number | null) {
+  return useMutation<{ url: string; expires_in_hours: number }, Error, void>({
+    mutationFn: async () =>
+      (await apiClient.post(`/client/bookings/${bookingId}/tracking/share`)).data.data,
+  });
+}
