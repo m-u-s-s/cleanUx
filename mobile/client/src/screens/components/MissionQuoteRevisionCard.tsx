@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import { Button } from '@/ui';
+import { Button, CarteDeMission } from '@/ui';
 import { useRevisionDeDevis, useRepondreALaRevision } from '@/booking/onsite';
 import type { QuoteRevision } from '@/booking/onsite';
 import { spacing, typography, radius } from '@/theme';
@@ -47,8 +47,7 @@ export function MissionQuoteRevisionCard({ bookingId }: { bookingId: number }) {
     );
 
   return (
-    <View style={styles.carte} testID="revision-de-devis">
-      <Text style={styles.titre}>Nouveau devis proposé</Text>
+    <CarteDeMission ton="decision" titre="Nouveau devis proposé" testID="revision-de-devis">
 
       <View style={styles.montants}>
         <View>
@@ -106,7 +105,7 @@ export function MissionQuoteRevisionCard({ bookingId }: { bookingId: number }) {
           />
         </View>
       )}
-    </View>
+    </CarteDeMission>
   );
 }
 
@@ -143,16 +142,8 @@ function montant(valeur: number, devise: string): string {
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
-  // Fond « brand » et non « warning » : une révision n'est pas un incident, c'est une décision à
-  // prendre. La signaler comme un problème ferait refuser par réflexe.
-  carte: {
-    backgroundColor: t.tint.brand,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    marginTop: spacing.md,
-    gap: spacing.sm,
-  },
-  titre: { fontSize: typography.fontSize.base, fontWeight: '700', color: t.text },
+  // Ton « decision » et non « attention » : une révision n'est pas un incident, c'est une décision
+  // à prendre. La signaler comme un problème ferait refuser par réflexe.
   montants: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md },
   libelle: { fontSize: typography.fontSize.xs, color: t.textSecondary },
   ancien: {

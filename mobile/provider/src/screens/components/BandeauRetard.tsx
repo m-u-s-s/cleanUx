@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import { Button, TextInput } from '@/ui';
+import { Button, TextInput, CarteDeMission } from '@/ui';
 import { useMonRetard, useAnnoncerMonRetard } from '@/missions';
-import { spacing, typography, radius } from '@/theme';
+import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 
@@ -48,8 +48,11 @@ export function BandeauRetard({ missionId }: { missionId: number }) {
     : null;
 
   return (
-    <View style={styles.bandeau} testID="bandeau-retard">
-      <Text style={styles.titre}>{retard.minutes} min de retard</Text>
+    <CarteDeMission
+      ton="attention"
+      titre={`${retard.minutes} min de retard`}
+      testID="bandeau-retard"
+    >
 
       {/*
         CE QUE LE CLIENT SAIT DÉJÀ. C'est l'information qui manque vraiment : elle change la
@@ -88,22 +91,11 @@ export function BandeauRetard({ missionId }: { missionId: number }) {
           />
         ))}
       </View>
-    </View>
+    </CarteDeMission>
   );
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
-  bandeau: {
-    gap: spacing.sm,
-    padding: spacing.md,
-    borderRadius: radius.md,
-    backgroundColor: t.tint.warning,
-  },
-  titre: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
-    color: t.text,
-  },
-  etat: { fontSize: typography.fontSize.sm, lineHeight: 20, color: t.textSecondary },
+  etat: { fontSize: typography.fontSize.sm, lineHeight: 20, color: t.mutedOnGlass },
   boutons: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
 });

@@ -15,10 +15,10 @@
             plateforme a DEJA prevenu son client, et qu'il arrivera donc en s'excusant d'un retard
             dont l'autre parlait depuis vingt minutes.
         --}}
-        <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 space-y-3" data-testid="bandeau-retard">
-            <p class="font-semibold text-amber-900">{{ $retard['minutes'] }} min de retard</p>
+        <div class="rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-400/30 dark:bg-amber-400/10 p-4 space-y-3" data-testid="bandeau-retard">
+            <p class="font-semibold text-amber-900 dark:text-amber-100">{{ $retard['minutes'] }} min de retard</p>
 
-            <p class="text-sm text-amber-800">
+            <p class="text-sm text-amber-800 dark:text-amber-200">
                 @if($retard['prevenu_at'])
                     Le client a ete prevenu a {{ \Illuminate\Support\Carbon::parse($retard['prevenu_at'])->format('H:i') }}.
                 @else
@@ -28,7 +28,7 @@
             </p>
 
             @if(data_get($retard, 'annonce.arrivee_at'))
-                <p class="text-sm text-amber-800" data-testid="retard-deja-annonce">
+                <p class="text-sm text-amber-800 dark:text-amber-200" data-testid="retard-deja-annonce">
                     Vous avez annonce votre arrivee vers
                     {{ \Illuminate\Support\Carbon::parse($retard['annonce']['arrivee_at'])->format('H:i') }}.
                 </p>
@@ -36,13 +36,13 @@
 
             <input type="text" wire:model="motifDuRetard" maxlength="180"
                    placeholder="Motif (facultatif) : embouteillage, chantier precedent…"
-                   class="w-full rounded-lg border border-amber-300 px-3 py-2 text-sm"
+                   class="w-full rounded-lg border border-amber-300 px-3 py-2 dark:border-amber-400/40 text-sm"
                    data-testid="retard-motif">
 
             <div class="flex flex-wrap gap-2">
                 @foreach ([10, 20, 30] as $minutes)
                     <button type="button" wire:click="annoncerLeRetard({{ $minutes }})"
-                            class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm font-medium text-amber-900 hover:bg-amber-100"
+                            class="rounded-lg border border-amber-300 bg-white dark:border-amber-400/40 dark:bg-transparent px-3 py-2 text-sm font-medium text-amber-900 dark:text-amber-100 hover:bg-amber-100 dark:hover:bg-amber-400/20"
                             data-testid="retard-annoncer-{{ $minutes }}">
                         +{{ $minutes }} min
                     </button>
@@ -143,7 +143,7 @@
                             wire:click="declarerClientAbsent"
                             wire:confirm="Déclarer que le client ne s’est pas présenté ? La course sera close et des frais lui seront appliqués."
                             type="button"
-                            class="mt-2 rounded-xl border border-amber-400 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-900 transition hover:bg-amber-100">
+                            class="mt-2 rounded-xl border border-amber-400 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-900 dark:text-amber-100 transition hover:bg-amber-100 dark:hover:bg-amber-400/20">
                             Client absent
                         </button>
                     @endif

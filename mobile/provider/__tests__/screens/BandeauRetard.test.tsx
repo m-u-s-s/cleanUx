@@ -19,7 +19,7 @@ jest.mock('@/missions', () => ({
 }));
 
 jest.mock('@/ui', () => {
-  const { Text, TouchableOpacity, TextInput: RNTextInput } = require('react-native');
+  const { Text, TouchableOpacity, TextInput: RNTextInput, View } = require('react-native');
 
   return {
     Button: ({ label, onPress, testID }: any) => (
@@ -29,6 +29,14 @@ jest.mock('@/ui', () => {
     ),
     TextInput: ({ value, onChangeText, testID }: any) => (
       <RNTextInput value={value} onChangeText={onChangeText} testID={testID} />
+    ),
+    // Traversante : elle rend son titre et ses enfants, sinon le bouchon ferait passer au vert
+    // un bandeau devenu vide. Sa matiere propre a son fichier a elle.
+    CarteDeMission: ({ titre, children, testID }: any) => (
+      <View testID={testID}>
+        {titre ? <Text>{titre}</Text> : null}
+        {children}
+      </View>
     ),
   };
 });

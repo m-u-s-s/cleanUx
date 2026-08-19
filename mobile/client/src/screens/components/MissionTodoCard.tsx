@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
-import { Button, TextInput, Icon } from '@/ui';
+import { Button, TextInput, Icon, CarteDeMission } from '@/ui';
 import { useTodoList, useAjouterTache, useRetirerTache, useConsigneDAcces } from '@/booking/onsite';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -56,9 +56,7 @@ export function MissionTodoCard({ bookingId }: { bookingId: number }) {
   };
 
   return (
-    <View style={styles.section} testID="ma-todo-list">
-      <Text style={styles.titre}>Ma liste de tâches</Text>
-
+    <CarteDeMission titre="Ma liste de tâches" testID="ma-todo-list">
       <Text style={styles.avertissement}>
         Le prestataire ne pourra pas terminer tant que ces tâches ne sont pas faites.
         {fenetre.open && fenetre.minutes_left !== null
@@ -174,17 +172,11 @@ export function MissionTodoCard({ bookingId }: { bookingId: number }) {
         // LE MOTIF SE MONTRE : une liste qui cesse d'accepter sans rien dire passe pour une panne.
         <Text style={styles.figee} testID="todo-figee">{fenetre.reason}</Text>
       )}
-    </View>
+    </CarteDeMission>
   );
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
-  section: { marginTop: spacing.lg, gap: spacing.sm },
-  titre: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
-    color: t.text,
-  },
   avertissement: {
     fontSize: typography.fontSize.xs,
     lineHeight: 17,

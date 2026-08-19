@@ -38,6 +38,14 @@ jest.mock('@/ui', () => {
       <RNTextInput value={value} onChangeText={onChangeText} testID={testID} />
     ),
     Icon: () => <View />,
+    // Traversante : elle rend son titre et ses enfants. Un bouchon qui les avalerait ferait
+    // passer au vert une carte devenue vide.
+    CarteDeMission: ({ titre, children, testID }: any) => (
+      <View testID={testID}>
+        {titre ? <Text>{titre}</Text> : null}
+        {children}
+      </View>
+    ),
   };
 });
 

@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import { Button } from '@/ui';
+import { Button, CarteDeMission } from '@/ui';
 import { useRetard, useReprogrammer } from '@/booking/onsite';
-import { spacing, typography, radius } from '@/theme';
+import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 
@@ -52,10 +52,11 @@ export function MissionRetardCard({
   const heure = (d: Date) => d.toTimeString().slice(0, 5);
 
   return (
-    <View style={styles.carte} testID="retard-prestataire">
-      <Text style={styles.titre}>
-        {retard.minutes} min de retard
-      </Text>
+    <CarteDeMission
+      ton="attention"
+      titre={`${retard.minutes} min de retard`}
+      testID="retard-prestataire"
+    >
 
       {/*
         LA RÉPONSE DU PRESTATAIRE, ou son absence — et l'absence se dit.
@@ -94,23 +95,11 @@ export function MissionRetardCard({
           testID="retard-annuler"
         />
       ) : null}
-    </View>
+    </CarteDeMission>
   );
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
-  carte: {
-    marginTop: spacing.lg,
-    gap: spacing.sm,
-    padding: spacing.md,
-    borderRadius: radius.md,
-    backgroundColor: t.tint.warning,
-  },
-  titre: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
-    color: t.text,
-  },
-  annonce: { fontSize: typography.fontSize.sm, lineHeight: 20, color: t.textSecondary },
+  annonce: { fontSize: typography.fontSize.sm, lineHeight: 20, color: t.mutedOnGlass },
   actions: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
 });

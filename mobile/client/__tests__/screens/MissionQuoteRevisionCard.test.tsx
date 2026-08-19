@@ -22,13 +22,21 @@ jest.mock('@/booking/onsite', () => ({
 }));
 
 jest.mock('@/ui', () => {
-  const { Text, TouchableOpacity } = require('react-native');
+  const { Text, TouchableOpacity, View } = require('react-native');
 
   return {
     Button: ({ label, onPress, testID }: any) => (
       <TouchableOpacity onPress={onPress} testID={testID}>
         <Text>{label}</Text>
       </TouchableOpacity>
+    ),
+    // Traversante : elle rend son titre et ses enfants. Un bouchon qui les avalerait ferait
+    // passer au vert une carte devenue vide.
+    CarteDeMission: ({ titre, children, testID }: any) => (
+      <View testID={testID}>
+        {titre ? <Text>{titre}</Text> : null}
+        {children}
+      </View>
     ),
   };
 });

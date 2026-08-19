@@ -22,6 +22,8 @@ export { AnimatedListItem } from './AnimatedListItem';
 export { SuccessOverlay } from './SuccessOverlay';
 export { useReducedMotion, useScreenReader, a11y } from './a11y';
 export { OfflineBanner } from './OfflineBanner';
+export { CarteDeMission } from './CarteDeMission';
+export type { TonDeMission } from './CarteDeMission';
 export { TurnstileWidget } from './TurnstileWidget';
 export {
   CANVAS,
