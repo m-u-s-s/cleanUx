@@ -139,6 +139,7 @@ job courant).
 | `presence:scan-stale --threshold=5` | Toutes les 2 min | « En ligne » faux, dont dépend `CandidateFinder` |
 | `dispatch:balayer-les-offres-expirees` | Toutes les 2 min | Offre de mission restee `assigned` pour toujours : l'expiration repose sur un job DIFFERE a `tries = 1`, qu'un worker redemarre ou un echec unique fait disparaitre. La mission n'est alors jamais proposee au suivant, et le client attend quelqu'un qui ne viendra pas |
 | `spine:check-stuck-missions` | Horaire | Mission bloquee au-dela de son demarrage prevu : la sonde existait et n'etait executee par personne |
+| `missions:signaler-les-retards` | Toutes les 5 min | Client qui attend sans nouvelle : le retard etait mesure depuis toujours et ne servait qu'a autoriser une annulation gratuite — on ne lui en parlait donc qu'apres qu'il ait renonce. Sans cette tache, l'annonce n'existe pas et l'annulation reste la seule issue visible |
 | `face-check:maintenance` | Toutes les 5 min | Contrôle facial ouvert et jamais répondu : il bloque la réouverture du suivant, et le prestataire reste devant un écran mort |
 | `extras:reprendre-les-prelevements` | Toutes les heures | Supplément accepté par le client et jamais encaissé : le prestataire a fait le travail, la créance existe, et rien ne la rejouait |
 | `temps:reprendre-les-reglements` | Toutes les heures | Temps supplémentaire constaté et jamais encaissé : la clôture prélève en échec doux pour ne pas bloquer un prestataire devant la porte du client, et sans cette reprise la créance resterait constatée pour l'éternité |

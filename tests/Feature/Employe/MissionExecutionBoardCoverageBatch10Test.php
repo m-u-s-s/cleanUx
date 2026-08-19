@@ -4,6 +4,7 @@ namespace Tests\Feature\Employe;
 
 use App\Livewire\Employe\MissionExecutionBoard;
 use App\Models\MissionAssignment;
+use App\Models\MissionChecklist;
 use App\Models\MissionChecklistItem;
 use App\Models\MissionMedia;
 use App\Models\User;
@@ -20,6 +21,18 @@ class MissionExecutionBoardCoverageBatch10Test extends TestCase
     use CreatesMissionPortalFixtures;
     use RefreshDatabase;
 
+    /**
+     * LA LISTE NAÎT VIDE, ET C'EST VOULU.
+     *
+     * Ce test exigeait des tâches dès le montage : `ensureChecklist()` posait alors les six lignes
+     * d'un gabarit, toutes obligatoires. Le prestataire cochait donc six cases que personne ne lui
+     * avait demandées, pendant que ce que le CLIENT voulait n'existait nulle part.
+     *
+     * Le gabarit est devenu une SUGGESTION, et la liste appartient au client. L'assertion change
+     * donc de sens : le porte-liste existe, il est vide, et une mission sans demande du client ne
+     * bloque personne. Le témoin positif est deux lignes plus bas — dès qu'une tâche existe, elle
+     * bloque bien.
+     */
     public function test_lead_employee_can_mount_board_and_checklist_is_seeded(): void
     {
         $scenario = $this->createMissionPortalContext(['status' => 'assigned']);
@@ -34,7 +47,34 @@ class MissionExecutionBoardCoverageBatch10Test extends TestCase
         $this->assertDatabaseHas('mission_checklists', [
             'mission_id' => $scenario['mission']->id,
         ]);
-        $this->assertGreaterThan(0, MissionChecklistItem::query()->count());
+        $this->assertSame(0, MissionChecklistItem::query()->count(), 'la liste naît vide : elle appartient au client');
+
+        // LE TÉMOIN : une tâche demandée par le client apparaît bien, et elle est obligatoire.
+        $tache = $this->tachePosee($scenario['mission']->id);
+
+        $this->assertTrue($tache->is_required);
+        $this->assertSame(1, MissionChecklistItem::query()->count());
+    }
+
+    /**
+     * Pose une tâche comme le client la poserait, et rend la ligne.
+     *
+     * Directement par le modèle : la fenêtre d'édition et les droits du client ont leurs propres
+     * tests. Ce fichier-ci porte sur ce que le TABLEAU DE BORD fait d'une tâche existante.
+     */
+    private function tachePosee(int $missionId): MissionChecklistItem
+    {
+        $checklist = MissionChecklist::query()->where('mission_id', $missionId)->firstOrFail();
+
+        return MissionChecklistItem::query()->create([
+            'mission_checklist_id' => $checklist->id,
+            'label' => 'Nettoyer la hotte',
+            'item_type' => 'task',
+            'is_required' => true,
+            'status' => MissionChecklistService::A_FAIRE,
+            'sort_order' => 1,
+            'source' => 'client',
+        ]);
     }
 
     /**
@@ -53,9 +93,9 @@ class MissionExecutionBoardCoverageBatch10Test extends TestCase
 
         $component = Livewire::test(MissionExecutionBoard::class, ['mission' => $scenario['mission']]);
 
-        $item = MissionChecklistItem::query()
-            ->whereHas('checklist', fn ($q) => $q->where('mission_id', $scenario['mission']->id))
-            ->firstOrFail();
+        // La liste naît vide depuis que le client la tient : on pose la tâche que le tableau de
+        // bord doit savoir cocher, au lieu d'attendre un gabarit qui n'existe plus.
+        $item = $this->tachePosee($scenario['mission']->id);
 
         $component
             ->call('toggleChecklistItem', $item->id)
