@@ -10,9 +10,9 @@ use App\Models\Feedback;
 use App\Models\Mission;
 use App\Models\MissionChecklistItem;
 use App\Models\MissionExtra;
-use App\Models\MissionQuoteRevision;
 use App\Models\MissionIncident;
 use App\Models\MissionMedia;
+use App\Models\MissionQuoteRevision;
 use App\Models\MissionReport;
 use App\Services\Client\Calendar\BookingRescheduleService;
 use App\Services\Missions\HourlyExtensionService;
@@ -504,7 +504,7 @@ class MissionOnSiteController extends Controller
                 $donnees['time'] ?? null,
                 $donnees['reason'] ?? null,
             );
-        } catch (\DomainException $e) {
+        } catch (DomainException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
 

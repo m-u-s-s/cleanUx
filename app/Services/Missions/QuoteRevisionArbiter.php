@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Notifications\SanctionAutomatiqueNotification;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
@@ -290,7 +291,7 @@ class QuoteRevisionArbiter
      * Requête directe plutôt qu'un rôle en dur ailleurs : `users.role` porte le rôle canonique, et
      * `is_super_admin` ne le double pas — un super-administrateur porte aussi `role = admin`.
      *
-     * @return \Illuminate\Support\Collection<int, User>
+     * @return Collection<int, User>
      */
     private function administrateurs()
     {

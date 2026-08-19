@@ -4,6 +4,7 @@ namespace App\Livewire\Client;
 
 use App\Models\Booking;
 use App\Models\MaskedCallSession;
+use App\Models\Mission;
 use App\Models\MissionChecklistItem;
 use App\Models\MissionQuoteRevision;
 use App\Services\Client\Calendar\BookingRescheduleService;
@@ -213,7 +214,6 @@ class GererMaMission extends Component
         return ['numero' => $session->proxy_phone_number];
     }
 
-
     private function repondre(int $revisionId, bool $accepte, ?string $decision = null): void
     {
         $this->erreur = null;
@@ -239,9 +239,9 @@ class GererMaMission extends Component
         }
     }
 
-    private function mission(): ?\App\Models\Mission
+    private function mission(): ?Mission
     {
-        return \App\Models\Mission::query()
+        return Mission::query()
             ->where('booking_id', $this->bookingId)
             ->latest('id')
             ->first();

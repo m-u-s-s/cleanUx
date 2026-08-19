@@ -10,6 +10,7 @@ use App\Models\MissionExtra;
 use App\Models\MissionIncident;
 use App\Models\MissionMedia;
 use App\Models\MissionQuoteRevision;
+use App\Models\MissionReinforcementRequest;
 use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Support\Domain\BookingStatus;
@@ -202,7 +203,7 @@ class TerrainWebPrestataireTest extends TestCase
 
         $this->assertSame(
             1,
-            \App\Models\MissionReinforcementRequest::query()->where('mission_id', $mission->id)->count(),
+            MissionReinforcementRequest::query()->where('mission_id', $mission->id)->count(),
         );
     }
 

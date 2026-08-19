@@ -10,10 +10,10 @@ use App\Models\MissionQuoteRevision;
 use App\Services\Missions\HourlyMissionClock;
 use App\Services\Missions\MissionQuoteRevisionService;
 use App\Services\Missions\MissionReinforcementService;
-use App\Services\Missions\QuoteRevisionWindow;
 use App\Services\Missions\OnSite\MissionAccessSheetService;
 use App\Services\Missions\OnSite\MissionExtraService;
 use App\Services\Missions\OnSite\MissionIncidentService;
+use App\Services\Missions\QuoteRevisionWindow;
 use App\Support\Domain\MissionEngine;
 use DomainException;
 use Illuminate\Contracts\View\View;
@@ -264,7 +264,6 @@ class MissionFieldTools extends Component
 
         return ['numero' => $session->proxy_phone_number];
     }
-
 
     /**
      * LA FICHE D'ACCÈS NE S'AFFICHE QU'UNE FOIS L'ARRIVÉE CONFIRMÉE — le service le décide, et il

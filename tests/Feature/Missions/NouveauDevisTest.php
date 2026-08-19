@@ -6,12 +6,11 @@ use App\Models\Booking;
 use App\Models\BookingCancellationV2;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
-use App\Models\MissionChecklistItem;
+use App\Models\MissionFeatureSuspension;
 use App\Models\MissionMedia;
+use App\Models\MissionQuoteRevision;
 use App\Models\PromoCode;
 use App\Models\PromoCodeRedemption;
-use App\Models\MissionFeatureSuspension;
-use App\Models\MissionQuoteRevision;
 use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Services\Missions\MissionQuoteRevisionService;
@@ -19,13 +18,13 @@ use App\Services\Missions\MissionTodoService;
 use App\Services\Missions\OnSite\MissionChecklistService as OnSiteChecklistService;
 use App\Services\Missions\QuoteRevisionPricing;
 use App\Services\Missions\QuoteRevisionTopUp;
-use App\Services\Payments\CommissionService;
 use App\Services\Missions\QuoteRevisionWindow;
+use App\Services\Payments\CommissionService;
 use App\Support\Domain\BookingStatus;
 use App\Support\Domain\MissionStatus;
-use DomainException;
 use Database\Seeders\CancellationPoliciesSeeder;
 use Database\Seeders\CancellationQuestionnaireSeeder;
+use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -510,7 +509,6 @@ class NouveauDevisTest extends TestCase
         $this->expectExceptionMessage('ne vous concerne pas');
         $this->revisions()->refuser($revision, User::factory()->client()->create(), MissionQuoteRevision::DECISION_POURSUIVRE);
     }
-
 
     // ── LES API ───────────────────────────────────────────────────────────────
 
