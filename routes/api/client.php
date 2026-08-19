@@ -173,6 +173,18 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
      * route, et elle prime sur les consignes du carnet sans les remplacer.
      */
     Route::post('/bookings/{booking}/onsite/access-note', [ClientMissionOnSiteController::class, 'consigneDAcces']);
+
+    /*
+     * LE MINUTEUR DE RETARD ET SA DEUXIEME ISSUE.
+     *
+     * Le GET vit hors du suivi GPS : `tracking` rend `null` tant qu'aucune session n'est ouverte,
+     * et un prestataire qui n'est jamais parti est le cas ou le retard compte le plus.
+     *
+     * Le POST branche `BookingRescheduleService`, qui n'etait atteignable que par le
+     * glisser-deposer du calendrier web.
+     */
+    Route::get('/bookings/{booking}/delay', [ClientMissionOnSiteController::class, 'retard']);
+    Route::post('/bookings/{booking}/reschedule', [ClientMissionOnSiteController::class, 'reprogrammer']);
     // F16 — la clôture guidée : rapport, puis pourboire, puis avis.
     Route::get('/bookings/{booking}/onsite/closure', [ClientMissionOnSiteController::class, 'closureFlow']);
     Route::post('/bookings/{booking}/onsite/extras/{extra}/approve', [ClientMissionOnSiteController::class, 'approveExtra']);

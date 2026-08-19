@@ -68,6 +68,13 @@ class Kernel extends ConsoleKernel
         $schedule->command('face-check:maintenance')->everyFiveMinutes()->withoutOverlapping();
 
         /*
+         * LE MINUTEUR DE RETARD. Cinq minutes est la granularite du message : au-dela, un client
+         * decouvre le retard avant que la plateforme ne l'en informe, ce qui est exactement la
+         * situation que ce minuteur existe pour eviter.
+         */
+        $schedule->command('missions:signaler-les-retards')->everyFiveMinutes()->withoutOverlapping();
+
+        /*
          * Les suppléments acceptés mais jamais encaissés. Toutes les heures : une carte refusée à
          * 14 h peut passer à 15 h, et le prestataire a déjà fait le travail.
          */

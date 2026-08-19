@@ -48,24 +48,62 @@ class CancellationAnswerVerifier
      */
     public function leProviderEstEnRetard(Booking $booking): bool
     {
-        $prevu = $booking->scheduled_at
-            ?? ($booking->date && $booking->heure
-                ? Carbon::parse($booking->date->format('Y-m-d').' '.substr((string) $booking->heure, 0, 8))
-                : null);
+        return $this->minutesDeRetard($booking) !== null;
+    }
+
+    /**
+     * DE COMBIEN, ET LE MÊME CALCUL POUR TOUT LE MONDE.
+     *
+     * Le minuteur de retard et l'option d'annulation gratuite doivent répondre au même moment :
+     * un client averti « votre prestataire a 22 minutes de retard » puis à qui l'on refuse le
+     * motif « il est en retard » ne lit pas deux règles, il lit une panne. Une seule mesure, donc,
+     * et le booléen n'est plus qu'une lecture de celle-ci.
+     *
+     * Rend les minutes écoulées depuis l'HEURE PRÉVUE — pas depuis la fin de la tolérance. Ce que
+     * le client attend, c'est le retard qu'il vit ; la tolérance décide seulement quand on en
+     * parle.
+     */
+    public function minutesDeRetard(Booking $booking): ?int
+    {
+        $prevu = $this->heurePrevue($booking);
 
         if ($prevu === null) {
-            return false;
+            return null;
         }
 
         $tolerance = max(0, (int) Config::get('missions.late_tolerance_minutes', 15));
 
-        if (Carbon::now()->lessThan(Carbon::parse($prevu)->addMinutes($tolerance))) {
-            return false;
+        if (Carbon::now()->lessThan($prevu->copy()->addMinutes($tolerance))) {
+            return null;
         }
 
         $mission = Mission::query()->where('booking_id', $booking->id)->latest('id')->first();
 
-        return $mission === null || $mission->actual_start_at === null;
+        if ($mission !== null && $mission->actual_start_at !== null) {
+            return null;
+        }
+
+        return (int) $prevu->diffInMinutes(Carbon::now());
+    }
+
+    /**
+     * L'HEURE PRÉVUE, quelle que soit la colonne qui la porte.
+     *
+     * `scheduled_at` fait foi quand elle existe ; les réservations anciennes ne portent que le
+     * couple `date` + `heure`. Lire une seule des deux laisserait une moitié du parc sans retard
+     * mesurable — et un retard non mesuré est un retard gratuit.
+     */
+    public function heurePrevue(Booking $booking): ?Carbon
+    {
+        if ($booking->scheduled_at !== null) {
+            return Carbon::parse($booking->scheduled_at);
+        }
+
+        if ($booking->date && $booking->heure) {
+            return Carbon::parse($booking->date->format('Y-m-d').' '.substr((string) $booking->heure, 0, 8));
+        }
+
+        return null;
     }
 
     /**

@@ -303,6 +303,13 @@ Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved', 'face.ve
         Route::get('/{mission}', [ProviderMissionLifecycleController::class, 'show']);
         Route::post('/{mission}/start', [ProviderMissionLifecycleController::class, 'start']);
         Route::post('/{mission}/arrive', [ProviderMissionLifecycleController::class, 'arrive']);
+
+        /*
+         * LE RETARD, DES DEUX COTES DU MEME FAIT. Le prestataire lit ce que le client sait deja,
+         * et repond par une heure d'arrivee — la seule chose qui evite l'annulation gratuite.
+         */
+        Route::get('/{mission}/delay', [ProviderMissionLifecycleController::class, 'retard']);
+        Route::post('/{mission}/delay', [ProviderMissionLifecycleController::class, 'annoncerLeRetard']);
         // arrived -> started. N'existait que sur les routes web a session, donc hors de portee de
         // l'app mobile : un prestataire arrive sur place ne pouvait pas demarrer sa mission.
         Route::post('/{mission}/begin', [ProviderMissionLifecycleController::class, 'begin']);

@@ -14,7 +14,9 @@ use App\Models\MissionQuoteRevision;
 use App\Models\MissionIncident;
 use App\Models\MissionMedia;
 use App\Models\MissionReport;
+use App\Services\Client\Calendar\BookingRescheduleService;
 use App\Services\Missions\HourlyExtensionService;
+use App\Services\Missions\MissionDelayService;
 use App\Services\Missions\MissionQuoteRevisionService;
 use App\Services\Missions\MissionTodoService;
 use App\Services\Missions\OnSite\MissionCheckInService;
@@ -25,6 +27,7 @@ use App\Services\Missions\OnSite\MissionTimelineService;
 use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use RuntimeException;
 
@@ -457,6 +460,57 @@ class MissionOnSiteController extends Controller
             'ok' => true,
             'live_note' => $booking->live_access_note,
             'live_note_at' => $booking->live_access_note_at?->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * LE MINUTEUR DE RETARD, VU DU CLIENT.
+     *
+     * Sur son propre chemin, et pas greffé sur le suivi GPS : `tracking` rend `null` tant
+     * qu'aucune session n'est ouverte, et un prestataire qui n'est jamais parti est exactement le
+     * cas où le retard compte le plus. Le suivi aurait donc été muet précisément quand il fallait
+     * parler.
+     */
+    public function retard(Request $request, Booking $booking, MissionDelayService $retards): JsonResponse
+    {
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
+
+        return response()->json(['data' => $retards->etat($booking)]);
+    }
+
+    /**
+     * DÉCALER L'INTERVENTION — la deuxième des trois issues.
+     *
+     * Elle réutilise `BookingRescheduleService`, qui portait déjà l'autorisation, la validation et
+     * l'historique. Ce service n'était atteignable QUE par le glisser-déposer du calendrier web :
+     * un client mobile devant un prestataire en retard n'avait donc le choix qu'entre attendre et
+     * annuler, alors que le décalage existait à quelques lignes de là.
+     */
+    public function reprogrammer(Request $request, Booking $booking, BookingRescheduleService $reprogrammation): JsonResponse
+    {
+        $this->assertClientPeutVoirLaReservation($request->user(), $booking);
+
+        $donnees = $request->validate([
+            'date' => ['required', 'date'],
+            'time' => ['nullable', 'date_format:H:i'],
+            'reason' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        try {
+            $booking = $reprogrammation->reschedule(
+                $request->user(),
+                $booking,
+                Carbon::parse($donnees['date']),
+                $donnees['time'] ?? null,
+                $donnees['reason'] ?? null,
+            );
+        } catch (\DomainException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'scheduled_at' => $booking->scheduled_at?->toIso8601String(),
         ]);
     }
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Concerns\FormatsBookingSchedule;
 use App\Http\Controllers\Controller;
 use App\Models\Mission;
 use App\Services\Missions\HourlyMissionClock;
+use App\Services\Missions\MissionDelayService;
 use App\Services\Missions\MissionLifecycleService;
 use App\Services\Missions\MissionVerificationCodeService;
 use App\Services\Missions\RideLifecycleService;
@@ -839,5 +840,62 @@ class ProviderMissionLifecycleController extends Controller
     private function toFloat(mixed $value): ?float
     {
         return $value === null ? null : (float) $value;
+    }
+
+    /**
+     * LE RETARD, VU DU PRESTATAIRE.
+     *
+     * Il n'a pas besoin qu'on le lui apprenne — il a une montre. Il a besoin de savoir que le
+     * CLIENT le sait, et depuis quand : un prestataire qui ignore que la plateforme a déjà envoyé
+     * l'annonce arrive en s'excusant d'un retard dont l'autre parlait depuis vingt minutes.
+     */
+    public function retard(Request $request, Mission $mission, MissionDelayService $retards): JsonResponse
+    {
+        $this->authorizeProvider($request, $mission);
+
+        $booking = $mission->booking;
+
+        if ($booking === null) {
+            return response()->json(['data' => null]);
+        }
+
+        return response()->json(['data' => $retards->etat($booking)]);
+    }
+
+    /**
+     * ANNONCER SON RETARD — la seule action qui évite l'annulation.
+     *
+     * Un retard annoncé avec une heure se gère ; un retard muet se subit. On accepte soit une
+     * heure d'arrivée, soit un nombre de minutes — le terrain compte en minutes, pas en horloge,
+     * et convertir côté serveur évite que deux applications le fassent différemment.
+     */
+    public function annoncerLeRetard(Request $request, Mission $mission, MissionDelayService $retards): JsonResponse
+    {
+        $this->authorizeProvider($request, $mission);
+
+        $booking = $mission->booking;
+
+        if ($booking === null) {
+            return response()->json(['message' => 'Reservation introuvable.'], 422);
+        }
+
+        $donnees = $request->validate([
+            'minutes' => ['nullable', 'integer', 'min:1', 'max:600'],
+            'arrival_at' => ['nullable', 'date'],
+            'reason' => ['nullable', 'string', 'max:180'],
+        ]);
+
+        $arrivee = null;
+
+        if (($donnees['arrival_at'] ?? null) !== null) {
+            $arrivee = Carbon::parse($donnees['arrival_at']);
+        } elseif (($donnees['minutes'] ?? null) !== null) {
+            $arrivee = Carbon::now()->addMinutes((int) $donnees['minutes']);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'data' => $retards->annoncerParLePrestataire($booking, $arrivee, $donnees['reason'] ?? null),
+        ]);
     }
 }

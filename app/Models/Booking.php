@@ -370,6 +370,9 @@ class Booking extends Model
          */
         'live_access_note',
         'live_access_note_at',
+        'late_notified_at',
+        'provider_delay_eta_at',
+        'provider_delay_reason',
         'client_absent_instructions',
         'backup_contact_name',
         'backup_contact_phone',
@@ -384,6 +387,8 @@ class Booking extends Model
         'approved_at' => 'datetime',
         'cancelled_at' => 'datetime',
         'live_access_note_at' => 'datetime',
+        'late_notified_at' => 'datetime',
+        'provider_delay_eta_at' => 'datetime',
         'mission_started_at' => 'datetime',
         'mission_arrived_at' => 'datetime',
         'mission_finished_at' => 'datetime',

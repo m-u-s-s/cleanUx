@@ -77,15 +77,62 @@ trait HasLegacyBookingAliases
      */
     public function syncLegacyAliases(): void
     {
-        $this->fillScheduledAt();
-
         foreach (static::$legacyAliasPairs as [$legacy, $modern]) {
-            if (blank($this->{$legacy}) && filled($this->{$modern})) {
-                $this->{$legacy} = $this->normaliseLegacyAliasValue($legacy, $this->{$modern});
-            }
-            if (blank($this->{$modern}) && filled($this->{$legacy})) {
-                $this->{$modern} = $this->normaliseLegacyAliasValue($modern, $this->{$legacy});
-            }
+            $this->propagerLaPaire($legacy, $modern);
+        }
+
+        $this->fillScheduledAt();
+    }
+
+    /**
+     * COMBLER UN TROU NE SUFFIT PAS : IL FAUT AUSSI PROPAGER UN CHANGEMENT.
+     *
+     * L'ancienne version ne recopiait que dans une colonne VIDE. Tant qu'on ne faisait que créer
+     * des réservations, cela ressemblait à une synchronisation — les deux colonnes finissaient
+     * toujours d'accord. À la première MODIFICATION, elles divergeaient définitivement : la
+     * reprogrammation écrit `scheduled_date` et `scheduled_time`, les deux étaient déjà remplies,
+     * donc `date` et `heure` gardaient l'ancien créneau pour toujours.
+     *
+     * Mesuré : un rendez-vous du 10 septembre 10 h déplacé au 12 septembre 14 h gardait
+     * `date = 2026-09-10` et `heure = 10:00:00`. Le moteur d'annulation, l'affectation et le
+     * minuteur de retard lisent ce couple — ils décidaient tous sur un créneau abandonné.
+     *
+     * ── CE QUI DÉPARTAGE ─────────────────────────────────────────────────────────────────────
+     *
+     * La fraîcheur, et elle seule. Si une seule des deux colonnes a changé dans cet
+     * enregistrement, c'est elle qui fait foi. Si les deux ont changé, l'appelant a tranché
+     * lui-même et on ne devine pas à sa place. Si aucune n'a changé, il n'y a rien à propager.
+     */
+    protected function propagerLaPaire(string $legacy, string $modern): void
+    {
+        // Un trou se comble toujours — c'est le comportement d'origine, et il reste le premier.
+        if (blank($this->{$legacy}) && filled($this->{$modern})) {
+            $this->{$legacy} = $this->normaliseLegacyAliasValue($legacy, $this->{$modern});
+
+            return;
+        }
+
+        if (blank($this->{$modern}) && filled($this->{$legacy})) {
+            $this->{$modern} = $this->normaliseLegacyAliasValue($modern, $this->{$legacy});
+
+            return;
+        }
+
+        if (blank($this->{$legacy}) || blank($this->{$modern})) {
+            return;
+        }
+
+        $legacyModifiee = $this->isDirty($legacy);
+        $moderneModifiee = $this->isDirty($modern);
+
+        if ($legacyModifiee === $moderneModifiee) {
+            return;
+        }
+
+        if ($legacyModifiee) {
+            $this->{$modern} = $this->normaliseLegacyAliasValue($modern, $this->{$legacy});
+        } else {
+            $this->{$legacy} = $this->normaliseLegacyAliasValue($legacy, $this->{$modern});
         }
     }
 
@@ -103,7 +150,23 @@ trait HasLegacyBookingAliases
      */
     protected function fillScheduledAt(): void
     {
-        if (filled($this->scheduled_at) || blank($this->date) || blank($this->heure)) {
+        if (blank($this->date) || blank($this->heure)) {
+            return;
+        }
+
+        /*
+         * L'APPELANT QUI ÉCRIT L'HORODATAGE LUI-MÊME A RAISON. On ne le recalcule jamais par-dessus.
+         */
+        if ($this->isDirty('scheduled_at')) {
+            return;
+        }
+
+        /*
+         * SINON ON RECALCULE DÈS QUE LE CRÉNEAU BOUGE. La version d'origine s'arrêtait à
+         * « déjà rempli », ce qui la rendait muette après toute reprogrammation : l'horodatage
+         * gardait l'heure d'avant, et le barème d'annulation facturait contre elle.
+         */
+        if (filled($this->scheduled_at) && ! $this->isDirty('date') && ! $this->isDirty('heure')) {
             return;
         }
 
