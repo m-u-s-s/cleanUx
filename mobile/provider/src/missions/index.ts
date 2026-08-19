@@ -31,6 +31,9 @@ export {
   useRetirerLaRevision,
   // Le renfort : l'autre reponse au meme constat — faire venir quelqu'un plutot que renegocier.
   useDemanderDuRenfort,
+  // Le retard : ce que le client sait deja, et la reponse qui evite l'annulation.
+  useMonRetard,
+  useAnnoncerMonRetard,
   useMissionChecklist,
   useToggleMissionChecklistItem,
   INCIDENT_TYPES,
@@ -49,4 +52,6 @@ export type {
   MissionChecklistState,
   QuoteRevisionWindow,
   ProviderQuoteRevision,
+  EtatDeRetard,
+  RetardAnnonce,
 } from './onsite';

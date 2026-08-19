@@ -149,6 +149,8 @@ class MissionDelayService
      * L'heure annoncée n'est pas contrainte d'être dans le futur — un prestataire qui répond avec
      * cinq minutes de décalage écrirait une heure déjà passée, et refuser sa réponse pour cela le
      * laisserait muet, ce qui est pire pour le client.
+     *
+     * @return array{en_retard: bool, minutes: int|null, heure_prevue: string|null, annonce: array{arrivee_at: string|null, motif: string|null}|null, annulation_gratuite: bool, prevenu_at: string|null}
      */
     public function annoncerParLePrestataire(Booking $booking, ?Carbon $arrivee, ?string $motif): array
     {

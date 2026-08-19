@@ -6,6 +6,8 @@ use App\Models\Booking;
 use App\Models\MaskedCallSession;
 use App\Models\MissionChecklistItem;
 use App\Models\MissionQuoteRevision;
+use App\Services\Client\Calendar\BookingRescheduleService;
+use App\Services\Missions\MissionDelayService;
 use App\Services\Missions\MissionQuoteRevisionService;
 use App\Services\Missions\MissionTodoService;
 use DomainException;
@@ -132,6 +134,40 @@ class GererMaMission extends Component
         $this->repondre($revisionId, accepte: false, decision: $decision);
     }
 
+    /**
+     * DÉCALER PLUTÔT QU'ANNULER — la deuxième des trois issues du minuteur de retard.
+     *
+     * Elle passe par `BookingRescheduleService`, qui portait déjà l'autorisation, la validation et
+     * l'historique, et qui n'était atteignable que par le glisser-déposer du calendrier. Le client
+     * qui attend devant sa porte n'ouvre pas un calendrier : il lui faut le geste ici.
+     */
+    public function decaler(string $quand): void
+    {
+        $this->erreur = null;
+
+        $cible = match ($quand) {
+            'plus_tard' => now()->addHours(2),
+            'demain' => now()->addDay(),
+            default => null,
+        };
+
+        if ($cible === null) {
+            return;
+        }
+
+        try {
+            app(BookingRescheduleService::class)->reschedule(
+                Auth::user(),
+                $this->booking(),
+                $cible,
+                $cible->format('H:i'),
+                'Retard du prestataire',
+            );
+        } catch (DomainException $e) {
+            $this->erreur = $e->getMessage();
+        }
+    }
+
     public function render(): View
     {
         $mission = $this->mission();
@@ -142,6 +178,7 @@ class GererMaMission extends Component
             'revision' => $mission === null
                 ? null
                 : app(MissionQuoteRevisionService::class)->vivante($mission),
+            'retard' => app(MissionDelayService::class)->etat($this->booking()),
             'ligne' => $mission?->booking === null ? null : $this->ligneMasquee(
                 (int) $mission->booking->client_id,
                 (int) ($mission->lead_provider_user_id ?? $mission->booking->employe_id),

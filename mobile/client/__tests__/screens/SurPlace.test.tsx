@@ -57,6 +57,13 @@ jest.mock('@/tracking', () => {
 });
 
 jest.mock('@/booking/onsite', () => ({
+  /*
+   * LE MINUTEUR DE RETARD VIT MAINTENANT SOUS LA CARTE, et un bouchon partiel de ce module fait
+   * tomber l'ecran entier sur un crochet absent — le test mesurerait alors une panne de montage
+   * au lieu du canal temps reel qu'il surveille. Pas de retard ici : c'est l'etat nominal.
+   */
+  useRetard: () => ({ data: { en_retard: false, minutes: null, annonce: null, annulation_gratuite: false, prevenu_at: null } }),
+  useReprogrammer: () => ({ mutate: jest.fn(), isPending: false }),
   useOnSiteTimeline: () => ({
     data: {
       mission_id: 4242,

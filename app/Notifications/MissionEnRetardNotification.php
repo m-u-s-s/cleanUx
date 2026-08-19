@@ -31,6 +31,7 @@ class MissionEnRetardNotification extends Notification
         public ?array $annonce = null,
     ) {}
 
+    /** @return list<string> */
     public function via(object $notifiable): array
     {
         return ['database', 'mail'];
@@ -52,6 +53,7 @@ class MissionEnRetardNotification extends Notification
             ->action('Gérer ma mission', url('/client/dashboard'));
     }
 
+    /** @return array<string, mixed> */
     public function toArray(object $notifiable): array
     {
         return [

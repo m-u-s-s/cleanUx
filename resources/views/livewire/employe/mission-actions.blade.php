@@ -9,6 +9,48 @@
         </div>
     </div>
 
+    @if (($retard['en_retard'] ?? false))
+        {{--
+            CE QUE LE PRESTATAIRE IGNORE, CE N'EST PAS L'HEURE — il a une montre. C'est que la
+            plateforme a DEJA prevenu son client, et qu'il arrivera donc en s'excusant d'un retard
+            dont l'autre parlait depuis vingt minutes.
+        --}}
+        <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 space-y-3" data-testid="bandeau-retard">
+            <p class="font-semibold text-amber-900">{{ $retard['minutes'] }} min de retard</p>
+
+            <p class="text-sm text-amber-800">
+                @if($retard['prevenu_at'])
+                    Le client a ete prevenu a {{ \Illuminate\Support\Carbon::parse($retard['prevenu_at'])->format('H:i') }}.
+                @else
+                    Le client n’a pas encore ete prevenu.
+                @endif
+                @if($retard['annulation_gratuite']) Il peut annuler sans frais. @endif
+            </p>
+
+            @if(data_get($retard, 'annonce.arrivee_at'))
+                <p class="text-sm text-amber-800" data-testid="retard-deja-annonce">
+                    Vous avez annonce votre arrivee vers
+                    {{ \Illuminate\Support\Carbon::parse($retard['annonce']['arrivee_at'])->format('H:i') }}.
+                </p>
+            @endif
+
+            <input type="text" wire:model="motifDuRetard" maxlength="180"
+                   placeholder="Motif (facultatif) : embouteillage, chantier precedent…"
+                   class="w-full rounded-lg border border-amber-300 px-3 py-2 text-sm"
+                   data-testid="retard-motif">
+
+            <div class="flex flex-wrap gap-2">
+                @foreach ([10, 20, 30] as $minutes)
+                    <button type="button" wire:click="annoncerLeRetard({{ $minutes }})"
+                            class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm font-medium text-amber-900 hover:bg-amber-100"
+                            data-testid="retard-annoncer-{{ $minutes }}">
+                        +{{ $minutes }} min
+                    </button>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     @if ($successMessage)
     <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
         {{ $successMessage }}

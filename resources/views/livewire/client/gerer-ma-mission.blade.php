@@ -7,6 +7,50 @@
         </div>
     @endif
 
+    @if(($retard['en_retard'] ?? false))
+        {{--
+            LE RETARD PASSE DEVANT TOUT LE RESTE.
+
+            Ce n'est pas le retard qui fait annuler, c'est le silence : dix minutes sans nouvelle
+            valent une heure annoncee. Trois informations, dans cet ordre — de combien, ce que le
+            prestataire repond, et ce qu'on peut faire.
+        --}}
+        <div class="rounded-2xl border border-amber-200 bg-amber-50 p-5 space-y-3" data-testid="retard-prestataire">
+            <h3 class="font-semibold text-amber-900">{{ $retard['minutes'] }} min de retard</h3>
+
+            <p class="text-sm text-amber-800">
+                @if(data_get($retard, 'annonce.arrivee_at'))
+                    Le prestataire annonce son arrivee vers
+                    {{ \Illuminate\Support\Carbon::parse($retard['annonce']['arrivee_at'])->format('H:i') }}
+                    @if(data_get($retard, 'annonce.motif')) — {{ $retard['annonce']['motif'] }} @endif
+                @else
+                    Le prestataire n’a pas encore repondu.
+                @endif
+            </p>
+
+            <div class="flex flex-wrap gap-2">
+                <button type="button" wire:click="decaler('plus_tard')"
+                        class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm font-medium text-amber-900 hover:bg-amber-100"
+                        data-testid="retard-decaler-plus-tard">
+                    Plus tard aujourd’hui
+                </button>
+                <button type="button" wire:click="decaler('demain')"
+                        class="rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm font-medium text-amber-900 hover:bg-amber-100"
+                        data-testid="retard-decaler-demain">
+                    Demain, meme heure
+                </button>
+            </div>
+
+            @if($retard['annulation_gratuite'])
+                {{-- La gratuite ne se promet que si le serveur la donne : un bouton « sans frais »
+                     suivi de frais est pire qu'une absence de bouton. --}}
+                <p class="text-xs text-amber-700" data-testid="retard-gratuit">
+                    Vous pouvez annuler cette intervention sans frais.
+                </p>
+            @endif
+        </div>
+    @endif
+
     @if($revision && $revision->attendLeClient())
         {{--
             LE NOUVEAU DEVIS EN PREMIER : c'est la seule chose de cette page qui engage le PRIX,

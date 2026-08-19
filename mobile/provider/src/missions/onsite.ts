@@ -518,3 +518,55 @@ export function useDemanderDuRenfort(missionId: number) {
     },
   });
 }
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────
+ * LE RETARD, VU DU PRESTATAIRE
+ * ─────────────────────────────────────────────────────────────────────────────────────────────
+ *
+ * Il n'a pas besoin qu'on lui apprenne qu'il est en retard — il a une montre. Il a besoin de
+ * savoir que le CLIENT le sait, et depuis quand : arriver en s'excusant d'un retard dont l'autre
+ * parlait depuis vingt minutes est la façon la plus sûre de commencer mal une intervention.
+ */
+
+export interface RetardAnnonce {
+  arrivee_at: string | null;
+  motif: string | null;
+}
+
+export interface EtatDeRetard {
+  en_retard: boolean;
+  minutes: number | null;
+  heure_prevue: string | null;
+  annonce: RetardAnnonce | null;
+  annulation_gratuite: boolean;
+  prevenu_at: string | null;
+}
+
+export function useMonRetard(missionId: number | null) {
+  return useQuery<EtatDeRetard | null>({
+    queryKey: ['provider', 'mission', missionId, 'delay'],
+    queryFn: async () => (await apiClient.get(`/provider/missions/${missionId}/delay`)).data.data,
+    enabled: missionId !== null,
+    refetchInterval: 60000,
+  });
+}
+
+/**
+ * ANNONCER SON RETARD — la seule action qui évite l'annulation gratuite.
+ *
+ * On envoie des MINUTES, pas une horloge : sur la route, personne ne calcule « j'arriverai à
+ * 14 h 37 ». Le serveur convertit, pour que les deux applications ne le fassent pas chacune à sa
+ * façon.
+ */
+export function useAnnoncerMonRetard(missionId: number) {
+  const qc = useQueryClient();
+
+  return useMutation<EtatDeRetard, ApiError, { minutes: number; reason?: string }>({
+    mutationFn: async (annonce) =>
+      (await apiClient.post(`/provider/missions/${missionId}/delay`, annonce)).data.data,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['provider', 'mission', missionId] });
+    },
+  });
+}

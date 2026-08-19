@@ -45,7 +45,23 @@ const TRAIL = [
  */
 jest.mock('@/booking/onsite', () => ({
   useOnSiteTimeline: () => ({ data: { mission_id: 4242 }, isLoading: false }),
+  // Pas de retard : ce test regarde la carte, pas le minuteur.
+  useRetard: () => ({ data: { en_retard: false, minutes: null, annonce: null, annulation_gratuite: false, prevenu_at: null } }),
+  useReprogrammer: () => ({ mutate: jest.fn(), isPending: false }),
 }));
+
+/*
+ * LA FEUILLE D'ANNULATION EST BOUCHONNEE, pour la meme raison que `MissionSheet` ci-dessous.
+ *
+ * Elle vient de `@brio/shared`, dont le tonneau charge tout le systeme de composants — et ce
+ * fichier bouchonne `@/theme` avec une palette PARTIELLE. Le vrai bouton y lirait une couleur
+ * absente et le test echouerait sur le chargement du module, sans rien dire de la carte.
+ */
+jest.mock('@brio/shared', () => {
+  const { View } = require('react-native');
+
+  return { AnnulerLaMissionSheet: () => <View /> };
+});
 
 /*
  * LA FEUILLE EST BOUCHONNÉE, comme l'accueil bouchonne la sienne.

@@ -1,8 +1,10 @@
-import React, { useRef, useEffect, useMemo } from 'react';
+import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import type GorhomBottomSheet from '@gorhom/bottom-sheet';
 import { Screen, Badge, Button, Skeleton, OsmMap, loadMapModule, isMapRenderable } from '@/ui';
 import { MissionSheet } from '@/screens/components/MissionSheet';
+import { MissionRetardCard } from '@/screens/components/MissionRetardCard';
+import { AnnulerLaMissionSheet } from '@brio/shared';
 import { useTrackingSession, useTrackingTrail, useLiveTracking } from '@/tracking';
 import { useOnSiteTimeline } from '@/booking/onsite';
 import { PresenceCodeCard } from '@/screens/components/PresenceCodeCard';
@@ -41,6 +43,7 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
    * silence. Le fil « sur place » est le seul endroit d'où le client obtient ce numéro.
    */
   const { data: filSurPlace } = useOnSiteTimeline(bookingId);
+  const [annulationOuverte, setAnnulationOuverte] = useState(false);
   const { position: livePos, eta: liveEta } = useLiveTracking(filSurPlace?.mission_id ?? null);
   const mapRef = useRef<any>(null);
   const sheetRef = useRef<GorhomBottomSheet>(null);
@@ -197,6 +200,24 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
         lien sert. La pile garde les deux, dans l'ordre de ce qu'on cherche à cet instant.
       */}
       <View style={styles.basDEcran}>
+        {/*
+          LE RETARD PASSE DEVANT L'ETA.
+
+          Un encart qui affiche « ETA — » pendant qu'on attend depuis vingt minutes ne dit rien de
+          ce que le client vit. La carte se retire d'elle-meme des que l'intervention demarre : le
+          serveur cesse alors de compter un retard.
+        */}
+        {annulationOuverte ? (
+          <AnnulerLaMissionSheet
+            audience="client"
+            bookingId={bookingId}
+            onAnnulee={() => setAnnulationOuverte(false)}
+            onFermer={() => setAnnulationOuverte(false)}
+          />
+        ) : (
+          <MissionRetardCard bookingId={bookingId} onAnnuler={() => setAnnulationOuverte(true)} />
+        )}
+
         {awaitingPresence || awaitingCompletion ? (
           <PresenceCodeCard
             bookingId={bookingId}

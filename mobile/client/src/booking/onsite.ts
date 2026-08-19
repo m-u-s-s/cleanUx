@@ -388,3 +388,55 @@ export function useConsigneDAcces(bookingId: number | null) {
     },
   });
 }
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────────────────────
+ * LE MINUTEUR DE RETARD
+ * ─────────────────────────────────────────────────────────────────────────────────────────────
+ *
+ * Sur son propre chemin, hors du suivi GPS : `tracking` rend `null` tant qu'aucune session n'est
+ * ouverte, et un prestataire qui n'est jamais parti est exactement le cas où le retard compte le
+ * plus. Le suivi aurait donc été muet précisément quand il fallait parler.
+ */
+
+export interface RetardAnnonce {
+  arrivee_at: string | null;
+  motif: string | null;
+}
+
+export interface EtatDeRetard {
+  en_retard: boolean;
+  minutes: number | null;
+  heure_prevue: string | null;
+  annonce: RetardAnnonce | null;
+  annulation_gratuite: boolean;
+  prevenu_at: string | null;
+}
+
+export function useRetard(bookingId: number | null, actif = true) {
+  return useQuery<EtatDeRetard>({
+    queryKey: ['client', 'booking', bookingId, 'delay'],
+    queryFn: async () => (await apiClient.get(`/client/bookings/${bookingId}/delay`)).data.data,
+    enabled: bookingId !== null && actif,
+    // Le retard grandit d'une minute par minute : le relire plus souvent n'apprendrait rien.
+    refetchInterval: 60000,
+  });
+}
+
+/**
+ * DÉCALER PLUTÔT QU'ANNULER — la deuxième des trois issues.
+ *
+ * Elle passe par `BookingRescheduleService`, qui portait déjà l'autorisation, la validation et
+ * l'historique, et qui n'était atteignable que par le glisser-déposer du calendrier web.
+ */
+export function useReprogrammer(bookingId: number | null) {
+  const qc = useQueryClient();
+
+  return useMutation<{ scheduled_at: string | null }, ApiError, { date: string; time?: string }>({
+    mutationFn: async (creneau) =>
+      (await apiClient.post(`/client/bookings/${bookingId}/reschedule`, creneau)).data,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['client', 'booking', bookingId] });
+    },
+  });
+}

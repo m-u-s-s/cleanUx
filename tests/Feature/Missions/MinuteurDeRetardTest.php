@@ -9,6 +9,8 @@ use App\Models\MissionAssignment;
 use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Notifications\MissionEnRetardNotification;
+use App\Livewire\Client\GererMaMission;
+use App\Livewire\Employe\MissionActions;
 use App\Services\Missions\MissionDelayService;
 use App\Support\Domain\BookingStatus;
 use App\Support\Domain\MissionStatus;
@@ -19,6 +21,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
+use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -256,5 +259,57 @@ class MinuteurDeRetardTest extends TestCase
         ])->assertOk();
 
         $this->assertFalse($this->retards()->etat($booking->fresh())['en_retard']);
+    }
+
+    // ── LES SURFACES WEB ──────────────────────────────────────────────────────
+
+    /**
+     * LE WEB CLIENT MONTRE LE RETARD ET SES ISSUES.
+     *
+     * Un module complet et injoignable est la famille de défaut la plus coûteuse de ce dépôt : on
+     * PRESSE le bouton, on ne se contente pas de vérifier qu'il s'affiche.
+     */
+    #[Test]
+    public function la_page_client_montre_le_retard_et_sait_decaler(): void
+    {
+        $booking = $this->reservation(Carbon::now()->subMinutes(40));
+
+        Livewire::actingAs($this->client)
+            ->test(GererMaMission::class, ['booking' => $booking])
+            ->assertSee('40 min de retard')
+            ->assertSee('Plus tard aujourd’hui')
+            ->call('decaler', 'demain')
+            ->assertHasNoErrors();
+
+        $this->assertFalse($this->retards()->etat($booking->fresh())['en_retard']);
+    }
+
+    /** Le témoin : à l'heure, la page ne parle pas de retard. */
+    #[Test]
+    public function la_page_client_ne_parle_pas_de_retard_quand_il_n_y_en_a_pas(): void
+    {
+        $booking = $this->reservation(Carbon::now()->addHours(4));
+
+        Livewire::actingAs($this->client)
+            ->test(GererMaMission::class, ['booking' => $booking])
+            ->assertDontSee('min de retard');
+    }
+
+    #[Test]
+    public function la_page_prestataire_permet_d_annoncer_une_arrivee(): void
+    {
+        $booking = $this->reservation(Carbon::now()->subMinutes(40));
+
+        Livewire::actingAs($this->prestataire)
+            ->test(MissionActions::class, ['mission' => $this->mission])
+            ->assertSee('40 min de retard')
+            ->set('motifDuRetard', 'Embouteillage')
+            ->call('annoncerLeRetard', 20)
+            ->assertHasNoErrors();
+
+        $etat = $this->retards()->etat($booking->fresh());
+
+        $this->assertSame('Embouteillage', $etat['annonce']['motif']);
+        $this->assertNotNull($etat['annonce']['arrivee_at']);
     }
 }

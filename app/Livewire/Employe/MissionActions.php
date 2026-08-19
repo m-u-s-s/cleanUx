@@ -4,6 +4,7 @@ namespace App\Livewire\Employe;
 
 use App\Models\Mission;
 use App\Services\Cancellation\CancelBookingService;
+use App\Services\Missions\MissionDelayService;
 use App\Services\Missions\MissionLifecycleService;
 use App\Services\Missions\RideLifecycleService;
 use Illuminate\Support\Carbon;
@@ -13,6 +14,9 @@ use Livewire\Component;
 class MissionActions extends Component
 {
     public Mission $mission;
+
+    /** Le motif du retard, saisi par le prestataire. Court par construction. */
+    public string $motifDuRetard = '';
 
     public string $startCode = '';
 
@@ -328,10 +332,39 @@ class MissionActions extends Component
         $this->errorMessage = null;
     }
 
+    /**
+     * ANNONCER SON RETARD — le seul geste qui evite l'annulation gratuite.
+     *
+     * En minutes et non en horloge : personne ne calcule « j'arriverai a 14 h 37 » en partant.
+     * Le motif est facultatif et court ; le service le tronque.
+     */
+    public function annoncerLeRetard(int $minutes): void
+    {
+        $this->resetMessages();
+
+        $booking = $this->mission->booking;
+
+        if ($booking === null) {
+            return;
+        }
+
+        app(MissionDelayService::class)->annoncerParLePrestataire(
+            $booking,
+            Carbon::now()->addMinutes(max(1, min(600, $minutes))),
+            $this->motifDuRetard === '' ? null : $this->motifDuRetard,
+        );
+
+        $this->successMessage = "Votre client est prevenu : arrivee annoncee dans {$minutes} min.";
+    }
+
     public function render()
     {
         $this->annoncerSiLeStatutAChange();
 
-        return view('livewire.employe.mission-actions');
+        $booking = $this->mission->booking;
+
+        return view('livewire.employe.mission-actions', [
+            'retard' => $booking === null ? null : app(MissionDelayService::class)->etat($booking),
+        ]);
     }
 }

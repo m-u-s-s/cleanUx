@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { Screen, Button, Badge, Divider, TextInput } from '@/ui';
 import { useMissionDetail, useMissionLifecycle, useResendMissionCode, missionStatusLabel } from '@/missions';
+import { BandeauRetard } from '@/screens/components/BandeauRetard';
 import type { MissionLifecyclePayload, MissionPayoutAnnouncement } from '@/missions';
 import { useArriveOnSite } from '@/tracking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
@@ -142,6 +143,14 @@ export function MissionDetailScreen({ route }: Props) {
           </>
         )}
       </View>
+      {/*
+        LE RETARD PASSE AVANT LES ACTIONS.
+
+        Sous les boutons, il serait lu apres avoir appuye — c'est-a-dire trop tard pour changer
+        quoi que ce soit a la façon d'arriver.
+      */}
+      <BandeauRetard missionId={missionId} />
+
       <View style={styles.actions}>
         {mission.status === 'assigned' && (
           <Button
