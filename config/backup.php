@@ -234,7 +234,28 @@ return [
              * configurée. Le déploiement passe de toute façon --disable-notifications ; cette
              * adresse sert aux sauvegardes planifiées.
              */
-            'to' => env('BACKUP_NOTIFICATION_EMAIL', env('MAIL_FROM_ADDRESS')),
+            /*
+             * ── ET POURQUOI LE REPLI EST UN TABLEAU VIDE, PAS UNE ADRESSE ────────────────
+             *
+             * L'`env()` INTÉRIEUR N'AVAIT PAS DE DÉFAUT, et cela faisait échouer TOUT
+             * déploiement depuis toujours. Sur le runner, `composer install` s'exécute avant
+             * qu'un `.env` existe : la valeur vaut alors `null`, et
+             * `NotificationMailConfig::fromArray()` la refuse pendant `package:discover`.
+             * Le job mourait donc à l'installation des dépendances, sans jamais atteindre
+             * l'étape SSH — d'où zéro déploiement réussi, et un diagnostic qui accusait les
+             * secrets manquants alors qu'ils n'étaient même pas lus.
+             *
+             * Le réflexe serait de recopier le défaut de `config/mail.php`
+             * (`hello@example.com`). Ce serait rouvrir exactement le trou décrit ci-dessus :
+             * un rapport de sauvegarde — chemins de serveur et fragments de configuration
+             * inclus — envoyé à un domaine d'exemple qui appartient à quelqu'un d'autre.
+             *
+             * Un TABLEAU VIDE traverse la validation (elle boucle sur les adresses, et il n'y
+             * en a aucune) et n'envoie rien : `routeNotificationForMail()` rend `[]`, et le
+             * canal mail de Laravel s'arrête là. Pas d'adresse configurée = pas de
+             * notification, au lieu de = une notification à un inconnu.
+             */
+            'to' => env('BACKUP_NOTIFICATION_EMAIL', env('MAIL_FROM_ADDRESS')) ?? [],
 
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),

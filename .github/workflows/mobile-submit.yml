@@ -24,6 +24,7 @@ env:
 jobs:
   submit:
     name: Submit to Store
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     defaults:
       run:

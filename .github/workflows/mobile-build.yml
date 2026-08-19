@@ -38,6 +38,7 @@ jobs:
   build-client:
     name: Build Client
     if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/mobile-client-v') || github.event.inputs.app == 'client' || github.event.inputs.app == 'both' }}
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -77,6 +78,7 @@ jobs:
   build-provider:
     name: Build Provider
     if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/mobile-provider-v') || github.event.inputs.app == 'provider' || github.event.inputs.app == 'both' }}
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     defaults:
       run:

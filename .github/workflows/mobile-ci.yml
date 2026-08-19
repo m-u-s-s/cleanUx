@@ -25,6 +25,7 @@ env:
 jobs:
   client:
     name: Client — Lint + Typecheck + Tests
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -52,6 +53,7 @@ jobs:
 
   provider:
     name: Provider — Lint + Typecheck + Tests
+    timeout-minutes: 30
     runs-on: ubuntu-latest
     defaults:
       run:

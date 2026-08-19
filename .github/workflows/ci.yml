@@ -26,6 +26,7 @@ env:
 jobs:
   quality:
     name: Quality gate (validate, pint, phpstan, tests, build)
+    timeout-minutes: 150
     runs-on: ubuntu-latest
 
     steps:
@@ -154,6 +155,7 @@ jobs:
   # well-formed money/compliance suites rather than the whole suite.
   money-integrity-mysql:
     name: Money/GDPR integrity (MySQL, FK enforced)
+    timeout-minutes: 45
     runs-on: ubuntu-latest
     # BLOQUANT depuis le 2026-08-13, et c'est le point de ce job.
     #
@@ -291,6 +293,7 @@ jobs:
   # gardé cette CI structurellement rouge pendant des mois.
   e2e:
     name: E2E (Playwright, per role)
+    timeout-minutes: 25
     runs-on: ubuntu-latest
 
     env:
