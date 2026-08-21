@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Integration;
 
+use App\Models\Booking;
 use App\Models\FleetAssignment;
 use App\Models\FleetCertification;
 use App\Models\FleetMaintenanceLog;
@@ -51,7 +52,8 @@ class FleetAssignmentChainTest extends TestCase
         $svc = app(FleetService::class);
         $assignment = $svc->assignVehicle(
             $vehicle, $provider,
-            bookingId: 101,
+            // Une vraie réservation : la colonne porte désormais une clé étrangère.
+            bookingId: Booking::factory()->create()->id,
             expectedReturnAt: now()->addHours(8),
         );
         $this->assertSame(FleetAssignment::STATUS_ACTIVE, $assignment->status);

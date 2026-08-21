@@ -3,6 +3,7 @@
 namespace Tests\Feature\Quality;
 
 use App\Models\ClientSignature;
+use App\Models\Mission;
 use App\Models\MissionQualityInspection;
 use App\Models\User;
 use App\Services\Quality\QualityInspectionService;
@@ -16,6 +17,8 @@ class QualityInspectionServiceTest extends TestCase
 {
     use RefreshDatabase;
 
+    private ?Mission $mission = null;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -23,16 +26,34 @@ class QualityInspectionServiceTest extends TestCase
         Config::set('quality.enabled', true);
     }
 
+    /**
+     * UNE VRAIE MISSION, DONT ON RÉUTILISE L'IDENTIFIANT.
+     *
+     * Ce fichier appelait le service avec les identifiants 1 et 42 — inventés, ne désignant aucune
+     * ligne. Rien ne s'y opposait tant que `mission_quality_inspections.mission_id` ne portait
+     * aucune contrainte ; la clé étrangère posée depuis rend l'insertion impossible, et c'est son
+     * rôle : une inspection qualité rattachée à une mission qui n'existe pas ne veut rien dire.
+     *
+     * Ce que ces tests vérifient — que le service reporte fidèlement la mission qu'on lui donne —
+     * ne change pas : on lui donne simplement une mission qui existe.
+     */
+    private function missionId(): int
+    {
+        $this->mission ??= Mission::factory()->create();
+
+        return (int) $this->mission->id;
+    }
+
     public function test_start_creates_inspection_in_progress(): void
     {
         $provider = User::factory()->employe()->create();
         $insp = app(QualityInspectionService::class)->start(
-            missionId: 42, phase: 'post', provider: $provider,
+            missionId: $this->missionId(), phase: 'post', provider: $provider,
         );
 
         $this->assertInstanceOf(MissionQualityInspection::class, $insp);
         $this->assertSame(MissionQualityInspection::STATUS_IN_PROGRESS, $insp->status);
-        $this->assertSame(42, (int) $insp->mission_id);
+        $this->assertSame($this->missionId(), (int) $insp->mission_id);
         $this->assertNotNull($insp->checklist_id);
     }
 
@@ -41,8 +62,8 @@ class QualityInspectionServiceTest extends TestCase
         $provider = User::factory()->employe()->create();
         $svc = app(QualityInspectionService::class);
 
-        $a = $svc->start(42, 'post', $provider);
-        $b = $svc->start(42, 'post', $provider);
+        $a = $svc->start($this->missionId(), 'post', $provider);
+        $b = $svc->start($this->missionId(), 'post', $provider);
 
         $this->assertSame($a->id, $b->id);
     }
@@ -50,13 +71,13 @@ class QualityInspectionServiceTest extends TestCase
     public function test_start_rejects_invalid_phase(): void
     {
         $this->expectException(ValidationException::class);
-        app(QualityInspectionService::class)->start(1, 'midflight');
+        app(QualityInspectionService::class)->start($this->missionId(), 'midflight');
     }
 
     public function test_submit_item_creates_response(): void
     {
         $provider = User::factory()->employe()->create();
-        $insp = app(QualityInspectionService::class)->start(1, 'post', $provider);
+        $insp = app(QualityInspectionService::class)->start($this->missionId(), 'post', $provider);
         $item = $insp->checklist->items->first();
 
         $row = app(QualityInspectionService::class)->submitItem(
@@ -70,7 +91,7 @@ class QualityInspectionServiceTest extends TestCase
     public function test_submit_item_updates_existing_response(): void
     {
         $provider = User::factory()->employe()->create();
-        $insp = app(QualityInspectionService::class)->start(1, 'post', $provider);
+        $insp = app(QualityInspectionService::class)->start($this->missionId(), 'post', $provider);
         $item = $insp->checklist->items->first();
 
         $svc = app(QualityInspectionService::class);
@@ -85,7 +106,7 @@ class QualityInspectionServiceTest extends TestCase
     public function test_submit_finalizes_inspection_with_score(): void
     {
         $provider = User::factory()->employe()->create();
-        $insp = app(QualityInspectionService::class)->start(1, 'post', $provider);
+        $insp = app(QualityInspectionService::class)->start($this->missionId(), 'post', $provider);
 
         foreach ($insp->checklist->items as $item) {
             $value = match ($item->item_type) {
@@ -111,7 +132,7 @@ class QualityInspectionServiceTest extends TestCase
     {
         $provider = User::factory()->employe()->create();
         $stranger = User::factory()->employe()->create();
-        $insp = app(QualityInspectionService::class)->start(1, 'post', $provider);
+        $insp = app(QualityInspectionService::class)->start($this->missionId(), 'post', $provider);
 
         $this->expectException(ValidationException::class);
         app(QualityInspectionService::class)->submit($insp, $stranger);
@@ -123,7 +144,7 @@ class QualityInspectionServiceTest extends TestCase
 
         $provider = User::factory()->employe()->create();
         $client = User::factory()->client()->create();
-        $insp = app(QualityInspectionService::class)->start(1, 'post', $provider);
+        $insp = app(QualityInspectionService::class)->start($this->missionId(), 'post', $provider);
 
         $insp->forceFill(['status' => MissionQualityInspection::STATUS_SUBMITTED])->save();
 
@@ -137,7 +158,7 @@ class QualityInspectionServiceTest extends TestCase
 
         $provider = User::factory()->employe()->create();
         $client = User::factory()->client()->create();
-        $insp = app(QualityInspectionService::class)->start(1, 'post', $provider);
+        $insp = app(QualityInspectionService::class)->start($this->missionId(), 'post', $provider);
         $insp->forceFill(['status' => MissionQualityInspection::STATUS_SUBMITTED])->save();
 
         $result = app(QualityInspectionService::class)->validateByClient(
@@ -155,7 +176,7 @@ class QualityInspectionServiceTest extends TestCase
     {
         $provider = User::factory()->employe()->create();
         $client = User::factory()->client()->create();
-        $insp = app(QualityInspectionService::class)->start(1, 'post', $provider);
+        $insp = app(QualityInspectionService::class)->start($this->missionId(), 'post', $provider);
         $insp->forceFill(['status' => MissionQualityInspection::STATUS_SUBMITTED])->save();
 
         $this->expectException(ValidationException::class);
@@ -166,7 +187,7 @@ class QualityInspectionServiceTest extends TestCase
     {
         $provider = User::factory()->employe()->create();
         $client = User::factory()->client()->create();
-        $insp = app(QualityInspectionService::class)->start(1, 'post', $provider);
+        $insp = app(QualityInspectionService::class)->start($this->missionId(), 'post', $provider);
         $insp->forceFill(['status' => MissionQualityInspection::STATUS_SUBMITTED])->save();
 
         $result = app(QualityInspectionService::class)->dispute(
@@ -183,7 +204,7 @@ class QualityInspectionServiceTest extends TestCase
         $provider = User::factory()->employe()->create();
         $client = User::factory()->client()->create();
         $admin = User::factory()->admin()->create();
-        $insp = app(QualityInspectionService::class)->start(1, 'post', $provider);
+        $insp = app(QualityInspectionService::class)->start($this->missionId(), 'post', $provider);
         $insp->forceFill(['status' => MissionQualityInspection::STATUS_DISPUTED])->save();
 
         $result = app(QualityInspectionService::class)->validateByAdmin($insp, $admin);

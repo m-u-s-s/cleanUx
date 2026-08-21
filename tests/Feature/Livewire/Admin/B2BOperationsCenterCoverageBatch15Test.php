@@ -5,6 +5,7 @@ namespace Tests\Feature\Livewire\Admin;
 use App\Livewire\Admin\B2BOperationsCenter;
 use App\Models\ContractSlaEvent;
 use App\Models\EnterpriseWorkOrder;
+use App\Models\Mission;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationContract;
 use App\Models\ServiceCatalog;
@@ -171,20 +172,27 @@ class B2BOperationsCenterCoverageBatch15Test extends TestCase
     {
         $contract = OrganizationContract::factory()->create();
 
+        /*
+         * De VRAIES missions : `contract_sla_events.mission_id` porte désormais une clé étrangère.
+         * Les identifiants 1, 2 et 3 ne désignaient aucune ligne — le test comptait des
+         * agrégats sur des événements rattachés à rien.
+         */
+        [$m1, $m2, $m3] = [Mission::factory()->create(), Mission::factory()->create(), Mission::factory()->create()];
+
         ContractSlaEvent::factory()->create([
-            'mission_id' => 1,
+            'mission_id' => $m1->id,
             'organization_contract_id' => $contract->id,
             'kind' => ContractSlaEvent::KIND_RESPONSE,
             'status' => ContractSlaEvent::STATUS_PENDING,
         ]);
         ContractSlaEvent::factory()->create([
-            'mission_id' => 2,
+            'mission_id' => $m2->id,
             'organization_contract_id' => $contract->id,
             'kind' => ContractSlaEvent::KIND_RESPONSE,
             'status' => ContractSlaEvent::STATUS_BREACHED,
         ]);
         ContractSlaEvent::factory()->create([
-            'mission_id' => 3,
+            'mission_id' => $m3->id,
             'organization_contract_id' => $contract->id,
             'kind' => ContractSlaEvent::KIND_RESOLUTION,
             'status' => ContractSlaEvent::STATUS_ESCALATED,

@@ -173,27 +173,53 @@ class TracabiliteSocieteSurMissionTest extends TestCase
         $this->assertSame($equipeId, $mission?->provider_team_id);
     }
 
-    public function test_une_equipe_disparue_ne_fait_pas_echouer_la_creation_de_mission(): void
+    public function test_une_equipe_supprimee_ne_laisse_pas_de_reference_morte(): void
     {
         /*
-         * `missions.provider_team_id` porte une CLÉ ÉTRANGÈRE sur `provider_teams`. Reporter
-         * aveuglément un identifiant périmé — un vieux rendez-vous dont l'équipe a été supprimée —
-         * ferait échouer la création de la mission en MySQL, au milieu du parcours de réservation.
-         * On reporte une décision, on ne ressuscite pas une équipe.
+         * CE QUE CE TEST PROTÉGEAIT, ET CE QU'IL PROTÈGE MAINTENANT.
+         *
+         * Il posait `provider_team_id = 999999` sur un rendez-vous — un identifiant périmé, comme
+         * en laissait une équipe supprimée — et vérifiait que la mission naissait quand même, sans
+         * hériter de cette référence morte. La garantie était DÉFENSIVE : le code de report devait
+         * penser à écarter l'identifiant.
+         *
+         * `bookings.provider_team_id` porte désormais elle aussi une clé étrangère, en
+         * `nullOnDelete`. Un identifiant périmé ne peut donc plus exister : supprimer l'équipe met
+         * la colonne à NULL séance tenante. Le scénario d'origine n'est plus reproductible, non
+         * parce qu'on a cessé de s'en soucier, mais parce que le schéma l'empêche.
+         *
+         * On vérifie donc la même chose, à l'endroit où elle se joue maintenant : après la
+         * disparition de l'équipe, ni le rendez-vous ni la mission ne pointent vers le vide, et
+         * la mission est toujours là.
          */
         $org = $this->societePrestataire();
         $salarie = $this->salarie($org);
 
+        $equipeId = DB::table('provider_teams')->insertGetId([
+            'organization_account_id' => $org->id,
+            'name' => 'Équipe dissoute',
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         $booking = Booking::factory()->create([
             'employe_id' => $salarie->id,
-            'provider_team_id' => 999999,
+            'provider_team_id' => $equipeId,
             'status' => BookingStatus::CONFIRME,
         ]);
 
         $mission = Mission::where('booking_id', $booking->id)->first();
+        $this->assertNotNull($mission);
 
-        $this->assertNotNull($mission, 'La mission doit exister malgré une équipe introuvable.');
-        $this->assertNull($mission->provider_team_id);
+        DB::table('provider_teams')->where('id', $equipeId)->delete();
+
+        $this->assertNotNull(
+            Mission::where('booking_id', $booking->id)->first(),
+            'La mission doit survivre à la disparition de son équipe.'
+        );
+        $this->assertNull($booking->fresh()->provider_team_id, 'Le rendez-vous ne doit plus pointer vers une équipe disparue.');
+        $this->assertNull(Mission::where('booking_id', $booking->id)->first()?->provider_team_id);
     }
 
     public function test_un_independant_qui_rejoint_une_societe_y_est_vraiment_rattache(): void

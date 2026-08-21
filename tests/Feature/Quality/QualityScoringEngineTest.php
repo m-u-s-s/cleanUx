@@ -3,6 +3,7 @@
 namespace Tests\Feature\Quality;
 
 use App\Models\InspectionItem;
+use App\Models\Mission;
 use App\Models\MissionQualityInspection;
 use App\Models\QualityChecklist;
 use App\Models\QualityChecklistItem;
@@ -13,6 +14,26 @@ use Tests\TestCase;
 class QualityScoringEngineTest extends TestCase
 {
     use RefreshDatabase;
+
+    private ?Mission $mission = null;
+
+    /**
+     * UNE VRAIE MISSION, PARCE QUE L'INSPECTION EN DÉPEND VRAIMENT.
+     *
+     * Ces tests écrivaient `'mission_id' => 1` — un identifiant inventé, qui ne désignait aucune
+     * ligne. Rien ne s'y opposait tant qu'aucune contrainte ne reliait
+     * `mission_quality_inspections.mission_id` à `missions` ; la clé étrangère posée depuis rend
+     * l'insertion impossible, et c'est exactement son rôle : une inspection qualité qui ne se
+     * rattache à aucune mission ne veut rien dire.
+     *
+     * La mission est créée UNE FOIS et partagée : ce fichier mesure le moteur de NOTATION, à qui
+     * l'identité de la mission est indifférente. En créer une par test allongerait la suite sans
+     * rien prouver de plus.
+     */
+    protected function mission(): Mission
+    {
+        return $this->mission ??= Mission::factory()->create();
+    }
 
     protected function makeChecklist(): QualityChecklist
     {
@@ -45,7 +66,7 @@ class QualityScoringEngineTest extends TestCase
         $item = $this->addItem($cl, ['item_type' => 'boolean', 'weight' => 3]);
 
         $insp = MissionQualityInspection::create([
-            'mission_id' => 1,
+            'mission_id' => $this->mission()->id,
             'checklist_id' => $cl->id,
             'phase' => 'post',
         ]);
@@ -70,7 +91,7 @@ class QualityScoringEngineTest extends TestCase
         $item = $this->addItem($cl, ['item_type' => 'boolean', 'weight' => 3]);
 
         $insp = MissionQualityInspection::create([
-            'mission_id' => 1,
+            'mission_id' => $this->mission()->id,
             'checklist_id' => $cl->id,
             'phase' => 'post',
         ]);
@@ -97,7 +118,7 @@ class QualityScoringEngineTest extends TestCase
         ]);
 
         $insp = MissionQualityInspection::create([
-            'mission_id' => 1,
+            'mission_id' => $this->mission()->id,
             'checklist_id' => $cl->id,
             'phase' => 'post',
         ]);
@@ -120,7 +141,7 @@ class QualityScoringEngineTest extends TestCase
         $item = $this->addItem($cl, ['item_type' => 'photo', 'weight' => 2]);
 
         $insp = MissionQualityInspection::create([
-            'mission_id' => 1,
+            'mission_id' => $this->mission()->id,
             'checklist_id' => $cl->id,
             'phase' => 'post',
         ]);
@@ -142,7 +163,7 @@ class QualityScoringEngineTest extends TestCase
         $this->addItem($cl, ['item_type' => 'boolean', 'weight' => 10]);
 
         $insp = MissionQualityInspection::create([
-            'mission_id' => 1,
+            'mission_id' => $this->mission()->id,
             'checklist_id' => $cl->id,
             'phase' => 'post',
             'score_calculated' => 9.5,
@@ -167,7 +188,7 @@ class QualityScoringEngineTest extends TestCase
         ]);
 
         $insp = MissionQualityInspection::create([
-            'mission_id' => 1,
+            'mission_id' => $this->mission()->id,
             'checklist_id' => $cl->id,
             'phase' => 'post',
         ]);

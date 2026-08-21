@@ -56,6 +56,25 @@ return new class extends Migration
      *
      * @var array<string, list<array{0:string,1:string,2:bool,3:string}>>
      */
+    /*
+     * CINQ PARENTS CORRIGÉS À LA SOURCE.
+     *
+     * Ces cinq colonnes ont d'abord reçu un parent DÉDUIT DE LEUR NOM, et le nom mentait :
+     * `assigned_provider_organization_id` désigne une organisation et non un utilisateur,
+     * `assigned_field_team_id` une équipe, `assigned_service_partner_id` un partenaire,
+     * `lead_assignment_id` une affectation, et l'`invoice_id` d'un cycle d'abonnement une facture
+     * D'ABONNEMENT. Le préfixe d'action (`assigned_`, `lead_`) avait été pris pour la marque d'une
+     * personne.
+     *
+     * Ce sont les `belongsTo()` déclarés dans les modèles qui ont tranché — 136 des 197 mappages
+     * étaient vérifiables ainsi, et CINQ étaient faux. La leçon est écrite dans
+     * `2026_09_14` : interroger les modèles d'abord, ne déduire du nom que ce qu'aucun modèle ne
+     * déclare.
+     *
+     * La correction est faite ICI, et pas seulement dans la migration suivante, parce que SQLite —
+     * sur lequel tourne la suite — ne sait pas retirer une contrainte : il rejoue les migrations
+     * sur un schéma neuf, et n'aurait donc jamais vu passer la réparation.
+     */
     private array $contraintes = [
         'academy_courses' => [
             ['trade_id', 'trades', true, 'fk_academy_courses_trade'],
@@ -80,7 +99,7 @@ return new class extends Migration
         ],
         'bookings' => [
             ['assigned_employee_id', 'users', true, 'fk_bookings_assigned_employee'],
-            ['assigned_provider_organization_id', 'users', true, 'fk_bookings_assigned_prov_org'],
+            ['assigned_provider_organization_id', 'organization_accounts', true, 'fk_bookings_assigned_prov_org'],
             ['client_id', 'users', true, 'fk_bookings_client'],
             ['client_place_id', 'client_places', true, 'fk_bookings_client_place'],
             ['employe_id', 'users', true, 'fk_bookings_employe'],
@@ -156,8 +175,8 @@ return new class extends Migration
             ['requested_by_user_id', 'users', true, 'fk_ent_booking_approvals_requested_by_user'],
         ],
         'enterprise_work_orders' => [
-            ['assigned_field_team_id', 'users', true, 'fk_ent_work_orders_assigned_field_team'],
-            ['assigned_service_partner_id', 'users', true, 'fk_ent_work_orders_assigned_svc_partner'],
+            ['assigned_field_team_id', 'field_teams', true, 'fk_ent_work_orders_assigned_field_team'],
+            ['assigned_service_partner_id', 'service_partners', true, 'fk_ent_work_orders_assigned_svc_partner'],
             ['organization_contract_id', 'organization_contracts', true, 'fk_ent_work_orders_org_contract'],
             ['requested_by_user_id', 'users', true, 'fk_ent_work_orders_requested_by_user'],
             ['service_catalog_id', 'service_catalogs', true, 'fk_ent_work_orders_svc_catalog'],
@@ -305,7 +324,7 @@ return new class extends Migration
         'mission_team_assignments' => [
             ['assigned_by_user_id', 'users', true, 'fk_mission_team_asgs_assigned_by_user'],
             ['field_team_id', 'field_teams', false, 'fk_mission_team_asgs_field_team'],
-            ['lead_assignment_id', 'users', true, 'fk_mission_team_asgs_lead_asg'],
+            ['lead_assignment_id', 'mission_assignments', true, 'fk_mission_team_asgs_lead_asg'],
             ['mission_id', 'missions', false, 'fk_mission_team_asgs_mission'],
         ],
         'missions' => [
@@ -400,7 +419,7 @@ return new class extends Migration
             ['provider_agency_id', 'provider_agencies', true, 'fk_shifts_prov_agency'],
         ],
         'subscription_cycles_v2' => [
-            ['invoice_id', 'invoices', true, 'fk_sub_cycles_v2_invoice'],
+            ['invoice_id', 'subscription_invoices_v2', true, 'fk_sub_cycles_v2_invoice'],
         ],
         'subscriptions' => [
             ['user_id', 'users', true, 'fk_subs_user'],

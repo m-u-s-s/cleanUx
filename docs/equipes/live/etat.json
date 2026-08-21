@@ -1,6 +1,6 @@
 {
   "mission": "Schéma : performance, sécurité, échelle mondiale",
-  "maj": "18:20",
+  "maj": "21:16",
   "mesures": {
     "tables": 313,
     "colonnes_id": 822,
@@ -58,9 +58,9 @@
       "detail": "233 posées — 347 → 114, dont 89 structurellement impossibles"
     },
     {
-      "nom": "Tables en double",
-      "etat": "encours",
-      "detail": "feedback / feedbacks : le garde des statistiques lisait la mauvaise"
+      "nom": "Non-régression",
+      "etat": "fait",
+      "detail": "49 → 1 → 0 : toutes les fixtures reprises"
     },
     {
       "nom": "Découpe des missions par nature",
@@ -138,6 +138,30 @@
     {
       "h": "18:20",
       "quoi": "Pint avait cassé scripts/audit_schema.php : un use placé après son usage ne s'applique pas"
+    },
+    {
+      "h": "20:18",
+      "quoi": "La suite complète a rejeté 49 tests : les contraintes exposaient des fixtures qui inventaient leurs parents"
+    },
+    {
+      "h": "20:18",
+      "quoi": "5 clés étrangères FAUSSES de ma part corrigées à la source (le nom mentait, les modèles ont tranché)"
+    },
+    {
+      "h": "20:18",
+      "quoi": "DÉFAUT : bookings.recurring_series_id reçoit TROIS choses — un UUID, un id de série, un id de réservation"
+    },
+    {
+      "h": "20:18",
+      "quoi": "Contrainte retirée sur cette colonne : on ne contraint pas une colonne dont le sens change selon l'écrivain"
+    },
+    {
+      "h": "20:18",
+      "quoi": "10 fixtures corrigées : elles écrivaient mission_id=42, booking_id=1, provider_team_id=999999"
+    },
+    {
+      "h": "21:16",
+      "quoi": "Suite complète : 49 échecs → 1 → 0. Pint et PHPStan verts."
     }
   ],
   "fichiers": [

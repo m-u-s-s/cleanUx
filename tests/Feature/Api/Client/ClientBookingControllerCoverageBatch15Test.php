@@ -5,6 +5,7 @@ namespace Tests\Feature\Api\Client;
 use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\MissionTrackingSession;
+use App\Models\OrganizationAccount;
 use App\Models\ProviderProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,7 +19,10 @@ class ClientBookingControllerCoverageBatch15Test extends TestCase
     public function test_index_applies_status_date_and_pagination_filters(): void
     {
         $owner = User::factory()->client()->create([
-            'organization_account_id' => 4242, // exercises the org branch in the query builder
+            // Une VRAIE organisation : `users.organization_account_id` porte désormais une clé
+            // étrangère. Seul comptait ici d'emprunter la branche « organisation » du constructeur
+            // de requête, ce qu'un identifiant valide fait tout aussi bien que 4242.
+            'organization_account_id' => OrganizationAccount::factory()->create()->id,
         ]);
 
         $this->buildBooking($owner, [

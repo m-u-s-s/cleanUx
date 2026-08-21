@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AccountingPeriod;
+use App\Models\Booking;
 use App\Models\BookingInsurance;
 use App\Models\InsuranceClaim;
 use App\Models\InsurancePlan;
@@ -201,7 +202,9 @@ class SkeletalModulesTest extends TestCase
             'is_active' => true,
         ]);
         $insurance = BookingInsurance::create([
-            'booking_id' => 1,
+            // Une VRAIE réservation : `booking_insurances.booking_id` porte désormais une clé
+            // étrangère. L'identifiant « 1 » ne désignait aucune ligne.
+            'booking_id' => Booking::factory()->create()->id,
             'plan_id' => $plan->id,
             'user_id' => $user->id,
             'premium_cents' => 2000,
@@ -247,7 +250,7 @@ class SkeletalModulesTest extends TestCase
             'is_active' => true,
         ]);
         $insurance = BookingInsurance::create([
-            'booking_id' => 2,
+            'booking_id' => Booking::factory()->create()->id,
             'plan_id' => $plan->id,
             'user_id' => $user->id,
             'premium_cents' => 1000,

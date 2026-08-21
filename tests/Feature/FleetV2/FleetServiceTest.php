@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\FleetV2;
 
+use App\Models\Booking;
 use App\Models\FleetAssignment;
 use App\Models\FleetEquipment;
 use App\Models\FleetMaintenanceLog;
@@ -80,8 +81,17 @@ class FleetServiceTest extends TestCase
         $v = $this->vehicle();
         $p = User::factory()->create();
         $svc = app(FleetService::class);
-        $a = $svc->assignVehicle($v, $p, bookingId: 42);
-        $b = $svc->assignVehicle($v, $p, bookingId: 42);
+
+        /*
+         * Une VRAIE réservation : `fleet_assignments.booking_id` porte désormais une clé étrangère
+         * vers `bookings`. L'identifiant 42 ne désignait aucune ligne — ce que l'absence de
+         * contrainte laissait passer. Ce que ce test vérifie, l'idempotence sur un même couple
+         * (véhicule, prestataire, réservation), ne change pas.
+         */
+        $reservation = Booking::factory()->create();
+
+        $a = $svc->assignVehicle($v, $p, bookingId: $reservation->id);
+        $b = $svc->assignVehicle($v, $p, bookingId: $reservation->id);
         $this->assertSame($a->id, $b->id);
     }
 

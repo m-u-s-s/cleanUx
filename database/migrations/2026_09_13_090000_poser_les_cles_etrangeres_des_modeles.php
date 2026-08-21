@@ -40,9 +40,20 @@ return new class extends Migration
      * @var array<string, list<array{0:string,1:string,2:bool,3:string}>>
      */
     private array $contraintes = [
-        'bookings' => [
-            ['recurring_series_id', 'bookings', true, 'fk_bookings_recurring_series'],
-        ],
+        /*
+         * `bookings.recurring_series_id` A ÉTÉ RETIRÉE DE CETTE TABLE.
+         *
+         * Le modèle la déclare `belongsTo(Booking::class)`, ce qui l'avait fait entrer ici. La suite
+         * complète l'a rejetée, et la cause est plus grave qu'un mauvais parent : cette colonne
+         * reçoit TROIS choses différentes selon qui l'écrit — un UUID
+         * (`CreateRecurringSeriesAction`), l'identifiant d'une `recurring_booking_series`
+         * (`ProcessRecurringBookings`), et un identifiant de réservation selon le modèle. La colonne
+         * est un `bigint unsigned` : le UUID n'y entre même pas.
+         *
+         * Aucune clé étrangère ne peut être juste tant que ces trois usages coexistent. Voir
+         * `2026_09_15_090000_retirer_la_contrainte_sur_recurring_series_id`, qui la défait sur les
+         * bases où elle a déjà été posée.
+         */
         'cancellation_question_options' => [
             ['exempt_reason_id', 'cancellation_exempt_reasons', true, 'fk_cancel_q_options_exempt_reason'],
         ],
