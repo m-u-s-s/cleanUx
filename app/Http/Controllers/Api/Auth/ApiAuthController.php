@@ -269,9 +269,23 @@ class ApiAuthController extends Controller
         // `role` et `platform_role` ne sont plus assignables en masse : ce sont les colonnes qui
         // décident de ce que le compte peut atteindre. Elles se posent ici par `forceFill`, à
         // partir du seul `account_type` validé, jamais d'une clé libre du corps de la requête.
+        /*
+         * `account_type` SUIT LA MEME DECISION QUE `role`, ET DANS LA MEME ECRITURE.
+         *
+         * Elle ne l'a pas toujours suivie : ce chemin lisait `account_type` dans la requete pour en
+         * deduire le role, puis ne persistait pas la colonne. Le defaut SQL
+         * (`NOT NULL DEFAULT 'client_personal'`) s'appliquait alors, et une inscription de
+         * prestataire produisait dans UNE SEULE transaction un compte portant `role = 'employe'` et
+         * `account_type = 'client_personal'` — deux colonnes de la meme ligne qui se contredisent.
+         * Mesure sur `brio` avant correction : onze comptes dans ce cas.
+         *
+         * Le chemin web (`CreateNewUser:121`) la posait deja ; seul celui-ci l'oubliait. Les poser
+         * ensemble est ce qui empeche la divergence de revenir.
+         */
         $user->forceFill([
             'platform_role' => User::PLATFORM_USER,
             'role' => $asProvider ? 'employe' : 'client',
+            'account_type' => $asProvider ? 'provider_independent' : 'client_personal',
         ])->save();
 
         if ($verifiedPhone !== null && Schema::hasColumn('users', 'phone_verified_at')) {

@@ -58,6 +58,36 @@ class ProviderSelfRegistrationTest extends TestCase
         $this->assertNull(ProviderProfile::where('user_id', $user->id)->first());
     }
 
+    /**
+     * `account_type` et `role` decrivent la meme chose : ils ne peuvent pas se contredire.
+     *
+     * L'assertion sur `role` n'est pas decorative, c'est le TEMOIN : sans elle, une inscription
+     * cassee pour une tout autre raison ferait passer l'assertion suivante au vert.
+     */
+    public function test_le_type_de_compte_suit_le_role_pour_un_prestataire(): void
+    {
+        $this->postJson('/api/auth/register', $this->payload(['account_type' => 'provider']))->assertCreated();
+
+        $user = User::where('email', 'nouveau@prestataire.test')->firstOrFail();
+
+        $this->assertSame('employe', $user->role);
+        $this->assertStringStartsWith(
+            'provider',
+            (string) $user->account_type,
+            'Le defaut SQL de la colonne vaut `client_personal` : sans ecriture explicite, elle contredit le role.'
+        );
+    }
+
+    public function test_le_type_de_compte_suit_le_role_pour_un_client(): void
+    {
+        $this->postJson('/api/auth/register', $this->payload())->assertCreated();
+
+        $user = User::where('email', 'nouveau@prestataire.test')->firstOrFail();
+
+        $this->assertSame('client', $user->role);
+        $this->assertSame('client_personal', $user->account_type);
+    }
+
     public function test_a_self_registered_provider_can_reach_the_onboarding_routes(): void
     {
         $this->postJson('/api/auth/register', $this->payload(['account_type' => 'provider']))->assertCreated();
