@@ -293,3 +293,35 @@ export function formatDateIso(iso: string | null | undefined, avecHeure = false)
 
   return avecHeure ? `${jour} à ${lu.hhmm}` : jour;
 }
+
+/**
+ * LES NEUF ÉTATS D'UNE VÉRIFICATION D'IDENTITÉ, EN FRANÇAIS.
+ *
+ * L'écran « Vérification d'identité » de l'application prestataire affichait la valeur brute :
+ * relevé à l'écran, un prestataire lisait « clear » sous le titre, en anglais et en jargon de
+ * fournisseur de contrôle. Les huit autres états sont du même tonneau — `in_review`,
+ * `awaiting_documents`, `unidentified`…
+ *
+ * Même règle que `libelleStatut` juste au-dessus : un état inconnu ressort TEL QUEL plutôt que
+ * masqué. Mieux vaut un mot technique visible, qu'on corrigera, qu'un vide qui laisse croire que
+ * la vérification n'a pas d'état.
+ */
+const LIBELLES_KYC: Record<string, string> = {
+  pending: 'En attente',
+  in_review: 'En cours d’examen',
+  awaiting_documents: 'Documents attendus',
+  clear: 'Vérifiée',
+  consider: 'À examiner',
+  unidentified: 'Identité non établie',
+  rejected: 'Refusée',
+  expired: 'Expirée',
+  cancelled: 'Annulée',
+};
+
+export function libelleStatutKyc(statut: string | null | undefined): string {
+  if (!statut) {
+    return 'Non vérifié';
+  }
+
+  return LIBELLES_KYC[statut] ?? statut;
+}

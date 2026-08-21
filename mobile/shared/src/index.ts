@@ -121,7 +121,7 @@ export type { ParityModule } from './parity';
  * redécouverts à l'identique côté prestataire le lendemain : statut technique, date ISO, message
  * interne d'axios. Une seule copie évite une troisième découverte.
  */
-export { libelleStatut, formatDateHeure, formatAdresse, formatDelai, messageDErreur, formatHeureDuFil, formatHeureDuFilCompacte, formatDateIso } from './format';
+export { libelleStatut, formatDateHeure, formatAdresse, formatDelai, messageDErreur, formatHeureDuFil, formatHeureDuFilCompacte, formatDateIso, libelleStatutKyc } from './format';
 
 /*
  * LA FILE HORS-LIGNE fait desormais partie de la surface publique : les ecrans dependent de son

@@ -117,8 +117,31 @@
     </main>
 
     @livewireScripts
-    <x-mobile-bottom-nav />
+
+    {{--
+        LA BARRE DU BAS N'APPARTIENT NI AU CLIENT, NI À L'APPLICATION NATIVE.
+
+        Deux défauts tenaient dans cette seule ligne, relevés en ouvrant « Planning et absences »
+        depuis l'application prestataire.
+
+        1. `<x-mobile-bottom-nav />` sans `items` retombe sur ses valeurs par défaut, qui sont
+           CELLES DU CLIENT : « Mes RDV », « Réserver » (`client.rendezvous.*`). Une société
+           prestataire lisait donc, en bas de son propre espace, une invitation à commander une
+           prestation. `<x-ui.mobile-bottom-nav />` déduit le rôle de l'utilisateur et vérifie
+           chaque route par `Route::has()` — il ne rend rien plutôt que d'inventer une destination.
+
+        2. Elle était posée HORS du `@unless($embedded)` qui protège tout le reste de ce gabarit
+           (lignes 54 à 106). Embarquée dans la WebView de l'application native, la page ajoutait
+           donc sa propre barre de navigation web SOUS la barre d'onglets native — deux
+           navigations empilées, occupant un tiers de l'écran.
+
+        `layouts/app.blade.php` applique déjà exactement ce traitement à ses trois composants de
+        chrome ; ce gabarit-ci était resté en arrière.
+    --}}
+    @unless($embedded ?? false)
+    <x-ui.mobile-bottom-nav />
     <x-pwa-install-prompt />
+    @endunless
 
     {{-- Sans ce stack, les `@push('scripts')` des composants ci-dessus n'atteignaient pas la page. --}}
     @stack('scripts')

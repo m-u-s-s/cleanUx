@@ -333,6 +333,20 @@ export function RootNavigator() {
             component={ModulesRoute}
             options={{ headerShown: true, title: 'Modules' }}
           />
+          {/*
+            SANS CET ÉCRAN, LE RÉPERTOIRE DE MODULES NE MÈNE NULLE PART.
+
+            `Modules` était déclaré ici, `EmbeddedModule` non — or chaque entrée du répertoire
+            ouvre l'une ou l'autre. Un administrateur pouvait donc ouvrir le menu, appuyer sur
+            n'importe laquelle de ses vingt-quatre entrées, et ne voir ABSOLUMENT rien se passer :
+            comme le note cette même fonction plus haut, « une route absente ne lève rien — elle
+            ne fait simplement rien », ce qui rend le lien mort très discret.
+          */}
+          <Stack.Screen
+            name="EmbeddedModule"
+            component={EmbeddedModuleRoute}
+            options={{ headerShown: true }}
+          />
           <Stack.Screen
             name="Appearance"
             component={AppearanceScreen}
@@ -362,6 +376,20 @@ export function RootNavigator() {
             name="Modules"
             component={ModulesRoute}
             options={{ headerShown: true, title: 'Modules' }}
+          />
+          {/*
+            SANS CET ÉCRAN, LE RÉPERTOIRE DE MODULES NE MÈNE NULLE PART.
+
+            `Modules` était déclaré ici, `EmbeddedModule` non — or chaque entrée du répertoire
+            ouvre l'une ou l'autre. Un administrateur pouvait donc ouvrir le menu, appuyer sur
+            n'importe laquelle de ses vingt-quatre entrées, et ne voir ABSOLUMENT rien se passer :
+            comme le note cette même fonction plus haut, « une route absente ne lève rien — elle
+            ne fait simplement rien », ce qui rend le lien mort très discret.
+          */}
+          <Stack.Screen
+            name="EmbeddedModule"
+            component={EmbeddedModuleRoute}
+            options={{ headerShown: true }}
           />
           {/*
             Le moteur de console : trois écrans pour tous les domaines. `AdminResource` reste

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Screen, Button, Badge } from '@/ui';
+import { libelleStatutKyc } from '@brio/shared';
 import { apiClient } from '@/api';
 import {spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -28,7 +29,8 @@ export function KYCScreen() {
         </View>
       ) : (
         <View style={styles.card}>
-          <Badge label={status?.status ?? 'Non vérifié'} variant="warning" />
+          {/* Le libellé, jamais la valeur brute : l'écran affichait « clear » en toutes lettres. */}
+          <Badge label={libelleStatutKyc(status?.status)} variant="warning" />
           <Text style={styles.info}>
             Complétez la vérification pour recevoir des missions.
           </Text>

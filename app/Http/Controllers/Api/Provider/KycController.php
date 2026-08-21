@@ -58,12 +58,26 @@ class KycController extends Controller
         if (! $verification) {
             return response()->json([
                 'has_verification' => false,
+                'verified' => $this->estVerifie($request),
                 'provider_verification_status' => $request->user()->providerProfile?->verification_status,
             ]);
         }
 
         return response()->json([
             'has_verification' => true,
+            /*
+             * L'ETAT, EN UN MOT, PARCE QUE C'EST CE QUE L'ECRAN DEMANDE.
+             *
+             * `KYCScreen` teste `status.verified` depuis toujours ; cette reponse ne l'a jamais
+             * envoye. La branche « pas encore verifie » etait donc la SEULE atteignable : releve a
+             * l'ecran, un prestataire dont l'identite est validee lisait quand meme « Completez la
+             * verification pour recevoir des missions », sous un badge qui disait le contraire.
+             *
+             * La source de verite reste `provider_profiles.verification_status`, celle que
+             * `KycVerificationService::markProviderApproved()` ecrit. On ne la recalcule pas ici :
+             * on la nomme.
+             */
+            'verified' => $this->estVerifie($request),
             'verification_id' => $verification->id,
             'provider' => $verification->provider,
             'status' => $verification->status,
@@ -74,6 +88,12 @@ class KycController extends Controller
             'completed_at' => $verification->completed_at,
             'provider_verification_status' => $request->user()->providerProfile?->verification_status,
         ]);
+    }
+
+    /** L'identite est-elle validee ? La reponse tient dans le profil, pas dans le dernier controle. */
+    private function estVerifie(Request $request): bool
+    {
+        return $request->user()?->providerProfile?->verification_status === 'verified';
     }
 
     public function sync(Request $request, KycVerification $verification): JsonResponse

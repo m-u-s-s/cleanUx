@@ -1,4 +1,5 @@
 import { formatAdresse, formatDelai, messageDErreur, formatDateHeure } from '@brio/shared/format';
+import { libelleStatutKyc } from '@brio/shared';
 
 /**
  * CE QUE LE PRESTATAIRE LIT — relevé à l'écran, sur émulateur.
@@ -138,5 +139,31 @@ describe('messageDErreur', () => {
 describe('formatDateHeure', () => {
   it('écrit la date en français', () => {
     expect(formatDateHeure('2026-08-17', '09:00')).toBe('17 août 2026 à 09h00');
+  });
+});
+
+/**
+ * « CLEAR », EN TOUTES LETTRES, SOUS LE TITRE.
+ *
+ * Relevé à l'écran dans l'application prestataire : l'état de la vérification d'identité était
+ * affiché brut. Neuf valeurs techniques peuvent sortir de ce contrôle, toutes en anglais.
+ */
+describe('libelleStatutKyc', () => {
+  it('traduit les neuf états du contrôle d’identité', () => {
+    expect(libelleStatutKyc('clear')).toBe('Vérifiée');
+    expect(libelleStatutKyc('in_review')).toBe('En cours d’examen');
+    expect(libelleStatutKyc('awaiting_documents')).toBe('Documents attendus');
+    expect(libelleStatutKyc('unidentified')).toBe('Identité non établie');
+    expect(libelleStatutKyc('rejected')).toBe('Refusée');
+  });
+
+  it('dit « Non vérifié » quand il n’y a pas encore d’état', () => {
+    expect(libelleStatutKyc(null)).toBe('Non vérifié');
+    expect(libelleStatutKyc(undefined)).toBe('Non vérifié');
+  });
+
+  it('laisse passer un état inconnu au lieu de l’effacer', () => {
+    // TÉMOIN : un état non prévu doit rester VISIBLE pour qu'on le corrige, pas disparaître.
+    expect(libelleStatutKyc('etat_invente')).toBe('etat_invente');
   });
 });
