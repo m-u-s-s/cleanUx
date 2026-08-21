@@ -1,4 +1,16 @@
 import React, { useState, useRef } from 'react';
+/*
+ * IMPORT STATIQUE, comme `shared/storage/secureStore.ts` — et non `await import()`.
+ *
+ * Les deux accès de cet écran chargeaient le module dynamiquement, dans un `try` dont le `catch`
+ * conclut « déjà vu, on saute la présentation ». Le jour où la forme du module ne se prête pas à
+ * cet appel, `getItemAsync` est `undefined`, l'appel lève, et le témoin répond TOUJOURS `true` :
+ * la présentation ne peut alors plus jamais s'afficher, sans qu'aucune erreur ne remonte.
+ *
+ * C'est exactement ce qui s'est produit ici, et c'est le seul endroit du dépôt à employer cette
+ * forme. Le reste du code importe le module statiquement, et fonctionne.
+ */
+import * as SecureStore from 'expo-secure-store';
 import { View, Text, FlatList, Dimensions, StyleSheet } from 'react-native';
 import { Button } from '@/ui';
 import { colors, spacing, typography, radius } from '@/theme';
@@ -48,9 +60,18 @@ export function WalkthroughScreen({ onComplete }: Props) {
 
   const handleComplete = async () => {
     try {
-      const SecureStore = await import('expo-secure-store');
       await SecureStore.setItemAsync(WALKTHROUGH_KEY, 'true');
-    } catch {}
+    } catch (erreur) {
+      /*
+       * UN CATCH MUET EST CE QUI A MASQUÉ CE DÉFAUT.
+       *
+       * Si le drapeau n'est pas écrit, la présentation revient à CHAQUE lancement — et rien, nulle
+       * part, ne dit pourquoi. On laisse entrer quand même (ce n'est jamais bloquant), mais on le
+       * dit.
+       */
+      console.warn('[walkthrough] drapeau non enregistré :', erreur);
+    }
+
     onComplete();
   };
 
@@ -135,9 +156,9 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
 
 export async function hasCompletedWalkthrough(): Promise<boolean> {
   try {
-    const SecureStore = await import('expo-secure-store');
     return (await SecureStore.getItemAsync(WALKTHROUGH_KEY)) === 'true';
   } catch {
-    return true; // skip walkthrough if SecureStore unavailable
+    // Stockage indisponible : on ne bloque pas l'accès à l'application pour une présentation.
+    return true;
   }
 }

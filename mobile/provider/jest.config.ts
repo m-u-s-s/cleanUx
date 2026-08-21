@@ -29,6 +29,8 @@ const config: Config = {
     // fournit son propre fichier de mise en place ; sans lui, tout test qui touche au fond nuit
     // échoue sur « Native Skia Module failed to correctly install JSI Bindings ».
     require.resolve('@shopify/react-native-skia/jestSetup.js'),
+    // Le magasin sécurisé et le défaut « présentation déjà vue » — voir jest.setup.js.
+    require.resolve('./jest.setup.js'),
   ],
   transformIgnorePatterns: [
     // @shopify/react-native-skia est publié en modules ES (`main: lib/module/index.js`) :

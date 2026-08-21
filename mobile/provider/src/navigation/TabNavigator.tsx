@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DashboardScreen } from '@/screens/DashboardScreen';
 import { MissionsScreen } from '@/screens/MissionsScreen';
-import { EarningsScreen } from '@/screens/EarningsScreen';
+import { WalletScreen } from '@/screens/WalletScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
 import { Icon } from '@/ui';
 import { apparenceDeBarre } from '@/ui/glassBars';
@@ -60,9 +60,25 @@ export function TabNavigator() {
           tabBarIcon: ({ color, size }) => <Icon name="briefcase-outline" size={size} color={color} />,
         }}
       />
+      {/*
+        L'ONGLET « REVENUS » SAIT DÉSORMAIS RETIRER, PAS SEULEMENT AFFICHER.
+
+        Il montait `EarningsScreen` : solde, transactions, état Stripe — en LECTURE SEULE.
+        `WalletScreen` lit exactement les mêmes trois sources (`useWalletBalance`,
+        `useWalletTransactions`, `useStripeConnectStatus`) et ajoute la seule chose qui manquait :
+        `useWithdraw`, qui appelle `POST /provider/wallet/withdraw`. Cet écran, son hook et cet
+        endpoint existaient tous les trois — et AUCUN navigateur ne montait l'écran. Un prestataire
+        voyait donc son solde sans aucun moyen de le retirer depuis l'application.
+
+        Le nom de route reste `Earnings` : tous les appelants existants continuent de fonctionner.
+
+        L'écran demande confirmation avant d'envoyer, refuse un montant supérieur au disponible et
+        refuse un montant non numérique — ce n'est pas un brouillon. Le double retrait, lui, est
+        fermé côté serveur depuis `da5990d4` (`scopeEngagedDebit`).
+      */}
       <Tab.Screen
         name="Earnings"
-        component={EarningsScreen}
+        component={WalletScreen}
         options={{
           tabBarLabel: 'Revenus',
           tabBarIcon: ({ color, size }) => <Icon name="wallet-outline" size={size} color={color} />,

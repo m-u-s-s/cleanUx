@@ -3,6 +3,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '@/auth';
 import { useOnboardingProgress, isJourneyComplete } from '@/onboarding';
+import { WalkthroughScreen, hasCompletedWalkthrough } from '@/screens/WalkthroughScreen';
 import { useFaceCheckStatus, faceCheckBloqueLeTerrain } from '@/faceCheck';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { MissionDetailScreen } from '@/screens/MissionDetailScreen';
@@ -109,6 +110,29 @@ export function RootNavigator() {
   const faceCheckBlocks =
     faceLoading || faceError ? undefined : faceCheckBloqueLeTerrain(faceStatus);
 
+  /*
+   * LA PRÉSENTATION DE L'APPLICATION, MONTRÉE UNE FOIS.
+   *
+   * `WalkthroughScreen` et son témoin `hasCompletedWalkthrough()` existaient depuis longtemps :
+   * un carrousel de présentation, un bouton « Passer », un drapeau posé dans SecureStore pour ne
+   * jamais le remontrer. Aucun navigateur ne le montait — personne ne l'a jamais vu.
+   *
+   * `undefined` = on ne sait pas encore, et l'on n'affiche RIEN plutôt que de faire clignoter
+   * l'application puis le carrousel. `hasCompletedWalkthrough()` rend déjà `true` quand SecureStore
+   * est indisponible : en cas de doute, on ne bloque pas l'accès.
+   */
+  const [walkthroughVu, setWalkthroughVu] = React.useState<boolean | undefined>(undefined);
+
+  React.useEffect(() => {
+    let vivant = true;
+
+    hasCompletedWalkthrough()
+      .then((vu) => { if (vivant) setWalkthroughVu(vu); })
+      .catch(() => { if (vivant) setWalkthroughVu(true); });
+
+    return () => { vivant = false; };
+  }, []);
+
   const space = resolveSpace({
     isLoading: isLoading || spaceLoading,
     isAuthenticated,
@@ -118,7 +142,11 @@ export function RootNavigator() {
     chosenSpace,
   });
 
-  if (space === 'loading') {
+  if (walkthroughVu === false) {
+    return <WalkthroughScreen onComplete={() => setWalkthroughVu(true)} />;
+  }
+
+  if (space === 'loading' || walkthroughVu === undefined) {
     return (
       <View
         testID="root-navigator"
