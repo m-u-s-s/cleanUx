@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\Booking;
+use App\Models\Feedback;
 use App\Services\Admin\AdminAnalyticsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -29,6 +30,40 @@ class AdminAnalyticsMargeTest extends TestCase
     private function service(): AdminAnalyticsService
     {
         return app(AdminAnalyticsService::class);
+    }
+
+    /**
+     * LA NOTE MOYENNE VIENT DE LA TABLE DU MODÈLE, PAS D'UNE AUTRE.
+     *
+     * Deuxième occurrence, dans ce même service, du défaut décrit en tête de fichier : le garde
+     * interrogeait le schéma de `feedbacks` pour décider quelle colonne moyenner, puis moyennait
+     * sur `Feedback::query()` — c'est-à-dire sur `feedback`, que le modèle désigne explicitement.
+     * Deux tables réelles et distinctes, l'une avec modèle et 34 colonnes, l'autre sans modèle et
+     * avec 15.
+     *
+     * Cela fonctionnait par COÏNCIDENCE : les deux portent une colonne `note`. Le jour où la table
+     * sans modèle disparaît — ce qui est prévu — `hasTable()` rend faux, aucune branche ne
+     * s'exécute, et la note moyenne tombe à zéro sans erreur ni trace, pendant que les avis
+     * continuent d'être enregistrés.
+     */
+    #[Test]
+    public function la_note_moyenne_ne_depend_pas_d_une_table_sans_modele(): void
+    {
+        Feedback::factory()->create(['note' => 4]);
+        Feedback::factory()->create(['note' => 2]);
+
+        $this->assertSame(3.0, $this->service()->overview()['average_rating']);
+    }
+
+    /**
+     * TÉMOIN POSITIF. Sans lui, le test ci-dessus passerait au vert sur un service qui rendrait
+     * toujours la même valeur : il faut vérifier que l'absence d'avis donne bien zéro, et que ce
+     * zéro-là est un vrai zéro et non le zéro par défaut d'un garde refermé.
+     */
+    #[Test]
+    public function sans_aucun_avis_la_note_moyenne_est_nulle(): void
+    {
+        $this->assertSame(0.0, $this->service()->overview()['average_rating']);
     }
 
     #[Test]

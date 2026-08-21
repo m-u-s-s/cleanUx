@@ -91,11 +91,34 @@ class AdminAnalyticsService
 
         $averageRating = 0.0;
 
-        if (Schema::hasTable('feedbacks')) {
-            if (Schema::hasColumn('feedbacks', 'note')) {
-                $averageRating = (float) Feedback::query()->avg('note');
-            } elseif (Schema::hasColumn('feedbacks', 'rating')) {
-                $averageRating = (float) Feedback::query()->avg('rating');
+        /*
+         * LE GARDE INTERROGEAIT UNE AUTRE TABLE QUE LA REQUÊTE.
+         *
+         * Il testait le schéma de `feedbacks` pour décider quelle colonne moyenner — puis
+         * moyennait sur `Feedback::query()`, c'est-à-dire sur `feedback`, que le modèle désigne
+         * explicitement (`protected $table = 'feedback'`). Deux tables distinctes existent bel et
+         * bien : `feedback` (34 colonnes, celle du modèle) et `feedbacks` (15 colonnes, sans
+         * modèle).
+         *
+         * Cela FONCTIONNAIT, par coïncidence : les deux portent une colonne `note`, donc le garde
+         * choisissait la bonne branche pour la mauvaise raison. Le jour où `feedbacks` disparaît,
+         * `hasTable()` rend faux, aucune branche ne s'exécute, et la note moyenne de la console
+         * d'administration tombe à zéro — sans erreur, sans trace, alors que les avis continuent
+         * d'être enregistrés.
+         *
+         * On interroge donc la table que le modèle utilise vraiment, demandée au modèle lui-même.
+         */
+        $tableDesAvis = (new Feedback)->getTable();
+
+        if (Schema::hasTable($tableDesAvis)) {
+            $colonne = match (true) {
+                Schema::hasColumn($tableDesAvis, 'note') => 'note',
+                Schema::hasColumn($tableDesAvis, 'rating') => 'rating',
+                default => null,
+            };
+
+            if ($colonne !== null) {
+                $averageRating = (float) Feedback::query()->avg($colonne);
             }
         }
 

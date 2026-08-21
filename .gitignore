@@ -39,3 +39,9 @@ ruvector.db
 mobile/node_modules
 storage/app/parity_webview.json
 storage/app/parity_sweep_results.json
+
+# Sortie de l'outil graphify : graphe, cache d'extraction et rapports d'audit.
+# 81 Mo de fichiers dérivés, reconstructibles par `php scripts/audit_schema.php` et le
+# pipeline graphify. Ce sont des mesures, pas du code.
+/graphify-out/
+/app/graphify-out/
