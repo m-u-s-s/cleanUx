@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\AnalyticsEvent;
 use App\Models\Booking;
+use App\Models\BookingStatusHistory;
 use App\Models\Feedback;
 use App\Models\User;
 use App\Notifications\Rating\RatingRequestedNotification;
@@ -18,6 +19,7 @@ use App\Support\Domain\MissionStatus;
 use App\Support\Presence\PresenceAutoTransitioner;
 use App\Support\TripTracking\TripTrackingAutoCloser;
 use App\Support\Webhooks\BusinessEventEmitter;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
@@ -128,8 +130,61 @@ class BookingObserver
         $mission->forceFill($champs)->save();
     }
 
+    /**
+     * TENIR L'HISTORIQUE DES STATUTS, QUE PERSONNE NE TENAIT.
+     *
+     * `booking_status_histories` existait depuis l'origine, complète et sans le moindre écrivain.
+     * Vérifié avant de la brancher : `Booking` ne porte pas `AuditsEloquentEvents` (qui équipe
+     * pourtant sept autres modèles), cet observateur n'en gardait pas trace, `mission_events` tient
+     * la chronologie de TERRAIN et `booking_reschedule_history` les seules reprogrammations.
+     * Personne ne pouvait donc dire qui avait annulé une réservation, ni depuis quel état — alors
+     * que les frais d'annulation se calculent sur ce chemin et qu'un litige se tranche dessus.
+     *
+     * La création ouvre le journal avec `from_status` nul : sans cette première ligne, la deuxième
+     * transition serait la première trace, et l'état initial resterait à deviner.
+     *
+     * `changed_by` est nul quand le changement vient d'une commande ou d'une file — c'est une
+     * information, pas un trou : la colonne l'admet exprès.
+     *
+     * ── POURQUOI `created` ET `updated`, ET SURTOUT PAS `saved` ──────────────────────────────
+     *
+     * La première version tenait dans `saved()` et distinguait l'insertion par
+     * `$booking->wasRecentlyCreated`. C'est faux, et le test l'a montré : ce drapeau reste vrai
+     * pour toute la DURÉE DE VIE de l'instance, pas seulement pendant l'insertion. Modifier
+     * ensuite le même objet — changer un commentaire, par exemple — rouvrait donc le journal une
+     * seconde fois, avec un `from_status` nul mensonger.
+     *
+     * `created` et `updated` ne se prêtent pas à cette confusion : le premier ne se déclenche que
+     * sur une insertion, le second que sur une mise à jour réelle.
+     */
+    protected function ouvrirLHistoriqueDesStatuts(Booking $booking): void
+    {
+        BookingStatusHistory::create([
+            'booking_id' => $booking->id,
+            'changed_by' => Auth::id(),
+            'from_status' => null,
+            'to_status' => $booking->status,
+        ]);
+    }
+
+    public function updated(Booking $booking): void
+    {
+        if (! $booking->wasChanged('status')) {
+            // Un journal qui consigne ce qui n'a pas changé devient illisible.
+            return;
+        }
+
+        BookingStatusHistory::create([
+            'booking_id' => $booking->id,
+            'changed_by' => Auth::id(),
+            'from_status' => $booking->getOriginal('status'),
+            'to_status' => $booking->status,
+        ]);
+    }
+
     public function created(Booking $booking): void
     {
+        $this->ouvrirLHistoriqueDesStatuts($booking);
         $this->trackAnalytics($booking, 'booking.created');
         $this->emitBusinessWebhook($booking, 'booking.created');
         BookingChatAutoCreator::ensureThreadForBooking($booking);

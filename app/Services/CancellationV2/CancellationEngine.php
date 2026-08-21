@@ -3,6 +3,7 @@
 namespace App\Services\CancellationV2;
 
 use App\Models\BookingCancellationV2;
+use App\Models\BookingStatusHistory;
 use App\Models\CancellationAudit;
 use App\Models\User;
 use App\Services\Cancellation\CancellationExemptQuota;
@@ -203,6 +204,27 @@ class CancellationEngine
                 DB::table('bookings')->where('id', $bookingId)->update([
                     'status' => $statusAfter,
                     'cancelled_at' => now(),
+                ]);
+
+                /*
+                 * CETTE ÉCRITURE-CI NE PASSE PAS PAR L'OBSERVATEUR.
+                 *
+                 * `BookingObserver::consignerLeChangementDeStatut()` tient l'historique des statuts,
+                 * mais il est accroché aux événements d'Eloquent — et la ligne ci-dessus emploie le
+                 * constructeur de requêtes, qui n'en déclenche aucun. Sans cette consignation
+                 * explicite, l'annulation serait le SEUL changement de statut absent du journal, et
+                 * précisément celui qu'un litige vient interroger.
+                 *
+                 * On ne convertit pas la mise à jour en Eloquent pour autant : l'observateur émet
+                 * aussi des webhooks métier et des événements d'analytique, et les déclencher ici
+                 * changerait le comportement observable d'un chemin qui touche à l'argent.
+                 */
+                BookingStatusHistory::create([
+                    'booking_id' => $bookingId,
+                    'changed_by' => $actor->id,
+                    'from_status' => $statusBefore,
+                    'to_status' => $statusAfter,
+                    'note' => 'Annulation',
                 ]);
             }
 
