@@ -90,7 +90,19 @@
                     @foreach($primaryLinks as $link)
                     <x-nav-link :href="route($link['route'])" :active="request()->routeIs($link['route']) || request()->routeIs($link['route'].'.*')">
                         <span class="me-1 inline-flex items-center">{!! $renderIcon($link['icon']) !!}</span>
-                        {{ $link['label'] }}
+                        {{--
+                            `__()` ET NON LE LIBELLÉ BRUT.
+
+                            Les libellés de `config/modules.php` sortaient tels quels : la
+                            navigation restait en français quelle que soit la langue choisie,
+                            pendant que le contenu de la page, lui, se traduisait. Un client
+                            anglophone lisait « Historique » à côté de « New booking ».
+
+                            Une clé sans traduction s'affiche inchangée : un francophone ne
+                            voit donc aucune différence, et les langues servies cessent
+                            d'être à moitié appliquées.
+                        --}}
+                        {{ __($link['label']) }}
                     </x-nav-link>
                     @endforeach
 
@@ -181,7 +193,7 @@
                 <a href="{{ route($porteSociete['route']) }}"
                     class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
                     <span>{{ $porteSociete['icon'] }}</span>
-                    <span class="hidden lg:inline">{{ $porteSociete['label'] }}</span>
+                    <span class="hidden lg:inline">{{ __($porteSociete['label']) }}</span>
                 </a>
                 @endif
 
@@ -356,7 +368,7 @@
             @foreach($primaryLinks as $link)
             <x-responsive-nav-link :href="route($link['route'])" :active="request()->routeIs($link['route']) || request()->routeIs($link['route'].'.*')">
                 <span class="me-2 inline-flex items-center">{!! $renderIcon($link['icon']) !!}</span>
-                {{ $link['label'] }}
+                {{ __($link['label']) }}
             </x-responsive-nav-link>
             @endforeach
 

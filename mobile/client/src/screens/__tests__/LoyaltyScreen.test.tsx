@@ -36,7 +36,18 @@ function makeWrapper() {
   };
 }
 
-const ACCOUNT = { tier: 'gold', total_points: 800, redeemable_points: 500, period_points: 120 };
+/*
+ * LA FORME DU SERVEUR, et non celle qu'on aurait aimée.
+ *
+ * Cette fixture donnait `tier: 'gold'`, une chaîne. L'API rend un objet. Le test passait donc au
+ * vert sur un contrat que personne ne tenait, pendant que l'écran tombait à l'ouverture.
+ */
+const ACCOUNT = {
+  tier: { slug: 'gold', name: 'Or' },
+  total_points: 800,
+  redeemable_points: 500,
+  period_points: 120,
+};
 const REWARDS = [{ id: 7, name: 'Bon 10€', type: 'discount_code', points_cost: 100 }];
 
 beforeEach(() => {

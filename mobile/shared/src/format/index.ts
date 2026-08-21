@@ -192,3 +192,104 @@ export function messageDErreur(erreur: any, repli = 'Une erreur est survenue. R�
       return repli;
   }
 }
+
+/**
+ * L'HEURE D'UN FIL D'ÉVÉNEMENTS — avec la date dès qu'on sort du jour même.
+ *
+ * Le fil « sur place » affichait `H:i` nu, sur cette hypothèse écrite noir sur blanc : « le fil se
+ * lit dans la journée où il se déroule ». Elle tombe dès qu'on rouvre une mission le lendemain.
+ * Relevé le 21 août à 03 h 40, un fil démarré le 18 à 04:32 affichait « 04:32 » — soit, pour qui
+ * lit, une heure ENCORE À VENIR dans la journée en cours. Les trois repères de l'écran (départ,
+ * gel de la liste, fin estimée) se lisaient ainsi à l'envers, sans rien qui signale l'écart.
+ *
+ * Le jour même ne change pas : c'est le cas courant, et « 14:05 » s'y lit mieux que n'importe
+ * quelle date répétée à chaque ligne. La date n'apparaît que lorsqu'elle porte une information.
+ *
+ * `maintenant` est un paramètre pour que la règle soit vérifiable sans truquer l'horloge.
+ */
+function lireLHeure(iso: string | null | undefined): { d: Date; hhmm: string } | null {
+  if (!iso) {
+    return null;
+  }
+
+  const d = new Date(iso);
+
+  if (Number.isNaN(d.getTime())) {
+    return null;
+  }
+
+  return { d, hhmm: `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` };
+}
+
+function estLeMemeJour(d: Date, maintenant: Date): boolean {
+  return d.getFullYear() === maintenant.getFullYear()
+    && d.getMonth() === maintenant.getMonth()
+    && d.getDate() === maintenant.getDate();
+}
+
+/** La forme de PHRASE : « Fin estimée vers 18 août à 06:16 ». */
+export function formatHeureDuFil(iso: string | null | undefined, maintenant: Date = new Date()): string {
+  const lu = lireLHeure(iso);
+
+  if (!lu) {
+    return '—';
+  }
+
+  if (estLeMemeJour(lu.d, maintenant)) {
+    return lu.hhmm;
+  }
+
+  return `${lu.d.getDate()} ${MOIS[lu.d.getMonth()] ?? '?'} à ${lu.hhmm}`;
+}
+
+/**
+ * La forme de RAIL : la colonne étroite d'un fil d'événements.
+ *
+ * La forme de phrase ne tient pas dans cette gouttière de 52 px : elle s'y coupait après le « à »,
+ * et « 18 août à » se lisait alors comme le début du libellé posé juste à droite — « 18 août à En
+ * route », avec « 04:32 » relégué en dessous. Relevé à l'écran après la première correction.
+ *
+ * D'où deux lignes assumées, sans mot de liaison à couper : la date, puis l'heure. Le jour même
+ * reste sur une seule ligne, comme avant.
+ */
+export function formatHeureDuFilCompacte(iso: string | null | undefined, maintenant: Date = new Date()): string {
+  const lu = lireLHeure(iso);
+
+  if (!lu) {
+    return '—';
+  }
+
+  if (estLeMemeJour(lu.d, maintenant)) {
+    return lu.hhmm;
+  }
+
+  const jour = String(lu.d.getDate()).padStart(2, '0');
+  const mois = String(lu.d.getMonth() + 1).padStart(2, '0');
+
+  // Le retour est ECHAPPE, pas ecrit en clair : un passage de formatage reindenterait la
+  // seconde ligne, et l'heure gagnerait alors les espaces de l'indentation.
+  return `${jour}/${mois}\n${lu.hhmm}`;
+}
+
+/**
+ * UNE DATE ISO, EN FRANÇAIS — sans rien demander à l'appareil.
+ *
+ * `formatDateHeure` ci-dessus explique déjà pourquoi ce module écrit ses dates à la main. La leçon
+ * n'avait pas atteint les notifications : `formatNotificationDate` appelait `toLocaleDateString()`
+ * SANS locale, donc suivait celle du téléphone. Relevé dans l'émulateur, réglé en anglais : le fil
+ * de notifications affichait « 8/18/2026 » — un mois et un jour inversés pour qui lit en français,
+ * au milieu d'une application qui ne l'est pas.
+ *
+ * Cinq points d'appel en dépendent, dans les DEUX applications.
+ */
+export function formatDateIso(iso: string | null | undefined, avecHeure = false): string {
+  const lu = lireLHeure(iso);
+
+  if (!lu) {
+    return '';
+  }
+
+  const jour = `${lu.d.getDate()} ${MOIS[lu.d.getMonth()] ?? '?'} ${lu.d.getFullYear()}`;
+
+  return avecHeure ? `${jour} à ${lu.hhmm}` : jour;
+}

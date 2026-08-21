@@ -476,8 +476,14 @@ Route::middleware(['auth', 'role:admin', 'enforce_2fa'])->group(function () {
 |
 | La garde est donc portée par le contrôleur : organisation active obligatoire, puis une
 | permission par écriture. Voir `CompanyController`.
+|
+| `org.type:provider` EST en revanche exigé, comme sur le pendant web
+| (`routes/company-dashboards.php`) : la décision ci-dessus écarte `role:employe` et
+| `provider.approved`, elle n'a jamais dit que le TYPE d'organisation pouvait sauter.
+| Sans lui, la frontière entre société cliente et société prestataire n'était tenue
+| que par le navigateur.
 */
-Route::middleware('auth:sanctum')->prefix('provider/company')->group(function () {
+Route::middleware(['auth:sanctum', 'org.type:provider'])->prefix('provider/company')->group(function () {
     /*
      * LES LECTURES SONT GARDÉES PAR MIDDLEWARE, LES ÉCRITURES DANS LE CONTRÔLEUR.
      *

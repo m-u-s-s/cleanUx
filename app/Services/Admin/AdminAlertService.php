@@ -58,13 +58,32 @@ class AdminAlertService
      */
     protected function providersWithoutAvailability(): EloquentCollection
     {
+        /*
+            LA MÊME DÉFINITION QUE LA FICHE, SINON L'ALERTE OFFRE DES LIENS MORTS.
+
+            `scopePrestataires()` ratisse large — un profil prestataire OU la colonne héritée
+            `role` — pour ne manquer personne. La fiche de disponibilités, elle, refuse tout
+            compte dont `isEmploye()` est faux (`ProviderAvailabilityDetail::mount()`, 404).
+
+            Deux définitions de « prestataire » pour la même notion : l'alerte listait des
+            comptes que la fiche renvoyait en 404. Mesuré sur l'écran réel : deux clientes
+            porteuses d'un profil prestataire sans type exploitable y figuraient, et leur nom
+            était cliquable vers une page vide.
+
+            On garde le ratissage large pour la REQUÊTE — il évite d'oublier quelqu'un — puis
+            on retient ceux que la fiche accepte, en appelant SA méthode plutôt qu'en
+            recopiant sa règle en SQL. Une seule source de vérité, et elle reste sur le modèle.
+        */
         return User::query()
             ->tap(fn ($q) => $this->scopePrestataires($q))
             ->where('is_active', true)
             ->whereDoesntHave('availabilitySlots')
             ->orderBy('name')
+            ->take(30)
+            ->get()
+            ->filter(fn (User $u) => $u->isEmploye())
             ->take(10)
-            ->get();
+            ->values();
     }
 
     /**

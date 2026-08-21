@@ -5,6 +5,7 @@ use App\Http\Controllers\Client\ClientExcelExportController;
 use App\Http\Controllers\Client\FinanceDocumentDownloadController;
 use App\Livewire\Client\AiQuotePhoto;
 use App\Livewire\Client\BookingCheckout;
+use App\Livewire\Client\BrowseCompanies;
 use App\Livewire\Client\BrowseProviders;
 use App\Livewire\Client\Calendar\ClientCalendarFC;
 use App\Livewire\Client\ClientApiTokens;
@@ -81,6 +82,18 @@ Route::middleware(['role:client'])
 
         if (class_exists(BrowseProviders::class)) {
             Route::get('/prestataires', BrowseProviders::class)->name('providers.browse');
+        }
+
+        /*
+         * LES SOCIÉTÉS, ET PAS SEULEMENT LES PRESTATAIRES.
+         *
+         * `BrowseProviders` liste les intervenants par métier ; `BrowseCompanies` liste les
+         * SOCIÉTÉS prestataires vérifiées. Le composant, sa vue et ses tests existaient depuis
+         * le début — sans route ni appelant. Sur une place de marché où les deux côtés peuvent
+         * être des sociétés, ce chemin manquait purement et simplement au client.
+         */
+        if (class_exists(BrowseCompanies::class)) {
+            Route::get('/societes-prestataires', BrowseCompanies::class)->name('companies.browse');
         }
 
         if (class_exists(GdprDataPage::class)) {

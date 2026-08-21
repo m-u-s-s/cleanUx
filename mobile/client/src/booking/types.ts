@@ -19,7 +19,16 @@ export interface Provider {
   id: number;
   name: string;
   avatar_url?: string;
-  rating_avg: number;
+  /*
+   * NULL VEUT DIRE « PAS ENCORE NOTÉ », et ce n'est pas zéro.
+   *
+   * Le type promettait un nombre. L'API, elle, rend `rating.avg` à null tant que personne n'a
+   * noté : `rating_avg.toFixed(1)` levait alors « Cannot read property 'toFixed' of undefined »,
+   * et l'écran « Explorer » tombait sur son écran d'erreur dès la première recherche aboutie.
+   * Le remplacer par 0 aurait été pire qu'un plantage : afficher « ⭐ 0.0 » sur un prestataire
+   * neuf, c'est le donner pour mauvais.
+   */
+  rating_avg: number | null;
   review_count: number;
   trades: string[];
   distance_km?: number;

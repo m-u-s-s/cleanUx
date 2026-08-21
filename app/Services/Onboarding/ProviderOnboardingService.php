@@ -2,6 +2,7 @@
 
 namespace App\Services\Onboarding;
 
+use App\Enums\ProviderType;
 use App\Models\OnboardingProgress;
 use App\Models\OnboardingStepCompletion;
 use App\Models\ProviderOnboardingDocument;
@@ -55,7 +56,14 @@ class ProviderOnboardingService
         return ProviderProfile::firstOrCreate(
             ['user_id' => $user->id],
             [
-                'provider_type' => 'individual',
+                /*
+                    LA VALEUR CANONIQUE, celle qu'écrit déjà l'inscription par l'API
+                    (`ApiAuthController`). Ce chemin-ci écrivait `individual` : même notion,
+                    autre chaîne, et un prestataire que le modèle ne reconnaissait pas.
+                    Les deux valeurs restent acceptées à la LECTURE — les profils déjà créés
+                    ne deviennent pas invalides — mais on cesse d'en produire une seconde.
+                */
+                'provider_type' => ProviderType::INDEPENDENT->value,
                 'status' => 'pending',
                 'verification_status' => 'pending',
                 'onboarding_step' => self::STEP_PROFILE_BASICS,

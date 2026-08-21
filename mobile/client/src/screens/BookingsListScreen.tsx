@@ -74,6 +74,15 @@ export function BookingsListScreen() {
   );
 }
 
+/**
+ * L'état normalisé du serveur, avec repli sur le statut brut.
+ *
+ * `status` porte le vocabulaire du domaine (`en_route`, `sur_place`, `termine`…) ; `state` porte
+ * les six valeurs que `libelleStatut` et la table ci-dessous savent lire. Les indexer par `status`
+ * affichait le jargon au client et retombait sur la couleur neutre.
+ */
+const etatDe = (b: { state?: string; status: string }) => b.state ?? b.status;
+
 const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'neutral' | 'brand'> = {
   pending: 'warning',
   confirmed: 'brand',
@@ -95,7 +104,7 @@ const BookingCard = React.memo(function BookingCard({ booking }: { booking: Book
       <View style={[styles.card, { backgroundColor: themeColors.card }]}>
         <View style={styles.cardHeader}>
           <Text style={[styles.serviceName, { color: themeColors.text }]}>{booking.service_name}</Text>
-          <Badge label={libelleStatut(booking.status)} variant={statusVariant[booking.status] ?? 'neutral'} />
+          <Badge label={libelleStatut(etatDe(booking))} variant={statusVariant[etatDe(booking)] ?? 'neutral'} />
         </View>
         <Text style={[styles.cardDate, { color: themeColors.textSecondary }]}>{formatDateHeure(booking.scheduled_date, booking.scheduled_time)}</Text>
         <Text style={[styles.cardAddress, { color: themeColors.textMuted }]}>{formatAdresse(booking.address, booking.city)}</Text>

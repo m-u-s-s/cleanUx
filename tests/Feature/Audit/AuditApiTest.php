@@ -19,7 +19,7 @@ class AuditApiTest extends TestCase
 
     public function test_index_returns_recent_events(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         app(AuditService::class)->record('booking.created', ['x' => 1]);
@@ -32,7 +32,7 @@ class AuditApiTest extends TestCase
 
     public function test_index_filters_by_domain(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         app(AuditService::class)->record('booking.created', []);
@@ -47,7 +47,7 @@ class AuditApiTest extends TestCase
 
     public function test_show_returns_event_detail(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $event = app(AuditService::class)->record('booking.created', ['booking_id' => 42]);
@@ -60,7 +60,7 @@ class AuditApiTest extends TestCase
 
     public function test_pin_toggles_is_pinned_flag(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $event = app(AuditService::class)->record('booking.created', []);
@@ -75,7 +75,7 @@ class AuditApiTest extends TestCase
 
     public function test_export_csv_returns_streamed_response(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         app(AuditService::class)->record('booking.created', ['x' => 1]);

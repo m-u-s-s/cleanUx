@@ -22,6 +22,7 @@ class NotificationPresenter
             str_contains($class, 'Feedback') => 'feedback',
             str_contains($class, 'Finance') => 'finance',
             str_contains($class, 'Urgence') || str_contains($message, 'urgence') => 'urgent',
+            str_contains($class, 'Safety') || str_contains($class, 'Securite') => 'safety',
             str_contains($class, 'Admin') => 'admin',
             str_contains($class, 'Calendar') => 'calendar',
             str_contains($class, 'Rappel'), str_contains($class, 'Rdv'), str_contains($class, 'Rendez'), array_key_exists('rdv_id', $payload) => 'rendezvous',
@@ -29,8 +30,38 @@ class NotificationPresenter
         };
     }
 
+    /**
+     * CE QUE CHAQUE ÉVÉNEMENT DIT, QUAND IL NE LE DIT PAS LUI-MÊME.
+     *
+     * `title()` retombait sur `label()` et `message()` sur le mot « Notification ». Or huit des
+     * treize notifications en base ne portent NI `title` NI `message` dans leur charge utile :
+     * le fil affichait donc « Système / Système / Notification » trois fois de suite, relevé à
+     * l'écran dans l'application cliente. L'information existait pourtant — `type` valait
+     * `mission_started`, et la charge utile portait la référence et le nom du prestataire.
+     *
+     * Les notifications qui apportent leur propre texte ne sont pas touchées : elles gagnent
+     * toujours. Cette table ne sert qu'à celles qui n'en ont pas.
+     *
+     * [étiquette, titre, message]
+     */
+    private const PAR_TYPE = [
+        'mission_started' => ['Intervention', 'Intervention démarrée', 'Le prestataire a commencé l’intervention.'],
+        'employee_en_route' => ['Intervention', 'Prestataire en route', 'Le prestataire est en route vers l’adresse.'],
+        'employee_arrived' => ['Intervention', 'Prestataire arrivé', 'Le prestataire est arrivé sur place.'],
+        'mission.offer' => ['Mission', 'Nouvelle mission', 'Une mission vous est proposée.'],
+        'asap_search_outcome' => ['Recherche', 'Recherche immédiate', 'Le résultat de votre recherche immédiate est disponible.'],
+        'kyc_completed' => ['Vérification', 'Vérification terminée', 'Votre vérification d’identité est terminée.'],
+        'safety' => ['Sécurité', 'Alerte sécurité', 'Une alerte de sécurité a été signalée.'],
+    ];
+
     public function label(DatabaseNotification $notification): string
     {
+        $connu = self::PAR_TYPE[$this->typeKey($notification)][0] ?? null;
+
+        if ($connu !== null) {
+            return $connu;
+        }
+
         return match ($this->typeKey($notification)) {
             'feedback' => 'Feedback',
             'finance' => 'Finance',
@@ -69,14 +100,48 @@ class NotificationPresenter
     {
         $payload = (array) ($notification->data ?? []);
 
-        return (string) ($payload['title'] ?? $this->label($notification));
+        if (filled($payload['title'] ?? null)) {
+            return (string) $payload['title'];
+        }
+
+        return self::PAR_TYPE[$this->typeKey($notification)][1] ?? $this->label($notification);
     }
 
     public function message(DatabaseNotification $notification): string
     {
         $payload = (array) ($notification->data ?? []);
 
-        return (string) ($payload['message'] ?? 'Notification');
+        if (filled($payload['message'] ?? null)) {
+            return (string) $payload['message'];
+        }
+
+        $texte = self::PAR_TYPE[$this->typeKey($notification)][2] ?? null;
+
+        if ($texte === null) {
+            return 'Notification';
+        }
+
+        /*
+         * NOMMER LA PERSONNE QUAND ON LA CONNAÎT.
+         *
+         * `employee_name` et `booking_reference` sont déjà dans la charge utile de ces
+         * événements — les taire revenait à écrire une phrase générique alors qu'on avait de quoi
+         * la rendre précise.
+         */
+        $prestataire = $payload['employee_name'] ?? $payload['provider_name'] ?? null;
+
+        if (filled($prestataire)) {
+            $texte = match ($this->typeKey($notification)) {
+                'mission_started' => $prestataire.' a commencé l’intervention.',
+                'employee_en_route' => $prestataire.' est en route vers l’adresse.',
+                'employee_arrived' => $prestataire.' est arrivé sur place.',
+                default => $texte,
+            };
+        }
+
+        $reference = $payload['booking_reference'] ?? null;
+
+        return filled($reference) ? $texte.' (réservation '.$reference.')' : $texte;
     }
 
     public function context(DatabaseNotification $notification): array

@@ -48,7 +48,7 @@ class MobileCatalogDescentTest extends TestCase
         ]);
         ServiceZone::factory()->create(['country_id' => $this->france->id, 'name' => 'Paris']);
 
-        Sanctum::actingAs(User::factory()->create(['role' => 'admin', 'platform_role' => 'admin']), ['*']);
+        Sanctum::actingAs(User::factory()->adminComplet()->create(), ['*']);
     }
 
     public function test_les_zones_se_filtrent_par_pays(): void

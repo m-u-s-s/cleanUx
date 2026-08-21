@@ -119,6 +119,9 @@
     @livewireScripts
     <x-mobile-bottom-nav />
     <x-pwa-install-prompt />
+
+    {{-- Sans ce stack, les `@push('scripts')` des composants ci-dessus n'atteignaient pas la page. --}}
+    @stack('scripts')
 </body>
 
 </html>

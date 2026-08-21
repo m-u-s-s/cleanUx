@@ -81,7 +81,14 @@
                            class="w-full text-xs mt-1.5 file:rounded-lg file:border-0 file:bg-brand-50 file:text-brand-700 file:px-3 file:py-1.5 file:font-semibold file:hover:bg-brand-100 file:transition file:mr-2" />
                 </div>
 
-                <button wire:click="openClaim" class="brio-btn-primary w-full inline-flex items-center justify-center gap-2">
+                {{--
+                    `createClaim` ET NON `openClaim` : la seconde n'existe pas sur le composant.
+                    Le bouton paraissait normal et rendait 500 au clic — « Unable to call
+                    component method » — si bien qu'aucun client ne pouvait déposer de
+                    réclamation depuis cet écran. La méthode appelée ici valide, range les
+                    photos et crée la réclamation ; c'est bien ce que le bouton promet.
+                --}}
+                <button wire:click="createClaim" class="brio-btn-primary w-full inline-flex items-center justify-center gap-2">
                     <x-ui.icon name="envelope" class="w-4 h-4" />
                     Envoyer la réclamation
                 </button>

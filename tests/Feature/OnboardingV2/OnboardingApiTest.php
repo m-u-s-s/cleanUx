@@ -99,7 +99,7 @@ class OnboardingApiTest extends TestCase
 
     public function test_admin_index_returns_all_progress(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $client = User::factory()->client()->create();
         app(OnboardingEngine::class)->startFor($client);
 

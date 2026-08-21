@@ -66,6 +66,10 @@ export function HomeScreen() {
   const focusIsLive = focus ? isLive(focus) : false;
   const autresBookings = activeBookings.filter(b => b.id !== focus?.id);
 
+  /** Date et ville, assemblées : le tiret n'apparaît que s'il sépare deux morceaux réels. */
+  const ligneMeta = (b: { scheduled_date?: string; scheduled_time?: string; city?: string }) =>
+    [formatDateHeure(b.scheduled_date, b.scheduled_time), b.city].filter(Boolean).join(' — ');
+
   return (
     <Screen testID="home-screen">
       <View style={styles.hero}>
@@ -105,11 +109,16 @@ export function HomeScreen() {
               <Text style={[styles.focusService, { color: themeColors.text }]}>{focus.service_name}</Text>
               {/* Le statut technique de l'API ne s'affiche pas tel quel : « pending » n'est pas
                   une promesse qu'on fait à un client. */}
-              <Badge label={libelleStatut(focus.status)} variant={focusIsLive ? 'success' : 'brand'} />
+              <Badge label={libelleStatut(stateOf(focus))} variant={focusIsLive ? 'success' : 'brand'} />
             </View>
-            <Text style={[styles.focusDate, { color: themeColors.textSecondary }]}>
-              {formatDateHeure(focus.scheduled_date, focus.scheduled_time)}
-            </Text>
+            {/* Pas de date connue, pas de ligne : `formatDateHeure` rend une chaîne vide quand
+                la réservation n'a pas encore d'horaire, et la carte affichait alors un blanc
+                entre le titre et l'adresse — un trou qui ressemble à un défaut d'affichage. */}
+            {formatDateHeure(focus.scheduled_date, focus.scheduled_time) ? (
+              <Text style={[styles.focusDate, { color: themeColors.textSecondary }]}>
+                {formatDateHeure(focus.scheduled_date, focus.scheduled_time)}
+              </Text>
+            ) : null}
             <Text style={[styles.focusAddress, { color: themeColors.textMuted }]}>
               {formatAdresse(focus.address, focus.city)}
             </Text>
@@ -171,9 +180,16 @@ export function HomeScreen() {
                   <Text style={[styles.otherService, { color: themeColors.text }]} numberOfLines={1}>
                     {b.service_name}
                   </Text>
-                  <Text style={[styles.otherMeta, { color: themeColors.textMuted }]} numberOfLines={1}>
-                    {formatDateHeure(b.scheduled_date, b.scheduled_time)} — {b.city}
-                  </Text>
+                  {/* LE SÉPARATEUR NE S'AFFICHE QUE S'IL SÉPARE QUELQUE CHOSE.
+
+                      Écrit « {date} — {ville} » en dur, il restait seul quand ni l'une ni
+                      l'autre n'était connue : la carte se réduisait à un tiret au milieu du
+                      vide. On assemble ce qui existe, et on ne rend rien s'il n'y a rien. */}
+                  {ligneMeta(b) ? (
+                    <Text style={[styles.otherMeta, { color: themeColors.textMuted }]} numberOfLines={1}>
+                      {ligneMeta(b)}
+                    </Text>
+                  ) : null}
                 </View>
                 <Icon
                   name={isLive(b) ? 'navigate-outline' : 'chevron-forward'}

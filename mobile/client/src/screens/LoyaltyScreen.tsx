@@ -40,9 +40,15 @@ export function LoyaltyScreen() {
         <Skeleton width="100%" height={120} />
       ) : account ? (
         <View style={[styles.tierCard, { backgroundColor: themeColors.card }]}>
-          <Badge label={account.tier.toUpperCase()} variant="brand" />
+          {/* Pas encore de palier — l'état normal d'un compte neuf — se dit en toutes lettres. */}
+          <Badge label={account.tier?.name ?? 'Aucun palier'} variant="brand" />
           <View style={styles.kpiRow}>
-            <KPICard title="Points" value={account.redeemable_points} hint="Échangeables" tone="success" />
+            <KPICard
+              title="Points"
+              value={account.redeemable_points ?? '—'}
+              hint="Échangeables"
+              tone="success"
+            />
             <KPICard title="Ce mois" value={account.period_points} />
           </View>
         </View>

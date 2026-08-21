@@ -289,6 +289,26 @@ class MissionTodoListTest extends TestCase
             ->assertJsonCount(0, 'items');
     }
 
+    public function test_le_motif_porte_la_date_des_qu_on_sort_du_jour_meme(): void
+    {
+        /*
+         * Relevé dans l'application cliente : une intervention démarrée le 18 août, rouverte le 21,
+         * affichait « La liste est figée depuis 05:02 ». À 03 h 40 ce jour-là, cela se lit comme un
+         * gel À VENIR — pour une liste fermée depuis trois jours.
+         */
+        Carbon::setTestNow('2026-08-18 10:00:00');
+        $mission = $this->mission(demarree: Carbon::parse('2026-08-18 10:00:00'));
+        Sanctum::actingAs($this->client);
+
+        Carbon::setTestNow('2026-08-21 03:40:00');
+
+        $this->postJson('/api/client/bookings/'.$mission->booking_id.'/onsite/todo', [
+            'label' => 'Trop tard, et un autre jour',
+        ])->assertStatus(422)->assertJsonPath('message', 'La liste est figée depuis 18 août à 10:30.');
+
+        Carbon::setTestNow();
+    }
+
     public function test_l_api_rend_le_motif_du_refus_et_non_une_erreur_muette(): void
     {
         Carbon::setTestNow('2026-08-18 10:00:00');

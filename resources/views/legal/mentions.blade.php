@@ -1,6 +1,4 @@
-@extends('layouts.app')
-
-@section('content')
+<x-app-layout>
 <div class="max-w-4xl mx-auto py-12 px-6">
     <h1 class="text-3xl font-black text-slate-900 mb-8">Mentions légales</h1>
 
@@ -34,4 +32,4 @@
         </section>
     </div>
 </div>
-@endsection
+</x-app-layout>

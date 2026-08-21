@@ -27,9 +27,7 @@ class ConsoleGlobalActionsTest extends TestCase
     {
         parent::setUp();
 
-        Sanctum::actingAs(User::factory()->create([
-            'role' => 'admin',
-            'platform_role' => 'admin',
+        Sanctum::actingAs(User::factory()->adminComplet()->create([
             'access_scope' => User::ACCESS_SCOPE_ALL,
         ]), ['*']);
     }

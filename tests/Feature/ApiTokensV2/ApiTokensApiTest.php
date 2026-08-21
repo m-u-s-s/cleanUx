@@ -123,7 +123,7 @@ class ApiTokensApiTest extends TestCase
 
     public function test_admin_suspend_returns_token_marked_suspended(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $user = User::factory()->create();
         $token = app(ApiTokenManager::class)->createForUser($user, [
             'name' => 'tobe-suspended', 'scopes' => ['read:bookings'],
@@ -139,7 +139,7 @@ class ApiTokensApiTest extends TestCase
 
     public function test_admin_suspend_validates_reason_min_length(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $user = User::factory()->create();
         $token = app(ApiTokenManager::class)->createForUser($user, [
             'name' => 't', 'scopes' => ['read:bookings'],
@@ -153,7 +153,7 @@ class ApiTokensApiTest extends TestCase
 
     public function test_admin_list_returns_all_tokens(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $a = User::factory()->create();
         $b = User::factory()->create();
         app(ApiTokenManager::class)->createForUser($a, ['name' => 'A', 'scopes' => ['read:bookings']]);

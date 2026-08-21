@@ -61,13 +61,17 @@ class BookingRescheduleService
     }
 
     /**
-     * Vérifie que l'utilisateur a le droit de reprogrammer ce booking.
+     * La règle d'appartenance à une réservation.
+     *
+     * Exposée publiquement pour que la LECTURE puisse la poser elle aussi :
+     * l'écriture et l'affichage doivent répondre à la même règle, sans quoi
+     * on se retrouve avec deux sources de vérité qui divergent.
      */
-    protected function authorize(User $user, Booking $booking): void
+    public function peutAcceder(User $user, Booking $booking): bool
     {
         // Admin plateforme : OK
         if (method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin()) {
-            return;
+            return true;
         }
 
         // Le user doit être client direct ou membre de l'org cliente
@@ -78,7 +82,12 @@ class BookingRescheduleService
             && $user->organization_account_id
             && (int) $booking->customer_organization_id === (int) $user->organization_account_id;
 
-        if (! $isOwner && ! $isOrgMember) {
+        return $isOwner || $isOrgMember;
+    }
+
+    protected function authorize(User $user, Booking $booking): void
+    {
+        if (! $this->peutAcceder($user, $booking)) {
             throw new \DomainException("Vous n'avez pas accès à cette réservation.");
         }
     }

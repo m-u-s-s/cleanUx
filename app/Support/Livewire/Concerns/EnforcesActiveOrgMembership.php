@@ -23,7 +23,20 @@ trait EnforcesActiveOrgMembership
         $user = Auth::user();
         abort_if($user === null, 403);
 
-        $orgId = $user->current_organization_id;
+        /*
+            L'organisation active vit dans DEUX colonnes (`organization_account_id`
+            et `current_organization_id`), plus un repli dans `metadata`.
+            `organizationContextId()` est la résolution unique du dépôt, celle que
+            la surface API applique déjà (`ResolvesActiveOrganization`).
+
+            Lire `current_organization_id` seul refusait ici des membres
+            parfaitement légitimes — « Aucune organisation active » sur leur propre
+            espace — pendant que la même personne passait par l'API.
+
+            L'appartenance, elle, reste vérifiée exactement comme avant : c'est
+            l'IDENTIFIANT qu'on résout mieux, pas le droit qu'on relâche.
+        */
+        $orgId = $user->organizationContextId();
         abort_if(empty($orgId), 403, 'Aucune organisation active.');
 
         abort_unless(

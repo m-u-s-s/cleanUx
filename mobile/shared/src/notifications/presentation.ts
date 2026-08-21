@@ -1,5 +1,6 @@
 import { colors } from '@/theme';
 import type { NotificationSeverity } from './hooks';
+import { formatDateIso } from '../format';
 
 /**
  * Présentation partagée entre les deux applications.
@@ -72,13 +73,7 @@ export function contextLabel(cle: string): string {
  * l'écran, ce que rien n'attrape. Une notification sans date n'affiche rien du tout.
  */
 export function formatNotificationDate(iso: string | null | undefined, avecHeure = false): string {
-  if (!iso) return '';
-
-  const date = new Date(iso);
-
-  if (Number.isNaN(date.getTime())) return '';
-
-  return avecHeure
-    ? `${date.toLocaleDateString()} à ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-    : date.toLocaleDateString();
+  // La règle vit dans `../format`, avec les autres dates de l'application : `toLocaleDateString()`
+  // suivait la langue de l'appareil et rendait « 8/18/2026 » sur un téléphone en anglais.
+  return formatDateIso(iso, avecHeure);
 }

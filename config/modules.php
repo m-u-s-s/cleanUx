@@ -129,6 +129,7 @@ return [
         ['key' => 'client:client.ai.quote.photo', 'label' => 'Devis IA depuis photo', 'icon' => '🤖', 'route' => 'client.ai.quote.photo', 'context' => 'client', 'category' => 'prestataires', 'primary' => false],
         ['key' => 'client:client.bundles.manage', 'label' => 'Chantiers groupés', 'icon' => '🏗️', 'route' => 'client.bundles.manage', 'context' => 'client', 'category' => 'prestataires', 'primary' => false],
         ['key' => 'client:client.providers.browse', 'label' => 'Trouver un prestataire', 'icon' => '🔍', 'route' => 'client.providers.browse', 'context' => 'client', 'category' => 'prestataires', 'primary' => true],
+        ['key' => 'client:client.companies.browse', 'label' => 'Trouver une société', 'icon' => '🏢', 'route' => 'client.companies.browse', 'context' => 'client', 'category' => 'prestataires', 'primary' => false],
         ['key' => 'client:client.chat.inbox', 'label' => 'Messagerie', 'icon' => '💬', 'route' => 'client.chat.inbox', 'context' => 'client', 'category' => 'communication', 'primary' => false],
         ['key' => 'client:client.favorite-employes', 'label' => 'Prestataires favoris', 'icon' => '❤️', 'route' => 'client.favorite-employes', 'context' => 'client', 'category' => 'communication', 'primary' => false],
         ['key' => 'client:client.claims', 'label' => 'Litiges', 'icon' => '⚠️', 'route' => 'client.claims', 'context' => 'client', 'category' => 'qualite', 'primary' => false],
@@ -147,7 +148,7 @@ return [
          */
         ['key' => 'client:client.calendar.interactive', 'label' => 'Calendrier interactif', 'icon' => '📅', 'route' => 'client.calendar.interactive', 'context' => 'client', 'category' => 'rendez-vous', 'primary' => false],
         ['key' => 'client:client.recurring.templates', 'label' => 'Templates 1-clic', 'icon' => '⭐', 'route' => 'client.recurring.templates', 'context' => 'client', 'category' => 'rendez-vous', 'primary' => false],
-        ['key' => 'client:client.analytics.dashboard', 'label' => 'Mes statistiques', 'icon' => '📊', 'route' => 'client.analytics.dashboard', 'context' => 'client', 'category' => 'donnees', 'primary' => false],
+        ['key' => 'client:client.analytics.dashboard', 'label' => 'Mes statistiques', 'icon' => '📊', 'route' => 'client.analytics.dashboard', 'context' => 'client', 'category' => 'donnees', 'primary' => false, 'visible_si' => 'isClientCompany'],
 
         /*
          * Propres aux CLIENTS, particuliers comme sociétés : commander une intervention, chercher
@@ -315,6 +316,7 @@ return [
         ['key' => 'admin:admin.analytics', 'label' => 'Analytics', 'icon' => '📈', 'route' => 'admin.analytics', 'context' => 'admin', 'category' => 'donnees', 'primary' => false, 'gate' => 'manage-analytics'],
         ['key' => 'admin:admin.analytics.cancellations', 'label' => 'Raisons annulation', 'icon' => '❌', 'route' => 'admin.analytics.cancellations', 'context' => 'admin', 'category' => 'donnees', 'primary' => false, 'gate' => 'manage-analytics'],
         ['key' => 'admin:admin.analytics.center', 'label' => 'Analytics v2', 'icon' => '📊', 'route' => 'admin.analytics.center', 'context' => 'admin', 'category' => 'donnees', 'primary' => false, 'gate' => 'manage-analytics'],
+        ['key' => 'admin:admin.analytics.exploration', 'label' => 'Exploration métier', 'icon' => '🔎', 'route' => 'admin.analytics.exploration', 'context' => 'admin', 'category' => 'donnees', 'primary' => false, 'gate' => 'manage-analytics'],
         ['key' => 'admin:admin.dashboard', 'label' => 'Dashboard', 'icon' => '📊', 'route' => 'admin.dashboard', 'context' => 'admin', 'category' => 'donnees', 'primary' => true],
         ['key' => 'admin:admin.home', 'label' => 'Vue d’ensemble', 'icon' => '🗂️', 'route' => 'admin.home', 'context' => 'admin', 'category' => 'donnees', 'primary' => true],
         ['key' => 'admin:admin.matching.insights', 'label' => 'Matching insights', 'icon' => '🎯', 'route' => 'admin.matching.insights', 'context' => 'admin', 'category' => 'donnees', 'primary' => false, 'gate' => 'manage-analytics'],

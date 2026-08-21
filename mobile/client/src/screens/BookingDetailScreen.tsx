@@ -112,15 +112,25 @@ export function BookingDetailScreen({ route }: Props) {
     );
   }
 
-  const canStart = booking.status === 'confirmed';
-  const canEnd = booking.status === 'in_progress';
-  const canTrack = ['confirmed', 'in_progress'].includes(booking.status);
-  const isCompleted = booking.status === 'completed';
+  /*
+    L'ÉTAT NORMALISÉ, PAS LE STATUT BRUT.
+
+    `status` porte le vocabulaire du domaine — `termine`, `annule`, `en_attente`, `sur_place` —
+    tandis que `state` porte les six valeurs anglaises que le reste de cet écran compare.
+    Comparer `status` à 'completed' était donc toujours faux sur des données françaises :
+    « Évaluer la prestation » et « Laisser un pourboire » ne s'affichaient jamais, et la carte
+    « Code de fin » s'affichait au contraire sur des réservations annulées ou en attente.
+  */
+  const etat = booking.state ?? booking.status;
+  const isCompleted = etat === 'completed';
+  const canStart = etat === 'confirmed';
+  const canEnd = etat === 'in_progress';
+  const canTrack = ['confirmed', 'in_progress'].includes(etat);
 
   const statusVariant =
-    booking.status === 'completed'
+    etat === 'completed'
       ? 'success'
-      : booking.status === 'cancelled'
+      : etat === 'cancelled'
       ? 'danger'
       : 'brand';
 
@@ -128,7 +138,7 @@ export function BookingDetailScreen({ route }: Props) {
     <Screen scroll>
       <View style={styles.header}>
         <Text style={styles.title}>{booking.service_name}</Text>
-        <Badge label={libelleStatut(booking.status)} variant={statusVariant} />
+        <Badge label={libelleStatut(etat)} variant={statusVariant} />
       </View>
 
       {booking.contract_covered ? (
@@ -174,7 +184,7 @@ export function BookingDetailScreen({ route }: Props) {
         que échouer. Ce n'est pas deviner la règle du serveur, c'est ne pas proposer un geste dont
         on sait qu'il n'a pas d'objet.
       */}
-      {!isCompleted && booking.status !== 'cancelled' && booking.status !== 'pending' && (
+      {!isCompleted && etat !== 'cancelled' && etat !== 'pending' && (
         <View style={styles.card} testID="carte-code-de-fin">
           <Text style={styles.codeTitre}>Code de fin</Text>
 
@@ -212,7 +222,7 @@ export function BookingDetailScreen({ route }: Props) {
       )}
 
       <View style={styles.actions}>
-        {['pending', 'confirmed'].includes(booking.status) && booking.total_price != null && (
+        {['pending', 'confirmed'].includes(etat) && booking.total_price != null && (
           <Button
             label={`Payer ${booking.total_price} €`}
             onPress={() => navigation.navigate('PaymentCheckout', { bookingId })}

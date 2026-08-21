@@ -55,7 +55,7 @@ class FleetV2ControllerCoverageBatch7Test extends TestCase
 
     public function test_admin_list_vehicles_filters_by_status_and_type(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $this->makeVehicle('B7-LV-001', 'van', FleetVehicle::STATUS_AVAILABLE);
         $this->makeVehicle('B7-LV-002', 'truck', FleetVehicle::STATUS_MAINTENANCE);
 
@@ -68,7 +68,7 @@ class FleetV2ControllerCoverageBatch7Test extends TestCase
 
     public function test_admin_create_equipment(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $resp = $this->postJson('/api/admin/fleet-v2/equipment', [
@@ -87,7 +87,7 @@ class FleetV2ControllerCoverageBatch7Test extends TestCase
 
     public function test_admin_create_equipment_validates_type(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
         $this->postJson('/api/admin/fleet-v2/equipment', [
             'name' => 'Bad', 'equipment_type' => 'nonexistent',
@@ -96,7 +96,7 @@ class FleetV2ControllerCoverageBatch7Test extends TestCase
 
     public function test_admin_list_equipment_filters_by_status_and_category(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $this->makeEquipment('Alpha Mop', 'tool', 'cleaning', FleetEquipment::STATUS_AVAILABLE);
         $this->makeEquipment('Beta Roller', 'tool', 'painting', FleetEquipment::STATUS_AVAILABLE);
 
@@ -109,7 +109,7 @@ class FleetV2ControllerCoverageBatch7Test extends TestCase
 
     public function test_admin_assign_equipment(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $provider = User::factory()->create();
         $eq = $this->makeEquipment('Assignable Tool');
 
@@ -125,7 +125,7 @@ class FleetV2ControllerCoverageBatch7Test extends TestCase
 
     public function test_admin_assign_equipment_validates_missing_provider(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $eq = $this->makeEquipment('Tool No Provider');
 
         Sanctum::actingAs($admin);
@@ -135,7 +135,7 @@ class FleetV2ControllerCoverageBatch7Test extends TestCase
 
     public function test_admin_list_assignments_filters_by_provider(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $p1 = User::factory()->create();
         $p2 = User::factory()->create();
         $v1 = $this->makeVehicle('B7-AS-001');
@@ -152,7 +152,7 @@ class FleetV2ControllerCoverageBatch7Test extends TestCase
 
     public function test_admin_list_maintenance_logs(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $v = $this->makeVehicle('B7-ML-001');
         app(FleetService::class)->logMaintenance($v, null, 'preventive', null, 12000, 'Oil', $admin, null);
 
@@ -164,7 +164,7 @@ class FleetV2ControllerCoverageBatch7Test extends TestCase
 
     public function test_admin_list_certifications_filters(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         FleetCertification::query()->create([
             'subject_type' => 'vehicle', 'subject_id' => 1,
             'certification_type' => 'insurance',

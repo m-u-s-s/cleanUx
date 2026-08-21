@@ -29,7 +29,7 @@ class WebhookApiTest extends TestCase
 
     public function test_admin_create_endpoint_persists_with_subscriptions(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $response = $this->postJson('/api/admin/webhooks-v2/endpoints', [
@@ -48,7 +48,7 @@ class WebhookApiTest extends TestCase
 
     public function test_admin_create_endpoint_rejects_unknown_event_code(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $response = $this->postJson('/api/admin/webhooks-v2/endpoints', [
@@ -60,7 +60,7 @@ class WebhookApiTest extends TestCase
 
     public function test_admin_rotate_secret_returns_new_value(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $ep = WebhookEndpoint::query()->create([
             'code' => 'whe_r', 'name' => 'R', 'url' => 'https://r.test',
             'secret' => 'whsec_original', 'is_active' => true,
@@ -75,7 +75,7 @@ class WebhookApiTest extends TestCase
 
     public function test_admin_test_endpoint_emits_test_event_and_creates_delivery(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $ep = WebhookEndpoint::query()->create([
             'code' => 'whe_test', 'name' => 'Test', 'url' => 'https://test.test/hook',
             'secret' => 'whsec_test', 'is_active' => true,
@@ -90,7 +90,7 @@ class WebhookApiTest extends TestCase
 
     public function test_admin_replay_delivery_resets_status(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $ep = WebhookEndpoint::query()->create([
             'code' => 'whe_rp', 'name' => 'RP', 'url' => 'https://rp.test',
             'secret' => 'whsec_rp', 'is_active' => true,
@@ -114,7 +114,7 @@ class WebhookApiTest extends TestCase
 
     public function test_admin_list_endpoints_returns_data(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         WebhookEndpoint::query()->create([
             'code' => 'whe_l1', 'name' => 'L1', 'url' => 'https://l1.test',
             'secret' => 'whsec_l1', 'is_active' => true,
@@ -128,7 +128,7 @@ class WebhookApiTest extends TestCase
 
     public function test_admin_update_endpoint_toggles_active(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $ep = WebhookEndpoint::query()->create([
             'code' => 'whe_u', 'name' => 'U', 'url' => 'https://u.test',
             'secret' => 'whsec_u', 'is_active' => true,
@@ -151,7 +151,7 @@ class WebhookApiTest extends TestCase
 
     public function test_old_secret_rejected_after_rotation(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $ep = WebhookEndpoint::query()->create([
             'code' => 'whe_rot2', 'name' => 'RotTest', 'url' => 'https://rot.test',
             'secret' => 'whsec_old_secret_value', 'is_active' => true,

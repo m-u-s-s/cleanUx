@@ -67,7 +67,7 @@ class KybV2ControllerCoverageBatch10Test extends TestCase
     public function test_admin_can_show_any_entity_via_bypass(): void
     {
         $owner = User::factory()->create();
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $entity = $this->makeEntity($owner);
 
         Sanctum::actingAs($admin);
@@ -103,7 +103,7 @@ class KybV2ControllerCoverageBatch10Test extends TestCase
 
     public function test_admin_list_entities_with_filters(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $owner = User::factory()->create();
         $entity = $this->makeEntity($owner);
 
@@ -115,7 +115,7 @@ class KybV2ControllerCoverageBatch10Test extends TestCase
 
     public function test_admin_list_documents_with_status_filter(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $owner = User::factory()->create();
         $entity = $this->makeEntity($owner);
 
@@ -134,7 +134,7 @@ class KybV2ControllerCoverageBatch10Test extends TestCase
 
     public function test_admin_review_document_approve(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $owner = User::factory()->create();
         $entity = $this->makeEntity($owner);
 
@@ -154,7 +154,7 @@ class KybV2ControllerCoverageBatch10Test extends TestCase
 
     public function test_admin_review_document_reject_requires_reason(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $owner = User::factory()->create();
         $entity = $this->makeEntity($owner);
 

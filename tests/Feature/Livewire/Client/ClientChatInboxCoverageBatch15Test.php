@@ -148,7 +148,7 @@ class ClientChatInboxCoverageBatch15Test extends TestCase
 
         Livewire::actingAs($this->client)
             ->test(ClientChatInbox::class)
-            ->set('activeThreadId', $thread->id)
+            ->call('selectThread', $thread->id)
             ->set('body', '   ')
             ->call('send')
             ->assertNotDispatched('toast');
@@ -162,7 +162,7 @@ class ClientChatInboxCoverageBatch15Test extends TestCase
 
         Livewire::actingAs($this->client)
             ->test(ClientChatInbox::class)
-            ->set('activeThreadId', $thread->id)
+            ->call('selectThread', $thread->id)
             ->set('body', 'Bonjour, on se voit demain a 9h')
             ->call('send')
             ->assertSet('body', '')
@@ -181,7 +181,7 @@ class ClientChatInboxCoverageBatch15Test extends TestCase
 
         Livewire::actingAs($this->client)
             ->test(ClientChatInbox::class)
-            ->set('activeThreadId', $thread->id)
+            ->call('selectThread', $thread->id)
             ->set('body', 'Mon email est jean@test.com')
             ->call('send')
             ->assertSet('body', '')
@@ -197,7 +197,7 @@ class ClientChatInboxCoverageBatch15Test extends TestCase
 
         Livewire::actingAs($this->client)
             ->test(ClientChatInbox::class)
-            ->set('activeThreadId', $thread->id)
+            ->call('selectThread', $thread->id)
             ->set('body', 'tu es un idiot')
             ->call('send')
             ->assertDispatched('toast');
@@ -215,7 +215,7 @@ class ClientChatInboxCoverageBatch15Test extends TestCase
 
         Livewire::actingAs($this->client)
             ->test(ClientChatInbox::class)
-            ->set('activeThreadId', $thread->id)
+            ->call('selectThread', $thread->id)
             ->set('body', 'Un message apres archive')
             ->call('send')
             ->assertDispatched('toast');
@@ -225,12 +225,16 @@ class ClientChatInboxCoverageBatch15Test extends TestCase
 
     public function test_send_missing_thread_is_noop(): void
     {
+        // `activeThreadId` est verrouillée depuis la fermeture de l'IDOR de
+        // lecture : un fil auquel on ne participe pas ne peut plus être posé
+        // du tout. L'aiguillage le refuse et prévient — d'où le toast attendu.
         Livewire::actingAs($this->client)
             ->test(ClientChatInbox::class)
-            ->set('activeThreadId', 999999)
+            ->call('selectThread', 999999)
+            ->assertSet('activeThreadId', null)
+            ->assertDispatched('toast')
             ->set('body', 'Bonjour')
-            ->call('send')
-            ->assertNotDispatched('toast');
+            ->call('send');
 
         $this->assertSame(0, ChatMessage::query()->count());
     }

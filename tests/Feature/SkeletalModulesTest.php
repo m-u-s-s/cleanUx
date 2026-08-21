@@ -34,7 +34,7 @@ class SkeletalModulesTest extends TestCase
 
     public function test_marketing_campaigns_list(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $this->getJson('/api/admin/marketing/campaigns')->assertOk()
@@ -43,7 +43,7 @@ class SkeletalModulesTest extends TestCase
 
     public function test_marketing_campaigns_create(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $this->postJson('/api/admin/marketing/campaigns', [
@@ -55,7 +55,7 @@ class SkeletalModulesTest extends TestCase
 
     public function test_marketing_campaigns_update(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $campaign = MarketingCampaign::create([
@@ -73,7 +73,7 @@ class SkeletalModulesTest extends TestCase
 
     public function test_marketing_campaigns_delete(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $campaign = MarketingCampaign::create([
@@ -92,7 +92,7 @@ class SkeletalModulesTest extends TestCase
 
     public function test_marketing_segments_list(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $this->getJson('/api/admin/marketing/segments')->assertOk()
@@ -101,7 +101,7 @@ class SkeletalModulesTest extends TestCase
 
     public function test_marketing_segments_create(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $this->postJson('/api/admin/marketing/segments', [
@@ -172,7 +172,7 @@ class SkeletalModulesTest extends TestCase
 
     public function test_accounting_period_validate_endpoint(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $period = AccountingPeriod::create([
@@ -288,7 +288,7 @@ class SkeletalModulesTest extends TestCase
 
     public function test_insurance_admin_claims_list(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $this->getJson('/api/admin/insurance-v2/claims')
@@ -364,7 +364,7 @@ class SkeletalModulesTest extends TestCase
 
     public function test_admin_webhooks_endpoints_list(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $this->getJson('/api/admin/webhooks-v2/endpoints')->assertOk();

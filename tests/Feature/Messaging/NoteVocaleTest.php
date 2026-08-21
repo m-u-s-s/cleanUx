@@ -37,7 +37,11 @@ class NoteVocaleTest extends TestCase
     /** @return array{0: User, 1: Channel} */
     private function membreEtCanal(): array
     {
-        $organisation = OrganizationAccount::factory()->create();
+        // Un canal d'équipe prestataire appartient à une organisation PRESTATAIRE.
+        // La fabrique crée une organisation cliente par défaut : le test appelait
+        // donc l'API société prestataire avec une société cliente, ce que
+        // `org.type:provider` refuse désormais — à juste titre.
+        $organisation = OrganizationAccount::factory()->providerCompany()->create();
 
         $user = User::factory()->create([
             'organization_account_id' => $organisation->id,

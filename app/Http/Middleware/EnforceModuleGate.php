@@ -39,7 +39,8 @@ class EnforceModuleGate
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $gate = $this->gateDeLaRoute($request->route()?->getName());
+        $gate = $this->gateDeLaRoute($request->route()?->getName())
+            ?? $this->gateDeLUrlDApi($request->path());
 
         if ($gate !== null) {
             abort_unless(Gate::allows($gate), 403);
@@ -69,6 +70,125 @@ class EnforceModuleGate
             $gate = $module['gate'] ?? null;
 
             if (is_string($gate) && $gate !== '') {
+                return $gate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * LE REPLI DE LA SURFACE API — et pourquoi il ne contredit pas la règle ci-dessus.
+     *
+     * Sur le web, on compare le NOM de route, parce que le catalogue en emploie un. Côté API,
+     * ce nom n'existe pas : sur les cent dix-neuf routes `api/admin/*`, **une seule** est
+     * nommée. Comparer sur le nom y revient donc à ne rien garder du tout — et c'est
+     * exactement ce qui se passait : un administrateur limité à `manage-quality` recevait 403
+     * sur `/admin/accounting-v2` et 200 sur `/api/admin/accounting-v2/entries`, la même
+     * comptabilité par l'autre porte.
+     *
+     * On rattache donc la route à son module par le SEGMENT qui suit `api/admin/`, en cherchant
+     * le module d'administration dont la route commence par `admin.<segment>`. La source de
+     * vérité reste `config/modules.php` : rien n'est déclaré deux fois, c'est la CLÉ de lecture
+     * qui s'adapte à une surface qui n'a pas de noms.
+     *
+     * Un segment sans module correspondant ne ferme rien — comme un module sans clé `gate`.
+     */
+    private function gateDeLUrlDApi(string $chemin): ?string
+    {
+        if (! str_starts_with($chemin, 'api/admin/')) {
+            return null;
+        }
+
+        $segments = explode('/', $chemin);
+        $segment = $segments[2] ?? '';
+
+        if ($segment === '') {
+            return null;
+        }
+
+        /*
+         * LA CONSOLE GÉNÉRIQUE N'EST PAS UN MODULE, elle les sert TOUS.
+         *
+         * `api/admin/console/{ressource}` mène aux quatre-vingt-onze ressources du moteur —
+         * comptabilité, finances, utilisateurs, litiges. S'arrêter au segment « console »
+         * ne trouvait aucun module correspondant, donc aucune capacité à vérifier : un
+         * administrateur limité à `manage-quality` lisait la comptabilité depuis le mobile,
+         * alors que le web la lui refusait.
+         *
+         * La ressource porte la même clé que son module dans `config/admin_console.php` —
+         * lequel connaît les routes WEB du module. On remonte donc jusqu'à la capacité que
+         * `config/modules.php` déclare pour ces routes : la règle reste écrite une seule
+         * fois, c'est seulement le chemin pour l'atteindre qui est plus long.
+         */
+        if ($segment === 'console') {
+            $cle = ($segments[3] ?? '') === 'reports'
+                ? ($segments[4] ?? '')
+                : ($segments[3] ?? '');
+
+            return $cle === '' ? null : $this->gateDuModuleDeConsole($cle);
+        }
+
+        foreach ((array) config('modules.catalogue', []) as $module) {
+            if (($module['context'] ?? null) !== 'admin') {
+                continue;
+            }
+
+            $route = (string) ($module['route'] ?? '');
+
+            if ($route === '' || ! str_starts_with($route, 'admin.'.$segment)) {
+                continue;
+            }
+
+            $gate = $module['gate'] ?? null;
+
+            if (is_string($gate) && $gate !== '') {
+                return $gate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * La capacité du module servi par une ressource de la console générique.
+     *
+     * `config/admin_console.php` fait le lien entre la clé de ressource et les routes WEB
+     * du module ; `config/modules.php` porte la capacité de ces routes. On traverse les
+     * deux plutôt que de recopier la capacité dans le premier : deux déclarations
+     * divergeraient, et c'est toujours la plus permissive qui déciderait.
+     */
+    private function gateDuModuleDeConsole(string $cleDeRessource): ?string
+    {
+        $routesWeb = [];
+
+        foreach ((array) config('admin_console.modules', []) as $module) {
+            if (($module['key'] ?? null) === $cleDeRessource) {
+                $routesWeb = (array) ($module['routes'] ?? []);
+                break;
+            }
+        }
+
+        if ($routesWeb === []) {
+            return null;
+        }
+
+        $routeur = app('router')->getRoutes();
+
+        foreach ((array) config('modules.catalogue', []) as $module) {
+            if (($module['context'] ?? null) !== 'admin') {
+                continue;
+            }
+
+            $gate = $module['gate'] ?? null;
+
+            if (! is_string($gate) || $gate === '') {
+                continue;
+            }
+
+            $uri = $routeur->getByName((string) ($module['route'] ?? ''))?->uri();
+
+            if ($uri !== null && in_array($uri, $routesWeb, true)) {
                 return $gate;
             }
         }

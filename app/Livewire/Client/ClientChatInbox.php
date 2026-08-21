@@ -10,10 +10,12 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class ClientChatInbox extends Component
 {
+    #[Locked]
     public ?int $activeThreadId = null;
 
     public string $body = '';
@@ -41,14 +43,28 @@ class ClientChatInbox extends Component
         return $listeners;
     }
 
-    public function selectThread(int $threadId): void
+    /**
+     * Participe-t-il encore à ce fil ?
+     *
+     * Posée à l'aiguillage ET à chaque lecture : quitter un fil doit fermer
+     * l'accès aux messages, pas seulement empêcher d'en ouvrir un nouveau.
+     */
+    private function participeAuFil(?int $threadId): bool
     {
-        $belongsToMe = ChatParticipant::query()
+        if (! $threadId) {
+            return false;
+        }
+
+        return ChatParticipant::query()
             ->where('thread_id', $threadId)
             ->where('user_id', Auth::id())
             ->whereNull('left_at')
             ->exists();
-        if (! $belongsToMe) {
+    }
+
+    public function selectThread(int $threadId): void
+    {
+        if (! $this->participeAuFil($threadId)) {
             $this->dispatch('toast', 'Vous n\'avez pas accès à ce thread.', 'error');
 
             return;
@@ -125,7 +141,7 @@ class ClientChatInbox extends Component
     #[Computed]
     public function activeMessages()
     {
-        if (! $this->activeThreadId) {
+        if (! $this->participeAuFil($this->activeThreadId)) {
             return collect();
         }
 
@@ -140,7 +156,9 @@ class ClientChatInbox extends Component
     #[Computed]
     public function activeThread(): ?ChatThread
     {
-        return $this->activeThreadId ? ChatThread::find($this->activeThreadId) : null;
+        return $this->participeAuFil($this->activeThreadId)
+            ? ChatThread::find($this->activeThreadId)
+            : null;
     }
 
     public function render(): View

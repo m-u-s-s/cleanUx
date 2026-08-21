@@ -9,6 +9,7 @@ use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
@@ -144,6 +145,60 @@ class RecurringSeriesManagementTest extends TestCase
                 ],
             ]);
         })->values();
+
+        return [$client, $employee, $records, $admin];
+    }
+
+    /**
+     * L'identifiant de rendez-vous du trait de série est une propriété publique :
+     * le navigateur peut la retourner après le montage, et la lecture ne
+     * revérifiait pas le droit de regard accordé au montage.
+     *
+     * Les deux témoins positifs comptent autant que le refus — le trait est
+     * partagé par l'écran client ET l'écran admin, et la correction ne doit
+     * fermer la porte à aucun des deux.
+     */
+    public function test_temoin_le_client_proprietaire_voit_sa_serie(): void
+    {
+        [$client, , $records] = $this->createSeries();
+
+        $this->actingAs($client);
+
+        Livewire::test(ClientEditRecurringBooking::class, ['rendezVous' => $records[1]])
+            ->assertOk()
+            ->assertSet('rendezVousId', $records[1]->id);
+    }
+
+    public function test_temoin_l_admin_voit_la_serie(): void
+    {
+        [, , $records, $admin] = $this->createSeriesAvecAdmin();
+
+        $this->actingAs($admin);
+
+        Livewire::test(AdminEditRecurringBooking::class, ['rendezVous' => $records[1]])
+            ->assertOk()
+            ->assertSet('rendezVousId', $records[1]->id);
+    }
+
+    public function test_l_identifiant_de_rendez_vous_est_verrouille(): void
+    {
+        [$client, , $records] = $this->createSeries();
+        // Le verrou lève avant toute requête : l'identifiant visé n'a pas
+        // besoin d'exister pour prouver que le navigateur ne peut pas le poser.
+        $cibleDAutrui = $records[0]->id + 9999;
+
+        $this->actingAs($client);
+
+        $this->expectException(CannotUpdateLockedPropertyException::class);
+
+        Livewire::test(ClientEditRecurringBooking::class, ['rendezVous' => $records[1]])
+            ->set('rendezVousId', $cibleDAutrui);
+    }
+
+    /** @return array{0: User, 1: User, 2: mixed, 3: User} */
+    protected function createSeriesAvecAdmin(): array
+    {
+        [$client, $employee, $records, $admin] = $this->createSeries(true);
 
         return [$client, $employee, $records, $admin];
     }

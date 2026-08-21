@@ -45,7 +45,7 @@ class ReportsTest extends TestCase
 
     private function actingAsAdmin(): void
     {
-        Sanctum::actingAs(User::factory()->admin()->create(), ['*']);
+        Sanctum::actingAs(User::factory()->adminComplet()->create(), ['*']);
     }
 
     public function test_tout_module_declare_report_a_bien_un_rapport(): void

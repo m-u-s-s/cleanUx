@@ -14,6 +14,7 @@ import type { OnSiteExtra, OnSiteMedia, OnSiteTimelineEntry } from '@/booking/on
 import { MissionClockBar, useMissionClock, AnnulerLaMissionSheet } from '@brio/shared';
 import { MissionQuoteRevisionCard } from '@/screens/components/MissionQuoteRevisionCard';
 import { MissionTodoCard } from '@/screens/components/MissionTodoCard';
+import { formatHeureDuFil, formatHeureDuFilCompacte } from '@/lib/format';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
@@ -347,21 +348,20 @@ function LigneDeFil({ entree }: { entree: OnSiteTimelineEntry }) {
 
   return (
     <View style={styles.ligne}>
-      <Text style={styles.ligneHeure}>{entree.at ? heure(entree.at) : '—'}</Text>
+      <Text style={styles.ligneHeure}>{formatHeureDuFilCompacte(entree.at)}</Text>
       <Text style={styles.ligneTexte}>{entree.label}</Text>
     </View>
   );
 }
 
-/** Une heure locale, sans la date : le fil se lit dans la journée où il se déroule. */
+/**
+ * L'heure d'un repère du fil, datée dès qu'elle sort du jour même.
+ *
+ * La règle vit dans `@brio/shared` : l'application prestataire affiche le même fil, et le défaut
+ * qu'on corrige ici y serait réapparu à l'identique.
+ */
 function heure(iso: string): string {
-  const d = new Date(iso);
-
-  if (Number.isNaN(d.getTime())) {
-    return '—';
-  }
-
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return formatHeureDuFil(iso);
 }
 
 /**

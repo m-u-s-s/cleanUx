@@ -4,12 +4,44 @@ import { useChannel } from '@/realtime';
 import { useCallback } from 'react';
 import type { ChatThread, ChatMessage, ChatMessageBroadcast } from './types';
 
+/**
+ * CE QUE LE SERVEUR ENVOIE VRAIMENT POUR UN FIL — et qui n'est pas `ChatThread`.
+ *
+ * `listMyThreads` rend les modèles Eloquent bruts : `last_message_preview`, `message_count`,
+ * `title`… mais NI `participants` (la relation n'est pas chargée), NI `unread_count`, NI
+ * `last_message`. L'écran, lui, lisait `item.participants[0]` sans garde : la messagerie tombait
+ * sur son écran d'erreur au premier fil de la liste — « Cannot convert undefined value to object ».
+ *
+ * Cette traduction est le FILET, pas la correction : le serveur doit renvoyer les participants,
+ * c'est lui qui sait qui parle à qui. Mais un champ absent ne doit plus jamais faire tomber
+ * l'écran — c'est la troisième fois dans ce dépôt qu'un contrat non tenu se paie d'une page
+ * blanche.
+ */
+type FilDeLApi = Partial<ChatThread> & {
+  last_message_preview?: string | null;
+  participants?: ChatThread['participants'] | null;
+};
+
+function versFil(brut: FilDeLApi): ChatThread {
+  return {
+    id: brut.id as number,
+    booking_id: brut.booking_id,
+    last_message: brut.last_message ?? brut.last_message_preview ?? undefined,
+    last_message_at: brut.last_message_at,
+    unread_count: brut.unread_count ?? 0,
+    participants: Array.isArray(brut.participants) ? brut.participants : [],
+    title: brut.title,
+  };
+}
+
 export function useChatThreads() {
   return useQuery<ChatThread[]>({
     queryKey: ['chat', 'threads'],
     queryFn: async () => {
       const res = await apiClient.get('/v2/chat/threads');
-      return res.data.data ?? res.data;
+      const brut = res.data?.data ?? res.data ?? [];
+
+      return (Array.isArray(brut) ? brut : []).map(versFil);
     },
     /*
      * LE FILET, comme sur le suivi d'intervention.

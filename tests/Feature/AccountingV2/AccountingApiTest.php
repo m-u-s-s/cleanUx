@@ -33,7 +33,7 @@ class AccountingApiTest extends TestCase
 
     public function test_post_entries_via_api(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $response = $this->postJson('/api/admin/accounting-v2/entries', [
@@ -51,7 +51,7 @@ class AccountingApiTest extends TestCase
 
     public function test_post_entries_rejects_unbalanced(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $this->postJson('/api/admin/accounting-v2/entries', [
@@ -64,7 +64,7 @@ class AccountingApiTest extends TestCase
 
     public function test_list_entries_with_account_filter(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         app(AccountingService::class)->post([
             ['account_code' => '411000', 'debit_cents' => 100, 'label' => 'A'],
             ['account_code' => '701100', 'credit_cents' => 100, 'label' => 'B'],
@@ -78,7 +78,7 @@ class AccountingApiTest extends TestCase
 
     public function test_account_balance_returns_signed_balance(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         app(AccountingService::class)->post([
             ['account_code' => '411000', 'debit_cents' => 7500, 'label' => 'A'],
             ['account_code' => '701100', 'credit_cents' => 7500, 'label' => 'B'],
@@ -92,7 +92,7 @@ class AccountingApiTest extends TestCase
 
     public function test_close_period_via_api(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         app(AccountingService::class)->post([
             ['account_code' => '411000', 'debit_cents' => 100, 'label' => 'A'],
             ['account_code' => '701100', 'credit_cents' => 100, 'label' => 'B'],
@@ -108,7 +108,7 @@ class AccountingApiTest extends TestCase
 
     public function test_generate_export_returns_ready_status(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         app(AccountingService::class)->post([
             ['account_code' => '411000', 'debit_cents' => 100, 'label' => 'A'],
             ['account_code' => '701100', 'credit_cents' => 100, 'label' => 'B'],
@@ -127,7 +127,7 @@ class AccountingApiTest extends TestCase
 
     public function test_generate_export_validates_format(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
         $this->postJson('/api/admin/accounting-v2/exports', [
             'format' => 'invalid',

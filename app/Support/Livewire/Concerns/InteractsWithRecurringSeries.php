@@ -8,9 +8,11 @@ use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 
 trait InteractsWithRecurringSeries
 {
+    #[Locked]
     public int $rendezVousId;
 
     public string $scope = 'occurrence';
@@ -38,9 +40,16 @@ trait InteractsWithRecurringSeries
     #[Computed]
     public function currentRendezVous(): Booking
     {
-        return Booking::query()
+        $rendezVous = Booking::query()
             ->with(['employe', 'serviceZone', 'serviceCatalog', 'client'])
             ->findOrFail($this->rendezVousId);
+
+        // Le droit de regard accordé au montage se repose ici : le trait sert
+        // l'écran client ET l'écran admin, et `RendezVousPolicy::view` répond
+        // pour les deux. Une seule règle, posée à chaque lecture.
+        Gate::authorize('view', $rendezVous);
+
+        return $rendezVous;
     }
 
     #[Computed]

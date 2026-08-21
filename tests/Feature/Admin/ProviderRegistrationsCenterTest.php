@@ -128,7 +128,7 @@ class ProviderRegistrationsCenterTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->adminComplet()->create();
+        return User::factory()->admin()->create();
     }
 
     private function selfRegistered(string $name, string $email): ProviderProfile

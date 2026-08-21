@@ -1,6 +1,11 @@
 <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
     <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div>
+        {{--
+            `min-w-0` : le bloc voisin porte `lg:min-w-[520px]`, et un enfant de flex ne
+            rétrécit jamais sous son contenu sans cela. Le bandeau sortait de 91 px à droite
+            sur grand écran — mesuré à 1440 px, invisible à 390 où la colonne s'empile.
+        --}}
+        <div class="min-w-0">
             <div class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                 <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
                 Go-live readiness

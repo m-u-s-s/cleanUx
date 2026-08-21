@@ -2,6 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Enums\CustomerType;
+use App\Enums\OrganizationType;
+use App\Models\CustomerProfile;
+use App\Models\OrganizationAccount;
+use App\Models\OrganizationMember;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -137,6 +142,57 @@ class UserFactory extends Factory
             'plan_type' => 'premium',
             'plan_status' => 'active',
         ]);
+    }
+
+    /**
+     * UNE SOCIÉTÉ CLIENTE COMPLÈTE — et « complète » n'est pas un luxe.
+     *
+     * Quatre choses doivent exister ensemble pour qu'un espace société s'ouvre, et
+     * chaque test les rebâtissait à la main, souvent à moitié :
+     *
+     *   1. l'organisation, de type `client_company` ;
+     *   2. le RATTACHEMENT de l'utilisateur à cette organisation — dans les DEUX
+     *      colonnes, parce que `organizationContextId()` lit l'une puis l'autre ;
+     *   3. le profil client `company`, que `isClientCompany()` consulte en premier ;
+     *   4. l'adhésion ACTIVE, seule chose que `EnforcesActiveOrgMembership` regarde.
+     *
+     * Il en manquait toujours une : d'où des 403 que l'on prenait pour des défauts du
+     * code alors qu'ils mesuraient une fixture incomplète.
+     *
+     * `forceFill` ET NON un tableau passé à `create()` : `organization_account_id` et
+     * `current_organization_id` ne sont pas assignables en masse, et Eloquent les
+     * écarte SANS RIEN DIRE — le compte paraît rattaché, il ne l'est pas.
+     *
+     * Le rôle d'organisation est `owner`, pas celui que la fabrique de membre tire au
+     * hasard : un dirigeant a les permissions financières que les écrans de facturation
+     * exigent. Un test qui veut un rôle restreint passe le sien à `organisationMembre`.
+     */
+    public function societeCliente(?OrganizationAccount $organisation = null, string $roleOrganisation = 'owner'): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'client',
+        ])->afterCreating(function (User $utilisateur) use ($organisation, $roleOrganisation) {
+            $org = $organisation ?? OrganizationAccount::factory()->create([
+                'type' => OrganizationType::CLIENT_COMPANY->value,
+            ]);
+
+            $utilisateur->forceFill([
+                'organization_account_id' => $org->id,
+                'current_organization_id' => $org->id,
+            ])->save();
+
+            CustomerProfile::updateOrCreate(
+                ['user_id' => $utilisateur->id],
+                ['customer_type' => CustomerType::COMPANY->value],
+            );
+
+            OrganizationMember::updateOrCreate(
+                ['organization_account_id' => $org->id, 'user_id' => $utilisateur->id],
+                ['role' => $roleOrganisation, 'status' => 'active', 'joined_at' => now()],
+            );
+
+            $utilisateur->refresh();
+        });
     }
 
     public function withPersonalTeam(?callable $callback = null): static

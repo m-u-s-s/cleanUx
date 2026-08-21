@@ -40,9 +40,13 @@ describe('ProfileScreen', () => {
     expect(render(<ProfileScreen />).toJSON()).not.toBeNull();
   });
 
-  it('shows profile title', () => {
+  /*
+   * Le titre était « Profile », en anglais, dans une application entièrement française — relevé à
+   * l'écran. Le test épinglait le mot anglais : il gardait donc le défaut en place.
+   */
+  it('affiche le titre en français', () => {
     const { getByText } = render(<ProfileScreen />);
-    expect(getByText('Profile')).toBeTruthy();
+    expect(getByText('Mon profil')).toBeTruthy();
   });
 
   it('shows logout button', () => {

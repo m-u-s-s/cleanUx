@@ -9,7 +9,7 @@
     @foreach ($groupes as $groupe)
         <section class="mt-8" wire:key="categorie-{{ $groupe['category'] }}">
             <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                {{ $groupe['label'] }}
+                {{ __($groupe['label']) }}
             </h2>
 
             <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -31,7 +31,7 @@
                             @endif
                         </span>
                         <span class="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                            {{ $module['label'] }}
+                            {{ __($module['label']) }}
                         </span>
                     </a>
                 @endforeach

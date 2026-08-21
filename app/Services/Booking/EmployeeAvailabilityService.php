@@ -200,12 +200,11 @@ class EmployeeAvailabilityService
     private function providerTypeValues(string $providerType): array
     {
         return match ($providerType) {
-            'independent' => [ProviderType::INDEPENDENT->value, ProviderType::INDIVIDUAL->value],
-            'company' => [ProviderType::COMPANY_WORKER->value, ProviderType::COMPANY->value],
-            default => [
-                ProviderType::INDEPENDENT->value, ProviderType::INDIVIDUAL->value,
-                ProviderType::COMPANY_WORKER->value, ProviderType::COMPANY->value,
-            ],
+            // La liste vient de l'énumération : elle seule sait quelles valeurs désignent
+            // le même camp, et la recopier ici l'aurait laissée diverger.
+            'independent' => ProviderType::valeursIndependantes(),
+            'company' => ProviderType::valeursDeSociete(),
+            default => ProviderType::toutesLesValeurs(),
         };
     }
 }

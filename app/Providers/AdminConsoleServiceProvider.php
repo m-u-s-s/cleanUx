@@ -19,6 +19,7 @@ use App\Admin\Reports\ToolsReport;
 use App\Admin\Resources\AccountingEntryResource;
 use App\Admin\Resources\AddressLookupResource;
 use App\Admin\Resources\AnalyticsEventResource;
+use App\Admin\Resources\AnalyticsExplorationResource;
 use App\Admin\Resources\ApiTokenUsageResource;
 use App\Admin\Resources\ApiTokenV2Resource;
 use App\Admin\Resources\AuditEventResource;
@@ -161,6 +162,7 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('nps', NpsResource::class);
             $registry->register('feedbacks', FeedbackResource::class);
             $registry->register('analytics-v2', AnalyticsEventResource::class);
+            $registry->register('analytics-exploration', AnalyticsExplorationResource::class);
             $registry->register('realtime', BroadcastEventResource::class);
             $registry->register('audit', AuditEventResource::class);
             $registry->register('translations', TranslationResource::class);

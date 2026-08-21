@@ -13,5 +13,7 @@ export {
   formatDateHeure,
   formatAdresse,
   formatDelai,
+  formatHeureDuFil,
+  formatHeureDuFilCompacte,
   messageDErreur,
 } from '@brio/shared/format';

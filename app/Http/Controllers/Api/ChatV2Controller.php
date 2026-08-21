@@ -33,12 +33,75 @@ class ChatV2Controller extends Controller
         $user = $request->user();
         $rows = ChatThread::query()
             ->forUser($user->id)
+            /*
+             * LES PARTICIPANTS SONT CE QUE L'ÉCRAN AFFICHE, et ils ne partaient pas.
+             *
+             * Cette réponse rendait les modèles bruts : ni `participants` (relation non chargée),
+             * ni `unread_count`, ni `last_message`. L'application cliente lisait pourtant
+             * `item.participants[0]` sans garde — la messagerie tombait sur son écran d'erreur au
+             * premier fil de la liste. On charge donc la relation, et on donne à chaque champ le
+             * nom que l'écran attend.
+             *
+             * `with` et non une requête par ligne : sans cela, une liste de cinquante fils
+             * déclencherait cent une requêtes.
+             */
+            ->with(['participants.user:id,name'])
             ->when($request->boolean('archived'), fn ($q) => $q->where('is_archived', true), fn ($q) => $q->where('is_archived', false))
             ->orderByDesc('last_message_at')
             ->limit((int) $request->integer('limit', 50))
             ->get();
 
-        return response()->json(['data' => $rows]);
+        return response()->json([
+            'data' => $rows->map(fn (ChatThread $fil) => $this->serialiserLeFil($fil, (int) $user->id))->all(),
+        ]);
+    }
+
+    /**
+     * La forme d'un fil telle que les deux applications la lisent.
+     *
+     * `last_message_preview` est le nom de la colonne ; `last_message` celui du champ affiché. Les
+     * deux sont servis : renommer sans prévenir casserait tout appelant existant, et l'ancien nom
+     * ne coûte rien.
+     */
+    /** @return array<string, mixed> */
+    private function serialiserLeFil(ChatThread $fil, int $utilisateur): array
+    {
+        $participants = $fil->participants
+            ->filter(fn ($p) => $p->user !== null)
+            ->map(fn ($p) => [
+                'id' => (int) $p->user->id,
+                'name' => (string) $p->user->name,
+                'role' => (string) $p->role,
+            ])
+            ->values()
+            ->all();
+
+        $moi = $fil->participants->firstWhere('user_id', $utilisateur);
+
+        return array_merge($fil->toArray(), [
+            'participants' => $participants,
+            'last_message' => $fil->last_message_preview,
+            'unread_count' => $this->messagesNonLus($fil, $moi),
+        ]);
+    }
+
+    /**
+     * Ce que la personne n'a pas encore lu dans ce fil.
+     *
+     * Sans date de dernière lecture, tout est non lu : un fil qu'on n'a jamais ouvert ne peut pas
+     * être considéré comme lu. Les messages qu'on a soi-même envoyés ne comptent pas — personne
+     * n'a de message non lu de sa propre main.
+     */
+    private function messagesNonLus(ChatThread $fil, ?ChatParticipant $moi): int
+    {
+        // `sender_user_id` — mesuré sur la table, pas deviné : `chat_messages` n'a pas de `sender_id`.
+        $requete = $fil->messages()->where('sender_user_id', '!=', $moi?->user_id);
+
+        if ($moi?->last_read_at !== null) {
+            $requete->where('created_at', '>', $moi->last_read_at);
+        }
+
+        return (int) $requete->count();
     }
 
     public function createThread(Request $request): JsonResponse

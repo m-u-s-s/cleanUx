@@ -49,6 +49,13 @@ return [
         ['key' => 'alerts', 'title' => 'Alertes', 'group' => 'pilotage', 'icon' => 'warning-outline', 'coverage' => 'report', 'routes' => ['admin/alerts']],
         ['key' => 'analytics', 'title' => 'Analytics', 'group' => 'pilotage', 'icon' => 'bar-chart-outline', 'coverage' => 'report', 'routes' => ['admin/analytics']],
         ['key' => 'analytics-v2', 'title' => 'Analytics V2', 'group' => 'pilotage', 'icon' => 'analytics-outline', 'coverage' => 'descriptor', 'routes' => ['admin/analytics-v2']],
+        /*
+         * `descriptor` DEPUIS QUE LA PROMESSE EST TENUE : `AnalyticsExplorationResource`
+         * sert la liste filtrable — par statut, par zone, par service. Les indicateurs
+         * chiffrés restent au web, ils relèvent d'une couverture `report` et un module
+         * n'en déclare qu'une.
+         */
+        ['key' => 'analytics-exploration', 'title' => 'Exploration métier', 'group' => 'pilotage', 'icon' => 'search-outline', 'coverage' => 'descriptor', 'routes' => ['admin/analytics/exploration']],
         ['key' => 'cancellation-reasons', 'title' => 'Motifs d’annulation', 'group' => 'pilotage', 'icon' => 'close-circle-outline', 'coverage' => 'descriptor', 'routes' => ['admin/analytics/cancellations']],
         ['key' => 'readiness', 'title' => 'Préparation plateforme', 'group' => 'pilotage', 'icon' => 'checkmark-done-outline', 'coverage' => 'report', 'routes' => ['admin/platform-readiness']],
         ['key' => 'nps', 'title' => 'NPS', 'group' => 'pilotage', 'icon' => 'happy-outline', 'coverage' => 'descriptor', 'routes' => ['admin/nps']],

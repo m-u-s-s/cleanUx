@@ -102,7 +102,7 @@ class GeolocationApiTest extends TestCase
 
     public function test_admin_stats_endpoint(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $response = $this->getJson('/api/admin/geolocation-v2/stats');
@@ -113,7 +113,7 @@ class GeolocationApiTest extends TestCase
 
     public function test_admin_purge_cache_runs(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $response = $this->postJson('/api/admin/geolocation-v2/cache/purge');

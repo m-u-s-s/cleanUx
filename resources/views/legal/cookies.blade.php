@@ -1,6 +1,4 @@
-@extends('layouts.app')
-
-@section('content')
+<x-app-layout>
 <div class="max-w-4xl mx-auto py-12 px-6">
     <h1 class="text-3xl font-black text-slate-900 mb-2">Politique de cookies</h1>
     <p class="text-sm text-slate-500 mb-8">Version 1.0 — 20/05/2026</p>
@@ -46,4 +44,4 @@
         </section>
     </div>
 </div>
-@endsection
+</x-app-layout>

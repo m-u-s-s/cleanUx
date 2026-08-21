@@ -6,9 +6,11 @@ use App\Models\AsapDispatchRequest;
 use App\Models\Booking;
 use App\Models\OrderDraft;
 use App\Models\Trade;
+use App\Models\User;
 use App\Services\OrderEngine\BundleComposer;
 use App\Services\OrderEngine\OrderConfirmationService;
 use App\Services\OrderEngine\OrderDraftManager;
+use App\Services\Promotion\BookingPromoCodeApplier;
 use App\Support\Domain\OrderDraftStatus;
 use App\Support\Domain\OrderMode;
 use Illuminate\Support\Collection;
@@ -52,6 +54,24 @@ class OrderConfirmation extends Component
     public ?string $confirmedReference = null;
 
     public string $error = '';
+
+    /**
+     * LE CODE PROMO — la plateforme en émettait sans que personne puisse en saisir.
+     *
+     * `PromoCodeService`, `BookingPromoCodeApplier` et l'administration des campagnes
+     * existent depuis le début ; aucun écran client ne les appelait. Les codes
+     * distribués aux clients ne pouvaient donc être utilisés nulle part.
+     *
+     * Il se saisit ICI et pas dans le parcours : `/commander` est public — le prix
+     * s'affiche avant l'identité — alors qu'un code se valide contre un compte
+     * (premier achat, plafond par personne, campagne réservée).
+     */
+    public string $promoCode = '';
+
+    /** Ce que le code a donné : ni exception, ni silence. */
+    public ?string $promoMessage = null;
+
+    public bool $promoApplique = false;
 
     public function mount(): void
     {
@@ -223,6 +243,8 @@ class OrderConfirmation extends Component
         $this->confirmedReference = $confirmed->reference;
         unset($this->draft, $this->quote, $this->blockers, $this->bookings, $this->paymentStates, $this->paymentOptions);
 
+        $this->appliquerLeCodePromo($confirmed, $user);
+
         /*
          * En mode immédiat, l'écran d'attente EST la suite : la recherche vient d'être ouverte et
          * quelqu'un peut accepter dans les secondes qui suivent. Laisser le client sur un
@@ -238,6 +260,61 @@ class OrderConfirmation extends Component
             if ($search) {
                 $this->redirect(route('order.asap.search', $search->id), navigate: true);
             }
+        }
+    }
+
+    /**
+     * Applique le code saisi aux réservations qui viennent d'être créées.
+     *
+     * UN CODE REFUSÉ N'ANNULE PAS LA COMMANDE. Elle est confirmée, les
+     * réservations existent, le dispatch est peut-être déjà parti : faire échouer
+     * l'ensemble pour une remise ferait perdre au client une commande valide. On
+     * le dit, et on continue.
+     */
+    private function appliquerLeCodePromo(OrderDraft $confirmed, User $client): void
+    {
+        $this->promoApplique = false;
+        $this->promoMessage = null;
+
+        if (trim($this->promoCode) === '') {
+            return;
+        }
+
+        $reservations = Booking::query()
+            ->where('client_id', $client->id)
+            ->whereIn('id', $confirmed->items()->get()
+                ->map(fn ($item) => $item->metadata['booking_id'] ?? null)
+                ->filter())
+            ->get();
+
+        if ($reservations->isEmpty()) {
+            $this->promoMessage = __("Le code n'a pas pu être appliqué : aucune réservation à réduire.");
+
+            return;
+        }
+
+        $applicateur = app(BookingPromoCodeApplier::class);
+        $remiseTotale = 0.0;
+
+        foreach ($reservations as $reservation) {
+            try {
+                $rachat = $applicateur->applyToBooking($reservation, $client, $this->promoCode);
+            } catch (ValidationException $e) {
+                $this->promoMessage = $e->validator->errors()->first() ?: $e->getMessage();
+
+                return;
+            }
+
+            if ($rachat) {
+                $remiseTotale += (float) ($rachat->discount_amount ?? 0);
+            }
+        }
+
+        if ($remiseTotale > 0.0) {
+            $this->promoApplique = true;
+            $this->promoMessage = __('Code appliqué : :montant € de remise.', [
+                'montant' => number_format($remiseTotale, 2, ',', ' '),
+            ]);
         }
     }
 

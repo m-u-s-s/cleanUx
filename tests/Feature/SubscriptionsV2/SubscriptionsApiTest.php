@@ -148,7 +148,7 @@ class SubscriptionsApiTest extends TestCase
 
     public function test_admin_list_subscriptions_returns_all(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $a = User::factory()->create();
         $b = User::factory()->create();
         $plan = SubscriptionPlanV2::query()->where('code', 'cleaning_weekly_basic')->first();

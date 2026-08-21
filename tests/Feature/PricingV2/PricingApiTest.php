@@ -94,7 +94,7 @@ class PricingApiTest extends TestCase
 
     public function test_admin_quotes_endpoint_returns_ledger(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
 
         $this->postJson('/api/v2/pricing/quote', ['service_code' => 'cleaning_standard']);
 

@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen, Avatar, Badge, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
 import { useChatThreads } from '@/chat';
+import { useAuth } from '@/auth';
 import type { ChatThread } from '@/chat/types';
 import {spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -14,6 +15,7 @@ export function ChatListScreen() {
   const styles = stylesFor(useThemeColors());
 
   const { data: threads, isLoading, refetch, isRefetching } = useChatThreads();
+  const { user } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   return (
@@ -27,19 +29,40 @@ export function ChatListScreen() {
         <FlatList
           data={threads ?? []}
           keyExtractor={item => String(item.id)}
-          renderItem={({ item, index }: { item: ChatThread; index: number }) => (
+          renderItem={({ item, index }: { item: ChatThread; index: number }) => {
+            /*
+             * UN FIL A TOUJOURS UN NOM À MONTRER.
+             *
+             * Les participants viennent du serveur, qui ne les envoie pas toujours. On descend
+             * alors sur le titre du fil, puis sur un mot générique — plutôt que d'afficher une
+             * ligne vide, et surtout plutôt que de tomber : `item.participants[0]` sans garde
+             * faisait sauter tout l'écran au premier fil.
+             */
+            /*
+             * ON NOMME UN FIL PAR LES AUTRES, jamais par soi-même.
+             *
+             * Le serveur renvoie TOUS les participants, soi compris. Les lister tels quels donnait
+             * une conversation intitulée « Gabrielle Lemoine » à Gabrielle Lemoine elle-même.
+             */
+            const autres = (item.participants ?? [])
+              .filter(p => p.id !== user?.id)
+              .map(p => p.name)
+              .filter(Boolean);
+            const nom = autres.join(', ') || item.title || 'Conversation';
+
+            return (
             <AnimatedListItem index={index}>
             <TouchableOpacity
               style={styles.row}
               onPress={() => navigation.navigate('Chat', {
                 threadId: item.id,
-                title: item.participants.map(p => p.name).join(', '),
+                title: nom,
               })}
             >
-              <Avatar name={item.participants[0]?.name ?? '?'} size={40} />
+              <Avatar name={nom} size={40} />
               <View style={styles.rowContent}>
                 <Text style={styles.rowName}>
-                  {item.participants.map(p => p.name).join(', ')}
+                  {nom}
                 </Text>
                 {item.last_message && (
                   <Text style={styles.rowPreview} numberOfLines={1}>
@@ -47,12 +70,13 @@ export function ChatListScreen() {
                   </Text>
                 )}
               </View>
-              {item.unread_count > 0 && (
+              {(item.unread_count ?? 0) > 0 && (
                 <Badge label={String(item.unread_count)} variant="danger" />
               )}
             </TouchableOpacity>
             </AnimatedListItem>
-          )}
+            );
+          }}
           onRefresh={refetch}
           refreshing={isRefetching}
           ListEmptyComponent={<EmptyState title="Aucune conversation" message="Vos échanges avec les prestataires apparaîtront ici." icon="chatbubble-outline" />}

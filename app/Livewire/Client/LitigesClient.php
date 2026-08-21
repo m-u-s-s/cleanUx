@@ -36,6 +36,9 @@ class LitigesClient extends Component
 
     // SECURITY/UX : panel detail expected by the view (@if($selected)).
     // Currently no selection logic implemented — values stay null so panel is skipped.
+    /** Le corps de la réponse en cours de saisie — `wire:model` de la zone de texte. */
+    public string $replyBody = '';
+
     public ?int $selectedId = null;
 
     public mixed $selected = null;
@@ -113,6 +116,78 @@ class LitigesClient extends Component
         };
     }
 
+    /**
+     * OUVRIR UNE RÉCLAMATION — et seulement l'une des siennes.
+     *
+     * La vue appelait `select($id)` depuis chaque ligne de la liste ; la méthode n'existait
+     * pas, si bien que `selected` restait nul et que le panneau de détail n'était jamais
+     * rendu. Le bloc entier — le fil, la résolution, la réponse — était donc mort.
+     *
+     * L'identifiant vient du navigateur : on filtre sur le client AVANT de charger, sinon
+     * n'importe qui lirait la réclamation d'un autre en changeant un nombre.
+     */
+    public function select(int $claimId): void
+    {
+        $claim = CustomerClaim::query()
+            ->where(fn ($q) => $q->where('client_id', Auth::id())
+                ->orWhere('customer_user_id', Auth::id()))
+            ->with(['events.author:id,name'])
+            ->find($claimId);
+
+        if (! $claim) {
+            $this->selectedId = null;
+            $this->selected = null;
+            $this->dispatch('toast', __("Cette réclamation n'existe pas ou ne vous appartient pas."), 'error');
+
+            return;
+        }
+
+        $this->selectedId = $claim->id;
+        $this->selected = $claim;
+        $this->replyBody = '';
+    }
+
+    /**
+     * RÉPONDRE À SA RÉCLAMATION.
+     *
+     * Une réclamation close ne se rouvre pas par une réponse : la vue masque déjà le
+     * formulaire dans ce cas, mais le navigateur peut appeler la méthode quand même.
+     */
+    public function postReply(): void
+    {
+        $this->validate([
+            'replyBody' => ['required', 'string', 'min:2', 'max:2000'],
+        ], [], ['replyBody' => __('réponse')]);
+
+        $claim = CustomerClaim::query()
+            ->where(fn ($q) => $q->where('client_id', Auth::id())
+                ->orWhere('customer_user_id', Auth::id()))
+            ->find($this->selectedId);
+
+        if (! $claim) {
+            $this->dispatch('toast', __('Réclamation introuvable.'), 'error');
+
+            return;
+        }
+
+        if (in_array($claim->status, ['resolved', 'closed'], true)) {
+            $this->dispatch('toast', __('Cette réclamation est clôturée : elle n’accepte plus de réponse.'), 'error');
+
+            return;
+        }
+
+        $claim->events()->create([
+            'author_role' => 'client',
+            'author_user_id' => Auth::id(),
+            'body' => trim($this->replyBody),
+        ]);
+
+        $this->replyBody = '';
+        $this->selected = $claim->fresh(['events.author:id,name']);
+
+        $this->dispatch('toast', __('Votre réponse a été envoyée.'), 'success');
+    }
+
     public function updatingFilterStatus(): void
     {
         $this->resetPage();
@@ -178,9 +253,21 @@ class LitigesClient extends Component
     public function render(): View
     {
         return view('livewire.client.litiges-client', [
+            /*
+                LES DEUX COLONNES DE CLIENT, PARCE QUE LES DEUX EXISTENT.
+
+                `customer_claims` porte `client_id` ET `customer_user_id`. La création
+                (`createClaim()`) renseigne la première ; cette liste filtrait sur la
+                seconde. Une réclamation déposée n'apparaissait donc JAMAIS dans la liste
+                de son auteur — l'écran restait vide quoi qu'il fasse.
+
+                On lit les deux plutôt que d'en élire une : les lignes déjà écrites d'un
+                côté ou de l'autre remontent toutes, et personne ne perd son historique.
+            */
             'claims' => CustomerClaim::query()
                 ->with('rendezVous')
-                ->where('customer_user_id', Auth::id())
+                ->where(fn ($q) => $q->where('client_id', Auth::id())
+                    ->orWhere('customer_user_id', Auth::id()))
                 ->when($this->filterStatus, fn ($query) => $query->where('status', $this->filterStatus))
                 ->latest()
                 ->paginate(8),

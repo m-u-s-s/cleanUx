@@ -75,7 +75,7 @@ class MissionTodoService
         $maintenant = Carbon::now();
 
         if ($maintenant->greaterThanOrEqualTo($echeance)) {
-            return $this->fermee('La liste est figée depuis '.$echeance->format('H:i').'.', $echeance);
+            return $this->fermee('La liste est figée depuis '.$this->quandLisible($echeance).'.', $echeance);
         }
 
         return [
@@ -228,6 +228,26 @@ class MissionTodoService
     /**
      * @return array{open: bool, closes_at: ?string, minutes_left: ?int, reason: ?string}
      */
+    /**
+     * UNE HEURE NUE NE DIT PAS QUEL JOUR.
+     *
+     * `format('H:i')` seul donnait « La liste est figée depuis 05:02 ». Relevé dans l'application
+     * cliente à 03 h 40, sur une intervention démarrée TROIS JOURS plus tôt : la phrase annonçait
+     * donc un gel à venir dans la journée en cours, pour une liste fermée depuis avant-hier.
+     *
+     * Le jour même ne change pas — c'est le cas courant, et le test qui épingle « figée depuis
+     * 10:30 » le vérifie. La date n'apparaît que lorsqu'elle porte une information.
+     */
+    private function quandLisible(Carbon $moment): string
+    {
+        if ($moment->isSameDay(Carbon::now())) {
+            return $moment->format('H:i');
+        }
+
+        return $moment->translatedFormat('j F').' à '.$moment->format('H:i');
+    }
+
+    /** @return array{open: bool, closes_at: string|null, minutes_left: int, reason: string} */
     private function fermee(string $raison, ?Carbon $echeance = null): array
     {
         return [

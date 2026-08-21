@@ -25,7 +25,7 @@ class GdprCenterCoverageBatch9Test extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->adminComplet()->create();
+        return User::factory()->admin()->create();
     }
 
     #[Test]

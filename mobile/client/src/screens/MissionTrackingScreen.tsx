@@ -28,6 +28,25 @@ const STATUS_LABELS: Record<string, string> = {
   cancelled: 'Annulée',
 };
 
+/*
+ * OU L'ON CADRE QUAND ON NE SAIT RIEN ENCORE.
+ *
+ * Ce repli servait Paris au zoom d'une rue (delta 0.05). Il s'applique pourtant tant qu'aucune
+ * session de suivi n'existe — le cas courant d'une reservation confirmee mais pas encore demarree :
+ * le client ouvrait alors « Suivre en direct » sur un plan de Paris pour une mission a Bruxelles.
+ *
+ * Deux corrections dans une seule valeur. La ville d'abord : l'application prestataire cadre deja
+ * sur Bruxelles (`FALLBACK_REGION` de ProviderMap, et son propre TrackingScreen) ; le client etait
+ * le seul des quatre plans du projet a partir d'ailleurs. L'echelle ensuite : a l'echelle du pays,
+ * un cadrage par defaut se lit pour ce qu'il est. Au zoom d'une rue, il affirme une position.
+ */
+const REPLI_PAYS = {
+  latitude: 50.85,
+  longitude: 4.35,
+  latitudeDelta: 2,
+  longitudeDelta: 2,
+};
+
 export function MissionTrackingScreen({ route, navigation }: Props) {
   const styles = stylesFor(useThemeColors());
 
@@ -92,7 +111,7 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
   // Initial region only — updates happen via animateToRegion
   const initialRegion = useMemo(() => {
     if (!currentPos) {
-      return { latitude: 48.8566, longitude: 2.3522, latitudeDelta: 0.05, longitudeDelta: 0.05 };
+      return { ...REPLI_PAYS };
     }
     return {
       latitude: currentPos.latitude,
@@ -199,10 +218,13 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
             position={currentPos ? { latitude: currentPos.latitude, longitude: currentPos.longitude } : null}
             // La route prévue prime sur la trace parcourue : c'est elle qui montre où l'on va.
             trail={session?.route?.points ?? trail?.map(p => ({ latitude: p.latitude, longitude: p.longitude }))}
+            // `fallbackCenter` ne sert QUE si la carte n'a aucun point a cadrer (OsmMap ajuste
+            // sinon ses bornes seule). Ce cas est exactement celui ou l'on ne sait rien : le zoom
+            // suit donc l'echelle pays du repli, au lieu d'afficher des rues choisies au hasard.
             fallbackCenter={{
               latitude: initialRegion.latitude,
               longitude: initialRegion.longitude,
-              zoom: 13,
+              zoom: 7,
             }}
             onMarkerPress={() => undefined}
             testID="mission-tracking-map-osm"

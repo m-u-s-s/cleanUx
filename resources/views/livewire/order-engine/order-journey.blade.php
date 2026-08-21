@@ -10,7 +10,21 @@
 <div class="pb-28 lg:pb-8">
     <div class="mx-auto max-w-6xl space-y-6 px-4 py-6 lg:grid lg:max-w-7xl lg:grid-cols-[1fr_340px] lg:gap-8 lg:space-y-0">
 
-        <div class="space-y-6">
+        {{--
+            `min-w-0` N'EST PAS DÉCORATIF — sans lui, la colonne d'estimation sort de l'écran.
+
+            Une colonne `1fr` vaut `minmax(auto, 1fr)`, et `auto` ne descend jamais sous la
+            largeur MINIMALE de son contenu. Les carrousels de secteurs et de services qui
+            vivent ici portent des cartes `shrink-0` : leur minimum dépasse la place
+            disponible, la colonne s'élargit, et pousse le panneau « Votre estimation »
+            hors du cadre.
+
+            Mesuré sur le parcours réel, écran de 1440 px : le document défilait de 202 px
+            vers la droite, et le prix — ce que le client vient chercher — était hors champ.
+            À 390 px rien ne paraissait, les carrousels y défilant normalement : c'est le
+            GRAND écran qui souffrait, pas le petit.
+        --}}
+        <div class="min-w-0 space-y-6">
 
             {{--
                 ─── Intention ─────────────────────────────────────────────────────────────
@@ -463,6 +477,9 @@
         x-init="boot()"
     ></div>
 </div>
+
+{{-- Les scripts des morceaux conditionnels, déclarés au premier rendu. Voir le morceau. --}}
+@include('livewire.order-engine.partials.scripts')
 
 @push('scripts')
 <script>

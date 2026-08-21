@@ -125,7 +125,7 @@ class CancellationApiTest extends TestCase
     public function test_admin_override_endpoint_waives_fee(): void
     {
         $client = User::factory()->client()->create();
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $booking = Booking::create([
             'client_id' => $client->id,
             'date' => now()->addHour(),
@@ -150,7 +150,7 @@ class CancellationApiTest extends TestCase
     public function test_admin_override_validates_short_reason(): void
     {
         $client = User::factory()->client()->create();
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $booking = $this->makeBooking($client);
         $cancellation = app(CancellationEngine::class)->execute($booking->id, $client, 'client');
 
@@ -163,7 +163,7 @@ class CancellationApiTest extends TestCase
     public function test_admin_index_returns_list(): void
     {
         $client = User::factory()->client()->create();
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $booking = $this->makeBooking($client);
         app(CancellationEngine::class)->execute($booking->id, $client, 'client');
 

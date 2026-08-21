@@ -52,7 +52,15 @@ use Illuminate\Support\Facades\Route;
 | Le second facteur est réclamé à la connexion (`ApiAuthController::login`) ; ce middleware exige en
 | plus que l'administrateur l'ait ACTIVÉE, ce qu'un mot de passe seul ne peut pas contourner.
 */
-Route::middleware(['auth:sanctum', 'api_admin', 'enforce_2fa'])->group(function () {
+/*
+| `module_gate` FERME ICI LA MÊME PORTE QUE SUR LE WEB.
+|
+| Les capacités déclarées par `config/modules.php` gardaient les écrans d'administration et
+| PAS leur équivalent d'API : un administrateur limité à `manage-quality` recevait 403 sur
+| `/admin/accounting-v2` et 200 sur `/api/admin/accounting-v2/entries`. La restriction n'était
+| qu'une gêne d'affichage, contournable avec le jeton de l'application mobile.
+*/
+Route::middleware(['auth:sanctum', 'api_admin', 'enforce_2fa', 'module_gate'])->group(function () {
 
     // Phase Matching v2 — Simulation admin
     Route::prefix('admin/matching')->middleware('api_scope:admin:read,admin:everything')->group(function () {

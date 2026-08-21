@@ -5,6 +5,8 @@ export interface ChatThread {
   last_message_at?: string;
   unread_count: number;
   participants: Array<{ id: number; name: string; role: string }>;
+  /** Le nom du fil côté serveur : le seul repli lisible quand les participants manquent. */
+  title?: string | null;
 }
 
 export interface ChatMessage {

@@ -180,7 +180,7 @@ class ChatV2ControllerCoverageBatch16Test extends TestCase
     public function test_admin_list_threads_applies_status_and_flagged_filters(): void
     {
         $user = User::factory()->create();
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $svc = app(ChatService::class);
 
         $flagged = $svc->startThread('booking', 501, [['user_id' => $user->id, 'role' => 'client']]);
@@ -198,7 +198,7 @@ class ChatV2ControllerCoverageBatch16Test extends TestCase
     public function test_admin_list_flagged_returns_flagged_and_blocked_messages(): void
     {
         $user = User::factory()->create();
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $thread = app(ChatService::class)->startThread('booking', 601, [
             ['user_id' => $user->id, 'role' => 'client'],
         ]);

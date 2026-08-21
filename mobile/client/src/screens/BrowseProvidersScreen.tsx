@@ -17,6 +17,17 @@ export function BrowseProvidersScreen() {
     postalCode: postalCode || undefined,
   });
 
+  /*
+   * N'AVOIR RIEN CHERCHÉ N'EST PAS N'AVOIR RIEN TROUVÉ.
+   *
+   * `useBrowseProviders` ne se déclenche QUE si un métier ou un code postal est saisi — et c'est
+   * voulu : sans filtre, la requête ramènerait l'annuaire entier. Mais la liste, elle, rendait son
+   * état vide dès l'ouverture, si bien que l'écran s'ouvrait sur « Aucun prestataire trouvé ».
+   * Relevé à l'écran : on arrive sur « Explorer », on lit qu'il n'y a personne, et on en conclut
+   * que la plateforme est vide. La requête n'avait simplement jamais été lancée.
+   */
+  const uneRechercheEstLancee = trade !== '' || postalCode !== '';
+
   const renderProviderCard = useCallback(({ item, index }: { item: Provider; index: number }) => (
     <AnimatedListItem index={index}>
       <ProviderCard provider={item} />
@@ -48,7 +59,7 @@ export function BrowseProvidersScreen() {
           label="Code postal"
           value={postalCode}
           onChangeText={setPostalCode}
-          placeholder="75001"
+          placeholder="1000"
           keyboardType="numeric"
         />
       </View>
@@ -65,7 +76,11 @@ export function BrowseProvidersScreen() {
             getItemLayout={getItemLayout}
             contentContainerStyle={styles.list}
             accessibilityLabel="Liste des prestataires"
-            ListEmptyComponent={<EmptyState title="Aucun prestataire trouvé" message="Essayez avec d'autres critères de recherche." icon="search-outline" />}
+            ListEmptyComponent={uneRechercheEstLancee ? (
+              <EmptyState title="Aucun prestataire trouvé" message="Essayez avec d'autres critères de recherche." icon="search-outline" />
+            ) : (
+              <EmptyState title="Trouvez un prestataire" message="Renseignez un métier ou un code postal pour lancer la recherche." icon="search-outline" />
+            )}
             refreshControl={
               <RefreshControl
                 refreshing={isRefetching}
@@ -89,7 +104,12 @@ const ProviderCard = React.memo(function ProviderCard({ provider }: { provider: 
       <View style={styles.cardContent}>
         <Text style={[styles.providerName, { color: themeColors.text }]}>{provider.name}</Text>
         <View style={styles.cardMeta}>
-          <Text style={[styles.rating, { color: themeColors.textSecondary }]}>⭐ {provider.rating_avg.toFixed(1)} ({provider.review_count})</Text>
+          {provider.rating_avg != null ? (
+            <Text style={[styles.rating, { color: themeColors.textSecondary }]}>⭐ {provider.rating_avg.toFixed(1)} ({provider.review_count})</Text>
+          ) : (
+            // Pas encore noté : on le dit. « ⭐ 0.0 » se lirait comme une mauvaise note.
+            <Text style={[styles.rating, { color: themeColors.textSecondary }]}>Nouveau prestataire</Text>
+          )}
           {provider.distance_km != null && (
             <Text style={[styles.distance, { color: themeColors.textMuted }]}>{provider.distance_km.toFixed(1)} km</Text>
           )}

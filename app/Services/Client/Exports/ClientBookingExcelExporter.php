@@ -5,6 +5,7 @@ namespace App\Services\Client\Exports;
 use App\Models\Booking;
 use App\Models\User;
 use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -55,12 +56,35 @@ class ClientBookingExcelExporter
 
         $filename = sprintf('rendez-vous_%s.xlsx', now()->format('Y-m-d_Hi'));
 
-        return new StreamedResponse(function () use ($spreadsheet) {
-            $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-            $writer->save('php://output');
+        /*
+            LA GÉNÉRATION SE FAIT MAINTENANT, PAS DANS LE CALLBACK.
+
+            Le callback d'un `StreamedResponse` s'exécute après la fin du cycle de
+            requête : le conteneur est déjà démonté, et PhpSpreadsheet — qui résout
+            des services pendant `save()` — mourait sur « Class "config" does not
+            exist », en plein milieu d'une réponse déjà partie avec un code 200. Le
+            client recevait donc une trace PHP déguisée en fichier Excel.
+
+            On écrit dans un fichier temporaire tant que l'application est vivante,
+            et le callback ne fait plus que rendre les octets. Passer par
+            `php://output` sous tampon ne suffit pas : le serveur applicatif tient
+            son propre tampon de sortie, et les deux se marchent dessus. C'est d'ailleurs ce que l'en-tête de
+            cette classe décrit depuis le début.
+        */
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $fichier = tempnam(sys_get_temp_dir(), 'export_xlsx_');
+        $writer->save($fichier);
+        $binaire = (string) file_get_contents($fichier);
+        @unlink($fichier);
+        $spreadsheet->disconnectWorksheets();
+        unset($spreadsheet);
+
+        return new StreamedResponse(function () use ($binaire) {
+            echo $binaire;
         }, 200, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Content-Length' => (string) strlen($binaire),
             'Cache-Control' => 'no-cache, must-revalidate',
         ]);
     }
@@ -125,10 +149,8 @@ class ClientBookingExcelExporter
         $headers = ['Référence', 'Date', 'Heure', 'Service', 'Site', 'Adresse', 'Ville', 'Statut', 'Surface (m²)', 'Prix estimé (€)', 'Mode'];
 
         // Headers row
-        $col = 'A';
-        foreach ($headers as $h) {
-            $sheet->setCellValue($col.'1', $h);
-            $col++;
+        foreach ($headers as $index => $h) {
+            $sheet->setCellValue(Coordinate::stringFromColumnIndex($index + 1).'1', $h);
         }
         $this->styleHeaderRow($sheet, 1);
 
@@ -181,10 +203,8 @@ class ClientBookingExcelExporter
         $sheet->setTitle('Par site');
 
         $headers = ['Site', 'Nb RDV', 'Terminés', 'Annulés', 'CA estimé'];
-        $col = 'A';
-        foreach ($headers as $h) {
-            $sheet->setCellValue($col.'1', $h);
-            $col++;
+        foreach ($headers as $index => $h) {
+            $sheet->setCellValue(Coordinate::stringFromColumnIndex($index + 1).'1', $h);
         }
         $this->styleHeaderRow($sheet, 1);
 
@@ -212,10 +232,8 @@ class ClientBookingExcelExporter
         $sheet->setTitle('Par mois');
 
         $headers = ['Mois', 'Nb RDV', 'Terminés', 'Annulés', 'CA estimé'];
-        $col = 'A';
-        foreach ($headers as $h) {
-            $sheet->setCellValue($col.'1', $h);
-            $col++;
+        foreach ($headers as $index => $h) {
+            $sheet->setCellValue(Coordinate::stringFromColumnIndex($index + 1).'1', $h);
         }
         $this->styleHeaderRow($sheet, 1);
 

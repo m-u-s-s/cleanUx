@@ -122,7 +122,7 @@ class KybApiTest extends TestCase
 
     public function test_admin_run_verifications(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $user = User::factory()->create();
         $entity = app(BusinessOnboardingService::class)->startVerification([
             'legal_name' => 'Acme', 'country_code' => 'FR',
@@ -137,7 +137,7 @@ class KybApiTest extends TestCase
 
     public function test_admin_run_sanctions(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $user = User::factory()->create();
         $entity = app(BusinessOnboardingService::class)->startVerification([
             'legal_name' => 'Acme', 'country_code' => 'FR',
@@ -152,7 +152,7 @@ class KybApiTest extends TestCase
 
     public function test_admin_approve_entity(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $user = User::factory()->create();
         $entity = app(BusinessOnboardingService::class)->startVerification([
             'legal_name' => 'Acme', 'country_code' => 'FR',
@@ -166,7 +166,7 @@ class KybApiTest extends TestCase
 
     public function test_admin_reject_entity_validates_reason_length(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $user = User::factory()->create();
         $entity = app(BusinessOnboardingService::class)->startVerification([
             'legal_name' => 'Acme', 'country_code' => 'FR',
@@ -186,7 +186,7 @@ class KybApiTest extends TestCase
 
     public function test_admin_add_beneficial_owner(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $user = User::factory()->create();
         $entity = app(BusinessOnboardingService::class)->startVerification([
             'legal_name' => 'Acme', 'country_code' => 'FR',

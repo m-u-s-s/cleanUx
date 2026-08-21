@@ -127,8 +127,6 @@
     @endif
     @endauth
 
-    @stack('scripts')
-
     @unless($embedded ?? false)
     <x-mobile-bottom-nav />
     <x-pwa-install-prompt />
@@ -138,6 +136,18 @@
         @livewire('chatbot.assistant-widget')
     @endauth
     @endunless
+
+    {{--
+      LE STACK EN DERNIER, ET C'EST LE POINT.
+
+      Il était rendu plus haut, AVANT `<x-pwa-install-prompt />` et
+      `<x-cookie-banner />` : leurs `@push('scripts')` arrivaient donc après la
+      pile déjà vidée, et leurs fonctions n'atteignaient jamais la page. Alpine
+      se plaignait sur chaque écran — « pwaInstallPrompt is not defined »,
+      « init is not defined » — et ni le bandeau d'installation ni la bannière
+      cookies ne fonctionnaient.
+    --}}
+    @stack('scripts')
 </body>
 
 </html>

@@ -110,7 +110,7 @@ class ContractApiTest extends TestCase
     public function test_admin_invalidate_signature_endpoint(): void
     {
         $user = User::factory()->client()->create();
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $doc = app(ContractService::class)->renderDocumentFor('client_tos', $user);
         $sig = app(ContractService::class)->signDocument($doc, $user, 'data:base64,x', 'A');
 
@@ -126,7 +126,7 @@ class ContractApiTest extends TestCase
     public function test_admin_invalidate_validates_reason_length(): void
     {
         $user = User::factory()->client()->create();
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $doc = app(ContractService::class)->renderDocumentFor('client_tos', $user);
         $sig = app(ContractService::class)->signDocument($doc, $user, 'data:base64,x', 'A');
 

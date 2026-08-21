@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Les 4 équipes — en direct</title>
+<style>
+  :root{
+    --fond:#0b0d12; --carte:#141822; --carte2:#1a1f2b; --bord:#232a38;
+    --texte:#e8ecf4; --doux:#98a2b8; --faible:#6b7488;
+    --t1:#5b8cff; --t2:#37c98b; --t3:#c79a4b; --t4:#b07de0;
+    --ok:#37c98b; --encours:#e0b341; --attente:#6b7488;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--fond);color:var(--texte);
+       font:15px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;padding:26px 30px}
+  header{display:flex;align-items:baseline;gap:18px;margin-bottom:6px;flex-wrap:wrap}
+  h1{font-size:23px;font-weight:650;letter-spacing:-.02em}
+  .horloge{color:var(--faible);font-variant-numeric:tabular-nums;font-size:13px}
+  .mission{color:var(--doux);margin-bottom:22px;font-size:14px;max-width:100ch}
+  .grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px}
+  .equipe{background:var(--carte);border:1px solid var(--bord);border-radius:14px;
+          padding:17px 18px;border-top:3px solid var(--bord)}
+  .equipe.t1{border-top-color:var(--t1)} .equipe.t2{border-top-color:var(--t2)}
+  .equipe.t3{border-top-color:var(--t3)} .equipe.t4{border-top-color:var(--t4)}
+  .tete{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:3px}
+  .nom{font-weight:640;font-size:15px;letter-spacing:.01em}
+  .perimetre{color:var(--faible);font-size:12.5px;margin-bottom:13px}
+  .etat{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;
+        padding:3px 9px;border-radius:99px;white-space:nowrap}
+  .etat.actif{background:rgba(224,179,65,.14);color:var(--encours)}
+  .etat.fini{background:rgba(55,201,139,.14);color:var(--ok)}
+  .etat.attente{background:rgba(107,116,136,.16);color:var(--attente)}
+  .chiffres{display:flex;gap:18px;margin-bottom:13px;padding-bottom:13px;border-bottom:1px solid var(--bord)}
+  .chiffre b{display:block;font-size:20px;font-weight:640;font-variant-numeric:tabular-nums}
+  .chiffre span{font-size:11.5px;color:var(--faible)}
+  .titre-liste{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--faible);margin:0 0 7px}
+  ul{list-style:none}
+  li{padding:6px 0 6px 20px;position:relative;font-size:13.5px;color:var(--doux);
+     border-bottom:1px solid rgba(35,42,56,.55)}
+  li:last-child{border-bottom:0}
+  li::before{position:absolute;left:0;top:6px;font-size:12px}
+  li.ok::before{content:"✓";color:var(--ok)}
+  li.encours::before{content:"◐";color:var(--encours)}
+  li.todo::before{content:"○";color:var(--faible)}
+  li em{display:block;color:var(--faible);font-style:normal;font-size:12px;margin-top:1px}
+  .bas{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px}
+  .bloc{background:var(--carte2);border:1px solid var(--bord);border-radius:14px;padding:17px 18px}
+  .bloc h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--faible);margin-bottom:11px;font-weight:600}
+  .journal li{padding-left:0}
+  .journal li::before{content:none}
+  .journal time{color:var(--faible);font-variant-numeric:tabular-nums;margin-right:8px;font-size:12px}
+  .pastille{display:inline-block;font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:99px;margin-right:7px}
+  .p-t1{background:rgba(91,140,255,.16);color:var(--t1)} .p-t2{background:rgba(55,201,139,.16);color:var(--t2)}
+  .p-t3{background:rgba(199,154,75,.16);color:var(--t3)} .p-t4{background:rgba(176,125,224,.16);color:var(--t4)}
+  footer{margin-top:20px;color:var(--faible);font-size:12px}
+</style>
+</head>
+<body>
+  <header>
+    <h1>Les 4 équipes — en direct</h1>
+    <span class="horloge" id="horloge"></span>
+  </header>
+  <p class="mission" id="mission"></p>
+  <div class="grille" id="grille"></div>
+  <div class="bas">
+    <div class="bloc"><h2>Journal des corrections</h2><ul class="journal" id="journal"></ul></div>
+    <div class="bloc"><h2>Arbitrages du comité (T4)</h2><ul id="arbitrages"></ul></div>
+  </div>
+  <footer id="pied"></footer>
+
+<script>
+const ETATS = { actif:'en cours', fini:'terminé', attente:'en attente' };
+
+async function rafraichir() {
+  let d;
+  try { d = await (await fetch('etat.json?_=' + Date.now())).json(); }
+  catch { return; }
+
+  document.getElementById('mission').textContent = d.mission || '';
+  document.getElementById('horloge').textContent = 'mis à jour ' + (d.maj || '');
+  document.getElementById('pied').textContent = d.pied || '';
+
+  document.getElementById('grille').innerHTML = (d.equipes || []).map(e => `
+    <div class="equipe ${e.cle}">
+      <div class="tete">
+        <span class="nom">${e.nom}</span>
+        <span class="etat ${e.etat}">${ETATS[e.etat] || e.etat}</span>
+      </div>
+      <div class="perimetre">${e.perimetre}</div>
+      <div class="chiffres">
+        ${(e.chiffres || []).map(c => `<div class="chiffre"><b>${c.valeur}</b><span>${c.libelle}</span></div>`).join('')}
+      </div>
+      <p class="titre-liste">Travaux</p>
+      <ul>${(e.taches || []).map(t =>
+        `<li class="${t.etat}">${t.titre}${t.detail ? `<em>${t.detail}</em>` : ''}</li>`).join('')}</ul>
+    </div>`).join('');
+
+  document.getElementById('journal').innerHTML = (d.journal || []).map(j =>
+    `<li><time>${j.heure}</time><span class="pastille p-${j.equipe}">${j.equipe.toUpperCase()}</span>${j.texte}</li>`).join('');
+
+  document.getElementById('arbitrages').innerHTML = (d.arbitrages || []).map(a =>
+    `<li class="${a.etat}">${a.titre}${a.detail ? `<em>${a.detail}</em>` : ''}</li>`).join('');
+}
+rafraichir();
+setInterval(rafraichir, 3000);
+</script>
+</body>
+</html>

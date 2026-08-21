@@ -111,7 +111,15 @@ trait HasUserTypeChecks
          * morte depuis que le cast existe, et l'analyse statique ne pouvait pas le dire tant que
          * l'annotation de la relation désignait le mauvais modèle.
          */
-        if ($providerType === ProviderType::INDEPENDENT) {
+        /*
+            `isIndependent()` PLUTÔT QU'UNE COMPARAISON DIRECTE.
+
+            `INDEPENDENT` et `INDIVIDUAL` désignent le même prestataire, et deux chemins
+            d'inscription produisent l'une ou l'autre. Comparer à la seule valeur canonique
+            refusait de son espace un prestataire que le dispatch envoyait pourtant en mission.
+            L'énumération porte la règle ; on la lui demande.
+        */
+        if ($providerType?->isIndependent()) {
             return true;
         }
 
@@ -129,7 +137,10 @@ trait HasUserTypeChecks
 
         // Même raison : le cast garantit l'énumération. Un profil absent rend nul, donc faux — ce
         // qui est le comportement voulu, un compte sans profil n'étant pas salarié d'une société.
-        return $providerType === ProviderType::COMPANY_WORKER;
+        //
+        // `COMPANY` et `COMPANY_WORKER` valent tous deux « rattaché à une société » : la même
+        // divergence que du côté indépendant, et le même remède — c'est l'énumération qui tranche.
+        return (bool) $providerType?->isCompanyWorker();
     }
 
     public function getIsEmployeAttribute(): bool

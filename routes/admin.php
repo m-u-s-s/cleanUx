@@ -10,6 +10,7 @@ use App\Livewire\Admin\AdminHomeDashboard;
 use App\Livewire\Admin\AiDispatchCenter;
 use App\Livewire\Admin\Analytics\AnalyticsCenter;
 use App\Livewire\Admin\Analytics\CancellationReasonsCenter;
+use App\Livewire\Admin\AnalyticsCenter as ExplorationAnalytique;
 use App\Livewire\Admin\ApiTokensV2\ApiTokensCenter;
 use App\Livewire\Admin\Audit\AuditCenter;
 use App\Livewire\Admin\Availability\AvailabilityCenter;
@@ -201,6 +202,28 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
 
         if (class_exists(AdminAnalyticsDashboard::class)) {
             Route::get('/analytics', AdminAnalyticsDashboard::class)->name('analytics');
+        }
+
+        /*
+         * L'EXPLORATION ANALYTIQUE MÉTIER — trois cent quarante-six lignes que rien n'atteignait.
+         *
+         * `App\Livewire\Admin\AnalyticsCenter` filtre par zone, service, intervenant, marché,
+         * statut et période, croise les analyses, dessine une carte de chaleur et exporte en CSV.
+         * Il n'avait ni route ni montage : aucun administrateur ne pouvait l'ouvrir.
+         *
+         * CE QUI L'AVAIT RENDU INVISIBLE : un homonyme. `App\Livewire\Admin\Analytics         * AnalyticsCenter` — importé juste au-dessus, routé sur `/analytics-v2` — mesure l'usage
+         * (sessions, entonnoir), pas le métier. Chercher « AnalyticsCenter » dans les routes
+         * répondait donc « c'est routé », en attrapant l'autre classe.
+         *
+         * D'où l'ALIAS à l'import : sans lui, les deux se disputent le même nom court, et c'est
+         * la dernière ligne écrite qui gagne — en silence.
+         *
+         * L'aperçu de `/analytics` reste en place : vingt-quatre lignes, un coup d'œil. Les deux
+         * écrans ne font pas double emploi, l'un résume et l'autre creuse.
+         */
+        if (class_exists(ExplorationAnalytique::class)) {
+            Route::get('/analytics/exploration', ExplorationAnalytique::class)
+                ->name('analytics.exploration');
         }
 
         if (class_exists(CustomerCreditsManager::class)) {

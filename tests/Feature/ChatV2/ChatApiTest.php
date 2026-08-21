@@ -197,7 +197,7 @@ class ChatApiTest extends TestCase
     public function test_admin_moderate_blocks_message(): void
     {
         $a = User::factory()->create();
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $svc = app(ChatService::class);
         $thread = $svc->startThread('booking', 61, [['user_id' => $a->id, 'role' => 'client']]);
         $msg = $svc->sendMessage($thread, $a, 'message à modérer');
@@ -214,7 +214,7 @@ class ChatApiTest extends TestCase
     public function test_admin_moderate_validates_action(): void
     {
         $a = User::factory()->create();
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $svc = app(ChatService::class);
         $thread = $svc->startThread('booking', 62, [['user_id' => $a->id, 'role' => 'client']]);
         $msg = $svc->sendMessage($thread, $a, 'message');

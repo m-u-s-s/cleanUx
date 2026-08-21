@@ -9,8 +9,10 @@ use App\Models\KycVerification;
 use App\Models\Mission;
 use App\Models\ProviderProfile;
 use App\Models\User;
+use App\Support\AdminScope;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Les indicateurs d'accueil de la console d'administration mobile.
@@ -32,17 +34,32 @@ class AdminOverviewController extends Controller
 {
     public function __invoke(): JsonResponse
     {
+        /*
+         * LE PÉRIMÈTRE DE ZONE VAUT AUSSI ICI.
+         *
+         * Un administrateur peut être borné à une zone (`access_scope = 'zone'`), et
+         * `AdminScope` sert cette règle aux six écrans web qui l'appliquent. Cet
+         * accueil d'API ne la posait pas : le même administrateur voyait les chiffres
+         * de SA zone sur le web, et ceux de TOUTE la plateforme sur mobile.
+         *
+         * `AdminScope` reste la seule source de la règle — on l'appelle, on ne la
+         * réécrit pas.
+         */
+        $admin = Auth::user();
+
         return response()->json([
             'ok' => true,
             'kpis' => [
                 $this->kpi('users', 'Comptes', 'people-outline',
-                    fn () => User::count()),
+                    fn () => AdminScope::scopeUserQuery(User::query(), $admin)->count()),
 
                 $this->kpi('bookings_pending', 'Réservations en attente', 'hourglass-outline',
-                    fn () => Booking::pending()->count()),
+                    fn () => AdminScope::scopeRendezVousQuery(Booking::pending(), $admin)->count()),
 
                 $this->kpi('bookings_today', 'Réservations du jour', 'today-outline',
-                    fn () => Booking::whereDate('scheduled_date', today())->count()),
+                    fn () => AdminScope::scopeRendezVousQuery(
+                        Booking::whereDate('scheduled_date', today()), $admin
+                    )->count()),
 
                 $this->kpi('missions_active', 'Missions en cours', 'briefcase-outline',
                     fn () => Mission::whereIn('status', MissionStatus::trackable())->count()),

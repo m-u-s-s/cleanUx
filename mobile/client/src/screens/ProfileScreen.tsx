@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button, Divider } from '@/ui';
+import { Button, Divider, Screen } from '@/ui';
 import { useAuth } from '@/auth';
 import {spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -32,8 +32,20 @@ export function ProfileScreen() {
   const appartientAUneSocieteCliente = user?.is_entreprise === true;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Profile</Text>
+    /*
+     * UN ÉCRAN QUI DÉFILE, ET QUI COMMENCE SOUS L'HORLOGE.
+     *
+     * Ce profil était le seul écran de l'application à se dessiner dans un `View` nu plutôt que
+     * dans `Screen` : ni encart de sécurité, ni défilement. Or il aligne vingt et un boutons, bien
+     * plus haut qu'un téléphone — et son conteneur les CENTRAIT (`justifyContent: 'center'`), ce
+     * qui déborde des DEUX côtés à la fois.
+     *
+     * Relevé dans l'émulateur : le titre et les deux premiers boutons passaient derrière l'heure,
+     * les trois derniers tombaient sous la barre d'onglets, et rien ne défilait. « Se déconnecter »
+     * était l'un des trois : il n'existait aucun moyen de fermer sa session depuis l'application.
+     */
+    <Screen scroll>
+      <Text style={styles.title}>Mon profil</Text>
       <View style={styles.actions}>
         {/*
           ESPACE ENTREPRISE — en tête, parce qu'un responsable multi-sites ouvre son profil POUR
@@ -208,23 +220,17 @@ export function ProfileScreen() {
           fullWidth
         />
       </View>
-    </View>
+    </Screen>
   );
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: t.page,
-    padding: spacing.lg,
-  },
   title: {
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.semibold,
     color: t.text,
-    marginBottom: spacing.xl,
+    marginTop: spacing.md,
+    marginBottom: spacing.lg,
   },
   actions: {
     width: '100%',

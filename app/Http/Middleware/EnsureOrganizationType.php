@@ -33,7 +33,11 @@ class EnsureOrganizationType
             return $next($request);
         }
 
-        $orgId = $user->current_organization_id;
+        // L'organisation active vit dans DEUX colonnes (`organization_account_id`
+        // et `current_organization_id`), plus un repli dans `metadata`.
+        // `organizationContextId()` est la résolution unique du dépôt : lire
+        // `current_organization_id` seul refusait des membres légitimes.
+        $orgId = $user->organizationContextId();
         abort_if(empty($orgId), 403, 'Aucune organisation active.');
 
         // `organization_accounts.type` est une colonne string non castée :

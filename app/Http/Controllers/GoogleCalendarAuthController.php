@@ -16,6 +16,13 @@ class GoogleCalendarAuthController extends Controller
     {
         abort_unless($request->user(), 403);
 
+        // Une intégration non configurée n'est pas une panne du serveur : sans
+        // ce garde, le lien « connecter mon agenda » répondait 500 à tout le
+        // monde, sur toutes les instances où les clés Google sont absentes.
+        if (! $oauth->isConfigured()) {
+            return back()->with('error', __("La connexion à Google Agenda n'est pas disponible sur cette instance."));
+        }
+
         $state = Str::uuid()->toString();
 
         Session::put('google_calendar.oauth_state', $state);

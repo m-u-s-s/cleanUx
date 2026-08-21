@@ -31,7 +31,18 @@ class MissionQualityAnalytics extends Component
             ->limit(15)
             ->get();
 
+        /*
+            LA JOINTURE MANQUANTE — `bookings` n'était jamais amenée dans la requête.
+            Elle partait de `missions` et raccrochait `postal_codes` sur
+            `bookings.postal_code_id`, une table absente du FROM : la base répondait
+            « no such column ». L'écran entier tombait donc en erreur, ce que
+            personne ne voyait puisque aucune route n'y menait.
+
+            Le pays d'une mission se lit via sa réservation : mission → booking →
+            code postal → pays.
+        */
         $byCountry = DB::table('missions')
+            ->leftJoin('bookings', 'bookings.id', '=', 'missions.booking_id')
             ->leftJoin('postal_codes', 'postal_codes.id', '=', 'bookings.postal_code_id')
             ->leftJoin('countries', 'countries.id', '=', 'postal_codes.country_id')
             ->whereNotNull('missions.quality_score')

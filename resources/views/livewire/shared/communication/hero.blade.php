@@ -9,7 +9,7 @@
 --}}
 <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
     <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-        <div>
+        <div class="min-w-0">
             <div class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
                 <span class="h-2 w-2 rounded-full bg-blue-500"></span>
                 Communication Brio

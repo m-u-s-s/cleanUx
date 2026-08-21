@@ -33,12 +33,59 @@ export function usePricingServices(categorySlug?: string) {
   });
 }
 
+/**
+ * LA FORME QUE REND VRAIMENT `/search/providers`.
+ *
+ * Elle ne ressemble pas à `Provider`, et rien ne le signalait : le type déclarait `rating_avg`,
+ * `review_count`, `avatar_url` et des métiers en chaînes, quand le serveur envoie `rating.avg`,
+ * `rating.count`, `photo_url` et des métiers en objets. TypeScript validait l'écran contre un
+ * contrat que personne ne tenait — la vérification s'arrête au `res.data` non typé.
+ */
+type ProviderDeLApi = {
+  id: number;
+  name: string;
+  photo_url?: string | null;
+  rating?: { avg: number | null; count: number } | null;
+  trades?: Array<{ id: number; name: string; code: string }> | null;
+  distance_km?: number | null;
+  hourly_rate?: number | null;
+};
+
+function versProvider(brut: ProviderDeLApi): Provider {
+  return {
+    id: brut.id,
+    name: brut.name,
+    avatar_url: brut.photo_url ?? undefined,
+    rating_avg: brut.rating?.avg ?? null,
+    review_count: brut.rating?.count ?? 0,
+    // Les métiers arrivent en objets ; la carte n'affiche que leur nom.
+    trades: (brut.trades ?? []).map(t => t.name).filter(Boolean),
+    distance_km: brut.distance_km ?? undefined,
+    hourly_rate: brut.hourly_rate ?? undefined,
+  };
+}
+
 export function useBrowseProviders(filters: { trade?: string; postalCode?: string; minRating?: number; page?: number }) {
   return useQuery<{ data: Provider[]; meta?: unknown }>({
     queryKey: ['providers', 'browse', filters],
     queryFn: async () => {
-      const res = await apiClient.get('/search/providers', { params: filters });
-      return res.data;
+      /*
+       * LES NOMS DE PARAMÈTRES SONT CEUX DU SERVEUR, pas ceux de l'écran.
+       *
+       * `postalCode` partait tel quel ; la validation du contrôleur, qui attend `postal_code`,
+       * l'écartait sans rien dire. Le filtre était donc inerte : on saisissait un code postal et
+       * la recherche ramenait l'annuaire entier, page par page.
+       */
+      const res = await apiClient.get('/search/providers', {
+        params: {
+          trade: filters.trade,
+          postal_code: filters.postalCode,
+          min_rating: filters.minRating,
+          page: filters.page,
+        },
+      });
+
+      return { data: (res.data?.data ?? []).map(versProvider), meta: res.data?.meta };
     },
     enabled: !!filters.trade || !!filters.postalCode,
   });

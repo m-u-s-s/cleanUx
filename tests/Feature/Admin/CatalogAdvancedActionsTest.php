@@ -30,9 +30,7 @@ class CatalogAdvancedActionsTest extends TestCase
         parent::setUp();
         $this->seed(OrderEngineCatalogSeeder::class);
 
-        Sanctum::actingAs(User::factory()->create([
-            'role' => 'admin',
-            'platform_role' => 'admin',
+        Sanctum::actingAs(User::factory()->adminComplet()->create([
             'access_scope' => User::ACCESS_SCOPE_ALL,
         ]), ['*']);
     }

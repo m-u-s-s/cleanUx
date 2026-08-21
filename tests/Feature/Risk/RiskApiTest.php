@@ -41,7 +41,7 @@ class RiskApiTest extends TestCase
 
     public function test_evaluations_endpoint_returns_list_for_admin(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $client = User::factory()->client()->create();
 
         $context = new RiskContext(
@@ -60,7 +60,7 @@ class RiskApiTest extends TestCase
 
     public function test_holds_endpoint_returns_only_active_by_default(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $client = User::factory()->client()->create();
         $this->createHold($client);
 
@@ -75,7 +75,7 @@ class RiskApiTest extends TestCase
 
     public function test_review_hold_approved(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $client = User::factory()->client()->create();
         $hold = $this->createHold($client);
 
@@ -97,7 +97,7 @@ class RiskApiTest extends TestCase
 
     public function test_review_hold_rejected(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $client = User::factory()->client()->create();
         $hold = $this->createHold($client);
 
@@ -113,7 +113,7 @@ class RiskApiTest extends TestCase
 
     public function test_review_hold_validates_decision_enum(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $client = User::factory()->client()->create();
         $hold = $this->createHold($client);
 

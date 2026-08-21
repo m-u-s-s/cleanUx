@@ -529,7 +529,15 @@ class ClientBookingController extends Controller
             'scheduled_time' => $b->scheduled_time
                                     ? Carbon::parse($b->scheduled_time)->format('H:i')
                                     : null,
-            'service_name' => $b->serviceCatalog?->name,
+            /*
+                UN NOM, TOUJOURS — l'écran natif l'affiche en titre de carte.
+
+                Sans catalogue rattaché, ce champ rendait `null` : la carte d'accueil montrait
+                un badge et une adresse surmontés d'un blanc, sans dire de quoi il s'agissait.
+                `CalendarDataService` retombe déjà sur « Prestation » pour la même raison ;
+                on emploie le même mot plutôt qu'un second.
+            */
+            'service_name' => $b->serviceCatalog->name ?? 'Prestation',
             'address' => $b->address,
             'city' => $b->city,
             'postal_code' => $b->postal_code,

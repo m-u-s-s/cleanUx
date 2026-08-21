@@ -1,6 +1,4 @@
-@extends('layouts.app')
-
-@section('content')
+<x-app-layout>
 <div class="max-w-2xl mx-auto p-6 bg-white rounded shadow mt-6">
 
     <h2 class="text-2xl font-bold text-blue-900 mb-4">🗣️ Laisser un feedback</h2>
@@ -50,4 +48,4 @@
         });
     });
 </script>
-@endsection
+</x-app-layout>

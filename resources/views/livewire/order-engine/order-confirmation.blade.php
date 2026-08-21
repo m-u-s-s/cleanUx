@@ -243,6 +243,37 @@
                 <p class="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-900" role="alert">{{ $error }}</p>
             @endif
 
+            {{--
+                LE CODE PROMO — la plateforme en distribuait sans que personne puisse en saisir.
+
+                Il se pose ici, sur l'ecran ou l'identite est connue : un code se valide contre un
+                compte (premier achat, plafond par personne, campagne reservee), ce que le parcours
+                public de `/commander` ne peut pas faire.
+
+                Un code refuse n'annule pas la commande : elle est confirmee, et le message dit
+                seulement que la remise n'a pas pu s'appliquer.
+            --}}
+            @unless ($confirmed)
+                <div class="rounded-2xl border border-slate-200 bg-white/70 px-4 py-4">
+                    <label for="promo-code" class="block text-sm font-medium text-slate-700">
+                        Vous avez un code promo ?
+                    </label>
+                    <input id="promo-code" type="text" wire:model="promoCode" autocomplete="off"
+                        placeholder="Saisissez votre code"
+                        class="mt-2 w-full rounded-xl border-slate-300 text-sm uppercase placeholder:normal-case focus:border-slate-900 focus:ring-slate-900">
+                    <p class="mt-2 text-xs text-slate-500">
+                        La remise s'applique a la confirmation de votre commande.
+                    </p>
+                </div>
+            @endunless
+
+            @if ($promoMessage)
+                <p role="status"
+                    class="rounded-xl px-4 py-3 text-sm {{ $promoApplique ? 'bg-emerald-50 text-emerald-900' : 'bg-amber-50 text-amber-900' }}">
+                    {{ $promoMessage }}
+                </p>
+            @endif
+
             {{-- ─── L'identité, au dernier moment ───────────────────────────────────────── --}}
             @unless ($confirmed)
                 {{--

@@ -25,7 +25,7 @@ class DecisionResourcesTest extends TestCase
 
     private function actingAsAdmin(): User
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin, ['*']);
 
         return $admin;

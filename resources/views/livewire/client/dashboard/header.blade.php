@@ -34,7 +34,14 @@
             </a>
         @endif
 
-        @if(Route::has('client.analytics.dashboard'))
+        {{--
+          `Route::has()` prouve que la porte existe, pas qu'on a la clé : le
+          composant derrière refuse tout client qui n'est pas une société
+          (`abort_unless(isClientCompany(), 403)`). Le bouton était donc offert à
+          tous les particuliers, pour un 403 garanti au clic. On pose ici la même
+          condition que la garde — la même méthode, pas une cousine.
+        --}}
+        @if(Route::has('client.analytics.dashboard') && auth()->user()?->isClientCompany())
             <a href="{{ route('client.analytics.dashboard') }}" class="brio-btn-secondary inline-flex items-center gap-2">
                 <x-ui.icon name="chart-bar" class="w-4 h-4" />
                 <span>{{ __('Analytics') }}</span>

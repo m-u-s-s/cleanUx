@@ -92,7 +92,7 @@ class DescriptorSmokeTest extends TestCase
             $this->markTestSkipped("« {$resource} » exempté : ".self::EXEMPTS[$resource]);
         }
 
-        Sanctum::actingAs(User::factory()->admin()->create(), ['*']);
+        Sanctum::actingAs(User::factory()->adminComplet()->create(), ['*']);
 
         $selects = array_values(array_filter(
             $champs,

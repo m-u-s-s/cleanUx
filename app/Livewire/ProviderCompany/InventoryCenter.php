@@ -78,7 +78,7 @@ class InventoryCenter extends Component
         // L'agence vient du navigateur : on ne la retient que si elle appartient à cette société.
         $agenceLegitime = $this->agenceId !== null
             && ProviderAgency::query()
-                ->where('organization_account_id', $orgId)
+                ->where('provider_organization_id', $orgId)
                 ->whereKey($this->agenceId)
                 ->exists();
 
@@ -188,7 +188,7 @@ class InventoryCenter extends Component
                 ->get(),
             'aReappro' => app(InventoryService::class)->aReapprovisionner($orgId),
             'agences' => ProviderAgency::query()
-                ->where('organization_account_id', $orgId)
+                ->where('provider_organization_id', $orgId)
                 ->orderBy('name')
                 ->get(['id', 'name']),
             'mouvements' => $this->articleOuvertId === null

@@ -8,6 +8,7 @@ use App\Services\Client\Calendar\CalendarDataService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -26,6 +27,7 @@ use Livewire\Component;
  */
 class ClientCalendarFC extends Component
 {
+    #[Locked]
     public ?int $selectedBookingId = null;
 
     public ?string $message = null;
@@ -141,8 +143,22 @@ class ClientCalendarFC extends Component
             return null;
         }
 
-        return Booking::with(['serviceCatalog:id,name', 'organizationSite:id,name'])
+        $booking = Booking::with(['serviceCatalog:id,name', 'organizationSite:id,name'])
             ->find($this->selectedBookingId);
+
+        if (! $booking) {
+            return null;
+        }
+
+        // Le panneau affiche l'adresse du lieu d'intervention : on repose ici
+        // la règle d'appartenance du service de reprogrammation plutôt que d'en
+        // écrire une seconde.
+        $user = Auth::user();
+        if (! $user || ! app(BookingRescheduleService::class)->peutAcceder($user, $booking)) {
+            return null;
+        }
+
+        return $booking;
     }
 
     public function render(): View

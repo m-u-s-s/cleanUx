@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Services\Client\Exports\ClientBookingExcelExporter;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -16,8 +18,17 @@ class ClientExcelExportController extends Controller
         protected ClientBookingExcelExporter $exporter,
     ) {}
 
-    public function bookings(Request $request): StreamedResponse
+    public function bookings(Request $request): StreamedResponse|RedirectResponse
     {
+        // `phpoffice/phpspreadsheet` n'est pas une dépendance de ce projet :
+        // l'exporteur a été écrit contre une bibliothèque absente, si bien que
+        // le lien d'export a toujours répondu 500. Tant qu'elle n'est pas
+        // installée, on renvoie l'utilisateur d'où il vient avec une phrase
+        // qu'il comprend, plutôt qu'une page d'erreur.
+        if (! class_exists(Spreadsheet::class)) {
+            return back()->with('error', __("L'export Excel n'est pas disponible sur cette instance."));
+        }
+
         $filters = $request->validate([
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],

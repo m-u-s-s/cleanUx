@@ -1,0 +1,343 @@
+{
+  "mission": "Parcourir la plateforme de A à Z, corriger bugs et erreurs d'affichage, vérifier la complétude des modules par rôle, optimiser — sans casser la fonction première. La boucle ne s'arrête qu'à 100 %.",
+  "maj": "08:15",
+  "pied": "Verdict T4 : 7 282 tests verts · Pint passe · PHPStan sans erreur · console admin et fabrique livrées",
+  "equipes": [
+    {
+      "cle": "t4",
+      "nom": "T4 — Comité de pilotage",
+      "etat": "fini",
+      "perimetre": "Reçoit l'utilisateur · découpe · arbitre les frontières · prononce le verdict",
+      "chiffres": [
+        {
+          "valeur": "7 282",
+          "libelle": "tests verts"
+        },
+        {
+          "valeur": "0",
+          "libelle": "échec"
+        },
+        {
+          "valeur": "14",
+          "libelle": "défauts corrigés"
+        }
+      ],
+      "taches": [
+        {
+          "etat": "ok",
+          "titre": "Instrument de balayage A→Z",
+          "detail": "242 pages × 6 profils, erreurs + matrice d'autorisation d'un seul passage"
+        },
+        {
+          "etat": "ok",
+          "titre": "Charte, protocole et périmètres posés",
+          "detail": "docs/equipes/ — mesurés sur le code réel"
+        },
+        {
+          "etat": "ok",
+          "titre": "Dépendances manquantes installées",
+          "detail": "phpoffice/phpspreadsheet + extension PHP gd activée"
+        },
+        {
+          "etat": "ok",
+          "titre": "Arbitrage des 7 zones de frontière",
+          "detail": "organisation active tranchée : middleware ET trait alignés sur organizationContextId()"
+        },
+        {
+          "etat": "ok",
+          "titre": "Verdict final prononcé",
+          "detail": "7 269 tests verts, 0 échec · Pint passe · PHPStan sans erreur"
+        },
+        {
+          "etat": "ok",
+          "titre": "Tunnel de réservation mort supprimé",
+          "detail": "39 vues retirées ; vues recompilées, 1231 tests verts, pages en 200"
+        }
+      ]
+    },
+    {
+      "cle": "t1",
+      "nom": "T1 — Client",
+      "etat": "actif",
+      "perimetre": "client_individuelle · client_societe · 6 sous-rôles — web & natif",
+      "chiffres": [
+        {
+          "valeur": "60",
+          "libelle": "composants web"
+        },
+        {
+          "valeur": "52",
+          "libelle": "écrans natifs"
+        },
+        {
+          "valeur": "4",
+          "libelle": "IDOR/gardes fermés"
+        }
+      ],
+      "taches": [
+        {
+          "etat": "ok",
+          "titre": "Fabrique « société cliente »",
+          "detail": "les 4 invariants posés ensemble ; le témoin positif en souffrance est rétabli — 5 + 3 tests"
+        },
+        {
+          "etat": "ok",
+          "titre": "Code promo enfin saisissable",
+          "detail": "campagnes, service et applicateur existaient ; aucun écran client ne les appelait — 4 tests"
+        },
+        {
+          "etat": "ok",
+          "titre": "Adresse de domicile d'autrui exposée",
+          "detail": "calendrier — verrou + appartenance reposée à la lecture"
+        },
+        {
+          "etat": "ok",
+          "titre": "Messagerie : 200 messages de n'importe quel fil",
+          "detail": "+ cas « a quitté le fil », 16 tests verts"
+        },
+        {
+          "etat": "ok",
+          "titre": "Statut technique brut affiché au client",
+          "detail": "3 écrans natifs — « sur_place » → « En cours »"
+        },
+        {
+          "etat": "ok",
+          "titre": "Avis et pourboire jamais proposés",
+          "detail": "status brut comparé à des valeurs anglaises"
+        },
+        {
+          "etat": "ok",
+          "titre": "Export Excel : dépendance absente",
+          "detail": "phpspreadsheet installé + génération sortie du flux — 9 657 o, 3 onglets, archive valide"
+        },
+        {
+          "etat": "ok",
+          "titre": "Sociétés prestataires injoignables",
+          "detail": "BrowseCompanies avait vue, tests et composant — aucune route. Porte + tuile posées, 4 tests"
+        },
+        {
+          "etat": "ok",
+          "titre": "Tuile « Mes statistiques » promettait un 403",
+          "detail": "offerte à tout client, refusée à tous sauf sociétés — même condition posée des deux côtés"
+        }
+      ]
+    },
+    {
+      "cle": "t2",
+      "nom": "T2 — Prestataire",
+      "etat": "actif",
+      "perimetre": "provider_individuelle · provider_societe · salariés · 5 sous-rôles — web & natif",
+      "chiffres": [
+        {
+          "valeur": "51",
+          "libelle": "composants web"
+        },
+        {
+          "valeur": "71",
+          "libelle": "écrans natifs"
+        },
+        {
+          "valeur": "0",
+          "libelle": "orphelin réel"
+        }
+      ],
+      "taches": [
+        {
+          "etat": "ok",
+          "titre": "Frontière société cliente / prestataire absente de l'API",
+          "detail": "org.type posé — 379 tests verts"
+        },
+        {
+          "etat": "ok",
+          "titre": "Page consommables : colonne SQL inexistante",
+          "detail": "provider_organization_id — fatal MySQL, invisible SQLite"
+        },
+        {
+          "etat": "ok",
+          "titre": "Stripe Connect : page d'erreur",
+          "detail": "dégradation propre, l'exception reste rapportée"
+        },
+        {
+          "etat": "ok",
+          "titre": "Alerte « prestataire enfermé dehors » RÉFUTÉE",
+          "detail": "routes/web.php:65 et :79 existent ; 9 composants sans route, les 9 montés — zéro orphelin"
+        },
+        {
+          "etat": "ok",
+          "titre": "Canaux d'équipe : alerte RÉFUTÉE",
+          "detail": "canalSousGarde() vérifie organisation + rattachement du canal + policy — les 7 méthodes y passent"
+        },
+        {
+          "etat": "ok",
+          "titre": "132 gardes class_exists sous surveillance",
+          "detail": "aucune classe absente ; un test les vérifie désormais en permanence"
+        }
+      ]
+    },
+    {
+      "cle": "t3",
+      "nom": "T3 — Admin",
+      "etat": "actif",
+      "perimetre": "admin · super_admin — web & console native",
+      "chiffres": [
+        {
+          "valeur": "107",
+          "libelle": "composants web"
+        },
+        {
+          "valeur": "92",
+          "libelle": "ressources console"
+        },
+        {
+          "valeur": "0",
+          "libelle": "injoignable"
+        }
+      ],
+      "taches": [
+        {
+          "etat": "ok",
+          "titre": "Console native : exploration métier servie",
+          "detail": "AnalyticsExplorationResource — liste filtrable par statut, zone et service ; module passé de « à venir » à servi"
+        },
+        {
+          "etat": "ok",
+          "titre": "Les 91 ressources de console échappaient à la capacité",
+          "detail": "api/admin/console/{ressource} : un admin manage-quality lisait la comptabilité depuis le mobile"
+        },
+        {
+          "etat": "ok",
+          "titre": "Série récurrente d'autrui lisible",
+          "detail": "trait partagé avec T1 — admin préservé, 2 témoins positifs"
+        },
+        {
+          "etat": "ok",
+          "titre": "Un admin restreint contournait par l'API",
+          "detail": "module_gate posé sur /api/admin/* ; 403 sur le web et 200 sur l'API, c'est fini"
+        },
+        {
+          "etat": "ok",
+          "titre": "Périmètre de zone appliqué côté API",
+          "detail": "AdminScope posé sur l'accueil d'API : le web et le mobile bornent enfin pareil"
+        },
+        {
+          "etat": "ok",
+          "titre": "Les 2 composants admin sans route",
+          "detail": "AnalyticsCenter branché ; MissionQualityAnalytics remonte avec lui"
+        },
+        {
+          "etat": "todo",
+          "titre": "Console native : NATIVE_ADMIN_SCREENS vide"
+        },
+        {
+          "etat": "ok",
+          "titre": "Exploration analytique métier BRANCHÉE",
+          "detail": "route + tuile ; et l'écran était CASSÉ — une jointure manquait, il tombait en erreur"
+        }
+      ]
+    }
+  ],
+  "journal": [
+    {
+      "heure": "08:15",
+      "equipe": "t4",
+      "texte": "VERDICT : 7 282 tests verts, 0 échec — console admin et fabrique « société cliente » livrées"
+    },
+    {
+      "heure": "07:30",
+      "equipe": "t4",
+      "texte": "Fixtures nues : 5 fichiers de plus alignés, aucun test de refus désarmé (vérifié un par un)"
+    },
+    {
+      "heure": "06:20",
+      "equipe": "t3",
+      "texte": "Trou trouvé par mon propre test : les 91 ressources de console ignoraient la capacité du module"
+    },
+    {
+      "heure": "05:55",
+      "equipe": "t3",
+      "texte": "Exploration métier servie à la console native — filtres statut, zone, service"
+    },
+    {
+      "heure": "05:30",
+      "equipe": "t1",
+      "texte": "Fabrique « société cliente » : 4 invariants d'un coup, témoin positif rétabli"
+    },
+    {
+      "heure": "05:10",
+      "equipe": "t4",
+      "texte": "VERDICT : suite complète 7 269 verts, Pint et PHPStan au vert"
+    },
+    {
+      "heure": "04:35",
+      "equipe": "t3",
+      "texte": "Page admin déclarée « à venir » côté natif plutôt que promettre un descripteur inexistant"
+    },
+    {
+      "heure": "04:10",
+      "equipe": "t4",
+      "texte": "L'inventaire de la console a rattrapé un écart de parité web/natif que j'allais créer"
+    },
+    {
+      "heure": "03:40",
+      "equipe": "t3",
+      "texte": "Périmètre de zone : un admin régional voyait toute la plateforme depuis l'API"
+    },
+    {
+      "heure": "03:10",
+      "equipe": "t4",
+      "texte": "Test permanent des 132 gardes class_exists : une route ne peut plus disparaître en silence"
+    },
+    {
+      "heure": "02:55",
+      "equipe": "t4",
+      "texte": "Troisième alerte de T2 réfutée : la garde des canaux porte un nom métier, pas celui qu'il cherchait"
+    },
+    {
+      "heure": "02:30",
+      "equipe": "t1",
+      "texte": "Code promo intégré à la confirmation, PUIS tunnel supprimé — 513 tests du moteur verts"
+    }
+  ],
+  "arbitrages": [
+    {
+      "etat": "ok",
+      "titre": "Suppression d'un orphelin (règle utilisateur)",
+      "detail": "comparer la richesse, porter ce qui manque, supprimer ensuite — jamais la suppression seule"
+    },
+    {
+      "etat": "ok",
+      "titre": "Alertes T2 sur la joignabilité prestataire",
+      "detail": "réfutées : T2 n'avait pas ouvert routes/web.php, et comptait « sans route » comme « injoignable »"
+    },
+    {
+      "etat": "ok",
+      "titre": "Trait de série récurrente (T1 ↔ T3)",
+      "detail": "une seule règle : RendezVousPolicy::view répond pour les deux côtés"
+    },
+    {
+      "etat": "ok",
+      "titre": "Organisation active (T1 ↔ T2 ↔ T3)",
+      "detail": "organizationContextId() fait foi — le middleware n'en lisait qu'une moitié"
+    },
+    {
+      "etat": "ok",
+      "titre": "Garde d'API société prestataire (T2)",
+      "detail": "la décision d'écarter role:employe n'a jamais couvert le type d'organisation"
+    },
+    {
+      "etat": "ok",
+      "titre": "Tunnel de réservation client (T1)",
+      "detail": "39 vues mortes : résidu ASSUMÉ de l'unification dans /commander — on ne le ressuscite pas"
+    },
+    {
+      "etat": "encours",
+      "titre": "Leviers admin subis par T1 et T2",
+      "detail": "catalogue, tarifs, drapeaux : manipulables sans capacité ni zone depuis le natif"
+    },
+    {
+      "etat": "todo",
+      "titre": "enforce_2fa absent des groupes client",
+      "detail": "décision produit — à trancher avec l'utilisateur"
+    }
+  ]
+}

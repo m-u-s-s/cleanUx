@@ -17,7 +17,7 @@ class DisputeResolutionApiTest extends TestCase
 
     public function test_admin_can_resolve_dispute_as_no_action(): void
     {
-        $admin = User::factory()->create(['role' => 'admin']);
+        $admin = User::factory()->adminComplet()->create();
         $client = User::factory()->create(['role' => 'client']);
         $case = ComplaintCase::create([
             'reference' => 'CASE-001',
@@ -40,7 +40,7 @@ class DisputeResolutionApiTest extends TestCase
 
     public function test_admin_can_resolve_dispute_as_dismissed(): void
     {
-        $admin = User::factory()->create(['role' => 'admin']);
+        $admin = User::factory()->adminComplet()->create();
         $client = User::factory()->create(['role' => 'client']);
         $case = ComplaintCase::create([
             'reference' => 'CASE-002',
@@ -64,7 +64,7 @@ class DisputeResolutionApiTest extends TestCase
 
     public function test_admin_can_escalate_dispute(): void
     {
-        $admin = User::factory()->create(['role' => 'admin']);
+        $admin = User::factory()->adminComplet()->create();
         $client = User::factory()->create(['role' => 'client']);
         $case = ComplaintCase::create([
             'reference' => 'CASE-003',
@@ -86,7 +86,7 @@ class DisputeResolutionApiTest extends TestCase
 
     public function test_resolve_rejects_invalid_resolution_type(): void
     {
-        $admin = User::factory()->create(['role' => 'admin']);
+        $admin = User::factory()->adminComplet()->create();
         $client = User::factory()->create(['role' => 'client']);
         $case = ComplaintCase::create([
             'reference' => 'CASE-004',
@@ -108,7 +108,7 @@ class DisputeResolutionApiTest extends TestCase
 
     public function test_dispatch_returns_422_when_no_planned_mission(): void
     {
-        $admin = User::factory()->create(['role' => 'admin']);
+        $admin = User::factory()->adminComplet()->create();
         $booking = Booking::factory()->create(['status' => 'en_attente']);
 
         Sanctum::actingAs($admin);

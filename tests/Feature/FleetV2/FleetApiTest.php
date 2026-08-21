@@ -33,7 +33,7 @@ class FleetApiTest extends TestCase
 
     public function test_admin_create_vehicle(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
 
         $response = $this->postJson('/api/admin/fleet-v2/vehicles', [
@@ -51,7 +51,7 @@ class FleetApiTest extends TestCase
 
     public function test_admin_create_vehicle_validates_plate_unique(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         FleetVehicle::query()->create([
             'code' => FleetVehicle::generateCode(),
             'plate' => '1-DUP-001', 'vehicle_type' => 'van',
@@ -65,7 +65,7 @@ class FleetApiTest extends TestCase
 
     public function test_admin_assign_vehicle(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $provider = User::factory()->create();
         $v = FleetVehicle::query()->create([
             'code' => FleetVehicle::generateCode(),
@@ -156,7 +156,7 @@ class FleetApiTest extends TestCase
 
     public function test_admin_log_maintenance(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $v = FleetVehicle::query()->create([
             'code' => FleetVehicle::generateCode(),
             'plate' => '1-MNT-001', 'vehicle_type' => 'van',
@@ -175,7 +175,7 @@ class FleetApiTest extends TestCase
 
     public function test_admin_log_maintenance_rejects_without_subject(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         Sanctum::actingAs($admin);
         $this->postJson('/api/admin/fleet-v2/maintenance', [
             'maintenance_type' => 'preventive',
@@ -184,7 +184,7 @@ class FleetApiTest extends TestCase
 
     public function test_admin_add_certification_runs_scan_after(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         $v = FleetVehicle::query()->create([
             'code' => FleetVehicle::generateCode(),
             'plate' => '1-CC-001', 'vehicle_type' => 'van',
@@ -206,7 +206,7 @@ class FleetApiTest extends TestCase
 
     public function test_admin_scan_expiring_endpoint(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->adminComplet()->create();
         FleetCertification::query()->create([
             'subject_type' => 'vehicle', 'subject_id' => 1,
             'certification_type' => 'insurance',

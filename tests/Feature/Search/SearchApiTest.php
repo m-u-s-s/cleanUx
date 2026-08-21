@@ -41,6 +41,75 @@ class SearchApiTest extends TestCase
         $this->assertSame(3, $response->json('meta.total'));
     }
 
+    /**
+     * UN MÉTIER ÉCRIT EN TOUTES LETTRES DOIT FILTRER.
+     *
+     * L'écran « Explorer » envoie `trade=nettoyage` ; le contrôleur ne déclarait que `trade_id`, si
+     * bien que `validate()` écartait le paramètre en silence et rendait l'annuaire ENTIER. Mesuré
+     * en direct avant correction : `?trade=peinture` et `?trade=nettoyage` renvoyaient le même
+     * prestataire de nettoyage.
+     */
+    public function test_providers_search_filtre_sur_un_metier_ecrit_en_toutes_lettres(): void
+    {
+        $nettoyage = Trade::create(['name' => 'Nettoyage à domicile', 'code' => 'CLN-T', 'slug' => 'nettoyage']);
+        $peinture = Trade::create(['name' => 'Peinture', 'code' => 'PNT-T', 'slug' => 'peinture']);
+
+        $laveur = $this->prestataireAvecMetier($nettoyage, 'Laveur de vitres');
+        $this->prestataireAvecMetier($peinture, 'Peintre en bâtiment');
+
+        $reponse = $this->getJson('/api/search/providers?trade=nettoyage');
+
+        $reponse->assertOk();
+        $this->assertSame(1, $reponse->json('meta.total'));
+        $this->assertSame($laveur->id, $reponse->json('data.0.id'));
+    }
+
+    /**
+     * TÉMOIN POSITIF : sans filtre, les DEUX prestataires ressortent.
+     *
+     * Sans lui, le test ci-dessus passerait au vert même si le filtre excluait tout le monde —
+     * ce qui a failli arriver : une première version résolvait « nettoyage » vers le mauvais
+     * métier et ne rendait plus personne.
+     */
+    public function test_providers_search_sans_metier_rend_tout_le_monde(): void
+    {
+        $nettoyage = Trade::create(['name' => 'Nettoyage à domicile', 'code' => 'CLN-T', 'slug' => 'nettoyage']);
+        $peinture = Trade::create(['name' => 'Peinture', 'code' => 'PNT-T', 'slug' => 'peinture']);
+
+        $this->prestataireAvecMetier($nettoyage, 'Laveur de vitres');
+        $this->prestataireAvecMetier($peinture, 'Peintre en bâtiment');
+
+        $this->getJson('/api/search/providers')->assertOk()->assertJsonPath('meta.total', 2);
+    }
+
+    /** Un libellé qui ne correspond à aucun métier rend zéro résultat, et non l'annuaire entier. */
+    public function test_providers_search_un_metier_inconnu_ne_rend_personne(): void
+    {
+        $nettoyage = Trade::create(['name' => 'Nettoyage à domicile', 'code' => 'CLN-T', 'slug' => 'nettoyage']);
+        $this->prestataireAvecMetier($nettoyage, 'Laveur de vitres');
+
+        $this->getJson('/api/search/providers?trade=zzzzz')->assertOk()->assertJsonPath('meta.total', 0);
+    }
+
+    private function prestataireAvecMetier(Trade $trade, string $nom): User
+    {
+        $user = User::factory()->create(['role' => 'employe', 'name' => $nom]);
+
+        ProviderProfile::create([
+            'user_id' => $user->id,
+            'provider_type' => 'independent',
+            'status' => 'active',
+            'verification_status' => 'verified',
+            'rating_avg' => 4.5,
+            'rating_count' => 3,
+            'hourly_rate' => 40,
+        ]);
+
+        $user->trades()->attach($trade->id);
+
+        return $user;
+    }
+
     public function test_providers_search_min_rating_filter_via_api(): void
     {
         $low = User::factory()->create(['role' => 'employe']);

@@ -4,9 +4,11 @@ namespace App\Services\Missions\OnSite;
 
 use App\Models\InspectionItem;
 use App\Models\Mission;
+use App\Models\MissionChecklistItem;
 use App\Models\MissionEvent;
 use App\Services\Missions\HourlyExtensionService;
 use App\Services\Missions\HourlyMissionClock;
+use App\Services\Missions\MissionChecklistService;
 use Illuminate\Support\Carbon;
 
 /**
@@ -94,17 +96,30 @@ class MissionTimelineService
      *
      * @return array{done: int, total: int, percent: int}
      */
+    /**
+     * L'AVANCEMENT COMPTE LA CHECKLIST QUE LE CLIENT VOIT, PAS CELLE DE L'INSPECTION.
+     *
+     * Trois listes cohabitent sur une mission, et elles ne disent pas la même chose :
+     * `mission_checklist_items` porte les tâches convenues — celles que l'écran affiche sous
+     * « Ma liste de tâches », et les seules qui bloquent la clôture ; `inspection_items`
+     * porte le contrôle qualité, rempli après coup par un autre métier.
+     *
+     * Ce compteur lisait l'inspection. Sur l'écran de suivi du client, il annonçait donc
+     * « 0/0 » juste au-dessus de six tâches bien réelles : le badge et la liste, à trois
+     * centimètres l'un de l'autre, comptaient deux choses différentes.
+     */
+    /** @return array{done: int, total: int, percent: int} */
     public function avancement(Mission $mission): array
     {
-        $requete = InspectionItem::query()
-            ->whereIn('inspection_id', function ($q) use ($mission) {
+        $requete = MissionChecklistItem::query()
+            ->whereIn('mission_checklist_id', function ($q) use ($mission) {
                 $q->select('id')
-                    ->from('mission_quality_inspections')
+                    ->from('mission_checklists')
                     ->where('mission_id', $mission->id);
             });
 
         $total = (clone $requete)->count();
-        $faits = (clone $requete)->whereNotNull('recorded_at')->count();
+        $faits = (clone $requete)->where('status', MissionChecklistService::FAITE)->count();
 
         return [
             'done' => $faits,
