@@ -1,5 +1,5 @@
 /**
- * Failure-path tests for the provider EarningsScreen.
+ * Failure-path tests for the provider WalletScreen (l'onglet « Revenus »).
  *
  * Regression: the screen only destructured `isLoading`, never the error. A 403 on
  * /provider/wallet/* (accounts with no provider_profiles row) therefore rendered
@@ -56,6 +56,12 @@ jest.mock('@/ui', () => {
     ),
     Skeleton: () => <View testID="skeleton" />,
     Divider: () => <View />,
+    EmptyState: ({ title, message }: any) => (
+      <View testID="empty-state">
+        <Text>{title}</Text>
+        <Text>{message}</Text>
+      </View>
+    ),
     ErrorState: ({ message, onRetry, compact }: any) => (
       <View testID={compact ? 'error-state-compact' : 'error-state'}>
         <Text>{message}</Text>
@@ -93,7 +99,7 @@ jest.mock('@/theme', () => ({
 // ── Imports ───────────────────────────────────────────────────────────────────
 
 import { apiClient } from '@/api';
-import { EarningsScreen } from '@/screens/EarningsScreen';
+import { WalletScreen } from '@/screens/WalletScreen';
 
 const apiMock = new MockAdapter(apiClient);
 
@@ -119,12 +125,12 @@ beforeEach(() => {
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-describe('EarningsScreen failure paths', () => {
+describe('WalletScreen failure paths', () => {
   it('explains a 403 instead of rendering an empty wallet', async () => {
     apiMock.onGet('/provider/wallet/balance').reply(403, FORBIDDEN);
     apiMock.onGet('/provider/wallet/transactions').reply(403, FORBIDDEN);
 
-    render(<EarningsScreen />, { wrapper: makeWrapper() });
+    render(<WalletScreen />, { wrapper: makeWrapper() });
 
     await waitFor(() => {
       expect(screen.getByText(/aucun portefeuille n'y est rattaché/)).toBeTruthy();
@@ -138,7 +144,7 @@ describe('EarningsScreen failure paths', () => {
     apiMock.onGet('/provider/wallet/balance').reply(500);
     apiMock.onGet('/provider/wallet/transactions').reply(500);
 
-    render(<EarningsScreen />, { wrapper: makeWrapper() });
+    render(<WalletScreen />, { wrapper: makeWrapper() });
 
     await waitFor(() => {
       expect(screen.getByText('Impossible de charger vos revenus.')).toBeTruthy();
@@ -151,7 +157,7 @@ describe('EarningsScreen failure paths', () => {
       .reply(200, { available: 120.5, pending: 30, currency: 'EUR' });
     apiMock.onGet('/provider/wallet/transactions').reply(500);
 
-    render(<EarningsScreen />, { wrapper: makeWrapper() });
+    render(<WalletScreen />, { wrapper: makeWrapper() });
 
     await waitFor(() => {
       expect(screen.getByTestId('kpi-Disponible')).toBeTruthy();
@@ -165,7 +171,7 @@ describe('EarningsScreen failure paths', () => {
     apiMock.onGet('/provider/wallet/balance').reply(403, FORBIDDEN);
     apiMock.onGet('/provider/wallet/transactions').reply(403, FORBIDDEN);
 
-    render(<EarningsScreen />, { wrapper: makeWrapper() });
+    render(<WalletScreen />, { wrapper: makeWrapper() });
 
     await waitFor(() => screen.getByLabelText('Réessayer'));
     const before = apiMock.history['get']!.filter(c => c.url?.startsWith('/provider/wallet')).length;
@@ -195,7 +201,7 @@ describe('EarningsScreen failure paths', () => {
       ],
     });
 
-    render(<EarningsScreen />, { wrapper: makeWrapper() });
+    render(<WalletScreen />, { wrapper: makeWrapper() });
 
     await waitFor(() => {
       expect(screen.getByText('120.50 EUR')).toBeTruthy();

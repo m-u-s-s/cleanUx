@@ -80,7 +80,8 @@ export function CompanyProfileScreen() {
 
         Ces trois routes sont montées sur la pile société depuis sa création — le commentaire de
         `RootNavigator` annonçait « l'issue vers l'espace terrain ET LES RÉGLAGES » — mais leur seul
-        appelant était `SettingsScreen`, qui vit dans l'espace terrain. Trois écrans montés,
+        appelant était `SettingsScreen`, qui vivait dans l'espace terrain et a depuis été supprimé
+        (il ne faisait que redoubler `ProfileScreen`). Trois écrans montés,
         joignables par personne d'ici. Un `navigate()` vers une route absente de la pile n'échoue
         pas bruyamment : il ne fait rien, ce qui rend ce genre de lien mort très discret.
       */}

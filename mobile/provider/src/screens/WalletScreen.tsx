@@ -2,19 +2,44 @@ import React, { useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Alert, TextInput as RNTextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Screen, KPICard, Badge, Button, Skeleton, Divider, EmptyState } from '@/ui';
+import { Screen, KPICard, Badge, Button, Skeleton, Divider, EmptyState, ErrorState } from '@/ui';
 import { useWalletBalance, useWalletTransactions, useWithdraw, useStripeConnectStatus } from '@/earnings';
+import { ApiError } from '@/api';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+
+/**
+ * CE QU'ON DIT QUAND LE PORTEFEUILLE NE RÉPOND PAS.
+ *
+ * Repris de `EarningsScreen`, que cet écran remplace dans l'onglet « Revenus ». Les endpoints
+ * portefeuille refusent 403 quand le compte n'a pas de ligne `provider_profiles` — un `employe`
+ * peut exister sans. Le dire vaut mieux qu'un échec générique, et surtout mieux que ce que cet
+ * écran-ci faisait : afficher « 0.00 EUR » et « Aucune transaction » comme si la donnée était
+ * vraie. Sur un écran d'argent, un zéro inventé est pire qu'une erreur.
+ */
+function messageDErreurPortefeuille(error: unknown): string {
+  if (error instanceof ApiError && error.status === 403) {
+    return "Ce compte n'a pas de profil prestataire, aucun portefeuille n'y est rattaché.";
+  }
+
+  return 'Impossible de charger vos revenus.';
+}
 
 export function WalletScreen() {
   const styles = stylesFor(useThemeColors());
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const themeColors = useThemeColors();
-  const { data: balance, isLoading: loadingBalance } = useWalletBalance();
-  const { data: transactions, isLoading: loadingTx } = useWalletTransactions();
+  const balanceQuery = useWalletBalance();
+  const txQuery = useWalletTransactions();
+  const { data: balance, isLoading: loadingBalance } = balanceQuery;
+  const { data: transactions, isLoading: loadingTx } = txQuery;
+
+  const reessayerLePortefeuille = React.useCallback(() => {
+    void balanceQuery.refetch();
+    void txQuery.refetch();
+  }, [balanceQuery, txQuery]);
   const { data: stripe } = useStripeConnectStatus();
   const withdraw = useWithdraw();
   const [withdrawAmount, setWithdrawAmount] = useState('');
@@ -54,6 +79,24 @@ export function WalletScreen() {
     );
   };
 
+  /*
+   * Les deux requêtes passent la MÊME garde côté serveur : quand les deux tombent, le portefeuille
+   * entier est indisponible et il ne reste rien d'honnête à afficher.
+   */
+  if (balanceQuery.isError && txQuery.isError) {
+    return (
+      <Screen testID="wallet-screen">
+        <Text style={styles.title} accessibilityRole="header">
+          Portefeuille
+        </Text>
+        <ErrorState
+          message={messageDErreurPortefeuille(balanceQuery.error)}
+          onRetry={reessayerLePortefeuille}
+        />
+      </Screen>
+    );
+  }
+
   return (
     <Screen scroll testID="wallet-screen">
       <Text style={styles.title} accessibilityRole="header">
@@ -79,6 +122,12 @@ export function WalletScreen() {
           <Skeleton width="48%" height={80} />
           <Skeleton width="48%" height={80} />
         </View>
+      ) : balanceQuery.isError ? (
+        <ErrorState
+          compact
+          message="Solde indisponible."
+          onRetry={() => void balanceQuery.refetch()}
+        />
       ) : balance ? (
         <View style={styles.kpiRow}>
           <KPICard
@@ -144,6 +193,12 @@ export function WalletScreen() {
       </Text>
       {loadingTx ? (
         <Skeleton width="100%" height={200} />
+      ) : txQuery.isError ? (
+        <ErrorState
+          compact
+          message="Impossible de charger vos transactions."
+          onRetry={() => void txQuery.refetch()}
+        />
       ) : (
         <FlatList
           data={transactions ?? []}

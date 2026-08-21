@@ -37,9 +37,20 @@ const SANS_ENTREE: Record<string, string> = {
    * repartait à zéro dès qu'on quittait l'écran. Le laisser dormant, c'était garantir qu'on le
    * recopie le jour où il faudrait afficher un temps écoulé quelque part.
    */
-  'MoreScreen.tsx':
-    'Aucun appelant : la navigation secondaire passe par `ModulesRoute`. Même dette, même ' +
-    'traitement.',
+  /*
+   * `MoreScreen.tsx` a occupé cette liste et a été SUPPRIMÉ le 2026-08-21, avec `HomeScreen`,
+   * `SettingsScreen` et `EarningsScreen`. La comparaison exigée avant toute suppression a été
+   * faite écran par écran : les trois premiers n'apportaient RIEN que leur équivalent routé
+   * n'offrait déjà — le menu de `MoreScreen` est inclus dans `ProfileScreen`, l'unique appel de
+   * `SettingsScreen` (`PUT /provider/profile`) est exactement celui de `LanguageScreen`, et les
+   * compteurs de `HomeScreen` vivent dans la feuille d'actions du tableau de bord.
+   *
+   * `EarningsScreen` est un cas à part, et instructif : `WalletScreen` l'a remplacé dans l'onglet
+   * « Revenus » parce qu'il sait RETIRER. Mais il ne savait pas ÉCHOUER — pas d'état d'erreur, pas
+   * de reprise, un « 0.00 EUR » affiché quand l'API refusait. Sa gestion d'erreur a donc été
+   * portée AVANT la suppression, et les cinq tests de chemins d'échec suivent le portefeuille.
+   * Une comparaison qui ne regarde que les hooks et les endpoints ne voit pas cela.
+   */
 };
 
 /**

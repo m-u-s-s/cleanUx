@@ -5,7 +5,7 @@ import { useChannel } from '@/realtime';
 import type { MissionAssignment, Mission, MissionLifecycleAction } from './types';
 
 // `enabled` par défaut à `true` : aucun appelant existant (DashboardScreen, MissionInboxScreen,
-// ProviderMap, HomeScreen) n'a besoin de changer. DashboardActionsSheet le passe à `false` tant
+// ProviderMap) n'a besoin de changer. DashboardActionsSheet le passe à `false` tant
 // que le sheet est fermé — sinon le polling 15s tournerait pour un contenu hors écran.
 export function useMissionInbox(enabled: boolean = true) {
   return useQuery<MissionAssignment[]>({

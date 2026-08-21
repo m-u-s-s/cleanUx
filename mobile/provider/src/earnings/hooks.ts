@@ -6,8 +6,8 @@ export interface WalletTransaction { id: number; type: string; amount: number; c
 export interface StripeConnectStatus { onboarded: boolean; charges_enabled: boolean; payouts_enabled: boolean; requirements: string[]; }
 export interface Payout { id: string; amount: number; currency: string; status: string; arrival_date: string; }
 
-// `enabled` par défaut à `true` : aucun appelant existant (EarningsScreen, DashboardScreen,
-// WalletScreen, HomeScreen) n'a besoin de changer. DashboardActionsSheet le passe à `false` tant
+// `enabled` par défaut à `true` : aucun appelant existant (WalletScreen, DashboardScreen,
+// WalletScreen) n'a besoin de changer. DashboardActionsSheet le passe à `false` tant
 // que le sheet est fermé (voir useMissionInbox pour la même raison).
 export function useWalletBalance(enabled: boolean = true) {
   return useQuery<WalletBalance>({
