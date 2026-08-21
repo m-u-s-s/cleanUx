@@ -72,6 +72,42 @@ trait HasLegacyBookingAliases
     ];
 
     /**
+     * VOCABULAIRE ATTENDU PAR CHAQUE CÔTÉ D'UNE PAIRE ÉNUMÉRÉE.
+     *
+     * Recopier une date sans la formater cassait le chemin ASAP ; recopier une PRIORITÉ sans la
+     * traduire casse le chemin des urgences, et de la même manière — la valeur arrive intacte dans
+     * une colonne dont personne n'emploie ce mot.
+     *
+     * Les deux côtés ne parlent pas la même langue, et chacun a raison chez lui :
+     *
+     *   `priorite`  les listes de choix qui alimentent les filtres — `normale`, `haute`, `urgente`
+     *               (resources/views/livewire/admin/missions/filters.blade.php:36-38 et
+     *                resources/views/livewire/employe/mes-rendez-vous.blade.php:8-10). C'est la
+     *               colonne que tout le dépôt interroge : 86 emplacements, dont des `where()` qui
+     *               court-circuitent tout accesseur de modèle.
+     *   `priority`  ce que valide l'API — `in:normal,urgent,low`
+     *               (app/Http/Requests/Api/Client/StoreBookingRequest.php:30). AUCUN filtre du
+     *               dépôt ne l'interroge sur cette table.
+     *
+     * Mesuré avant correction : `CreateBookingFromApiAction.php:112` écrit `'urgent'` pour une
+     * réservation immédiate, le trait le recopiait tel quel, et les lecteurs cherchent `'urgente'`
+     * — SendRendezVousReminders.php:126 (l'alerte d'urgence), PlanningAdmin.php:160/185/229,
+     * AgendaHebdomadaire.php:94, ProfilClient.php:95. Une réservation immédiate passée par l'API
+     * n'était donc urgente pour personne.
+     *
+     * La table couvre l'UNION des deux vocabulaires, pas leur intersection : l'API ne sait pas dire
+     * `haute` et les écrans ne proposent pas `basse`, mais une valeur venue d'ailleurs ne doit pas
+     * se perdre en traversant. Toute valeur absente de la table passe inchangée — ce mécanisme ne
+     * peut donc rien réécrire qu'il ne connaisse.
+     *
+     * @var array<string, array<string, string>>
+     */
+    protected static array $legacyAliasValueMaps = [
+        'priorite' => ['low' => 'basse', 'normal' => 'normale', 'high' => 'haute', 'urgent' => 'urgente'],
+        'priority' => ['basse' => 'low', 'normale' => 'normal', 'haute' => 'high', 'urgente' => 'urgent'],
+    ];
+
+    /**
      * Synchronise legacy FR ↔ modern EN so that both columns are always
      * consistent in the database regardless of which side was written.
      */
@@ -193,6 +229,10 @@ trait HasLegacyBookingAliases
      */
     protected function normaliseLegacyAliasValue(string $attribute, mixed $value): mixed
     {
+        if (is_string($value) && isset(static::$legacyAliasValueMaps[$attribute][$value])) {
+            return static::$legacyAliasValueMaps[$attribute][$value];
+        }
+
         if (! $value instanceof \DateTimeInterface || $this->hasCast($attribute)) {
             return $value;
         }
