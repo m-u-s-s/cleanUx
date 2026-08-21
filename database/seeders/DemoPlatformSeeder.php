@@ -571,7 +571,6 @@ class DemoPlatformSeeder extends Seeder
             'duree_estimee' => $duration,
             'currency' => 'EUR',
             'options' => ['seeded' => true],
-            'areas' => ['demo'],
             'pricing_snapshot' => [
                 'service_catalog_id' => $service->id,
                 'service_name' => $service->name,

@@ -97,7 +97,6 @@ use Illuminate\Support\Facades\Schema;
  * @property int $surface_m2
  * @property array $options
  * @property array $options_prestation
- * @property array $areas
  * @property array $zones_specifiques
  * @property array $materiel_specifique
  * @property array $photos_reference
@@ -229,7 +228,6 @@ class Booking extends Model
         // Données structurées
         'options',
         'options_prestation',
-        'areas',
         'zones_specifiques',
         'materiel_specifique',
         'photos_reference',
@@ -436,7 +434,6 @@ class Booking extends Model
         // JSON / arrays
         'options' => 'array',
         'options_prestation' => 'array',
-        'areas' => 'array',
         'zones_specifiques' => 'array',
         'materiel_specifique' => 'array',
         'photos_reference' => 'array',
