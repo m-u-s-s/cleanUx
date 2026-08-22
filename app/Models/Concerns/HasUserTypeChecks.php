@@ -47,16 +47,31 @@ trait HasUserTypeChecks
         return $this->providerProfile()->exists();
     }
 
+    /**
+     * UN REPLI NE PARLE QUE QUAND L'AUTRE SE TAIT.
+     *
+     * L'ancienne version testait « le type est-il PERSONAL ? », et retombait sur la colonne
+     * héritée dans TOUS les autres cas — y compris quand le profil disait clairement autre chose.
+     * Un client dont `customer_type` vaut `company` et dont `role` vaut `client` répondait donc
+     * OUI à « êtes-vous un particulier ? ».
+     *
+     * Mesuré sur `brio` avant correction : DIX clients société sur trente comptes répondaient oui.
+     * Aucun n'en souffrait — tous les appelants testent la société AVANT le particulier, si bien
+     * que la mauvaise réponse n'était jamais atteinte. C'est un défaut latent, pas une panne : il
+     * attend le premier appelant qui interrogera ce prédicat seul.
+     *
+     * La règle est désormais celle que le commentaire d'origine décrivait déjà — « remove once all
+     * users have a populated customer_profile row » : un profil renseigné TRANCHE, et la colonne
+     * héritée ne parle que s'il n'y en a pas.
+     */
     public function isClientPersonal(): bool
     {
         $customerType = $this->customerProfile?->customer_type;
 
-        if ($customerType instanceof CustomerType) {
-            if ($customerType === CustomerType::PERSONAL) {
-                return true;
-            }
-        } elseif ($customerType === CustomerType::PERSONAL->value) {
-            return true;
+        if ($customerType !== null) {
+            return $customerType instanceof CustomerType
+                ? $customerType === CustomerType::PERSONAL
+                : $customerType === CustomerType::PERSONAL->value;
         }
 
         /**
@@ -93,6 +108,23 @@ trait HasUserTypeChecks
             // type inconnu : on retombe sur le fallback legacy ci-dessous.
         }
 
+        /*
+         * LES DEUX SIGNAUX TYPÉS RESTENT GÉNÉREUX, SEUL L'HÉRITÉ SE TAIT.
+         *
+         * On ne fait PAS trancher `customer_type` seul ici, contrairement à `isClientPersonal()`.
+         * Un particulier peut appartenir à une société cliente — c'est le cas C2B que cette
+         * plateforme sert — et lui refuser l'espace société sur la foi de son profil personnel le
+         * mettrait dehors d'un espace où il a sa place. Les deux signaux valent donc toujours.
+         *
+         * Ce qui change : la colonne héritée ne parle plus que si AUCUN des deux ne s'est exprimé.
+         * Sans cette condition, un profil disant « particulier » et un `role` disant « entreprise »
+         * ouvraient quand même les quatorze écrans gardés par `abort_unless(isClientCompany())`.
+         * Mesuré avant correction : zéro compte dans ce cas — le trou existait sans être emprunté.
+         */
+        if ($customerType !== null || ! empty($this->organization_account_id)) {
+            return false;
+        }
+
         /**
          * @deprecated Reading the legacy `role` column directly. Remove once all users
          *             have a populated customer_profile row.
@@ -119,8 +151,21 @@ trait HasUserTypeChecks
             refusait de son espace un prestataire que le dispatch envoyait pourtant en mission.
             L'énumération porte la règle ; on la lui demande.
         */
-        if ($providerType?->isIndependent()) {
-            return true;
+        if ($providerType !== null) {
+            /*
+             * UN PROFIL RENSEIGNÉ TRANCHE, DANS LES DEUX SENS.
+             *
+             * L'ancienne version ne rendait `true` que sur un type indépendant, puis retombait sur
+             * la colonne héritée — si bien qu'un prestataire SALARIÉ dont `role` valait `employe`
+             * répondait oui à « êtes-vous indépendant ? ». Mesuré sur `brio` : NEUF prestataires
+             * `company_worker` sur trente comptes.
+             *
+             * Sans conséquence à ce jour : le seul appelant est `isEmploye()`, qui unit ce
+             * prédicat à `isProviderCompanyWorker()` par un `||` — les deux vrais donnent la même
+             * réponse. Le défaut attendait le premier appelant qui l'interrogerait seul, pour
+             * décider d'un versement ou d'un rattachement.
+             */
+            return $providerType->isIndependent();
         }
 
         /**
