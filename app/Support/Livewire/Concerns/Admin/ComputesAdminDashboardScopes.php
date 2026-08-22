@@ -91,7 +91,7 @@ trait ComputesAdminDashboardScopes
 
     protected function scopedEmployeesQuery(): Builder
     {
-        $query = User::query()->where('role', 'employe');
+        $query = User::query()->providers();
         $zoneIds = $this->scopeZoneIds();
 
         if ($zoneIds->isNotEmpty()) {

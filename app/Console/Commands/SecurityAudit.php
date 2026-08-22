@@ -16,7 +16,7 @@ class SecurityAudit extends Command
     {
         $issues = 0;
 
-        $admins = User::query()->where('role', User::ROLE_ADMIN)->get();
+        $admins = User::query()->admins()->get();
 
         foreach ($admins as $admin) {
             if (! $admin->is_active) {

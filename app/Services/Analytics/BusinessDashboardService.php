@@ -31,13 +31,13 @@ class BusinessDashboardService
                 ->whereBetween('actual_end_at', [$currentMonthStart, $now])
                 ->count(),
 
-            'clients_total' => User::whereIn('role', ['client', 'entreprise'])->count(),
-            'premium_clients' => User::whereIn('role', ['client', 'entreprise'])
+            'clients_total' => User::query()->clients()->count(),
+            'premium_clients' => User::query()->clients()
                 ->where('plan_type', 'premium')
                 ->where('plan_status', 'active')
                 ->count(),
 
-            'employees_total' => User::where('role', 'employe')->where('is_active', true)->count(),
+            'employees_total' => User::query()->providers()->where('is_active', true)->count(),
 
             'open_claims' => class_exists(CustomerClaim::class)
                 ? CustomerClaim::whereIn('status', ['open', 'in_review', 'waiting_client'])->count()

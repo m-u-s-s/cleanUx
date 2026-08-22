@@ -72,7 +72,7 @@ class CalendrierInterne extends Component
 
     public function getEmployesProperty()
     {
-        return User::where('role', 'employe')->orderBy('name')->get(['id', 'name']);
+        return User::query()->providers()->orderBy('name')->get(['id', 'name']);
     }
 
     protected function baseQuery(): Builder

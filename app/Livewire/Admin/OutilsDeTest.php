@@ -18,7 +18,7 @@ class OutilsDeTest extends Component
         return [
             'utilisateurs' => User::count(),
             'clients' => User::clientFacing()->count(),
-            'employes' => User::where('role', 'employe')->count(),
+            'employes' => User::query()->providers()->count(),
             'rendez_vous' => Booking::count(),
             'feedbacks' => Feedback::count(),
             'logs' => ActivityLog::count(),

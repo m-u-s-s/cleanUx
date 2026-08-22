@@ -56,7 +56,7 @@ class MissionsAdmin extends Component
 
     public function getEmployesProperty()
     {
-        return User::where('role', 'employe')->orderBy('name')->get();
+        return User::query()->providers()->orderBy('name')->get();
     }
 
     public function dispatchRendezVous(int $rdvId): void

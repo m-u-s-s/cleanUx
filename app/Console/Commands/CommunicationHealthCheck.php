@@ -41,7 +41,7 @@ class CommunicationHealthCheck extends Command
             return self::SUCCESS;
         }
 
-        $admins = User::query()->where('role', 'admin')->get();
+        $admins = User::query()->admins()->get();
 
         foreach ($admins as $admin) {
             $admin->notify(new AdminDigestNotification(

@@ -10,7 +10,7 @@ class EmployeePerformanceService
 {
     public function get(): array
     {
-        $employees = User::where('role', 'employe')->get();
+        $employees = User::query()->providers()->get();
 
         return $employees->map(function ($employee) {
             $missions = Mission::where('lead_employee_id', $employee->id)->get();

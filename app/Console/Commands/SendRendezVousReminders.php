@@ -128,7 +128,7 @@ class SendRendezVousReminders extends Command
             ->where('created_at', '<=', now()->subHours(2))
             ->get();
 
-        $admins = User::where('role', 'admin')->get();
+        $admins = User::query()->admins()->get();
 
         foreach ($rdvs as $rdv) {
             foreach ($admins as $admin) {
@@ -149,7 +149,7 @@ class SendRendezVousReminders extends Command
 
     protected function sendOverrunAlerts(): void
     {
-        $admins = User::where('role', 'admin')->get();
+        $admins = User::query()->admins()->get();
 
         $missions = Booking::query()
             ->with('serviceCatalog:id,name')
@@ -188,7 +188,7 @@ class SendRendezVousReminders extends Command
 
     protected function sendLowFeedbackRateDigest(): void
     {
-        $admins = User::where('role', 'admin')->get();
+        $admins = User::query()->admins()->get();
 
         $finished = Booking::where('status', 'termine')
             ->where('mission_finished_at', '>=', now()->subDays(30))
@@ -227,9 +227,9 @@ class SendRendezVousReminders extends Command
 
     protected function sendAutoReassignmentSuggestions(): void
     {
-        $admins = User::where('role', 'admin')->get();
+        $admins = User::query()->admins()->get();
         $today = today()->toDateString();
-        $employees = User::where('role', 'employe')->get();
+        $employees = User::query()->providers()->get();
 
         $loads = $employees->map(function ($employe) use ($today) {
             $rdvs = Booking::with('serviceZone')

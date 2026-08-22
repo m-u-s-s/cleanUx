@@ -24,7 +24,7 @@ class AuditSeedIntegrity extends Command
             ['slugs comptes entreprise dupliqués', $this->countDuplicateRows('organization_accounts', 'slug', true)],
             ['TVA comptes entreprise dupliqués', $this->countDuplicateRows('organization_accounts', 'tva_number', true)],
             ['slugs zones dupliqués', $this->countDuplicateRows('service_zones', 'slug')],
-            ['utilisateurs entreprise sans compte', User::query()->where('role', User::ROLE_ENTREPRISE)->whereNull('organization_account_id')->count()],
+            ['utilisateurs entreprise sans compte', User::query()->companyClients()->whereNull('organization_account_id')->count()],
             ['utilisateurs avec zone primaire inexistante', User::query()->whereNotNull('primary_service_zone_id')->whereDoesntHave('primaryServiceZone')->count()],
             ['utilisateurs avec code postal inexistant', User::query()->whereNotNull('postal_code_id')->whereDoesntHave('postalCode')->count()],
             ['sites sans compte lié', OrganizationSite::query()->whereDoesntHave('organizationAccount')->count()],

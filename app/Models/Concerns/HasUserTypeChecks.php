@@ -9,6 +9,7 @@ use App\Enums\ProviderType;
 use App\Enums\Role;
 use App\Http\Middleware\CheckRole;
 use App\Models\OrganizationAccount;
+use Illuminate\Database\Eloquent\Builder;
 
 trait HasUserTypeChecks
 {
@@ -45,6 +46,104 @@ trait HasUserTypeChecks
     public function isProvider(): bool
     {
         return $this->providerProfile()->exists();
+    }
+
+    /**
+     * INTERROGER UNE POPULATION, AVEC LA MÊME RÈGLE QUE POUR UN COMPTE.
+     *
+     * ── LE DÉFAUT QUE CES PORTÉES REMPLACENT ─────────────────────────────────────────────────
+     *
+     * Vingt-quatre endroits du dépôt écrivaient `where('role', 'employe')` ou
+     * `where('role', User::ROLE_ENTREPRISE)` — la colonne HÉRITÉE, interrogée en base, hors de
+     * tout prédicat. Mesuré sur `brio` :
+     *
+     *   `where('role','employe')`      voit 11 prestataires ; la vérité typée en compte 14.
+     *                                  TROIS sont invisibles — dont pour les rappels de
+     *                                  rendez-vous (`SendRendezVousReminders:232`).
+     *   `where('role','entreprise')`   rend ZÉRO, alors que onze comptes portent
+     *                                  `customer_type = 'company'`. Tout filtre sur cette valeur
+     *                                  est aveugle, y compris l'audit d'intégrité des données.
+     *
+     * Contrairement au défaut des prédicats — latent, neutralisé par l'ordre des tests — celui-ci
+     * est ACTIF : les mauvaises lignes sortent vraiment des requêtes.
+     *
+     * ── POURQUOI ICI, ET PAS DANS UN FICHIER DE PORTÉES ──────────────────────────────────────
+     *
+     * Chaque portée reflète EXACTEMENT le prédicat qui vit dix lignes plus bas. Les séparer
+     * créerait une troisième source de vérité, et c'est précisément ce que ce fichier existe pour
+     * empêcher : la version SQL et la version PHP doivent se lire côte à côte pour rester
+     * d'accord.
+     *
+     * @param  Builder<static>  $query
+     */
+    public function scopeProviders(Builder $query): void
+    {
+        // Miroir de `isEmploye()` = `isProviderIndependent() || isProviderCompanyWorker()`.
+        // Un profil renseigné suffit, quel que soit son type — les quatre valeurs de l'énumération
+        // désignent un prestataire. Sans profil, la colonne héritée décide.
+        $query->where(function (Builder $q) {
+            $q->whereHas('providerProfile', fn ($p) => $p->whereNotNull('provider_type'))
+                ->orWhere(function (Builder $sans) {
+                    $sans->whereDoesntHave('providerProfile', fn ($p) => $p->whereNotNull('provider_type'))
+                        ->where('role', self::ROLE_EMPLOYE);
+                });
+        });
+    }
+
+    /**
+     * Miroir de `isAdmin()`.
+     *
+     * Le repli hérité reste inconditionnel ici, comme dans le prédicat : `platform_role` est
+     * `NOT NULL DEFAULT 'user'`, donc « absent » n'y est pas exprimable.
+     *
+     * @param  Builder<static>  $query
+     */
+    public function scopeAdmins(Builder $query): void
+    {
+        $query->where(function (Builder $q) {
+            $q->whereIn('platform_role', [self::ROLE_ADMIN, 'super_admin'])
+                ->orWhereIn('role', [self::ROLE_ADMIN, 'super_admin']);
+        });
+    }
+
+    /**
+     * Miroir de `isClientCompany()` — les deux signaux typés, puis l'hérité s'ils se taisent.
+     *
+     * @param  Builder<static>  $query
+     */
+    public function scopeCompanyClients(Builder $query): void
+    {
+        $typesClients = array_values(array_map(
+            fn (OrganizationType $t) => $t->value,
+            array_filter(OrganizationType::cases(), fn (OrganizationType $t) => $t->isClient()),
+        ));
+
+        $query->where(function (Builder $q) use ($typesClients) {
+            $q->whereHas('customerProfile', fn ($p) => $p->where('customer_type', CustomerType::COMPANY->value))
+                ->orWhereHas('organizationAccount', fn ($o) => $o->whereIn('type', $typesClients))
+                ->orWhere(function (Builder $sans) {
+                    $sans->whereDoesntHave('customerProfile', fn ($p) => $p->whereNotNull('customer_type'))
+                        ->whereNull('organization_account_id')
+                        ->where('role', self::ROLE_ENTREPRISE);
+                });
+        });
+    }
+
+    /**
+     * Miroir de `isClient()` = particuliers ET sociétés.
+     *
+     * @param  Builder<static>  $query
+     */
+    public function scopeClients(Builder $query): void
+    {
+        $query->where(function (Builder $q) {
+            $q->whereHas('customerProfile', fn ($p) => $p->whereNotNull('customer_type'))
+                ->orWhere(fn (Builder $societe) => $societe->companyClients())
+                ->orWhere(function (Builder $sans) {
+                    $sans->whereDoesntHave('customerProfile', fn ($p) => $p->whereNotNull('customer_type'))
+                        ->whereIn('role', [self::ROLE_CLIENT, self::ROLE_ENTREPRISE]);
+                });
+        });
     }
 
     /**
@@ -256,7 +355,11 @@ trait HasUserTypeChecks
     /**
      * Single source of truth for the role-string matching used by the
      * `role:` route middleware ({@see CheckRole}).
-     * Uses typed fields only (no legacy `role` column — dropped in migration A3).
+     * Les champs TYPÉS d'abord — mais la colonne `role` N'EST PAS supprimée, contrairement à ce
+     * que ce commentaire affirmait. La migration `2026_05_27_000003_drop_legacy_role_from_users`
+     * porte ce nom et a bien tourné ; son étape 4, celle qui supprime, est EN COMMENTAIRE. La
+     * colonne vit donc encore, elle est lue en repli par les prédicats ci-dessous, et les
+     * portées plus haut la consultent aussi. Voir la note du 2026-08-22.
      *
      * Provider aliases (all three resolve to the SAME check, isEmploye):
      *   - `employe`  / `employee` / `provider` → independent OR company worker

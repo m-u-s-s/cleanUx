@@ -53,7 +53,7 @@ class PlatformReadinessReport
             $this->makeCheck(
                 key: 'entreprise_users_without_account',
                 label: 'Utilisateurs entreprise sans compte organisation',
-                count: User::query()->where('role', User::ROLE_ENTREPRISE)->whereNull('organization_account_id')->count(),
+                count: User::query()->companyClients()->whereNull('organization_account_id')->count(),
                 severity: 'error'
             ),
             $this->makeCheck(
@@ -176,9 +176,9 @@ class PlatformReadinessReport
             'countries_total' => Country::query()->count(),
             'postal_codes_total' => PostalCode::query()->count(),
             'users_total' => User::query()->count(),
-            'clients_total' => User::query()->whereIn('role', [User::ROLE_CLIENT, User::ROLE_ENTREPRISE])->count(),
-            'employees_total' => User::query()->where('role', User::ROLE_EMPLOYE)->count(),
-            'admins_total' => User::query()->where('role', User::ROLE_ADMIN)->count(),
+            'clients_total' => User::query()->clients()->count(),
+            'employees_total' => User::query()->providers()->count(),
+            'admins_total' => User::query()->admins()->count(),
             'organization_accounts_total' => OrganizationAccount::query()->count(),
             'organization_sites_total' => OrganizationSite::query()->count(),
             'service_zones_total' => ServiceZone::query()->count(),

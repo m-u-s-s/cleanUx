@@ -90,7 +90,7 @@ class UserFactory extends Factory
 
     /**
      * Client personal — creates the customer_profiles row separately if needed.
-     * The users table no longer carries a `role` column.
+     * La colonne `role` existe TOUJOURS et cet état la pose : voir la note du 2026-08-22.
      */
     public function client(): static
     {
@@ -115,7 +115,7 @@ class UserFactory extends Factory
     }
 
     /**
-     * Provider / employe — users table carries no role column.
+     * Provider / employe — la colonne `role` existe toujours et cet état la pose.
      * A provider_profiles row with provider_type='independent' must be created separately in tests.
      */
     public function employe(): static
@@ -130,7 +130,7 @@ class UserFactory extends Factory
     }
 
     /**
-     * Company client — users table carries no role column.
+     * Company client — la colonne `role` existe toujours et cet état la pose.
      * A customer_profiles row with customer_type='company' must be created separately in tests.
      */
     public function entreprise(): static

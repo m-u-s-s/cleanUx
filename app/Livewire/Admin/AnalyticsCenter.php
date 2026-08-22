@@ -104,7 +104,7 @@ class AnalyticsCenter extends Component
 
     public function getEmployeesProperty()
     {
-        return User::query()->where('role', User::ROLE_EMPLOYE)->orderBy('name')->get();
+        return User::query()->providers()->orderBy('name')->get();
     }
 
     protected function financeService(): FinanceDocumentService

@@ -187,7 +187,7 @@ trait PerformsZoneManagementActions
         ]);
 
         $zone = ServiceZone::findOrFail($data['selectedZoneId']);
-        $employee = User::query()->where('role', User::ROLE_EMPLOYE)->findOrFail((int) $data['employeeToAssign']);
+        $employee = User::query()->providers()->findOrFail((int) $data['employeeToAssign']);
 
         $assignment = EmployeeZoneAssignment::updateOrCreate(
             ['user_id' => $employee->id, 'service_zone_id' => $zone->id],

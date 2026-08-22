@@ -47,7 +47,7 @@ class StatsGlobale extends Component
         $noteAverage = round($feedbacks->avg('note'), 2);
         $feedbackCount = $feedbacks->count();
 
-        $employes = User::where('role', 'employe')->get();
+        $employes = User::query()->providers()->get();
 
         return view('livewire.admin.stats-globale', [
             'dataMonthly' => $dataMonthly,
