@@ -133,10 +133,10 @@
                                  l'élément du dock arrive. --}}
                             <h2 id="questions-titre" class="text-lg font-semibold text-slate-900"
                                 style="view-transition-name: cx-trade-choisi">
-                                {{ $this->trade->name }}
+                                {{ $this->trade->translate('name') }}
                             </h2>
-                            @if ($this->trade->short_description)
-                                <p class="mt-0.5 text-sm text-slate-500">{{ $this->trade->short_description }}</p>
+                            @if ($this->trade->translate('short_description'))
+                                <p class="mt-0.5 text-sm text-slate-500">{{ $this->trade->translate('short_description') }}</p>
                             @endif
                         </div>
 

@@ -130,7 +130,7 @@ class OrderIntentInterpreter
 
             return [
                 'trade_id' => $metier->id,
-                'trade_name' => $metier->name,
+                'trade_name' => $metier->translate('name'),
                 'sector_id' => $metier->sector_id,
                 'confidence' => $this->confianceLisible($donnees['confidence'] ?? null),
                 'summary' => Str::limit((string) ($donnees['summary'] ?? ''), 200),
@@ -182,7 +182,7 @@ class OrderIntentInterpreter
 
         return [
             'trade_id' => $meilleur->id,
-            'trade_name' => $meilleur->name,
+            'trade_name' => $meilleur->translate('name'),
             'sector_id' => $meilleur->sector_id,
             // JAMAIS « haute » : ce repli compte des mots, il ne comprend pas une phrase. Annoncer
             // une confiance qu'on n'a pas ferait accepter une proposition sans la relire.

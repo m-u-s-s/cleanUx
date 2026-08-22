@@ -35,6 +35,23 @@ trait HasCatalogTranslations
      */
     public function translate(string $field, ?string $locale = null): ?string
     {
+        /*
+         * UN OBJET QUI N'EXISTE PAS EN BASE N'A PAS DE TRADUCTION, ET NE DOIT RIEN COÛTER.
+         *
+         * Sans cette sortie, `$this->translations()` engendre une requête sur une clé nulle. Elle
+         * ne rend jamais rien — Laravel y ajoute `id IS NULL AND id IS NOT NULL` — mais elle
+         * TOUCHE la base : il faut une connexion, et il faut que `catalog_translations` existe.
+         *
+         * Mesuré : quatorze tests du moteur de prix sont tombés d'un coup sur
+         * « no such table: catalog_translations ». Ils construisent un métier en mémoire pour
+         * vérifier une arithmétique — c'est légitime, et le prix n'a aucune raison d'exiger une
+         * base de données. Traduire un libellé ne doit pas transformer un calcul pur en calcul
+         * persistant : ce serait payer un service rendu ailleurs.
+         */
+        if (! $this->exists) {
+            return $this->getAttribute($field);
+        }
+
         $locale ??= App::getLocale();
         $fallback = (string) Config::get('i18n.default', 'fr');
 

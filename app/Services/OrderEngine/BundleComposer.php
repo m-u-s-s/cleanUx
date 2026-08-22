@@ -111,7 +111,7 @@ class BundleComposer
             ->map(fn (TradeBundleSuggestion $s) => [
                 'trade' => $s->suggestedTrade,
                 'gap_min' => (int) $s->default_sequence_gap_min,
-                'after' => $s->trade->name ?? '',
+                'after' => $s->trade?->translate('name') ?? '',
             ])
             ->values();
     }
@@ -203,8 +203,8 @@ class BundleComposer
                 throw ValidationException::withMessages([
                     'item_date' => sprintf(
                         '« %s » ne peut pas commencer avant la fin de « %s ». Au plus tôt le %s.',
-                        $item->trade->name ?? 'Ce métier',
-                        $blocker->trade->name ?? 'le métier précédent',
+                        $item->trade?->translate('name') ?? 'Ce métier',
+                        $blocker->trade?->translate('name') ?? 'le métier précédent',
                         $earliest->translatedFormat('l j F à H\hi'),
                     ),
                 ]);
@@ -253,8 +253,8 @@ class BundleComposer
                 throw ValidationException::withMessages([
                     'sequence' => [sprintf(
                         '« %s » ne peut pas passer avant « %s » : il faut attendre la fin de cette intervention.',
-                        $item->trade->name ?? 'Ce service',
-                        $blocker?->trade->name ?? 'l’intervention précédente',
+                        $item->trade?->translate('name') ?? 'Ce service',
+                        $blocker?->trade?->translate('name') ?? 'l’intervention précédente',
                     )],
                 ]);
             }

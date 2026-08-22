@@ -204,7 +204,7 @@ class OrderConfirmationService
         $zoneId = $draft->service_zone_id ? (int) $draft->service_zone_id : null;
         $resolver = app(ZonePricingResolver::class);
 
-        foreach ($draft->items()->with('trade.questions')->get() as $item) {
+        foreach ($draft->items()->with(['trade.questions', 'trade.translations'])->get() as $item) {
             if (! $item->trade) {
                 continue;
             }
@@ -212,7 +212,7 @@ class OrderConfirmationService
             if ($zoneId && ! $resolver->isOpen((int) $item->trade_id, $zoneId)) {
                 $blockers[] = sprintf(
                     'Le service « %s » n’est pas encore disponible dans cette zone.',
-                    $item->trade->name,
+                    $item->trade->translate('name'),
                 );
             }
 
@@ -228,7 +228,7 @@ class OrderConfirmationService
                 && ($draft->dropoff_lat === null || $draft->dropoff_lng === null)) {
                 $blockers[] = sprintf(
                     'Indiquez le point d’arrivée pour « %s » : nous ne pouvons pas envoyer quelqu’un sans savoir où aller.',
-                    $item->trade->name,
+                    $item->trade->translate('name'),
                 );
             }
         }
