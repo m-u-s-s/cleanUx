@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCatalogTranslations;
+use App\Models\Contracts\TranslatesCatalogLabels;
 use App\Models\Pivots\TradeUser;
 use App\Services\Audit\Concerns\AuditsEloquentEvents;
 use App\Support\Domain\OrderMode;
@@ -32,10 +34,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * prestataire (`$user->trades`). Elle porte `is_primary`, `proficiency` et `notes` — le niveau
  * déclaré sur CE métier, qui n'a de sens que pour cette personne-là.
  * @property-read TradeUser|null $pivot
+ *
+ * ── POURQUOI LE MÉTIER SE TRADUIT ────────────────────────────────────────────────────────────
+ *
+ * Le questionnaire du métier était traduisible depuis longtemps ; le métier lui-même ne l'était
+ * pas. Un client néerlandophone choisissait donc « Nettoyage de vitres » en français, puis
+ * répondait en néerlandais aux questions de ce métier. La chaîne se traduisait par le milieu.
+ *
+ * Trois champs : `name`, `short_description`, `description`. La liste est FERMÉE côté écran
+ * d'administration — voir `CatalogCenter::CHAMPS_TRADUISIBLES`.
  */
-class Trade extends Model
+class Trade extends Model implements TranslatesCatalogLabels
 {
     use AuditsEloquentEvents;
+    use HasCatalogTranslations;
 
     /** @use HasFactory<TradeFactory> */
     use HasFactory;

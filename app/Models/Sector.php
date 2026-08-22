@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasCatalogTranslations;
+use App\Models\Contracts\TranslatesCatalogLabels;
 use App\Services\Audit\Concerns\AuditsEloquentEvents;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -13,10 +15,21 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * Une carte du carrousel d'accueil. `accent_color` est le seul endroit du produit ou la couleur
  * est saturee : la carte active s'en teinte, tout le reste vit en neutres.
+ *
+ * ── POURQUOI LE SECTEUR SE TRADUIT ───────────────────────────────────────────────────────────
+ *
+ * C'est la PREMIÈRE chose qu'un client voit en commandant. Le questionnaire qui suit était
+ * traduisible depuis longtemps — `Question`, `QuestionStep`, `QuestionOption` portent ce trait —
+ * mais le carrousel qui y mène ne l'était pas : un client néerlandophone choisissait son secteur
+ * en français, puis répondait à des questions en néerlandais. La chaîne se traduisait par le
+ * milieu.
+ *
+ * Les champs traduisibles sont `name` et `tagline`, et la liste est FERMÉE côté écran
+ * d'administration : voir `CatalogCenter::CHAMPS_TRADUISIBLES`.
  */
-class Sector extends Model
+class Sector extends Model implements TranslatesCatalogLabels
 {
-    use AuditsEloquentEvents, SoftDeletes;
+    use AuditsEloquentEvents, HasCatalogTranslations, SoftDeletes;
 
     protected $fillable = [
         'slug', 'name', 'tagline', 'icon', 'cover_image_path', 'accent_color',

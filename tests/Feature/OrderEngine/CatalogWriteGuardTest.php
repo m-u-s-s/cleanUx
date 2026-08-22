@@ -101,6 +101,22 @@ class CatalogWriteGuardTest extends TestCase
         $this->assertNotNull(Sector::find($secteur->id));
     }
 
+    /**
+     * La traduction est une ÉCRITURE du catalogue, au même titre que le reste.
+     *
+     * Un libellé est ce que le client LIT : le changer dans cinq langues change le produit tel
+     * qu'il se présente. Ce test existe parce que ce fichier l'exige de toute mutation nouvelle —
+     * `saveTranslation()` a été ajoutée après lui, et devait donc venir s'y inscrire.
+     */
+    public function test_il_ne_traduit_pas_un_libelle(): void
+    {
+        $metier = Trade::query()->firstOrFail();
+
+        $this->ecran()->call('saveTranslation', 'trade', $metier->id, 'nl', 'name', 'Verboden vertaling');
+
+        $this->assertDatabaseMissing('catalog_translations', ['value' => 'Verboden vertaling']);
+    }
+
     public function test_il_ne_rattache_pas_un_metier_a_un_secteur(): void
     {
         $metier = Trade::query()->firstOrFail();
@@ -197,7 +213,18 @@ class CatalogWriteGuardTest extends TestCase
 
     private function ecritEnBase(string $corps): bool
     {
-        foreach (['->update(', '->save()', '::create(', '->delete()', 'updateOrCreate', 'firstOrNew', '->archive('] as $signe) {
+        /*
+         * LA LISTE DOIT SUIVRE LES FAÇONS D'ÉCRIRE, PAS SEULEMENT CELLES D'ELOQUENT.
+         *
+         * `setTranslation()` écrit dans `catalog_translations` sans qu'aucun de ces verbes
+         * n'apparaisse dans le corps de la méthode appelante : il les emploie à l'intérieur du
+         * trait. `saveTranslation()` était donc SAUTÉE par cette énumération, et ce test passait au
+         * vert sans jamais la regarder — le vert obtenu pour une mauvaise raison, que ce fichier
+         * existe précisément pour empêcher.
+         *
+         * Toute nouvelle façon d'écrire ajoutée au dépôt doit venir s'inscrire ici.
+         */
+        foreach (['->update(', '->save()', '::create(', '->delete()', 'updateOrCreate', 'firstOrNew', '->archive(', '->setTranslation('] as $signe) {
             if (str_contains($corps, $signe)) {
                 return true;
             }

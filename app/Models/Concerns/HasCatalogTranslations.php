@@ -47,8 +47,17 @@ trait HasCatalogTranslations
             ->filter(fn (CatalogTranslation $t) => filled($t->value))
             ->keyBy('locale');
 
-        return $byLocale->get($locale)?->value
-            ?? $byLocale->get($fallback)?->value
+        /*
+         * `has()` puis `get()` plutôt que `?->` : la collection est indexée par langue et
+         * `get()` y est typé non-nul, si bien que l'accès sûr n'y protégeait rien — il masquait
+         * seulement l'absence, que ce `has()` dit maintenant explicitement.
+         */
+        $traduit = static fn (string $code): ?string => $byLocale->has($code)
+            ? (string) $byLocale->get($code)->value
+            : null;
+
+        return $traduit($locale)
+            ?? $traduit($fallback)
             ?? $this->getAttribute($field);
     }
 
@@ -86,7 +95,9 @@ trait HasCatalogTranslations
      */
     public function missingLocales(array $fields = ['label']): array
     {
-        $enabled = collect(Config::get('i18n.locales', []))
+        // Le cast dit ce que la configuration peut réellement rendre : `Config::get()` n'a aucun
+        // type, et une collection construite sur `mixed` ne sait pas ce qu'elle contient.
+        $enabled = collect((array) Config::get('i18n.locales', []))
             ->filter(fn ($meta) => (bool) ($meta['enabled'] ?? false))
             ->keys()
             ->reject(fn ($locale) => $locale === (string) Config::get('i18n.default', 'fr'));

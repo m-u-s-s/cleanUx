@@ -146,14 +146,14 @@
                         </span>
                     @endif
 
-                    <span class="text-[15px] font-semibold leading-snug">{{ $sector->name }}</span>
+                    <span class="text-[15px] font-semibold leading-snug">{{ $sector->translate('name') }}</span>
 
-                    @if ($sector->tagline)
+                    @if ($sector->translate('tagline'))
                         <span @class([
                             'text-xs leading-snug',
                             'text-white/80' => $sectorId === $sector->id,
                             'text-slate-500' => $sectorId !== $sector->id,
-                        ])>{{ $sector->tagline }}</span>
+                        ])>{{ $sector->translate('tagline') }}</span>
                     @endif
 
                     {{-- Un signal vivant plutôt qu'un badge décoratif : la confiance vient de ce qui est vrai. --}}

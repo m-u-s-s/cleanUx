@@ -120,6 +120,12 @@
                     </button>
                 </div>
 
+
+                @include('livewire.admin.order-engine.partials.traductions', [
+                    'objet' => $sector,
+                    'type' => 'sector',
+                    'champs' => ['name' => 'Nom du secteur', 'tagline' => 'Accroche'],
+                ])
                 {{-- ─── Métiers du secteur ──────────────────────────────────────────────── --}}
                 @if ($sector->trades->isEmpty())
                     <p class="mt-4 rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-500">
@@ -262,6 +268,12 @@
                                         {{ $trade->is_active ? 'Désactiver' : 'Activer' }}
                                     </button>
                                 </div>
+
+                                @include('livewire.admin.order-engine.partials.traductions', [
+                                    'objet' => $trade,
+                                    'type' => 'trade',
+                                    'champs' => ['name' => 'Nom du métier', 'short_description' => 'Résumé', 'description' => 'Description'],
+                                ])
                             </li>
                         @endforeach
                     </ul>

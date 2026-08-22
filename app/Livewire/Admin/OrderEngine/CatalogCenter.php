@@ -12,6 +12,7 @@ use App\Services\OrderEngine\CatalogArchiver;
 use App\Services\OrderEngine\QuestionInsights;
 use App\Services\OrderEngine\QuestionnaireValidator;
 use App\Services\OrderEngine\TradeFormPublisher;
+use App\Support\Livewire\Concerns\Admin\ManagesCatalogTranslations;
 use App\Support\Livewire\Concerns\Admin\ManagesTradeForm;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Support\Collection;
@@ -47,6 +48,28 @@ class CatalogCenter extends Component
 
     /** Le refus vaut au niveau du composant, pas seulement de la route. */
     use EnforcesAdminAccess;
+
+    /* La liste des langues, partagée avec `QuestionnaireBuilder` — une seule source. */
+    use ManagesCatalogTranslations;
+
+    /**
+     * CE QUI SE TRADUIT, ET RIEN D'AUTRE.
+     *
+     * La liste est FERMÉE, et par type d'objet. Sans elle, un champ arbitraire venu du navigateur
+     * — `base_price_cents`, `slug` — créerait dans `catalog_translations` des lignes que rien ne
+     * lit jamais : invisibles, jamais affichées, et pourtant grossissant à chaque tentative. C'est
+     * la même précaution que `QuestionnaireBuilder::saveTranslation()`.
+     *
+     * `slug` est délibérément absent : il sert d'identifiant d'URL et de clé de recherche. Le
+     * traduire donnerait deux adresses pour un même métier, dont une seule serait connue du reste
+     * de la plateforme.
+     *
+     * @var array<string, list<string>>
+     */
+    private const CHAMPS_TRADUISIBLES = [
+        'sector' => ['name', 'tagline'],
+        'trade' => ['name', 'short_description', 'description'],
+    ];
 
     /*
      * Le formulaire complet d'un métier — vingt et un champs — partagé avec `/admin/trades`.
@@ -340,12 +363,73 @@ class CatalogCenter extends Component
 
     // ─── Lecture ─────────────────────────────────────────────────────────────────────────────
 
+    /**
+     * Écrit — ou retire — la traduction d'un libellé de catalogue.
+     *
+     * ── POURQUOI CET ÉCRAN EN AVAIT BESOIN ───────────────────────────────────────────────────
+     *
+     * Le mécanisme de traduction existait, complet et éprouvé : table polymorphe, trait, chaîne de
+     * repli, et un écran d'administration… pour le seul QUESTIONNAIRE. Le catalogue qui y mène —
+     * le secteur qu'on choisit, puis le métier — n'était traduisible nulle part. Un client
+     * néerlandophone parcourait donc un carrousel français avant de répondre à des questions
+     * néerlandaises : la chaîne se traduisait par le milieu.
+     *
+     * ── LES TROIS GARDES, ET CE QUE CHACUNE ARRÊTE ───────────────────────────────────────────
+     *
+     * 1. `refusesWrite()` — un accès en lecture seule n'écrit pas le catalogue. La règle vit dans
+     *    la Policy ; on la consulte, on ne la redit pas.
+     * 2. La langue doit être ACTIVÉE. Une langue désactivée dans `config/i18n.php` — `pt` l'est
+     *    aujourd'hui — ne doit pas recevoir de traduction que personne n'affichera.
+     * 3. Le champ doit appartenir à la liste fermée du type. Voir `CHAMPS_TRADUISIBLES`.
+     *
+     * Une valeur vide SUPPRIME la ligne : revenir au libellé français doit être aussi simple que
+     * d'effacer le champ. Le trait s'en charge — c'est lui qui porte cette règle, pas cet écran.
+     */
+    public function saveTranslation(string $type, int $id, string $locale, string $field, ?string $value): void
+    {
+        if ($this->refusesWrite()) {
+            return;
+        }
+
+        if (! array_key_exists($locale, $this->translationLocales())) {
+            return;
+        }
+
+        if (! in_array($field, self::CHAMPS_TRADUISIBLES[$type] ?? [], true)) {
+            return;
+        }
+
+        $modele = match ($type) {
+            'sector' => Sector::query()->find($id),
+            'trade' => Trade::query()->find($id),
+            default => null,
+        };
+
+        $modele?->setTranslation($field, $locale, $value);
+
+        // Le cache de `#[Computed]` porte les traductions déjà chargées : sans cette invalidation,
+        // l'écran continuerait d'afficher la valeur d'avant la saisie.
+        unset($this->sectors);
+    }
+
+    /**
+     * Les secteurs et leurs métiers, TRADUCTIONS COMPRISES.
+     *
+     * Le préchargement n'est pas une optimisation de confort. `translate()` interroge la relation
+     * quand elle n'est pas chargée : sans ce `with`, afficher quatre secteurs et dix métiers dans
+     * cinq langues déclencherait une requête par libellé et par langue. C'est la même précaution
+     * que prennent déjà `OrderJourney:655`, `QuestionnaireValidator:36` et `BundleComposer:283`
+     * pour les questions.
+     */
     #[Computed]
     public function sectors()
     {
         return Sector::query()
             ->ordered()
-            ->with(['trades' => fn ($q) => $q->orderBy('sort_order')])
+            ->with([
+                'translations',
+                'trades' => fn ($q) => $q->orderBy('sort_order')->with('translations'),
+            ])
             ->get();
     }
 

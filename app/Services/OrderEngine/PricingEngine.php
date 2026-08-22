@@ -121,15 +121,24 @@ class PricingEngine
             $sumMax = $base;
             $duration = (int) round($heuresAchetees * 60);
 
+            /*
+             * LE NOM DU MÉTIER TEL QUE LE CLIENT L'A VU, DONC DANS SA LANGUE.
+             *
+             * Cette chaîne devient une LIGNE DU DEVIS. La même règle vaut déjà pour les questions
+             * — `OrderDraftManager:229` fige `question_label_snapshot` traduit, au motif qu'un devis
+             * rédigé dans une autre langue que celle de la commande serait inopposable. Un client
+             * néerlandophone qui a choisi une tuile « Schilderwerk » doit retrouver ce mot sur son
+             * devis, pas « Peinture ».
+             */
             $lines[] = $this->line(
                 '_hourly',
-                $trade->name,
+                $trade->translate('name'),
                 $this->libelleDesHeures($heuresAchetees, $tarifHoraire),
                 $base,
                 $base,
             );
         } elseif ($base > 0) {
-            $lines[] = $this->line('_base', $trade->name, 'Prestation de base', $base, $base);
+            $lines[] = $this->line('_base', $trade->translate('name'), 'Prestation de base', $base, $base);
         }
 
         foreach ($visible as $question) {

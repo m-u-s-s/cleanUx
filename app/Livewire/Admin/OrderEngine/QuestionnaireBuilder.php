@@ -23,6 +23,7 @@ use App\Support\Domain\OrderMode;
 use App\Support\Domain\PriceImpactMode;
 use App\Support\Domain\QuestionType;
 use App\Support\Domain\TradeRouteRules;
+use App\Support\Livewire\Concerns\Admin\ManagesCatalogTranslations;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -64,6 +65,13 @@ class QuestionnaireBuilder extends Component
      */
     use EnforcesAdminAccess;
 
+    /*
+     * La liste des langues à traduire vit dans ce trait, partagée avec `CatalogCenter`. Elle y a
+     * été déplacée parce que le second écran en avait besoin à l'identique : deux copies auraient
+     * fini par diverger, et une langue activée mais oubliée dans l'une d'elles serait simplement
+     * introuvable dans cet écran, sans message.
+     */
+    use ManagesCatalogTranslations;
     use WithFileUploads;
 
     /**
@@ -525,23 +533,6 @@ class QuestionnaireBuilder extends Component
         $question?->setTranslation($field, $locale, $value);
 
         $this->refreshDerived();
-    }
-
-    /**
-     * Les langues à traduire — celles activées, moins celle des libellés de base.
-     *
-     * @return array<string, string>
-     */
-    #[Computed]
-    public function translationLocales(): array
-    {
-        $default = (string) config('i18n.default', 'fr');
-
-        return collect(config('i18n.locales', []))
-            ->filter(fn ($meta) => (bool) ($meta['enabled'] ?? false))
-            ->reject(fn ($meta, $code) => $code === $default)
-            ->map(fn ($meta) => (string) ($meta['native_name'] ?? $meta['name'] ?? ''))
-            ->all();
     }
 
     /** Les questions réutilisables que ce métier n'a pas encore reprises. */

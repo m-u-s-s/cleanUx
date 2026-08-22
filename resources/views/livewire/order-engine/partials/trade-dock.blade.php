@@ -90,10 +90,10 @@
                            motion-reduce:focus-visible:border-slate-900 motion-reduce:hover:border-slate-900"
                     style="--cx-scale: 1"
                 >
-                    <span class="text-[15px] font-medium leading-tight text-slate-900 sm:text-sm">{{ $trade->name }}</span>
+                    <span class="text-[15px] font-medium leading-tight text-slate-900 sm:text-sm">{{ $trade->translate('name') }}</span>
 
-                    @if ($trade->short_description)
-                        <span class="text-xs leading-snug text-slate-500 sm:hidden">{{ $trade->short_description }}</span>
+                    @if ($trade->translate('short_description'))
+                        <span class="text-xs leading-snug text-slate-500 sm:hidden">{{ $trade->translate('short_description') }}</span>
                     @endif
 
                     {{--
@@ -101,7 +101,7 @@
                         tronqué faute de place, et c'est elle qui le rend lisible au survol.
                     --}}
                     <span class="pointer-events-none absolute -top-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 sm:block"
-                        aria-hidden="true">{{ $trade->name }}</span>
+                        aria-hidden="true">{{ $trade->translate('name') }}</span>
                 </button>
             </li>
         @endforeach

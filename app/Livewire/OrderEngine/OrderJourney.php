@@ -550,6 +550,12 @@ class OrderJourney extends Component
         $sectors = Sector::query()
             ->active()
             ->ordered()
+            /*
+             * Les traductions viennent AVEC, comme celles des questions plus bas (ligne 655).
+             * `translate()` interroge la relation quand elle n'est pas chargée : sans ce
+             * préchargement, afficher le carrousel coûterait une requête par carte et par champ.
+             */
+            ->with('translations')
             ->withCount(['trades' => fn ($q) => $q->where('is_active', true)
                 ->servableEnMode($this->intendedMode, $this->serviceZoneId)])
             /*
@@ -625,13 +631,14 @@ class OrderJourney extends Component
             ->where('is_active', true)
             ->servableEnMode($this->intendedMode, $this->serviceZoneId)
             ->orderBy('sort_order')
+            ->with('translations')
             ->get();
     }
 
     #[Computed]
     public function trade(): ?Trade
     {
-        return $this->tradeId ? Trade::find($this->tradeId) : null;
+        return $this->tradeId ? Trade::query()->with('translations')->find($this->tradeId) : null;
     }
 
     /**
@@ -1620,14 +1627,21 @@ class OrderJourney extends Component
             } else {
                 // On le DIT. Basculer en silence laisserait le client croire qu'il a commandé une
                 // intervention dans l'heure.
+                /*
+                 * Le métier est nommé comme la TUILE que le client vient de choisir. Lui renvoyer
+                 * « Peinture » quand il a cliqué « Schilderwerk » lui ferait chercher un métier
+                 * qu'il n'a jamais sélectionné. La phrase qui l'entoure reste française — tout
+                 * l'habillage du parcours l'est encore, et c'est `translation_overrides` qui le
+                 * traduira ; ce n'est pas une raison pour se tromper aussi de nom.
+                 */
                 $this->modeNotice = match ($wanted) {
                     OrderMode::ASAP => sprintf(
                         '« %s » n’accepte pas les interventions immédiates : ce métier demande une préparation. Choisissez une date ci-dessous.',
-                        $trade->name,
+                        $trade->translate('name'),
                     ),
                     OrderMode::BUNDLE => sprintf(
                         '« %s » ne se commande pas au sein d’un chantier multi-services. Il reste commandable seul.',
-                        $trade->name,
+                        $trade->translate('name'),
                     ),
                     default => '',
                 };
