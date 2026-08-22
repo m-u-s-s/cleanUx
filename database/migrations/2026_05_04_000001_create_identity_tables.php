@@ -16,6 +16,7 @@ return new class extends Migration
         $this->fusion20260608000003DropTenantIdFromUsers();
         $this->fusion20260612000002AddPhoneVerifiedAtToUsers();
         $this->fusionFixPortalAndBookingLegacyColumnsUsers();
+        $this->fusionAddCurrencyPreferencesUsers();
     }
 
     public function down(): void
@@ -328,5 +329,15 @@ return new class extends Migration
                 }
             });
         }
+    }
+
+    /** Fusionne depuis 2026_05_07_140002_add_currency_preferences */
+    private function fusionAddCurrencyPreferencesUsers(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            if (! Schema::hasColumn('users', 'preferred_currency')) {
+                $table->string('preferred_currency', 3)->nullable();
+            }
+        });
     }
 };

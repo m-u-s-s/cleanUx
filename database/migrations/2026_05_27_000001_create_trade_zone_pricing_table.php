@@ -10,6 +10,7 @@ return new class extends Migration
     {
         $this->corpsInitial();
         $this->fusion20260829090000TariferAuKilometreParMetierEtZone();
+        $this->fusionFacturerAuTempsPasseTradeZonePricing();
     }
 
     public function down(): void
@@ -87,5 +88,25 @@ return new class extends Migration
                 $table->unsignedInteger('included_km')->default(0);
             }
         });
+    }
+
+    /** Fusionne depuis 2026_08_30_090000_facturer_au_temps_passe */
+    private function fusionFacturerAuTempsPasseTradeZonePricing(): void
+    {
+        if (Schema::hasTable('trade_zone_pricing') && ! Schema::hasColumn('trade_zone_pricing', 'price_per_hour_cents')) {
+            Schema::table('trade_zone_pricing', function (Blueprint $table) {
+                /*
+                 * NULLABLE, ET LA NUANCE EST LE PROPOS.
+                 *
+                 * `null` = « cette zone ne surcharge rien », on retombe sur le tarif du métier.
+                 * `0` = « une heure est gratuite ici », ce qui est une décision, absurde mais
+                 * explicite. `price_per_km_cents` a exactement la même nuance, pour la même raison :
+                 * un défaut à 0 aurait rendu la surcharge indistinguable de l'absence de surcharge,
+                 * et toutes les zones auraient silencieusement facturé zéro.
+                 */
+                $table->unsignedInteger('price_per_hour_cents')
+                    ->nullable();
+            });
+        }
     }
 };

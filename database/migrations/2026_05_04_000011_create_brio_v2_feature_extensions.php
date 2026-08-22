@@ -20,6 +20,8 @@ return new class extends Migration
         $this->fusionFixRemainingRuntimeSchemaCompatRound5MissionQualityRevie();
         $this->fusionFixRemainingRuntimeSchemaCompatRound5GoogleCalendarConne();
         $this->fusionFixRemainingRuntimeSchemaCompatRound5LocationGeocodes();
+        $this->fusionAddProviderOrgAndContractLinksForSp4OrganizationContract();
+        $this->fusionSocleDuKitSurPlaceMissionIncidents();
     }
 
     public function down(): void
@@ -652,6 +654,34 @@ return new class extends Migration
 
                 if (! Schema::hasColumn('location_geocodes', 'raw')) {
                     $table->json('raw')->nullable();
+                }
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_06_05_000001_add_provider_org_and_contract_links_for_sp4 */
+    private function fusionAddProviderOrgAndContractLinksForSp4OrganizationContract(): void
+    {
+        if (Schema::hasTable('organization_contracts') && ! Schema::hasColumn('organization_contracts', 'provider_organization_id')) {
+            Schema::table('organization_contracts', function (Blueprint $table) {
+                $table->unsignedBigInteger('provider_organization_id')->nullable()->index();
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_08_11_000100_socle_du_kit_sur_place */
+    private function fusionSocleDuKitSurPlaceMissionIncidents(): void
+    {
+        if (Schema::hasTable('mission_incidents')) {
+            Schema::table('mission_incidents', function (Blueprint $table) {
+                if (! Schema::hasColumn('mission_incidents', 'mission_media_id')) {
+                    $table->unsignedBigInteger('mission_media_id')->nullable();
+                }
+                if (! Schema::hasColumn('mission_incidents', 'notified_at')) {
+                    $table->timestamp('notified_at')->nullable();
+                }
+                if (! Schema::hasColumn('mission_incidents', 'complaint_case_id')) {
+                    $table->unsignedBigInteger('complaint_case_id')->nullable();
                 }
             });
         }

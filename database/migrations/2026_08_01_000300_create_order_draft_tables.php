@@ -29,6 +29,7 @@ return new class extends Migration
     {
         $this->corpsInitial();
         $this->fusion20260803000100AddRecoveryKeyToOrderDrafts();
+        $this->fusionPorterLesHeuresAcheteesOrderDraftItems();
     }
 
     public function down(): void
@@ -225,5 +226,17 @@ return new class extends Migration
                 $table->index('recovery_key_hash');
             }
         });
+    }
+
+    /** Fusionne depuis 2026_08_30_090100_porter_les_heures_achetees */
+    private function fusionPorterLesHeuresAcheteesOrderDraftItems(): void
+    {
+        // Le panier : une ligne par métier commandé, donc des heures par métier. Un client peut
+        // acheter deux heures de ménage et trois heures de repassage dans la même commande.
+        if (Schema::hasTable('order_draft_items') && ! Schema::hasColumn('order_draft_items', 'purchased_minutes')) {
+            Schema::table('order_draft_items', function (Blueprint $table) {
+                $table->unsignedInteger('purchased_minutes')->nullable();
+            });
+        }
     }
 };

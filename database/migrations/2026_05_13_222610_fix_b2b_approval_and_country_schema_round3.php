@@ -12,6 +12,7 @@ return new class extends Migration
         $this->fusion20260528100028AddRejectedAtToWorkOrderApprovalsTable();
         $this->fusion20260528100035AddMissingColumnsToMissionTeamAssignmentsTable();
         $this->fusionFixApprovalBookingRuntimeSchemaRound4EnterpriseBookingAp();
+        $this->fusionAddLegalNameToServicePartnersTableCountryBillingProfiles();
     }
 
     private function ensureCountryBillingProfiles(): void
@@ -351,6 +352,14 @@ return new class extends Migration
             if (! Schema::hasColumn('enterprise_booking_approvals', 'rejected_at')) {
                 $table->timestamp('rejected_at')->nullable();
             }
+        });
+    }
+
+    /** Fusionne depuis 2026_05_16_185918_add_legal_name_to_service_partners_table */
+    private function fusionAddLegalNameToServicePartnersTableCountryBillingProfiles(): void
+    {
+        Schema::table('country_billing_profiles', function (Blueprint $table) {
+            $table->boolean('prices_include_tax')->default(false);
         });
     }
 };

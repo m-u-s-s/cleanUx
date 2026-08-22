@@ -24,6 +24,10 @@ return new class extends Migration
         $this->fusionFixPortalAndBookingLegacyColumnsBookings();
         $this->fusionFixBrioTestSchemaCompatibilityFinalBookings();
         $this->fusionFixApprovalBookingRuntimeSchemaRound4Bookings();
+        $this->fusionAddProviderOrgTeamToBookingAndMissionBookings();
+        $this->fusionAddProviderOrgAndContractLinksForSp4Bookings();
+        $this->fusionAddMissingReferencedColumnsBookings();
+        $this->fusionPorterLesHeuresAcheteesBookings();
     }
 
     public function down(): void
@@ -759,5 +763,59 @@ return new class extends Migration
                 $table->json('address_components')->nullable();
             }
         });
+    }
+
+    /** Fusionne depuis 2026_06_01_000001_add_provider_org_team_to_booking_and_mission */
+    private function fusionAddProviderOrgTeamToBookingAndMissionBookings(): void
+    {
+        Schema::table('bookings', function (Blueprint $table) {
+            if (! Schema::hasColumn('bookings', 'assigned_provider_organization_id')) {
+                if (Schema::hasColumn('bookings', 'assigned_provider_user_id')) {
+                    $table->foreignId('assigned_provider_organization_id')->nullable();
+                } else {
+                    $table->foreignId('assigned_provider_organization_id')->nullable();
+                }
+            }
+            if (! Schema::hasColumn('bookings', 'provider_team_id')) {
+                if (Schema::hasColumn('bookings', 'assigned_provider_organization_id')) {
+                    $table->unsignedBigInteger('provider_team_id')->nullable();
+                } else {
+                    $table->unsignedBigInteger('provider_team_id')->nullable();
+                }
+            }
+        });
+    }
+
+    /** Fusionne depuis 2026_06_05_000001_add_provider_org_and_contract_links_for_sp4 */
+    private function fusionAddProviderOrgAndContractLinksForSp4Bookings(): void
+    {
+        if (Schema::hasTable('bookings') && ! Schema::hasColumn('bookings', 'organization_contract_id')) {
+            Schema::table('bookings', function (Blueprint $table) {
+                $table->unsignedBigInteger('organization_contract_id')->nullable()->index();
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_06_10_000001_add_missing_referenced_columns */
+    private function fusionAddMissingReferencedColumnsBookings(): void
+    {
+        Schema::table('bookings', function (Blueprint $table) {
+            if (! Schema::hasColumn('bookings', 'feedback_demande_envoye_at')) {
+                $table->timestamp('feedback_demande_envoye_at')->nullable();
+            }
+            if (! Schema::hasColumn('bookings', 'remarque_terrain')) {
+                $table->text('remarque_terrain')->nullable();
+            }
+        });
+    }
+
+    /** Fusionne depuis 2026_08_30_090100_porter_les_heures_achetees */
+    private function fusionPorterLesHeuresAcheteesBookings(): void
+    {
+        if (Schema::hasTable('bookings') && ! Schema::hasColumn('bookings', 'purchased_minutes')) {
+            Schema::table('bookings', function (Blueprint $table) {
+                $table->unsignedInteger('purchased_minutes')->nullable();
+            });
+        }
     }
 };

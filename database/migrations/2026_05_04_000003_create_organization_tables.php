@@ -16,6 +16,7 @@ return new class extends Migration
         $this->fusion20260528100040AddMissingColumnsToProviderProfilesTable();
         $this->fusion20260603000001AddRatingToOrganizationAccounts();
         $this->fusion20260728000001AddSelfRegisteredAtToProviderProfiles();
+        $this->fusionAddCurrencyPreferencesOrganizationAccounts();
     }
 
     public function down(): void
@@ -397,6 +398,19 @@ return new class extends Migration
     {
         Schema::table('provider_profiles', function (Blueprint $table) {
             $table->timestamp('self_registered_at')->nullable();
+        });
+    }
+
+    /** Fusionne depuis 2026_05_07_140002_add_currency_preferences */
+    private function fusionAddCurrencyPreferencesOrganizationAccounts(): void
+    {
+        Schema::table('organization_accounts', function (Blueprint $table) {
+            if (! Schema::hasColumn('organization_accounts', 'preferred_currency')) {
+                $table->string('preferred_currency', 3)->default('EUR');
+            }
+            if (! Schema::hasColumn('organization_accounts', 'preferred_locale')) {
+                $table->string('preferred_locale', 5)->default('fr');
+            }
         });
     }
 };

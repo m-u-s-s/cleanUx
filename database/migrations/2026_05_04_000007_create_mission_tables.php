@@ -26,6 +26,9 @@ return new class extends Migration
         $this->fusionFixPortalLegacyColumnsRound2MissionAssignments();
         $this->fusionFixBrioTestSchemaCompatibilityFinalMissions();
         $this->fusionFixBrioTestSchemaCompatibilityFinalMissionAssignments();
+        $this->fusionAddProviderOrgTeamToBookingAndMissionMissions();
+        $this->fusionAddProviderOrgAndContractLinksForSp4Missions();
+        $this->fusionSocleDuKitSurPlaceMissionMedia();
     }
 
     public function down(): void
@@ -782,5 +785,82 @@ return new class extends Migration
                 }
             });
         }
+    }
+
+    /** Fusionne depuis 2026_06_01_000001_add_provider_org_team_to_booking_and_mission */
+    private function fusionAddProviderOrgTeamToBookingAndMissionMissions(): void
+    {
+        Schema::table('missions', function (Blueprint $table) {
+            if (! Schema::hasColumn('missions', 'provider_organization_id')) {
+                if (Schema::hasColumn('missions', 'organization_account_id')) {
+                    $table->foreignId('provider_organization_id')->nullable();
+                } else {
+                    $table->foreignId('provider_organization_id')->nullable();
+                }
+            }
+            if (! Schema::hasColumn('missions', 'provider_team_id')) {
+                if (Schema::hasColumn('missions', 'provider_organization_id')) {
+                    $table->unsignedBigInteger('provider_team_id')->nullable();
+                } else {
+                    $table->unsignedBigInteger('provider_team_id')->nullable();
+                }
+            }
+        });
+    }
+
+    /** Fusionne depuis 2026_06_05_000001_add_provider_org_and_contract_links_for_sp4 */
+    private function fusionAddProviderOrgAndContractLinksForSp4Missions(): void
+    {
+        if (Schema::hasTable('missions')) {
+            Schema::table('missions', function (Blueprint $table) {
+                if (! Schema::hasColumn('missions', 'organization_contract_id')) {
+                    $table->unsignedBigInteger('organization_contract_id')->nullable()->index();
+                }
+                if (! Schema::hasColumn('missions', 'sla_response_due_at')) {
+                    $table->dateTime('sla_response_due_at')->nullable();
+                }
+                if (! Schema::hasColumn('missions', 'sla_resolution_due_at')) {
+                    $table->dateTime('sla_resolution_due_at')->nullable();
+                }
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_08_11_000100_socle_du_kit_sur_place */
+    private function fusionSocleDuKitSurPlaceMissionMedia(): void
+    {
+        if (Schema::hasTable('mission_media')) {
+            Schema::table('mission_media', function (Blueprint $table) {
+                if (! Schema::hasColumn('mission_media', 'sha256')) {
+                    // 64 caractères hexadécimaux, longueur fixe : `char` et non `string`.
+                    $table->char('sha256', 64)->nullable();
+                }
+                if (! Schema::hasColumn('mission_media', 'accuracy_m')) {
+                    $table->float('accuracy_m')->nullable();
+                }
+                if (! Schema::hasColumn('mission_media', 'client_visible')) {
+                    $table->boolean('client_visible')->default(true);
+                }
+            });
+
+            // Nom court et explicite : MySQL refuse au-delà de 64 caractères, et le nom généré
+            // par défaut sur cette table le frôle.
+            $this->fusionSocleDuKitSurPlaceMissionMediaAideAddIndexIfMissing('mission_media', ['mission_id', 'media_type'], 'mission_media_type_idx');
+        }
+    }
+
+    private function fusionSocleDuKitSurPlaceMissionMediaAideAddIndexIfMissing(string $table, array $columns, string $name): void
+    {
+        $existing = collect(Schema::getIndexes($table))
+            ->pluck('name')
+            ->map(fn ($n) => strtolower((string) $n));
+
+        if ($existing->contains(strtolower($name))) {
+            return;
+        }
+
+        Schema::table($table, function (Blueprint $blueprint) use ($columns, $name) {
+            $blueprint->index($columns, $name);
+        });
     }
 };

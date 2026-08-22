@@ -18,6 +18,7 @@ return new class extends Migration
         $this->fusionFixRuntimeSchemaRound6FinanceQuotes();
         $this->fusionFixRuntimeSchemaRound6FinanceInvoices();
         $this->fusionFixRemainingRuntimeSchemaCompatRound5FinanceInvoices();
+        $this->fusionAddMissingReferencedColumnsEnterpriseWorkOrders();
     }
 
     private function restoreLegacyRendezVous(): void
@@ -774,5 +775,21 @@ return new class extends Migration
                 }
             });
         }
+    }
+
+    /** Fusionne depuis 2026_06_10_000001_add_missing_referenced_columns */
+    private function fusionAddMissingReferencedColumnsEnterpriseWorkOrders(): void
+    {
+        Schema::table('enterprise_work_orders', function (Blueprint $table) {
+            if (! Schema::hasColumn('enterprise_work_orders', 'generated_batch_id')) {
+                $table->unsignedBigInteger('generated_batch_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('enterprise_work_orders', 'generation_status')) {
+                $table->string('generation_status')->nullable();
+            }
+            if (! Schema::hasColumn('enterprise_work_orders', 'generation_started_at')) {
+                $table->timestamp('generation_started_at')->nullable();
+            }
+        });
     }
 };

@@ -22,6 +22,7 @@ return new class extends Migration
         $this->fusion20260517120004AddBookingFormSchemaToTrades();
         $this->fusion20260527000000ExtendTradesWithBillingAndSiteVisit();
         $this->fusion20260728000002AddProviderFormSchemaToTrades();
+        $this->fusionFacturerAuTempsPasseTrades();
     }
 
     public function down(): void
@@ -137,5 +138,16 @@ return new class extends Migration
         Schema::table('trades', function (Blueprint $table) {
             $table->json('provider_form_schema')->nullable();
         });
+    }
+
+    /** Fusionne depuis 2026_08_30_090000_facturer_au_temps_passe */
+    private function fusionFacturerAuTempsPasseTrades(): void
+    {
+        if (Schema::hasTable('trades') && ! Schema::hasColumn('trades', 'hourly_billing')) {
+            Schema::table('trades', function (Blueprint $table) {
+                $table->boolean('hourly_billing')
+                    ->default(false);
+            });
+        }
     }
 };

@@ -11,6 +11,7 @@ return new class extends Migration
         $this->corpsInitial();
         $this->fusion20260517140001ExtendFeedbackWithPublicRatings();
         $this->fusion20260528100017AddMissingColumnsToFeedbackTable();
+        $this->fusionAddLegalNameToServicePartnersTableServicePartners();
     }
 
     private function rebuildFeedbackTable(): void
@@ -266,6 +267,14 @@ return new class extends Migration
             if (! Schema::hasColumn('feedback', 'client_organization_id')) {
                 $table->unsignedBigInteger('client_organization_id')->nullable()->index();
             }
+        });
+    }
+
+    /** Fusionne depuis 2026_05_16_185918_add_legal_name_to_service_partners_table */
+    private function fusionAddLegalNameToServicePartnersTableServicePartners(): void
+    {
+        Schema::table('service_partners', function (Blueprint $table) {
+            $table->string('legal_name')->nullable();
         });
     }
 };
