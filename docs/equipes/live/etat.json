@@ -1,14 +1,15 @@
 {
-  "mission": "Schéma : performance, sécurité, échelle mondiale",
-  "maj": "21:16",
+  "mission": "Schéma, rôles et catalogue : performance, cohérence, échelle mondiale",
+  "maj": "11:22",
   "mesures": {
-    "tables": 313,
-    "colonnes_id": 822,
-    "sans_fk": 114,
+    "tables": 304,
+    "colonnes_id": 792,
+    "sans_fk": 111,
     "sans_index": 0,
-    "tables_sans_aucune_fk": 82,
-    "noeuds_graphe": 12486,
-    "aretes_graphe": 35567
+    "colonnes_bookings": 164,
+    "index_bookings": 31,
+    "traductions_catalogue": 60,
+    "suite_complete": 7351
   },
   "coeur_chaud": [
     {
@@ -38,130 +39,44 @@
   ],
   "phases": [
     {
-      "nom": "Cartographie du schéma",
+      "nom": "Index et clés étrangères",
       "etat": "fait",
-      "detail": "313 tables, graphe de 12 486 nœuds construit"
+      "detail": "170 → 0 colonnes de jointure sans index ; 347 → 111 sans contrainte"
     },
     {
-      "nom": "Inventaire des défauts",
+      "nom": "Vocabulaire des priorités",
       "etat": "fait",
-      "detail": "audit reproductible : scripts/audit_schema.php"
+      "detail": "une réservation immédiate n'était urgente pour personne — corrigé"
     },
     {
-      "nom": "Index sur les jointures",
+      "nom": "Tables et colonnes mortes",
       "etat": "fait",
-      "detail": "149 index posés — 822 colonnes de jointure toutes couvertes"
+      "detail": "9 tables retirées, la 10e branchée ; 4 colonnes de bookings"
     },
     {
-      "nom": "Clés étrangères",
+      "nom": "Cohérence à l'inscription",
       "etat": "fait",
-      "detail": "233 posées — 347 → 114, dont 89 structurellement impossibles"
+      "detail": "account_type contredisait role sur 11 lignes"
     },
     {
-      "nom": "Non-régression",
+      "nom": "Catalogue multilingue",
       "etat": "fait",
-      "detail": "49 → 1 → 0 : toutes les fixtures reprises"
+      "detail": "Sector et Trade traduisibles ; 60 traductions dans 5 langues"
     },
     {
-      "nom": "Découpe des missions par nature",
-      "etat": "attente",
-      "detail": "rdv / immédiat / récurrent"
+      "nom": "Rôles hérités",
+      "etat": "fait",
+      "detail": "19 comptes mal classés ; 24 filtres SQL remplacés par 4 portées"
     },
     {
-      "nom": "Rôles et types de compte",
-      "etat": "attente",
-      "detail": "vers des tables liées par clé étrangère"
+      "nom": "Index redondants",
+      "etat": "en cours",
+      "detail": "18 repérés, migration et garde-fou prêts — pose après la suite en cours"
     },
     {
-      "nom": "Suite complète et non-régression",
-      "etat": "attente",
-      "detail": "aucune page cassée"
-    }
-  ],
-  "journal": [
-    {
-      "h": "",
-      "quoi": "Graphe construit : 12 486 nœuds, 35 567 arêtes, 524 communautés"
-    },
-    {
-      "h": "",
-      "quoi": "Mesure : 170 colonnes *_id sans index de tête — scans complets à chaque jointure"
-    },
-    {
-      "h": "",
-      "quoi": "CORRECTION : détection de tables mortes invalide (nom de table implicite Eloquent)"
-    },
-    {
-      "h": "17:34",
-      "quoi": "Audit corrigé : la table d'un modèle vient de getTable(), plus du nom du fichier"
-    },
-    {
-      "h": "17:34",
-      "quoi": "283 des 313 tables ont un modèle — seules 9 n'ont ni modèle ni mention"
-    },
-    {
-      "h": "17:34",
-      "quoi": "31 index posés sur missions, bookings, users, organization_accounts, service_zones, provider_profiles"
-    },
-    {
-      "h": "17:34",
-      "quoi": "Colonnes sans index de tête : 170 → 139"
-    },
-    {
-      "h": "17:41",
-      "quoi": "21 colonnes polymorphes : DÉJÀ couvertes par leur composite (type, id) — faux positifs retirés de l'audit"
-    },
-    {
-      "h": "17:41",
-      "quoi": "118 index de plus posés sur 74 tables (dont 30 clés de corrélation de webhook)"
-    },
-    {
-      "h": "17:41",
-      "quoi": "Colonnes de jointure sans index : 0 sur 822"
-    },
-    {
-      "h": "18:20",
-      "quoi": "197 clés étrangères posées (parent déduit du nom), puis 36 de plus (parent lu dans les belongsTo des modèles)"
-    },
-    {
-      "h": "18:20",
-      "quoi": "542 relations belongsTo extraites — la table rendez_vous n'existe plus, ces colonnes pointent vers bookings"
-    },
-    {
-      "h": "18:20",
-      "quoi": "DÉFAUT : AdminAnalyticsService testait le schéma de « feedbacks » et moyennait sur « feedback »"
-    },
-    {
-      "h": "18:20",
-      "quoi": "Corrigé + 2 tests : supprimer feedbacks aurait mis la note moyenne admin à zéro, en silence"
-    },
-    {
-      "h": "18:20",
-      "quoi": "Pint avait cassé scripts/audit_schema.php : un use placé après son usage ne s'applique pas"
-    },
-    {
-      "h": "20:18",
-      "quoi": "La suite complète a rejeté 49 tests : les contraintes exposaient des fixtures qui inventaient leurs parents"
-    },
-    {
-      "h": "20:18",
-      "quoi": "5 clés étrangères FAUSSES de ma part corrigées à la source (le nom mentait, les modèles ont tranché)"
-    },
-    {
-      "h": "20:18",
-      "quoi": "DÉFAUT : bookings.recurring_series_id reçoit TROIS choses — un UUID, un id de série, un id de réservation"
-    },
-    {
-      "h": "20:18",
-      "quoi": "Contrainte retirée sur cette colonne : on ne contraint pas une colonne dont le sens change selon l'écrivain"
-    },
-    {
-      "h": "20:18",
-      "quoi": "10 fixtures corrigées : elles écrivaient mission_id=42, booking_id=1, provider_team_id=999999"
-    },
-    {
-      "h": "21:16",
-      "quoi": "Suite complète : 49 échecs → 1 → 0. Pint et PHPStan verts."
+      "nom": "Découpage de bookings",
+      "etat": "écarté",
+      "detail": "aucune mesure ne le soutient : 0 index gaspillé, 0 colonne morte, ~210 sites pour la seule récurrence"
     }
   ],
   "fichiers": [
@@ -170,28 +85,82 @@
       "quoi": "audit reproductible du schéma"
     },
     {
-      "chemin": "database/migrations/2026_09_10_090000_indexer_les_jointures_du_coeur_chaud.php",
-      "quoi": "31 index"
-    },
-    {
-      "chemin": "database/migrations/2026_09_11_090000_indexer_le_reste_des_jointures.php",
-      "quoi": "118 index"
-    },
-    {
-      "chemin": "database/migrations/2026_09_12_090000_poser_les_cles_etrangeres_manquantes.php",
-      "quoi": "197 contraintes"
-    },
-    {
-      "chemin": "database/migrations/2026_09_13_090000_poser_les_cles_etrangeres_des_modeles.php",
-      "quoi": "36 contraintes"
-    },
-    {
       "chemin": "scripts/relations_declarees.php",
-      "quoi": "542 belongsTo extraits"
+      "quoi": "les belongsTo réellement déclarés"
     },
     {
-      "chemin": "app/Services/Admin/AdminAnalyticsService.php",
-      "quoi": "note moyenne : lit la table du modèle"
+      "chemin": "app/Models/Concerns/HasUserTypeChecks.php",
+      "quoi": "prédicats de rôle + 4 portées SQL qui les reflètent"
+    },
+    {
+      "chemin": "app/Models/Concerns/HasCatalogTranslations.php",
+      "quoi": "traduction du catalogue, chaîne de repli"
+    },
+    {
+      "chemin": "app/Livewire/Admin/OrderEngine/CatalogCenter.php",
+      "quoi": "saisie des traductions, 3 gardes"
+    },
+    {
+      "chemin": "database/seeders/CatalogueTraductionsSeeder.php",
+      "quoi": "60 traductions de départ, idempotent"
+    },
+    {
+      "chemin": "app/Models/Concerns/HasLegacyBookingAliases.php",
+      "quoi": "15 paires d'alias — un seul getDirty() par enregistrement"
+    }
+  ],
+  "journal": [
+    {
+      "h": "21:40",
+      "quoi": "Priorité : 'urgent' n'atteignait aucun des 6 lecteurs qui cherchent 'urgente'"
+    },
+    {
+      "h": "22:30",
+      "quoi": "9 tables mortes retirées ; Cashier et Jetstream épargnés de justesse"
+    },
+    {
+      "h": "22:55",
+      "quoi": "booking_status_histories branchée : qui a annulé, et depuis quel état"
+    },
+    {
+      "h": "23:30",
+      "quoi": "4 colonnes mortes de bookings, dont une 3e représentation de l'urgence"
+    },
+    {
+      "h": "00:05",
+      "quoi": "account_type contredisait role dans la même transaction — 11 comptes"
+    },
+    {
+      "h": "00:20",
+      "quoi": "Échec de suite élucidé : un test cassait dans les 10 minutes suivant minuit"
+    },
+    {
+      "h": "02:10",
+      "quoi": "Catalogue traduisible : carrousel, dock, devis — la chaîne ne se coupe plus au milieu"
+    },
+    {
+      "h": "02:40",
+      "quoi": "Traduire ne doit pas rendre le calcul de prix persistant : 14 tests l'ont dit"
+    },
+    {
+      "h": "03:15",
+      "quoi": "Le repli par mots-clés de l'assistant ne connaissait que le français"
+    },
+    {
+      "h": "10:05",
+      "quoi": "Rôles : un repli ne parle que quand l'autre se tait — 19 comptes mal classés"
+    },
+    {
+      "h": "10:45",
+      "quoi": "24 filtres SQL sur la colonne héritée → 4 portées ; 3 prestataires étaient invisibles"
+    },
+    {
+      "h": "11:10",
+      "quoi": "bookings : le coût n'est pas les 164 colonnes mais 30 getDirty() par save (75 % du temps)"
+    },
+    {
+      "h": "11:22",
+      "quoi": "18 index strictement redondants repérés ; migration et garde-fou prêts"
     }
   ]
 }
