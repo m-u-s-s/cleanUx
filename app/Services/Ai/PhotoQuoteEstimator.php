@@ -37,7 +37,8 @@ class PhotoQuoteEstimator
         }
 
         $model = (string) config('services.anthropic.model', 'claude-haiku-4-5-20251001');
-        $tradeName = $trade->name ?? $trade->code;
+        // Le nom part dans l'invite ET revient au client : il le nomme comme la tuile choisie.
+        $tradeName = $trade->translate('name') ?? $trade->code;
 
         $systemPrompt = $this->systemPromptForTrade($tradeName);
 
@@ -178,7 +179,7 @@ PROMPT;
         return [
             'success' => true,
             'trade_code' => $trade->code,
-            'trade_name' => $trade->name,
+            'trade_name' => $trade->translate('name'),
             'surface_estimee_m2' => $decoded['surface_estimee_m2'] ?? null,
             'etat_observe' => $decoded['etat_observe'] ?? '',
             'duree_estimee_min' => (int) ($decoded['duree_estimee_min'] ?? 0),

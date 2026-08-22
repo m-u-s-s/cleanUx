@@ -67,7 +67,7 @@ class OrderIntentInterpreter
     {
         return Trade::query()
             ->where('is_active', true)
-            ->with('sector:id,name')
+            ->with(['sector:id,name', 'translations'])
             ->orderBy('name')
             ->get(['id', 'name', 'slug', 'sector_id', 'description']);
     }
@@ -85,7 +85,12 @@ class OrderIntentInterpreter
         }
 
         $liste = $catalogue
-            ->map(fn (Trade $metier) => sprintf('%d | %s | %s', $metier->id, $metier->name, $metier->sector->name ?? '—'))
+            ->map(fn (Trade $metier) => sprintf(
+                '%d | %s | %s',
+                $metier->id,
+                $metier->translate('name'),
+                $metier->sector?->translate('name') ?? '—',
+            ))
             ->implode("\n");
 
         try {
@@ -167,7 +172,23 @@ class OrderIntentInterpreter
         $meilleurScore = 0;
 
         foreach ($catalogue as $metier) {
-            $corpus = Str::lower(Str::ascii(trim(($metier->name ?? '').' '.($metier->description ?? ''))));
+            /*
+             * LE CORPUS PORTE TOUTES LES LANGUES, PAS SEULEMENT CELLE DU MOMENT.
+             *
+             * Ce repli compte des mots ; il ne comprend rien. Construit sur le seul libellé
+             * français, il rendait zéro pour « schilderwerk ramen » sur CHAQUE métier, et le client
+             * néerlandophone lisait « Nous n'avons pas reconnu le service » — alors que le service
+             * existe et porte ce nom depuis que le catalogue se traduit.
+             *
+             * Toutes les traductions y entrent, et non la seule langue active : quelqu'un peut
+             * écrire un mot anglais dans une phrase française, et un mot de plus dans le corpus ne
+             * peut qu'AJOUTER une correspondance, jamais en retirer une qui fonctionnait.
+             */
+            $corpus = Str::lower(Str::ascii(trim(
+                ($metier->name ?? '')
+                .' '.($metier->description ?? '')
+                .' '.$metier->translations->where('field', 'name')->pluck('value')->implode(' ')
+            )));
             $score = $mots->filter(fn (string $mot) => str_contains($corpus, $mot))->count();
 
             if ($score > $meilleurScore) {
