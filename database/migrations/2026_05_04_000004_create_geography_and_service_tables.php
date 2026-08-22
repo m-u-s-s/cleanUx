@@ -2,11 +2,28 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
+    {
+        $this->corpsInitial();
+        $this->fusionFixBrioTestSchemaCompatibilityFinalServiceCatalogs();
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('zone_service_rules');
+        Schema::dropIfExists('service_catalogs');
+        Schema::dropIfExists('postal_codes');
+        Schema::dropIfExists('service_zones');
+        Schema::dropIfExists('countries');
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
     {
         Schema::create('countries', function (Blueprint $table) {
             $table->id();
@@ -219,12 +236,35 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
+    /** Fusionne depuis 2026_05_13_194311_fix_brio_test_schema_compatibility_final */
+    private function fusionFixBrioTestSchemaCompatibilityFinalServiceCatalogs(): void
     {
-        Schema::dropIfExists('zone_service_rules');
-        Schema::dropIfExists('service_catalogs');
-        Schema::dropIfExists('postal_codes');
-        Schema::dropIfExists('service_zones');
-        Schema::dropIfExists('countries');
+        if (Schema::hasTable('service_catalogs')) {
+            Schema::table('service_catalogs', function (Blueprint $table) {
+                if (! Schema::hasColumn('service_catalogs', 'service_type')) {
+                    $table->string('service_type', 60)->nullable();
+                }
+
+                if (! Schema::hasColumn('service_catalogs', 'requires_quote')) {
+                    $table->boolean('requires_quote')->default(false);
+                }
+
+                if (! Schema::hasColumn('service_catalogs', 'is_entreprise')) {
+                    $table->boolean('is_entreprise')->default(false);
+                }
+
+                if (! Schema::hasColumn('service_catalogs', 'sort_order')) {
+                    $table->unsignedInteger('sort_order')->default(0);
+                }
+
+                if (! Schema::hasColumn('service_catalogs', 'settings')) {
+                    $table->json('settings')->nullable();
+                }
+            });
+
+            DB::table('service_catalogs')
+                ->whereNull('service_type')
+                ->update(['service_type' => 'standard']);
+        }
     }
 };

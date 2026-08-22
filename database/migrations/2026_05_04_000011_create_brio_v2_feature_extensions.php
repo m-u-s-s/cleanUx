@@ -15,6 +15,11 @@ return new class extends Migration
         $this->fusion20260528100030AddMissingColumnsToMissionIncidentsTable();
         $this->fusion20260528100032AddMissingColumnsToMissionQualityReviewsTable();
         $this->fusion20260528100037AddMissingColumnsToOrganizationContractsTable();
+        $this->fusionFixPortalLegacyColumnsRound2ProviderFavorites();
+        $this->fusionFixBrioTestSchemaCompatibilityFinalLocationGeocodes();
+        $this->fusionFixRemainingRuntimeSchemaCompatRound5MissionQualityRevie();
+        $this->fusionFixRemainingRuntimeSchemaCompatRound5GoogleCalendarConne();
+        $this->fusionFixRemainingRuntimeSchemaCompatRound5LocationGeocodes();
     }
 
     public function down(): void
@@ -543,5 +548,112 @@ return new class extends Migration
                 $table->json('metadata')->nullable();
             }
         });
+    }
+
+    /** Fusionne depuis 2026_05_11_231500_fix_portal_legacy_columns_round2 */
+    private function fusionFixPortalLegacyColumnsRound2ProviderFavorites(): void
+    {
+        if (Schema::hasTable('provider_favorites')) {
+            Schema::table('provider_favorites', function (Blueprint $table) {
+                if (! Schema::hasColumn('provider_favorites', 'is_favorite')) {
+                    $table->boolean('is_favorite')->default(true);
+                }
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_05_13_194311_fix_brio_test_schema_compatibility_final */
+    private function fusionFixBrioTestSchemaCompatibilityFinalLocationGeocodes(): void
+    {
+        if (Schema::hasTable('location_geocodes')) {
+            Schema::table('location_geocodes', function (Blueprint $table) {
+                if (! Schema::hasColumn('location_geocodes', 'lookup_hash')) {
+                    $table->string('lookup_hash')->nullable()->index();
+                }
+
+                if (! Schema::hasColumn('location_geocodes', 'address_line')) {
+                    $table->string('address_line')->nullable();
+                }
+
+                if (! Schema::hasColumn('location_geocodes', 'country_code')) {
+                    $table->string('country_code', 2)->nullable();
+                }
+
+                if (! Schema::hasColumn('location_geocodes', 'raw')) {
+                    $table->json('raw')->nullable();
+                }
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_05_13_235712_fix_remaining_runtime_schema_compat_round5 */
+    private function fusionFixRemainingRuntimeSchemaCompatRound5MissionQualityRevie(): void
+    {
+        // Analytics
+        if (Schema::hasTable('mission_quality_reviews')) {
+            Schema::table('mission_quality_reviews', function (Blueprint $table) {
+                if (! Schema::hasColumn('mission_quality_reviews', 'overall_rating')) {
+                    $table->unsignedTinyInteger('overall_rating')->nullable();
+                }
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_05_13_235712_fix_remaining_runtime_schema_compat_round5 */
+    private function fusionFixRemainingRuntimeSchemaCompatRound5GoogleCalendarConne(): void
+    {
+        // Google Calendar connections
+        if (Schema::hasTable('google_calendar_connections')) {
+            Schema::table('google_calendar_connections', function (Blueprint $table) {
+                if (! Schema::hasColumn('google_calendar_connections', 'google_email')) {
+                    $table->string('google_email')->nullable();
+                }
+
+                if (! Schema::hasColumn('google_calendar_connections', 'google_user_id')) {
+                    $table->string('google_user_id')->nullable();
+                }
+
+                if (! Schema::hasColumn('google_calendar_connections', 'calendar_id')) {
+                    $table->string('calendar_id')->nullable();
+                }
+
+                if (! Schema::hasColumn('google_calendar_connections', 'sync_enabled')) {
+                    $table->boolean('sync_enabled')->default(true);
+                }
+
+                if (! Schema::hasColumn('google_calendar_connections', 'last_synced_at')) {
+                    $table->timestamp('last_synced_at')->nullable();
+                }
+
+                if (! Schema::hasColumn('google_calendar_connections', 'last_sync_status')) {
+                    $table->string('last_sync_status')->nullable();
+                }
+
+                if (! Schema::hasColumn('google_calendar_connections', 'last_sync_error')) {
+                    $table->text('last_sync_error')->nullable();
+                }
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_05_13_235712_fix_remaining_runtime_schema_compat_round5 */
+    private function fusionFixRemainingRuntimeSchemaCompatRound5LocationGeocodes(): void
+    {
+        // Location cache
+        if (Schema::hasTable('location_geocodes')) {
+            Schema::table('location_geocodes', function (Blueprint $table) {
+                if (! Schema::hasColumn('location_geocodes', 'address_hash')) {
+                    $table->string('address_hash')->nullable();
+                }
+
+                if (! Schema::hasColumn('location_geocodes', 'lookup_hash')) {
+                    $table->string('lookup_hash')->nullable();
+                }
+
+                if (! Schema::hasColumn('location_geocodes', 'raw')) {
+                    $table->json('raw')->nullable();
+                }
+            });
+        }
     }
 };

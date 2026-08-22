@@ -21,6 +21,9 @@ return new class extends Migration
         $this->fusion20260814090000ModeClientAbsentEtPingDeMiMission();
         $this->fusion20260907090000PorterLaConsigneDeDerniereMinute();
         $this->fusion20260908090000PorterLeMinuteurDeRetard();
+        $this->fusionFixPortalAndBookingLegacyColumnsBookings();
+        $this->fusionFixBrioTestSchemaCompatibilityFinalBookings();
+        $this->fusionFixApprovalBookingRuntimeSchemaRound4Bookings();
     }
 
     public function down(): void
@@ -536,6 +539,224 @@ return new class extends Migration
 
             if (! Schema::hasColumn('bookings', 'provider_delay_reason')) {
                 $table->string('provider_delay_reason', 180)->nullable();
+            }
+        });
+    }
+
+    /** Fusionne depuis 2026_05_11_224500_fix_portal_and_booking_legacy_columns */
+    private function fusionFixPortalAndBookingLegacyColumnsBookings(): void
+    {
+        if (Schema::hasTable('bookings')) {
+            Schema::table('bookings', function (Blueprint $table) {
+                if (! Schema::hasColumn('bookings', 'duree')) {
+                    $table->unsignedInteger('duree')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'duree_estimee')) {
+                    $table->unsignedInteger('duree_estimee')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'devis_estime')) {
+                    $table->decimal('devis_estime', 10, 2)->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'motif')) {
+                    $table->text('motif')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'adresse')) {
+                    $table->string('adresse')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'ville')) {
+                    $table->string('ville')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'code_postal')) {
+                    $table->string('code_postal')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'type_lieu')) {
+                    $table->string('type_lieu')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'surface')) {
+                    $table->string('surface')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'frequence')) {
+                    $table->string('frequence')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'telephone_client')) {
+                    $table->string('telephone_client')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'priorite')) {
+                    $table->string('priorite')->default('normale');
+                }
+
+                if (! Schema::hasColumn('bookings', 'commentaire_client')) {
+                    $table->text('commentaire_client')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'options_prestation')) {
+                    $table->json('options_prestation')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'zones_specifiques')) {
+                    $table->json('zones_specifiques')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'materiel_specifique')) {
+                    $table->json('materiel_specifique')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'presence_animaux')) {
+                    $table->boolean('presence_animaux')->default(false);
+                }
+
+                if (! Schema::hasColumn('bookings', 'acces_parking')) {
+                    $table->boolean('acces_parking')->default(false);
+                }
+
+                if (! Schema::hasColumn('bookings', 'materiel_fournit')) {
+                    $table->boolean('materiel_fournit')->default(false);
+                }
+
+                if (! Schema::hasColumn('bookings', 'is_recurrent')) {
+                    $table->boolean('is_recurrent')->default(false);
+                }
+
+                if (! Schema::hasColumn('bookings', 'recurrence_rule')) {
+                    $table->string('recurrence_rule')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'recurrence_frequency')) {
+                    $table->string('recurrence_frequency')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'recurrence_interval')) {
+                    $table->unsignedInteger('recurrence_interval')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'recurrence_until')) {
+                    $table->date('recurrence_until')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'recurrence_count')) {
+                    $table->unsignedInteger('recurrence_count')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'recurrence_days')) {
+                    $table->json('recurrence_days')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'is_series_master')) {
+                    $table->boolean('is_series_master')->default(false);
+                }
+
+                if (! Schema::hasColumn('bookings', 'series_position')) {
+                    $table->unsignedInteger('series_position')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'series_status')) {
+                    $table->string('series_status')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'is_favorite_slot')) {
+                    $table->boolean('is_favorite_slot')->default(false);
+                }
+
+                if (! Schema::hasColumn('bookings', 'photos_reference')) {
+                    $table->json('photos_reference')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'mission_started_at')) {
+                    $table->timestamp('mission_started_at')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'mission_finished_at')) {
+                    $table->timestamp('mission_finished_at')->nullable();
+                }
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_05_13_194311_fix_brio_test_schema_compatibility_final */
+    private function fusionFixBrioTestSchemaCompatibilityFinalBookings(): void
+    {
+        if (Schema::hasTable('bookings')) {
+            Schema::table('bookings', function (Blueprint $table) {
+                if (! Schema::hasColumn('bookings', 'destination_lat')) {
+                    $table->decimal('destination_lat', 10, 7)->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'destination_lng')) {
+                    $table->decimal('destination_lng', 10, 7)->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'cancelled_by')) {
+                    $table->unsignedBigInteger('cancelled_by')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'cancellation_reason')) {
+                    $table->text('cancellation_reason')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'cancellation_fee_amount')) {
+                    $table->decimal('cancellation_fee_amount', 10, 2)->default(0);
+                }
+
+                if (! Schema::hasColumn('bookings', 'cancellation_fee_percent')) {
+                    $table->unsignedInteger('cancellation_fee_percent')->default(0);
+                }
+
+                if (! Schema::hasColumn('bookings', 'series_status')) {
+                    $table->string('series_status')->nullable();
+                }
+
+                if (! Schema::hasColumn('bookings', 'series_position')) {
+                    $table->unsignedInteger('series_position')->nullable();
+                }
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_05_13_225926_fix_approval_booking_runtime_schema_round4 */
+    private function fusionFixApprovalBookingRuntimeSchemaRound4Bookings(): void
+    {
+        if (! Schema::hasTable('bookings')) {
+            return;
+        }
+
+        Schema::table('bookings', function (Blueprint $table) {
+            if (! Schema::hasColumn('bookings', 'asap_requested_at')) {
+                $table->timestamp('asap_requested_at')->nullable();
+            }
+
+            if (! Schema::hasColumn('bookings', 'asap_deadline_at')) {
+                $table->timestamp('asap_deadline_at')->nullable();
+            }
+
+            if (! Schema::hasColumn('bookings', 'matched_at')) {
+                $table->timestamp('matched_at')->nullable();
+            }
+
+            if (! Schema::hasColumn('bookings', 'matching_snapshot')) {
+                $table->json('matching_snapshot')->nullable();
+            }
+
+            if (! Schema::hasColumn('bookings', 'destination_lat')) {
+                $table->decimal('destination_lat', 10, 7)->nullable();
+            }
+
+            if (! Schema::hasColumn('bookings', 'destination_lng')) {
+                $table->decimal('destination_lng', 10, 7)->nullable();
+            }
+
+            if (! Schema::hasColumn('bookings', 'address_components')) {
+                $table->json('address_components')->nullable();
             }
         });
     }

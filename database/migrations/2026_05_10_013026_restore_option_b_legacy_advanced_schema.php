@@ -13,6 +13,11 @@ return new class extends Migration
         $this->fusion20260528100019AddMissingColumnsToFinanceRemindersTable();
         $this->fusion20260528100022AddMissingColumnsToIncidentReportsTable();
         $this->fusion20260605000004AddAgreedUnitPriceToWorkOrderLines();
+        $this->fusionFixPortalAndBookingLegacyColumnsEmployeeZoneAssignments();
+        $this->fusionFixBrioTestSchemaCompatibilityFinalFieldTeams();
+        $this->fusionFixRuntimeSchemaRound6FinanceQuotes();
+        $this->fusionFixRuntimeSchemaRound6FinanceInvoices();
+        $this->fusionFixRemainingRuntimeSchemaCompatRound5FinanceInvoices();
     }
 
     private function restoreLegacyRendezVous(): void
@@ -606,6 +611,167 @@ return new class extends Migration
         if (Schema::hasTable('work_order_lines') && ! Schema::hasColumn('work_order_lines', 'agreed_unit_price')) {
             Schema::table('work_order_lines', function (Blueprint $table) {
                 $table->decimal('agreed_unit_price', 10, 2)->nullable();
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_05_11_224500_fix_portal_and_booking_legacy_columns */
+    private function fusionFixPortalAndBookingLegacyColumnsEmployeeZoneAssignments(): void
+    {
+        if (Schema::hasTable('employee_zone_assignments')) {
+            Schema::table('employee_zone_assignments', function (Blueprint $table) {
+                if (! Schema::hasColumn('employee_zone_assignments', 'assignment_type')) {
+                    $table->string('assignment_type')->default('primary');
+                }
+
+                if (! Schema::hasColumn('employee_zone_assignments', 'coverage_priority')) {
+                    $table->unsignedInteger('coverage_priority')->default(0);
+                }
+
+                if (! Schema::hasColumn('employee_zone_assignments', 'is_active')) {
+                    $table->boolean('is_active')->default(true);
+                }
+
+                if (! Schema::hasColumn('employee_zone_assignments', 'starts_at')) {
+                    $table->timestamp('starts_at')->nullable();
+                }
+
+                if (! Schema::hasColumn('employee_zone_assignments', 'ends_at')) {
+                    $table->timestamp('ends_at')->nullable();
+                }
+
+                if (! Schema::hasColumn('employee_zone_assignments', 'notes')) {
+                    $table->text('notes')->nullable();
+                }
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_05_13_194311_fix_brio_test_schema_compatibility_final */
+    private function fusionFixBrioTestSchemaCompatibilityFinalFieldTeams(): void
+    {
+        if (Schema::hasTable('field_teams')) {
+            Schema::table('field_teams', function (Blueprint $table) {
+                if (! Schema::hasColumn('field_teams', 'country_id')) {
+                    $table->unsignedBigInteger('country_id')->nullable();
+                }
+
+                if (! Schema::hasColumn('field_teams', 'service_zone_id')) {
+                    $table->unsignedBigInteger('service_zone_id')->nullable();
+                }
+
+                if (! Schema::hasColumn('field_teams', 'team_lead_user_id')) {
+                    $table->unsignedBigInteger('team_lead_user_id')->nullable();
+                }
+
+                if (! Schema::hasColumn('field_teams', 'is_internal')) {
+                    $table->boolean('is_internal')->default(true);
+                }
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_05_13_232801_fix_runtime_schema_round6 */
+    private function fusionFixRuntimeSchemaRound6FinanceQuotes(): void
+    {
+        if (Schema::hasTable('finance_quotes')) {
+            Schema::table('finance_quotes', function (Blueprint $table) {
+                if (! Schema::hasColumn('finance_quotes', 'tax_rate')) {
+                    $table->decimal('tax_rate', 8, 2)->default(0);
+                }
+
+                if (! Schema::hasColumn('finance_quotes', 'tax_amount')) {
+                    $table->decimal('tax_amount', 10, 2)->default(0);
+                }
+
+                if (! Schema::hasColumn('finance_quotes', 'total_amount')) {
+                    $table->decimal('total_amount', 10, 2)->default(0);
+                }
+
+                if (! Schema::hasColumn('finance_quotes', 'issued_at')) {
+                    $table->timestamp('issued_at')->nullable();
+                }
+
+                if (! Schema::hasColumn('finance_quotes', 'valid_until')) {
+                    $table->timestamp('valid_until')->nullable();
+                }
+
+                if (! Schema::hasColumn('finance_quotes', 'accepted_at')) {
+                    $table->timestamp('accepted_at')->nullable();
+                }
+
+                if (! Schema::hasColumn('finance_quotes', 'snapshot')) {
+                    $table->json('snapshot')->nullable();
+                }
+
+                if (! Schema::hasColumn('finance_quotes', 'meta')) {
+                    $table->json('meta')->nullable();
+                }
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_05_13_232801_fix_runtime_schema_round6 */
+    private function fusionFixRuntimeSchemaRound6FinanceInvoices(): void
+    {
+        if (Schema::hasTable('finance_invoices')) {
+            Schema::table('finance_invoices', function (Blueprint $table) {
+                if (! Schema::hasColumn('finance_invoices', 'tax_rate')) {
+                    $table->decimal('tax_rate', 8, 2)->default(0);
+                }
+
+                if (! Schema::hasColumn('finance_invoices', 'tax_amount')) {
+                    $table->decimal('tax_amount', 10, 2)->default(0);
+                }
+
+                if (! Schema::hasColumn('finance_invoices', 'total_amount')) {
+                    $table->decimal('total_amount', 10, 2)->default(0);
+                }
+
+                if (! Schema::hasColumn('finance_invoices', 'paid_amount')) {
+                    $table->decimal('paid_amount', 10, 2)->default(0);
+                }
+
+                if (! Schema::hasColumn('finance_invoices', 'balance_due')) {
+                    $table->decimal('balance_due', 10, 2)->default(0);
+                }
+
+                if (! Schema::hasColumn('finance_invoices', 'snapshot')) {
+                    $table->json('snapshot')->nullable();
+                }
+
+                if (! Schema::hasColumn('finance_invoices', 'meta')) {
+                    $table->json('meta')->nullable();
+                }
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_05_13_235712_fix_remaining_runtime_schema_compat_round5 */
+    private function fusionFixRemainingRuntimeSchemaCompatRound5FinanceInvoices(): void
+    {
+        // Finance invoices B2B
+        if (Schema::hasTable('finance_invoices')) {
+            Schema::table('finance_invoices', function (Blueprint $table) {
+                if (! Schema::hasColumn('finance_invoices', 'invoice_type')) {
+                    $table->string('invoice_type')->nullable();
+                }
+
+                if (! Schema::hasColumn('finance_invoices', 'balance_due')) {
+                    $table->decimal('balance_due', 10, 2)->default(0);
+                }
+
+                if (! Schema::hasColumn('finance_invoices', 'billing_period_start')) {
+                    $table->dateTime('billing_period_start')->nullable();
+                }
+
+                if (! Schema::hasColumn('finance_invoices', 'billing_period_end')) {
+                    $table->dateTime('billing_period_end')->nullable();
+                }
+
+                if (! Schema::hasColumn('finance_invoices', 'site_breakdown')) {
+                    $table->json('site_breakdown')->nullable();
+                }
             });
         }
     }

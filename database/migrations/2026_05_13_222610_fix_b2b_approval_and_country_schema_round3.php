@@ -11,6 +11,7 @@ return new class extends Migration
         $this->corpsInitial();
         $this->fusion20260528100028AddRejectedAtToWorkOrderApprovalsTable();
         $this->fusion20260528100035AddMissingColumnsToMissionTeamAssignmentsTable();
+        $this->fusionFixApprovalBookingRuntimeSchemaRound4EnterpriseBookingAp();
     }
 
     private function ensureCountryBillingProfiles(): void
@@ -299,6 +300,56 @@ return new class extends Migration
             }
             if (! Schema::hasColumn('mission_team_assignments', 'instructions_snapshot')) {
                 $table->json('instructions_snapshot')->nullable();
+            }
+        });
+    }
+
+    /** Fusionne depuis 2026_05_13_225926_fix_approval_booking_runtime_schema_round4 */
+    private function fusionFixApprovalBookingRuntimeSchemaRound4EnterpriseBookingAp(): void
+    {
+        if (! Schema::hasTable('enterprise_booking_approvals')) {
+            return;
+        }
+
+        Schema::table('enterprise_booking_approvals', function (Blueprint $table) {
+            if (! Schema::hasColumn('enterprise_booking_approvals', 'manager_approved_by_user_id')) {
+                $table->unsignedBigInteger('manager_approved_by_user_id')->nullable()->index();
+            }
+
+            if (! Schema::hasColumn('enterprise_booking_approvals', 'manager_approved_at')) {
+                $table->timestamp('manager_approved_at')->nullable();
+            }
+
+            if (! Schema::hasColumn('enterprise_booking_approvals', 'manager_note')) {
+                $table->text('manager_note')->nullable();
+            }
+
+            if (! Schema::hasColumn('enterprise_booking_approvals', 'finance_approved_by_user_id')) {
+                $table->unsignedBigInteger('finance_approved_by_user_id')->nullable()->index();
+            }
+
+            if (! Schema::hasColumn('enterprise_booking_approvals', 'finance_approved_at')) {
+                $table->timestamp('finance_approved_at')->nullable();
+            }
+
+            if (! Schema::hasColumn('enterprise_booking_approvals', 'finance_note')) {
+                $table->text('finance_note')->nullable();
+            }
+
+            if (! Schema::hasColumn('enterprise_booking_approvals', 'final_approved_by_user_id')) {
+                $table->unsignedBigInteger('final_approved_by_user_id')->nullable()->index();
+            }
+
+            if (! Schema::hasColumn('enterprise_booking_approvals', 'final_approved_at')) {
+                $table->timestamp('final_approved_at')->nullable();
+            }
+
+            if (! Schema::hasColumn('enterprise_booking_approvals', 'rejected_by_user_id')) {
+                $table->unsignedBigInteger('rejected_by_user_id')->nullable()->index();
+            }
+
+            if (! Schema::hasColumn('enterprise_booking_approvals', 'rejected_at')) {
+                $table->timestamp('rejected_at')->nullable();
             }
         });
     }

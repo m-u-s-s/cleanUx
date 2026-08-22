@@ -23,6 +23,9 @@ return new class extends Migration
         $this->fusion20260815090000GuiderLaChecklistPasAPas();
         $this->fusion20260901090000RetirerLesColonnesDormantesDesAffectations();
         $this->fusion20260903090000PorterLaTodoDuClient();
+        $this->fusionFixPortalLegacyColumnsRound2MissionAssignments();
+        $this->fusionFixBrioTestSchemaCompatibilityFinalMissions();
+        $this->fusionFixBrioTestSchemaCompatibilityFinalMissionAssignments();
     }
 
     public function down(): void
@@ -699,5 +702,85 @@ return new class extends Migration
     {
         return collect(Schema::getIndexes('mission_checklist_items'))
             ->contains(fn (array $index) => ($index['name'] ?? null) === $nom);
+    }
+
+    /** Fusionne depuis 2026_05_11_231500_fix_portal_legacy_columns_round2 */
+    private function fusionFixPortalLegacyColumnsRound2MissionAssignments(): void
+    {
+        if (Schema::hasTable('mission_assignments')) {
+            Schema::table('mission_assignments', function (Blueprint $table) {
+                if (! Schema::hasColumn('mission_assignments', 'role_on_mission')) {
+                    $table->string('role_on_mission')->nullable();
+                }
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_05_13_194311_fix_brio_test_schema_compatibility_final */
+    private function fusionFixBrioTestSchemaCompatibilityFinalMissions(): void
+    {
+        if (Schema::hasTable('missions')) {
+            Schema::table('missions', function (Blueprint $table) {
+                if (! Schema::hasColumn('missions', 'requires_start_code')) {
+                    $table->boolean('requires_start_code')->default(true);
+                }
+
+                if (! Schema::hasColumn('missions', 'requires_end_code')) {
+                    $table->boolean('requires_end_code')->default(true);
+                }
+
+                if (! Schema::hasColumn('missions', 'client_presence_confirmed')) {
+                    $table->boolean('client_presence_confirmed')->default(false);
+                }
+
+                if (! Schema::hasColumn('missions', 'started_by_user_id')) {
+                    $table->unsignedBigInteger('started_by_user_id')->nullable();
+                }
+
+                if (! Schema::hasColumn('missions', 'closed_by_user_id')) {
+                    $table->unsignedBigInteger('closed_by_user_id')->nullable();
+                }
+
+                if (! Schema::hasColumn('missions', 'destination_lat')) {
+                    $table->decimal('destination_lat', 10, 7)->nullable();
+                }
+
+                if (! Schema::hasColumn('missions', 'destination_lng')) {
+                    $table->decimal('destination_lng', 10, 7)->nullable();
+                }
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_05_13_194311_fix_brio_test_schema_compatibility_final */
+    private function fusionFixBrioTestSchemaCompatibilityFinalMissionAssignments(): void
+    {
+        if (Schema::hasTable('mission_assignments')) {
+            Schema::table('mission_assignments', function (Blueprint $table) {
+                if (! Schema::hasColumn('mission_assignments', 'notification_sent_at')) {
+                    $table->timestamp('notification_sent_at')->nullable();
+                }
+
+                if (! Schema::hasColumn('mission_assignments', 'expires_at')) {
+                    $table->timestamp('expires_at')->nullable();
+                }
+
+                if (! Schema::hasColumn('mission_assignments', 'response_seconds')) {
+                    $table->unsignedInteger('response_seconds')->nullable();
+                }
+
+                if (! Schema::hasColumn('mission_assignments', 'decline_reason')) {
+                    $table->string('decline_reason')->nullable();
+                }
+
+                if (! Schema::hasColumn('mission_assignments', 'role_on_mission')) {
+                    $table->string('role_on_mission')->nullable();
+                }
+
+                if (! Schema::hasColumn('mission_assignments', 'escalated_from_assignment_id')) {
+                    $table->unsignedBigInteger('escalated_from_assignment_id')->nullable();
+                }
+            });
+        }
     }
 };

@@ -8,6 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $this->corpsInitial();
+        $this->fusionFixRuntimeSchemaRound6Conversations();
+    }
+
+    public function down(): void
+    {
+        //
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
         if (! Schema::hasTable('conversations')) {
             Schema::create('conversations', function (Blueprint $table) {
                 $table->id();
@@ -87,8 +99,23 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
+    /** Fusionne depuis 2026_05_13_232801_fix_runtime_schema_round6 */
+    private function fusionFixRuntimeSchemaRound6Conversations(): void
     {
-        //
+        if (Schema::hasTable('conversations')) {
+            Schema::table('conversations', function (Blueprint $table) {
+                if (! Schema::hasColumn('conversations', 'mission_id')) {
+                    $table->unsignedBigInteger('mission_id')->nullable()->index();
+                }
+
+                if (! Schema::hasColumn('conversations', 'channel_id')) {
+                    $table->unsignedBigInteger('channel_id')->nullable()->index();
+                }
+
+                if (! Schema::hasColumn('conversations', 'created_by_user_id')) {
+                    $table->unsignedBigInteger('created_by_user_id')->nullable()->index();
+                }
+            });
+        }
     }
 };

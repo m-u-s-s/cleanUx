@@ -15,6 +15,7 @@ return new class extends Migration
         $this->fusion20260526000001AddThemePreferenceToUsers();
         $this->fusion20260608000003DropTenantIdFromUsers();
         $this->fusion20260612000002AddPhoneVerifiedAtToUsers();
+        $this->fusionFixPortalAndBookingLegacyColumnsUsers();
     }
 
     public function down(): void
@@ -315,5 +316,17 @@ return new class extends Migration
                 $table->timestamp('phone_verified_at')->nullable();
             }
         });
+    }
+
+    /** Fusionne depuis 2026_05_11_224500_fix_portal_and_booking_legacy_columns */
+    private function fusionFixPortalAndBookingLegacyColumnsUsers(): void
+    {
+        if (Schema::hasTable('users')) {
+            Schema::table('users', function (Blueprint $table) {
+                if (! Schema::hasColumn('users', 'managed_service_zone_id')) {
+                    $table->unsignedBigInteger('managed_service_zone_id')->nullable()->index();
+                }
+            });
+        }
     }
 };
