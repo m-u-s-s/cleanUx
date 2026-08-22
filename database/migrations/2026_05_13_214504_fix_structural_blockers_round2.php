@@ -8,11 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $this->rebuildFeedbackTable();
-        $this->createCountryOperationalSettings();
-        $this->createEnterpriseBookingApprovals();
-        $this->createServicePartners();
-        $this->fixFieldTeamMembers();
+        $this->corpsInitial();
+        $this->fusion20260517140001ExtendFeedbackWithPublicRatings();
+        $this->fusion20260528100017AddMissingColumnsToFeedbackTable();
     }
 
     private function rebuildFeedbackTable(): void
@@ -188,5 +186,86 @@ return new class extends Migration
     public function down(): void
     {
         //
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
+        $this->rebuildFeedbackTable();
+        $this->createCountryOperationalSettings();
+        $this->createEnterpriseBookingApprovals();
+        $this->createServicePartners();
+        $this->fixFieldTeamMembers();
+    }
+
+    /** Fusionne depuis 2026_05_17_140001_extend_feedback_with_public_ratings */
+    private function fusion20260517140001ExtendFeedbackWithPublicRatings(): void
+    {
+        Schema::table('feedback', function (Blueprint $table) {
+            if (! Schema::hasColumn('feedback', 'direction')) {
+                $table->enum('direction', ['client_to_provider', 'provider_to_client'])
+                    ->default('client_to_provider');
+            }
+
+            if (! Schema::hasColumn('feedback', 'punctuality_score')) {
+                $table->unsignedTinyInteger('punctuality_score')->nullable();
+            }
+            if (! Schema::hasColumn('feedback', 'quality_score')) {
+                $table->unsignedTinyInteger('quality_score')->nullable();
+            }
+            if (! Schema::hasColumn('feedback', 'communication_score')) {
+                $table->unsignedTinyInteger('communication_score')->nullable();
+            }
+            if (! Schema::hasColumn('feedback', 'value_score')) {
+                $table->unsignedTinyInteger('value_score')->nullable();
+            }
+
+            if (! Schema::hasColumn('feedback', 'is_public')) {
+                $table->boolean('is_public')->default(true);
+            }
+            if (! Schema::hasColumn('feedback', 'is_hidden')) {
+                $table->boolean('is_hidden')->default(false);
+            }
+            if (! Schema::hasColumn('feedback', 'hidden_reason')) {
+                $table->string('hidden_reason')->nullable();
+            }
+            if (! Schema::hasColumn('feedback', 'hidden_at')) {
+                $table->timestamp('hidden_at')->nullable();
+            }
+            if (! Schema::hasColumn('feedback', 'hidden_by_user_id')) {
+                $table->unsignedBigInteger('hidden_by_user_id')->nullable();
+            }
+
+            if (! Schema::hasColumn('feedback', 'provider_response')) {
+                $table->text('provider_response')->nullable();
+            }
+            if (! Schema::hasColumn('feedback', 'provider_responded_at')) {
+                $table->timestamp('provider_responded_at')->nullable();
+            }
+
+            if (! Schema::hasColumn('feedback', 'published_at')) {
+                $table->timestamp('published_at')->nullable();
+            }
+            if (! Schema::hasColumn('feedback', 'reports_count')) {
+                $table->unsignedInteger('reports_count')->default(0);
+            }
+        });
+    }
+
+    /** Fusionne depuis 2026_05_28_100017_add_missing_columns_to_feedback_table */
+    private function fusion20260528100017AddMissingColumnsToFeedbackTable(): void
+    {
+        if (! Schema::hasTable('feedback')) {
+            return;
+        }
+
+        Schema::table('feedback', function (Blueprint $table) {
+            if (! Schema::hasColumn('feedback', 'client_user_id')) {
+                $table->unsignedBigInteger('client_user_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('feedback', 'client_organization_id')) {
+                $table->unsignedBigInteger('client_organization_id')->nullable()->index();
+            }
+        });
     }
 };

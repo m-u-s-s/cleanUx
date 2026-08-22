@@ -8,6 +8,30 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $this->corpsInitial();
+        $this->fusion20260517130006AddReferralCodeToUsersTable();
+        $this->fusion20260518150002AddGdprFieldsToUsersTable();
+        $this->fusion20260520020001AddTenantIdToUsersOptional();
+        $this->fusion20260526000001AddThemePreferenceToUsers();
+        $this->fusion20260608000003DropTenantIdFromUsers();
+        $this->fusion20260612000002AddPhoneVerifiedAtToUsers();
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('failed_jobs');
+        Schema::dropIfExists('job_batches');
+        Schema::dropIfExists('jobs');
+        Schema::dropIfExists('personal_access_tokens');
+        Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
 
@@ -150,15 +174,146 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
+    /** Fusionne depuis 2026_05_17_130006_add_referral_code_to_users_table */
+    private function fusion20260517130006AddReferralCodeToUsersTable(): void
     {
-        Schema::dropIfExists('notifications');
-        Schema::dropIfExists('failed_jobs');
-        Schema::dropIfExists('job_batches');
-        Schema::dropIfExists('jobs');
-        Schema::dropIfExists('personal_access_tokens');
-        Schema::dropIfExists('sessions');
-        Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('users');
+        Schema::table('users', function (Blueprint $table) {
+            if (! Schema::hasColumn('users', 'referral_code')) {
+                $table->string('referral_code', 32)->nullable();
+            }
+
+            if (! Schema::hasColumn('users', 'referred_by_referral_id')) {
+                $table->unsignedBigInteger('referred_by_referral_id')->nullable();
+            }
+        });
+
+        if (! $this->fusion20260517130006AddReferralCodeToUsersTableAideIndexExists('users', 'users_referral_code_unique')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->unique('referral_code', 'users_referral_code_unique');
+            });
+        }
+    }
+
+    private function fusion20260517130006AddReferralCodeToUsersTableAideIndexExists(string $table, string $name): bool
+    {
+        $conn = Schema::getConnection();
+        $driver = $conn->getDriverName();
+
+        try {
+            if ($driver === 'mysql' || $driver === 'mariadb') {
+                $rows = $conn->select(
+                    'SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ?',
+                    [$table, $name]
+                );
+
+                return count($rows) > 0;
+            }
+
+            if ($driver === 'sqlite') {
+                $rows = $conn->select("PRAGMA index_list('{$table}')");
+                foreach ($rows as $row) {
+                    if (($row->name ?? null) === $name) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            if ($driver === 'pgsql') {
+                $rows = $conn->select(
+                    'SELECT indexname FROM pg_indexes WHERE tablename = ? AND indexname = ?',
+                    [$table, $name]
+                );
+
+                return count($rows) > 0;
+            }
+        } catch (Throwable $e) {
+            return false;
+        }
+
+        return false;
+    }
+
+    /** Fusionne depuis 2026_05_18_150002_add_gdpr_fields_to_users_table */
+    private function fusion20260518150002AddGdprFieldsToUsersTable(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            foreach ([
+                'anonymized_at' => fn ($t) => $t->timestamp('anonymized_at')->nullable(),
+                'processing_restricted_at' => fn ($t) => $t->timestamp('processing_restricted_at')->nullable(),
+                'deletion_scheduled_at' => fn ($t) => $t->timestamp('deletion_scheduled_at')->nullable(),
+                'last_gdpr_action_at' => fn ($t) => $t->timestamp('last_gdpr_action_at')->nullable(),
+            ] as $col => $builder) {
+                if (! Schema::hasColumn('users', $col)) {
+                    $builder($table);
+                }
+            }
+        });
+
+        try {
+            Schema::table('users', function (Blueprint $table) {
+                $table->index('anonymized_at', 'users_anonymized_at_index');
+                $table->index('deletion_scheduled_at', 'users_deletion_scheduled_at_index');
+            });
+        } catch (Throwable $e) {
+            // index existant
+        }
+    }
+
+    /** Fusionne depuis 2026_05_20_020001_add_tenant_id_to_users_optional */
+    private function fusion20260520020001AddTenantIdToUsersOptional(): void
+    {
+        if (! Schema::hasTable('users')) {
+            return;
+        }
+        if (! Schema::hasColumn('users', 'tenant_id')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->unsignedBigInteger('tenant_id')->nullable();
+                $table->index('tenant_id');
+            });
+        }
+    }
+
+    /** Fusionne depuis 2026_05_26_000001_add_theme_preference_to_users */
+    private function fusion20260526000001AddThemePreferenceToUsers(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('theme_preference', 10)->default('system');
+        });
+    }
+
+    /** Fusionne depuis 2026_06_08_000003_drop_tenant_id_from_users */
+    private function fusion20260608000003DropTenantIdFromUsers(): void
+    {
+        if (! Schema::hasColumn('users', 'tenant_id')) {
+            return;
+        }
+
+        Schema::table('users', function (Blueprint $table) {
+            if ($this->fusion20260608000003DropTenantIdFromUsersAideHasIndex('users', 'users_tenant_id_index')) {
+                $table->dropIndex('users_tenant_id_index');
+            }
+            $table->dropColumn('tenant_id');
+        });
+    }
+
+    private function fusion20260608000003DropTenantIdFromUsersAideHasIndex(string $table, string $index): bool
+    {
+        try {
+            return collect(Schema::getIndexes($table))->contains(fn ($i) => $i['name'] === $index);
+        } catch (Throwable $e) {
+            return false;
+        }
+    }
+
+    /** Fusionne depuis 2026_06_12_000002_add_phone_verified_at_to_users */
+    private function fusion20260612000002AddPhoneVerifiedAtToUsers(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            if (! Schema::hasColumn('users', 'phone_verified_at')) {
+                $table->timestamp('phone_verified_at')->nullable();
+            }
+        });
     }
 };

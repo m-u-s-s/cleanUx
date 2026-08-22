@@ -8,6 +8,41 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $this->corpsInitial();
+        $this->fusion20260528100004AddActorUserIdToMissionEventsTable();
+        $this->fusion20260528100015AddMissingColumnsToCustomerClaimsTable();
+        $this->fusion20260528100020AddMissingColumnsToGoogleCalendarConnectionsTa();
+        $this->fusion20260528100030AddMissingColumnsToMissionIncidentsTable();
+        $this->fusion20260528100032AddMissingColumnsToMissionQualityReviewsTable();
+        $this->fusion20260528100037AddMissingColumnsToOrganizationContractsTable();
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('location_geocodes');
+        Schema::dropIfExists('organization_contracts');
+        Schema::dropIfExists('mission_events');
+        Schema::dropIfExists('mission_reports');
+        Schema::dropIfExists('mission_quality_reviews');
+        Schema::dropIfExists('mission_incidents');
+        Schema::dropIfExists('customer_claims');
+        Schema::dropIfExists('pricing_logs');
+        Schema::dropIfExists('email_logs');
+        Schema::dropIfExists('google_calendar_events');
+        Schema::dropIfExists('google_calendar_connections');
+        Schema::dropIfExists('provider_daily_limits');
+        Schema::dropIfExists('provider_favorites');
+        Schema::dropIfExists('platform_modules');
+        Schema::dropIfExists('platform_settings');
+        Schema::dropIfExists('account_subscriptions');
+        Schema::dropIfExists('subscription_plans');
+        Schema::dropIfExists('subscription_items');
+        Schema::dropIfExists('subscriptions');
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
         Schema::table('users', function (Blueprint $table) {
             if (! Schema::hasColumn('users', 'stripe_id')) {
                 $table->string('stripe_id')->nullable()->index()->after('status');
@@ -369,26 +404,144 @@ return new class extends Migration
         }
     }
 
-    public function down(): void
+    /** Fusionne depuis 2026_05_28_100004_add_actor_user_id_to_mission_events_table */
+    private function fusion20260528100004AddActorUserIdToMissionEventsTable(): void
     {
-        Schema::dropIfExists('location_geocodes');
-        Schema::dropIfExists('organization_contracts');
-        Schema::dropIfExists('mission_events');
-        Schema::dropIfExists('mission_reports');
-        Schema::dropIfExists('mission_quality_reviews');
-        Schema::dropIfExists('mission_incidents');
-        Schema::dropIfExists('customer_claims');
-        Schema::dropIfExists('pricing_logs');
-        Schema::dropIfExists('email_logs');
-        Schema::dropIfExists('google_calendar_events');
-        Schema::dropIfExists('google_calendar_connections');
-        Schema::dropIfExists('provider_daily_limits');
-        Schema::dropIfExists('provider_favorites');
-        Schema::dropIfExists('platform_modules');
-        Schema::dropIfExists('platform_settings');
-        Schema::dropIfExists('account_subscriptions');
-        Schema::dropIfExists('subscription_plans');
-        Schema::dropIfExists('subscription_items');
-        Schema::dropIfExists('subscriptions');
+        if (! Schema::hasTable('mission_events')) {
+            return;
+        }
+
+        Schema::table('mission_events', function (Blueprint $table) {
+            if (! Schema::hasColumn('mission_events', 'actor_user_id')) {
+                $table->unsignedBigInteger('actor_user_id')->nullable()->index();
+            }
+        });
+    }
+
+    /** Fusionne depuis 2026_05_28_100015_add_missing_columns_to_customer_claims_table */
+    private function fusion20260528100015AddMissingColumnsToCustomerClaimsTable(): void
+    {
+        if (! Schema::hasTable('customer_claims')) {
+            return;
+        }
+
+        Schema::table('customer_claims', function (Blueprint $table) {
+            if (! Schema::hasColumn('customer_claims', 'client_id')) {
+                $table->unsignedBigInteger('client_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('customer_claims', 'rendez_vous_id')) {
+                $table->unsignedBigInteger('rendez_vous_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('customer_claims', 'title')) {
+                $table->string('title')->nullable();
+            }
+            if (! Schema::hasColumn('customer_claims', 'sla_due_at')) {
+                $table->timestamp('sla_due_at')->nullable();
+            }
+        });
+    }
+
+    /** Fusionne depuis 2026_05_28_100020_add_missing_columns_to_google_calendar_connections_table */
+    private function fusion20260528100020AddMissingColumnsToGoogleCalendarConnectionsTa(): void
+    {
+        if (! Schema::hasTable('google_calendar_connections')) {
+            return;
+        }
+
+        Schema::table('google_calendar_connections', function (Blueprint $table) {
+            if (! Schema::hasColumn('google_calendar_connections', 'scope')) {
+                $table->string('scope')->nullable();
+            }
+            if (! Schema::hasColumn('google_calendar_connections', 'meta')) {
+                $table->json('meta')->nullable();
+            }
+        });
+    }
+
+    /** Fusionne depuis 2026_05_28_100030_add_missing_columns_to_mission_incidents_table */
+    private function fusion20260528100030AddMissingColumnsToMissionIncidentsTable(): void
+    {
+        if (! Schema::hasTable('mission_incidents')) {
+            return;
+        }
+
+        Schema::table('mission_incidents', function (Blueprint $table) {
+            if (! Schema::hasColumn('mission_incidents', 'reported_by_user_id')) {
+                $table->unsignedBigInteger('reported_by_user_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_incidents', 'resolved_by_user_id')) {
+                $table->unsignedBigInteger('resolved_by_user_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_incidents', 'incident_type')) {
+                $table->string('incident_type')->nullable();
+            }
+            if (! Schema::hasColumn('mission_incidents', 'title')) {
+                $table->string('title')->nullable();
+            }
+            if (! Schema::hasColumn('mission_incidents', 'resolution_notes')) {
+                $table->text('resolution_notes')->nullable();
+            }
+            if (! Schema::hasColumn('mission_incidents', 'client_visible')) {
+                $table->boolean('client_visible')->default(false);
+            }
+            if (! Schema::hasColumn('mission_incidents', 'reported_at')) {
+                $table->timestamp('reported_at')->nullable();
+            }
+            if (! Schema::hasColumn('mission_incidents', 'meta')) {
+                $table->json('meta')->nullable();
+            }
+        });
+    }
+
+    /** Fusionne depuis 2026_05_28_100032_add_missing_columns_to_mission_quality_reviews_table */
+    private function fusion20260528100032AddMissingColumnsToMissionQualityReviewsTable(): void
+    {
+        if (! Schema::hasTable('mission_quality_reviews')) {
+            return;
+        }
+
+        Schema::table('mission_quality_reviews', function (Blueprint $table) {
+            if (! Schema::hasColumn('mission_quality_reviews', 'reviewer_user_id')) {
+                $table->unsignedBigInteger('reviewer_user_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_quality_reviews', 'reviewer_role')) {
+                $table->string('reviewer_role')->nullable();
+            }
+            if (! Schema::hasColumn('mission_quality_reviews', 'final_status')) {
+                $table->string('final_status')->nullable();
+            }
+            if (! Schema::hasColumn('mission_quality_reviews', 'cleanliness_score')) {
+                $table->unsignedInteger('cleanliness_score')->nullable();
+            }
+            if (! Schema::hasColumn('mission_quality_reviews', 'punctuality_score')) {
+                $table->unsignedInteger('punctuality_score')->nullable();
+            }
+            if (! Schema::hasColumn('mission_quality_reviews', 'behavior_score')) {
+                $table->unsignedInteger('behavior_score')->nullable();
+            }
+            if (! Schema::hasColumn('mission_quality_reviews', 'comment')) {
+                $table->text('comment')->nullable();
+            }
+            if (! Schema::hasColumn('mission_quality_reviews', 'meta')) {
+                $table->json('meta')->nullable();
+            }
+        });
+    }
+
+    /** Fusionne depuis 2026_05_28_100037_add_missing_columns_to_organization_contracts_table */
+    private function fusion20260528100037AddMissingColumnsToOrganizationContractsTable(): void
+    {
+        if (! Schema::hasTable('organization_contracts')) {
+            return;
+        }
+
+        Schema::table('organization_contracts', function (Blueprint $table) {
+            if (! Schema::hasColumn('organization_contracts', 'allowed_service_catalog_ids')) {
+                $table->json('allowed_service_catalog_ids')->nullable();
+            }
+            if (! Schema::hasColumn('organization_contracts', 'metadata')) {
+                $table->json('metadata')->nullable();
+            }
+        });
     }
 };

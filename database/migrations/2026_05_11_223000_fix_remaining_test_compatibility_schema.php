@@ -8,6 +8,22 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $this->corpsInitial();
+        $this->fusion20260528100029AddMissingColumnsToMissionBatchesTable();
+        $this->fusion20260528100033AddMissingColumnsToMissionReinforcementRequest();
+        $this->fusion20260528100034AddMissingColumnsToMissionTaskSegmentsTable();
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('mission_reinforcement_requests');
+        Schema::dropIfExists('mission_task_segments');
+        Schema::dropIfExists('mission_batches');
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
         /*
         |--------------------------------------------------------------------------
         | Pivot zones <-> codes postaux
@@ -164,10 +180,126 @@ return new class extends Migration
         }
     }
 
-    public function down(): void
+    /** Fusionne depuis 2026_05_28_100029_add_missing_columns_to_mission_batches_table */
+    private function fusion20260528100029AddMissingColumnsToMissionBatchesTable(): void
     {
-        Schema::dropIfExists('mission_reinforcement_requests');
-        Schema::dropIfExists('mission_task_segments');
-        Schema::dropIfExists('mission_batches');
+        if (! Schema::hasTable('mission_batches')) {
+            return;
+        }
+
+        Schema::table('mission_batches', function (Blueprint $table) {
+            if (! Schema::hasColumn('mission_batches', 'organization_account_id')) {
+                $table->unsignedBigInteger('organization_account_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_batches', 'organization_site_id')) {
+                $table->unsignedBigInteger('organization_site_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_batches', 'enterprise_work_order_id')) {
+                $table->unsignedBigInteger('enterprise_work_order_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_batches', 'service_partner_id')) {
+                $table->unsignedBigInteger('service_partner_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_batches', 'reference')) {
+                $table->string('reference')->nullable();
+            }
+            if (! Schema::hasColumn('mission_batches', 'batch_type')) {
+                $table->string('batch_type')->nullable();
+            }
+            if (! Schema::hasColumn('mission_batches', 'starts_on')) {
+                $table->date('starts_on')->nullable();
+            }
+            if (! Schema::hasColumn('mission_batches', 'ends_on')) {
+                $table->date('ends_on')->nullable();
+            }
+            if (! Schema::hasColumn('mission_batches', 'default_start_time')) {
+                $table->string('default_start_time')->nullable();
+            }
+            if (! Schema::hasColumn('mission_batches', 'default_end_time')) {
+                $table->string('default_end_time')->nullable();
+            }
+            if (! Schema::hasColumn('mission_batches', 'estimated_total_minutes')) {
+                $table->unsignedInteger('estimated_total_minutes')->nullable();
+            }
+            if (! Schema::hasColumn('mission_batches', 'estimated_total_cost')) {
+                $table->decimal('estimated_total_cost', 10, 2)->nullable();
+            }
+            if (! Schema::hasColumn('mission_batches', 'notes')) {
+                $table->text('notes')->nullable();
+            }
+        });
+    }
+
+    /** Fusionne depuis 2026_05_28_100033_add_missing_columns_to_mission_reinforcement_requests_table */
+    private function fusion20260528100033AddMissingColumnsToMissionReinforcementRequest(): void
+    {
+        if (! Schema::hasTable('mission_reinforcement_requests')) {
+            return;
+        }
+
+        Schema::table('mission_reinforcement_requests', function (Blueprint $table) {
+            if (! Schema::hasColumn('mission_reinforcement_requests', 'mission_batch_id')) {
+                $table->unsignedBigInteger('mission_batch_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_reinforcement_requests', 'mission_batch_day_id')) {
+                $table->unsignedBigInteger('mission_batch_day_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_reinforcement_requests', 'mission_task_segment_id')) {
+                $table->unsignedBigInteger('mission_task_segment_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_reinforcement_requests', 'field_team_id')) {
+                $table->unsignedBigInteger('field_team_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_reinforcement_requests', 'service_partner_id')) {
+                $table->unsignedBigInteger('service_partner_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_reinforcement_requests', 'resolved_by_user_id')) {
+                $table->unsignedBigInteger('resolved_by_user_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_reinforcement_requests', 'requested_members')) {
+                $table->unsignedInteger('requested_members')->nullable();
+            }
+            if (! Schema::hasColumn('mission_reinforcement_requests', 'requested_minutes')) {
+                $table->unsignedInteger('requested_minutes')->nullable();
+            }
+            if (! Schema::hasColumn('mission_reinforcement_requests', 'resolution_notes')) {
+                $table->text('resolution_notes')->nullable();
+            }
+        });
+    }
+
+    /** Fusionne depuis 2026_05_28_100034_add_missing_columns_to_mission_task_segments_table */
+    private function fusion20260528100034AddMissingColumnsToMissionTaskSegmentsTable(): void
+    {
+        if (! Schema::hasTable('mission_task_segments')) {
+            return;
+        }
+
+        Schema::table('mission_task_segments', function (Blueprint $table) {
+            if (! Schema::hasColumn('mission_task_segments', 'mission_batch_day_id')) {
+                $table->unsignedBigInteger('mission_batch_day_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_task_segments', 'service_partner_id')) {
+                $table->unsignedBigInteger('service_partner_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_task_segments', 'zone_label')) {
+                $table->string('zone_label')->nullable();
+            }
+            if (! Schema::hasColumn('mission_task_segments', 'service_date')) {
+                $table->date('service_date')->nullable();
+            }
+            if (! Schema::hasColumn('mission_task_segments', 'estimated_minutes')) {
+                $table->unsignedInteger('estimated_minutes')->nullable();
+            }
+            if (! Schema::hasColumn('mission_task_segments', 'crew_size')) {
+                $table->unsignedInteger('crew_size')->nullable();
+            }
+            if (! Schema::hasColumn('mission_task_segments', 'sequence')) {
+                $table->unsignedInteger('sequence')->nullable();
+            }
+            if (! Schema::hasColumn('mission_task_segments', 'notes')) {
+                $table->text('notes')->nullable();
+            }
+        });
     }
 };

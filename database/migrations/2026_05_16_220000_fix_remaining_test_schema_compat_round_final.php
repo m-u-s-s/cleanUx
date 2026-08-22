@@ -8,21 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $this->ensureCountryBillingProfileColumns();
-        $this->ensureCountryOperationalSettingMarketStage();
-        $this->ensureServicePartnerColumns();
-        $this->ensureServicePartnerLoadSnapshots();
-        $this->ensureFinanceDocumentColumns();
-        $this->ensureUserAdditionalColumns();
-        $this->ensureActivityLogColumns();
-        $this->ensureLegacyRendezVousColumns();
-        $this->ensureOrganizationContractColumns();
-        $this->ensureMarketLaunchReadinessColumns();
-        $this->ensureWorkOrderLineColumns();
-        $this->ensureCountryServiceCatalogRuleColumns();
-        $this->ensureFieldTeamColumns();
-        $this->ensurePartnerZoneCoverages();
-        $this->relaxFinanceDocumentForeignKeys();
+        $this->corpsInitial();
+        $this->fusion20260528100039AddMissingColumnsToPartnerZoneCoveragesTable();
     }
 
     private function ensureOrganizationContractColumns(): void
@@ -516,5 +503,51 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('service_partner_load_snapshots');
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
+        $this->ensureCountryBillingProfileColumns();
+        $this->ensureCountryOperationalSettingMarketStage();
+        $this->ensureServicePartnerColumns();
+        $this->ensureServicePartnerLoadSnapshots();
+        $this->ensureFinanceDocumentColumns();
+        $this->ensureUserAdditionalColumns();
+        $this->ensureActivityLogColumns();
+        $this->ensureLegacyRendezVousColumns();
+        $this->ensureOrganizationContractColumns();
+        $this->ensureMarketLaunchReadinessColumns();
+        $this->ensureWorkOrderLineColumns();
+        $this->ensureCountryServiceCatalogRuleColumns();
+        $this->ensureFieldTeamColumns();
+        $this->ensurePartnerZoneCoverages();
+        $this->relaxFinanceDocumentForeignKeys();
+    }
+
+    /** Fusionne depuis 2026_05_28_100039_add_missing_columns_to_partner_zone_coverages_table */
+    private function fusion20260528100039AddMissingColumnsToPartnerZoneCoveragesTable(): void
+    {
+        if (! Schema::hasTable('partner_zone_coverages')) {
+            return;
+        }
+
+        Schema::table('partner_zone_coverages', function (Blueprint $table) {
+            if (! Schema::hasColumn('partner_zone_coverages', 'service_catalog_id')) {
+                $table->unsignedBigInteger('service_catalog_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('partner_zone_coverages', 'coverage_status')) {
+                $table->string('coverage_status')->nullable();
+            }
+            if (! Schema::hasColumn('partner_zone_coverages', 'priority')) {
+                $table->unsignedInteger('priority')->nullable();
+            }
+            if (! Schema::hasColumn('partner_zone_coverages', 'max_daily_capacity')) {
+                $table->unsignedInteger('max_daily_capacity')->nullable();
+            }
+            if (! Schema::hasColumn('partner_zone_coverages', 'sla_response_hours')) {
+                $table->unsignedInteger('sla_response_hours')->nullable();
+            }
+        });
     }
 };

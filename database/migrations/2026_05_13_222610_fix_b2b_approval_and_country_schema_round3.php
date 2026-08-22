@@ -8,11 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $this->ensureCountryBillingProfiles();
-        $this->ensureMissionTeamAssignments();
-        $this->ensureEnterpriseBookingApprovalsColumns();
-        $this->ensureWorkOrderApprovalsColumns();
-        $this->ensureCountryServiceCatalogRules();
+        $this->corpsInitial();
+        $this->fusion20260528100028AddRejectedAtToWorkOrderApprovalsTable();
+        $this->fusion20260528100035AddMissingColumnsToMissionTeamAssignmentsTable();
     }
 
     private function ensureCountryBillingProfiles(): void
@@ -259,5 +257,49 @@ return new class extends Migration
     public function down(): void
     {
         //
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
+        $this->ensureCountryBillingProfiles();
+        $this->ensureMissionTeamAssignments();
+        $this->ensureEnterpriseBookingApprovalsColumns();
+        $this->ensureWorkOrderApprovalsColumns();
+        $this->ensureCountryServiceCatalogRules();
+    }
+
+    /** Fusionne depuis 2026_05_28_100028_add_rejected_at_to_work_order_approvals_table */
+    private function fusion20260528100028AddRejectedAtToWorkOrderApprovalsTable(): void
+    {
+        if (! Schema::hasTable('work_order_approvals')) {
+            return;
+        }
+
+        Schema::table('work_order_approvals', function (Blueprint $table) {
+            if (! Schema::hasColumn('work_order_approvals', 'rejected_at')) {
+                $table->timestamp('rejected_at')->nullable();
+            }
+        });
+    }
+
+    /** Fusionne depuis 2026_05_28_100035_add_missing_columns_to_mission_team_assignments_table */
+    private function fusion20260528100035AddMissingColumnsToMissionTeamAssignmentsTable(): void
+    {
+        if (! Schema::hasTable('mission_team_assignments')) {
+            return;
+        }
+
+        Schema::table('mission_team_assignments', function (Blueprint $table) {
+            if (! Schema::hasColumn('mission_team_assignments', 'lead_assignment_id')) {
+                $table->unsignedBigInteger('lead_assignment_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('mission_team_assignments', 'started_at')) {
+                $table->timestamp('started_at')->nullable();
+            }
+            if (! Schema::hasColumn('mission_team_assignments', 'instructions_snapshot')) {
+                $table->json('instructions_snapshot')->nullable();
+            }
+        });
     }
 };

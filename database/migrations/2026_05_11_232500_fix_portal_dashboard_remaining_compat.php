@@ -9,6 +9,18 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $this->corpsInitial();
+        $this->fusion20260528100023AddVerrouAdminToLimitesJournalieresTable();
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('limites_journalieres');
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
         /*
         |--------------------------------------------------------------------------
         | Compat subscriptions.user_id
@@ -83,8 +95,17 @@ return new class extends Migration
         }
     }
 
-    public function down(): void
+    /** Fusionne depuis 2026_05_28_100023_add_verrou_admin_to_limites_journalieres_table */
+    private function fusion20260528100023AddVerrouAdminToLimitesJournalieresTable(): void
     {
-        Schema::dropIfExists('limites_journalieres');
+        if (! Schema::hasTable('limites_journalieres')) {
+            return;
+        }
+
+        Schema::table('limites_journalieres', function (Blueprint $table) {
+            if (! Schema::hasColumn('limites_journalieres', 'verrou_admin')) {
+                $table->boolean('verrou_admin')->default(false);
+            }
+        });
     }
 };

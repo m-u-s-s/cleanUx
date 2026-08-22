@@ -8,6 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $this->corpsInitial();
+        $this->fusion20260612000001AddServiceZoneToMultiTradeBundles();
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('multi_trade_bundle_items');
+        Schema::dropIfExists('multi_trade_bundles');
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
         Schema::create('multi_trade_bundles', function (Blueprint $table) {
             $table->id();
             $table->string('code', 40)->unique();
@@ -82,9 +95,12 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
+    /** Fusionne depuis 2026_06_12_000001_add_service_zone_to_multi_trade_bundles */
+    private function fusion20260612000001AddServiceZoneToMultiTradeBundles(): void
     {
-        Schema::dropIfExists('multi_trade_bundle_items');
-        Schema::dropIfExists('multi_trade_bundles');
+        Schema::table('multi_trade_bundles', function (Blueprint $table) {
+            $table->foreignId('service_zone_id')->nullable()
+                ->constrained('service_zones')->nullOnDelete();
+        });
     }
 };

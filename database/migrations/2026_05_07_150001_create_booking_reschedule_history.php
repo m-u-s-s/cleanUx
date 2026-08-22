@@ -19,6 +19,18 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $this->corpsInitial();
+        $this->fusion20260808180000TracerLeContexteEtLeLieuDesReprogrammations();
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('booking_reschedule_history');
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
         if (Schema::hasTable('booking_reschedule_history')) {
             return;
         }
@@ -50,8 +62,34 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
+    /** Fusionne depuis 2026_08_08_180000_tracer_le_contexte_et_le_lieu_des_reprogrammations */
+    private function fusion20260808180000TracerLeContexteEtLeLieuDesReprogrammations(): void
     {
-        Schema::dropIfExists('booking_reschedule_history');
+        if (! Schema::hasTable('booking_reschedule_history')) {
+            return;
+        }
+
+        Schema::table('booking_reschedule_history', function (Blueprint $table) {
+            if (! Schema::hasColumn('booking_reschedule_history', 'actor_context')) {
+                // client | admin | provider — à quel titre la personne a agi.
+                $table->string('actor_context', 20)->nullable();
+            }
+
+            if (! Schema::hasColumn('booking_reschedule_history', 'old_site_id')) {
+                $table->unsignedBigInteger('old_site_id')->nullable();
+            }
+
+            if (! Schema::hasColumn('booking_reschedule_history', 'new_site_id')) {
+                $table->unsignedBigInteger('new_site_id')->nullable();
+            }
+
+            if (! Schema::hasColumn('booking_reschedule_history', 'old_address')) {
+                $table->string('old_address', 255)->nullable();
+            }
+
+            if (! Schema::hasColumn('booking_reschedule_history', 'new_address')) {
+                $table->string('new_address', 255)->nullable();
+            }
+        });
     }
 };

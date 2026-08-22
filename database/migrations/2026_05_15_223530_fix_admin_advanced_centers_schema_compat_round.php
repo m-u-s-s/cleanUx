@@ -8,6 +8,39 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $this->corpsInitial();
+        $this->fusion20260528100018AddMissingColumnsToFieldTeamLoadSnapshotsTable();
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('field_team_load_snapshots');
+        Schema::dropIfExists('market_launch_readiness');
+
+        if (Schema::hasTable('field_teams')) {
+            Schema::table('field_teams', function (Blueprint $table) {
+                foreach (['max_concurrent_missions', 'color', 'metadata'] as $column) {
+                    if (Schema::hasColumn('field_teams', $column)) {
+                        $table->dropColumn($column);
+                    }
+                }
+            });
+        }
+
+        if (Schema::hasTable('users')) {
+            Schema::table('users', function (Blueprint $table) {
+                foreach (['access_scope', 'primary_service_zone_id', 'permissions'] as $column) {
+                    if (Schema::hasColumn('users', $column)) {
+                        $table->dropColumn($column);
+                    }
+                }
+            });
+        }
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
         if (Schema::hasTable('field_teams')) {
             Schema::table('field_teams', function (Blueprint $table) {
                 if (! Schema::hasColumn('field_teams', 'max_concurrent_missions')) {
@@ -73,29 +106,26 @@ return new class extends Migration
         }
     }
 
-    public function down(): void
+    /** Fusionne depuis 2026_05_28_100018_add_missing_columns_to_field_team_load_snapshots_table */
+    private function fusion20260528100018AddMissingColumnsToFieldTeamLoadSnapshotsTable(): void
     {
-        Schema::dropIfExists('field_team_load_snapshots');
-        Schema::dropIfExists('market_launch_readiness');
-
-        if (Schema::hasTable('field_teams')) {
-            Schema::table('field_teams', function (Blueprint $table) {
-                foreach (['max_concurrent_missions', 'color', 'metadata'] as $column) {
-                    if (Schema::hasColumn('field_teams', $column)) {
-                        $table->dropColumn($column);
-                    }
-                }
-            });
+        if (! Schema::hasTable('field_team_load_snapshots')) {
+            return;
         }
 
-        if (Schema::hasTable('users')) {
-            Schema::table('users', function (Blueprint $table) {
-                foreach (['access_scope', 'primary_service_zone_id', 'permissions'] as $column) {
-                    if (Schema::hasColumn('users', $column)) {
-                        $table->dropColumn($column);
-                    }
-                }
-            });
-        }
+        Schema::table('field_team_load_snapshots', function (Blueprint $table) {
+            if (! Schema::hasColumn('field_team_load_snapshots', 'planned_segments_count')) {
+                $table->unsignedInteger('planned_segments_count')->nullable();
+            }
+            if (! Schema::hasColumn('field_team_load_snapshots', 'planned_minutes')) {
+                $table->unsignedInteger('planned_minutes')->nullable();
+            }
+            if (! Schema::hasColumn('field_team_load_snapshots', 'assigned_members_count')) {
+                $table->unsignedInteger('assigned_members_count')->nullable();
+            }
+            if (! Schema::hasColumn('field_team_load_snapshots', 'capacity_minutes')) {
+                $table->unsignedInteger('capacity_minutes')->nullable();
+            }
+        });
     }
 };

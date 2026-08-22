@@ -8,6 +8,25 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $this->corpsInitial();
+        $this->fusion20260528100027AddCompletedAtToTasksTable();
+        $this->fusion20260805100100AddAssignmentAuditColumnsToTaskAssignees();
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('task_assignees');
+        Schema::dropIfExists('tasks');
+        Schema::dropIfExists('message_reactions');
+        Schema::dropIfExists('messages');
+        Schema::dropIfExists('channel_members');
+        Schema::dropIfExists('channels');
+        Schema::dropIfExists('feedbacks');
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
         Schema::create('feedbacks', function (Blueprint $table) {
             $table->id();
 
@@ -234,14 +253,38 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
+    /** Fusionne depuis 2026_05_28_100027_add_completed_at_to_tasks_table */
+    private function fusion20260528100027AddCompletedAtToTasksTable(): void
     {
-        Schema::dropIfExists('task_assignees');
-        Schema::dropIfExists('tasks');
-        Schema::dropIfExists('message_reactions');
-        Schema::dropIfExists('messages');
-        Schema::dropIfExists('channel_members');
-        Schema::dropIfExists('channels');
-        Schema::dropIfExists('feedbacks');
+        if (! Schema::hasTable('tasks')) {
+            return;
+        }
+
+        Schema::table('tasks', function (Blueprint $table) {
+            if (! Schema::hasColumn('tasks', 'completed_at')) {
+                $table->timestamp('completed_at')->nullable();
+            }
+        });
+    }
+
+    /** Fusionne depuis 2026_08_05_100100_add_assignment_audit_columns_to_task_assignees */
+    private function fusion20260805100100AddAssignmentAuditColumnsToTaskAssignees(): void
+    {
+        if (! Schema::hasTable('task_assignees')) {
+            return;
+        }
+
+        Schema::table('task_assignees', function (Blueprint $table) {
+            // Idempotente : rejouable sans erreur sur une base déjà corrigée.
+            if (! Schema::hasColumn('task_assignees', 'assigned_by')) {
+                $table->foreignId('assigned_by')->nullable()
+                    ->constrained('users')
+                    ->nullOnDelete();
+            }
+
+            if (! Schema::hasColumn('task_assignees', 'assigned_at')) {
+                $table->timestamp('assigned_at')->nullable();
+            }
+        });
     }
 };

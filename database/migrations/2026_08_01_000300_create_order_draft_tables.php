@@ -27,6 +27,21 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $this->corpsInitial();
+        $this->fusion20260803000100AddRecoveryKeyToOrderDrafts();
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('order_draft_media');
+        Schema::dropIfExists('order_draft_answers');
+        Schema::dropIfExists('order_draft_items');
+        Schema::dropIfExists('order_drafts');
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
         if (! Schema::hasTable('order_drafts')) {
             Schema::create('order_drafts', function (Blueprint $table) {
                 $table->id();
@@ -199,11 +214,16 @@ return new class extends Migration
         }
     }
 
-    public function down(): void
+    /** Fusionne depuis 2026_08_03_000100_add_recovery_key_to_order_drafts */
+    private function fusion20260803000100AddRecoveryKeyToOrderDrafts(): void
     {
-        Schema::dropIfExists('order_draft_media');
-        Schema::dropIfExists('order_draft_answers');
-        Schema::dropIfExists('order_draft_items');
-        Schema::dropIfExists('order_drafts');
+        Schema::table('order_drafts', function (Blueprint $table) {
+            if (! Schema::hasColumn('order_drafts', 'recovery_key_hash')) {
+                $table->string('recovery_key_hash', 64)->nullable();
+                $table->timestamp('recovery_key_expires_at')->nullable();
+
+                $table->index('recovery_key_hash');
+            }
+        });
     }
 };

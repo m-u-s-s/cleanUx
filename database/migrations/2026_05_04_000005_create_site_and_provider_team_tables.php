@@ -8,6 +8,22 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $this->corpsInitial();
+        $this->fusion20260528100038AddMissingColumnsToOrganizationSitesTable();
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('provider_availabilities');
+        Schema::dropIfExists('provider_team_members');
+        Schema::dropIfExists('provider_teams');
+        Schema::dropIfExists('organization_member_site_access');
+        Schema::dropIfExists('organization_sites');
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
         Schema::create('organization_sites', function (Blueprint $table) {
             $table->id();
 
@@ -180,12 +196,32 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
+    /** Fusionne depuis 2026_05_28_100038_add_missing_columns_to_organization_sites_table */
+    private function fusion20260528100038AddMissingColumnsToOrganizationSitesTable(): void
     {
-        Schema::dropIfExists('provider_availabilities');
-        Schema::dropIfExists('provider_team_members');
-        Schema::dropIfExists('provider_teams');
-        Schema::dropIfExists('organization_member_site_access');
-        Schema::dropIfExists('organization_sites');
+        if (! Schema::hasTable('organization_sites')) {
+            return;
+        }
+
+        Schema::table('organization_sites', function (Blueprint $table) {
+            if (! Schema::hasColumn('organization_sites', 'floor_count')) {
+                $table->unsignedInteger('floor_count')->nullable();
+            }
+            if (! Schema::hasColumn('organization_sites', 'preferred_provider_id')) {
+                $table->unsignedBigInteger('preferred_provider_id')->nullable()->index();
+            }
+            if (! Schema::hasColumn('organization_sites', 'cleaning_frequency')) {
+                $table->string('cleaning_frequency')->nullable();
+            }
+            if (! Schema::hasColumn('organization_sites', 'service_frequency')) {
+                $table->string('service_frequency')->nullable();
+            }
+            if (! Schema::hasColumn('organization_sites', 'preferred_time_slot')) {
+                $table->string('preferred_time_slot')->nullable();
+            }
+            if (! Schema::hasColumn('organization_sites', 'notes')) {
+                $table->text('notes')->nullable();
+            }
+        });
     }
 };

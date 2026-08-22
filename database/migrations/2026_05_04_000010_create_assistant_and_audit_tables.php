@@ -8,6 +8,22 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $this->corpsInitial();
+        $this->fusion20260528100013AddRouteNameToActivityLogsTable();
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('activity_logs');
+        Schema::dropIfExists('knowledge_articles');
+        Schema::dropIfExists('assistant_actions');
+        Schema::dropIfExists('assistant_messages');
+        Schema::dropIfExists('assistant_conversations');
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
         Schema::create('assistant_conversations', function (Blueprint $table) {
             $table->id();
 
@@ -137,12 +153,17 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
+    /** Fusionne depuis 2026_05_28_100013_add_route_name_to_activity_logs_table */
+    private function fusion20260528100013AddRouteNameToActivityLogsTable(): void
     {
-        Schema::dropIfExists('activity_logs');
-        Schema::dropIfExists('knowledge_articles');
-        Schema::dropIfExists('assistant_actions');
-        Schema::dropIfExists('assistant_messages');
-        Schema::dropIfExists('assistant_conversations');
+        if (! Schema::hasTable('activity_logs')) {
+            return;
+        }
+
+        Schema::table('activity_logs', function (Blueprint $table) {
+            if (! Schema::hasColumn('activity_logs', 'route_name')) {
+                $table->string('route_name')->nullable();
+            }
+        });
     }
 };

@@ -8,6 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $this->corpsInitial();
+        $this->fusion20260528100021AddMissingColumnsToGoogleCalendarEventLinksTab();
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('google_calendar_event_links');
+    }
+
+    /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
+    private function corpsInitial(): void
+    {
         if (! Schema::hasTable('google_calendar_event_links')) {
             Schema::create('google_calendar_event_links', function (Blueprint $table) {
                 $table->id();
@@ -97,8 +109,23 @@ return new class extends Migration
         });
     }
 
-    public function down(): void
+    /** Fusionne depuis 2026_05_28_100021_add_missing_columns_to_google_calendar_event_links_table */
+    private function fusion20260528100021AddMissingColumnsToGoogleCalendarEventLinksTab(): void
     {
-        Schema::dropIfExists('google_calendar_event_links');
+        if (! Schema::hasTable('google_calendar_event_links')) {
+            return;
+        }
+
+        Schema::table('google_calendar_event_links', function (Blueprint $table) {
+            if (! Schema::hasColumn('google_calendar_event_links', 'google_calendar_id')) {
+                $table->string('google_calendar_id')->nullable();
+            }
+            if (! Schema::hasColumn('google_calendar_event_links', 'etag')) {
+                $table->string('etag')->nullable();
+            }
+            if (! Schema::hasColumn('google_calendar_event_links', 'last_error')) {
+                $table->text('last_error')->nullable();
+            }
+        });
     }
 };
