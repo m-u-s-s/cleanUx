@@ -116,6 +116,21 @@ class ClientAbsentTest extends TestCase
     {
         $client = User::factory()->client()->create();
 
+        /*
+         * LE JOUR ET L'HEURE VIENNENT DU MEME INSTANT, ET CE N'EST PAS UN DETAIL DE STYLE.
+         *
+         * La version precedente prenait `now()->toDateString()` pour le jour et
+         * `now()->subMinutes(10)` pour l'heure. Les dix minutes qui suivent minuit font basculer la
+         * seconde sur la VEILLE sans toucher au premier : le trait recomposait alors un
+         * `scheduled_at` a aujourd'hui 23 h 5x, pres de vingt-quatre heures dans le FUTUR, et
+         * l'absence ne pouvait jamais etre constatee.
+         *
+         * Constate le 2026-08-22 a 00 h 08 : la suite complete est passee dans cette fenetre et ce
+         * test seul est tombe. Un echec qui n'arrive que 0,7 % du temps coute plus cher a
+         * diagnostiquer qu'un echec permanent.
+         */
+        $prevu = now()->subMinutes(10);
+
         $booking = Booking::create([
             'booking_reference' => 'CUX-'.strtoupper(Str::random(6)),
             'client_id' => $client->id,
@@ -123,8 +138,8 @@ class ClientAbsentTest extends TestCase
             'currency' => 'EUR',
             'priority' => 'normal',
             'booking_mode' => 'scheduled',
-            'scheduled_date' => now()->toDateString(),
-            'scheduled_time' => now()->subMinutes(10)->format('H:i:s'),
+            'scheduled_date' => $prevu->toDateString(),
+            'scheduled_time' => $prevu->format('H:i:s'),
         ]);
 
         $calculateur = app(CancellationFeeCalculator::class);

@@ -3,6 +3,7 @@
 namespace App\Livewire\Client;
 
 use App\Enums\OrganizationType;
+use App\Enums\ProviderType;
 use App\Models\OrganizationAccount;
 use App\Services\Booking\EligibleCompaniesResolver;
 use Illuminate\Contracts\View\View;
@@ -93,7 +94,7 @@ class BrowseCompanies extends Component
                 ->where('type', OrganizationType::PROVIDER_COMPANY->value)
                 ->whereNotNull('rating_avg')
                 ->withCount(['providerProfiles as providers_count' => function ($q) {
-                    $q->where('provider_type', 'company_worker')
+                    $q->whereIn('provider_type', ProviderType::valeursDeSociete())
                         ->where('status', 'active')
                         ->where('verification_status', 'verified');
                 }])

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Client;
 
+use App\Enums\ProviderType;
 use App\Http\Controllers\Controller;
 use App\Models\OrganizationAccount;
 use App\Models\ServiceCatalog;
@@ -89,7 +90,7 @@ class CompanyDirectoryController extends Controller
     {
         return (int) DB::table('provider_profiles')
             ->where('organization_account_id', $organizationId)
-            ->where('provider_type', 'company_worker')
+            ->whereIn('provider_type', ProviderType::valeursDeSociete())
             ->where('status', 'active')
             ->where('verification_status', 'verified')
             ->count();

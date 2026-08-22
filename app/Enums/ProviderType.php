@@ -33,6 +33,13 @@ enum ProviderType: string
      * `ApiAuthController` écrit `INDEPENDENT`, `ProviderOnboardingService` écrivait
      * `individual`.
      *
+     * ÉTAT MESURÉ LE 2026-08-22 : `INDIVIDUAL` vit en base (3 lignes) — c'est bien le résidu du
+     * second chemin. `COMPANY`, en revanche, n'est écrit par AUCUN code de `app/` ni de
+     * `database/` ; seule une fixture de test l'emploie. Une version précédente de ce commentaire
+     * affirmait que l'inscription en libre-service en produisait : ce n'est plus vrai. Le cas
+     * reste déclaré parce que des lignes peuvent exister et que `label()` doit savoir les nommer,
+     * mais nul ne doit compter dessus pour justifier un chemin.
+     *
      * Le moteur de répartition le savait déjà et acceptait les deux ; le modèle, lui,
      * comparait à la seule valeur canonique. Un prestataire inscrit par le second chemin
      * était donc CANDIDAT AUX MISSIONS tout en étant refusé de son propre espace.
