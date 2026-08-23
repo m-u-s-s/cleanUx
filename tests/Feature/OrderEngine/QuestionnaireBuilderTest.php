@@ -130,13 +130,14 @@ class QuestionnaireBuilderTest extends TestCase
     {
         $html = Livewire::test(QuestionnaireBuilder::class, ['trade' => $this->peinture()])->html();
 
-        foreach (['publish', 'export', 'import', 'duplicateTo', 'importFile'] as $action) {
-            $this->assertStringContainsString(
-                $action,
-                $html,
-                sprintf('Aucun élément de l’écran n’appelle « %s » : la méthode existe sans porte d’entrée.', $action),
-            );
-        }
+        // Toutes les methodes sans porte d'entree d'un coup : c'est la famille de defauts
+        // dominante de ce depot, et elle vient rarement seule.
+        $injoignables = array_values(array_filter(
+            ['publish', 'export', 'import', 'duplicateTo', 'importFile'],
+            fn (string $action) => ! str_contains($html, $action),
+        ));
+
+        $this->assertSame([], $injoignables, 'Ces methodes existent sans qu aucun element de l ecran ne les appelle.');
     }
 
     public function test_it_opens_on_a_seeded_trade(): void

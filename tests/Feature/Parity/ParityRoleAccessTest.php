@@ -27,20 +27,28 @@ class ParityRoleAccessTest extends TestCase
     {
         $keys = $this->parityKeysFor(User::factory()->client()->create());
 
+        // TOUS les ecarts de perimetre d'un coup. Sur une matrice de droits, la liste complete
+        // est ce qui permet de juger : une entree qui fuit est rarement seule, et corriger la
+        // premiere puis relancer coute autant d'executions qu'il y a de fuites.
+        $ecarts = [];
+
         foreach (config('parity.modules', []) as $module) {
             $roles = $module['roles'] ?? [];
             $key = $module['key'];
 
-            if ($roles === ['client']) {
-                $this->assertContains($key, $keys, "individual client should see client module {$key}");
+            if ($roles === ['client'] && ! in_array($key, $keys, true)) {
+                $ecarts[] = "{$key} : module client INVISIBLE pour un client";
             }
-            // admin-only, provider-only, entreprise-only, provider_company-only must be hidden
+
+            // admin-only, provider-only, entreprise-only, provider_company-only doivent rester caches.
             foreach (['admin', 'provider', 'entreprise', 'provider_company'] as $exclusive) {
-                if ($roles === [$exclusive]) {
-                    $this->assertNotContains($key, $keys, "individual client must NOT see {$exclusive}-only module {$key}");
+                if ($roles === [$exclusive] && in_array($key, $keys, true)) {
+                    $ecarts[] = "{$key} : module reserve a « {$exclusive} » VISIBLE par un client";
                 }
             }
         }
+
+        $this->assertSame([], $ecarts, 'Le perimetre du client particulier ne correspond pas a la carte de parite.');
     }
 
     public function test_provider_company_sees_its_modules_and_not_entreprise_client(): void

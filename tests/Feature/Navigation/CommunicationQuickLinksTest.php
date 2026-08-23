@@ -83,14 +83,16 @@ class CommunicationQuickLinksTest extends TestCase
      */
     public function test_la_carte_notifications_est_rendue_pour_tous_les_roles(): void
     {
+        $manquants = [];
+
         foreach (['admin', 'client', 'employe'] as $role) {
             $html = $this->rendu(User::factory()->{$role}()->create());
 
-            $this->assertStringContainsString(
-                route('notifications.index'),
-                $html,
-                sprintf('La carte Notifications manque pour le rôle %s.', $role),
-            );
+            if (! str_contains($html, route('notifications.index'))) {
+                $manquants[] = $role;
+            }
         }
+
+        $this->assertSame([], $manquants, 'La carte Notifications manque a ces roles.');
     }
 }

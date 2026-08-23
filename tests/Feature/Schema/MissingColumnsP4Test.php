@@ -12,6 +12,7 @@ use App\Models\ProviderBadge;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
@@ -56,6 +57,10 @@ class MissingColumnsP4Test extends TestCase
     /** P4 — models that previously had a factory but no HasFactory trait now resolve Model::factory(). */
     public function test_model_factory_now_resolves_for_previously_traitless_models(): void
     {
+        // Les six modeles verifies ensemble : un trait `HasFactory` oublie l'est rarement sur un
+        // seul modele, et chaque echec bloque tout test qui voudrait employer cette fabrique.
+        $casses = [];
+
         foreach ([
             BookingTip::class,
             ChatThread::class,
@@ -64,8 +69,15 @@ class MissingColumnsP4Test extends TestCase
             ProviderBadge::class,
             OrganizationMember::class,
         ] as $model) {
-            $instance = $model::factory()->make();
-            $this->assertInstanceOf($model, $instance, "$model::factory() must resolve");
+            try {
+                if (! $model::factory()->make() instanceof $model) {
+                    $casses[] = class_basename($model).' : la fabrique rend autre chose';
+                }
+            } catch (\Throwable $e) {
+                $casses[] = class_basename($model).' : '.Str::limit($e->getMessage(), 70);
+            }
         }
+
+        $this->assertSame([], $casses, 'Ces fabriques ne se resolvent pas.');
     }
 }

@@ -139,13 +139,30 @@ class SelecteurDHeuresTest extends TestCase
     /** La règle rendue porte les chiffres, jamais les jetons bruts. */
     public function test_la_regle_ne_laisse_aucun_jeton_brut(): void
     {
+        // Trois langues × trois formes = neuf textes. Un jeton oublié l'est généralement sur la
+        // même forme dans TOUTES les langues, ou sur toutes les formes d'une même langue : c'est
+        // le motif qui dit où corriger, et le motif n'apparaît qu'en voyant la liste entière.
+        $defauts = [];
+
         foreach (['fr', 'nl', 'en'] as $langue) {
-            foreach ([HourlyRuleText::courte($langue), HourlyRuleText::complete($langue), HourlyRuleText::prestataire($langue)] as $texte) {
-                $this->assertStringNotContainsString(':multiplier', $texte, "Jeton non remplacé en {$langue}.");
-                $this->assertStringNotContainsString(':grace', $texte, "Jeton non remplacé en {$langue}.");
-                $this->assertNotSame('', trim($texte), "Texte vide en {$langue}.");
+            foreach ([
+                'courte' => HourlyRuleText::courte($langue),
+                'complete' => HourlyRuleText::complete($langue),
+                'prestataire' => HourlyRuleText::prestataire($langue),
+            ] as $forme => $texte) {
+                foreach ([':multiplier', ':grace'] as $jeton) {
+                    if (str_contains($texte, $jeton)) {
+                        $defauts[] = "{$langue}/{$forme} : jeton « {$jeton} » non remplacé";
+                    }
+                }
+
+                if (trim($texte) === '') {
+                    $defauts[] = "{$langue}/{$forme} : texte vide";
+                }
             }
         }
+
+        $this->assertSame([], $defauts, 'La règle rendue doit porter les chiffres, jamais les jetons bruts.');
     }
 
     // ─────────────────────────────────────────────────────────────────────

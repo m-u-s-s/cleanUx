@@ -69,13 +69,17 @@ class TradeFormSingleSourceTest extends TestCase
             'resources/views/livewire/admin/order-engine/catalog-center.blade.php',
         ];
 
-        foreach ($vues as $vue) {
-            $this->assertStringContainsString(
-                "@include('livewire.admin.partials.trade-form-fields')",
+        // Toutes les vues qui recopient d'un coup : une duplication de formulaire se propage, et
+        // c'est le nombre de copies qui dit s'il faut refactoriser ou corriger.
+        $copieuses = array_values(array_filter(
+            $vues,
+            fn (string $vue) => ! str_contains(
                 (string) file_get_contents(base_path($vue)),
-                "{$vue} doit inclure la partial partagée plutôt que recopier les champs.",
-            );
-        }
+                "@include('livewire.admin.partials.trade-form-fields')",
+            ),
+        ));
+
+        $this->assertSame([], $copieuses, 'Ces vues recopient les champs au lieu d inclure la partial partagee.');
     }
 
     public function test_la_partial_couvre_bien_tous_les_champs(): void

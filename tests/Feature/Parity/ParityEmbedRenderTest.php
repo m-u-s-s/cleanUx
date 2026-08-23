@@ -81,21 +81,25 @@ class ParityEmbedRenderTest extends TestCase
     {
         $this->actingAs(User::factory()->entreprise()->create());
 
+        // Les deux gabarits x les deux modes : quatre rendus, et une assertion par tour n'en
+        // rapportait qu'un. Un `embedded` mal branche l'est generalement sur les deux gabarits.
+        $ecarts = [];
+
         foreach (['layouts.client-company', 'layouts.provider-company'] as $layout) {
             $normal = view($layout, ['slot' => 'CONTENT', 'embedded' => false])->render();
-            $this->assertStringContainsString(
-                'data-chrome="primary-nav"',
-                $normal,
-                "$layout must render primary-nav chrome when NOT embedded",
-            );
+
+            if (! str_contains($normal, 'data-chrome="primary-nav"')) {
+                $ecarts[] = "{$layout} : pas de barre principale hors incrustation";
+            }
 
             $embedded = view($layout, ['slot' => 'CONTENT', 'embedded' => true])->render();
-            $this->assertStringNotContainsString(
-                'data-chrome="primary-nav"',
-                $embedded,
-                "$layout must hide primary-nav chrome when embedded",
-            );
+
+            if (str_contains($embedded, 'data-chrome="primary-nav"')) {
+                $ecarts[] = "{$layout} : barre principale rendue MALGRE l incrustation";
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Ces gabarits ne respectent pas le mode incruste.');
     }
 
     /**

@@ -63,15 +63,25 @@ class PaymentPlanTest extends TestCase
         $planner = app(OrderPaymentPlanner::class);
 
         // Des montants choisis pour tomber sur des divisions inexactes.
+        // Les quatre partages releves ensemble. Sur de l'argent, savoir QUELS cas perdent un
+        // centime vaut mieux que d'apprendre qu'un cas le perd : un arrondi fautif se voit a son
+        // motif, et le motif n'apparait qu'en comparant plusieurs cas.
+        $ecarts = [];
+
         foreach ([[99999, 30000, 1234], [77777, 23333, 999], [10001, 3000, 301], [3, 1, 2]] as [$total, $deposit, $fee]) {
             $split = $planner->splitFee($total, $deposit, $fee);
+            $somme = $split['deposit_fee_cents'] + $split['balance_fee_cents'];
 
-            $this->assertSame(
-                $fee,
-                $split['deposit_fee_cents'] + $split['balance_fee_cents'],
-                sprintf('Le partage de %d centimes sur %d/%d ne retombe pas juste.', $fee, $deposit, $total),
-            );
+            if ($somme !== $fee) {
+                $ecarts[] = sprintf(
+                    '%d centimes sur %d/%d : acompte %d + solde %d = %d',
+                    $fee, $deposit, $total,
+                    $split['deposit_fee_cents'], $split['balance_fee_cents'], $somme,
+                );
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Ces partages de frais ne retombent pas juste : des centimes se perdent.');
     }
 
     /** Le reste d'arrondi est porté par le SOLDE, jamais dispersé au hasard. */

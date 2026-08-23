@@ -14,9 +14,14 @@ class PwaManifestTest extends TestCase
         $manifest = json_decode((string) file_get_contents($path), true);
         $this->assertIsArray($manifest);
 
-        foreach (['name', 'short_name', 'start_url', 'display', 'icons'] as $key) {
-            $this->assertArrayHasKey($key, $manifest, "manifest missing '{$key}'");
-        }
+        // Un manifeste ampute ne s'installe pas : la liste complete evite de le corriger cle
+        // par cle, une execution a la fois.
+        $manquantes = array_values(array_filter(
+            ['name', 'short_name', 'start_url', 'display', 'icons'],
+            fn (string $k) => ! array_key_exists($k, $manifest),
+        ));
+
+        $this->assertSame([], $manquantes, 'Ces cles manquent au manifeste : l application ne s installera pas.');
 
         $this->assertContains($manifest['display'], ['standalone', 'fullscreen', 'minimal-ui']);
         $this->assertNotEmpty($manifest['icons']);

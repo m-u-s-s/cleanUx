@@ -287,13 +287,27 @@ class MoneyPathIsolationTest extends TestCase
             'F4: parity-map must be tenant-agnostic (role-scoped) — different-tenant clients must see the identical module set'
         );
 
+        // Toutes les fuites d'un coup : une carte qui expose un champ de trop l'expose sur
+        // TOUTES ses entrees, et c'est le nombre qui dit l'ampleur.
+        $attendues = ['key', 'title', 'icon', 'path', 'mobile'];
+        $fuites = [];
+
         foreach ($aData as $module) {
-            $this->assertEqualsCanonicalizing(
-                ['key', 'title', 'icon', 'path', 'mobile'],
-                array_keys($module),
-                'F4: parity-map module must expose only static catalog fields — no tenant data'
-            );
+            $clefs = array_keys($module);
+            $enTrop = array_diff($clefs, $attendues);
+            $absentes = array_diff($attendues, $clefs);
+
+            if ($enTrop !== [] || $absentes !== []) {
+                $fuites[] = sprintf(
+                    '%s : en trop [%s], absentes [%s]',
+                    $module['key'] ?? '?',
+                    implode(', ', $enTrop),
+                    implode(', ', $absentes),
+                );
+            }
         }
+
+        $this->assertSame([], $fuites, 'La carte de parite doit n exposer que des champs de catalogue, jamais de donnee de locataire.');
     }
 
     public function test_webview_ticket_not_mintable_for_another_tenant(): void

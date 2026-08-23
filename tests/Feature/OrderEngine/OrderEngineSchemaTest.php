@@ -30,16 +30,19 @@ class OrderEngineSchemaTest extends TestCase
     {
         $this->assertTrue(Schema::hasTable('trades'));
 
-        foreach ([
+        // Les huit colonnes verifiees ensemble : une migration incomplete en laisse plusieurs de
+        // cote, et le moteur echoue alors sur la premiere qu'il touche, pas sur la liste.
+        $absentes = array_values(array_filter([
             'sector_id', 'base_price_cents', 'pricing_unit',
             'estimated_duration_min', 'min_duration_min',
             'allows_scheduled', 'allows_asap', 'allows_bundle',
-        ] as $column) {
-            $this->assertTrue(
-                Schema::hasColumn('trades', $column),
-                "La colonne trades.{$column} manque : le moteur de commande doit étendre les métiers existants, pas les dupliquer.",
-            );
-        }
+        ], fn (string $c) => ! Schema::hasColumn('trades', $c)));
+
+        $this->assertSame(
+            [],
+            $absentes,
+            'Ces colonnes manquent a `trades` : le moteur de commande doit ETENDRE les metiers existants, pas les dupliquer.',
+        );
     }
 
     /**
