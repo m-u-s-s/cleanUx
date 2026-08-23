@@ -62,6 +62,21 @@ class ReferencePlatformSeeder extends Seeder
              * tarifés qu'aucun écran de commande n'affichait, faute de secteur.
              */
             TradeSectorLinkSeeder::class,
+            /*
+             * LE CATALOGUE DANS LES CINQ AUTRES LANGUES ACTIVES.
+             *
+             * Ce semeur existait, complet et documenté — et AUCUNE chaîne ne l'appelait. Il portait
+             * la mention « Usage : php artisan db:seed --class=… », si bien qu'une base neuve
+             * naissait avec un catalogue techniquement multilingue et entièrement français :
+             * `catalog_translations` restait à zéro ligne.
+             *
+             * APRÈS le rattachement des secteurs : il traduit ce que les semeurs précédents ont
+             * posé, et le secteur `Services à la personne` n'existe qu'à partir de là.
+             *
+             * Il n'écrase jamais une saisie existante et n'écrit que les langues activées : le
+             * relancer ne coûte rien et ne reprend la main sur aucun travail d'exploitant.
+             */
+            CatalogueTraductionsSeeder::class,
         ]);
 
         $this->command?->info('✅ Référentiel plateforme chargé (géographie, trades, services multi-métiers, modules, zones, paramètres, parcours prestataire, catalogue de commande, grille métier × zone).');

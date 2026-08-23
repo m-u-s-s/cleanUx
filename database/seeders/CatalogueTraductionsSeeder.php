@@ -26,9 +26,13 @@ use Illuminate\Support\Facades\Config;
  * un texte que personne n'a choisi et que personne ne relirait. L'écran d'administration les
  * signalera comme manquantes, ce qui est la bonne façon de les réclamer.
  *
- * Les entrées de TEST du catalogue — le secteur « MISSION AUTO » et le métier « TAXI » — sont
- * délibérément absentes : traduire une donnée de démonstration lui donnerait l'air d'un vrai
- * service.
+ * La couverture suit le catalogue semé : SIX secteurs et SEIZE métiers. Un objet absent de ces
+ * tables est simplement sauté — mais un métier ajouté au catalogue sans être ajouté ici restera
+ * français dans les cinq autres langues, sans que rien ne le signale. Le test de couverture qui
+ * accompagne ce seeder est là pour ça.
+ *
+ * `pt` n'y figure pas : il est désactivé dans `config/i18n.php`, et ce seeder n'écrit QUE les
+ * langues actives. L'activer demandera d'ajouter la colonne portugaise partout ici.
  *
  * ── IDEMPOTENT, ET NON DESTRUCTIF ────────────────────────────────────────────────────────────
  *
@@ -62,6 +66,27 @@ class CatalogueTraductionsSeeder extends Seeder
             'de' => 'Garten & Grünflächen',
             'es' => 'Jardinería y zonas verdes',
             'it' => 'Giardini e aree verdi',
+        ],
+        'mobilite' => [
+            'nl' => 'Mobiliteit',
+            'en' => 'Mobility',
+            'de' => 'Mobilität',
+            'es' => 'Movilidad',
+            'it' => 'Mobilità',
+        ],
+        'services-a-la-personne' => [
+            'nl' => 'Persoonlijke dienstverlening',
+            'en' => 'Personal services',
+            'de' => 'Persönliche Dienstleistungen',
+            'es' => 'Servicios a la persona',
+            'it' => 'Servizi alla persona',
+        ],
+        'securite' => [
+            'nl' => 'Beveiliging',
+            'en' => 'Security',
+            'de' => 'Sicherheit',
+            'es' => 'Seguridad',
+            'it' => 'Sicurezza',
         ],
     ];
 
@@ -129,6 +154,55 @@ class CatalogueTraductionsSeeder extends Seeder
             'de' => 'Dacharbeiten',
             'es' => 'Tejados',
             'it' => 'Coperture e tetti',
+        ],
+        'batiment' => [
+            'nl' => 'Ruwbouw',
+            'en' => 'Structural work',
+            'de' => 'Rohbau',
+            'es' => 'Obra gruesa',
+            'it' => 'Opere strutturali',
+        ],
+        'renovation' => [
+            'nl' => 'Renovatie',
+            'en' => 'Renovation',
+            'de' => 'Renovierung',
+            'es' => 'Reformas',
+            'it' => 'Ristrutturazione',
+        ],
+        'levage' => [
+            'nl' => 'Verhuislift',
+            'en' => 'Hoisting & lifts',
+            'de' => 'Möbelaufzug',
+            'es' => 'Elevación',
+            'it' => 'Sollevamento',
+        ],
+        'moving' => [
+            'nl' => 'Verhuizing',
+            'en' => 'Removals',
+            'de' => 'Umzug',
+            'es' => 'Mudanzas',
+            'it' => 'Traslochi',
+        ],
+        'childcare' => [
+            'nl' => 'Kinderopvang',
+            'en' => 'Childcare',
+            'de' => 'Kinderbetreuung',
+            'es' => 'Cuidado de niños',
+            'it' => "Assistenza all'infanzia",
+        ],
+        'security' => [
+            'nl' => 'Bewaking',
+            'en' => 'Security & guarding',
+            'de' => 'Bewachung',
+            'es' => 'Vigilancia',
+            'it' => 'Vigilanza',
+        ],
+        'course-vtc' => [
+            'nl' => 'Rit',
+            'en' => 'Ride',
+            'de' => 'Fahrt',
+            'es' => 'Trayecto',
+            'it' => 'Corsa',
         ],
     ];
 
