@@ -11,9 +11,6 @@ use App\Services\Notifications\SmsService;
 /**
  * Le journal des SMS et messages WhatsApp.
  *
- * Le cout est affiche : un canal facturé au message se surveille depuis la meme page que ses
- * échecs, sinon on découvre la dérive sur la facture.
- *
  * @extends EloquentResource<SmsMessage>
  */
 class SmsMessageResource extends EloquentResource
@@ -73,11 +70,7 @@ class SmsMessageResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Le refus est repris du web MOT POUR MOT : seuls les SMS en échec, non délivrés ou
-             * limités se retentent. Relancer un SMS déjà parti le enverrait deux fois, et le
-             * destinataire n'a aucun moyen de savoir lequel compte.
-             */
+            // Le refus est repris du web MOT POUR MOT : seuls les SMS en échec, non délivrés ou limités se retentent.
             Action::make('retry', 'Réessayer l’envoi', function (SmsMessage $message) {
                 $retentable = [
                     SmsMessage::STATUS_FAILED,
@@ -89,11 +82,7 @@ class SmsMessageResource extends EloquentResource
                     return ['ok' => false, 'message' => 'Seuls les SMS en échec peuvent être retentés.'];
                 }
 
-                /*
-                 * On renvoie le MÊME corps, pas un gabarit reconstruit : le message est déjà
-                 * rédigé et traduit, et le régénérer risquerait d'envoyer autre chose que ce que
-                 * le destinataire attendait.
-                 */
+                // On renvoie le MÊME corps, pas un gabarit reconstruit : le message est déjà rédigé et traduit, et le régénérer risquerait d'envoyer autre chose que ce que le destinataire attendait.
                 app(SmsService::class)->dispatch(
                     toPhone: (string) $message->to_phone,
                     body: (string) $message->body,

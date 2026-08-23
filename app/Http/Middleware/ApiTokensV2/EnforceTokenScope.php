@@ -8,10 +8,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Usage : ->middleware('api_scope:read:bookings,write:bookings')
- * Le caller doit posséder AU MOINS UN scope listé (OR logic).
- */
+/** Usage : ->middleware('api_scope:read:bookings,write:bookings') Le caller doit posséder AU MOINS UN scope listé (OR logic). */
 class EnforceTokenScope
 {
     public function handle(Request $request, Closure $next, string ...$requiredAny): Response

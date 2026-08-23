@@ -34,12 +34,7 @@ class QualityCenterCoverageBatch12Test extends TestCase
 
     private ?Mission $mission = null;
 
-    /**
-     * Une VRAIE mission : `mission_quality_inspections.mission_id` porte désormais une clé
-     * étrangère vers `missions`. L'identifiant inventé « 1 » ne désignait aucune ligne, ce que
-     * l'absence de contrainte laissait passer. Ce fichier mesure le CENTRE qualité ; l'identité de
-     * la mission lui est indifférente, d'où une seule mission partagée.
-     */
+    /** Une VRAIE mission : `mission_quality_inspections.mission_id` porte désormais une clé étrangère vers `missions`. */
     private function mission(): Mission
     {
         return $this->mission ??= Mission::factory()->create();

@@ -221,12 +221,7 @@ class EnterpriseWorkOrderMissionGeneratorService
         return $created;
     }
 
-    /**
-     * SP4 — si la WO du batch est sous contrat, stampe le contrat + l'org
-     * partenaire sur la mission générée et arme son SLA. No-op (garde fermée)
-     * pour toute mission non issue d'une WO ou d'une WO sans contrat : la
-     * génération hors-contrat reste strictement inchangée.
-     */
+    /** SP4 — si la WO du batch est sous contrat, stampe le contrat + l'org partenaire sur la mission générée et arme son SLA. */
     protected function applyContractToMission(Mission $mission, MissionBatch $batch): void
     {
         if (! $batch->enterprise_work_order_id) {

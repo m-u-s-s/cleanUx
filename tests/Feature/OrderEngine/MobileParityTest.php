@@ -7,19 +7,7 @@ use Database\Seeders\OrderEngineCatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Le moteur de commande, atteignable depuis l'application.
- *
- * Il n'existait QUE sur le web : aucun écran natif, aucun point d'API — `routes/api/` n'en parle
- * nulle part — et aucune entrée dans le registre de parité, pas même en vue embarquée. Un client
- * sur l'application réservait encore par catégorie de service, sans secteur, sans question propre au
- * métier, sans mode immédiat et sans devis explicable ligne par ligne. Le onzième critère
- * d'acceptation était donc faux sur mobile.
- *
- * L'entrée en vue embarquée est le chemin le moins coûteux vers la parité : le parcours complet
- * devient joignable depuis l'application, et la migration vers un écran natif se fera plus tard en
- * basculant `mobile` sur `native` — sans autre changement de code, c'est la promesse du registre.
- */
+/** Le moteur de commande, atteignable depuis l'application. */
 class MobileParityTest extends TestCase
 {
     use RefreshDatabase;
@@ -56,13 +44,7 @@ class MobileParityTest extends TestCase
             'La carte de parité du client ne propose pas le moteur de commande.',
         );
 
-        /*
-         * UNE SEULE entrée de réservation.
-         *
-         * Deux modules pointant l'un sur l'ancien assistant et l'autre sur le moteur donneraient
-         * deux parcours écrivant la même table par des chemins différents : les devis seraient
-         * explicables ou non selon la porte empruntée.
-         */
+        // UNE SEULE entrée de réservation.
         $this->assertSame(
             ['/commander'],
             collect($response->json('data'))
@@ -74,14 +56,7 @@ class MobileParityTest extends TestCase
         );
     }
 
-    /**
-     * Le CONSTRUCTEUR de parcours est joignable depuis mobile lui aussi.
-     *
-     * Une quarantaine de modules d'administration sont servis en vue embarquée ; le catalogue de
-     * commande n'y était pas. Un administrateur sur téléphone ne pouvait donc pas atteindre l'écran
-     * qui pilote secteurs, métiers, questions et — depuis peu — règles d'affichage : exactement
-     * l'écran dont toute la promesse « sans une ligne de code » dépend.
-     */
+    /** Le CONSTRUCTEUR de parcours est joignable depuis mobile lui aussi. */
     public function test_the_questionnaire_builder_is_reachable_from_mobile(): void
     {
         $module = collect(config('parity.modules'))->firstWhere('key', 'admin-order-engine');
@@ -91,13 +66,7 @@ class MobileParityTest extends TestCase
         $this->assertContains('admin', $module['roles']);
     }
 
-    /**
-     * Le parcours se rend SANS le chrome du site quand il est embarqué.
-     *
-     * Une vue embarquée qui garde l'en-tête, la navigation basse et le pied de page du site donne
-     * une application dans laquelle on navigue deux fois — et sur laquelle la barre du pouce du
-     * parcours se retrouve masquée par celle du site.
-     */
+    /** Le parcours se rend SANS le chrome du site quand il est embarqué. */
     public function test_the_journey_renders_without_site_chrome_when_embedded(): void
     {
         $plain = $this->get('/commander');
@@ -113,13 +82,7 @@ class MobileParityTest extends TestCase
         );
     }
 
-    /**
-     * Le parcours reste PUBLIC, y compris embarqué.
-     *
-     * C'est la première loi : le prix se voit avant l'identité. Une entrée de registre réservée aux
-     * clients connectés ne doit pas transformer la route en route authentifiée — le visiteur du
-     * site web garde son estimation sans compte.
-     */
+    /** Le parcours reste PUBLIC, y compris embarqué. */
     public function test_registering_it_for_mobile_does_not_close_the_public_route(): void
     {
         $this->get('/commander')->assertOk();

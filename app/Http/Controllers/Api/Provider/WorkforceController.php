@@ -22,25 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * L'API NATIVE DU PLANNING (E19), DES HEURES (E20), DES ABSENCES (E21), DE LA RENTABILITÉ (E22) ET
- * DES CONSOMMABLES (E23).
- *
- * CES CINQ MODULES SE CONSULTENT DEBOUT, PAS ASSIS. Un chef d'équipe regarde son planning dans la
- * camionnette, un exécutant pose son congé le soir, quelqu'un vérifie ce qui reste en stock AVANT de
- * partir — c'est-à-dire au moment exact où l'ordinateur de bureau est hors de portée. Les servir en
- * WebView reviendrait à ne pas les servir.
- *
- * DEUX RÈGLES, COMME PARTOUT DANS L'ESPACE SOCIÉTÉ : chaque requête est limitée à l'organisation
- * ACTIVE de l'appelant, et chaque écriture exige une permission — jamais la seule appartenance. Le
- * scoping fait partie de la REQUÊTE : une ressource d'une autre société n'est jamais chargée, donc
- * jamais divulguée, pas même par la différence entre un 403 et un 404.
- *
- * ET LES REFUS DU DOMAINE SORTENT EN 422, PAS EN 500. « Il ne reste que trois cartons » et « une
- * absence ne s'approuve pas soi-même » sont des réponses, pas des pannes : les laisser remonter en
- * erreur serveur ferait afficher « une erreur est survenue » là où l'utilisateur a besoin de lire la
- * règle.
- */
+/** L'API NATIVE DU PLANNING (E19), DES HEURES (E20), DES ABSENCES (E21), DE LA RENTABILITÉ (E22) ET DES CONSOMMABLES (E23). */
 class WorkforceController extends Controller
 {
     use ResolvesActiveOrganization;
@@ -159,11 +141,7 @@ class WorkforceController extends Controller
 
         $demandes = app(LeaveService::class)
             ->surLaPeriode((int) $org->id, $debut, $fin, $request->query('status'))
-            /*
-             * SANS `team.manage`, ON NE VOIT QUE LES SIENNES. Les absences des collègues disent la
-             * maladie, la garde d'enfant, l'accompagnement d'un proche : les exposer à toute la
-             * société ferait de la pose de congé un aveu.
-             */
+            // SANS `team.manage`, ON NE VOIT QUE LES SIENNES.
             ->when(! $peutGerer, fn ($c) => $c->where('user_id', Auth::id()))
             ->values();
 
@@ -361,11 +339,7 @@ class WorkforceController extends Controller
     public function profitability(Request $request): JsonResponse
     {
         $org = $this->organisationActive();
-        /*
-         * LA MARGE N'EST PAS UNE DONNÉE D'ÉQUIPE. Elle dit ce que coûte chaque personne : la
-         * réserver aux porteurs de `analytics.view` évite qu'un exécutant lise le prix de ses
-         * propres heures dans un écran d'exploitation.
-         */
+        // LA MARGE N'EST PAS UNE DONNÉE D'ÉQUIPE.
         $this->exiger('analytics.view');
 
         $debut = $this->dateOuDefaut($request->query('from'), Carbon::now()->startOfMonth());
@@ -431,13 +405,7 @@ class WorkforceController extends Controller
         ]);
     }
 
-    /**
-     * Un mouvement de stock.
-     *
-     * TROIS TYPES, UN SEUL POINT D'ENTRÉE : on ne saisit jamais le compteur, on déclare ce qui a
-     * bougé. Dès qu'on peut écrire le stock à la main, le registre et le compteur divergent et plus
-     * personne ne sait lequel croire.
-     */
+    /** Un mouvement de stock. */
     public function moveInventory(Request $request, int $itemId): JsonResponse
     {
         $org = $this->organisationActive();

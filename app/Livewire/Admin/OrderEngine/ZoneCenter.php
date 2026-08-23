@@ -18,22 +18,6 @@ use Livewire\WithPagination;
 /**
  * Le deuxième niveau : les zones d'un pays.
  *
- * IL RÉUTILISE LES TRAITS DE `GestionZones` et n'en réécrit aucun. Cet écran-là fait déjà l'édition
- * des zones, ses filtres, sa réservabilité et sa visibilité ; un second jeu d'actions divergerait,
- * et plus personne ne saurait lequel fait foi.
- *
- * LE CLOISONNEMENT PASSE PAR LA REQUÊTE. `zoneBaseQuery()` est redéfinie ici, et comme
- * `selectZone()` s'en sert pour son `findOrFail`, les ACTIONS sont cloisonnées autant que
- * l'affichage. Un filtre posé à la vue aurait laissé passer un identifiant forgé — et l'erreur
- * n'aurait l'air de rien tant qu'il n'y a qu'un seul pays en base, c'est-à-dire aujourd'hui.
- *
- * LA CRÉATION DE ZONE N'EXISTAIT NULLE PART avant ce composant. `saveZone()`, hérité, n'édite
- * qu'une zone déjà sélectionnée : il exige un `selectedZoneId` et fait `findOrFail`. D'où
- * `creerZone()`.
- *
- * `$selectedZone` vient de `ManagesZonesData::getSelectedZoneProperty()` : c'est une propriété
- * magique de Livewire, invisible à l'analyse statique. On la déclare pour que PHPStan la voie.
- *
  * @property-read ServiceZone|null $selectedZone
  */
 #[Layout('layouts.app')]
@@ -116,12 +100,7 @@ class ZoneCenter extends Component
         $this->country = $country;
     }
 
-    /**
-     * Le cloisonnement, en un seul endroit.
-     *
-     * Redéfinir la requête de base plutôt que filtrer à l'affichage : `selectZone()` l'emploie pour
-     * son `findOrFail`, donc toute action qui passe par une sélection hérite de la restriction.
-     */
+    /** Le cloisonnement, en un seul endroit. */
     /** @return Builder<ServiceZone> */
     protected function zoneBaseQuery(): Builder
     {
@@ -137,13 +116,7 @@ class ZoneCenter extends Component
             ]);
     }
 
-    /**
-     * Créer une zone dans CE pays.
-     *
-     * Le pays vient du contexte et n'est pas un champ : le laisser saisissable permettrait de
-     * créer, depuis l'écran Belgique, une zone française — une erreur qui ne se verrait qu'en
-     * cherchant une zone disparue.
-     */
+    /** Créer une zone dans CE pays. */
     public function creerZone(): void
     {
         $valide = $this->validate([
@@ -160,12 +133,7 @@ class ZoneCenter extends Component
             // Un identifiant lisible et unique, sans demander à l'administrateur de l'inventer.
             'slug' => Str::slug($nom).'-'.Str::lower(Str::random(5)),
             'coverage_type' => 'custom',
-            /*
-             * Une zone neuve naît FERMÉE.
-             *
-             * Même raison que pour un pays neuf : créer une zone ne doit pas la rendre commandable
-             * avant qu'on ait réglé son catalogue et ses prix. L'ouverture est un geste séparé.
-             */
+            // Une zone neuve naît FERMÉE.
             'status' => 'draft',
             'is_bookable' => false,
             'is_visible' => false,

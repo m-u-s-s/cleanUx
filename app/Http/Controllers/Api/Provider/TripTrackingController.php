@@ -24,10 +24,7 @@ use Illuminate\Validation\ValidationException;
 class TripTrackingController extends Controller
 {
     /**
-     * Start a trip tracking session for a booking.
-     *
-     * Creates a new session in `enroute` status. Call once when the provider departs.
-     * The session is used to record GPS pings and share real-time ETA with the client.
+     * Start a trip tracking session for a booking. Creates a new session in `enroute` status.
      *
      * @bodyParam start_lat numeric Starting GPS latitude (-90 to 90). Example: 50.843
      * @bodyParam start_lng numeric Starting GPS longitude (-180 to 180). Example: 4.348
@@ -59,14 +56,6 @@ class TripTrackingController extends Controller
     /**
      * LA SESSION ACTIVE DE CETTE RÉSERVATION — la seule lecture du module, et elle manquait.
      *
-     * Tout ce contrôleur était en écriture : démarrer, pinguer, terminer. Le prestataire ne pouvait
-     * donc RELIRE nulle part la session qu'il avait ouverte — son écran de suivi la gardait en
-     * mémoire locale, et une application relancée l'oubliait. Sa carte d'accueil, elle, ne pouvait
-     * afficher aucune route : elle n'avait aucun moyen de la demander.
-     *
-     * `null` plutôt qu'un 404 : « aucune session ouverte » est une réponse normale — la plupart des
-     * réservations n'en ont pas — et un 404 se lit comme une panne côté application.
-     *
      * @response 200 {"data": {"id": 12, "status": "enroute", "route": {"points": [], "source": "osrm", "distance_m": 4200}}}
      */
     public function active(Request $request, Booking $booking): JsonResponse
@@ -85,10 +74,7 @@ class TripTrackingController extends Controller
     }
 
     /**
-     * Record a GPS ping for an active tracking session.
-     *
-     * Call every 5-15 seconds while en route. Pings with duplicate `sequence` numbers are
-     * deduplicated. Auto-transitions session to `arrived` when within 150 m of destination.
+     * Record a GPS ping for an active tracking session. Call every 5-15 seconds while en route.
      *
      * @bodyParam lat numeric required Current GPS latitude (-90 to 90). Example: 50.845
      * @bodyParam lng numeric required Current GPS longitude (-180 to 180). Example: 4.351
@@ -196,17 +182,6 @@ class TripTrackingController extends Controller
     /**
      * Confirm the provider's physical presence with the code shown by the client.
      *
-     * The geofence proves proximity, not presence — a phone 100 m from the door crosses it. The
-     * client displays a single-use code that the provider scans on site, which requires both
-     * devices in the same place.
-     *
-     * The code alone proves possession, not presence: photographed and forwarded, or simply read
-     * out over the phone, it validates from anywhere during its ten-minute life. The provider's
-     * position at scan time is cross-checked against the job address to close that gap.
-     *
-     * `lat`/`lng` must be read AT SCAN TIME. The session's last ping is not used: a provider need
-     * only stop pinging when leaving to freeze it on a flattering value.
-     *
      * @bodyParam code string required The 6-digit code read from the client's QR. Example: 482951
      * @bodyParam lat numeric Provider latitude at scan time (-90 to 90). Required unless the geo check is relaxed. Example: 50.8467
      * @bodyParam lng numeric Provider longitude at scan time (-180 to 180). Example: 4.3525
@@ -252,19 +227,7 @@ class TripTrackingController extends Controller
         }
     }
 
-    /**
-     * Démarre la mission dès la présence prouvée.
-     *
-     * Le démarrage exigeait jusqu'ici un code à six chiffres envoyé au client par SMS, que le
-     * prestataire recopiait. Ce code faisait exactement le travail que fait déjà la preuve de
-     * présence — et moins bien, puisqu'un SMS se transmet à distance alors qu'un code affiché se
-     * lit sur place. Le faire saisir une seconde fois n'apportait rien.
-     *
-     * Effet de bord, jamais bloquant : la présence est un FAIT déjà gravé quand on arrive ici.
-     * Une mission introuvable, un prestataire non assigné ou un incident de notification ne
-     * doivent pas transformer une confirmation réussie en erreur — le prestataire, lui, est bien
-     * chez le client. La réponse dit ce qui s'est passé plutôt que de le taire.
-     */
+    /** Démarre la mission dès la présence prouvée. */
     protected function startMissionOnPresence(TripTrackingSession $session, $provider): bool
     {
         $mission = Mission::query()->where('booking_id', $session->booking_id)->first();
@@ -334,20 +297,7 @@ class TripTrackingController extends Controller
     {
         $user = $request->user();
         abort_unless($user, 401);
-        /*
-         * Celui qui pousse sa position est celui qui SE DÉPLACE — voir `Booking::intervenantId()`.
-         *
-         * `provider_user_id` figurait ici en troisième branche et N'EXISTE PAS sur `bookings` :
-         * elle appartient au portefeuille, aux conversations et à la finance. Sur un modèle
-         * Eloquent elle rendait `null` sans bruit, donc la branche était morte ; recopiée un jour
-         * dans un `where`, elle aurait fait tomber la requête en MySQL et serait restée MUETTE
-         * sous SQLite, qui prend un identifiant inconnu pour une chaîne littérale. `intervenantId()`
-         * porte déjà le même avertissement, et l'avait déjà écartée de sa propre chaîne.
-         *
-         * `assigned_employee_id` reste, bien qu'`intervenantId()` la couvre : elle ne peut
-         * qu'ACCORDER l'accès, jamais le refuser, et la retirer changerait le comportement pour
-         * une ligne dont les colonnes d'intervenant se contrediraient.
-         */
+        // Celui qui pousse sa position est celui qui SE DÉPLACE — voir `Booking::intervenantId()`.
         $isProvider = (int) ($booking->intervenantId() ?? 0) === (int) $user->id
                    || (int) ($booking->assigned_employee_id ?? 0) === (int) $user->id;
         abort_unless($isProvider, 403, 'Not assigned to this booking.');

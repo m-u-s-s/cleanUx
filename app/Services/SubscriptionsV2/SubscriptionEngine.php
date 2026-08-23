@@ -16,10 +16,7 @@ class SubscriptionEngine
         protected BillingProcessor $billing,
     ) {}
 
-    /**
-     * Crée une nouvelle subscription idempotent par (user, plan, status=active|trialing).
-     * Un user peut avoir plusieurs subscriptions actives de plans DIFFÉRENTS.
-     */
+    /** Crée une nouvelle subscription idempotent par (user, plan, status=active|trialing). */
     public function subscribe(User $user, SubscriptionPlanV2 $plan, array $opts = []): SubscriptionV2
     {
         if (! $plan->is_active) {
@@ -108,9 +105,7 @@ class SubscriptionEngine
         return $sub->fresh();
     }
 
-    /**
-     * Cancel : immediate=true → arrête tout de suite, sinon cancel_at_period_end.
-     */
+    /** Cancel : immediate=true → arrête tout de suite, sinon cancel_at_period_end. */
     public function cancel(SubscriptionV2 $sub, bool $immediate = false): SubscriptionV2
     {
         if ($sub->isCancelled()) {
@@ -147,11 +142,7 @@ class SubscriptionEngine
         return $sub->fresh();
     }
 
-    /**
-     * Change plan en cours de subscription. Méthode conservatrice :
-     * - Active la nouvelle subscription au prochain cycle (upgrade/downgrade
-     *   pas proratisé — à enrichir Phase 2 si besoin).
-     */
+    /** Change plan en cours de subscription. */
     public function changePlan(SubscriptionV2 $sub, SubscriptionPlanV2 $newPlan): SubscriptionV2
     {
         if (! $newPlan->is_active) {
@@ -171,10 +162,7 @@ class SubscriptionEngine
         return $sub->fresh();
     }
 
-    /**
-     * Tick d'un cycle : appelé par cron / job. Génère le prochain cycle si nécessaire
-     * et déclenche le billing si due.
-     */
+    /** Tick d'un cycle : appelé par cron / job. */
     public function tick(SubscriptionV2 $sub): SubscriptionV2
     {
         // Stoppe si cancel_at_period_end et next_billing_at passé

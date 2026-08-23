@@ -14,23 +14,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-/**
- * Phase 14.1 — Wizard d'onboarding prestataire en 7 étapes (côté provider).
- *
- * Route : /provider/onboarding
- *
- * Étapes :
- *   0. Profil (nom, photo, bio)
- *   1. Identité (1 doc parmi ID/passport/résidence)
- *   2. Numéro fiscal (TVA / SIREN)
- *   3. Assurance pro
- *   4. Compétences + zones
- *   5. Stripe Connect (lien externe)
- *   6. En attente validation admin
- *
- * Affiche progress bar + steps cliquables (revient en arrière) + champs spécifiques
- * à l'étape courante. Idempotent : on peut re-uploader, re-saisir, etc.
- */
+/** Phase 14.1 — Wizard d'onboarding prestataire en 7 étapes (côté provider). */
 class ProviderOnboardingWizard extends Component
 {
     use WithFileUploads;
@@ -105,19 +89,6 @@ class ProviderOnboardingWizard extends Component
     /**
      * LES PIÈCES DE CONDUITE QUI MANQUENT ENCORE — nommées, pas devinées.
      *
-     * Cet assistant a ses cinq étapes écrites en dur : profil, identité, fiscal, assurance,
-     * compétences. Les justificatifs qui dépendent du MÉTIER déclaré — permis, carte grise,
-     * assurance du véhicule — n'y figurent nulle part, et il annonçait donc « dossier complet » à un
-     * chauffeur qui n'avait rien déposé de tout cela.
-     *
-     * Le parcours de vérification v2 et l'écran de conduite les réclament bien, eux. Le trou n'était
-     * pas dans le verrou : il était dans ce que CET écran laisse croire, et c'est ce qui compte pour
-     * quelqu'un qui pense avoir fini.
-     *
-     * On ne renumérote AUCUNE étape : ajouter une sixième case ici décalerait `getProgress()`, les
-     * libellés et les gardes de navigation, pour une exigence qui ne concerne qu'une minorité de
-     * métiers. La liste renvoie vers l'écran dédié, qui sait déjà tout faire.
-     *
      * @return list<string>
      */
     public function getPiecesDeConduiteManquantesProperty(): array
@@ -186,16 +157,7 @@ class ProviderOnboardingWizard extends Component
     // Étape 0 — Profil
     // ──────────────────────────────────────────────
 
-    /**
-     * La photo passe par `ProviderOnboardingService::setProfileBasics()` et finit sur le disque
-     * `public` — le même dossier, servi sur le même domaine, que la photo envoyée depuis le mobile
-     * par `ProviderOnboardingController::setProfile()`.
-     *
-     * D'où la même liste pour les deux, {@see ImagesTeleversees}. Ce point-ci était resté sur la
-     * règle `image` de Laravel pendant que l'API passait à une liste explicite : deux formulaires
-     * qui écrivent au même endroit et n'acceptent pas la même chose, c'est le formulaire le plus
-     * permissif qui définit la surface d'attaque, et le plus strict qui refuse à tort.
-     */
+    /** La photo passe par `ProviderOnboardingService::setProfileBasics()` et finit sur le disque `public` — le même dossier, servi sur le même domaine, que la photo envoyée depuis le mobile par `ProviderOnboardingController::setProfile()`. */
     public function saveStep0(): void
     {
         $this->validate([

@@ -13,9 +13,7 @@ class WebhookDeliveryRunner
 {
     public function __construct(protected WebhookSigner $signer) {}
 
-    /**
-     * Attempt to deliver one webhook delivery. Updates the row and returns it.
-     */
+    /** Attempt to deliver one webhook delivery. Updates the row and returns it. */
     public function run(WebhookDelivery $delivery): WebhookDelivery
     {
         if ($delivery->isTerminal()) {
@@ -145,10 +143,7 @@ class WebhookDeliveryRunner
         return $delivery->fresh();
     }
 
-    /**
-     * Marque explicitement une delivery en dead-letter et log l'event.
-     * Utilisable par un admin ou un job de maintenance pour forcer la résolution.
-     */
+    /** Marque explicitement une delivery en dead-letter et log l'event. */
     public function markDeadLetter(WebhookDelivery $delivery): void
     {
         if ($delivery->status === WebhookDelivery::STATUS_DEAD) {

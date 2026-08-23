@@ -7,11 +7,7 @@ use App\Admin\Console\EloquentResource;
 use App\Models\OnboardingProgress;
 
 /**
- * L’avancement des parcours d’inscription.
- *
- * LECTURE SEULE. Une étape se valide en la RÉUSSISSANT : chaque étape a son validateur, qui
- * vérifie des conditions réparties dans plusieurs modules. Marquer une étape faite à la main
- * ferait entrer dans l’application quelqu’un dont le dossier ne tient pas.
+ * L’avancement des parcours d’inscription. LECTURE SEULE.
  *
  * @extends EloquentResource<OnboardingProgress>
  */

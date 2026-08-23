@@ -8,10 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Rate limiting per access token : utilise personal_access_tokens.rate_limit_per_minute
- * (ou default config). Si pas de token (session web), bypass.
- */
+/** Rate limiting per access token : utilise personal_access_tokens.rate_limit_per_minute (ou default config). */
 class ThrottleByToken
 {
     public function handle(Request $request, Closure $next): Response

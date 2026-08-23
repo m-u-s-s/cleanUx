@@ -52,23 +52,7 @@ class UserFactory extends Factory
         ]);
     }
 
-    /**
-     * UN ADMINISTRATEUR QUI PEUT REELLEMENT TOUT FAIRE, sans etre super-administrateur.
-     *
-     * `admin()` ne pose AUCUNE capacite. C'etait sans consequence tant que rien ne les verifiait --
-     * une seule route d'administration sur quatre-vingt-six portait un `can:`. Depuis que
-     * `EnforceModuleGate` fait appliquer ce que `config/modules.php` declare, ce compte se voit
-     * refuser quinze ecrans, et une quinzaine de tests d'acces sont tombes en 403.
-     *
-     * DEUX FACONS DE REPARER, ET UNE SEULE EST HONNETE. Faire de `admin()` un compte tout-puissant
-     * aurait rendu vert d'un coup, et aurait silencieusement desarme tout test verifiant qu'une
-     * capacite MANQUANTE ferme une porte. On ajoute donc un etat qui DIT ce qu'il est : les tests
-     * qui balaient l'espace l'emploient, ceux qui mesurent une restriction construisent leur compte
-     * a la main.
-     *
-     * On n'en fait pas un super-administrateur non plus : celui-la passe TOUS les gardes, y compris
-     * ceux qu'un test voudrait eprouver.
-     */
+    /** UN ADMINISTRATEUR QUI PEUT REELLEMENT TOUT FAIRE, sans etre super-administrateur. */
     public function adminComplet(): static
     {
         return $this->admin()->state(fn (array $attributes) => [
@@ -88,10 +72,7 @@ class UserFactory extends Factory
         ]);
     }
 
-    /**
-     * Client personal — creates the customer_profiles row separately if needed.
-     * La colonne `role` existe TOUJOURS et cet état la pose : voir la note du 2026-08-22.
-     */
+    /** Client personal — creates the customer_profiles row separately if needed. */
     public function client(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -114,10 +95,7 @@ class UserFactory extends Factory
         ]);
     }
 
-    /**
-     * Provider / employe — la colonne `role` existe toujours et cet état la pose.
-     * A provider_profiles row with provider_type='independent' must be created separately in tests.
-     */
+    /** Provider / employe — la colonne `role` existe toujours et cet état la pose. */
     public function employe(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -129,10 +107,7 @@ class UserFactory extends Factory
         ]);
     }
 
-    /**
-     * Company client — la colonne `role` existe toujours et cet état la pose.
-     * A customer_profiles row with customer_type='company' must be created separately in tests.
-     */
+    /** Company client — la colonne `role` existe toujours et cet état la pose. */
     public function entreprise(): static
     {
         return $this->state(fn (array $attributes) => [
@@ -144,29 +119,7 @@ class UserFactory extends Factory
         ]);
     }
 
-    /**
-     * UNE SOCIÉTÉ CLIENTE COMPLÈTE — et « complète » n'est pas un luxe.
-     *
-     * Quatre choses doivent exister ensemble pour qu'un espace société s'ouvre, et
-     * chaque test les rebâtissait à la main, souvent à moitié :
-     *
-     *   1. l'organisation, de type `client_company` ;
-     *   2. le RATTACHEMENT de l'utilisateur à cette organisation — dans les DEUX
-     *      colonnes, parce que `organizationContextId()` lit l'une puis l'autre ;
-     *   3. le profil client `company`, que `isClientCompany()` consulte en premier ;
-     *   4. l'adhésion ACTIVE, seule chose que `EnforcesActiveOrgMembership` regarde.
-     *
-     * Il en manquait toujours une : d'où des 403 que l'on prenait pour des défauts du
-     * code alors qu'ils mesuraient une fixture incomplète.
-     *
-     * `forceFill` ET NON un tableau passé à `create()` : `organization_account_id` et
-     * `current_organization_id` ne sont pas assignables en masse, et Eloquent les
-     * écarte SANS RIEN DIRE — le compte paraît rattaché, il ne l'est pas.
-     *
-     * Le rôle d'organisation est `owner`, pas celui que la fabrique de membre tire au
-     * hasard : un dirigeant a les permissions financières que les écrans de facturation
-     * exigent. Un test qui veut un rôle restreint passe le sien à `organisationMembre`.
-     */
+    /** UNE SOCIÉTÉ CLIENTE COMPLÈTE — et « complète » n'est pas un luxe. */
     public function societeCliente(?OrganizationAccount $organisation = null, string $roleOrganisation = 'owner'): static
     {
         return $this->state(fn (array $attributes) => [

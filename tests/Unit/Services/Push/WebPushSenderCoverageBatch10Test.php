@@ -10,13 +10,7 @@ use Illuminate\Support\Facades\Log;
 use ReflectionMethod;
 use Tests\TestCase;
 
-/**
- * Coverage for WebPushSender — exercises the early-return branches
- * (no subscriptions, missing VAPID config) plus the protected
- * normalizePayload/vapidConfig helpers via reflection. The live flush()
- * path requires real network + valid EC keys, so it is intentionally
- * left uncovered here.
- */
+/** Coverage for WebPushSender — exercises the early-return branches (no subscriptions, missing VAPID config) plus the protected normalizePayload/vapidConfig helpers via reflection. */
 class WebPushSenderCoverageBatch10Test extends TestCase
 {
     use RefreshDatabase;

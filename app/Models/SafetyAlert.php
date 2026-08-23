@@ -10,14 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * UNE ALERTE DE SÉCURITÉ DÉCLENCHÉE SUR LE TERRAIN (E33).
- *
- * À NE PAS CONFONDRE AVEC UN SIGNALEMENT. Un signalement rapporte un comportement, un administrateur
- * arbitre, des jours plus tard : c'est de la modération. Ceci est de l'URGENCE — quelqu'un seul chez
- * un inconnu, qui a besoin qu'on sache où il est maintenant.
- *
- * DEUX NIVEAUX, ET C'EST ASSEZ. En inventer six ferait hésiter au moment de choisir, c'est-à-dire au
- * pire moment.
+ * UNE ALERTE DE SÉCURITÉ DÉCLENCHÉE SUR LE TERRAIN (E33). À NE PAS CONFONDRE AVEC UN SIGNALEMENT.
  *
  * @property int $id
  * @property int $user_id

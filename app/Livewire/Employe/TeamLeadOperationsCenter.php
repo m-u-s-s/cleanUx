@@ -76,19 +76,7 @@ class TeamLeadOperationsCenter extends Component
             return MissionTaskSegment::query()->whereRaw('1=0');
         }
 
-        /*
-         * QUATRE NOMS FAUX DANS UNE SEULE REQUÊTE (corrigés le 2026-08-06).
-         *
-         *   - `missionBatchDay` : la relation s'appelle `day()` sur `MissionTaskSegment`.
-         *     `whereHas` sur une relation absente lève une `RelationNotFoundException`.
-         *   - `segment_date` : la colonne s'appelle `service_date`.
-         *   - `assignments` et `memberStatuses` : relations qui n'étaient pas déclarées sur le
-         *     segment, alors que leurs tables, leurs modèles et le côté direct existaient tous.
-         *
-         * Résultat : l'écran chef d'équipe tombait dès qu'un lot était sélectionné, et le panneau
-         * « statut membre par membre » ne s'affichait jamais. Aucun test ne montait ce composant
-         * avec des données — la couverture existante n'exerçait que le cas « aucun lot ».
-         */
+        // QUATRE NOMS FAUX DANS UNE SEULE REQUÊTE (corrigés le 2026-08-06).
         return MissionTaskSegment::query()
             ->whereHas('day', fn ($q) => $q->where('mission_batch_id', $this->selectedBatchId))
             ->with(['assignments.user', 'memberStatuses'])
@@ -112,18 +100,7 @@ class TeamLeadOperationsCenter extends Component
 
     public function updateSelectedMemberStatus(int $assignmentId): void
     {
-        /*
-         * L'IDENTIFIANT VIENT DU CLIENT (garde ajoutée le 2026-08-06).
-         *
-         * La liste des lots est bien limitée aux équipes dont on est chef — `managedBatches()`
-         * filtre sur `team_lead_user_id` ou l'appartenance en tant que chef. Mais cette action
-         * résolvait l'affectation par un `findOrFail()` non scopé, et `TeamLeadOperationsService`
-         * n'autorise rien de son côté : un chef pouvait écrire le statut d'un membre d'une AUTRE
-         * équipe.
-         *
-         * Même motif que la messagerie d'équipe — lecture gardée, écriture oubliée. On limite donc
-         * la résolution aux équipes que cet utilisateur dirige réellement.
-         */
+        // L'IDENTIFIANT VIENT DU CLIENT (garde ajoutée le 2026-08-06).
         $assignment = MissionTaskSegmentAssignment::query()
             ->with('mission')
             ->whereHas('fieldTeam', fn ($q) => $q->where('team_lead_user_id', Auth::id())

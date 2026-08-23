@@ -15,22 +15,7 @@ use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * RENVOYER AU CLIENT LE CODE QU'IL N'A PAS REÇU.
- *
- * Un SMS se perd : réseau du client, numéro mal saisi, message noyé, plafond d'envoi atteint. Sans
- * ce geste, l'intervention s'arrêtait là — le prestataire devant la porte, le client sans ses six
- * chiffres, et pour seul recours l'annulation de la mission.
- *
- * DEUX INVARIANTS PORTENT TOUT LE RESTE :
- *
- *  1. LE CODE PRÉCÉDENT EST INVALIDÉ. Deux codes valides pour la même mission feraient hésiter un
- *     client qui a reçu les deux SMS, et le mauvais choix brûle un essai.
- *  2. UNE ATTENTE SÉPARE DEUX RENVOIS. Le module SMS plafonne à cinq messages par heure et par
- *     numéro : trois pressions distraites suffisaient à l'épuiser, après quoi le client ne recevait
- *     plus RIEN — ni ce code-ci, ni celui de fin. C'est arrivé sur la base de démonstration, et le
- *     statut `rate_limited` du registre était le seul endroit où cela se lisait.
- */
+/** RENVOYER AU CLIENT LE CODE QU'IL N'A PAS REÇU. */
 class RenvoiDuCodeTest extends TestCase
 {
     use RefreshDatabase;
@@ -61,11 +46,7 @@ class RenvoiDuCodeTest extends TestCase
             'customer_user_id' => $client->id,
             'employe_id' => $prestataire->id,
             'status' => 'confirme',
-            /*
-             * DEUX SOURCES POUR LE NUMÉRO, et le contrôleur les essaie dans l'ordre : le compte du
-             * client, puis celui saisi sur la réservation. Ne vider que la première laissait la
-             * fabrique fournir la seconde — et le test passait pour une mauvaise raison.
-             */
+            // DEUX SOURCES POUR LE NUMÉRO, et le contrôleur les essaie dans l'ordre : le compte du client, puis celui saisi sur la réservation.
             'telephone_client' => $telephone,
         ]);
 

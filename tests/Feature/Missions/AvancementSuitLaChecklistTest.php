@@ -9,20 +9,7 @@ use App\Services\Missions\OnSite\MissionTimelineService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LE COMPTEUR DOIT COMPTER CE QUE LE CLIENT VOIT.
- *
- * L'écran de suivi affiche un badge « Avancement x/y » posé juste au-dessus de « Ma liste de
- * tâches ». Les deux venaient de sources différentes : le badge comptait les items
- * d'INSPECTION QUALITÉ (`inspection_items`), la liste affichait la CHECKLIST DE MISSION
- * (`mission_checklist_items`).
- *
- * Relevé sur l'émulateur : « 0/0 » annoncé au-dessus de six tâches bien réelles. Trois
- * centimètres d'écart, deux ensembles différents.
- *
- * Seule `mission_checklists` bloque la clôture d'une mission : c'est donc elle que
- * l'avancement doit refléter.
- */
+/** LE COMPTEUR DOIT COMPTER CE QUE LE CLIENT VOIT. */
 class AvancementSuitLaChecklistTest extends TestCase
 {
     use RefreshDatabase;
@@ -72,12 +59,7 @@ class AvancementSuitLaChecklistTest extends TestCase
         $this->assertSame(100, $avancement['percent']);
     }
 
-    /**
-     * TÉMOIN NÉGATIF — sans tâche, le compteur reste à zéro sans diviser par zéro.
-     *
-     * L'écran masque alors la barre : « 0 sur 0 » se lirait comme un travail qui n'avance
-     * pas, alors qu'il n'y a simplement rien à cocher.
-     */
+    /** TÉMOIN NÉGATIF — sans tâche, le compteur reste à zéro sans diviser par zéro. */
     public function test_temoin_aucune_tache_donne_zero_sans_planter(): void
     {
         $mission = $this->missionAvecTaches(total: 0, faites: 0);
@@ -88,13 +70,7 @@ class AvancementSuitLaChecklistTest extends TestCase
         $this->assertSame(0, $avancement['percent']);
     }
 
-    /**
-     * L'INSPECTION QUALITÉ NE DOIT PLUS INFLUENCER CE COMPTEUR.
-     *
-     * C'est elle qu'il lisait auparavant. Une mission sans tâche mais avec une inspection
-     * remplie ne doit pas annoncer d'avancement au client : il ne verrait rien à cocher en
-     * face du chiffre.
-     */
+    /** L'INSPECTION QUALITÉ NE DOIT PLUS INFLUENCER CE COMPTEUR. C'est elle qu'il lisait auparavant. */
     public function test_l_inspection_n_influence_plus_l_avancement(): void
     {
         $mission = $this->missionAvecTaches(total: 4, faites: 1);

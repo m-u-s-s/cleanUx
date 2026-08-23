@@ -6,17 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * BackupRestoreDrill — proves a DB backup can be restored and verified.
- *
- * SAFETY: the real restore path REFUSES to run against the primary/default DB
- * connection. It restores exclusively into a named SCRATCH connection so that
- * production data can never be overwritten by an accidental drill run.
- *
- * Usage:
- *   php artisan backup:restore-drill --dry-run           # print the plan, exit 0
- *   php artisan backup:restore-drill --connection=scratch --backup=/path/to/dump.sql
- */
+/** BackupRestoreDrill — proves a DB backup can be restored and verified. */
 class BackupRestoreDrill extends Command
 {
     protected $signature = 'backup:restore-drill

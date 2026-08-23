@@ -10,23 +10,7 @@ use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * Le garde-fou générique des descripteurs — il vaut pour TOUS, y compris ceux à venir.
- *
- * POURQUOI IL EXISTE. Le descripteur des codes promo déclarait des types de remise
- * (« percentage », « fixed ») que la colonne refuse : elle porte une contrainte CHECK sur
- * `percent` / `fixed_amount` / `free_first_booking`. La validation passait, l'insertion échouait
- * en base — c'est-à-dire trop tard pour le dire à l'utilisateur, et sous la forme d'un 500 muet.
- *
- * Ce défaut est structurel : un descripteur DÉCLARE des options, la base en ACCEPTE d'autres, et
- * rien ne compare les deux. Sur les dizaines de descripteurs qui restent à écrire, il se
- * reproduira. Ce fichier le rend impossible à livrer.
- *
- * CE QU'IL NE FAIT PAS : deviner un formulaire valide. Il essaie chaque option déclarée avec des
- * valeurs plausibles par type ; si un domaine exige des valeurs que le moteur ne peut pas
- * inventer (clés étrangères, unicité croisée), il faut l'inscrire dans EXEMPTS avec sa raison —
- * un domaine muet serait un domaine non couvert qui aurait l'air couvert.
- */
+/** Le garde-fou générique des descripteurs — il vaut pour TOUS, y compris ceux à venir. */
 class DescriptorSmokeTest extends TestCase
 {
     use RefreshDatabase;
@@ -44,11 +28,6 @@ class DescriptorSmokeTest extends TestCase
 
     /**
      * Les domaines servis par le moteur.
-     *
-     * Le registre est lu DIRECTEMENT depuis son fichier, pas via `config()` : PHPUnit appelle les
-     * fournisseurs de données avant que l'application ne démarre, donc le conteneur n'existe pas
-     * encore. Passer par `config()` rendrait une liste vide — et « aucun test trouvé » est un vert
-     * silencieux, exactement le contraire de ce que ce fichier cherche à empêcher.
      *
      * @return array<string, array{string}>
      */
@@ -105,14 +84,7 @@ class DescriptorSmokeTest extends TestCase
             ? [[]]
             : $this->combinaisonsDeSelects($selects);
 
-        /*
-         * TOUTES LES OPTIONS QUE LA BASE REFUSE, PAS LA PREMIÈRE.
-         *
-         * 201 (créé) et 422 (refusé par la validation) sont tous deux des réponses SAINES : le
-         * moteur a parlé. Un 500 signifie que la base a refusé ce que le descripteur annonçait
-         * comme un choix valide — et un descripteur décalé du schéma l'est en général sur
-         * plusieurs options à la fois.
-         */
+        // TOUTES LES OPTIONS QUE LA BASE REFUSE, PAS LA PREMIÈRE.
         $refusees = [];
 
         foreach ($combinaisons as $index => $forcees) {
@@ -128,8 +100,7 @@ class DescriptorSmokeTest extends TestCase
     }
 
     /**
-     * Une combinaison par option de chaque liste de choix — pas le produit cartésien, qui
-     * exploserait sans rien prouver de plus : le risque est par OPTION, pas par croisement.
+     * Une combinaison par option de chaque liste de choix — pas le produit cartésien, qui exploserait sans rien prouver de plus : le risque est par OPTION, pas par croisement.
      *
      * @param  list<Field>  $selects
      * @return list<array<string, string>>

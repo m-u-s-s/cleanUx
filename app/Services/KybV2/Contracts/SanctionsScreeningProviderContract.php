@@ -8,8 +8,6 @@ interface SanctionsScreeningProviderContract
 {
     public function name(): string;
 
-    /**
-     * Screen un nom d'entité (ou de personne) contre une liste sanctions.
-     */
+    /** Screen un nom d'entité (ou de personne) contre une liste sanctions. */
     public function screen(string $nameOrIdentifier, string $listName, ?string $countryCode = null): SanctionsResult;
 }

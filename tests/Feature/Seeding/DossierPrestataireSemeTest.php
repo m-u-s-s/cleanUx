@@ -13,20 +13,7 @@ use Illuminate\Support\Collection;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * UN PRESTATAIRE SEMÉ DOIT POUVOIR ENTRER CHEZ LUI, pas seulement recevoir des offres.
- *
- * DEUX SOURCES RÉPONDENT À « CE PRESTATAIRE EST-IL VÉRIFIÉ ? », ET LES DEUX CÔTÉS DE L'APPLICATION
- * N'INTERROGENT PAS LA MÊME : le dispatch lit `provider_profiles.verification_status`, le parcours
- * d'inscription lit `kyc_verifications`. Les seeders ne posaient que la première. Le moteur
- * fonctionnait donc parfaitement — offres, escalade, acceptation — pendant que le prestataire, lui,
- * se heurtait à « Vérification KYC non approuvée » dès la connexion. La démonstration s'arrêtait à
- * l'écran d'accueil, et le message accusait le KYC là où le trou était dans le semis.
- *
- * Ce test sème POUR DE VRAI le scénario de démonstration et vérifie les deux moitiés à la fois :
- * candidat pour le moteur, et dossier bouclé pour l'espace. C'est le seul moyen de le savoir —
- * `migrate:fresh --seed` ne dit rien de ce qu'un humain rencontrera après s'être connecté.
- */
+/** UN PRESTATAIRE SEMÉ DOIT POUVOIR ENTRER CHEZ LUI, pas seulement recevoir des offres. */
 class DossierPrestataireSemeTest extends TestCase
 {
     use RefreshDatabase;

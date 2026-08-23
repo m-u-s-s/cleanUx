@@ -16,22 +16,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * « Aucun métier n'affiche plus de sept questions en une seule étape. »
- *
- * C'était le seul critère d'acceptation que rien ne garantissait. Le validateur AVERTIT
- * l'administrateur au-delà de sept — mais ce n'est qu'une alerte, et surtout le parcours client
- * ignorait complètement les étapes : `visibleQuestions` rendait une liste plate, `step_id` n'était
- * lu nulle part. Un métier de douze questions affichait douze champs empilés, ce que la
- * spécification range parmi ses anti-patterns.
- *
- * La garantie ne peut pas reposer sur la discipline de qui remplit le back-office. Elle est donc
- * STRUCTURELLE : au-delà du seuil, le parcours se découpe tout seul.
- *
- * L'indicateur de progression est HONNÊTE, ce qui est la partie difficile : les questions
- * conditionnelles apparaissent et disparaissent pendant la saisie. Il compte donc les étapes
- * réellement VISIBLES à l'instant présent, jamais celles qui existent en base.
- */
+/** « Aucun métier n'affiche plus de sept questions en une seule étape. */
 class QuestionnaireStepsTest extends TestCase
 {
     use RefreshDatabase;
@@ -42,15 +27,7 @@ class QuestionnaireStepsTest extends TestCase
         $this->seed(OrderEngineCatalogSeeder::class);
     }
 
-    /**
-     * Un questionnaire court SANS étapes déclarées reste d'un seul tenant.
-     *
-     * Pas de cérémonie là où elle n'apporte rien : six questions ne se traversent pas en deux
-     * temps.
-     *
-     * (Le métier « Peinture » du catalogue seedé, lui, déclare DÉJÀ deux étapes — elles étaient
-     * écrites dans les données et le parcours les ignorait. Il ne sert donc pas ce test-ci.)
-     */
+    /** Un questionnaire court SANS étapes déclarées reste d'un seul tenant. */
     public function test_a_short_questionnaire_stays_on_one_screen(): void
     {
         $component = Livewire::test(OrderJourney::class)
@@ -70,12 +47,7 @@ class QuestionnaireStepsTest extends TestCase
         $component->assertSee('Étape 1 sur 2');
     }
 
-    /**
-     * LA GARANTIE : au-delà de sept, le parcours se découpe TOUT SEUL.
-     *
-     * Sans découpage automatique, la règle dépendrait de la discipline de l'administrateur — et le
-     * validateur ne fait que l'avertir.
-     */
+    /** LA GARANTIE : au-delà de sept, le parcours se découpe TOUT SEUL. */
     public function test_a_long_questionnaire_splits_itself(): void
     {
         $trade = $this->tradeWithQuestions(12);
@@ -123,13 +95,7 @@ class QuestionnaireStepsTest extends TestCase
         $this->assertSame('une réponse', $component->instance()->answers[$code] ?? null);
     }
 
-    /**
-     * L'indicateur compte les étapes RÉELLEMENT visibles.
-     *
-     * Une étape dont toutes les questions sont masquées par une condition ne compte pas, et ne se
-     * traverse pas : annoncer « étape 2 sur 3 » puis sauter la troisième serait un compte
-     * malhonnête, et le client saurait qu'on lui raconte quelque chose.
-     */
+    /** L'indicateur compte les étapes RÉELLEMENT visibles. */
     public function test_an_entirely_hidden_step_is_not_counted(): void
     {
         $trade = $this->tradeWithQuestions(6);

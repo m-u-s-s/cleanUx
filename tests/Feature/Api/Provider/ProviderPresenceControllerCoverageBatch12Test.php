@@ -8,15 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Coverage batch 12 — drives App\Http\Controllers\Api\ProviderPresenceController
- * through its HTTP routes:
- *   - POST /api/provider/presence/online     (200, validation 422)
- *   - POST /api/provider/presence/offline    (200)
- *   - POST /api/provider/presence/heartbeat  (200 online, 409 offline)
- *   - GET  /api/provider/presence/me         (200, 404 no profile)
- *   - abortIfNotProvider guard (employe without ProviderProfile -> 403)
- */
+/** Coverage batch 12 — drives App\Http\Controllers\Api\ProviderPresenceController through its HTTP routes: - POST /api/provider/presence/online (200, validation 422) - POST /api/provider/presence/offline (200) - POST /api/provider/presence/heartbeat (200 online, 409 offline) - GET /api/provider/presence/me (200, 404 no profile) - abortIfNotProvider guard (employe without ProviderProfile -> 403) */
 class ProviderPresenceControllerCoverageBatch12Test extends TestCase
 {
     use RefreshDatabase;

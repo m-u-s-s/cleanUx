@@ -6,14 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Phase 14 — État surge actuel d'une zone géographique.
- *
- * Une row par service_zone_id (unique). Mise à jour par RecomputeSurgeJob.
- *
- * isActive() = expires_at > now()  (sinon le surge a "decay" naturellement
- * et on revient à 1.0).
- */
+/** Phase 14 — État surge actuel d'une zone géographique. Une row par service_zone_id (unique). */
 class PricingZoneState extends Model
 {
     use HasFactory;
@@ -56,9 +49,7 @@ class PricingZoneState extends Model
             && (float) $this->multiplier > 1.0;
     }
 
-    /**
-     * Multiplier "effectif" (1.0 si expiré).
-     */
+    /** Multiplier "effectif" (1.0 si expiré). */
     public function effectiveMultiplier(): float
     {
         return $this->isActive() ? (float) $this->multiplier : 1.0;

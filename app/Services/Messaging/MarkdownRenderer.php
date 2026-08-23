@@ -10,19 +10,7 @@ use League\CommonMark\Extension\Strikethrough\StrikethroughExtension;
 use League\CommonMark\Extension\Table\TableExtension;
 use League\CommonMark\MarkdownConverter;
 
-/**
- * Phase 4.1 — Rendu Markdown safe pour les messages d'équipe.
- *
- * Stratégie :
- *   1. League/CommonMark pour parser Markdown (gras, italique, listes, code, liens, tables, strike).
- *   2. Pas d'HTML brut autorisé : `html_input = strip` ; les balises sont neutralisées.
- *   3. Substitution des mentions @user après render : `<span class="mention">@nom</span>`
- *      pour highlight cohérent côté UI.
- *   4. Pas d'image inline (évite d'exfiltrer via tracking pixel) — on garde liens uniquement.
- *
- * Usage :
- *   $html = app(MarkdownRenderer::class)->render($message->content, $message->mentions);
- */
+/** Phase 4.1 — Rendu Markdown safe pour les messages d'équipe. Stratégie : 1. */
 class MarkdownRenderer
 {
     private MarkdownConverter $converter;
@@ -73,10 +61,7 @@ class MarkdownRenderer
         return trim($html);
     }
 
-    /**
-     * Strip on*= attributes et javascript:/vbscript: dans href.
-     * Le converter a déjà fait l'essentiel, c'est juste une seconde ligne de défense.
-     */
+    /** Strip on*= attributes et javascript:/vbscript: dans href. */
     private function stripDangerousAttributes(string $html): string
     {
         // Retirer les attributs onXxx="..." (clic, mouseover, etc.)
@@ -114,10 +99,7 @@ class MarkdownRenderer
         return $html;
     }
 
-    /**
-     * Version "preview" pour notifs / search results : strip toutes balises
-     * et limite à N caractères.
-     */
+    /** Version "preview" pour notifs / search results : strip toutes balises et limite à N caractères. */
     public function plainPreview(string $markdown, int $limit = 80): string
     {
         $markdown = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $markdown);

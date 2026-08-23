@@ -11,12 +11,7 @@ use App\Services\Tax\TaxCalculator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * BusinessLogicTest — validates monetisation + metier depth core logic.
- *
- * All tests use RefreshDatabase to avoid state bleed and work with
- * the in-memory SQLite test database.
- */
+/** BusinessLogicTest — validates monetisation + metier depth core logic. */
 class BusinessLogicTest extends TestCase
 {
     use RefreshDatabase;

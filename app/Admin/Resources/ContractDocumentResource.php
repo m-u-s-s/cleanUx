@@ -9,9 +9,6 @@ use App\Models\ContractDocument;
 /**
  * Les contrats générés et leur état de signature.
  *
- * L’INVALIDATION d’une signature passe par le module Contrats, qui conserve la trace de ce qui
- * a été invalidé et par qui. Une signature effacée sans trace rendrait le contrat indéfendable.
- *
  * @extends EloquentResource<ContractDocument>
  */
 class ContractDocumentResource extends EloquentResource

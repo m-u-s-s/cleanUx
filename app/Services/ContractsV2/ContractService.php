@@ -15,19 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-/**
- * ContractService v2 — orchestre le cycle de vie d'un contrat signable.
- *
- *   - resolveActiveTemplate($code) : retourne le template le plus récent valide
- *   - renderDocumentFor($templateCode, $user, $variables[]) : ContractDocument pending
- *   - signDocument($document, $signer, $signatureData, $signerName, $request) : ContractSignature + status=signed
- *   - audit($document, $event, $request, $signature?) : trace immutable
- *   - invalidateSignature($signature, $admin, $reason)
- *
- * eIDAS-lite : la signature stocke `signature_hash` calculé via SHA256(body_html + signer_name + timestamp),
- * + ip_hash + user_agent_short + terms_version + geolocation optionnelle. Preuves contractuelles
- * pour litiges (le hash permet de prouver l'intégrité du body au moment de la signature).
- */
+/** ContractService v2 — orchestre le cycle de vie d'un contrat signable. */
 class ContractService
 {
     public function __construct(
@@ -220,10 +208,7 @@ class ContractService
         ]);
     }
 
-    /**
-     * Helper for OnboardingV2 ContractSignValidator : retourne true si l'user a
-     * une signature valide pour le template_code donné.
-     */
+    /** Helper for OnboardingV2 ContractSignValidator : retourne true si l'user a une signature valide pour le template_code donné. */
     public function userHasValidSignatureFor(User $user, string $templateCode): bool
     {
         $template = ContractTemplate::query()->where('code', $templateCode)->active()->latest('version')->first();

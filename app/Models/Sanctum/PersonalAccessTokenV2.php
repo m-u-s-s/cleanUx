@@ -5,13 +5,7 @@ namespace App\Models\Sanctum;
 use Illuminate\Database\Eloquent\Builder;
 use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
 
-/**
- * Extended Sanctum token with V2 features :
- * - rate_limit_per_minute, owner_role
- * - suspended_at / suspended_reason
- * - rotation chain (rotated_from_token_id + rotation_grace_until)
- * - usage tracking (last_used_ip_hash, usage_count)
- */
+/** Extended Sanctum token with V2 features : - rate_limit_per_minute, owner_role - suspended_at / suspended_reason - rotation chain (rotated_from_token_id + rotation_grace_until) - usage tracking (last_used_ip_hash, usage_count) */
 class PersonalAccessTokenV2 extends SanctumPersonalAccessToken
 {
     protected $table = 'personal_access_tokens';
@@ -77,9 +71,7 @@ class PersonalAccessTokenV2 extends SanctumPersonalAccessToken
         return (int) config('api_tokens_v2.default_rate_limit_per_minute', 120);
     }
 
-    /**
-     * Override Sanctum's default permission check : suspended/expired tokens never can.
-     */
+    /** Override Sanctum's default permission check : suspended/expired tokens never can. */
     public function can($ability)
     {
         if (! $this->isUsable()) {

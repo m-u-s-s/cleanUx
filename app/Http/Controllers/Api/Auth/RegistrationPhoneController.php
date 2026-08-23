@@ -9,16 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 /**
+ * Le premier écran de l'inscription prestataire demande le téléphone et le vérifie par SMS, avant le nom, l'email ou le mot de passe.
+ *
  * @group Auth — Vérification du téléphone à l'inscription
- *
- * Le premier écran de l'inscription prestataire demande le téléphone et le vérifie par SMS, avant
- * le nom, l'email ou le mot de passe. Ces routes sont donc publiques : à ce stade, le compte
- * n'existe pas. Elles portent `throttle:otp` (5/min par IP, 20/h) et chaque envoi repasse par les
- * plafonds par numéro de SmsService — un endpoint public qui déclenche des SMS payants.
- *
- * La vérification réussie rend un jeton à usage unique, présenté ensuite à
- * `POST /api/auth/register` : c'est lui, et non un booléen envoyé par le client, qui autorise à
- * marquer le téléphone comme vérifié sur le compte créé.
  */
 class RegistrationPhoneController extends Controller
 {

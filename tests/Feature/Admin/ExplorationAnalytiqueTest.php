@@ -9,18 +9,7 @@ use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * L'EXPLORATION ANALYTIQUE MÉTIER — un module complet que rien n'atteignait.
- *
- * `App\Livewire\Admin\AnalyticsCenter` porte 346 lignes : filtres par zone,
- * service, intervenant, marché, statut et période, analyses croisées, carte de
- * chaleur, tendance mensuelle et export CSV. Il n'avait ni route ni montage.
- *
- * Ce qui l'avait rendu invisible : un HOMONYME. `App\Livewire\Admin\Analytics\
- * AnalyticsCenter`, lui, est routé sur `/admin/analytics-v2` et fait tout autre
- * chose (sessions, entonnoir d'usage). Chercher « AnalyticsCenter » dans les
- * routes répondait donc « c'est routé » — pour l'autre classe.
- */
+/** L'EXPLORATION ANALYTIQUE MÉTIER — un module complet que rien n'atteignait. */
 class ExplorationAnalytiqueTest extends TestCase
 {
     use RefreshDatabase;

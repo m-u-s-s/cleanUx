@@ -10,9 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * @group Public — Provider Profiles
- *
  * Endpoints publics pour profil + avis providers (consultable sans auth).
+ *
+ * @group Public — Provider Profiles
  */
 class ProviderProfileController extends Controller
 {

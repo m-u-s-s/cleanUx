@@ -11,36 +11,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\Spine\SpineScenario;
 use Tests\TestCase;
 
-/**
- * ANNULER UNE EMPREINTE : ENCAISSER LES FRAIS, RENDRE LE RESTE.
- *
- * LE DÉFAUT RÉPARÉ. `CancelBookingService::tryRefundPartial()` acceptait un paiement `authorized`
- * puis appelait `refundMissionPayment()`, qui LÈVE sur tout ce qui n'est pas `captured`.
- * L'exception était attrapée quinze lignes plus bas et journalisée : l'annulation répondait
- * `ok: true` au client, les frais n'étaient JAMAIS encaissés, et l'empreinte tenait sur sa carte
- * jusqu'à expiration — environ sept jours.
- *
- * CE QUE CES TESTS PROTÈGENT, ET QUI A FAIT ÉCHOUER LA PREMIÈRE TENTATIVE : la capture partielle
- * fait dire « succeeded » à Stripe, exactement comme l'encaissement d'une mission accomplie. Toute
- * la chaîne d'aval lit `captured` comme « la prestation a été payée » — le webhook créditerait au
- * prestataire la part de la commande ENTIÈRE, et Stripe renvoie ensuite le solde libéré sous forme
- * de remboursement, indistinguable d'un vrai. Trois gardes défendent la distinction ; chacun a son
- * test ici.
- *
- * AUCUN APPEL À STRIPE. On vérifie les invariants qui ne dépendent pas du réseau — ce sont eux qui
- * décident de qui est payé.
- */
+/** ANNULER UNE EMPREINTE : ENCAISSER LES FRAIS, RENDRE LE RESTE. LE DÉFAUT RÉPARÉ. */
 class FraisSurEmpreinteTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * LE GARDE N°1 — `fee_captured` n'est pas `captured`.
-     *
-     * `syncPaymentIntent()` traduit le « succeeded » de Stripe en `captured`. Sur une capture de
-     * frais, cette traduction créditerait le prestataire pour une prestation jamais faite : sur une
-     * commande de 120 € annulée à 24 € de frais, il toucherait 96 €.
-     */
+    /** LE GARDE N°1 — `fee_captured` n'est pas `captured`. */
     public function test_une_capture_de_frais_nest_jamais_traduite_en_encaissement(): void
     {
         $scenario = $this->reservationAvecEmpreinte();
@@ -57,12 +33,7 @@ class FraisSurEmpreinteTest extends TestCase
         );
     }
 
-    /**
-     * LE GARDE N°2 — le webhook ne crédite pas le prestataire sur des frais.
-     *
-     * C'est la conséquence directe du garde précédent : `handlePaymentIntentSucceeded` ne crédite
-     * que sur `captured`, et ce statut n'est plus atteint.
-     */
+    /** LE GARDE N°2 — le webhook ne crédite pas le prestataire sur des frais. */
     public function test_le_prestataire_nest_pas_credite_pour_une_annulation(): void
     {
         $scenario = $this->reservationAvecEmpreinte();
@@ -83,13 +54,7 @@ class FraisSurEmpreinteTest extends TestCase
         );
     }
 
-    /**
-     * LE GARDE N°3 — le solde libéré n'est pas un remboursement.
-     *
-     * Stripe rend le reste de l'empreinte sous forme de remboursement sur la charge, objet `re_…`
-     * compris. Écrire « partiellement remboursé » par-dessus effacerait la seule trace disant que
-     * ces euros sont des frais.
-     */
+    /** LE GARDE N°3 — le solde libéré n'est pas un remboursement. */
     public function test_le_solde_libere_nefface_pas_la_trace_des_frais(): void
     {
         $scenario = $this->reservationAvecEmpreinte();
@@ -118,12 +83,7 @@ class FraisSurEmpreinteTest extends TestCase
         );
     }
 
-    /**
-     * TÉMOIN — sur une VRAIE mission encaissée, tout le chemin historique fonctionne encore.
-     *
-     * Sans lui, les trois tests ci-dessus passeraient au vert sur une implémentation qui aurait
-     * simplement débranché le crédit du prestataire et le remboursement client.
-     */
+    /** TÉMOIN — sur une VRAIE mission encaissée, tout le chemin historique fonctionne encore. */
     public function test_temoin_une_mission_reellement_encaissee_credite_toujours(): void
     {
         $scenario = $this->reservationAvecEmpreinte();
@@ -144,15 +104,7 @@ class FraisSurEmpreinteTest extends TestCase
         $this->assertSame('refunded', $scenario->booking->refresh()->payment_status);
     }
 
-    /**
-     * L'ACOMPTE DÉJÀ DÉBITÉ SE DÉDUIT DES FRAIS.
-     *
-     * Les frais se calculent sur le TOTAL et ne peuvent se capturer que sur l'intention du SOLDE.
-     * Sans déduction, le client paie l'acompte PLUS la totalité des frais — et au-delà d'environ
-     * 70 % de frais, la capture dépasserait l'autorisation et Stripe la rejetterait.
-     *
-     * Ce test vérifie l'arithmétique de la déduction, seule partie qui ne dépend pas du réseau.
-     */
+    /** L'ACOMPTE DÉJÀ DÉBITÉ SE DÉDUIT DES FRAIS. */
     public function test_la_deduction_de_lacompte_est_arithmetiquement_juste(): void
     {
         // 120 € commandés, 30 € d'acompte déjà débité, 24 € de frais dus.

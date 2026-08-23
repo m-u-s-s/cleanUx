@@ -7,16 +7,7 @@ use App\Models\AssistantConversation;
 use App\Models\User;
 use App\Support\ActivityLogger;
 
-/**
- * Public facade for assistant action execution.
- *
- * Delegates read logic to AssistantReadActions and write logic to
- * AssistantWriteActions.  The public API (execute / executeWrite /
- * confirmAction / isWriteAction / executeImmediateWrite) is unchanged.
- *
- * Sub-services are injected via the constructor; when called without
- * arguments (e.g. in tests) they are instantiated directly.
- */
+/** Public facade for assistant action execution. */
 class AssistantActionExecutor
 {
     /** Write actions that require a confirmation round-trip before execution. */
@@ -38,17 +29,14 @@ class AssistantActionExecutor
         $this->writeActions = $writeActions ?? new AssistantWriteActions;
     }
 
-    /**
-     * Dispatch a read-only action by name and return its formatted French text.
-     */
+    /** Dispatch a read-only action by name and return its formatted French text. */
     public function execute(string $actionName, User $user, array $params = []): string
     {
         return $this->readActions->execute($actionName, $user, $params);
     }
 
     /**
-     * Prepare a write action: persist a pending AssistantAction record and
-     * return a confirmation payload the assistant can show to the user.
+     * Prepare a write action: persist a pending AssistantAction record and return a confirmation payload the assistant can show to the user.
      *
      * @return array{action: string, requires_confirmation: bool, summary: string, params: array, action_id: int}
      */
@@ -77,10 +65,7 @@ class AssistantActionExecutor
         ];
     }
 
-    /**
-     * Confirm and execute a previously prepared write action.
-     * Returns a human-readable French result string.
-     */
+    /** Confirm and execute a previously prepared write action. */
     public function confirmAction(int $actionId, User $user): string
     {
         $action = AssistantAction::query()
@@ -111,18 +96,13 @@ class AssistantActionExecutor
         return $result;
     }
 
-    /**
-     * Returns whether an action name is a write action requiring confirmation.
-     */
+    /** Returns whether an action name is a write action requiring confirmation. */
     public function isWriteAction(string $actionName): bool
     {
         return in_array($actionName, self::WRITE_ACTIONS, true);
     }
 
-    /**
-     * Execute a low-risk write action immediately (no confirmation round-trip).
-     * Currently handles: update_availability.
-     */
+    /** Execute a low-risk write action immediately (no confirmation round-trip). */
     public function executeImmediateWrite(string $actionName, User $user, array $params = []): string
     {
         return $this->dispatchWrite($actionName, $user, $params);

@@ -2,14 +2,7 @@
 
 namespace App\Services\Payments;
 
-/**
- * StripeCountryMapper — per-country Stripe Connect account configuration.
- *
- * Maps ISO country codes to Stripe Connect capabilities and settlement currencies.
- * Used when creating/updating Express or Custom Connected Accounts.
- *
- * Reference: https://stripe.com/docs/connect/capabilities-overview
- */
+/** StripeCountryMapper — per-country Stripe Connect account configuration. */
 class StripeCountryMapper
 {
     private const SUPPORTED_COUNTRIES = [
@@ -51,9 +44,7 @@ class StripeCountryMapper
         ],
     ];
 
-    /**
-     * Default country when the requested code is unsupported.
-     */
+    /** Default country when the requested code is unsupported. */
     private const FALLBACK_COUNTRY = 'BE';
 
     /**
@@ -90,17 +81,13 @@ class StripeCountryMapper
             ->all();
     }
 
-    /**
-     * Settlement currency for a country.
-     */
+    /** Settlement currency for a country. */
     public function getCurrency(string $countryCode): string
     {
         return $this->getConfig($countryCode)['currency'];
     }
 
-    /**
-     * Whether a country supports a specific payment method capability.
-     */
+    /** Whether a country supports a specific payment method capability. */
     public function supportsCapability(string $countryCode, string $capability): bool
     {
         return in_array($capability, $this->getConfig($countryCode)['capabilities'], true);

@@ -5,20 +5,7 @@ namespace App\Services\Audit\Concerns;
 use App\Services\Audit\AuditService;
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Trait à utiliser sur les modèles Eloquent "critiques" pour audit auto
- * sur created / updated / deleted. Soft-fail.
- *
- * Override `auditEventDomain(): string`, `auditedAttributes(): array` (whitelist)
- * dans le modèle pour personnaliser. Sans override : domaine = nom du modèle,
- * tous les changed attributes sont enregistrés (le redaction filtre les sensibles).
- *
- * Usage :
- *   class CriticalThing extends Model {
- *       use AuditsEloquentEvents;
- *       protected function auditEventDomain(): string { return 'security'; }
- *   }
- */
+/** Trait à utiliser sur les modèles Eloquent "critiques" pour audit auto sur created / updated / deleted. */
 trait AuditsEloquentEvents
 {
     public static function bootAuditsEloquentEvents(): void
@@ -50,10 +37,8 @@ trait AuditsEloquentEvents
     public function writeAuditEvent(string $action, ?array $changes): void
     {
         try {
-            /*
-             * Le garde reste indispensable : ce trait sert des dizaines de modèles et seuls
-             * quelques-uns définissent ces méthodes. L'analyse ne le juge inutile que dans
-             * le contexte des deux qui les implémentent — le retirer casserait tous les autres.
+            /**
+             * Le garde reste indispensable : ce trait sert des dizaines de modèles et seuls quelques-uns définissent ces méthodes.
              *
              * @phpstan-ignore function.alreadyNarrowedType
              */

@@ -15,21 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * QUI TRAVAILLE QUAND (E19), ET QUI S'ABSENTE (E21).
- *
- * Les deux répondent à la même question et se contredisent si on les sépare : un planning qui ignore
- * les congés envoie une course le premier jour des vacances, et des congés qui ignorent le planning
- * ne bloquent rien. Ils vivent donc sur le même écran, et surtout sur la même lecture —
- * `WorkerAvailabilityService` consulte les deux.
- *
- * LE PLANNING NE S'IMPOSE QUE S'IL EXISTE. Une société qui n'a rien saisi garde le comportement
- * d'avant : sans cette précaution, la mise en service rendrait toute l'équipe indisponible du jour
- * au lendemain — la fonctionnalité créerait la panne qu'elle devait éviter.
- *
- * PUBLIER EST UN GESTE À PART. Un brouillon se corrige ; un planning publié engage. Assigner sur du
- * brouillon reviendrait à faire travailler quelqu'un sur un horaire que personne ne lui a communiqué.
- */
+/** QUI TRAVAILLE QUAND (E19), ET QUI S'ABSENTE (E21). */
 class WorkforcePlanning extends Component
 {
     use EnforcesActiveOrgMembership;
@@ -55,17 +41,7 @@ class WorkforcePlanning extends Component
     #[Locked]
     public ?string $refus = null;
 
-    /**
-     * L'ÉCRAN EST OUVERT À TOUT MEMBRE, ET SON CONTENU EST FILTRÉ.
-     *
-     * Le fermer sur `team.view` serait le réflexe, et il serait faux : poser SON congé est un geste
-     * de salarié, pas de responsable. Un exécutant qui ne peut pas atteindre le formulaire pose son
-     * absence par SMS à son chef — c'est-à-dire nulle part, et la répartition continue de lui
-     * envoyer des courses pendant ses vacances.
-     *
-     * Ce qui se garde, ce sont les LECTURES ÉLARGIES et les écritures : voir le planning des autres
-     * demande `team.view`, planifier ou trancher demande `team.manage`.
-     */
+    /** L'ÉCRAN EST OUVERT À TOUT MEMBRE, ET SON CONTENU EST FILTRÉ. */
     public function mount(): void
     {
         $this->semaine = Carbon::now()->startOfWeek()->toDateString();
@@ -81,12 +57,7 @@ class WorkforcePlanning extends Component
         $this->semaine = $this->lundi()->addWeek()->toDateString();
     }
 
-    /**
-     * Ajouter un créneau au planning — en BROUILLON.
-     *
-     * On ne publie pas en créant : une semaine se construit ligne à ligne, et publier à chaque
-     * ajout communiquerait un planning à moitié fait.
-     */
+    /** Ajouter un créneau au planning — en BROUILLON. */
     public function ajouterUnCreneau(): void
     {
         $this->autoriserLaGestion();
@@ -232,11 +203,7 @@ class WorkforcePlanning extends Component
                 ->with('user:id,name')
                 ->orderBy('starts_at')
                 ->get(),
-            /*
-             * LES ABSENCES DES AUTRES SE GARDENT PLUS SÉVÈREMENT QUE LES CRÉNEAUX. Une absence dit
-             * la maladie, la garde d'enfant, l'accompagnement d'un proche : les exposer à toute la
-             * société ferait de la pose de congé un aveu, et personne n'en poserait.
-             */
+            // LES ABSENCES DES AUTRES SE GARDENT PLUS SÉVÈREMENT QUE LES CRÉNEAUX.
             'absences' => app(LeaveService::class)
                 ->surLaPeriode($orgId, $lundi, $dimanche)
                 ->when(! $peutGerer, fn ($c) => $c->where('user_id', $acteur->id))

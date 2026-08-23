@@ -8,15 +8,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * GET /api/parity-map Returns the modules visible to the authenticated user, each tagged with its mobile delivery mode.
+ *
  * @group Parity
  *
  * @authenticated
- *
- * GET /api/parity-map
- *
- * Returns the modules visible to the authenticated user, each tagged with its
- * mobile delivery mode. The mobile app builds its navigation from this list:
- * `native` → an in-app screen, `webview` → the EmbeddedModuleScreen at `path`.
  */
 class ParityMapController extends Controller
 {

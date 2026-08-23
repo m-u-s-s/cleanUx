@@ -7,22 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 
-/**
- * Résolveur centralisé de la locale courante.
- *
- * Stratégie (ordre de priorité) :
- *   1. Query param ?lang=fr (utile pour switch direct + tests + emails)
- *   2. Session 'locale'
- *   3. User->locale persisté
- *   4. Accept-Language du navigateur (avec scoring quality factor)
- *   5. Cookie 'locale'
- *   6. Default config('i18n.default')
- *
- * Utilisable depuis :
- *   - Middleware SetLocale (résolution standard requête HTTP)
- *   - Service Notifications (résolution par destinataire User)
- *   - Tests
- */
+/** Résolveur centralisé de la locale courante. Stratégie (ordre de priorité) : 1. */
 class LocaleResolver
 {
     /**

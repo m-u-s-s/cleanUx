@@ -19,17 +19,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
-/**
- * ON NE CONDUIT PAS SANS PERMIS — et sous règles taxi, pas dans n'importe quelle voiture.
- *
- * Les exigences se DÉRIVENT des métiers déclarés, exactement comme l'assurance professionnelle le
- * fait déjà. C'est le point d'extension qui existait : `ProviderDocumentRequirements` lit
- * `trade_user` et compose la liste. Rien n'a été inventé à côté.
- *
- * LE TÉMOIN EST PARTOUT. Un prestataire d'un métier ordinaire ne doit voir AUCUNE pièce
- * supplémentaire — sans ce contrôle, on ne saurait pas distinguer « la règle s'applique bien » de
- * « la règle s'applique à tout le monde ».
- */
+/** ON NE CONDUIT PAS SANS PERMIS — et sous règles taxi, pas dans n'importe quelle voiture. */
 class DossierConduiteTest extends TestCase
 {
     use RefreshDatabase;

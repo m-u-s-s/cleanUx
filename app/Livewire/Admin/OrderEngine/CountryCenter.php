@@ -14,16 +14,7 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-/**
- * Le premier niveau du catalogue : les pays.
- *
- * LE PAYS N'ORGANISE QUE LES ZONES. Il ne porte aucun métier : un pays « a » un métier si au moins
- * une de ses zones l'a. C'est un calcul, jamais un réglage — donc rien à tenir à jour, et aucun
- * risque qu'un réglage pays contredise la vérité du terrain.
- *
- * De là découle qu'il n'existe pas de table `country_trade`, et que ce composant ne sait rien des
- * métiers.
- */
+/** Le premier niveau du catalogue : les pays. LE PAYS N'ORGANISE QUE LES ZONES. */
 #[Layout('layouts.app')]
 class CountryCenter extends Component
 {
@@ -47,12 +38,7 @@ class CountryCenter extends Component
         $this->reinitialiserFormulaire();
     }
 
-    /**
-     * La liste, avec le nombre de zones de chaque pays.
-     *
-     * `withCount` plutôt qu'une relation chargée : la liste n'a besoin que du nombre, et charger
-     * les zones de chaque pays pour les compter ferait une requête par ligne.
-     */
+    /** La liste, avec le nombre de zones de chaque pays. */
     /** @return LengthAwarePaginator<int, Country> */
     #[Computed]
     public function pays(): LengthAwarePaginator
@@ -83,12 +69,7 @@ class CountryCenter extends Component
 
     public function enregistrer(): void
     {
-        /*
-         * La règle d'unicité doit s'ignorer elle-même en édition.
-         *
-         * Sans le `,{id}`, aucun pays ne serait modifiable une fois créé : son propre code ISO
-         * déclencherait le conflit. C'est le genre de défaut qui ne se voit qu'au deuxième usage.
-         */
+        // La règle d'unicité doit s'ignorer elle-même en édition.
         $unicite = 'unique:countries,iso_code'.($this->editionId ? ','.$this->editionId : '');
 
         $valide = $this->validate([
@@ -103,18 +84,7 @@ class CountryCenter extends Component
         $valide['iso_code'] = strtoupper((string) $valide['iso_code']);
         $valide['currency_code'] = strtoupper((string) $valide['currency_code']);
 
-        /*
-         * LA DEVISE DOIT CORRESPONDRE AU PAYS, ET LE FORMULAIRE PROPOSAIT `EUR` A TOUT LE MONDE.
-         *
-         * Ajouter le Maroc laissait donc `EUR` en place a moins d'y penser, et toutes les commandes
-         * marocaines etaient libellees en euros -- silencieusement, puisque rien ne compare les
-         * deux champs. Une valeur pre-remplie juste vingt fois sur vingt-cinq est le pire des cas :
-         * on cesse de la lire.
-         *
-         * ON AVERTIT SANS INTERDIRE. Certaines plateformes facturent legitimement dans une autre
-         * monnaie que celle du pays, et refuser en bloc empecherait un choix valable. Mais poser
-         * MAD sur le Maroc par distraction n'est plus possible sans l'avoir vu.
-         */
+        // LA DEVISE DOIT CORRESPONDRE AU PAYS, ET LE FORMULAIRE PROPOSAIT `EUR` A TOUT LE MONDE.
         $attendue = DeviseParPays::pour($valide['iso_code']);
 
         if ($attendue !== null && $attendue !== $valide['currency_code'] && ! $this->devisePeuDefaut) {
@@ -146,13 +116,7 @@ class CountryCenter extends Component
     {
         $pays = Country::findOrFail($id);
 
-        /*
-         * On ne touche QUE le pays.
-         *
-         * Propager l'extinction aux zones ferait perdre l'information de celles qui étaient déjà
-         * éteintes pour leur propre raison : la réactivation les rallumerait toutes. La
-         * joignabilité se lit — voir `GeoGuard::zoneEstJoignable()` — elle ne s'écrit pas.
-         */
+        // On ne touche QUE le pays.
         $pays->update(['is_active' => ! $pays->is_active]);
 
         $this->flash = $pays->is_active
@@ -182,22 +146,11 @@ class CountryCenter extends Component
         unset($this->pays);
     }
 
-    /**
-     * Une devise inattendue a-t-elle deja ete signalee pour cette saisie ?
-     *
-     * `#[Locked]` parce que le navigateur peut retourner toute propriete publique de Livewire par
-     * `$set` : sans cela, l'avertissement se contournerait depuis la console, ce qui en ferait un
-     * ornement. Le piege est documente dans ce depot.
-     */
+    /** Une devise inattendue a-t-elle deja ete signalee pour cette saisie ? */
     #[Locked]
     public bool $devisePeuDefaut = false;
 
-    /**
-     * LA DEVISE ATTENDUE POUR LE CODE ISO EN COURS DE SAISIE.
-     *
-     * Sert a proposer -- MAD des qu'on tape MA -- sans jamais ecraser ce que l'administrateur a
-     * pose lui-meme : `deduireLaDevise()` ne remplit que le champ VIDE.
-     */
+    /** LA DEVISE ATTENDUE POUR LE CODE ISO EN COURS DE SAISIE. */
     public function deduireLaDevise(): void
     {
         if (trim((string) ($this->formulaire['currency_code'] ?? '')) !== '') {

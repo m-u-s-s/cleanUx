@@ -6,16 +6,7 @@ use App\Jobs\Pricing\RecomputeSurgeJob;
 use App\Services\Pricing\SurgePricingEngine;
 use Illuminate\Console\Command;
 
-/**
- * Phase 14 — Recalcule le surge pricing.
- *
- * Usage scheduler (Kernel.php) :
- *   $schedule->command('surge:recompute')->everyMinute()->withoutOverlapping();
- *
- * Manuel :
- *   php artisan surge:recompute
- *   php artisan surge:recompute --zone=42
- */
+/** Phase 14 — Recalcule le surge pricing. */
 class RecomputeSurgeCommand extends Command
 {
     protected $signature = 'surge:recompute {--zone= : ID d\'une zone spécifique}';

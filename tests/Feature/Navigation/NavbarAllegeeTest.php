@@ -6,12 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LA NAVBAR PORTE LES LIENS CHAUDS, PAS LE CATALOGUE ENTIER.
- *
- * Elle déversait 126 liens répartis en 22 groupes dans un menu déroulant « Toutes les pages ».
- * Le reste vit désormais dans la page Modules, où il est rangé par fonction.
- */
+/** LA NAVBAR PORTE LES LIENS CHAUDS, PAS LE CATALOGUE ENTIER. */
 class NavbarAllegeeTest extends TestCase
 {
     use RefreshDatabase;

@@ -152,13 +152,7 @@ class NotificationPresenterCoverageBatch16Test extends TestCase
         $this->assertSame(route('admin.finance'), $presenter->actionUrl($this->makeNotification(['type' => 'finance']), $admin));
         $this->assertSame(route('client.dashboard'), $presenter->actionUrl($this->makeNotification(['type' => 'finance']), $client));
 
-        /*
-         * LE PRESTATAIRE SUR CES DEUX TYPES — le trou que ce test laissait ouvert.
-         *
-         * `$employe` n'était exercé que sur `calendar` et `system`. `feedback` et `finance`
-         * renvoyaient donc un prestataire sur `client.historique` / `client.dashboard`, deux
-         * routes gardées par `CheckRole:client` : 403 à l'arrivée.
-         */
+        // LE PRESTATAIRE SUR CES DEUX TYPES — le trou que ce test laissait ouvert.
         $this->assertSame(route('employe.feedbacks'), $presenter->actionUrl($this->makeNotification(['type' => 'feedback']), $employe));
         $this->assertSame(route('employe.wallet'), $presenter->actionUrl($this->makeNotification(['type' => 'finance']), $employe));
         $this->assertSame(route('admin.calendar.settings'), $presenter->actionUrl($this->makeNotification(['type' => 'calendar']), $admin));

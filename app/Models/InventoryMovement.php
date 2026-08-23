@@ -8,14 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * UN MOUVEMENT DE STOCK, AVEC SA CAUSE.
- *
- * C'est la table la plus importante des deux. Le stock courant seul répond « il reste douze » sans
- * jamais pouvoir répondre « pourquoi » — or c'est la seconde question qui se pose vraiment quand un
- * stock fond plus vite que prévu.
- *
- * LA QUANTITÉ EST SIGNÉE : positive à la réception, négative à la consommation. Un seul signe
- * obligerait chaque lecteur à savoir dans quel sens compter, et l'un d'eux se tromperait.
+ * UN MOUVEMENT DE STOCK, AVEC SA CAUSE. C'est la table la plus importante des deux.
  *
  * @property int $id
  * @property int $inventory_item_id
@@ -67,10 +60,7 @@ class InventoryMovement extends Model
     }
 
     /**
-     * Qui a déclaré ce mouvement.
-     *
-     * Nullable : un mouvement peut venir d'un traitement automatique. « Système » est une réponse
-     * honnête ; inventer un auteur en serait une fausse.
+     * Qui a déclaré ce mouvement. Nullable : un mouvement peut venir d'un traitement automatique.
      *
      * @return BelongsTo<User, $this>
      */

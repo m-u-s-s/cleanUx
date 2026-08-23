@@ -7,27 +7,10 @@ use App\Models\Mission;
 use App\Models\MissionAssignment;
 use Carbon\Carbon;
 
-/**
- * Phase 14 — Calcul des frais d'annulation selon délai.
- *
- * Pure function : ne touche PAS la DB. Renvoie un détail structuré pour
- * traçabilité.
- *
- * Rules dans config/cancellation.php — ajustables sans toucher au code.
- */
+/** Phase 14 — Calcul des frais d'annulation selon délai. Pure function : ne touche PAS la DB. */
 class CancellationFeeCalculator
 {
-    /**
-     * Calcule le fee à appliquer pour une annulation par le client.
-     *
-     * Renvoie :
-     *   - fee_amount: float (en euros)
-     *   - fee_percent: int (% appliqué)
-     *   - tier_matched: array (le tier qui a matché)
-     *   - is_free: bool
-     *   - minutes_before_start: int|null
-     *   - reason_code: 'free_within_grace'|'tier_<n>'|'no_show'
-     */
+    /** Calcule le fee à appliquer pour une annulation par le client. */
     public function forClientCancellation(Booking $booking, ?Carbon $cancelledAt = null): array
     {
         $cancelledAt = $cancelledAt ?? now();
@@ -99,9 +82,7 @@ class CancellationFeeCalculator
         return $this->result(round($fee, 2), 100, null, false, $minutesBeforeStart, 'tier_fallback');
     }
 
-    /**
-     * Calcul de pénalité pour annulation par prestataire.
-     */
+    /** Calcul de pénalité pour annulation par prestataire. */
     public function forProviderCancellation(Booking $booking, ?Carbon $cancelledAt = null): array
     {
         $cancelledAt = $cancelledAt ?? now();
@@ -131,25 +112,12 @@ class CancellationFeeCalculator
         ];
     }
 
-    /**
-     * Détection no-show (passé X min après planned_start_at sans arrivée).
-     */
+    /** Détection no-show (passé X min après planned_start_at sans arrivée). */
     public function isNoShow(Booking $booking, ?Carbon $now = null): bool
     {
         $now = $now ?? now();
 
-        /*
-         * SUR UNE COURSE, LE DÉCOMPTE PART DE L'ARRIVÉE, PAS DE L'HORAIRE.
-         *
-         * Et c'est ce qui rendait le no-show IMPOSSIBLE en pratique : une commande immédiate n'a
-         * pas de `scheduled_date`, donc `bookingStartDateTime()` rendait `null`, donc `isNoShow()`
-         * rendait toujours `false` — un chauffeur devant une porte fermée n'avait littéralement
-         * aucun geste disponible, ni pour partir, ni pour être payé de son déplacement.
-         *
-         * Le repère juste est le moment où il a signalé son arrivée : c'est de là que les
-         * plateformes de transport comptent leurs deux à cinq minutes d'attente, et c'est de là
-         * qu'un passager en retard le vit comme équitable.
-         */
+        // SUR UNE COURSE, LE DÉCOMPTE PART DE L'ARRIVÉE, PAS DE L'HORAIRE.
         if ($booking->estUneCourse()) {
             $arrivee = $this->arriveeAuPointDePriseEnCharge($booking);
 
@@ -175,12 +143,7 @@ class CancellationFeeCalculator
         return $now->greaterThanOrEqualTo($start->copy()->addMinutes($graceMinutes));
     }
 
-    /**
-     * Quand le prestataire a signalé son arrivée au point de prise en charge.
-     *
-     * Lu sur l'ASSIGNATION, qui est le seul endroit horodaté : la mission porte un statut
-     * `arrived` mais aucune date, et une date de statut ne se reconstitue pas après coup.
-     */
+    /** Quand le prestataire a signalé son arrivée au point de prise en charge. */
     protected function arriveeAuPointDePriseEnCharge(Booking $booking): ?Carbon
     {
         $arrivee = MissionAssignment::query()
@@ -192,9 +155,7 @@ class CancellationFeeCalculator
         return $arrivee ? Carbon::parse($arrivee) : null;
     }
 
-    /**
-     * Combine scheduled_date + scheduled_time → Carbon.
-     */
+    /** Combine scheduled_date + scheduled_time → Carbon. */
     protected function bookingStartDateTime(Booking $booking): ?Carbon
     {
         if (! $booking->scheduled_date) {

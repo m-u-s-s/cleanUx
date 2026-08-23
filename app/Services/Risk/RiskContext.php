@@ -6,12 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
-/**
- * DTO passé à chaque RiskRuleInterface::score().
- *
- * Immutable container avec toutes les infos utiles pour scorer un événement.
- * Volontairement permissif : chaque règle pioche les champs qui l'intéressent.
- */
+/** DTO passé à chaque RiskRuleInterface::score(). */
 class RiskContext
 {
     public function __construct(

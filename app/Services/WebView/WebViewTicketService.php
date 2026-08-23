@@ -6,16 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
-/**
- * Issues and redeems opaque, single-use, short-lived tickets that hand a
- * mobile (Sanctum-authenticated) user off into a web session inside a WebView.
- *
- * The ticket string is a cryptographically-random opaque secret. Its SHA-256
- * is the cache key; the cache value carries the binding payload. Redemption
- * uses Cache::pull (a single get-then-delete), so a ticket can be used at most
- * once. The short TTL plus the opaque 64-char token make the residual replay
- * window negligible.
- */
+/** Issues and redeems opaque, single-use, short-lived tickets that hand a mobile (Sanctum-authenticated) user off into a web session inside a WebView. */
 class WebViewTicketService
 {
     private const TTL_SECONDS = 60;

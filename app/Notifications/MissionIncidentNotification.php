@@ -9,13 +9,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * « Il y a un problème chez vous, maintenant. »
- *
- * Le SMS est dans la liste par défaut, comme pour l'arrivée : le client visé par ce message est
- * précisément celui qui n'est pas devant son écran — sinon le prestataire le lui dirait de vive
- * voix. Un accès impossible non lu, c'est une mission annulée et un déplacement facturé pour rien.
- */
+/** « Il y a un problème chez vous, maintenant. */
 class MissionIncidentNotification extends Notification
 {
     use InteractsWithUserNotificationPreferences;

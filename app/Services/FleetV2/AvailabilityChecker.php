@@ -11,9 +11,7 @@ use Illuminate\Support\Collection;
 
 class AvailabilityChecker
 {
-    /**
-     * Check si véhicule peut être assigné maintenant pour la fenêtre [from, until].
-     */
+    /** Check si véhicule peut être assigné maintenant pour la fenêtre [from, until]. */
     public function isVehicleAvailable(FleetVehicle $vehicle, ?Carbon $from = null, ?Carbon $until = null): bool
     {
         if (! $vehicle->isAvailable()) {
@@ -88,9 +86,7 @@ class AvailabilityChecker
         return $q->orderBy('name')->get();
     }
 
-    /**
-     * Conflit = assignment active sur même véhicule/équipement qui chevauche la fenêtre demandée.
-     */
+    /** Conflit = assignment active sur même véhicule/équipement qui chevauche la fenêtre demandée. */
     protected function hasConflictingAssignment(string $subjectType, int $subjectId, ?Carbon $from, ?Carbon $until): bool
     {
         $q = FleetAssignment::query()->active();

@@ -108,30 +108,14 @@ class PlatformModulesCenter extends Component
 
         $module = PlatformModule::query()->findOrFail($this->editingModuleId);
 
-        /*
-         * LE VERROU DOIT VERROUILLER PAR LES DEUX PORTES.
-         *
-         * `toggleEnabled()` refuse d'agir sur un module verrouillé — mais le formulaire, lui,
-         * postait `is_enabled` sans rien vérifier : il suffisait d'ouvrir la fiche et d'enregistrer
-         * pour éteindre un module qu'on venait de verrouiller. Un verrou contournable par l'autre
-         * bouton du même écran n'est pas un verrou.
-         *
-         * Déverrouiller reste permis dans le même geste : c'est la seule façon d'en sortir.
-         */
+        // LE VERROU DOIT VERROUILLER PAR LES DEUX PORTES.
         $enabled = $module->is_locked ? $module->is_enabled : $this->is_enabled;
 
         if ($module->is_locked && $this->is_enabled !== $module->is_enabled) {
             session()->flash('error', "Ce module est verrouillé : son activation n'a pas été modifiée. Déverrouillez-le d'abord.");
         }
 
-        /*
-         * FUSIONNER, JAMAIS REMPLACER.
-         *
-         * `settings` ne porte pas que l'audience : les modules qui ont des réglages métier les
-         * rangent ici sous leur propre clé (voir `security.face_check`). Réécrire le tableau entier
-         * effaçait ces réglages au premier enregistrement d'audience — sans erreur, sans trace, et
-         * le module repartait sur les valeurs par défaut de la config.
-         */
+        // FUSIONNER, JAMAIS REMPLACER.
         $settings = array_merge($module->settings ?? [], [
             'allowed_roles' => $this->normalizeStringArray($this->allowed_roles),
             'allowed_plans' => $this->normalizeStringArray($this->allowed_plans),

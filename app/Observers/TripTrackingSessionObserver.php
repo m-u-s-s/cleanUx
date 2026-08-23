@@ -8,14 +8,7 @@ use App\Services\Push\PushService;
 use App\Support\Webhooks\BusinessEventEmitter;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Réagit aux transitions de status TripTrackingSession :
- *   - enroute → arrived : push au client "votre prestataire est arrivé"
- *   - arrived → in_mission : push au client "mission démarrée"
- *   - * → ended : push au client "mission terminée" + webhook B2B
- *
- * Soft-fail partout — ne bloque jamais le flow business.
- */
+/** Réagit aux transitions de status TripTrackingSession : - enroute → arrived : push au client "votre prestataire est arrivé" - arrived → in_mission : push au client "mission démarrée" - * → ended : push au client "mission terminée" + webhook B2B Soft-fail partout — ne bloque jamais le flow business. */
 class TripTrackingSessionObserver
 {
     public function updated(TripTrackingSession $session): void

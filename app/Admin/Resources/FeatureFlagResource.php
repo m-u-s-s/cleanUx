@@ -17,17 +17,6 @@ use Illuminate\Support\Facades\Auth;
 /**
  * Les dérogations de feature flags.
  *
- * CE QUE CETTE TABLE EST : une liste de DÉROGATIONS, pas le catalogue des drapeaux. Un drapeau
- * absent d'ici suit sa valeur par défaut ; une ligne ici la force. Confondre les deux ferait
- * croire qu'un drapeau non listé est désactivé, alors qu'il est simplement non dérogé.
- *
- * CHAQUE BASCULE EXIGE UN MOTIF, et c'est le champ le plus important du formulaire. Un drapeau
- * forcé sans raison écrite se retrouve six mois plus tard sans que personne n'ose y toucher —
- * la dérogation devient permanente par peur, pas par décision.
- *
- * L'AUTEUR DE LA DERNIÈRE BASCULE EST ENREGISTRÉ. Une dérogation qui change le comportement de
- * la plateforme sans laisser de nom n'est pas rattrapable.
- *
  * @implements AdminResource<FeatureFlagOverride>
  */
 class FeatureFlagResource implements AdminResource

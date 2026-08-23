@@ -15,20 +15,7 @@ use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * L'ESPACE SOCIÉTÉ N'AVAIT AUCUNE API — SEULEMENT DES ÉCRANS WEB.
- *
- * POURQUOI CE FICHIER EXISTE. `routes/api/provider.php` couvre abondamment le prestataire
- * INDIVIDUEL — missions, disponibilités, badges, litiges, portefeuille — et rien de la société :
- * ni membres, ni équipes terrain, ni tâches. Vérifié endpoint par endpoint.
- *
- * Les écrans société étaient donc servis en WebView faute de données à consommer côté natif. Ces
- * points d'entrée sont la condition préalable à des écrans natifs.
- *
- * Chaque test éprouve les deux mêmes exigences, qui sont celles de tout ce programme :
- *   1. la réponse est limitée à l'organisation active de l'appelant ;
- *   2. l'action est gardée par une permission, pas seulement par l'appartenance.
- */
+/** L'ESPACE SOCIÉTÉ N'AVAIT AUCUNE API — SEULEMENT DES ÉCRANS WEB. POURQUOI CE FICHIER EXISTE. */
 class ProviderCompanyApiTest extends TestCase
 {
     use RefreshDatabase;
@@ -58,17 +45,7 @@ class ProviderCompanyApiTest extends TestCase
     #[Test]
     public function le_compte_tel_que_db_seed_le_produit_atteint_bien_son_espace(): void
     {
-        /*
-         * LA FORME EXACTE QUE LES SEEDERS ÉCRIVENT, ET ELLE NE PASSAIT PAS.
-         *
-         * `organisationActive()` lisait `currentOrganization`, donc la seule colonne
-         * `current_organization_id`. Aucun seeder de démonstration ne la renseigne : le rattachement
-         * se fait par `organization_account_id`. Les cinq écrans société répondaient donc 403 à tout
-         * compte semé, quelle que soit la porte d'entrée.
-         *
-         * Les tests de ce fichier ne le voyaient pas : `societeAvec()` renseigne LES DEUX colonnes,
-         * une forme que la production ne produit pas toujours.
-         */
+        // LA FORME EXACTE QUE LES SEEDERS ÉCRIVENT, ET ELLE NE PASSAIT PAS.
         $org = OrganizationAccount::factory()->providerCompany()->create();
 
         $user = User::factory()->create([
@@ -112,10 +89,7 @@ class ProviderCompanyApiTest extends TestCase
     #[Test]
     public function l_accueil_societe_resume_la_journee(): void
     {
-        /*
-         * L'écran d'accueil natif de l'espace société. Il lisait jusqu'ici les mêmes points que le
-         * reste, ce qui obligeait l'application à faire quatre appels pour afficher cinq chiffres.
-         */
+        // L'écran d'accueil natif de l'espace société.
         [$org, $patron] = $this->societeAvec(OrganizationRole::OWNER);
 
         Mission::factory()->count(2)->create([

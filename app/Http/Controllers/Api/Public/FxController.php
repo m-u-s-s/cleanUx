@@ -15,9 +15,7 @@ class FxController extends Controller
 {
     public function __construct(protected FxService $svc) {}
 
-    /**
-     * GET /api/fx/currencies
-     */
+    /** GET /api/fx/currencies */
     public function currencies(): JsonResponse
     {
         $rows = Currency::query()->active()->orderBy('sort_order')->orderBy('code')->get([
@@ -27,9 +25,7 @@ class FxController extends Controller
         return response()->json(['data' => $rows]);
     }
 
-    /**
-     * GET /api/fx/rates?base=EUR&quotes=USD,GBP
-     */
+    /** GET /api/fx/rates?base=EUR&quotes=USD,GBP */
     public function rates(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -62,9 +58,7 @@ class FxController extends Controller
         return response()->json(['data' => $out]);
     }
 
-    /**
-     * POST /api/fx/convert
-     */
+    /** POST /api/fx/convert */
     public function convert(Request $request): JsonResponse
     {
         $data = $request->validate([

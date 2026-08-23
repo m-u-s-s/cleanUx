@@ -14,14 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * La checklist qui conditionne la clôture, exposée au mobile.
- *
- * `assertRequiredChecklistCompleted()` refuse de terminer une mission tant qu'une tâche
- * obligatoire reste ouverte. Ce refus n'avait aucun remède dans l'application prestataire : ces
- * tâches n'étaient atteignables que par des routes web à session, et l'écran terrain affichait la
- * checklist d'un AUTRE module. Le prestataire était bloqué sans recours.
- */
+/** La checklist qui conditionne la clôture, exposée au mobile. */
 class MissionChecklistApiTest extends TestCase
 {
     use RefreshDatabase;
@@ -154,13 +147,7 @@ class MissionChecklistApiTest extends TestCase
         $this->assertNull($tache->fresh()->completed_at);
     }
 
-    /**
-     * L'ASSIGNATION AUTORISE SA MISSION, PAS TOUTES.
-     *
-     * Les deux paramètres de la route sont résolus séparément : sans rapprochement, un prestataire
-     * légitime pourrait cocher les tâches de n'importe quelle autre mission en changeant le second
-     * identifiant dans l'URL.
-     */
+    /** L'ASSIGNATION AUTORISE SA MISSION, PAS TOUTES. */
     public function test_une_tache_d_une_autre_mission_est_refusee(): void
     {
         [$provider, $mission] = $this->construire();

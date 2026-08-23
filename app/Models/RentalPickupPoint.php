@@ -8,13 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * L'AGENCE OÙ LE CLIENT VIENT CHERCHER SA VOITURE.
- *
- * Une table plutôt qu'une adresse recopiée sur chaque véhicule : dix voitures au même comptoir
- * doivent donner UNE adresse à corriger, pas dix. C'est l'administrateur qui les tient, et
- * l'adresse s'affiche telle quelle sur la confirmation du client.
- */
+/** L'AGENCE OÙ LE CLIENT VIENT CHERCHER SA VOITURE. */
 class RentalPickupPoint extends Model
 {
     /** @use HasFactory<RentalPickupPointFactory> */

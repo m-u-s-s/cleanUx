@@ -6,13 +6,7 @@ use App\Support\Validation\BusinessNumber;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Contrôle de clé du numéro d'entreprise.
- *
- * Les numéros valides employés ici sont de vraies entreprises publiquement enregistrées : un
- * contrôle de clé ne se teste utilement que sur des numéros réellement émis, des valeurs
- * inventées passant ou échouant par hasard.
- */
+/** Contrôle de clé du numéro d'entreprise. */
 class BusinessNumberTest extends TestCase
 {
     /** @return array<string, array{string}> */

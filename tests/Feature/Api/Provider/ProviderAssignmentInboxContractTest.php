@@ -11,13 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * Verrouille le contrat plat de GET /api/provider/assignments/inbox.
- *
- * Le sérialiseur renvoyait une structure imbriquée { mission: {...}, booking: {...} } alors que
- * le type TS mobile (MissionAssignment) et les deux écrans qui le consomment attendent un
- * payload plat — d'où des champs vides dans l'app et un missionId undefined à la navigation.
- */
+/** Verrouille le contrat plat de GET /api/provider/assignments/inbox. */
 class ProviderAssignmentInboxContractTest extends TestCase
 {
     use RefreshDatabase;
@@ -87,12 +81,7 @@ class ProviderAssignmentInboxContractTest extends TestCase
         $this->assertNull($payload['longitude']);
     }
 
-    /**
-     * `missions.destination_lat` n'est pas toujours renseignée : seule la synchronisation depuis
-     * une réservation géocode l'adresse, et les missions antérieures à ce correctif n'ont que la
-     * destination portée par le dossier. L'inbox doit donc retomber dessus, exactement comme le
-     * fait déjà l'écran de détail (ProviderMissionLifecycleController).
-     */
+    /** `missions.destination_lat` n'est pas toujours renseignée : seule la synchronisation depuis une réservation géocode l'adresse, et les missions antérieures à ce correctif n'ont que la destination portée par le dossier. */
     public function test_inbox_falls_back_to_the_booking_destination_when_the_mission_has_none(): void
     {
         $provider = $this->makeProvider();
@@ -112,13 +101,7 @@ class ProviderAssignmentInboxContractTest extends TestCase
             ->assertJsonPath('data.0.longitude', 5.5713);
     }
 
-    /**
-     * Anti-régression du bloquant : missions.start_lat porte la position GPS DU PRESTATAIRE,
-     * écrite par MissionLifecycleService aux transitions `arrived` / `started`. L'inbox ne liste
-     * que des lignes `assigned`, donc antérieures à ces transitions : s'en servir comme
-     * destination affichait zéro marqueur en production, et aurait pointé le prestataire
-     * lui-même plutôt que le client sur les missions déjà démarrées.
-     */
+    /** Anti-régression du bloquant : missions.start_lat porte la position GPS DU PRESTATAIRE, écrite par MissionLifecycleService aux transitions `arrived` / `started`. */
     public function test_inbox_never_exposes_the_provider_telemetry_start_coordinates(): void
     {
         $provider = $this->makeProvider();
@@ -141,12 +124,7 @@ class ProviderAssignmentInboxContractTest extends TestCase
         $this->assertNull($payload['longitude']);
     }
 
-    /**
-     * Deux chemins de création écrivent chacun une colonne différente vers bookings.id :
-     * CreateBookingFromApiAction / ProcessRecurringBookings écrivent booking_id, tandis que
-     * MissionFromRendezVousSyncService / MissionPaymentService (et le factory par défaut)
-     * écrivent rendez_vous_id. L'inbox doit résoudre les deux, pas seulement le premier.
-     */
+    /** Deux chemins de création écrivent chacun une colonne différente vers bookings.id : CreateBookingFromApiAction / ProcessRecurringBookings écrivent booking_id, tandis que MissionFromRendezVousSyncService / MissionPaymentService (et le factory par défaut) écrivent rendez_vous_id. */
     public function test_inbox_resolves_bookings_created_via_the_legacy_rendez_vous_path(): void
     {
         $provider = $this->makeProvider();

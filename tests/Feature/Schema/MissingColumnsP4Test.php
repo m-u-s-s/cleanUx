@@ -15,10 +15,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * P4 — columns that code referenced but were never migrated (writes silently dropped). Confirms the
- * migration provisioned them and that the values now persist.
- */
+/** P4 — columns that code referenced but were never migrated (writes silently dropped). */
 class MissingColumnsP4Test extends TestCase
 {
     use RefreshDatabase;

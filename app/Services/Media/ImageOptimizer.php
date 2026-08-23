@@ -4,10 +4,7 @@ namespace App\Services\Media;
 
 use RuntimeException;
 
-/**
- * Resize and compress images using the GD extension (bundled with PHP).
- * Supports JPEG, PNG, and WebP inputs; always outputs JPEG.
- */
+/** Resize and compress images using the GD extension (bundled with PHP). */
 class ImageOptimizer
 {
     /**

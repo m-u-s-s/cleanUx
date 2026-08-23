@@ -9,16 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Sprint 0 — Task 3 : Provider Stripe Connect API
- *
- * Coverage :
- *   - GET  /api/provider/stripe-connect/status   (not onboarded + onboarded with mock)
- *   - POST /api/provider/stripe-connect/onboard  (mock)
- *   - GET  /api/provider/stripe-connect/payouts  (with + without stripe_account_id)
- *   - GET  /api/provider/stripe-connect/dashboard-link  (404 when no account)
- *   - 403 when caller is not a provider (client role)
- */
+/** Sprint 0 — Task 3 : Provider Stripe Connect API Coverage : - GET /api/provider/stripe-connect/status (not onboarded + onboarded with mock) - POST /api/provider/stripe-connect/onboard (mock) - GET /api/provider/stripe-connect/payouts (with + without stripe_account_id) - GET /api/provider/stripe-connect/dashboard-link (404 when no account) - 403 when caller is not a provider (client role) */
 class StripeConnectTest extends TestCase
 {
     use RefreshDatabase;
@@ -27,10 +18,7 @@ class StripeConnectTest extends TestCase
     // Helpers
     // ──────────────────────────────────────────────
 
-    /**
-     * Create a user with an associated ProviderProfile so the controller's
-     * abortIfNotProvider check passes.
-     */
+    /** Create a user with an associated ProviderProfile so the controller's abortIfNotProvider check passes. */
     private function makeProvider(array $attributes = []): User
     {
         $user = User::factory()->employe()->create($attributes);

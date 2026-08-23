@@ -7,23 +7,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * LIRE LES CODES ENVOYÉS PAR SMS, SANS TÉLÉPHONE.
- *
- * Un émulateur ne reçoit pas de SMS. Toute la fin du parcours terrain en dépend pourtant — code de
- * début, code de fin, vérification de numéro — et il n'existait aucun moyen d'avancer sans un
- * appareil réel, ce qui rendait le scénario complet intestable sur un poste de travail.
- *
- * RIEN N'EST AFFAIBLI ICI. En développement, le pilote `mock` n'envoie pas le message : il
- * l'ENREGISTRE. Le corps est déjà en clair dans `sms_messages`, et cette commande ne fait que le
- * relire. Les codes eux-mêmes restent hachés dans `mission_verification_codes` et confrontés côté
- * serveur — c'est ce qui rend la preuve de présence crédible, et il n'était pas question d'y
- * toucher pour la commodité d'un émulateur.
- *
- * ELLE REFUSE DE S'EXÉCUTER EN PRODUCTION. Le registre y contient les messages réellement partis
- * vers de vrais numéros : afficher ces codes sur une console serait exactement la fuite que le
- * hachage cherche à éviter, avec la bénédiction d'un outil maison.
- */
+/** LIRE LES CODES ENVOYÉS PAR SMS, SANS TÉLÉPHONE. Un émulateur ne reçoit pas de SMS. */
 class DernierCodeSms extends Command
 {
     protected $signature = 'sms:dernier-code
@@ -78,12 +62,7 @@ class DernierCodeSms extends Command
                 Carbon::parse($m->created_at)->format('H:i:s'),
                 $m->to_phone,
                 $code ?? '—',
-                /*
-                 * LE STATUT EST MONTRÉ, et il n'est pas décoratif : `rate_limited` veut dire que le
-                 * plafond par numéro a été atteint. En développement le corps est enregistré quand
-                 * même, donc le code reste lisible ici — mais en production, le client n'aurait
-                 * rien reçu. Le cacher ferait conclure à un code perdu.
-                 */
+                // LE STATUT EST MONTRÉ, et il n'est pas décoratif : `rate_limited` veut dire que le plafond par numéro a été atteint.
                 $m->status,
                 mb_strimwidth((string) $m->body, 0, 52, '…'),
             ];

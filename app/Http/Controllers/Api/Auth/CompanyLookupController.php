@@ -9,21 +9,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * Le prestataire tape son numéro d'entreprise pendant l'inscription et voit sa raison sociale remonter du registre officiel : il confirme d'un geste au lieu de recopier.
+ *
  * @group Auth — Recherche d'entreprise
- *
- * Le prestataire tape son numéro d'entreprise pendant l'inscription et voit sa raison sociale
- * remonter du registre officiel : il confirme d'un geste au lieu de recopier. C'est ce qui
- * distingue une inscription de trente secondes d'une inscription de trois minutes.
- *
- * Cette route est nécessairement publique — elle sert au milieu de l'inscription, avant que le
- * compte existe. Deux garde-fous, parce qu'elle relaie des appels vers un registre tiers :
- *
- *  - la clé de contrôle du numéro est vérifiée AVANT tout appel sortant, ce qui élimine
- *    l'énumération à l'aveugle : deviner un numéro valide demande déjà de connaître le modulo ;
- *  - `throttle:otp` (5/min par IP) limite ce qu'un même client peut extraire.
- *
- * Les données rendues sont publiques par nature — les registres BCE et SIRENE sont ouverts et
- * consultables en ligne. Cette route ne divulgue donc rien qui ne le soit déjà.
+ * - la clé de contrôle du numéro est vérifiée AVANT tout appel sortant, ce qui élimine
+ * l'énumération à l'aveugle : deviner un numéro valide demande déjà de connaître le modulo ;
+ * - `throttle:otp` (5/min par IP) limite ce qu'un même client peut extraire.
  */
 class CompanyLookupController extends Controller
 {

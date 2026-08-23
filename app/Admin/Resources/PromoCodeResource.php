@@ -13,15 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Les codes promotionnels.
- *
- * SUSPENDRE PLUTÔT QUE SUPPRIMER. Le statut `paused` coupe l'usage d'un code sans effacer la
- * ligne — et c'est important : les rachats déjà consentis pointent dessus. Supprimer un code
- * laisserait un historique de commandes qui référence un rabais dont plus rien n'explique
- * l'origine. Le formulaire existe pour créer et corriger ; l'arrêt passe par une action.
- *
- * LES PLAFONDS SONT DÉCLARÉS, PAS DEVINÉS. `max_total_uses` et `max_uses_per_user` figurent au
- * formulaire parce qu'un code sans plafond est un code qu'on découvre en lisant la facture.
+ * Les codes promotionnels. SUSPENDRE PLUTÔT QUE SUPPRIMER.
  *
  * @implements AdminResource<PromoCode>
  */

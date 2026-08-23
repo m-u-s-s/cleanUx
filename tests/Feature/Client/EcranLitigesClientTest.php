@@ -10,20 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * L'ÉCRAN DES LITIGES CLIENT, DE BOUT EN BOUT.
- *
- * Il était inachevé de trois façons, et aucune ne se voyait au chargement :
- *
- *   - le bouton « Envoyer la réclamation » appelait `openClaim()`, absente : 500 au clic ;
- *   - `select()` et `postReply()` n'existaient pas, donc `selected` restait nul et tout le
- *     panneau de détail — le fil, la résolution, la réponse — n'était jamais rendu ;
- *   - la liste filtrait sur `customer_user_id` quand la création écrit `client_id` : une
- *     réclamation déposée n'apparaissait jamais.
- *
- * Le fil de discussion vit désormais dans `customer_claim_events`, propre à ce modèle. Le
- * second modèle de litige du dépôt, `ComplaintCase`, n'est pas touché.
- */
+/** L'ÉCRAN DES LITIGES CLIENT, DE BOUT EN BOUT. */
 class EcranLitigesClientTest extends TestCase
 {
     use RefreshDatabase;

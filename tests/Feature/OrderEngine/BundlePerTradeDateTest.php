@@ -16,17 +16,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Une date par métier, quand une seule ne suffit pas.
- *
- * Le chantier proposait une séquence calculée : tout s'enchaînait depuis une date unique. C'est le
- * bon défaut — le client n'a pas à orchestrer ses artisans — mais pas toujours la réalité. Le
- * plombier passe mardi parce qu'il n'a que mardi, et le carreleur suit.
- *
- * CE QU'ON REFUSE. Épingler le carreleur AVANT la fin du plombier produit un chantier impossible.
- * Le composeur refuse déjà un réordonnancement qui violerait une dépendance plutôt que de le
- * corriger en silence — une date épinglée suit la même règle : on dit non, et on dit pourquoi.
- */
+/** Une date par métier, quand une seule ne suffit pas. */
 class BundlePerTradeDateTest extends TestCase
 {
     use RefreshDatabase;
@@ -72,12 +62,7 @@ class BundlePerTradeDateTest extends TestCase
         $this->assertNotNull($line['starts_at']);
     }
 
-    /**
-     * Un métier ne se pose pas AVANT ce dont il dépend.
-     *
-     * Le carreleur avant le plombier, c'est un chantier impossible. Corriger en silence serait pire
-     * que refuser : le client croirait sa date prise en compte et découvrirait autre chose.
-     */
+    /** Un métier ne se pose pas AVANT ce dont il dépend. */
     public function test_a_date_before_the_dependency_is_refused(): void
     {
         $draft = $this->bundle();
@@ -122,12 +107,7 @@ class BundlePerTradeDateTest extends TestCase
     /** L'écran câble ce qu'il propose — huitième fois que ce module l'oublie. */
     public function test_the_screen_wires_the_per_trade_date(): void
     {
-        /*
-         * Le chantier est composé PAR LE COMPOSANT, pas à côté.
-         *
-         * Un brouillon fabriqué sur un autre jeton de session n'est pas celui que l'écran ouvre :
-         * la timeline resterait vide et le test passerait à côté du rendu qu'il prétend vérifier.
-         */
+        // Le chantier est composé PAR LE COMPOSANT, pas à côté.
         $component = Livewire::withQueryParams(['mode' => 'bundle'])
             ->test(OrderJourney::class)
             ->call('selectTrade', $this->trade('plumbing')->id);

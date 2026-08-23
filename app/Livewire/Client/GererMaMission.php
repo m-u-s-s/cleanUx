@@ -17,22 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * « GÉRER MA MISSION » — le web fait ce que le mobile fait.
- *
- * ── POURQUOI CE COMPOSANT EXISTE ─────────────────────────────────────────────────────────────
- *
- * Le suivi web portait déjà la carte, les codes à six chiffres et les QR. Il lui manquait les deux
- * choses qui ATTENDENT une réponse : la liste de tâches du client, et le nouveau devis. Un client
- * qui suit son intervention depuis un ordinateur ne pouvait ni demander « la hotte, surtout », ni
- * répondre à une révision de prix — il devait prendre son téléphone.
- *
- * ── LES IDENTIFIANTS SONT VERROUILLÉS ────────────────────────────────────────────────────────
- *
- * Une propriété publique Livewire est retournable par le navigateur avec `$set`. Sans `#[Locked]`,
- * n'importe qui pourrait répondre à la révision d'une autre réservation en changeant un nombre dans
- * la console — c'est un piège que ce dépôt a déjà payé.
- */
+/** « GÉRER MA MISSION » — le web fait ce que le mobile fait. */
 class GererMaMission extends Component
 {
     #[Locked]
@@ -104,13 +89,7 @@ class GererMaMission extends Component
         }
     }
 
-    /**
-     * LA CONSIGNE DE DERNIÈRE MINUTE — « le digicode a changé ce matin ».
-     *
-     * Sans fenêtre, contrairement à la to-do list : un digicode qui change à 17 h doit pouvoir se
-     * dire à 17 h, même si la liste est figée depuis longtemps. C'est le prestataire qu'elle
-     * dépanne, pas le client qu'elle avantage.
-     */
+    /** LA CONSIGNE DE DERNIÈRE MINUTE — « le digicode a changé ce matin ». */
     public function enregistrerLaConsigne(): void
     {
         $this->erreur = null;
@@ -135,13 +114,7 @@ class GererMaMission extends Component
         $this->repondre($revisionId, accepte: false, decision: $decision);
     }
 
-    /**
-     * DÉCALER PLUTÔT QU'ANNULER — la deuxième des trois issues du minuteur de retard.
-     *
-     * Elle passe par `BookingRescheduleService`, qui portait déjà l'autorisation, la validation et
-     * l'historique, et qui n'était atteignable que par le glisser-déposer du calendrier. Le client
-     * qui attend devant sa porte n'ouvre pas un calendrier : il lui faut le geste ici.
-     */
+    /** DÉCALER PLUTÔT QU'ANNULER — la deuxième des trois issues du minuteur de retard. */
     public function decaler(string $quand): void
     {
         $this->erreur = null;
@@ -190,10 +163,6 @@ class GererMaMission extends Component
 
     /**
      * LA LIGNE MASQUÉE — un numéro relais, jamais celui de l'autre.
-     *
-     * Le service existait depuis longtemps et n'était appelé de NULLE PART, ni mobile ni web. Il
-     * rend `available: false` avec son motif quand la ligne n'est pas ouverte : on affiche ce motif
-     * plutôt que de faire disparaître le bouton, qui ferait chercher puis appeler le support.
      *
      * @return array<string, mixed>|null
      */

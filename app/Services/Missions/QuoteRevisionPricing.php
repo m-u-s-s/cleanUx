@@ -5,33 +5,7 @@ namespace App\Services\Missions;
 use App\Models\Booking;
 use App\Models\PromoCodeRedemption;
 
-/**
- * LE PRIX RÉVISÉ — le prestataire annonce un SERVICE, le serveur en tire un TOTAL.
- *
- * ── POURQUOI LE PRESTATAIRE NE SAISIT JAMAIS LE TOTAL ────────────────────────────────────────
- *
- * S'il tapait « 300 € à payer », la remise du client serait silencieusement avalée : le code promo
- * qu'il a obtenu, la réduction qu'on lui a promise, tout disparaîtrait dans un chiffre rond. Il
- * annonce donc ce que vaut la PRESTATION, et les remises se réappliquent ici — au même endroit et
- * par la même règle qu'à la commande.
- *
- * ── COMMENT CHAQUE REMISE SE COMPORTE, ET POURQUOI ───────────────────────────────────────────
- *
- *   `percent`              RECALCULÉ sur le nouveau prix. C'est le terme même du code : « 20 % de
- *                          moins ». Il grandit donc avec le prix — en faveur du client, qui n'a pas
- *                          demandé cette augmentation. Le plafond du code, s'il en a un, s'applique.
- *
- *   `fixed_amount`         INCHANGÉ. Un bon de 10 € reste un bon de 10 €, quel que soit le montant.
- *
- *   `free_first_booking`   la totalité, comme à la commande.
- *
- * ── CE QU'IL FAUT SAVOIR SUR `bookings.discount_amount` ──────────────────────────────────────
- *
- * Cette colonne existe et AUCUN service ne l'écrit aujourd'hui — vérifié. Le seul canal de remise
- * réellement branché est le code promo. On la reporte tout de même telle quelle si elle est un jour
- * remplie : la reporter en montant fixe ne peut jamais inventer une remise plus grande que celle
- * qui a été accordée.
- */
+/** LE PRIX RÉVISÉ — le prestataire annonce un SERVICE, le serveur en tire un TOTAL. */
 class QuoteRevisionPricing
 {
     /**

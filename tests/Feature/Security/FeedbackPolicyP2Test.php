@@ -9,9 +9,7 @@ use App\Policies\FeedbackPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * P2 — FeedbackPolicy authorization (dead code removed; the real first-return logic is asserted).
- */
+/** P2 — FeedbackPolicy authorization (dead code removed; the real first-return logic is asserted). */
 class FeedbackPolicyP2Test extends TestCase
 {
     use RefreshDatabase;

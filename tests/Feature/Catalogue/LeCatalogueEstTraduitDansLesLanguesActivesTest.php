@@ -10,27 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
-/**
- * UN CATALOGUE TRADUISIBLE ET VIDE RESTE MONOLINGUE À L'ÉCRAN.
- *
- * `Sector` et `Trade` savent porter des traductions depuis le 2026-08-22. Le semeur qui les
- * remplit, `CatalogueTraductionsSeeder`, existait lui aussi — complet, idempotent, documenté — et
- * AUCUNE chaîne ne l'appelait. Il portait la mention « Usage : php artisan db:seed --class=… ».
- *
- * Conséquence mesurée après un `migrate:fresh --seed` : `catalog_translations` contenait ZÉRO
- * ligne. Un visiteur néerlandophone, anglophone, hispanophone, italophone ou germanophone voyait
- * un catalogue entièrement français.
- *
- * C'est la forme la plus discrète de la famille de défauts dominante de ce dépôt : non pas du code
- * absent, mais une capacité complète que rien n'alimente.
- *
- * ── CE QUE CE TEST GARDE, ET CE QU'IL NE GARDE PAS ───────────────────────────────────────────
- *
- * Les NOMS, dans les langues ACTIVES. Les accroches et les descriptions relèvent de la plume
- * commerciale et restent délibérément à la main de l'exploitant — les inventer produirait un texte
- * que personne n'a choisi. `pt` est configuré mais désactivé : le semeur ne l'écrit pas, et ce test
- * ne l'exige pas non plus.
- */
+/** UN CATALOGUE TRADUISIBLE ET VIDE RESTE MONOLINGUE À L'ÉCRAN. */
 class LeCatalogueEstTraduitDansLesLanguesActivesTest extends TestCase
 {
     use RefreshDatabase;
@@ -51,10 +31,7 @@ class LeCatalogueEstTraduitDansLesLanguesActivesTest extends TestCase
 
     public function test_temoin_il_y_a_bien_des_langues_actives_et_un_catalogue(): void
     {
-        /*
-         * TÉMOIN POSITIF. Sans lui, le test principal passerait au vert dans deux cas où il ne
-         * mesure rien : aucune langue active, ou aucun objet de catalogue.
-         */
+        // TÉMOIN POSITIF.
         $this->seed(ReferencePlatformSeeder::class);
 
         $this->assertGreaterThanOrEqual(4, count($this->languesActives()), 'Presque aucune langue active.');
@@ -87,12 +64,7 @@ class LeCatalogueEstTraduitDansLesLanguesActivesTest extends TestCase
         $this->assertSame([], $manquantes, 'Ces entrées du catalogue restent en français pour ces visiteurs.');
     }
 
-    /**
-     * LE SEMEUR N'ÉCRASE JAMAIS UNE SAISIE.
-     *
-     * Il propose un point de départ ; l'exploitant décide. Sans ce contrôle, un second passage —
-     * ou un déploiement — effacerait la traduction retouchée à la main.
-     */
+    /** LE SEMEUR N'ÉCRASE JAMAIS UNE SAISIE. Il propose un point de départ ; l'exploitant décide. */
     public function test_une_traduction_deja_saisie_survit_a_un_second_passage(): void
     {
         $this->seed(ReferencePlatformSeeder::class);

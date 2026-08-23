@@ -10,11 +10,7 @@ use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * La commande ne lisait que la chaîne `rendezVous` et sautait donc toutes les missions créées
- * via `booking_id` — soit exactement celles qui n'ont jamais eu de destination, puisque leur
- * chemin de création n'en écrivait aucune.
- */
+/** La commande ne lisait que la chaîne `rendezVous` et sautait donc toutes les missions créées via `booking_id` — soit exactement celles qui n'ont jamais eu de destination, puisque leur chemin de création n'en écrivait aucune. */
 class BackfillMissionDestinationsTest extends TestCase
 {
     use RefreshDatabase;

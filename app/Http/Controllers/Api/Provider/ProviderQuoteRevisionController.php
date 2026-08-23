@@ -13,16 +13,7 @@ use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * LE NOUVEAU DEVIS, CÔTÉ TERRAIN.
- *
- * Trois gestes : voir si l'on peut encore réviser, proposer, retirer.
- *
- * LA LECTURE PORTE LA FENÊTRE ET UNE SIMULATION. Sans elles, l'écran devrait deviner s'il peut
- * afficher le formulaire, et le prestataire découvrirait le refus après avoir tout saisi. La
- * simulation lui montre en outre le total que le client verra — remises comprises —, ce qui évite
- * qu'il annonce un chiffre de vive voix qui ne sera pas celui du téléphone.
- */
+/** LE NOUVEAU DEVIS, CÔTÉ TERRAIN. */
 class ProviderQuoteRevisionController extends Controller
 {
     public function __construct(
@@ -49,12 +40,7 @@ class ProviderQuoteRevisionController extends Controller
         ]);
     }
 
-    /**
-     * Simuler : « si j'annonce ce prix de service, que paiera le client ? »
-     *
-     * Le prestataire ne saisit JAMAIS le total. Cette route lui montre ce que le serveur en tirera,
-     * remises réappliquées, avant qu'il n'engage quoi que ce soit.
-     */
+    /** Simuler : « si j'annonce ce prix de service, que paiera le client ? */
     public function simulate(Request $request, Mission $mission): JsonResponse
     {
         $this->authorizeProvider($request, $mission);
@@ -133,10 +119,6 @@ class ProviderQuoteRevisionController extends Controller
     /**
      * DEMANDER DU RENFORT — la troisième issue, celle qui manquait.
      *
-     * Un prestataire devant un chantier deux fois plus gros n'avait que deux sorties : réviser le
-     * devis, ou abandonner. Le renfort est souvent la bonne — le travail se fait, le client garde
-     * son intervention, et personne ne renégocie sous pression.
-     *
      * @bodyParam reason string required Ce qui justifie le renfort. Example: Deux cents mètres carrés à deux.
      * @bodyParam people integer Nombre de personnes demandées. Example: 1
      *
@@ -197,10 +179,7 @@ class ProviderQuoteRevisionController extends Controller
         ];
     }
 
-    /**
-     * La même garde que l'annulation prestataire : le responsable, ou quelqu'un d'affecté et
-     * réellement en cours. Une affectation `assigned` ne suffit pas — c'est l'état d'une OFFRE.
-     */
+    /** La même garde que l'annulation prestataire : le responsable, ou quelqu'un d'affecté et réellement en cours. */
     protected function authorizeProvider(Request $request, Mission $mission): void
     {
         $userId = $request->user()->id;

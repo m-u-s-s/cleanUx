@@ -51,23 +51,6 @@ class SmartDispatchService
     /**
      * LA POSITION DU PRESTATAIRE — QUI N'EST PAS SUR `users`.
      *
-     * Ces deux méthodes lisaient `$employee->current_lat` / `current_lng`. Ces colonnes
-     * N'EXISTENT PAS sur `users` : elles vivent dans `provider_presence` (la position vivante,
-     * poussée par le battement de cœur du mobile) et, en repli, dans `provider_profiles`.
-     *
-     * `User` les annonçait pourtant en `@property`, si bien que l'analyse statique validait. La
-     * garde `if (! $employee->current_lat)` sortait donc TOUJOURS par le haut : le score de
-     * distance valait invariablement 0, et l'écart entre « à deux kilomètres » (+500) et « à plus
-     * de vingt » (−200) — sept cents points, le poids le plus lourd de tout le barème — n'a jamais
-     * pesé sur un seul choix. Trois surfaces d'administration s'en servent, dont « assigner le
-     * meilleur employé » et l'écran qui EXPLIQUE les scores.
-     *
-     * L'ordre présence puis profil est celui de `CandidateFinder`, le moteur moderne : la présence
-     * fait foi, le profil rattrape un prestataire dont l'application n'a pas encore battu.
-     *
-     * Mémorisé par passe : `explainScores()` parcourt tous les candidats, et sans cela chacun
-     * coûterait une requête.
-     *
      * @return array{0: float, 1: float}|null
      */
     protected function positionDe(User $employe): ?array

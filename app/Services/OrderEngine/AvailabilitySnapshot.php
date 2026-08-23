@@ -4,17 +4,7 @@ namespace App\Services\OrderEngine;
 
 use Illuminate\Support\Carbon;
 
-/**
- * Ce qu'on peut honnêtement promettre à quelqu'un qui vient de donner son adresse.
- *
- * La confiance vient de la disponibilité VISIBLE, pas d'un badge décoratif : « 14 peintres à moins
- * de 8 km, premier créneau aujourd'hui à 16 h » vaut mieux que trois étoiles et un sceau doré.
- * Mais cela n'est vrai que si le chiffre l'est — un compte inventé se retourne contre la marque au
- * premier client qui attend.
- *
- * D'où `providersLocatable` : le nombre de prestataires dont on connaît RÉELLEMENT la position.
- * Quand il est nul, on ne dit rien plutôt que d'affirmer une proximité qu'on ne peut pas établir.
- */
+/** Ce qu'on peut honnêtement promettre à quelqu'un qui vient de donner son adresse. */
 final class AvailabilitySnapshot
 {
     /**
@@ -43,12 +33,7 @@ final class AvailabilitySnapshot
         return $this->providerCount > 0;
     }
 
-    /**
-     * Une impasse doit toujours offrir une suite : un écran d'erreur sans action est un bug produit.
-     *
-     * Élargir le rayon, changer de métier, ou être prévenu — au moins une de ces trois portes doit
-     * rester ouverte.
-     */
+    /** Une impasse doit toujours offrir une suite : un écran d'erreur sans action est un bug produit. */
     public function hasWayForward(): bool
     {
         return $this->hasProviders()

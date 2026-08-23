@@ -21,18 +21,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
-/**
- * PERSONNE N'A RÉPONDU — les trois sorties (consigne 8).
- *
- * Un écran d'attente qui finit sur « aucun professionnel disponible » est un bug produit : le client
- * a déjà décidé, déjà donné son adresse, et on lui rend un constat. Les trois issues doivent être
- * des ACTIONS, et chacune doit laisser le système propre.
- *
- * Ce que ces tests protègent, concrètement :
- *  - convertir ne doit RIEN refaire payer ni redemander — c'est la même réservation ;
- *  - annuler ne doit laisser ni mission fantôme, ni offre vivante, ni argent capturé ;
- *  - relancer ne doit pas repartir de zéro sur les refus déjà exprimés.
- */
+/** PERSONNE N'A RÉPONDU — les trois sorties (consigne 8). */
 class SortiesDeSecoursTest extends TestCase
 {
     use OuvreLeCatalogue;
@@ -242,13 +231,7 @@ class SortiesDeSecoursTest extends TestCase
         $this->assertSame(AsapStatus::CANCELLED, $recherche->fresh()->status);
         $this->assertSame(BookingStatus::ANNULE, $booking->fresh()->status);
 
-        /*
-         * DEUX COLONNES DU MÊME NOM, DEUX TYPES — et SQLite ne le dit pas.
-         *
-         * `bookings.cancelled_by` est un `bigint unsigned` (QUI annule) ; celle de
-         * `asap_dispatch_requests` est une chaîne (QUEL RÔLE). Écrire « client » dans la première
-         * passe en test et échoue en MySQL strict, au moment précis où un client annule.
-         */
+        // DEUX COLONNES DU MÊME NOM, DEUX TYPES — et SQLite ne le dit pas.
         $this->assertSame((int) $booking->client_id, (int) $booking->fresh()->cancelled_by);
         $this->assertSame('client', $recherche->fresh()->cancelled_by);
 

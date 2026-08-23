@@ -7,11 +7,7 @@ use App\Admin\Console\EloquentResource;
 use App\Models\RiskEvaluation;
 
 /**
- * Les évaluations de risque et leurs décisions.
- *
- * LECTURE SEULE ici. Lever une retenue passe par le module Risque, qui réévalue la règle avant
- * de libérer : forcer une décision depuis une liste contournerait exactement le contrôle que
- * cette liste sert à surveiller.
+ * Les évaluations de risque et leurs décisions. LECTURE SEULE ici.
  *
  * @extends EloquentResource<RiskEvaluation>
  */

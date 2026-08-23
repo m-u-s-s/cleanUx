@@ -15,12 +15,7 @@ use Illuminate\Support\Facades\Notification;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * Concrete host that mounts the trait under test and satisfies the helper
- * methods the trait expects from its using class by delegating to the real
- * FinanceDocumentCalculator. This mirrors how FinanceDocumentService composes
- * the same behaviour, but exercises the trait code path directly.
- */
+/** Concrete host that mounts the trait under test and satisfies the helper methods the trait expects from its using class by delegating to the real FinanceDocumentCalculator. */
 class FinanceDocumentSyncHost
 {
     use SynchronizesFinanceDocuments;

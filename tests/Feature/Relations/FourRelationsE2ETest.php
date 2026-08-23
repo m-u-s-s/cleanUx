@@ -18,29 +18,13 @@ use App\Services\Matching\MatchingV2Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * SP1 Task 7 — Capstone E2E des 4 relations C2I / C2B / B2I / B2B × multi-métiers.
- *
- * Pour chaque relation, on crée une réservation pour UN métier précis, on seede
- * UNIQUEMENT un prestataire du BON TYPE possédant ce métier dans la zone, on lance
- * le matching canonique (MatchingV2Service::bestFor) et on vérifie que le bon User
- * est choisi. Pour C2B/B2B on pousse jusqu'à la mission via MissionDispatchService::
- * accept() afin de prouver que provider_organization_id + lead_provider_user_id sont
- * correctement propagés (org du worker pour une société, null pour un indépendant).
- *
- * Convention naming :
- *   C2I = client particulier  → prestataire indépendant      (org null)
- *   C2B = client particulier  → worker société               (org = providerOrg)
- *   B2I = client société      → prestataire indépendant      (org null)
- *   B2B = client société      → worker société               (org = providerOrg)
- */
+/** SP1 Task 7 — Capstone E2E des 4 relations C2I / C2B / B2I / B2B × multi-métiers. */
 class FourRelationsE2ETest extends TestCase
 {
     use RefreshDatabase;
 
     /**
      * Crée Trade + ServiceZone + ServiceCatalog (lié au trade) + Booking.
-     * $customerOrgId non-null => client société (B2x), null => client particulier (C2x).
      *
      * @return array{trade: Trade, zone: ServiceZone, booking: Booking}
      */
@@ -71,10 +55,7 @@ class FourRelationsE2ETest extends TestCase
         return compact('trade', 'zone', 'booking');
     }
 
-    /**
-     * Crée un User + ProviderProfile actif+vérifié du type donné, rattache le métier
-     * et rattache la zone (via primary_service_zone_id, suffisant pour l'éligibilité).
-     */
+    /** Crée un User + ProviderProfile actif+vérifié du type donné, rattache le métier et rattache la zone (via primary_service_zone_id, suffisant pour l'éligibilité). */
     private function provider(string $type, Trade $trade, int $zoneId, ?int $orgId = null): User
     {
         $user = User::factory()->create([
@@ -95,9 +76,7 @@ class FourRelationsE2ETest extends TestCase
         return $user;
     }
 
-    /**
-     * Câble le flux jusqu'à la mission acceptée, pour vérifier la propagation d'org.
-     */
+    /** Câble le flux jusqu'à la mission acceptée, pour vérifier la propagation d'org. */
     private function acceptViaMission(Booking $booking, User $worker): Mission
     {
         $mission = Mission::create(['booking_id' => $booking->id, 'status' => 'planned']);

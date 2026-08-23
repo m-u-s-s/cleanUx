@@ -8,12 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * Une recherche de prestataire immédiat.
- *
- * Porte la phase où le client attend devant son écran — avant qu'une mission existe, donc avant
- * que le dispatch habituel puisse s'en charger.
- */
+/** Une recherche de prestataire immédiat. */
 class AsapDispatchRequest extends Model
 {
     protected $fillable = [
@@ -72,10 +67,6 @@ class AsapDispatchRequest extends Model
 
     /**
      * LA RESERVATION QU'ON CHERCHE A POURVOIR.
-     *
-     * La recherche vivait dans son coin : elle prevenait des prestataires sans que personne ne
-     * puisse repondre, pendant que la chaine d'offres avec compte a rebours tournait ailleurs, sur
-     * un autre objet, sans rayon ni vague. Ces deux relations sont ce qui les reunit.
      *
      * @return BelongsTo<Booking, $this>
      */

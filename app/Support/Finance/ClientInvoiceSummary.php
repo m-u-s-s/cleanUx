@@ -8,37 +8,22 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * Single source of truth for the client invoice summary block, payment-health
- * indicator, and latest-payment-events feed.
- *
- * All queries are scoped through ClientFinanceDocumentScope so isolation rules
- * (own + org/site) are identical to the web Livewire component.
- *
- * INTENTIONAL DIVERGENCE — currency_symbol resolution:
- *   The web Livewire component (FinanceDocumentsClient::getFinanceSummaryProperty)
- *   resolves the currency symbol from the most-recent QUOTE first, falling back
- *   to the most-recent invoice. Quotes are not exposed on the mobile API (they
- *   are a B2B web-only feature), so this class resolves the symbol from the
- *   most-recent INVOICE only. The divergence is by design and documented here
- *   so tests must NOT assert equality of `currency_symbol` between the two sides.
- *   See tests/Feature/Finance/ClientInvoiceSummaryParityTest.php.
- */
+/** Single source of truth for the client invoice summary block, payment-health indicator, and latest-payment-events feed. */
 class ClientInvoiceSummary
 {
     /**
      * @return array{
-     *     summary: array{
-     *         invoices_count: int,
-     *         paid_count: int,
-     *         partial_count: int,
-     *         overdue_count: int,
-     *         outstanding_total: float,
-     *         next_due_at: string|null,
-     *         currency_symbol: string
-     *     },
-     *     payment_health: array{tone: string, label: string, title: string, message: string},
-     *     latest_payment_events: list<array{id: int, amount: float, status: string, reference: string, date: string|null}>
+     * summary: array{
+     * invoices_count: int,
+     * paid_count: int,
+     * partial_count: int,
+     * overdue_count: int,
+     * outstanding_total: float,
+     * next_due_at: string|null,
+     * currency_symbol: string
+     * },
+     * payment_health: array{tone: string, label: string, title: string, message: string},
+     * latest_payment_events: list<array{id: int, amount: float, status: string, reference: string, date: string|null}>
      * }
      */
     public static function for(User $user): array
@@ -132,8 +117,7 @@ class ClientInvoiceSummary
     }
 
     /**
-     * Mirrors FinanceDocumentsClient::getLatestPaymentEventsProperty() — returns
-     * the 5 most-recent payment events across the latest 15 invoices.
+     * Mirrors FinanceDocumentsClient::getLatestPaymentEventsProperty() — returns the 5 most-recent payment events across the latest 15 invoices.
      *
      * @return list<array{id: int, amount: float, status: string, reference: string, date: string|null}>
      */

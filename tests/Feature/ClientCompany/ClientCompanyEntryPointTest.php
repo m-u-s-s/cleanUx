@@ -9,10 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Espace société B2B P1 — l'analytics société, longtemps orpheline, doit être
- * accessible et gardée par le type d'organisation, dans l'espace société.
- */
+/** Espace société B2B P1 — l'analytics société, longtemps orpheline, doit être accessible et gardée par le type d'organisation, dans l'espace société. */
 class ClientCompanyEntryPointTest extends TestCase
 {
     use RefreshDatabase;

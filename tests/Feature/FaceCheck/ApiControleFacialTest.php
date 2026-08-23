@@ -56,13 +56,7 @@ class ApiControleFacialTest extends TestCase
             ->assertJsonPath('data.required', false);
     }
 
-    /**
-     * LE POINT LE PLUS IMPORTANT DE TOUT LE MODULE.
-     *
-     * Si l'échéance sortait, un prestataire saurait exactement quand se présenter en personne — et
-     * pourrait prêter son compte le reste du temps. Le module aurait coûté cher pour ne rien
-     * prouver. On vérifie la charge utile ENTIÈRE, pas seulement le champ qu'on a pensé à cacher.
-     */
+    /** LE POINT LE PLUS IMPORTANT DE TOUT LE MODULE. */
     public function test_lecheance_ne_sort_par_aucune_reponse_dapi(): void
     {
         $this->enroler();
@@ -200,12 +194,7 @@ class ApiControleFacialTest extends TestCase
             ->assertOk();
     }
 
-    /**
-     * LE PARCOURS DE REMÉDIATION RESTE ATTEIGNABLE QUAND TOUT LE RESTE EST FERMÉ.
-     *
-     * C'est la boucle qu'il ne faut pas fabriquer : exiger un contrôle et fermer la porte par
-     * laquelle on le passe. Le module KYC a déjà cette exemption, pour la même raison.
-     */
+    /** LE PARCOURS DE REMÉDIATION RESTE ATTEIGNABLE QUAND TOUT LE RESTE EST FERMÉ. */
     public function test_les_routes_du_controle_restent_ouvertes_a_un_compte_bloque(): void
     {
         $this->enroler();
@@ -238,14 +227,7 @@ class ApiControleFacialTest extends TestCase
 
     // ─── Aides ───────────────────────────────────────────────────────────────
 
-    /**
-     * UN VRAI CONTENU PLUTÔT QU'UNE IMAGE GÉNÉRÉE.
-     *
-     * `UploadedFile::fake()->image()` exige l'extension GD, absente de cet environnement. Et le
-     * contenu contrôlé vaut mieux de toute façon : il porte le marqueur d'identité du fournisseur
-     * bouchon, donc le test dit VRAIMENT « c'est le même visage » au lieu de croiser les doigts
-     * sur des pixels aléatoires. Le type MIME est déduit du nom du fichier par Laravel.
-     */
+    /** UN VRAI CONTENU PLUTÔT QU'UNE IMAGE GÉNÉRÉE. */
     private function selfie(string $nom = 'selfie.jpg'): UploadedFile
     {
         return UploadedFile::fake()->createWithContent(

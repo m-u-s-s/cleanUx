@@ -13,19 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-/**
- * SP3 Task 7 — GET /api/client/companies
- *
- * Liste les SOCIÉTÉS prestataires éligibles pour un métier (déduit de
- * service_catalog_id) + une zone, triées par note décroissante, pour le browse
- * mobile + web. L'éligibilité est entièrement déléguée à EligibleCompaniesResolver
- * (SP3 Task 3) — pas de réinvention ici.
- *
- * La zone peut être fournie directement (service_zone_id, chemin web inchangé) OU
- * résolue depuis un code postal (postal_code) — exactement comme la création de
- * booking (ClientBookingController). Le wizard mobile porte déjà le code postal
- * dans son state, donc l'utilisateur n'a JAMAIS à saisir un id de zone technique.
- */
+/** SP3 Task 7 — GET /api/client/companies Liste les SOCIÉTÉS prestataires éligibles pour un métier (déduit de service_catalog_id) + une zone, triées par note décroissante, pour le browse mobile + web. */
 class CompanyDirectoryController extends Controller
 {
     public function __invoke(Request $request, EligibleCompaniesResolver $resolver, ZoneCoverageService $coverage): JsonResponse
@@ -63,9 +51,7 @@ class CompanyDirectoryController extends Controller
     }
 
     /**
-     * Résout une service_zone_id depuis un code postal (+ ville optionnelle), via
-     * EXACTEMENT le service de couverture utilisé par la création de booking
-     * (ClientBookingController::resolveServiceZoneId). Pas de 2e logique divergente.
+     * Résout une service_zone_id depuis un code postal (+ ville optionnelle), via EXACTEMENT le service de couverture utilisé par la création de booking (ClientBookingController::resolveServiceZoneId).
      *
      * @throws ValidationException si le code postal ne résout aucune zone couverte.
      */
@@ -83,9 +69,7 @@ class CompanyDirectoryController extends Controller
         return (int) $zoneId;
     }
 
-    /**
-     * Nombre de workers company_worker actifs + vérifiés rattachés à la société.
-     */
+    /** Nombre de workers company_worker actifs + vérifiés rattachés à la société. */
     private function providersCount(int $organizationId): int
     {
         return (int) DB::table('provider_profiles')

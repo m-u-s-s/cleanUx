@@ -7,18 +7,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 
-/**
- * Traduire les libellés du catalogue, sans jamais laisser un écran vide.
- *
- * LA CHAÎNE DE REPLI EST LA RÈGLE : langue demandée → langue par défaut → colonne de base. Un
- * client néerlandophone devant une question sans traduction voit le français ; il ne voit jamais
- * un blanc. Une question muette est pire qu'une question dans la mauvaise langue — elle ne peut
- * même pas être devinée.
- *
- * Écrire une traduction vide EFFACE la ligne plutôt que d'enregistrer une chaîne creuse : sans
- * cela, vider le champ dans l'écran d'administration produirait un libellé blanc en production,
- * alors que l'intention était manifestement de revenir au libellé de base.
- */
+/** Traduire les libellés du catalogue, sans jamais laisser un écran vide. */
 trait HasCatalogTranslations
 {
     /** @return MorphMany<CatalogTranslation, $this> */
@@ -27,27 +16,10 @@ trait HasCatalogTranslations
         return $this->morphMany(CatalogTranslation::class, 'translatable');
     }
 
-    /**
-     * Le libellé dans la langue demandée, ou le meilleur repli disponible.
-     *
-     * Jamais nul quand la colonne de base est renseignée : c'est ce qui garantit qu'aucun écran
-     * n'affiche de vide.
-     */
+    /** Le libellé dans la langue demandée, ou le meilleur repli disponible. */
     public function translate(string $field, ?string $locale = null): ?string
     {
-        /*
-         * UN OBJET QUI N'EXISTE PAS EN BASE N'A PAS DE TRADUCTION, ET NE DOIT RIEN COÛTER.
-         *
-         * Sans cette sortie, `$this->translations()` engendre une requête sur une clé nulle. Elle
-         * ne rend jamais rien — Laravel y ajoute `id IS NULL AND id IS NOT NULL` — mais elle
-         * TOUCHE la base : il faut une connexion, et il faut que `catalog_translations` existe.
-         *
-         * Mesuré : quatorze tests du moteur de prix sont tombés d'un coup sur
-         * « no such table: catalog_translations ». Ils construisent un métier en mémoire pour
-         * vérifier une arithmétique — c'est légitime, et le prix n'a aucune raison d'exiger une
-         * base de données. Traduire un libellé ne doit pas transformer un calcul pur en calcul
-         * persistant : ce serait payer un service rendu ailleurs.
-         */
+        // UN OBJET QUI N'EXISTE PAS EN BASE N'A PAS DE TRADUCTION, ET NE DOIT RIEN COÛTER.
         if (! $this->exists) {
             return $this->getAttribute($field);
         }
@@ -64,11 +36,7 @@ trait HasCatalogTranslations
             ->filter(fn (CatalogTranslation $t) => filled($t->value))
             ->keyBy('locale');
 
-        /*
-         * `has()` puis `get()` plutôt que `?->` : la collection est indexée par langue et
-         * `get()` y est typé non-nul, si bien que l'accès sûr n'y protégeait rien — il masquait
-         * seulement l'absence, que ce `has()` dit maintenant explicitement.
-         */
+        // `has()` puis `get()` plutôt que `?->` : la collection est indexée par langue et `get()` y est typé non-nul, si bien que l'accès sûr n'y protégeait rien — il masquait seulement l'absence, que ce `has()` dit maintenant explicitement.
         $traduit = static fn (string $code): ?string => $byLocale->has($code)
             ? (string) $byLocale->get($code)->value
             : null;
@@ -78,12 +46,7 @@ trait HasCatalogTranslations
             ?? $this->getAttribute($field);
     }
 
-    /**
-     * Enregistre — ou retire — une traduction.
-     *
-     * Une valeur vide supprime la ligne : revenir au libellé de base doit être aussi simple que
-     * d'effacer le champ, et ne doit surtout pas produire un écran blanc.
-     */
+    /** Enregistre — ou retire — une traduction. */
     public function setTranslation(string $field, string $locale, ?string $value): void
     {
         if (blank($value)) {
@@ -103,9 +66,6 @@ trait HasCatalogTranslations
 
     /**
      * Les langues où ce libellé manque encore.
-     *
-     * Sert à l'écran d'administration : dire « il manque le néerlandais » vaut mieux que de
-     * laisser découvrir le trou en production, par un client qui ne comprend pas la question.
      *
      * @param  list<string>  $fields
      * @return list<string>

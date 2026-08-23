@@ -19,16 +19,7 @@ use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * ANNULER — le questionnaire remplace le champ libre, des deux côtés.
- *
- * Deux garanties se testent ici :
- *
- *   - l'AIGUILLAGE : certaines réponses ne mènent pas à une annulation, et on le dit AVANT que la
- *     personne appuie. Après, elle a déjà annulé ;
- *   - la SÉPARATION annuler / abandonner : le prestataire ne peut plus annuler une fois
- *     l'intervention démarrée.
- */
+/** ANNULER — le questionnaire remplace le champ libre, des deux côtés. */
 class AnnulerLaMissionTest extends TestCase
 {
     use RefreshDatabase;
@@ -106,12 +97,7 @@ class AnnulerLaMissionTest extends TestCase
         );
     }
 
-    /**
-     * L'AIGUILLAGE NE FAIT PAS ANNULER — et il le dit.
-     *
-     * « Le travail ne correspond pas » renvoie vers le nouveau devis. Un prestataire qui veut partir
-     * parce que le chantier est trop gros ne doit pas annuler.
-     */
+    /** L'AIGUILLAGE NE FAIT PAS ANNULER — et il le dit. */
     public function test_un_aiguillage_ne_produit_aucune_annulation(): void
     {
         $mission = $this->mission('domicile');
@@ -143,10 +129,7 @@ class AnnulerLaMissionTest extends TestCase
         $this->assertSame(1, BookingCancellationV2::query()->where('booking_id', $mission->booking_id)->count());
     }
 
-    /**
-     * ANNULER ET ABANDONNER SONT DEUX FAITS DIFFÉRENTS. Une fois l'intervention démarrée, le
-     * prestataire ne peut plus annuler : le client se retrouverait avec un chantier ouvert.
-     */
+    /** ANNULER ET ABANDONNER SONT DEUX FAITS DIFFÉRENTS. */
     public function test_le_prestataire_ne_peut_plus_annuler_une_mission_demarree(): void
     {
         $mission = $this->mission(demarree: Carbon::now()->subMinutes(10));

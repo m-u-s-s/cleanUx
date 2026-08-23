@@ -8,10 +8,7 @@ use App\Models\FinanceInvoice;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Audit HIGH — émission d'avoirs (credit notes) lors des remboursements.
- * Document comptable numéroté + idempotent par identifiant de refund Stripe.
- */
+/** Audit HIGH — émission d'avoirs (credit notes) lors des remboursements. */
 class FinanceCreditNoteService
 {
     /**
@@ -57,10 +54,7 @@ class FinanceCreditNoteService
         });
     }
 
-    /**
-     * Numéro séquentiel par année, sans trou : AV-{année}-{00001}.
-     * Calculé sous verrou pour éviter les collisions en cas de refunds concurrents.
-     */
+    /** Numéro séquentiel par année, sans trou : AV-{année}-{00001}. */
     protected function nextNumber(): string
     {
         $year = now()->format('Y');

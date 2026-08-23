@@ -11,43 +11,7 @@ use App\Support\Domain\QuestionType;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 
-/**
- * Le calcul de prix, en un seul endroit.
- *
- *     prix_ligne = ( base_métier
- *                  + Σ modificateurs des réponses
- *                  + Σ (valeur numérique × coefficient à l'unité) )
- *                  × Π multiplicateurs des réponses
- *                  × coefficient de mode      (majoration du service immédiat)
- *                  × coefficient de zone      (déplacement, zone tarifaire)
- *                  [ × élargissement d'incertitude, sur le MAXIMUM seulement ]
- *                  + trajet mesuré × (mêmes multiplicateurs de PRIX, aucun élargissement)
- *
- *     prix_commande = Σ prix_lignes − remise multi-services
- *
- * L'ORDRE n'est pas négociable : on additionne d'abord, on multiplie ensuite. L'inverser donne un
- * autre prix, et les deux paraissent également plausibles à la lecture — d'où ce rappel.
- *
- * Quatre règles tenues bout à bout :
- *
- * 1. Tout est en CENTIMES ENTIERS. Les multiplicateurs travaillent en flottant, mais l'arrondi
- *    n'a lieu qu'une fois, à la toute fin. Arrondir à chaque étape fait dériver le total de
- *    quelques centimes — assez pour qu'une facture ne tombe pas juste, et pour que personne ne
- *    comprenne pourquoi.
- *
- * 2. La FOURCHETTE n'est pas un pourcentage inventé. Un « je ne sais pas » sur « murs seuls ou
- *    murs + plafonds » borne le prix entre l'option la moins chère et la plus chère : le client
- *    voit ce qu'il risque réellement. Le repli en pourcentage ne sert que lorsqu'une question
- *    n'offre aucune borne exploitable.
- *
- * 3. Le serveur fait autorité. Rien de ce que le navigateur annonce comme prix n'est lu ici.
- *
- * 4. Un MULTIPLICATEUR DE PRIX et un ÉLARGISSEMENT D'INCERTITUDE ne sont pas la même chose, même
- *    s'ils se ressemblent : les deux multiplient. Le premier dit combien la prestation coûte —
- *    majoration de l'immédiat, coefficient de zone, option « avec véhicule ». Le second dit
- *    seulement à quel point nous ignorons ce qui nous attend. Le trajet, lui, est MESURÉ : il prend
- *    les premiers et jamais les seconds. {@see self::quoteItem()}
- */
+/** Le calcul de prix, en un seul endroit. */
 class PricingEngine
 {
     public function __construct(
@@ -75,14 +39,7 @@ class PricingEngine
         // montant à rien de visible, et le contesterait à raison.
         $visible = $this->conditions->visible($questions, $answers);
 
-        /*
-         * LE TARIF DE LA ZONE REMPLACE CELUI DU MÉTIER.
-         *
-         * C'est le sens même de « l'activation et le prix sont la même ligne » : quand
-         * `trade_zone_pricing` fixe un tarif pour ce couple (métier, zone), c'est LUI qui engage.
-         * Le tarif du métier n'est plus qu'un défaut, celui qu'on hérite là où aucune grille
-         * locale n'a été décidée.
-         */
+        // LE TARIF DE LA ZONE REMPLACE CELUI DU MÉTIER.
         $base = $context['zone_base_cents'] ?? null;
         $base = $base !== null ? (int) $base : (int) ($trade->base_price_cents ?? 0);
         $sumMin = $base;
@@ -92,26 +49,7 @@ class PricingEngine
         $duration = (int) ($trade->estimated_duration_min ?? 0);
         $lines = [];
 
-        /*
-         * LE TEMPS ACHETÉ REMPLACE LE FORFAIT — c'est tout le propos de la facturation à l'heure.
-         *
-         * Trois conséquences, et la troisième est la plus importante :
-         *
-         * 1. La base devient `tarif horaire × heures choisies`. Le forfait du métier et celui de la
-         *    zone sont IGNORÉS : sur un métier horaire ils ne veulent plus rien dire, et les
-         *    additionner ferait payer deux fois la même prestation.
-         *
-         * 2. La ligne de devis nomme le calcul (« 3 h × 45,00 € ») au lieu de « Prestation de base ».
-         *    Un client qui voit son total sans voir d'où viennent les heures conteste, et il a raison.
-         *
-         * 3. La durée n'est plus une ESTIMATION mais un ENGAGEMENT : le client a acheté ces
-         *    minutes-là. C'est elle qui servira de repère au dépassement, et l'estimation du métier
-         *    n'a plus voix au chapitre — sinon un métier estimé à 2 h ferait basculer en dépassement
-         *    un client qui en a acheté 4.
-         *
-         * Les modificateurs des questions, eux, continuent de s'ajouter par-dessus : un supplément
-         * « produits fournis » reste un montant, pas des heures.
-         */
+        // LE TEMPS ACHETÉ REMPLACE LE FORFAIT — c'est tout le propos de la facturation à l'heure.
         $tarifHoraire = $context['hourly_rate_cents'] ?? null;
         $heuresAchetees = $this->heuresAchetees($context);
 
@@ -121,15 +59,7 @@ class PricingEngine
             $sumMax = $base;
             $duration = (int) round($heuresAchetees * 60);
 
-            /*
-             * LE NOM DU MÉTIER TEL QUE LE CLIENT L'A VU, DONC DANS SA LANGUE.
-             *
-             * Cette chaîne devient une LIGNE DU DEVIS. La même règle vaut déjà pour les questions
-             * — `OrderDraftManager:229` fige `question_label_snapshot` traduit, au motif qu'un devis
-             * rédigé dans une autre langue que celle de la commande serait inopposable. Un client
-             * néerlandophone qui a choisi une tuile « Schilderwerk » doit retrouver ce mot sur son
-             * devis, pas « Peinture ».
-             */
+            // LE NOM DU MÉTIER TEL QUE LE CLIENT L'A VU, DONC DANS SA LANGUE.
             $lines[] = $this->line(
                 '_hourly',
                 $trade->translate('name'),
@@ -161,14 +91,7 @@ class PricingEngine
             }
         }
 
-        /*
-         * LA DISTANCE, quand — et SEULEMENT quand — la zone a ouvert le tarif au kilomètre.
-         *
-         * Elle n'est pas versée dans la somme du service : elle a son propre chemin plus bas, parce
-         * qu'elle ne rencontre pas les mêmes multiplicateurs. Le drapeau est éteint par défaut sur
-         * toutes les lignes existantes — la sortie du moteur reste identique au centime pour tous
-         * les métiers d'aujourd'hui.
-         */
+        // LA DISTANCE, quand — et SEULEMENT quand — la zone a ouvert le tarif au kilomètre.
         $distance = $this->distanceImpact($context);
 
         if ($distance !== null) {
@@ -197,48 +120,14 @@ class PricingEngine
             [$min, $max] = [$max, $min];
         }
 
-        /*
-         * LE TRAJET MESURÉ ENTRE ICI — après les élargissements, jamais avant.
-         *
-         * Ce qu'il PREND : la majoration du mode immédiat, le coefficient de zone et les
-         * multiplicateurs venus des réponses. C'est le modèle Heetch/Bolt/Uber, et c'est le bon :
-         * une course de nuit majore ses kilomètres, pas seulement sa prise en charge. Facturer la
-         * majoration sur le seul premier mètre reviendrait à dire qu'un trajet de nuit de trente
-         * kilomètres coûte à peu près comme le même trajet en plein après-midi.
-         *
-         * Ce qu'il NE PREND PAS : les élargissements d'incertitude — les +15 % du questionnaire
-         * raccourci de l'immédiat, et le repli d'un « je ne sais pas » sans borne exploitable. Ils
-         * ont un sens sur une prestation qu'on découvrira sur place ; aucun sur une distance qu'on
-         * a mesurée. Ils s'appliquaient pourtant : une course de vingt kilomètres était annoncée
-         * « entre 34,45 € et 39,62 € » alors que les deux chiffres portaient les MÊMES kilomètres,
-         * et le client lisait cinq euros de risque là où il n'y en avait pas un centime.
-         *
-         * D'où `$multMin` et non `$multMax` : le premier ne porte que des multiplicateurs de prix
-         * réels, le second y mêle l'élargissement du repli. Deux notions dans un même champ — c'est
-         * ce que ce passage démêle.
-         *
-         * Minimum et maximum reçoivent donc le MÊME montant : sur ce qui est mesuré, il n'y a pas
-         * de fourchette à annoncer.
-         */
+        // LE TRAJET MESURÉ ENTRE ICI — après les élargissements, jamais avant.
         if ($distance !== null) {
             $trajet = (int) round($distance['cents'] * $multMin * $modeMultiplier * $zoneMultiplier);
             $min += $trajet;
             $max += $trajet;
         }
 
-        /*
-         * PLANCHER ET PLAFOND DE LA ZONE, appliqués APRÈS l'arrondi.
-         *
-         * Ce sont des engagements commerciaux — « on ne se déplace pas sous 45 € à Bruxelles » —
-         * pas des composantes du calcul. Les faire entrer plus tôt les laisserait multiplier par
-         * la majoration du mode immédiat, et le plancher annoncé ne serait pas celui appliqué.
-         *
-         * Ils portent sur le total TRAJET COMPRIS, et c'est délibéré : ce plancher existe pour
-         * couvrir un déplacement, et l'appliquer avant le trajet le facturerait deux fois. La
-         * contrepartie tient dans la même phrase — un plafond posé sur un métier tarifé au
-         * kilomètre écrête aussi les longues courses. C'est le sens littéral d'un plafond, et
-         * l'administrateur qui ouvre le kilomètre décide donc aussi de ce qu'il laisse en face.
-         */
+        // PLANCHER ET PLAFOND DE LA ZONE, appliqués APRÈS l'arrondi.
         $floor = $context['zone_min_cents'] ?? null;
         $ceiling = $context['zone_max_cents'] ?? null;
 
@@ -317,15 +206,6 @@ class PricingEngine
 
     /**
      * Le prix du TRAJET : prise en charge, kilomètres au-delà du forfait, minutes le cas échéant.
-     *
-     * Rend `null` — et non zéro — quand la tarification à la distance n'est pas ouverte sur ce
-     * couple (métier, zone), ou quand aucune route n'a été mesurée. La différence n'est pas
-     * cosmétique : zéro produirait une ligne « Trajet — 0,00 € » sur le devis d'un ménage, et
-     * ferait douter le client de ce qu'il lit.
-     *
-     * IL N'Y A PAS DE FOURCHETTE ICI. La distance est MESURÉE, pas estimée à partir d'une réponse
-     * incertaine : min et max sont donc le même nombre, et l'élargir donnerait une fausse
-     * impression d'approximation là où le chiffre est exact.
      *
      * @param  array<string, mixed>  $context
      * @return array{cents: int, detail: string}|null
@@ -451,11 +331,7 @@ class PricingEngine
 
         $unit = $pricing['unit'] ?? ($question->validation['unit'] ?? null);
 
-        /*
-         * La durée suit la même logique que le prix : à l'unité, elle est PROPORTIONNELLE à la
-         * valeur — 80 m² ne prennent pas le même temps que 20. Dans les autres modes, l'impact
-         * est forfaitaire. Confondre les deux ferait tenir une façade entière en vingt minutes.
-         */
+        // La durée suit la même logique que le prix : à l'unité, elle est PROPORTIONNELLE à la valeur — 80 m² ne prennent pas le même temps que 20.
         $durationImpact = (int) $question->duration_impact_min;
         $duration = $mode === PriceImpactMode::PER_UNIT
             ? (int) round($value * $durationImpact)
@@ -471,14 +347,7 @@ class PricingEngine
         ];
     }
 
-    /**
-     * « Je ne sais pas » : on borne au lieu de bloquer.
-     *
-     * C'est ce qui rend la porte de sortie tenable sans mentir sur le prix. Une question à
-     * options se borne entre l'option la moins chère et la plus chère ; une question numérique,
-     * entre les bornes de validation déclarées par l'administrateur. Le repli en pourcentage
-     * n'intervient que si la question n'offre aucune de ces deux prises.
-     */
+    /** « Je ne sais pas » : on borne au lieu de bloquer. */
     protected function unknownImpact(Question $question): array
     {
         $duration = 0;
@@ -546,10 +415,6 @@ class PricingEngine
     /**
      * Les heures achetées par le client, telles qu'elles arrivent du parcours.
      *
-     * Rend `null` — et non zéro — quand rien n'a été choisi : le moteur doit alors garder le
-     * forfait plutôt que d'annoncer 0 €. Un prix nul affiché sur un métier horaire ferait
-     * commander une prestation gratuite.
-     *
      * @param  array<string, mixed>  $context
      */
     protected function heuresAchetees(array $context): ?float
@@ -563,9 +428,7 @@ class PricingEngine
         return ((int) $minutes) / 60;
     }
 
-    /**
-     * « 3 h × 45,00 € » — le calcul écrit en toutes lettres sur la ligne de devis.
-     */
+    /** « 3 h × 45,00 € » — le calcul écrit en toutes lettres sur la ligne de devis. */
     protected function libelleDesHeures(float $heures, int $tarifCents): string
     {
         $heuresLisibles = fmod($heures, 1.0) === 0.0

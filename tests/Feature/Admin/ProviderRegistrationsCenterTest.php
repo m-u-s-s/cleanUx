@@ -11,16 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Écran d'approbation des prestataires inscrits en libre-service depuis l'app mobile.
- *
- * Ces comptes sont créés avec `status = pending` et `self_registered_at` renseigné ; le
- * middleware provider.approved les cantonne à leur dossier d'onboarding tant qu'un humain ne
- * les a pas approuvés. Sans cet écran, la bascule se faisait à la main en base.
- *
- * Distinct d'AdminOnboardingProvidersList, qui traite l'approbation FINALE sur pièces
- * justificatives et refuse tout profil sans document — donc précisément ces nouveaux comptes.
- */
+/** Écran d'approbation des prestataires inscrits en libre-service depuis l'app mobile. */
 class ProviderRegistrationsCenterTest extends TestCase
 {
     use RefreshDatabase;
@@ -35,10 +26,7 @@ class ProviderRegistrationsCenterTest extends TestCase
             ->assertSee('alice@presta.test');
     }
 
-    /**
-     * Le périmètre est la clé de cet écran : les prestataires antérieurs à l'inscription en
-     * libre-service n'ont pas à y apparaître, ils ne sont soumis à aucune attente d'approbation.
-     */
+    /** Le périmètre est la clé de cet écran : les prestataires antérieurs à l'inscription en libre-service n'ont pas à y apparaître, ils ne sont soumis à aucune attente d'approbation. */
     public function test_providers_created_before_self_registration_are_not_listed(): void
     {
         $user = User::factory()->employe()->create(['name' => 'Ancien Prestataire']);
@@ -74,11 +62,7 @@ class ProviderRegistrationsCenterTest extends TestCase
             ->assertOk();
     }
 
-    /**
-     * Une société inscrite crée AUSSI un OrganizationAccount en `pending`. L'approuver sans
-     * l'activer laisserait l'organisation — celle que consomme l'espace provider-company — dans
-     * un état intermédiaire que plus personne ne viendrait débloquer.
-     */
+    /** Une société inscrite crée AUSSI un OrganizationAccount en `pending`. */
     public function test_approving_a_company_also_activates_its_organization(): void
     {
         [$profile, $organization] = $this->selfRegisteredCompany('Nettoyage Dupont SPRL');

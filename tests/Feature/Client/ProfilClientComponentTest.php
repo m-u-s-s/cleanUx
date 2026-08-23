@@ -16,20 +16,13 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * Coverage for the client profile Livewire component.
- *
- * Exercises mount/render, the computed stats/address/preference props,
- * and the enterprise-only multi-site CRUD wire actions (create / edit /
- * save / delete) together with their guard branches.
- */
+/** Coverage for the client profile Livewire component. */
 class ProfilClientComponentTest extends TestCase
 {
     use RefreshDatabase;
 
     /**
      * Build a CLIENT_COMPANY org + an entreprise user attached to it.
-     * The org type drives User::isClientCompany() → isEntreprise true.
      *
      * @return array{0: OrganizationAccount, 1: User}
      */

@@ -17,13 +17,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
-/**
- * La confirmation : le panier devient une réservation.
- *
- * Trois garanties. Elle est IDEMPOTENTE — un double-clic ne doit pas produire deux réservations
- * et deux empreintes bancaires. Le devis est FIGÉ — le prix accepté engage, pas celui qu'un
- * recalcul donnerait demain. Et l'identité n'est demandée qu'ICI, au dernier moment.
- */
+/** La confirmation : le panier devient une réservation. Trois garanties. */
 class OrderConfirmationTest extends TestCase
 {
     use RefreshDatabase;
@@ -57,13 +51,7 @@ class OrderConfirmationTest extends TestCase
         $this->assertSame('Rue de la Loi 1, 1000 Bruxelles', $booking->address);
     }
 
-    /**
-     * LA garantie du double envoi.
-     *
-     * Un double-clic, un rechargement, un retour arrière du navigateur : sans garde, le client se
-     * retrouverait avec deux réservations et deux pré-autorisations pour une seule intervention —
-     * et c'est lui qui découvrirait le doublon sur son relevé.
-     */
+    /** LA garantie du double envoi. */
     public function test_confirming_twice_creates_a_single_booking(): void
     {
         [$draft, $client] = $this->readyDraft();
@@ -75,13 +63,7 @@ class OrderConfirmationTest extends TestCase
         $this->assertSame($first->converted_booking_id, $second->converted_booking_id);
     }
 
-    /**
-     * Le DEVIS EST FIGÉ.
-     *
-     * Le prix affiché au moment du clic est celui qui engage. Recalculer plus tard exposerait le
-     * client à un montant différent de celui qu'il a accepté, parce qu'un administrateur aura
-     * modifié une grille entre-temps.
-     */
+    /** Le DEVIS EST FIGÉ. Le prix affiché au moment du clic est celui qui engage. */
     public function test_the_quote_is_frozen_at_the_moment_of_the_click(): void
     {
         [$draft, $client] = $this->readyDraft();
@@ -146,12 +128,7 @@ class OrderConfirmationTest extends TestCase
 
     // ─── Ce qui bloque ───────────────────────────────────────────────────────────────────────
 
-    /**
-     * Les blocages sont RENDUS, pas levés.
-     *
-     * L'écran doit pouvoir griser son bouton et dire pourquoi, au lieu de laisser le client
-     * cliquer pour découvrir un refus.
-     */
+    /** Les blocages sont RENDUS, pas levés. */
     public function test_blockers_are_returned_so_the_screen_can_explain(): void
     {
         $draft = app(OrderDraftManager::class)->resumeOrCreate('jeton');
@@ -175,13 +152,7 @@ class OrderConfirmationTest extends TestCase
 
     // ─── Paiement ────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Sans prestataire assigné, le paiement ne peut pas être pré-autorisé — et on le DIT.
-     *
-     * La charge Stripe est une « destination charge » vers le compte du professionnel : sans
-     * destination, il n'y a nulle part où envoyer l'argent. Avec l'attribution automatique,
-     * personne n'est désigné à la confirmation.
-     */
+    /** Sans prestataire assigné, le paiement ne peut pas être pré-autorisé — et on le DIT. */
     public function test_payment_waits_for_a_provider_and_says_so(): void
     {
         [$draft, $client] = $this->readyDraft();
@@ -208,12 +179,7 @@ class OrderConfirmationTest extends TestCase
         $this->assertStringContainsString('configuration de ses paiements', $readiness['reason']);
     }
 
-    /**
-     * Aucun soft-fail sur le paiement.
-     *
-     * Une réservation confirmée sans autorisation valide est une intervention qu'on enverra faire
-     * sans garantie d'être payé.
-     */
+    /** Aucun soft-fail sur le paiement. */
     public function test_authorising_without_a_ready_provider_is_refused_loudly(): void
     {
         [$draft, $client] = $this->readyDraft();

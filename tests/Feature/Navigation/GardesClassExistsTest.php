@@ -4,17 +4,7 @@ namespace Tests\Feature\Navigation;
 
 use Tests\TestCase;
 
-/**
- * UNE ROUTE NE DOIT PAS POUVOIR DISPARAÎTRE EN SILENCE.
- *
- * Les fichiers de routes enveloppent 132 déclarations dans `class_exists(X::class)`.
- * C'est prudent au démarrage — mais le jour où `X` est renommée, la route cesse
- * simplement d'exister : pas d'erreur, pas de test rouge, juste un écran que plus
- * personne n'atteint. Sur ce dépôt, le module complet et injoignable est la
- * famille de défauts dominante ; cette construction en fabrique sans bruit.
- *
- * Ce test transforme ce risque muet en échec visible.
- */
+/** UNE ROUTE NE DOIT PAS POUVOIR DISPARAÎTRE EN SILENCE. */
 class GardesClassExistsTest extends TestCase
 {
     public function test_chaque_garde_class_exists_designe_une_classe_qui_existe(): void
@@ -58,15 +48,7 @@ class GardesClassExistsTest extends TestCase
             }
         }
 
-        /*
-            LE CONTRÔLE DOIT TROUVER DE QUOI CONTRÔLER.
-
-            Si le motif de lecture se casse un jour, il ne trouve plus AUCUNE garde —
-            et la liste des absentes est vide, donc le test passe au vert en ne
-            mesurant rien. Le plancher rend cette panne visible : le dépôt en compte
-            132 aujourd'hui, en dessous de cent c'est le contrôle qui est cassé, pas
-            le code.
-        */
+        // LE CONTRÔLE DOIT TROUVER DE QUOI CONTRÔLER.
         $this->assertGreaterThan(100, $total, 'Le contrôle ne lit plus les gardes : motif à revoir');
         $this->assertSame([], $absentes, sprintf(
             '%d garde(s) class_exists désignent une classe absente : la route correspondante '.

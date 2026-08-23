@@ -9,27 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-/**
- * DÉCRIRE SON BESOIN EN TEXTE, ET ARRIVER SUR LE BON MÉTIER (E5).
- *
- * LE PROBLÈME QU'IL RÈGLE. Le moteur de commande commence par « choisissez un secteur », puis « un
- * métier ». C'est parfait quand on sait qu'il faut un plafonneur ; ça ne l'est pas quand on écrit
- * « il y a une auréole marron au plafond de la salle de bain ». Le client abandonne à l'étape zéro,
- * ou choisit le mauvais métier et découvre l'erreur quand le professionnel arrive.
- *
- * LE CATALOGUE FAIT AUTORITÉ, PAS LE MODÈLE. On ne demande jamais à l'IA d'inventer un métier : on
- * lui donne la liste réelle et on n'accepte qu'un identifiant qui s'y trouve. Une réponse hors
- * catalogue est écartée — sans quoi le parcours partirait sur un métier qui n'existe pas, et
- * l'erreur ne se verrait qu'au moment de chercher un prestataire.
- *
- * IL PROPOSE, IL NE DÉCIDE PAS. Le résultat porte un niveau de confiance et pré-remplit le
- * parcours ; le client garde la main sur chaque étape. Une IA qui commanderait à sa place
- * transformerait une erreur d'interprétation en intervention non désirée.
- *
- * REPLI DÉTERMINISTE, TOUJOURS. Sans clé d'API, en cas de panne ou de dépassement de quota, la
- * recherche par mots-clés sur le catalogue prend le relais. Elle est moins fine et parfaitement
- * honnête sur sa confiance : un assistant qui tombe en panne doit dégrader, pas disparaître.
- */
+/** DÉCRIRE SON BESOIN EN TEXTE, ET ARRIVER SUR LE BON MÉTIER (E5). LE PROBLÈME QU'IL RÈGLE. */
 class OrderIntentInterpreter
 {
     /**
@@ -123,11 +103,7 @@ class OrderIntentInterpreter
             $metier = $catalogue->firstWhere('id', (int) ($donnees['trade_id'] ?? 0));
 
             if ($metier === null) {
-                /*
-                 * LE CATALOGUE FAIT AUTORITÉ. Un identifiant hors liste est écarté sans discussion :
-                 * partir sur un métier qui n'existe pas produirait une commande que le dispatch ne
-                 * saurait servir, et l'erreur ne se verrait qu'à la recherche de prestataire.
-                 */
+                // LE CATALOGUE FAIT AUTORITÉ.
                 Log::info('[order_intent] métier hors catalogue écarté', ['recu' => $donnees['trade_id'] ?? null]);
 
                 return $this->interpreterParMotsCles($description, $catalogue);
@@ -154,9 +130,6 @@ class OrderIntentInterpreter
     /**
      * LE REPLI DÉTERMINISTE — mots du catalogue contre mots de la description.
      *
-     * Volontairement simple et explicable. Il ne prétend pas comprendre : il compte des
-     * correspondances, et le dit en rendant une confiance basse.
-     *
      * @param  Collection<int, Trade>  $catalogue
      * @return array<string, mixed>
      */
@@ -172,18 +145,7 @@ class OrderIntentInterpreter
         $meilleurScore = 0;
 
         foreach ($catalogue as $metier) {
-            /*
-             * LE CORPUS PORTE TOUTES LES LANGUES, PAS SEULEMENT CELLE DU MOMENT.
-             *
-             * Ce repli compte des mots ; il ne comprend rien. Construit sur le seul libellé
-             * français, il rendait zéro pour « schilderwerk ramen » sur CHAQUE métier, et le client
-             * néerlandophone lisait « Nous n'avons pas reconnu le service » — alors que le service
-             * existe et porte ce nom depuis que le catalogue se traduit.
-             *
-             * Toutes les traductions y entrent, et non la seule langue active : quelqu'un peut
-             * écrire un mot anglais dans une phrase française, et un mot de plus dans le corpus ne
-             * peut qu'AJOUTER une correspondance, jamais en retirer une qui fonctionnait.
-             */
+            // LE CORPUS PORTE TOUTES LES LANGUES, PAS SEULEMENT CELLE DU MOMENT.
             $corpus = Str::lower(Str::ascii(trim(
                 ($metier->name ?? '')
                 .' '.($metier->description ?? '')

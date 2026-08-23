@@ -14,22 +14,7 @@ use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Un administrateur en LECTURE SEULE ne modifie rien du catalogue.
- *
- * CE QUE CE FICHIER CORRIGE. `refusesWrite()` existait sur cet écran et consultait bien la Policy —
- * mais il ne gardait que les QUATRE mutations de réordonnancement. Les sept autres — enregistrer un
- * secteur, l'archiver, le retirer du carrousel, rattacher un métier, l'activer, l'ouvrir dans une
- * zone, en créer un — étaient ouvertes à quiconque franchissait `EnforcesAdminAccess`.
- *
- * Or ce trait s'arrête à « est-ce un administrateur » : un `platform_role` à « admin » assorti d'un
- * `access_scope` à « readonly » le franchit. Le compte destiné à consulter pouvait donc archiver un
- * secteur du carrousel client.
- *
- * LE TEST EST ÉCRIT PAR ÉNUMÉRATION plutôt que méthode par méthode : une mutation ajoutée demain
- * sans garde doit faire échouer la suite, et non passer inaperçue parce que personne n'aura pensé à
- * lui écrire son test.
- */
+/** Un administrateur en LECTURE SEULE ne modifie rien du catalogue. CE QUE CE FICHIER CORRIGE. */
 class CatalogWriteGuardTest extends TestCase
 {
     use RefreshDatabase;
@@ -101,13 +86,7 @@ class CatalogWriteGuardTest extends TestCase
         $this->assertNotNull(Sector::find($secteur->id));
     }
 
-    /**
-     * La traduction est une ÉCRITURE du catalogue, au même titre que le reste.
-     *
-     * Un libellé est ce que le client LIT : le changer dans cinq langues change le produit tel
-     * qu'il se présente. Ce test existe parce que ce fichier l'exige de toute mutation nouvelle —
-     * `saveTranslation()` a été ajoutée après lui, et devait donc venir s'y inscrire.
-     */
+    /** La traduction est une ÉCRITURE du catalogue, au même titre que le reste. */
     public function test_il_ne_traduit_pas_un_libelle(): void
     {
         $metier = Trade::query()->firstOrFail();
@@ -177,13 +156,7 @@ class CatalogWriteGuardTest extends TestCase
 
     public function test_aucune_mutation_n_echappe_au_garde(): void
     {
-        /*
-         * L'ÉNUMÉRATION, et non la liste écrite à la main.
-         *
-         * Une mutation ajoutée demain sans garde doit faire échouer ce test, et non passer
-         * inaperçue parce que personne n'aura pensé à lui écrire le sien. C'est exactement ainsi
-         * que les sept trous d'origine sont apparus : au fil des ajouts, un par un.
-         */
+        // L'ÉNUMÉRATION, et non la liste écrite à la main.
         $source = (string) file_get_contents(
             base_path('app/Livewire/Admin/OrderEngine/CatalogCenter.php'),
         );
@@ -213,17 +186,7 @@ class CatalogWriteGuardTest extends TestCase
 
     private function ecritEnBase(string $corps): bool
     {
-        /*
-         * LA LISTE DOIT SUIVRE LES FAÇONS D'ÉCRIRE, PAS SEULEMENT CELLES D'ELOQUENT.
-         *
-         * `setTranslation()` écrit dans `catalog_translations` sans qu'aucun de ces verbes
-         * n'apparaisse dans le corps de la méthode appelante : il les emploie à l'intérieur du
-         * trait. `saveTranslation()` était donc SAUTÉE par cette énumération, et ce test passait au
-         * vert sans jamais la regarder — le vert obtenu pour une mauvaise raison, que ce fichier
-         * existe précisément pour empêcher.
-         *
-         * Toute nouvelle façon d'écrire ajoutée au dépôt doit venir s'inscrire ici.
-         */
+        // LA LISTE DOIT SUIVRE LES FAÇONS D'ÉCRIRE, PAS SEULEMENT CELLES D'ELOQUENT.
         foreach (['->update(', '->save()', '::create(', '->delete()', 'updateOrCreate', 'firstOrNew', '->archive(', '->setTranslation('] as $signe) {
             if (str_contains($corps, $signe)) {
                 return true;

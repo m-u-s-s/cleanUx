@@ -6,11 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * OTP téléphone — garde optionnelle (gated) : quand auth.require_phone_verification
- * est activé, force la vérification du numéro avant d'accéder aux routes protégées.
- * Off par défaut → no-op (ne casse aucun flux existant).
- */
+/** OTP téléphone — garde optionnelle (gated) : quand auth.require_phone_verification est activé, force la vérification du numéro avant d'accéder aux routes protégées. */
 class EnsurePhoneVerified
 {
     public function handle(Request $request, Closure $next): Response

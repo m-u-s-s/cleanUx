@@ -7,10 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * Bundle Marketplace P1 — demande de devis envoyée à un prestataire sollicité
- * pour un item de chantier groupé. Le prestataire peut proposer son prix.
- */
+/** Bundle Marketplace P1 — demande de devis envoyée à un prestataire sollicité pour un item de chantier groupé. */
 class BundleQuoteRequestedNotification extends Notification
 {
     use Queueable;

@@ -17,20 +17,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * SP3 Task 6 — Le client peut CHOISIR une SOCIÉTÉ prestataire pour sa réservation.
- *
- * Ce choix est :
- *   - GATÉ au Premium (frontière sécurité, comme le palier "nouveau prestataire" SP2),
- *   - VALIDÉ contre l'éligibilité (la société doit avoir ≥1 worker couvrant zone+métier
- *     du booking — délégué à EligibleCompaniesResolver).
- *
- * On monte orgA (PROVIDER_COMPANY) ÉLIGIBLE (worker company actif/vérifié, taggé du bon
- * métier, dispo sur le créneau, rattaché à la zone) et orgZ NON éligible (worker taggé
- * d'un AUTRE métier). Le resolver doit retourner assigned_provider_organization_id pour
- * un client premium choisissant orgA, et lever AuthorizationException pour un non-premium
- * ou pour orgZ.
- */
+/** SP3 Task 6 — Le client peut CHOISIR une SOCIÉTÉ prestataire pour sa réservation. */
 class CompanySelectionResolverTest extends TestCase
 {
     use CreatesZoneAwareFixtures;

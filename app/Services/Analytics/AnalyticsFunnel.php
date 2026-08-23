@@ -4,19 +4,7 @@ namespace App\Services\Analytics;
 
 use App\Models\AnalyticsEvent;
 
-/**
- * Funnel analyzer — calcule un funnel ordonné d'event_names sur une période.
- *
- * Usage :
- *   AnalyticsFunnel::for($from, $to)
- *     ->steps(['search.performed', 'provider.viewed', 'booking.started', 'booking.confirmed'])
- *     ->groupBy('user_id')  // ou 'session_id'
- *     ->compute();
- *
- * Retourne un tableau ordonné de :
- *   ['step' => 'search.performed', 'count' => N, 'rate_from_start' => 1.0, 'rate_from_prev' => 1.0]
- *   ...
- */
+/** Funnel analyzer — calcule un funnel ordonné d'event_names sur une période. */
 class AnalyticsFunnel
 {
     /** @var array<int,string> */

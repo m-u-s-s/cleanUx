@@ -42,13 +42,7 @@ class MoteurDeComparaisonFacialeTest extends TestCase
         );
     }
 
-    /**
-     * LA DIFFÉRENCE DÉLIBÉRÉE AVEC LE MODULE KYC.
-     *
-     * `KycServiceProvider` bascule tout seul sur Onfido dès qu'un jeton existe. Ici, non : poser
-     * une clé pour un autre module ne doit pas déplacer un contrôle d'identité vers un service
-     * distant et payant sans que personne l'ait décidé.
-     */
+    /** LA DIFFÉRENCE DÉLIBÉRÉE AVEC LE MODULE KYC. */
     public function test_un_jeton_onfido_present_ne_fait_pas_basculer_tout_seul(): void
     {
         config()->set('face_check.onfido.api_token', 'un-jeton-qui-traine');

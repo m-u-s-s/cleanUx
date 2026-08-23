@@ -13,22 +13,7 @@ use Stripe\PaymentIntent;
 use Stripe\Refund;
 use Stripe\Stripe;
 
-/**
- * Phase 13 — Service complet de paiements Stripe Connect.
- *
- * Étend MissionPaymentService (qui gère seulement authorize/capture/markFailed).
- *
- * Ajoute :
- *   - captureMissionPayment(): version "complete + capture + create payout entry"
- *   - refundMissionPayment(): refund total ou partiel
- *   - syncPaymentIntent(): re-sync depuis Stripe vers booking (utile post-webhook)
- *   - createProviderPayout(): crée l'entrée comptable côté plateforme
- *
- * NB : Stripe gère automatiquement le transfer vers le compte Connect via
- * `transfer_data.destination` posé par MissionPaymentService::authorize().
- * Notre ProviderPayout est une trace comptable côté Brio, pas un transfer
- * actif.
- */
+/** Phase 13 — Service complet de paiements Stripe Connect. */
 class StripeConnectPaymentService
 {
     public function __construct(private ?ProviderWalletService $walletService = null)
@@ -39,15 +24,7 @@ class StripeConnectPaymentService
         $this->walletService ??= new ProviderWalletService;
     }
 
-    /**
-     * Capture le PaymentIntent d'une mission terminée et crée une entrée
-     * ProviderPayout.
-     *
-     * Appelé typiquement depuis MissionLifecycleService::completeMission()
-     * ou en async via un job.
-     *
-     * Retourne le ProviderPayout créé, ou null si pas de payment_intent à capturer.
-     */
+    /** Capture le PaymentIntent d'une mission terminée et crée une entrée ProviderPayout. */
     public function captureMissionPayment(Mission $mission): ?ProviderPayout
     {
         $booking = $mission->booking;
@@ -110,12 +87,7 @@ class StripeConnectPaymentService
         });
     }
 
-    /**
-     * Crée une entrée ProviderPayout pour une mission capturée.
-     *
-     * Le montant est calculé depuis booking.provider_amount_cents si dispo,
-     * sinon depuis mission.client_price - mission.platform_commission.
-     */
+    /** Crée une entrée ProviderPayout pour une mission capturée. */
     public function createProviderPayout(Mission $mission, Booking $booking): ProviderPayout
     {
         // Provider user_id : priorité au lead_provider, sinon premier assignment accepté
@@ -269,10 +241,7 @@ class StripeConnectPaymentService
         return $refund;
     }
 
-    /**
-     * Re-synchronise l'état du PaymentIntent depuis Stripe vers le booking.
-     * Utile après réception d'un webhook pour s'assurer que la DB est à jour.
-     */
+    /** Re-synchronise l'état du PaymentIntent depuis Stripe vers le booking. */
     public function syncPaymentIntent(Booking $booking): void
     {
         if (! $booking->stripe_payment_intent_id) {
@@ -300,18 +269,7 @@ class StripeConnectPaymentService
             'succeeded' => 'captured',
         ];
 
-        /*
-         * UNE CAPTURE DE FRAIS N'EST PAS UN ENCAISSEMENT DE PRESTATION.
-         *
-         * Stripe ne connaît qu'un statut : après une capture PARTIELLE des frais d'annulation, il
-         * répond « succeeded », exactement comme après l'encaissement d'une mission accomplie. La
-         * table de correspondance ci-dessus écrirait donc `captured`, et
-         * `handlePaymentIntentSucceeded` créditerait au prestataire la part de la commande entière
-         * — 96 € pour une prestation jamais faite sur une commande de 120 € annulée à 24 € de frais.
-         *
-         * La distinction n'existe que chez nous : c'est donc à nous de la défendre. Voir
-         * `MissionPaymentService::STATUT_FRAIS_CAPTURES`.
-         */
+        // UNE CAPTURE DE FRAIS N'EST PAS UN ENCAISSEMENT DE PRESTATION.
         if ($booking->payment_status === MissionPaymentService::STATUT_FRAIS_CAPTURES) {
             return;
         }

@@ -9,14 +9,7 @@ use App\Services\Catalog\GeoGuard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Les règles géographiques du catalogue, testées sans interface.
- *
- * POURQUOI ICI ET NON DANS UN TEST D'ÉCRAN. Une règle de suppression fausse ne se manifeste qu'au
- * moment où elle détruit quelque chose. La tester à travers un composant Livewire, c'est la tester
- * à travers le rendu, la validation et l'autorisation — trois raisons de passer au vert pour de
- * mauvaises raisons.
- */
+/** Les règles géographiques du catalogue, testées sans interface. */
 class GeoGuardTest extends TestCase
 {
     use RefreshDatabase;
@@ -87,14 +80,7 @@ class GeoGuardTest extends TestCase
 
         $pays->update(['is_active' => false]);
 
-        /*
-         * La zone devient injoignable — mais SON PROPRE état n'a pas bougé.
-         *
-         * C'est ce qui permet à la réactivation du pays de restaurer exactement l'état d'avant, y
-         * compris les zones qui étaient déjà éteintes pour leur propre raison. Une propagation en
-         * écriture les rallumerait toutes, et personne ne s'en apercevrait avant qu'un client
-         * réserve dans une zone fermée.
-         */
+        // La zone devient injoignable — mais SON PROPRE état n'a pas bougé.
         $this->assertFalse(app(GeoGuard::class)->zoneEstJoignable($zone->fresh()));
         $this->assertTrue($zone->fresh()->is_bookable);
         $this->assertSame('active', $zone->fresh()->status);

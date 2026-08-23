@@ -4,14 +4,7 @@ namespace App\Services\Assistant\Actions;
 
 use App\Models\User;
 
-/**
- * Registry of data-fetching actions the chatbot assistant can execute.
- *
- * Each action descriptor is passed to the LLM as part of the system prompt
- * so the model can decide which actions to invoke based on user intent.
- *
- * Actions are read-only — they never mutate state.
- */
+/** Registry of data-fetching actions the chatbot assistant can execute. */
 class AssistantActionRegistry
 {
     /**
@@ -116,9 +109,7 @@ class AssistantActionRegistry
         return $actions;
     }
 
-    /**
-     * Returns a compact string representation suitable for injection into a system prompt.
-     */
+    /** Returns a compact string representation suitable for injection into a system prompt. */
     public function toPromptBlock(User $user): string
     {
         $actions = $this->availableActions($user);

@@ -47,9 +47,6 @@ class GdprController extends Controller
     /**
      * Request a personal data export (GDPR Article 20 — data portability).
      *
-     * The export is generated synchronously. The response includes a signed download URL
-     * valid for 7 days. A second request while one is already processing returns the existing request.
-     *
      * @response 201 {"request_id": 1, "reference": "GDPR-ABCDEFGHIJ", "status": "fulfilled", "download_url": "https://brio.be/api/gdpr/export/download/1?signature=xxx&expires=...", "expires_at": "2026-06-08T10:01:30+00:00"}
      * @response 200 scenario="Export already in progress" {"ok": true, "request_id": 1, "reference": "GDPR-ABCDEFGHIJ", "status": "processing", "note": "Un export est déjà en cours."}
      * @response 500 {"ok": false, "error": "Export generation failed."}
@@ -111,9 +108,6 @@ class GdprController extends Controller
 
     /**
      * Request account and data erasure (GDPR Article 17 — right to erasure).
-     *
-     * Schedules erasure after a grace period (default 30 days) during which the request
-     * can be cancelled. Cannot be submitted if an active erasure request already exists.
      *
      * @bodyParam confirm boolean required Must be accepted (1/true) to confirm intent. Example: 1
      * @bodyParam reason string Optional reason for the erasure request (max 2000 chars). Example: Je n'utilise plus le service.
@@ -188,8 +182,6 @@ class GdprController extends Controller
 
     /**
      * Download a fulfilled personal data export archive.
-     *
-     * Returns the JSON export file as an attachment. The signed URL is valid for 7 days.
      *
      * @response 200 scenario="File download" {"binary": "file content as attachment"}
      * @response 403 {"message": "This action is unauthorized."}

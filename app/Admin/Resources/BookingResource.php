@@ -7,15 +7,7 @@ use App\Admin\Console\EloquentResource;
 use App\Models\Booking;
 
 /**
- * Les réservations, toutes confondues.
- *
- * NI ANNULATION NI REPROGRAMMATION ICI. Annuler une réservation déclenche le moteur
- * d’annulation : frais selon la politique en vigueur, remboursement Stripe, reprise de
- * commission côté prestataire, avoir éventuel. Poser `status = ’annule’` sauterait tout cela et
- * laisserait de l’argent au mauvais endroit.
- *
- * La colonne de statut porte des valeurs françaises ET anglaises selon l’ancienneté de la
- * ligne : le filtre propose les valeurs françaises, qui sont celles du domaine.
+ * Les réservations, toutes confondues. NI ANNULATION NI REPROGRAMMATION ICI.
  *
  * @extends EloquentResource<Booking>
  */

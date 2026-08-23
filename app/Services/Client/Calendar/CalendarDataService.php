@@ -8,11 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * Feeds the client FullCalendar component (ClientCalendarFC): the user's bookings as calendar
- * events, and the list of sites they can filter by. Scoped strictly to the authenticated user's
- * own bookings (client_id / customer_user_id).
- */
+/** Feeds the client FullCalendar component (ClientCalendarFC): the user's bookings as calendar events, and the list of sites they can filter by. */
 class CalendarDataService
 {
     /** Booking status → FullCalendar colour. */

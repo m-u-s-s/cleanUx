@@ -8,20 +8,7 @@ use App\Services\FaceCheck\Data\FaceDocumentCompareRequest;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * LE VISAGE ENRÔLÉ CONTRE LE PORTRAIT DE LA PIÈCE D'IDENTITÉ.
- *
- * C'est la question que le KYC ne pose pas aujourd'hui : il vérifie qu'une pièce est authentique
- * et qu'elle appartient à quelqu'un, jamais que le prestataire qui s'inscrit est cette personne-là.
- *
- * TROIS VERDICTS, ET LE TROISIÈME EST LE PLUS FRÉQUENT :
- *   `match`         — c'est bien la même personne.
- *   `mismatch`      — ce n'en est pas une. Blocage, et un administrateur tranche.
- *   `inconclusive`  — on ne peut pas dire. Un PDF, un scan de travers, un portrait de trois
- *                     millimètres. Le confondre avec `mismatch` bloquerait des prestataires
- *                     honnêtes pour un défaut de numérisation : c'est un cas pour l'œil d'un
- *                     administrateur, pas pour un seuil.
- */
+/** LE VISAGE ENRÔLÉ CONTRE LE PORTRAIT DE LA PIÈCE D'IDENTITÉ. */
 class FaceIdDocumentMatcher
 {
     /** Les trois pièces qui portent un portrait. */
@@ -56,11 +43,7 @@ class FaceIdDocumentMatcher
         $document = $this->pieceDIdentite($profil);
 
         if ($document === null) {
-            /*
-             * Aucune pièce déposée : ce n'est PAS un soupçon. Le parcours d'onboarding réclame déjà
-             * la pièce par ailleurs, et l'appariement se refera à son dépôt. On reste `pending` —
-             * le seul état honnête quand il manque un des deux termes de la comparaison.
-             */
+            // Aucune pièce déposée : ce n'est PAS un soupçon.
             return $profil;
         }
 
@@ -142,9 +125,7 @@ class FaceIdDocumentMatcher
         return $profil->refresh();
     }
 
-    /**
-     * La pièce la plus récente parmi celles qui portent un portrait, approuvée de préférence.
-     */
+    /** La pièce la plus récente parmi celles qui portent un portrait, approuvée de préférence. */
     private function pieceDIdentite(ProviderFaceProfile $profil): ?ProviderOnboardingDocument
     {
         return ProviderOnboardingDocument::query()
@@ -156,11 +137,7 @@ class FaceIdDocumentMatcher
             ->first();
     }
 
-    /**
-     * Les pièces d'onboarding sont posées EN CLAIR sur le disque privé par
-     * `ProviderOnboardingService` — on les lit donc directement, sans passer par `FaceImageStore`
-     * qui, lui, ne sait relire que ce qu'il a chiffré.
-     */
+    /** Les pièces d'onboarding sont posées EN CLAIR sur le disque privé par `ProviderOnboardingService` — on les lit donc directement, sans passer par `FaceImageStore` qui, lui, ne sait relire que ce qu'il a chiffré. */
     private function contenuDuDocument(ProviderOnboardingDocument $document): ?string
     {
         try {

@@ -2,56 +2,14 @@
 
 namespace App\Support;
 
-/**
- * Helper de schema de formulaire dynamique par Trade.
- *
- * Le schema est un JSON stocké sur Trade.booking_form_schema. Il décrit
- * les champs que le client doit remplir quand il réserve un service de
- * ce métier (remplace les champs cleaning hardcodés).
- *
- * Format :
- * {
- *   "version": 1,
- *   "fields": [
- *     {
- *       "key": "nb_enfants",              // identifiant unique du champ (snake_case)
- *       "label": "Nombre d'enfants",      // libellé affiché au client
- *       "type": "number",                  // number|boolean|select|multiselect|text|textarea
- *       "required": true,                  // optionnel, false par défaut
- *       "default": 1,                      // valeur initiale, optionnel
- *       "help": "Combien d'enfants...",    // optionnel
- *       "unit": "enfants",                 // optionnel (m², h, étage…)
- *
- *       // number :
- *       "min": 1, "max": 10, "step": 1,
- *
- *       // text / textarea :
- *       "max_length": 2000,
- *
- *       // select / multiselect :
- *       "options": [
- *         {"value": "simple", "label": "Serrure simple", "price_delta": 0},
- *         {"value": "blindee", "label": "Porte blindée", "price_delta": 50}
- *       ],
- *
- *       // pricing direct (number/boolean uniquement, select via options[].price_delta) :
- *       "pricing": {"modifier": "per_unit|fixed|percent", "value": 5.0}
- *     }
- *   ]
- * }
- */
+/** Helper de schema de formulaire dynamique par Trade. */
 class TradeFormSchema
 {
     public const SUPPORTED_TYPES = ['number', 'boolean', 'select', 'multiselect', 'text', 'textarea'];
 
     public const SUPPORTED_MODIFIERS = ['fixed', 'percent', 'per_unit'];
 
-    /**
-     * Valide la structure d'un schema. Renvoie ['ok' => bool, 'errors' => [...], 'normalized' => [...]].
-     *
-     * - Si schema est null ou [] → ok = true, normalized = ['version' => 1, 'fields' => []]
-     * - Sinon, valide la forme (clés uniques, types supportés, options bien formées…)
-     */
+    /** Valide la structure d'un schema. */
     public static function validate(mixed $schema): array
     {
         $errors = [];
@@ -214,10 +172,7 @@ class TradeFormSchema
         ];
     }
 
-    /**
-     * Retourne les règles de validation Laravel pour les answers correspondant
-     * à ce schema. Le préfixe est par exemple "tradeFormAnswers".
-     */
+    /** Retourne les règles de validation Laravel pour les answers correspondant à ce schema. */
     public static function answerValidationRules(array $schema, string $prefix): array
     {
         $fields = $schema['fields'] ?? [];
@@ -273,10 +228,7 @@ class TradeFormSchema
         return $rules;
     }
 
-    /**
-     * Construit le tableau des valeurs par défaut pour un schema (utilisé
-     * par le trait Livewire à l'initialisation).
-     */
+    /** Construit le tableau des valeurs par défaut pour un schema (utilisé par le trait Livewire à l'initialisation). */
     public static function defaultAnswers(array $schema): array
     {
         $out = [];
@@ -298,17 +250,7 @@ class TradeFormSchema
         return $out;
     }
 
-    /**
-     * Calcule le delta de prix appliqué par les answers. Renvoie :
-     *   ['total' => float, 'breakdown' => [['key' => ..., 'label' => ..., 'delta' => float]]]
-     *
-     * - number per_unit  : answer × pricing.value
-     * - number fixed     : pricing.value si answer > 0
-     * - boolean fixed    : pricing.value si true
-     * - boolean percent  : base_price × pricing.value / 100 si true
-     * - select           : options[answer].price_delta
-     * - multiselect      : somme des options sélectionnées price_delta
-     */
+    /** Calcule le delta de prix appliqué par les answers. */
     public static function computePriceDelta(array $schema, array $answers, float $basePrice = 0.0): array
     {
         $breakdown = [];

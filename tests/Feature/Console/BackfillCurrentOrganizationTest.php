@@ -10,24 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * DES MEMBRES ACTIFS QUI NE POUVAIENT PAS ENTRER DANS LEUR PROPRE SOCIÉTÉ.
- *
- * POURQUOI CETTE COMMANDE EXISTE. `EnsureOrganizationType` — la garde des deux espaces société —
- * lit `users.current_organization_id`. Appartenir activement à une organisation ne suffit donc
- * pas : sans ce champ, la porte reste fermée.
- *
- * Constaté en base : 7 membres actifs, 1 seul utilisateur avec une organisation courante. Six
- * personnes membres d'une société ne pouvaient atteindre aucun de ses écrans.
- *
- * Ce n'est pas un défaut du code actuel — `OrganizationMembershipService`, écrit en phase 0,
- * renseigne bien le champ à l'adhésion. Ce sont les comptes ANTÉRIEURS à cette correction, créés
- * quand rien ne le faisait. D'où un rattrapage, et non un correctif.
- *
- * LE CAS AMBIGU EST LE CŒUR DU SUJET : un utilisateur membre actif de PLUSIEURS organisations n'a
- * pas d'organisation courante évidente. Choisir à sa place le placerait dans une société au hasard
- * — on préfère le laisser tel quel et le signaler.
- */
+/** DES MEMBRES ACTIFS QUI NE POUVAIENT PAS ENTRER DANS LEUR PROPRE SOCIÉTÉ. */
 class BackfillCurrentOrganizationTest extends TestCase
 {
     use RefreshDatabase;

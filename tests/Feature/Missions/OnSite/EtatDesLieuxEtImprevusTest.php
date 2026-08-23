@@ -20,19 +20,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * Le kit « sur place » : la preuve horodatée, l'imprévu qui se dit, et ce que le client en voit.
- *
- * Ce qui est réellement vérifié ici, dans l'ordre où ça compte :
- *
- * - Une photo prise en cours d'intervention est GARDÉE et EMPREINTÉE. Sans empreinte, une preuve
- *   n'est qu'une illustration.
- * - Un prestataire qui n'est pas affecté ne peut rien déposer. L'identifiant de mission est un
- *   entier ; sans ce contrôle, il suffit d'en essayer un autre.
- * - Un imprévu signalé PART chez le client, et `notified_at` ne se remplit que si l'envoi a eu
- *   lieu — une colonne remplie d'avance ferait croire à une information jamais partie.
- * - Le client voit ce qui lui est destiné, et rien d'autre.
- */
+/** Le kit « sur place » : la preuve horodatée, l'imprévu qui se dit, et ce que le client en voit. */
 class EtatDesLieuxEtImprevusTest extends TestCase
 {
     use RefreshDatabase;
@@ -68,20 +56,12 @@ class EtatDesLieuxEtImprevusTest extends TestCase
         $this->assertTrue(Storage::disk('private')->exists($media->path));
     }
 
-    /**
-     * L'empreinte n'a d'intérêt que si elle DISTINGUE. Deux fichiers différents ne doivent pas
-     * partager la leur, sans quoi elle ne prouve rien.
-     */
+    /** L'empreinte n'a d'intérêt que si elle DISTINGUE. */
     public function test_deux_cliches_differents_ont_deux_empreintes(): void
     {
         [$provider, $mission] = $this->scenario();
 
-        /*
-         * `createWithContent` et non `create` : ce dernier fabrique un fichier VIDE dont il se
-         * contente de déclarer la taille. Deux « photos » de poids différents auraient donc le
-         * même contenu — et la même empreinte, ce qui ferait passer ce test pour la pire des
-         * raisons : en démontrant l'inverse de ce qu'il affirme.
-         */
+        // `createWithContent` et non `create` : ce dernier fabrique un fichier VIDE dont il se contente de déclarer la taille.
         foreach (['un.jpg' => 'salon avant', 'deux.jpg' => 'cuisine avant'] as $nom => $contenu) {
             $this->actingAs($provider)
                 ->postJson("/api/provider/missions/{$mission->id}/media", [
@@ -171,10 +151,7 @@ class EtatDesLieuxEtImprevusTest extends TestCase
         );
     }
 
-    /**
-     * La photo d'un imprévu N'ENTRE PAS dans le comparateur avant/après : elle y raconterait le
-     * contraire de ce qu'elle documente.
-     */
+    /** La photo d'un imprévu N'ENTRE PAS dans le comparateur avant/après : elle y raconterait le contraire de ce qu'elle documente. */
     public function test_la_photo_dun_imprevu_reste_hors_du_comparateur(): void
     {
         [$provider, $mission, $client] = $this->scenario();
@@ -233,10 +210,7 @@ class EtatDesLieuxEtImprevusTest extends TestCase
         $this->assertContains('media', array_column($reponse->json('entries'), 'kind'));
     }
 
-    /**
-     * Le suivi ouvert AVANT l'heure ne doit pas répondre « introuvable » : la réservation existe,
-     * l'intervention n'a simplement pas commencé.
-     */
+    /** Le suivi ouvert AVANT l'heure ne doit pas répondre « introuvable » : la réservation existe, l'intervention n'a simplement pas commencé. */
     public function test_une_reservation_sans_mission_rend_un_fil_vide_et_non_une_erreur(): void
     {
         $client = User::factory()->create();

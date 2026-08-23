@@ -15,25 +15,7 @@ use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * LE PRESTATAIRE SUR PLACE NE VOYAIT AUCUNE CONSIGNE DU CLIENT.
- *
- * La carte « Client & accès » de la fiche terrain porte un panneau ambre intitulé « Notes
- * client ». Il était gardé par `@if($rdv?->notes)` — et `bookings.notes` n'est écrite par AUCUN
- * code. Le panneau ne s'est donc jamais affiché, depuis qu'il existe.
- *
- * Le commentaire du client vit ailleurs, dans `customer_comment` / `commentaire_client` : c'est
- * là que le parcours de commande le range, là que `CreateBookingFromApiAction` le reçoit, et là
- * que le tableau de bord prestataire et la page d'offre le lisent déjà — le tableau de bord avec
- * exactement le même habillage ambre, ce qui montre bien ce que la fiche voulait montrer.
- *
- * La confusion a une origine nommable : dans `BookingHub`, le champ de formulaire s'appelle
- * `notes` et s'enregistre dans `commentaire_client`. Qui a écrit la fiche a suivi le nom du
- * champ, pas celui de la colonne.
- *
- * Aucun test ne pouvait le voir : un panneau conditionnel qui ne s'affiche jamais ne casse rien,
- * il se contente de manquer. C'est la famille de défauts dominante de ce dépôt.
- */
+/** LE PRESTATAIRE SUR PLACE NE VOYAIT AUCUNE CONSIGNE DU CLIENT. */
 class ConsignesClientSurLaFicheTerrainTest extends TestCase
 {
     use RefreshDatabase;
@@ -91,14 +73,7 @@ class ConsignesClientSurLaFicheTerrainTest extends TestCase
             ->assertSee('Portail au fond de la cour, sonner deux fois.');
     }
 
-    /**
-     * LA CONSIGNE PASSE AUSSI PAR LE CÔTÉ ANGLAIS DE LA PAIRE.
-     *
-     * `commentaire_client` et `customer_comment` sont deux noms d'une même valeur, tenus d'accord
-     * par `HasLegacyBookingAliases`. La fiche lit le côté moderne ; ce test vérifie que l'écriture
-     * par le côté français y arrive quand même — sinon le formulaire société, qui écrit le
-     * français, laisserait la fiche vide sans que rien ne le dise.
-     */
+    /** LA CONSIGNE PASSE AUSSI PAR LE CÔTÉ ANGLAIS DE LA PAIRE. */
     public function test_la_consigne_ecrite_en_anglais_arrive_aussi(): void
     {
         [$prestataire, $mission] = $this->intervention([
@@ -111,12 +86,7 @@ class ConsignesClientSurLaFicheTerrainTest extends TestCase
             ->assertSee('Key under the mat.');
     }
 
-    /**
-     * TÉMOIN NÉGATIF — sans consigne, le panneau reste absent.
-     *
-     * Sans ce contrôle, un panneau affiché systématiquement passerait les deux tests ci-dessus
-     * tout en encombrant l'écran d'un cadre vide à chaque intervention.
-     */
+    /** TÉMOIN NÉGATIF — sans consigne, le panneau reste absent. */
     public function test_sans_consigne_le_panneau_ne_s_affiche_pas(): void
     {
         [$prestataire, $mission] = $this->intervention();

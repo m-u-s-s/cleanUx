@@ -11,20 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Webhook KYC — pattern hardening identique à Stripe v2 :
- *   1. CONFIRME que le segment {provider} de l'URL désigne le provider configuré
- *   2. Vérifie la signature
- *   3. Stocke l'event (idempotence sur external_event_id)
- *   4. Dispatch async, retourne 200
- *
- * B5 — le segment {provider} de l'URL ne SÉLECTIONNE plus le vérificateur de
- * signature ; il ne fait que le confirmer. Auparavant l'appelant choisissait
- * lui-même qui vérifierait sa signature : en demandant /webhooks/kyc/mock il
- * choisissait « personne » (KycMockProvider n'authentifie rien) et pouvait donc
- * signer ce qu'il voulait. La faille n'est pas seulement le mock : sélectionner
- * un vérificateur avec une donnée que l'attaquant contrôle est la faille.
- */
+/** Webhook KYC — pattern hardening identique à Stripe v2 : 1. */
 class KycWebhookController extends Controller
 {
     public function handle(Request $request, string $provider): JsonResponse
@@ -88,11 +75,7 @@ class KycWebhookController extends Controller
         ]);
     }
 
-    /**
-     * B5 — la seule source de vérité est la configuration (le conteneur). Le segment
-     * d'URL doit lui être ÉGAL, sinon on répond 404 sans révéler quel provider est
-     * réellement configuré.
-     */
+    /** B5 — la seule source de vérité est la configuration (le conteneur). */
     protected function resolveProvider(string $name): ?KycProviderInterface
     {
         $configured = $this->providerConfigure();

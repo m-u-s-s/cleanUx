@@ -12,11 +12,7 @@ use Tests\Support\Stripe\FakeStripeHttpClient;
 use Tests\Support\Stripe\StripeFakeResponses;
 use Tests\TestCase;
 
-/**
- * A2 — The manual payout Transfer::create in payouts:process Phase 2 must send a
- * deterministic Stripe idempotency key so a crash/retry between Stripe success and the
- * local DB update cannot create a second real transfer (double payment to the provider).
- */
+/** A2 — The manual payout Transfer::create in payouts:process Phase 2 must send a deterministic Stripe idempotency key so a crash/retry between Stripe success and the local DB update cannot create a second real transfer (double payment to the provider). */
 class PayoutIdempotencyTest extends TestCase
 {
     use RefreshDatabase;

@@ -20,26 +20,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
-/**
- * LE CLIENT A CHOISI UNE SOCIÉTÉ : ses répartiteurs l'apprennent au départ, pas à l'arrivée.
- *
- * Restreindre les candidats aux salariés de la société choisie garantissait que la course ne parte
- * pas ailleurs, et s'arrêtait là. Côté société, la demande était INVISIBLE : le répartiteur la
- * découvrait par le salarié qui l'avait acceptée — ou jamais, si personne ne répondait et que la
- * recherche expirait. Celui qui pilote l'équipe ne pouvait donc pas faire la seule chose qu'on
- * attend de lui : réagir avant l'échéance.
- *
- * Trois invariants tiennent ce comportement, et chacun est une façon dont il pouvait se retourner :
- *
- *  1. SEULS LES PORTEURS DE `missions.dispatch` sont prévenus. Faire sonner le téléphone d'un
- *     nettoyeur pour une décision qu'il ne peut pas prendre est le meilleur moyen qu'on cesse de
- *     lire ces messages — y compris ceux qui comptent.
- *  2. UNE SEULE DEMANDE, UN SEUL MESSAGE. La clé d'idempotence porte l'identifiant de réservation :
- *     rouvrir la recherche, relancer après une vague épuisée, rejouer un job — rien ne doit
- *     renotifier.
- *  3. SANS SOCIÉTÉ CHOISIE, personne n'est prévenu. Une course de marketplace ne concerne aucune
- *     société en particulier, et le contraire ferait fuiter des demandes à des tiers.
- */
+/** LE CLIENT A CHOISI UNE SOCIÉTÉ : ses répartiteurs l'apprennent au départ, pas à l'arrivée. */
 class SocietePrevenueTest extends TestCase
 {
     use OuvreLeCatalogue;
@@ -97,12 +78,7 @@ class SocietePrevenueTest extends TestCase
             'joined_at' => now(),
         ]);
 
-        /*
-         * SANS APPAREIL ENREGISTRÉ, RIEN NE PART — et c'est le comportement réel du notifieur
-         * société : il ne connaît que le canal push. Le poser explicitement ici évite un test vert
-         * pour la mauvaise raison (zéro message attendu, zéro message trouvé) et rappelle la limite
-         * du dispositif : un répartiteur qui n'a jamais ouvert l'application n'est pas joignable.
-         */
+        // SANS APPAREIL ENREGISTRÉ, RIEN NE PART — et c'est le comportement réel du notifieur société : il ne connaît que le canal push.
         DeviceToken::factory()->create(['user_id' => $user->id, 'invalidated_at' => null]);
 
         return $user;
@@ -217,11 +193,7 @@ class SocietePrevenueTest extends TestCase
         $moteur->openImmediate($booking);
         $moteur->openImmediate($booking->fresh());
 
-        /*
-         * UN SEUL MESSAGE pour une seule demande. La relance et la réouverture repassent par la
-         * même porte ; sans clé d'idempotence, un répartiteur voyait son téléphone sonner à chaque
-         * vague pour la course qu'il regardait déjà.
-         */
+        // UN SEUL MESSAGE pour une seule demande.
         $this->assertSame(
             1,
             PushNotification::query()

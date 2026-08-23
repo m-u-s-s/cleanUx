@@ -15,18 +15,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * Activation automatique d'un compte prestataire.
- *
- * Les contrôles automatiques rendaient déjà un verdict, mais personne ne faisait jamais passer
- * `provider_profiles.status` à `active` — la colonne que garde le middleware. Un dossier
- * entièrement vert restait donc bloqué jusqu'au clic d'un administrateur.
- *
- * Règle retenue : le compte s'ouvre dès que l'identité est validée et les pièces DÉPOSÉES, sans
- * attendre leur relecture. Ce que ces tests verrouillent avant tout, c'est ce que le robot ne
- * doit JAMAIS faire — refuser un compte, toucher un prestataire historique, ou affirmer une
- * vérification humaine qui n'a pas eu lieu.
- */
+/** Activation automatique d'un compte prestataire. */
 class ProviderAutoApprovalTest extends TestCase
 {
     use RefreshDatabase;
@@ -41,10 +30,7 @@ class ProviderAutoApprovalTest extends TestCase
         $this->assertSame('active', $user->providerProfile->fresh()->status);
     }
 
-    /**
-     * Le point de la règle choisie : une pièce déposée mais pas encore relue n'empêche pas
-     * l'activation. C'est ce qui permet d'ouvrir en minutes plutôt qu'en jours.
-     */
+    /** Le point de la règle choisie : une pièce déposée mais pas encore relue n'empêche pas l'activation. */
     public function test_a_document_awaiting_review_does_not_delay_the_opening(): void
     {
         $user = $this->providerWithCompleteDossier(documentStatus: ProviderOnboardingDocument::STATUS_PENDING);
@@ -56,10 +42,7 @@ class ProviderAutoApprovalTest extends TestCase
         $this->assertSame('active', $user->providerProfile->fresh()->status);
     }
 
-    /**
-     * Mais être actif n'est pas être certifié : `verified` affirme une relecture humaine des
-     * pièces, et il ne doit pas être écrit tant qu'elle n'a pas eu lieu.
-     */
+    /** Mais être actif n'est pas être certifié : `verified` affirme une relecture humaine des pièces, et il ne doit pas être écrit tant qu'elle n'a pas eu lieu. */
     public function test_being_open_is_not_being_certified(): void
     {
         $user = $this->providerWithCompleteDossier(documentStatus: ProviderOnboardingDocument::STATUS_PENDING);
@@ -91,11 +74,7 @@ class ProviderAutoApprovalTest extends TestCase
         $this->assertSame('pending', $user->providerProfile->fresh()->status);
     }
 
-    /**
-     * La garantie la plus importante : le robot n'a pas le droit de refuser. Une pièce
-     * photographiée de travers n'est pas une fraude, et un faux positif ne doit pas fermer une
-     * inscription légitime — il oriente vers un humain.
-     */
+    /** La garantie la plus importante : le robot n'a pas le droit de refuser. */
     public function test_a_refused_identity_never_closes_the_account(): void
     {
         $user = $this->providerWithCompleteDossier(kycDecision: 'rejected');
@@ -160,10 +139,7 @@ class ProviderAutoApprovalTest extends TestCase
         $this->assertSame(OnboardingProgress::STATUS_COMPLETED, $progress->status);
     }
 
-    /**
-     * Dossier complet : métier sans assurance ni certification exigées, pièce d'identité déposée,
-     * identité validée, toutes les étapes franchies.
-     */
+    /** Dossier complet : métier sans assurance ni certification exigées, pièce d'identité déposée, identité validée, toutes les étapes franchies. */
     private function providerWithCompleteDossier(
         string $documentStatus = ProviderOnboardingDocument::STATUS_APPROVED,
         string $kycDecision = 'approved',

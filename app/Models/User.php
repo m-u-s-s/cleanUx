@@ -29,16 +29,14 @@ use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
+ * `profile_photo_url` vient du trait `HasProfilePhoto` de Jetstream, sous forme d'accesseur : l'attribut existe bien à l'exécution — les vues s'en servent déjà — mais n'étant ni une colonne ni une méthode, l'analyse statique ne le voit pas.
+ *
  * @property ?Carbon $email_verified_at
  * @property ?Carbon $two_factor_confirmed_at
  * @property bool $is_active
  * @property ?array $metadata
  * @property ?array $permissions
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $unreadNotifications
- *
- * `profile_photo_url` vient du trait `HasProfilePhoto` de Jetstream, sous forme d'accesseur :
- * l'attribut existe bien à l'exécution — les vues s'en servent déjà — mais n'étant ni une colonne
- * ni une méthode, l'analyse statique ne le voit pas.
  * @property-read string $profile_photo_url
  */
 class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail
@@ -59,34 +57,7 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     use Notifiable;
     use TwoFactorAuthenticatable;
 
-    /**
-     * Champs auto-assignables via Eloquent::fill/update/create.
-     *
-     * SECURITY : Tout controller modifiant User DOIT utiliser `$request->validated()`
-     * et JAMAIS `$request->all()`. Si un attribut peut être self-elevé (ex: role),
-     * le retirer du payload validé via FormRequest.
-     *
-     * QUATRE COLONNES SONT VOLONTAIREMENT ABSENTES DE CETTE LISTE — elles décident QUI TU ES,
-     * pas ce que tu préfères :
-     *
-     *   - `platform_role`      : `admin` / `super_admin` ouvrent toute la console d'administration
-     *                            (`HasAdminCapabilities::canAccessAdminModule()`).
-     *   - `role`               : colonne dépréciée, mais encore lue par `CheckRole`, par les
-     *                            gardes `role:employe` et par des callbacks de diffusion.
-     *   - `organization_account_id`
-     *   - `current_organization_id` : ces deux-là DÉSIGNENT L'ORGANISATION dont on lit les données.
-     *                            Se les assigner soi-même, c'est entrer chez le voisin.
-     *
-     * Le parcours d'inscription passe `$request->all()` à `CreateNewUser` (c'est Fortify qui le
-     * fait, pas nous) : tant que ces clés étaient assignables en masse, un simple champ caché
-     * `platform_role=admin` dans le formulaire d'inscription suffisait. Elles s'écrivent
-     * désormais par `forceFill()` uniquement — un appel explicite, visible en revue, jamais
-     * pilotable depuis le navigateur.
-     *
-     * `Model::preventSilentlyDiscardingAttributes` étant actif hors production, toute tentative
-     * de les repasser en masse LÈVE une `MassAssignmentException` au lieu de les ignorer : la
-     * régression se voit tout de suite au lieu de s'écrire en silence.
-     */
+    /** Champs auto-assignables via Eloquent::fill/update/create. */
     protected $fillable = [
         'name',
         'email',
@@ -181,28 +152,13 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         return $this->hasMany(AssistantConversation::class);
     }
 
-    /**
-     * CE DESTINATAIRE VEUT-IL DE CE CANAL POUR CET ÉVÉNEMENT ?
-     *
-     * `InteractsWithUserNotificationPreferences::preferredChannels()` cherchait cette méthode
-     * depuis toujours, avec un garde `method_exists()`. Elle n'existait sur AUCUN modèle : le garde
-     * échouait en silence, la fonction rendait ses valeurs par défaut, et la matrice de préférences
-     * — versionnée, auditée, avec son écran de réglage — n'était consultée par aucun envoi.
-     * L'utilisateur qui coupait les rappels continuait de les recevoir, et rien nulle part ne
-     * signalait que son choix était ignoré.
-     *
-     * La traduction entre le vocabulaire de Laravel et celui de la matrice vit dans
-     * `NotificationChannelResolver` : un seul endroit, pour qu'elle ne diverge pas.
-     */
+    /** CE DESTINATAIRE VEUT-IL DE CE CANAL POUR CET ÉVÉNEMENT ? */
     public function wantsNotificationChannel(string $eventKey, string $channel): bool
     {
         return app(NotificationChannelResolver::class)->accepte($this, $eventKey, $channel);
     }
 
-    /**
-     * Le numéro vers lequel router un SMS de notification. Le canal `sms` le demande avant de
-     * retomber sur l'attribut `phone`.
-     */
+    /** Le numéro vers lequel router un SMS de notification. */
     public function routeNotificationForSms(): ?string
     {
         return $this->phone ?: null;
@@ -210,15 +166,6 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
 
     /**
      * Les réservations de cette personne, comme cliente puis comme prestataire.
-     *
-     * ELLES LISAIENT LE MIROIR, PAS LA SOURCE. `RendezVous` désigne la table `rendez_vous`, une
-     * copie de `bookings` alimentée au fil de l'eau par un trait — au mieux, puisque son écriture
-     * est enveloppée dans un `catch` muet. Un échec de recopie ne laissait aucune trace et la
-     * plateforme continuait de décider dessus : `SmartDispatchService` y comptait les missions du
-     * jour d'un prestataire pour l'affecter, et `GestionUtilisateurs` y filtrait par zone.
-     *
-     * Décider sur une copie dont on ignore si elle est à jour, c'est décider au hasard une fois de
-     * temps en temps — le pire des régimes, parce qu'il est invisible.
      *
      * @return HasMany<Booking, $this>
      */
@@ -279,30 +226,14 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     // over trait methods, preserving original semantics.
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Broad "is admin" check: uses platform_role primarily with legacy role fallback.
-     */
+    /** Broad "is admin" check: uses platform_role primarily with legacy role fallback. */
     /** OTP téléphone — le numéro a-t-il été vérifié par code SMS. */
     public function hasVerifiedPhone(): bool
     {
         return $this->phone_verified_at !== null;
     }
 
-    /**
-     * LE COMPTE EST-IL EN ÉTAT DE SERVIR — la définition unique de « suspendu ».
-     *
-     * Elle vivait dans `EnsureActiveAccount`, un middleware posé sur tous les groupes web et sur
-     * AUCUNE route d'API : un compte suspendu obtenait un jeton neuf et gardait l'application
-     * mobile entière — sa boîte d'offres, ses réservations, son portefeuille. Bannir quelqu'un ne
-     * l'arrêtait que dans le navigateur.
-     *
-     * Trois lecteurs, une seule règle : le middleware web, l'authentification par jeton Sanctum
-     * (`AppServiceProvider`) et la porte de connexion mobile (`ApiAuthController::login`). Deux
-     * copies de cette condition finiraient par diverger, et c'est la moitié oubliée qui décide.
-     *
-     * `status` est comparé en minuscules : la colonne est libre et des seeders y ont écrit des
-     * majuscules.
-     */
+    /** LE COMPTE EST-IL EN ÉTAT DE SERVIR — la définition unique de « suspendu ». */
     public function compteActif(): bool
     {
         if (! $this->is_active) {
@@ -324,10 +255,7 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         return in_array($this->attributes['role'] ?? null, ['admin', 'super_admin'], true);
     }
 
-    /**
-     * Client check: uses customer_type via profile or organization membership.
-     * Includes both personal and company clients.
-     */
+    /** Client check: uses customer_type via profile or organization membership. */
     public function isClient(): bool
     {
         if ($this->isClientPersonal()) {
@@ -337,17 +265,13 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         return $this->isClientCompany();
     }
 
-    /**
-     * Provider / employee role check: uses provider_type via provider profile.
-     */
+    /** Provider / employee role check: uses provider_type via provider profile. */
     public function isEmploye(): bool
     {
         return $this->isProviderIndependent() || $this->isProviderCompanyWorker();
     }
 
-    /**
-     * Company-client role check: uses customer_type or organization membership.
-     */
+    /** Company-client role check: uses customer_type or organization membership. */
     public function isEntreprise(): bool
     {
         return $this->isClientCompany();
@@ -357,11 +281,7 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     // HasLocalePreference implementation
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Laravel uses this method to resolve the locale when sending
-     * notifications/mails, ensuring each recipient receives content
-     * in their own language — not the admin session locale.
-     */
+    /** Laravel uses this method to resolve the locale when sending notifications/mails, ensuring each recipient receives content in their own language — not the admin session locale. */
     public function preferredLocale(): ?string
     {
         $raw = $this->locale ?? null;

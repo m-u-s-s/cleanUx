@@ -9,14 +9,6 @@ use Illuminate\Support\Carbon;
 /**
  * UNE POSITION RELEVÉE PENDANT UNE ALERTE (E33).
  *
- * TABLE SÉPARÉE parce que ces lignes sont NOMBREUSES et que l'alerte, elle, est unique : les empiler
- * dans un JSON sur la ligne d'alerte ferait grossir sans fin une ligne qu'on relit en urgence, et
- * rendrait impossible de retrouver « où était-il à 14 h 12 ».
- *
- * PAS DE `timestamps` : `pinged_at` porte l'heure du RELEVÉ, qui n'est pas celle de l'écriture. Un
- * téléphone hors réseau accumule et envoie plus tard ; confondre les deux placerait toute la trace
- * au moment où la connexion est revenue.
- *
  * @property int $id
  * @property int $safety_alert_id
  * @property float $lat

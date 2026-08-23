@@ -17,22 +17,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
-/**
- * CE QUI FAIT PROGRESSER UN PRESTATAIRE — heatmap (E12), objectifs (E13), cash-out (E14),
- * statistiques d'offres (E15), académie (E16), tournée du jour (E17/E34), fiscal (E18).
- *
- * POURQUOI CES SEPT SUR UN TÉLÉPHONE. Ce sont exactement les questions qu'on se pose EN TRAVAILLANT,
- * pas assis à un bureau : où me placer ce matin, où j'en suis de mon objectif, est-ce que ma journée
- * tient, est-ce que je peux être payé maintenant. Un prestataire indépendant n'a souvent pas
- * d'ordinateur du tout.
- *
- * LA TOURNÉE EST LA PLUS CRITIQUE DES SEPT. Elle se consulte le matin, en montant dans la voiture,
- * et elle dit si l'enchaînement de la journée tient. La renvoyer au web reviendrait à ne pas la
- * servir.
- *
- * TOUTES LES LECTURES SONT BORNÉES À L'APPELANT, sans exception : ces surfaces disent ce que
- * quelqu'un gagne, où il va, et comment il travaille.
- */
+/** CE QUI FAIT PROGRESSER UN PRESTATAIRE — heatmap (E12), objectifs (E13), cash-out (E14), statistiques d'offres (E15), académie (E16), tournée du jour (E17/E34), fiscal (E18). */
 class GrowthController extends Controller
 {
     /** E12 — où me placer, et à quelle heure. */

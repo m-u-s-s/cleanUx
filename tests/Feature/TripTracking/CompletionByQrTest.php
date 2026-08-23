@@ -14,20 +14,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
-/**
- * Le client atteste la fin du travail avec un code que le prestataire scanne.
- *
- * Symétrique de la preuve de présence, à l'autre bout de la visite. Le code de fin était envoyé
- * au client par SMS puis recopié par le prestataire : un SMS voyage, alors qu'un code lu sur
- * l'écran du client exige les deux personnes dans la même pièce.
- *
- * L'enjeu est plus lourd qu'au démarrage : la clôture encaisse le paiement pré-autorisé.
- * L'accord du client doit donc être un geste délibéré, pas un message transféré.
- *
- * Le croisement avec la position du scan est vérifié à part, dans {@see CompletionGeoProofTest}.
- * Ici la mission porte des coordonnées et toutes les clôtures envoient une position valide : sans
- * elles, ces tests passeraient sans jamais exercer le contrôle — verts pour rien.
- */
+/** Le client atteste la fin du travail avec un code que le prestataire scanne. */
 class CompletionByQrTest extends TestCase
 {
     use RefreshDatabase;
@@ -106,10 +93,7 @@ class CompletionByQrTest extends TestCase
         $this->assertNotNull($mission->actual_end_at);
     }
 
-    /**
-     * Garantie centrale : la clôture encaisse. Un code refusé ne doit donc RIEN déclencher —
-     * ni fin de mission, ni prélèvement.
-     */
+    /** Garantie centrale : la clôture encaisse. */
     public function test_a_wrong_code_closes_nothing(): void
     {
         Notification::fake();

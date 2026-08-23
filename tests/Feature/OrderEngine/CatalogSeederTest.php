@@ -15,14 +15,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
-/**
- * Le catalogue de démonstration — et les lois du parcours, vérifiées sur les DONNÉES.
- *
- * Un seeder qui tourne sans erreur ne prouve rien : il peut très bien produire un questionnaire
- * de quinze questions sans porte de sortie, c'est-à-dire précisément ce que le produit interdit.
- * Ces tests contrôlent donc le contenu, pas l'exécution — ils sont le garde-fou qui empêchera le
- * catalogue de dériver au fil des ajouts.
- */
+/** Le catalogue de démonstration — et les lois du parcours, vérifiées sur les DONNÉES. */
 class CatalogSeederTest extends TestCase
 {
     use RefreshDatabase;
@@ -39,13 +32,7 @@ class CatalogSeederTest extends TestCase
         $this->assertSame(9, Trade::whereNotNull('sector_id')->count());
     }
 
-    /**
-     * Rejouer le seeder ne doit RIEN dupliquer.
-     *
-     * Il tournera sur chaque environnement, à chaque déploiement, et parfois deux fois de suite.
-     * Un seeder qui double son catalogue au second passage est une bombe à retardement : le
-     * carrousel affiche alors deux fois « Peinture » et personne ne sait laquelle est la bonne.
-     */
+    /** Rejouer le seeder ne doit RIEN dupliquer. */
     public function test_running_it_twice_changes_nothing(): void
     {
         $before = [Sector::count(), Trade::count(), Question::count(), QuestionStep::count()];
@@ -55,12 +42,7 @@ class CatalogSeederTest extends TestCase
         $this->assertSame($before, [Sector::count(), Trade::count(), Question::count(), QuestionStep::count()]);
     }
 
-    /**
-     * Loi 3 — au plus sept questions par étape.
-     *
-     * Au-delà, un client sur trois abandonne. C'est le genre de seuil qu'on franchit sans s'en
-     * apercevoir, une question à la fois, jusqu'à ce que la conversion s'effondre.
-     */
+    /** Loi 3 — au plus sept questions par étape. Au-delà, un client sur trois abandonne. */
     public function test_no_step_asks_more_than_seven_questions(): void
     {
         $max = (int) Config::get('order_engine.max_questions_per_step', 7);
@@ -86,13 +68,7 @@ class CatalogSeederTest extends TestCase
         $this->assertTrue($walls->isEmpty(), 'Questions sans porte de sortie : '.$walls->implode(', '));
     }
 
-    /**
-     * Loi 5 — un défaut intelligent, et UN SEUL.
-     *
-     * Deux options par défaut sur la même question ne se voient pas en base et produisent un
-     * écran dont le comportement dépend de l'ordre de tri. Le client validerait alors une réponse
-     * qu'il n'a pas choisie.
-     */
+    /** Loi 5 — un défaut intelligent, et UN SEUL. */
     public function test_every_choice_question_has_exactly_one_default(): void
     {
         $questions = Question::with('options')
@@ -132,10 +108,7 @@ class CatalogSeederTest extends TestCase
         $this->assertSame([], $ecarts, 'Ces métiers ne proposent pas correctement la photo.');
     }
 
-    /**
-     * Le mode immédiat n'est ouvert que là où il a un sens, et il pose alors des questions
-     * essentielles — sans quoi il n'aurait rien à demander avant d'envoyer un prestataire.
-     */
+    /** Le mode immédiat n'est ouvert que là où il a un sens, et il pose alors des questions essentielles — sans quoi il n'aurait rien à demander avant d'envoyer un prestataire. */
     public function test_asap_trades_declare_their_essential_questions(): void
     {
         $asapTrades = Trade::whereNotNull('sector_id')->where('allows_asap', true)->get();
@@ -179,12 +152,7 @@ class CatalogSeederTest extends TestCase
         $this->assertSame('pistolet', $condition->value['value']);
     }
 
-    /**
-     * La preuve de bout en bout : le questionnaire semé produit un prix cohérent et explicable.
-     *
-     * C'est le seul test qui relie les trois étapes livrées — schéma, moteur, données. Sans lui,
-     * chacune pourrait être juste isolément et l'ensemble ne rien produire d'utilisable.
-     */
+    /** La preuve de bout en bout : le questionnaire semé produit un prix cohérent et explicable. */
     public function test_the_seeded_painting_questionnaire_produces_an_explainable_price(): void
     {
         $trade = Trade::where('slug', 'peinture')->firstOrFail();
@@ -246,13 +214,7 @@ class CatalogSeederTest extends TestCase
         $this->assertGreaterThan(0, $suggestion->default_sequence_gap_min);
     }
 
-    /**
-     * Le seeder ENRICHIT les métiers existants, il ne les remplace pas.
-     *
-     * « Peinture » et « Plomberie » vivaient déjà en base avec leurs tarifs et leurs
-     * certifications. Le seeder leur ajoute un secteur et les colonnes du moteur ; il ne doit
-     * jamais créer un second métier du même nom.
-     */
+    /** Le seeder ENRICHIT les métiers existants, il ne les remplace pas. */
     public function test_it_never_duplicates_a_pre_existing_trade(): void
     {
         // Un semeur non idempotent duplique TOUT : la liste complete dit l'ampleur, pas seulement

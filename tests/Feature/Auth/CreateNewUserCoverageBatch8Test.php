@@ -34,17 +34,7 @@ class CreateNewUserCoverageBatch8Test extends TestCase
 
         $this->assertSame('client_personal', $user->account_type);
         $this->assertSame('client', $user->role);
-        /*
-         * `user`, ET NON `client` — corrigé le 2026-08-08.
-         *
-         * `platform_role` n'a que trois valeurs déclarées : `user`, `admin`, `super_admin` (voir
-         * `HasAdminCapabilities`). L'inscription web posait `client`, une quatrième qu'aucune
-         * constante ne reconnaît et qu'`isAdmin()` ne lit pas. L'inscription mobile posait déjà
-         * `User::PLATFORM_USER` : les deux parcours disent enfin la même chose.
-         *
-         * La colonne héritée `role` garde `client`, elle : c'est SA nomenclature, testée à la
-         * ligne au-dessus.
-         */
+        // `user`, ET NON `client` — corrigé le 2026-08-08.
         $this->assertSame('user', $user->platform_role);
         $this->assertSame('active', $user->status);
         $this->assertTrue((bool) $user->is_active);
@@ -79,12 +69,7 @@ class CreateNewUserCoverageBatch8Test extends TestCase
             'password_confirmation' => 'password123',
             'account_type' => 'client_company',
             'company_name' => 'Acme Cleaning SARL',
-            /*
-             * NUMÉRO RÉEL — « BE0123456789 » n'a jamais eu une clé de contrôle valide, et
-             * l'inscription web l'acceptait sans examen là où l'API le refusait depuis longtemps.
-             * Depuis le 2026-08-16 les deux canaux appliquent la même règle, donc ce jeu d'essai
-             * doit porter un vrai numéro. Le même remplacement avait déjà eu lieu côté API.
-             */
+            // NUMÉRO RÉEL — « BE0123456789 » n'a jamais eu une clé de contrôle valide, et l'inscription web l'acceptait sans examen là où l'API le refusait depuis longtemps.
             'tva_number' => 'BE0202239951',
         ]);
 

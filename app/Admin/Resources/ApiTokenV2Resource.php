@@ -10,20 +10,7 @@ use App\Models\Sanctum\PersonalAccessTokenV2;
 use App\Services\ApiTokensV2\ApiTokenManager;
 
 /**
- * Les jetons d'API et leur cycle de vie.
- *
- * POURQUOI CE DESCRIPTEUR EXISTE À CÔTÉ DE CELUI DES USAGES. La page web des jetons montre deux
- * choses : l'USAGE — qui a appelé quoi, à quelle fréquence — et les JETONS eux-mêmes. Les trois
- * gestes de la page portent tous sur le jeton : suspendre, réactiver, révoquer. Le descripteur des
- * usages ne pouvait rien en faire, et un jeton compromis restait actif jusqu'au retour au bureau.
- *
- * C'EST UN ÉCRAN D'URGENCE. On apprend qu'un jeton a fuité par un message, souvent en déplacement ;
- * c'est exactement là qu'il faut pouvoir le révoquer. Le laisser au seul poste de travail, c'est
- * accepter un délai qui se compte en heures sur un secret déjà public.
- *
- * SUSPENDRE N'EST PAS RÉVOQUER. Une suspension se lève ; une révocation est définitive et casse
- * l'intégration qui s'en sert. Les deux gestes sont donc séparés, et seul le second est annoncé
- * comme destructif.
+ * Les jetons d'API et leur cycle de vie. POURQUOI CE DESCRIPTEUR EXISTE À CÔTÉ DE CELUI DES USAGES.
  *
  * @extends EloquentResource<PersonalAccessTokenV2>
  */
@@ -76,11 +63,7 @@ class ApiTokenV2Resource extends EloquentResource
 
                 return ['ok' => true];
             })->requires([
-                /*
-                 * Le motif est obligatoire : une suspension sans raison sera levée par le premier
-                 * qui la verra, faute de savoir pourquoi elle est là — et le jeton compromis
-                 * reprendra du service.
-                 */
+                // Le motif est obligatoire : une suspension sans raison sera levée par le premier qui la verra, faute de savoir pourquoi elle est là — et le jeton compromis reprendra du service.
                 Field::make('reason', 'Motif de la suspension', Field::TYPE_TEXTAREA)
                     ->rules(['required', 'string', 'min:5', 'max:500']),
             ]),

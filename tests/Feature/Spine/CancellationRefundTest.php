@@ -16,19 +16,7 @@ use Tests\Support\Stripe\FakeStripeHttpClient;
 use Tests\Support\Stripe\StripeFakeResponses;
 use Tests\TestCase;
 
-/**
- * F9 — CancellationV2 refund: quote correctness, Stripe refund, clawback, idempotency.
- *
- * AUTHORITATIVE path: CancellationEngine (quote + execute) +
- * CancellationIntegrationsRunner (stripe refund).
- *
- * REAL BUG FOUND: CancellationIntegrationsRunner::tryStripeRefund() calls
- * Refund::create but does NOT call ProviderWalletService::recordRefundClawback.
- * A cancellation via CancellationV2 issues the Stripe refund but leaves the
- * provider's wallet untouched — they keep money the client was refunded.
- * Fix applied: tryStripeRefund() now calls walletService->recordRefundClawback
- * after a successful Stripe refund.
- */
+/** F9 — CancellationV2 refund: quote correctness, Stripe refund, clawback, idempotency. */
 class CancellationRefundTest extends TestCase
 {
     use RefreshDatabase;
@@ -65,11 +53,7 @@ class CancellationRefundTest extends TestCase
     // Helpers
     // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Seed a CancellationPolicy with one tier that applies a fee_percent.
-     * The policy is catch-all (no trade_codes filter), applies to 'client' actor,
-     * and the tier covers 0..999 hours before (i.e. always matches).
-     */
+    /** Seed a CancellationPolicy with one tier that applies a fee_percent. */
     private function seedPolicy(float $feePercent = 20.0): CancellationPolicy
     {
         $policy = CancellationPolicy::create([

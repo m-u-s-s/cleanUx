@@ -15,6 +15,7 @@ class RetentionPolicyService
 {
     /**
      * @return array<string,int> table => rows purged
+     *                           /
      */
     public function enforceAll(): array
     {
@@ -84,11 +85,7 @@ class RetentionPolicyService
         }
     }
 
-    /**
-     * Delete the on-disk export files for GdprDataRequests past their expires_at, and null the
-     * stored path. The export JSON contains the user's full PII, so leaving it on a
-     * signed-URL-accessible disk past the announced expiry breaks minimisation/retention.
-     */
+    /** Delete the on-disk export files for GdprDataRequests past their expires_at, and null the stored path. */
     protected function purgeExpiredExports(): int
     {
         if (! Schema::hasTable('gdpr_data_requests')) {
@@ -119,33 +116,14 @@ class RetentionPolicyService
         return $deleted;
     }
 
-    /**
-     * LES SELFIES DE CONTROLE SONT EPHEMERES — et purger la ligne ne suffit pas.
-     *
-     * Un visage releve de l'article 9 du RGPD : sa conservation doit etre la plus courte possible.
-     * Ce qui compte ici, c'est que le FICHIER disparaisse du disque ; effacer la colonne en
-     * laissant l'image en place donnerait un registre de traitement conforme et un disque qui ne
-     * l'est pas. C'est exactement le defaut de `DataErasureService` sur les pieces d'identite,
-     * qu'on corrige par ailleurs.
-     *
-     * La ligne, elle, SURVIT : le verdict, le score et l'horodatage restent, sans l'image. C'est
-     * ce qui permet a un administrateur d'expliquer une decision six mois plus tard sans conserver
-     * de biometrie.
-     */
+    /** LES SELFIES DE CONTROLE SONT EPHEMERES — et purger la ligne ne suffit pas. */
     protected function purgeFaceCheckSelfies(): int
     {
         if (! Schema::hasTable('provider_face_checks')) {
             return 0;
         }
 
-        /*
-         * LA DUREE VIENT DES REGLAGES DU MODULE, PAS DE LA CONFIG.
-         *
-         * L'administrateur peut la changer depuis /admin/verification-faciale ; lire
-         * `config()` ici donnerait une interface qui affiche sept jours pendant que la purge
-         * en applique trente -- et personne ne s'en apercevrait, les deux valeurs etant
-         * parfaitement plausibles. `FaceCheckSettings` est le point de passage unique.
-         */
+        // LA DUREE VIENT DES REGLAGES DU MODULE, PAS DE LA CONFIG.
         $jours = app(FaceCheckSettings::class)->selfieRetentionDays();
         $magasin = app(FaceImageStore::class);
         $purges = 0;

@@ -8,11 +8,7 @@ use App\Admin\Console\EloquentResource;
 use App\Models\WebhookEndpoint;
 
 /**
- * Les points de sortie webhook des intégrations B2B.
- *
- * NI ROTATION DE SECRET NI REJEU ICI. Faire tourner un secret coupe l’intégration du client
- * jusqu’à ce qu’il l’ait repris ; ce geste s’accompagne d’un avertissement que la page dédiée
- * affiche et qu’un bouton de liste ne montrerait pas.
+ * Les points de sortie webhook des intégrations B2B. NI ROTATION DE SECRET NI REJEU ICI.
  *
  * @extends EloquentResource<WebhookEndpoint>
  */
@@ -62,11 +58,7 @@ class WebhookEndpointResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Faire tourner le secret invalide immédiatement les signatures en cours de route :
-             * c'est le geste d'urgence quand un secret a fuité, et il doit être atteignable depuis
-             * un téléphone — c'est précisément là qu'on est quand on l'apprend.
-             */
+            // Faire tourner le secret invalide immédiatement les signatures en cours de route : c'est le geste d'urgence quand un secret a fuité, et il doit être atteignable depuis un téléphone — c'est précisément là qu'on est quand on l'apprend.
             Action::make('rotate-secret', 'Faire tourner le secret', function (WebhookEndpoint $endpoint) {
                 $endpoint->forceFill(['secret' => WebhookEndpoint::generateSecret()])->save();
 

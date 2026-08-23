@@ -16,16 +16,10 @@ use Illuminate\Validation\ValidationException;
 
 class PhoneVerificationService
 {
-    /**
-     * Codes émis avant l'existence du compte, pour le premier écran de l'inscription prestataire.
-     * Ils portent `user_id = null` et s'échangent contre un jeton présenté à l'inscription.
-     */
+    /** Codes émis avant l'existence du compte, pour le premier écran de l'inscription prestataire. */
     public const PURPOSE_REGISTRATION = 'registration';
 
-    /**
-     * Durée de vie du jeton remis après vérification. Assez large pour finir le formulaire sans
-     * se presser, assez courte pour qu'un jeton intercepté ne serve pas des semaines plus tard.
-     */
+    /** Durée de vie du jeton remis après vérification. */
     private const TOKEN_TTL_MINUTES = 30;
 
     public function __construct(protected SmsService $smsService) {}
@@ -144,12 +138,7 @@ class PhoneVerificationService
         return true;
     }
 
-    /**
-     * Envoie un code à un numéro qui n'appartient encore à personne.
-     *
-     * Volontairement muet sur l'existence d'un compte portant déjà ce numéro : répondre
-     * différemment ferait de cet endpoint public un oracle d'énumération d'utilisateurs.
-     */
+    /** Envoie un code à un numéro qui n'appartient encore à personne. */
     public function sendRegistrationCode(string $phone): PhoneVerificationCode
     {
         $phone = $this->smsService->normalizePhone($phone);
@@ -204,9 +193,7 @@ class PhoneVerificationService
         return $record;
     }
 
-    /**
-     * Vérifie le code d'inscription et renvoie le jeton à présenter à `POST /api/auth/register`.
-     */
+    /** Vérifie le code d'inscription et renvoie le jeton à présenter à `POST /api/auth/register`. */
     public function verifyRegistrationCode(string $phone, string $code): string
     {
         $phone = $this->smsService->normalizePhone($phone);
@@ -253,12 +240,7 @@ class PhoneVerificationService
         ]));
     }
 
-    /**
-     * Échange le jeton contre le numéro vérifié qu'il porte, une seule fois.
-     *
-     * Renvoie `null` sur tout jeton illisible, expiré, déjà échangé ou portant un autre numéro que
-     * celui soumis : l'inscription se poursuit alors sans téléphone vérifié plutôt que d'échouer.
-     */
+    /** Échange le jeton contre le numéro vérifié qu'il porte, une seule fois. */
     public function consumeRegistrationToken(string $token, ?string $expectedPhone = null): ?string
     {
         try {

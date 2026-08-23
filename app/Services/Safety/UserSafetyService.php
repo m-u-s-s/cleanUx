@@ -8,12 +8,7 @@ use App\Models\UserReport;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Service Block/Report user — Trust & Safety basique.
- *
- * Block : user A bloque user B → B ne peut plus booker A, ni chat avec A.
- * Report : user A signale user B avec catégorie → admin review.
- */
+/** Service Block/Report user — Trust & Safety basique. */
 class UserSafetyService
 {
     public function block(User $blocker, User $blocked, ?string $reason = null): UserBlock
@@ -45,9 +40,7 @@ class UserSafetyService
     }
 
     /**
-     * IDs des utilisateurs en relation de blocage avec $userId, dans un sens OU
-     * l'autre. Sert à exclure du matching tout prestataire bloqué par le client
-     * ou ayant bloqué le client.
+     * IDs des utilisateurs en relation de blocage avec $userId, dans un sens OU l'autre.
      *
      * @return list<int>
      */

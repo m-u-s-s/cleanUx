@@ -6,13 +6,7 @@ use App\Models\MissionQualityInspection;
 use App\Models\User;
 use App\Support\Quality\QualityInspectionAccess;
 
-/**
- * Authorization for Quality inspections (C1).
- *
- * Client abilities require the user to be the booking's client; provider abilities require
- * the user to be an assigned provider on the mission. This closes the IDOR where any
- * authenticated user could read or mutate another user's inspection by enumerating ids.
- */
+/** Authorization for Quality inspections (C1). */
 class MissionQualityInspectionPolicy
 {
     public function viewClient(User $user, MissionQualityInspection $inspection): bool

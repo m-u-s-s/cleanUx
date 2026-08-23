@@ -7,13 +7,7 @@ use Illuminate\Support\Collection;
 
 class CertificationExpiryScanner
 {
-    /**
-     * Met à jour les statuts certifications selon expires_at :
-     *   - expired (déjà passé)
-     *   - expiring_soon (dans les N jours)
-     *   - active (sinon)
-     * Retourne le compte de chaque transition.
-     */
+    /** Met à jour les statuts certifications selon expires_at : - expired (déjà passé) - expiring_soon (dans les N jours) - active (sinon) Retourne le compte de chaque transition. */
     public function scanAndUpdate(?int $expiringSoonDays = null): array
     {
         $expiringSoonDays ??= (int) config('fleet_v2.expiring_soon_days', 30);

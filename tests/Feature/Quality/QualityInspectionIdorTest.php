@@ -12,11 +12,7 @@ use Laravel\Sanctum\Sanctum;
 use Tests\Support\Spine\SpineScenario;
 use Tests\TestCase;
 
-/**
- * C1 — IDOR on Quality/Inspection. Any authenticated user could previously read or mutate
- * another user's inspection by enumerating ids. These tests assert ownership is enforced at
- * the API boundary for both the client and provider controllers.
- */
+/** C1 — IDOR on Quality/Inspection. */
 class QualityInspectionIdorTest extends TestCase
 {
     use RefreshDatabase;

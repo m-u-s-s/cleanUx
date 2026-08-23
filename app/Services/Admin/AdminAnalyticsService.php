@@ -58,25 +58,7 @@ class AdminAnalyticsService
 
         $totalRevenue = (float) Booking::query()->sum('devis_estime');
 
-        /*
-         * LA MARGE DE LA PLATEFORME, C'EST SA COMMISSION — et elle est enfin lue quelque part.
-         *
-         * Cette valeur affichait zéro depuis toujours. Le code cherchait une colonne `margin` ou
-         * `marge` qu'AUCUNE table n'a jamais portée, et interrogeait par-dessus le marché une table
-         * différente de celle qu'il sommait. Deux gardes successives se refermaient donc sur rien,
-         * et la carte « Marge totale » du tableau de bord annonçait 0,00 € avec l'aplomb d'un
-         * calcul. Un chiffre faux affiché sans réserve est pire qu'une case vide : on le lit.
-         *
-         * `platform_fee_cents` est ce que la plateforme retient réellement. Il est écrit à la
-         * complétion par MissionLifecycleService depuis CommissionService, et c'est la même valeur
-         * que reprend l'écriture comptable (BookingPostingService).
-         *
-         * LES DEUX BASES DIFFÈRENT, et il faut le savoir avant de faire un ratio : le chiffre
-         * d'affaires ci-dessus additionne des DEVIS (`devis_estime`), y compris pour des
-         * réservations annulées ou jamais payées, tandis que la marge n'existe que sur les missions
-         * effectivement terminées et encaissées. Rapporter l'une à l'autre ne donne pas un taux de
-         * commission.
-         */
+        // LA MARGE DE LA PLATEFORME, C'EST SA COMMISSION — et elle est enfin lue quelque part.
         // Le transtypage n'est pas cosmétique : en PHP, `/` rend un ENTIER quand les deux opérandes
         // sont entiers et la division exacte. 2000/100 donnait donc `int(20)` et 4325/100
         // `float(43.25)` — le type de la clé changeait avec le montant, ce qui casse une comparaison
@@ -91,23 +73,7 @@ class AdminAnalyticsService
 
         $averageRating = 0.0;
 
-        /*
-         * LE GARDE INTERROGEAIT UNE AUTRE TABLE QUE LA REQUÊTE.
-         *
-         * Il testait le schéma de `feedbacks` pour décider quelle colonne moyenner — puis
-         * moyennait sur `Feedback::query()`, c'est-à-dire sur `feedback`, que le modèle désigne
-         * explicitement (`protected $table = 'feedback'`). Deux tables distinctes existent bel et
-         * bien : `feedback` (34 colonnes, celle du modèle) et `feedbacks` (15 colonnes, sans
-         * modèle).
-         *
-         * Cela FONCTIONNAIT, par coïncidence : les deux portent une colonne `note`, donc le garde
-         * choisissait la bonne branche pour la mauvaise raison. Le jour où `feedbacks` disparaît,
-         * `hasTable()` rend faux, aucune branche ne s'exécute, et la note moyenne de la console
-         * d'administration tombe à zéro — sans erreur, sans trace, alors que les avis continuent
-         * d'être enregistrés.
-         *
-         * On interroge donc la table que le modèle utilise vraiment, demandée au modèle lui-même.
-         */
+        // LE GARDE INTERROGEAIT UNE AUTRE TABLE QUE LA REQUÊTE.
         $tableDesAvis = (new Feedback)->getTable();
 
         if (Schema::hasTable($tableDesAvis)) {

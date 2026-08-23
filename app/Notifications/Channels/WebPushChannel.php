@@ -6,28 +6,7 @@ use App\Models\User;
 use App\Services\Push\WebPushSender;
 use Illuminate\Notifications\Notification;
 
-/**
- * Phase 8 — Channel Laravel pour envoyer des notifications via Web Push.
- *
- * Pour utiliser :
- *   class MaNotification extends Notification {
- *       public function via($notifiable): array {
- *           return ['database', 'mail', \App\Notifications\Channels\WebPushChannel::class];
- *       }
- *
- *       public function toWebPush($notifiable): array {
- *           return [
- *               'title' => 'Votre prestataire arrive',
- *               'body'  => "Mission CUX-ABC123",
- *               'url'   => route('client.rendezvous.index'),
- *               'tag'   => 'mission-' . $this->mission->id,
- *           ];
- *       }
- *   }
- *
- * Pas besoin de bind explicite : Laravel détecte automatiquement les channels
- * référencés par leur classe complète.
- */
+/** Phase 8 — Channel Laravel pour envoyer des notifications via Web Push. */
 class WebPushChannel
 {
     public function __construct(

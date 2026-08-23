@@ -21,17 +21,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Publier une version, et déplacer un questionnaire.
- *
- * La révision est ce qui rend un devis REJOUABLE, pas seulement lisible : sans elle, on saurait ce
- * que le client a répondu mais plus jamais ce qu'on lui avait demandé ni comment son prix avait
- * été calculé.
- *
- * La portabilité, elle, tient à un seul point : les conditions se remappent par CODE. Les copier
- * par identifiant les ferait pointer vers les questions du métier d'origine — sans erreur, sans
- * rien signaler, jusqu'à ce qu'un client voie une question surgir sans raison.
- */
+/** Publier une version, et déplacer un questionnaire. */
 class PublicationAndPortabilityTest extends TestCase
 {
     use RefreshDatabase;
@@ -56,13 +46,7 @@ class PublicationAndPortabilityTest extends TestCase
         $this->assertNotNull($trade->fresh()->published_at);
     }
 
-    /**
-     * Une révision publiée se REJOUE.
-     *
-     * Figer des versions sans pouvoir y revenir ne sert qu'à constater les dégâts. Une mauvaise
-     * grille tarifaire partie en production se répare aujourd'hui à la main, question par question,
-     * pendant que les clients commandent au mauvais prix.
-     */
+    /** Une révision publiée se REJOUE. */
     public function test_a_published_revision_can_be_restored(): void
     {
         $trade = $this->peinture();
@@ -81,13 +65,7 @@ class PublicationAndPortabilityTest extends TestCase
         );
     }
 
-    /**
-     * Restaurer AVANCE l'historique, il ne le réécrit pas.
-     *
-     * Revenir à la version 1 publie une version 3 qui lui ressemble. Supprimer la version 2 ferait
-     * disparaître le contrat de prix sous lequel des commandes ont réellement été passées — et ces
-     * commandes-là citent son identifiant.
-     */
+    /** Restaurer AVANCE l'historique, il ne le réécrit pas. */
     public function test_restoring_moves_history_forward_instead_of_erasing_it(): void
     {
         $trade = $this->peinture();
@@ -114,12 +92,7 @@ class PublicationAndPortabilityTest extends TestCase
         $this->assertSame(4500, collect($etendue['options'])->firstWhere('value', 'murs_plafonds')['price_modifier_cents']);
     }
 
-    /**
-     * Un défaut bloquant empêche la mise en ligne.
-     *
-     * Deux réponses par défaut produisent un écran dont le comportement dépend de l'ordre de tri :
-     * le client validerait une réponse qu'il n'a pas choisie, et personne ne le saurait.
-     */
+    /** Un défaut bloquant empêche la mise en ligne. */
     public function test_a_blocking_flaw_refuses_publication(): void
     {
         $trade = $this->peinture();
@@ -139,13 +112,7 @@ class PublicationAndPortabilityTest extends TestCase
         $this->assertNotNull(app(TradeFormPublisher::class)->publish($trade, $this->admin()));
     }
 
-    /**
-     * Le brouillon en attente se juge sur le CONTENU.
-     *
-     * Renommer une question puis annuler laisse une trace dans `updated_at` sans rien changer au
-     * parcours ; signaler « en attente » dans ce cas apprendrait à l'administrateur à ignorer
-     * l'avertissement, et il l'ignorerait aussi le jour où il compte.
-     */
+    /** Le brouillon en attente se juge sur le CONTENU. */
     public function test_pending_changes_are_judged_on_content_not_timestamps(): void
     {
         $trade = $this->peinture();
@@ -165,12 +132,7 @@ class PublicationAndPortabilityTest extends TestCase
         $this->assertFalse($publisher->hasUnpublishedChanges($trade->fresh()));
     }
 
-    /**
-     * LE maillon qui manquait : la commande cite la révision employée.
-     *
-     * Sans elle, un devis de six mois n'est plus rejouable — le questionnaire aura changé trois
-     * fois d'ici la contestation.
-     */
+    /** LE maillon qui manquait : la commande cite la révision employée. */
     public function test_an_order_line_records_the_revision_it_used(): void
     {
         $trade = $this->peinture();
@@ -197,13 +159,7 @@ class PublicationAndPortabilityTest extends TestCase
         $this->assertNotNull($target->questions()->where('code', 'type_pistolet')->first());
     }
 
-    /**
-     * LA garantie de la duplication : les conditions pointent vers le NOUVEAU métier.
-     *
-     * Recopiées par identifiant, elles viseraient les questions d'origine et se déclencheraient sur
-     * les réponses de quelqu'un d'autre — sans erreur, jusqu'à ce qu'un client voie une question
-     * surgir sans raison.
-     */
+    /** LA garantie de la duplication : les conditions pointent vers le NOUVEAU métier. */
     public function test_duplicated_conditions_point_inside_the_target_trade(): void
     {
         $source = $this->peinture();
@@ -236,12 +192,7 @@ class PublicationAndPortabilityTest extends TestCase
         $this->assertGreaterThan(0, $second['updated']);
     }
 
-    /**
-     * Un import n'EFFACE rien.
-     *
-     * C'est une contribution, pas une remise à zéro : supprimer silencieusement des questions déjà
-     * répondues rendrait des devis inexplicables.
-     */
+    /** Un import n'EFFACE rien. */
     public function test_an_import_never_deletes_what_it_does_not_mention(): void
     {
         $target = Trade::where('slug', 'vitrerie')->firstOrFail();
@@ -252,12 +203,7 @@ class PublicationAndPortabilityTest extends TestCase
         $this->assertNotNull(Question::find($ownQuestion->id));
     }
 
-    /**
-     * Une question archivée n'est pas ressuscitée par un import.
-     *
-     * Son code reste réservé — ce qui garde les instantanés univoques — mais la réécrire lui
-     * donnerait un sens neuf sous une clé déjà employée par d'anciennes réponses.
-     */
+    /** Une question archivée n'est pas ressuscitée par un import. */
     public function test_an_import_does_not_resurrect_an_archived_question(): void
     {
         $target = Trade::where('slug', 'vitrerie')->firstOrFail();
@@ -316,13 +262,7 @@ class PublicationAndPortabilityTest extends TestCase
 
     // ─── Le constructeur ─────────────────────────────────────────────────────────────────────
 
-    /**
-     * L'import se fait DEPUIS L'ÉCRAN, comme l'export.
-     *
-     * Le service savait déjà importer, mais rien ne l'appelait : l'administrateur pouvait sortir un
-     * questionnaire d'un environnement sans pouvoir le faire entrer dans l'autre. Une moitié de
-     * fonctionnalité, atteignable uniquement par un développeur avec un tinker ouvert.
-     */
+    /** L'import se fait DEPUIS L'ÉCRAN, comme l'export. */
     public function test_a_questionnaire_can_be_imported_from_the_screen(): void
     {
         $this->actingAs($this->admin());
@@ -403,17 +343,7 @@ class PublicationAndPortabilityTest extends TestCase
 
     // ─── Fabriques ───────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Deux schémas au contenu identique mais aux clés dans un autre ordre sont LE MÊME schéma.
-     *
-     * MySQL réordonne les clés d'une colonne JSON ; ce qu'on relit n'a pas l'ordre de ce qu'on a
-     * écrit. Comme `!==` sur des tableaux PHP compare aussi l'ordre, la comparaison directe
-     * déclarait le questionnaire modifié à chaque appel — et le constructeur affichait
-     * « modifications non publiées » en permanence, y compris juste après une publication.
-     *
-     * Le test attaque la comparaison directement plutôt que de passer par la base : il tient donc
-     * sur SQLite comme sur MySQL, alors que le défaut n'était visible que sur le second.
-     */
+    /** Deux schémas au contenu identique mais aux clés dans un autre ordre sont LE MÊME schéma. */
     public function test_two_schemas_differing_only_in_key_order_are_the_same(): void
     {
         $publisher = app(TradeFormPublisher::class);

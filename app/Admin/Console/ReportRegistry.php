@@ -4,13 +4,7 @@ namespace App\Admin\Console;
 
 use Illuminate\Contracts\Container\Container;
 
-/**
- * Le registre des rapports d'administration.
- *
- * Jumeau de {@see ResourceRegistry} pour les modules qui ne sont pas des listes. Les mêmes règles
- * s'appliquent : un module annoncé `report` sans rapport enregistré, ou l'inverse, fait échouer
- * `ReportRegistryTest`. Le registre de couverture ne peut pas mentir dans un sens ni dans l'autre.
- */
+/** Le registre des rapports d'administration. */
 class ReportRegistry
 {
     /** @var array<string, class-string<AdminReport>> */

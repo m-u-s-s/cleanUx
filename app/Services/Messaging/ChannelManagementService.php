@@ -8,25 +8,7 @@ use App\Models\OrganizationMember;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-/**
- * CRÉER UNE CONVERSATION, Y METTRE DU MONDE, EN RETIRER — POUR LES DEUX SURFACES.
- *
- * Toute la gestion des canaux vivait dans `TeamChannels.php`, l'écran web : créer, ajouter un
- * membre, ouvrir une conversation à deux. L'API mobile ne savait que LISTER, LIRE et POSTER — une
- * équipe sur le terrain pouvait donc répondre, jamais ouvrir un fil. Recopier ces règles côté API
- * aurait produit deux définitions de « qui peut entrer dans un canal ».
- *
- * TROIS INVARIANTS, ET AUCUN N'EST DÉCORATIF :
- *
- *   1. LE CANAL APPARTIENT À UNE ORGANISATION, et n'est jamais chargé hors d'elle. Ouvrir l'ajout
- *      de membres sans ce scoping ouvrirait les canaux d'une société aux utilisateurs de toutes
- *      les autres.
- *   2. LA CIBLE EST UN COLLÈGUE ACTIF. Un canal d'équipe qui accepterait n'importe quel compte
- *      cesserait d'être une conversation interne.
- *   3. ON CHERCHE AVANT DE CRÉER une conversation à deux. Sans cela, chaque clic ajouterait un
- *      canal : la messagerie se remplirait de fils vides entre les deux mêmes personnes, et
- *      l'historique se disperserait entre eux — pire que pas de messagerie du tout.
- */
+/** CRÉER UNE CONVERSATION, Y METTRE DU MONDE, EN RETIRER — POUR LES DEUX SURFACES. */
 class ChannelManagementService
 {
     /**
@@ -66,13 +48,7 @@ class ChannelManagementService
                 }
             }
 
-            /*
-             * Le message système passe par `Message::create()` et NON par `MessageService::send()`.
-             *
-             * `send()` déclenche mentions, notifications et diffusion : une ligne d'annonce
-             * technique ne doit réveiller personne, et la modération n'a pas à examiner un texte
-             * que le produit a écrit lui-même.
-             */
+            // Le message système passe par `Message::create()` et NON par `MessageService::send()`.
             Message::create([
                 'channel_id' => $canal->id,
                 'user_id' => $acteur->id,
@@ -84,13 +60,7 @@ class ChannelManagementService
         });
     }
 
-    /**
-     * OUVRIR — OU RETROUVER — LA CONVERSATION À DEUX.
-     *
-     * La recherche porte sur la COMPOSITION, pas sur un nom : « exactement ces deux-là, et personne
-     * d'autre ». C'est ce qui fait qu'Ana retrouve la conversation ouverte par son patron plutôt
-     * que d'en créer une seconde en croyant lui répondre.
-     */
+    /** OUVRIR — OU RETROUVER — LA CONVERSATION À DEUX. */
     public function ouvrirConversationDirecte(User $acteur, int $organisationId, int $autreUserId): ?Channel
     {
         if ($autreUserId === $acteur->id) {
@@ -103,13 +73,7 @@ class ChannelManagementService
             return null;
         }
 
-        /*
-         * Le comptage final se fait EN PHP, et non par un `having` sur `withCount`.
-         *
-         * SQLite refuse « HAVING clause on a non-aggregate query » là où MySQL l'accepte : la suite
-         * tourne sur SQLite, la production sur MySQL, et écrire la requête qui plaît aux deux
-         * coûterait plus cher en subtilité qu'un filtre sur une poignée de canaux privés.
-         */
+        // Le comptage final se fait EN PHP, et non par un `having` sur `withCount`.
         $existant = Channel::query()
             ->where('organization_account_id', $organisationId)
             ->where('type', 'private')
@@ -163,26 +127,13 @@ class ChannelManagementService
         return true;
     }
 
-    /**
-     * Retirer quelqu'un d'un canal.
-     *
-     * RETIRER COUPE AUSSI L'ACCÈS TEMPS RÉEL : l'autorisation Reverb `channel.{id}` vérifie
-     * l'appartenance à chaque abonnement. C'est la raison pour laquelle on détache réellement la
-     * ligne au lieu de poser un drapeau — un membre « inactif » resterait dans le canal aux yeux
-     * de la diffusion.
-     */
+    /** Retirer quelqu'un d'un canal. */
     public function retirerMembre(Channel $canal, int $userId): void
     {
         $canal->members()->detach($userId);
     }
 
-    /**
-     * Marquer un canal comme lu.
-     *
-     * `channel_members.last_read_at` existait depuis l'origine et n'était écrit par personne : les
-     * non-lus ne pouvaient donc pas exister, et la liste des canaux ne disait jamais où il se
-     * passait quelque chose.
-     */
+    /** Marquer un canal comme lu. */
     public function marquerCommeLu(Channel $canal, int $userId): void
     {
         $canal->members()->updateExistingPivot($userId, ['last_read_at' => now()]);
@@ -191,11 +142,8 @@ class ChannelManagementService
     /**
      * Les non-lus de chaque canal de l'organisation où cette personne est membre.
      *
-     * SES PROPRES MESSAGES NE COMPTENT PAS — se compter soi-même afficherait un badge à chaque fois
-     * qu'on parle. Et `last_read_at` nul signifie « jamais ouvert », donc tout est non lu : c'est
-     * la valeur d'un canal auquel on vient d'être ajouté.
-     *
      * @return array<int, int> channel_id => non-lus
+     *                         /
      */
     public function nonLusPour(int $organisationId, int $userId): array
     {
@@ -204,14 +152,7 @@ class ChannelManagementService
             ->whereHas('members', fn ($q) => $q->where('user_id', $userId))
             ->pluck('id');
 
-        /*
-         * La date de dernière lecture est lue sur le PIVOT, en une requête.
-         *
-         * Passer par `$canal->members->first()->pivot` obligerait à charger chaque relation, et
-         * PHPStan a raison de refuser cet accès : `members()` rend des `User`, dont le pivot n'est
-         * typé nulle part. La table de liaison se lit directement, ce qui est aussi plus honnête
-         * sur ce qu'on cherche.
-         */
+        // La date de dernière lecture est lue sur le PIVOT, en une requête.
         $lectures = DB::table('channel_members')
             ->whereIn('channel_id', $canaux)
             ->where('user_id', $userId)

@@ -8,17 +8,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
 
-/**
- * OÙ ME PLACER, ET À QUELLE HEURE (E12).
- *
- * LA QUESTION QUE SE POSE TOUT INDÉPENDANT le matin, et à laquelle rien ne répond : il se place où
- * il s'est placé hier, et découvre après trois heures d'attente qu'il fallait être ailleurs. La
- * plateforme, elle, SAIT — les recherches de dispatch sont horodatées et géolocalisées.
- *
- * CE N'EST PAS UNE PROMESSE, et l'écran le dit. Une demande passée ne garantit pas une demande
- * future : afficher un classement sans dire sur combien de jours il porte ferait lire un pic isolé
- * comme une tendance, et déplacer quelqu'un pour rien.
- */
+/** OÙ ME PLACER, ET À QUELLE HEURE (E12). */
 class DemandHeatmap extends Component
 {
     /** Le métier filtré, ou tous. */

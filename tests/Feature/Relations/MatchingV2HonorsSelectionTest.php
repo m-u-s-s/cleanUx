@@ -15,24 +15,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * MatchingV2 est le matcher PRIMAIRE (MATCHING_V2_ENABLED=true par défaut, utilisé
- * par AiDispatchService::bestEmployeeFor). Il doit donc HONORER le choix du client :
- *   - provider_type_preference (SP2) : indépendant vs société ;
- *   - assigned_provider_organization_id (SP3) : la société choisie.
- *
- * Chaque candidat « exclu » est PAR AILLEURS éligible (actif+vérifié, taggé du métier,
- * rattaché à la zone, disponible) — seul le type/l'org doit l'exclure. Garde-fou
- * anti-trivial : sans préférence/org ('any'/null), MatchingV2 verrait les deux.
- */
+/** MatchingV2 est le matcher PRIMAIRE (MATCHING_V2_ENABLED=true par défaut, utilisé par AiDispatchService::bestEmployeeFor). */
 class MatchingV2HonorsSelectionTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
     use RefreshDatabase;
 
-    /**
-     * Crée un prestataire PAR AILLEURS éligible et le tagge du métier donné.
-     */
+    /** Crée un prestataire PAR AILLEURS éligible et le tagge du métier donné. */
     private function eligibleProvider(string $type, int $zoneId, int $tradeId, string $date, ?int $orgId = null): User
     {
         $user = User::factory()->create([

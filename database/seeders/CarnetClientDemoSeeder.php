@@ -9,20 +9,7 @@ use App\Services\Client\ClientPlaceService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-/**
- * LE CARNET DE LIEUX (E2) ET LE BÉNÉFICIAIRE (E1), SUR LA BASE DE DÉMONSTRATION.
- *
- * SANS DONNÉES, LE CARNET NE PROUVE RIEN. Un écran vide ne distingue pas « ce client n'a pas encore
- * enregistré de lieu » de « la requête est fausse » — et ici le premier cas est le comportement
- * nominal d'un nouveau compte, ce qui rend la confusion certaine.
- *
- * ET SURTOUT, LE CHAÎNON QUI COMPTE se démontre : un lieu AVEC SES CONSIGNES, rattaché à une
- * réservation, pour que la fiche d'accès sur place (F5) ait quelque chose à révéler à l'arrivée.
- * C'est ce lien qui fait la différence entre un carnet d'adresses et un carnet de lieux ; sans
- * données, il n'est visible nulle part.
- *
- * IDEMPOTENT : chaque ligne est cherchée sur (client, libellé) avant d'être écrite.
- */
+/** LE CARNET DE LIEUX (E2) ET LE BÉNÉFICIAIRE (E1), SUR LA BASE DE DÉMONSTRATION. */
 class CarnetClientDemoSeeder extends Seeder
 {
     public function run(): void
@@ -80,13 +67,7 @@ class CarnetClientDemoSeeder extends Seeder
             $premier ??= $lieu;
         }
 
-        /*
-         * UNE RÉSERVATION RATTACHÉE AU LIEU, ET AVEC UN BÉNÉFICIAIRE.
-         *
-         * C'est le seul moyen de voir la fiche d'accès sur place révéler quelque chose : sans ce
-         * rattachement, les consignes restent dans le carnet et le terrain ne les voit jamais —
-         * c'est-à-dire que le module ne sert à rien, tout en paraissant complet.
-         */
+        // UNE RÉSERVATION RATTACHÉE AU LIEU, ET AVEC UN BÉNÉFICIAIRE.
         $reservation = Booking::query()
             ->where('client_id', $client->id)
             ->whereNull('client_place_id')

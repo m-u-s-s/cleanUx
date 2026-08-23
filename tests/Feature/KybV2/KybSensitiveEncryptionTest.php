@@ -9,10 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * Audit LOW (RGPD/sécurité) — les charges utiles de screening sanctions et les
- * métadonnées des bénéficiaires effectifs (PII) doivent être chiffrées au repos.
- */
+/** Audit LOW (RGPD/sécurité) — les charges utiles de screening sanctions et les métadonnées des bénéficiaires effectifs (PII) doivent être chiffrées au repos. */
 class KybSensitiveEncryptionTest extends TestCase
 {
     use RefreshDatabase;

@@ -9,12 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Les indicateurs d'accueil de la console d'administration mobile.
- *
- * Ils sont volontairement peu nombreux et tous comptables : un accueil qui affiche sept nombres
- * exacts vaut mieux qu'un tableau de bord riche dont on ne sait pas ce qu'il mesure.
- */
+/** Les indicateurs d'accueil de la console d'administration mobile. */
 class AdminOverviewEndpointTest extends TestCase
 {
     use RefreshDatabase;
@@ -34,13 +29,7 @@ class AdminOverviewEndpointTest extends TestCase
         $kpis = $res->json('kpis');
         $this->assertCount(7, $kpis);
 
-        /*
-         * TOUS LES INDICATEURS FAUTIFS, PAS LE PREMIER.
-         *
-         * Le controleur rattrape les erreurs pour qu'une table absente ne fasse pas tomber
-         * l'accueil entier. Une requete cassee rendrait donc 0 sans bruit — le vert qui ne prouve
-         * rien. Et quand une table manque, ce sont plusieurs indicateurs qui tombent ensemble.
-         */
+        // TOUS LES INDICATEURS FAUTIFS, PAS LE PREMIER.
         $fautifs = [];
 
         foreach ($kpis as $i => $kpi) {

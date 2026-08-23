@@ -8,18 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * PERSONNE NE POUVAIT DIRE QUI AVAIT CHANGÉ LE STATUT D'UNE RÉSERVATION.
- *
- * La table `booking_status_histories` existait, complète, sans modèle ni écrivain. Aucune autre ne
- * tenait cette notion : `Booking` ne porte pas le trait d'audit générique, `BookingObserver` n'en
- * gardait pas trace, `mission_events` tient la chronologie de terrain et
- * `booking_reschedule_history` les seules reprogrammations.
- *
- * Ces tests fixent ce que le branchement doit garantir — y compris ce qu'il ne doit PAS faire :
- * une ligne d'historique pour un changement qui n'est pas un changement de statut serait du bruit,
- * et le bruit rend un journal inutilisable aussi sûrement que le vide.
- */
+/** PERSONNE NE POUVAIT DIRE QUI AVAIT CHANGÉ LE STATUT D'UNE RÉSERVATION. */
 class BookingStatusHistoryTest extends TestCase
 {
     use RefreshDatabase;

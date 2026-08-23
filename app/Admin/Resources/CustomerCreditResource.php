@@ -12,13 +12,6 @@ use App\Support\ActivityLogger;
 /**
  * Les avoirs et crédits clients.
  *
- * ATTENTION, PIÈGE CONNU DE CE PROJET : le modèle et la table de cette entité ont divergé par le
- * passé. Les colonnes servies ici sont celles du SCHÉMA, vérifiées — et le test de schéma le
- * refera à chaque exécution.
- *
- * Aucune création depuis la console : un avoir naît d’un remboursement ou d’un geste commercial,
- * tous deux journalisés par leur module.
- *
  * @extends EloquentResource<CustomerCredit>
  */
 class CustomerCreditResource extends EloquentResource
@@ -76,11 +69,7 @@ class CustomerCreditResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Le REFUS est repris du web : seul un crédit actif s'annule. Annuler un crédit déjà
-             * consommé remettrait son solde à zéro sans rien rendre au client — une perte qu'il
-             * découvrirait à sa prochaine réservation.
-             */
+            // Le REFUS est repris du web : seul un crédit actif s'annule.
             Action::make('cancel', 'Annuler le crédit', function (CustomerCredit $credit, array $valeurs) {
                 if ($credit->status !== 'active') {
                     return ['ok' => false, 'message' => 'Seul un crédit actif peut être annulé.'];

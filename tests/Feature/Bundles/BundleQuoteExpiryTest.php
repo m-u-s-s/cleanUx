@@ -12,10 +12,7 @@ use App\Services\Bundles\MultiTradeBundleService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Bundle Marketplace P4 — expiration des demandes dépassées + ré-escalade pour
- * compléter les items sous-quotés.
- */
+/** Bundle Marketplace P4 — expiration des demandes dépassées + ré-escalade pour compléter les items sous-quotés. */
 class BundleQuoteExpiryTest extends TestCase
 {
     use RefreshDatabase;

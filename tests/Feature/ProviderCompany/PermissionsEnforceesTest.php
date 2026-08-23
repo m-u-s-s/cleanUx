@@ -17,31 +17,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LES CLÉS DE PERMISSION DÉCLARÉES QUE PLUS PERSONNE NE CONSULTAIT.
- *
- * `PermissionService::ROLE_PERMISSIONS` déclare 31 clés. Un relevé du 2026-08-07 en a trouvé
- * quatre que RIEN dans `app/` n'interrogeait : `missions.assign`, `missions.view_all`,
- * `analytics.export`, `sites.assign_members`. Une permission qu'aucun code ne lit est pire qu'une
- * permission absente : elle s'affiche dans la matrice, un patron la décoche, et il ne se passe
- * rien. Il croit avoir fermé une porte restée grande ouverte.
- *
- * Ce fichier en enforce DEUX, celles qui gardent quelque chose d'existant :
- *
- *   - `missions.view_all` — le tableau de bord société montrait à N'IMPORTE QUEL membre, nettoyeur
- *     compris, les missions de toute la société, ses retards et l'état Stripe de chaque collègue.
- *     Sa seule garde était `isProviderCompanyWorker()`, un test de TYPE de compte : tout employé la
- *     franchit, par construction.
- *
- *   - `missions.assign` — `DispatchCenter::confirmAssign()` n'était gardée QUE par le
- *     `missions.dispatch` de `mount()`. Livewire ne rejoue pas `mount()` sur les actions : la
- *     vérification avait lieu une fois, à l'ouverture de l'écran, et jamais au moment d'agir.
- *
- * `analytics.export` et `sites.assign_members` restent sans consommateur À DESSEIN : aucun export
- * ni aucune affectation par site n'existe encore dans ces espaces. `sites.assign_members` trouvera
- * le sien au lot 2B ; inventer une fonctionnalité pour justifier une clé serait prendre le problème
- * à l'envers.
- */
+/** LES CLÉS DE PERMISSION DÉCLARÉES QUE PLUS PERSONNE NE CONSULTAIT. */
 class PermissionsEnforceesTest extends TestCase
 {
     use RefreshDatabase;
@@ -65,12 +41,7 @@ class PermissionsEnforceesTest extends TestCase
             'joined_at' => now(),
         ]);
 
-        /*
-         * `ProviderDashboard::mount()` exige `isProviderCompanyWorker()`, donc un `ProviderProfile`
-         * de type `company_worker`. C'est ce que `OrganizationMembershipService` crée pour CHAQUE
-         * membre, patron compris — d'où le fait que cette garde ne distingue personne, et qu'il
-         * fallait une permission pour le faire.
-         */
+        // `ProviderDashboard::mount()` exige `isProviderCompanyWorker()`, donc un `ProviderProfile` de type `company_worker`.
         ProviderProfile::factory()->create([
             'user_id' => $user->id,
             'organization_account_id' => $org->id,
@@ -149,14 +120,7 @@ class PermissionsEnforceesTest extends TestCase
     #[Test]
     public function assigner_exige_missions_assign_au_moment_d_agir(): void
     {
-        /*
-         * LE DÉFAUT : `mount()` vérifiait `missions.dispatch`, et rien d'autre ne vérifiait plus
-         * rien. Livewire ne rejoue pas `mount()` entre deux actions — la garde tenait à l'instant
-         * de l'ouverture de l'écran, pas à celui de l'assignation.
-         *
-         * Cette société a décidé que ses dispatcheurs CONSULTENT le tableau sans assigner : c'est
-         * exactement ce que la matrice réglable promet, et ce que le code ignorait.
-         */
+        // LE DÉFAUT : `mount()` vérifiait `missions.dispatch`, et rien d'autre ne vérifiait plus rien.
         [$org, $dispatcheur] = $this->societeAvec(OrganizationRole::DISPATCHER);
 
         OrganizationRolePermission::create([

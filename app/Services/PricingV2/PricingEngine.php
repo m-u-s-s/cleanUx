@@ -15,22 +15,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
-/**
- * PricingEngine v2 — calcule un quote en appliquant les pricing_rules.
- *
- * Workflow :
- *   1. Charge le service catalog (active)
- *   2. Sanitize les variables (whitelist via config)
- *   3. Détermine variant A/B (deterministic crc32(experiment.code:user_id))
- *   4. Filtre les rules applicables (service_code OR trade_code match + valid_from/until)
- *   5. Trie par priority asc, évalue applies_when via PricingDsl
- *   6. Applique adjustments dans l'ordre, clamp final entre min/max du service
- *   7. Persist PriceQuote ledger + ActivityLogger
- *   8. Idempotent via key
- *
- * Soft-fail : si rule lève une exception, on l'ignore + Log warning, on continue
- * avec les autres rules.
- */
+/** PricingEngine v2 — calcule un quote en appliquant les pricing_rules. Workflow : 1. */
 class PricingEngine
 {
     public function __construct(protected PricingDsl $dsl) {}
@@ -145,9 +130,7 @@ class PricingEngine
         return $row;
     }
 
-    /**
-     * Pure compute : preview without persistence. Useful for "live price" UI.
-     */
+    /** Pure compute : preview without persistence. Useful for "live price" UI. */
     public function preview(string $serviceCode, array $variables = [], ?User $user = null): array
     {
         $service = ServiceCatalogV2::query()->where('code', $serviceCode)->active()->first();
@@ -211,9 +194,7 @@ class PricingEngine
         return $rules;
     }
 
-    /**
-     * Allows experiments to override/extend the rule set for the assigned variant.
-     */
+    /** Allows experiments to override/extend the rule set for the assigned variant. */
     protected function overlayExperimentRules(Collection $rules, ServiceCatalogV2 $service, string $variant): Collection
     {
         $experiment = $this->resolveExperimentForService($service);

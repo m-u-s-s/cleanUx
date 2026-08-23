@@ -36,12 +36,7 @@ class ProductionHealthReportTest extends TestCase
         $this->assertSame('ERROR', $httpsCheck['severity']);
     }
 
-    /**
-     * LE GABARIT DE CLÉ PORTE LE BON PRÉFIXE, et c'est tout le piège.
-     *
-     * `.env.example` livre `sk_test_…` tronqué : un contrôle sur le seul préfixe déclarerait la
-     * plateforme prête alors qu'aucun `PaymentIntent` ne peut être créé.
-     */
+    /** LE GABARIT DE CLÉ PORTE LE BON PRÉFIXE, et c'est tout le piège. */
     public function test_le_gabarit_de_cle_stripe_est_signale(): void
     {
         Config::set('cashier.secret', 'sk_test_xxx');
@@ -79,14 +74,7 @@ class ProductionHealthReportTest extends TestCase
         $this->assertSame('ERROR', $check['severity']);
     }
 
-    /**
-     * SANS PRESTATAIRE ENCAISSABLE, AUCUNE RÉSERVATION NE PEUT ÊTRE PAYÉE.
-     *
-     * `MissionPaymentService::authorize()` refuse explicitement : la plateforme ne peut pas
-     * prélever ce qu'elle serait incapable de reverser. Sur une base sans onboarding Stripe —
-     * l'état de la base de démonstration au 2026-08-13 — le chemin de l'argent est donc
-     * intégralement bloqué, et rien ne le disait.
-     */
+    /** SANS PRESTATAIRE ENCAISSABLE, AUCUNE RÉSERVATION NE PEUT ÊTRE PAYÉE. */
     public function test_aucun_prestataire_encaissable_est_une_erreur(): void
     {
         $report = app(ProductionHealthReport::class)->build();

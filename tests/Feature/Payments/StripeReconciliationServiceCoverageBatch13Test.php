@@ -15,13 +15,7 @@ use Tests\Support\Stripe\FakeStripeHttpClient;
 use Tests\Support\Stripe\StripeFakeResponses;
 use Tests\TestCase;
 
-/**
- * Coverage for App\Services\Payments\StripeReconciliationService.
- *
- * Drives the payment-intent and payout reconciliation loops through the
- * project's FakeStripeHttpClient so no network is hit, exercising every
- * mismatch branch plus the Stripe-unavailable and API-error guards.
- */
+/** Coverage for App\Services\Payments\StripeReconciliationService. */
 class StripeReconciliationServiceCoverageBatch13Test extends TestCase
 {
     use RefreshDatabase;

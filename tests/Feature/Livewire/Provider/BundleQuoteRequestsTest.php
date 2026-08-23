@@ -12,9 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Bundle Marketplace P2 — page prestataire des demandes de devis (chantiers groupés).
- */
+/** Bundle Marketplace P2 — page prestataire des demandes de devis (chantiers groupés). */
 class BundleQuoteRequestsTest extends TestCase
 {
     use RefreshDatabase;

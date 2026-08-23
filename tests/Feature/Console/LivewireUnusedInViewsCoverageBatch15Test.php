@@ -6,15 +6,7 @@ use App\Console\Commands\LivewireUnusedInViews;
 use Illuminate\Console\Command;
 use Tests\TestCase;
 
-/**
- * Coverage for {@see LivewireUnusedInViews}.
- *
- * The command scans resources/views for @livewire / <livewire:...> usages,
- * collects full-page routed components, then walks app/Livewire to report any
- * component never included in a view and not bound to a route. It always
- * returns SUCCESS. Running it against the real codebase exercises the view
- * scanning, alias normalisation, route inspection and unused-detection loops.
- */
+/** Coverage for {@see LivewireUnusedInViews}. */
 class LivewireUnusedInViewsCoverageBatch15Test extends TestCase
 {
     public function test_command_runs_and_returns_success(): void

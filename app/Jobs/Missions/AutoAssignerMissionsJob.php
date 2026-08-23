@@ -12,18 +12,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * « ASSIGNER TOUTES LES MISSIONS NON ATTRIBUÉES » — le bouton du gérant.
- *
- * EN FILE, ET PAS DANS LA REQUÊTE. Un arriéré de deux cents missions, c'est deux cents décisions et
- * autant de notifications : le faire pendant que le navigateur attend donnerait un écran figé, puis
- * un timeout qui laisserait le travail à moitié fait, sans que rien ne dise où il s'est arrêté.
- *
- * `ShouldBeUnique` PAR SOCIÉTÉ. Un double-clic sur le bouton — le geste le plus naturel quand rien
- * ne semble se passer — lancerait deux passages concurrents sur le même arriéré. Ils choisiraient
- * les mêmes personnes pour les mêmes missions, et le second écraserait le premier. Le verrou est
- * porté par l'identifiant d'organisation : deux sociétés différentes ne s'attendent pas.
- */
+/** « ASSIGNER TOUTES LES MISSIONS NON ATTRIBUÉES » — le bouton du gérant. */
 class AutoAssignerMissionsJob implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable;
@@ -42,12 +31,7 @@ class AutoAssignerMissionsJob implements ShouldBeUnique, ShouldQueue
         return (string) $this->organisationId;
     }
 
-    /**
-     * Combien de temps le verrou tient si le processus meurt sans le relâcher.
-     *
-     * Sans cette borne, un worker tué laisserait la société incapable de relancer son
-     * auto-assignation — et la seule issue serait une intervention en base.
-     */
+    /** Combien de temps le verrou tient si le processus meurt sans le relâcher. */
     public function uniqueFor(): int
     {
         return (int) config('internal_dispatch.verrou_job_secondes', 300);
@@ -78,14 +62,7 @@ class AutoAssignerMissionsJob implements ShouldBeUnique, ShouldQueue
             };
         }
 
-        /*
-         * LE RÉSUMÉ NE REMPLACE PAS L'ALERTE, IL LA COMPLÈTE.
-         *
-         * Chaque mission sans candidat a DÉJÀ déclenché sa propre notification — décision produit du
-         * 2026-08-08 : une mission de demain matin que personne ne peut prendre est une urgence, la
-         * découvrir en fin de traitement serait la découvrir trop tard. Ce résumé donne le compte
-         * d'ensemble, qu'aucune alerte unitaire ne porte.
-         */
+        // LE RÉSUMÉ NE REMPLACE PAS L'ALERTE, IL LA COMPLÈTE.
         $notifier->notifierPorteursDe(
             organisationId: $this->organisationId,
             permission: 'missions.dispatch',

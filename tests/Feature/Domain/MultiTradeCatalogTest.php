@@ -10,9 +10,7 @@ use Database\Seeders\TradeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Phase 1 — Tests d'intégration domaine pour le multi-métiers.
- */
+/** Phase 1 — Tests d'intégration domaine pour le multi-métiers. */
 class MultiTradeCatalogTest extends TestCase
 {
     use RefreshDatabase;

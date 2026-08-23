@@ -9,20 +9,7 @@ use Laravel\Sanctum\Sanctum;
 use Tests\Support\Spine\SpineScenario;
 use Tests\TestCase;
 
-/**
- * ANNULER DEPUIS L'APPLICATION MOBILE TOUCHE À L'ARGENT — ce n'était pas le cas.
- *
- * `ClientBookingController::cancel()` écrivait le statut, la date et l'auteur, puis s'arrêtait là.
- * Aucun frais calculé, aucun remboursement, aucune libération d'empreinte, aucun redispatch. Le
- * client voyait « annulé », son empreinte restait posée jusqu'à expiration, et les frais prévus au
- * contrat n'étaient jamais réclamés.
- *
- * Le MÊME geste depuis le web passait, lui, par `CancelBookingService`. Deux chemins pour une seule
- * décision, dont un seul comptait — le défaut dominant de ce dépôt, sous une autre forme.
- *
- * CES TESTS NE PARLENT PAS À STRIPE. Ils vérifient ce qui ne dépend pas du réseau : que le calcul
- * des frais a bien eu lieu, qu'il est DIT au client, et que les gardes d'annulation tiennent.
- */
+/** ANNULER DEPUIS L'APPLICATION MOBILE TOUCHE À L'ARGENT — ce n'était pas le cas. */
 class AnnulerDepuisLeMobileTest extends TestCase
 {
     use RefreshDatabase;
@@ -51,13 +38,7 @@ class AnnulerDepuisLeMobileTest extends TestCase
         $this->assertSame('annule', $scenario->booking->refresh()->status);
     }
 
-    /**
-     * LES FRAIS SONT DITS DANS LA RÉPONSE.
-     *
-     * Le client vient d'être débité, ou de l'être en partie. L'apprendre par son relevé bancaire,
-     * alors que l'écran affichait « annulé » sans un chiffre, est la façon la plus sûre de
-     * transformer une règle acceptée en réclamation.
-     */
+    /** LES FRAIS SONT DITS DANS LA RÉPONSE. Le client vient d'être débité, ou de l'être en partie. */
     public function test_les_frais_sont_annonces_au_client(): void
     {
         $scenario = $this->reservationAnnulable();
@@ -98,13 +79,7 @@ class AnnulerDepuisLeMobileTest extends TestCase
             ->assertStatus(422);
     }
 
-    /**
-     * `sur_place` reste non annulable depuis un téléphone, et c'est plus strict que le service.
-     *
-     * Le prestataire est chez le client : annuler d'un geste pendant qu'il travaille n'est pas une
-     * annulation, c'est un litige. Cette garde-là appartient au contrôleur et devait survivre au
-     * branchement du service.
-     */
+    /** `sur_place` reste non annulable depuis un téléphone, et c'est plus strict que le service. */
     public function test_une_intervention_en_cours_nest_pas_annulable(): void
     {
         $scenario = $this->reservationAnnulable();

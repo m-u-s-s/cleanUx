@@ -9,29 +9,7 @@ use Database\Seeders\Support\PngDeDemonstration;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * UN PARC DE DÉMONSTRATION POUR « NOS LOCATIONS ».
- *
- * Il existe pour VOIR le module : la grille du catalogue, les filtres, la fiche, la rotation à 360°
- * et le récapitulatif avec ses deux prix. Un parc vide ne montre que l'écran d'absence.
- *
- * ── CE QU'IL NE FAIT PAS, ET POURQUOI ────────────────────────────────────────────────────────
- *
- * IL N'INVENTE PAS DE MODÈLE 3D. Produire un `.glb` factice afficherait un cube sur une fiche de
- * voiture, c'est-à-dire quelque chose qui ressemble à un défaut. Le visualiseur 3D se voit en
- * déposant un vrai fichier depuis l'écran d'administration ; la rotation photo, elle, est ici et
- * montre exactement l'expérience « vue 360 ».
- *
- * IL EST IDEMPOTENT. Relancé, il ne double pas le parc : chaque voiture est retrouvée par son code,
- * chaque agence par son nom, et les images ne sont réécrites que si elles manquent. Un semis de
- * démonstration qu'on n'ose pas relancer ne sert qu'une fois.
- *
- * ── LES VOITURES SONT OUVERTES ICI, ET C'EST L'EXCEPTION ─────────────────────────────────────
- *
- * L'écran d'administration crée FERMÉ, exprès : une faute de frappe sur un tarif ne doit pas rendre
- * un véhicule louable dans la seconde. Un semis n'a pas ce risque — il pose des valeurs choisies —
- * et une vitrine fermée ne montrerait rien.
- */
+/** UN PARC DE DÉMONSTRATION POUR « NOS LOCATIONS ». */
 class NosLocationsDemoSeeder extends Seeder
 {
     /** Le nombre d'images d'une séquence de rotation : un tour complet, tous les 15 degrés. */
@@ -39,11 +17,6 @@ class NosLocationsDemoSeeder extends Seeder
 
     /**
      * Les clés du tableau ci-dessous qui NE SONT PAS des colonnes.
-     *
-     * Elles pilotent le semis — quelle agence, quelle teinte, faut-il une rotation — et doivent
-     * être retirées avant d'atteindre Eloquent. Les y laisser lèverait : ce dépôt active le refus
-     * explicite d'attribut inconnu hors production, précisément pour que ce genre d'oubli se voie
-     * au lieu de disparaître en silence.
      *
      * @var list<string>
      */
@@ -114,10 +87,6 @@ class NosLocationsDemoSeeder extends Seeder
 
     /**
      * Le parc.
-     *
-     * Des catégories, des boîtes, des énergies et des prix différents : c'est ce qui donne aux
-     * filtres du catalogue de quoi trier réellement. Un parc de huit citadines rouges montrerait
-     * une grille et rien d'autre.
      *
      * @return list<array<string, mixed>>
      */
@@ -203,13 +172,7 @@ class NosLocationsDemoSeeder extends Seeder
                 'description' => 'Berline premium — pour un déplacement professionnel ou une occasion.',
             ],
             [
-                /*
-                 * AUCUNE GARANTIE PROPOSÉE sur ce véhicule, et c'est délibéré.
-                 *
-                 * C'est le cas qui montre que la fiche n'affiche pas un choix entre deux options
-                 * rigoureusement identiques — ce qui ne serait pas un choix mais une confusion.
-                 * Sans lui dans le parc, ce comportement ne se verrait jamais à l'écran.
-                 */
+                // AUCUNE GARANTIE PROPOSÉE sur ce véhicule, et c'est délibéré.
                 'code' => 'LOC-DEMO-TOURAN', 'agence' => 'bruxelles', 'teinte' => 0.45, 'rotation' => false,
                 'brand' => 'Volkswagen', 'model' => 'Touran', 'year' => 2023, 'color' => 'Argent',
                 'category' => 'monospace', 'transmission' => 'manuelle', 'fuel' => 'diesel',
@@ -259,13 +222,7 @@ class NosLocationsDemoSeeder extends Seeder
         }
     }
 
-    /**
-     * La séquence de rotation, sur un tour complet.
-     *
-     * L'ORDRE EST LE SENS DE ROTATION : `position` range les images, et la largeur de la caisse
-     * suit le cosinus de l'angle. C'est ce qui fait qu'on lit un objet qui tourne, et non un
-     * diaporama.
-     */
+    /** La séquence de rotation, sur un tour complet. */
     private function rotation(RentalVehicle $vehicule, float $teinte): void
     {
         if ($vehicule->media()->where('type', RentalVehicleMedia::TYPE_ROTATION)->exists()) {

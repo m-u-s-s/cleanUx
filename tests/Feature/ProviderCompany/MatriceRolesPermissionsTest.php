@@ -16,17 +16,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * LOT 2 — LA MATRICE DE LA SOCIÉTÉ TROUVE ENFIN UN ÉCRIVAIN.
- *
- * `organization_role_permissions` existait depuis le 2026-08-06 et `PermissionService::memberCan()`
- * la lisait comme deuxième étage de résolution. Aucun écran, aucun endpoint ne l'écrivait : la table
- * n'était remplie que par des tests. Une capacité annoncée dans le code, inaccessible à qui devait
- * s'en servir.
- *
- * Ce fichier vérifie les deux moitiés : que l'écran écrit, et que ce qu'il écrit CHANGE la réponse
- * du service — un réglage qui ne se répercuterait pas serait pire qu'aucun réglage.
- */
+/** LOT 2 — LA MATRICE DE LA SOCIÉTÉ TROUVE ENFIN UN ÉCRIVAIN. */
 class MatriceRolesPermissionsTest extends TestCase
 {
     use RefreshDatabase;
@@ -106,11 +96,7 @@ class MatriceRolesPermissionsTest extends TestCase
 
     public function test_un_droit_retire_pendant_la_session_ferme_l_action(): void
     {
-        /*
-         * Livewire ne rejoue PAS `mount()`. Sans revérification par action, un propriétaire
-         * rétrogradé continuait de distribuer des droits tant que son onglet restait ouvert — sur
-         * l'écran qui distribue précisément les droits.
-         */
+        // Livewire ne rejoue PAS `mount()`.
         $owner = $this->membre(OrganizationRole::OWNER);
         $this->membre(OrganizationRole::OWNER); // pour que la rétrogradation reste possible
 
@@ -149,10 +135,7 @@ class MatriceRolesPermissionsTest extends TestCase
 
     public function test_retirer_une_cle_accordee_par_defaut_fonctionne_aussi(): void
     {
-        /*
-         * `granted` est un booléen EXPLICITE, pas une simple présence. Sans cela la matrice ne
-         * saurait qu'élargir, et une société ne pourrait jamais restreindre un rôle.
-         */
+        // `granted` est un booléen EXPLICITE, pas une simple présence.
         $owner = $this->membre(OrganizationRole::OWNER);
         $dispatcher = $this->membre(OrganizationRole::DISPATCHER);
 
@@ -214,10 +197,7 @@ class MatriceRolesPermissionsTest extends TestCase
 
     public function test_le_role_proprietaire_n_est_pas_reglable(): void
     {
-        /*
-         * Il porte `members.manage_permissions`. Lui laisser la retirer à son propre rôle fermerait
-         * cet écran à tout le monde, sans recours autre qu'une écriture en base.
-         */
+        // Il porte `members.manage_permissions`.
         $owner = $this->membre(OrganizationRole::OWNER);
 
         Livewire::actingAs($owner)->test(RolePermissionsMatrix::class)

@@ -8,15 +8,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * Endpoints client pour gérer ses préférences marketing (RGPD).
+ *
  * @group Client — Marketing Preferences
  *
  * @authenticated
- *
- * Endpoints client pour gérer ses préférences marketing (RGPD).
- *
- *   - GET    /api/client/marketing/preferences
- *   - POST   /api/client/marketing/opt-out   { channel: email|sms|push|all }
- *   - POST   /api/client/marketing/opt-in    { channel: email|sms|push|all }
+ * - GET    /api/client/marketing/preferences
+ * - POST   /api/client/marketing/opt-out   { channel: email|sms|push|all }
+ * - POST   /api/client/marketing/opt-in    { channel: email|sms|push|all }
  */
 class MarketingPreferencesController extends Controller
 {

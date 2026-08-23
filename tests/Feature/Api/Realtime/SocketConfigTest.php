@@ -7,9 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Sprint 0 — Task 4 : /api/realtime/socket-config + Bearer broadcasting/auth.
- */
+/** Sprint 0 — Task 4 : /api/realtime/socket-config + Bearer broadcasting/auth. */
 class SocketConfigTest extends TestCase
 {
     use RefreshDatabase;

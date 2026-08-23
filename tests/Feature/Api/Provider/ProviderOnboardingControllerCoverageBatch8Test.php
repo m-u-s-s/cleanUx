@@ -12,18 +12,7 @@ use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Endpoint coverage for App\Http\Controllers\Api\Provider\ProviderOnboardingController.
- *
- * Drives every controller action through the real routes:
- *   - POST /api/provider/onboarding/start
- *   - GET  /api/provider/onboarding/progress
- *   - POST /api/provider/onboarding/profile
- *   - POST /api/provider/onboarding/documents (success + InvalidArgumentException 422 branch)
- *   - POST /api/provider/onboarding/tax
- *   - POST /api/provider/onboarding/skills
- *   - GET  admin.onboarding.document.file (downloadDocument)
- */
+/** Endpoint coverage for App\Http\Controllers\Api\Provider\ProviderOnboardingController. */
 class ProviderOnboardingControllerCoverageBatch8Test extends TestCase
 {
     use RefreshDatabase;

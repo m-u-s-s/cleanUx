@@ -7,13 +7,7 @@ use App\Admin\Console\ReportTile;
 use App\Models\AccountingEntry;
 use App\Models\FinanceInvoice;
 
-/**
- * La santé financière.
- *
- * Le RESTE DÛ est en ton d’alerte dès qu’il n’est pas nul : c’est de l’argent facturé qui n’est
- * pas rentré, et un tableau de bord financier qui l’affiche en neutre laisse passer le seul
- * chiffre qu’on ouvre cette page pour voir.
- */
+/** La santé financière. */
 class FinanceReport implements AdminReport
 {
     public function key(): string

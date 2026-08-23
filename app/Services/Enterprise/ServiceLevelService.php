@@ -7,25 +7,7 @@ use App\Models\TripTrackingSession;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * LE TABLEAU DE SERVICE D'UNE ENTREPRISE CLIENTE (E9).
- *
- * LA QUESTION À LAQUELLE IL RÉPOND. « Est-ce que ce prestataire tient ses engagements ? » — celle
- * qu'on pose au moment de renouveler un contrat, et à laquelle personne ne sait répondre autrement
- * qu'au ressenti. Les données existent toutes : les missions, le suivi qui date les arrivées, le
- * moteur d'annulation. Aucune ne se lit côté client entreprise.
- *
- * TROIS TAUX, ET C'EST ASSEZ. Réalisation, ponctualité, annulation. Un tableau plus fourni décrit
- * un contrat de niveau de service d'infogérance, pas la relation d'une société de vingt personnes
- * avec son prestataire de nettoyage. Ce qu'on n'utilise pas ne se regarde pas.
- *
- * LA PONCTUALITÉ SE MESURE SUR L'ARRIVÉE RELEVÉE, jamais sur un statut. Une mission qu'on a oublié
- * de démarrer n'est pas un retard, et un démarrage tardif dans l'application n'en est pas un non
- * plus : seule `arrived_at`, posée par la géo-barrière, dit où était la personne et quand.
- *
- * LES MISSIONS SANS ARRIVÉE RELEVÉE SONT COMPTÉES À PART, jamais fondues. Les compter comme des
- * retards punirait un GPS coupé ; comme des arrivées à l'heure, l'inverse. On les annonce.
- */
+/** LE TABLEAU DE SERVICE D'UNE ENTREPRISE CLIENTE (E9). LA QUESTION À LAQUELLE IL RÉPOND. */
 class ServiceLevelService
 {
     /** Au-delà, l'arrivée n'est plus « à l'heure ». */
@@ -33,9 +15,6 @@ class ServiceLevelService
 
     /**
      * Le tableau d'une période, ventilé par local.
-     *
-     * Rendu comme une LISTE : c'est une charge utile, lue une fois par l'écran ou sérialisée par
-     * l'API. Rien ici n'appelle de chaînage.
      *
      * @return list<array<string, mixed>>
      */

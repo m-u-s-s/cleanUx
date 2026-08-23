@@ -9,13 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Coverage batch 7 — drives ProviderWalletController through its HTTP routes:
- *   - GET  /api/provider/wallet/balance       (currency query, provider guard)
- *   - GET  /api/provider/wallet/transactions  (mapping, type filter, validation)
- *   - POST /api/provider/wallet/withdraw       (201 success, 422 service error)
- *   - abortIfNotProvider guard (employe without ProviderProfile -> 403)
- */
+/** Coverage batch 7 — drives ProviderWalletController through its HTTP routes: - GET /api/provider/wallet/balance (currency query, provider guard) - GET /api/provider/wallet/transactions (mapping, type filter, validation) - POST /api/provider/wallet/withdraw (201 success, 422 service error) - abortIfNotProvider guard (employe without ProviderProfile -> 403) */
 class ProviderWalletControllerCoverageBatch7Test extends TestCase
 {
     use RefreshDatabase;

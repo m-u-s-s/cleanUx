@@ -9,30 +9,11 @@ use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
-/**
- * LES EN-TÊTES DE SÉCURITÉ DOIVENT SURVIVRE À `config:cache`.
- *
- * POURQUOI CE FICHIER EXISTE. SecurityHeaders et TrustProxies lisaient leurs réglages par
- * env(), depuis app/. Or env() rend null dès que la configuration est mise en cache — c'est
- * l'état normal en production. Les valeurs par défaut (SAMEORIGIN, strict-origin-when-cross-origin,
- * la Permissions-Policy) auraient donc continué de s'afficher en local pendant qu'en production
- * X-Frame-Options serait devenu une chaîne vide, et les proxies de confiance auraient disparu.
- * Aucun test ne l'aurait vu : la suite ne met jamais la config en cache.
- *
- * CE QUE CETTE GARDE MESURE. Le rendu, pas la déclaration : un vrai GET, et les en-têtes
- * réellement posés sur la réponse. Si quelqu'un remet un env() dans le middleware, le premier
- * cas (valeurs par défaut) reste vert tant que .env est lisible, mais le second — celui qui
- * pose une valeur par `config()->set()` — tombe immédiatement, puisque env() ignore la config.
- *
- * ELLE VERROUILLE AUSSI DEUX NUANCES qu'un simple déplacement de réglage casse sans bruit :
- *   - la CSP de repli ne s'applique QU'EN production. Hors production, aucune CSP ;
- *   - « aucun proxy configuré » vaut null, pas un tableau vide.
- */
+/** LES EN-TÊTES DE SÉCURITÉ DOIVENT SURVIVRE À `config:cache`. POURQUOI CE FICHIER EXISTE. */
 class EnTetesDeSecuriteRendusTest extends TestCase
 {
     /**
-     * Symfony garde les proxies de confiance dans un état STATIQUE, partagé par tout le
-     * process PHPUnit. On le restaure pour ne pas contaminer les tests suivants.
+     * Symfony garde les proxies de confiance dans un état STATIQUE, partagé par tout le process PHPUnit.
      *
      * @var array<int, string>
      */
@@ -124,12 +105,7 @@ class EnTetesDeSecuriteRendusTest extends TestCase
         $this->assertSame("default-src 'none'", $reponse->headers->get('Content-Security-Policy'));
     }
 
-    /**
-     * Deux lecteurs regardent cette clé : notre constructeur, et le middleware du framework
-     * qui fait `$this->proxies() ?: config('trustedproxy.proxies')`. Ce test mesure la
-     * confiance RENDUE, donc il tient quel que soit celui des deux qui a servi — ce qui est
-     * précisément ce qu'on veut garantir.
-     */
+    /** Deux lecteurs regardent cette clé : notre constructeur, et le middleware du framework qui fait `$this->proxies() ?: config('trustedproxy.proxies')`. */
     #[Test]
     public function les_proxies_de_confiance_viennent_de_la_configuration(): void
     {
@@ -156,15 +132,7 @@ class EnTetesDeSecuriteRendusTest extends TestCase
         $this->assertSame('10.0.0.9', $requete->ip());
     }
 
-    /**
-     * UNE CONFIGURATION NULLE NE DOIT JAMAIS PRODUIRE UN EN-TÊTE VIDE.
-     *
-     * `(string) null` vaut '' : tant que le middleware lisait la config sans repli, un fichier de
-     * config non publié ou une clé mal orthographiée posait un en-tête vide. Un en-tête vide ne
-     * protège de rien ET ne se distingue pas d'un en-tête correct dans un journal — la protection
-     * disparaissait donc en silence, ce qui était exactement le défaut que le passage de env() vers
-     * la config devait fermer.
-     */
+    /** UNE CONFIGURATION NULLE NE DOIT JAMAIS PRODUIRE UN EN-TÊTE VIDE. */
     #[Test]
     public function une_configuration_nulle_ne_produit_jamais_un_en_tete_vide(): void
     {
@@ -197,18 +165,7 @@ class EnTetesDeSecuriteRendusTest extends TestCase
         );
     }
 
-    /**
-     * LA NORMALISATION DU CONSTRUCTEUR, SEULE CHOSE QUE NOTRE SOUS-CLASSE CHANGE.
-     *
-     * Les deux tests de confiance ci-dessus mesurent la confiance RENDUE — ce qui est utile, mais
-     * les laisse verts même si l'on supprimait entièrement notre constructeur : le middleware du
-     * framework fait lui-même `$this->proxies() ?: config('trustedproxy.proxies')`. Ils ne
-     * prouvent donc rien sur NOTRE code. Ce test-ci frappe la propriété résultante.
-     *
-     * La distinction null / tableau vide est le point sensible : seul null laisse le framework
-     * accorder sa confiance automatique aux plateformes gérées. Un tableau vide couperait ce
-     * repli sans que rien ne le signale.
-     */
+    /** LA NORMALISATION DU CONSTRUCTEUR, SEULE CHOSE QUE NOTRE SOUS-CLASSE CHANGE. */
     #[Test]
     public function le_constructeur_normalise_les_proxies_et_distingue_null_du_tableau_vide(): void
     {
@@ -241,10 +198,7 @@ class EnTetesDeSecuriteRendusTest extends TestCase
         $this->assertNull($lire(), 'Un tableau vide se ramène à null : c’est « rien de configuré ».');
     }
 
-    /**
-     * La normalisation de la CHAÎNE se fait dans config/trustedproxy.php. On la vérifie là où elle
-     * vit : sinon, personne ne mesure le découpage par virgules ni le retrait des espaces.
-     */
+    /** La normalisation de la CHAÎNE se fait dans config/trustedproxy.php. */
     #[Test]
     public function la_configuration_decoupe_une_liste_cidr_et_retire_les_espaces(): void
     {
@@ -266,11 +220,7 @@ class EnTetesDeSecuriteRendusTest extends TestCase
         $this->assertNull($normaliser(''));
     }
 
-    /**
-     * Passe une requête par le middleware seul. On ne peut pas faire un GET en environnement
-     * « production » : ForceHttps court-circuite la pile avant SecurityHeaders, et rien ne
-     * serait mesuré.
-     */
+    /** Passe une requête par le middleware seul. */
     private function passeParSecurityHeaders(Request $requete): Response
     {
         return (new SecurityHeaders)->handle($requete, fn () => new Response('ok'));

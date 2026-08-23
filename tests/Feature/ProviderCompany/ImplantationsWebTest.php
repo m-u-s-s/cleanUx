@@ -18,22 +18,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LES IMPLANTATIONS, CÔTÉ WEB — la moitié manquante d'un lot qu'on croyait terminé.
- *
- * L'API `/api/provider/company/agencies` et l'écran natif « Nos implantations » existaient depuis le
- * lot société. Le web, non : ni composant, ni route, ni entrée de répertoire. Une société qui pilote
- * depuis un ordinateur — c'est-à-dire la plupart — ne pouvait pas déclarer d'où partent ses équipes,
- * alors que `ProviderAgency` est lue par la répartition interne. L'inventaire disait « lot livré »
- * parce qu'il comptait des fichiers ; ce test compte des portes.
- *
- * TROIS CHOSES SONT VÉRIFIÉES ICI :
- *  1. la porte web existe et rend l'écran ;
- *  2. l'écriture est gardée par `agencies.manage`, revérifiée À CHAQUE ACTION — Livewire ne rejoue
- *     jamais `mount()`, donc une garde posée à l'ouverture ne protège que l'ouverture ;
- *  3. le centre de répartition sait filtrer par implantation, et le filtre ne franchit pas la
- *     frontière entre deux sociétés.
- */
+/** LES IMPLANTATIONS, CÔTÉ WEB — la moitié manquante d'un lot qu'on croyait terminé. */
 class ImplantationsWebTest extends TestCase
 {
     use RefreshDatabase;
@@ -146,14 +131,7 @@ class ImplantationsWebTest extends TestCase
         $this->assertSame('active', $agence->fresh()->status);
     }
 
-    /**
-     * VOIR N'EST PAS ÉCRIRE — et c'est le cas qui compte.
-     *
-     * Le répartiteur porte `agencies.view` : l'écran s'ouvre pour lui, `mount()` passe. Il ne porte
-     * PAS `agencies.manage`. Or Livewire ne rejoue jamais `mount()` sur une action : sans garde
-     * dans `creer()`, la vérification aurait eu lieu une fois, à l'ouverture, et jamais au moment
-     * d'agir. C'est exactement la faille corrigée sur `DispatchCenter::confirmAssign()`.
-     */
+    /** VOIR N'EST PAS ÉCRIRE — et c'est le cas qui compte. */
     #[Test]
     public function le_repartiteur_voit_mais_ne_declare_pas(): void
     {
@@ -300,12 +278,7 @@ class ImplantationsWebTest extends TestCase
             'planned_start_at' => $jour,
         ]);
 
-        /*
-         * `filterAgencyId` est une propriété publique Livewire : le navigateur peut la retourner
-         * par `$set`. Elle ne garde donc RIEN — les missions restent scopées sur l'organisation
-         * active — et un identifiant étranger doit se comporter comme « pas de filtre », pas comme
-         * une liste vide qui laisserait croire à une panne.
-         */
+        // `filterAgencyId` est une propriété publique Livewire : le navigateur peut la retourner par `$set`.
         $composant = Livewire::actingAs($patron)
             ->test(DispatchCenter::class)
             ->set('filterDate', $jour->format('Y-m-d'))

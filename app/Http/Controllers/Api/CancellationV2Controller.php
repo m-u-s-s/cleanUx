@@ -12,13 +12,11 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 /**
+ * Unified cancellation v2 controller — sert client / provider / admin via une seule classe et discrimine par actor_role.
+ *
  * @group Cancellation v2
  *
  * @authenticated
- *
- * Unified cancellation v2 controller — sert client / provider / admin via
- * une seule classe et discrimine par actor_role. Routes API séparées appellent
- * chacune leur méthode dédiée pour clarté.
  */
 class CancellationV2Controller extends Controller
 {
@@ -78,12 +76,7 @@ class CancellationV2Controller extends Controller
         ], 201);
     }
 
-    /**
-     * Ownership guard for the V2 cancellation endpoints. Previously absent — any authenticated
-     * user could quote/cancel another user's booking by id (IDOR). The client must own the
-     * booking; the provider must be assigned to it. (Surfaced while removing the legacy
-     * client cancellation controller, which already had this check.)
-     */
+    /** Ownership guard for the V2 cancellation endpoints. */
     protected function authorizeBooking(Request $request, int $bookingId, string $actorRole): void
     {
         $booking = Booking::query()->find($bookingId);
@@ -113,13 +106,7 @@ class CancellationV2Controller extends Controller
         // Other roles (e.g. admin) are reached via separately-gated routes.
     }
 
-    /**
-     * LE QUESTIONNAIRE — les questions de cette audience, et les seules réponses SOUTENUES.
-     *
-     * Sans cette route, l'écran devrait connaître les codes de motif en dur : la première option
-     * qu'un administrateur ajoute serait invisible, et la première qu'il retire produirait un code
-     * que le moteur ne reconnaît plus.
-     */
+    /** LE QUESTIONNAIRE — les questions de cette audience, et les seules réponses SOUTENUES. */
     public function questionnaire(Request $request, int $booking, string $actorRole): JsonResponse
     {
         $this->authorizeBooking($request, $booking, $actorRole);

@@ -16,14 +16,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * L'ARBITRE — et surtout ce qu'il REFUSE de conclure.
- *
- * La garde centrale n'est pas « à partir de trois fois, on sanctionne ». C'est « à partir de trois
- * fois CHEZ DEUX CONTREPARTIES DISTINCTES ». Sans le second nombre, un client acharné produirait
- * trois signaux contre le même prestataire et le ferait sanctionner à lui seul — exactement ce que
- * le porteur a demandé d'empêcher.
- */
+/** L'ARBITRE — et surtout ce qu'il REFUSE de conclure. */
 class ArbitrageDesRevisionsTest extends TestCase
 {
     use RefreshDatabase;
@@ -95,11 +88,7 @@ class ArbitrageDesRevisionsTest extends TestCase
         $this->assertSame(0, MissionFeatureSuspension::count());
     }
 
-    /**
-     * LA GARDE CENTRALE : trois occurrences chez UN SEUL client ne prouvent rien.
-     *
-     * Sans elle, un client acharné ferait sanctionner un prestataire honnête à lui tout seul.
-     */
+    /** LA GARDE CENTRALE : trois occurrences chez UN SEUL client ne prouvent rien. */
     public function test_trois_refus_du_meme_client_ne_sanctionnent_pas(): void
     {
         $presta = $this->prestataire();
@@ -205,10 +194,7 @@ class ArbitrageDesRevisionsTest extends TestCase
 
     // ── L'ENTENTE ─────────────────────────────────────────────────────────────
 
-    /**
-     * Deux arrêts sur le MÊME COUPLE ne sanctionnent pas : ils envoient en revue humaine. Une
-     * sanction automatique frapperait aussi deux personnes qui se retrouvent par hasard.
-     */
+    /** Deux arrêts sur le MÊME COUPLE ne sanctionnent pas : ils envoient en revue humaine. */
     public function test_deux_arrets_sur_le_meme_couple_partent_en_revue(): void
     {
         $presta = $this->prestataire();

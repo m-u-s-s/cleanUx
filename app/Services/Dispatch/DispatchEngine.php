@@ -21,36 +21,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * LE MOTEUR DE RÉPARTITION — une seule porte, pour tous les rôles et les deux modes.
- *
- * Il y avait deux chemins qui ne se parlaient pas : `MissionDispatchService` proposait la mission à
- * UN prestataire à la fois avec un compte à rebours, `AsapDispatchService` prévenait TOUT LE MONDE
- * dans un rayon qui s'élargissait. Chacun tenait la moitié du patron Uber, aucun ne tenait l'autre,
- * et une même course pouvait sortir par les deux.
- *
- * CE QUE FAIT CE MOTEUR, dans l'ordre, pour une intervention IMMÉDIATE :
- *
- *   1. Vague 1 — les candidats du `CandidateFinder` dans le rayon initial, du plus proche au plus
- *      lointain. Offre SÉQUENTIELLE au premier, TTL 20 s (`config/dispatch.php`, surchargeable par
- *      métier). Refus ou silence → le suivant, en excluant ceux déjà tentés.
- *   2. Vague épuisée → le rayon s'élargit d'un palier, et on recommence. Le client attend : mieux
- *      vaut un professionnel un peu plus loin que pas de professionnel.
- *   3. Rayon maximal atteint → BROADCAST, premier qui accepte gagne. C'est le seul moment où
- *      plusieurs modales s'ouvrent en même temps, et le verrou pessimiste de l'acceptation est ce
- *      qui empêche deux personnes de partir pour la même course.
- *   4. Échéance globale sans acceptation → la recherche s'arrête et le client choisit sa suite
- *      (attendre encore, basculer en rendez-vous, annuler). Jamais un cul-de-sac.
- *
- * POUR UN RENDEZ-VOUS PLANIFIÉ, le même moteur avec deux réglages : le score prime sur la distance
- * (personne n'attend derrière la porte), et le TTL se compte en minutes. À l'épuisement de la
- * chaîne, l'assignation d'office reprend la main — le comportement historique devient le REPLI, et
- * non plus la règle : un prestataire à qui l'on n'a rien demandé découvre sa mission la veille.
- *
- * CHAQUE ÉVÉNEMENT LAISSE UNE LIGNE. Offre, refus, expiration, élargissement, broadcast : c'est ce
- * qui permet à l'administration de rejouer l'histoire d'une recherche, et c'est aussi la seule
- * façon d'avoir un taux d'acceptation qui veut dire quelque chose.
- */
+/** LE MOTEUR DE RÉPARTITION — une seule porte, pour tous les rôles et les deux modes. */
 class DispatchEngine
 {
     public function __construct(
@@ -60,13 +31,7 @@ class DispatchEngine
 
     // ─── Ouverture ───────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Une réservation confirmée entre dans le moteur.
-     *
-     * C'est LA porte amont : le moteur de commande appelle ceci et rien d'autre. Idempotent — une
-     * confirmation rejouée ne lance pas deux recherches, ce qui doublerait les offres et pourrait
-     * produire deux acceptations pour une seule intervention.
-     */
+    /** Une réservation confirmée entre dans le moteur. */
     public function dispatchBooking(Booking $booking, ?OrderDraftItem $item = null): ?MissionAssignment
     {
         if (($booking->booking_mode ?? null) === 'asap') {
@@ -80,14 +45,7 @@ class DispatchEngine
         return $this->openScheduled($booking);
     }
 
-    /**
-     * Ouvre — ou retrouve — la recherche d'une intervention immédiate.
-     *
-     * La ligne de panier est RATTACHÉE quand elle existe : elle porte les réponses au questionnaire
-     * et sert à expliquer le devis six mois plus tard. Elle n'est pas obligatoire — une recherche
-     * peut naître d'un rendez-vous converti ou d'une relance administrative, qui n'ont pas de
-     * panier.
-     */
+    /** Ouvre — ou retrouve — la recherche d'une intervention immédiate. */
     public function openImmediate(Booking $booking, ?OrderDraftItem $item = null): ?AsapDispatchRequest
     {
         $existing = AsapDispatchRequest::query()
@@ -134,13 +92,7 @@ class DispatchEngine
         return $search->fresh();
     }
 
-    /**
-     * Le rendez-vous planifié devient une OFFRE, plus une assignation d'office silencieuse.
-     *
-     * Patron « Uber Reserve » : le mieux classé reçoit la course à l'avance, avec une fenêtre de
-     * réponse longue. Il peut refuser — c'est précisément ce qu'une assignation d'office lui
-     * interdisait, et ce qui produisait des missions abandonnées le jour même.
-     */
+    /** Le rendez-vous planifié devient une OFFRE, plus une assignation d'office silencieuse. */
     public function openScheduled(Booking $booking): ?MissionAssignment
     {
         $mission = $this->ensureMission($booking);
@@ -154,13 +106,7 @@ class DispatchEngine
 
     // ─── Progression de la chaîne ────────────────────────────────────────────────────────────
 
-    /**
-     * L'offre suivante pour cette mission — quel que soit le mode.
-     *
-     * Appelée par le refus, par l'expiration, et par l'ouverture. C'est le seul endroit qui décide
-     * « à qui maintenant » : le dupliquer ferait diverger l'immédiat du planifié au premier
-     * changement de règle.
-     */
+    /** L'offre suivante pour cette mission — quel que soit le mode. */
     public function next(Mission $mission): ?MissionAssignment
     {
         $search = AsapDispatchRequest::query()
@@ -172,17 +118,7 @@ class DispatchEngine
             return $this->offerNext($search);
         }
 
-        /*
-         * UNE RÉSERVATION IMMÉDIATE SANS RECHERCHE OUVERTE EN OUVRE UNE — elle ne bascule pas sur
-         * le planifié.
-         *
-         * Le cas se produit dès qu'une mission entre par un autre chemin que la confirmation de
-         * commande : `CreateBookingFromApiAction` (l'API cliente mobile) appelle directement
-         * l'escalade sans passer par `dispatchBooking()`. Sans cette garde, la course partait avec
-         * les règles du RENDEZ-VOUS — zones déclarées au lieu de la position GPS, trente minutes au
-         * lieu de vingt secondes, aucune vague. Le client attendait devant sa porte pendant qu'on
-         * interrogeait des prestataires hors ligne à l'autre bout de la zone.
-         */
+        // UNE RÉSERVATION IMMÉDIATE SANS RECHERCHE OUVERTE EN OUVRE UNE — elle ne bascule pas sur le planifié.
         $booking = $mission->booking;
 
         if ($booking && ($booking->booking_mode ?? null) === 'asap') {
@@ -215,11 +151,7 @@ class DispatchEngine
             return null;
         }
 
-        /*
-         * UNE SEULE OFFRE VIVANTE À LA FOIS, hors broadcast. Sans cette garde, un refus reçu
-         * pendant que le job d'expiration s'exécute produirait deux offres concurrentes pour la
-         * même mission — et deux prestataires qui se déplacent.
-         */
+        // UNE SEULE OFFRE VIVANTE À LA FOIS, hors broadcast.
         if (! $search->broadcast_at && $this->currentOffer($mission->id)) {
             return null;
         }
@@ -329,31 +261,12 @@ class DispatchEngine
 
     // ─── Résolutions ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Une offre a été acceptée : la recherche se ferme et les autres modales aussi.
-     *
-     * Appelée par `MissionDispatchService::accept()`, APRÈS le verrou. Fermer les modales des
-     * perdants n'est pas une politesse : sans ce message, leur compte à rebours continue sur une
-     * course déjà partie et ils apprennent à ne plus croire les offres.
-     */
+    /** Une offre a été acceptée : la recherche se ferme et les autres modales aussi. */
     public function onAccepted(MissionAssignment $accepted): void
     {
         $missionId = (int) $accepted->mission_id;
 
-        /*
-         * LE PRESTATAIRE DEVIENT OCCUPÉ DÈS L'ACCEPTATION, pas au démarrage de l'intervention.
-         *
-         * C'est le patron VTC : occupé pendant la course, disponible à la fin. Sans cela, celui qui
-         * vient d'accepter reste `online` et redevient candidat à la seconde suivante — il pouvait
-         * donc recevoir une deuxième course immédiate alors qu'il est déjà en route pour la
-         * première, et l'une des deux clientes attendait pour rien.
-         *
-         * `PresenceAutoTransitioner` ne basculait qu'aux transitions `en_route`/`sur_place`, c'est-
-         * à-dire plusieurs minutes trop tard. Il le remet `online` à la clôture, ce qui reste vrai.
-         *
-         * SOFT-FAIL : une panne du module de présence ne doit pas faire échouer une acceptation
-         * déjà écrite — le prestataire serait débité d'une course qu'il croit avoir prise.
-         */
+        // LE PRESTATAIRE DEVIENT OCCUPÉ DÈS L'ACCEPTATION, pas au démarrage de l'intervention.
         try {
             $prestataire = $accepted->user;
 
@@ -390,36 +303,13 @@ class DispatchEngine
             });
     }
 
-    /**
-     * L'offre n'est plus à prendre : la modale se ferme d'elle-même.
-     *
-     * Exposé pour que le refus et l'expiration ferment l'écran sans dépendre du sondage. Sur
-     * mobile, la socket est ce qui fait disparaître la modale ; sans ce message, elle resterait
-     * jusqu'à ce que le compte à rebours atteigne zéro — sur une offre déjà passée au suivant.
-     */
+    /** L'offre n'est plus à prendre : la modale se ferme d'elle-même. */
     public function withdraw(MissionAssignment $assignment, string $reason = 'taken'): void
     {
         $this->transmitter->withdraw($assignment, $reason);
     }
 
-    /**
-     * LE CLIENT A CHOISI UNE SOCIÉTÉ : ses répartiteurs sont prévenus.
-     *
-     * Les candidats sont déjà restreints à ses salariés — c'est ce qui garantit que la course ne
-     * part pas ailleurs. Mais sans ce message, la société apprenait la demande par le salarié qui
-     * l'avait acceptée, ou pas du tout si personne ne répondait : celui qui pilote l'équipe ne
-     * voyait rien passer et ne pouvait pas réagir avant l'échéance.
-     *
-     * Le message part aux porteurs de `missions.dispatch`, c'est-à-dire à ceux qui peuvent
-     * effectivement agir. Prévenir toute la société ferait sonner des téléphones qui n'ont rien à
-     * décider — et l'on n'écoute plus des notifications qu'on ne peut pas suivre d'un geste.
-     *
-     * L'assignation interne, elle, reste au chantier société : si la société a activé son mode
-     * continu, `MissionFromRendezVousSyncService` l'a déjà tentée à la naissance de la mission, et
-     * la chaîne d'offres s'arrête d'elle-même dès qu'un chef est désigné.
-     *
-     * SOFT-FAIL : une notification qui échoue ne doit pas empêcher la recherche de démarrer.
-     */
+    /** LE CLIENT A CHOISI UNE SOCIÉTÉ : ses répartiteurs sont prévenus. */
     protected function previenirLaSocieteChoisie(Booking $booking): void
     {
         $societeId = $booking->assigned_provider_organization_id;
@@ -478,14 +368,7 @@ class DispatchEngine
         return $search->fresh();
     }
 
-    /**
-     * Relance une recherche épuisée — « continuer à attendre ».
-     *
-     * Les exclusions ne sont PAS remises à zéro : réoffrir la course à qui vient de la refuser
-     * ferait vibrer son téléphone pour rien et n'apporterait aucun candidat de plus. En revanche
-     * ceux qui n'avaient jamais été joints — hors ligne il y a trois minutes, en ligne maintenant —
-     * entrent naturellement, puisque la liste de candidats est recalculée.
-     */
+    /** Relance une recherche épuisée — « continuer à attendre ». */
     public function relaunch(AsapDispatchRequest $search): AsapDispatchRequest
     {
         $search->update([
@@ -502,9 +385,7 @@ class DispatchEngine
 
     // ─── Fabrication d'une offre ─────────────────────────────────────────────────────────────
 
-    /**
-     * Le prestataire est-il en règle côté contrôle facial pour CETTE mission ?
-     */
+    /** Le prestataire est-il en règle côté contrôle facial pour CETTE mission ? */
     protected function passeLeControleFacial(User $provider, Mission $mission): bool
     {
         $booking = $mission->booking;
@@ -516,12 +397,7 @@ class DispatchEngine
         return $verdict->allowed();
     }
 
-    /**
-     * Une offre, une ligne, trois canaux.
-     *
-     * L'écriture en base précède l'envoi : si la diffusion échoue, l'offre existe quand même et
-     * l'inbox la montre. L'inverse laisserait un prestataire prévenu d'une offre inexistante.
-     */
+    /** Une offre, une ligne, trois canaux. */
     public function createOffer(
         Mission $mission,
         User $provider,
@@ -533,16 +409,7 @@ class DispatchEngine
             return null;
         }
 
-        /*
-         * LE CONTRÔLE FACIAL, AU MÊME ENDROIT QUE LE KYC ET POUR LA MÊME RAISON.
-         *
-         * `CandidateFinder` écarte déjà les visages bloqués dans le SQL, mais toutes les offres ne
-         * viennent pas de lui : `assignByDefault()` et le forçage administrateur fabriquent des
-         * offres sans passer par la recherche de candidats. Cette garde-ci est la seule que TOUTE
-         * offre traverse.
-         *
-         * `null` et non une exception : c'est un chemin automatique, l'appelant passe au suivant.
-         */
+        // LE CONTRÔLE FACIAL, AU MÊME ENDROIT QUE LE KYC ET POUR LA MÊME RAISON.
         if (! $this->passeLeControleFacial($provider, $mission)) {
             return null;
         }
@@ -550,12 +417,7 @@ class DispatchEngine
         $assignment = DB::transaction(function () use ($mission, $provider, $ttlSeconds) {
             $now = now();
 
-            /*
-             * `updateOrCreate` et non `create` : `mission_assignments` porte un index unique
-             * (mission, prestataire). Une relance après refus, ou une assignation d'office sur
-             * quelqu'un déjà sollicité, ferait échouer l'insertion — et la recherche entière
-             * tomberait sur une contrainte plutôt que de proposer la course.
-             */
+            // `updateOrCreate` et non `create` : `mission_assignments` porte un index unique (mission, prestataire).
             return MissionAssignment::updateOrCreate(
                 ['mission_id' => $mission->id, 'user_id' => $provider->id],
                 [
@@ -604,9 +466,6 @@ class DispatchEngine
     /**
      * La dernière vague : tout le monde en même temps, premier qui accepte gagne.
      *
-     * On n'y vient qu'au rayon maximal, quand attendre vingt secondes par personne coûterait plus
-     * cher au client que la concurrence ne coûte aux prestataires.
-     *
      * @param  Collection<int, DispatchCandidate>  $candidates
      */
     protected function broadcast(AsapDispatchRequest $search, Mission $mission, Collection $candidates): ?MissionAssignment
@@ -649,11 +508,6 @@ class DispatchEngine
     /**
      * QUI A DÉJÀ ÉTÉ SOLLICITÉ — et « annulée » ne compte pas.
      *
-     * Une offre `cancelled` est une offre que NOUS avons retirée : parce qu'un autre a accepté,
-     * parce que le client a converti sa demande. Le prestataire ne s'est pas prononcé. La compter
-     * comme un refus l'écarterait d'une question qu'on ne lui a jamais posée — typiquement « peux-tu
-     * venir jeudi » après un « peux-tu venir tout de suite » retiré au bout de cinq minutes.
-     *
      * @return list<int>
      */
     protected function alreadyAsked(Mission $mission): array
@@ -682,12 +536,7 @@ class DispatchEngine
             ->first();
     }
 
-    /**
-     * La mission d'exécution existe AVANT la première offre.
-     *
-     * `mission_assignments` s'y rattache : sans mission, il n'y a rien à proposer. Elle naît
-     * `planned`, sans chef — c'est l'acceptation qui la passe à `assigned`.
-     */
+    /** La mission d'exécution existe AVANT la première offre. */
     public function ensureMission(Booking $booking): ?Mission
     {
         $existing = $booking->resolveMission();
@@ -708,12 +557,7 @@ class DispatchEngine
         }
     }
 
-    /**
-     * Le repli du planifié : personne n'a accepté, on assigne quand même.
-     *
-     * C'est l'ancien comportement, devenu SECOURS. Un rendez-vous confirmé doit avoir un
-     * prestataire à la date dite ; l'offre est la voie courtoise, l'assignation la garantie.
-     */
+    /** Le repli du planifié : personne n'a accepté, on assigne quand même. */
     protected function assignByDefault(Mission $mission, Booking $booking): ?MissionAssignment
     {
         $tried = $mission->assignments()->pluck('user_id')->map(fn ($id) => (int) $id)->all();
@@ -769,12 +613,7 @@ class DispatchEngine
         return $assignment;
     }
 
-    /**
-     * La trace de « qui a été prévenu, quand, à quelle distance ».
-     *
-     * L'index unique (recherche, prestataire) est ce qui garantit qu'on ne prévient pas deux fois :
-     * l'écriture refusée est le comportement voulu, pas une erreur à remonter.
-     */
+    /** La trace de « qui a été prévenu, quand, à quelle distance ». */
     protected function traceNotification(AsapDispatchRequest $search, User $provider, ?int $distanceM): void
     {
         try {

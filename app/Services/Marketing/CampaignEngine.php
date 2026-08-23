@@ -17,17 +17,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * CampaignEngine — pilote la vie d'une campagne marketing.
- *
- *   - schedule(campaign) : matérialise un MarketingCampaignRecipient par membre×step,
- *     skippe les opt-outs immédiatement (status=opted_out).
- *   - dispatchDueRecipients() : envoie les recipients prêts (scheduled_for <= now)
- *     via le canal approprié. À appeler par scheduler ou queue worker.
- *   - assignVariant(campaign, user) : choisit déterministiquement un variant_label
- *     parmi ab_test_config.variants si A/B activé.
- *   - markStatus(recipient, status, ...) : transitions du recipient.
- */
+/** CampaignEngine — pilote la vie d'une campagne marketing. */
 class CampaignEngine
 {
     public function __construct(protected OptOutService $optOut) {}

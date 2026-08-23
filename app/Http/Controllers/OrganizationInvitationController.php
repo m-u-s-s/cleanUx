@@ -7,12 +7,7 @@ use App\Services\Organizations\OrganizationMembershipService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * Acceptation d'une invitation reçue par email.
- *
- * L'écran manquant du parcours : le lien envoyé n'aboutissait nulle part, faute d'invitation à
- * accepter (voir `OrganizationInvitationTest`).
- */
+/** Acceptation d'une invitation reçue par email. */
 class OrganizationInvitationController extends Controller
 {
     public function accept(string $token, OrganizationMembershipService $adhesions): RedirectResponse
@@ -24,10 +19,7 @@ class OrganizationInvitationController extends Controller
 
         $utilisateur = Auth::user();
 
-        /*
-         * L'invitation est nominative. Sans cette vérification, n'importe quel compte connecté
-         * ayant intercepté le lien rejoindrait la société à la place du destinataire.
-         */
+        // L'invitation est nominative.
         $emailConnecte = mb_strtolower((string) $utilisateur->email);
         $emailInvite = mb_strtolower((string) $invitation->email);
 

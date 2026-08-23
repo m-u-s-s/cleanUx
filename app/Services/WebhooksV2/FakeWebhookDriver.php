@@ -5,9 +5,7 @@ namespace App\Services\WebhooksV2;
 use App\Models\WebhookEndpoint;
 use App\Models\WebhookEvent;
 
-/**
- * In-memory recorder for tests. Activated when config('webhooks_v2.driver') === 'fake'.
- */
+/** In-memory recorder for tests. Activated when config('webhooks_v2.driver') === 'fake'. */
 class FakeWebhookDriver
 {
     /** @var array<int, array{endpoint_id:int,event_id:int,body:string,headers:array}> */

@@ -10,22 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Livewire tests for the admin feedbacks moderation screen.
- *
- * Mirrors the conventions of AdminPromoCodesCenterTest / FeedbackExportTest:
- *   User::factory()->admin()/->client()/->employe()->create([...])
- *   $this->actingAs($admin)
- *   Livewire::test(AdminFeedbacks::class, [...mount])->...
- *
- * NOTE (source bug, not fixed here): AdminFeedbacks::updatedReponse() calls
- * Gate::authorize('respond', Feedback::class). The FeedbackPolicy::respond()
- * method requires a Feedback *instance*, but only the class string is passed,
- * so Laravel raises an ArgumentCountError before any branch of updatedReponse
- * is reached. That action is therefore not exercisable green and is left
- * uncovered intentionally. exportPdf/exportCsv use the export() policy method
- * (no model param) and work fine.
- */
+/** Livewire tests for the admin feedbacks moderation screen. */
 class AdminFeedbacksComponentTest extends TestCase
 {
     use RefreshDatabase;
@@ -39,10 +24,7 @@ class AdminFeedbacksComponentTest extends TestCase
         ]);
     }
 
-    /**
-     * Create a feedback row attached to a fresh booking, controlling the
-     * fields the component filters/searches on.
-     */
+    /** Create a feedback row attached to a fresh booking, controlling the fields the component filters/searches on. */
     private function makeFeedback(
         string $commentaire,
         ?int $serviceZoneId = null,

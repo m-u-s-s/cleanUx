@@ -149,15 +149,7 @@ class RecurringSeriesManagementTest extends TestCase
         return [$client, $employee, $records, $admin];
     }
 
-    /**
-     * L'identifiant de rendez-vous du trait de série est une propriété publique :
-     * le navigateur peut la retourner après le montage, et la lecture ne
-     * revérifiait pas le droit de regard accordé au montage.
-     *
-     * Les deux témoins positifs comptent autant que le refus — le trait est
-     * partagé par l'écran client ET l'écran admin, et la correction ne doit
-     * fermer la porte à aucun des deux.
-     */
+    /** L'identifiant de rendez-vous du trait de série est une propriété publique : le navigateur peut la retourner après le montage, et la lecture ne revérifiait pas le droit de regard accordé au montage. */
     public function test_temoin_le_client_proprietaire_voit_sa_serie(): void
     {
         [$client, , $records] = $this->createSeries();

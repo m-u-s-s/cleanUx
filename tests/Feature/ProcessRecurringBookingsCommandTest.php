@@ -64,23 +64,7 @@ class ProcessRecurringBookingsCommandTest extends TestCase
         $this->assertSame(0, Booking::query()->count());
     }
 
-    /**
-     * UN ECHEC EST ISOLE, JOURNALISE, COMPTE, ET LA TRANSACTION EST ANNULEE.
-     *
-     * CE TEST A ETE REECRIT, ET LA RAISON MERITE D'ETRE LUE. Sa version precedente obtenait
-     * l'echec en s'appuyant sur un VRAI DEFAUT du code : `createMissionForBooking()` concatenait
-     * `scheduled_date` et `scheduled_time`, deux colonnes CASTEES, ce qui produisait
-     * « 2026-09-01 00:00:00 2026-09-01 09:00:00 » -- refuse par PHP. Son commentaire decrivait
-     * d'ailleurs cette concatenation comme le comportement exerce.
-     *
-     * Le test etait donc VERT en mesurant une panne, et il consacrait comme normal le fait
-     * qu'AUCUNE reservation recurrente ne soit jamais generee. Le defaut corrige, il est devenu
-     * rouge -- ce qui est exactement ce qu'un test doit faire quand la realite change.
-     *
-     * Son INTENTION reste entiere et vaut d'etre gardee : une serie qui echoue ne doit pas rester
-     * a moitie creee, ni retenir les suivantes, ni avancer son echeance. On provoque donc l'echec
-     * DELIBEREMENT, sur une dependance reelle, au lieu de compter sur un bug.
-     */
+    /** UN ECHEC EST ISOLE, JOURNALISE, COMPTE, ET LA TRANSACTION EST ANNULEE. */
     public function test_due_series_failure_is_isolated_and_reported(): void
     {
         $series = RecurringBookingSeriesFactory::new()->create([
@@ -115,13 +99,7 @@ class ProcessRecurringBookingsCommandTest extends TestCase
         $this->assertNull($series->last_generated_at);
     }
 
-    /**
-     * LE TEMOIN QUI MANQUAIT : le chemin nominal produit VRAIMENT une reservation.
-     *
-     * Sans lui, ce fichier ne verifiait que des refus -- serie future ignoree, serie en pause
-     * ignoree, serie en echec isolee. Trois facons de ne rien faire, aucune de faire. C'est
-     * precisement ce qui a laisse la fonctionnalite morte sans que personne le voie.
-     */
+    /** LE TEMOIN QUI MANQUAIT : le chemin nominal produit VRAIMENT une reservation. */
     public function test_a_due_series_actually_creates_a_booking(): void
     {
         $series = RecurringBookingSeriesFactory::new()->create([

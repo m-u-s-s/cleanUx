@@ -21,23 +21,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * UN RESPONSABLE RESTREINT NE DOIT RIEN VOIR DE L'AGENCE VOISINE — SUR AUCUN ÉCRAN.
- *
- * `AccesParSiteDesMembresTest` prouve que la restriction s'écrit et se relit, et qu'un écran qui
- * SCOPE DÉJÀ par local la respecte. Ce fichier-ci pose l'autre moitié de la question, la seule qui
- * intéresse la personne concernée : est-ce que les ÉCRANS, montés pour de vrai, laissent fuir
- * l'agence interdite ?
- *
- * LA DIFFÉRENCE N'EST PAS THÉORIQUE. Une restriction correcte dans le service et absente d'un
- * écran ne produit aucune erreur : la page s'affiche, elle affiche simplement trop. Personne ne le
- * remarque, sauf la société dont on vient d'exposer les adresses de chantier, les montants et les
- * litiges à un chef d'agence qui n'a rien à y voir.
- *
- * ON MONTE LES COMPOSANTS RÉELS et on cherche un marqueur unique planté sur le local interdit. Pas
- * de requête réécrite pour le test : une garde vérifiée ailleurs que là où elle s'applique ne
- * prouve rien.
- */
+/** UN RESPONSABLE RESTREINT NE DOIT RIEN VOIR DE L'AGENCE VOISINE — SUR AUCUN ÉCRAN. */
 class PerimetreRestreintDesEcransTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
@@ -142,16 +126,7 @@ class PerimetreRestreintDesEcransTest extends TestCase
             ->assertDontSee(self::MARQUEUR_INTERDIT, escape: false);
     }
 
-    /**
-     * FILTRER LA LISTE NE GARDE RIEN — c'est l'ÉCRITURE qui doit refuser.
-     *
-     * `siteIds` est une propriété publique Livewire : le navigateur la réécrit par un simple
-     * `$set`, quelle que soit la liste affichée. Un responsable restreint à une agence pouvait donc
-     * engager la société sur des interventions dans les autres — des réservations créées à des
-     * adresses qu'il n'a pas le droit de connaître, et facturées à la société.
-     *
-     * Ce test-ci vaut plus que les cinq précédents réunis : il vise la garde, pas l'affichage.
-     */
+    /** FILTRER LA LISTE NE GARDE RIEN — c'est l'ÉCRITURE qui doit refuser. */
     #[Test]
     public function un_identifiant_de_local_force_ne_cree_aucune_reservation(): void
     {
@@ -175,13 +150,7 @@ class PerimetreRestreintDesEcransTest extends TestCase
         );
     }
 
-    /**
-     * ET LA RESTRICTION NE DOIT PAS TOUT COUPER.
-     *
-     * Le contre-test compte autant : un écran qui n'affiche plus rien passerait toutes les
-     * assertions d'absence ci-dessus tout en étant inutilisable. On vérifie donc que le local
-     * autorisé, lui, est bien là.
-     */
+    /** ET LA RESTRICTION NE DOIT PAS TOUT COUPER. */
     #[Test]
     public function l_agence_autorisee_reste_visible(): void
     {
@@ -190,11 +159,7 @@ class PerimetreRestreintDesEcransTest extends TestCase
             ->assertSee(self::MARQUEUR_AUTORISE, escape: false);
     }
 
-    /**
-     * SANS RESTRICTION, ON VOIT LES DEUX — sans quoi le test ci-dessus pourrait passer pour une
-     * raison qui n'a rien à voir avec le périmètre (un écran vide, un filtre par défaut, une
-     * fixture mal construite).
-     */
+    /** SANS RESTRICTION, ON VOIT LES DEUX — sans quoi le test ci-dessus pourrait passer pour une raison qui n'a rien à voir avec le périmètre (un écran vide, un filtre par défaut, une fixture mal construite). */
     #[Test]
     public function sans_restriction_les_deux_agences_apparaissent(): void
     {

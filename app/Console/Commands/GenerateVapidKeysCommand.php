@@ -5,18 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Minishlink\WebPush\VAPID;
 
-/**
- * Phase 8 — Génère une nouvelle paire de clés VAPID.
- *
- *   php artisan webpush:vapid
- *
- * Affiche les 2 clés à coller dans .env :
- *   VAPID_PUBLIC_KEY=...
- *   VAPID_PRIVATE_KEY=...
- *
- * IMPORTANT : les clés doivent rester STABLES en prod. Si tu les régénères,
- * toutes les subscriptions existantes deviennent invalides.
- */
+/** Phase 8 — Génère une nouvelle paire de clés VAPID. */
 class GenerateVapidKeysCommand extends Command
 {
     protected $signature = 'webpush:vapid';

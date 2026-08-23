@@ -26,18 +26,6 @@ use Livewire\Component;
 /**
  * Le catalogue : secteurs et métiers.
  *
- * C'est la porte d'entrée qui manquait — sans elle, le constructeur de parcours n'était atteignable
- * par aucun lien, et il fallait connaître une adresse pour l'ouvrir.
- *
- * L'écran ne se contente pas de lister. Il montre, pour chaque métier, ce qui empêche sa
- * publication et ce qui attend d'être mis en ligne : un catalogue où l'on doit ouvrir dix écrans
- * pour savoir lequel est prêt ne sera pas tenu à jour.
- *
- * IL EST DÉSORMAIS CELUI D'UNE ZONE. Les secteurs et les métiers restent communs — ce sont les
- * mêmes objets partout — mais leur OUVERTURE se règle zone par zone. C'est ce qui permet à un
- * métier de coûter plus cher là où la demande est forte : l'activation et le prix sont la même
- * ligne, `trade_zone_pricing`, donc il n'y a pas deux réglages à garder cohérents.
- *
  * @property-read array<int, int> $tradesLosingClients
  */
 #[Layout('layouts.app')]
@@ -53,16 +41,7 @@ class CatalogCenter extends Component
     use ManagesCatalogTranslations;
 
     /**
-     * CE QUI SE TRADUIT, ET RIEN D'AUTRE.
-     *
-     * La liste est FERMÉE, et par type d'objet. Sans elle, un champ arbitraire venu du navigateur
-     * — `base_price_cents`, `slug` — créerait dans `catalog_translations` des lignes que rien ne
-     * lit jamais : invisibles, jamais affichées, et pourtant grossissant à chaque tentative. C'est
-     * la même précaution que `QuestionnaireBuilder::saveTranslation()`.
-     *
-     * `slug` est délibérément absent : il sert d'identifiant d'URL et de clé de recherche. Le
-     * traduire donnerait deux adresses pour un même métier, dont une seule serait connue du reste
-     * de la plateforme.
+     * CE QUI SE TRADUIT, ET RIEN D'AUTRE. La liste est FERMÉE, et par type d'objet.
      *
      * @var array<string, list<string>>
      */
@@ -71,12 +50,7 @@ class CatalogCenter extends Component
         'trade' => ['name', 'short_description', 'description'],
     ];
 
-    /*
-     * Le formulaire complet d'un métier — vingt et un champs — partagé avec `/admin/trades`.
-     *
-     * Le trait fournit les propriétés, les règles et la persistance ; l'enchaînement propre à cet
-     * écran (rattacher au secteur, ouvrir dans la zone) reste ci-dessous.
-     */
+    // Le formulaire complet d'un métier — vingt et un champs — partagé avec `/admin/trades`.
     use ManagesTradeForm;
 
     public ?int $editingSectorId = null;
@@ -105,14 +79,7 @@ class CatalogCenter extends Component
 
     public function mount(Country $country, ServiceZone $zone): void
     {
-        /*
-         * L'URL porte les deux identifiants, et rien n'empêche d'en écrire un couple incohérent à
-         * la main. Le refus est explicite plutôt que d'afficher le catalogue d'un marché voisin
-         * sous le nom d'un autre — une confusion qui se propagerait ensuite aux prix qu'on y règle.
-         *
-         * Le pays sert aussi au fil d'Ariane : sans lui, `/admin/catalogue/12` ne dirait pas si 12
-         * désigne un pays ou une zone.
-         */
+        // L'URL porte les deux identifiants, et rien n'empêche d'en écrire un couple incohérent à la main.
         abort_unless($zone->country_id === $country->id, 404);
 
         $this->country = $country;
@@ -120,13 +87,7 @@ class CatalogCenter extends Component
         $this->resetSectorForm();
     }
 
-    /**
-     * Ouvrir ou fermer un métier DANS CETTE ZONE.
-     *
-     * L'activation et le prix sont la même ligne. On ne supprime JAMAIS la ligne en éteignant :
-     * rallumer doit retrouver le tarif saisi plutôt que de repartir de zéro, car ce tarif a pu
-     * demander une négociation qu'on ne veut pas refaire.
-     */
+    /** Ouvrir ou fermer un métier DANS CETTE ZONE. L'activation et le prix sont la même ligne. */
     public function basculerMetierDansLaZone(int $tradeId): void
     {
         // Ouvrir un métier dans une zone décidera de son prix et de sa disponibilité : c'est une
@@ -141,12 +102,7 @@ class CatalogCenter extends Component
         ]);
 
         if (! $ligne->exists) {
-            /*
-             * Première ouverture : on part du prix du métier.
-             *
-             * Ouvrir un métier dans une zone ne doit pas le mettre à zéro euro en attendant qu'on
-             * saisisse une grille. Les champs deviendront éditables au lot suivant.
-             */
+            // Première ouverture : on part du prix du métier.
             $ligne->base_rate_cents = (int) (Trade::findOrFail($tradeId)->base_price_cents ?? 0);
             // La colonne est un décimal : la remplir avec un float PHP la ferait arrondir au
             // hasard de la conversion. On écrit la chaîne que la base attend.
@@ -161,18 +117,7 @@ class CatalogCenter extends Component
         unset($this->metiersActifsDansLaZone, $this->metiersEnImmediatDansLaZone);
     }
 
-    /**
-     * Ouvrir ou fermer l'INTERVENTION IMMÉDIATE pour ce métier DANS CETTE ZONE.
-     *
-     * La décision est locale et c'est tout son intérêt : un plombier de garde à Bruxelles
-     * n'implique pas un plombier de garde à Bastogne. Promettre l'immédiat là où personne n'est
-     * jamais en ligne fait attendre le client devant sa porte pour rien, puis lui propose une
-     * conversion en rendez-vous qu'il aurait choisie d'emblée si on la lui avait offerte.
-     *
-     * ELLE EXIGE QUE LE MÉTIER SOIT OUVERT. Un métier fermé dans la zone n'y est pas vendu du tout :
-     * lui ouvrir l'immédiat produirait une ligne qui promet un dépannage pour un service absent du
-     * parcours.
-     */
+    /** Ouvrir ou fermer l'INTERVENTION IMMÉDIATE pour ce métier DANS CETTE ZONE. */
     public function basculerImmediatDansLaZone(int $tradeId): void
     {
         if ($this->refusesWrite()) {
@@ -195,22 +140,7 @@ class CatalogCenter extends Component
         unset($this->metiersEnImmediatDansLaZone);
     }
 
-    /**
-     * RÉGLER LA MAJORATION DE CE MÉTIER DANS CETTE ZONE.
-     *
-     * Le multiplicateur vivait sur `trade_zone_pricing` sans qu'aucun écran ne le règle : le
-     * moteur de surge le lisait, l'administration ne pouvait pas l'écrire. Une valeur qu'on
-     * consulte sans pouvoir la changer est un réglage en lecture seule, c'est-à-dire pas un
-     * réglage.
-     *
-     * IL SE RÈGLE SUR LA MÊME LIGNE que l'ouverture du métier et que l'immédiat, parce que c'est la
-     * même décision commerciale : ce que je vends ici, à quel prix, et en urgence ou non. Les
-     * séparer sur deux écrans a déjà produit deux tables concurrentes.
-     *
-     * LES BORNES SONT DURES. En dessous de 1, la « majoration » deviendrait une remise silencieuse
-     * appliquée à tous ; au-dessus du plafond de configuration, elle dépasserait ce que le moteur
-     * accepte de toute façon — autant refuser la saisie que promettre un réglage sans effet.
-     */
+    /** RÉGLER LA MAJORATION DE CE MÉTIER DANS CETTE ZONE. */
     public function reglerMajorationDansLaZone(int $tradeId, string $multiplicateur): void
     {
         if ($this->refusesWrite()) {
@@ -279,12 +209,7 @@ class CatalogCenter extends Component
             ->all();
     }
 
-    /**
-     * Ouvre le formulaire de création, pour un secteur donné.
-     *
-     * Le secteur vient du bouton et non d'un champ : on clique « Ajouter un métier » DANS un
-     * secteur, il n'y a donc rien à choisir de nouveau.
-     */
+    /** Ouvre le formulaire de création, pour un secteur donné. */
     public function ouvrirCreationMetier(int $sectorId): void
     {
         $this->secteurCible = Sector::query()->findOrFail($sectorId)->id;
@@ -299,18 +224,7 @@ class CatalogCenter extends Component
         $this->resetTradeForm();
     }
 
-    /**
-     * Enregistre le métier, le rattache au secteur, et l'ouvre dans CETTE zone.
-     *
-     * LES TROIS GESTES SONT UN SEUL. C'est le détour qu'on supprime : il fallait créer le métier
-     * sur un autre écran, revenir ici le rattacher — il arrivait orphelin — puis l'ouvrir. Trois
-     * écrans pour ce que l'on venait manifestement faire.
-     *
-     * LE MÉTIER EST GLOBAL, SON OUVERTURE EST LOCALE. Il existera dans tous les pays et toutes les
-     * zones ; seule la ligne `trade_zone_pricing` créée ici le rend disponible à Bruxelles. La
-     * distinction est écrite dans le formulaire, faute de quoi on croirait créer un métier « pour
-     * Bruxelles ».
-     */
+    /** Enregistre le métier, le rattache au secteur, et l'ouvre dans CETTE zone. */
     public function enregistrerMetier(): void
     {
         // Le lecteur seul lit. `EnforcesAdminAccess` s'arrête à « est-ce un administrateur » : un
@@ -363,28 +277,7 @@ class CatalogCenter extends Component
 
     // ─── Lecture ─────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Écrit — ou retire — la traduction d'un libellé de catalogue.
-     *
-     * ── POURQUOI CET ÉCRAN EN AVAIT BESOIN ───────────────────────────────────────────────────
-     *
-     * Le mécanisme de traduction existait, complet et éprouvé : table polymorphe, trait, chaîne de
-     * repli, et un écran d'administration… pour le seul QUESTIONNAIRE. Le catalogue qui y mène —
-     * le secteur qu'on choisit, puis le métier — n'était traduisible nulle part. Un client
-     * néerlandophone parcourait donc un carrousel français avant de répondre à des questions
-     * néerlandaises : la chaîne se traduisait par le milieu.
-     *
-     * ── LES TROIS GARDES, ET CE QUE CHACUNE ARRÊTE ───────────────────────────────────────────
-     *
-     * 1. `refusesWrite()` — un accès en lecture seule n'écrit pas le catalogue. La règle vit dans
-     *    la Policy ; on la consulte, on ne la redit pas.
-     * 2. La langue doit être ACTIVÉE. Une langue désactivée dans `config/i18n.php` — `pt` l'est
-     *    aujourd'hui — ne doit pas recevoir de traduction que personne n'affichera.
-     * 3. Le champ doit appartenir à la liste fermée du type. Voir `CHAMPS_TRADUISIBLES`.
-     *
-     * Une valeur vide SUPPRIME la ligne : revenir au libellé français doit être aussi simple que
-     * d'effacer le champ. Le trait s'en charge — c'est lui qui porte cette règle, pas cet écran.
-     */
+    /** Écrit — ou retire — la traduction d'un libellé de catalogue. */
     public function saveTranslation(string $type, int $id, string $locale, string $field, ?string $value): void
     {
         if ($this->refusesWrite()) {
@@ -412,15 +305,7 @@ class CatalogCenter extends Component
         unset($this->sectors);
     }
 
-    /**
-     * Les secteurs et leurs métiers, TRADUCTIONS COMPRISES.
-     *
-     * Le préchargement n'est pas une optimisation de confort. `translate()` interroge la relation
-     * quand elle n'est pas chargée : sans ce `with`, afficher quatre secteurs et dix métiers dans
-     * cinq langues déclencherait une requête par libellé et par langue. C'est la même précaution
-     * que prennent déjà `OrderJourney:655`, `QuestionnaireValidator:36` et `BundleComposer:283`
-     * pour les questions.
-     */
+    /** Les secteurs et leurs métiers, TRADUCTIONS COMPRISES. */
     #[Computed]
     public function sectors()
     {
@@ -433,13 +318,7 @@ class CatalogCenter extends Component
             ->get();
     }
 
-    /**
-     * Métiers actifs rattachés à aucun secteur.
-     *
-     * Ils restent utilisables par le reste de la plateforme mais n'apparaissent pas dans le
-     * parcours de commande. Les taire ferait chercher longtemps pourquoi « Toiture » est
-     * introuvable côté client.
-     */
+    /** Métiers actifs rattachés à aucun secteur. */
     #[Computed]
     public function orphanTrades()
     {
@@ -461,13 +340,7 @@ class CatalogCenter extends Component
         $validator = app(QuestionnaireValidator::class);
         $publisher = app(TradeFormPublisher::class);
 
-        /*
-         * Sorti de la boucle, et lu en PROPRIÉTÉ.
-         *
-         * `#[Computed]` ne met en cache que l'accès propriété : `$this->tradesLosingClients()`
-         * réexécute le corps à chaque appel, donc une fois par métier — soit exactement le coût
-         * qui grandit avec la liste que cette analyse sert à débusquer.
-         */
+        // Sorti de la boucle, et lu en PROPRIÉTÉ.
         $losing = $this->tradesLosingClients;
         $statuses = [];
 
@@ -489,15 +362,6 @@ class CatalogCenter extends Component
 
     /**
      * Les métiers dont une question fait décrocher les clients.
-     *
-     * Sans ce signal, il faudrait ouvrir les douze métiers un par un pour découvrir lequel perd ses
-     * clients — donc personne ne le découvrirait, et les statistiques ne serviraient à rien.
-     *
-     * LE VOLUME EST FILTRÉ D'ABORD, EN UNE REQUÊTE. Appeler l'analyse sur chaque métier du
-     * catalogue reproduirait exactement le défaut qu'elle sert à débusquer : un coût qui grandit
-     * avec le nombre de lignes affichées. On compte donc les commandes par métier d'un seul coup,
-     * et on n'analyse que ceux qui en ont assez pour qu'un verdict veuille dire quelque chose —
-     * en pratique, une poignée.
      *
      * @return array<int, int>
      */
@@ -651,13 +515,7 @@ class CatalogCenter extends Component
         $this->archiveImpact = null;
     }
 
-    /**
-     * Le lecteur seul lit.
-     *
-     * `EnforcesAdminAccess` s'arrête à « est-ce un administrateur » : un `platform_role` à « admin »
-     * assorti d'un `access_scope` à « readonly » franchit la garde et atteint cet écran, qui écrit
-     * le catalogue et décide de l'ordre du carrousel.
-     */
+    /** Le lecteur seul lit. */
     private function refusesWrite(): bool
     {
         // La règle vit dans la Policy : on la consulte, on ne la redit pas.
@@ -666,10 +524,6 @@ class CatalogCenter extends Component
 
     /**
      * L'ordre des secteurs, tel que le navigateur l'a composé.
-     *
-     * C'est l'ordre du CARROUSEL : le premier secteur est celui que tout visiteur voit d'abord.
-     * Il n'est pas cosmétique, et il est revalidé côté serveur — la liste vient du navigateur, elle
-     * n'est pas crue sur parole.
      *
      * @param  array<int, int|string>  $orderedIds
      */
@@ -697,10 +551,6 @@ class CatalogCenter extends Component
 
     /**
      * L'ordre des métiers DANS un secteur.
-     *
-     * C'est l'ordre du dock, donc le premier métier proposé une fois le secteur choisi. Il ne se
-     * réglait pas du tout — ni à la souris, ni aux flèches — alors que ce sont les métiers qui se
-     * vendent.
      *
      * @param  array<int, int|string>  $orderedIds
      */
@@ -732,12 +582,7 @@ class CatalogCenter extends Component
         $this->refreshDerived();
     }
 
-    /**
-     * Les flèches, qui restent.
-     *
-     * Le glisser-déposer ne fonctionne ni au clavier ni avec un lecteur d'écran, et le catalogue
-     * est un écran de travail quotidien.
-     */
+    /** Les flèches, qui restent. */
     public function moveTrade(int $tradeId, int $direction): void
     {
         if ($this->refusesWrite()) {
@@ -770,9 +615,6 @@ class CatalogCenter extends Component
 
     /**
      * La liste reçue décrit-elle EXACTEMENT ce qu'on possède ?
-     *
-     * `null` si elle est partielle ou si elle contient un intrus. Les deux cas se soldent par un
-     * refus, jamais par un réordonnancement de la partie reconnue.
      *
      * @param  array<int, int|string>  $orderedIds
      * @param  Collection<int, mixed>  $own
@@ -880,12 +722,7 @@ class CatalogCenter extends Component
     public function render()
     {
         return view('livewire.admin.order-engine.catalog-center', [
-            /*
-             * LA CARTE DES MAJORATIONS (E28). Le multiplicateur se règle zone par zone, métier par
-             * métier : personne ne pouvait voir ce que la plateforme facture en plus, PARTOUT, en
-             * une fois. Une majoration oubliée à 2,5 dans une zone tourne indéfiniment, et se
-             * découvre par une plainte.
-             */
+            // LA CARTE DES MAJORATIONS (E28).
             'carteDesMajorations' => app(SurgeOverviewService::class)->carte(),
         ]);
     }

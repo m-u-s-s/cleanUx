@@ -11,10 +11,6 @@ use App\Models\InsuranceClaim;
 /**
  * Les sinistres déclarés.
  *
- * La MACHINE À ÉTATS d’un sinistre est tenue par le module Assurance : elle refuse les
- * transitions incohérentes. Écrire un statut ici sauterait une étape et laisserait un sinistre
- * indemnisé sans avoir été instruit.
- *
  * @extends EloquentResource<InsuranceClaim>
  */
 class InsuranceClaimResource extends EloquentResource
@@ -76,11 +72,7 @@ class InsuranceClaimResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Le statut d'un sinistre suit une LISTE FERMÉE, celle du web. Laisser saisir un statut
-             * libre produirait des sinistres dans un état que ni les relances ni les statistiques
-             * ne savent lire — invisibles jusqu'à ce que l'assuré rappelle.
-             */
+            // Le statut d'un sinistre suit une LISTE FERMÉE, celle du web.
             Action::make('set-status', 'Changer le statut', function (InsuranceClaim $claim, array $valeurs) {
                 $claim->forceFill(['status' => (string) $valeurs['status']])->save();
 

@@ -9,10 +9,6 @@ use Illuminate\Support\Carbon;
 /**
  * QUELQU'UN A TERMINÉ UNE FORMATION (E16).
  *
- * `badge_granted_at` EST SÉPARÉ DE `completed_at` : terminer et voir son badge apparaître sont deux
- * événements, et l'attribution passe par le module Badges — qui peut échouer sans que la complétion
- * doive être perdue.
- *
  * @property int $id
  * @property int $academy_course_id
  * @property int $user_id

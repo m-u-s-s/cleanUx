@@ -13,14 +13,7 @@ use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * LE SOCLE DE LA FACTURATION AU TEMPS PASSÉ.
- *
- * Ce que ces tests protègent, en une phrase : la plateforme annonçait publiquement « à partir de
- * 45 €/heure » et facturait 45 € forfaitaires. Le drapeau `hourly_billing` est ce qui rend la
- * promesse vraie — et il ne sert à rien s'il n'est pas éditable, pas persisté, ou si le tarif
- * qu'il pilote ne se résout pas.
- */
+/** LE SOCLE DE LA FACTURATION AU TEMPS PASSÉ. */
 class FacturationHoraireSocleTest extends TestCase
 {
     use RefreshDatabase;
@@ -66,10 +59,7 @@ class FacturationHoraireSocleTest extends TestCase
         $this->assertSame(4500, app(HourlyRateResolver::class)->tarifCatalogue($metier));
     }
 
-    /**
-     * Cocher la case sans tarif produirait un métier qui multiplie des heures par rien. Le refus
-     * doit tomber à la saisie, pas à la première commande où il passerait pour une panne.
-     */
+    /** Cocher la case sans tarif produirait un métier qui multiplie des heures par rien. */
     public function test_cocher_sans_tarif_est_refuse(): void
     {
         Livewire::actingAs($this->admin())
@@ -136,11 +126,7 @@ class FacturationHoraireSocleTest extends TestCase
         $this->assertSame(6000, $resolveur->tarifCatalogue($metier, $zone->id), 'Dans la zone : sa surcharge.');
     }
 
-    /**
-     * `null` veut dire « cette zone ne surcharge rien », `0` veut dire « une heure est offerte ici ».
-     * Les confondre transformerait une gratuité voulue en facturation pleine — c'est exactement le
-     * piège qui a valu à `price_per_km_cents` de ne PAS être casté en entier.
-     */
+    /** `null` veut dire « cette zone ne surcharge rien », `0` veut dire « une heure est offerte ici ». */
     public function test_une_zone_a_zero_nest_pas_une_zone_sans_surcharge(): void
     {
         [$metier, $zone] = $this->metierHoraireEtZone(4500);

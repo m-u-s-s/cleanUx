@@ -18,29 +18,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LE PANNEAU « STATUT MEMBRE PAR MEMBRE » NE POUVAIT PAS S'AFFICHER.
- *
- * `member-status-panel.blade.php` parcourt `$selectedSegment->assignments`, et
- * `TeamLeadOperationsCenter` chargeait `MissionTaskSegment::with(['assignments.user', 'memberStatuses'])`.
- * Or `MissionTaskSegment` n'exposait NI l'une NI l'autre : l'eager-load levait une
- * `RelationNotFoundException`, et l'écran entier tombait dès qu'un segment existait.
- *
- * CE QUI EXISTAIT DÉJÀ, vérifié avant d'écrire — et qui corrige mon propre diagnostic de la veille,
- * où j'avais conclu trop vite que « la fonctionnalité était à reconstruire » :
- *
- *   - les tables `mission_task_segment_assignments` et `mission_member_statuses` ;
- *   - leurs modèles, avec `user()`, `segment()`, `segmentAssignment()`, `memberStatuses()` ;
- *   - `TeamLeadOperationsCenter::updateSelectedMemberStatus()` et le service qui l'exécute.
- *
- * Seules manquaient les DEUX relations inverses sur le segment. J'avais lu le seul modèle segment
- * et généralisé — la leçon est la même que pour `MembersAccess` en phase 0.
- *
- * SECOND DÉFAUT, du même motif que les canaux : la liste des lots est bien limitée aux équipes dont
- * on est chef, mais `updateSelectedMemberStatus()` faisait `findOrFail()` sur un identifiant venu du
- * client, et le service n'autorise rien. Un chef d'équipe pouvait donc écrire le statut d'un membre
- * d'une AUTRE équipe.
- */
+/** LE PANNEAU « STATUT MEMBRE PAR MEMBRE » NE POUVAIT PAS S'AFFICHER. */
 class TeamLeadMemberStatusPanelTest extends TestCase
 {
     use RefreshDatabase;
@@ -68,15 +46,7 @@ class TeamLeadMemberStatusPanelTest extends TestCase
             'planned_start_at' => now(),
         ]);
 
-        /*
-         * LE CHEF EST DÉSIGNÉ PAR LE PIVOT, PAS PAR LE LOT.
-         *
-         * `managedBatches()` accepte deux chemins : `mission_batches.team_lead_user_id`, ou
-         * l'appartenance à l'équipe avec `is_team_lead`. Le PREMIER est mort — la colonne existe et
-         * est lue, mais elle est absente de `$fillable` et aucune ligne du dépôt ne la renseigne :
-         * toute écriture par `create()` est silencieusement perdue. On emprunte donc le chemin que
-         * la production utilise réellement.
-         */
+        // LE CHEF EST DÉSIGNÉ PAR LE PIVOT, PAS PAR LE LOT.
         FieldTeamMember::create([
             'field_team_id' => $equipe->id,
             'user_id' => $chef->id,

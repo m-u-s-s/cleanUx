@@ -13,18 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * L'ADMINISTRATEUR PILOTE TOUT LE COMPTOIR DEPUIS « NOS LOCATIONS ».
- *
- * Prix, garantie, mise en vitrine, agences, médias, réservations : tout est dans ce module et nulle
- * part ailleurs. Ce fichier vérifie que chaque levier existe ET qu'il agit — un écran de réglages
- * décoratif est la forme d'échec que ce dépôt collectionne.
- *
- * ── LA CAPACITÉ EST À PART DE FLEET, ET C'EST VOULU ──────────────────────────────────────────
- *
- * `manage-rentals` n'est pas `manage-orchestration` : on peut confier le comptoir de location sans
- * ouvrir la gestion du parc interne, et l'inverse. Ce sont deux métiers.
- */
+/** L'ADMINISTRATEUR PILOTE TOUT LE COMPTOIR DEPUIS « NOS LOCATIONS ». */
 class AdministrationDesLocationsTest extends TestCase
 {
     use RefreshDatabase;
@@ -52,12 +41,7 @@ class AdministrationDesLocationsTest extends TestCase
         $this->assertContains('admin:admin.rentals.center', $cles);
     }
 
-    /**
-     * TÉMOIN INVERSE — un administrateur de flotte interne ne l'a pas.
-     *
-     * Sans lui, la capacité ne servirait à rien : donner la location sans donner le reste suppose
-     * que le reste ne donne pas la location.
-     */
+    /** TÉMOIN INVERSE — un administrateur de flotte interne ne l'a pas. */
     public function test_temoin_un_admin_de_flotte_ne_voit_pas_la_tuile(): void
     {
         $this->actingAs($this->admin(['manage-orchestration']));
@@ -85,13 +69,7 @@ class AdministrationDesLocationsTest extends TestCase
 
     // ── Le parc et ses tarifs ────────────────────────────────────────────
 
-    /**
-     * UNE VOITURE CRÉÉE ARRIVE FERMÉE.
-     *
-     * Même prudence que pour un pays neuf du catalogue géographique : une faute de frappe sur un
-     * tarif ne doit pas rendre un véhicule louable dans la seconde. La mise en vitrine est un geste
-     * distinct, et il se voit.
-     */
+    /** UNE VOITURE CRÉÉE ARRIVE FERMÉE. */
     public function test_un_vehicule_cree_nest_pas_en_vitrine(): void
     {
         $this->actingAs($this->admin(['manage-rentals']));
@@ -120,12 +98,7 @@ class AdministrationDesLocationsTest extends TestCase
         $this->assertTrue($vehicule->refresh()->is_active);
     }
 
-    /**
-     * LE PRIX ET LA GARANTIE SE SAISISSENT EN UNITÉS ET VIVENT EN CENTIMES.
-     *
-     * L'administrateur tape « 45,00 » ; la base garde 4500. Un `decimal` sur des prix journaliers
-     * multipliés par un nombre de jours ramènerait des arrondis que personne ne vérifie.
-     */
+    /** LE PRIX ET LA GARANTIE SE SAISISSENT EN UNITÉS ET VIVENT EN CENTIMES. */
     public function test_les_montants_sont_convertis_en_centimes(): void
     {
         $this->actingAs($this->admin(['manage-rentals']));
@@ -164,12 +137,7 @@ class AdministrationDesLocationsTest extends TestCase
             ->assertHasErrors('fiche.max_rental_days');
     }
 
-    /**
-     * UNE VOITURE EN COURS DE LOCATION NE SE RETIRE PAS DU PARC.
-     *
-     * Un client a la clé ; effacer la fiche laisserait une réservation vivante pointant vers un
-     * véhicule disparu, et le comptoir n'aurait plus de quoi établir l'état des lieux au retour.
-     */
+    /** UNE VOITURE EN COURS DE LOCATION NE SE RETIRE PAS DU PARC. */
     public function test_une_voiture_en_location_ne_se_retire_pas(): void
     {
         $this->actingAs($this->admin(['manage-rentals']));
@@ -182,18 +150,7 @@ class AdministrationDesLocationsTest extends TestCase
         $this->assertNotNull($vehicule->fresh(), 'Le véhicule a été retiré alors qu’il est loué.');
     }
 
-    /**
-     * TÉMOIN — une voiture libre se retire bien, SANS effacer son histoire.
-     *
-     * Le retrait est une suppression DOUCE : les locations passées gardent leur véhicule, y compris
-     * devant un litige. Une voiture qui a servi ne s'efface pas de la comptabilité parce qu'on l'a
-     * revendue.
-     *
-     * D'où `assertSoftDeleted` et non `assertNull($vehicule->fresh())` : `fresh()` requête SANS les
-     * portées globales et retrouve donc la ligne supprimée. Ma première version échouait sur ce
-     * détail en semblant dire que la suppression n'avait pas eu lieu — alors qu'elle avait
-     * exactement l'effet voulu.
-     */
+    /** TÉMOIN — une voiture libre se retire bien, SANS effacer son histoire. */
     public function test_temoin_une_voiture_libre_se_retire(): void
     {
         $this->actingAs($this->admin(['manage-rentals']));
@@ -227,12 +184,7 @@ class AdministrationDesLocationsTest extends TestCase
         $this->assertStringContainsString('Avenue Fonsny 1', $point->adresseComplete());
     }
 
-    /**
-     * LA DEVISE D'UN VÉHICULE SUIT LE PAYS DE SON AGENCE.
-     *
-     * Une agence marocaine loue en dirhams. C'est la même autorité que le reste de la plateforme —
-     * jamais un littéral, jamais la devise de base par défaut.
-     */
+    /** LA DEVISE D'UN VÉHICULE SUIT LE PAYS DE SON AGENCE. Une agence marocaine loue en dirhams. */
     public function test_la_devise_suit_le_pays_de_lagence(): void
     {
         $this->actingAs($this->admin(['manage-rentals']));
@@ -252,12 +204,7 @@ class AdministrationDesLocationsTest extends TestCase
 
     // ── Le cycle d'une location ──────────────────────────────────────────
 
-    /**
-     * LE RETOUR REMET LA VOITURE AU CATALOGUE.
-     *
-     * Tant qu'elle est « retirée », elle reste bloquée. Ne pas enregistrer le retour la laisserait
-     * invisible indéfiniment, et personne ne comprendrait pourquoi le parc rétrécit.
-     */
+    /** LE RETOUR REMET LA VOITURE AU CATALOGUE. Tant qu'elle est « retirée », elle reste bloquée. */
     public function test_le_cycle_retrait_retour_libere_la_voiture(): void
     {
         $this->actingAs($this->admin(['manage-rentals']));

@@ -12,11 +12,7 @@ use Livewire\Component;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Defense-in-depth — chaque composant Livewire admin doit refuser (403) un
- * non-admin au niveau composant (boot), pas seulement via la middleware de route.
- * Ferme les 2 derniers retardataires du rollout EnforcesAdminAccess.
- */
+/** Defense-in-depth — chaque composant Livewire admin doit refuser (403) un non-admin au niveau composant (boot), pas seulement via la middleware de route. */
 class AdminComponentGuardTest extends TestCase
 {
     use RefreshDatabase;
@@ -52,10 +48,7 @@ class AdminComponentGuardTest extends TestCase
         );
     }
 
-    /**
-     * Garde de complétude — tout composant Livewire du namespace App\Livewire\Admin
-     * doit être gardé. Empêche qu'un futur composant admin oublie le trait.
-     */
+    /** Garde de complétude — tout composant Livewire du namespace App\Livewire\Admin doit être gardé. */
     public function test_all_admin_namespace_components_are_guarded(): void
     {
         $dir = app_path('Livewire/Admin');

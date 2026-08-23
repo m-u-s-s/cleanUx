@@ -7,19 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * UNE SUSPENSION VAUT SUR LES DEUX SURFACES.
- *
- * Mesuré le 2026-08-16 sur la base locale : `active.account` était posé sur tous les groupes web et
- * sur AUCUNE route d'API. Un compte `is_active=false, status=suspended` obtenait un jeton NEUF par
- * `/api/auth/login`, puis gardait l'application entière — `/auth/me`, ses réservations, et pour un
- * prestataire approuvé sa boîte d'offres. Bannir quelqu'un (fraude, sécurité, impayé) ne l'arrêtait
- * que dans le navigateur, c'est-à-dire là où il n'allait pas.
- *
- * CHAQUE REFUS A SON TÉMOIN. Un test d'interdiction seul passe au vert le jour où la route casse
- * pour une autre raison : le même compte, actif, doit passer juste à côté. Sans ce contrôle
- * positif, ce fichier mesurerait une panne.
- */
+/** UNE SUSPENSION VAUT SUR LES DEUX SURFACES. */
 class CompteSuspenduTest extends TestCase
 {
     use RefreshDatabase;
@@ -50,12 +38,7 @@ class CompteSuspenduTest extends TestCase
         ])->assertOk()->assertJsonPath('ok', true);
     }
 
-    /**
-     * Le refus ne vient pas AVANT le mot de passe.
-     *
-     * Sinon `/api/auth/login` répondrait « compte suspendu » à qui tape une mauvaise adresse, et
-     * dirait ainsi à un inconnu quelles adresses existent — et lesquelles sont bannies.
-     */
+    /** Le refus ne vient pas AVANT le mot de passe. */
     public function test_un_mauvais_mot_de_passe_ne_revele_pas_la_suspension(): void
     {
         $user = $this->compte(['is_active' => false, 'status' => 'suspended']);
@@ -68,10 +51,7 @@ class CompteSuspenduTest extends TestCase
 
     // ─── Les jetons déjà émis ────────────────────────────────────────────────────────────────
 
-    /**
-     * Fermer la porte ne sert à rien si la fenêtre reste ouverte : le jeton obtenu AVANT la
-     * suspension doit mourir avec elle, sans attendre son expiration à trente jours.
-     */
+    /** Fermer la porte ne sert à rien si la fenêtre reste ouverte : le jeton obtenu AVANT la suspension doit mourir avec elle, sans attendre son expiration à trente jours. */
     public function test_un_jeton_emis_avant_la_suspension_ne_vaut_plus_rien(): void
     {
         $user = $this->compte();
@@ -104,9 +84,7 @@ class CompteSuspenduTest extends TestCase
         $this->avecJeton($jeton)->getJson('/api/provider/assignments/inbox')->assertUnauthorized();
     }
 
-    /**
-     * Le renouvellement est une porte lui aussi : sans cela un jeton suspendu se reconduirait.
-     */
+    /** Le renouvellement est une porte lui aussi : sans cela un jeton suspendu se reconduirait. */
     public function test_un_compte_suspendu_ne_renouvelle_pas_son_jeton(): void
     {
         $user = $this->compte();
@@ -160,10 +138,7 @@ class CompteSuspenduTest extends TestCase
         $this->actingAs($user)->get('/dashboard')->assertForbidden();
     }
 
-    /**
-     * `auth()->logout()` sur une requête d'API lèverait « Session store not set on request » : un
-     * 500 à la place d'un 403, sur le chemin même qui refuse un compte banni.
-     */
+    /** `auth()->logout()` sur une requête d'API lèverait « Session store not set on request » : un 500 à la place d'un 403, sur le chemin même qui refuse un compte banni. */
     public function test_le_refus_d_api_ne_produit_pas_une_erreur_serveur(): void
     {
         $user = $this->compte(['is_active' => false, 'status' => 'suspended']);
@@ -191,15 +166,7 @@ class CompteSuspenduTest extends TestCase
         return $this->withHeader('Authorization', 'Bearer '.$jeton);
     }
 
-    /**
-     * Suspend le compte ET oublie les gardes résolus.
-     *
-     * `RequestGuard` mémorise l'utilisateur dès la première résolution, et l'instance survit d'une
-     * requête de test à l'autre : sans cet oubli, la seconde requête rendrait l'objet en mémoire
-     * — actif — sans jamais revalider le jeton. Le test passerait au vert en production comme
-     * ici, mais pour la mauvaise raison : il ne mesurerait rien. En production chaque requête part
-     * d'un processus neuf, et c'est cette situation-là qu'on reproduit.
-     */
+    /** Suspend le compte ET oublie les gardes résolus. */
     private function suspendre(User $user): void
     {
         $user->forceFill(['is_active' => false, 'status' => 'suspended'])->save();

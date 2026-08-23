@@ -8,12 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 
-/**
- * GCal bidirectionnel — endpoint des notifications push Google Calendar.
- * Google envoie un POST sans corps avec les en-têtes X-Goog-Channel-ID /
- * X-Goog-Resource-ID quand un calendrier surveillé change. On route vers le
- * service qui réimporte les créneaux occupés du prestataire concerné.
- */
+/** GCal bidirectionnel — endpoint des notifications push Google Calendar. */
 class GoogleCalendarWebhookController extends Controller
 {
     public function handle(Request $request, GoogleCalendarBidirectionalService $service): Response

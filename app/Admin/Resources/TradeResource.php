@@ -13,10 +13,6 @@ use App\Services\Catalog\CatalogOrdering;
 /**
  * Les métiers de la plateforme.
  *
- * La GRILLE TARIFAIRE par zone et le questionnaire de commande ne s'éditent pas ici : ce sont
- * deux dimensions et un arbre, que le rendu générique ne sait pas montrer sans mentir sur leur
- * structure. Ils restent sur leurs pages dédiées.
- *
  * @extends EloquentResource<Trade>
  */
 class TradeResource extends EloquentResource
@@ -74,14 +70,7 @@ class TradeResource extends EloquentResource
         ];
     }
 
-    /**
-     * Les champs d'un métier.
-     *
-     * PAS LES VINGT ET UN DU WEB. La console sert une console : le nécessaire pour créer un métier
-     * et le corriger en déplacement. Les réglages fins — multiplicateurs urgence/nuit/week-end,
-     * schéma de questionnaire, certifications — restent sur le web, où l'écran montre à quoi ils
-     * servent. Ils gardent leur valeur : le moteur n'écrit QUE les champs déclarés.
-     */
+    /** Les champs d'un métier. PAS LES VINGT ET UN DU WEB. */
     public function formFields(): array
     {
         return [
@@ -97,13 +86,7 @@ class TradeResource extends EloquentResource
             Field::make('base_price_cents', 'Prix de base (centimes)', Field::TYPE_NUMBER)
                 ->rules(['nullable', 'integer', 'min:0', 'max:100000000']),
             Field::make('sort_order', 'Ordre', Field::TYPE_NUMBER)->rules(['nullable', 'integer', 'min:0', 'max:9999']),
-            /*
-             * Celui-ci fait exception à la règle « le nécessaire seulement » ci-dessus, et pour une
-             * raison précise : il ne règle pas un prix, il décide de ce qu'on exige d'un prestataire
-             * avant de lui confier une mission. Le laisser au web signifierait qu'un métier créé en
-             * déplacement part sans sa règle, et que personne ne s'en aperçoive avant qu'un
-             * conducteur sans permis reçoive une course.
-             */
+            // Celui-ci fait exception à la règle « le nécessaire seulement » ci-dessus, et pour une raison précise : il ne règle pas un prix, il décide de ce qu'on exige d'un prestataire avant de lui confier une mission.
             Field::make('taxi_rules', 'Règles taxi (véhicule de moins de 4 ans)', Field::TYPE_BOOL)
                 ->rules(['nullable', 'boolean']),
         ];
@@ -133,11 +116,7 @@ class TradeResource extends EloquentResource
                 return ['ok' => true];
             }),
 
-            /*
-             * Rattacher est ce qui fait ENTRER un métier dans le parcours client : sans secteur, il
-             * n'apparaît nulle part et rien ne le signale. Il arrive en FIN de secteur — un métier
-             * qu'on vient de rattacher n'a pas à passer devant ceux qui se vendent déjà.
-             */
+            // Rattacher est ce qui fait ENTRER un métier dans le parcours client : sans secteur, il n'apparaît nulle part et rien ne le signale.
             Action::make('attach-sector', 'Rattacher à un secteur', function (Trade $metier, array $valeurs) {
                 $secteur = Sector::findOrFail((int) $valeurs['sector_id']);
 
@@ -162,12 +141,7 @@ class TradeResource extends EloquentResource
         ];
     }
 
-    /**
-     * Un métier créé par la console naît ACTIF mais sans parcours.
-     *
-     * `is_active` dit « ce métier existe », pas « il est commandable » : c'est son OUVERTURE par
-     * zone qui décide de cela, et son parcours de questions qui décide s'il est publiable.
-     */
+    /** Un métier créé par la console naît ACTIF mais sans parcours. */
     public function prepareForCreate(array $data): array
     {
         return $data + ['is_active' => true, 'sort_order' => 0];

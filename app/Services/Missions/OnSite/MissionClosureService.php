@@ -16,30 +16,7 @@ use DomainException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-/**
- * LE RAPPORT DE FIN (F9) ET LA SIGNATURE DU CLIENT (F10).
- *
- * DEUX GÉNÉRATEURS EXISTAIENT SANS SE CONNAÎTRE. `MissionReportService` fabriquait un PDF sur le
- * disque privé ; `MissionQualityService::generateOrRefreshReport()` écrivait une fiche de synthèse
- * en base — photos avant/après, taux de checklist, incidents. Ni l'un ni l'autre ne savait que
- * l'autre existait : la fiche ne portait pas le chemin du PDF, et le PDF ignorait la synthèse.
- *
- * ET SURTOUT, RIEN NE L'ENVOYAIT AU CLIENT. Le rapport était produit à la clôture puis rangé sur un
- * disque que le client ne peut pas atteindre. Un compte rendu que le destinataire ne reçoit pas est
- * un fichier, pas un compte rendu — et c'est précisément la pièce qu'on cherche trois semaines plus
- * tard quand une contestation arrive.
- *
- * LA GÉNÉRATION EST EN SOFT-FAIL, la clôture ne l'est pas. Une bibliothèque PDF qui échoue ne doit
- * pas empêcher un prestataire de terminer sa journée : la mission se clôture, la fiche de synthèse
- * existe, et le PDF se rattrape. L'inverse — bloquer la clôture sur un rendu — laisserait des
- * missions ouvertes pour une raison qui n'intéresse personne sur le terrain.
- *
- * LA SIGNATURE EST CELLE DU CLIENT, PAS UNE CASE À COCHER. Elle passe par Contracts v2, qui la
- * date, la hache avec le contenu signé et l'attribue à un compte : une croix dans une case ne
- * prouve rien le jour où le client dit n'avoir jamais validé. Elle est FACULTATIVE — le client
- * n'est pas toujours là, et faire dépendre la clôture de sa présence bloquerait toutes les
- * interventions en son absence.
- */
+/** LE RAPPORT DE FIN (F9) ET LA SIGNATURE DU CLIENT (F10). */
 class MissionClosureService
 {
     public function __construct(
@@ -49,9 +26,7 @@ class MissionClosureService
         protected ContractService $contracts,
     ) {}
 
-    /**
-     * Produit le rapport de fin, l'archive, et l'envoie au client.
-     */
+    /** Produit le rapport de fin, l'archive, et l'envoie au client. */
     public function cloturer(Mission $mission, ?User $auteur = null): MissionReport
     {
         $rapport = $this->qualityService->generateOrRefreshReport($mission, $auteur);
@@ -62,13 +37,7 @@ class MissionClosureService
         return $rapport->fresh();
     }
 
-    /**
-     * LE PDF, ET SON CHEMIN ENFIN CONSIGNÉ SUR LA FICHE.
-     *
-     * `mission_reports.pdf_path` existait et restait vide : la fiche de synthèse ne savait pas où
-     * trouver le document qu'elle résume. Retrouver le PDF supposait de reconstruire son chemin de
-     * mémoire.
-     */
+    /** LE PDF, ET SON CHEMIN ENFIN CONSIGNÉ SUR LA FICHE. */
     protected function attacherLePdf(Mission $mission, MissionReport $rapport): void
     {
         try {
@@ -114,10 +83,6 @@ class MissionClosureService
 
     /**
      * LA SIGNATURE DU CLIENT, RECUEILLIE SUR L'ÉCRAN DU PRESTATAIRE (F10).
-     *
-     * Elle vaut par ce qui l'accompagne : l'horodatage, l'empreinte du contenu signé, et le compte
-     * auquel elle est attribuée. Une case cochée ne prouve rien le jour où le client affirme
-     * n'avoir jamais validé l'intervention.
      *
      * @param  string  $signatureData  le tracé, tel que l'écran l'a capturé
      */
@@ -166,13 +131,7 @@ class MissionClosureService
         return $document->fresh();
     }
 
-    /**
-     * Le modèle « rapport d'intervention », créé à la première signature.
-     *
-     * UN SEUL MODÈLE POUR TOUS LES RAPPORTS, et non un par mission : c'est la version des
-     * conditions qu'il porte, pas le contenu. Le contenu, lui, est propre à chaque document et
-     * c'est lui que l'empreinte eIDAS-lite couvre.
-     */
+    /** Le modèle « rapport d'intervention », créé à la première signature. */
     protected function modeleDuRapport(): ContractTemplate
     {
         return ContractTemplate::query()->firstOrCreate(
@@ -196,12 +155,7 @@ class MissionClosureService
         return 'mission-report-'.$mission->id;
     }
 
-    /**
-     * CE QUE LE CLIENT SIGNE, EN TOUTES LETTRES.
-     *
-     * L'empreinte eIDAS-lite est calculée sur ce texte : il doit donc décrire précisément ce qui est
-     * validé — sinon la signature atteste d'un contenu que personne ne peut reconstituer.
-     */
+    /** CE QUE LE CLIENT SIGNE, EN TOUTES LETTRES. */
     protected function corpsSignable(Mission $mission, MissionReport $rapport): string
     {
         $extras = $this->extraService->pourLaMission($mission)

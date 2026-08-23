@@ -14,17 +14,7 @@ use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * LE CODE PROMO, ENFIN SAISISSABLE.
- *
- * La plateforme administre des campagnes et émet des codes ; `PromoCodeService` et
- * `BookingPromoCodeApplier` savent les valider et les appliquer. Aucun écran client
- * ne les appelait : un code distribué à un client ne pouvait être utilisé nulle part.
- *
- * Le champ vit sur l'écran de confirmation, pas dans le parcours : `/commander` est
- * public — le prix s'affiche avant l'identité — alors qu'un code se valide contre un
- * compte (premier achat, plafond par personne, campagne réservée).
- */
+/** LE CODE PROMO, ENFIN SAISISSABLE. */
 class CodePromoALaCommandeTest extends TestCase
 {
     use RefreshDatabase;
@@ -35,12 +25,7 @@ class CodePromoALaCommandeTest extends TestCase
         $this->seed(OrderEngineCatalogSeeder::class);
     }
 
-    /**
-     * LE CHAMP EST VISIBLE — pas seulement fonctionnel.
-     *
-     * Un composant qui accepte `promoCode` sans que l'écran l'offre est un module
-     * injoignable de plus : c'est précisément le défaut qu'on répare ici.
-     */
+    /** LE CHAMP EST VISIBLE — pas seulement fonctionnel. */
     public function test_le_champ_est_offert_au_client(): void
     {
         $client = $this->panierPret();
@@ -78,12 +63,7 @@ class CodePromoALaCommandeTest extends TestCase
         );
     }
 
-    /**
-     * TÉMOIN DE NON-RÉGRESSION — sans code, la commande se confirme comme avant.
-     *
-     * Sans lui, le test ci-dessus pourrait passer au vert sur un écran qui ne
-     * confirme plus rien du tout.
-     */
+    /** TÉMOIN DE NON-RÉGRESSION — sans code, la commande se confirme comme avant. */
     public function test_temoin_sans_code_la_commande_passe_toujours(): void
     {
         $client = $this->panierPret();

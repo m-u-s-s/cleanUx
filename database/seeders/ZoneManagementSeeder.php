@@ -133,12 +133,6 @@ class ZoneManagementSeeder extends Seeder
     /**
      * LE PIVOT QUI FAISAIT DÉFAUT — `service_zone_postal_code`, et ses zéro lignes.
      *
-     * `ZoneCoverageService::resolveServiceZoneWithSource()` cherche la zone par ce pivot AVANT tout
-     * repli. La table existait, personne ne la remplissait : la résolution tombait donc
-     * systématiquement sur le repli provincial puis national, et deux adresses de villes
-     * différentes obtenaient la même zone — donc le même prix, et le même bassin de prestataires.
-     * C'est le maillon coupé de la chaîne géographique.
-     *
      * @param  Collection<int, object>  $allPostalCodes
      * @param  list<string>  $codes
      */

@@ -5,26 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * UN FAIT, ET RIEN QU'UN FAIT : à telle date, sur telle mission, une révision a été proposée et
- * voici ce que le client en a fait.
- *
- * ── POURQUOI LES DEUX CONTREPARTIES SONT SUR LA MÊME LIGNE ───────────────────────────────────
- *
- * Le signal décisif n'est ni « celui-ci révise souvent » ni « celui-là refuse souvent » — ces deux
- * mesures se fabriquent seul. C'est la CONCORDANCE DES TIERS qui tranche : un client révisé par
- * plusieurs prestataires qui ne se connaissent pas, ou un prestataire qui révise chez plusieurs
- * clients que personne d'autre n'a jamais révisés.
- *
- * C'est aussi la garantie qu'un menteur ne fera jamais sanctionner un honnête : il lui faudrait
- * recruter plusieurs contreparties indépendantes mentant toutes dans le même sens.
- *
- * ── UN FAIT NE SE CORRIGE PAS ────────────────────────────────────────────────────────────────
- *
- * Les décisions — suspendre, lever — vivent dans {@see MissionFeatureSuspension}. Les fondre ici
- * donnerait une table qu'on modifie pour changer un état, effaçant au passage la trace qui l'a
- * justifiée.
- */
+/** UN FAIT, ET RIEN QU'UN FAIT : à telle date, sur telle mission, une révision a été proposée et voici ce que le client en a fait. */
 class MissionDisputeSignal extends Model
 {
     /** Le client a reconnu que le devis était trop bas. */

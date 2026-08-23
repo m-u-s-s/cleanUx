@@ -6,14 +6,7 @@ use App\Services\Risk\RiskContext;
 use App\Services\Risk\RiskRuleHit;
 use App\Services\Risk\RiskRuleInterface;
 
-/**
- * Détecte un mismatch entre le pays déclaré (user.country / billing) et
- * le pays infered de l'IP / event.
- *
- * Lit `expected_country_code` et `observed_country_code` depuis $context->extra.
- * Le caller doit avoir résolu le pays de l'IP (via MaxMind, header CF, etc.)
- * avant d'appeler.
- */
+/** Détecte un mismatch entre le pays déclaré (user.country / billing) et le pays infered de l'IP / event. */
 class GeoMismatchRule implements RiskRuleInterface
 {
     public function code(): string

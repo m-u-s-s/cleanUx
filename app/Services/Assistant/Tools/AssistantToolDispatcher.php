@@ -8,19 +8,7 @@ use App\Models\User;
 use App\Support\ActivityLogger;
 use Throwable;
 
-/**
- * Dispatcher : exécute un tool_use décidé par le LLM.
- *
- * 2 chemins possibles :
- *   A. Tool en lecture (executesImmediately = true) → exécute direct
- *   B. Tool en écriture → crée une AssistantAction status=pending_confirmation
- *      et renvoie au LLM un payload "needs_user_confirmation" pour qu'il
- *      explique à l'utilisateur et lui propose le bouton "Confirmer".
- *
- * Le UI Livewire fournit un bouton "Confirmer" qui appelle
- *   confirmAndExecute(int $assistantActionId)
- * qui finalise l'exécution.
- */
+/** Dispatcher : exécute un tool_use décidé par le LLM. 2 chemins possibles : A. */
 class AssistantToolDispatcher
 {
     public function __construct(
@@ -32,6 +20,7 @@ class AssistantToolDispatcher
      *
      * @param  array  $toolUse  Format Anthropic: ['id' => 'toolu_xxx', 'name' => '...', 'input' => [...]]
      * @return array Payload à renvoyer à l'API en tool_result.
+     *               /
      */
     public function dispatch(
         User $user,
@@ -95,7 +84,6 @@ class AssistantToolDispatcher
 
     /**
      * Confirme et exécute une AssistantAction qui était en attente.
-     * Appelé depuis l'UI quand l'utilisateur clique "Confirmer".
      *
      * @return array Résultat d'exécution (à renvoyer ensuite au LLM si on veut continuer la conversation).
      */

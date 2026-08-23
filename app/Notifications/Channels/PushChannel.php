@@ -7,21 +7,7 @@ use App\Models\User;
 use App\Services\Push\PushService;
 use Illuminate\Notifications\Notification;
 
-/**
- * Push notification channel — extension Laravel.
- *
- * Usage côté Notification :
- *   public function via($notifiable): array { return [PushChannel::class]; }
- *   public function toPush($notifiable): array {
- *       return [
- *           'title' => 'Hello',
- *           'body' => 'World',
- *           'data' => ['booking_id' => 42],
- *           'category' => PushNotification::CATEGORY_TRANSACTIONAL,
- *       ];
- *   }
- *   public function pushIdempotencyKey($notifiable): ?string { return 'booking-confirmed:'.$booking->id; }
- */
+/** Push notification channel — extension Laravel. */
 class PushChannel
 {
     public function __construct(protected PushService $service) {}

@@ -14,26 +14,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * SP2 Task 3 — SmartDispatchService::assignBestEmployee doit honorer
- * $booking->provider_type_preference en le passant à l'éligibilité SP1.
- *
- * On seede DEUX prestataires PAR AILLEURS éligibles (actifs+vérifiés, rattachés à
- * la zone, disponibles sur le créneau) : un indépendant et un worker société. La
- * préférence du booking est 'independent' ; SEULE la préférence de type doit exclure
- * le worker société. Si la préférence était ignorée (défaut 'any'), le worker pourrait
- * être retourné.
- */
+/** SP2 Task 3 — SmartDispatchService::assignBestEmployee doit honorer $booking->provider_type_preference en le passant à l'éligibilité SP1. */
 class DispatchHonorsTypePreferenceTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
     use RefreshDatabase;
 
-    /**
-     * Crée un prestataire PAR AILLEURS éligible : User actif rattaché à la zone via
-     * primary_service_zone_id, ProviderProfile actif+vérifié du type donné, et une
-     * disponibilité couvrant le créneau du booking.
-     */
+    /** Crée un prestataire PAR AILLEURS éligible : User actif rattaché à la zone via primary_service_zone_id, ProviderProfile actif+vérifié du type donné, et une disponibilité couvrant le créneau du booking. */
     private function eligibleProvider(string $type, int $zoneId, string $date, ?int $orgId = null): User
     {
         $user = User::factory()->create([

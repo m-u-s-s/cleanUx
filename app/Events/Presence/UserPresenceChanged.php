@@ -9,15 +9,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Phase 3 — Diffuse un changement explicite de statut de présence.
- *
- * Note : la présence "automatique" (online/offline) est gérée par le presence
- * channel d'Echo (joining/leaving). Cet event sert pour les statuts manuels :
- *   - "Disponible" / "Occupé" / "En réunion" / "Pause"
- *
- * Diffusé sur le channel d'organisation pour que tous les coéquipiers le voient.
- */
+/** Phase 3 — Diffuse un changement explicite de statut de présence. */
 class UserPresenceChanged implements ShouldBroadcast
 {
     public const STATUS_AVAILABLE = 'available';

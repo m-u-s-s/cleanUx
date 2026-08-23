@@ -10,31 +10,7 @@ use App\Models\OrganizationMember;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * LA FLOTTE VUE PAR LA SOCIÉTÉ QUI LA POSSÈDE (E27).
- *
- * Fleet v2 est complet et entièrement piloté par l'administration de la PLATEFORME. Une société qui
- * a trois camionnettes et deux monobrosses ne pouvait ni les déclarer, ni savoir laquelle est en
- * maintenance, ni voir que le permis d'un de ses exécutants expire dans deux semaines — alors que le
- * blocage de mission sur certification expirée, lui, fonctionne déjà et va lui refuser une
- * assignation sans qu'elle comprenne pourquoi.
- *
- * TROIS PÉRIMÈTRES, ET C'EST LE CŒUR DE CETTE CLASSE.
- *
- * Les véhicules et équipements QU'ELLE POSSÈDE — `organization_account_id`. Ceux de la plateforme
- * (colonne à `null`) ne lui appartiennent pas et ne se montrent pas : les inclure lui donnerait un
- * droit de regard sur le matériel d'une concurrente.
- *
- * Ce qui est ASSIGNÉ à ses exécutants, même sans lui appartenir. Une société qui loue un camion à la
- * plateforme doit savoir qui l'a et jusqu'à quand — c'est elle qui répond du retour.
- *
- * Les certifications DE SES EXÉCUTANTS. Le permis poids lourd d'un salarié est une donnée
- * d'employeur, pas de plateforme.
- *
- * LA PÉREMPTION SE DIT AVANT, PAS LE JOUR MÊME. Une certification qui expire dans trois jours est
- * annoncée comme telle : découvrir l'expiration au moment où le moteur refuse l'assignation, c'est
- * la découvrir trop tard.
- */
+/** LA FLOTTE VUE PAR LA SOCIÉTÉ QUI LA POSSÈDE (E27). */
 class ProviderFleetService
 {
     /** À partir de combien de jours une échéance mérite d'être annoncée. */
@@ -115,10 +91,7 @@ class ProviderFleetService
     }
 
     /**
-     * Ce qui expire bientôt — ou a déjà expiré.
-     *
-     * C'EST LA SEULE LECTURE QUI CHANGE QUELQUE CHOSE. Le reste est un inventaire ; celle-ci évite
-     * qu'une assignation soit refusée un matin sans que personne ne sache pourquoi.
+     * Ce qui expire bientôt — ou a déjà expiré. C'EST LA SEULE LECTURE QUI CHANGE QUELQUE CHOSE.
      *
      * @return Collection<int, FleetCertification>
      */
@@ -145,12 +118,7 @@ class ProviderFleetService
             'code' => FleetVehicle::generateCode(),
             'organization_account_id' => $organisationId,
             'status' => $attributs['status'] ?? FleetVehicle::STATUS_AVAILABLE,
-            /*
-             * `vehicle_type` EST NOT NULL EN BASE, et la plupart des sociétés de services ne
-             * roulent qu'en camionnette : imposer le choix ferait buter la déclaration sur un champ
-             * qui, neuf fois sur dix, aurait la même valeur. Le défaut se corrige, l'absence de
-             * formulaire non.
-             */
+            // `vehicle_type` EST NOT NULL EN BASE, et la plupart des sociétés de services ne roulent qu'en camionnette : imposer le choix ferait buter la déclaration sur un champ qui, neuf fois sur dix, aurait la même valeur.
             'vehicle_type' => $attributs['vehicle_type'] ?? 'van',
         ]));
 
@@ -176,12 +144,7 @@ class ProviderFleetService
         return $equipement;
     }
 
-    /**
-     * Ce véhicule appartient-il à cette société — ou lui est-il confié ?
-     *
-     * Le scoping fait partie de la LECTURE : un identifiant forgé ne doit jamais charger le camion
-     * d'une autre société, faute de quoi la différence entre un 403 et un 404 dirait qu'il existe.
-     */
+    /** Ce véhicule appartient-il à cette société — ou lui est-il confié ? */
     public function vehiculeDeLaSociete(int $organisationId, int $vehiculeId): ?FleetVehicle
     {
         return $this->vehicules($organisationId)->firstWhere('id', $vehiculeId);

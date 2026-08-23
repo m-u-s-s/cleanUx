@@ -92,16 +92,6 @@ class ProviderWalletTransaction extends Model
     /**
      * UN DÉBIT ENGAGE LE SOLDE DÈS QU'IL EXISTE, et cesse de l'engager seulement s'il est annulé.
      *
-     * Les débits étaient comptés par `availableBalance()`, qui ne retient que `available` et
-     * `cleared`. Or un retrait naît en `processing` : il n'entrait donc dans AUCUN calcul, le
-     * solde disponible ne baissait jamais après une demande, et le même solde pouvait être retiré
-     * autant de fois qu'on le demandait — `requestWithdraw()` relisant un solde intact à chaque
-     * fois.
-     *
-     * La symétrie avec les crédits serait ici une erreur : un crédit non encore disponible ne doit
-     * pas être dépensable, tandis qu'un débit non encore abouti est de l'argent DÉJÀ promis. Le
-     * doute doit jouer dans le même sens dans les deux cas — celui de la prudence.
-     *
      * @param  Builder<self>  $query
      * @return Builder<self>
      */

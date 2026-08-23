@@ -10,16 +10,7 @@ use App\Services\Missions\OperationalLoadCalculator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Coverage for the operational load calculator's reachable guard / filter paths.
- *
- * NOTE: the snapshot-capture bodies (captureFieldTeamSnapshot / captureServicePartnerSnapshot
- * and anything that fans out to them with rows present) cannot be exercised here because they
- * run `Mission::whereHas('taskSegment', ...)`, and the `missions` table in the current schema
- * has no `mission_task_segment_id` column — the query throws "no such column". So this suite
- * covers the date resolution, the candidate filters, and the empty/no-candidate short circuits,
- * which are the paths that return before that broken sub-query executes.
- */
+/** Coverage for the operational load calculator's reachable guard / filter paths. */
 class OperationalLoadCalculatorTest extends TestCase
 {
     use RefreshDatabase;

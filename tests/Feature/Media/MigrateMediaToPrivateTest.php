@@ -5,10 +5,7 @@ namespace Tests\Feature\Media;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * M3 — the backfill moves existing mission/dispute media from public to private, idempotently,
- * preserving the relative path.
- */
+/** M3 — the backfill moves existing mission/dispute media from public to private, idempotently, preserving the relative path. */
 class MigrateMediaToPrivateTest extends TestCase
 {
     public function test_moves_media_from_public_to_private_preserving_path(): void

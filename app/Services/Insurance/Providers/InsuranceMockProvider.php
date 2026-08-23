@@ -14,13 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RuntimeException;
 
-/**
- * Mock provider — pour dev/tests.
- *
- * Comportements spéciaux:
- *   - plan_code contenant "fail" → purchase failed
- *   - incident_type === "fraud_simulation" → claim immediately rejected
- */
+/** Mock provider — pour dev/tests. */
 class InsuranceMockProvider implements InsuranceProviderInterface
 {
     public function name(): string

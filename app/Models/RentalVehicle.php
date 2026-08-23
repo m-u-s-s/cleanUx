@@ -13,18 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
-/**
- * UNE VOITURE QUE LA PLATEFORME LOUE À SES CLIENTS.
- *
- * À NE PAS CONFONDRE AVEC {@see FleetVehicle}, et la confusion serait coûteuse. Fleet est le
- * registre d'un EMPLOYEUR : ce qu'une société possède et confie à ses exécutants pour aller
- * travailler, sans transaction. Ici le véhicule est un PRODUIT — un prix par jour, une caution, une
- * garantie optionnelle, un permis à vérifier, une agence où venir le chercher.
- *
- * Les deux tables ne se parlent pas et ne partagent aucune ligne. Une même voiture physique
- * pourrait figurer dans les deux, et ce serait deux enregistrements distincts décrivant deux
- * usages distincts — pas une duplication.
- */
+/** UNE VOITURE QUE LA PLATEFORME LOUE À SES CLIENTS. */
 class RentalVehicle extends Model
 {
     /** @use HasFactory<RentalVehicleFactory> */
@@ -114,10 +103,6 @@ class RentalVehicle extends Model
     /**
      * La séquence de rotation, dans l'ordre.
      *
-     * L'ORDRE EST LE SENS DE ROTATION : deux images interverties font sauter la voiture en arrière
-     * au milieu du geste. C'est la seule relation du modèle où `position` porte du sens et non un
-     * simple confort d'affichage.
-     *
      * @return HasMany<RentalVehicleMedia, $this>
      */
     public function rotation360(): HasMany
@@ -150,26 +135,12 @@ class RentalVehicle extends Model
     /**
      * LES VÉHICULES LIBRES SUR LA PÉRIODE — c'est la règle « ne pas afficher les voitures louées ».
      *
-     * On exclut par ABSENCE DE CHEVAUCHEMENT, et le sens de la comparaison est le piège classique :
-     * deux périodes se chevauchent dès que l'une commence avant que l'autre ne finisse ET finit
-     * après que l'autre a commencé. Écrire l'inverse laisse passer les locations enchâssées — celles
-     * qui tiennent entièrement à l'intérieur d'une autre, c'est-à-dire le cas le plus courant d'une
-     * location courte pendant une longue.
-     *
-     * Seules les locations VIVANTES bloquent : une annulée ou une rendue ne réserve plus rien.
-     *
      * @param  Builder<RentalVehicle>  $query
      */
     public function scopeLibreEntre(Builder $query, ?CarbonInterface $debut, ?CarbonInterface $fin): void
     {
         if ($debut === null || $fin === null) {
-            /*
-             * SANS DATES, ON N'ÉCARTE QUE CE QUI EST DEHORS MAINTENANT.
-             *
-             * Le catalogue s'ouvre avant que le client n'ait choisi ses dates. Tout masquer
-             * faute de période donnerait une vitrine vide ; ne rien masquer montrerait une voiture
-             * physiquement absente du parking. On montre donc ce qui est là aujourd'hui.
-             */
+            // SANS DATES, ON N'ÉCARTE QUE CE QUI EST DEHORS MAINTENANT.
             $debut = Carbon::now();
             $fin = Carbon::now();
         }
@@ -197,13 +168,7 @@ class RentalVehicle extends Model
         return ($this->daily_price_cents + $this->waiver_daily_price_cents) * $jours;
     }
 
-    /**
-     * La caution demandée selon que le client prend la garantie ou non.
-     *
-     * C'est l'argument commercial de la garantie et il doit être visible : sans elle la caution est
-     * pleine, avec elle elle tombe. Un client qui ne voit que le supplément journalier ne comprend
-     * pas ce qu'il achète.
-     */
+    /** La caution demandée selon que le client prend la garantie ou non. */
     public function cautionPour(string $protection): int
     {
         return $protection === self::PROTECTION_AVEC

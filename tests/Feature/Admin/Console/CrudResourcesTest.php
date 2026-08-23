@@ -11,12 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Les trois premiers descripteurs, éprouvés à travers le moteur.
- *
- * Ils sont testés par l'API et non en isolation : c'est le chemin que prend l'application, et
- * c'est le seul qui prouve que le descripteur ET le moteur s'accordent.
- */
+/** Les trois premiers descripteurs, éprouvés à travers le moteur. */
 class CrudResourcesTest extends TestCase
 {
     use RefreshDatabase;

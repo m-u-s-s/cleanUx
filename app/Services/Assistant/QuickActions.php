@@ -4,13 +4,7 @@ namespace App\Services\Assistant;
 
 use App\Models\User;
 
-/**
- * Returns role-specific quick-action suggestions for the chatbot widget.
- *
- * Each entry has:
- *   - label : short button text shown in the UI
- *   - prompt: the full message sent to the assistant when clicked
- */
+/** Returns role-specific quick-action suggestions for the chatbot widget. */
 class QuickActions
 {
     /**

@@ -11,17 +11,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * CHAQUE MODULE ANNONCÉ EST UNE PORTE QUI S'OUVRE.
- *
- * L'application prestataire ouvre son répertoire de modules en WebView : `ModulesRoute` navigue
- * vers `EmbeddedModule` avec le `path` que le serveur a lui-même annoncé dans `/api/modules`. Une
- * entrée dont le chemin répond 403, 404 ou 500 devient donc, dans l'application, un écran vide ou
- * un message d'erreur — sans que rien côté natif ne puisse le prévoir.
- *
- * Ce test prend le catalogue à la source et pousse chaque porte. Il ne juge pas le contenu : il
- * vérifie qu'aucune entrée du menu ne mène nulle part.
- */
+/** CHAQUE MODULE ANNONCÉ EST UNE PORTE QUI S'OUVRE. */
 class ModulesAnnoncesSontJoignablesTest extends TestCase
 {
     use RefreshDatabase;

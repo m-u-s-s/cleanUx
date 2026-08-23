@@ -14,20 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * LA SANTÉ DU MARCHÉ (E30), LA PRÉVISION (E29) ET LE RATTRAPAGE DES ÉCHECS (E31).
- *
- * TROIS MODULES SUR UN ÉCRAN PARCE QU'ILS FORMENT UNE SEULE BOUCLE : on constate qu'une zone
- * décroche, on projette ce qu'il faudra y servir, et on rattrape un par un les clients qu'on a
- * déjà perdus. Répartis sur trois écrans, personne ne ferait le lien entre les trois — et c'est
- * précisément le lien qui déclenche un recrutement.
- *
- * LE TAUX DE RECHERCHE SANS CANDIDAT EST LE SEUL CHIFFRE QUI COMMANDE UNE ACTION. Le reste décrit.
- * Il est donc en tête, et les zones sont triées dessus.
- *
- * ON NE RELANCE PAS UNE RECHERCHE ENCORE OUVERTE : le moteur en ouvrirait une seconde sur la même
- * réservation, et deux prestataires se déplaceraient.
- */
+/** LA SANTÉ DU MARCHÉ (E30), LA PRÉVISION (E29) ET LE RATTRAPAGE DES ÉCHECS (E31). */
 class MarketplaceHealthCenter extends Component
 {
     use EnforcesAdminAccess;
@@ -121,11 +108,7 @@ class MarketplaceHealthCenter extends Component
             'projection' => app(DemandForecastService::class)->projection(),
             'jours' => $jours,
         ])->layout(
-            /*
-             * `layouts.app` ET NON `layouts.admin` : ce dernier n'existe pas. L'administration
-             * partage le gabarit applicatif, et les deux écrans voisins — sécurité, catalogue —
-             * le laissent même par défaut. Un gabarit inventé rend 500 à l'ouverture.
-             */
+            // `layouts.app` ET NON `layouts.admin` : ce dernier n'existe pas.
             'layouts.app',
         );
     }

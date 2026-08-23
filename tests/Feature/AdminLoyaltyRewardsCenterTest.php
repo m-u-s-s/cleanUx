@@ -10,14 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Tests Livewire admin pour le centre marketplace fidélité (récompenses + rédemptions).
- *
- * Calque sur AdminPromoCodesCenterTest:
- *   User::factory()->admin()->create([...])
- *   $this->actingAs($admin)
- *   Livewire::test(LoyaltyRewardsCenter::class)->call(...)
- */
+/** Tests Livewire admin pour le centre marketplace fidélité (récompenses + rédemptions). */
 class AdminLoyaltyRewardsCenterTest extends TestCase
 {
     use RefreshDatabase;

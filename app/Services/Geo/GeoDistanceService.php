@@ -10,9 +10,6 @@ class GeoDistanceService
     /**
      * Real driving distance and duration via Google Distance Matrix API.
      *
-     * Falls back gracefully to null when the API key is absent or the request
-     * fails — callers should then use haversineKm() as their fallback.
-     *
      * @return array{distance_km: float, duration_minutes: int}|null
      */
     public function drivingDistanceKm(

@@ -7,11 +7,7 @@ use App\Admin\Console\EloquentResource;
 use App\Models\Booking;
 
 /**
- * Les réservations annulées et leur motif.
- *
- * Sert à voir CE QUI REVIENT dans les annulations. Les agrégats et l’évolution dans le temps
- * restent sur la page d’analyse : une liste répond à « qu’est-ce qui s’est passé ici », pas à
- * « est-ce que ça empire ».
+ * Les réservations annulées et leur motif. Sert à voir CE QUI REVIENT dans les annulations.
  *
  * @extends EloquentResource<Booking>
  */

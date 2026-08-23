@@ -13,33 +13,12 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LES PERMISSIONS D'UN MEMBRE NE SE MODIFIENT PAS SANS GARDE.
- *
- * POURQUOI CE FICHIER EXISTE. `TeamManagement::togglePermission()` faisait
- * `OrganizationMember::find($this->editingMemberId)` — un identifiant venu du client, résolu
- * sans aucun scoping d'organisation et sans aucune vérification de permission. Trois trous
- * dans la même méthode :
- *
- *   1. ISOLATION. Rien ne liait le membre visé à l'organisation de l'acteur : un identifiant
- *      appartenant à une AUTRE société était accepté. C'est une fuite entre clients, pas une
- *      gêne d'ergonomie.
- *   2. ESCALADE. La seule garde du composant est au `mount()`, sur `members.invite`. Un membre
- *      autorisé à inviter pouvait donc s'attribuer — ou attribuer — n'importe quelle permission.
- *   3. HIÉRARCHIE. `PermissionService::canManageMember()` existait déjà et n'était appelé nulle
- *      part : rien n'empêchait d'agir sur un membre de rang égal ou supérieur.
- *
- * Le test existant (TeamManagementCoverageBatch8Test) ne couvrait que le cas nominal — un
- * owner agissant sur un worker de sa propre organisation — donc il restait vert malgré tout.
- */
+/** LES PERMISSIONS D'UN MEMBRE NE SE MODIFIENT PAS SANS GARDE. POURQUOI CE FICHIER EXISTE. */
 class TeamPermissionGuardsTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Le composant trie avec `FIELD()`, fonction MySQL absente de SQLite. On l'enregistre pour
-     * le harnais de test uniquement — jamais dans le composant, la config ou les migrations.
-     */
+    /** Le composant trie avec `FIELD()`, fonction MySQL absente de SQLite. */
     protected function setUp(): void
     {
         parent::setUp();

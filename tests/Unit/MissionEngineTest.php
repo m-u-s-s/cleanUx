@@ -9,10 +9,7 @@ use Tests\TestCase;
 
 class MissionEngineTest extends TestCase
 {
-    /**
-     * Le résolveur est PUR : il ne lit que des attributs, jamais la base. Un modèle non persisté
-     * suffit donc, et le test reste utilisable dans une suite unitaire sans migrations.
-     */
+    /** Le résolveur est PUR : il ne lit que des attributs, jamais la base. */
     private function reservation(array $attributs = []): Booking
     {
         return (new Booking)->forceFill($attributs);

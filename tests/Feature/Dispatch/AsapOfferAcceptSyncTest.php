@@ -12,15 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
-/**
- * Décision produit 2026-06-11 : ASAP = dispatch par offre/escalade temps réel
- * UNIQUEMENT (plus de confirmation directe parallèle = fin du double-dispatch).
- *
- * Conséquence : quand le prestataire accepte l'offre, le booking doit être
- * synchronisé (employe_id + status confirmé) pour que le client voie sa mission
- * confirmée — sinon le booking resterait "en attente" alors que la mission est
- * assignée.
- */
+/** Décision produit 2026-06-11 : ASAP = dispatch par offre/escalade temps réel UNIQUEMENT (plus de confirmation directe parallèle = fin du double-dispatch). */
 class AsapOfferAcceptSyncTest extends TestCase
 {
     use RefreshDatabase;

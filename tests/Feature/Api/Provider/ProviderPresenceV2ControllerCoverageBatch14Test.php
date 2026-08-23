@@ -8,16 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Coverage batch 14 — drives App\Http\Controllers\Api\Provider\PresenceController
- * (the v2 four-state controller) through its HTTP routes:
- *   - GET  /api/provider/presence-v2            status() -> offline payload
- *   - POST /api/provider/presence-v2/online     goOnline() 200 + validation 422
- *   - POST /api/provider/presence-v2/heartbeat  heartbeat() 200 online, 422 offline + validation 422
- *   - POST /api/provider/presence-v2/busy       goBusy() 200
- *   - POST /api/provider/presence-v2/break      goBreak() 200
- *   - POST /api/provider/presence-v2/offline    goOffline() 200
- */
+/** Coverage batch 14 — drives App\Http\Controllers\Api\Provider\PresenceController (the v2 four-state controller) through its HTTP routes: - GET /api/provider/presence-v2 status() -> offline payload - POST /api/provider/presence-v2/online goOnline() 200 + validation 422 - POST /api/provider/presence-v2/heartbeat heartbeat() 200 online, 422 offline + validation 422 - POST /api/provider/presence-v2/busy goBusy() 200 - POST /api/provider/presence-v2/break goBreak() 200 - POST /api/provider/presence-v2/offline goOffline() 200 */
 class ProviderPresenceV2ControllerCoverageBatch14Test extends TestCase
 {
     use RefreshDatabase;

@@ -14,17 +14,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Process recurring booking series whose next occurrence is due today or earlier.
- *
- * For each active series:
- *   1. Create a Booking from the series template_payload
- *   2. Create a Mission linked to that booking
- *   3. Trigger dispatch to the next available provider
- *   4. Advance next_occurrence_at to the following slot
- *
- * Run daily via the scheduler (see app/Console/Kernel.php).
- */
+/** Process recurring booking series whose next occurrence is due today or earlier. */
 class ProcessRecurringBookings extends Command
 {
     protected $signature = 'bookings:process-recurring
@@ -113,23 +103,7 @@ class ProcessRecurringBookings extends Command
         $scheduledDate = Carbon::parse($series->next_occurrence_at)->toDateString();
         $scheduledTime = Carbon::parse($series->next_occurrence_at)->format('H:i');
 
-        /*
-         * LE PAYLOAD DU MODÈLE N'EST PAS UNE LIGNE DE RÉSERVATION.
-         *
-         * Il porte de quoi DÉCRIRE le modèle — `template_id`, `template_slug`, `template_name`,
-         * `time`, `duration_minutes` — et rien de tout cela n'est une colonne de `bookings`. Ce
-         * dépôt refuse explicitement l'affectation de masse d'un attribut inconnu au lieu de
-         * l'écarter en silence : chaque série levait donc « Add fillable property […] », la
-         * transaction était annulée, et la commande comptait un échec.
-         *
-         * CE DÉFAUT ÉTAIT CACHÉ PAR LES DEUX AUTRES. Tant qu'aucune série n'était visible, la
-         * génération ne s'exécutait jamais et personne ne pouvait le voir. Il n'est apparu qu'au
-         * premier test de bout en bout — celui qui demande « une réservation a-t-elle été créée ? »
-         * plutôt que « la requête trouve-t-elle une ligne ? ».
-         *
-         * ON FILTRE SUR `$fillable` PLUTÔT QUE SUR UNE LISTE ÉCRITE ICI : la liste vit sur le
-         * modèle, et une seconde copie divergerait à la première colonne ajoutée.
-         */
+        // LE PAYLOAD DU MODÈLE N'EST PAS UNE LIGNE DE RÉSERVATION.
         $duree = (int) ($payload['duration_minutes'] ?? 0);
 
         if ($duree > 0) {
@@ -156,27 +130,11 @@ class ProcessRecurringBookings extends Command
 
     private function createMissionForBooking(Booking $booking, RecurringBookingSeries $series): Mission
     {
-        /*
-         * ON DÉCOUPE AVANT DE RECOLLER — la concaténation brute produisait une date impossible.
-         *
-         * `scheduled_date` et `scheduled_time` sont CASTÉES sur le modèle : chacune se rend en
-         * chaîne comme un instant complet. Les coller donnait
-         * « 2026-09-01 00:00:00 2026-09-01 09:00:00 », que PHP refuse — « Double date
-         * specification ». Toute mission issue d'une série mourait là.
-         *
-         * C'est le piège déjà connu de ce dépôt : ces colonnes portent une chaîne brute OU un
-         * Carbon selon le cast et le chemin d'écriture. `MissionFromRendezVousSyncService` le
-         * traite depuis longtemps de cette façon — on suit la même découpe plutôt que d'en
-         * inventer une seconde.
-         */
+        // ON DÉCOUPE AVANT DE RECOLLER — la concaténation brute produisait une date impossible.
         $plannedStart = null;
 
         if ($booking->scheduled_date && $booking->scheduled_time) {
-            /*
-             * On FORMATE chaque moitié au lieu de laisser la conversion en chaîne s'en charger :
-             * les deux colonnes sont castées, chacune se rend donc comme un instant COMPLET, et
-             * c'est leur date redondante qui produisait la double spécification.
-             */
+            // On FORMATE chaque moitié au lieu de laisser la conversion en chaîne s'en charger : les deux colonnes sont castées, chacune se rend donc comme un instant COMPLET, et c'est leur date redondante qui produisait la double spécification.
             $plannedStart = $booking->scheduled_date->format('Y-m-d')
                 .' '.$booking->scheduled_time->format('H:i:s');
         }

@@ -14,11 +14,6 @@ use Illuminate\Support\Carbon;
 /**
  * Le visage de référence d'un prestataire, et l'état courant de sa conformité faciale.
  *
- * Une ligne par prestataire. C'est la seule source de vérité sur trois questions :
- *   — ce prestataire a-t-il enrôlé son visage ?
- *   — un contrôle lui est-il dû maintenant ?
- *   — est-il bloqué ?
- *
  * @property string $status
  * @property ?string $reference_path
  * @property ?Carbon $captured_at
@@ -67,10 +62,7 @@ class ProviderFaceProfile extends Model
     public const BLOCK_ADMIN = 'admin_decision';
 
     /**
-     * `next_check_due_at`, `blocked_at`, `block_reason`, `status` et `consecutive_failures` sont
-     * VOLONTAIREMENT hors `$fillable` : ce sont les colonnes qui portent la garde. Les rendre
-     * assignables en masse rendrait la garde optionnelle — c'est exactement la porte qu'on ferme
-     * ici. Elles s'écrivent par `forceFill()`, depuis les services du module et nulle part ailleurs.
+     * `next_check_due_at`, `blocked_at`, `block_reason`, `status` et `consecutive_failures` sont VOLONTAIREMENT hors `$fillable` : ce sont les colonnes qui portent la garde.
      *
      * @var list<string>
      */
@@ -100,11 +92,7 @@ class ProviderFaceProfile extends Model
         'metadata',
     ];
 
-    /**
-     * Le défaut SQL ne remplit pas l'objet en mémoire : `status` et `id_match_status` ne sont pas
-     * assignables en masse, `create()` les rendrait donc à `null` en PHP alors que la ligne porte
-     * bien sa valeur. Voir le même commentaire sur `ProviderFaceCheck`.
-     */
+    /** Le défaut SQL ne remplit pas l'objet en mémoire : `status` et `id_match_status` ne sont pas assignables en masse, `create()` les rendrait donc à `null` en PHP alors que la ligne porte bien sa valeur. */
     protected static function booted(): void
     {
         static::creating(function (self $profil): void {
@@ -167,18 +155,13 @@ class ProviderFaceProfile extends Model
         return $this->blocked_at !== null;
     }
 
-    /**
-     * Le consentement est retirable, et son retrait rend le visage inutilisable.
-     */
+    /** Le consentement est retirable, et son retrait rend le visage inutilisable. */
     public function hasActiveConsent(): bool
     {
         return $this->consent_given_at !== null && $this->consent_withdrawn_at === null;
     }
 
-    /**
-     * Une échéance NULLE vaut « dû » : c'est le cas d'un profil qui vient d'être enrôlé et dont
-     * aucun contrôle n'a encore fixé la suivante. Le défaut penche du côté du contrôle.
-     */
+    /** Une échéance NULLE vaut « dû » : c'est le cas d'un profil qui vient d'être enrôlé et dont aucun contrôle n'a encore fixé la suivante. */
     public function isCheckDue(): bool
     {
         return $this->next_check_due_at === null || $this->next_check_due_at->isPast();

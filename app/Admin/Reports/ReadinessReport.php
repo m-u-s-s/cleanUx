@@ -9,13 +9,7 @@ use App\Models\ServiceCatalog;
 use App\Models\ServiceZone;
 use App\Models\Trade;
 
-/**
- * La préparation de la plateforme au lancement.
- *
- * Chaque tuile répond à « est-ce prêt ? » par un compte, pas par un avis. Un catalogue vide ou
- * une zone sans prestataire empêchent la prise de commande, et c’est le genre de manque qui ne
- * se voit pas tant qu’un client n’a pas essayé.
- */
+/** La préparation de la plateforme au lancement. Chaque tuile répond à « est-ce prêt ? */
 class ReadinessReport implements AdminReport
 {
     public function key(): string

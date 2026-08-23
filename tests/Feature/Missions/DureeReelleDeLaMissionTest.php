@@ -9,20 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\Spine\SpineScenario;
 use Tests\TestCase;
 
-/**
- * LE TEMPS RÉELLEMENT PASSÉ — deux défauts qui se tenaient par la main.
- *
- * 1. `MissionProfitService::calculate()` était appelé AVANT que `actual_end_at` ne soit écrit :
- *    `actual_duration_minutes` valait 0 sur toute mission clôturée par le chemin normal, le coût
- *    salarié aussi, et la marge affichée à l'administrateur égalait le prix client — 100 % sur
- *    chaque intervention.
- *
- * 2. `bookings.duree_reelle` n'était écrite que par un employé tapant un nombre à la main dans le
- *    rapport de fin web. Une mission clôturée depuis le mobile la laissait vide, et le calcul de
- *    coût interne retombait sur la durée ESTIMÉE.
- *
- * Sans ces deux-là, aucun dépassement d'heures ne pourrait être constaté.
- */
+/** LE TEMPS RÉELLEMENT PASSÉ — deux défauts qui se tenaient par la main. 1. */
 class DureeReelleDeLaMissionTest extends TestCase
 {
     use RefreshDatabase;
@@ -54,12 +41,7 @@ class DureeReelleDeLaMissionTest extends TestCase
         $this->assertSame(140, (int) $scenario->booking->refresh()->duree_reelle);
     }
 
-    /**
-     * ON N'ÉCRASE PAS UNE SAISIE HUMAINE.
-     *
-     * Si un employé a corrigé la durée à la main, il a vu quelque chose que l'horloge ignore : une
-     * pause non enregistrée, un départ anticipé, un imprévu.
-     */
+    /** ON N'ÉCRASE PAS UNE SAISIE HUMAINE. */
     public function test_une_duree_saisie_a_la_main_est_respectee(): void
     {
         $scenario = SpineScenario::make()->build();
@@ -72,14 +54,7 @@ class DureeReelleDeLaMissionTest extends TestCase
         $this->assertSame(60, (int) $scenario->booking->refresh()->duree_reelle);
     }
 
-    /**
-     * LE PIÈGE QUI A FAIT ÉCHOUER LA PREMIÈRE TENTATIVE.
-     *
-     * `RendezVousObserver::saved()` resynchronise la mission sur TOUTE sauvegarde d'une réservation
-     * `confirme`, et cette synchronisation ramène le statut à sa valeur initiale. Écrire la durée
-     * par le modèle faisait donc retomber à `assigned` une mission qu'on venait de clôturer — et le
-     * client recevait « assigned » en réponse à sa validation.
-     */
+    /** LE PIÈGE QUI A FAIT ÉCHOUER LA PREMIÈRE TENTATIVE. */
     public function test_ecrire_la_duree_ne_ramene_pas_la_mission_en_arriere(): void
     {
         $scenario = SpineScenario::make()->build();
@@ -87,12 +62,7 @@ class DureeReelleDeLaMissionTest extends TestCase
 
         $mission = $this->missionCommenceeIlYA($scenario, 75);
 
-        /*
-         * Passer la réservation en `confirme` a fait naître la checklist du métier : la clôture est
-         * refusée tant qu'elle n'est pas cochée, et c'est la règle métier, pas un défaut. On coche,
-         * comme le ferait le prestataire — sinon ce test mesurerait le refus de la checklist au lieu
-         * du piège de l'observateur.
-         */
+        // Passer la réservation en `confirme` a fait naître la checklist du métier : la clôture est refusée tant qu'elle n'est pas cochée, et c'est la règle métier, pas un défaut.
         $mission->loadMissing('checklists.items');
         foreach ($mission->checklists->flatMap->items as $item) {
             $item->update(['status' => 'done']);

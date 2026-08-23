@@ -21,9 +21,7 @@ class GenerateSubscriptions extends Command
      */
     protected $description = 'Command description';
 
-    /**
-     * Execute the console command.
-     */
+    /** Execute the console command. */
     public function handle()
     {
         app(SubscriptionScheduler::class)

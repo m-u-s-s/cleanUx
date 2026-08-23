@@ -299,17 +299,7 @@ class CreateBookingAction
             $policy->applyDiscount($rendezVous, $org);
         }
 
-        /*
-         * UNE SEULE PORTE AMONT — `DispatchEngine`.
-         *
-         * Ce bloc contenait DEUX chemins : l'offre ASAP d'un cote, la confirmation directe du
-         * planifie de l'autre (`SmartDispatchService::assignBestEmployee()`), chacun avec sa propre
-         * liste de candidats. Le moteur tient les deux modes : chaine d'offres a compte a rebours
-         * pour l'immediat, offre a delai long puis assignation d'office en repli pour le planifie.
-         *
-         * `resolveMission()` plutot que la relation `mission()` : celle-ci ne lit que `booking_id`,
-         * alors que ce chemin cree sa mission via `rendez_vous_id` (RendezVousObserver).
-         */
+        // UNE SEULE PORTE AMONT — `DispatchEngine`.
         $mission = $rendezVous->resolveMission();
 
         app(DispatchEngine::class)->dispatchBooking($rendezVous->fresh());

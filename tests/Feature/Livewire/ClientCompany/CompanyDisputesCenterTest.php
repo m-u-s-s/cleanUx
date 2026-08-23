@@ -14,10 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Espace société B2B P2 — centre de litiges société : visibilité des litiges de
- * l'organisation (par site/booking), strictement scopé à l'org du membre.
- */
+/** Espace société B2B P2 — centre de litiges société : visibilité des litiges de l'organisation (par site/booking), strictement scopé à l'org du membre. */
 class CompanyDisputesCenterTest extends TestCase
 {
     use RefreshDatabase;

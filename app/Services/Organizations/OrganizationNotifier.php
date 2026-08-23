@@ -9,23 +9,7 @@ use App\Services\PermissionService;
 use App\Services\Push\PushService;
 use Illuminate\Support\Facades\Log;
 
-/**
- * PRÉVENIR LES GENS DE CE QU'ON DÉCIDE POUR EUX.
- *
- * `MissionAssignmentService::assigner()` n'envoyait AUCUNE notification. Ni l'entrant ni le sortant
- * n'étaient prévenus : quelqu'un se voyait retirer la mission de demain sans le savoir, et
- * l'apprenait en arrivant sur place — ou n'y allait pas. Le remplaçant, lui, découvrait sa mission
- * en ouvrant l'application, s'il l'ouvrait.
- *
- * DEUX DESTINATAIRES POSSIBLES, ET C'EST TOUT CE QUE FAIT CETTE CLASSE : une PERSONNE, ou tous les
- * porteurs d'une PERMISSION dans une organisation. La seconde primitive n'existait nulle part —
- * « prévenir les dispatcheurs » supposait de recopier la résolution de rôles, qui aurait ignoré la
- * matrice réglable de la société.
- *
- * SOFT-FAIL, TOUJOURS. Une notification qui échoue ne doit jamais faire échouer l'assignation
- * elle-même : le travail est distribué, c'est le fait principal. L'échec est journalisé, pas
- * propagé — sinon un jeton d'appareil périmé empêcherait de répartir les missions du jour.
- */
+/** PRÉVENIR LES GENS DE CE QU'ON DÉCIDE POUR EUX. */
 class OrganizationNotifier
 {
     public function __construct(
@@ -77,11 +61,6 @@ class OrganizationNotifier
 
     /**
      * Prévenir tous les porteurs d'une permission dans une organisation.
-     *
-     * « Alerter les dispatcheurs » ne se résout pas par une liste de rôles : une société peut avoir
-     * réglé sa propre matrice, et une liste recopiée ici l'ignorerait. On demande donc à
-     * `PermissionService`, membre par membre — le cache de 60 s rend le coût négligeable, et la
-     * réponse suit les réglages de la maison.
      *
      * @param  array<string, mixed>  $donnees
      * @param  ?int  $saufUtilisateurId  ne pas se notifier soi-même quand on est l'auteur du geste

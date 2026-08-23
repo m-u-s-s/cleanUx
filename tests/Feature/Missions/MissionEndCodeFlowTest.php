@@ -78,17 +78,7 @@ class MissionEndCodeFlowTest extends TestCase
         $response->assertJsonPath('status', 'completed');
     }
 
-    /**
-     * CE TEST FIGEAIT LE TROU — comme son jumeau dans le lot 13.
-     *
-     * Il affirmait qu'une mission sans code de fin EN ATTENTE se clôture. Tant que le code était
-     * émis d'office à l'arrivée, cette situation n'existait pas en vrai. Depuis qu'il n'est émis
-     * qu'à la demande, c'est le cas normal — et il ouvrait la clôture sans l'accord du client :
-     * encaissement compris.
-     *
-     * La règle vit dans `missions.requires_end_code`. Sans exigence, la clôture passe ; avec, elle
-     * réclame les six chiffres. Ce test couvre les deux versants.
-     */
+    /** CE TEST FIGEAIT LE TROU — comme son jumeau dans le lot 13. */
     public function test_complete_refuses_without_end_code_when_the_mission_requires_one(): void
     {
         [$provider, $mission] = $this->makeStartedMission();

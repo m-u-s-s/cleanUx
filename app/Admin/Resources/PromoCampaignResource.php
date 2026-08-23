@@ -11,9 +11,6 @@ use App\Support\ActivityLogger;
 /**
  * Les campagnes promotionnelles et leur enveloppe.
  *
- * Le budget consommé est affiché à côté du plafond : une campagne promotionnelle se surveille
- * là où on voit ce qu’elle coûte, pas sur une page séparée qu’on ouvre après coup.
- *
  * @extends EloquentResource<PromoCampaign>
  */
 class PromoCampaignResource extends EloquentResource

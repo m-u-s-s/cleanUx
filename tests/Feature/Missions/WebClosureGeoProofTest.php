@@ -15,16 +15,7 @@ use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Clôturer depuis le web exige aussi d'être sur place.
- *
- * Le scan mobile exigeait la position ; le web, non. Un prestataire qui connaissait le tableau de
- * bord pouvait donc encaisser depuis chez lui avec un code de fin photographié ou dicté — la
- * protection mobile n'était qu'un détour à contourner.
- *
- * Ces deux surfaces sont sous `role:employe` : ce sont celles du PRESTATAIRE, pas des outils
- * d'administration. Y exiger la position ne bloque donc aucune correction faite depuis un bureau.
- */
+/** Clôturer depuis le web exige aussi d'être sur place. */
 class WebClosureGeoProofTest extends TestCase
 {
     use RefreshDatabase;
@@ -59,13 +50,7 @@ class WebClosureGeoProofTest extends TestCase
         $this->assertStringContainsString('Position', (string) $component->get('errorMessage'));
     }
 
-    /**
-     * Le refus doit DIRE pourquoi.
-     *
-     * « Clôture impossible » enverrait le prestataire redemander au client un code qui n'a aucun
-     * problème, pendant que la vraie cause — il est à onze kilomètres — resterait invisible. Le
-     * message du serveur doit traverser le composant intact.
-     */
+    /** Le refus doit DIRE pourquoi. */
     public function test_the_dashboard_explains_why_it_refused(): void
     {
         [$provider, $mission] = $this->scenario();
@@ -103,11 +88,7 @@ class WebClosureGeoProofTest extends TestCase
         $this->assertNull($component->get('errorMessage'));
     }
 
-    /**
-     * Une mission sans coordonnées ne réclame rien : il n'y a rien à comparer, et un navigateur
-     * sans géolocalisation — HTTP simple, permission coupée — laisserait sinon le prestataire
-     * devant un bouton qui ne marche jamais.
-     */
+    /** Une mission sans coordonnées ne réclame rien : il n'y a rien à comparer, et un navigateur sans géolocalisation — HTTP simple, permission coupée — laisserait sinon le prestataire devant un bouton qui ne marche jamais. */
     public function test_a_mission_without_coordinates_still_closes_from_the_dashboard(): void
     {
         [$provider, $mission] = $this->scenario();

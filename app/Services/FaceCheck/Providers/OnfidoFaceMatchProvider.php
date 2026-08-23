@@ -13,24 +13,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
-/**
- * Adaptateur Onfido pour la comparaison faciale.
- *
- * UN SEUL COMPTE ONFIDO, UN SEUL « APPLICANT » PAR PRESTATAIRE. Le module KYC en crée déjà un à
- * l'onboarding et range son identifiant dans `provider_profiles.kyc_external_applicant_id` : on le
- * réutilise. En créer un second dédierait deux dossiers à la même personne chez le fournisseur, et
- * les rapports des deux ne se compareraient jamais entre eux.
- *
- * CE QUE COMPARE `verify()`, PRÉCISÉMENT. Onfido ne fait pas de selfie-contre-selfie : son rapport
- * `facial_similarity_photo` compare la photo prise à l'instant au PORTRAIT DE LA PIÈCE D'IDENTITÉ
- * déposée chez lui. C'est exactement la question qui nous intéresse — « est-ce bien la personne de
- * la carte ? » — et c'est ainsi que fonctionnent Uber et Bolt avec leurs fournisseurs. Le selfie de
- * référence que nous gardons de notre côté sert à l'œil de l'administrateur et au bouchon ; il
- * n'est pas envoyé à Onfido à chaque contrôle.
- *
- * TOUT EST ASYNCHRONE CHEZ ONFIDO. `verify()` rend donc presque toujours `PENDING`, et c'est
- * `fetchVerification()` qui conclut. La porte reste fermée entre les deux.
- */
+/** Adaptateur Onfido pour la comparaison faciale. */
 class OnfidoFaceMatchProvider implements FaceMatchProviderInterface
 {
     /** Les trois variantes de rapport de similarité faciale chez Onfido. */
@@ -116,12 +99,7 @@ class OnfidoFaceMatchProvider implements FaceMatchProviderInterface
             return FaceCompareResult::inconclusive('onfido_applicant_missing');
         }
 
-        /*
-         * Un PDF ne se compare pas. Onfido attend une image ; lui envoyer un PDF produit une erreur
-         * distante et, faute de mieux, un « mismatch » qui bloquerait un prestataire honnête ayant
-         * simplement scanné sa carte au format bureautique. On le dit franchement : non concluant,
-         * revue manuelle.
-         */
+        // Un PDF ne se compare pas.
         if (! str_starts_with($request->documentMimeType, 'image/')) {
             return FaceCompareResult::inconclusive('document_not_an_image');
         }
@@ -146,11 +124,7 @@ class OnfidoFaceMatchProvider implements FaceMatchProviderInterface
         $checkId = (string) ($check->json('id') ?? '');
         $verdict = $this->verdict($check->json() ?? [], $checkId);
 
-        /*
-         * L'appariement tourne dans un job : attendre y est légitime. On sonde un nombre borné de
-         * fois, puis on rend la main à l'administrateur. Un « non concluant » honnête vaut mieux
-         * qu'un job qui tourne dix minutes ou qu'un verdict inventé.
-         */
+        // L'appariement tourne dans un job : attendre y est légitime.
         $tentatives = 0;
         while ($verdict->isPending() && $tentatives < 5 && $checkId !== '') {
             $tentatives++;

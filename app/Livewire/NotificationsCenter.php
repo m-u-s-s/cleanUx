@@ -113,13 +113,7 @@ class NotificationsCenter extends Component
         return $user?->unreadNotifications()->count() ?? 0;
     }
 
-    /**
-     * LE VIDE N'ACCUSE PLUS LE FILTRE.
-     *
-     * La vue affichait « Aucune notification ne correspond au filtre actuel » même pour un compte
-     * qui n'a strictement aucune notification et aucun filtre actif — le message désignait un
-     * coupable inexistant. La clé `ui.notifications.none` existait déjà, sans appelant.
-     */
+    /** LE VIDE N'ACCUSE PLUS LE FILTRE. */
     public function hasAnyNotifications(): bool
     {
         return (bool) $this->currentUser()?->notifications()->exists();
@@ -130,12 +124,7 @@ class NotificationsCenter extends Component
         return $this->filter !== 'all' || $this->type !== 'all' || $this->search !== '';
     }
 
-    /**
-     * `type` est lié au queryString mais n'avait AUCUN contrôle dans la vue : arriver sur
-     * `/notifications?type=finance` vidait la liste pendant que le sélecteur visible affichait
-     * toujours « Toutes ». On ne pouvait s'en sortir qu'en éditant l'URL. La vue rend désormais le
-     * sélecteur de type, et ce bouton désarme tout d'un coup.
-     */
+    /** `type` est lié au queryString mais n'avait AUCUN contrôle dans la vue : arriver sur `/notifications?type=finance` vidait la liste pendant que le sélecteur visible affichait toujours « Toutes ». */
     public function resetFilters(): void
     {
         $this->filter = 'all';
@@ -167,14 +156,7 @@ class NotificationsCenter extends Component
             return collect();
         }
 
-        /*
-         * LU / NON LU SE TRANCHE EN SQL, PAS APRÈS LA TRONCATURE.
-         *
-         * Le filtre s'appliquait en PHP sur les 250 dernières lignes déjà chargées : au-delà de
-         * 250 notifications, demander « Lues » ne cherchait que dans les 250 plus récentes et
-         * taisait le reste. `read_at` est une colonne — la base sait répondre exactement. Le type
-         * et la recherche, eux, dépendent du presenter et restent en PHP, sur un plafond assumé.
-         */
+        // LU / NON LU SE TRANCHE EN SQL, PAS APRÈS LA TRONCATURE.
         $requete = $user->notifications()->latest();
 
         if ($this->filter === 'unread') {

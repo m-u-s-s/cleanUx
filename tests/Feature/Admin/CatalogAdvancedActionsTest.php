@@ -10,17 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Les gestes du catalogue que le web sait faire et que l'API ne servait pas.
- *
- * RÉORDONNER N'EST PAS COSMÉTIQUE. L'ordre des secteurs est celui du CARROUSEL, l'ordre des métiers
- * celui du dock : le premier secteur est ce que voit tout visiteur, le premier métier ce qu'on lui
- * propose. Un mobile qui ne sait pas le régler laisse cette décision au seul poste de travail.
- *
- * ARCHIVER N'EST PAS SUPPRIMER. `CatalogArchiver` conserve la ligne et ses métiers ; l'API doit
- * passer par lui plutôt que d'inventer un `delete`, sinon deux chemins vers la même table
- * produiraient deux résultats différents selon la porte empruntée.
- */
+/** Les gestes du catalogue que le web sait faire et que l'API ne servait pas. */
 class CatalogAdvancedActionsTest extends TestCase
 {
     use RefreshDatabase;

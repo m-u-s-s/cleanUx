@@ -9,24 +9,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**
+ * POST /api/auth/refresh Issues a new Sanctum token for the authenticated user while keeping the old token valid for a short grace window (GRACE_MINUTES).
+ *
  * @group Authentication
  *
  * @authenticated
- *
- * POST /api/auth/refresh
- *
- * Issues a new Sanctum token for the authenticated user while keeping the
- * old token valid for a short grace window (GRACE_MINUTES).  This prevents
- * the user from being logged out when a network glitch hits during rotation
- * (e.g. parallel refresh calls from mobile).
- *
- * Rotation chain:
- *   old_token.rotation_grace_until = now() + GRACE_MINUTES
- *   new_token.rotated_from_token_id = old_token.id
- *
- * Both writes (and the new token creation) are wrapped in a DB transaction so
- * a mid-flight process death cannot leave the old token permanently in grace
- * while the new token has no audit link (or vice-versa).
+ * old_token.rotation_grace_until = now() + GRACE_MINUTES
+ * new_token.rotated_from_token_id = old_token.id
  */
 class AuthRefreshController extends Controller
 {
@@ -36,13 +25,7 @@ class AuthRefreshController extends Controller
     {
         $user = $request->user();
 
-        /*
-         * Le renouvellement est une PORTE, au même titre que la connexion et la reprise de session.
-         *
-         * La refuser ici évite qu'un jeton logé dans la mauvaise application se reconduise
-         * indéfiniment : bloquer l'entrée sans bloquer le renouvellement laisserait la session se
-         * prolonger toute seule, sans jamais repasser par `/auth/me`.
-         */
+        // Le renouvellement est une PORTE, au même titre que la connexion et la reprise de session.
         $app = AppAudience::declared($request);
 
         if (! AppAudience::allows($user, $app)) {

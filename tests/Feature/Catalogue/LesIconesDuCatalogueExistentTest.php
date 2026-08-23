@@ -8,19 +8,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * UNE ICÔNE INCONNUE NE PROTESTE PAS — ELLE DEVIENT UN CERCLE.
- *
- * `<x-ui.icon>` termine par `$icons[$name] ?? $icons['circle']`. Un nom absent de la table rend
- * donc une pastille ronde, sans erreur, sans avertissement, sans rien dans les journaux.
- *
- * `sectors.icon` et `trades.icon` sont remplies par les semeurs avec des NOMS. Sept d'entre eux
- * n'existaient pas dans le composant — `car`, `broom`, `leaf`, `paint-roller`, `pencil-square`,
- * `user-group`, `window`. Le secteur Mobilité et six métiers s'affichaient tous avec le même rond.
- *
- * Ce test ferme la classe entière plutôt qu'un cas : n'importe quel semeur qui introduirait demain
- * un nom non défini le fera échouer, au lieu de livrer un rond de plus.
- */
+/** UNE ICÔNE INCONNUE NE PROTESTE PAS — ELLE DEVIENT UN CERCLE. */
 class LesIconesDuCatalogueExistentTest extends TestCase
 {
     use RefreshDatabase;
@@ -56,12 +44,7 @@ class LesIconesDuCatalogueExistentTest extends TestCase
         $this->assertSame([], $rondes, 'Ces icones du catalogue s affichent en cercle.');
     }
 
-    /**
-     * TÉMOIN POSITIF — le repli existe bel et bien, et se reconnaît.
-     *
-     * Sans ce contrôle, le test ci-dessus passerait au vert si `rendu()` renvoyait n'importe quoi
-     * de toujours différent : il comparerait deux valeurs qui ne se ressemblent jamais.
-     */
+    /** TÉMOIN POSITIF — le repli existe bel et bien, et se reconnaît. */
     public function test_temoin_un_nom_inconnu_rend_bien_le_cercle_de_repli(): void
     {
         $repli = $this->rendu('nom-qui-n-existe-pas-du-tout');
@@ -73,12 +56,7 @@ class LesIconesDuCatalogueExistentTest extends TestCase
         $this->assertNotSame($repli, $this->rendu('hammer'));
     }
 
-    /**
-     * LES SEPT QUI MANQUAIENT, NOMMÉES UNE PAR UNE.
-     *
-     * Le test global ci-dessus dépend de ce que les semeurs écrivent aujourd'hui. Celui-ci fixe le
-     * lot précis qui a été ajouté, pour qu'une suppression accidentelle dise LAQUELLE.
-     */
+    /** LES SEPT QUI MANQUAIENT, NOMMÉES UNE PAR UNE. */
     public function test_les_sept_icones_ajoutees_sont_bien_definies(): void
     {
         $repli = $this->rendu('nom-qui-n-existe-pas-du-tout');

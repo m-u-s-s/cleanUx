@@ -5,13 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * UNE RÉVISION DE DEVIS — le prix était faux dès le départ, et voici ce qu'il devrait être.
- *
- * À ne pas confondre avec {@see MissionExtra}, qui AJOUTE une ligne à un devis juste. Celle-ci
- * REMPLACE le prix, et c'est pourquoi elle porte les deux totaux : sans le montant d'origine gelé,
- * un dossier de désaccord perdrait le chiffre qu'il sert précisément à établir.
- */
+/** UNE RÉVISION DE DEVIS — le prix était faux dès le départ, et voici ce qu'il devrait être. */
 class MissionQuoteRevision extends Model
 {
     public const STATUT_PROPOSEE = 'proposed';
@@ -89,14 +83,7 @@ class MissionQuoteRevision extends Model
         return $this->status === self::STATUT_PROPOSEE;
     }
 
-    /**
-     * L'intervention doit-elle s'arrêter ? Portée par la révision, exécutée par l'annulation.
-     *
-     * Ce drapeau existe parce que le refus et l'annulation sont deux gestes : le client dit
-     * « arrêtez », et c'est le parcours d'annulation — avec son questionnaire et ses motifs
-     * exemptés — qui décide ce que cela coûte. Les fondre facturerait des frais à un client de
-     * bonne foi face à un prestataire abusif.
-     */
+    /** L'intervention doit-elle s'arrêter ? Portée par la révision, exécutée par l'annulation. */
     public function doitEtreAnnulee(): bool
     {
         return $this->status === self::STATUT_REFUSEE

@@ -10,17 +10,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Middleware de vérification des permissions sur une organisation.
- *
- * Usage dans les routes :
- *   ->middleware('org.permission:bookings.create')
- *   ->middleware('org.permission:finance.view,analytics.view')  // OU logique
- *
- * L'organisation est résolue depuis :
- *   1. Le paramètre de route {organization}
- *   2. L'organisation courante de l'utilisateur (current_organization_id)
- */
+/** Middleware de vérification des permissions sur une organisation. */
 class CheckOrganizationPermission
 {
     public function __construct(private PermissionService $permissions) {}
@@ -55,20 +45,7 @@ class CheckOrganizationPermission
         abort(403, 'Permission insuffisante.');
     }
 
-    /**
-     * L'ORGANISATION SE RÉSOUT PAR `organizationContextId()`, ET L'ADHÉSION EST VÉRIFIÉE.
-     *
-     * Deux corrections par rapport à la version d'origine :
-     *
-     * 1. `current_organization_id` seul ne suffit pas. C'est un repli parmi quatre —
-     *    `organizationContextId()` regarde d'abord `organization_account_id`, puis les métadonnées.
-     *    Les seeders ont déjà rempli une colonne et pas l'autre, et tout l'espace société
-     *    répondait 403 pour cette seule raison.
-     *
-     * 2. Une organisation résolue ne prouve PAS l'appartenance. Un compte qui garde en base
-     *    l'identifiant d'une société qu'il a quittée verrait ses permissions évaluées contre elle.
-     *    On exige donc une adhésion ACTIVE — le rôle qui sert à évaluer la permission doit exister.
-     */
+    /** L'ORGANISATION SE RÉSOUT PAR `organizationContextId()`, ET L'ADHÉSION EST VÉRIFIÉE. */
     private function resolveOrganization(Request $request, $user): ?OrganizationAccount
     {
         // 1. Depuis le paramètre de route — c'est une cible explicite, pas une déduction.

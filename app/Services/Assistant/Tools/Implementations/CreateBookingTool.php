@@ -11,20 +11,7 @@ use App\Services\PermissionService;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
-/**
- * Tool d'écriture : créer une nouvelle réservation.
- *
- * REVIEW FIX :
- *   - Génère booking_reference (colonne UNIQUE NOT NULL sans default)
- *     → sans cette ligne, Booking::create() plantait avec
- *       "Field 'booking_reference' doesn't have a default value"
- *   - Utilise la vraie route (client.rendezvous.index) qui existe dans
- *     routes/client.php au lieu de client.bookings.show qui n'existe pas
- *
- * executesImmediately = FALSE → l'orchestrateur enregistre une AssistantAction
- * en pending_confirmation et l'utilisateur doit valider dans l'UI avant
- * que la réservation soit réellement créée.
- */
+/** Tool d'écriture : créer une nouvelle réservation. */
 class CreateBookingTool implements AssistantTool
 {
     public function name(): string
@@ -170,10 +157,7 @@ class CreateBookingTool implements AssistantTool
         ];
     }
 
-    /**
-     * Génère une référence unique au format CUX-XXXXXX (6 chars alphanum upper).
-     * Boucle jusqu'à trouver une combinaison libre (collision proba ≈ 0 en pratique).
-     */
+    /** Génère une référence unique au format CUX-XXXXXX (6 chars alphanum upper). */
     protected function generateUniqueBookingReference(int $maxAttempts = 8): string
     {
         for ($i = 0; $i < $maxAttempts; $i++) {
@@ -187,24 +171,10 @@ class CreateBookingTool implements AssistantTool
         return 'CUX-'.strtoupper(substr((string) Str::ulid(), -8));
     }
 
-    /**
-     * Résout l'URL de vue du booking de manière défensive : si la route
-     * spécifique n'existe pas, on tombe sur la liste, et en dernier ressort
-     * sur '#' (UI-only).
-     */
+    /** Résout l'URL de vue du booking de manière défensive : si la route spécifique n'existe pas, on tombe sur la liste, et en dernier ressort sur '#' (UI-only). */
     protected function resolveBookingViewUrl(Booking $booking): string
     {
-        /*
-         * `Route::has()` PLUTÔT QU'UNE EXCEPTION RATTRAPÉE (2026-08-05).
-         *
-         * La version précédente visait une route de détail « future-proof, si tu ajoutes la route
-         * un jour ». Cette route n'existant pas, l'appel levait à CHAQUE passage pour être aussitôt
-         * rattrapé : une exception par réservation créée, en guise de branchement.
-         *
-         * Elle n'est plus nommée du tout. Nommer une route inexistante, même sous un garde, laisse
-         * une cible que rien ne vérifie et que les outils d'analyse ne peuvent pas distinguer d'une
-         * faute de frappe. Le jour où la page de détail existera, l'ajouter ici en tête.
-         */
+        // `Route::has()` PLUTÔT QU'UNE EXCEPTION RATTRAPÉE (2026-08-05).
         if (Route::has('client.rendezvous.index')) {
             return route('client.rendezvous.index', [], false);
         }

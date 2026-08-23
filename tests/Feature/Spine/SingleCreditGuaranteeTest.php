@@ -17,16 +17,7 @@ use Tests\Support\Stripe\FakeStripeHttpClient;
 use Tests\Support\Stripe\StripeFakeResponses;
 use Tests\TestCase;
 
-/**
- * Regression: a mission completed via MissionLifecycleService::completeMission
- * followed by a payment_intent.succeeded webhook must credit the provider wallet
- * EXACTLY ONCE, not twice.
- *
- * Before the fix: completeMission inserted a raw DB row (idempotency_key=null),
- * and the webhook called recordEarning unconditionally — two rows, double credit.
- * After the fix: both paths go through ProviderWalletService::recordEarning which
- * deduplicates via idempotency_key, so the second call is a no-op.
- */
+/** Regression: a mission completed via MissionLifecycleService::completeMission followed by a payment_intent.succeeded webhook must credit the provider wallet EXACTLY ONCE, not twice. */
 class SingleCreditGuaranteeTest extends TestCase
 {
     use RefreshDatabase;

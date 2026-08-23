@@ -7,14 +7,7 @@ use App\Support\Domain\ConditionAction;
 use App\Support\Domain\ConditionOperator;
 use Illuminate\Support\Collection;
 
-/**
- * Décide quelles questions le client voit, à partir de ce qu'il a déjà répondu.
- *
- * Séparé du moteur tarifaire à dessein : une question cachée ne doit PAS peser sur le prix. Sans
- * cette séparation, répondre « au pistolet » puis revenir sur « au rouleau » laisserait le
- * supplément « type de pistolet » dans le devis — un montant que le client ne pourrait rattacher
- * à aucune question visible, et qu'il contesterait à raison.
- */
+/** Décide quelles questions le client voit, à partir de ce qu'il a déjà répondu. */
 class ConditionEvaluator
 {
     /**
@@ -43,11 +36,7 @@ class ConditionEvaluator
             return true;
         }
 
-        /*
-         * Une règle `show` rend la question conditionnelle : par défaut elle est CACHÉE, et il
-         * faut qu'une règle la fasse apparaître. Sans ce basculement, poser une condition
-         * d'affichage n'aurait aucun effet tant qu'elle n'est pas remplie.
-         */
+        // Une règle `show` rend la question conditionnelle : par défaut elle est CACHÉE, et il faut qu'une règle la fasse apparaître.
         $hasShowRule = $conditions->contains(fn ($c) => $c->action === ConditionAction::SHOW);
         $visible = ! $hasShowRule;
 
@@ -79,9 +68,6 @@ class ConditionEvaluator
     /**
      * La question est-elle rendue obligatoire par une condition ?
      *
-     * Distinct de la visibilité : une question visible et facultative peut devenir obligatoire
-     * selon une réponse précédente.
-     *
      * @param  Collection<int, Question>  $questions
      * @param  array<string, mixed>  $answers
      */
@@ -109,12 +95,7 @@ class ConditionEvaluator
         return false;
     }
 
-    /**
-     * Un opérateur inconnu rend FAUX plutôt que de lever.
-     *
-     * Le questionnaire est de la donnée saisie en back-office : une condition mal formée doit
-     * dégrader l'affichage d'une question, jamais faire tomber le parcours de commande entier.
-     */
+    /** Un opérateur inconnu rend FAUX plutôt que de lever. */
     protected function matches(string $operator, mixed $answer, mixed $expected): bool
     {
         if ($operator === ConditionOperator::IS_ANSWERED) {

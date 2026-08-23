@@ -7,18 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Les actions GLOBALES : celles qui ne portent sur aucune ligne.
- *
- * POURQUOI LE MOTEUR EN MANQUAIT. Il ne savait agir que sur une ligne — `/{resource}/{id}/actions/`.
- * Or plusieurs pages web offrent des gestes qui ne visent rien en particulier : rafraîchir tous les
- * taux de change, clôturer un mois comptable, lancer une réconciliation, purger un cache, balayer
- * les certifications qui expirent.
- *
- * Les porter sur une ligne arbitraire aurait été un mensonge d'interface — « purger le cache » posé
- * sur la troisième adresse de la liste — et les omettre aurait laissé une dizaine de modules sans
- * leur geste principal.
- */
+/** Les actions GLOBALES : celles qui ne portent sur aucune ligne. POURQUOI LE MOTEUR EN MANQUAIT. */
 class ConsoleGlobalActionsTest extends TestCase
 {
     use RefreshDatabase;
@@ -68,11 +57,7 @@ class ConsoleGlobalActionsTest extends TestCase
 
     public function test_l_action_globale_ne_se_confond_pas_avec_une_ligne(): void
     {
-        /*
-         * `/{resource}/actions/{action}` et `/{resource}/{id}/actions/{action}` se ressemblent
-         * assez pour que le routeur prenne « actions » pour un identifiant. On vérifie que la
-         * route globale gagne, faute de quoi elle rendrait 404 sur une ligne introuvable.
-         */
+        // `/{resource}/actions/{action}` et `/{resource}/{id}/actions/{action}` se ressemblent assez pour que le routeur prenne « actions » pour un identifiant.
         $this->postJson('/api/admin/console/fx/actions/refresh-all')->assertOk();
     }
 }

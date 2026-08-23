@@ -12,14 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * Quels justificatifs sont demandés, à qui.
- *
- * L'application n'en connaissait qu'un, écrit en dur : `identity_card`. Un électricien n'était
- * donc jamais invité à déposer sa certification, ni un peintre son attestation d'assurance —
- * alors que `approveOnboarding()` EXIGE une assurance approuvée. Le parcours menait à un dossier
- * complet côté prestataire et impossible à approuver côté admin, sans que rien ne l'indique.
- */
+/** Quels justificatifs sont demandés, à qui. */
 class ProviderDocumentRequirementsTest extends TestCase
 {
     use RefreshDatabase;
@@ -103,10 +96,7 @@ class ProviderDocumentRequirementsTest extends TestCase
         $this->assertNull($insurance['document'], "l'assurance n'a pas encore été déposée");
     }
 
-    /**
-     * Le motif de refus est ce qui rend un rejet actionnable : sans lui, le prestataire redépose
-     * la même pièce et se fait refuser une seconde fois.
-     */
+    /** Le motif de refus est ce qui rend un rejet actionnable : sans lui, le prestataire redépose la même pièce et se fait refuser une seconde fois. */
     public function test_a_rejected_document_carries_its_reason(): void
     {
         Storage::fake('private');

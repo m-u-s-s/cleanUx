@@ -15,17 +15,7 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LOT 1 — RBAC SERVEUR : chaque membre n'accède qu'à ce que son rôle permet.
- *
- * Les gardes sont à DEUX ÉTAGES : middleware `org.permission:<clé>` sur les LECTURES de groupes de
- * routes — uniforme, impossible à oublier — et vérification fine dans chaque action d'écriture.
- * Ce fichier exerce l'étage middleware et la politique mission.
- *
- * L'EXIGENCE 8 EST UNE GARDE SERVEUR, PAS UN FILTRE D'ÉCRAN. Un worker ne doit pas pouvoir suivre
- * une mission qui ne lui est pas assignée « ni à l'écran, ni via l'API » : masquer le bouton ne
- * suffit pas, l'URL reste tapable.
- */
+/** LOT 1 — RBAC SERVEUR : chaque membre n'accède qu'à ce que son rôle permet. */
 class RbacServeurTest extends TestCase
 {
     use RefreshDatabase;
@@ -94,13 +84,7 @@ class RbacServeurTest extends TestCase
     {
         $worker = $this->membre(OrganizationRole::WORKER);
 
-        /*
-         * ON RELÈVE LES QUATRE CODES, PUIS ON LES AFFIRME D'UN COUP.
-         *
-         * Une assertion par tour interrompt la méthode au premier écart : si trois de ces quatre
-         * lectures s'ouvraient à un simple exécutant, la sortie n'en nommerait qu'une. Sur une
-         * matrice de droits, c'est précisément la liste complète qu'on veut voir.
-         */
+        // ON RELÈVE LES QUATRE CODES, PUIS ON LES AFFIRME D'UN COUP.
         $ouverts = [];
 
         foreach (['overview', 'members', 'sites', 'field-teams'] as $chemin) {
@@ -161,11 +145,7 @@ class RbacServeurTest extends TestCase
 
     public function test_l_owner_ouvre_une_mission_de_sa_societe(): void
     {
-        /*
-         * `MissionPolicy` ignorait l'organisation : un owner ne pouvait pas ouvrir
-         * `/missions/{id}` de sa PROPRE société. La garde regardait le rôle plateforme, pas
-         * l'appartenance.
-         */
+        // `MissionPolicy` ignorait l'organisation : un owner ne pouvait pas ouvrir `/missions/{id}` de sa PROPRE société.
         $owner = $this->membre(OrganizationRole::OWNER);
 
         $this->assertTrue($owner->can('view', $this->missionDeLOrg()));
@@ -219,10 +199,7 @@ class RbacServeurTest extends TestCase
 
     public function test_la_navbar_du_worker_n_a_plus_de_lien_mort(): void
     {
-        /*
-         * Une case qui mène à un 403 est pire qu'une case absente. Depuis que les lectures sont
-         * gardées, la navbar d'un worker affichait quatre liens qui répondent 403.
-         */
+        // Une case qui mène à un 403 est pire qu'une case absente.
         $this->actingAs($this->membre(OrganizationRole::WORKER));
 
         $routes = $this->routesDuMenuSociete();

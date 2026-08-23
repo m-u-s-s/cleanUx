@@ -32,16 +32,7 @@ class ClientProfileController extends Controller
         return response()->json(['ok' => true, 'user' => $request->user()->fresh()]);
     }
 
-    /**
-     * L'avatar atterrit sur le disque `public`, donc dans un dossier servi tel quel sur le domaine
-     * de l'application. Ce qui est accepté ici est ce qu'un navigateur exécutera dans notre origine :
-     * un SVG est un document XML qui porte volontiers un `<script>`, et il s'ouvre avec la session
-     * de qui le regarde.
-     *
-     * La liste des formats n'est pas écrite ici : elle vit dans {@see ImagesTeleversees}, avec les
-     * deux autres points de téléversement d'image qui visent le même disque. Une règle recopiée
-     * diverge, et c'est la copie la plus permissive qui décide.
-     */
+    /** L'avatar atterrit sur le disque `public`, donc dans un dossier servi tel quel sur le domaine de l'application. */
     public function uploadAvatar(Request $request): JsonResponse
     {
         $request->validate([

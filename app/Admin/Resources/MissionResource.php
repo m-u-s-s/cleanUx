@@ -7,12 +7,7 @@ use App\Admin\Console\EloquentResource;
 use App\Models\Mission;
 
 /**
- * Les missions exécutées sur le terrain.
- *
- * NI RÉASSIGNATION NI CHANGEMENT DE STATUT ICI. Le cycle de vie d’une mission est tenu par le
- * moteur de dispatch et par les gestes du terrain (départ, arrivée, clôture avec code de
- * présence). Poser un statut à la main désaccorderait la mission de sa preuve d’exécution — et
- * c’est cette preuve qui règle les litiges.
+ * Les missions exécutées sur le terrain. NI RÉASSIGNATION NI CHANGEMENT DE STATUT ICI.
  *
  * @extends EloquentResource<Mission>
  */

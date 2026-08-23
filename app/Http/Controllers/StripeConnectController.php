@@ -27,14 +27,7 @@ class StripeConnectController extends Controller
         return $this->versLeParcoursStripe($service, $user);
     }
 
-    /**
-     * Stripe injoignable ou mal configuré ne doit pas devenir une page d'erreur :
-     * le prestataire y arrive en cliquant « activer mes paiements », et une 500
-     * lui donne à croire que son compte est cassé.
-     *
-     * L'exception est rapportée — on veut la voir passer dans la supervision —
-     * mais l'utilisateur, lui, repart avec une phrase.
-     */
+    /** Stripe injoignable ou mal configuré ne doit pas devenir une page d'erreur : le prestataire y arrive en cliquant « activer mes paiements », et une 500 lui donne à croire que son compte est cassé. */
     private function versLeParcoursStripe(StripeConnectService $service, User $user): RedirectResponse
     {
         try {

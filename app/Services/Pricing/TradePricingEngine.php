@@ -6,21 +6,7 @@ use App\Models\ServiceCatalog;
 use App\Models\TradeZonePricing;
 use App\Support\International\Devise;
 
-/**
- * TradePricingEngine — calculates booking price estimates per trade billing model.
- *
- * Supported billing units (Trade.billing_unit or ServiceCatalog.billing_unit):
- *   hourly   — unit_price × duration_hours
- *   per_m2   — unit_price × surface_m2
- *   per_item — unit_price × quantity
- *   fixed    — unit_price × 1
- *
- * Legacy ServiceCatalog::BILLING_UNITS aliases (hour → hourly, sqm → per_m2,
- * flat → fixed) are normalised before dispatch.
- *
- * Zone pricing (TradeZonePricing) overrides the catalog base_price when
- * an active record exists for the (trade, service_zone) pair.
- */
+/** TradePricingEngine — calculates booking price estimates per trade billing model. */
 class TradePricingEngine
 {
     /** Canonical billing units accepted by resolveQuantity(). */
@@ -35,12 +21,7 @@ class TradePricingEngine
     ];
 
     /**
-     * Estimate the price for a service given optional form answers and zone.
-     *
-     * Priority order:
-     *   1. ServiceCatalog.base_price  — service-specific price set on the catalog entry.
-     *   2. TradeZonePricing.base_rate — zone-level override for the trade (in cents).
-     *   3. Trade.default_hourly_rate  — trade-wide billing fallback.
+     * Estimate the price for a service given optional form answers and zone. Priority order: 1.
      *
      * @param  array<string,mixed>  $formAnswers  Answers from trade booking form (e.g. duration_hours, surface_m2).
      * @return array{billing_unit:string, unit_price:float, quantity:float, surge_multiplier:float, subtotal:float, currency:string, zone_pricing_applied:bool, price_source:string}
@@ -91,25 +72,7 @@ class TradePricingEngine
             'quantity' => $quantity,
             'surge_multiplier' => $surgeMultiplier,
             'subtotal' => round($subtotal, 2),
-            /*
-             * LA DEVISE EST FOURNIE PAR L'APPELANT, ELLE N'EST PAS DEVINEE ICI.
-             *
-             * Ce tableau alimente l'estimation montree au client et le devis du prestataire. Le
-             * montant venait deja du bon marche -- `TradeZonePricing` est resolu par zone quelques
-             * lignes plus haut -- mais l'etiquette valait `'EUR'` en dur : un chantier marocain
-             * chiffre au tarif marocain, presente en euros. Un prix juste avec la mauvaise monnaie
-             * est pire qu'un prix faux, parce qu'on le lit sans se mefier.
-             *
-             * PREMIERE TENTATIVE, ECARTEE : resoudre la zone ici pour en tirer le pays. Elle
-             * fonctionnait, et elle etait mauvaise. Ce moteur est un CALCUL -- ses tests unitaires
-             * tournent sans base, et quatre d'entre eux sont tombes sur « no such table:
-             * service_zones ». Lui faire interroger la geographie le couplait a une couche qui
-             * n'est pas la sienne, et posait une requete sur le chemin chaud de l'estimation.
-             *
-             * L'appelant, lui, connait deja la position : c'est lui qui a fourni la zone. Il
-             * resout la devise par l'autorite commune et la passe. Le repli sur la devise de la
-             * plateforme ne sert qu'aux appels qui ne savent rien du lieu.
-             */
+            // LA DEVISE EST FOURNIE PAR L'APPELANT, ELLE N'EST PAS DEVINEE ICI.
             'currency' => Devise::premiereRenseignee($currency),
             'zone_pricing_applied' => $zonePricing !== null,
             'price_source' => $priceSource,

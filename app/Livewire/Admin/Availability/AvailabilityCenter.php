@@ -12,18 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-/**
- * LE CENTRE DES DISPONIBILITÉS — et surtout ceux qui n'en ont pas.
- *
- * Cette page listait `User::whereHas('availabilitySlots')` : elle ne montrait QUE les prestataires
- * qui ont déjà des créneaux. Le compte à zéro disponibilité — précisément celui qu'une
- * administration doit repérer, puisqu'il est injoignable à la planification sans le savoir —
- * était structurellement absent de la liste. Elle affichait un indicateur « prestataires
- * configurés » sans jamais pouvoir dire qui manquait à l'appel.
- *
- * La liste porte maintenant TOUS les prestataires, avec un filtre pour isoler les comptes muets,
- * et chaque nom ouvre sa fiche.
- */
+/** LE CENTRE DES DISPONIBILITÉS — et surtout ceux qui n'en ont pas. */
 class AvailabilityCenter extends Component
 {
     use EnforcesAdminAccess;
@@ -46,13 +35,7 @@ class AvailabilityCenter extends Component
         $this->resetPage();
     }
 
-    /**
-     * Desarmer les deux filtres d'un coup.
-     *
-     * Un filtre qu'on ne peut pas retirer est un piege : arriver sur « Sans disponibilite » depuis
-     * l'indicateur, ne rien trouver, et devoir deviner comment revenir. Le defaut existait deja au
-     * centre de notifications, ou seul un passage par l'URL en sortait.
-     */
+    /** Desarmer les deux filtres d'un coup. */
     public function resetFiltres(): void
     {
         $this->search = '';
@@ -62,10 +45,6 @@ class AvailabilityCenter extends Component
 
     /**
      * Qui est prestataire — la même définition que `DefaultAvailabilityProvisioner`.
-     *
-     * `whereHas('providerProfile')` seul écarterait les comptes dont seule la colonne héritée
-     * `role` porte l'information. Deux définitions du même mot dans la même application, c'est le
-     * défaut qu'on a déjà rencontré sur la commande de rattrapage.
      *
      * @param  Builder<User>  $query
      */
@@ -106,10 +85,7 @@ class AvailabilityCenter extends Component
             })
             ->withCount([
                 'availabilitySlots as slots_count' => fn ($q) => $q->where('is_active', true),
-                /*
-                 * Le compte d'exceptions était calculé DANS la boucle Blade : une requête par
-                 * ligne, vingt par page. Il rejoint les autres agrégats, en une seule.
-                 */
+                // Le compte d'exceptions était calculé DANS la boucle Blade : une requête par ligne, vingt par page.
                 'availabilityExceptions as exceptions_count' => fn ($q) => $q->where('date', '>=', now()->subDays(30)),
             ])
             // Les comptes muets d'abord : c'est pour eux qu'on ouvre cette page.

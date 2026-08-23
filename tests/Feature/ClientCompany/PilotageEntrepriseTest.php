@@ -26,21 +26,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * PHASE 4 — BUDGETS (E7), APPROBATIONS (E8), NIVEAU DE SERVICE (E9), ACCÈS PAR LOCAL (E10) ET
- * EXPORTS COMPTABLES (E11).
- *
- * CE QUE CE FICHIER PROTÈGE EN PRIORITÉ, ce sont les quatre décisions qui font que ces modules
- * servent à quelque chose :
- *
- *   1. le plafond ALERTE et ne bloque pas — une intervention refusée pour une ligne comptable,
- *      c'est une fuite d'eau qu'on laisse couler ;
- *   2. approuver ENTRE DANS LE DISPATCH — une approbation qui ne déclenche rien est un tampon ;
- *   3. la restriction par local FILTRE LES LISTES — l'écran de réglage existait déjà et ne
- *      réglait rien ;
- *   4. l'export ne sort QUE les factures de cette société — le moteur comptable de la plateforme,
- *      lui, ne connaît pas la notion d'organisation.
- */
+/** PHASE 4 — BUDGETS (E7), APPROBATIONS (E8), NIVEAU DE SERVICE (E9), ACCÈS PAR LOCAL (E10) ET EXPORTS COMPTABLES (E11). */
 class PilotageEntrepriseTest extends TestCase
 {
     use RefreshDatabase;
@@ -134,10 +120,7 @@ class PilotageEntrepriseTest extends TestCase
 
         $etat = app(SiteBudgetService::class)->etat($budget);
 
-        /*
-         * ATTENDRE LA FACTURE ferait découvrir le dépassement quand il est consommé — exactement le
-         * défaut que ce module corrige.
-         */
+        // ATTENDRE LA FACTURE ferait découvrir le dépassement quand il est consommé — exactement le défaut que ce module corrige.
         $this->assertSame(30000, $etat['committed_cents']);
         $this->assertSame(30, $etat['usage_percent']);
     }
@@ -176,10 +159,7 @@ class PilotageEntrepriseTest extends TestCase
 
         app(SiteBudgetService::class)->verifierApresReservation($booking);
 
-        /*
-         * LA RÉSERVATION EXISTE TOUJOURS. Une intervention refusée parce qu'un budget mensuel est
-         * atteint, c'est une fuite d'eau qu'on laisse couler pour une ligne comptable.
-         */
+        // LA RÉSERVATION EXISTE TOUJOURS.
         $this->assertDatabaseHas('bookings', ['id' => $booking->id, 'status' => $booking->status]);
 
         // Et le palier est retenu : sans lui, chaque réservation suivante renverrait le même
@@ -227,10 +207,7 @@ class PilotageEntrepriseTest extends TestCase
 
         $resultat = app(InternalApprovalService::class)->approuver($booking, $patron);
 
-        /*
-         * UNE APPROBATION QUI NE DÉCLENCHE RIEN EST UN TAMPON SUR UN FORMULAIRE. Avant, la
-         * réservation passait en `pending` et personne ne cherchait de prestataire.
-         */
+        // UNE APPROBATION QUI NE DÉCLENCHE RIEN EST UN TAMPON SUR UN FORMULAIRE.
         $this->assertSame('pending', $resultat->status);
         // Et la décision laisse une trace : un contrôle interne sans trace ne sert pas au contrôle
         // interne.
@@ -328,11 +305,7 @@ class PilotageEntrepriseTest extends TestCase
             Carbon::now(),
         );
 
-        /*
-         * LES COMPTER COMME DES RETARDS punirait un GPS coupé ; comme des arrivées à l'heure,
-         * l'inverse. Et un taux de 0 % se lirait « personne n'arrive à l'heure », ce qui n'est pas
-         * ce qu'on sait.
-         */
+        // LES COMPTER COMME DES RETARDS punirait un GPS coupé ; comme des arrivées à l'heure, l'inverse.
         $this->assertNull($resume['punctuality_rate']);
         $this->assertSame(1, $resume['without_arrival_data']);
         $this->assertSame(100.0, $resume['completion_rate']);
@@ -355,11 +328,7 @@ class PilotageEntrepriseTest extends TestCase
 
         app(MemberSiteAccessService::class)->definirLesSites($membre, [$sien->id]);
 
-        /*
-         * L'ÉCRAN DE RÉGLAGE EXISTAIT DÉJÀ et ne réglait rien : un responsable de site voyait TOUS
-         * les locaux de sa société — adresses, codes d'accès et réservations des autres agences
-         * comprises.
-         */
+        // L'ÉCRAN DE RÉGLAGE EXISTAIT DÉJÀ et ne réglait rien : un responsable de site voyait TOUS les locaux de sa société — adresses, codes d'accès et réservations des autres agences comprises.
         Livewire::actingAs($responsable->fresh())
             ->test(SiteManager::class)
             ->assertOk()
@@ -376,11 +345,7 @@ class PilotageEntrepriseTest extends TestCase
         $this->local('Agence Nord');
         $this->local('Agence Sud');
 
-        /*
-         * `null` NE VEUT PAS DIRE « AUCUN ACCÈS ». La restriction est une décision positive :
-         * l'inverse aurait vidé les écrans de toutes les entreprises existantes au premier
-         * déploiement.
-         */
+        // `null` NE VEUT PAS DIRE « AUCUN ACCÈS ».
         Livewire::actingAs($patron)
             ->test(SiteManager::class)
             ->assertViewHas('sites', fn ($sites) => $sites->count() === 2);
@@ -416,10 +381,7 @@ class PilotageEntrepriseTest extends TestCase
             Carbon::now()->endOfMonth(),
         );
 
-        /*
-         * LA NORME FEC IMPOSE LA TABULATION. Produire un « FEC » en point-virgule donnerait un
-         * fichier refusé au dépôt, après que le client aura cru l'avoir.
-         */
+        // LA NORME FEC IMPOSE LA TABULATION.
         $this->assertStringContainsString("JournalCode\tJournalLib", $export['content']);
         $this->assertStringStartsWith('FEC-', $export['filename']);
     }
@@ -445,11 +407,7 @@ class PilotageEntrepriseTest extends TestCase
             Carbon::now()->endOfMonth(),
         );
 
-        /*
-         * ON NE RÉUTILISE PAS `ExportManager`, ET C'EST DÉLIBÉRÉ : il exporte le grand livre de la
-         * PLATEFORME, sans notion d'organisation. L'ouvrir à un client exposerait la comptabilité
-         * de ses concurrents.
-         */
+        // ON NE RÉUTILISE PAS `ExportManager`, ET C'EST DÉLIBÉRÉ : il exporte le grand livre de la PLATEFORME, sans notion d'organisation.
         $this->assertStringNotContainsString('FACT-CONCURRENT-001', $export['content']);
         $this->assertSame(0, $export['rows']);
     }

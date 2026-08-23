@@ -5,21 +5,7 @@ namespace Tests\Feature\Simulation;
 use App\Support\Domain\MissionStatus;
 use Tests\TestCase;
 
-/**
- * LE VOCABULAIRE DES STATUTS DOIT ÊTRE LE MÊME DES DEUX CÔTÉS.
- *
- * Trois défauts d'écran cette semaine avaient la même cause : une garde comparée à un statut que
- * le serveur n'émet jamais. `in_progress` figurait dans la table de libellés du mobile sans
- * exister dans `MissionStatus` — il suffisait de le lire là pour le croire valide, et deux écrans
- * ont conditionné leurs actions dessus. Sur une mission démarrée, qui porte `started`, ils
- * n'affichaient donc rien : ni partage GPS, ni bouton de clôture, ni actions finales.
- *
- * UN ÉCART DE VOCABULAIRE NE PRODUIT AUCUNE ERREUR. Il produit un écran vide, ce qui est bien plus
- * long à diagnostiquer qu'un plantage — on cherche la donnée manquante, la permission, le réseau,
- * jamais le mot.
- *
- * Ce test n'exécute rien : il compare deux listes. C'est précisément ce qui manquait.
- */
+/** LE VOCABULAIRE DES STATUTS DOIT ÊTRE LE MÊME DES DEUX CÔTÉS. */
 class MissionsStatutsAlignesTest extends TestCase
 {
     private const LABELS = 'mobile/provider/src/missions/labels.ts';
@@ -76,13 +62,7 @@ class MissionsStatutsAlignesTest extends TestCase
         );
     }
 
-    /**
-     * `pending` N'EST PAS UN STATUT DE MISSION, et du code de production en écrivait.
-     *
-     * Le retrait d'un membre d'une organisation remettait ses missions à venir en `pending` : elles
-     * tombaient alors hors de tous les filtres bâtis sur `MissionStatus`, y compris ceux qui
-     * servent à les réassigner. Le départ d'un salarié rendait ses interventions invisibles.
-     */
+    /** `pending` N'EST PAS UN STATUT DE MISSION, et du code de production en écrivait. */
     public function test_aucun_code_de_production_n_ecrit_un_statut_de_mission_hors_vocabulaire(): void
     {
         $fautifs = [];

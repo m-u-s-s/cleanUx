@@ -9,12 +9,6 @@ use App\Models\Booking;
 /**
  * Le planning : les réservations à venir, triées par date.
  *
- * MÊME TABLE QUE « Rendez-vous », AUTRE LECTURE — et c’est délibéré. Le planning répond à « que
- * se passe-t-il ensuite ? » et ne montre que ce qui est encore devant : une liste complète où
- * il faut chercher la prochaine intervention ne rend pas ce service.
- *
- * Aucune écriture : replanifier engage la disponibilité du prestataire et prévient le client.
- *
  * @extends EloquentResource<Booking>
  */
 class PlanningResource extends EloquentResource

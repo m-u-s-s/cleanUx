@@ -8,25 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\WebPush;
 
-/**
- * Phase 8 — Envoi de notifications Web Push.
- *
- * Wrapper autour de minishlink/web-push.
- *
- * Usage :
- *   app(WebPushSender::class)->sendToUser($user, [
- *       'title' => 'Votre rendez-vous',
- *       'body'  => 'Le prestataire est en route',
- *       'url'   => '/dashboard/client/rendezvous',
- *       'tag'   => 'mission-en-route',
- *   ]);
- *
- * Comportement :
- *   - Multi-device : envoi à toutes les subscriptions actives du user
- *   - Désactive les subscriptions invalides (HTTP 404/410)
- *   - Increment failure_count + auto-disable à 5 erreurs
- *   - Log warning si VAPID/lib absente, mais ne crash pas l'app
- */
+/** Phase 8 — Envoi de notifications Web Push. Wrapper autour de minishlink/web-push. */
 class WebPushSender
 {
     /**
@@ -46,9 +28,7 @@ class WebPushSender
         return $this->sendToSubscriptions($subscriptions, $payload);
     }
 
-    /**
-     * Envoi à plusieurs users.
-     */
+    /** Envoi à plusieurs users. */
     public function sendToUsers(iterable $users, array $payload): array
     {
         $userIds = collect($users)->map(fn ($u) => is_int($u) ? $u : $u->id)->all();

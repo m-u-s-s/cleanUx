@@ -10,10 +10,6 @@ class ContractPolicyEnforcer
 {
     /**
      * Enforce les policies dures d'un contrat sur les DATA d'un booking.
-     * Hard-fail (ContractPolicyException) : service non autorisé, PO requis manquant.
-     * Soft : cost center défaut forcé, approbation manuelle signalée
-     * (entreprise_approval_required) pour que le chemin de création route vers
-     * EnterpriseBookingApprovalService.
      *
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>

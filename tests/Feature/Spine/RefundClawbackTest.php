@@ -16,13 +16,7 @@ use Tests\Support\Stripe\FakeStripeHttpClient;
 use Tests\Support\Stripe\StripeFakeResponses;
 use Tests\TestCase;
 
-/**
- * F3 — Refund after capture must write a wallet clawback (debit).
- *
- * After a full refund to the client the provider's net available balance
- * must return to ~0. Without a clawback the provider keeps money that
- * was returned to the client — a real money-out disaster.
- */
+/** F3 — Refund after capture must write a wallet clawback (debit). */
 class RefundClawbackTest extends TestCase
 {
     use RefreshDatabase;
@@ -410,14 +404,7 @@ class RefundClawbackTest extends TestCase
         $walletService = app(ProviderWalletService::class);
         $booking = $s->booking->fresh();
 
-        /*
-         * LE GAIN D'ABORD — sans lui, ce montage décrivait un état impossible.
-         *
-         * Le test reprenait 80 € à un prestataire dont le portefeuille n'avait jamais été crédité.
-         * La reprise est désormais plafonnée au montant réellement versé : on ne reprend pas ce
-         * qu'on n'a pas donné. L'idempotence, qui est l'objet de ce test, se vérifie exactement de
-         * la même façon — sur un état, cette fois, qui peut exister en production.
-         */
+        // LE GAIN D'ABORD — sans lui, ce montage décrivait un état impossible.
         $walletService->recordEarning($booking);
 
         // First call

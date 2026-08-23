@@ -18,16 +18,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Tests\TestCase;
 
-/**
- * Tests de régression pour les 7 bombes techniques corrigées en mai 2026.
- *
- * Chaque bug fixé a un test ici. Si l'un d'eux pète à nouveau, on saura
- * EXACTEMENT lequel et pourquoi. Les tests sont volontairement chacun
- * minimaux et indépendants — pas de scénario business, juste vérifier que
- * le mécanisme bas-niveau fonctionne.
- *
- * Voir CHANGELOG-FIXES-MAY-2026.md pour le contexte complet.
- */
+/** Tests de régression pour les 7 bombes techniques corrigées en mai 2026. */
 class PostFixesRegressionTest extends TestCase
 {
     use RefreshDatabase;
@@ -36,16 +27,7 @@ class PostFixesRegressionTest extends TestCase
     // Fix #1 — Webhook Stripe Connect routé
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Bug d'origine : `StripeConnectWebhookController` existait mais aucune
-     * route ne pointait dessus. Tous les events Connect (account.updated,
-     * payout.paid, charge.refunded, payment_intent.*) étaient ignorés.
-     *
-     * Ce test vérifie que la route POST /webhooks/stripe-connect existe
-     * et qu'elle accepte des requêtes (la signature sera évidemment
-     * rejetée puisqu'on n'envoie pas de header Stripe-Signature, mais
-     * c'est suffisant pour confirmer que la route est branchée).
-     */
+    /** Bug d'origine : `StripeConnectWebhookController` existait mais aucune route ne pointait dessus. */
     public function test_stripe_connect_webhook_route_is_registered(): void
     {
         config(['services.stripe.connect_webhook_secret' => 'whsec_test_fake']);
@@ -63,13 +45,7 @@ class PostFixesRegressionTest extends TestCase
         );
     }
 
-    /**
-     * Bug d'origine : la route webhook n'était pas dans VerifyCsrfToken::$except,
-     * donc même routée, elle aurait rejeté toute requête sans token CSRF.
-     *
-     * Ce test envoie un POST sans CSRF et vérifie qu'on n'a pas un 419
-     * (Token Mismatch).
-     */
+    /** Bug d'origine : la route webhook n'était pas dans VerifyCsrfToken::$except, donc même routée, elle aurait rejeté toute requête sans token CSRF. */
     public function test_stripe_connect_webhook_is_excluded_from_csrf(): void
     {
         // post() (pas postJson) => session web => CSRF middleware actif
@@ -87,15 +63,7 @@ class PostFixesRegressionTest extends TestCase
     // Fix #2 — lead_provider_user_id fillable + booking() relation
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Bug d'origine : `lead_provider_user_id` n'était pas dans `$fillable` de
-     * Mission. `MissionDispatchService::accept()` faisait
-     * `$mission->update(['lead_provider_user_id' => ...])` → mass assignment
-     * ignorait silencieusement → la colonne restait null.
-     *
-     * Conséquence : le prestataire ne voyait jamais la mission acceptée
-     * dans /api/provider/missions/active (qui filtre sur lead_provider_user_id).
-     */
+    /** Bug d'origine : `lead_provider_user_id` n'était pas dans `$fillable` de Mission. */
     public function test_mission_lead_provider_user_id_is_fillable(): void
     {
         $user = $this->makeProvider();
@@ -113,12 +81,7 @@ class PostFixesRegressionTest extends TestCase
         );
     }
 
-    /**
-     * Bug d'origine : `$mission->booking` retournait null partout dans le
-     * code Phase 11/12/13 parce que la relation s'appelait `rendezVous()`
-     * et non `booking()`. Tout le flux dispatch / ETA / paiement était
-     * silencieusement cassé.
-     */
+    /** Bug d'origine : `$mission->booking` retournait null partout dans le code Phase 11/12/13 parce que la relation s'appelait `rendezVous()` et non `booking()`. */
     public function test_mission_booking_relation_resolves_to_booking(): void
     {
         $booking = $this->makeBooking();
@@ -138,15 +101,7 @@ class PostFixesRegressionTest extends TestCase
         $this->assertNotNull($reloaded->booking);
     }
 
-    /**
-     * Bug d'origine : `channels.php` ne checkait que `lead_employee_id`
-     * pour autoriser un prestataire sur le channel mission. Un prestataire
-     * Phase 11+ qui acceptait via API obtenait `lead_provider_user_id`
-     * mais pas `lead_employee_id` (fillable bug) → broadcast Reverb refusé.
-     *
-     * Avec le fix qui écrit les DEUX colonnes au moment de accept(), on
-     * vérifie ici que les deux sont bien posées.
-     */
+    /** Bug d'origine : `channels.php` ne checkait que `lead_employee_id` pour autoriser un prestataire sur le channel mission. */
     public function test_accept_writes_both_lead_columns_for_compat(): void
     {
         Bus::fake();
@@ -173,16 +128,7 @@ class PostFixesRegressionTest extends TestCase
     // Fix #3 — Layout Trades.php
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Bug d'origine : `Trades.php` déclarait `#[Layout('layouts.admin')]`
-     * mais `resources/views/layouts/admin.blade.php` n'existe pas. La page
-     * crashait au premier accès en production avec
-     * "View [layouts.admin] not found".
-     *
-     * Test feature complet (HTTP) — c'est le seul moyen de détecter une
-     * vue manquante. Un test unitaire `Livewire::test()` n'aurait pas
-     * vu le bug parce qu'il monte le composant en isolation.
-     */
+    /** Bug d'origine : `Trades.php` déclarait `#[Layout('layouts.admin')]` mais `resources/views/layouts/admin.blade.php` n'existe pas. */
     public function test_admin_trades_page_renders_without_layout_error(): void
     {
         $admin = User::factory()->admin()->create([
@@ -206,12 +152,7 @@ class PostFixesRegressionTest extends TestCase
     // Fix #4 — TradeSeeder dans la chaîne
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Bug d'origine : `TradeSeeder` n'était appelé nulle part. Sur
-     * `php artisan migrate:fresh --seed`, aucun trade n'était créé. Un
-     * service ne pouvait pas être rattaché à un métier (sauf manuellement
-     * via /admin/trades), et tout flux multi-métier démarrait à vide.
-     */
+    /** Bug d'origine : `TradeSeeder` n'était appelé nulle part. */
     public function test_reference_seeder_creates_trades(): void
     {
         $this->seed(ReferencePlatformSeeder::class);
@@ -233,18 +174,7 @@ class PostFixesRegressionTest extends TestCase
     // Fix #6 — DynamicPricingService délègue à SurgePricingEngine
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Bug d'origine : `SurgePricingEngine::boot()` essayait de binder
-     * DynamicPricingService au container, mais la classe n'étant pas
-     * un ServiceProvider, la méthode n'était jamais appelée. Conséquence :
-     * le code legacy qui appelait `app(DynamicPricingService::class)`
-     * exécutait toujours les 4 règles fixes pré-Phase 14 au lieu du
-     * SurgePricingEngine multi-critères.
-     *
-     * Fix : DynamicPricingService::calculate() délègue lui-même au
-     * SurgePricingEngine en interne. On vérifie que les 2 retournent
-     * le même prix pour un même contexte.
-     */
+    /** Bug d'origine : `SurgePricingEngine::boot()` essayait de binder DynamicPricingService au container, mais la classe n'étant pas un ServiceProvider, la méthode n'était jamais appelée. */
     public function test_dynamic_pricing_service_delegates_to_surge_engine(): void
     {
         $context = [
@@ -274,16 +204,7 @@ class PostFixesRegressionTest extends TestCase
     // Fix #7 — AiDispatchService::filter() return true manquant
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Bug d'origine : la closure `filter()` de rankEmployees() manquait
-     * un `return true` final. Pour les bookings non-ASAP, elle retournait
-     * implicitement null (= falsy) → tous les prestataires éliminés →
-     * dispatch retournait toujours collect() vide pour les missions
-     * planifiées → flow Phase 11 cassé pour scheduled.
-     *
-     * Test : on crée un prestataire éligible et un booking SCHEDULED
-     * (le mode par défaut), on rank, on doit obtenir au moins ce prestataire.
-     */
+    /** Bug d'origine : la closure `filter()` de rankEmployees() manquait un `return true` final. */
     public function test_ai_dispatch_returns_candidates_for_scheduled_bookings(): void
     {
         // `service_zones` n'a pas de colonne `is_active` : elle marque son état par `status` et

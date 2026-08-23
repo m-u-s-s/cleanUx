@@ -7,22 +7,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * EnforceTokenGrace
- *
- * Rejects requests made with a rotated token whose grace window has expired.
- * Tokens in their grace window (rotation_grace_until in the future) are still
- * allowed to pass — only tokens where grace_until is set AND in the past are
- * rejected with a specific error code so mobile clients can re-authenticate.
- *
- * Fast path: if the in-memory token has rotation_grace_until === null the
- * token has never been rotated; skip the DB re-fetch entirely to avoid an
- * extra query on every request to high-traffic endpoints (e.g. /auth/me).
- *
- * Slow path: re-fetch from DB when the cached value is non-null, because
- * Sanctum caches the token instance in memory at authentication time and a
- * concurrent rotation (parallel refresh call) would not be visible otherwise.
- */
+/** EnforceTokenGrace Rejects requests made with a rotated token whose grace window has expired. */
 class EnforceTokenGrace
 {
     public function handle(Request $request, Closure $next): Response

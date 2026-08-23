@@ -7,26 +7,7 @@ use App\Support\Navigation\ModuleCatalogue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LA NAVIGATION D'ADMINISTRATION DOIT LIRE LES CAPACITÉS D'ADMINISTRATION.
- *
- * `ModuleCatalogue` filtrait sur trois choses : le contexte, l'existence de la route, et la
- * permission d'ORGANISATION. Aucune ne dit ce qu'un administrateur a le droit de faire —
- * `platform_role` porte quinze capacités distinctes.
- *
- * LE DÉFAUT ALLAIT DANS LES DEUX SENS, et c'est ce qui le rendait difficile à voir.
- *
- * TROP PERMISSIF : les quatre-vingt-six tuiles de l'espace admin s'affichaient sans qu'aucune
- * capacité ne soit consultée. Un administrateur au périmètre restreint voyait des cases qui lui
- * répondent 403 — ce que le fichier lui-même appelle « pire qu'une case absente ».
- *
- * TROP RESTRICTIF : le SEUL module admin qui déclarait une clé la déclarait en `permission`, donc
- * évaluée par le service de permissions d'ORGANISATION. Or celui-ci rend `false` dès que le compte
- * n'a pas d'organisation — c'est le cas d'un administrateur plateforme. La vérification faciale
- * était donc invisible pour TOUS les administrateurs, y compris le super-administrateur.
- *
- * Une même racine : une capacité d'administration rangée dans la clé d'un autre mécanisme.
- */
+/** LA NAVIGATION D'ADMINISTRATION DOIT LIRE LES CAPACITÉS D'ADMINISTRATION. */
 class NavigationEtGatesAdminTest extends TestCase
 {
     use RefreshDatabase;
@@ -42,12 +23,7 @@ class NavigationEtGatesAdminTest extends TestCase
         );
     }
 
-    /**
-     * LE TÉMOIN DANS L'AUTRE SENS — la capacité est réellement consultée.
-     *
-     * Sans lui, le test précédent passerait au vert sur un filtre qui laisserait tout passer, et
-     * on aurait remplacé un défaut trop restrictif par un défaut trop permissif.
-     */
+    /** LE TÉMOIN DANS L'AUTRE SENS — la capacité est réellement consultée. */
     public function test_un_admin_sans_la_capacite_ne_voit_pas_la_tuile(): void
     {
         $this->actingAs($this->admin(superAdmin: false, capacites: ['manage-users']));
@@ -63,20 +39,7 @@ class NavigationEtGatesAdminTest extends TestCase
         $this->assertTrue($this->voitLeModule('admin:admin.face-check.center'));
     }
 
-    /**
-     * TÉMOIN DE PORTÉE — ce qui ne déclare RIEN reste visible.
-     *
-     * CE TEST MESURAIT AUTRE CHOSE AVANT, et son ancienne forme mérite d'être racontée : il
-     * exigeait plus de cinquante tuiles visibles pour un administrateur ne portant qu'une
-     * capacité. C'était juste tant qu'UN SEUL module en déclarait une — la vérification faciale —
-     * mais cela ne mesurait pas le filtre : cela mesurait le fait que presque rien n'était gardé.
-     *
-     * Les quatre-vingt-quatre modules d'administration déclarent désormais la leur. Le même
-     * administrateur en voit donc une poignée, ce qui est le comportement voulu. Ce qu'il faut
-     * encore garantir, c'est que le filtre laisse passer ce qui ne déclare RIEN : les modules
-     * universels — profil, notifications, aide, mentions légales — et les deux pages d'arrivée de
-     * l'espace. Une erreur ici enfermerait dehors un administrateur au périmètre restreint.
-     */
+    /** TÉMOIN DE PORTÉE — ce qui ne déclare RIEN reste visible. */
     public function test_les_modules_sans_gate_restent_visibles(): void
     {
         $this->actingAs($this->admin(superAdmin: false, capacites: ['manage-users']));
@@ -99,12 +62,7 @@ class NavigationEtGatesAdminTest extends TestCase
         $this->assertNotContains('admin:admin.finance', $visibles);
     }
 
-    /**
-     * TOUTE CAPACITÉ DÉCLARÉE DOIT EXISTER.
-     *
-     * Une faute de frappe dans un `gate` masquerait la case pour tout le monde, en silence — la
-     * disparition exacte que ce dépôt cherche à rendre visible.
-     */
+    /** TOUTE CAPACITÉ DÉCLARÉE DOIT EXISTER. */
     public function test_chaque_gate_declare_est_une_capacite_reelle(): void
     {
         $connues = array_keys(User::allowedAdminPermissions());
@@ -126,9 +84,7 @@ class NavigationEtGatesAdminTest extends TestCase
     // ─────────────────────────────────────────────────────────────────────
 
     /**
-     * `pourContexte()` rend des GROUPES par categorie, pas une liste plate : chaque element porte
-     * `category`, `label` et `modules`. Lire `['key']` dessus donnait « Undefined array key », et
-     * en compter les elements comptait les douze categories, pas les modules.
+     * `pourContexte()` rend des GROUPES par categorie, pas une liste plate : chaque element porte `category`, `label` et `modules`.
      *
      * @return list<array<string, mixed>>
      */

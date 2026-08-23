@@ -31,16 +31,7 @@ use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * LE NOUVEAU DEVIS — et surtout la fenêtre qui empêche d'en faire une arme.
- *
- * La règle du porteur : la révision se fait AU DÉBUT, avant que le prestataire ne touche à quoi que
- * ce soit. Un imprévu découvert en travaillant passe par le supplément, pas par ici.
- *
- * Trois faits mesurables ferment la fenêtre, et aucun n'est déclaratif : une tâche cochée, une
- * photo « après », l'échéance. La photo « avant » ne ferme rien — elle se prend justement pour
- * constater l'écart.
- */
+/** LE NOUVEAU DEVIS — et surtout la fenêtre qui empêche d'en faire une arme. */
 class NouveauDevisTest extends TestCase
 {
     use RefreshDatabase;
@@ -170,12 +161,7 @@ class NouveauDevisTest extends TestCase
         Carbon::setTestNow();
     }
 
-    /**
-     * LA SYMÉTRIE, et c'est la garde la plus importante du module.
-     *
-     * Sans elle, un client ajoute trois tâches lourdes à la minute 25 — quand plus rien n'est
-     * révisable — et la règle anti-abus prestataire devient une arme entre ses mains.
-     */
+    /** LA SYMÉTRIE, et c'est la garde la plus importante du module. */
     public function test_une_tache_ajoutee_par_le_client_rouvre_la_fenetre(): void
     {
         Carbon::setTestNow('2026-08-18 10:00:00');
@@ -228,10 +214,7 @@ class NouveauDevisTest extends TestCase
         $this->assertNull($prix['breakdown']['promo']);
     }
 
-    /**
-     * UNE REMISE AU POURCENTAGE GRANDIT AVEC LE PRIX — c'est le terme même du code, et c'est en
-     * faveur du client, qui n'a pas demandé cette augmentation.
-     */
+    /** UNE REMISE AU POURCENTAGE GRANDIT AVEC LE PRIX — c'est le terme même du code, et c'est en faveur du client, qui n'a pas demandé cette augmentation. */
     public function test_une_remise_au_pourcentage_se_recalcule(): void
     {
         $mission = $this->mission();
@@ -384,14 +367,7 @@ class NouveauDevisTest extends TestCase
 
     // ── ACCEPTER ET REFUSER ───────────────────────────────────────────────────
 
-    /**
-     * L'ÉCHEC DU COMPLÉMENT NE TOUCHE PAS L'EMPREINTE D'ORIGINE.
-     *
-     * C'est la garantie centrale du choix « garder et compléter » : le prestataire est sur place,
-     * et un paiement refusé ne doit jamais le laisser sans garantie. Aucun compte Stripe n'existe
-     * dans ce scénario — l'autorisation échoue donc pour de bon, ce qui est exactement le cas à
-     * prouver.
-     */
+    /** L'ÉCHEC DU COMPLÉMENT NE TOUCHE PAS L'EMPREINTE D'ORIGINE. */
     public function test_un_complement_refuse_laisse_le_devis_d_origine_intact(): void
     {
         $mission = $this->mission();
@@ -460,13 +436,7 @@ class NouveauDevisTest extends TestCase
         $this->assertSame(50.0, (float) $mission->booking->fresh()->devis_estime);
     }
 
-    /**
-     * L'ARRÊT ANNULE VRAIMENT, ET IL EST GRATUIT.
-     *
-     * Le motif `quote_revision_declined` est exempté : un client de bonne foi face à un devis
-     * abusif ne paie rien, pas même la pénalité « prestataire déjà en route ». Le prestataire, lui,
-     * n'a rien commencé — la fenêtre de révision le garantit — et ne touche donc rien.
-     */
+    /** L'ARRÊT ANNULE VRAIMENT, ET IL EST GRATUIT. */
     public function test_le_client_refuse_et_choisit_d_arreter(): void
     {
         $this->seed(CancellationPoliciesSeeder::class);

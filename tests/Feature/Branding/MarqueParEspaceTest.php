@@ -14,24 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * CHAQUE ESPACE PORTE SA MARQUE — vérifié sur les PAGES RENDUES, pas sur les fichiers.
- *
- * La plateforme a deux marques et non une : « Brio Client » et « Brio Provider », chacune en clair
- * et en sombre. Avant ce lot, quatre identités différentes cohabitaient sans que personne ne sache
- * laquelle faisait foi — le SVG mauve de Jetstream sur les pages d'authentification, une pastille
- * « Br » dans la barre authentifiée, une pastille « Cx » sur le site public, « Brio Pro » en texte
- * dans l'espace société, et l'ancienne icône bleue dans l'onglet du navigateur.
- *
- * CE FICHIER DEMANDE LES PAGES ET LIT CE QUI EN SORT. Un test qui parcourrait les gabarits à la
- * recherche d'une balise dirait qu'un composant est écrit quelque part, jamais qu'un utilisateur le
- * voit : un espace ajouté demain avec son propre gabarit passerait au travers. Ce qu'on affirme
- * ici, c'est ce qu'un navigateur reçoit.
- *
- * LES DEUX VARIANTES DOIVENT ÊTRE PRÉSENTES DANS LA MÊME RÉPONSE. Le thème se choisit dans le
- * navigateur — bascule manuelle, préférence système, cache HTTP partagé ; servir une seule variante
- * depuis le serveur donnerait l'image sombre à qui vient de passer en clair.
- */
+/** CHAQUE ESPACE PORTE SA MARQUE — vérifié sur les PAGES RENDUES, pas sur les fichiers. */
 class MarqueParEspaceTest extends TestCase
 {
     use RefreshDatabase;
@@ -106,11 +89,7 @@ class MarqueParEspaceTest extends TestCase
 
     // ─── Ce que le navigateur reçoit ─────────────────────────────────────────────────────────
 
-    /**
-     * LE SITE PUBLIC EST NOIR EN PERMANENCE, et ne porte pas la classe `dark` : la règle
-     * automatique y servait donc la version crème — un badge clair sur un fond noir, l'inverse de
-     * ce qui est voulu. Sa coquille force la variante sombre.
-     */
+    /** LE SITE PUBLIC EST NOIR EN PERMANENCE, et ne porte pas la classe `dark` : la règle automatique y servait donc la version crème — un badge clair sur un fond noir, l'inverse de ce qui est voulu. */
     #[Test]
     public function l_accueil_public_force_la_marque_client_sombre(): void
     {

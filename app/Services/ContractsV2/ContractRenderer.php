@@ -6,16 +6,7 @@ use App\Models\ContractTemplate;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
 
-/**
- * ContractRenderer — substitue les placeholders dans body_markdown et renvoie un HTML.
- *
- * Workflow :
- *   1. Sélectionne le body selon locale (avec fallback body_markdown)
- *   2. Substitue {{key}} → variables[key] uniquement si `key` ∈ allowed_variables (whitelist)
- *   3. Convertit markdown → HTML (basique : titres, paragraphes, listes, bold/italic)
- *
- * Anti-injection : placeholders inconnus sont laissés tels quels (pas d'eval).
- */
+/** ContractRenderer — substitue les placeholders dans body_markdown et renvoie un HTML. */
 class ContractRenderer
 {
     public function renderBody(ContractTemplate $template, ?User $user, array $variables = [], ?string $locale = null): string
@@ -63,11 +54,7 @@ class ContractRenderer
         }, $body) ?? $body;
     }
 
-    /**
-     * Minimal markdown-to-HTML converter (titres, paragraphes, listes, bold, italic).
-     * Pour prod, utiliser un package comme league/commonmark. Cette version est
-     * suffisante pour des templates simples et n'a pas de dépendance externe.
-     */
+    /** Minimal markdown-to-HTML converter (titres, paragraphes, listes, bold, italic). */
     protected function markdownToHtml(string $markdown): string
     {
         $lines = explode("\n", $markdown);

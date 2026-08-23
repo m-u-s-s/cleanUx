@@ -8,13 +8,7 @@ use App\Admin\Console\Field;
 use App\Admin\Console\Filter;
 use Tests\TestCase;
 
-/**
- * La forme sérialisée du contrat de console.
- *
- * Ces quatre objets sont le SEUL langage entre les descripteurs serveur et le rendu natif. Toute
- * clé renommée casse silencieusement des écrans : le mobile lit du JSON, aucun typage ne relie les
- * deux bouts. Ce test est ce lien.
- */
+/** La forme sérialisée du contrat de console. */
 class AdminResourceContractTest extends TestCase
 {
     public function test_une_colonne_se_serialise_avec_son_type(): void

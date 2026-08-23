@@ -10,14 +10,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 /**
+ * Phase 12 — Endpoints profil utilisateur.
+ *
  * @group User Profile
  *
  * @authenticated
- *
- * Phase 12 — Endpoints profil utilisateur.
- *
- * GET   /api/profile  → profil détaillé (incluant providerProfile si applicable)
- * PATCH /api/profile  → update champs autorisés (name, phone, locale, password)
  */
 class ProfileController extends Controller
 {
@@ -66,14 +63,7 @@ class ProfileController extends Controller
 
         $user->save();
 
-        /*
-         * UN CHANGEMENT DE MOT DE PASSE COUPE LES AUTRES ACCÈS.
-         *
-         * Ce chemin-là est celui du téléphone : on épargne le jeton COURANT — se faire déconnecter
-         * du geste qu'on vient de faire ferait croire à un échec — et on révoque tous les autres,
-         * plus les sessions web enregistrées et le cookie « se souvenir de moi ». Sans cela,
-         * changer son mot de passe depuis l'application laissait l'ordinateur du voleur connecté.
-         */
+        // UN CHANGEMENT DE MOT DE PASSE COUPE LES AUTRES ACCÈS.
         if ($motDePasseChange) {
             app(RevocationDesAcces::class)->apresChangementDeMotDePasse(
                 $user,
@@ -88,19 +78,7 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * L'identifiant du jeton courant, ou `null` s'il n'en a pas.
-     *
-     * `currentAccessToken()` ne rend PAS toujours une ligne de la table : quand la session vient du
-     * cookie web — ou d'un `Sanctum::actingAs` en test — c'est un `TransientToken`, un objet sans
-     * clé. Lui demander son identifiant lèverait une erreur là où il n'y a simplement rien à
-     * épargner.
-     *
-     * Le paramètre est typé `?object` À DESSEIN : la signature de Sanctum annonce un modèle, si bien
-     * qu'un `instanceof` écrit au point d'appel est déclaré « toujours vrai » par l'analyse statique
-     * alors qu'il est faux à l'exécution. Le contrôle vit donc ici, où le type large le rend lisible
-     * plutôt que suspect.
-     */
+    /** L'identifiant du jeton courant, ou `null` s'il n'en a pas. */
     private function jetonAConserver(?object $jeton): ?int
     {
         return $jeton instanceof Model ? (int) $jeton->getKey() : null;

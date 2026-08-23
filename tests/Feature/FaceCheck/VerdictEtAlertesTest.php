@@ -95,12 +95,7 @@ class VerdictEtAlertesTest extends TestCase
         Notification::assertSentTo($admin, FaceCheckIncidentRaised::class);
     }
 
-    /**
-     * UN CONTRÔLE ÉCHOUÉ N'OUVRE AUCUNE FENÊTRE.
-     *
-     * Le blocage dur ne survient qu'au second échec. Sans cette garantie, un imposteur travaillerait
-     * entre les deux — et le seuil de deux échecs serait une faveur qu'on lui fait.
-     */
+    /** UN CONTRÔLE ÉCHOUÉ N'OUVRE AUCUNE FENÊTRE. Le blocage dur ne survient qu'au second échec. */
     public function test_un_controle_echoue_exige_aussitot_un_nouveau_controle(): void
     {
         $service = app(FaceCheckService::class);
@@ -215,9 +210,7 @@ class VerdictEtAlertesTest extends TestCase
         $this->assertSame(1, ProviderFaceIncident::query()->count(), 'Un seul dossier, pas six.');
     }
 
-    /**
-     * UN CONTRÔLE EXPIRÉ N'EST PAS UN ABANDON. Le prestataire n'a peut-être jamais vu l'écran.
-     */
+    /** UN CONTRÔLE EXPIRÉ N'EST PAS UN ABANDON. Le prestataire n'a peut-être jamais vu l'écran. */
     public function test_un_controle_expire_ne_compte_pas_comme_un_abandon(): void
     {
         $service = app(FaceCheckService::class);
@@ -320,9 +313,7 @@ class VerdictEtAlertesTest extends TestCase
         Notification::assertSentTo($admin, FaceCheckIncidentRaised::class);
     }
 
-    /**
-     * UN PDF NE SE COMPARE PAS — et ce n'est pas la faute du prestataire.
-     */
+    /** UN PDF NE SE COMPARE PAS — et ce n'est pas la faute du prestataire. */
     public function test_une_piece_non_comparable_ne_bloque_personne(): void
     {
         $this->deposerUnePiece('%PDF-1.4 contenu', 'application/pdf');

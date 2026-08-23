@@ -12,24 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * CHAQUE SOCIÉTÉ DOIT POUVOIR RÉGLER SA PROPRE MATRICE DE RÔLES.
- *
- * POURQUOI CE FICHIER EXISTE. `PermissionService::ROLE_PERMISSIONS` est une constante PRIVÉE :
- * la correspondance rôle → permissions est figée dans le code. La résolution ne connaissait que
- * deux étages — surcharge JSON par membre, puis défaut du rôle. Un propriétaire pouvait donc
- * accorder un droit à Marie individuellement, mais pas décider que « chez nous, les chefs
- * d'équipe assignent les missions ». Chaque société attendait un déploiement.
- *
- * On insère un étage intermédiaire, propre à l'organisation :
- *
- *   1. surcharge par MEMBRE (inchangée, priorité maximale)
- *   2. matrice de l'ORGANISATION  ← nouveau
- *   3. défaut du rôle, en dur     (repli)
- *
- * Sans réglage, le comportement reste identique — c'est la condition pour ne rien casser des
- * 5479 tests existants.
- */
+/** CHAQUE SOCIÉTÉ DOIT POUVOIR RÉGLER SA PROPRE MATRICE DE RÔLES. POURQUOI CE FICHIER EXISTE. */
 class RolePermissionMatrixTest extends TestCase
 {
     use RefreshDatabase;

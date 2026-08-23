@@ -13,11 +13,6 @@ use App\Services\OrderEngine\CatalogArchiver;
 /**
  * Les secteurs du moteur de commande.
  *
- * L’ARBRE COMPLET — secteur, métier, questions — ne se rend pas en liste sans mentir sur sa
- * structure : c’est une hiérarchie où chaque question dépend d’un métier, et l’aplatir ferait
- * perdre ce qui dépend de quoi. Cette liste sert le premier niveau ; le constructeur de
- * questionnaire reste sur le web, qui peut montrer l’arbre.
- *
  * @extends EloquentResource<Sector>
  */
 class SectorResource extends EloquentResource
@@ -79,11 +74,7 @@ class SectorResource extends EloquentResource
     {
         return [
 
-            /*
-             * Monter et descendre plutôt qu'un glisser-déposer : le glisser ne fonctionne ni au
-             * clavier ni avec un lecteur d'écran, et sur un téléphone il se confond avec le
-             * défilement de la liste. Le web garde les flèches pour la même raison.
-             */
+            // Monter et descendre plutôt qu'un glisser-déposer : le glisser ne fonctionne ni au clavier ni avec un lecteur d'écran, et sur un téléphone il se confond avec le défilement de la liste.
             Action::make('move-up', 'Monter dans le carrousel', function (Sector $secteur) {
                 app(CatalogOrdering::class)->deplacer(Sector::query(), $secteur->id, -1);
 
@@ -96,21 +87,13 @@ class SectorResource extends EloquentResource
                 return ['ok' => true];
             }),
 
-            /*
-             * ARCHIVER N'EST PAS SUPPRIMER. On passe par `CatalogArchiver`, le même service que le
-             * web : il conserve la ligne et laisse les métiers intacts. Inventer un `delete` ici
-             * ferait deux chemins vers la même table, avec deux résultats selon la porte.
-             */
+            // ARCHIVER N'EST PAS SUPPRIMER.
             Action::make('archive', 'Archiver le secteur', function (Sector $secteur) {
                 app(CatalogArchiver::class)->archive($secteur);
 
                 return ['ok' => true];
             })->destructive('Le secteur sera archivé. Ses métiers restent intacts.'),
-            /*
-             * « Retirer du carrousel » plutôt que « désactiver » : c'est ce que le geste FAIT, et
-             * c'est ce que l'administrateur cherche. Un secteur inactif n'est pas supprimé, il
-             * disparaît de ce que voit le visiteur.
-             */
+            // « Retirer du carrousel » plutôt que « désactiver » : c'est ce que le geste FAIT, et c'est ce que l'administrateur cherche.
             Action::make('toggle-active', 'Retirer / remettre dans le carrousel', function (Sector $secteur) {
                 $secteur->forceFill(['is_active' => ! $secteur->is_active])->save();
 

@@ -7,25 +7,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Phase 5.1 — Rate limiting pour les appels assistant LLM.
- *
- * Limites configurables via .env :
- *   - ASSISTANT_RATE_PER_HOUR (défaut 30 messages/heure/user)
- *   - ASSISTANT_RATE_PER_DAY  (défaut 200 messages/jour/user)
- *   - ASSISTANT_COST_LIMIT_USD_PER_DAY (défaut $1.00/jour/user)
- *
- * À utiliser sur les routes/Livewire actions qui déclenchent un appel LLM
- * (AssistantWidget::send, et tous les futurs endpoints API).
- *
- * Usage :
- *   Route::middleware(['auth', 'assistant.ratelimit'])->group(...)
- *
- * Et register dans Kernel.php :
- *   protected $middlewareAliases = [
- *       'assistant.ratelimit' => \App\Http\Middleware\AssistantRateLimit::class,
- *   ];
- */
+/** Phase 5.1 — Rate limiting pour les appels assistant LLM. */
 class AssistantRateLimit
 {
     public function handle(Request $request, Closure $next): Response

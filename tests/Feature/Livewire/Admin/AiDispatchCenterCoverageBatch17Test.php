@@ -25,12 +25,7 @@ class AiDispatchCenterCoverageBatch17Test extends TestCase
         $this->admin = User::factory()->admin()->create();
     }
 
-    /**
-     * Le métier commun aux fixtures.
-     *
-     * Il est OBLIGATOIRE depuis que le filtre métier n'a plus de repli : une réservation sans
-     * métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous.
-     */
+    /** Le métier commun aux fixtures. */
     private function trade(): Trade
     {
         return Trade::firstOrCreate(

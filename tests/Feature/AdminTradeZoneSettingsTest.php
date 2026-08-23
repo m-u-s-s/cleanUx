@@ -52,14 +52,7 @@ class AdminTradeZoneSettingsTest extends TestCase
             });
     }
 
-    /**
-     * L'ABSENCE DE LIGNE VAUT DESORMAIS « FERME », et le premier basculement OUVRE.
-     *
-     * C'est l'inverse de l'ancienne regle (« absent = actif par defaut »), et le changement est
-     * delibere : un metier cree apres l'ouverture d'un marche ne doit pas s'y vendre du seul fait
-     * que personne n'a encore rien decide. Le seeder pose la grille complete pour que l'etat
-     * initial d'une plateforme reste « tout est ouvert ».
-     */
+    /** L'ABSENCE DE LIGNE VAUT DESORMAIS « FERME », et le premier basculement OUVRE. */
     public function test_admin_can_toggle_a_trade_in_a_zone(): void
     {
         $context = $this->createCoverageContext();

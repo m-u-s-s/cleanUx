@@ -9,9 +9,6 @@ use App\Models\ContractRateCard;
 /**
  * Les grilles tarifaires négociées par contrat B2B.
  *
- * Un prix négocié engage un contrat signé : le modifier depuis une liste changerait ce qui est
- * facturé à un client sans passer par l’avenant qui le justifie.
- *
  * @extends EloquentResource<ContractRateCard>
  */
 class ContractRateCardResource extends EloquentResource

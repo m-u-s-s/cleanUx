@@ -12,14 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * L'ADMINISTRATION VOIT LES COMPTES MUETS, ET PEUT AGIR DESSUS.
- *
- * Le centre listait `whereHas('availabilitySlots')` : il ne montrait QUE les prestataires déjà
- * configurés. Le compte à zéro disponibilité — celui qu'une administration doit repérer, puisqu'il
- * est injoignable à la planification sans le savoir — était structurellement absent. Et aucun nom
- * n'était cliquable : voir un problème sans pouvoir le traiter.
- */
+/** L'ADMINISTRATION VOIT LES COMPTES MUETS, ET PEUT AGIR DESSUS. */
 class AdminAvailabilityTest extends TestCase
 {
     use RefreshDatabase;
@@ -96,10 +89,7 @@ class AdminAvailabilityTest extends TestCase
             ->assertSee(route('admin.availability.provider', $presta), false);
     }
 
-    /**
-     * Un filtre qu'on ne peut pas desarmer est un piege : on arrive sur « Sans disponibilite »
-     * depuis l'indicateur, on ne trouve rien, et il faut deviner comment revenir.
-     */
+    /** Un filtre qu'on ne peut pas desarmer est un piege : on arrive sur « Sans disponibilite » depuis l'indicateur, on ne trouve rien, et il faut deviner comment revenir. */
     public function test_le_bouton_reinitialiser_desarme_les_deux_filtres(): void
     {
         $this->creneau($this->prestataire('Configure'));
@@ -144,10 +134,7 @@ class AdminAvailabilityTest extends TestCase
         $this->assertSame(3, (int) $slot->weekday);
     }
 
-    /**
-     * La règle de chevauchement est celle du prestataire, à l'identique : c'est le même
-     * `AvailabilityEditor`. Deux implémentations divergeraient.
-     */
+    /** La règle de chevauchement est celle du prestataire, à l'identique : c'est le même `AvailabilityEditor`. */
     public function test_le_chevauchement_est_refuse_cote_admin_aussi(): void
     {
         $presta = $this->prestataire();
@@ -203,10 +190,7 @@ class AdminAvailabilityTest extends TestCase
         $this->assertSame(1, AvailabilitySlot::where('provider_user_id', $presta->id)->count());
     }
 
-    /**
-     * La fiche d'un compte qui n'est pas prestataire n'existe pas : un écran de créneaux pour
-     * quelqu'un qui n'en aura jamais laisserait croire que la configuration a été faite.
-     */
+    /** La fiche d'un compte qui n'est pas prestataire n'existe pas : un écran de créneaux pour quelqu'un qui n'en aura jamais laisserait croire que la configuration a été faite. */
     public function test_la_fiche_d_un_client_est_introuvable(): void
     {
         $client = User::factory()->client()->create();
@@ -238,13 +222,7 @@ class AdminAvailabilityTest extends TestCase
 
     // ─── Les alertes ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * IL N'Y AVAIT AUCUNE ALERTE DE DISPONIBILITÉ.
-     *
-     * Les quatre existantes surveillent des missions déjà lancées. Un prestataire injoignable ne
-     * produit aucune mission — donc aucun retard, donc aucun signal. Son silence passait pour du
-     * calme.
-     */
+    /** IL N'Y AVAIT AUCUNE ALERTE DE DISPONIBILITÉ. */
     public function test_l_alerte_signale_les_prestataires_sans_disponibilite(): void
     {
         $muet = $this->prestataire('Muet');

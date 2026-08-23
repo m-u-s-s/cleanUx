@@ -10,17 +10,7 @@ use App\Services\Availability\DefaultAvailabilityProvisioner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LA SEMAINE PAR DÉFAUT, ET CE QU'ELLE NE DOIT JAMAIS ÉCRASER.
- *
- * Un prestataire sans le moindre créneau est invisible à la planification : `AvailabilityService`
- * ne lui calcule aucune fenêtre, et rien à l'écran ne le lui dit. Il sortait de l'inscription
- * fermé, donc cassé.
- *
- * Le point délicat n'est pas de créer les créneaux, c'est de NE PAS les recréer : un prestataire
- * qui ferme délibérément son dimanche ne doit pas le voir revenir au prochain passage de la
- * commande de rattrapage.
- */
+/** LA SEMAINE PAR DÉFAUT, ET CE QU'ELLE NE DOIT JAMAIS ÉCRASER. */
 class DefaultAvailabilityOnRegistrationTest extends TestCase
 {
     use RefreshDatabase;
@@ -79,10 +69,7 @@ class DefaultAvailabilityOnRegistrationTest extends TestCase
         $this->assertSame(7, AvailabilitySlot::where('provider_user_id', $user->id)->count());
     }
 
-    /**
-     * Un client n'est pas un prestataire : lui poser des créneaux créerait des lignes qu'aucune
-     * lecture n'attend, et fausserait tout comptage de prestataires « configurés ».
-     */
+    /** Un client n'est pas un prestataire : lui poser des créneaux créerait des lignes qu'aucune lecture n'attend, et fausserait tout comptage de prestataires « configurés ». */
     public function test_un_client_ne_recoit_aucun_creneau(): void
     {
         $client = app(CreateNewUser::class)->create([
@@ -95,9 +82,7 @@ class DefaultAvailabilityOnRegistrationTest extends TestCase
         $this->assertSame(0, AvailabilitySlot::where('provider_user_id', $client->id)->count());
     }
 
-    /**
-     * LE CŒUR DU SUJET : un horaire déjà choisi ne se fait jamais réécrire.
-     */
+    /** LE CŒUR DU SUJET : un horaire déjà choisi ne se fait jamais réécrire. */
     public function test_un_prestataire_qui_a_deja_choisi_n_est_pas_touche(): void
     {
         $user = User::factory()->employe()->create();
@@ -120,10 +105,7 @@ class DefaultAvailabilityOnRegistrationTest extends TestCase
         ));
     }
 
-    /**
-     * Un jour DÉLIBÉRÉMENT FERMÉ est un créneau inactif, pas un créneau absent. Si le test
-     * d'idempotence ne portait que sur les créneaux actifs, le dimanche fermé rouvrirait tout seul.
-     */
+    /** Un jour DÉLIBÉRÉMENT FERMÉ est un créneau inactif, pas un créneau absent. */
     public function test_un_jour_desactive_ne_rouvre_pas(): void
     {
         $user = User::factory()->employe()->create();
@@ -152,10 +134,7 @@ class DefaultAvailabilityOnRegistrationTest extends TestCase
         $this->assertSame(7, AvailabilitySlot::where('provider_user_id', $user->id)->count());
     }
 
-    /**
-     * Le but de tout ceci : le moteur de disponibilité voit enfin quelque chose. Sans cette
-     * assertion, on vérifierait des lignes en base sans savoir si elles servent.
-     */
+    /** Le but de tout ceci : le moteur de disponibilité voit enfin quelque chose. */
     public function test_le_moteur_calcule_des_fenetres_pour_un_compte_neuf(): void
     {
         $user = $this->inscrire();

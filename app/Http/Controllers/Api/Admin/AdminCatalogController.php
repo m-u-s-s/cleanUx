@@ -5,19 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 
-/**
- * L'annuaire d'administration que voit l'application mobile.
- *
- * Il sert le registre `config/admin_console.php` tel quel, groupé pour l'affichage.
- *
- * POURQUOI LES MODULES NON COUVERTS SONT SERVIS EUX AUSSI. Ne renvoyer que le couvert donnerait
- * une application qui a l'air complète, et un chantier dont personne — ni l'utilisateur, ni celui
- * qui le mène — ne peut mesurer l'avancement. Le mobile les affiche marqués « à venir » et
- * non navigables ; les compteurs disent exactement ce qui reste.
- *
- * L'ORDRE DES GROUPES EST CELUI DU REGISTRE. Il porte une intention de lecture (piloter, opérer,
- * puis administrer) ; le trier autrement ici la perdrait silencieusement.
- */
+/** L'annuaire d'administration que voit l'application mobile. */
 class AdminCatalogController extends Controller
 {
     public function __invoke(): JsonResponse
@@ -41,15 +29,7 @@ class AdminCatalogController extends Controller
                         // rattachées au module côté registre pour que l'inventaire soit complet,
                         // mais elles ne sont pas des destinations d'annuaire.
                         'route' => $module['routes'][0],
-                        /*
-                         * Les ressources SECONDAIRES du module.
-                         *
-                         * Une page web multi-modèles — « Opérations B2B » et ses contrats, ordres
-                         * de travail et grilles — donne plusieurs descripteurs pour une seule
-                         * entrée d'annuaire. Sans cette liste, le mobile ouvrirait la ressource
-                         * principale et les autres resteraient écrites, correctes et
-                         * inatteignables.
-                         */
+                        // Les ressources SECONDAIRES du module.
                         'resources' => $this->ressourcesSecondairesDe($module),
                     ],
                     array_filter($modules, fn (array $module) => $module['group'] === $key),
@@ -72,10 +52,6 @@ class AdminCatalogController extends Controller
 
     /**
      * Les ressources secondaires déclarées par un module.
-     *
-     * Passer par une méthode plutôt que de lire la clé sur place : l'analyse statique déduit la
-     * forme du tableau depuis `config/admin_console.php`, où la plupart des modules n'ont pas cette
-     * clé — elle la croit donc absente partout et refuse l'accès.
      *
      * @param  array<string, mixed>  $module
      * @return list<string>

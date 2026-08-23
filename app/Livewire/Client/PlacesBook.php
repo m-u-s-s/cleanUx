@@ -10,21 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * LE CARNET DE LIEUX (E2).
- *
- * UN CLIENT A PLUSIEURS LIEUX, et la plateforme n'en connaissait qu'un. Quelqu'un qui fait nettoyer
- * son appartement et la maison de sa mère retape l'adresse, l'étage et le code à chaque commande —
- * et se trompe une fois sur cinq, ce qui envoie un prestataire à la mauvaise porte.
- *
- * CE QUI COMPTE N'EST PAS L'ADRESSE, ce sont les CONSIGNES : l'étage, le digicode, la clé chez la
- * voisine, le chien, l'allergie aux produits chlorés. Elles se redonnaient oralement à chaque
- * nouveau prestataire, ou se perdaient. Cet écran les enregistre une fois ; la fiche d'accès sur
- * place les révèle à l'arrivée, et seulement là.
- *
- * ON ARCHIVE, ON NE SUPPRIME PAS. Les missions passées portent ce lieu : l'effacer viderait
- * l'historique de ses adresses, et personne ne saurait plus où une intervention a eu lieu.
- */
+/** LE CARNET DE LIEUX (E2). UN CLIENT A PLUSIEURS LIEUX, et la plateforme n'en connaissait qu'un. */
 class PlacesBook extends Component
 {
     public string $libelle = '';

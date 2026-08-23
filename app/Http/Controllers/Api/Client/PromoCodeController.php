@@ -10,16 +10,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * API mobile — Validation d'un code promo.
+ *
  * @group Client — Promo Codes
  *
  * @authenticated
- *
- * API mobile — Validation d'un code promo.
- *
- * POST /api/client/promo-codes/validate
- *   { code: "SUMMER25", amount: 120.00, service_catalog_id?: 5, service_zone_id?: 12 }
- *
- * Retourne valid + discount + final amount, sans rien persister.
+ * { code: "SUMMER25", amount: 120.00, service_catalog_id?: 5, service_zone_id?: 12 }
  */
 class PromoCodeController extends Controller
 {

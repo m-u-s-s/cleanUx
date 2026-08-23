@@ -17,18 +17,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LE SCÉNARIO DE DÉMONSTRATION EXISTE VRAIMENT.
- *
- * C'est le piège classique de ce dépôt : un module complet dont personne ne crée les lignes. Le
- * dispatch immédiat exige QUATRE choses simultanément — un métier ouvert en immédiat dans la zone,
- * des prestataires vérifiés, déclarés sur ce métier, et en ligne avec une position fraîche. Il
- * suffit qu'une seule manque pour que la recherche s'épuise en silence, et rien à l'écran ne dit
- * laquelle.
- *
- * Ce test vérifie que les quatre sont posées par le seeder, et que la chaîne se déroule réellement :
- * offre au plus proche → refus → escalade au suivant → acceptation.
- */
+/** LE SCÉNARIO DE DÉMONSTRATION EXISTE VRAIMENT. */
 class ScenarioDeDemonstrationTest extends TestCase
 {
     use RefreshDatabase;

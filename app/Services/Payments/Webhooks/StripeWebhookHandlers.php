@@ -18,12 +18,7 @@ use App\Support\Accounting\BookingAutoPoster;
 use App\Support\Webhooks\BusinessEventEmitter;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Implémentations des handlers Stripe par type d'événement.
- *
- * Extraits de StripeWebhookEventProcessor pour limiter la taille du god-object.
- * Behavior identique — aucune logique métier modifiée.
- */
+/** Implémentations des handlers Stripe par type d'événement. */
 class StripeWebhookHandlers
 {
     public function __construct(
@@ -40,17 +35,6 @@ class StripeWebhookHandlers
 
     /**
      * QUELLE RÉSERVATION, ET QUEL VOLET DE SON PAIEMENT ?
-     *
-     * Une réservation à acompte porte DEUX intentions Stripe : `deposit_payment_intent_id`, débitée
-     * à la commande, et `stripe_payment_intent_id`, le solde bloqué jusqu'à la fin. Les webhooks ne
-     * cherchaient que la seconde : tout événement portant sur l'acompte — encaissement,
-     * remboursement, échec — ne trouvait aucune réservation et sortait en `ignored`. La colonne
-     * était écrite par le planificateur de paiement et relue par PERSONNE.
-     *
-     * LE VOLET EST RENDU AVEC LA RÉSERVATION, et ce n'est pas un confort. `payment_status` décrit
-     * le SOLDE, pas l'acompte : le rattacher sans le dire ferait écrire « remboursé » sur une
-     * réservation dont le solde n'est qu'autorisé, et ce solde deviendrait définitivement non
-     * capturable. Chaque appelant doit savoir de quel volet on lui parle.
      *
      * @return array{0: Booking|null, 1: string}
      */
@@ -158,26 +142,8 @@ class StripeWebhookHandlers
 
         $alreadyHandled = $booking->payment_status === ($isTotal ? 'refunded' : 'partially_refunded');
 
-        /*
-         * `payment_status` DECRIT LE SOLDE, JAMAIS L'ACOMPTE.
-         *
-         * Rembourser un acompte et ecrire « partiellement rembourse » sur la reservation rendrait
-         * le solde -- qui n'est qu'AUTORISE -- definitivement non capturable : la capture refuse
-         * tout statut autre que `authorized`. Le remboursement de l'acompte est reel et se
-         * comptabilise ; il ne dit simplement rien de l'autre volet.
-         */
-        /*
-         * LE SOLDE LIBÉRÉ N'EST PAS UN REMBOURSEMENT.
-         *
-         * Après une capture partielle des frais d'annulation, Stripe rend le reste de l'empreinte
-         * — et il le rend sous forme de REMBOURSEMENT sur la charge, objet `re_…` compris. Rien
-         * dans la charge ne permet de le distinguer d'un vrai remboursement client.
-         *
-         * Écrire « partiellement remboursé » par-dessus `fee_captured` effacerait la seule trace
-         * disant que ces euros sont des frais et non une prestation. La reprise sur le portefeuille
-         * est déjà neutralisée en amont — sans gain enregistré, il n'y a rien à reprendre — mais le
-         * statut, lui, se défend ici.
-         */
+        // `payment_status` DECRIT LE SOLDE, JAMAIS L'ACOMPTE.
+        // LE SOLDE LIBÉRÉ N'EST PAS UN REMBOURSEMENT.
         $fraisEncaisses = $booking->payment_status === MissionPaymentService::STATUT_FRAIS_CAPTURES;
 
         if (! $alreadyHandled && ! $fraisEncaisses && $volet === self::VOLET_SOLDE) {
@@ -272,19 +238,7 @@ class StripeWebhookHandlers
             return ['status' => StripeWebhookEvent::STATUS_IGNORED];
         }
 
-        /*
-         * L'ACOMPTE EST DEJA ENCAISSE, ET SA PART PRESTATAIRE DEJA TRANSFEREE.
-         *
-         * Il est cree en capture automatique avec sa propre `application_fee_amount` et sa
-         * destination Connect : Stripe a deja fait le partage au moment de la commande. Le
-         * reprendre ici creditrait `provider_amount_cents` -- la part du TOTAL -- pour un
-         * encaissement partiel, et une seconde fois a la capture du solde, la cle d'idempotence
-         * portant l'identifiant de l'intention.
-         *
-         * On reconnait donc l'evenement au lieu de l'ignorer -- il concerne bien une reservation
-         * connue, et le journal doit pouvoir le dire -- sans toucher ni au statut du solde ni au
-         * portefeuille.
-         */
+        // L'ACOMPTE EST DEJA ENCAISSE, ET SA PART PRESTATAIRE DEJA TRANSFEREE.
         if ($volet === self::VOLET_ACOMPTE) {
             return ['status' => StripeWebhookEvent::STATUS_PROCESSED, 'details' => [
                 'booking_id' => $booking->id,
@@ -310,29 +264,7 @@ class StripeWebhookHandlers
                 ?? data_get($intent, 'application_fee_amount')
                 ?? 0);
 
-            /*
-             * LA MÊME GARDE QUE POUR `recordEarning`, ET LE MÊME DÉFAUT — ELLE EST TOMBÉE ICI AUSSI.
-             *
-             * Le commentaire juste au-dessus raconte que `$previousStatus !== 'captured'` empêchait
-             * le crédit du portefeuille quand `captureMissionPayment()` avait déjà posé `captured`
-             * avant l'arrivée du webhook. La correction n'a porté que sur `recordEarning` : ces
-             * deux appels-ci sont restés derrière la garde cassée.
-             *
-             * Or c'est le chemin ORDINAIRE. `captureMissionPayment()` écrit `payment_status =
-             * 'captured'` puis Stripe notifie : le statut précédent vaut donc déjà `captured`, et
-             * ni l'événement métier ni l'écriture comptable n'avaient lieu. Seules les confirmations
-             * ASYNCHRONES — celles où Stripe capture sans passer par notre appel — franchissaient la
-             * garde. Autrement dit, le grand livre ne recevait que les encaissements minoritaires.
-             *
-             * Un TÉMOIN l'a découvert : il affirmait qu'un encaissement normal écrit toujours sa
-             * ligne, et il était rouge. Écrit pour prouver qu'on n'avait rien cassé, il a montré ce
-             * qui était déjà cassé.
-             *
-             * RIEN NE SE DUPLIQUE POUR AUTANT, ET C'EST VÉRIFIÉ : `WebhookDispatcher::emit()` rend
-             * l'événement existant quand la clé d'idempotence a déjà servi, et `postIdempotent()`
-             * rend le lot existant. La garde protégeait d'un risque que les deux appelés écartent
-             * déjà eux-mêmes.
-             */
+            // LA MÊME GARDE QUE POUR `recordEarning`, ET LE MÊME DÉFAUT — ELLE EST TOMBÉE ICI AUSSI.
             BusinessEventEmitter::emit(
                 eventCode: 'payment.succeeded',
                 payload: [
@@ -349,24 +281,7 @@ class StripeWebhookHandlers
             BookingAutoPoster::postPayment($booking, $feeCents);
         }
 
-        /*
-         * DES FRAIS D'ANNULATION SONT DE L'ARGENT ENCAISSÉ, ET ILS N'ENTRAIENT DANS AUCUN LIVRE.
-         *
-         * Tout le reste était prêt : le plan comptable déclare `708 Produits annexes (frais
-         * d'annulation)` et `ChartOfAccounts::salesAccount('cancellation_fee')` le renvoie. Rien ne
-         * l'appelait. La garde `payment_status === 'captured'` juste au-dessus — indispensable pour
-         * que le prestataire ne soit pas crédité d'une prestation jamais faite — écartait du même
-         * geste l'écriture comptable, qui, elle, devait avoir lieu.
-         *
-         * ── PAS DE GARDE SUR `$previousStatus`, ET C'EST DÉLIBÉRÉ ─────────────────────────────
-         *
-         * `capturerLesFraisDAnnulation()` pose `fee_captured` AVANT que le webhook n'arrive : au
-         * moment où l'on passe ici, le statut précédent vaut déjà `fee_captured`. Le motif
-         * `$previousStatus !== …` employé quelques lignes plus haut sauterait donc l'écriture à
-         * tous les coups. C'est exactement le défaut que le commentaire de `recordEarning` raconte,
-         * et l'imiter par symétrie le reproduirait. L'idempotence est portée par
-         * `postIdempotent()`, sur une clé qui lui est propre.
-         */
+        // DES FRAIS D'ANNULATION SONT DE L'ARGENT ENCAISSÉ, ET ILS N'ENTRAIENT DANS AUCUN LIVRE.
         if ($booking->payment_status === MissionPaymentService::STATUT_FRAIS_CAPTURES) {
             [$fraisCents, $partPrestataireCents] = $this->partagerLesFraisDAnnulation($booking, $intent);
 
@@ -386,23 +301,6 @@ class StripeWebhookHandlers
 
     /**
      * COMBIEN A ÉTÉ PRIS, ET COMBIEN EN EST REPARTI CHEZ LE PRESTATAIRE.
-     *
-     * LE MONTANT vient d'abord de notre propre trace : `capturerLesFraisDAnnulation()` écrit
-     * `metadata.frais_annulation.captures_cents`, qui EST la définition des frais. On se rabat sur
-     * `amount_received` quand elle manque — une capture faite hors de ce code, depuis le tableau de
-     * bord Stripe par exemple.
-     *
-     * LE PARTAGE SE LIT, IL NE SE DEVINE PAS. L'empreinte est une charge à destination : elle porte
-     * `transfer_data.destination` et une `application_fee_amount` calculée sur la commande entière.
-     * Ce que Stripe fait de cette commission lors d'une capture PARTIELLE décide si la plateforme
-     * garde tout ou si une part file chez le prestataire — et cela ne s'exerce nulle part ici, la
-     * clé du dépôt faisant onze caractères. On lit donc la commission RÉELLEMENT appliquée sur la
-     * charge et on en déduit le reste.
-     *
-     * L'ABSENCE DE `application_fee_amount` VAUT « LA PLATEFORME GARDE TOUT », et c'est le choix
-     * prudent dans les deux cas réels : soit l'intention n'a pas de destinataire — la variante sans
-     * prestataire n'en pose aucun — soit la charge n'expose pas le champ, et fabriquer une dette
-     * prestataire depuis un champ manquant inventerait un passif.
      *
      * @param  array<string, mixed>  $intent
      * @return array{0: int, 1: int} Frais encaissés, part partie chez le prestataire.
@@ -426,10 +324,7 @@ class StripeWebhookHandlers
         return [$fraisCents, max(0, $fraisCents - (int) $commissionPlateforme)];
     }
 
-    /**
-     * Si un PaymentIntent succeeded correspond à un BookingTip, le confirmCharge.
-     * Filtre via metadata.tip_id OU lookup stripe_payment_intent_id sur booking_tips.
-     */
+    /** Si un PaymentIntent succeeded correspond à un BookingTip, le confirmCharge. */
     public function maybeConfirmTipCharge(array $intent, string $piId): void
     {
         try {

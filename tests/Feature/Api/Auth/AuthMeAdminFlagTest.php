@@ -7,13 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * La reprise de session doit dire la même chose que la connexion.
- *
- * `login` sérialise explicitement `is_admin` ; `me` renvoyait les attributs bruts du modèle, qui
- * ne le portent pas. À chaque redémarrage de l'application, l'administrateur redevenait donc un
- * compte ordinaire — et l'aiguillage d'espace l'envoyait là où rien ne lui répond.
- */
+/** La reprise de session doit dire la même chose que la connexion. */
 class AuthMeAdminFlagTest extends TestCase
 {
     use RefreshDatabase;

@@ -14,20 +14,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * UNE MESSAGERIE D'ÉQUIPE OÙ PERSONNE NE PEUT ÊTRE AJOUTÉ N'EST PAS UNE MESSAGERIE.
- *
- * POURQUOI CE FICHIER EXISTE. `TeamChannels::createChannel()` n'attache que son créateur, et
- * c'est le SEUL `members()->attach` de tout le dépôt — vérifié par recherche exhaustive. Aucun
- * écran, aucun service, aucune commande ne sait ajouter quelqu'un à un canal. Chaque canal reste
- * donc un monologue, quel que soit son type.
- *
- * L'ironie tient dans `ChannelPolicy` : elle expose `kickMember()` et `changeRole()` — expulser
- * un membre et changer son rôle — pour une population qui ne peut jamais exister.
- *
- * Ces deux tests figent le minimum utilisable : ajouter un coéquipier, et créer un canal d'équipe
- * qui embarque l'équipe.
- */
+/** UNE MESSAGERIE D'ÉQUIPE OÙ PERSONNE NE PEUT ÊTRE AJOUTÉ N'EST PAS UNE MESSAGERIE. */
 class TeamChannelMembershipTest extends TestCase
 {
     use RefreshDatabase;
@@ -121,15 +108,7 @@ class TeamChannelMembershipTest extends TestCase
         );
     }
 
-    /**
-     * IDOR : `activeChannelId` est une propriété PUBLIQUE, donc pilotable depuis le navigateur.
-     * `openChannel()` ne vérifiait ni l'organisation ni l'appartenance : n'importe quel compte
-     * société prestataire pouvait ouvrir le canal privé d'une AUTRE société et en lire les
-     * messages et la liste des membres.
-     *
-     * `ChannelPolicy::view()` encode pourtant la bonne règle — être membre — mais aucun appelant
-     * ne la consultait.
-     */
+    /** IDOR : `activeChannelId` est une propriété PUBLIQUE, donc pilotable depuis le navigateur. */
     #[Test]
     public function on_n_ouvre_pas_le_canal_prive_d_une_autre_organisation(): void
     {

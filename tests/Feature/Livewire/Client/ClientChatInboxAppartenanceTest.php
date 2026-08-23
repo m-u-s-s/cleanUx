@@ -12,15 +12,7 @@ use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyExceptio
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * `selectThread()` vérifie l'appartenance au fil — mais la LECTURE des
- * messages ne la reposait pas. Or la propriété qui désigne le fil actif est
- * pilotable depuis le navigateur : la garde de l'aiguillage ne protège rien
- * si l'affichage se sert directement.
- *
- * Le témoin positif est indispensable : sans lui, un composant qui ne rend
- * jamais aucun message ferait passer le test de refus au vert.
- */
+/** `selectThread()` vérifie l'appartenance au fil — mais la LECTURE des messages ne la reposait pas. */
 class ClientChatInboxAppartenanceTest extends TestCase
 {
     use RefreshDatabase;
@@ -84,10 +76,7 @@ class ClientChatInboxAppartenanceTest extends TestCase
             ->set('activeThreadId', $fil->id);
     }
 
-    /**
-     * Quitter un fil doit fermer la lecture — le cas qui prouve que la garde
-     * est bien reposée à l'affichage et pas seulement à l'aiguillage.
-     */
+    /** Quitter un fil doit fermer la lecture — le cas qui prouve que la garde est bien reposée à l'affichage et pas seulement à l'aiguillage. */
     public function test_celui_qui_a_quitte_le_fil_ne_lit_plus(): void
     {
         $membre = User::factory()->create();

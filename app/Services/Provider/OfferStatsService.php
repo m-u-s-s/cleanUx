@@ -7,25 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * LES STATISTIQUES D'OFFRES D'UN PRESTATAIRE (E15).
- *
- * TOUT EST DÉJÀ DANS `mission_assignments`, et personne ne le lit. La table porte le temps de
- * réponse, les refus avec leur motif, les expirations — c'est-à-dire la réponse exacte à la question
- * que tout indépendant se pose : « pourquoi est-ce que je reçois moins de courses qu'avant ? »
- *
- * TROIS RÉPONSES POSSIBLES, ET IL FAUT LES DISTINGUER. Trop lent à répondre : l'offre part au
- * suivant. Trop de refus : le moteur de matching en tient compte. Ou simplement moins d'offres
- * reçues, ce qui n'est pas la faute du prestataire et ne doit surtout pas lui être présenté comme
- * telle. Les confondre ferait culpabiliser quelqu'un pour une baisse de demande dans sa zone.
- *
- * LE TEMPS DE RÉPONSE EST UNE MÉDIANE, PAS UNE MOYENNE. Une seule offre reçue pendant un tunnel —
- * répondue quarante minutes plus tard — décalerait une moyenne au point de la rendre absurde. La
- * médiane décrit le comportement ordinaire, qui est ce qu'on cherche à améliorer.
- *
- * LES OFFRES SANS RÉPONSE NE SONT PAS DES REFUS. Une expiration se corrige en répondant plus vite,
- * un refus se corrige en changeant ce qu'on accepte : les mélanger donnerait un conseil faux.
- */
+/** LES STATISTIQUES D'OFFRES D'UN PRESTATAIRE (E15). */
 class OfferStatsService
 {
     /**
@@ -39,30 +21,14 @@ class OfferStatsService
         $lignes = MissionAssignment::query()
             ->where('user_id', $prestataire->id)
             ->whereBetween('created_at', [$depuis, $jusqua])
-            /*
-             * `status` A ÉTÉ RETIRÉE DE CETTE LISTE PARCE QUE LA COLONNE N'EXISTE PLUS.
-             *
-             * C'était une colonne dormante — NOT NULL, défaut « assigned », jamais écrite par une
-             * ligne de code — supprimée avec `role` le 2026-09-01. La retirer de la table sans la
-             * retirer d'ici laissait une sélection explicite sur un identifiant inconnu : MySQL
-             * refuse la requête, et cet écran est celui des statistiques d'offres du prestataire.
-             *
-             * Rien ne se perd : aucun calcul de ce fichier ne lisait `status`. Ils s'appuient tous
-             * sur `accepted_at` et `declined_at`, et son propre commentaire dit pourquoi —
-             * « plusieurs vocabulaires de statut coexistent dans cette table, et aucun ne dit
-             * "le temps a passé" ».
-             */
+            // `status` A ÉTÉ RETIRÉE DE CETTE LISTE PARCE QUE LA COLONNE N'EXISTE PLUS.
             ->get(['id', 'assignment_status', 'accepted_at', 'declined_at', 'response_seconds', 'decline_reason', 'expires_at', 'created_at']);
 
         $total = $lignes->count();
         $acceptees = $lignes->whereNotNull('accepted_at')->count();
         $refusees = $lignes->whereNotNull('declined_at')->count();
 
-        /*
-         * SANS RÉPONSE : ni acceptée, ni refusée, et l'échéance est passée. C'est le cas qu'on ne
-         * peut pas déduire d'un statut — plusieurs vocabulaires de statut coexistent dans cette
-         * table, et aucun ne dit « le temps a passé ».
-         */
+        // SANS RÉPONSE : ni acceptée, ni refusée, et l'échéance est passée.
         $sansReponse = $lignes
             ->filter(fn (MissionAssignment $ligne) => $ligne->accepted_at === null
                 && $ligne->declined_at === null
@@ -111,10 +77,7 @@ class OfferStatsService
     }
 
     /**
-     * Les motifs de refus, du plus fréquent au moins.
-     *
-     * C'EST CE QUI SE CORRIGE. « Trop loin » se règle en resserrant sa zone, « déjà pris » en
-     * ajustant ses disponibilités : un taux de refus sans ses motifs ne dit pas quoi faire.
+     * Les motifs de refus, du plus fréquent au moins. C'EST CE QUI SE CORRIGE.
      *
      * @param  Collection<int, MissionAssignment>  $lignes
      * @return list<array<string, mixed>>

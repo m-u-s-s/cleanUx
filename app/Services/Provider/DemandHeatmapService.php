@@ -8,26 +8,7 @@ use App\Models\ServiceZone;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * OÙ ME PLACER, ET À QUELLE HEURE (E12).
- *
- * LA QUESTION QUE SE POSE TOUT INDÉPENDANT le matin, et à laquelle rien ne répond : il se place où
- * il s'est placé hier, et découvre après trois heures d'attente qu'il fallait être ailleurs. La
- * plateforme, elle, SAIT — les recherches de dispatch sont horodatées et géolocalisées depuis le
- * chantier de répartition.
- *
- * DEUX SIGNAUX, ET IL FAUT LES DEUX. Les recherches immédiates disent où la demande arrive MAINTENANT ;
- * les réservations planifiées disent où elle arrivera. Ne montrer que le premier ferait courir tout
- * le monde derrière l'instantané, et rater le rendez-vous de jeudi matin.
- *
- * LE CRENEAU HORAIRE COMPTE AUTANT QUE LA ZONE. « Bruxelles centre » est vrai toute la journée et
- * n'aide personne ; « Bruxelles centre, entre 8 h et 10 h » est une décision. On ventile donc par
- * (zone, tranche horaire), jamais par zone seule.
- *
- * CE N'EST PAS UNE PROMESSE. Une demande passée ne garantit pas une demande future : l'écran doit
- * pouvoir dire sur combien de jours l'observation porte, sinon un pic isolé se lit comme une
- * tendance. `days_observed` voyage avec chaque ligne.
- */
+/** OÙ ME PLACER, ET À QUELLE HEURE (E12). */
 class DemandHeatmapService
 {
     /** Les tranches horaires, en heures pleines de début. */
@@ -100,9 +81,6 @@ class DemandHeatmapService
 
     /**
      * Les réservations planifiées — où la demande arrivera.
-     *
-     * L'HEURE RETENUE EST CELLE DE L'INTERVENTION, pas celle de la commande : ce qu'on cherche est
-     * quand il faut être là, pas quand le client a réservé depuis son canapé.
      *
      * @return Collection<int, array{zone_id: int<0, max>, slot: int, kind: 'scheduled'}>
      */

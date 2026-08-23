@@ -11,11 +11,6 @@ use Illuminate\Support\Carbon;
 /**
  * UN SUPPLÉMENT PROPOSÉ SUR PLACE, et la réponse du client.
  *
- * Le prestataire constate que les vitres n'étaient pas au devis et propose vingt-cinq euros. Sans
- * ce chemin, il n'a que deux mauvaises réponses — le faire gratuitement, ou ne pas le faire — et
- * une troisième pire que les deux : s'arranger en espèces, ce qui sort l'argent de la plateforme et
- * le client de toute protection.
- *
  * @property int $id
  * @property int $mission_id
  * @property int|null $proposed_by_user_id
@@ -45,12 +40,7 @@ class MissionExtra extends Model
     /** Le client a dit non. Le refus est une réponse, pas une panne : il se conserve. */
     public const STATUS_DECLINED = 'declined';
 
-    /**
-     * L'argent a réellement été prélevé.
-     *
-     * SÉPARÉ D'`approved` À DESSEIN. Confondre l'accord et l'encaissement ferait réclamer deux fois
-     * un supplément dont le prélèvement a échoué, ou ne jamais réclamer celui qu'on croyait payé.
-     */
+    /** L'argent a réellement été prélevé. SÉPARÉ D'`approved` À DESSEIN. */
     public const STATUS_CHARGED = 'charged';
 
     protected $fillable = [

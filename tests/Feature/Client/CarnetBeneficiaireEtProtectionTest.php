@@ -24,21 +24,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * PHASE 3 — LE BÉNÉFICIAIRE (E1), LE CARNET DE LIEUX (E2), LE SUIVI PARTAGÉ (E3), LE BUDGET (E4),
- * L'ASSISTANT (E5) ET « MA PROTECTION » (E6).
- *
- * CE QUE CE FICHIER PROTÈGE EN PRIORITÉ, ce sont les quatre décisions qui font que ces modules
- * servent à quelque chose :
- *
- *   1. le bénéficiaire SURVIT à la conversion du panier — sinon le prestataire arrive en demandant
- *      celui qui a payé ;
- *   2. le carnet ALIMENTE la fiche d'accès sur place — sans quoi ce n'est qu'un formulaire
- *      d'adresse de plus, et les consignes ne servent à personne ;
- *   3. le lien de suivi partagé ne montre NI le montant NI l'adresse — il circule par SMS ;
- *   4. l'assistant ne propose QUE des métiers du catalogue — un métier inventé produirait une
- *      commande que le dispatch ne sait pas servir.
- */
+/** PHASE 3 — LE BÉNÉFICIAIRE (E1), LE CARNET DE LIEUX (E2), LE SUIVI PARTAGÉ (E3), LE BUDGET (E4), L'ASSISTANT (E5) ET « MA PROTECTION » (E6). */
 class CarnetBeneficiaireEtProtectionTest extends TestCase
 {
     use RefreshDatabase;
@@ -90,10 +76,7 @@ class CarnetBeneficiaireEtProtectionTest extends TestCase
             'address' => 'Rue Haute 1',
         ]);
 
-        /*
-         * UN CARNET DONT AUCUN LIEU N'EST PAR DÉFAUT NE PRÉ-REMPLIT RIEN — c'est-à-dire exactement
-         * le problème qu'il devait résoudre.
-         */
+        // UN CARNET DONT AUCUN LIEU N'EST PAR DÉFAUT NE PRÉ-REMPLIT RIEN — c'est-à-dire exactement le problème qu'il devait résoudre.
         $this->assertTrue($premier->is_default);
 
         $second = app(ClientPlaceService::class)->enregistrer($client, [
@@ -183,11 +166,7 @@ class CarnetBeneficiaireEtProtectionTest extends TestCase
 
         $fiche = app(MissionAccessSheetService::class)->pour($mission->fresh(), $prestataire);
 
-        /*
-         * C'EST LE CHAÎNON QUI FAIT D'UN CARNET D'ADRESSES UN CARNET DE LIEUX. Sans lui, les
-         * consignes enregistrées par le client ne serviraient à personne, et se redonneraient
-         * oralement à chaque nouveau prestataire.
-         */
+        // C'EST LE CHAÎNON QUI FAIT D'UN CARNET D'ADRESSES UN CARNET DE LIEUX.
         $this->assertSame('3e étage, porte gauche', $fiche['floor']);
         $this->assertStringContainsString('Digicode', $fiche['access_instructions']);
         $this->assertTrue($fiche['alarm_code_required']);
@@ -241,10 +220,7 @@ class CarnetBeneficiaireEtProtectionTest extends TestCase
             'beneficiary_note' => 'Sonnez longtemps.',
         ]);
 
-        /*
-         * LE PANIER PORTE L'INFORMATION ; c'est la RÉSERVATION qui la fait suivre au terrain. Un
-         * bénéficiaire qui ne franchirait pas la confirmation ne servirait à personne.
-         */
+        // LE PANIER PORTE L'INFORMATION ; c'est la RÉSERVATION qui la fait suivre au terrain.
         $this->assertSame('Madame Dupont', $draft->fresh()->beneficiary_name);
 
         $booking = Booking::factory()->create([
@@ -310,20 +286,7 @@ class CarnetBeneficiaireEtProtectionTest extends TestCase
 
         $apercu = app(SharedTrackingService::class)->apercu($booking);
 
-        /*
-         * VOLONTAIREMENT PAUVRE. Le destinataire du lien n'est pas le client : il n'a pas à
-         * connaître le montant, ni l'adresse exacte. Une position et une heure suffisent à ce pour
-         * quoi le lien a été envoyé.
-         *
-         * ON ÉNUMÈRE LES CHAMPS AUTORISÉS, plutôt que de chercher des valeurs interdites dans le
-         * JSON. La version précédente cherchait la chaîne « 189 » — le montant — dans la charge
-         * entière, et tombait le jour où la référence tirée au hasard en contenait les chiffres
-         * (`CUX-20260814-CK189KS`). Un échec par coïncidence, sur une assertion trop large.
-         *
-         * La liste blanche dit mieux ce qu'on protège : ce n'est pas « le nombre 189 n'apparaît
-         * pas », c'est « cette charge ne porte QUE ces champs-là ». Elle refusera aussi le jour où
-         * quelqu'un ajoutera un champ sans y penser — ce qui est exactement le but.
-         */
+        // VOLONTAIREMENT PAUVRE.
         $this->assertSame(
             [
                 'reference',
@@ -425,10 +388,7 @@ class CarnetBeneficiaireEtProtectionTest extends TestCase
     {
         $resultat = app(OrderIntentInterpreter::class)->interpreter('un dégât des eaux au plafond');
 
-        /*
-         * LE CATALOGUE FAIT AUTORITÉ. Un métier inventé produirait une commande que le dispatch ne
-         * saurait servir, et l'erreur ne se verrait qu'à la recherche de prestataire.
-         */
+        // LE CATALOGUE FAIT AUTORITÉ.
         if ($resultat['trade_id'] !== null) {
             $this->assertDatabaseHas('trades', ['id' => $resultat['trade_id'], 'is_active' => true]);
         }
@@ -470,11 +430,7 @@ class CarnetBeneficiaireEtProtectionTest extends TestCase
 
         $reponse = $this->getJson('/api/client/protection')->assertOk();
 
-        /*
-         * LES TROIS SONT TOUJOURS RENDUES, même vides : un écran dont les blocs apparaissent et
-         * disparaissent selon ce qu'on possède fait douter de ce qui manque — et c'est exactement
-         * ce qu'une page de protection doit éviter.
-         */
+        // LES TROIS SONT TOUJOURS RENDUES, même vides : un écran dont les blocs apparaissent et disparaissent selon ce qu'on possède fait douter de ce qui manque — et c'est exactement ce qu'une page de protection doit éviter.
         $this->assertIsArray($reponse->json('data.insurance'));
         $this->assertIsArray($reponse->json('data.cancellation'));
         $this->assertIsArray($reponse->json('data.disputes'));

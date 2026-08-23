@@ -17,24 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LE GUIDE PAS-À-PAS (F6) ET LA CLÔTURE GUIDÉE (F16).
- *
- * F6 — UNE LISTE N'EST PAS UN GUIDE. Les checklists existaient : toutes les cases visibles,
- * cochables dans n'importe quel ordre. Parfait pour un professionnel expérimenté qui vérifie qu'il
- * n'a rien oublié, inutilisable pour celui qui débute ou découvre un métier. Sur une remise en état
- * après travaux, aspirer avant de dépoussiérer les hauteurs fait le travail deux fois : l'ordre
- * n'est pas une préférence d'affichage, c'est le métier.
- *
- * CE QUE CE FICHIER PROTÈGE : qu'on ne puisse valider QUE l'étape en cours. Sans ce refus, le mode
- * guidé ne serait qu'un affichage — n'importe quel identifiant passerait, et la séquence deviendrait
- * une suggestion.
- *
- * F16 — TROIS BRIQUES QUI EXISTAIENT CHACUNE DE SON CÔTÉ. Rapport, pourboire, avis étaient
- * atteignables depuis trois endroits différents, si bien que la plupart des clients n'en voyaient
- * aucune. Le flux les enchaîne dans l'ordre où les choses se décident — on ne remercie pas avant de
- * savoir ce qui a été fait, et on ne note pas avant d'avoir décidé si on remercie.
- */
+/** LE GUIDE PAS-À-PAS (F6) ET LA CLÔTURE GUIDÉE (F16). F6 — UNE LISTE N'EST PAS UN GUIDE. */
 class GuideEtClotureTest extends TestCase
 {
     use RefreshDatabase;
@@ -143,11 +126,7 @@ class GuideEtClotureTest extends TestCase
         [$prestataire, $mission] = $this->scenario();
         [, $seconde] = $this->checklistOrdonnee($mission);
 
-        /*
-         * L'ASSERTION QUI PORTE F6. Sans ce refus, le mode guidé ne serait qu'un affichage :
-         * n'importe quel identifiant passerait, et l'ordre du métier — aspirer APRÈS avoir
-         * dépoussiéré les hauteurs — ne serait plus qu'une suggestion.
-         */
+        // L'ASSERTION QUI PORTE F6.
         $this->actingAs($prestataire, 'sanctum')
             ->postJson("/api/provider/missions/{$mission->id}/guided-step", ['item_id' => $seconde->id])
             ->assertStatus(422);

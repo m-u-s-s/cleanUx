@@ -14,18 +14,7 @@ use Illuminate\Support\Str;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * LES ÉQUIPES TERRAIN D'UNE SOCIÉTÉ, PILOTÉES PAR CETTE SOCIÉTÉ.
- *
- * `FieldTeam` porte déjà tout le nécessaire — organisation, zone de service, chef d'équipe,
- * capacité maximale, statut — mais n'était manipulable que depuis les écrans d'ADMINISTRATION de
- * la plateforme et un écran employé. Une société voulant ouvrir une agence, la rattacher à une
- * zone ou en nommer le responsable devait passer par un administrateur.
- *
- * Les clés `team.view`, `team.create` et `team.manage` existaient elles aussi dans la matrice de
- * `PermissionService`, accordées à plusieurs rôles, sans qu'aucun code ne les consulte. Cet écran
- * les met en service : la capacité et le droit existaient, seule la porte manquait.
- */
+/** LES ÉQUIPES TERRAIN D'UNE SOCIÉTÉ, PILOTÉES PAR CETTE SOCIÉTÉ. */
 class FieldTeams extends Component
 {
     use EnforcesActiveOrgMembership;
@@ -64,11 +53,7 @@ class FieldTeams extends Component
 
         $orgId = $acteur->current_organization_id;
 
-        /*
-         * Zone et chef d'équipe viennent du navigateur : on ne les retient que s'ils appartiennent
-         * bien à cette société. Sans cela, une agence pourrait nommer responsable l'employé d'une
-         * autre entreprise.
-         */
+        // Zone et chef d'équipe viennent du navigateur : on ne les retient que s'ils appartiennent bien à cette société.
         $chefLegitime = $this->chefId !== null
             && OrganizationMember::query()
                 ->where('organization_account_id', $orgId)
@@ -90,14 +75,7 @@ class FieldTeams extends Component
         $this->capaciteMax = 3;
     }
 
-    /**
-     * L'équipe dont on regarde la composition.
-     *
-     * Publique parce que la vue en dépend, et `#[Locked]` parce qu'elle vient du navigateur : une
-     * propriété publique Livewire est modifiable par `$set`. Ici elle ne porte pas de décision
-     * d'autorisation — chaque action revérifie sa permission et rescope sa requête — mais la
-     * verrouiller évite qu'un identifiant forgé désigne une équipe qu'on n'a pas ouverte.
-     */
+    /** L'équipe dont on regarde la composition. */
     #[Locked]
     public ?int $equipeOuverteId = null;
 
@@ -106,14 +84,7 @@ class FieldTeams extends Component
         $this->equipeOuverteId = $this->equipeDeLaSociete($teamId)?->id;
     }
 
-    /**
-     * Ajouter quelqu'un à une équipe.
-     *
-     * `field_team_members` n'était manipulable que depuis l'administration de la PLATEFORME : une
-     * société qui créait son équipe sur cet écran ne pouvait pas la peupler, et devait appeler un
-     * administrateur pour y mettre quelqu'un. L'équipe restait donc vide, et une équipe vide ne peut
-     * recevoir aucune mission.
-     */
+    /** Ajouter quelqu'un à une équipe. */
     public function ajouterMembre(int $teamId, int $userId): void
     {
         $acteur = Auth::user();
@@ -141,23 +112,14 @@ class FieldTeams extends Component
             return;
         }
 
-        /*
-         * `updateOrCreate` sur (équipe, personne) : le geste est REJOUABLE. Quelqu'un qui avait
-         * quitté l'équipe la réintègre par le même bouton, sans ligne en double — et `left_at` est
-         * remis à null, sans quoi il resterait invisible des lectures.
-         */
+        // `updateOrCreate` sur (équipe, personne) : le geste est REJOUABLE.
         FieldTeamMember::updateOrCreate(
             ['field_team_id' => $equipe->id, 'user_id' => $userId],
             ['is_active' => true, 'left_at' => null, 'joined_at' => now()],
         );
     }
 
-    /**
-     * Retirer quelqu'un d'une équipe.
-     *
-     * La ligne SURVIT — `is_active` à faux, `left_at` daté. L'historique d'une équipe doit pouvoir
-     * dire qui en a fait partie : les missions passées portent son nom.
-     */
+    /** Retirer quelqu'un d'une équipe. La ligne SURVIT — `is_active` à faux, `left_at` daté. */
     public function retirerMembre(int $teamId, int $userId): void
     {
         $acteur = Auth::user();
@@ -178,12 +140,7 @@ class FieldTeams extends Component
             ->where('user_id', $userId)
             ->update(['is_active' => false, 'left_at' => now()]);
 
-        /*
-         * LE MENEUR QUI PART CESSE DE MENER. Laisser `team_lead_user_id` désigner un partant
-         * donnerait la mission au premier membre actif à l'assignation suivante — sans que rien ne
-         * l'explique — et `ReassignmentPolicy` continuerait de lui accorder la main sur les missions
-         * de l'équipe.
-         */
+        // LE MENEUR QUI PART CESSE DE MENER.
         if ((int) $equipe->team_lead_user_id === $userId) {
             $equipe->update(['team_lead_user_id' => null]);
         }

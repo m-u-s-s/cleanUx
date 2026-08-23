@@ -9,14 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * Zones d'intervention du prestataire.
- *
- * `POST /provider/onboarding/skills` accepte `service_zone_ids` depuis toujours, mais aucune
- * route ne permettait de connaître les zones existantes : aucun écran ne pouvait donc en
- * proposer, et le champ restait vide. Sans zone déclarée, le matching géographique n'a rien sur
- * quoi travailler — un prestataire vérifié ne recevait aucune mission.
- */
+/** Zones d'intervention du prestataire. */
 class ProviderServiceZonesTest extends TestCase
 {
     use RefreshDatabase;
@@ -33,10 +26,7 @@ class ProviderServiceZonesTest extends TestCase
             ->assertJsonPath('zones.0.name', 'Zone Bruxelles');
     }
 
-    /**
-     * Proposer une zone fermée laisserait un prestataire s'y positionner sans jamais y recevoir
-     * la moindre mission.
-     */
+    /** Proposer une zone fermée laisserait un prestataire s'y positionner sans jamais y recevoir la moindre mission. */
     public function test_a_closed_zone_is_not_offered(): void
     {
         $this->zone('Zone ouverte', bookable: true, visible: true);

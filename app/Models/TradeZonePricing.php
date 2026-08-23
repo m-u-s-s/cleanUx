@@ -11,9 +11,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * TradeZonePricing — tarif de base d'un métier dans une zone de service.
  *
- * Permet de surcharger le default_hourly_rate du Trade par zone géographique,
- * avec un multiplicateur de surge et des planchers/plafonds en centimes.
- *
  * @property int $id
  * @property int $trade_id
  * @property int $service_zone_id
@@ -46,21 +43,13 @@ class TradeZonePricing extends Model
         'max_price_cents',
         'is_active',
         'asap_enabled',
-        /*
-         * LE PRIX AU KILOMETRE — meme ligne que l'activation, parce que c'est la meme nature de
-         * decision : ce metier est ouvert ICI, a ce tarif-la. Une course coute plus cher au
-         * kilometre en centre-ville qu'en peripherie, et personne ne devrait deployer pour le dire.
-         */
+        // LE PRIX AU KILOMETRE — meme ligne que l'activation, parce que c'est la meme nature de decision : ce metier est ouvert ICI, a ce tarif-la.
         'distance_pricing_enabled',
         'pickup_fee_cents',
         'price_per_km_cents',
         'price_per_minute_cents',
         'included_km',
-        /*
-         * LE PRIX DE L'HEURE, meme raison que le prix du kilometre juste au-dessus : le tarif vendu
-         * vit par zone. Une heure de menage ne vaut pas la meme chose a Bruxelles et dans un
-         * village, et `trades.default_hourly_rate` n'est qu'une reference.
-         */
+        // LE PRIX DE L'HEURE, meme raison que le prix du kilometre juste au-dessus : le tarif vendu vit par zone.
         'price_per_hour_cents',
         'metadata',
     ];
@@ -75,12 +64,7 @@ class TradeZonePricing extends Model
         'distance_pricing_enabled' => 'boolean',
         'pickup_fee_cents' => 'integer',
         'included_km' => 'integer',
-        /*
-         * PAS DE CAST `integer`, deliberement -- comme `price_per_km_cents` et
-         * `price_per_minute_cents` juste au-dessus, qui n'y figurent pas non plus. Le cast
-         * ecraserait `null` en `0`, et le resolveur ne pourrait plus distinguer « cette zone ne
-         * surcharge rien » de « une heure y est gratuite ».
-         */
+        // PAS DE CAST `integer`, deliberement -- comme `price_per_km_cents` et `price_per_minute_cents` juste au-dessus, qui n'y figurent pas non plus.
         'metadata' => 'array',
     ];
 

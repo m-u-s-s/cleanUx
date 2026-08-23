@@ -10,18 +10,7 @@ use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * LA SEULE FAÇON DE REGARDER UN VISAGE — et elle laisse une trace.
- *
- * Trois verrous, empruntés au contrôleur des pièces d'onboarding qui fait déjà exactement ça :
- * une URL SIGNÉE à durée courte, un contrôle d'administrateur en dur dans la méthode, et aucune
- * mise en cache. Sans l'URL signée, le chemin du fichier suffirait ; sans le contrôle en dur, une
- * signature qui fuite ouvrirait l'image à n'importe qui.
- *
- * S'y ajoute une quatrième chose que le contrôleur des pièces n'a pas : CHAQUE CONSULTATION EST
- * JOURNALISÉE. Une donnée biométrique regardée sans trace, c'est un registre de traitement qu'on
- * ne peut pas produire le jour où on le demande.
- */
+/** LA SEULE FAÇON DE REGARDER UN VISAGE — et elle laisse une trace. */
 class FaceCheckImageController extends Controller
 {
     public function reference(Request $request, ProviderFaceProfile $profile, FaceImageStore $store): Response
@@ -55,11 +44,7 @@ class FaceCheckImageController extends Controller
 
     private function rendre(?string $contenu, ?string $mime): Response
     {
-        /*
-         * 410 et non 404 : le selfie a existé, il a été purgé par la rétention. La nuance compte
-         * pour l'administrateur qui enquête — « jamais eu d'image » et « image effacée après
-         * trente jours » n'appellent pas la même conclusion.
-         */
+        // 410 et non 404 : le selfie a existé, il a été purgé par la rétention.
         abort_if($contenu === null, 410, "Cette image n'est plus disponible (purgée ou illisible).");
 
         return response($contenu, 200, [

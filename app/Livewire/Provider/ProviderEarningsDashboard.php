@@ -19,16 +19,7 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/**
- * Dashboard provider earnings (revenus jour/semaine/mois + tips + projections).
- *
- * Lit depuis :
- *   - bookings (status=termine, amount captured)
- *   - booking_tips (status=charged/paid_out)
- *   - provider_wallet_transactions (ledger immuable provider)
- *
- * Toutes les agrégations sont per-period (today / this_week / this_month + prev period).
- */
+/** Dashboard provider earnings (revenus jour/semaine/mois + tips + projections). */
 class ProviderEarningsDashboard extends Component
 {
     public string $period = 'week';   // today | week | month | year
@@ -54,12 +45,7 @@ class ProviderEarningsDashboard extends Component
         $this->anneeFiscale = (int) Carbon::now()->year;
     }
 
-    /**
-     * DEMANDER UN VIREMENT INSTANTANÉ (E14).
-     *
-     * Le refus du domaine s'AFFICHE : « le virement instantané demande au moins 20 € » est une
-     * règle à lire, et la remplacer par une erreur générique ferait recommencer la saisie.
-     */
+    /** DEMANDER UN VIREMENT INSTANTANÉ (E14). */
     public function demanderLeVirementExpress(): void
     {
         $cents = (int) round(((float) str_replace(',', '.', $this->montantExpress)) * 100);
@@ -104,17 +90,9 @@ class ProviderEarningsDashboard extends Component
 
         return view('livewire.provider.provider-earnings-dashboard', [
             'period' => $this->period,
-            /*
-             * E15 — LES STATISTIQUES D'OFFRES. Tout est déjà dans `mission_assignments` et personne
-             * ne le lit : c'est la réponse exacte à « pourquoi est-ce que je reçois moins de
-             * courses qu'avant », une question à laquelle on ne pouvait répondre qu'au ressenti.
-             */
+            // E15 — LES STATISTIQUES D'OFFRES.
             'offres' => app(OfferStatsService::class)->pour($user),
-            /*
-             * E18 — L'ASSISTANT FISCAL. Le registre est immuable et daté ; il n'existait aucun
-             * moyen d'en sortir un total autrement qu'en additionnant des virements à la main, en
-             * avril, sous pression.
-             */
+            // E18 — L'ASSISTANT FISCAL.
             'fiscal' => app(TaxSummaryService::class)->pourLAnnee($user, (int) $this->anneeFiscale),
             // E14 — le devis du virement instantané, affiché AVANT le bouton : « 1,5 % » se lit et
             // ne se comprend pas, « 2,40 € » se comprend.
@@ -193,19 +171,7 @@ class ProviderEarningsDashboard extends Component
                 ->sum('amount_cents');
         }
 
-        /*
-         * DEUX COLONNES INEXISTANTES DANS LE MÊME BLOC — la section « portefeuille » de cette page
-         * n'a jamais rien pu afficher.
-         *
-         * Le filtre portait sur `user_id`, la colonne s'appelle `provider_user_id` ; la somme
-         * portait sur `amount_cents`, la colonne s'appelle `amount` et vaut des EUROS. Sur MySQL,
-         * chacune lève « Unknown column ». Sur SQLite — le moteur de la suite de tests — Laravel
-         * entoure les identifiants de guillemets doubles et SQLite traite un identifiant inconnu
-         * comme une CHAÎNE LITTÉRALE : la comparaison est fausse en silence et la somme rend zéro.
-         *
-         * Le défaut était donc invisible aux tests ET masqué par une table vide. Même un paiement
-         * réellement encaissé n'aurait rien affiché ici.
-         */
+        // DEUX COLONNES INEXISTANTES DANS LE MÊME BLOC — la section « portefeuille » de cette page n'a jamais rien pu afficher.
         $walletEarnedCents = 0;
         $walletPaidOutCents = 0;
         if (Schema::hasTable('provider_wallet_transactions')) {

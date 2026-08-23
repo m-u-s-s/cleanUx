@@ -8,10 +8,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
 
-/**
- * Admin analytics : pivot des raisons d'annulation pour identifier les frictions.
- * Source : bookings.cancellation_reason + cancelled_at.
- */
+/** Admin analytics : pivot des raisons d'annulation pour identifier les frictions. */
 class CancellationReasonsCenter extends Component
 {
     use EnforcesAdminAccess;
@@ -60,11 +57,7 @@ class CancellationReasonsCenter extends Component
             : 0;
 
         $rows = (clone $base)
-            /*
-             * `cancellation_fee_amount` est un `decimal(10,2)` EN EUROS — son alias annonçait des
-             * centimes, et la vue divisait donc le total par cent. La somme n'a jamais montré
-             * l'erreur : personne n'écrivait cette colonne, et elle affichait 0 €.
-             */
+            // `cancellation_fee_amount` est un `decimal(10,2)` EN EUROS — son alias annonçait des centimes, et la vue divisait donc le total par cent.
             ->selectRaw('cancellation_reason, COUNT(*) as count, SUM(COALESCE(cancellation_fee_amount,0)) as total_fee_euros')
             ->whereNotNull('cancellation_reason')
             ->where('cancellation_reason', '!=', '')

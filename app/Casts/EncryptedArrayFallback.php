@@ -7,9 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 
 /**
- * Array cast that stores the value ENCRYPTED at rest (L7), but reads legacy *plaintext* JSON
- * gracefully — so enabling the cast on a column that already holds unencrypted JSON does not
- * break existing rows (avoids DecryptException during the transition before the backfill runs).
+ * Array cast that stores the value ENCRYPTED at rest (L7), but reads legacy *plaintext* JSON gracefully — so enabling the cast on a column that already holds unencrypted JSON does not break existing rows (avoids DecryptException during the transition before the backfill runs).
  *
  * @implements CastsAttributes<array<array-key, mixed>|null, array<array-key, mixed>|null>
  */

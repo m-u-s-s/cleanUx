@@ -7,18 +7,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
-/**
- * Phase 7 — Calcul centralisé des KPIs business pour le dashboard analytics.
- *
- * Thin orchestrator: delegates to KpiAggregator (DB queries),
- * KpiCalculator (pure math), and KpiFormatter (output shaping).
- *
- * Périmètre adapté automatiquement :
- *   - User entreprise → KPIs scopés à organization_account_id
- *   - User admin      → KPIs globaux plateforme
- *
- * Cache 5 minutes par scope (compromis fraîcheur / charge DB).
- */
+/** Phase 7 — Calcul centralisé des KPIs business pour le dashboard analytics. */
 class AnalyticsKpiService
 {
     private const CACHE_TTL = 300; // 5 minutes
@@ -38,12 +27,12 @@ class AnalyticsKpiService
      * Compute les KPIs principaux pour une période donnée.
      *
      * @return array{
-     *   revenue: array{value:float, currency:string, trend:?float, label:string},
-     *   bookings_count: array{value:int, trend:?float, label:string},
-     *   completed_count: array{value:int, completion_rate:?float, label:string},
-     *   cancellation_rate: array{value:float, trend:?float, label:string},
-     *   average_rating: array{value:?float, count:int, label:string},
-     *   active_sites: array{value:int, total:int, label:string},
+     * revenue: array{value:float, currency:string, trend:?float, label:string},
+     * bookings_count: array{value:int, trend:?float, label:string},
+     * completed_count: array{value:int, completion_rate:?float, label:string},
+     * cancellation_rate: array{value:float, trend:?float, label:string},
+     * average_rating: array{value:?float, count:int, label:string},
+     * active_sites: array{value:int, total:int, label:string},
      * }
      */
     public function mainKpis(?int $organizationAccountId, CarbonImmutable $from, CarbonImmutable $to): array
@@ -147,9 +136,7 @@ class AnalyticsKpiService
         return $this->formatter->formatTopServices($rows);
     }
 
-    /**
-     * Top sites (pour client entreprise multi-sites).
-     */
+    /** Top sites (pour client entreprise multi-sites). */
     public function topSites(?int $organizationAccountId, CarbonImmutable $from, CarbonImmutable $to, int $limit = 10): Collection
     {
         if (! $organizationAccountId) {
@@ -165,9 +152,7 @@ class AnalyticsKpiService
         });
     }
 
-    /**
-     * Évolution de la satisfaction (rating moyen par mois).
-     */
+    /** Évolution de la satisfaction (rating moyen par mois). */
     public function satisfactionTrend(?int $organizationAccountId, int $months = 12): Collection
     {
         $cacheKey = $this->cacheKey('satisfaction_trend', $organizationAccountId, null, null, ['m' => $months]);
@@ -186,10 +171,10 @@ class AnalyticsKpiService
      * Alertes business : éléments qui méritent l'attention immédiate.
      *
      * @return array{
-     *   overdue_invoices: int,
-     *   pending_approvals: int,
-     *   open_incidents: int,
-     *   bookings_at_risk: int,
+     * overdue_invoices: int,
+     * pending_approvals: int,
+     * open_incidents: int,
+     * bookings_at_risk: int,
      * }
      */
     public function alerts(?int $organizationAccountId): array

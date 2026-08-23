@@ -14,44 +14,16 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Service Push unifié (Phase Push v2 — prod-ready).
- *
- *   - Provider-agnostic (FCM / APNs / Mock)
- *   - Ledger PushNotification + idempotency
- *   - Opt-out par catégorie (cf. DeviceToken::preferences)
- *   - Token invalidation auto sur erreurs provider (UNREGISTERED, BadDeviceToken)
- *   - Rate limiting per token + per user
- *   - Audit via ActivityLogger
- */
+/** Service Push unifié (Phase Push v2 — prod-ready). */
 class PushService
 {
     public function __construct(protected PushProviderInterface $provider) {}
 
-    /**
-     * Sélectionne le provider adapté à la plateforme du device token.
-     *
-     * Multi-platform routing :
-     *   - ios (native APNs) → APNs si configuré, sinon FCM (qui sait router APNs)
-     *   - android (FCM) → FCM
-     *   - web (Web Push API) → FCM si configuré, sinon Web Push (sender propre)
-     *
-     * Fallback : si aucun provider disponible pour la platform, utilise le bind par défaut.
-     */
+    /** Sélectionne le provider adapté à la plateforme du device token. */
     protected function providerFor(DeviceToken $token): PushProviderInterface
     {
         try {
-            /*
-             * LE FOURNISSEUR DU JETON PASSE AVANT SA PLATEFORME.
-             *
-             * Un jeton Expo — `ExponentPushToken[…]` — n'est ni un jeton FCM ni un jeton APNs :
-             * Expo garde la correspondance de son côté et route lui-même vers Google et Apple.
-             * L'aiguillage par plateforme ci-dessous l'enverrait donc à FCM, qui le rejetterait.
-             *
-             * On lit `device_tokens.provider`, écrit à l'enregistrement par l'application
-             * elle-même. C'est elle qui sait de quel service vient son jeton ; le deviner depuis la
-             * plateforme rouvrirait l'écart que ce lot vient de fermer.
-             */
+            // LE FOURNISSEUR DU JETON PASSE AVANT SA PLATEFORME.
             if (strtolower((string) ($token->provider ?? '')) === 'expo'
                 && class_exists(ExpoPushProvider::class)) {
                 return app(ExpoPushProvider::class);
@@ -83,9 +55,7 @@ class PushService
         return $this->provider;
     }
 
-    /**
-     * Envoi push à un device token spécifique.
-     */
+    /** Envoi push à un device token spécifique. */
     public function dispatch(
         DeviceToken $token,
         ?string $title,

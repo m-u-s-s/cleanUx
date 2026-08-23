@@ -11,21 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Phase 11 — Job de timeout d'une offre de mission.
- *
- * Dispatché par MissionDispatchService::createOffer() avec ->delay($expiresAt).
- *
- * À l'exécution :
- *   1. Recharge l'assignment depuis la DB
- *   2. Si encore "assigned" et expiré → expireAndEscalate()
- *   3. Sinon (déjà accepté/refusé/expiré) → ne rien faire
- *
- * Robustesse :
- *   - Si l'assignment n'existe plus, on logue et on stoppe (pas de retry)
- *   - tries=1 : pas de retry (l'escalation se déclenche elle-même un nouveau job
- *     pour le prochain prestataire)
- */
+/** Phase 11 — Job de timeout d'une offre de mission. */
 class EscalateMissionAssignmentJob implements ShouldQueue
 {
     use Dispatchable;
@@ -56,9 +42,7 @@ class EscalateMissionAssignmentJob implements ShouldQueue
         $service->expireAndEscalate($assignment);
     }
 
-    /**
-     * Tag pour Horizon : permet de filtrer les jobs de dispatch dans le dashboard.
-     */
+    /** Tag pour Horizon : permet de filtrer les jobs de dispatch dans le dashboard. */
     public function tags(): array
     {
         return ['dispatch', 'mission-assignment-'.$this->assignmentId];

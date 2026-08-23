@@ -7,18 +7,7 @@ use App\Support\Notifications\InteractsWithUserNotificationPreferences;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * « VOUS ÊTES SUSPENDU, ET VOICI POURQUOI. »
- *
- * Sans cette notification, un prestataire découvrait sa suspension en essayant de passer en ligne
- * un lundi matin, devant un client qui l'attend. Il faut le lui dire au moment où c'est décidé,
- * lui donner le motif, et surtout lui dire CE QUI NE MARCHERA PAS : attendre, et cliquer sur
- * « ça ne marche pas ». Un blocage qu'on ne sait pas comment lever se transforme en appel au
- * support, puis en désinstallation.
- *
- * Pas `ShouldQueue`, comme les alertes de sécurité : une file bouchée est exactement le moment où
- * ce message compte.
- */
+/** « VOUS ÊTES SUSPENDU, ET VOICI POURQUOI. */
 class FaceCheckBlockedNotification extends Notification
 {
     use InteractsWithUserNotificationPreferences;
@@ -30,12 +19,7 @@ class FaceCheckBlockedNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        /*
-         * Catégorie `transactional` par défaut de résolution : c'est une conséquence directe de
-         * l'usage du service, pas une communication qu'on peut couper. `preferredChannels` garde
-         * de toute façon `database` même si tout est désactivé — un blocage muet serait le pire
-         * des deux mondes.
-         */
+        // Catégorie `transactional` par défaut de résolution : c'est une conséquence directe de l'usage du service, pas une communication qu'on peut couper.
         return $this->preferredChannels($notifiable, 'face_check_blocked', ['database', 'mail']);
     }
 

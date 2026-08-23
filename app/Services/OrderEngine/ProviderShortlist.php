@@ -6,16 +6,7 @@ use App\Models\Trade;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Les professionnels proposés au client, quand il veut choisir.
- *
- * Le choix est FACULTATIF, et c'est le point. Par défaut, « le meilleur professionnel disponible »
- * est déjà retenu et suffit pour continuer : obliger à trancher entre douze inconnus transforme un
- * service en corvée de comparaison, sur des critères que le client n'a aucun moyen d'arbitrer.
- *
- * Ceux qui veulent choisir trouvent ici de quoi le faire — note, missions accomplies, distance —
- * et rien de décoratif. Un badge « professionnel vérifié » sur tout le monde n'aide personne.
- */
+/** Les professionnels proposés au client, quand il veut choisir. */
 class ProviderShortlist
 {
     public function __construct(
@@ -24,8 +15,8 @@ class ProviderShortlist
 
     /**
      * @return Collection<int, array{
-     *     id: int, name: string, rating: float|null, rating_count: int,
-     *     missions_count: int, distance_m: int, distance_km: float
+     * id: int, name: string, rating: float|null, rating_count: int,
+     * missions_count: int, distance_m: int, distance_km: float
      * }>
      */
     public function forTrade(Trade $trade, float $lat, float $lng, int $limit = 6): Collection
@@ -69,9 +60,6 @@ class ProviderShortlist
 
     /**
      * Missions réellement terminées, par prestataire.
-     *
-     * Une requête groupée plutôt qu'une par ligne : la liste en compte six, mais la même erreur
-     * répétée sur chaque écran de la plateforme finit par se voir.
      *
      * @param  list<int>  $providerIds
      * @return array<int, int>

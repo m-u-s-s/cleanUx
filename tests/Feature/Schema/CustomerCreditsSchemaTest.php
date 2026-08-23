@@ -8,10 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-/**
- * M6 — customer_credits consolidated on the credit-per-booking model; dead wallet columns and the
- * orphan ledger table are gone, and the canonical model still works.
- */
+/** M6 — customer_credits consolidated on the credit-per-booking model; dead wallet columns and the orphan ledger table are gone, and the canonical model still works. */
 class CustomerCreditsSchemaTest extends TestCase
 {
     use RefreshDatabase;

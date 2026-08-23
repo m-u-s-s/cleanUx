@@ -6,14 +6,7 @@ use App\Models\ProviderProfile;
 use App\Models\Trade;
 use Illuminate\Http\Response;
 
-/**
- * Public SEO endpoints :
- *   - sitemap.xml : tous les providers actifs vérifiés + pages stat
- *   - robots.txt : crawling rules
- *
- * Format sitemap : urls indexed by Google/Bing pour acquisition organique.
- * Cible : /providers/{trade_slug}/{city_slug}/{provider_slug}
- */
+/** Public SEO endpoints : - sitemap.xml : tous les providers actifs vérifiés + pages stat - robots.txt : crawling rules Format sitemap : urls indexed by Google/Bing pour acquisition organique. */
 class PublicSeoController extends Controller
 {
     public function sitemap(): Response

@@ -2,10 +2,7 @@
 
 namespace App\Services\Kyc;
 
-/**
- * Résultat d'une lecture (poll ou webhook) du statut d'une vérification chez
- * le provider externe.
- */
+/** Résultat d'une lecture (poll ou webhook) du statut d'une vérification chez le provider externe. */
 class KycStatusResult
 {
     public function __construct(

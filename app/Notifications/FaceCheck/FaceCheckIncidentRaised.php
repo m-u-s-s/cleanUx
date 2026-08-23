@@ -8,15 +8,7 @@ use App\Support\Notifications\InteractsWithUserNotificationPreferences;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * Ce qui arrive dans la boîte d'un administrateur quand un contrôle facial appelle un humain.
- *
- * PAS `ShouldQueue`, comme `SafetyAlertRaised` : une alerte de sécurité qui attend qu'un worker
- * la ramasse est une alerte qui n'arrive pas quand la file est bouchée — et c'est précisément
- * quand quelque chose ne va pas que la file est bouchée.
- *
- * `database` en premier dans `via()` : c'est le seul canal qui ne dépend d'aucun tiers.
- */
+/** Ce qui arrive dans la boîte d'un administrateur quand un contrôle facial appelle un humain. */
 class FaceCheckIncidentRaised extends Notification
 {
     use InteractsWithUserNotificationPreferences;

@@ -82,12 +82,7 @@ class FleetServiceTest extends TestCase
         $p = User::factory()->create();
         $svc = app(FleetService::class);
 
-        /*
-         * Une VRAIE réservation : `fleet_assignments.booking_id` porte désormais une clé étrangère
-         * vers `bookings`. L'identifiant 42 ne désignait aucune ligne — ce que l'absence de
-         * contrainte laissait passer. Ce que ce test vérifie, l'idempotence sur un même couple
-         * (véhicule, prestataire, réservation), ne change pas.
-         */
+        // Une VRAIE réservation : `fleet_assignments.booking_id` porte désormais une clé étrangère vers `bookings`.
         $reservation = Booking::factory()->create();
 
         $a = $svc->assignVehicle($v, $p, bookingId: $reservation->id);

@@ -11,18 +11,7 @@ use Stripe\Stripe;
 use Tests\Support\Stripe\FakeStripeHttpClient;
 use Tests\TestCase;
 
-/**
- * Ce que `syncAccountStatus()` enregistre réellement.
- *
- * La méthode écrit quatre champs sur l'utilisateur : le statut, puis les dates d'aboutissement,
- * d'activation des encaissements et d'activation des versements. Trois de ces colonnes
- * n'existaient pas sur `users` et n'étaient pas assignables en masse : `update()` les rejetait en
- * silence. La synchronisation semblait réussir et ne persistait que le statut, sans qu'aucune
- * erreur ne le signale jamais.
- *
- * La couverture existante ne testait que le retour anticipé — le cas sans compte lié — donc
- * jamais l'écriture elle-même. C'est exactement ce qui a laissé le défaut invisible.
- */
+/** Ce que `syncAccountStatus()` enregistre réellement. */
 class StripeConnectSyncPersistenceTest extends TestCase
 {
     use RefreshDatabase;
@@ -74,10 +63,7 @@ class StripeConnectSyncPersistenceTest extends TestCase
         $this->assertNull($user->stripe_connect_payouts_enabled_at);
     }
 
-    /**
-     * La date d'aboutissement marque la PREMIÈRE fois : une synchronisation ultérieure ne doit
-     * pas la repousser, sans quoi la piste d'audit dirait n'importe quoi.
-     */
+    /** La date d'aboutissement marque la PREMIÈRE fois : une synchronisation ultérieure ne doit pas la repousser, sans quoi la piste d'audit dirait n'importe quoi. */
     public function test_the_onboarded_date_is_not_pushed_forward_on_a_later_sync(): void
     {
         $user = $this->provider('acct_stable');
@@ -95,14 +81,7 @@ class StripeConnectSyncPersistenceTest extends TestCase
         );
     }
 
-    /**
-     * Garde de bout en bout du chemin monétaire : après une synchronisation complète, le
-     * prestataire doit pouvoir être payé.
-     *
-     * Ce test ne prouve PAS que la date y suffit — par cette voie, `stripe_connect_status` passe
-     * à `active` en même temps, et il suffit à lui seul. Il vaut comme anti-régression du
-     * résultat, pas comme démonstration du rôle de la date.
-     */
+    /** Garde de bout en bout du chemin monétaire : après une synchronisation complète, le prestataire doit pouvoir être payé. */
     public function test_a_synced_account_can_be_paid(): void
     {
         $user = $this->provider('acct_paiement');

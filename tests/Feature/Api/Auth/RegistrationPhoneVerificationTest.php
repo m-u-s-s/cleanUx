@@ -10,18 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * Vérification du téléphone AVANT la création du compte.
- *
- * Le parcours prestataire demande le numéro au premier écran et le vérifie par SMS, comme Uber et
- * Heetch : c'est l'identifiant opérationnel du prestataire. Or le module OTP existant exigeait un
- * `User` — sa table portait `user_id` NOT NULL avec clé étrangère — et ne savait donc vérifier que
- * le téléphone d'un compte déjà créé.
- *
- * La pièce sensible est le jeton rendu après vérification : c'est lui, et non un booléen envoyé
- * par le client, qui autorise `phone_verified_at`. Les tests ci-dessous décrivent surtout ce
- * qu'il ne doit PAS permettre.
- */
+/** Vérification du téléphone AVANT la création du compte. */
 class RegistrationPhoneVerificationTest extends TestCase
 {
     use RefreshDatabase;
@@ -86,10 +75,7 @@ class RegistrationPhoneVerificationTest extends TestCase
         $this->assertNotNull($user->phone_verified_at);
     }
 
-    /**
-     * Le point de sécurité de tout ce lot : un numéro vérifié une fois ne doit pas ouvrir un
-     * nombre illimité de comptes vérifiés. C'est ce que `consumed_at` garantit.
-     */
+    /** Le point de sécurité de tout ce lot : un numéro vérifié une fois ne doit pas ouvrir un nombre illimité de comptes vérifiés. */
     public function test_a_token_cannot_be_used_twice(): void
     {
         $token = $this->verifiedToken();
@@ -148,12 +134,7 @@ class RegistrationPhoneVerificationTest extends TestCase
         $this->assertNull($user->phone_verified_at);
     }
 
-    /**
-     * Demande un code et le relit dans le SMS émis — seul endroit où il circule en clair, la
-     * table n'en gardant que le hash. Le déduire du hash demanderait un million de vérifications
-     * bcrypt ; le reconstruire à la main ferait de ce test un décor qui resterait vert si
-     * l'implémentation changeait.
-     */
+    /** Demande un code et le relit dans le SMS émis — seul endroit où il circule en clair, la table n'en gardant que le hash. */
     private function issueCode(): string
     {
         $this->postJson(self::REQUEST_ROUTE, ['phone' => self::PHONE])->assertCreated();

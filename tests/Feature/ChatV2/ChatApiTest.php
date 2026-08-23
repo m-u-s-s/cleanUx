@@ -43,12 +43,7 @@ class ChatApiTest extends TestCase
         $user = User::factory()->create();
         $other = User::factory()->create();
 
-        /*
-         * LA RÉSERVATION PARTAGÉE EST DÉSORMAIS INDISPENSABLE, et ce test la posait auparavant sur
-         * un `context_id` fantaisiste (11) qui ne désignait rien. Il vérifiait donc, sans le dire,
-         * qu'un compte pouvait ouvrir un fil avec un parfait inconnu — c'était le trou, pas le
-         * contrat.
-         */
+        // LA RÉSERVATION PARTAGÉE EST DÉSORMAIS INDISPENSABLE, et ce test la posait auparavant sur un `context_id` fantaisiste (11) qui ne désignait rien.
         $booking = Booking::factory()->create([
             'client_id' => $user->id,
             'customer_user_id' => $user->id,

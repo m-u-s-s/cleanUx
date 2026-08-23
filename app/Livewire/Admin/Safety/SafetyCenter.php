@@ -32,13 +32,7 @@ class SafetyCenter extends Component
 
     public string $resolutionNotes = '';
 
-    /**
-     * ACCUSER RÉCEPTION D'UNE ALERTE D'URGENCE (E33).
-     *
-     * C'EST LE GESTE QUI COMPTE LE PLUS, et pas la résolution : savoir que quelqu'un a VU l'alerte
-     * est ce que la personne sur place attend en premier. Savoir qu'on est seul est ce qui rend une
-     * situation effrayante.
-     */
+    /** ACCUSER RÉCEPTION D'UNE ALERTE D'URGENCE (E33). */
     public function accuserReception(int $alerteId): void
     {
         $alerte = SafetyAlert::query()->find($alerteId);
@@ -143,14 +137,7 @@ class SafetyCenter extends Component
             : null;
 
         return view('livewire.admin.safety.safety-center', [
-            /*
-             * LES ALERTES D'URGENCE (E33), EN TÊTE DE L'ÉCRAN.
-             *
-             * Le centre traitait les SIGNALEMENTS — de la modération, arbitrée des jours plus
-             * tard. Rien n'existait pour l'urgence : quelqu'un seul chez un inconnu, dont il faut
-             * savoir où il est maintenant. Les urgences passent avant les veilles, et les deux
-             * avant tout le reste de cet écran.
-             */
+            // LES ALERTES D'URGENCE (E33), EN TÊTE DE L'ÉCRAN.
             'alertes' => app(SafetyAlertService::class)->ouvertes(),
             'reports' => $reports,
             'blocks' => $blocks,

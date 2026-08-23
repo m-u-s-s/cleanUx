@@ -5,11 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Un réglage rôle → permission propre à une organisation.
- *
- * Complète, sans la remplacer, la matrice par défaut codée dans `PermissionService`.
- */
+/** Un réglage rôle → permission propre à une organisation. */
 class OrganizationRolePermission extends Model
 {
     protected $fillable = [

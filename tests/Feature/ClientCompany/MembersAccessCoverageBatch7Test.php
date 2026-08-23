@@ -14,25 +14,12 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * Coverage-focused exercise of App\Livewire\ClientCompany\MembersAccess.
- *
- * Drives the mount guard, invitation (existing user / pending / duplicate /
- * validation / permission), role changes (success / rank guard / forbidden /
- * cross-org), member status transitions (suspend / reactivate / remove and
- * their self / hierarchy / permission guards) plus the custom-permission
- * toggles and the computed properties.
- */
+/** Coverage-focused exercise of App\Livewire\ClientCompany\MembersAccess. */
 class MembersAccessCoverageBatch7Test extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * The component orders members with the MySQL-only FIELD() function. The
-     * test database is SQLite, which lacks it, so register a compatible UDF on
-     * the active connection before any render happens. This touches only the
-     * test harness — never the component, config or migrations.
-     */
+    /** The component orders members with the MySQL-only FIELD() function. */
     protected function setUp(): void
     {
         parent::setUp();
@@ -78,9 +65,7 @@ class MembersAccessCoverageBatch7Test extends TestCase
         return [$org, $user, $member];
     }
 
-    /**
-     * Attach an extra member (a brand-new user) to the given organisation.
-     */
+    /** Attach an extra member (a brand-new user) to the given organisation. */
     private function makeMember(
         OrganizationAccount $org,
         string $role = OrganizationRole::REQUESTER->value,

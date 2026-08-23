@@ -10,19 +10,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Helper soft-fail pour auto-transitionner la presence du provider
- * en réaction aux changements de status booking.
- *
- * Workflow :
- *   - Booking → en_cours (provider start mission)   → presence::goBusy
- *   - Booking → termine/cancelled                   → presence::goOnline (si auto_online_on_mission_complete)
- *
- * Appelé depuis BookingObserver::saved. Skip silencieusement si :
- *   - module Presence pas installé (table absente)
- *   - feature désactivée (config)
- *   - provider n'a pas de presence record (pas online actuellement)
- */
+/** Helper soft-fail pour auto-transitionner la presence du provider en réaction aux changements de status booking. */
 class PresenceAutoTransitioner
 {
     public static function bookingStarted(Booking $booking): void
@@ -91,33 +79,7 @@ class PresenceAutoTransitioner
         return (bool) Config::get('presence.enabled', true);
     }
 
-    /**
-     * L'INTERVENANT VIT SUR LA MISSION, pas seulement sur la réservation.
-     *
-     * Cette résolution ne lisait que des colonnes de `bookings`. Or une mission confiée à une
-     * SOCIÉTÉ prestataire, ou réassignée après coup, porte son responsable sur
-     * `missions.lead_provider_user_id` sans que la réservation en sache rien : le module de
-     * présence ne trouvait alors personne et se taisait — dans les deux sens.
-     *
-     * La conséquence n'était pas cosmétique. `bookingEnded()` fait repasser `busy → online`, et
-     * `CandidateFinder` exige `online` : un prestataire basculé en occupé par `DispatchEngine`
-     * mais introuvable ici restait occupé indéfiniment, et cessait donc en silence de recevoir la
-     * moindre offre — après sa PREMIÈRE course.
-     *
-     * LA MISSION PASSE DEVANT, et ce n'est pas un détail d'ordre.
-     *
-     * `bookings.employe_id` est le prestataire de la COMMANDE ; `missions.lead_provider_user_id`
-     * est celui qui INTERVIENT. Les deux divergent dès qu'une mission est réassignée — la
-     * réservation garde l'ancien nom — et dès qu'une société confie le travail à l'un de ses
-     * salariés. Lire la réservation d'abord basculait alors la présence de quelqu'un qui n'y va
-     * pas, en laissant occupé celui qui y est vraiment.
-     *
-     * Les colonnes de la réservation restent en repli : quand la mission ne désigne personne,
-     * elles sont la seule information disponible, et le comportement des parcours qui n'ont jamais
-     * divergé est inchangé. Cet ordre est celui de `Booking::intervenantId()`, et n'est pas
-     * recopié ici : une règle d'identité qui existe en deux exemplaires finit toujours par
-     * diverger.
-     */
+    /** L'INTERVENANT VIT SUR LA MISSION, pas seulement sur la réservation. */
     protected static function resolveProvider(Booking $booking): ?User
     {
         return $booking->intervenant();

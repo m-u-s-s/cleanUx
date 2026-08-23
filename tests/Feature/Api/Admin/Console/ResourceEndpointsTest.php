@@ -8,13 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Les endpoints génériques du moteur de console.
- *
- * Ils sont éprouvés sur un descripteur d'essai plutôt que sur un vrai domaine : les défauts du
- * moteur et ceux d'un domaine se mêleraient sinon, et un test rouge ne dirait pas lequel des deux
- * est en cause.
- */
+/** Les endpoints génériques du moteur de console. */
 class ResourceEndpointsTest extends TestCase
 {
     use RefreshDatabase;
@@ -58,12 +52,7 @@ class ResourceEndpointsTest extends TestCase
 
         $actions = $this->getJson('/api/admin/console/fake-users')->json('resource.actions');
 
-        /*
-         * `fields` decrit ce que l'action EXIGE avant de s'executer — des champs a dessiner,
-         * jamais du comportement. La fermeture, elle, ne traverse jamais le JSON.
-         *
-         * Toutes les actions mal formees d'un coup : un contrat qui derive derive sur plusieurs.
-         */
+        // `fields` decrit ce que l'action EXIGE avant de s'executer — des champs a dessiner, jamais du comportement.
         $fautives = [];
 
         foreach ($actions as $i => $action) {

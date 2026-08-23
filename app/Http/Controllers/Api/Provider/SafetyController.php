@@ -12,21 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * LE BOUTON D'URGENCE (E33).
- *
- * C'EST LE POINT D'API LE PLUS CRITIQUE DE TOUTE LA PLATEFORME. Quelqu'un seul chez un inconnu
- * appuie sur un bouton : ce qui compte est que la ligne s'écrive, tout de suite, et que quelqu'un
- * la voie.
- *
- * AUCUN DRAPEAU, AUCUNE PERMISSION FINE. Un bouton d'urgence gardé par une clé de permission est un
- * bouton qui peut répondre 403 au pire moment. La seule condition est d'être authentifié — et
- * l'alerte est nominative, donc rattachée à quelqu'un de connu.
- *
- * LA VALIDATION EST MINIMALE, DÉLIBÉRÉMENT. Une position mal formée ne doit pas faire échouer un
- * appel au secours : les coordonnées sont optionnelles, et une alerte sans position vaut infiniment
- * mieux qu'un 422 renvoyé à quelqu'un qui a peur.
- */
+/** LE BOUTON D'URGENCE (E33). C'EST LE POINT D'API LE PLUS CRITIQUE DE TOUTE LA PLATEFORME. */
 class SafetyController extends Controller
 {
     public function trigger(Request $request): JsonResponse
@@ -67,12 +53,7 @@ class SafetyController extends Controller
         return response()->json(['data' => $this->presenter($alerte)], 201);
     }
 
-    /**
-     * Une position de plus, pendant l'alerte.
-     *
-     * `pinged_at` accepte l'heure du RELEVÉ : un téléphone hors réseau accumule et envoie plus tard.
-     * Dater à l'écriture placerait toute la trace au moment où la connexion est revenue.
-     */
+    /** Une position de plus, pendant l'alerte. */
     public function ping(Request $request, int $alertId): JsonResponse
     {
         $donnees = $request->validate([

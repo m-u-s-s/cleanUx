@@ -13,14 +13,7 @@ use Illuminate\Support\Str;
 
 class SubscriptionV2 extends Model
 {
-    /**
-     * LA FABRIQUE VIT DANS `Database\Factories`, PAS DANS UN SOUS-ESPACE.
-     *
-     * Ce modèle étant dans `App\Models\SubscriptionsV2`, Laravel cherche par défaut
-     * `Database\Factories\SubscriptionsV2\SubscriptionV2Factory` — qui n'existe pas. Tout appel à
-     * `::factory()` échouait donc sur « Class not found », et rien ne le signalait tant qu'aucun
-     * test ne l'employait.
-     */
+    /** LA FABRIQUE VIT DANS `Database\Factories`, PAS DANS UN SOUS-ESPACE. */
     protected static function newFactory(): SubscriptionV2Factory
     {
         return SubscriptionV2Factory::new();

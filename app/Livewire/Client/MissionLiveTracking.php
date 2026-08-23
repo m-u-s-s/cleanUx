@@ -12,19 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-/**
- * LE SUIVI CLIENT, SUR LE WEB — et pas seulement jusqu'à la porte.
- *
- * La page montrait un trajet, une carte et une arrivée estimée. Puis, l'intervention commencée,
- * elle n'apprenait plus rien pendant deux heures : la carte figée sur un point immobile, et le
- * client à se demander ce qui se passe chez lui. C'est ce silence qui produit les appels au
- * support et, quand il dure, les litiges.
- *
- * Trois blocs s'y ajoutent, exactement ceux de l'application mobile et servis par les MÊMES
- * services : le déroulé, les photos avant/après, les imprévus signalés. Le contraire — un
- * assemblage propre à chaque surface — donnerait deux versions de la vérité pour une même
- * intervention, et c'est celle qui contredit l'autre qu'on lirait le jour du litige.
- */
+/** LE SUIVI CLIENT, SUR LE WEB — et pas seulement jusqu'à la porte. */
 class MissionLiveTracking extends Component
 {
     public Mission $mission;

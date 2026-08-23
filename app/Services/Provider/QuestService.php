@@ -10,24 +10,7 @@ use App\Services\Loyalty\LoyaltyService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * LES OBJECTIFS D'UN PRESTATAIRE (E13).
- *
- * CE QUI MANQUE N'EST PAS LA GAMIFICATION, C'EST LA VISIBILITÉ DU PROGRÈS. Les badges existent, mais
- * se découvrent une fois obtenus : on n'a jamais dit à quelqu'un qu'il lui manquait deux missions.
- * Une quête sans compteur visible n'est pas une quête, c'est une surprise — et une surprise ne
- * motive personne à faire la course de trop.
- *
- * LE COMPTEUR EST RECALCULÉ, PAS INCRÉMENTÉ. Un compteur qu'on incrémente dérive : un rejeu de file,
- * une mission annulée après coup, un correctif manuel, et le chiffre affiché cesse de correspondre
- * aux missions réellement faites. On le recalcule depuis la source — c'est plus cher et c'est juste.
- *
- * ATTEINDRE ET ÊTRE PAYÉ SONT DEUX ÉVÉNEMENTS. `completed_at` et `rewarded_at` sont séparés : les
- * confondre ferait payer deux fois au moindre rejeu, ou jamais.
- *
- * LA RÉCOMPENSE PASSE PAR LOYALTY, jamais par une monnaie inventée ici : une troisième monnaie
- * demanderait sa comptabilité, ses litiges et son écran.
- */
+/** LES OBJECTIFS D'UN PRESTATAIRE (E13). */
 class QuestService
 {
     /**
@@ -71,12 +54,7 @@ class QuestService
         return $lignes;
     }
 
-    /**
-     * Compter ce qui compte, DEPUIS LA SOURCE.
-     *
-     * Un compteur qu'on incrémente dérive : un rejeu de file, une mission annulée après coup, et le
-     * chiffre affiché cesse de correspondre aux missions réellement faites.
-     */
+    /** Compter ce qui compte, DEPUIS LA SOURCE. */
     protected function mesurer(User $prestataire, ProviderQuest $quete): int
     {
         $requete = Mission::query()
@@ -120,13 +98,7 @@ class QuestService
         });
     }
 
-    /**
-     * Verser la récompense — par les modules existants.
-     *
-     * SOFT-FAIL, ET LA MARQUE D'ABORD. Si Loyalty tombe, la quête reste complétée et non récompensée :
-     * la prochaine lecture réessaiera. L'inverse — marquer payé puis échouer — perdrait la récompense
-     * sans laisser de trace.
-     */
+    /** Verser la récompense — par les modules existants. SOFT-FAIL, ET LA MARQUE D'ABORD. */
     protected function recompenser(User $prestataire, ProviderQuest $quete, ProviderQuestProgress $ligne): void
     {
         if ($quete->reward_type !== ProviderQuest::REWARD_LOYALTY || $quete->reward_value <= 0) {
@@ -139,11 +111,7 @@ class QuestService
                 type: 'quest_completed',
                 points: $quete->reward_value,
                 source: $quete,
-                /*
-                 * LA CLÉ D'IDEMPOTENCE PORTE LA QUÊTE ET LA PERSONNE, jamais l'horodatage : ce
-                 * service RECALCULE à chaque lecture, et une clé variable verserait la récompense
-                 * autant de fois que l'écran est ouvert.
-                 */
+                // LA CLÉ D'IDEMPOTENCE PORTE LA QUÊTE ET LA PERSONNE, jamais l'horodatage : ce service RECALCULE à chaque lecture, et une clé variable verserait la récompense autant de fois que l'écran est ouvert.
                 idempotencyKey: 'quest:'.$quete->code.':'.$prestataire->id,
                 reason: $quete->title,
             );

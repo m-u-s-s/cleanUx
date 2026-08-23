@@ -15,20 +15,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LE CHRONOMÈTRE AVEC PAUSES (F4) ET LA FICHE D'ACCÈS (F5).
- *
- * LE CHRONOMÈTRE SAVAIT S'ARRÊTER, PAS COMPTER. `is_paused` et `paused_at` existaient, mais la
- * reprise se contentait de baisser le drapeau : la durée écoulée n'était cumulée nulle part, et
- * `paused_at` restait en place — il continuait de se lire comme « en pause depuis ce matin ».
- * Conséquence : le temps travaillé n'était pas calculable. Sur une intervention de quatre heures
- * dont une de déjeuner, la seule durée disponible en facturait une de trop.
- *
- * LA FICHE D'ACCÈS NE S'OUVRE QU'À L'ARRIVÉE, et c'est le cœur de ce fichier. Un code d'alarme,
- * l'emplacement d'une boîte à clés : ce sont les clés du domicile de quelqu'un. Les rendre lisibles
- * dès l'assignation — parfois plusieurs jours à l'avance, parfois à un prestataire qui annulera —
- * reviendrait à les distribuer à tous ceux qui passent dans la file d'affectation.
- */
+/** LE CHRONOMÈTRE AVEC PAUSES (F4) ET LA FICHE D'ACCÈS (F5). */
 class ChronometreEtFicheDAccesTest extends TestCase
 {
     use RefreshDatabase;
@@ -133,10 +120,7 @@ class ChronometreEtFicheDAccesTest extends TestCase
 
         $travaille = $session->fresh()->workedSeconds();
 
-        /*
-         * C'EST LA VALEUR QUE CONSOMMERONT LES FEUILLES D'HEURES. Confondre présence et travail
-         * fait payer ou facturer une heure de trop sur une intervention avec déjeuner.
-         */
+        // C'EST LA VALEUR QUE CONSOMMERONT LES FEUILLES D'HEURES.
         $this->assertGreaterThanOrEqual(10700, $travaille);
         $this->assertLessThanOrEqual(10900, $travaille);
         $this->assertSame(180, $session->fresh()->workedMinutes());
@@ -185,11 +169,7 @@ class ChronometreEtFicheDAccesTest extends TestCase
             ->getJson("/api/provider/missions/{$mission->id}/access-sheet")
             ->assertOk();
 
-        /*
-         * C'EST L'ASSERTION QUI PORTE F5. Le code d'alarme et l'emplacement d'une boîte à clés sont
-         * les clés du domicile de quelqu'un ; les exposer dès l'assignation les distribuerait à tous
-         * ceux qui passent dans la file d'affectation, y compris à ceux qui annuleront.
-         */
+        // C'EST L'ASSERTION QUI PORTE F5.
         $this->assertFalse($reponse->json('data.available'));
         $this->assertNull($reponse->json('data.access_instructions'));
         // Le refus est EXPLICITE : une fiche vide se lirait comme une donnée manquante et ferait
@@ -223,18 +203,7 @@ class ChronometreEtFicheDAccesTest extends TestCase
             ->assertJsonPath('data.alarm_code_required', true);
     }
 
-    /**
-     * LA CONSIGNE DU CLIENT ARRIVE SUR LA FICHE.
-     *
-     * `MissionAccessSheetService` renvoyait `'notes' => $booking?->notes`, et `bookings.notes`
-     * n'est écrite par aucun code : la fiche annonçait donc toujours `notes: null`. La consigne
-     * réelle vit dans `commentaire_client` / `customer_comment` — que le scénario ci-dessus posait
-     * déjà, sans qu'aucun test ne vérifie qu'elle ressorte.
-     *
-     * La carte « Client & accès » de la fiche terrain souffrait du même défaut, sur la même
-     * colonne. Deux écrans, un seul malentendu : le formulaire société nomme son champ « notes »
-     * alors qu'il enregistre `commentaire_client`.
-     */
+    /** LA CONSIGNE DU CLIENT ARRIVE SUR LA FICHE. */
     #[Test]
     public function la_fiche_porte_la_consigne_laissee_par_le_client(): void
     {

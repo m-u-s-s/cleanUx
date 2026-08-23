@@ -6,30 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LE PANNEAU DE COMMUNICATION NE PROMET QUE CE QU'IL PEUT TENIR.
- *
- * Deux défauts vivaient ensemble dans `livewire.shared.communication.quick-links`, constatés à
- * l'écran le 2026-08-15 sur /notifications avec un compte prestataire :
- *
- *   1. La visibilité se décidait sur `Route::has()`, qui dit que la porte EXISTE, pas qu'on a la
- *      clé. « Alertes admin » et « Emails produit » s'affichaient pour tout le monde alors que
- *      `admin.alerts` / `admin.emails` portent `CheckRole:admin` : un clic menait à une page 403
- *      nue, sans navigation ni retour.
- *   2. Deux entrées visaient un nom qui n'existe pas — `notifications` au lieu de
- *      `notifications.index`, `client.litiges` au lieu de `client.claims`. Le même `Route::has()`
- *      les avalait en silence : cinq destinations déclarées, trois rendues, dont deux interdites.
- *
- * Pourquoi `ToutePageEstAtteignableTest::test_aucun_garde_route_has_ne_vise_une_route_fantome`
- * ne l'a pas vu : son expression cherche `Route::has('nom-littéral')`. Ici l'appel s'écrit
- * `Route::has($link['route'])` — les noms vivent dans un tableau au-dessus, invisibles à une
- * recherche de littéral. Un garde textuel ne peut pas suivre une table de données ; il faut
- * RENDRE le panneau pour le savoir.
- *
- * D'où ce test, qui exerce les trois rôles. Les cas d'admission (l'admin VOIT ses cartes) sont
- * aussi importants que le refus : sans eux, un panneau qui ne rendrait plus rien du tout passerait
- * au vert en mesurant une panne.
- */
+/** LE PANNEAU DE COMMUNICATION NE PROMET QUE CE QU'IL PEUT TENIR. */
 class CommunicationQuickLinksTest extends TestCase
 {
     use RefreshDatabase;
@@ -77,10 +54,7 @@ class CommunicationQuickLinksTest extends TestCase
         $this->assertStringContainsString(route('admin.emails'), $html);
     }
 
-    /**
-     * La carte « Notifications » visait `notifications` quand la route s'appelle
-     * `notifications.index` : elle n'a JAMAIS été rendue, sur aucune page, pour aucun rôle.
-     */
+    /** La carte « Notifications » visait `notifications` quand la route s'appelle `notifications.index` : elle n'a JAMAIS été rendue, sur aucune page, pour aucun rôle. */
     public function test_la_carte_notifications_est_rendue_pour_tous_les_roles(): void
     {
         $manquants = [];

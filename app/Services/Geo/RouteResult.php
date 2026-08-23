@@ -2,14 +2,7 @@
 
 namespace App\Services\Geo;
 
-/**
- * Une route entre deux points : ce qu'elle coûte en distance, en temps, et par où elle passe.
- *
- * `points` est la GÉOMÉTRIE — la suite de coordonnées que la carte trace. Deux points seulement
- * signifient une ligne droite : aucun fournisseur d'itinéraire n'a répondu, et `source` le dit.
- * C'est une information à afficher, pas à taire : une ligne droite qui se ferait passer pour un
- * trajet routier annoncerait un temps de course qu'aucun conducteur ne tiendra.
- */
+/** Une route entre deux points : ce qu'elle coûte en distance, en temps, et par où elle passe. */
 class RouteResult
 {
     /**

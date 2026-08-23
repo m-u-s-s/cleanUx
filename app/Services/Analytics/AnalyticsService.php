@@ -11,16 +11,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-/**
- * AnalyticsService — central event tracker (Phase Analytics v2).
- *
- *   - track(name, properties, options) → AnalyticsEvent
- *   - identify(anonymousId, user) → relie le tracking pré-auth au user
- *   - resolveSession(request, user, anonymousId) → AnalyticsSession (lazy create)
- *   - PII sanitization (drop_keys, hash_keys, length clamp, prop count clamp)
- *   - Idempotency via UNIQUE idempotency_key
- *   - Soft-fail (un Log warning) sur erreur, ne casse jamais le flow business
- */
+/** AnalyticsService — central event tracker (Phase Analytics v2). */
 class AnalyticsService
 {
     /**

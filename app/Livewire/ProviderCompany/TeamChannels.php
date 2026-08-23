@@ -79,24 +79,7 @@ class TeamChannels extends Component
     // ──────────────────────────────────────────────────────
     // Mount
     // ──────────────────────────────────────────────────────
-    /**
-     * L'ORGANISATION SE RÉSOUT À CHAQUE REQUÊTE, PAS SEULEMENT AU MONTAGE (corrigé le 2026-08-05).
-     *
-     * `$org` est une propriété privée typée : Livewire n'hydrate que les propriétés PUBLIQUES, et
-     * `mount()` ne s'exécute qu'au tout premier rendu. À la deuxième requête — c'est-à-dire à la
-     * première interaction de l'utilisateur — la propriété était donc non initialisée, et toute
-     * méthode la touchant levait « Typed property $org must not be accessed before initialization ».
-     *
-     * Cela condamnait TOUT le composant au-delà de l'affichage : créer un canal, en ouvrir un,
-     * envoyer et supprimer un message passent tous par `$this->org`. La messagerie d'équipe
-     * n'était pas seulement incapable d'accueillir un second membre (bug 3) — elle ne
-     * fonctionnait pas du tout.
-     *
-     * Le fichier de test existant paraissait couvrir `createChannel()` : ses deux cas s'arrêtent
-     * en réalité sur la validation, avant la ligne fautive. Le chemin nominal n'était pas testé.
-     *
-     * `boot()` s'exécute, lui, à chaque requête Livewire.
-     */
+    /** L'ORGANISATION SE RÉSOUT À CHAQUE REQUÊTE, PAS SEULEMENT AU MONTAGE (corrigé le 2026-08-05). */
     public function boot(): void
     {
         $org = Auth::user()?->currentOrganization;
@@ -142,20 +125,7 @@ class TeamChannels extends Component
             ->get();
     }
 
-    /**
-     * CE COMPOSANT OUVRAIT N'IMPORTE QUEL CANAL, Y COMPRIS CEUX DES AUTRES SOCIÉTÉS
-     * (corrigé le 2026-08-05).
-     *
-     * `openChannel()` acceptait un identifiant arbitraire : ni l'organisation ni l'appartenance
-     * n'étaient vérifiées. Il chargeait ensuite les messages, marquait le canal comme lu et
-     * exposait sa liste de membres. Comme `$activeChannelId` est une propriété PUBLIQUE — donc
-     * modifiable depuis le navigateur — la fuite ne demandait même pas de cliquer.
-     *
-     * `ChannelPolicy::view()` encodait déjà la règle attendue (être membre) : personne ne
-     * l'appelait. La barre latérale, elle, ne liste que les canaux de l'organisation dont
-     * l'utilisateur est membre — la garde ci-dessous ne fait donc qu'aligner l'action sur ce que
-     * l'interface propose déjà.
-     */
+    /** CE COMPOSANT OUVRAIT N'IMPORTE QUEL CANAL, Y COMPRIS CEUX DES AUTRES SOCIÉTÉS (corrigé le 2026-08-05). */
     public function openChannel(int $channelId): void
     {
         $canalAutorise = Channel::query()
@@ -191,17 +161,7 @@ class TeamChannels extends Component
         $this->loadChannels(); // Rafraîchir les compteurs non lus
     }
 
-    /**
-     * Le nom affichable d'un expéditeur, qui peut ne plus exister.
-     *
-     * `messages.user_id` est nullable et `nullOnDelete` : les messages d'un compte supprimé
-     * restent en place, sans expéditeur. Le repli n'est donc pas décoratif.
-     *
-     * Sur l'écriture elle-même, PHPStan avait raison et j'avais tort : `??` évalue son membre
-     * gauche avec la sémantique d'`isset()`, qui tolère déjà un `null` dans la chaîne. L'opérateur
-     * `?->` y était redondant, pas protecteur — j'avais pris un doublon d'opérateurs pour une
-     * mauvaise inférence de nullabilité.
-     */
+    /** Le nom affichable d'un expéditeur, qui peut ne plus exister. */
     private function nomExpediteur(?User $expediteur): string
     {
         return $expediteur->name ?? 'Utilisateur supprimé';
@@ -245,28 +205,12 @@ class TeamChannels extends Component
                 'pinned_by' => $m->pinned_by,
                 'sender_id' => $m->user_id,
                 'sender_name' => $m->sender?->name,
-                /*
-                 * CINQ CLÉS QUE LA VUE LISAIT SANS QUE PERSONNE NE LES PRODUISE (corrigé le 2026-08-05).
-                 *
-                 * `team-channels.blade.php` consomme `sender`, `date`, `avatar`, `is_system` et
-                 * `reply_to` ; `loadMessages()` n'en fournissait aucune. La vue et le composant
-                 * ont été écrits contre deux contrats différents, et le rendu s'arrêtait sur
-                 * « Undefined array key "date" » dès le premier message — y compris le message
-                 * système émis à la création d'un canal.
-                 *
-                 * Autrement dit, personne n'a jamais vu une conversation s'afficher.
-                 */
+                // CINQ CLÉS QUE LA VUE LISAIT SANS QUE PERSONNE NE LES PRODUISE (corrigé le 2026-08-05).
                 'sender' => $this->nomExpediteur($m->sender),
                 'avatar' => $m->sender?->profile_photo_url,
                 'date' => $m->created_at->translatedFormat('d F Y'),
                 'is_system' => $m->type === Message::TYPE_SYSTEM,
-                /*
-                 * LA NOTE VOCALE SE DISTINGUE DU TEXTE — elle ne se distinguait pas.
-                 *
-                 * Le web affichait « 🎙️ Note vocale » comme une phrase ordinaire : on pouvait
-                 * envoyer depuis le terrain et personne ne pouvait écouter depuis un bureau. Le
-                 * fichier était pourtant là, avec son adresse signée, dans les pièces jointes.
-                 */
+                // LA NOTE VOCALE SE DISTINGUE DU TEXTE — elle ne se distinguait pas.
                 'is_voice' => $m->type === Message::TYPE_VOICE,
                 'duration' => data_get($m->metadata, 'duration'),
                 'reply_to' => $m->parent ? [
@@ -305,22 +249,7 @@ class TeamChannels extends Component
             return;
         }
 
-        /*
-         * FERMER LA LECTURE NE FERMAIT PAS L'ÉCRITURE (corrigé le 2026-08-06).
-         *
-         * La phase 0 a gardé `openChannel()` et le rendu. Ce chemin-ci résolvait encore le canal
-         * par `Channel::find()` — sans organisation, sans politique — et `MessageService::send()`
-         * n'autorise rien de son côté. `$activeChannelId` étant une propriété PUBLIQUE Livewire,
-         * il suffisait de l'écrire depuis le navigateur pour publier dans le canal privé d'une
-         * société concurrente, sans jamais l'ouvrir.
-         *
-         * `ChannelPolicy::postMessage()` encodait déjà la règle exacte — être membre, canal ni
-         * verrouillé ni archivé — et n'était appelée nulle part.
-         *
-         * NOTE : `lockChannel()` et `archiveChannel()` résolvent le canal de la même façon, mais
-         * passent par `ModerationService`, qui refuse un utilisateur non autorisé. Elles ne
-         * présentent donc pas ce défaut — vérifié avant de conclure.
-         */
+        // FERMER LA LECTURE NE FERMAIT PAS L'ÉCRITURE (corrigé le 2026-08-06).
         $channel = Channel::query()
             ->where('organization_account_id', $this->org->id)
             ->find($this->activeChannelId);
@@ -348,21 +277,7 @@ class TeamChannels extends Component
         $this->loadMessages();
     }
 
-    /**
-     * ENVOYER UNE NOTE VOCALE DEPUIS LE NAVIGATEUR.
-     *
-     * Le terrain pouvait enregistrer depuis son téléphone, le bureau ne pouvait ni enregistrer ni
-     * écouter : la conversation était à sens unique, et une conversation à sens unique se termine
-     * sur WhatsApp — hors de l'outil, hors de toute trace, hors de la modération.
-     *
-     * LE FICHIER PASSE PAR `AttachmentUploadService`, comme celui du mobile : même disque, même
-     * plafond audio, même scan antivirus, même route de téléchargement signée. Écrire un second
-     * chemin de stockage aurait fait deux portes à garder au lieu d'une.
-     *
-     * `MediaRecorder` produit du `webm` sur Chrome et Firefox, du `mp4` sur Safari — les deux
-     * figurent dans la liste blanche, et c'est le TYPE RÉEL du contenu qui est vérifié côté
-     * serveur, pas l'extension annoncée.
-     */
+    /** ENVOYER UNE NOTE VOCALE DEPUIS LE NAVIGATEUR. */
     public function envoyerNoteVocale(): void
     {
         if (! $this->noteVocale || ! $this->activeChannelId) {
@@ -580,13 +495,7 @@ class TeamChannels extends Component
             403
         );
 
-        /*
-         * LA CRÉATION EST PARTIE DANS `ChannelManagementService`.
-         *
-         * L'API mobile doit ouvrir des fils elle aussi — une équipe sur le terrain pouvait
-         * RÉPONDRE, jamais ouvrir. Deux implémentations de « qui entre dans un canal » auraient
-         * divergé, et la divergence se serait vue du côté le plus permissif.
-         */
+        // LA CRÉATION EST PARTIE DANS `ChannelManagementService`.
         $channel = app(ChannelManagementService::class)->creer(
             acteur: $user,
             organisationId: (int) $this->org->id,
@@ -602,21 +511,7 @@ class TeamChannels extends Component
         $this->openChannel($channel->id);
     }
 
-    /**
-     * OUVRIR — OU RETROUVER — LA CONVERSATION À DEUX AVEC UN COLLÈGUE.
-     *
-     * Le type `private` existait depuis le début, et rien ne permettait d'en ouvrir une : pour dire
-     * un mot à quelqu'un il fallait créer un canal nommé, ce que personne ne fait. Les équipes
-     * passaient donc par WhatsApp — hors de l'outil, hors de toute trace, et hors de la modération.
-     *
-     * ON CHERCHE AVANT DE CRÉER, et c'est le cœur de la méthode. Sans cela, chaque clic ajouterait
-     * un canal : la messagerie se remplirait de conversations vides entre les deux mêmes personnes,
-     * et l'historique se disperserait entre elles — pire que pas de messagerie du tout.
-     *
-     * La recherche porte sur la COMPOSITION, pas sur un nom : « exactement ces deux-là, et personne
-     * d'autre ». C'est ce qui fait qu'Ana retrouve la conversation ouverte par son patron plutôt
-     * que d'en créer une seconde en croyant lui répondre.
-     */
+    /** OUVRIR — OU RETROUVER — LA CONVERSATION À DEUX AVEC UN COLLÈGUE. */
     public function ouvrirConversationDirecte(int $userId): void
     {
         $canal = app(ChannelManagementService::class)->ouvrirConversationDirecte(
@@ -637,18 +532,7 @@ class TeamChannels extends Component
     // Membres d'un canal
     // ──────────────────────────────────────────────────────
 
-    /**
-     * AJOUTER QUELQU'UN À UN CANAL — CE QUE RIEN NE SAVAIT FAIRE (ajouté le 2026-08-05).
-     *
-     * L'unique `members()->attach` du dépôt était celui du créateur, dans `createChannel()`.
-     * Aucun écran, service ou commande ne permettait d'ajouter un tiers : chaque canal restait
-     * un monologue. `ChannelPolicy` exposait pourtant `kickMember()` et `changeRole()` — pour une
-     * population qui ne pouvait pas exister.
-     *
-     * La garde s'appuie sur `channels.manage`, une clé déjà présente dans la matrice de
-     * `PermissionService` mais qu'aucun composant ne consommait : elle était accordée à trois
-     * rôles sans jamais rien ouvrir.
-     */
+    /** AJOUTER QUELQU'UN À UN CANAL — CE QUE RIEN NE SAVAIT FAIRE (ajouté le 2026-08-05). */
     public function addChannelMember(int $channelId, int $userId): void
     {
         $acteur = Auth::user();
@@ -667,20 +551,13 @@ class TeamChannels extends Component
             return;
         }
 
-        /*
-         * … et la personne ajoutée doit être une collègue. Sans ce filtre, ouvrir l'ajout de
-         * membres ouvrirait les canaux d'une société aux utilisateurs de toutes les autres. La
-         * règle vit dans le service, partagée avec l'API mobile.
-         */
+        // … et la personne ajoutée doit être une collègue.
         app(ChannelManagementService::class)->ajouterMembre($canal, $userId);
 
         $this->dispatch('channel-members-updated');
     }
 
-    /**
-     * Retirer un membre. `ChannelPolicy::kickMember()` protège déjà l'owner du canal ; on la
-     * consulte plutôt que de réimplémenter cette règle ici.
-     */
+    /** Retirer un membre. */
     public function removeChannelMember(int $channelId, int $userId): void
     {
         $acteur = Auth::user();
@@ -721,11 +598,7 @@ class TeamChannels extends Component
     // ──────────────────────────────────────────────────────
     public function render()
     {
-        /*
-         * Le rendu est scopé lui aussi : `$activeChannelId` étant une propriété publique, un
-         * client peut l'écrire directement sans jamais passer par `openChannel()`. Garder la
-         * seule action laisserait la fuite ouverte par la porte d'à côté.
-         */
+        // Le rendu est scopé lui aussi : `$activeChannelId` étant une propriété publique, un client peut l'écrire directement sans jamais passer par `openChannel()`.
         $activeChannel = $this->activeChannelId
             ? Channel::with('members:id,name,profile_photo_path')
                 ->where('organization_account_id', $this->org->id)

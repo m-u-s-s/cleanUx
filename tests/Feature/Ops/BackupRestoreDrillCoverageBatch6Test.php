@@ -6,12 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * Adds coverage for the REAL-drill branches of BackupRestoreDrill that the
- * existing BackupRestoreDrillTest leaves untouched: scratch-connection
- * resolution, backup location guards, SQL-dump restore, integrity checks
- * (pass + fail), and the RTO/RPO report.
- */
+/** Adds coverage for the REAL-drill branches of BackupRestoreDrill that the existing BackupRestoreDrillTest leaves untouched: scratch-connection resolution, backup location guards, SQL-dump restore, integrity checks (pass + fail), and the RTO/RPO report. */
 class BackupRestoreDrillCoverageBatch6Test extends TestCase
 {
     use RefreshDatabase;

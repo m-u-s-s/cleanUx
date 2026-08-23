@@ -12,36 +12,12 @@ use App\Services\OnboardingV2\Validators\SkillDeclareValidator;
 use App\Services\OnboardingV2\Validators\VehicleDeclarationValidator;
 use Illuminate\Database\Seeder;
 
-/**
- * Parcours de vérification obligatoire d'un prestataire avant l'accès au tableau de bord.
- *
- * Le module Onboarding v2 était entièrement construit — moteur, huit validateurs, API — mais
- * AUCUN parcours n'était configuré : `onboarding_journeys` et `onboarding_steps` étaient vides,
- * si bien qu'aucune vérification ne s'appliquait jamais. Ce seeder définit celui des prestataires.
- *
- * Le code `provider_default` n'est pas arbitraire : config/onboarding_v2.php mappe déjà les rôles
- * `provider` et `employe` vers lui, donc OnboardingEngine::startFor() le résout sans argument.
- *
- * Périmètre décidé : profil, contrat, identité, documents, compétences sont BLOQUANTS. Stripe
- * Connect et l'assurance ne le sont pas — un prestataire peut être vérifié sans être encore
- * configuré pour être payé, et bloquer l'inscription là-dessus l'allongerait beaucoup. Leurs
- * validateurs existent et pourront être ajoutés ici sans toucher au code.
- *
- * Idempotent : rejouable sans dupliquer, les étapes sont réconciliées sur (journey, code).
- */
+/** Parcours de vérification obligatoire d'un prestataire avant l'accès au tableau de bord. */
 class ProviderOnboardingJourneySeeder extends Seeder
 {
     public const JOURNEY_CODE = 'provider_default';
 
-    /**
-     * Version du contrat prestataire acceptée à l'étape `contract_sign`.
-     *
-     * ContractSignValidator privilégie une signature Contracts v2 via `template_code`. L'étape
-     * déclare les deux : la vraie signature là où le modèle `provider_agreement` est seedé
-     * (ProductionBootstrapSeeder l'appelle), cette version en repli ailleurs. Le validateur ne
-     * refuse plus quand le modèle est absent — exiger une signature contre un contrat
-     * introuvable rendait l'étape définitivement infranchissable.
-     */
+    /** Version du contrat prestataire acceptée à l'étape `contract_sign`. */
     public const CONTRACT_VERSION = '1.0';
 
     public function run(): void
@@ -66,9 +42,7 @@ class ProviderOnboardingJourneySeeder extends Seeder
     }
 
     /**
-     * L'ordre porte du sens : on identifie la personne avant de lui demander ses pièces, et on
-     * ne déclare ses métiers qu'une fois son identité établie. `depends_on` rend cet
-     * enchaînement explicite pour le moteur plutôt que de le laisser à la seule position.
+     * L'ordre porte du sens : on identifie la personne avant de lui demander ses pièces, et on ne déclare ses métiers qu'une fois son identité établie.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -133,19 +107,7 @@ class ProviderOnboardingJourneySeeder extends Seeder
                 'metadata' => [],
             ],
             [
-                /*
-                 * LE VÉHICULE — pour les seuls métiers sous règles taxi.
-                 *
-                 * L'étape est dans le parcours de TOUT LE MONDE, et son validateur passe
-                 * trivialement quand aucun métier ne l'exige. C'est le seul montage possible : le
-                 * parcours est unique et partagé, et fabriquer un second parcours « chauffeur »
-                 * ferait deux suites d'étapes à tenir à jour — dont l'une finirait par oublier une
-                 * exigence que l'autre applique.
-                 *
-                 * Elle dépend des justificatifs : la carte grise est ce qui rend la date
-                 * d'immatriculation opposable, et la réclamer avant de l'avoir demandée n'aurait
-                 * aucun sens.
-                 */
+                // LE VÉHICULE — pour les seuls métiers sous règles taxi.
                 'code' => 'vehicle_declare',
                 'label' => 'Déclarer votre véhicule',
                 'description' => 'Marque, modèle, plaque et date de première immatriculation — exigé pour les services de transport de personnes.',

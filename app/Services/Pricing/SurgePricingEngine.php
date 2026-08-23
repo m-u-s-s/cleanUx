@@ -13,56 +13,13 @@ use Carbon\Carbon;
 use Illuminate\Support\Carbon as IlluminateCarbon;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Phase 14 — Moteur de surge pricing avancé (Uber-style).
- *
- * Remplace le DynamicPricingService 32 lignes par un vrai engine multi-critères :
- *
- *   multiplier = demand_factor × supply_factor × temporal_factor × asap_extra
- *
- * Avec :
- *   - demand_factor : nombre de bookings ouverts dans la zone (60 dernières minutes)
- *   - supply_factor : inverse du nombre de prestataires online dans la zone
- *   - temporal_factor : pics horaires + weekend
- *   - asap_extra : ×1.25 si mode ASAP
- *
- * Tous capped à `surge.max_multiplier` (défaut 3.0).
- *
- * Stratégie cache :
- *   - Le multiplier d'une zone est stocké dans pricing_zones_state
- *   - Recalculé par RecomputeSurgeJob (toutes les 60s par défaut)
- *   - Si pas calculé depuis surge.state_ttl_seconds → on revient à 1.0
- *     (decay naturel, évite les surges figés sur des données obsolètes)
- *
- * Pour une mission individuelle, on multiplie le prix de base par le multiplier
- * de la zone, puis on applique les extras spécifiques (ASAP, etc.).
- */
+/** Phase 14 — Moteur de surge pricing avancé (Uber-style). */
 class SurgePricingEngine
 {
-    /**
-     * Calcule le prix final pour un booking.
-     *
-     * Renvoie un array détaillé pour traçabilité (UI client + audit) :
-     *   - base_price
-     *   - final_price
-     *   - multiplier
-     *   - factors: { demand, supply, temporal, asap }
-     *   - is_visible (si on doit afficher un warning client)
-     *   - source: 'live'|'cached'|'default'
-     */
+    /** Calcule le prix final pour un booking. */
     public function calculate(float $basePrice, ?ServiceZone $zone = null, array $context = []): array
     {
-        /*
-         * LE DRAPEAU EST ENFIN LU. `surge_pricing` existait dans `config/features.php`, à `true`,
-         * et AUCUN code ne l'interrogeait : le seul interrupteur censé couper la majoration sans
-         * déploiement ne coupait rien. Sur un mécanisme qui change ce que les gens paient, c'est le
-         * pire endroit où laisser un interrupteur factice — le jour où une majoration s'emballe, on
-         * croit l'éteindre et elle continue.
-         *
-         * Drapeau baissé, on rend le prix de base tel quel, avec des facteurs neutres : les
-         * appelants lisent `multiplier` et `final_price`, ils doivent trouver une réponse cohérente
-         * plutôt qu'une absence.
-         */
+        // LE DRAPEAU EST ENFIN LU.
         if (! feature('surge_pricing')) {
             return [
                 'base_price' => round($basePrice, 2),
@@ -115,13 +72,7 @@ class SurgePricingEngine
             $source = 'live';
         }
 
-        /*
-         * 1.bis Multiplicateur metier x zone — lu sur `trade_zone_pricing`.
-         *
-         * C'etait `trade_zone_settings`, une seconde table decrivant le meme fait. Deux grilles
-         * pour un seul prix : l'administrateur en reglait une, le parcours de commande lisait
-         * l'autre, et le montant facture ne correspondait a aucun des deux ecrans.
-         */
+        // 1.bis Multiplicateur metier x zone — lu sur `trade_zone_pricing`.
         if ($zone && ! empty($context['trade_id'])) {
             $ligneZone = TradeZonePricing::query()
                 ->where('trade_id', (int) $context['trade_id'])
@@ -201,11 +152,7 @@ class SurgePricingEngine
         ];
     }
 
-    /**
-     * Recalcule le surge pour une zone et persiste dans pricing_zones_state.
-     *
-     * Appelé par RecomputeSurgeJob (toutes les 60s par défaut).
-     */
+    /** Recalcule le surge pour une zone et persiste dans pricing_zones_state. */
     public function recomputeForZone(ServiceZone $zone): PricingZoneState
     {
         return DB::transaction(function () use ($zone) {
@@ -231,9 +178,7 @@ class SurgePricingEngine
         });
     }
 
-    /**
-     * Calcul live des facteurs pour une zone (sans cache).
-     */
+    /** Calcul live des facteurs pour une zone (sans cache). */
     public function computeForZone(ServiceZone $zone): array
     {
         $demand = $this->demandFactor($zone);
@@ -254,10 +199,7 @@ class SurgePricingEngine
         ];
     }
 
-    /**
-     * Calcule le facteur "demand" : nombre de bookings ouverts dans la zone
-     * sur les X dernières minutes.
-     */
+    /** Calcule le facteur "demand" : nombre de bookings ouverts dans la zone sur les X dernières minutes. */
     protected function demandFactor(ServiceZone $zone): array
     {
         $config = config('surge.demand');
@@ -282,22 +224,12 @@ class SurgePricingEngine
         return ['factor' => $factor, 'count' => $count];
     }
 
-    /**
-     * Calcule le facteur "supply" : inverse du nombre de prestataires online
-     * dans (ou proche de) la zone.
-     */
+    /** Calcule le facteur "supply" : inverse du nombre de prestataires online dans (ou proche de) la zone. */
     protected function supplyFactor(ServiceZone $zone): array
     {
         $config = config('surge.supply');
 
-        /*
-         * QUI EST REELLEMENT EN LIGNE — Presence v2, pas le miroir binaire.
-         *
-         * `provider_profiles.is_online` reste vrai quand l'application est morte depuis vingt
-         * minutes. Compter dessus faisait croire l'offre abondante alors que personne ne repondait,
-         * donc PAS de majoration au moment ou la rarete etait maximale : le surge se declenchait a
-         * contretemps.
-         */
+        // QUI EST REELLEMENT EN LIGNE — Presence v2, pas le miroir binaire.
         $enLigne = app(ProviderPresenceService::class)->availableProviderIds();
 
         $count = $enLigne === [] ? 0 : ProviderProfile::query()
@@ -326,9 +258,7 @@ class SurgePricingEngine
         return ['factor' => $factor, 'count' => $count];
     }
 
-    /**
-     * Facteur temporel : pics horaires + weekend.
-     */
+    /** Facteur temporel : pics horaires + weekend. */
     protected function temporalFactor(?Carbon $now = null): float
     {
         $now = $now ?? IlluminateCarbon::now(config('app.timezone', 'Europe/Brussels'));

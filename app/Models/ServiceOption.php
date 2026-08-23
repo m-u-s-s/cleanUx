@@ -7,18 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * ServiceOption — variante paramétrable d'un ServiceCatalog.
- *
- * Permet à un service comme "Nettoyage bureaux" d'exposer au client :
- *   - "Surface (m²)"  type=number, unit=m², price_modifier=per_unit
- *   - "Fréquence"     type=select, values=[unique,hebdo,mensuel]
- *   - "Vitres extérieures"   type=boolean
- *
- * Le calcul de prix final se fait via:
- *   ServiceCatalog::computePriceFromOptions($payload)
- *   (à implémenter en Phase 1bis si besoin métier)
- */
+/** ServiceOption — variante paramétrable d'un ServiceCatalog. */
 class ServiceOption extends Model
 {
     /** @use HasFactory<ServiceOptionFactory> */

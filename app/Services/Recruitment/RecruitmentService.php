@@ -13,24 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-/**
- * LE RECRUTEMENT D'UNE SOCIÉTÉ PRESTATAIRE (E25).
- *
- * LA DERNIÈRE ÉTAPE EXISTE DÉJÀ, ET C'EST TOUT L'INTÉRÊT DE CE SERVICE. L'invitation à jeton conclut
- * le recrutement depuis longtemps : elle crée le compte, l'adhésion, le rôle. Ce qui manquait est
- * AVANT — l'offre, les candidatures, le tri. Une société qui recrutait publiait son annonce ailleurs,
- * échangeait des courriels, puis revenait ici inviter quelqu'un dont la plateforme n'avait jamais
- * entendu parler. La moitié du recrutement se faisait hors de l'outil, et le lien entre les deux
- * n'existait dans aucune donnée : impossible de savoir quelle annonce avait produit quelle recrue.
- *
- * EMBAUCHER, C'EST ÉMETTRE L'INVITATION — un même geste, pas deux écrans. Le contraire produisait
- * exactement le défaut qu'on répare : une candidature marquée « embauché » et personne dans
- * l'organigramme, parce que la seconde moitié du geste s'oubliait.
- *
- * ON NE POSTULE QU'À UNE OFFRE PUBLIÉE. Un brouillon qui accepterait des candidatures ferait
- * répondre des gens à une annonce que la société n'a pas fini d'écrire, et une offre fermée qui les
- * accepte encore laisse quelqu'un attendre une réponse qui ne viendra jamais.
- */
+/** LE RECRUTEMENT D'UNE SOCIÉTÉ PRESTATAIRE (E25). */
 class RecruitmentService
 {
     public function __construct(
@@ -102,10 +85,7 @@ class RecruitmentService
         ?User $utilisateur = null,
     ): JobApplication {
         if (! $offre->accepteDesCandidatures()) {
-            /*
-             * Un brouillon ferait répondre à une annonce non finie ; une offre fermée laisserait
-             * quelqu'un attendre une réponse qui ne viendra jamais.
-             */
+            // Un brouillon ferait répondre à une annonce non finie ; une offre fermée laisserait quelqu'un attendre une réponse qui ne viendra jamais.
             throw new DomainException('Cette offre n’accepte pas de candidature.');
         }
 
@@ -176,10 +156,7 @@ class RecruitmentService
     }
 
     /**
-     * Embaucher — c'est-à-dire ÉMETTRE L'INVITATION.
-     *
-     * Un même geste, pas deux écrans. Séparer les deux produirait exactement le défaut qu'on
-     * répare : une candidature marquée « embauché » et personne dans l'organigramme.
+     * Embaucher — c'est-à-dire ÉMETTRE L'INVITATION. Un même geste, pas deux écrans.
      *
      * @throws DomainException
      */
@@ -226,10 +203,7 @@ class RecruitmentService
                     route('organization.invitations.accept', $invitation->token),
                 ));
             } catch (\Throwable $e) {
-                /*
-                 * SOFT-FAIL : l'invitation est enregistrée et se renvoie. Annuler l'embauche parce
-                 * qu'un serveur de courriel a hoqueté ferait perdre une décision prise.
-                 */
+                // SOFT-FAIL : l'invitation est enregistrée et se renvoie.
                 Log::warning('[recruitment] envoi de l’invitation impossible', [
                     'invitation_id' => $invitation->id,
                     'error' => $e->getMessage(),

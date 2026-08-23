@@ -11,17 +11,7 @@ use App\Support\Domain\AsapStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * Les courses immédiates proposées à un prestataire.
- *
- * L'autre bout de la notification poussée : le prestataire reçoit une alerte, ouvre l'application,
- * et doit trouver ici de quoi décider en trois secondes — le métier, la distance, le montant, et
- * deux boutons.
- *
- * PREMIER ARRIVÉ, PREMIER SERVI. La course part au premier qui accepte ; les autres reçoivent un
- * refus explicite plutôt qu'une erreur technique. Un prestataire qui appuie sur « accepter » et
- * voit un plantage croit à un bug de l'application, pas à une course déjà prise.
- */
+/** Les courses immédiates proposées à un prestataire. */
 class AsapOfferController extends Controller
 {
     /** Ce qui est proposé à ce prestataire, en ce moment. */
@@ -39,15 +29,7 @@ class AsapOfferController extends Controller
         return response()->json(['data' => $offers]);
     }
 
-    /**
-     * Le prestataire prend la course.
-     *
-     * UNE SEULE VOIE D'ACCEPTATION. Elle passait par la recherche elle-meme, en parallele de la
-     * chaine d'offres a compte a rebours : deux facons d'accepter la meme course, dont une qui
-     * n'ecrivait aucun `MissionAssignment` et laissait donc l'offre de l'autre encore vivante.
-     * Ici, on retrouve l'offre nominative de ce prestataire et on l'accepte — le verrou pessimiste
-     * de `MissionDispatchService::accept()` tranche les acceptations simultanees.
-     */
+    /** Le prestataire prend la course. UNE SEULE VOIE D'ACCEPTATION. */
     public function accept(Request $request, AsapDispatchRequest $asapRequest): JsonResponse
     {
         $offer = $this->offerFor($request, $asapRequest);
@@ -87,12 +69,7 @@ class AsapOfferController extends Controller
         ]);
     }
 
-    /**
-     * Le prestataire passe son tour.
-     *
-     * Le refus est ENREGISTRÉ, pas seulement affiché : sans trace, la course lui serait reproposée
-     * au prochain élargissement de rayon, et il la refuserait à nouveau.
-     */
+    /** Le prestataire passe son tour. */
     public function decline(Request $request, AsapDispatchRequest $asapRequest): JsonResponse
     {
         $offer = $this->offerFor($request, $asapRequest);
@@ -109,13 +86,7 @@ class AsapOfferController extends Controller
         return response()->json(['data' => ['declined' => true]]);
     }
 
-    /**
-     * La proposition faite à CE prestataire, ou 404.
-     *
-     * Une course ne se prend pas parce qu'on connaît son numéro : il faut qu'elle ait été proposée.
-     * Sans cette vérification, n'importe quel prestataire raflerait les courses des autres zones en
-     * énumérant des identifiants.
-     */
+    /** La proposition faite à CE prestataire, ou 404. */
     protected function offerFor(Request $request, AsapDispatchRequest $asapRequest): AsapDispatchNotification
     {
         $offer = AsapDispatchNotification::query()

@@ -12,25 +12,7 @@ use Illuminate\Support\Facades\Http;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * LE CONTRAT PUSH ÉTAIT ROMPU À SES DEUX EXTRÉMITÉS.
- *
- * `mobile/shared/src/push/hooks.ts` enregistre l'appareil avec `provider: 'expo'` — c'est ce que
- * rend `expo-notifications`. Côté serveur, DEUX barrières le refusaient : la validation du
- * contrôleur (`in:fcm,apns,mock`, réponse 422) et, plus profond, `DeviceTokenService::register()`
- * qui levait « Provider push inconnu. ». Lever l'une sans l'autre n'aurait rien changé.
- *
- * Résultat : AUCUN appareil ne s'enregistrait, donc aucune notification ne pouvait partir — alors
- * que six notifications routaient déjà par `PushChannel` et que tout le reste de la chaîne
- * fonctionnait. Une fonctionnalité entière, morte sur une ligne de validation.
- *
- * ET ACCEPTER `expo` NE SUFFISAIT PAS. Un jeton `ExponentPushToken[…]` n'est ni un jeton FCM ni un
- * jeton APNs : Expo garde la correspondance et route lui-même. Sans fournisseur dédié, on aurait
- * stocké des jetons que plus personne ne savait consommer — un enregistrement réussi, et toujours
- * pas une notification.
- *
- * CES TESTS COUVRENT LA CHAÎNE ENTIÈRE : l'enregistrement, le choix du fournisseur, et l'envoi.
- */
+/** LE CONTRAT PUSH ÉTAIT ROMPU À SES DEUX EXTRÉMITÉS. */
 class ContratPushExpoTest extends TestCase
 {
     use RefreshDatabase;
@@ -66,12 +48,7 @@ class ContratPushExpoTest extends TestCase
         $this->assertSame(1, DeviceToken::query()->where('provider', 'expo')->count());
     }
 
-    /**
-     * TÉMOIN — la validation reste une validation.
-     *
-     * Sans lui, les deux tests ci-dessus passeraient au vert sur un champ devenu libre, et
-     * n'importe quelle chaîne finirait en base à la place d'un fournisseur.
-     */
+    /** TÉMOIN — la validation reste une validation. */
     public function test_un_fournisseur_inconnu_reste_refuse(): void
     {
         Sanctum::actingAs(User::factory()->create());
@@ -87,13 +64,7 @@ class ContratPushExpoTest extends TestCase
 
     // ── Le choix du fournisseur ──────────────────────────────────────────
 
-    /**
-     * UN JETON EXPO NE DOIT PAS PARTIR CHEZ FCM.
-     *
-     * L'aiguillage se faisait par PLATEFORME : un jeton Expo sur Android serait allé à FCM, qui
-     * l'aurait rejeté. On lit désormais le fournisseur déclaré par l'application — c'est elle qui
-     * sait d'où vient son jeton.
-     */
+    /** UN JETON EXPO NE DOIT PAS PARTIR CHEZ FCM. */
     public function test_un_jeton_expo_est_route_vers_expo(): void
     {
         config()->set('push.fcm.project_id', 'un-projet-fcm');
@@ -131,13 +102,7 @@ class ContratPushExpoTest extends TestCase
         $this->assertSame('ticket-1', $resultat->externalId);
     }
 
-    /**
-     * UN 200 N'EST PAS UN SUCCÈS — Expo répond toujours 200.
-     *
-     * Le verdict est dans `data.status`. S'y tromper ferait compter comme délivrées des
-     * notifications jamais parties : exactement le défaut réparé sur les suppléments et sur le
-     * règlement du temps supplémentaire.
-     */
+    /** UN 200 N'EST PAS UN SUCCÈS — Expo répond toujours 200. Le verdict est dans `data.status`. */
     public function test_un_200_avec_une_erreur_nest_pas_un_succes(): void
     {
         Http::fake(['exp.host/*' => Http::response([

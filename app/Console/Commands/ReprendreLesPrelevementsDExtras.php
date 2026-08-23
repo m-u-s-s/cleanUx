@@ -6,18 +6,7 @@ use App\Models\MissionExtra;
 use App\Services\Missions\OnSite\MissionExtraService;
 use Illuminate\Console\Command;
 
-/**
- * LA REPRISE QUI N'EXISTAIT PAS.
- *
- * `MissionExtraService::prelever()` documentait depuis toujours que « l'extra reste `approved`, la
- * créance existe, et la reprise se fait plus tard ». Aucune reprise n'existait : ni commande, ni
- * job, ni tâche planifiée. Un supplément dont le prélèvement échouait restait `approved` pour
- * l'éternité — le client avait dit oui, le prestataire avait travaillé, et personne n'était payé.
- *
- * CE QUE CETTE COMMANDE NE FAIT PAS : elle ne relance pas indéfiniment. Une carte refusée trois
- * fois de suite ne deviendra pas valide à la quatrième, et chaque tentative laisse une trace chez
- * Stripe. Au-delà, l'affaire appartient à un humain — d'où la borne et le compte rendu.
- */
+/** LA REPRISE QUI N'EXISTAIT PAS. */
 class ReprendreLesPrelevementsDExtras extends Command
 {
     protected $signature = 'extras:reprendre-les-prelevements
@@ -31,11 +20,7 @@ class ReprendreLesPrelevementsDExtras extends Command
         $maxTentatives = max(1, (int) $this->option('tentatives'));
         $ageMinimum = now()->subHours(max(0, (int) $this->option('age-heures')));
 
-        /*
-         * On ne reprend QUE les `approved`. Un `charged` a réussi, un `declined` a été refusé, un
-         * `proposed` attend encore le client — les reprendre facturerait quelqu'un qui n'a rien
-         * accepté.
-         */
+        // On ne reprend QUE les `approved`.
         $enSouffrance = MissionExtra::query()
             ->where('status', MissionExtra::STATUS_APPROVED)
             ->whereNotNull('approved_at')

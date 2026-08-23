@@ -10,12 +10,7 @@ use App\Models\KycVerification;
 use App\Models\Mission;
 use App\Support\Domain\MissionStatus;
 
-/**
- * L’accueil de l’administration : ce qui demande une attention aujourd’hui.
- *
- * Les files d’attente sont en ton d’alerte dès qu’elles ne sont pas vides — une file non vide
- * est une charge de travail, et l’annoncer est tout l’intérêt de cet écran.
- */
+/** L’accueil de l’administration : ce qui demande une attention aujourd’hui. */
 class HomeReport implements AdminReport
 {
     public function key(): string

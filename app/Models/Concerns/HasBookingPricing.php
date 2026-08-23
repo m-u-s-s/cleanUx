@@ -2,26 +2,10 @@
 
 namespace App\Models\Concerns;
 
-/**
- * HasBookingPricing
- *
- * Pricing-related accessors, formatters, and helpers for the Booking model.
- * Extracted from Booking to keep the model file under 400 lines.
- *
- * Pricing columns on the bookings table:
- *   - estimated_price       (decimal:2) — quote at time of booking
- *   - devis_estime          (decimal:2) — legacy FR alias for estimated_price
- *   - payment_amount_cents  (integer)   — Stripe captured amount in cents
- *   - provider_amount_cents (integer)   — provider share in cents
- *   - platform_fee_cents    (integer)   — platform fee in cents
- *   - currency              (string)    — ISO 4217 code (default EUR)
- */
+/** HasBookingPricing Pricing-related accessors, formatters, and helpers for the Booking model. */
 trait HasBookingPricing
 {
-    /**
-     * Final captured amount in major currency units (e.g. EUR).
-     * Returns null when payment has not been captured yet.
-     */
+    /** Final captured amount in major currency units (e.g. EUR). */
     public function getFinalPriceAttribute(): ?float
     {
         if ($this->payment_amount_cents === null) {
@@ -31,9 +15,7 @@ trait HasBookingPricing
         return round($this->payment_amount_cents / 100, 2);
     }
 
-    /**
-     * Platform commission in major currency units.
-     */
+    /** Platform commission in major currency units. */
     public function getPlatformFeeAttribute(): ?float
     {
         if ($this->platform_fee_cents === null) {
@@ -43,9 +25,7 @@ trait HasBookingPricing
         return round($this->platform_fee_cents / 100, 2);
     }
 
-    /**
-     * Provider net payout in major currency units.
-     */
+    /** Provider net payout in major currency units. */
     public function getProviderAmountAttribute(): ?float
     {
         if ($this->provider_amount_cents === null) {
@@ -57,7 +37,6 @@ trait HasBookingPricing
 
     /**
      * Human-readable price string with currency symbol.
-     * Falls back to estimated_price when final price is unavailable.
      *
      * @example "€ 75,00"
      */
@@ -69,18 +48,14 @@ trait HasBookingPricing
         return number_format($amount, 2, ',', ' ').' '.$currency;
     }
 
-    /**
-     * Whether a payment capture has been registered for this booking.
-     */
+    /** Whether a payment capture has been registered for this booking. */
     public function hasCapturedPayment(): bool
     {
         return $this->payment_amount_cents !== null
             && $this->payment_captured_at !== null;
     }
 
-    /**
-     * Effective display price: final (captured) or estimated, whichever is available.
-     */
+    /** Effective display price: final (captured) or estimated, whichever is available. */
     public function getEffectivePriceAttribute(): ?float
     {
         return $this->getFinalPriceAttribute()

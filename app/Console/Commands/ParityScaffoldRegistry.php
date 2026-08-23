@@ -6,13 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Str;
 
-/**
- * Dev tool: emits candidate parity-registry entries for every navigable web area
- * (GET, no path params, exactly one segment past its role prefix — the top-level
- * navigable area for that role) under a known role prefix, EXCLUDING paths already
- * present in config/parity.php. Output is reviewed by a human and pasted into
- * config/parity.php (the registry stays a committed file).
- */
+/** Dev tool: emits candidate parity-registry entries for every navigable web area (GET, no path params, exactly one segment past its role prefix — the top-level navigable area for that role) under a known role prefix, EXCLUDING paths already present in config/parity.php. */
 class ParityScaffoldRegistry extends Command
 {
     protected $signature = 'parity:scaffold-registry {--json : Output JSON instead of PHP array literals}';

@@ -18,10 +18,7 @@ use Tests\Support\Stripe\FakeStripeHttpClient;
 use Tests\Support\Stripe\StripeFakeResponses;
 use Tests\TestCase;
 
-/**
- * Direct coverage of StripeWebhookHandlers per-event handlers: account.updated,
- * payout.paid/failed, charge.refunded, payment_intent succeeded/failed, transfer.created.
- */
+/** Direct coverage of StripeWebhookHandlers per-event handlers: account.updated, payout.paid/failed, charge.refunded, payment_intent succeeded/failed, transfer.created. */
 class StripeWebhookHandlersCoverageBatch8Test extends TestCase
 {
     use RefreshDatabase;
@@ -158,11 +155,7 @@ class StripeWebhookHandlersCoverageBatch8Test extends TestCase
             'provider_amount_cents' => 10000,
         ])->save();
 
-        /*
-         * LE GAIN D'ABORD : la reprise est plafonnee au montant reellement verse au
-         * prestataire. Sans cette ligne, le montage decrit un etat impossible -- une reprise
-         * sur un portefeuille jamais credite -- et ne mesure plus le comportement du webhook.
-         */
+        // LE GAIN D'ABORD : la reprise est plafonnee au montant reellement verse au prestataire.
         app(ProviderWalletService::class)->recordEarning($booking->fresh());
 
         $res = $this->handlers()->handleChargeRefunded([
@@ -190,11 +183,7 @@ class StripeWebhookHandlersCoverageBatch8Test extends TestCase
             'provider_amount_cents' => 10000,
         ])->save();
 
-        /*
-         * LE GAIN D'ABORD : la reprise est plafonnee au montant reellement verse au
-         * prestataire. Sans cette ligne, le montage decrit un etat impossible -- une reprise
-         * sur un portefeuille jamais credite -- et ne mesure plus le comportement du webhook.
-         */
+        // LE GAIN D'ABORD : la reprise est plafonnee au montant reellement verse au prestataire.
         app(ProviderWalletService::class)->recordEarning($booking->fresh());
 
         $res = $this->handlers()->handleChargeRefunded([

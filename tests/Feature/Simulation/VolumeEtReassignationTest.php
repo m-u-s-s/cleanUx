@@ -15,37 +15,16 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * LE VOLUME, LES SOUS-RÔLES, ET L'ÉTANCHÉITÉ ENTRE SOCIÉTÉS.
- *
- * Une société prestataire n'a pas un prestataire : elle a des chefs d'équipe et des renforts, et
- * chacun ne doit voir QUE ses missions. Deux erreurs opposées guettent, et toutes deux se lisent
- * dans la même liste : un renfort qui ne voit pas sa mission ne peut pas travailler, un renfort
- * qui voit celles des autres a accès à l'adresse et au téléphone de clients chez qui il n'ira
- * jamais.
- *
- * CES DÉFAUTS NE SE VOIENT QU'EN NOMBRE. Avec une société, un chef et une mission, toutes les
- * requêtes semblent justes — il n'y a rien à confondre. C'est à quinze personnes et cinquante
- * missions qu'un filtre manquant devient visible.
- *
- * La liste interrogée est celle que l'application prestataire appelle vraiment,
- * `GET /api/provider/missions/active`, et non une requête réécrite pour le test : une garde
- * vérifiée ailleurs que là où elle s'applique ne prouve rien.
- */
+/** LE VOLUME, LES SOUS-RÔLES, ET L'ÉTANCHÉITÉ ENTRE SOCIÉTÉS. */
 class VolumeEtReassignationTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
     use RefreshDatabase;
 
     /**
-     * @var array<string, mixed> Le contexte géographique, construit UNE fois.
+     * LES FIXTURES NE MONTENT PAS EN VOLUME TOUTES SEULES : `BookingFactory` fabrique sinon une hiérarchie géographique complète par réservation, et `RegionFactory` s'appuie sur le générateur `unique()` de Faker — qui abandonne au bout de dix mille tentatives.
      *
-     * LES FIXTURES NE MONTENT PAS EN VOLUME TOUTES SEULES : `BookingFactory` fabrique sinon une
-     * hiérarchie géographique complète par réservation, et `RegionFactory` s'appuie sur le
-     * générateur `unique()` de Faker — qui abandonne au bout de dix mille tentatives. Cinquante
-     * réservations suffisaient à faire tomber le test sur une limite d'outillage, pas sur un
-     * défaut du produit. Un seul contexte partagé lève la limite et rapproche du réel : cinquante
-     * missions d'une même société se déroulent dans la même zone.
+     * @var array<string, mixed> Le contexte géographique, construit UNE fois.
      */
     private array $contexte;
 
@@ -113,12 +92,7 @@ class VolumeEtReassignationTest extends TestCase
                 'devis_estime' => 120,
             ]);
 
-        /*
-         * LA MISSION EXISTE DÉJÀ : `RendezVousObserver` la crée avec la réservation, en
-         * `updateOrCreate` sur `booking_id`. En fabriquer une seconde donnait deux missions pour
-         * une réservation — un état hors de portée de la production, et qui faussait ce que ce
-         * test croyait mesurer.
-         */
+        // LA MISSION EXISTE DÉJÀ : `RendezVousObserver` la crée avec la réservation, en `updateOrCreate` sur `booking_id`.
         $mission = $reservation->missions()->latest('id')->firstOrFail();
         $mission->forceFill([
             'provider_organization_id' => $societe->id,
@@ -145,9 +119,7 @@ class VolumeEtReassignationTest extends TestCase
         return collect($reponse->json('data'))->pluck('id')->sort()->values()->all();
     }
 
-    /**
-     * QUINZE PERSONNES, CINQUANTE MISSIONS : chacun voit les siennes et rien d'autre.
-     */
+    /** QUINZE PERSONNES, CINQUANTE MISSIONS : chacun voit les siennes et rien d'autre. */
     public function test_a_volume_chaque_renfort_ne_voit_que_ses_missions(): void
     {
         [$societe, $chefs, $renforts] = $this->societe(chefs: 3, renforts: 12);
@@ -199,9 +171,7 @@ class VolumeEtReassignationTest extends TestCase
         $this->assertSame([], $voyants, 'Un chef d’équipe ne doit voir aucune mission de renfort dans cette liste.');
     }
 
-    /**
-     * L'ÉTANCHÉITÉ ENTRE SOCIÉTÉS — la garde qui protège l'adresse des clients.
-     */
+    /** L'ÉTANCHÉITÉ ENTRE SOCIÉTÉS — la garde qui protège l'adresse des clients. */
     public function test_une_societe_ne_voit_jamais_les_missions_d_une_autre(): void
     {
         [$societeA, , $renfortsA] = $this->societe(renforts: 2);
@@ -224,12 +194,7 @@ class VolumeEtReassignationTest extends TestCase
             ->assertForbidden();
     }
 
-    /**
-     * RÉASSIGNER DOIT RETIRER À L'ANCIEN, pas seulement donner au nouveau.
-     *
-     * Une réassignation qui ajoute sans retirer laisse deux personnes convaincues d'y aller — et
-     * l'une des deux découvre sur place qu'elle n'était pas attendue.
-     */
+    /** RÉASSIGNER DOIT RETIRER À L'ANCIEN, pas seulement donner au nouveau. */
     public function test_reassigner_retire_la_mission_a_l_ancien(): void
     {
         [$societe, , $renforts] = $this->societe(renforts: 3);
@@ -246,9 +211,7 @@ class VolumeEtReassignationTest extends TestCase
         $this->assertSame([$mission->id], $this->saListe($renforts[1]));
     }
 
-    /**
-     * UN RENFORT AJOUTÉ VOIT LA MISSION, sans en déposséder le responsable.
-     */
+    /** UN RENFORT AJOUTÉ VOIT LA MISSION, sans en déposséder le responsable. */
     public function test_un_renfort_ajoute_voit_la_mission_sans_en_priver_le_responsable(): void
     {
         [$societe, , $renforts] = $this->societe(renforts: 3);

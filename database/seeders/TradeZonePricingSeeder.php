@@ -7,29 +7,7 @@ use App\Models\Trade;
 use App\Models\TradeZonePricing;
 use Illuminate\Database\Seeder;
 
-/**
- * LA GRILLE COMPLÈTE : chaque métier actif × chaque zone active.
- *
- * `trade_zone_pricing` est la source unique — l'ACTIVATION et le PRIX y sont la même ligne. Une
- * plateforme fraîchement semée sans cette grille est une plateforme où AUCUN métier n'est vendu
- * nulle part : le parcours de commande refuserait toute confirmation, et personne ne comprendrait
- * pourquoi puisque les métiers, eux, existent et sont publiés.
- *
- * LE PRIX DE DÉPART EST CELUI DU MÉTIER, pas zéro. Ouvrir un métier dans une zone ne doit pas le
- * mettre à zéro euro en attendant qu'un administrateur saisisse une grille : c'est une plateforme
- * qui travaille gratuitement jusqu'à ce que quelqu'un s'en aperçoive.
- *
- * L'IMMÉDIAT SUIT LE MÉTIER, et seulement lui. `asap_enabled` n'est ouvert que là où
- * `trades.allows_asap` l'autorise : semer un dépannage sur un ravalement de façade engagerait la
- * plateforme à dépêcher quelqu'un dans l'heure pour un chantier de trois jours. Sur les métiers qui
- * l'autorisent, il est ouvert d'emblée — sans quoi la démonstration du moteur de répartition
- * n'aurait aucun métier à se mettre sous la dent, et il faudrait aller cocher une case en base
- * avant de pouvoir montrer quoi que ce soit.
- *
- * IDEMPOTENT ET NON DESTRUCTIF. Rejouer le seeder ne remet pas à zéro un tarif négocié : les
- * lignes existantes sont laissées telles quelles. C'est la même règle que l'écran d'administration,
- * où éteindre un métier ne supprime jamais sa ligne.
- */
+/** LA GRILLE COMPLÈTE : chaque métier actif × chaque zone active. */
 class TradeZonePricingSeeder extends Seeder
 {
     public function run(): void

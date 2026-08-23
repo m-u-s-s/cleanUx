@@ -8,10 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Tests\TestCase;
 
-/**
- * M9 — failed Stripe webhook events must be re-dispatched when due, so transient failures
- * are not lost forever (the queue itself never retries: tries=1).
- */
+/** M9 — failed Stripe webhook events must be re-dispatched when due, so transient failures are not lost forever (the queue itself never retries: tries=1). */
 class RetryFailedStripeWebhooksTest extends TestCase
 {
     use RefreshDatabase;

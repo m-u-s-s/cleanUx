@@ -19,15 +19,7 @@ class AdminAlertService
             'not_started_soon' => $this->notStartedSoon(),
             'tracking_inactive' => $this->trackingInactive(),
             'payment_not_captured' => $this->paymentNotCaptured(),
-            /*
-             * TROIS ALERTES DE DISPONIBILITÉ — il n'y en avait AUCUNE.
-             *
-             * Ce service surveillait les missions déjà lancées : retard, non-démarrage, suivi
-             * inactif, paiement non capturé. Toutes regardent l'aval, quand la course existe déjà.
-             * Rien ne regardait l'amont — un prestataire injoignable à la planification ne
-             * produit aucune mission, donc aucune alerte, donc aucun signal. Le silence était pris
-             * pour du calme.
-             */
+            // TROIS ALERTES DE DISPONIBILITÉ — il n'y en avait AUCUNE.
             'providers_without_availability' => $this->providersWithoutAvailability(),
             'providers_fully_closed_week' => $this->providersFullyClosedThisWeek(),
             'providers_closing_spree' => $this->providersClosingSpree(),
@@ -36,10 +28,6 @@ class AdminAlertService
 
     /**
      * Qui est prestataire — la même définition que `DefaultAvailabilityProvisioner::provision()`.
-     *
-     * `whereHas('providerProfile')` seul écarterait les comptes dont seule la colonne héritée
-     * `role` porte l'information ; ils seraient absents de l'alerte tout en étant réellement
-     * injoignables.
      *
      * @param  Builder<User>  $query
      */
@@ -51,29 +39,13 @@ class AdminAlertService
     }
 
     /**
-     * Aucun créneau du tout : le compte existe, il est actif, et la planification ne le verra
-     * jamais. C'est l'alerte la plus silencieuse du lot — rien ne casse, personne ne se plaint.
+     * Aucun créneau du tout : le compte existe, il est actif, et la planification ne le verra jamais.
      *
      * @return EloquentCollection<int, User>
      */
     protected function providersWithoutAvailability(): EloquentCollection
     {
-        /*
-            LA MÊME DÉFINITION QUE LA FICHE, SINON L'ALERTE OFFRE DES LIENS MORTS.
-
-            `scopePrestataires()` ratisse large — un profil prestataire OU la colonne héritée
-            `role` — pour ne manquer personne. La fiche de disponibilités, elle, refuse tout
-            compte dont `isEmploye()` est faux (`ProviderAvailabilityDetail::mount()`, 404).
-
-            Deux définitions de « prestataire » pour la même notion : l'alerte listait des
-            comptes que la fiche renvoyait en 404. Mesuré sur l'écran réel : deux clientes
-            porteuses d'un profil prestataire sans type exploitable y figuraient, et leur nom
-            était cliquable vers une page vide.
-
-            On garde le ratissage large pour la REQUÊTE — il évite d'oublier quelqu'un — puis
-            on retient ceux que la fiche accepte, en appelant SA méthode plutôt qu'en
-            recopiant sa règle en SQL. Une seule source de vérité, et elle reste sur le modèle.
-        */
+        // LA MÊME DÉFINITION QUE LA FICHE, SINON L'ALERTE OFFRE DES LIENS MORTS.
         return User::query()
             ->tap(fn ($q) => $this->scopePrestataires($q))
             ->where('is_active', true)
@@ -87,9 +59,7 @@ class AdminAlertService
     }
 
     /**
-     * Une semaine entièrement fermée par exceptions : le prestataire a des créneaux, mais chaque
-     * jour des sept prochains est explicitement fermé. Techniquement configuré, pratiquement
-     * absent — un état qu'aucun compteur de créneaux ne révèle.
+     * Une semaine entièrement fermée par exceptions : le prestataire a des créneaux, mais chaque jour des sept prochains est explicitement fermé.
      *
      * @return Collection<int, User>
      */
@@ -112,8 +82,7 @@ class AdminAlertService
     }
 
     /**
-     * Beaucoup de fermetures d'un coup, sur trente jours à venir. Ce n'est pas une faute — un
-     * congé est légitime — mais c'est ce qui vide une zone sans que personne ne l'ait décidé.
+     * Beaucoup de fermetures d'un coup, sur trente jours à venir.
      *
      * @return Collection<int, User>
      */

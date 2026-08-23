@@ -8,16 +8,9 @@ use App\Services\Client\Templates\ApplyRecurringTemplateService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 use Livewire\Component;
 
-/**
- * Phase 6.1 — Galerie de templates de récurrence pré-définis.
- *
- * Affiche les templates système + ceux du user, groupés par catégorie.
- * Au clic sur un template → modal de confirmation (site, date début, fin).
- * Au confirm → crée une RecurringBookingSeries et redirige vers /recurrences.
- */
+/** Phase 6.1 — Galerie de templates de récurrence pré-définis. */
 class RecurringTemplatesGallery extends Component
 {
     public string $selectedCategory = 'all';
@@ -98,17 +91,7 @@ class RecurringTemplatesGallery extends Component
                 ]
             );
 
-            /*
-             * LE MESSAGE NE PROMET PLUS UNE PAGE QUI N'EXISTE PAS.
-             *
-             * Il annonçait « Tu peux la consulter dans Mes récurrences » et le code redirigeait
-             * vers `client.recurring.index` — une route qui n'existe nulle part. Gardée par
-             * `Route::has()`, l'erreur ne cassait rien : la redirection était simplement sautée,
-             * et l'utilisateur restait sur place en cherchant une page introuvable. Seule
-             * `client.recurring.templates` existe, et c'est précisément l'écran d'où l'on vient.
-             *
-             * Le jour où une liste des récurrences existera, remettre la redirection ici.
-             */
+            // LE MESSAGE NE PROMET PLUS UNE PAGE QUI N'EXISTE PAS.
             $this->flash("Récurrence \"{$template->name}\" créée.", 'success');
             $this->closeApplyModal();
         } catch (\DomainException $e) {

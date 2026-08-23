@@ -8,25 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
-/**
- * LE CASH-OUT EXPRESS (E14) — être payé maintenant, contre des frais.
- *
- * LE BESOIN EST RÉEL ET IL EST BRUTAL. Un indépendant qui a travaillé lundi est payé le vendredi
- * suivant, parfois plus tard. Entre les deux il y a un plein d'essence, une facture, une échéance
- * de loyer. La question n'est pas de savoir si des frais sont acceptables — c'est de savoir si on
- * lui laisse le choix, ou s'il va le chercher chez un organisme de crédit à 20 %.
- *
- * LES FRAIS S'AFFICHENT AVANT, EN EUROS, PAS EN POURCENTAGE. « 1,5 % » se lit et ne se comprend
- * pas ; « 2,40 € » se comprend. Le montant NET est calculé et rendu, pour qu'il n'y ait aucune
- * surprise sur le virement.
- *
- * LE PLANCHER EXISTE POUR PROTÉGER DU RATIO, PAS DE LA DÉPENSE. Sous vingt euros, des frais fixes
- * représenteraient une part indécente du montant — on refuse plutôt que de proposer une mauvaise
- * affaire à quelqu'un qui n'a pas le choix.
- *
- * ET LE VIREMENT ORDINAIRE RESTE GRATUIT. L'express est une OPTION, jamais le chemin par défaut :
- * en faire le bouton principal reviendrait à taxer l'impatience de gens qu'on paye en retard.
- */
+/** LE CASH-OUT EXPRESS (E14) — être payé maintenant, contre des frais. */
 class ExpressPayoutService
 {
     /** La commission, en points de base — 150 = 1,5 %. */
@@ -35,12 +17,7 @@ class ExpressPayoutService
     /** Un minimum de frais : sous ce seuil, le coût de traitement dépasse la commission. */
     public const FRAIS_MINIMUM_CENTS = 100;
 
-    /**
-     * En dessous, on refuse.
-     *
-     * PAS POUR PROTÉGER LA PLATEFORME, mais le prestataire : sur dix euros, un euro de frais fait
-     * 10 %. On ne propose pas une mauvaise affaire à quelqu'un qui n'a pas le choix.
-     */
+    /** En dessous, on refuse. */
     public const MONTANT_MINIMUM_CENTS = 2000;
 
     public function __construct(
@@ -88,11 +65,7 @@ class ExpressPayoutService
             ]);
         }
 
-        /*
-         * LE SOLDE EST VÉRIFIÉ SUR LE BRUT, pas sur le net. Les frais sont prélevés SUR le
-         * virement : quelqu'un qui a exactement 50 € doit pouvoir demander 50 € et en recevoir
-         * 49,25 — refuser parce que 50,75 dépasse son solde serait incompréhensible.
-         */
+        // LE SOLDE EST VÉRIFIÉ SUR LE BRUT, pas sur le net.
         $solde = $this->wallet->balance($prestataire->id, $devise);
 
         if ($solde['available'] < $montantCents / 100) {
@@ -101,18 +74,7 @@ class ExpressPayoutService
             ]);
         }
 
-        /*
-         * LE VERSEMENT PORTE LE NET, ET LES FRAIS DEVIENNENT UNE ÉCRITURE.
-         *
-         * Le retrait était demandé pour le montant BRUT et les frais ne vivaient que dans les
-         * métadonnées. Résultat : le prestataire recevait le brut, la plateforme ne percevait
-         * rien, et l'écran continuait d'annoncer un net inférieur — trois versions d'un même
-         * virement, dont aucune n'était vérifiable dans les comptes.
-         *
-         * Le versement porte donc désormais ce qui part réellement, et les frais leur propre
-         * ligne. Les deux sont indissociables : un versement net sans sa ligne de frais rendrait
-         * au prestataire un solde qu'il a pourtant dépensé, d'où la transaction.
-         */
+        // LE VERSEMENT PORTE LE NET, ET LES FRAIS DEVIENNENT UNE ÉCRITURE.
         return DB::transaction(function () use ($prestataire, $devis, $devise) {
             // Le retrait ordinaire fait déjà tout le travail — vérification Stripe Connect, ligne
             // de registre, journal d'activité. On ne le réécrit pas : on l'annote.

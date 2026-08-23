@@ -11,17 +11,7 @@ use App\Services\FaceCheck\FaceCheckRequirement;
 use App\Services\FaceCheck\FaceCheckSettings;
 use Illuminate\Support\Facades\DB;
 
-/**
- * LES QUATRE CONDITIONS RÉUNIES — sans quoi le module est simplement éteint.
- *
- * Un prestataire n'est soumis au contrôle facial que si TOUT est vrai à la fois : le module est
- * allumé, sa zone est dans l'audience, un de ses métiers coche `requires_face_check`, et il a bien
- * un profil prestataire. Une fixture qui en oublie une décrit un module éteint — et un test de
- * blocage passerait alors au vert en mesurant l'inaction.
- *
- * C'est la même leçon que `OuvreLeCatalogue` : l'absence de configuration n'est pas un état
- * neutre, c'est un état FERMÉ, et il faut l'ouvrir explicitement.
- */
+/** LES QUATRE CONDITIONS RÉUNIES — sans quoi le module est simplement éteint. */
 trait ActiveLeControleFacial
 {
     protected ServiceZone $zoneDuControle;
@@ -59,9 +49,7 @@ trait ActiveLeControleFacial
         $this->oublierLesCachesDuControleFacial();
     }
 
-    /**
-     * Un prestataire dans le périmètre : profil, métier soumis, zone couverte.
-     */
+    /** Un prestataire dans le périmètre : profil, métier soumis, zone couverte. */
     protected function prestataireSoumis(array $attributs = []): User
     {
         $user = User::factory()->create(array_merge([
@@ -87,10 +75,7 @@ trait ActiveLeControleFacial
         return $user->refresh();
     }
 
-    /**
-     * TÉMOIN NÉGATIF : un prestataire hors périmètre, pour prouver qu'on mesure bien la garde et
-     * non une panne générale.
-     */
+    /** TÉMOIN NÉGATIF : un prestataire hors périmètre, pour prouver qu'on mesure bien la garde et non une panne générale. */
     protected function prestataireHorsPerimetre(): User
     {
         $autreMetier = Trade::factory()->create();

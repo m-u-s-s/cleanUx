@@ -10,11 +10,7 @@ use App\Models\User;
 use App\Services\Presence\ProviderPresenceService;
 
 /**
- * La présence des prestataires sur le terrain.
- *
- * LECTURE SEULE. Le statut de présence est écrit par le battement de cœur de l’application
- * prestataire ; le forcer depuis ici ferait apparaître disponible quelqu’un dont le téléphone
- * ne répond plus, et le dispatch lui enverrait des missions.
+ * La présence des prestataires sur le terrain. LECTURE SEULE.
  *
  * @extends EloquentResource<ProviderPresence>
  */
@@ -74,10 +70,7 @@ class PresenceResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Passer un prestataire hors ligne à la main. Le service tranche — il touche au profil
-             * ET au journal de présence, ce qu'une écriture directe sur la ligne oublierait.
-             */
+            // Passer un prestataire hors ligne à la main.
             Action::make('force-offline', 'Passer hors ligne', function (ProviderPresence $presence) {
                 $user = User::find($presence->provider_user_id);
 

@@ -10,25 +10,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
 
-/**
- * QUI A LE DROIT D'OUVRIR UN FIL AVEC QUI.
- *
- * `createThread` ne posait AUCUNE question. Un compte authentifié quelconque pouvait ouvrir un fil
- * de discussion avec n'importe quel autre utilisateur de la plateforme — il suffisait de connaître
- * un identifiant — et s'y déclarer `admin` du fil au passage. Sur une marketplace où les clientes
- * et les prestataires ne se choisissent pas, c'est une porte de harcèlement : on écrit à quelqu'un
- * qu'on n'a jamais croisé, et le message atterrit dans sa messagerie applicative avec une
- * notification.
- *
- * LA RÈGLE EST LA RELATION RÉELLE : deux personnes ne peuvent se parler que si la plateforme les a
- * déjà mises en rapport — une même réservation, ou un même litige. C'est exactement le lien qui
- * justifie la conversation : « où en est mon intervention ? », « je ne trouve pas la porte ».
- *
- * L'ADMINISTRATION ÉCHAPPE À LA RÈGLE, et c'est nécessaire : la modération et le service après-vente
- * doivent pouvoir écrire à n'importe qui. Mais c'est le RÔLE DE PLATEFORME qui l'autorise, pas un
- * champ du formulaire — se déclarer `admin` dans le tableau `participants` ne conférait rien
- * d'autre qu'un libellé, sauf que ce libellé donne des droits de modération dans le fil.
- */
+/** QUI A LE DROIT D'OUVRIR UN FIL AVEC QUI. `createThread` ne posait AUCUNE question. */
 class ChatRelationshipGuard
 {
     /**
@@ -67,8 +49,7 @@ class ChatRelationshipGuard
     }
 
     /**
-     * Le rôle `admin` dans un fil ouvre la modération de ce fil. Il ne peut donc pas être demandé
-     * par le formulaire : seul un compte d'administration de la plateforme le porte.
+     * Le rôle `admin` dans un fil ouvre la modération de ce fil.
      *
      * @param  array<int, array{user_id?: int|string, role?: string}>  $participants
      *
@@ -108,12 +89,7 @@ class ChatRelationshipGuard
         return array_values($ids);
     }
 
-    /**
-     * Une relation existe quand les deux personnes figurent sur la MÊME réservation, dans n'importe
-     * lequel des quatre rôles qu'une réservation distingue (le client de compte, le client payeur,
-     * l'employé affecté, le prestataire assigné). Le litige remonte à sa réservation quand il en a
-     * une, et vaut lien par lui-même sinon.
-     */
+    /** Une relation existe quand les deux personnes figurent sur la MÊME réservation, dans n'importe lequel des quatre rôles qu'une réservation distingue (le client de compte, le client payeur, l'employé affecté, le prestataire assigné). */
     protected function partagentUneRelation(
         int $auteurId,
         int $autreId,
@@ -139,25 +115,13 @@ class ChatRelationshipGuard
     }
 
     /**
-     * Le constructeur est bien celui d'Eloquent, et pas celui de la requête brute : une fermeture
-     * passée à `where()` sur un modèle en reçoit un nouveau. C'est ce qui rend `orWhereHas`
-     * disponible ici — sans quoi la relation à la mission serait hors de portée.
+     * Le constructeur est bien celui d'Eloquent, et pas celui de la requête brute : une fermeture passée à `where()` sur un modèle en reçoit un nouveau.
      *
      * @param  Builder<Booking>  $q
      */
     protected function filtreRoles($q, int $userId): void
     {
-        /*
-         * L'INTERVENANT OUVRE LE DROIT DE PARLER AU CLIENT, et il vit sur la mission.
-         *
-         * Ce filtre ne connaissait que les colonnes de la réservation. Après une réassignation —
-         * ou pour une mission qu'une société confie à un salarié — l'ancien prestataire gardait
-         * l'accès à la conversation d'un client chez qui il n'ira pas, pendant que celui qui y va
-         * ne pouvait pas lui écrire.
-         *
-         * Le filtre est une REQUÊTE : `Booking::intervenantId()` ne s'y applique pas, mais la même
-         * règle s'exprime par la relation.
-         */
+        // L'INTERVENANT OUVRE LE DROIT DE PARLER AU CLIENT, et il vit sur la mission.
         $q->where('client_id', $userId)
             ->orWhere('customer_user_id', $userId)
             ->orWhere('employe_id', $userId)

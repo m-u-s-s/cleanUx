@@ -9,22 +9,7 @@ use App\Services\Badges\ProviderBadgeEngine;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * L'ACADÉMIE (E16) — apprendre, et que ça serve.
- *
- * RÉUSSIR DOIT CHANGER QUELQUE CHOSE, sinon personne ne suit. C'est la seule question qui vaille
- * pour un module de formation : un catalogue de cours sans effet est un catalogue que personne
- * n'ouvre deux fois. Ici, une complétion débloque un badge existant ET pèse dans le scoring de
- * matching — deux effets visibles, l'un par le client, l'autre dans le nombre d'offres reçues.
- *
- * LE BONUS DE SPÉCIALITÉ VIT SUR LE PROFIL, pas dans le moteur de matching. Le moteur lit déjà les
- * spécialités : y ajouter une lecture de l'académie ferait deux endroits à maintenir, et l'un des
- * deux finirait par ne plus refléter l'autre.
- *
- * ON NE TERMINE PAS DEUX FOIS. La contrainte d'unicité le garantit en base ; le service rend la
- * complétion existante plutôt que d'échouer, parce qu'un double clic sur « j'ai terminé » n'est pas
- * une erreur de l'utilisateur.
- */
+/** L'ACADÉMIE (E16) — apprendre, et que ça serve. */
 class AcademyService
 {
     /**
@@ -59,12 +44,7 @@ class AcademyService
             ->all();
     }
 
-    /**
-     * Marquer une formation terminée.
-     *
-     * REJOUABLE : un double clic sur « j'ai terminé » n'est pas une erreur de l'utilisateur, et
-     * échouer lui donnerait l'impression d'avoir perdu son travail.
-     */
+    /** Marquer une formation terminée. */
     public function terminer(User $prestataire, AcademyCourse $cours, ?int $score = null): AcademyCompletion
     {
         return DB::transaction(function () use ($prestataire, $cours, $score) {
@@ -91,21 +71,12 @@ class AcademyService
         });
     }
 
-    /**
-     * Ce que la réussite débloque — badge, et poids dans le matching.
-     *
-     * SOFT-FAIL DES DEUX CÔTÉS. La complétion est acquise : un module de badges indisponible ne doit
-     * pas la faire perdre. `badge_granted_at` reste nul, et une réévaluation ultérieure rattrapera.
-     */
+    /** Ce que la réussite débloque — badge, et poids dans le matching. SOFT-FAIL DES DEUX CÔTÉS. */
     protected function appliquerLesEffets(User $prestataire, AcademyCourse $cours, AcademyCompletion $completion): void
     {
         if ($cours->specialty_bonus > 0) {
             try {
-                /*
-                 * LE BONUS VIT SUR LE PROFIL, pas dans le moteur. Le moteur lit déjà les spécialités :
-                 * y ajouter une lecture de l'académie ferait deux endroits à maintenir, et l'un des
-                 * deux finirait par ne plus refléter l'autre.
-                 */
+                // LE BONUS VIT SUR LE PROFIL, pas dans le moteur.
                 $profil = $prestataire->providerProfile;
 
                 if ($profil !== null) {

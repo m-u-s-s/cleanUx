@@ -18,14 +18,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-/**
- * Collecte TOUTES les données d'un utilisateur et les sérialise dans un
- * fichier JSON (et optionnellement un ZIP avec les pièces jointes).
- *
- * Respecte l'art. 15 (accès) et 20 (portabilité) du RGPD :
- *   - Format machine-readable
- *   - Donné directement à l'utilisateur via URL signée
- */
+/** Collecte TOUTES les données d'un utilisateur et les sérialise dans un fichier JSON (et optionnellement un ZIP avec les pièces jointes). */
 class DataExportService
 {
     public function execute(GdprDataRequest $request): GdprDataRequest
@@ -67,9 +60,7 @@ class DataExportService
         return $request->fresh();
     }
 
-    /**
-     * Collecte structurée. Étendre selon les modules ajoutés.
-     */
+    /** Collecte structurée. Étendre selon les modules ajoutés. */
     public function collectFor(User $user): array
     {
         return [
@@ -96,11 +87,6 @@ class DataExportService
 
     /**
      * LES METADONNEES, JAMAIS LES IMAGES.
-     *
-     * L'article 20 porte sur la portabilite des donnees fournies par la personne ; il ne demande
-     * pas de reexpedier un gabarit biometrique dans un fichier JSON qui transitera par un e-mail,
-     * un telephone et une corbeille. Le prestataire a droit de savoir QUAND on l'a controle, avec
-     * quel verdict et quel score -- pas de recevoir une copie exploitable de son propre visage.
      *
      * @return array<string, mixed>
      */
@@ -178,17 +164,7 @@ class DataExportService
             return [];
         }
 
-        /*
-         * ICI ON ÉLARGIT, ON NE BASCULE PAS — et c'est la seule lecture de cette famille à le faire.
-         *
-         * Ailleurs, « qui intervient » désigne UNE personne : celle qui se déplace aujourd'hui.
-         * Un export RGPD répond à une autre question — quelles données concernent cette personne —
-         * et une réservation où elle a été nommée puis remplacée la concerne toujours. Basculer sur
-         * `intervenantEst()` retrancherait de son export des données auxquelles elle a droit.
-         *
-         * On ajoute donc le lien par la mission SANS retirer la colonne : après une réassignation,
-         * l'ancien comme le nouveau retrouvent la réservation dans leur export.
-         */
+        // ICI ON ÉLARGIT, ON NE BASCULE PAS — et c'est la seule lecture de cette famille à le faire.
         return Booking::query()
             ->where(fn ($q) => $q
                 ->where('client_id', $user->id)

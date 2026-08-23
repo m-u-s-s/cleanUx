@@ -2,25 +2,10 @@
 
 namespace App\Services\Assistant\Logging;
 
-/**
- * Phase 5.1 — Calcul de coût en USD à partir des tokens consommés.
- *
- * Tarifs Anthropic (au moment de la rédaction, à actualiser périodiquement) :
- *   claude-sonnet-4 :  $3 / 1M input,  $15 / 1M output
- *   claude-opus-4   : $15 / 1M input,  $75 / 1M output
- *   claude-haiku-4  :  $0.80 / 1M input, $4 / 1M output
- *
- * Tarifs OpenAI :
- *   gpt-4o-mini : $0.15 / 1M input, $0.60 / 1M output
- *   gpt-4o      : $2.50 / 1M input, $10  / 1M output
- *
- * Si le model est inconnu, retourne null (pas de tracking de coût).
- */
+/** Phase 5.1 — Calcul de coût en USD à partir des tokens consommés. */
 class CostCalculator
 {
-    /**
-     * Pricing en USD par 1M de tokens : [model_pattern => [input_per_1m, output_per_1m]]
-     */
+    /** Pricing en USD par 1M de tokens : [model_pattern => [input_per_1m, output_per_1m]] */
     private const PRICING = [
         // Anthropic
         'claude-sonnet-4' => [3.00,  15.00],
@@ -66,9 +51,7 @@ class CostCalculator
         return round($inputCost + $outputCost, 6);
     }
 
-    /**
-     * Retourne [input_per_1m, output_per_1m] ou null si model non reconnu.
-     */
+    /** Retourne [input_per_1m, output_per_1m] ou null si model non reconnu. */
     private function resolvePricing(string $model): ?array
     {
         $lower = mb_strtolower($model);

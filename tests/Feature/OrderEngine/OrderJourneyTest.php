@@ -13,13 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Le parcours de commande, du point de vue d'un visiteur.
- *
- * Ce que ces tests verrouillent, ce sont les lois qui font vendre : un prix avant toute demande
- * d'identité, aucune réponse perdue en revenant en arrière, un questionnaire réduit à l'essentiel
- * en mode urgent, et des modes qui ne s'offrent que là où ils ont un sens.
- */
+/** Le parcours de commande, du point de vue d'un visiteur. */
 class OrderJourneyTest extends TestCase
 {
     use RefreshDatabase;
@@ -36,12 +30,7 @@ class OrderJourneyTest extends TestCase
         $this->get('/commander')->assertOk();
     }
 
-    /**
-     * LA loi 1, rendue vérifiable.
-     *
-     * Un visiteur sans compte compose sa commande et obtient un PRIX. Aucun compte n'est créé au
-     * passage — un prix caché derrière un formulaire d'inscription est la première cause d'abandon.
-     */
+    /** LA loi 1, rendue vérifiable. Un visiteur sans compte compose sa commande et obtient un PRIX. */
     public function test_a_visitor_gets_a_price_without_ever_being_asked_who_they_are(): void
     {
         $usersBefore = User::count();
@@ -57,12 +46,7 @@ class OrderJourneyTest extends TestCase
         $this->assertNull(OrderDraft::firstOrFail()->client_id);
     }
 
-    /**
-     * LA loi 10 : revenir en arrière ne perd rien.
-     *
-     * Le client répond, retourne au choix du métier, revient — et retrouve ses réponses. Elles
-     * vivent dans le panier, pas dans le composant, et c'est ce qui rend la promesse tenable.
-     */
+    /** LA loi 10 : revenir en arrière ne perd rien. */
     public function test_going_back_and_returning_keeps_every_answer(): void
     {
         $component = Livewire::test(OrderJourney::class)
@@ -91,17 +75,7 @@ class OrderJourneyTest extends TestCase
         $this->assertGreaterThan($base, $component->instance()->quote()->minCents);
     }
 
-    /**
-     * L'intention de mode voyage dans l'URL.
-     *
-     * L'application mobile n'a plus d'écran de réservation natif : ses trois cartes — immédiat,
-     * rendez-vous, multi-services — ouvrent toutes ce parcours. Sans ce paramètre, elles
-     * arriveraient toutes les trois sur le même écran planifié, et le choix d'entrée deviendrait
-     * décoratif : le client demanderait « immédiat » puis devrait le redemander.
-     *
-     * L'intention n'est pas appliquée tout de suite — les modes dépendent du métier, et aucun
-     * n'est encore choisi. Elle attend la sélection.
-     */
+    /** L'intention de mode voyage dans l'URL. */
     public function test_an_intended_mode_survives_until_a_trade_is_chosen(): void
     {
         Livewire::withQueryParams(['mode' => 'asap'])
@@ -111,12 +85,7 @@ class OrderJourneyTest extends TestCase
             ->assertSet('mode', 'asap');
     }
 
-    /**
-     * Un métier qui n'accepte pas le mode demandé le DIT.
-     *
-     * Un ravalement de façade n'est pas un service immédiat. Basculer en silence sur « planifié »
-     * laisserait le client croire qu'il a commandé une intervention dans l'heure.
-     */
+    /** Un métier qui n'accepte pas le mode demandé le DIT. */
     public function test_a_trade_that_refuses_the_intended_mode_says_so(): void
     {
         Livewire::withQueryParams(['mode' => 'asap'])
@@ -126,14 +95,7 @@ class OrderJourneyTest extends TestCase
             ->assertSee('n’accepte pas les interventions immédiates');
     }
 
-    /**
-     * Le mode retenu est ÉCRIT SUR LA COMMANDE, pas seulement à l'écran.
-     *
-     * `reprice()` recalcule à partir de `order_drafts.mode`, jamais de la propriété du composant.
-     * Les deux qui divergent, c'est l'écran qui annonce une majoration d'urgence pendant que le
-     * devis enregistré — celui que la confirmation reprend — est calculé au tarif planifié. Le
-     * client voit un prix, il en paie un autre.
-     */
+    /** Le mode retenu est ÉCRIT SUR LA COMMANDE, pas seulement à l'écran. */
     public function test_the_mode_reaches_the_order_not_just_the_screen(): void
     {
         $component = Livewire::withQueryParams(['mode' => 'asap'])
@@ -144,13 +106,7 @@ class OrderJourneyTest extends TestCase
         $this->assertSame('asap', $component->get('mode'));
     }
 
-    /**
-     * Et le repli suit la même règle.
-     *
-     * Passer d'un métier qui accepte l'immédiat à un métier qui le refuse ramène l'écran au
-     * planifié — la commande doit suivre, sinon elle reste facturée avec la majoration d'urgence
-     * d'un mode que le client ne voit plus nulle part.
-     */
+    /** Et le repli suit la même règle. */
     public function test_falling_back_to_scheduled_also_updates_the_order(): void
     {
         Livewire::withQueryParams(['mode' => 'asap'])
@@ -172,14 +128,7 @@ class OrderJourneyTest extends TestCase
             ->assertSet('mode', 'scheduled');
     }
 
-    /**
-     * Le dock appelle bien `selectTrade`.
-     *
-     * Les tests choisissent un métier par `->call('selectTrade', ...)`, ce qui ne prouve rien du
-     * bouton. Le clic passe désormais par Alpine — pour envelopper la sélection dans une transition
-     * d'élément partagé — et un `wire:click` supprimé par mégarde laisserait un dock inerte que
-     * toute la suite continuerait de déclarer vert.
-     */
+    /** Le dock appelle bien `selectTrade`. */
     public function test_the_dock_actually_calls_select_trade(): void
     {
         $sector = $this->peinture()->sector;
@@ -205,14 +154,7 @@ class OrderJourneyTest extends TestCase
         $this->assertSame('Que faut-il peindre ?', $component->instance()->lastChange()['label']);
     }
 
-    /**
-     * L'explication de la variation est LUE SUR MOBILE aussi.
-     *
-     * Elle ne vivait que dans la carte collante du grand écran. Sur un produit conçu à 390 px
-     * d'abord, c'était le mauvais sens : le client mobile — le plus nombreux — voyait le montant
-     * bouger sans jamais savoir pourquoi. Le libellé doit donc apparaître DEUX fois dans le rendu :
-     * la carte de droite et la barre du pouce.
-     */
+    /** L'explication de la variation est LUE SUR MOBILE aussi. */
     public function test_the_price_variation_is_explained_on_the_thumb_bar_too(): void
     {
         $html = Livewire::test(OrderJourney::class)
@@ -220,11 +162,7 @@ class OrderJourneyTest extends TestCase
             ->dispatch('question-answered', code: 'etendue', value: 'murs_plafonds', valid: true)
             ->html();
 
-        /*
-         * Trois occurrences : l'intitulé de la question elle-même, la carte collante du grand
-         * écran, et la barre du pouce. Deux signifient que la barre basse ne le porte pas — c'était
-         * l'état avant ce correctif.
-         */
+        // Trois occurrences : l'intitulé de la question elle-même, la carte collante du grand écran, et la barre du pouce.
         $this->assertSame(
             3,
             substr_count($html, 'Que faut-il peindre ?'),
@@ -232,12 +170,7 @@ class OrderJourneyTest extends TestCase
         );
     }
 
-    /**
-     * Le mode immédiat pose MOINS de questions.
-     *
-     * La vitesse prime sur la précision : poser huit questions à quelqu'un dont l'eau coule dans
-     * le couloir serait absurde. La fourchette annoncée est simplement plus large.
-     */
+    /** Le mode immédiat pose MOINS de questions. */
     public function test_the_immediate_mode_asks_only_what_is_essential(): void
     {
         $plomberie = Trade::where('slug', 'plumbing')->firstOrFail();
@@ -336,13 +269,7 @@ class OrderJourneyTest extends TestCase
             ->assertSee('Quelle surface à peindre ?');
     }
 
-    /**
-     * Le jeton du panier n'est PAS une propriété pilotable depuis le navigateur.
-     *
-     * Une propriété Livewire voyage par le client : si le jeton en était une, changer sa valeur
-     * dans les outils de développement ouvrirait le panier de quelqu'un d'autre. Il vit donc en
-     * session.
-     */
+    /** Le jeton du panier n'est PAS une propriété pilotable depuis le navigateur. */
     public function test_the_basket_token_comes_from_the_session(): void
     {
         $component = Livewire::test(OrderJourney::class);

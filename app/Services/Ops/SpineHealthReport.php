@@ -7,22 +7,14 @@ use Illuminate\Support\Facades\Redis;
 use Throwable;
 
 /**
- * Spine health report — asserts that the five infrastructure dependencies
- * critical to the money-path are reachable.
- *
- * Design constraints:
- *  - collect() NEVER throws; every probe wraps its work in try/catch.
- *  - In the test environment probes that require real infrastructure (Redis,
- *    Stripe, Reverb) return ok=false with a descriptive detail — graceful degradation.
- *  - The stripe probe NEVER makes a real network call; it only checks whether a
- *    key is configured (to avoid flaky CI when STRIPE_SECRET is absent).
+ * Spine health report — asserts that the five infrastructure dependencies critical to the money-path are reachable.
  *
  * @return array{
- *   db:    array{ok: bool, detail: string},
- *   redis: array{ok: bool, detail: string},
- *   queue: array{ok: bool, detail: string},
- *   stripe: array{ok: bool, detail: string},
- *   reverb: array{ok: bool, detail: string},
+ * db:    array{ok: bool, detail: string},
+ * redis: array{ok: bool, detail: string},
+ * queue: array{ok: bool, detail: string},
+ * stripe: array{ok: bool, detail: string},
+ * reverb: array{ok: bool, detail: string},
  * }
  */
 class SpineHealthReport
@@ -65,7 +57,6 @@ class SpineHealthReport
 
     /**
      * Redis probe — sends a PING to the default Redis connection.
-     * ok=false when Redis is not running (graceful — never throws).
      *
      * @return array{ok: bool, detail: string}
      */
@@ -87,8 +78,6 @@ class SpineHealthReport
 
     /**
      * Queue probe — confirms a queue connection is configured.
-     * ok=true whenever the connection name is set; does not require a live worker.
-     * Best-effort: also reports the jobs-table depth when driver=database.
      *
      * @return array{ok: bool, detail: string}
      */
@@ -127,8 +116,6 @@ class SpineHealthReport
 
     /**
      * Stripe probe — checks that a Cashier API secret is configured.
-     * DOES NOT make a real network call (to keep tests fast and CI green).
-     * If the key looks like a live/test key it is considered reachable enough.
      *
      * @return array{ok: bool, detail: string}
      */
@@ -163,9 +150,7 @@ class SpineHealthReport
     }
 
     /**
-     * Reverb probe — checks that the broadcasting driver is set to 'reverb'
-     * and that the host/key config values are present.
-     * Does not require a live WebSocket connection.
+     * Reverb probe — checks that the broadcasting driver is set to 'reverb' and that the host/key config values are present.
      *
      * @return array{ok: bool, detail: string}
      */

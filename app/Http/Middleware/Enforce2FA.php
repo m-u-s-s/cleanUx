@@ -7,20 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Enforce two-factor authentication for platform administrators.
- *
- * When an admin has not yet confirmed a 2FA setup, requests are redirected to
- * the profile page where 2FA is enabled. The setup, confirmation and logout
- * endpoints are exempted so the admin can actually complete enrolment (and
- * leave) without the redirect chasing its own tail.
- */
+/** Enforce two-factor authentication for platform administrators. */
 class Enforce2FA
 {
-    /**
-     * Route names the un-enrolled admin must still reach, otherwise the
-     * redirect below would loop onto the very page that sets up 2FA.
-     */
+    /** Route names the un-enrolled admin must still reach, otherwise the redirect below would loop onto the very page that sets up 2FA. */
     private const EXEMPT_ROUTES = [
         'profile.show',
         'logout',
@@ -44,17 +34,7 @@ class Enforce2FA
                 return $next($request);
             }
 
-            /*
-             * LA CONSOLE NATIVE PASSE PAR ICI AUSSI — et une redirection n'y veut rien dire.
-             *
-             * Ce middleware ne gardait que les routes web : le web renvoyait l'administrateur vers
-             * l'activation de la 2FA, pendant que `/api/admin/*` répondait 200 à un jeton obtenu sur
-             * le seul mot de passe. La console d'administration étant entièrement native, la 2FA
-             * obligatoire ne gardait, en pratique, rien.
-             *
-             * L'enrôlement lui-même reste un geste web (QR code, codes de secours) : le message le
-             * dit, sinon l'administrateur chercherait dans son application un écran qui n'existe pas.
-             */
+            // LA CONSOLE NATIVE PASSE PAR ICI AUSSI — et une redirection n'y veut rien dire.
             if ($request->expectsJson()) {
                 return response()->json([
                     'ok' => false,

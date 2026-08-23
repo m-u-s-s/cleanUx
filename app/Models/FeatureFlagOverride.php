@@ -6,13 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * DB override for a feature flag defined in config/features.php.
- *
- * When a row exists for a given flag_key, its is_enabled value takes
- * precedence over the config file value.  The override_config JSON column
- * mirrors the advanced rollout array format (percentage / users / roles).
- */
+/** DB override for a feature flag defined in config/features.php. */
 class FeatureFlagOverride extends Model
 {
     use HasFactory;

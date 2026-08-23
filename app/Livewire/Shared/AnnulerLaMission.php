@@ -12,28 +12,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * ANNULER — la même porte pour les deux rôles, et un questionnaire plutôt qu'un champ libre.
- *
- * ── POURQUOI UN SEUL COMPOSANT ───────────────────────────────────────────────────────────────
- *
- * Client et prestataire répondent à des questions différentes, mais empruntent le MÊME tuyau :
- * `CancellationEngine`, ses politiques, ses paliers, sa capture partielle d'empreinte. Deux
- * composants auraient donné deux façons d'annuler la même réservation, et l'une des deux aurait
- * fini par diverger sur les frais. C'est l'audience qui change, pas le mécanisme.
- *
- * ── LE QUESTIONNAIRE EST UN AIGUILLAGE ───────────────────────────────────────────────────────
- *
- * Certaines réponses ne mènent PAS à une annulation : « le travail ne correspond pas » renvoie vers
- * le nouveau devis, « le chantier est trop gros » vers le renfort, « le client ne répond pas » vers
- * le no-show. On le montre au moment exact où la personne s'apprête à faire le mauvais geste —
- * après, elle a déjà annulé.
- *
- * ── LE MONTANT EST CELUI QU'ON PRÉLÈVE ───────────────────────────────────────────────────────
- *
- * L'aperçu passe par le même `quote()` que l'exécution, avec le même auteur : sans lui, le plafond
- * d'exemptions ne serait consulté qu'au moment du débit, et l'écran aurait annoncé « 0 € ».
- */
+/** ANNULER — la même porte pour les deux rôles, et un questionnaire plutôt qu'un champ libre. */
 class AnnulerLaMission extends Component
 {
     #[Locked]
@@ -89,9 +68,7 @@ class AnnulerLaMission extends Component
         ]);
     }
 
-    /**
-     * CONFIRMER — et seulement si la réponse mène réellement à une annulation.
-     */
+    /** CONFIRMER — et seulement si la réponse mène réellement à une annulation. */
     public function confirmer(): void
     {
         $this->erreur = null;
@@ -132,12 +109,7 @@ class AnnulerLaMission extends Component
             return;
         }
 
-        /*
-         * L'INSTANTANÉ DU QUESTIONNAIRE, écrit APRÈS coup et volontairement.
-         *
-         * Un libellé modifié demain ne doit pas altérer ce qui a été MONTRÉ hier. `reason_code`
-         * suffit à compter ; l'instantané, lui, sert à relire un dossier tel qu'il s'est présenté.
-         */
+        // L'INSTANTANÉ DU QUESTIONNAIRE, écrit APRÈS coup et volontairement.
         $annulation->forceFill([
             'metadata' => array_merge($annulation->metadata ?? [], [
                 'questionnaire' => [
@@ -208,13 +180,7 @@ class AnnulerLaMission extends Component
         return Booking::query()->findOrFail($this->bookingId);
     }
 
-    /**
-     * QUI A LE DROIT D'ANNULER, ET JUSQU'À QUAND.
-     *
-     * Le client, jusqu'à la clôture. Le prestataire, AVANT le démarrage seulement : après, ce n'est
-     * plus une annulation mais un abandon — deux faits différents pour le client, l'un le laisse
-     * libre de recommander, l'autre le laisse avec un chantier ouvert.
-     */
+    /** QUI A LE DROIT D'ANNULER, ET JUSQU'À QUAND. Le client, jusqu'à la clôture. */
     private function assertPeutAnnuler(Booking $booking, string $role): void
     {
         if ($role === 'client') {

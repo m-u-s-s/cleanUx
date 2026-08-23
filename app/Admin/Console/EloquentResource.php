@@ -6,21 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * La base des descripteurs adossés à un modèle Eloquent.
- *
- * POURQUOI ELLE EXISTE. Soixante domaines d'administration se décrivent de la même façon : un
- * modèle, des colonnes, une recherche sur quelques champs, un tri. Les écrire un par un aurait
- * produit soixante fois le même squelette — et soixante occasions de se tromper de nom de
- * colonne. Ici, un descripteur concret déclare ce qui lui est PROPRE et hérite du reste.
- *
- * CE QU'ELLE NE FAIT PAS. Elle ne devine rien. Les colonnes sont DÉCLARÉES, et
- * `EloquentResourceSchemaTest` vérifie que chacune existe vraiment sur la table — la même leçon
- * que les options de liste refusées par une contrainte de la base : une déclaration qui n'a pas
- * été confrontée au schéma est une déclaration fausse qui a l'air juste.
- *
- * ELLE N'INVENTE AUCUNE ACTION. Un domaine sans action déclarée n'en a aucune : le moteur ne
- * fabrique pas de suppression ni de bascule à partir du nom d'une colonne. Toute écriture passe
- * par ce que le descripteur a explicitement voulu.
+ * La base des descripteurs adossés à un modèle Eloquent. POURQUOI ELLE EXISTE.
  *
  * @template TModel of Model
  *
@@ -85,9 +71,6 @@ abstract class EloquentResource implements AdminResource
     /**
      * Les relations chargées d'avance.
      *
-     * Une liste de vingt-cinq lignes déclencherait sinon vingt-cinq requêtes par relation lue —
-     * invisible sur trois lignes en test, sensible en production.
-     *
      * @return list<string>
      */
     protected function eagerLoad(): array
@@ -145,17 +128,7 @@ abstract class EloquentResource implements AdminResource
             $tris[] = 'created_at';
         }
 
-        /*
-         * `name` quand la colonne existe.
-         *
-         * Sans lui, toute liste s'ordonne par identifiant — c'est-à-dire par ordre de création,
-         * illisible dès la cinquième ligne. Le refus n'était pas silencieux pour autant : l'API
-         * rendait 422, et l'écran mobile affichait « impossible de charger », un message d'erreur
-         * générique pour ce qui n'était qu'un tri non déclaré.
-         *
-         * Le curseur reste stable parce que le contrôleur ajoute l'identifiant en départage : un
-         * tri sur une colonne non unique produirait sinon des pages qui se chevauchent.
-         */
+        // `name` quand la colonne existe.
         if (array_key_exists('name', $this->columnSpec())) {
             $tris[] = 'name';
         }
@@ -233,9 +206,6 @@ abstract class EloquentResource implements AdminResource
 
     /**
      * Lit une valeur, en traversant les relations notées `relation.champ`.
-     *
-     * Les dates sont rendues en ISO 8601 : le mobile les formate selon le type déclaré, et lui
-     * envoyer une chaîne déjà mise en forme lui retirerait ce choix.
      *
      * @param  TModel  $model
      */

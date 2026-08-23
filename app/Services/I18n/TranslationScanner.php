@@ -2,14 +2,7 @@
 
 namespace App\Services\I18n;
 
-/**
- * Scanne les fichiers de langue et détecte les clés manquantes par locale.
- *
- * - Construit l'ensemble union de toutes les clés (depuis fr/en/nl/es/it/de…)
- * - Identifie pour chaque locale les clés présentes ailleurs mais absentes ici
- * - Identifie aussi les clés qui ont la même valeur que la fallback (traduction
- *   manquante = string copiée d'EN par exemple)
- */
+/** Scanne les fichiers de langue et détecte les clés manquantes par locale. */
 class TranslationScanner
 {
     public function __construct(protected LocaleResolver $resolver) {}
@@ -69,6 +62,7 @@ class TranslationScanner
 
     /**
      * @return array<string,string> ['group.nested.key' => 'value']
+     *                              /
      */
     public function flattenLocale(string $locale): array
     {

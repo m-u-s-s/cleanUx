@@ -15,17 +15,7 @@ use App\Support\ActivityLogger;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 
-/**
- * TOUT CE QUI ÉCRIT L'ÉTAT DU CONTRÔLE FACIAL PASSE ICI.
- *
- * `FaceCheckGate` lit et rend un verdict ; ce service-ci est le seul à écrire. La séparation n'est
- * pas cosmétique : la porte est appelée depuis des contextes de lecture — un filtre de dispatch,
- * un middleware — où un effet de bord ouvrirait des contrôles à des gens qui ne regardent même pas
- * leur téléphone.
- *
- * Les colonnes de verdict et de garde ne sont pas assignables en masse : elles s'écrivent par
- * `forceFill()`, ici et nulle part ailleurs.
- */
+/** TOUT CE QUI ÉCRIT L'ÉTAT DU CONTRÔLE FACIAL PASSE ICI. */
 class FaceCheckService
 {
     public function __construct(
@@ -52,10 +42,6 @@ class FaceCheckService
 
     /**
      * Enregistre le visage de référence.
-     *
-     * LE CONSENTEMENT EST UNE CONDITION, PAS UNE CASE À COCHER DÉCORATIVE. Un visage relève de
-     * l'article 9 du RGPD : sans consentement explicite, on n'a pas le droit de le traiter, et on
-     * refuse donc l'enrôlement plutôt que de l'enregistrer « en attendant ».
      *
      * @param  array<string, mixed>  $contexte  ip, device_name, app_version
      */
@@ -119,13 +105,7 @@ class FaceCheckService
         });
     }
 
-    /**
-     * Le retrait du consentement révoque le visage et ferme la porte.
-     *
-     * C'est un droit, et sa conséquence doit être annoncée à l'intéressé AVANT qu'il l'exerce :
-     * sans visage de référence, il n'y a plus de contrôle possible, donc plus d'intervention chez
-     * un client tant qu'un métier soumis figure dans son profil.
-     */
+    /** Le retrait du consentement révoque le visage et ferme la porte. */
     public function withdrawConsent(User $provider): ?ProviderFaceProfile
     {
         $profil = $this->profileFor($provider);
@@ -156,10 +136,6 @@ class FaceCheckService
 
     /**
      * Ouvre un contrôle, ou rend celui qui est déjà ouvert.
-     *
-     * Idempotent volontairement : le mobile et le web peuvent appeler au même instant, et un
-     * contrôle par onglet ouvert produirait des abandons en cascade — que le module lirait ensuite
-     * comme un évitement. Le module ne doit pas fabriquer les soupçons qu'il mesure.
      *
      * @param  array<string, mixed>  $contexte
      */
@@ -248,9 +224,7 @@ class FaceCheckService
         return $this->appliquerLeVerdict($controle, $profil, $resultat);
     }
 
-    /**
-     * Relit un verdict que le fournisseur n'avait pas rendu.
-     */
+    /** Relit un verdict que le fournisseur n'avait pas rendu. */
     public function resolvePending(ProviderFaceCheck $controle): ProviderFaceCheck
     {
         if ($controle->status !== ProviderFaceCheck::STATUS_PENDING || ! filled($controle->external_check_id)) {
@@ -289,14 +263,7 @@ class FaceCheckService
         return $controle;
     }
 
-    /**
-     * UN CONTRÔLE EXPIRÉ N'EST PAS UN ABANDON.
-     *
-     * Le prestataire n'a peut-être jamais vu l'écran : téléphone en poche, application fermée,
-     * notification jamais arrivée. Le compter comme un abandon ferait monter tout seul un signal
-     * de fraude contre des gens qui n'ont rien fait — et le premier faux positif suffit à faire
-     * cesser de lire les alertes.
-     */
+    /** UN CONTRÔLE EXPIRÉ N'EST PAS UN ABANDON. */
     public function expireStale(): int
     {
         $expires = ProviderFaceCheck::query()
@@ -336,15 +303,7 @@ class FaceCheckService
         return $profil;
     }
 
-    /**
-     * LA LEVÉE EST UN GESTE D'ADMINISTRATEUR, ET RIEN D'AUTRE NE LA PRODUIT.
-     *
-     * Ni le temps qui passe, ni un signalement de panne, ni un contrôle réussi : sans quoi il
-     * suffirait d'attendre, ou de cliquer sur « ça ne marche pas », pour rouvrir la porte.
-     *
-     * La levée remet les compteurs à zéro et exige un nouveau contrôle immédiatement : on
-     * débloque pour laisser une chance de prouver, pas pour dispenser de prouver.
-     */
+    /** LA LEVÉE EST UN GESTE D'ADMINISTRATEUR, ET RIEN D'AUTRE NE LA PRODUIT. */
     public function unblock(ProviderFaceProfile $profil, User $admin, ?string $note = null): ProviderFaceProfile
     {
         $profil->forceFill([
@@ -361,11 +320,7 @@ class FaceCheckService
 
         $this->journaliser('face_check.unblocked', $profil, $profil->user);
 
-        /*
-         * ON PREVIENT LE PRESTATAIRE. Sans ce message, il decouvrait la levee en reessayant,
-         * parfois des jours plus tard : une decision d'administrateur qui change la journee de
-         * quelqu'un doit lui parvenir, et le silence transforme une bonne nouvelle en temps perdu.
-         */
+        // ON PREVIENT LE PRESTATAIRE.
         $this->prevenir($profil, new FaceCheckUnblockedNotification);
 
         return $profil;
@@ -383,9 +338,7 @@ class FaceCheckService
         return $controle;
     }
 
-    /**
-     * L'administrateur tranche l'appariement avec la pièce d'identité, et sa décision prime.
-     */
+    /** L'administrateur tranche l'appariement avec la pièce d'identité, et sa décision prime. */
     public function overrideIdMatch(
         ProviderFaceProfile $profil,
         User $admin,
@@ -559,13 +512,7 @@ class FaceCheckService
         return filled($ip) ? hash('sha256', (string) $ip) : null;
     }
 
-    /**
-     * Prevenir le prestataire -- et ne JAMAIS faire echouer la decision si l'envoi tombe.
-     *
-     * Le blocage est deja ecrit quand on arrive ici. Laisser remonter une panne de messagerie
-     * annulerait la transaction d'un geste de securite pour un e-mail : c'est le mauvais arbitrage,
-     * et c'est exactement ce que fait deja `SafetyAlertService`.
-     */
+    /** Prevenir le prestataire -- et ne JAMAIS faire echouer la decision si l'envoi tombe. */
     private function prevenir(ProviderFaceProfile $profil, mixed $notification): void
     {
         try {

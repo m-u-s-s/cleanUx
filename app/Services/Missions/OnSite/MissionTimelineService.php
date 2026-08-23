@@ -11,21 +11,7 @@ use App\Services\Missions\HourlyMissionClock;
 use App\Services\Missions\MissionChecklistService;
 use Illuminate\Support\Carbon;
 
-/**
- * LA MISSION VUE DEPUIS LE SALON DU CLIENT — arrivé, démarré, ce qui est fait, quand ça finit.
- *
- * Le canal `mission.{id}` diffusait déjà des positions et des statuts, et les inspections
- * enregistraient déjà chaque item coché. Ce qui manquait n'était pas la donnée : c'était la LIGNE
- * qui les met bout à bout. Quatre tables racontent chacune un tiers de l'histoire, et le client
- * n'avait accès à aucune.
- *
- * Le fil est assemblé À LA LECTURE et non stocké. Une table de plus tenue à jour par cinq
- * écrivains finirait par diverger de ce qu'elle résume — et c'est le résumé qui serait affiché.
- *
- * L'HEURE DE FIN EST UNE ESTIMATION, et se présente comme telle. Elle vaut `actual_start_at` plus
- * la durée prévue au devis ; sans démarrage réel, il n'y en a pas — annoncer une fin pour une
- * mission qui n'a pas commencé est la meilleure façon de faire attendre quelqu'un pour rien.
- */
+/** LA MISSION VUE DEPUIS LE SALON DU CLIENT — arrivé, démarré, ce qui est fait, quand ça finit. */
 class MissionTimelineService
 {
     public function __construct(
@@ -39,14 +25,14 @@ class MissionTimelineService
      * Le fil complet d'une mission, du plus ancien au plus récent.
      *
      * @return array{
-     *     mission_id: int,
-     *     status: string|null,
-     *     started_at: string|null,
-     *     estimated_end_at: string|null,
-     *     clock: array<string, mixed>,
-     *     extension: array<string, mixed>|null,
-     *     progress: array{done: int, total: int, percent: int},
-     *     entries: list<array<string, mixed>>
+     * mission_id: int,
+     * status: string|null,
+     * started_at: string|null,
+     * estimated_end_at: string|null,
+     * clock: array<string, mixed>,
+     * extension: array<string, mixed>|null,
+     * progress: array{done: int, total: int, percent: int},
+     * entries: list<array<string, mixed>>
      * }
      */
     public function pour(Mission $mission, bool $vueClient = true): array
@@ -68,21 +54,9 @@ class MissionTimelineService
             'status' => $mission->status,
             'started_at' => $mission->actual_start_at?->toIso8601String(),
             'estimated_end_at' => $this->finEstimee($mission)?->toIso8601String(),
-            /*
-             * L'HEURE ESTIMÉE ET LE TEMPS ACHETÉ SONT DEUX NOTIONS DISTINCTES, et ce fil porte
-             * désormais les deux. `estimated_end_at` dit « on pense finir vers » — une prévision,
-             * sans conséquence. L'horloge dit « vous avez payé jusqu'à », et au-delà ça coûte.
-             * Les afficher sous le même libellé ferait passer une échéance contractuelle pour une
-             * estimation, et personne ne comprendrait la ligne supplémentaire sur sa facture.
-             */
+            // L'HEURE ESTIMÉE ET LE TEMPS ACHETÉ SONT DEUX NOTIONS DISTINCTES, et ce fil porte désormais les deux.
             'clock' => $this->horloge->etat($mission),
-            /*
-             * PEUT-ON ENCORE PROLONGER, ET JUSQU'OÙ.
-             *
-             * L'écran doit le savoir AVANT que le client appuie : un bouton qu'on découvre inactif
-             * en appuyant dessus est un bouton cassé. La réponse est `null` sur tout ce qui n'est
-             * pas vendu au temps — le bouton n'existe alors pas du tout.
-             */
+            // PEUT-ON ENCORE PROLONGER, ET JUSQU'OÙ.
             'extension' => $mission->booking !== null
                 ? $this->extensions->etatDeLaProlongation($mission->booking)
                 : null,
@@ -96,18 +70,7 @@ class MissionTimelineService
      *
      * @return array{done: int, total: int, percent: int}
      */
-    /**
-     * L'AVANCEMENT COMPTE LA CHECKLIST QUE LE CLIENT VOIT, PAS CELLE DE L'INSPECTION.
-     *
-     * Trois listes cohabitent sur une mission, et elles ne disent pas la même chose :
-     * `mission_checklist_items` porte les tâches convenues — celles que l'écran affiche sous
-     * « Ma liste de tâches », et les seules qui bloquent la clôture ; `inspection_items`
-     * porte le contrôle qualité, rempli après coup par un autre métier.
-     *
-     * Ce compteur lisait l'inspection. Sur l'écran de suivi du client, il annonçait donc
-     * « 0/0 » juste au-dessus de six tâches bien réelles : le badge et la liste, à trois
-     * centimètres l'un de l'autre, comptaient deux choses différentes.
-     */
+    /** L'AVANCEMENT COMPTE LA CHECKLIST QUE LE CLIENT VOIT, PAS CELLE DE L'INSPECTION. */
     /** @return array{done: int, total: int, percent: int} */
     public function avancement(Mission $mission): array
     {
@@ -152,13 +115,7 @@ class MissionTimelineService
      */
     private function depuisLesEvenements(Mission $mission): array
     {
-        /*
-         * LES JALONS SEULEMENT.
-         *
-         * `mission_events` sert aussi de journal technique — synchronisations hors ligne,
-         * réaffectations, recalculs. Tout déverser donnerait au client une trace d'exploitation
-         * là où il attend quatre lignes lisibles.
-         */
+        // LES JALONS SEULEMENT.
         $jalons = [
             'mission_en_route' => 'En route',
             'mission_arrived' => 'Arrivé sur place',

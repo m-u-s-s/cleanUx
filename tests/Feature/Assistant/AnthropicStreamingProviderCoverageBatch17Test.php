@@ -6,19 +6,7 @@ use App\Services\Assistant\Llm\AnthropicStreamingProvider;
 use App\Services\Assistant\Streaming\StreamEvent;
 use Tests\TestCase;
 
-/**
- * Coverage Batch 17 — exerce le chemin TRANSPORT curl de chatStream().
- *
- * Le test sibling existant couvre le guard "clé manquante" et les méthodes
- * privées de parsing/mapping par réflexion, mais PAS le corps curl public
- * (construction du payload, branche tools, curl_exec, émission d'erreur réseau).
- *
- * Avec une clé présente mais le réseau sortant indisponible en environnement
- * de test, curl_exec échoue et le provider émet un StreamEvent::error réseau —
- * ce qui exécute justement ces lignes jusqu'ici non couvertes. Les assertions
- * restent tolérantes à l'environnement (réseau présent ou absent) pour rester
- * vertes en isolation tout en traversant le code.
- */
+/** Coverage Batch 17 — exerce le chemin TRANSPORT curl de chatStream(). */
 class AnthropicStreamingProviderCoverageBatch17Test extends TestCase
 {
     private function buildProvider(): AnthropicStreamingProvider

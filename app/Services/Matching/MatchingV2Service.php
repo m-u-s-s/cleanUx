@@ -19,10 +19,7 @@ class MatchingV2Service
         protected MatchingScoreEngine $engine,
     ) {}
 
-    /**
-     * Returns ranked candidates with full scoring breakdown.
-     * Each item: ['employee' => User, 'breakdown' => MatchingScoreBreakdown, 'score' => float]
-     */
+    /** Returns ranked candidates with full scoring breakdown. */
     public function rankCandidates(Booking $booking, array $contextOverrides = []): Collection
     {
         if (! $booking->service_zone_id) {
@@ -80,12 +77,7 @@ class MatchingV2Service
 
     protected function eligibleCandidates(Booking $booking): Collection
     {
-        /*
-         * EN LIGNE SELON PRESENCE V2, pas selon le miroir binaire.
-         *
-         * `provider_profiles.is_online` reste vrai quand l'application est morte depuis vingt
-         * minutes : c'est un drapeau qu'on pose, pas un signe de vie.
-         */
+        // EN LIGNE SELON PRESENCE V2, pas selon le miroir binaire.
         $enLigne = ($booking->booking_mode ?? null) === 'asap'
             ? app(ProviderPresenceService::class)->availableProviderIds()
             : [];
@@ -115,13 +107,7 @@ class MatchingV2Service
 
         $tradeId = $booking->resolveTradeId();
 
-        /*
-         * SANS METIER CONNU, ON NE REND PERSONNE — et le filtre n'a plus de repli.
-         *
-         * Il rendait la liste NON filtree quand elle se vidait, « pour ne pas bloquer le
-         * dispatch ». Une mission non pourvue est un incident visible ; une mission pourvue par le
-         * mauvais metier est un client perdu et un prestataire qui perd son deplacement.
-         */
+        // SANS METIER CONNU, ON NE REND PERSONNE — et le filtre n'a plus de repli.
         if (! $tradeId) {
             Log::warning('MatchingV2: reservation sans metier resolvable, aucun candidat rendu.', [
                 'booking_id' => $booking->id,

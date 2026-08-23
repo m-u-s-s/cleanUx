@@ -9,19 +9,7 @@ use App\Models\QuestionStep;
 use App\Models\Trade;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Déplacer un questionnaire : d'un métier à l'autre, d'un environnement à l'autre.
- *
- * « Peinture intérieure » et « Peinture extérieure » partagent quatre-vingts pour cent de leurs
- * questions. Les ressaisir n'est pas seulement long : c'est ainsi qu'on obtient deux formulations
- * légèrement différentes de la même question, deux grilles tarifaires qui divergent, et un client
- * qui ne comprend pas pourquoi le même mur coûte deux prix.
- *
- * LE point délicat : les conditions se remappent par CODE. Copier `depends_on_question_id` tel
- * quel ferait pointer les conditions du nouveau métier vers les questions de l'ancien — elles se
- * déclencheraient alors sur des réponses données ailleurs, ce qui ne produit aucune erreur et
- * reste invisible jusqu'à ce qu'un client voie une question surgir sans raison.
- */
+/** Déplacer un questionnaire : d'un métier à l'autre, d'un environnement à l'autre. */
 class QuestionnairePortability
 {
     public function __construct(
@@ -42,13 +30,6 @@ class QuestionnairePortability
 
     /**
      * Écrit un questionnaire sur un métier.
-     *
-     * Par CODE, jamais par identifiant : rejouer le même import met à jour au lieu de dupliquer,
-     * ce qui permet de synchroniser deux environnements sans accumuler les doublons.
-     *
-     * Rien n'est SUPPRIMÉ : une question absente de l'import est laissée en place. Un import est
-     * une contribution, pas une remise à zéro — et effacer silencieusement des questions déjà
-     * répondues rendrait des devis inexplicables.
      *
      * @param  array<string, mixed>  $payload
      * @return array{created: int, updated: int, skipped: list<string>}
@@ -75,11 +56,7 @@ class QuestionnairePortability
                     ->where('code', $data['code'])
                     ->first();
 
-                /*
-                 * Une question ARCHIVÉE n'est pas ressuscitée par un import. Son code reste
-                 * réservé — c'est ce qui garde les instantanés univoques — mais la réécrire lui
-                 * donnerait un sens neuf sous une clé déjà employée par d'anciennes réponses.
-                 */
+                // Une question ARCHIVÉE n'est pas ressuscitée par un import.
                 if ($existing && $existing->trashed()) {
                     $skipped[] = $data['code'];
 

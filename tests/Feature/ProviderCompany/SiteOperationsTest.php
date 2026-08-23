@@ -19,24 +19,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LES SITES QU'UNE SOCIÉTÉ PRESTATAIRE DESSERT, ET QUI S'EN OCCUPE.
- *
- * POURQUOI CET ÉCRAN EXISTE. C'était le seul des six besoins prestataire validés dont RIEN
- * n'existait : ni composant, ni route, ni table. La permission `sites.assign_members` était
- * déclarée dans la matrice depuis le début et n'avait aucun consommateur — un patron pouvait la
- * décocher sans que rien ne change.
- *
- * LES SITES NE SE SAISISSENT PAS, ILS SE DÉDUISENT. Une société prestataire ne possède pas les
- * locaux de ses clients ; elle y intervient. La liste vient donc de ce qui la relie réellement à
- * un site — ses missions et ses contrats-cadres — et non d'un formulaire qu'il faudrait tenir à
- * jour en double. Un site saisi à la main et jamais visité serait une ligne fausse dès le premier
- * jour.
- *
- * L'ISOLATION EST DOUBLE, et c'est ce que ces tests éprouvent le plus : une société ne voit ni les
- * sites qu'elle ne dessert pas, ni les référents désignés par une concurrente sur un site qu'elles
- * partagent — car deux prestataires peuvent parfaitement travailler dans le même immeuble.
- */
+/** LES SITES QU'UNE SOCIÉTÉ PRESTATAIRE DESSERT, ET QUI S'EN OCCUPE. POURQUOI CET ÉCRAN EXISTE. */
 class SiteOperationsTest extends TestCase
 {
     use RefreshDatabase;
@@ -267,11 +250,7 @@ class SiteOperationsTest extends TestCase
     #[Test]
     public function le_referent_du_site_est_pre_suggere_au_repartiteur(): void
     {
-        /*
-         * Sans cela, désigner un référent serait de la décoration : une donnée saisie une fois,
-         * jamais relue, et qui se périme en silence. La suggestion est le seul endroit où elle
-         * change quelque chose pour quelqu'un.
-         */
+        // Sans cela, désigner un référent serait de la décoration : une donnée saisie une fois, jamais relue, et qui se périme en silence.
         [$org, $patron] = $this->societeAvec(OrganizationRole::OWNER);
 
         $site = OrganizationSite::factory()->create();
@@ -345,11 +324,7 @@ class SiteOperationsTest extends TestCase
     #[Test]
     public function deux_prestataires_du_meme_immeuble_ne_voient_pas_leurs_referents(): void
     {
-        /*
-         * Deux sociétés peuvent parfaitement desservir le même immeuble — l'une le nettoyage,
-         * l'autre les espaces verts. Le site est alors visible des deux côtés, ce qui est correct ;
-         * la composition de l'équipe adverse, non.
-         */
+        // Deux sociétés peuvent parfaitement desservir le même immeuble — l'une le nettoyage, l'autre les espaces verts.
         [$org, $patron] = $this->societeAvec(OrganizationRole::OWNER);
 
         $site = OrganizationSite::factory()->create(['name' => 'Immeuble Partagé']);

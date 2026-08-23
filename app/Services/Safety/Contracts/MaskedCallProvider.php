@@ -6,13 +6,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Services\Safety\Data\MaskedCallSessionData;
 
-/**
- * Contract for anonymous proxy call providers (Twilio, Vonage, mock…).
- *
- * Implementations create a temporary proxy number that shields the real
- * phone numbers of both parties. Callers dial the proxy; the provider
- * bridges to the other participant without exposing PII.
- */
+/** Contract for anonymous proxy call providers (Twilio, Vonage, mock…). */
 interface MaskedCallProvider
 {
     /**
@@ -36,8 +30,6 @@ interface MaskedCallProvider
      */
     public function closeSession(string $externalRef): void;
 
-    /**
-     * Provider identifier string (used in config and logs).
-     */
+    /** Provider identifier string (used in config and logs). */
     public function name(): string;
 }

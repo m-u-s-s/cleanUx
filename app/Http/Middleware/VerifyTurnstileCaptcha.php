@@ -8,27 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Vérifie un challenge Cloudflare Turnstile pour bloquer les bots.
- *
- * Usage :
- *   Route::post('/auth/register', ...)->middleware('turnstile');
- *   Route::post('/promo-codes/redeem', ...)->middleware('turnstile');
- *
- * Le client doit envoyer le token via :
- *   - body field `cf-turnstile-response` (form POST classic)
- *   - OU header `X-Turnstile-Token`
- *
- * Soft-bypass : si `services.turnstile.secret_key` (TURNSTILE_SECRET_KEY) est
- * absente, le middleware passe (mode dev sans clé). En prod, doit toujours être
- * configurée.
- *
- * Setup :
- *   1. Crée un site Turnstile sur https://dash.cloudflare.com/?to=/:account/turnstile
- *   2. Ajoute dans .env : TURNSTILE_SITE_KEY=0x4... + TURNSTILE_SECRET_KEY=0x4...
- *   3. Côté front : <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.site_key') }}"></div>
- *   4. Script <script src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
- */
+/** Vérifie un challenge Cloudflare Turnstile pour bloquer les bots. */
 class VerifyTurnstileCaptcha
 {
     public function handle(Request $request, Closure $next): Response

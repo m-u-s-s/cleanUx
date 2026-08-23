@@ -15,17 +15,7 @@ use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * RÉPARTITION ET CANAUX EN API — LES DEUX DERNIERS DOMAINES DE L'ESPACE SOCIÉTÉ.
- *
- * L'assignation partage `MissionAssignmentService` avec l'écran web : la règle « réassigner, c'est
- * aussi désassigner » est délicate — libérer les leads actifs des autres, puis synchroniser
- * `lead_provider_user_id` — et deux copies auraient divergé au premier ajustement.
- *
- * Les canaux passent par `ChannelPolicy` en LECTURE comme en ÉCRITURE. C'est en écrivant cette API
- * qu'est apparu le défaut corrigé le même jour : côté web, `sendMessage()` ne consultait aucune
- * politique, si bien qu'on pouvait publier dans le canal privé d'une autre société.
- */
+/** RÉPARTITION ET CANAUX EN API — LES DEUX DERNIERS DOMAINES DE L'ESPACE SOCIÉTÉ. */
 class ProviderCompanyDispatchApiTest extends TestCase
 {
     use RefreshDatabase;

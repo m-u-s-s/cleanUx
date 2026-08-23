@@ -7,12 +7,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Phase 11 — Event broadcasté quand un prestataire change de presence.
- *
- * Permet au dashboard admin / dispatcheur de voir en temps réel qui est en
- * ligne. Émis sur un channel global "providers.presence".
- */
+/** Phase 11 — Event broadcasté quand un prestataire change de presence. */
 class ProviderPresenceChanged implements ShouldBroadcast
 {
     use Dispatchable;

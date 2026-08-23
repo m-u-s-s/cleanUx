@@ -5,33 +5,7 @@ namespace App\Services\AccountingV2;
 use App\Models\Parametre;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * LES RÉGLAGES QUE LE COMPTABLE DOIT POUVOIR CHANGER LUI-MÊME.
- *
- * Ils vivaient dans `config/accounting_v2.php`, donc dans des variables d'environnement. Changer
- * une position de TVA demandait un accès au serveur et un redéploiement — autant dire que le
- * comptable ne pouvait rien décider seul, alors que ce sont précisément SES décisions : elles
- * l'engagent, pas nous.
- *
- * ── LA BASE D'ABORD, LA CONFIGURATION EN REPLI ────────────────────────────────────────────────
- *
- * Cet ordre n'est pas un détail. La configuration reste la valeur de départ et la référence
- * documentée ; dès que le comptable pose une valeur, elle prime. Aucune migration de données, rien
- * à reprendre, et un déploiement sur une base vierge se comporte exactement comme avant.
- *
- * ── ZÉRO N'EST PAS UNE ABSENCE, ET C'EST LE PIÈGE DE CE FICHIER ───────────────────────────────
- *
- * « Frais d'annulation hors champ de la TVA » s'écrit `0`. Un `?:` ou un `empty()` le confondrait
- * avec « non renseigné » et ferait silencieusement retomber sur 21 %, c'est-à-dire déclarer une
- * TVA qu'on a décidé de ne pas devoir. Toutes les lectures ici testent donc `null`, jamais la
- * vacuité — le défaut que ce dépôt a déjà rencontré sur des tarifs à zéro voulus.
- *
- * ── POURQUOI PAS DE CACHE ─────────────────────────────────────────────────────────────────────
- *
- * Ces valeurs sont lues au passage d'écritures, pas dans une boucle chaude, et un cache mal
- * invalidé ferait écrire des mois de journal avec une position fiscale que le comptable croit
- * avoir changée. La lecture directe est le comportement sûr.
- */
+/** LES RÉGLAGES QUE LE COMPTABLE DOIT POUVOIR CHANGER LUI-MÊME. */
 class ReglagesComptables
 {
     /** Le postage automatique des écritures est-il actif ? */
@@ -43,12 +17,7 @@ class ReglagesComptables
     /** Modèle de revenu marketplace : `principal` ou `agent`. */
     public const MODELE_REVENU = 'comptabilite.modele_revenu';
 
-    /**
-     * Le postage automatique est-il actif ?
-     *
-     * Coupé par défaut, à dessein : la compta valide les écritures avant qu'elles ne s'accumulent.
-     * Ce que ce fichier change, c'est QUI peut lever l'interrupteur.
-     */
+    /** Le postage automatique est-il actif ? */
     public function postageAutomatique(): bool
     {
         $pose = $this->valeur(self::POSTAGE_AUTOMATIQUE);
@@ -60,13 +29,7 @@ class ReglagesComptables
         return in_array(strtolower(trim($pose)), ['1', 'true', 'oui', 'on'], true);
     }
 
-    /**
-     * Le taux de TVA des frais d'annulation, ou `null` pour « appliquer le taux du pays ».
-     *
-     * `null` et `0.0` sont DEUX RÉPONSES DIFFÉRENTES : la première dit « traite-les comme un
-     * produit ordinaire », la seconde « ces frais sont hors champ ». Les appelants doivent les
-     * distinguer, d'où un type nullable plutôt qu'un `float` avec une valeur sentinelle.
-     */
+    /** Le taux de TVA des frais d'annulation, ou `null` pour « appliquer le taux du pays ». */
     public function tvaDesFraisDAnnulation(): ?float
     {
         $pose = $this->valeur(self::TVA_FRAIS_ANNULATION);
@@ -89,13 +52,7 @@ class ReglagesComptables
         return in_array($valeur, ['principal', 'agent'], true) ? $valeur : 'principal';
     }
 
-    /**
-     * Enregistre une valeur, ou l'efface pour revenir au réglage de configuration.
-     *
-     * Effacer et poser une chaîne vide sont deux gestes distincts pour la TVA — le premier rend la
-     * main à la configuration, le second dit « taux du pays ». On ne confond pas les deux ici : la
-     * valeur `null` supprime la ligne.
-     */
+    /** Enregistre une valeur, ou l'efface pour revenir au réglage de configuration. */
     public function poser(string $cle, int|float|string|bool|null $valeur): void
     {
         if (! $this->tableDisponible()) {
@@ -126,13 +83,7 @@ class ReglagesComptables
         return $brut === null ? null : (string) $brut;
     }
 
-    /**
-     * LE MODULE DOIT SURVIVRE À UNE BASE QUI N'A PAS ENCORE MIGRÉ.
-     *
-     * `BookingAutoPoster` s'appelle depuis des observateurs et des webhooks. Lever ici sur une
-     * table absente ferait échouer un encaissement pour une raison comptable, ce qui est
-     * exactement l'inverse de la règle du module : la comptabilité constate, elle ne pilote pas.
-     */
+    /** LE MODULE DOIT SURVIVRE À UNE BASE QUI N'A PAS ENCORE MIGRÉ. */
     private function tableDisponible(): bool
     {
         return Schema::hasTable('parametres');

@@ -23,15 +23,7 @@ class MissionFromRendezVousSyncService
         protected ProviderOrganisationResolver $providerOrganisationResolver,
     ) {}
 
-    /**
-     * LA SOCIÉTÉ QUI EXÉCUTE — la décision du booking d'abord, la déduction ensuite.
-     *
-     * `assigned_provider_organization_id` est une DÉCISION : posée par un dispatch ou par un
-     * contrat-cadre. Le profil du salarié n'est qu'une déduction — elle ne doit donc pas l'écraser.
-     *
-     * `null` reste une réponse valable : la mission d'un indépendant n'appartient à aucune société,
-     * et lui en inventer une la ferait apparaître dans le dispatch d'un tiers.
-     */
+    /** LA SOCIÉTÉ QUI EXÉCUTE — la décision du booking d'abord, la déduction ensuite. */
     protected function societeExecutante(Booking $rendezVous): ?int
     {
         $decidee = $rendezVous->assigned_provider_organization_id;
@@ -43,23 +35,7 @@ class MissionFromRendezVousSyncService
         return $this->providerOrganisationResolver->pourUtilisateur($rendezVous->employe_id);
     }
 
-    /**
-     * L'ÉQUIPE DÉJÀ DÉCIDÉE SUR LE RENDEZ-VOUS, REPORTÉE SUR LA MISSION.
-     *
-     * `bookings.provider_team_id` et `missions.provider_team_id` existent des deux côtés, et le
-     * report ne se faisait pas : la mission naissait sans équipe alors que la décision était prise.
-     *
-     * ON NE DÉDUIT RIEN ICI. Aucun repli par le profil du salarié, aucune équipe « par défaut » :
-     * ce champ ne fait que transporter une décision existante. `provider_teams` est par ailleurs
-     * gelée — le lot 3 fait de `field_teams` la notion canonique via une colonne distincte. Ce
-     * report n'ajoute donc aucun LECTEUR à la table gelée, il cesse seulement de perdre une donnée.
-     *
-     * L'EXISTENCE EST VÉRIFIÉE, et pas par excès de prudence : `missions.provider_team_id` porte une
-     * clé étrangère sur `provider_teams`. Un identifiant périmé sur un vieux rendez-vous ferait
-     * échouer la création de mission en MySQL — au milieu du parcours de réservation, et sans que la
-     * suite le voie, SQLite n'appliquant pas toujours les clés étrangères. Voir
-     * [[test-suite-sqlite-blindness]].
-     */
+    /** L'ÉQUIPE DÉJÀ DÉCIDÉE SUR LE RENDEZ-VOUS, REPORTÉE SUR LA MISSION. */
     protected function equipeExecutante(Booking $rendezVous): ?int
     {
         $equipeId = $rendezVous->provider_team_id;
@@ -73,30 +49,7 @@ class MissionFromRendezVousSyncService
         return $existe ? (int) $equipeId : null;
     }
 
-    /**
-     * LE STATUT D'UNE MISSION N'EST PAS UN REFLET DE LA RÉSERVATION — c'est sa vie propre.
-     *
-     * Tout le reste de cette synchronisation recopie la réservation : l'adresse, l'horaire, le
-     * contrat, les notes. Le statut, lui, raconte ce que le prestataire a FAIT — en route, arrivé,
-     * démarré, terminé — et rien de cela ne se déduit d'une réservation. Le réécrire à sa valeur
-     * initiale à chaque sauvegarde effaçait cette histoire.
-     *
-     * LE DÉFAUT ÉTAIT MUET ET GLOBAL. `RendezVousObserver::saved()` appelle cette synchronisation à
-     * CHAQUE sauvegarde d'une réservation `confirme`. Écrire n'importe quelle colonne d'une
-     * réservation confirmée — une note interne, une durée réelle, un champ de facturation — faisait
-     * donc retomber à `assigned` une mission en cours. Le prestataire perdait son écran de terrain,
-     * le client voyait « en attente » alors que quelqu'un travaillait chez lui, et rien dans les
-     * journaux ne reliait les deux : la cause était une écriture sur un AUTRE objet.
-     *
-     * CE QUI RESTE PERMIS, et qui est la raison pour laquelle cette ligne existait. Tant que la
-     * mission n'a pas commencé, la valeur initiale reste juste : nommer un salarié fait passer de
-     * `planned` à `assigned`, le retirer fait le chemin inverse. On garde ce va-et-vient et on
-     * s'arrête net dès que l'exécution démarre.
-     *
-     * C'est exactement la règle déjà posée un cran plus bas dans
-     * `MissionAssignmentStatusService::syncLeadAssignment()` — « on ne rétrograde pas une offre déjà
-     * acceptée ». Le statut de la mission avait échappé au même traitement.
-     */
+    /** LE STATUT D'UNE MISSION N'EST PAS UN REFLET DE LA RÉSERVATION — c'est sa vie propre. */
     protected function statutASynchroniser(?Mission $existante, Booking $rendezVous): string
     {
         $initial = MissionStatus::initialFor((bool) $rendezVous->employe_id);
@@ -149,18 +102,7 @@ class MissionFromRendezVousSyncService
                 $this->assignmentStatusService->syncLeadAssignment($mission, $rendezVous->employe_id);
             }
 
-            /*
-             * LA MISSION NE SE DISPATCHE PLUS ELLE-MEME.
-             *
-             * Elle appelait ici `dispatchToNextProvider()` a sa naissance. C'etait la SECONDE
-             * porte amont : le moteur de commande ouvrait sa recherche par rayons d'un cote, la
-             * mission lancait sa chaine d'offres de l'autre, et la meme course sortait par les
-             * deux — deux prestataires se deplacaient pour une seule intervention.
-             *
-             * Le dispatch a desormais UNE porte : `DispatchEngine::dispatchBooking()`, appelee a
-             * la confirmation. La mission n'est plus qu'un dossier d'execution, ce qu'elle a
-             * toujours ete.
-             */
+            // LA MISSION NE SE DISPATCHE PLUS ELLE-MEME.
 
             if ($mission->organization_contract_id) {
                 app(ContractSlaService::class)->armForMission($mission);
@@ -194,28 +136,11 @@ class MissionFromRendezVousSyncService
                 $countryCode
             );
 
-            /*
-             * CE QUI EST DÉJÀ DÉCIDÉ SUR LA MISSION NE SE DÉDUIT PAS À NOUVEAU.
-             *
-             * `societeExecutante()` et `equipeExecutante()` répondent `null` quand la réservation ne
-             * porte pas la décision — cas normal d'un indépendant. Mais la mission, elle, peut
-             * l'avoir reçue par ailleurs : une société prestataire assignée par le dispatch interne,
-             * une équipe posée à la main. Réécrire `null` par-dessus effaçait cette décision au
-             * premier enregistrement de la réservation, et la mission sortait alors du périmètre de
-             * sa société — ses renforts perdaient l'accès, le tableau de bord la perdait de vue.
-             *
-             * Une déduction absente n'est pas une décision de retirer.
-             */
+            // CE QUI EST DÉJÀ DÉCIDÉ SUR LA MISSION NE SE DÉDUIT PAS À NOUVEAU.
             $existante = Mission::query()->where('booking_id', $rendezVous->id)->latest('id')->first();
 
             /** @var Mission $mission */
-            /*
-              * LA CLÉ D'UNICITÉ EST `booking_id`, la seule que porte encore `missions`.
-              *
-              * Ce service écrivait `rendez_vous_id` pendant que le moteur de commande écrivait
-              * `booking_id` : deux chemins créaient chacun leur mission pour la même réservation,
-              * sans jamais se voir.
-              */
+            // LA CLÉ D'UNICITÉ EST `booking_id`, la seule que porte encore `missions`.
             $mission = Mission::query()->updateOrCreate(
                 ['booking_id' => $rendezVous->id],
                 [
@@ -255,22 +180,7 @@ class MissionFromRendezVousSyncService
         });
     }
 
-    /**
-     * LE MODE CONTINU — « toute nouvelle mission de la société est auto-assignée ».
-     *
-     * Le bouton du gérant traite l'arriéré ; ceci traite le flux. Sans lui, une société qui a activé
-     * l'auto-assignation devrait quand même appuyer sur un bouton chaque matin, ce qui n'est pas
-     * « automatique ».
-     *
-     * TROIS CONDITIONS, ET CHACUNE COMPTE : une société identifiée (une mission d'indépendant ne
-     * regarde personne), le réglage activé (faux par défaut — aucune société ne se met à distribuer
-     * son travail du fait d'un déploiement), et personne d'assigné (un rendez-vous confirmé avec un
-     * salarié nommé porte déjà sa décision, la réécrire l'annulerait).
-     *
-     * SOFT-FAIL. Ce hook vit sur le chemin de la RÉSERVATION : une panne du moteur ne doit pas
-     * empêcher un client de réserver. La mission naît sans personne, ce que le dispatch montre —
-     * plutôt qu'une erreur au visage du client pour un problème d'organisation interne.
-     */
+    /** LE MODE CONTINU — « toute nouvelle mission de la société est auto-assignée ». */
     protected function tenterLAutoAssignation(Mission $mission): void
     {
         if ($mission->provider_organization_id === null || $mission->lead_provider_user_id !== null) {
@@ -298,18 +208,7 @@ class MissionFromRendezVousSyncService
         }
     }
 
-    /**
-     * COMBIEN DE TEMPS CETTE INTERVENTION VA-T-ELLE DURER ?
-     *
-     * Le repli était `0` — et c'est ce zéro qui donnait des missions dont la fin tombait à la
-     * minute du début. Une fenêtre de durée nulle ne chevauche rien : la détection de conflit ne
-     * pouvait plus protéger le créneau du prestataire, et son planning affichait « 10:00 → 10:00 ».
-     *
-     * L'ordre importe : la durée de la RÉSERVATION d'abord — elle tient compte des réponses, une
-     * surface de 80 m² ne prend pas le même temps que 20 —, puis celle déclarée au catalogue pour
-     * le métier, et seulement en dernier recours une valeur de configuration. Zéro n'est plus une
-     * réponse acceptable.
-     */
+    /** COMBIEN DE TEMPS CETTE INTERVENTION VA-T-ELLE DURER ? */
     protected function dureeEstimee(Booking $rendezVous): int
     {
         $candidats = [
@@ -355,10 +254,7 @@ class MissionFromRendezVousSyncService
         return $timestamp === false ? null : date('H:i:s', $timestamp);
     }
 
-    /**
-     * Les colonnes `date` / `heure` peuvent porter une chaîne brute ou un Carbon selon le cast
-     * du modèle et le chemin d'écriture : on ramène les deux formes à la même découpe.
-     */
+    /** Les colonnes `date` / `heure` peuvent porter une chaîne brute ou un Carbon selon le cast du modèle et le chemin d'écriture : on ramène les deux formes à la même découpe. */
     protected function datePart($date): string
     {
         return $date instanceof \DateTimeInterface

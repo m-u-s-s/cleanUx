@@ -11,19 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
-/**
- * Le catalogue d'UNE zone, servi à l'application mobile.
- *
- * POURQUOI CE CONTRÔLEUR PLUTÔT QUE LE MOTEUR DE CONSOLE. Le moteur rend n'importe quel domaine
- * décrit par un descripteur — une liste de lignes d'une table. Or l'état demandé ici n'appartient à
- * AUCUNE table à lui seul : « ce métier est-il ouvert dans cette zone » est le couple
- * `(métier, zone)`, et un métier sans ligne est fermé plutôt qu'absent. Une liste de
- * `trade_zone_pricing` montrerait les métiers déjà réglés et tairait tous les autres — exactement
- * ceux qu'on vient ouvrir.
- *
- * L'ABSENCE DE LIGNE EST UN ÉTAT. On rend donc TOUS les métiers actifs, chacun avec son
- * `is_open`, plutôt que de laisser le client déduire « fermé » d'un métier manquant.
- */
+/** Le catalogue d'UNE zone, servi à l'application mobile. */
 class ZoneCatalogController extends Controller
 {
     /** Les métiers de la plateforme, avec leur état dans cette zone. */
@@ -54,26 +42,10 @@ class ZoneCatalogController extends Controller
                     // montrer ce que paiera le client, pas un zéro qui n'a jamais été décidé.
                     'base_rate_cents' => (int) ($ligne !== null ? $ligne->base_rate_cents : ($metier->base_price_cents ?? 0)),
                     'has_zone_price' => $ligne !== null,
-                    /*
-                     * L'IMMÉDIAT, ZONE PAR ZONE — la même donnée que l'écran web.
-                     *
-                     * `allows_asap` dit qu'un dépannage est possible pour ce métier ; `asap_enabled`
-                     * dit qu'on l'a ouvert ICI. La console mobile a besoin des deux pour savoir
-                     * quand griser le bouton plutôt que de laisser ouvrir l'immédiat sur un
-                     * ravalement de façade.
-                     */
+                    // L'IMMÉDIAT, ZONE PAR ZONE — la même donnée que l'écran web.
                     'allows_asap' => (bool) $metier->allows_asap,
                     'asap_enabled' => $ligne !== null && (bool) $ligne->asap_enabled,
-                    /*
-                     * LE TRAJET ET SON PRIX AU KILOMÈTRE — la même donnée que l'écran web.
-                     *
-                     * Sans eux, un administrateur en déplacement ouvre un métier de course dans une
-                     * zone et repart sans avoir pu y poser un tarif : la course s'y vend alors au
-                     * forfait, c'est-à-dire au même prix pour deux kilomètres que pour vingt.
-                     *
-                     * `is_route_service` se dérive du parcours, jamais d'un drapeau — voir
-                     * TradeRouteRules. Il est servi ici pour que l'écran sache quoi proposer.
-                     */
+                    // LE TRAJET ET SON PRIX AU KILOMÈTRE — la même donnée que l'écran web.
                     'is_route_service' => TradeRouteRules::estUnTrajet($metier),
                     'taxi_rules' => (bool) $metier->taxi_rules,
                     'distance_pricing_enabled' => $ligne !== null && (bool) $ligne->distance_pricing_enabled,
@@ -97,19 +69,10 @@ class ZoneCatalogController extends Controller
         ]);
     }
 
-    /**
-     * Ouvre ou ferme un métier dans cette zone.
-     *
-     * Mêmes règles que l'écran web, et c'est délibéré : éteindre ne supprime jamais la ligne, pour
-     * que rallumer retrouve le tarif saisi plutôt que de repartir de zéro.
-     */
+    /** Ouvre ou ferme un métier dans cette zone. */
     public function toggle(ServiceZone $zone, Trade $trade): JsonResponse
     {
-        /*
-         * `EnforcesApiAdmin` s'arrête à « est-ce un administrateur » : un compte en lecture seule
-         * le franchit. La décision d'ouvrir un métier engage le prix et la disponibilité — la même
-         * Policy que le web doit donc s'appliquer ici.
-         */
+        // `EnforcesApiAdmin` s'arrête à « est-ce un administrateur » : un compte en lecture seule le franchit.
         if (! Gate::allows('update', Trade::class)) {
             return response()->json([
                 'ok' => false,
@@ -144,13 +107,7 @@ class ZoneCatalogController extends Controller
         ]);
     }
 
-    /**
-     * Ouvre ou ferme l'INTERVENTION IMMÉDIATE pour ce métier dans cette zone.
-     *
-     * Mêmes règles que l'écran web : la décision est locale, et elle exige que le métier soit
-     * ouvert ici. Un métier fermé dans la zone n'y est pas vendu du tout — lui ouvrir l'immédiat
-     * promettrait un dépannage pour un service absent du parcours client.
-     */
+    /** Ouvre ou ferme l'INTERVENTION IMMÉDIATE pour ce métier dans cette zone. */
     public function toggleAsap(ServiceZone $zone, Trade $trade): JsonResponse
     {
         if (! Gate::allows('update', Trade::class)) {
@@ -196,14 +153,7 @@ class ZoneCatalogController extends Controller
         ]);
     }
 
-    /**
-     * LE PRIX AU KILOMÈTRE d'un métier dans cette zone.
-     *
-     * Une seule route pour les cinq réglages, et non cinq bascules : la prise en charge, le prix au
-     * kilomètre et les kilomètres inclus n'ont de sens qu'ENSEMBLE. Les enregistrer séparément
-     * laisserait, entre deux appels, une grille qui facture des kilomètres sans prise en charge — un
-     * état qu'aucun exploitant n'a décidé, sur des commandes en cours.
-     */
+    /** LE PRIX AU KILOMÈTRE d'un métier dans cette zone. */
     public function updateDistancePricing(Request $request, ServiceZone $zone, Trade $trade): JsonResponse
     {
         if (! Gate::allows('update', Trade::class)) {

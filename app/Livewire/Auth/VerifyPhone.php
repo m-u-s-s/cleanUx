@@ -8,10 +8,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-/**
- * OTP téléphone (web) : l'utilisateur saisit/confirme son numéro, reçoit un code
- * SMS, puis le saisit pour vérifier. Réutilise PhoneVerificationService (module SMS).
- */
+/** OTP téléphone (web) : l'utilisateur saisit/confirme son numéro, reçoit un code SMS, puis le saisit pour vérifier. */
 #[Layout('layouts.guest')]
 class VerifyPhone extends Component
 {

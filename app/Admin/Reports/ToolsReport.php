@@ -7,13 +7,7 @@ use App\Admin\Console\ReportTile;
 use App\Models\AccountingExport;
 use App\Models\GdprDataRequest;
 
-/**
- * Les outils et exports.
- *
- * Les EXPORTS ne se déclenchent pas depuis un téléphone : ils produisent des fichiers qu’on
- * ouvre sur un poste, et les lancer sans pouvoir les récupérer ne rend service à personne.
- * Cette page dit ce que le système contient ; les exports restent sur le web.
- */
+/** Les outils et exports. */
 class ToolsReport implements AdminReport
 {
     public function key(): string

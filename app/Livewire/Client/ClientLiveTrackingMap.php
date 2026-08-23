@@ -11,22 +11,13 @@ use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-/**
- * Page client live tracking — affiche carte Leaflet avec position provider.
- * Polling 10s + appel API /api/client/bookings/{id}/tracking côté JS.
- */
+/** Page client live tracking — affiche carte Leaflet avec position provider. */
 class ClientLiveTrackingMap extends Component
 {
     #[Url]
     public ?int $bookingId = null;
 
-    /**
-     * Le lien de partage, une fois demandé.
-     *
-     * `#[Locked]` : c'est une URL signée valable douze heures. Une propriété publique Livewire est
-     * modifiable par `$set` depuis le navigateur, et rien de ce qui vient de là ne doit pouvoir
-     * remplacer un lien qu'on va copier et envoyer.
-     */
+    /** Le lien de partage, une fois demandé. */
     #[Locked]
     public ?string $lienPartage = null;
 
@@ -35,16 +26,7 @@ class ClientLiveTrackingMap extends Component
         $this->bookingId = $bookingId;
     }
 
-    /**
-     * PARTAGER LE SUIVI (E3) — le patron « suivez ma course ».
-     *
-     * Quelqu'un commande un ménage pour sa mère et n'est pas sur place : il veut qu'elle sache
-     * quand sonner, et elle n'a pas de compte. Aujourd'hui il lui téléphone, puis rappelle vingt
-     * minutes plus tard parce que le prestataire est pris dans un embouteillage.
-     *
-     * LA RÉSERVATION EST REVÉRIFIÉE ICI. `bookingId` vient de la barre d'adresse : générer un lien
-     * sans contrôle donnerait à qui devine un numéro un accès signé au suivi d'un inconnu.
-     */
+    /** PARTAGER LE SUIVI (E3) — le patron « suivez ma course ». */
     public function partager(): void
     {
         $booking = $this->bookingId

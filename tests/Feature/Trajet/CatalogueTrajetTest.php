@@ -13,18 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * UN MÉTIER DEVIENT UN TRAJET PARCE QUE SON PARCOURS LE DIT — et pour aucune autre raison.
- *
- * Deux questions de localisation, un départ et une arrivée : c'est la seule déclaration. Aucun
- * drapeau ne la double, et ces tests sont ce qui l'empêche d'en apparaître un — le défaut dominant
- * de ce dépôt est d'avoir deux notions pour un même événement, et une colonne `is_route` tenue à la
- * main finirait par contredire les questions.
- *
- * LE TÉMOIN N'EST PAS DÉCORATIF. Chaque interdiction est doublée du cas qui doit PASSER : un test
- * qui vérifie seulement qu'un métier ordinaire n'est pas un trajet passerait au vert si plus rien
- * n'était jamais reconnu comme trajet.
- */
+/** UN MÉTIER DEVIENT UN TRAJET PARCE QUE SON PARCOURS LE DIT — et pour aucune autre raison. */
 class CatalogueTrajetTest extends TestCase
 {
     use RefreshDatabase;

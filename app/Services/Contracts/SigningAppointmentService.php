@@ -9,13 +9,7 @@ use App\Models\SigningAppointment;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 
-/**
- * Planifier et clore un rendez-vous de signature de contrat.
- *
- * La signature électronique et les rendez-vous d'intervention existaient déjà, sans lien entre eux.
- * Ce service comble ce manque pour le cas B2B courant : faire signer un contrat-cadre en présence,
- * dans un local du client.
- */
+/** Planifier et clore un rendez-vous de signature de contrat. */
 class SigningAppointmentService
 {
     /**
@@ -36,11 +30,7 @@ class SigningAppointmentService
             return null;
         }
 
-        /*
-         * Le local vient d'une sélection côté navigateur. Sans cette vérification, on pourrait
-         * fixer un rendez-vous dans les murs d'une autre société — et en révéler l'adresse au
-         * passage, puisque l'écran l'affiche ensuite.
-         */
+        // Le local vient d'une sélection côté navigateur.
         if ($site !== null && (int) $site->organization_account_id !== (int) $organisation->id) {
             return null;
         }

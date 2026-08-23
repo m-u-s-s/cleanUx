@@ -7,10 +7,7 @@ use App\Services\EmailV2\Contracts\EmailProviderContract;
 use App\Services\EmailV2\EmailSendResult;
 use Illuminate\Support\Str;
 
-/**
- * Mock provider — utilisé en CI/dev/staging. Toujours succès sauf si l'email
- * destinataire contient 'fail@' (pour tester scenario erreur).
- */
+/** Mock provider — utilisé en CI/dev/staging. */
 class MockEmailProvider implements EmailProviderContract
 {
     public function name(): string

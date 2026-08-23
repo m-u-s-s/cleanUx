@@ -7,21 +7,7 @@ use App\Models\MissionChecklist;
 use App\Models\MissionChecklistItem;
 use App\Models\User;
 
-/**
- * LES TÂCHES QUI BLOQUENT LA CLÔTURE — lisibles et cochables, y compris depuis le mobile.
- *
- * `MissionLifecycleService::assertRequiredChecklistCompleted()` refuse de clôturer tant qu'une
- * tâche `is_required` n'est pas `done`. Ce refus était SANS REMÈDE dans l'application prestataire :
- * l'écran « Mission terrain » affichait la checklist du module Inspection — une autre table — et
- * le seul chemin vers celle-ci passait par des routes web à session, inaccessibles à une
- * application authentifiée par jeton.
- *
- * POURQUOI PAS LE PARCOURS GUIDÉ. `MissionGuidedChecklistService` existe et sert une marche
- * ordonnée, une étape à la fois, avec photo obligatoire. Il exige que CHAQUE tâche porte un
- * `sort_order` : les checklists issues des gabarits n'en ont pas, et il rend alors `estGuidee()`
- * faux — donc rien. Les deux coexistent volontairement : le parcours guidé est une discipline
- * qu'on choisit, cette liste-ci est le minimum sans lequel une mission ne peut pas se terminer.
- */
+/** LES TÂCHES QUI BLOQUENT LA CLÔTURE — lisibles et cochables, y compris depuis le mobile. */
 class MissionChecklistService
 {
     /**
@@ -53,14 +39,7 @@ class MissionChecklistService
                     'requires_photo' => (bool) $item->requires_photo,
                     'status' => $item->status,
                     'done' => $item->status === 'done',
-                    /*
-                     * QUI A DEMANDÉ CETTE TÂCHE — et c'est loin d'être décoratif.
-                     *
-                     * Une tâche écrite par le client se discute AVEC LUI : il est dans la pièce, il
-                     * peut l'expliquer, la retirer ou la préciser. Une tâche générique, non. Sans
-                     * cette distinction à l'écran, le prestataire ne sait pas laquelle des deux il
-                     * a devant les yeux, et traite la demande du client comme une case de plus.
-                     */
+                    // QUI A DEMANDÉ CETTE TÂCHE — et c'est loin d'être décoratif.
                     'source' => $item->source ?? 'template',
                     'added_by' => $item->source === 'client'
                         ? ($item->createdBy?->name)
@@ -83,12 +62,7 @@ class MissionChecklistService
         ];
     }
 
-    /**
-     * Cocher ou décocher une tâche, et tenir à jour l'avancement de sa checklist.
-     *
-     * Décocher reste possible À DESSEIN : une tâche cochée par erreur juste avant la clôture doit
-     * pouvoir être reprise, sans quoi le prestataire n'a plus que le mensonge ou l'abandon.
-     */
+    /** Cocher ou décocher une tâche, et tenir à jour l'avancement de sa checklist. */
     public function basculer(
         MissionChecklistItem $item,
         string $statut,

@@ -51,27 +51,7 @@ class PlatformModuleSeeder extends Seeder
         $this->command?->info('✅ Modules de plateforme initialisés.');
     }
 
-    /**
-     * LE CONTRÔLE FACIAL — semé UNE SEULE FOIS, jamais réécrit.
-     *
-     * La boucle ci-dessus fait un `updateOrInsert` et REMPLACE `settings` à chaque passage : pour
-     * les modules historiques c'est sans conséquence, ils n'y rangent qu'un écho de leurs propres
-     * colonnes. Ici, `settings` porte les réglages métier du module (intervalles, seuils, durée de
-     * conservation) et l'audience par zone décidée par un administrateur. Repasser le seeder les
-     * effacerait sans rien dire — et un module de sécurité qui se réinitialise en silence est pire
-     * que pas de module du tout.
-     *
-     * EN SERVICE À LA CRÉATION, sur la stratégie `global`.
-     *
-     * `global` et non `zone` : avec `zone`, une liste de zones vide ne couvre PERSONNE, et surtout
-     * une zone créée plus tard n'y entre jamais — le module cesserait silencieusement de
-     * s'appliquer sur les nouvelles villes, ce qui est le pire des états pour un contrôle de
-     * sécurité. En `global`, il couvre tout ; l'administrateur qui veut restreindre bascule sur
-     * `zone` et choisit, geste explicite et visible.
-     *
-     * Le périmètre réel reste étroit : seuls les métiers qui cochent `requires_face_check` sont
-     * concernés, et `TradeSeeder` n'en coche que deux.
-     */
+    /** LE CONTRÔLE FACIAL — semé UNE SEULE FOIS, jamais réécrit. */
     private function seedFaceCheckModule(): void
     {
         $key = (string) config('face_check.module_key', 'security.face_check');
@@ -93,14 +73,7 @@ class PlatformModuleSeeder extends Seeder
                 'is_enabled' => true,
                 'is_locked' => false,
                 'sort_order' => 110,
-                /*
-                 * LES VALEURS VIENNENT DE LA CONFIG, elles ne sont pas recopiees.
-                 *
-                 * Les ecrire en dur ici creait deja une divergence : le seeder posait un seuil
-                 * d'echec de 3 quand `config/face_check.php` en annoncait 2, et c'est la base qui
-                 * gagne. Deux sources plausibles pour un meme reglage, c'est le defaut dominant de
-                 * ce depot -- et il ne se voit pas, les deux chiffres etant tous deux credibles.
-                 */
+                // LES VALEURS VIENNENT DE LA CONFIG, elles ne sont pas recopiees.
                 'settings' => [
                     'allowed_zone_ids' => [],
                     'face_check' => [

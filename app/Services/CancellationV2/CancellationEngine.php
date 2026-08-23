@@ -15,17 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
-/**
- * CancellationEngine v2 — calcule un quote puis exécute la cancellation.
- *
- *   - quote() : sans side-effects, retourne un CancellationQuote DTO
- *   - execute() : commit BookingCancellationV2 + ajuste statut booking + dispatch
- *     intégrations (Stripe refund, Loyalty forfeit, Promo restore, Insurance cancel)
- *   - override() : admin annule le fee (e.g. raison exceptionnelle hors policy)
- *
- * Soft-fail sur intégrations : si Stripe refund échoue, la cancellation reste
- * persistée + audit row 'refund_failed' + Log warning. Le flow ne casse pas.
- */
+/** CancellationEngine v2 — calcule un quote puis exécute la cancellation. */
 class CancellationEngine
 {
     public function __construct(
@@ -88,16 +78,7 @@ class CancellationEngine
                 ->where('is_active', true)
                 ->first();
 
-            /*
-             * LE PLAFOND PAR PERSONNE MORD ICI — « pas la première fois, mais si c'est fréquent ».
-             *
-             * `max_per_user_per_30d` était déclarée sur la table, semée à 2 pour l'urgence médicale,
-             * et appliquée par PERSONNE : le motif le plus généreux du barème exonérait donc autant
-             * de fois que voulu.
-             *
-             * Le dépassement retire l'EXEMPTION, pas le motif : `reason_code` reste enregistré,
-             * précisément pour qu'on puisse relire qu'une personne l'a invoqué six fois en un mois.
-             */
+            // LE PLAFOND PAR PERSONNE MORD ICI — « pas la première fois, mais si c'est fréquent ».
             if ($reason && app(CancellationExemptQuota::class)->exonereEncore($reason, $actorUserId)) {
                 $feePercent = 0.0;
                 $feeFlat = 0;
@@ -201,25 +182,7 @@ class CancellationEngine
 
             // Update booking status (schema-defensive)
             if (Schema::hasTable('bookings') && Schema::hasColumn('bookings', 'status')) {
-                /*
-                 * LE MOTIF ET LES FRAIS DESCENDENT AUSSI SUR LA RÉSERVATION.
-                 *
-                 * Tout le détail de l'annulation vit dans `booking_cancellations_v2`, et c'est
-                 * bien là qu'il doit vivre. Mais le centre d'analyse des annulations interroge
-                 * `bookings` : il filtre sur `cancellation_reason IS NOT NULL` et groupe sur
-                 * `cancelled_by`. Ce moteur n'écrivait ni l'un ni l'autre — AUCUNE annulation
-                 * passée par la v2 n'apparaissait dans cet écran, sans qu'aucune erreur ne le dise.
-                 *
-                 * Les colonnes de `bookings` sont donc le résumé agrégeable, la table v2 la source
-                 * détaillée. Une seule écriture, deux lectures différentes — pas deux vérités.
-                 *
-                 * `fee_amount_cents` est en centimes ; `bookings.cancellation_fee_amount` est un
-                 * `decimal(10,2)` en euros. La conversion se fait ici, une fois.
-                 *
-                 * `feePercent` est un `float` et la colonne un `int unsigned` : l'arrondi est
-                 * EXPLICITE. Laissé au moteur, MySQL arrondirait et SQLite garderait la décimale —
-                 * la suite tourne sur SQLite et n'aurait rien vu de cet écart.
-                 */
+                // LE MOTIF ET LES FRAIS DESCENDENT AUSSI SUR LA RÉSERVATION.
                 $surLaReservation = [
                     'status' => $statusAfter,
                     'cancelled_at' => now(),
@@ -238,19 +201,7 @@ class CancellationEngine
 
                 DB::table('bookings')->where('id', $bookingId)->update($surLaReservation);
 
-                /*
-                 * CETTE ÉCRITURE-CI NE PASSE PAS PAR L'OBSERVATEUR.
-                 *
-                 * `BookingObserver::consignerLeChangementDeStatut()` tient l'historique des statuts,
-                 * mais il est accroché aux événements d'Eloquent — et la ligne ci-dessus emploie le
-                 * constructeur de requêtes, qui n'en déclenche aucun. Sans cette consignation
-                 * explicite, l'annulation serait le SEUL changement de statut absent du journal, et
-                 * précisément celui qu'un litige vient interroger.
-                 *
-                 * On ne convertit pas la mise à jour en Eloquent pour autant : l'observateur émet
-                 * aussi des webhooks métier et des événements d'analytique, et les déclencher ici
-                 * changerait le comportement observable d'un chemin qui touche à l'argent.
-                 */
+                // CETTE ÉCRITURE-CI NE PASSE PAS PAR L'OBSERVATEUR.
                 BookingStatusHistory::create([
                     'booking_id' => $bookingId,
                     'changed_by' => $actor->id,
@@ -343,13 +294,7 @@ class CancellationEngine
         return (string) Config::get('cancellation_v2.default_refund_method', 'stripe');
     }
 
-    /**
-     * Le prestataire est-il déjà parti, arrivé ou en cours ? C'est le déclencheur de la pénalité
-     * d'annulation tardive.
-     *
-     * La mission se rattachait à la réservation par DEUX colonnes selon son chemin de création, et
-     * cette méthode interrogeait le schéma pour savoir lesquelles existaient. Une seule subsiste.
-     */
+    /** Le prestataire est-il déjà parti, arrivé ou en cours ? */
     protected function providerIsEnRoute(int $bookingId): bool
     {
         if (! Schema::hasTable('missions') || ! Schema::hasColumn('missions', 'status')) {

@@ -11,10 +11,6 @@ use App\Services\GeolocationV2\GeocodingService;
 /**
  * Le cache des recherches d’adresse.
  *
- * La PURGE du cache ne se déclenche pas d’ici : elle vide un cache que le calcul de distance et
- * le matching interrogent en permanence, et son coût se mesure sur la page qui montre le taux
- * de succès.
- *
  * @extends EloquentResource<AddressLookup>
  */
 class AddressLookupResource extends EloquentResource
@@ -60,11 +56,7 @@ class AddressLookupResource extends EloquentResource
     public function globalActions(): array
     {
         return [
-            /*
-             * Purger le cache expiré. Global par nature : il ne vise aucune adresse en
-             * particulier. Le nombre de lignes purgées est rendu — « purgé » sans chiffre ne dit
-             * pas si le cache était plein ou déjà vide.
-             */
+            // Purger le cache expiré. Global par nature : il ne vise aucune adresse en particulier.
             Action::make('purge-cache', 'Purger le cache expiré', function (array $valeurs) {
                 $purge = app(GeocodingService::class)->purgeExpired();
 

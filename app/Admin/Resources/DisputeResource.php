@@ -17,21 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Les litiges à traiter.
- *
- * DEUX MODÈLES DE LITIGE COEXISTENT dans la plateforme. Celui-ci est `ComplaintCase`
- * (`complaint_cases`) — celui de la page admin « Litiges » et du `DisputeResolutionService`.
- * `CustomerClaim` est un modèle parallèle : servir l'un en croyant servir l'autre donnerait une
- * file d'attente qui ne correspond à rien de ce qu'un administrateur peut résoudre.
- *
- * AUCUNE RÈGLE N'EST REJOUÉE ICI. L'escalade passe par le service, qui journalise l'événement,
- * recalcule le SLA et notifie. Écrire `status = 'escalated'` à la main produirait un litige
- * escaladé dont personne n'est prévenu et dont l'horloge ne tourne pas.
- *
- * LA CLÔTURE SANS SUITE est servie ici : l'action déclare le motif qu'elle exige, et le moteur
- * le demande avant d'appeler le service. La résolution AVEC indemnisation, elle, reste hors
- * console — elle exige un type, un montant ET une explication, et le montant d'un dédommagement
- * ne se saisit pas entre deux portes.
+ * Les litiges à traiter. DEUX MODÈLES DE LITIGE COEXISTENT dans la plateforme.
  *
  * @implements AdminResource<ComplaintCase>
  */
@@ -39,11 +25,7 @@ class DisputeResource implements AdminResource
 {
     use DefaultsResourceWrites;
 
-    /**
-     * DEUX services, parce que la plateforme les a séparés : `DisputeService` porte le cycle de
-     * vie (escalade, SLA), `DisputeResolutionService` porte les issues (clôture, indemnisation).
-     * Les confondre ici reviendrait à réécrire l'un des deux.
-     */
+    /** DEUX services, parce que la plateforme les a séparés : `DisputeService` porte le cycle de vie (escalade, SLA), `DisputeResolutionService` porte les issues (clôture, indemnisation). */
     public function __construct(
         private readonly DisputeService $disputes,
         private readonly DisputeResolutionService $resolution,

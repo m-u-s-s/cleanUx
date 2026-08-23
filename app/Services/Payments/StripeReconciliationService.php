@@ -14,17 +14,7 @@ use Stripe\PaymentIntent;
 use Stripe\Payout;
 use Stripe\Stripe;
 
-/**
- * Compare Stripe ↔ DB locale et remonte les écarts.
- *
- * Scopes :
- *   - payment_intents : PIs Stripe sur la période vs Booking.payment_status
- *   - payouts : Payouts Stripe vs ProviderPayout local
- *
- * Le but n'est PAS de corriger automatiquement (risque). Le but est de
- * lister les écarts pour qu'un admin les traite manuellement, sauf cas
- * triviaux (auto_fixed).
- */
+/** Compare Stripe ↔ DB locale et remonte les écarts. */
 class StripeReconciliationService
 {
     public function __construct()
@@ -178,23 +168,7 @@ class StripeReconciliationService
                 // SQLite with "malformed JSON" once a ProviderPayout row exists, and produces
                 // wrong results on MySQL. json_extract(...) = ? is correct on both drivers.
                 if ($booking->payment_status === 'captured') {
-                    /*
-                     * UNE SEULE CLÉ VERS LA RÉSERVATION.
-                     *
-                     * Cette requête interrogeait aussi `rendez_vous_id`, la seconde colonne que la
-                     * fusion du 2026-08-10 a supprimée. Sur MySQL elle levait donc
-                     * « Unknown column », erreur avalée plus bas et consignée sous l'étiquette
-                     * `stripe_api_error` : la réconciliation se déclarait terminée sans avoir
-                     * contrôlé un seul versement. Trois jours durant, un encaissement sans ligne
-                     * de versement serait passé sans alerte.
-                     *
-                     * SQLite ne l'avait pas vu, et pour une raison qui dépasse ce défaut : Laravel
-                     * y entoure les identifiants de guillemets doubles, et SQLite traite un
-                     * identifiant inconnu ainsi cité comme une CHAÎNE LITTÉRALE au lieu de refuser
-                     * la requête. La comparaison devenait `'rendez_vous_id' = 42`, donc fausse en
-                     * silence. Toute colonne supprimée ou mal orthographiée dans un `where` est
-                     * invisible à notre suite.
-                     */
+                    // UNE SEULE CLÉ VERS LA RÉSERVATION.
                     $expectsPayout = Mission::query()
                         ->where('booking_id', $booking->id)
                         ->whereNotNull('lead_provider_user_id')
@@ -223,17 +197,7 @@ class StripeReconciliationService
                 }
             }
         } catch (ApiErrorException $e) {
-            /*
-             * SEULES LES PANNES STRIPE SONT AVALÉES ICI, et c'est la distinction qui manquait.
-             *
-             * Une indisponibilité de l'API est une condition ATTENDUE : on la consigne, le run se
-             * termine, la réconciliation reprendra au passage suivant. Tout le reste — au premier
-             * chef une requête SQL cassée — est un défaut de programmation. Le `catch (\Throwable)`
-             * qui régnait ici le transformait en anomalie `stripe_api_error` et laissait le run se
-             * déclarer COMPLETED : un contrôle d'intégrité financière qui n'avait rien contrôlé
-             * passait pour sain. Ces exceptions-là remontent désormais jusqu'à `run()`, qui marque
-             * le run FAILED.
-             */
+            // SEULES LES PANNES STRIPE SONT AVALÉES ICI, et c'est la distinction qui manquait.
             $mismatches[] = $this->mismatch('stripe_api_error', 'payment_intents', null, $e->getMessage(), 'error');
         }
 

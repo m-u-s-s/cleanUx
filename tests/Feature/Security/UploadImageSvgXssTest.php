@@ -17,35 +17,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * M-4 — un SVG déposé comme photo de profil est un document XML qui peut porter du script.
- *
- * TROIS points d'entrée écrivent une image sur le disque `public`, c'est-à-dire dans un dossier
- * servi tel quel par le serveur web, sur le domaine de l'application :
- *
- *   - POST /api/client/profile/avatar        → ClientProfileController::uploadAvatar()
- *   - POST /api/provider/onboarding/profile  → ProviderOnboardingController::setProfile()
- *   - ProviderOnboardingWizard::saveStep0()  → le MÊME dossier que le précédent, depuis le web
- *
- * Un fichier rendu avec `Content-Type: image/svg+xml` s'exécute dans l'origine de l'application.
- * L'administrateur qui ouvre le dossier d'un prestataire y laisserait donc sa session.
- *
- * CE QUE CE FICHIER VERROUILLE, ET DANS LES DEUX SENS :
- *
- *   1. le SVG est refusé aux TROIS points — durcir deux portes sur trois ne ferme rien ;
- *   2. TOUS les formats matriciels de {@see ImagesTeleversees} passent encore, aux trois points —
- *      un durcissement qui refuse un gif de vieux téléphone n'est pas un correctif, c'est une
- *      panne. C'est exactement ce qui était arrivé : l'API mobile refusait gif et bmp que le
- *      wizard web acceptait.
- *
- * ATTENTION AU FAUX POSITIF DE MESURE : `UploadedFile::fake()->create('x.svg', 1, 'image/svg+xml')`
- * ne prouve rien ici. `Illuminate\Http\Testing\File::getMimeType()` REND LE TYPE DÉCLARÉ au lieu de
- * l'inspecter — le test mesurerait alors une étiquette qu'il a lui-même posée. Même piège côté
- * Livewire : `Testable::set()` encode le type dans le nom du fichier temporaire, et
- * `TemporaryUploadedFile::getMimeType()` le relit tel quel sous PHPUnit. Les fichiers de ce test
- * portent donc de VRAIS octets, écrits sur le disque sans marqueur `-mimeType=`, et traversent
- * `finfo` comme en production.
- */
+/** M-4 — un SVG déposé comme photo de profil est un document XML qui peut porter du script. */
 class UploadImageSvgXssTest extends TestCase
 {
     use RefreshDatabase;
@@ -60,12 +32,7 @@ class UploadImageSvgXssTest extends TestCase
         SVG;
 
     /**
-     * Un vrai fichier 1×1 par format accepté, encodé en dur : l'extension GD n'est pas chargée sur
-     * ce poste, on ne peut donc pas les générer.
-     *
-     * La clé est l'extension envoyée, la valeur porte les octets et l'extension SOUS LAQUELLE le
-     * fichier sera rangé — `hashName()` reprend `guessExtension()`, pas le nom du client, donc un
-     * `.jpeg` atterrit en `.jpg`.
+     * Un vrai fichier 1×1 par format accepté, encodé en dur : l'extension GD n'est pas chargée sur ce poste, on ne peut donc pas les générer.
      *
      * @return array<string, array{0: string, 1: string, 2: string}>
      */
@@ -83,19 +50,7 @@ class UploadImageSvgXssTest extends TestCase
             'bmp' => ['bmp', 'Qk1GAAAAAAAAADYAAAAoAAAAAQAAAAEAAAABABgAAAAAABAAAADDDgAAww4AAAAAAAAAAAAA////AA==', 'bmp'],
             'webp' => ['webp', 'UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==', 'webp'],
 
-            /*
-             * LE HEIC ET LE HEIF SONT DEUX ENTREES DISTINCTES, ET LES DEUX PORTENT.
-             *
-             * Ce sont des boites ISOBMFF : `finfo` lit la MARQUE declaree dans l'en-tete `ftyp`, pas
-             * l'extension. Une photo d'iPhone se presente en marque `heic` et rend `image/heic` ;
-             * d'autres appareils ecrivent la marque generique `mif1`, qui rend `image/heif`. Les
-             * deux types se traduisent en DEUX extensions differentes -- n'en lister qu'une
-             * refuserait la moitie du parc, et le refus tomberait sur des appareils qu'on n'a pas
-             * sous la main pour le reproduire.
-             *
-             * Les octets ci-dessous sont de vrais en-tetes `ftyp` de 24 octets, pas des chaines
-             * baptisees : c'est `finfo` qui doit les reconnaitre, comme en production.
-             */
+            // LE HEIC ET LE HEIF SONT DEUX ENTREES DISTINCTES, ET LES DEUX PORTENT.
             'heic' => ['heic', 'AAAAGGZ0eXBoZWljAAAAAGhlaWNtaWYx', 'heic'],
             'heif' => ['heif', 'AAAAGGZ0eXBtaWYxAAAAAG1pZjFoZWlj', 'heif'],
         ];
@@ -127,12 +82,7 @@ class UploadImageSvgXssTest extends TestCase
     // Fabrication des charges — de vrais octets, jamais d'étiquette déclarée
     // ---------------------------------------------------------------------
 
-    /**
-     * Construit un vrai fichier téléversé à partir d'octets réels.
-     *
-     * `test: true` court-circuite `is_uploaded_file()`, faux hors requête HTTP réelle ; le reste
-     * du chemin (détection du type par `finfo`, `guessExtension()`) est celui de production.
-     */
+    /** Construit un vrai fichier téléversé à partir d'octets réels. */
     private function televerse(string $nom, string $contenu, string $typeDeclare): UploadedFile
     {
         $chemin = $this->dossierTemporaire.'/'.$nom;
@@ -160,14 +110,7 @@ class UploadImageSvgXssTest extends TestCase
         );
     }
 
-    /**
-     * Dépose des octets dans le tampon de Livewire et rend le nom de fichier temporaire.
-     *
-     * C'est la voie de production : le navigateur envoie le fichier à la route d'upload de
-     * Livewire, puis appelle `_finishUpload` avec le nom obtenu. On passe volontairement à côté de
-     * `Testable::set()`, qui encode le type MIME dans le nom du fichier — `getMimeType()` le
-     * relirait alors au lieu d'inspecter le contenu, et le test mesurerait sa propre étiquette.
-     */
+    /** Dépose des octets dans le tampon de Livewire et rend le nom de fichier temporaire. */
     private function deposeDansLeTamponLivewire(string $nomOrigine, string $contenu): string
     {
         $nom = Str::random(30)
@@ -218,11 +161,7 @@ class UploadImageSvgXssTest extends TestCase
         $this->assertDatabaseMissing('provider_profiles', ['user_id' => $prestataire->id]);
     }
 
-    /**
-     * La troisième porte, celle qu'on avait oubliée : le wizard web écrit sur le même disque public
-     * que l'API mobile ci-dessus. Tant qu'elle acceptait ce que l'autre refusait, le durcissement
-     * n'était qu'un déplacement du problème.
-     */
+    /** La troisième porte, celle qu'on avait oubliée : le wizard web écrit sur le même disque public que l'API mobile ci-dessus. */
     public function test_le_wizard_web_d_onboarding_refuse_un_svg_porteur_de_script(): void
     {
         $prestataire = User::factory()->employe()->create();
@@ -244,10 +183,7 @@ class UploadImageSvgXssTest extends TestCase
         );
     }
 
-    /**
-     * Le nom de fichier ne doit pas servir de porte dérobée : renommer la charge en `.png` ne change
-     * rien, puisque la validation lit le contenu et non l'extension annoncée.
-     */
+    /** Le nom de fichier ne doit pas servir de porte dérobée : renommer la charge en `.png` ne change rien, puisque la validation lit le contenu et non l'extension annoncée. */
     public function test_un_svg_deguise_en_png_est_refuse_lui_aussi(): void
     {
         $client = User::factory()->create(['role' => 'client']);
@@ -281,11 +217,7 @@ class UploadImageSvgXssTest extends TestCase
     // 2. Le chemin normal, aux TROIS points d'entrée
     // ---------------------------------------------------------------------
 
-    /**
-     * Un fichier légitime de CHAQUE format accepté doit encore passer. gif et bmp sont dans la
-     * liste à dessein : ce ne sont pas des vecteurs de script, mais ce que produisent encore de
-     * vieux téléphones et de vieux scanners — le parc même des prestataires qu'on veut inscrire.
-     */
+    /** Un fichier légitime de CHAQUE format accepté doit encore passer. */
     #[DataProvider('formatsAcceptes')]
     public function test_l_avatar_client_accepte_chaque_format_de_la_liste(string $extension, string $base64, string $extensionRangee): void
     {
@@ -329,10 +261,7 @@ class UploadImageSvgXssTest extends TestCase
         Storage::disk('public')->assertExists($chemin);
     }
 
-    /**
-     * Le même jeu de formats côté web. C'est l'assertion de PARITÉ : si l'un des deux parcours
-     * cesse de lire {@see ImagesTeleversees}, l'un des six cas tombe ici ou dans le test ci-dessus.
-     */
+    /** Le même jeu de formats côté web. */
     #[DataProvider('formatsAcceptes')]
     public function test_le_wizard_web_accepte_chaque_format_de_la_liste(string $extension, string $base64, string $extensionRangee): void
     {
@@ -361,9 +290,7 @@ class UploadImageSvgXssTest extends TestCase
         Storage::disk('public')->assertExists($chemin);
     }
 
-    /**
-     * La photo reste facultative des deux côtés : l'étape 0 sert aussi à saisir un nom seul.
-     */
+    /** La photo reste facultative des deux côtés : l'étape 0 sert aussi à saisir un nom seul. */
     public function test_l_onboarding_accepte_toujours_une_etape_sans_photo(): void
     {
         $prestataire = User::factory()->employe()->create();
@@ -393,19 +320,7 @@ class UploadImageSvgXssTest extends TestCase
     // 3. Sentinelle sur le reste du dépôt
     // ---------------------------------------------------------------------
 
-    /**
-     * Les trois points doivent lire la MÊME liste, et cette parité-là ne se voit pas en boîte
-     * noire aujourd'hui : sur Laravel 12.62 `image` vaut exactement notre liste (jpg, jpeg, png,
-     * gif, bmp, webp). Un wizard resté sur `image` se comporterait donc comme les deux autres —
-     * jusqu'à la montée de version qui les fera diverger, en silence.
-     *
-     * D'où un contrôle sur la SOURCE, seul endroit où la divergence est visible avant qu'elle ne
-     * coûte quelque chose. Ce dépôt a déjà payé ce prix deux fois : les tables d'alias mobiles et
-     * le garde-fou couleur décrivaient la même chose à trois endroits sans jamais se vérifier.
-     *
-     * Les règles `mimes:pdf,jpg,jpeg,png` des étapes 1 et 3 ne sont pas concernées : ce sont des
-     * JUSTIFICATIFS, qui admettent le PDF et partent sur le disque `private`.
-     */
+    /** Les trois points doivent lire la MÊME liste, et cette parité-là ne se voit pas en boîte noire aujourd'hui : sur Laravel 12.62 `image` vaut exactement notre liste (jpg, jpeg, png, gif, bmp, webp). */
     public function test_les_trois_points_lisent_la_meme_liste(): void
     {
         $fichiers = [
@@ -414,17 +329,7 @@ class UploadImageSvgXssTest extends TestCase
             'app/Livewire/Provider/Onboarding/ProviderOnboardingWizard.php',
         ];
 
-        /*
-         * TOUS LES POINTS DE TELEVERSEMENT FAUTIFS D'UN COUP.
-         *
-         * Les trois photos de profil visent le MEME disque public : des que l'une d'elles porte sa
-         * propre liste, c'est la plus permissive des trois qui definit la surface d'attaque. Savoir
-         * qu'une seule a decroche ne dit donc rien de la surface reelle — c'est la liste entiere
-         * qu'il faut lire.
-         *
-         * On accumule des LIBELLES et non le fichier entier : `assertStringContainsString` aurait
-         * deverse tout le source dans le rapport, noyant le message qui dit quoi faire.
-         */
+        // TOUS LES POINTS DE TELEVERSEMENT FAUTIFS D'UN COUP.
         $fautifs = [];
 
         foreach ($fichiers as $fichier) {
@@ -443,17 +348,7 @@ class UploadImageSvgXssTest extends TestCase
         $this->assertSame([], $fautifs, 'Ces points de televersement echappent a la liste partagee.');
     }
 
-    /**
-     * Neuf autres points de téléversement du dépôt valident encore avec la règle `image` nue
-     * (MissionFieldActionController ×2, MissionExecutionBoard ×2, MesRendezVous ×2, LitigesClient,
-     * AiQuotePhoto, AiQuoteController). Sur Laravel 12.62 cette règle REFUSE déjà le svg —
-     * `validateImage()` ne l'ajoute que sur le paramètre explicite `allow_svg` — et c'est la seule
-     * raison pour laquelle ces neuf points ne sont pas des trous ouverts.
-     *
-     * Cette garantie n'est écrite nulle part chez nous : elle tient à une ligne de `vendor/`. Si une
-     * montée de version la reprend, ce test tombe et désigne l'ensemble des appelants restants avant
-     * qu'une charge active n'atteigne le disque public.
-     */
+    /** Neuf autres points de téléversement du dépôt valident encore avec la règle `image` nue (MissionFieldActionController ×2, MissionExecutionBoard ×2, MesRendezVous ×2, LitigesClient, AiQuotePhoto, AiQuoteController). */
     public function test_la_regle_image_nue_de_laravel_refuse_encore_le_svg(): void
     {
         $validateur = Validator::make(
@@ -471,26 +366,10 @@ class UploadImageSvgXssTest extends TestCase
         );
     }
 
-    /**
-     * Le pendant du test précédent : notre liste ne doit rien REFUSER que `image` accepte, sans
-     * quoi on casse des téléversements légitimes sans rien fermer. Le svg est le seul RETRAIT ;
-     * les ajouts, eux, sont permis mais doivent être déclarés.
-     */
+    /** Le pendant du test précédent : notre liste ne doit rien REFUSER que `image` accepte, sans quoi on casse des téléversements légitimes sans rien fermer. */
     public function test_notre_liste_couvre_image_sans_le_svg(): void
     {
-        /*
-         * ON VERROUILLE LE RAISONNEMENT, PAS LA VALEUR DU JOUR.
-         *
-         * Ce test comparait la liste a un tableau litteral. Il refusait donc aussi les ajouts
-         * VOLONTAIRES, alors que son propre intitule ne garde que contre le RETRAIT : « notre liste
-         * ne doit rien REFUSER que `image` accepte ». Un instantane fige la valeur ; ce qu'on veut
-         * figer, c'est la regle.
-         *
-         * Deux clauses, donc. Tout ce que Laravel appelle image reste accepte -- et le svg mis a
-         * part, c'est la clause qui empeche de casser des televersements legitimes. Et rien
-         * d'autre n'entre sans figurer dans la liste des ajouts assumes : une addition distraite
-         * echoue toujours.
-         */
+        // ON VERROUILLE LE RAISONNEMENT, PAS LA VALEUR DU JOUR.
         $natifs = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
 
         $disparus = array_values(array_diff($natifs, ImagesTeleversees::EXTENSIONS));
@@ -502,14 +381,7 @@ class UploadImageSvgXssTest extends TestCase
             .'ferme aucune faille : ca empeche juste un prestataire de s inscrire.',
         );
 
-        /*
-         * LES AJOUTS ASSUMES, et le motif de chacun.
-         *
-         * `heic`/`heif` : format par defaut de l'appareil photo des iPhone depuis iOS 11, que la
-         * regle `image` de Laravel ne connait pas. Sans eux, un client qui photographie son
-         * logement avec un iPhone recoit « format non accepte ». Ce sont des conteneurs matriciels
-         * ISOBMFF : ils ne portent ni script ni gestionnaire d'evenement, contrairement au svg.
-         */
+        // LES AJOUTS ASSUMES, et le motif de chacun.
         $ajoutsAssumes = ['heic', 'heif'];
 
         $this->assertSame(

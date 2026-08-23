@@ -18,28 +18,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * L'API DE L'ESPACE SOCIÉTÉ CLIENTE.
- *
- * POURQUOI CE FICHIER EXISTE. `config/parity.php` déclarait six modules `entreprise-client` en
- * `mobile => 'webview'` — Accueil, Locaux, Réservations, Membres, Facturation, Contrats. Aucun
- * n'était joignable depuis l'application cliente : pas d'écran natif, pas de lien WebView, et
- * `ModuleHubScreen`, seule porte générique vers ces modules, monté nulle part.
- *
- * Ce contrôleur est le pendant exact de `Api\Provider\CompanyController`, et il obéit aux deux
- * mêmes règles, sans exception :
- *   1. toute requête est limitée à l'organisation ACTIVE de l'appelant ;
- *   2. la lecture sensible comme l'écriture exigent une permission, jamais la seule appartenance.
- *
- * Les identifiants reçus ne sont jamais tenus pour fiables : le scoping fait partie de la REQUÊTE,
- * si bien qu'une ressource d'une autre société n'est jamais chargée — donc jamais divulguée, même
- * par la différence entre un 403 et un 404.
- *
- * Les permissions retenues sont celles que les écrans web appliquent DÉJÀ (`SiteManager` →
- * `sites.view_all`, `BillingCenter` → `finance.view`) : deux surfaces qui gardent la même donnée
- * par deux règles différentes finissent toujours par diverger, et c'est la plus permissive qui
- * décide.
- */
+/** L'API DE L'ESPACE SOCIÉTÉ CLIENTE. POURQUOI CE FICHIER EXISTE. */
 class CompanyController extends Controller
 {
     use ResolvesActiveOrganization;
@@ -241,19 +220,7 @@ class CompanyController extends Controller
     // Facturation
     // ──────────────────────────────────────────────────────
 
-    /**
-     * L'écran web `BillingCenter` renvoie des zéros codés en dur — « Données simulées, à connecter
-     * à Invoice model ». Le recopier aurait donné un écran natif incapable d'afficher quoi que ce
-     * soit. La donnée existe pourtant : `/api/client/invoices` la sert déjà.
-     *
-     * On passe donc par `ClientFinanceDocumentScope`, et pas par un `where` maison. Ce n'est pas
-     * une commodité : le scope porte la restriction PAR LOCAL (`site_scope = 'selected'`) d'un
-     * membre qui n'a accès qu'à certains sites. Un filtre écrit à la main ici aurait rendu à ce
-     * membre la facturation de toute la société — une fuite à l'intérieur même de l'organisation.
-     *
-     * Le `where` sur l'organisation vient EN PLUS, jamais à la place : il retire de cet écran les
-     * factures personnelles du membre, qui n'ont rien à y faire.
-     */
+    /** L'écran web `BillingCenter` renvoie des zéros codés en dur — « Données simulées, à connecter à Invoice model ». */
     public function billing(): JsonResponse
     {
         $org = $this->organisationActive();
@@ -263,10 +230,7 @@ class CompanyController extends Controller
             ->where('organization_account_id', $org->id);
 
         /**
-         * `ClientFinanceDocumentScope::apply()` est typée `Builder` sans générique : ce qui en sort
-         * est un `Collection<Model>` pour l'analyse statique, alors que la requête part bien de
-         * `FinanceInvoice`. On le rétablit ici plutôt que d'élargir la signature partagée, que
-         * `FinanceDocumentsClient` et l'API factures utilisent aussi.
+         * `ClientFinanceDocumentScope::apply()` est typée `Builder` sans générique : ce qui en sort est un `Collection<Model>` pour l'analyse statique, alors que la requête part bien de `FinanceInvoice`.
          *
          * @var Collection<int, FinanceInvoice> $lignes
          */
@@ -315,17 +279,7 @@ class CompanyController extends Controller
             'site' => $booking->organizationSite?->name,
             'provider' => $booking->providerUser?->name,
             'scheduled_at' => $booking->scheduled_at?->toIso8601String(),
-            /*
-             * `bookings` ne porte PAS de colonne `total_amount` — j'avais écrit ce nom, et l'écran
-             * aurait affiché un montant vide indéfiniment sans qu'aucune erreur ne le signale.
-             * PHPStan l'a rattrapé. Le modèle documente `estimated_price` ; `final_price` existe en
-             * base mais n'est ni castée ni déclarée sur le modèle, donc on ne l'invente pas ici.
-             *
-             * La lecture passe par `getAttributeValue` et non par la propriété : le modèle annote
-             * `@property string $estimated_price`, non nullable, alors que la COLONNE l'est. Lue
-             * par la propriété, la garde ci-dessous serait tenue pour toujours vraie — donc morte —
-             * alors qu'elle protège un cas réel : un devis pas encore chiffré.
-             */
+            // `bookings` ne porte PAS de colonne `total_amount` — j'avais écrit ce nom, et l'écran aurait affiché un montant vide indéfiniment sans qu'aucune erreur ne le signale.
             'estimated_price' => ($prix = $booking->getAttributeValue('estimated_price')) !== null
                 ? (float) $prix
                 : null,

@@ -11,14 +11,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * GET /api/auth/me Returns the currently authenticated user.
+ *
  * @group Authentication
  *
  * @authenticated
- *
- * GET /api/auth/me
- *
- * Returns the currently authenticated user. Extracted from a closure so
- * that this route is compatible with `php artisan route:cache`.
  */
 class AuthMeController extends Controller
 {
@@ -26,13 +23,7 @@ class AuthMeController extends Controller
     {
         $user = $request->user();
 
-        /*
-         * La reprise de session est le SECOND verrou de la séparation des deux applications.
-         *
-         * Bloquer la connexion ne suffit pas : un jeton obtenu avant ce garde-fou, ou dans l'autre
-         * APK, resterait valide indéfiniment. Le 403 ici fait tomber le `catch` de l'application,
-         * qui efface le jeton — la session se referme d'elle-même.
-         */
+        // La reprise de session est le SECOND verrou de la séparation des deux applications.
         $app = AppAudience::declared($request);
 
         if (! AppAudience::allows($user, $app)) {
@@ -45,110 +36,25 @@ class AuthMeController extends Controller
         $profile = $user->customerProfile;
         $payload['is_premium'] = $profile instanceof CustomerProfile && $profile->isPremium();
 
-        /*
-         * La reprise de session doit dire la même chose que la connexion.
-         *
-         * `login` sérialise explicitement `is_admin` ; ici la réponse était bâtie sur
-         * `$user->toArray()`, qui ne porte que des colonnes. L'administrateur redevenait donc un
-         * compte ordinaire à chaque redémarrage de l'application mobile — avec un jeton pourtant
-         * valide — et l'aiguillage d'espace l'envoyait là où rien ne lui répond.
-         *
-         * Ce drapeau est un AIGUILLAGE D'INTERFACE, pas une frontière de privilèges : celle-ci
-         * reste tenue par les gardes de rôle sur chaque route.
-         */
+        // La reprise de session doit dire la même chose que la connexion.
         $payload['is_admin'] = method_exists($user, 'isAdmin') && $user->isAdmin();
 
-        /*
-         * La casquette prestataire, pour la même raison — et pour une de plus.
-         *
-         * Un compte peut porter les DEUX : un administrateur qui intervient aussi sur le terrain
-         * existe. Sans ce drapeau à la reprise de session, l'application ne pouvait plus lui
-         * proposer de choisir son espace et l'enfermait du côté administration, sans retour.
-         */
+        // La casquette prestataire, pour la même raison — et pour une de plus.
         $payload['is_provider'] = method_exists($user, 'isProvider') && $user->isProvider();
 
-        /*
-         * La réponse porte les DEUX formes, et c'est délibéré.
-         *
-         * Le serveur renvoyait les attributs à plat ; l'application mobile lit `data.user`. Elle
-         * recevait donc `undefined` à chaque reprise de session, en concluait qu'il n'y avait
-         * personne, et renvoyait vers l'écran de connexion — un jeton valide en poche, une
-         * reconnexion à chaque lancement. Rien ne le signalait : le test mobile simulait
-         * `{ user: … }`, une forme que le serveur n'a jamais envoyée.
-         *
-         * Retirer la forme à plat casserait les consommateurs qui la lisent déjà — deux tests la
-         * figent. On ajoute donc, on ne remplace pas.
-         */
-        /*
-         * LA CASQUETTE SOCIÉTÉ, POUR LA MÊME RAISON QUE `is_admin`.
-         *
-         * `ApiAuthController::serializeUser()` expose déjà `is_entreprise` et
-         * `organization_account_id` à la CONNEXION. Ici la réponse était bâtie sur
-         * `$user->toArray()`, qui ne porte que des colonnes : un compte société redevenait un
-         * particulier à chaque reprise de session, jeton valide en poche.
-         *
-         * `organization_type` s'y ajoute parce que le drapeau booléen ne suffit pas : une société
-         * CLIENTE et une société PRESTATAIRE ouvrent deux espaces différents, et l'application ne
-         * peut pas les distinguer sans lui. Il vaut `null` pour un particulier — l'absence
-         * d'organisation est une information, pas un cas par défaut.
-         */
+        // La réponse porte les DEUX formes, et c'est délibéré.
+        // LA CASQUETTE SOCIÉTÉ, POUR LA MÊME RAISON QUE `is_admin`.
         $payload['is_entreprise'] = method_exists($user, 'isEntreprise') && $user->isEntreprise();
 
-        /*
-         * L'ORGANISATION SE RÉSOUT PAR `organizationContextId()`, PAS PAR `currentOrganization`.
-         *
-         * `organization_type` était lu sur la relation `currentOrganization`, donc sur la seule
-         * colonne `current_organization_id` — que les seeders ne renseignaient pas. Sur une base
-         * fraîchement semée, le contact société portait `org_account_id=1` et
-         * `current_org_id=NULL` : le type revenait `null`, et l'aiguillage société mobile ne
-         * s'ouvrait pour personne.
-         *
-         * `organizationContextId()` existait déjà pour exactement cela — repli en quatre niveaux,
-         * utilisé par `ClientContractsCenter`. Le seeder a été corrigé aussi, mais les bases
-         * existantes gardent l'ancienne forme : le serveur ne doit pas en dépendre.
-         */
-        /*
-         * LE CONTRAT D'ORGANISATION VIT DANS UNE SEULE CLASSE, LUE PAR LES DEUX RÉPONSES.
-         *
-         * Ces champs étaient calculés ici, et la connexion (`ApiAuthController::serializeUser()`)
-         * en calculait sa propre version — sans `can_manage_company` ni `organization_type`, et
-         * avec une autre résolution d'organisation. Un compte ouvrait donc l'espace société après
-         * un redémarrage de l'application, mais pas après une connexion.
-         *
-         * `organization_role` et `organization_permissions` s'y ajoutent : le sous-rôle n'était PAS
-         * exposé, et l'application ne pouvait distinguer un nettoyeur d'un dispatcheur que par
-         * `can_manage_company` — un seul booléen pour onze rôles. Ajout ADDITIF : aucun champ
-         * existant ne change de sens, les applications installées continuent de lire les leurs.
-         */
+        // L'ORGANISATION SE RÉSOUT PAR `organizationContextId()`, PAS PAR `currentOrganization`.
+        // LE CONTRAT D'ORGANISATION VIT DANS UNE SEULE CLASSE, LUE PAR LES DEUX RÉPONSES.
         $payload = array_merge($payload, app(ContratDeRoleMobile::class)->pour($user));
 
-        /*
-         * LE RÔLE CANONIQUE — ce qui subsume tous les drapeaux ci-dessus.
-         *
-         * Chacun d'eux a été ajouté APRÈS avoir manqué : `is_admin`, puis `is_provider`, puis
-         * `is_entreprise`, puis `organization_type`. L'application devait ensuite les recombiner
-         * elle-même, avec sa propre idée de l'ordre — c'est ainsi qu'une conjonction impossible a
-         * rendu cinq écrans société inatteignables pendant toute une livraison.
-         *
-         * `role` ÉCRASE ICI LA COLONNE HÉRITÉE du même nom, que `toArray()` sérialisait. Cette
-         * colonne dit `client` / `employe` / `entreprise` / `admin` — précisément la nomenclature
-         * remplacée. Elle n'est lue nulle part dans les applications mobiles (`role: string` est
-         * déclaré dans leurs types et jamais consommé), et le web lit le modèle, pas cette
-         * réponse.
-         *
-         * Les drapeaux restent : les retirer casserait les applications déjà installées.
-         */
+        // LE RÔLE CANONIQUE — ce qui subsume tous les drapeaux ci-dessus.
         $payload['role'] = $user->roleCanonique()->value;
         $payload['is_super_admin'] = $user->roleCanonique() === Role::SUPER_ADMIN;
 
-        /*
-         * La même clé qu'à la connexion, sous la même forme.
-         *
-         * `toArray()` porte déjà `email_verified_at`, mais c'est une DATE nullable : chaque écran
-         * devait la comparer lui-même, et la connexion n'en disait rien du tout. Le booléen est
-         * calculé une fois, au même nom des deux côtés — deux réponses qui divergent sur l'identité
-         * est le motif qui a produit tous les drapeaux ci-dessus, un par un.
-         */
+        // La même clé qu'à la connexion, sous la même forme.
         $payload['email_verified'] = $user->hasVerifiedEmail();
 
         $payload['user'] = $payload;

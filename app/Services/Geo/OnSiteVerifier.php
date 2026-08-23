@@ -5,18 +5,7 @@ namespace App\Services\Geo;
 use App\Services\GeolocationV2\DistanceCalculator;
 use Illuminate\Support\Facades\Config;
 
-/**
- * Confronte la position relevée au moment d'un geste au lieu où ce geste est censé avoir lieu.
- *
- * Les deux bouts d'une visite posent la même question — le prestataire est-il chez le client ? —
- * et doivent donc y répondre de la même façon. Deux copies de cette politique dériveraient : l'une
- * verrait son rayon ajusté, l'autre non, et la clôture finirait par être plus permissive que
- * l'arrivée alors que c'est elle qui déclenche l'encaissement.
- *
- * Ne décide de rien d'autre : ni qui a le droit, ni ce qu'on fait du verdict. Le refus est RENVOYÉ
- * plutôt que levé, parce que les appelants s'en servent depuis l'intérieur d'une transaction dont
- * une exception annulerait les compteurs et les traces.
- */
+/** Confronte la position relevée au moment d'un geste au lieu où ce geste est censé avoir lieu. */
 class OnSiteVerifier
 {
     /** Position fournie et située dans le rayon accepté. */
@@ -69,14 +58,7 @@ class OnSiteVerifier
             );
         }
 
-        /*
-         * Le lieu est examiné AVANT d'exiger une position, et l'ordre compte.
-         *
-         * Sans coordonnées au dossier, il n'y a rien à comparer : réclamer quand même une position
-         * reviendrait à exiger une preuve qu'on serait incapable d'exploiter, et à laisser le
-         * prestataire devant la porte du client sans aucun geste qui le débloque — activer sa
-         * localisation n'y changerait rien. On ne demande pas ce dont on ne peut rien faire.
-         */
+        // Le lieu est examiné AVANT d'exiger une position, et l'ordre compte.
         if ($destLat === null || $destLng === null) {
             return $pass(self::SKIPPED_NO_DESTINATION);
         }
@@ -106,13 +88,7 @@ class OnSiteVerifier
         return $pass(self::PASSED, $distanceM);
     }
 
-    /**
-     * Rayon effectivement toléré, élargi si l'appareil annonce un relevé imprécis.
-     *
-     * Un relevé honnête mais mauvais mérite d'être jugé sur la précision qu'il annonce plutôt que
-     * refusé sèchement. Mais cette valeur vient de l'appareil, donc de la partie contrôlée : sans
-     * plafond, annoncer une précision de 50 km rouvrirait la porte en grand.
-     */
+    /** Rayon effectivement toléré, élargi si l'appareil annonce un relevé imprécis. */
     public function allowedRadiusM(?float $accuracyM): int
     {
         $base = (int) Config::get('trip_tracking.presence_max_distance_m', 250);

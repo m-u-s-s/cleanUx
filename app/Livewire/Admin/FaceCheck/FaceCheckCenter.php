@@ -18,18 +18,7 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-/**
- * LE CENTRE DE VÉRIFICATION FACIALE — la file d'attente d'un humain.
- *
- * Bâti sur le patron de `RiskCenter` : des onglets, une file d'attente, deux gestes par ligne, et
- * toute la logique déléguée aux services. Un écran d'administration qui écrit lui-même dans les
- * colonnes de garde finit par diverger du moteur — et c'est l'écran qui a tort.
- *
- * TOUTE PROPRIÉTÉ QUI SERT DE GARDE PORTE `#[Locked]`. Livewire ne rejoue pas `mount()` : une
- * propriété publique non verrouillée peut être retournée depuis le navigateur par un simple
- * `$set`, et une file d'attente filtrée par une propriété retournable n'est pas une file
- * d'attente, c'est une suggestion.
- */
+/** LE CENTRE DE VÉRIFICATION FACIALE — la file d'attente d'un humain. */
 class FaceCheckCenter extends Component
 {
     use EnforcesAdminAccess;
@@ -213,11 +202,7 @@ class FaceCheckCenter extends Component
             return;
         }
 
-        /*
-         * FUSION, comme dans la page des modules : `settings` porte aussi l'audience par zone,
-         * réglée ailleurs. La réécrire en entier depuis cet écran effacerait la liste des zones
-         * couvertes — et le module cesserait de s'appliquer sans que personne l'ait décidé.
-         */
+        // FUSION, comme dans la page des modules : `settings` porte aussi l'audience par zone, réglée ailleurs.
         $reglages = $module->settings ?? [];
         $reglages['face_check'] = [
             'min_hours' => (int) $valide['minHours'],
@@ -334,9 +319,7 @@ class FaceCheckCenter extends Component
             ->get();
     }
 
-    /**
-     * Les URL d'image sont SIGNÉES ET COURTES — dix minutes, comme les pièces d'onboarding.
-     */
+    /** Les URL d'image sont SIGNÉES ET COURTES — dix minutes, comme les pièces d'onboarding. */
     public function urlDeLaReference(ProviderFaceProfile $profil): ?string
     {
         if ($profil->reference_path === null) {
@@ -384,14 +367,7 @@ class FaceCheckCenter extends Component
             ->first();
     }
 
-    /**
-     * LES GARDES SE REVÉRIFIENT À CHAQUE ACTION.
-     *
-     * `EnforcesAdminAccess` le fait déjà au niveau du composant, mais l'enrobage ci-dessous ajoute
-     * ce que le patron `RiskCenter` a montré d'utile : une action d'administration ne doit jamais
-     * faire disparaître l'écran sur une exception — l'administrateur perdrait la file qu'il était
-     * en train de traiter, et ne saurait pas ce qui a échoué.
-     */
+    /** LES GARDES SE REVÉRIFIENT À CHAQUE ACTION. */
     private function agir(callable $geste): void
     {
         $utilisateur = Auth::user();

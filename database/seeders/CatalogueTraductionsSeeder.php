@@ -8,40 +8,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 
-/**
- * LES NOMS DU CATALOGUE DANS LES CINQ LANGUES ACTIVES.
- *
- * ── POURQUOI CE SEEDER EXISTE ────────────────────────────────────────────────────────────────
- *
- * Rendre `Sector` et `Trade` traduisibles ne traduit rien : le mécanisme attend qu'on le
- * remplisse. Un catalogue techniquement multilingue et vide reste monolingue à l'écran, et c'est
- * exactement la forme que prend ici la famille de défauts la plus tenace — une capacité complète
- * que rien n'alimente.
- *
- * ── CE QU'IL TRADUIT, ET CE QU'IL LAISSE ─────────────────────────────────────────────────────
- *
- * Les NOMS seulement. Un nom de métier est un terme, il a une traduction juste ; une accroche
- * (« Du petit dépannage au chantier complet ») et une description sont de la PLUME — elles portent
- * un ton, un marché, une promesse commerciale. Les inventer à la place de l'exploitant produirait
- * un texte que personne n'a choisi et que personne ne relirait. L'écran d'administration les
- * signalera comme manquantes, ce qui est la bonne façon de les réclamer.
- *
- * La couverture suit le catalogue semé : SIX secteurs et SEIZE métiers. Un objet absent de ces
- * tables est simplement sauté — mais un métier ajouté au catalogue sans être ajouté ici restera
- * français dans les cinq autres langues, sans que rien ne le signale. Le test de couverture qui
- * accompagne ce seeder est là pour ça.
- *
- * `pt` n'y figure pas : il est désactivé dans `config/i18n.php`, et ce seeder n'écrit QUE les
- * langues actives. L'activer demandera d'ajouter la colonne portugaise partout ici.
- *
- * ── IDEMPOTENT, ET NON DESTRUCTIF ────────────────────────────────────────────────────────────
- *
- * Les clés sont les SLUGS, jamais les libellés : un nom français retouché ne doit pas faire perdre
- * ses cinq traductions à un métier. Et une traduction DÉJÀ SAISIE n'est jamais écrasée — ce
- * seeder propose un point de départ, il ne reprend pas la main sur le travail de l'exploitant.
- *
- * Usage : php artisan db:seed --class=CatalogueTraductionsSeeder
- */
+/** LES NOMS DU CATALOGUE DANS LES CINQ LANGUES ACTIVES. */
 class CatalogueTraductionsSeeder extends Seeder
 {
     /** @var array<string, array<string, string>> */
@@ -219,10 +186,6 @@ class CatalogueTraductionsSeeder extends Seeder
 
     /**
      * On n'écrit que dans les langues ACTIVES.
-     *
-     * Une langue éteinte dans `config/i18n.php` ne s'affiche nulle part : y écrire produirait un
-     * texte invisible, et fausserait le décompte des langues manquantes de l'écran
-     * d'administration.
      *
      * @return list<string>
      */

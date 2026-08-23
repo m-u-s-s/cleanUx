@@ -7,19 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Toute action déclarée est ATTEIGNABLE et bien formée.
- *
- * POURQUOI CE TEST GÉNÉRIQUE PLUTÔT QU'UN TEST PAR ACTION. Quatre-vingts modules porteront bientôt
- * plusieurs centaines de gestes. Écrire un test métier pour chacun est le travail de chaque domaine ;
- * ce fichier tient la garantie STRUCTURELLE que ces tests-là ne donnent pas — qu'une action déclarée
- * porte une clé utilisable, un libellé lisible, et des champs valides quand elle en exige.
- *
- * CE QU'IL ATTRAPE, et que rien d'autre n'attrape : une action au libellé vide qui rendrait un
- * bouton anonyme, une clé en doublon dont une seule serait atteignable, un champ requis sans règle
- * qui accepterait n'importe quoi. Trois défauts qui ne cassent rien à la compilation, ne lèvent
- * aucune erreur, et ne se voient qu'au moment où quelqu'un appuie.
- */
+/** Toute action déclarée est ATTEIGNABLE et bien formée. */
 class ConsoleActionsSmokeTest extends TestCase
 {
     use RefreshDatabase;

@@ -11,11 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
-/**
- * Bundle Marketplace P2 — soumission de devis par le prestataire.
- * Le prestataire sollicité propose son prix (concurrence). Gardes : seul le
- * prestataire destinataire, demande non expirée, KYC validé.
- */
+/** Bundle Marketplace P2 — soumission de devis par le prestataire. */
 class BundleQuoteSubmissionTest extends TestCase
 {
     use RefreshDatabase;

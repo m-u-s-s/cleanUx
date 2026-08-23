@@ -12,17 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Une photo vient d'être prise sur place — le client la voit apparaître sans rien faire.
- *
- * `ShouldBroadcastNow` et pas `ShouldBroadcast` : l'intérêt du cliché est qu'il arrive PENDANT
- * que le client se demande ce qui se passe chez lui. Passé par une file d'attente, il arriverait
- * après le prestataire.
- *
- * La charge ne porte PAS d'adresse de fichier. Une URL signée expire, et une URL diffusée à
- * quiconque écoute le canal survivrait à la fin de la mission dans les journaux du navigateur ;
- * l'application redemande la liste, qui vérifie l'accès à chaque appel.
- */
+/** Une photo vient d'être prise sur place — le client la voit apparaître sans rien faire. */
 class MissionMediaAdded implements ShouldBroadcastNow, TracksBroadcastLedger
 {
     use Dispatchable;

@@ -195,9 +195,7 @@ class AdminControleFacialTest extends TestCase
         $this->assertSame('ref#face:jean', $reponse->getContent());
     }
 
-    /**
-     * LE POINT QUI COMPTE : une signature qui fuite ne suffit pas.
-     */
+    /** LE POINT QUI COMPTE : une signature qui fuite ne suffit pas. */
     public function test_une_url_signee_ne_suffit_pas_a_qui_nest_pas_administrateur(): void
     {
         $profil = app(FaceCheckService::class)->profileFor($this->prestataire);

@@ -11,10 +11,7 @@ use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * OTP téléphone câblé à l'auth web : envoi du code, vérification (pose
- * phone_verified_at), et garde optionnelle (gated) qui force la vérification.
- */
+/** OTP téléphone câblé à l'auth web : envoi du code, vérification (pose phone_verified_at), et garde optionnelle (gated) qui force la vérification. */
 class PhoneOtpFlowTest extends TestCase
 {
     use RefreshDatabase;

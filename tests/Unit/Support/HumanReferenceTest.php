@@ -6,25 +6,10 @@ use App\Models\OrderDraft;
 use App\Support\HumanReference;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Une référence destinée à être DICTÉE au téléphone.
- *
- * Le défaut que ce test aurait attrapé : `Str::random()` n'accepte QU'UNE longueur. L'alphabet
- * qu'on croyait lui passer en second argument était silencieusement ignoré, et les références
- * contenaient donc exactement les caractères qu'on prétendait exclure — I, O, 0 et 1, les quatre
- * qui se confondent quand un client lit sa référence au support.
- *
- * Rien ne le montrait : les références restaient uniques et fonctionnelles. Seul un test sur le
- * CONTENU, et non sur la forme, pouvait le révéler.
- */
+/** Une référence destinée à être DICTÉE au téléphone. */
 class HumanReferenceTest extends TestCase
 {
-    /**
-     * Les quatre caractères ambigus n'apparaissent JAMAIS.
-     *
-     * Mille tirages : sur un alphabet de 32 caractères, si les interdits étaient présents, la
-     * probabilité de n'en voir aucun serait nulle en pratique.
-     */
+    /** Les quatre caractères ambigus n'apparaissent JAMAIS. */
     public function test_the_ambiguous_characters_never_appear(): void
     {
         $tirage = '';
@@ -82,12 +67,7 @@ class HumanReferenceTest extends TestCase
         $this->assertSame(10, strlen($reference));
     }
 
-    /**
-     * Les références réellement produites par le moteur respectent la règle.
-     *
-     * On vérifie le générateur ET son emploi : un helper correct appelé nulle part ne garantit
-     * rien.
-     */
+    /** Les références réellement produites par le moteur respectent la règle. */
     public function test_the_order_reference_uses_the_dictable_alphabet(): void
     {
         $tirage = '';

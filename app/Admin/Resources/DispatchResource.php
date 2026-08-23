@@ -11,10 +11,6 @@ use App\Services\Booking\SmartDispatchService;
 /**
  * Les réservations en attente d’affectation.
  *
- * DÉCLENCHER un dispatch depuis ici serait tentant, et c’est précisément ce qu’il ne faut pas
- * faire : le dispatch propose un prestataire avec un score et une explication, et on valide
- * APRÈS avoir vu la proposition. Un bouton de liste validerait sans montrer.
- *
  * @extends EloquentResource<Booking>
  */
 class DispatchResource extends EloquentResource
@@ -78,14 +74,7 @@ class DispatchResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Affecter le meilleur prestataire disponible. Le service pèse distance, charge,
-             * compétences et disponibilité — le refaire ici produirait un second classement, et
-             * deux affectations différentes selon l'écran d'où l'on part.
-             *
-             * Quand il ne trouve personne, on le DIT : « affecté » sur une mission sans
-             * intervenant se découvrirait le jour de la prestation.
-             */
+            // Affecter le meilleur prestataire disponible.
             Action::make('assign-best', 'Affecter le meilleur prestataire', function (Booking $rdv) {
                 $employe = app(SmartDispatchService::class)->assignBestEmployee($rdv);
 

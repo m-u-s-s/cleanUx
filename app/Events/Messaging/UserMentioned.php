@@ -10,11 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Diffuse l'événement "tu viens d'être mentionné" sur le canal personnel
- * de l'utilisateur, pour faire apparaître un toast/badge instantanément
- * même s'il n'est pas dans le channel actif.
- */
+/** Diffuse l'événement "tu viens d'être mentionné" sur le canal personnel de l'utilisateur, pour faire apparaître un toast/badge instantanément même s'il n'est pas dans le channel actif. */
 class UserMentioned implements ShouldBroadcast
 {
     use Dispatchable;

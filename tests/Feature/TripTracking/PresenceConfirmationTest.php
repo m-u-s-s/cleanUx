@@ -11,21 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
-/**
- * Le prestataire confirme sa présence avec le code que le client affiche.
- *
- * La géo-barrière atteste d'une proximité, pas d'une présence : un téléphone à 100 m de la porte
- * la franchit, et la session bascule seule en `arrived`. Confirmer réellement exige les deux
- * appareils au même endroit — d'où un code à usage unique, montré par le client et scanné par le
- * prestataire.
- *
- * Ce qui est verrouillé ici : le code ne quitte jamais la base en clair, il périme, il ne se
- * devine pas, et il n'est délivré qu'une fois l'intervention démarrée.
- *
- * Le croisement avec la position du scan est vérifié à part, dans {@see PresenceGeoProofTest}.
- * Ici, toutes les confirmations envoient une position valide — l'application le fait toujours, et
- * l'omettre ferait passer ces tests-ci pour une raison étrangère à ce qu'ils prétendent établir.
- */
+/** Le prestataire confirme sa présence avec le code que le client affiche. */
 class PresenceConfirmationTest extends TestCase
 {
     use RefreshDatabase;
@@ -47,10 +33,7 @@ class PresenceConfirmationTest extends TestCase
         $this->assertSame($session->id, $response->json('data.session_id'));
     }
 
-    /**
-     * Garantie centrale : le code en clair ne doit exister que dans la réponse et sur l'écran du
-     * client. Une base lisible ne doit pas suffire à confirmer une présence.
-     */
+    /** Garantie centrale : le code en clair ne doit exister que dans la réponse et sur l'écran du client. */
     public function test_the_plain_code_is_never_stored(): void
     {
         [$client, , $booking, $session] = $this->scenario(TripTrackingSession::STATUS_IN_MISSION);
@@ -136,10 +119,7 @@ class PresenceConfirmationTest extends TestCase
         $this->assertNull($session->fresh()->presence_confirmed_at);
     }
 
-    /**
-     * Six chiffres se devinent en un million d'essais — rien pour une machine. Le plafond est
-     * donc la seule chose qui rende le code utilisable.
-     */
+    /** Six chiffres se devinent en un million d'essais — rien pour une machine. */
     public function test_repeated_guesses_burn_the_code(): void
     {
         [$client, $provider, $booking, $session] = $this->scenario(TripTrackingSession::STATUS_IN_MISSION);

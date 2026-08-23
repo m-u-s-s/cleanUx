@@ -6,12 +6,7 @@ use App\Models\FinanceInvoice;
 use App\Models\User;
 use App\Services\Assistant\Tools\Contracts\AssistantTool;
 
-/**
- * Phase 5.1 — Tool: récupère les détails d'une facture.
- *
- * Lecture seule → exécution immédiate.
- * Vérifie que l'utilisateur est lié à la facture (client direct ou même org).
- */
+/** Phase 5.1 — Tool: récupère les détails d'une facture. Lecture seule → exécution immédiate. */
 class GetInvoiceTool implements AssistantTool
 {
     public function name(): string

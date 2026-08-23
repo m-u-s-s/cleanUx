@@ -8,18 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\Spine\SpineScenario;
 use Tests\TestCase;
 
-/**
- * LE SUPPLÉMENT ACCEPTÉ DOIT ÊTRE ENCAISSÉ — ou rester une créance, jamais les deux.
- *
- * Le défaut réparé ici : `prelever()` créait une intention `confirm: false`, sans moyen de
- * paiement et sans `off_session`. Aucun euro ne bougeait — puis l'extra était marqué `charged`
- * quoi qu'il arrive. Tout supplément accepté depuis la mise en service de ce mécanisme était
- * enregistré comme encaissé sans l'être, et rien ne pouvait le rattraper : ni la comptabilité, ni
- * le portefeuille du prestataire, ni le webhook, qui ne connaît pas `mission_extra_id`.
- *
- * Ces tests ne parlent pas à Stripe. Ils vérifient la seule chose qui compte et qui ne dépend pas
- * du réseau : **un extra n'est déclaré encaissé que si l'encaissement a réussi**.
- */
+/** LE SUPPLÉMENT ACCEPTÉ DOIT ÊTRE ENCAISSÉ — ou rester une créance, jamais les deux. */
 class PrelevementDesSupplementsTest extends TestCase
 {
     use RefreshDatabase;
@@ -41,10 +30,7 @@ class PrelevementDesSupplementsTest extends TestCase
         $this->assertNull($extra->charged_at);
     }
 
-    /**
-     * LA TRACE DE L'ÉCHEC — sans elle, un administrateur voyant un extra `approved` depuis trois
-     * jours n'a aucun moyen de savoir si le prélèvement a seulement été tenté.
-     */
+    /** LA TRACE DE L'ÉCHEC — sans elle, un administrateur voyant un extra `approved` depuis trois jours n'a aucun moyen de savoir si le prélèvement a seulement été tenté. */
     public function test_lechec_est_date_et_motive(): void
     {
         $extra = $this->extraApprouve();
@@ -58,12 +44,7 @@ class PrelevementDesSupplementsTest extends TestCase
         $this->assertNotSame('', (string) $metadata['motif_du_dernier_echec']);
     }
 
-    /**
-     * LA REPRISE NE TOUCHE QUE LES CRÉANCES.
-     *
-     * Rejouer un `proposed` facturerait quelqu'un qui n'a rien accepté ; rejouer un `declined`
-     * facturerait un refus. C'est le genre d'erreur qui ne se voit qu'au relevé bancaire.
-     */
+    /** LA REPRISE NE TOUCHE QUE LES CRÉANCES. */
     public function test_la_reprise_ignore_ce_qui_nest_pas_accepte(): void
     {
         // Les trois statuts releves ensemble : une garde de rejeu trop laxiste laisse passer
@@ -95,9 +76,7 @@ class PrelevementDesSupplementsTest extends TestCase
             ->assertSuccessful();
     }
 
-    /**
-     * TÉMOIN : sans créance, la commande ne fabrique rien.
-     */
+    /** TÉMOIN : sans créance, la commande ne fabrique rien. */
     public function test_sans_creance_la_commande_ne_fait_rien(): void
     {
         $this->artisan('extras:reprendre-les-prelevements')
@@ -105,10 +84,7 @@ class PrelevementDesSupplementsTest extends TestCase
             ->assertSuccessful();
     }
 
-    /**
-     * On laisse retomber un échec passager avant de réessayer : une créance acceptée il y a dix
-     * secondes n'est pas encore en souffrance, elle est en cours.
-     */
+    /** On laisse retomber un échec passager avant de réessayer : une créance acceptée il y a dix secondes n'est pas encore en souffrance, elle est en cours. */
     public function test_une_creance_toute_fraiche_nest_pas_reprise(): void
     {
         $this->extraApprouve()->forceFill(['approved_at' => now()])->save();
@@ -118,10 +94,7 @@ class PrelevementDesSupplementsTest extends TestCase
             ->assertSuccessful();
     }
 
-    /**
-     * Une carte refusée trois fois ne deviendra pas valide à la quatrième, et chaque tentative
-     * laisse une trace chez Stripe. Au-delà, l'affaire appartient à un humain.
-     */
+    /** Une carte refusée trois fois ne deviendra pas valide à la quatrième, et chaque tentative laisse une trace chez Stripe. */
     public function test_au_dela_du_plafond_le_dossier_passe_a_un_humain(): void
     {
         $extra = $this->extraApprouve();

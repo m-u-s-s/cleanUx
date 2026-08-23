@@ -14,23 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
-/**
- * PERSONNE N'A RÉPONDU — les trois sorties, et aucune n'est un cul-de-sac (consigne 8).
- *
- * Un écran d'attente qui finit sur « aucun professionnel disponible » est un bug produit : le client
- * a déjà décidé, il a déjà donné son adresse, et on lui rend un constat. Les trois issues sont donc
- * des ACTIONS, pas des explications :
- *
- *   1. ATTENDRE ENCORE — la recherche repart, les prestataires redevenus disponibles entrent.
- *   2. CONVERTIR EN RENDEZ-VOUS — la même commande, à une heure choisie. Sans re-saisir, sans
- *      repayer : c'est la même réservation qui change de mode.
- *   3. ANNULER — proprement : aucune mission fantôme, aucune offre vivante, aucun argent capturé.
- *
- * LE PAIEMENT N'A JAMAIS ÉTÉ CAPTURÉ à ce stade, et c'est structurel : l'autorisation Stripe exige
- * un prestataire assigné (« destination charge »). Une recherche sans acceptation n'a donc rien
- * encaissé. On le VÉRIFIE quand même avant d'annuler : une capture inattendue doit devenir un
- * incident visible, pas un client débité pour une intervention qui n'a jamais eu lieu.
- */
+/** PERSONNE N'A RÉPONDU — les trois sorties, et aucune n'est un cul-de-sac (consigne 8). */
 class SearchOutcomeService
 {
     public function __construct(
@@ -38,14 +22,7 @@ class SearchOutcomeService
         protected AsapDispatchService $searches,
     ) {}
 
-    /**
-     * « Continuer à attendre » — la recherche repart, plus large.
-     *
-     * Les exclusions ne sont PAS remises à zéro : réoffrir la course à qui vient de la refuser
-     * ferait vibrer son téléphone pour rien et n'apporterait aucun candidat de plus. Ceux qui
-     * n'avaient jamais été joints — hors ligne il y a trois minutes, en ligne maintenant — entrent
-     * naturellement, puisque la liste est recalculée à chaque offre.
-     */
+    /** « Continuer à attendre » — la recherche repart, plus large. */
     public function keepWaiting(AsapDispatchRequest $search): AsapDispatchRequest
     {
         if ($search->status !== AsapStatus::EXPIRED) {
@@ -63,13 +40,6 @@ class SearchOutcomeService
 
     /**
      * « Convertir en rendez-vous » — la même réservation, à une heure choisie.
-     *
-     * SANS RE-SAISIR NI REPAYER. La réservation existe déjà, avec son devis figé, ses réponses au
-     * questionnaire et son adresse : la renvoyer dans le parcours de commande ferait tout
-     * recommencer, et c'est exactement le moment où un client abandonne.
-     *
-     * La recherche immédiate est CLÔTURÉE, pas laissée ouverte : deux chemins vivants pour la même
-     * réservation produiraient deux prestataires.
      *
      * @throws ValidationException si la réservation n'existe plus ou si la date est passée
      */
@@ -135,27 +105,12 @@ class SearchOutcomeService
                 $booking->update([
                     'status' => BookingStatus::ANNULE,
                     'cancelled_at' => now(),
-                    /*
-                     * DEUX COLONNES DU MÊME NOM, DEUX TYPES.
-                     *
-                     * `bookings.cancelled_by` est un `bigint unsigned` — l'IDENTIFIANT de qui
-                     * annule ; `asap_dispatch_requests.cancelled_by` est une chaîne — le RÔLE.
-                     * Écrire « client » dans la première passe sous SQLite, qui accepte tout, et
-                     * échoue en MySQL strict au moment précis où un client annule.
-                     * Voir [[test-suite-sqlite-blindness]].
-                     */
+                    // DEUX COLONNES DU MÊME NOM, DEUX TYPES.
                     'cancelled_by' => $booking->client_id,
                     'cancellation_reason' => $reason ?? 'Aucun professionnel trouvé',
                 ]);
 
-                /*
-                 * L'AUTORISATION EST LIBÉRÉE, la capture est un INCIDENT.
-                 *
-                 * Le paiement attend l'assignation : une recherche sans acceptation n'a rien
-                 * encaissé. Si une capture existe malgré tout, c'est une anomalie qu'on écrit
-                 * plutôt que de la corriger en silence — un remboursement automatique masquerait
-                 * la cause et la ferait revenir.
-                 */
+                // L'AUTORISATION EST LIBÉRÉE, la capture est un INCIDENT.
                 if ($capture) {
                     Log::error('SearchOutcomeService: annulation d’une recherche déjà encaissée', [
                         'booking_id' => $booking->id,
@@ -190,13 +145,7 @@ class SearchOutcomeService
         ]);
     }
 
-    /**
-     * Aucune offre vivante ne survit à une sortie.
-     *
-     * Sans ce geste, un prestataire garde une modale ouverte sur une course que le client vient
-     * d'annuler ou de convertir : il accepte, et découvre une erreur. C'est ainsi qu'on apprend à
-     * ne plus croire les offres.
-     */
+    /** Aucune offre vivante ne survit à une sortie. */
     protected function withdrawLiveOffers(Booking $booking): void
     {
         $mission = $booking->resolveMission();

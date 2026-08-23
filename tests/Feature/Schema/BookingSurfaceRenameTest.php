@@ -9,10 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-/**
- * M8 — the tranche column is renamed surface -> surface_range, but the legacy ->surface
- * accessor/mutator keeps working transparently (so views/forms/estimator are unaffected).
- */
+/** M8 — the tranche column is renamed surface -> surface_range, but the legacy ->surface accessor/mutator keeps working transparently (so views/forms/estimator are unaffected). */
 class BookingSurfaceRenameTest extends TestCase
 {
     use RefreshDatabase;

@@ -5,16 +5,7 @@ namespace App\Events;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Raised by BusinessAlerts whenever a money-path failure is detected.
- *
- * A listener (e.g. BusinessAlertSentryListener) should be registered in
- * EventServiceProvider to forward this to Sentry via `app('sentry')->captureMessage()`
- * or Laravel's `report()` helper so the on-call engineer is paged.
- *
- * Example listener registration:
- *   BusinessAlertRaised::class => [BusinessAlertSentryListener::class],
- */
+/** Raised by BusinessAlerts whenever a money-path failure is detected. A listener (e.g. */
 class BusinessAlertRaised
 {
     use Dispatchable;

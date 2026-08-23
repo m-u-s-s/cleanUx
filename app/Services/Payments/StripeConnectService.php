@@ -101,10 +101,7 @@ class StripeConnectService
         return Account::retrieve($accountId);
     }
 
-    /**
-     * Create an Express account for a provider and store the account ID on the user.
-     * Returns the new account ID.
-     */
+    /** Create an Express account for a provider and store the account ID on the user. */
     public function createExpressAccount(User $user): string
     {
         $country = $user->country ?? $user->business_country ?? config('services.stripe.connect_country', 'BE');

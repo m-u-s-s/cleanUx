@@ -9,12 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Phase 6.1 — Modèle de template de récurrence pré-défini.
- *
- * Templates système : créés par TemplateSystemSeeder.
- * Templates user : créés par les clients pour réutilisation.
- */
+/** Phase 6.1 — Modèle de template de récurrence pré-défini. */
 class RecurringTemplate extends Model
 {
     /** @use HasFactory<RecurringTemplateFactory> */
@@ -130,9 +125,7 @@ class RecurringTemplate extends Model
         $this->increment('usage_count');
     }
 
-    /**
-     * Description humaine de la récurrence (réutilise la logique de RecurringBookingSeries).
-     */
+    /** Description humaine de la récurrence (réutilise la logique de RecurringBookingSeries). */
     public function getHumanDescriptionAttribute(): string
     {
         $interval = $this->interval ?: 1;

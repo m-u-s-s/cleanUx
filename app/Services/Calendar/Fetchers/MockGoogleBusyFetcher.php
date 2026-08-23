@@ -6,10 +6,7 @@ use App\Models\GoogleCalendarConnection;
 use App\Services\Calendar\Contracts\GoogleBusyFetcher;
 use Carbon\CarbonInterface;
 
-/**
- * Fetcher de test/dev — renvoie des événements en mémoire (aucun appel réseau).
- * Utilisé par défaut tant que l'API Google n'est pas configurée.
- */
+/** Fetcher de test/dev — renvoie des événements en mémoire (aucun appel réseau). */
 class MockGoogleBusyFetcher implements GoogleBusyFetcher
 {
     /** @var array<int, array<string, mixed>> */

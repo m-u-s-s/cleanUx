@@ -5,17 +5,7 @@ namespace Tests\Feature\Navigation;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
-/**
- * P1 — accessibilité de la navigation. Fige les entrées de menu de pages qui n'étaient
- * atteignables qu'en tapant leur URL. Chaque page autrefois orpheline doit (a) être une route
- * réellement enregistrée et (b) être référencée par la navigation, pour qu'on puisse y arriver.
- *
- * CE TEST LISAIT LES FICHIERS BLADE. Il vérifiait qu'un nom de route apparaissait dans
- * `navigation-menu.blade.php` ou dans un layout société — ce qui était juste tant que les liens y
- * vivaient. Ils vivent désormais dans `config/modules.php`, seul registre, servi à la fois à la
- * navbar allégée et à la page Modules. L'assertion suit le registre : elle exige toujours une
- * porte, simplement là où les portes sont désormais déclarées.
- */
+/** P1 — accessibilité de la navigation. */
 class NavigationAccessibilityP1Test extends TestCase
 {
     /** Une route est « dans la navigation » si le catalogue lui donne une case. */
@@ -45,10 +35,7 @@ class NavigationAccessibilityP1Test extends TestCase
         $this->assertDansLeCatalogue('admin.feature-flags.manager', 'admin');
     }
 
-    /**
-     * Garde : la couverture de navigation déjà validée ne doit pas régresser — ces pages
-     * centrales restent joignables depuis le répertoire des modules.
-     */
+    /** Garde : la couverture de navigation déjà validée ne doit pas régresser — ces pages centrales restent joignables depuis le répertoire des modules. */
     public function test_core_admin_pages_remain_in_nav(): void
     {
         // Les cinq routes relevees ensemble : un catalogue en retard l'est sur plusieurs entrees

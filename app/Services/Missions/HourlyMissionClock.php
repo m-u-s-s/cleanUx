@@ -9,32 +9,7 @@ use App\Support\Pricing\HourlyRuleText;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 
-/**
- * L'HORLOGE D'UNE MISSION VENDUE AU TEMPS — et la seule autorité sur ce qu'elle coûte.
- *
- * LE MOBILE NE CALCULE RIEN D'AUTRE QUE DES SECONDES. Il reçoit d'ici la date de début, l'échéance
- * et le montant ; il fait défiler l'affichage entre deux rafraîchissements. Lui laisser calculer
- * l'échéance ou le dépassement produirait deux vérités — celle de l'horloge du téléphone, réglable
- * par son porteur, et celle du serveur. Sur de l'argent, une seule doit exister.
- *
- * LA RÈGLE, EN CHIFFRES. Ménage à 45 €/h, 3 h achetées, mission immédiate (déjà majorée ×1,30) :
- *
- *   à la commande            3 h × 45 € × 1,30 ................ 175,50 €
- *   le client prolonge à 4 h  4 h × 45 € × 1,30 ................ 234,00 €
- *   le prestataire fait 4 h sans prolongation :
- *       les 3 h prévues ................................... 175,50 €
- *       l'heure dépassée  45 € × 1,30 × 1,30 ............... 76,05 €
- *                                                          = 251,55 €
- *
- * LE ×1,30 DU DÉPASSEMENT S'EMPILE, il ne remplace pas. S'il remplaçait la majoration du mode
- * immédiat, les deux colonnes du bas donneraient le même total : la pénalité ne pénaliserait rien
- * et personne n'aurait de raison de prolonger. C'est arithmétiquement ce qui la rend dissuasive.
- *
- * LA FRANCHISE EST UNE FRANCHISE, au sens de l'assurance : les quinze premières minutes de
- * dépassement sont à la charge de la plateforme, on ne facture QUE ce qui les dépasse. Sans elle,
- * cinq minutes de rangement coûteraient une pénalité — et le prestataire prendrait l'habitude de
- * clôturer avant d'avoir fini, ce qui est bien pire.
- */
+/** L'HORLOGE D'UNE MISSION VENDUE AU TEMPS — et la seule autorité sur ce qu'elle coûte. */
 class HourlyMissionClock
 {
     public function __construct(
@@ -52,15 +27,7 @@ class HourlyMissionClock
         $booking = $mission->booking;
         $achetees = $this->minutesAchetees($booking);
 
-        /*
-         * UN SEUL DISCRIMINANT GOUVERNE, et c'est celui qui décide de l'argent.
-         *
-         * `purchased_minutes` dit ce que le client a acheté ; `hourly_billing` dit si ce métier se
-         * facture au temps. Allumer le compteur sur le premier seul produirait un chronomètre qui
-         * défile, affiche « dépassement » et menace d'un montant nul — parce que le tarif effectif,
-         * lui, se refuse quand le métier n'est plus horaire. On ne montre pas une échéance dont on
-         * ne saurait pas tirer une facture.
-         */
+        // UN SEUL DISCRIMINANT GOUVERNE, et c'est celui qui décide de l'argent.
         if ($booking === null || $achetees === null || $mission->actual_start_at === null) {
             return ['applies' => false];
         }
@@ -73,15 +40,7 @@ class HourlyMissionClock
         $echeance = $debut->copy()->addMinutes($achetees);
         $franchise = $this->franchiseEnMinutes();
 
-        /*
-         * UNE MISSION TERMINÉE A UNE HORLOGE ARRÊTÉE.
-         *
-         * Sans cette borne, le compteur d'une intervention close continuerait de monter
-         * indéfiniment : le lendemain, l'écran du client annoncerait vingt heures de dépassement
-         * sur un ménage de trois heures, et le règlement calculé sur `now()` facturerait le temps
-         * écoulé depuis. C'est la même date qui sert au règlement et à l'affichage — sans quoi le
-         * montant réclamé ne serait pas celui qui a été montré.
-         */
+        // UNE MISSION TERMINÉE A UNE HORLOGE ARRÊTÉE.
         $fin = $mission->actual_end_at;
 
         if ($fin !== null && $fin->lessThan($maintenant)) {
@@ -96,23 +55,11 @@ class HourlyMissionClock
 
         return [
             'applies' => true,
-            /*
-             * L'HEURE DU SERVEUR AU MOMENT DE LA RÉPONSE — l'ancre qui rend le compteur honnête.
-             *
-             * Sans elle, le téléphone n'a que `started_at` et sa propre horloge : un appareil réglé
-             * une heure en avance afficherait une heure de dépassement dès la première minute, et
-             * un appareil en retard masquerait un dépassement réel. Avec elle, l'application mesure
-             * son écart à la réception et le corrige — le compteur reste juste sur un appareil mal
-             * réglé, et se recale à chaque rafraîchissement.
-             */
+            // L'HEURE DU SERVEUR AU MOMENT DE LA RÉPONSE — l'ancre qui rend le compteur honnête.
             'server_now' => $maintenant->toIso8601String(),
             'started_at' => $debut->toIso8601String(),
             'purchased_minutes' => $achetees,
-            /*
-             * L'ÉCHÉANCE ET LE DÉBUT DE FACTURATION SONT DEUX DATES DISTINCTES, et le client doit
-             * voir les deux : la première dit « votre temps est écoulé », la seconde « à partir
-             * d'ici, ça coûte ». Les confondre ferait croire que la pénalité tombe à la seconde.
-             */
+            // L'ÉCHÉANCE ET LE DÉBUT DE FACTURATION SONT DEUX DATES DISTINCTES, et le client doit voir les deux : la première dit « votre temps est écoulé », la seconde « à partir d'ici, ça coûte ».
             'deadline_at' => $echeance->toIso8601String(),
             'billable_from_at' => $echeance->copy()->addMinutes($franchise)->toIso8601String(),
             'grace_minutes' => $franchise,
@@ -126,15 +73,7 @@ class HourlyMissionClock
             'overtime_multiplier' => $this->multiplicateur(),
             'effective_hourly_rate_cents' => $tarif,
             'overtime_amount_cents' => $this->montantDuDepassement($booking, $facturables),
-            /*
-             * LA RÈGLE, SERVIE AVEC LE COMPTEUR — même principe que le texte de consentement du
-             * contrôle facial : une seule source, `lang/<code>/pricing.php`, et les deux surfaces
-             * affichent la même phrase.
-             *
-             * Sans cela, l'application mobile porterait sa propre rédaction, qui divergerait des
-             * conditions générales dès la première modification — et c'est la copie non relue qui
-             * serait lue par le client au moment où ça coûte.
-             */
+            // LA RÈGLE, SERVIE AVEC LE COMPTEUR — même principe que le texte de consentement du contrôle facial : une seule source, `lang/<code>/pricing.php`, et les deux surfaces affichent la même phrase.
             'rule' => [
                 'short' => HourlyRuleText::courte(),
                 'provider' => HourlyRuleText::prestataire(),
@@ -142,13 +81,7 @@ class HourlyMissionClock
         ];
     }
 
-    /**
-     * Ce que le dépassement coûte à cet instant, en centimes.
-     *
-     * Le tarif de base est le tarif EFFECTIF de la réservation — celui qui contient déjà la
-     * majoration du mode immédiat, celle de la zone et les options multiplicatives. Le ×1,30 vient
-     * par-dessus.
-     */
+    /** Ce que le dépassement coûte à cet instant, en centimes. */
     public function montantDuDepassement(Booking $booking, int $minutesFacturables): int
     {
         if ($minutesFacturables <= 0) {
@@ -164,13 +97,7 @@ class HourlyMissionClock
         return (int) round($tarif * ($minutesFacturables / 60) * $this->multiplicateur());
     }
 
-    /**
-     * Les minutes réellement facturables : franchise déduite, arrondies au quart d'heure ENTAMÉ,
-     * puis plafonnées.
-     *
-     * L'ordre compte. Plafonner avant d'arrondir laisserait l'arrondi repasser au-dessus du
-     * plafond — un dépassement de trois heures pile finirait facturé trois heures et un quart.
-     */
+    /** Les minutes réellement facturables : franchise déduite, arrondies au quart d'heure ENTAMÉ, puis plafonnées. */
     public function minutesFacturables(int $depassement, int $achetees): int
     {
         $reste = $depassement - $this->franchiseEnMinutes();
@@ -185,13 +112,7 @@ class HourlyMissionClock
         return min($arrondies, $this->plafondEnMinutes($achetees));
     }
 
-    /**
-     * LE PLAFOND BORNE L'ABUS.
-     *
-     * Sans lui, un compteur laissé tourner facture ce qu'il veut : le client a acheté trois heures
-     * et découvre huit heures sur son relevé, sans avoir rien accepté. Trois heures achetées, trois
-     * heures de dépassement au maximum.
-     */
+    /** LE PLAFOND BORNE L'ABUS. */
     public function plafondEnMinutes(int $achetees): int
     {
         $ratio = (float) Config::get('order_engine.overtime_cap_ratio', 1.0);
@@ -199,9 +120,7 @@ class HourlyMissionClock
         return (int) round($achetees * max(0.0, $ratio));
     }
 
-    /**
-     * Le temps acheté sur cette réservation, ou `null` si elle n'est pas vendue au temps.
-     */
+    /** Le temps acheté sur cette réservation, ou `null` si elle n'est pas vendue au temps. */
     public function minutesAchetees(?Booking $booking): ?int
     {
         if ($booking === null) {

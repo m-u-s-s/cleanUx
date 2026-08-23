@@ -16,14 +16,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Le constructeur de parcours, vu du poste de l'administrateur.
- *
- * Ce que ces tests verrouillent, c'est ce qui rend l'écran DIGNE DE CONFIANCE entre les mains d'un
- * responsable non technique : le simulateur donne le vrai prix, le code d'une question se
- * verrouille dès qu'une commande le cite, l'archivage annonce son impact, et les avertissements du
- * validateur remontent jusqu'à l'écran.
- */
+/** Le constructeur de parcours, vu du poste de l'administrateur. */
 class QuestionnaireBuilderTest extends TestCase
 {
     use RefreshDatabase;
@@ -35,16 +28,7 @@ class QuestionnaireBuilderTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'admin']));
     }
 
-    /**
-     * Un non-admin est refusé par le COMPOSANT, pas seulement par la route.
-     *
-     * Cet écran écrit le catalogue, verrouille des codes et archive des questions. La middleware
-     * `role:admin` le protège aujourd'hui ; la garantie doit survivre à un remaniement de routes,
-     * et à tout montage du composant hors de `/admin/*`.
-     *
-     * Ce test existe parce que la suite du projet m'a pris en défaut : j'avais écrit le composant
-     * sans le trait, et `AdminComponentGuardTest` l'a signalé.
-     */
+    /** Un non-admin est refusé par le COMPOSANT, pas seulement par la route. */
     public function test_a_non_admin_is_refused_by_the_component_itself(): void
     {
         $this->actingAs(User::factory()->client()->create());
@@ -53,17 +37,7 @@ class QuestionnaireBuilderTest extends TestCase
             ->assertForbidden();
     }
 
-    /**
-     * Un administrateur en LECTURE SEULE ne publie pas.
-     *
-     * `EnforcesAdminAccess` s'arrête à « est-ce un admin » et le dit lui-même : les restrictions
-     * d'écriture du lecteur seul restent à la charge du composant. Or un `platform_role` à « admin »
-     * avec un `access_scope` à « readonly » franchit la garde et atteint l'écran.
-     *
-     * Publier n'est pas une écriture parmi d'autres : la révision figée devient le contrat de prix
-     * opposable à tous les clients qui commanderont ensuite. C'est le geste le plus lourd de
-     * l'écran, et le seul que la spécification réserve explicitement.
-     */
+    /** Un administrateur en LECTURE SEULE ne publie pas. */
     public function test_a_read_only_admin_cannot_publish(): void
     {
         $this->actingAs(User::factory()->create([
@@ -116,16 +90,7 @@ class QuestionnaireBuilderTest extends TestCase
         $this->assertSame($before + 1, $trade->formRevisions()->count());
     }
 
-    /**
-     * Les actions de l'écran sont ATTEIGNABLES depuis l'écran.
-     *
-     * `Livewire::test(...)->call('publish')` prouve que la méthode fonctionne, jamais qu'un bouton
-     * l'appelle. `publish`, `export`, `import` et `duplicateTo` existaient tous les quatre dans le
-     * composant, testés et verts, sans qu'aucun ne soit câblé dans le gabarit : un constructeur de
-     * parcours dont on ne pouvait rien mettre en ligne.
-     *
-     * Ce test lit le rendu, pas l'API du composant.
-     */
+    /** Les actions de l'écran sont ATTEIGNABLES depuis l'écran. */
     public function test_the_screen_wires_its_own_actions(): void
     {
         $html = Livewire::test(QuestionnaireBuilder::class, ['trade' => $this->peinture()])->html();
@@ -148,13 +113,7 @@ class QuestionnaireBuilderTest extends TestCase
             ->assertSee('Quelle surface à peindre ?');
     }
 
-    /**
-     * LE test qui justifie l'écran : le simulateur donne le prix RÉEL.
-     *
-     * L'administrateur répond dans l'aperçu, et voit le même montant que le client verra. Un
-     * simulateur qui recalculerait de son côté finirait par diverger du moteur, et validerait une
-     * grille tarifaire qui n'est pas celle qui sera appliquée.
-     */
+    /** LE test qui justifie l'écran : le simulateur donne le prix RÉEL. */
     public function test_the_simulator_builds_the_same_price_the_client_will_pay(): void
     {
         $component = Livewire::test(QuestionnaireBuilder::class, ['trade' => $this->peinture()]);
@@ -199,13 +158,7 @@ class QuestionnaireBuilderTest extends TestCase
         $this->assertGreaterThan($scheduled, $component->instance()->quote()->minCents);
     }
 
-    /**
-     * Le code se VERROUILLE dès qu'une commande le cite.
-     *
-     * C'est la clé sous laquelle les réponses sont enregistrées : le renommer rendrait
-     * inexplicables tous les devis qui le citent. L'interface l'empêche, plutôt que de compter sur
-     * la prudence de qui l'emploie.
-     */
+    /** Le code se VERROUILLE dès qu'une commande le cite. */
     public function test_a_used_question_code_can_no_longer_be_renamed(): void
     {
         $trade = $this->peinture();

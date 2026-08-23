@@ -4,14 +4,10 @@ namespace App\Services\Sms;
 
 interface SmsProviderInterface
 {
-    /**
-     * Identifiant du provider ('mock', 'twilio', 'vonage').
-     */
+    /** Identifiant du provider ('mock', 'twilio', 'vonage'). */
     public function name(): string;
 
-    /**
-     * Envoie un SMS via le provider externe.
-     */
+    /** Envoie un SMS via le provider externe. */
     public function send(SmsSendRequest $request): SmsSendResult;
 
     /**
@@ -21,8 +17,6 @@ interface SmsProviderInterface
      */
     public function verifyWebhook(string $payload, array $headers): array;
 
-    /**
-     * Mappe un payload webhook en SmsStatusUpdate exploitable.
-     */
+    /** Mappe un payload webhook en SmsStatusUpdate exploitable. */
     public function mapWebhookEvent(array $payload): ?SmsStatusUpdate;
 }

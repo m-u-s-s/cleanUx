@@ -21,27 +21,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
 
-/**
- * Phase 12 — Bookings côté client mobile.
- *
- * GET    /api/client/bookings            → liste des bookings du client
- * POST   /api/client/bookings            → création (scheduled / asap)
- * GET    /api/client/bookings/{id}       → détail
- * POST   /api/client/bookings/{id}/cancel → annuler
- * GET    /api/client/bookings/{id}/eta   → ETA prestataire (Phase 13 will enrich)
- *
- * Sécurité : chaque endpoint vérifie que le booking appartient au user
- * (customer_user_id ou client_id ou même organisation).
- *
- * Pour création : utilise le service CreateBookingAction existant. Comme la
- * signature de ce service est complexe (PostalCode, ServiceZone, ServiceCatalog,
- * etc.), je délègue à un wrapper plus simple côté API qui résout les entités
- * depuis les IDs/codes du client.
- *
- * NB : la création complète full-featured passe par le composant Livewire
- * parcours de commande. L'API mobile fait une création "simplifiée"
- * suffisante pour les cas d'usage mobile (booking minimal viable).
- */
+/** Phase 12 — Bookings côté client mobile. */
 /**
  * @group Client Bookings
  *
@@ -143,8 +123,6 @@ class ClientBookingController extends Controller
     /**
      * Create a new booking (simplified mobile flow).
      *
-     * For complex cases (organization sites, recurring series, etc.) use the full web flow.
-     *
      * @bodyParam service_catalog_id integer required ID of the service from the catalog. Example: 3
      * @bodyParam address string required Street address of the intervention. Example: Rue de la Loi 1
      * @bodyParam city string required City of the intervention. Example: Bruxelles
@@ -208,8 +186,6 @@ class ClientBookingController extends Controller
     /**
      * Cancel a booking.
      *
-     * Cannot cancel bookings that are already cancelled or in a final state (termine, sur_place).
-     *
      * @bodyParam reason string Optional reason for cancellation (max 500 chars). Example: Changement de planning
      *
      * @response 200 {"ok": true, "data": {"id": 1, "reference": "CUX-A1B2C3", "status": "annule", "mode": "scheduled", "priority": "normal", "scheduled_date": "2026-06-15", "scheduled_time": "09:00", "service_name": "Nettoyage domicile", "address": "Rue de la Loi 1", "city": "Bruxelles", "postal_code": "1000", "estimated_price": 75.0, "currency": "EUR", "created_at": "2026-06-01T10:00:00+00:00"}}
@@ -236,23 +212,7 @@ class ClientBookingController extends Controller
             throw BookingException::notCancellable();
         }
 
-        /*
-         * ANNULER PASSE PAR LE SERVICE, ET NON PLUS PAR UN `update()` NU.
-         *
-         * Cette méthode écrivait le statut, la date et l'auteur — puis s'arrêtait là. Aucun frais
-         * calculé, aucun remboursement, aucune libération d'empreinte, aucun redispatch. Annuler
-         * depuis l'application mobile ne touchait PAS À L'ARGENT : le client voyait « annulé », son
-         * empreinte restait posée jusqu'à expiration, et les frais d'annulation prévus au contrat
-         * n'étaient jamais réclamés. Le même geste depuis le web, lui, passait par le service.
-         *
-         * Deux chemins pour une même décision, dont un seul comptait — le défaut dominant de ce
-         * dépôt, sous une autre forme.
-         *
-         * LES GARDES CI-DESSUS RESTENT, et ne font pas doublon avec celles du service : elles sont
-         * plus strictes (`sur_place` n'est pas annulable depuis un téléphone) et produisent les
-         * erreurs d'API que l'application sait présenter. Celle du service est un filet, et son
-         * `DomainException` deviendrait un 500 : on la traduit.
-         */
+        // ANNULER PASSE PAR LE SERVICE, ET NON PLUS PAR UN `update()` NU.
         try {
             $resultat = app(CancelBookingService::class)
                 ->cancelByClient($booking, $request->user(), $data['reason'] ?? null);
@@ -262,13 +222,7 @@ class ClientBookingController extends Controller
 
         return response()->json([
             'ok' => true,
-            /*
-             * LES FRAIS SONT DITS AU CLIENT, dans la réponse même de son annulation.
-             *
-             * Il vient d'être débité — ou de l'être en partie. Le lui apprendre par son relevé
-             * bancaire, alors que l'écran affichait « annulé » sans un chiffre, est exactement la
-             * façon de transformer une règle acceptée en réclamation.
-             */
+            // LES FRAIS SONT DITS AU CLIENT, dans la réponse même de son annulation.
             'cancellation' => [
                 'fee_amount' => $resultat['fee_details']['fee_amount'] ?? 0,
                 'fee_percent' => $resultat['fee_details']['fee_percent'] ?? 0,
@@ -281,10 +235,6 @@ class ClientBookingController extends Controller
 
     /**
      * Get real-time ETA for the provider en route to a booking.
-     *
-     * Returns the provider's current GPS position, estimated distance, and ETA
-     * calculated with Haversine at 30 km/h average. Full routing via Google
-     * Distance Matrix will arrive in Phase 13.
      *
      * @response 200 {"ok": true, "state": "tracking", "mission_id": 12, "mission_status": "en_route", "provider_position": {"lat": 50.843, "lng": 4.348, "last_update_at": "2026-06-15T08:45:00+00:00"}, "destination": {"lat": 50.846, "lng": 4.352}, "distance_km": 0.52, "eta_minutes": 1, "is_client_visible": true}
      * @response 200 scenario="No mission yet" {"ok": true, "eta": null, "state": "no_mission"}
@@ -356,11 +306,6 @@ class ClientBookingController extends Controller
     /**
      * Confirm mission START by scanning the on-site verification code (E1).
      *
-     * The client scans the 6-digit start code (shown as a QR on site). We verify the client
-     * owns the booking, validate the code, then transition the mission to started. The
-     * transition is attributed to the assigned provider so the existing lifecycle guards and
-     * notifications run unchanged.
-     *
      * @bodyParam qr_code string required The scanned verification code. Example: 482951
      *
      * @response 200 {"ok": true, "mission_id": 12, "status": "started"}
@@ -390,10 +335,6 @@ class ClientBookingController extends Controller
 
     /**
      * Confirm mission END by scanning the on-site verification code (E1).
-     *
-     * Validates the end code then completes the mission, which captures the pre-authorized
-     * PaymentIntent. Attributed to the assigned provider so capture + payout wiring run as
-     * in the provider-driven flow.
      *
      * @bodyParam qr_code string required The scanned end verification code. Example: 731204
      *
@@ -448,14 +389,7 @@ class ClientBookingController extends Controller
         return [$mission, $provider];
     }
 
-    /**
-     * Résout la service_zone_id depuis le code postal de la requête (best-effort).
-     *
-     * Utilisé UNIQUEMENT pour fournir un contexte d'éligibilité au
-     * ProviderSelectionResolver lorsqu'une société est choisie. Si la zone n'est pas
-     * résolvable, on retourne null : le resolver applique alors le seul gate premium,
-     * sans validation d'éligibilité (revérifiée au dispatch).
-     */
+    /** Résout la service_zone_id depuis le code postal de la requête (best-effort). */
     protected function resolveServiceZoneId(Request $request): ?int
     {
         if (! $request->filled('assigned_provider_organization_id')) {
@@ -475,23 +409,13 @@ class ClientBookingController extends Controller
         }
     }
 
-    /**
-     * La règle a déménagé dans {@see AuthorizesClientBooking} — elle était `protected` ici, donc
-     * invisible pour le contrôleur suivant qui en a eu besoin. Ce point d'entrée reste, il n'a
-     * simplement plus sa propre copie de la règle.
-     */
+    /** La règle a déménagé dans {@see AuthorizesClientBooking} — elle était `protected` ici, donc invisible pour le contrôleur suivant qui en a eu besoin. */
     protected function authorizeAccess(Request $request, Booking $booking): void
     {
         $this->assertClientPeutVoirLaReservation($request->user(), $booking);
     }
 
-    /**
-     * Traduit le statut brut en un état stable, sur lequel une application peut s'appuyer.
-     *
-     * Réutilise les aides du modèle plutôt que de redéclarer une liste de chaînes : elles
-     * connaissent déjà les deux vocabulaires, et une valeur ajoutée au domaine sera reflétée ici
-     * sans modification.
-     */
+    /** Traduit le statut brut en un état stable, sur lequel une application peut s'appuyer. */
     protected function normalisedState(Booking $b): string
     {
         return match (true) {
@@ -529,14 +453,7 @@ class ClientBookingController extends Controller
             'scheduled_time' => $b->scheduled_time
                                     ? Carbon::parse($b->scheduled_time)->format('H:i')
                                     : null,
-            /*
-                UN NOM, TOUJOURS — l'écran natif l'affiche en titre de carte.
-
-                Sans catalogue rattaché, ce champ rendait `null` : la carte d'accueil montrait
-                un badge et une adresse surmontés d'un blanc, sans dire de quoi il s'agissait.
-                `CalendarDataService` retombe déjà sur « Prestation » pour la même raison ;
-                on emploie le même mot plutôt qu'un second.
-            */
+            // UN NOM, TOUJOURS — l'écran natif l'affiche en titre de carte.
             'service_name' => $b->serviceCatalog->name ?? 'Prestation',
             'address' => $b->address,
             'city' => $b->city,
@@ -572,11 +489,7 @@ class ClientBookingController extends Controller
         return $base;
     }
 
-    /**
-     * Distance Haversine en km (formule géo simple, rapide).
-     * Pour une ETA plus précise (avec routing routier), Phase 13 utilisera
-     * Google Distance Matrix.
-     */
+    /** Distance Haversine en km (formule géo simple, rapide). */
     protected function haversine(float $lat1, float $lng1, float $lat2, float $lng2): float
     {
         $earthRadiusKm = 6371;

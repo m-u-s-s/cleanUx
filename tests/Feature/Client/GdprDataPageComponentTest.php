@@ -13,15 +13,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * Coverage for the client GDPR self-service Livewire component.
- *
- * Exercises mount/render plus every wire action — requestExport (happy +
- * already-in-progress guard), downloadExport (valid + unavailable guard),
- * requestErasure (validation, happy, already-active guard) and cancelErasure
- * (valid + unknown-id no-op) — together with the render-time latestExport /
- * activeErasure derivations.
- */
+/** Coverage for the client GDPR self-service Livewire component. */
 class GdprDataPageComponentTest extends TestCase
 {
     use RefreshDatabase;

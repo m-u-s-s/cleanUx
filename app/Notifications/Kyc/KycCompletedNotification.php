@@ -56,11 +56,7 @@ class KycCompletedNotification extends Notification
             'title' => $this->verification->isApproved()
                 ? 'Vérification d\'identité validée'
                 : 'Vérification d\'identité à compléter',
-            /*
-             * « Votre verification KYC est clear » — la valeur technique recopiee telle quelle dans
-             * une phrase francaise, lue a l'ecran dans le fil de notifications du prestataire.
-             * Le motif de refus, quand il existe, reste prioritaire : lui est deja redige.
-             */
+            // « Votre verification KYC est clear » — la valeur technique recopiee telle quelle dans une phrase francaise, lue a l'ecran dans le fil de notifications du prestataire.
             'message' => $this->verification->rejection_reason
                 ?? ($this->verification->isApproved()
                     ? 'Votre identité est vérifiée. Vous pouvez recevoir des missions.'

@@ -144,14 +144,7 @@ class MembersAccess extends Component
                 $user->id,
             );
         } else {
-            /*
-             * MÊME TROU QUE CÔTÉ PRESTATAIRE (corrigé le 2026-08-05).
-             *
-             * Cette branche n'était qu'un commentaire : inviter une adresse sans compte ne créait
-             * rien et n'envoyait rien, tandis que le formulaire se vidait comme si l'invitation
-             * était partie. On réutilise l'infrastructure d'invitation construite pour les
-             * sociétés prestataires — le mécanisme est identique, seul le rôle diffère.
-             */
+            // MÊME TROU QUE CÔTÉ PRESTATAIRE (corrigé le 2026-08-05).
             $invitation = OrganizationInvitation::updateOrCreate(
                 [
                     'organization_account_id' => $orgId,
@@ -194,18 +187,7 @@ class MembersAccess extends Component
         $actor = Auth::user();
         $orgId = $actor->current_organization_id;
 
-        /*
-         * LA GARDE PORTAIT SUR LE RÔLE VISÉ, JAMAIS SUR LA CIBLE (corrigé le 2026-08-05).
-         *
-         * Le contrôle ci-dessous vérifiait qu'on n'attribue pas un rang supérieur au sien — ce qui
-         * empêche bien l'escalade. Mais rien ne vérifiait qu'on a autorité sur la PERSONNE
-         * modifiée : rétrograder le propriétaire en `viewer` passait sans obstacle, le rang visé
-         * étant bas. `memberSousGarde()` ajoute cette vérification hiérarchique.
-         *
-         * À noter, contrairement à son équivalent prestataire : cet écran était déjà correctement
-         * limité à l'organisation active et déjà gardé par une permission. Seules la hiérarchie et
-         * la protection du dernier propriétaire manquaient.
-         */
+        // LA GARDE PORTAIT SUR LE RÔLE VISÉ, JAMAIS SUR LA CIBLE (corrigé le 2026-08-05).
         $member = $this->memberSousGarde($memberId, 'members.edit_role');
 
         if (! $member) {
@@ -222,11 +204,7 @@ class MembersAccess extends Component
             return;
         }
 
-        /*
-         * Une organisation sans propriétaire n'a plus personne pour gérer ses membres, ses accès
-         * ni sa facturation — et aucun écran ne permet d'en renommer un. On refuse donc de
-         * rétrograder le dernier.
-         */
+        // Une organisation sans propriétaire n'a plus personne pour gérer ses membres, ses accès ni sa facturation — et aucun écran ne permet d'en renommer un.
         if ($newRoleEnum !== OrganizationRole::OWNER && $this->estLeDernierProprietaire($member)) {
             $this->addError('role', 'Impossible de rétrograder le dernier propriétaire de l\'organisation.');
 
@@ -298,13 +276,7 @@ class MembersAccess extends Component
             return;
         }
 
-        /*
-         * ACCORDER UNE PERMISSION N'EST PAS CHANGER UN RÔLE (corrigé le 2026-08-05).
-         *
-         * Ce point d'entrée était gardé par `members.edit_role`, la clé du changement de rôle.
-         * Or il permet d'accorder n'importe quelle permission unitaire, y compris à soi-même :
-         * il mérite sa propre clé, plus restrictive, et le contrôle hiérarchique sur la cible.
-         */
+        // ACCORDER UNE PERMISSION N'EST PAS CHANGER UN RÔLE (corrigé le 2026-08-05).
         $member = $this->memberSousGarde($this->editingMemberId, 'members.manage_permissions', silencieuxSiIntrouvable: true);
 
         if (! $member) {
@@ -318,17 +290,7 @@ class MembersAccess extends Component
         }
     }
 
-    /**
-     * RESTREINDRE UN MEMBRE À SES LOCAUX — la table dormait, l'écran manquait.
-     *
-     * `organization_member_site_access` existait avec sa relation `authorizedMembers()`, et rien ne
-     * l'écrivait. Conséquence pour l'utilisatrice : un responsable de site voyait TOUS les locaux
-     * de sa société, avec les réservations, les adresses et les factures des autres agences.
-     *
-     * UN TABLEAU VIDE LÈVE LA RESTRICTION, il ne la durcit pas. C'est la lecture qui compte : « je
-     * n'ai coché aucun local » veut dire « pas de restriction », pas « aucun accès ». L'inverse
-     * viderait l'écran du membre au premier enregistrement par mégarde.
-     */
+    /** RESTREINDRE UN MEMBRE À SES LOCAUX — la table dormait, l'écran manquait. */
     public function enregistrerLesSites(int $memberId): void
     {
         $member = $this->memberSousGarde($memberId, 'members.manage_permissions', silencieuxSiIntrouvable: true);
@@ -356,9 +318,7 @@ class MembersAccess extends Component
             : 'Accès enregistré : '.count($retenus).' local(aux).');
     }
 
-    /**
-     * Ouvrir le panneau d'accès avec les locaux déjà cochés.
-     */
+    /** Ouvrir le panneau d'accès avec les locaux déjà cochés. */
     public function ouvrirLesSites(int $memberId): void
     {
         $member = $this->memberSousGarde($memberId, 'members.manage_permissions', silencieuxSiIntrouvable: true);

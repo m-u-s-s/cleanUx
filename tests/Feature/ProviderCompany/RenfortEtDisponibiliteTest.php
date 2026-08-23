@@ -16,23 +16,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * DEUX PERSONNES SUR UNE MÊME MISSION, ET UN SEUL RESPONSABLE.
- *
- * `mission_assignments.role_on_mission` distingue `lead` de `helper` depuis toujours, et rien ne
- * s'en servait : l'écran de répartition ne savait qu'assigner UNE personne, en remplaçant la
- * précédente. Un grand nettoyage à deux — le cas ordinaire d'une société — n'était pas
- * représentable, et les équipes s'organisaient hors de l'outil.
- *
- * LE PIÈGE ÉTAIT DANS LA RÈGLE DE REMPLACEMENT. `MissionAssignmentService::assigner()` libérait
- * TOUS les assignments actifs des autres personnes avant d'installer le nouveau responsable — ce
- * qui était juste tant qu'il n'y avait qu'un rôle possible, et qui aurait balayé les renforts dès
- * qu'ils existent. Changer de responsable ne doit pas renvoyer l'équipe chez elle.
- *
- * LA DISPONIBILITÉ EST INDICATIVE, JAMAIS BLOQUANTE. Un répartiteur qui connaît son équipe passe
- * outre pour de bonnes raisons — un échange entre collègues, une heure sup consentie. L'outil
- * l'informe, il ne décide pas à sa place.
- */
+/** DEUX PERSONNES SUR UNE MÊME MISSION, ET UN SEUL RESPONSABLE. */
 class RenfortEtDisponibiliteTest extends TestCase
 {
     use RefreshDatabase;
@@ -123,13 +107,7 @@ class RenfortEtDisponibiliteTest extends TestCase
     #[Test]
     public function changer_de_responsable_ne_renvoie_pas_les_renforts_chez_eux(): void
     {
-        /*
-         * LE DÉFAUT QUE CE LOT AURAIT INTRODUIT SANS CE TEST.
-         *
-         * `assigner()` libérait tous les assignments actifs des AUTRES personnes. Correct tant
-         * qu'un seul rôle existait ; dévastateur dès qu'il y a des renforts — remplacer le
-         * responsable la veille aurait silencieusement désassigné toute l'équipe.
-         */
+        // LE DÉFAUT QUE CE LOT AURAIT INTRODUIT SANS CE TEST.
         [$org, $patron] = $this->societeAvecPatron();
 
         $mission = Mission::factory()->create([
@@ -228,18 +206,7 @@ class RenfortEtDisponibiliteTest extends TestCase
     #[Test]
     public function la_disponibilite_distingue_qui_est_libre_de_qui_est_deja_pris(): void
     {
-        /*
-         * CE TEST ASSERTAIT D'ABORD `assertIsBool`, ET IL PASSAIT SUR UNE IMPLÉMENTATION FAUSSE.
-         *
-         * La première version consultait `AvailabilityService::isAvailable()`, comme le cahier des
-         * charges le demandait. Mesuré : il rend `false` pour un employé sans créneaux déclarés —
-         * donc pour TOUS les salariés d'une société, les créneaux étant un concept de prestataire
-         * indépendant. L'écran aurait affiché « indisponible » sur toute l'équipe, en permanence,
-         * et coûté ~200 ms par personne pour le dire.
-         *
-         * Un booléen était bien renvoyé, et la garde ne voyait rien. On vérifie donc les DEUX
-         * verdicts : sans quoi « toujours faux » reste indiscernable de « juste ».
-         */
+        // CE TEST ASSERTAIT D'ABORD `assertIsBool`, ET IL PASSAIT SUR UNE IMPLÉMENTATION FAUSSE.
         [$org, $patron] = $this->societeAvecPatron();
 
         $debut = now()->addHours(3);

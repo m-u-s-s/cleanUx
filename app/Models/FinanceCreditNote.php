@@ -5,10 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Avoir (credit note) émis lors d'un remboursement client. Document comptable
- * numéroté, daté, référençant la prestation/facture d'origine (conformité BE/FR).
- */
+/** Avoir (credit note) émis lors d'un remboursement client. */
 class FinanceCreditNote extends Model
 {
     protected $fillable = [

@@ -7,39 +7,14 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Phase 13 — Calcul d'ETA pour une mission en cours.
- *
- * Stratégie :
- *   1. Si Google Maps API key configurée → Distance Matrix API (vrai routing routier)
- *   2. Sinon → Haversine + vitesse moyenne 30 km/h (estimation simpliste)
- *
- * Cache côté serveur 60s (pour éviter de cramer le quota Google si plusieurs
- * clients regardent la même mission en parallèle).
- *
- * Côté DB : missions.last_eta_* permettent d'avoir l'ETA "dernier calcul"
- * directement sans appeler ce service (pour les listings, dashboards).
- *
- * Limites :
- *   - Distance Matrix : ~$5 / 1000 requêtes. Avec cache 60s + recalc à chaque
- *     tracking point (max 1/30s par mission active), coût raisonnable.
- *   - Pas de gestion des routes alternatives ou trafic prédictif (out of scope).
- */
+/** Phase 13 — Calcul d'ETA pour une mission en cours. Stratégie : 1. */
 class EtaService
 {
     public const CACHE_TTL_SECONDS = 60;
 
     public const DEFAULT_AVG_SPEED_KMH = 30;
 
-    /**
-     * Calcule ou récupère l'ETA d'une mission depuis sa session de tracking active.
-     *
-     * Renvoie un array :
-     *   - meters: int|null (distance en mètres)
-     *   - seconds: int|null (durée estimée en secondes)
-     *   - source: 'google'|'haversine'|'cache'|'none'
-     *   - calculated_at: ISO 8601 string|null
-     */
+    /** Calcule ou récupère l'ETA d'une mission depuis sa session de tracking active. */
     public function computeForMission(Mission $mission, bool $force = false): array
     {
 
@@ -121,9 +96,7 @@ class EtaService
         return $result;
     }
 
-    /**
-     * Calcul brut entre 2 points (lat/lng).
-     */
+    /** Calcul brut entre 2 points (lat/lng). */
     public function computeBetween(float $fromLat, float $fromLng, float $toLat, float $toLng): array
     {
         // config/services.php définit `google_maps.key`, pas `google_maps.api_key` :
@@ -143,10 +116,7 @@ class EtaService
         return $this->haversine($fromLat, $fromLng, $toLat, $toLng);
     }
 
-    /**
-     * Appelle Google Distance Matrix API.
-     * Retourne null si erreur (network, quota dépassé, no route).
-     */
+    /** Appelle Google Distance Matrix API. */
     protected function callDistanceMatrix(
         float $fromLat,
         float $fromLng,
@@ -213,9 +183,7 @@ class EtaService
         }
     }
 
-    /**
-     * Fallback Haversine + vitesse moyenne fixe.
-     */
+    /** Fallback Haversine + vitesse moyenne fixe. */
     protected function haversine(float $fromLat, float $fromLng, float $toLat, float $toLng): array
     {
         $earthRadiusKm = 6371;

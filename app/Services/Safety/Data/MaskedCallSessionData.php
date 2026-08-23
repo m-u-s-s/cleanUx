@@ -2,12 +2,7 @@
 
 namespace App\Services\Safety\Data;
 
-/**
- * Value object returned by MaskedCallProvider::createMaskedSession().
- *
- * Carries all the information needed to persist a MaskedCallSession row
- * and display the proxy number to both parties.
- */
+/** Value object returned by MaskedCallProvider::createMaskedSession(). */
 final class MaskedCallSessionData
 {
     public function __construct(

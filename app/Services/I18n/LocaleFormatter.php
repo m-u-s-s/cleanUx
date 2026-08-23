@@ -7,12 +7,7 @@ use DateTimeInterface;
 use IntlDateFormatter;
 use NumberFormatter;
 
-/**
- * Formatage de dates / nombres / devises selon la locale active.
- *
- * Utilise l'extension intl si disponible (Linux/Docker), fallback gracieux
- * sur des formats manuels par locale sinon.
- */
+/** Formatage de dates / nombres / devises selon la locale active. */
 class LocaleFormatter
 {
     public function __construct(protected LocaleResolver $resolver) {}

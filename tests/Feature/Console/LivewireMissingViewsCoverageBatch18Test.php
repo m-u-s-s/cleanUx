@@ -8,15 +8,7 @@ use Illuminate\Support\Facades\File;
 use Symfony\Component\Finder\SplFileInfo;
 use Tests\TestCase;
 
-/**
- * Coverage for {@see LivewireMissingViews}.
- *
- * The command walks app/Livewire, extracts any explicitly declared view() name
- * from each component and otherwise derives the conventional kebab-cased blade
- * path, then reports the components whose blade file is absent. Running it
- * against the live codebase exercises the happy path; mocking the File facade
- * lets us drive the missing-directory guard and every missing-blade branch.
- */
+/** Coverage for {@see LivewireMissingViews}. */
 class LivewireMissingViewsCoverageBatch18Test extends TestCase
 {
     private string $tempDir = '';

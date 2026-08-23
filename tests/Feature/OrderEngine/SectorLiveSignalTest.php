@@ -13,19 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Le signal vivant des cartes du carrousel.
- *
- * La carte annonçait « 3 métiers » — un fait de catalogue, que le client ne peut ni vérifier ni
- * utiliser. La confiance vient de la disponibilité VISIBLE, pas d'un décompte de rubriques.
- *
- * CE QU'ON NE DIT PAS. Sur cet écran, aucune adresse n'est connue : on ne peut donc rien promettre
- * sur la proximité. Le compte affiché est celui des professionnels actifs du secteur, sans « près
- * de chez vous » — la promesse de distance appartient à l'écran d'adresse, qui la vérifie.
- *
- * La définition d'un professionnel actif est reprise TELLE QUELLE de la preuve de disponibilité.
- * Deux définitions divergentes afficheraient 42 sur la carte et 0 une fois l'adresse saisie.
- */
+/** Le signal vivant des cartes du carrousel. */
 class SectorLiveSignalTest extends TestCase
 {
     use RefreshDatabase;
@@ -45,12 +33,7 @@ class SectorLiveSignalTest extends TestCase
         Livewire::test(OrderJourney::class)->assertSee('2 professionnels');
     }
 
-    /**
-     * Un professionnel qui exerce DEUX métiers du secteur compte pour un.
-     *
-     * Le compter deux fois gonflerait la promesse d'autant, et le client s'en apercevrait au
-     * premier créneau introuvable.
-     */
+    /** Un professionnel qui exerce DEUX métiers du secteur compte pour un. */
     public function test_a_provider_working_two_trades_counts_once(): void
     {
         $sector = $this->batiment();
@@ -73,12 +56,7 @@ class SectorLiveSignalTest extends TestCase
         Livewire::test(OrderJourney::class)->assertDontSee('1 professionnel');
     }
 
-    /**
-     * Sans aucun professionnel, on NE DIT PAS « 0 ».
-     *
-     * Un secteur qu'on annonce vide ne s'ouvre pas — alors qu'il porte peut-être un métier
-     * commandable dès demain. On retombe sur le décompte de métiers, qui reste vrai.
-     */
+    /** Sans aucun professionnel, on NE DIT PAS « 0 ». */
     public function test_an_empty_sector_never_advertises_zero(): void
     {
         Livewire::test(OrderJourney::class)
@@ -86,12 +64,7 @@ class SectorLiveSignalTest extends TestCase
             ->assertSee('métier');
     }
 
-    /**
-     * Le compte ne coûte PAS une requête par secteur.
-     *
-     * C'est le premier écran du produit, celui dont dépend le LCP. Un décompte par carte
-     * multiplierait les requêtes par le nombre de secteurs, qui n'a pas de plafond.
-     */
+    /** Le compte ne coûte PAS une requête par secteur. */
     public function test_the_counts_cost_one_query_not_one_per_sector(): void
     {
         $this->providerFor($this->peinture());

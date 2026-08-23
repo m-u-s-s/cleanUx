@@ -23,14 +23,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * Gouvernance du catalogue : archiver sans détruire, et avertir avant de laisser nuire.
- *
- * Ces deux services sont ce qui rend le constructeur de parcours confiable entre les mains d'un
- * responsable non technique. L'un garantit qu'aucun geste d'administration ne peut rendre un devis
- * illisible ; l'autre rend visibles les défauts qui ne lèvent aucune erreur mais coûtent des
- * clients.
- */
+/** Gouvernance du catalogue : archiver sans détruire, et avertir avant de laisser nuire. */
 class CatalogGovernanceTest extends TestCase
 {
     use RefreshDatabase;
@@ -48,12 +41,7 @@ class CatalogGovernanceTest extends TestCase
 
     // ─── Archivage ───────────────────────────────────────────────────────────────────────────
 
-    /**
-     * LE critère d'acceptation : archiver une question ne casse aucune commande passée.
-     *
-     * Le devis reste lisible intégralement — libellé de la question, libellé de la réponse, et
-     * l'euro exact qu'elle a coûté.
-     */
+    /** LE critère d'acceptation : archiver une question ne casse aucune commande passée. */
     public function test_archiving_a_question_leaves_past_quotes_fully_readable(): void
     {
         [$trade, $question] = $this->tradeWithQuestion();
@@ -118,18 +106,7 @@ class CatalogGovernanceTest extends TestCase
         $this->assertStringContainsString('restent lisibles', $impact['summary']);
     }
 
-    /**
-     * Un code archivé reste réservé à vie, et c'est une protection, pas une limitation.
-     *
-     * Les réponses sont indexées par CODE. Autoriser un administrateur à réécrire « surface_m2 »
-     * six mois plus tard, avec un autre sens, rendrait les instantanés historiques ambigus : la
-     * même clé désignerait deux questions différentes selon la date, et plus aucun devis ancien ne
-     * serait interprétable avec certitude.
-     *
-     * Ce test est né d'une erreur de ma part : j'avais écrit l'inverse — un test qui supposait la
-     * recréation possible — et la base l'a démenti. La contrainte protégeait déjà ce que je
-     * croyais devoir construire.
-     */
+    /** Un code archivé reste réservé à vie, et c'est une protection, pas une limitation. */
     public function test_an_archived_code_stays_reserved_forever(): void
     {
         [$trade, $question] = $this->tradeWithQuestion();
@@ -273,12 +250,7 @@ class CatalogGovernanceTest extends TestCase
         $this->assertEmpty(collect($this->validator->inspect($trade))->where('code', 'no_way_out'));
     }
 
-    /**
-     * Deux défauts sur la même question BLOQUENT la publication.
-     *
-     * Le défaut ne se voit pas en base : l'écran dépendrait de l'ordre de tri, et le client
-     * validerait une réponse qu'il n'a pas choisie.
-     */
+    /** Deux défauts sur la même question BLOQUENT la publication. */
     public function test_two_defaults_on_one_question_block_publication(): void
     {
         $trade = $this->trade();
@@ -296,12 +268,7 @@ class CatalogGovernanceTest extends TestCase
         $this->assertFalse($this->validator->canPublish($trade));
     }
 
-    /**
-     * LA détection qui bloque : deux questions qui s'attendent l'une l'autre.
-     *
-     * Ni l'une ni l'autre ne s'affichera jamais. C'est le seul défaut qui ne dégrade pas le
-     * parcours mais en supprime silencieusement une partie.
-     */
+    /** LA détection qui bloque : deux questions qui s'attendent l'une l'autre. */
     public function test_a_circular_dependency_blocks_publication(): void
     {
         $trade = $this->trade();
@@ -321,13 +288,7 @@ class CatalogGovernanceTest extends TestCase
         $this->assertFalse($this->validator->canPublish($trade));
     }
 
-    /**
-     * Un LOSANGE n'est pas un cycle.
-     *
-     * C et D dépendent toutes deux de A : deux chemins mènent à la même question, c'est
-     * parfaitement légal. Une détection naïve par « déjà visité » les confondrait avec un cycle et
-     * bloquerait un questionnaire valide.
-     */
+    /** Un LOSANGE n'est pas un cycle. */
     public function test_a_diamond_dependency_is_not_a_cycle(): void
     {
         $trade = $this->trade();
@@ -389,26 +350,14 @@ class CatalogGovernanceTest extends TestCase
 
     // ─── Journal d'audit ─────────────────────────────────────────────────────────────────────
 
-    /**
-     * Renommer un métier laisse une trace.
-     *
-     * Les questions étaient auditées, pas les deux niveaux au-dessus. Or c'est le métier qui porte
-     * le prix plancher et les trois interrupteurs de mode : le passer de « planifié seul » à
-     * « immédiat autorisé » change ce que la plateforme accepte de vendre, et un audit qui ne
-     * l'enregistre pas ne répond pas à « qui a ouvert l'ASAP sur le ravalement ».
-     */
+    /** Renommer un métier laisse une trace. */
     public function test_renaming_a_trade_leaves_an_audit_trail(): void
     {
         $trade = $this->trade();
 
         $trade->update(['name' => 'Peinture extérieure']);
 
-        /*
-         * `AuditService` range le NOM COURT de la classe (`class_basename`), pas le nom pleinement
-         * qualifié ni l'alias du morph map. Comparer à `Trade::class` ou à `getMorphClass()` ne
-         * trouve rien et fait conclure à tort que l'audit est absent — je m'y suis laissé prendre
-         * en écrivant ce test.
-         */
+        // `AuditService` range le NOM COURT de la classe (`class_basename`), pas le nom pleinement qualifié ni l'alias du morph map.
         $this->assertTrue(
             DB::table('audit_events')
                 ->where('event_type', 'catalog.updated')
@@ -437,13 +386,7 @@ class CatalogGovernanceTest extends TestCase
 
     // ─── Impact réel de l'archivage ──────────────────────────────────────────────────────────
 
-    /**
-     * L'impact annoncé doit compter les VRAIES réservations, pas seulement les brouillons.
-     *
-     * Le moteur de commande est récent ; les métiers vivent depuis des mois via `bookings`. Ne
-     * compter que `order_draft_items` annonce « utilisé par 0 commande » sur un métier qui en porte
-     * trois cents — et un administrateur qui lit ce zéro archive sans hésiter.
-     */
+    /** L'impact annoncé doit compter les VRAIES réservations, pas seulement les brouillons. */
     public function test_the_trade_impact_counts_real_bookings_not_only_drafts(): void
     {
         $trade = $this->trade();

@@ -13,11 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * E1 — the mobile client app posts to /api/client/bookings/{id}/qr-start|qr-end.
- * These endpoints must exist, enforce booking ownership, validate the scanned code, and
- * drive the mission lifecycle (qr-end completing the mission / capturing payment).
- */
+/** E1 — the mobile client app posts to /api/client/bookings/{id}/qr-start|qr-end. */
 class ClientQrFlowTest extends TestCase
 {
     use RefreshDatabase;
@@ -46,14 +42,7 @@ class ClientQrFlowTest extends TestCase
             'is_consumed' => false,
         ]);
 
-        /*
-         * LES TÂCHES OBLIGATOIRES SONT COCHÉES D'ABORD, comme le ferait le prestataire.
-         *
-         * La mission vient désormais de la synchronisation automatique — depuis la fusion des deux
-         * colonnes, le test réutilise celle-là au lieu d'en fabriquer une seconde — et cette
-         * mission-là porte la checklist de son métier. Une clôture sans les tâches est refusée, et
-         * c'est exactement ce qu'on veut : le refus est la règle métier, pas un défaut.
-         */
+        // LES TÂCHES OBLIGATOIRES SONT COCHÉES D'ABORD, comme le ferait le prestataire.
         $mission->loadMissing('checklists.items');
         foreach ($mission->checklists->flatMap->items as $item) {
             $item->update(['status' => 'done']);

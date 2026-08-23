@@ -13,16 +13,7 @@ use Illuminate\Support\Facades\Gate;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * L'autorisation d'écrire le catalogue tient dans UNE règle, et les écrans la consultent.
- *
- * Elle vivait en trois exemplaires : la middleware de route, le trait `EnforcesAdminAccess`, et une
- * garde `refusesWrite()` recopiée dans deux composants. Trois copies d'une même règle finissent par
- * diverger — et c'est la plus permissive qui décide, sans que personne ne s'en aperçoive.
- *
- * La Policy devient l'autorité ; les gardes existantes la consultent au lieu de la redire. Elles ne
- * disparaissent pas pour autant : la défense en profondeur reste, mais elle n'a plus qu'une source.
- */
+/** L'autorisation d'écrire le catalogue tient dans UNE règle, et les écrans la consultent. */
 class CatalogPolicyTest extends TestCase
 {
     use RefreshDatabase;
@@ -78,23 +69,12 @@ class CatalogPolicyTest extends TestCase
         $this->assertFalse(Gate::forUser($client)->allows('viewAny', Trade::class));
     }
 
-    /**
-     * L'ÉCRAN CONSULTE LA POLICY — il ne redit pas la règle.
-     *
-     * C'est la seule chose qui rende la Policy utile : si le composant gardait sa propre copie,
-     * refuser dans la Policy ne changerait rien, et les deux se mettraient à diverger.
-     */
+    /** L'ÉCRAN CONSULTE LA POLICY — il ne redit pas la règle. */
     public function test_the_builder_defers_to_the_policy(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'admin', 'platform_role' => 'admin']));
 
-        /*
-         * On remplace LA POLICY, pas une capacité nommée.
-         *
-         * `Gate::define('publish', ...)` ne suffit pas : quand l'argument porte une Policy, c'est
-         * elle qui répond, et la fermeture est ignorée. Le test passait alors à côté de ce qu'il
-         * prétendait vérifier — il m'a fallu le voir échouer pour m'en apercevoir.
-         */
+        // On remplace LA POLICY, pas une capacité nommée.
         Gate::policy(Trade::class, RefuseTout::class);
 
         $trade = Trade::where('slug', 'peinture')->firstOrFail();

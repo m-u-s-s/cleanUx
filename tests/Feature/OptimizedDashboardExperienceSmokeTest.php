@@ -13,17 +13,7 @@ class OptimizedDashboardExperienceSmokeTest extends TestCase
 
     public function test_optimized_admin_client_employee_pages_render(): void
     {
-        /*
-         * QUATRE DES HUIT CAPACITES LISTEES ICI N'EXISTAIENT PAS.
-         *
-         * `manage-planning`, `manage-missions`, `manage-feedbacks` et `manage-tools` ne figurent
-         * dans aucune liste : les vraies s'appellent `manage-calendar`, `manage-orchestration`,
-         * `manage-quality` et `manage-platform`. La liste etait donc a moitie fictive -- sans
-         * consequence tant que rien ne verifiait les capacites, ce qui etait le cas jusqu'ici.
-         *
-         * Ce test balaie l'espace d'administration : il lui faut un compte qui peut tout ouvrir, et
-         * `adminComplet()` derive sa liste de la source, ce qui rend un nom invente impossible.
-         */
+        // QUATRE DES HUIT CAPACITES LISTEES ICI N'EXISTAIENT PAS.
         $admin = User::factory()->adminComplet()->create(['is_active' => true]);
 
         $client = User::factory()->client()->create([

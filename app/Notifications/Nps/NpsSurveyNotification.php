@@ -7,12 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * Invite a client to complete a post-booking NPS survey.
- *
- * Sent automatically by SendNpsSurveys command X days after booking completion.
- * Uses both the database channel (in-app bell) and mail.
- */
+/** Invite a client to complete a post-booking NPS survey. */
 class NpsSurveyNotification extends Notification
 {
     use Queueable;
@@ -47,17 +42,7 @@ class NpsSurveyNotification extends Notification
         ];
     }
 
-    /**
-     * LE LIEN ÉTAIT MORT DANS LES DEUX BRANCHES (corrigé le 2026-08-05).
-     *
-     * `nps.survey` n'existe pas — la route s'appelle `client.nps.survey`. L'exception était donc
-     * levée à chaque envoi, attrapée, et le repli renvoyait vers `/nps`, que RIEN ne sert non plus.
-     * Chaque destinataire d'une enquête NPS recevait un lien vers un 404, sans que rien ne le
-     * signale : le try/catch transformait une erreur bruyante en lien mort silencieux.
-     *
-     * Le repli est conservé — une notification ne doit pas échouer parce qu'une route bouge — mais
-     * il pointe désormais vers une adresse qui existe.
-     */
+    /** LE LIEN ÉTAIT MORT DANS LES DEUX BRANCHES (corrigé le 2026-08-05). */
     private function surveyUrl(): string
     {
         $parametres = ['survey' => 'post_booking', 'bookingId' => $this->booking->id];

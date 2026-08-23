@@ -7,13 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Tests for POST /api/auth/refresh — token rotation with grace period.
- *
- * Uses raw Bearer token (not Sanctum::actingAs) so that the actual
- * personal_access_tokens rows are written and the grace period logic
- * can be exercised end-to-end.
- */
+/** Tests for POST /api/auth/refresh — token rotation with grace period. */
 class AuthRefreshTest extends TestCase
 {
     use RefreshDatabase;

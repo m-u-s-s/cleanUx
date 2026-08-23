@@ -31,18 +31,7 @@ trait HasBookingDisplayAccessors
     {
         $serviceName = $this->serviceCatalog?->display_name
             ?: $this->serviceCatalog?->name
-            /*
-             * LE MÉTIER DU MOTEUR DE COMMANDE — le maillon qui manquait.
-             *
-             * Cette chaîne ne connaissait que l'ANCIEN catalogue. Une commande passée par le
-             * moteur actuel fige pourtant le nom de son métier dans son instantané de devis, et
-             * s'affichait quand même « Service non précisé » sur tous les écrans : le tableau de
-             * bord du prestataire, sa fiche terrain, l'offre qu'on lui propose d'accepter.
-             *
-             * L'instantané d'abord : il fige le nom tel qu'il était au moment du clic. La relation
-             * ensuite, pour les réservations antérieures à cette recopie — et seulement là, pour ne
-             * pas payer une requête par ligne sur les listes.
-             */
+            // LE MÉTIER DU MOTEUR DE COMMANDE — le maillon qui manquait.
             ?: data_get($this->pricing_snapshot, 'service_name')
             ?: data_get($this->pricing_snapshot, 'service.name')
             ?: $this->trade?->name
@@ -52,20 +41,7 @@ trait HasBookingDisplayAccessors
             return 'Service non précisé';
         }
 
-        /*
-         * ON NE RÉÉCRIT QUE CE QUI EN A BESOIN.
-         *
-         * `headline()` existe pour rendre lisible un identifiant technique — `cleaning_residential`
-         * devient « Cleaning Residential ». Appliqué à un libellé déjà rédigé par un
-         * administrateur, il le déforme : « Nettoyage à domicile » ressortait « Nettoyage À
-         * Domicile », sur tous les écrans, jusque sur la fiche terrain du prestataire.
-         *
-         * Le défaut dormait tant que cette chaîne ne trouvait jamais de nom et rendait « Service
-         * non précisé » ; il est apparu le jour où elle a enfin su en trouver un.
-         *
-         * Le discriminant est l'apparence d'un identifiant : underscores, ou aucune majuscule ni
-         * espace. Un nom qui ressemble déjà à un nom sort tel qu'il a été écrit.
-         */
+        // ON NE RÉÉCRIT QUE CE QUI EN A BESOIN.
         $serviceName = (string) $serviceName;
         $ressembleAUnIdentifiant = str_contains($serviceName, '_')
             || ! preg_match('/[\s\p{Lu}]/u', $serviceName);

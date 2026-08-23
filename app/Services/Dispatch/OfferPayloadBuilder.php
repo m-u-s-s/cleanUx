@@ -10,17 +10,7 @@ use App\Models\ServiceCatalog;
 use App\Models\User;
 use App\Services\Geo\GeoDistanceService;
 
-/**
- * CE QUE LE PRESTATAIRE LIT DANS SA MODALE — écrit une seule fois.
- *
- * La même charge utile part en temps réel, en push, et ressort de l'inbox : trois formes
- * différentes du même écran feraient afficher trois prix différents selon le canal par lequel
- * l'offre est arrivée, et c'est le genre d'écart qui se découvre en production.
- *
- * L'ADRESSE EST APPROXIMATIVE tant que l'offre n'est pas acceptée. La rue et le numéro exacts
- * n'apparaissent qu'après : une offre refusée ne doit pas laisser l'adresse complète d'un client
- * chez quelqu'un qui n'ira jamais.
- */
+/** CE QUE LE PRESTATAIRE LIT DANS SA MODALE — écrit une seule fois. */
 class OfferPayloadBuilder
 {
     public function __construct(protected GeoDistanceService $distances) {}
@@ -36,16 +26,7 @@ class OfferPayloadBuilder
         $destLat = $this->toFloat($mission?->getAttribute('destination_lat') ?? $booking?->getAttribute('destination_lat'));
         $destLng = $this->toFloat($mission?->getAttribute('destination_lng') ?? $booking?->getAttribute('destination_lng'));
 
-        /*
-         * LA DISTANCE EST RECALCULÉE QUAND ELLE N'EST PAS FOURNIE.
-         *
-         * Le moteur la connaît — c'est elle qui classe les candidats — et la passe au canal temps
-         * réel. Mais le SONDAGE et la MODALE WEB appelaient `build()` sans elle : la même offre
-         * affichait « 1,2 km » si elle arrivait par le temps réel, et « — » si elle était lue par
-         * sondage. Or le sondage est le canal de repli, celui qui marche toujours — donc celui que
-         * beaucoup de prestataires voient en premier. Et la distance est le premier critère d'un
-         * refus : l'afficher vide revient à demander une décision sans son élément principal.
-         */
+        // LA DISTANCE EST RECALCULÉE QUAND ELLE N'EST PAS FOURNIE.
         $distanceM ??= $this->distanceDepuisLePrestataire($assignment, $destLat, $destLng);
 
         return [
@@ -69,15 +50,7 @@ class OfferPayloadBuilder
             'payout_cents' => $this->payoutCents($booking),
             'distance_m' => $distanceM,
             'distance_km' => $distanceM !== null ? round($distanceM / 1000, 1) : null,
-            /*
-             * SUR UNE COURSE, DEUX DISTANCES DÉCIDENT — et une seule voyageait.
-             *
-             * `distance_km` dit combien il faut rouler pour ALLER CHERCHER le client. La longueur
-             * de la course elle-même n'était nulle part : un chauffeur voyait « 4,81 € » sans
-             * savoir s'il s'engageait pour deux kilomètres ou pour quarante. C'est pourtant la
-             * question qui décide d'accepter, et la réservation porte la réponse depuis sa
-             * création.
-             */
+            // SUR UNE COURSE, DEUX DISTANCES DÉCIDENT — et une seule voyageait.
             'is_ride' => (bool) $booking?->estUneCourse(),
             'ride_distance_m' => $booking?->route_distance_m,
             'ride_distance_km' => $booking?->route_distance_m !== null
@@ -88,28 +61,14 @@ class OfferPayloadBuilder
                 : null,
             'latitude' => $destLat,
             'longitude' => $destLng,
-            /*
-             * L'HORLOGE FAIT AUTORITÉ CÔTÉ SERVEUR. `expires_at` voyage en ISO-8601 et
-             * `ttl_seconds` n'est qu'un repli d'affichage : un téléphone dont l'heure est fausse de
-             * dix minutes afficherait sinon une offre déjà morte ou éternelle.
-             */
+            // L'HORLOGE FAIT AUTORITÉ CÔTÉ SERVEUR.
             'expires_at' => $expiresAt?->toIso8601String(),
             'ttl_seconds' => $expiresAt ? max(0, (int) now()->diffInSeconds($expiresAt, false)) : null,
             'sent_at' => now()->toIso8601String(),
         ];
     }
 
-    /**
-     * La distance entre le prestataire et le lieu de l'intervention, en mètres.
-     *
-     * LA POSITION DE PRÉSENCE FAIT FOI, pas celle du profil : c'est celle que le moteur emploie
-     * pour classer les candidats, et deux sources donneraient deux distances pour la même offre.
-     * Le profil ne sert que de repli, pour les comptes dont la présence n'a jamais été écrite.
-     *
-     * `null` reste possible et ce n'est pas un défaut : une offre planifiée peut naître sans que
-     * personne ne soit en ligne quelque part. Une distance inventée serait pire qu'absente — elle
-     * ferait refuser une course qui est en réalité à deux rues.
-     */
+    /** La distance entre le prestataire et le lieu de l'intervention, en mètres. */
     protected function distanceDepuisLePrestataire(
         MissionAssignment $assignment,
         ?float $destLat,
@@ -139,13 +98,7 @@ class OfferPayloadBuilder
         return (int) round($this->distances->haversineKm($lat, $lng, $destLat, $destLng) * 1000);
     }
 
-    /**
-     * LA RESERVATION DERRIERE LA MISSION — trois chemins, un seul ordre.
-     *
-     * `missions` porte historiquement DEUX cles vers la meme table : `booking_id` et
-     * `rendez_vous_id`, selon le chemin qui l'a creee. Lire l'une sans l'autre rendait des offres
-     * sans adresse ni prix — la modale s'ouvrait sur des tirets.
-     */
+    /** LA RESERVATION DERRIERE LA MISSION — trois chemins, un seul ordre. */
     protected function bookingOf(MissionAssignment $assignment): ?Booking
     {
         $mission = $assignment->mission;
@@ -170,13 +123,7 @@ class OfferPayloadBuilder
         return $catalogue instanceof ServiceCatalog ? $catalogue->name : null;
     }
 
-    /**
-     * Le prénom du client, ou rien.
-     *
-     * Vérifié par `instanceof` plutôt que par accès enchaîné : une réservation orpheline — client
-     * supprimé au titre du droit à l'oubli — ferait tomber la construction de l'offre, et donc TOUT
-     * le dispatch, pour un libellé d'affichage.
-     */
+    /** Le prénom du client, ou rien. */
     protected function clientName(?Booking $booking): ?string
     {
         $client = $booking?->getRelationValue('customer');

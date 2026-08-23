@@ -12,15 +12,7 @@ use App\Services\Organizations\ProviderOrganisationResolver;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Phase 6.1 — Service de reprogrammation d'un booking via drag-and-drop.
- *
- * Vérifie l'ownership, valide la nouvelle date/heure, met à jour, et logue
- * dans booking_reschedule_history pour audit.
- *
- * Lance une exception DomainException si la reprog n'est pas autorisée
- * (booking déjà terminé, dans le passé, etc.).
- */
+/** Phase 6.1 — Service de reprogrammation d'un booking via drag-and-drop. */
 class BookingRescheduleService
 {
     /** Le client qui s'arrange, ou l'organisation cliente. */
@@ -60,13 +52,7 @@ class BookingRescheduleService
         });
     }
 
-    /**
-     * La règle d'appartenance à une réservation.
-     *
-     * Exposée publiquement pour que la LECTURE puisse la poser elle aussi :
-     * l'écriture et l'affichage doivent répondre à la même règle, sans quoi
-     * on se retrouve avec deux sources de vérité qui divergent.
-     */
+    /** La règle d'appartenance à une réservation. */
     public function peutAcceder(User $user, Booking $booking): bool
     {
         // Admin plateforme : OK
@@ -92,12 +78,7 @@ class BookingRescheduleService
         }
     }
 
-    /**
-     * Vérifie que la nouvelle date est cohérente :
-     *   - dans le futur (au moins +30 minutes)
-     *   - le booking n'est pas déjà terminé/annulé/sur place
-     *   - la date n'est pas plus de 6 mois dans le futur
-     */
+    /** Vérifie que la nouvelle date est cohérente : - dans le futur (au moins +30 minutes) - le booking n'est pas déjà terminé/annulé/sur place - la date n'est pas plus de 6 mois dans le futur */
     protected function validateNewSchedule(Booking $booking, Carbon $newDate, ?string $newTime): void
     {
         // Bookings finals : pas reprogrammables
@@ -169,20 +150,6 @@ class BookingRescheduleService
     /**
      * REPROGRAMMER CÔTÉ PRESTATAIRE — date, heure ET LIEU.
      *
-     * Ce service était strictement CLIENT/ADMIN : `authorize()` n'admet que le propriétaire de la
-     * réservation ou un membre de l'organisation cliente, et aucun endpoint ne l'exposait au
-     * prestataire. Une société qui devait décaler une intervention d'une heure — un embouteillage,
-     * une clé non remise, un chantier qui déborde — n'avait aucun moyen de le faire : elle
-     * appelait le client, qui devait le faire lui-même.
-     *
-     * LE CHEMIN CLIENT N'EST PAS TOUCHÉ. Cette méthode a sa propre autorisation, sa propre fenêtre
-     * de gel et son propre contexte d'audit ; `reschedule()` reste identique au caractère près.
-     *
-     * APPLICATION IMMÉDIATE, PAS DE DEMANDE D'ACCORD — mais notification client systématique. Un
-     * accord préalable transformerait chaque aléa de tournée en négociation, et une société qui
-     * doit décaler de vingt minutes ne peut pas attendre une réponse. Le client est prévenu tout de
-     * suite, et c'est ce qui rend l'immédiateté acceptable.
-     *
      * @param  ?int  $nouveauSiteId  autre local du même client (B2B)
      * @param  ?string  $nouvelleAdresse  adresse libre (B2C)
      *
@@ -213,12 +180,7 @@ class BookingRescheduleService
             $changements = [
                 'scheduled_date' => $nouvelleDate->toDateString(),
                 'scheduled_time' => $nouvelleHeure ?: $rendezVous->scheduled_time,
-                /*
-                 * LES COLONNES LEGACY SUIVENT, et ce n'est pas cosmétique : `date` et `heure` sont
-                 * ce que lit `MissionFromRendezVousSyncService` pour recaler `planned_start_at`.
-                 * Ne mettre à jour que `scheduled_*` déplacerait le rendez-vous sans déplacer la
-                 * mission — l'équipe se présenterait à l'ancienne heure.
-                 */
+                // LES COLONNES LEGACY SUIVENT, et ce n'est pas cosmétique : `date` et `heure` sont ce que lit `MissionFromRendezVousSyncService` pour recaler `planned_start_at`.
                 'date' => $nouvelleDate->toDateString(),
                 'heure' => $nouvelleHeure ?: $rendezVous->heure,
             ];
@@ -232,12 +194,7 @@ class BookingRescheduleService
                 $changements['adresse'] = $nouvelleAdresse;
             }
 
-            /*
-             * `update()` DÉCLENCHE L'OBSERVATEUR, et c'est exactement ce qu'on veut ici : la
-             * propagation vers la mission existe déjà — `RendezVousObserver` resynchronise les
-             * `planned_*` et relance le géocodage. La refaire à la main créerait une seconde
-             * vérité, et l'oublier laisserait la mission à l'ancienne adresse.
-             */
+            // `update()` DÉCLENCHE L'OBSERVATEUR, et c'est exactement ce qu'on veut ici : la propagation vers la mission existe déjà — `RendezVousObserver` resynchronise les `planned_*` et relance le géocodage.
             $rendezVous->update($changements);
 
             $this->logHistory(
@@ -265,11 +222,6 @@ class BookingRescheduleService
 
     /**
      * LA FENÊTRE DE GEL — sous 24 h, seuls le propriétaire et le directeur d'opérations décident.
-     *
-     * Déplacer une intervention la veille au soir n'est pas la même décision que la déplacer la
-     * semaine précédente : le client a organisé sa journée autour, et il est peut-être trop tard
-     * pour qu'il s'adapte. La borne n'interdit pas, elle relève le niveau de décision — et exige un
-     * MOTIF, qui sera lu par le client dans sa notification.
      *
      * @throws \DomainException
      */
@@ -310,11 +262,7 @@ class BookingRescheduleService
     }
 
     /**
-     * Le nouveau site, s'il est légitime.
-     *
-     * UN AUTRE LOCAL DU MÊME CLIENT, jamais n'importe lequel. Sans cette borne, un prestataire
-     * pourrait déplacer une intervention vers le site d'une autre entreprise — au mieux une erreur
-     * de saisie envoyant une équipe ailleurs, au pire une fuite sur l'existence de ces locaux.
+     * Le nouveau site, s'il est légitime. UN AUTRE LOCAL DU MÊME CLIENT, jamais n'importe lequel.
      *
      * @throws \DomainException
      */
@@ -335,20 +283,10 @@ class BookingRescheduleService
         return $site;
     }
 
-    /**
-     * Prévenir le client ET le travailleur assigné.
-     *
-     * LE CLIENT, parce qu'on vient de décider pour lui sans lui demander — c'est ce qui rend
-     * l'application immédiate acceptable. LE TRAVAILLEUR, parce qu'il a peut-être déjà pris la
-     * route : c'est lui que le changement d'adresse concerne le plus concrètement.
-     */
+    /** Prévenir le client ET le travailleur assigné. */
     protected function prevenirDuDeplacement(Booking $rendezVous, ?string $motif): void
     {
-        /*
-         * `scheduled_date` est CASTÉ en date par le modèle : l'accès rend toujours un Carbon. Une
-         * branche `instanceof` ici serait morte — PHPStan l'a montrée, et une garde que le type rend
-         * toujours vraie donne l'illusion d'une protection.
-         */
+        // `scheduled_date` est CASTÉ en date par le modèle : l'accès rend toujours un Carbon.
         $quand = trim(
             $rendezVous->scheduled_date?->format('d/m')
             .' '.substr((string) ($rendezVous->heure ?? ''), 0, 5)
@@ -384,11 +322,7 @@ class BookingRescheduleService
     /** L'heure de début prévue, sous forme comparable. */
     protected function debutPrevu(Booking $rendezVous): ?Carbon
     {
-        /*
-         * `scheduled_date` est CASTÉ en date : son accès rend un Carbon ou `null`, jamais une
-         * chaîne. La colonne legacy `date`, elle, n'est pas castée — d'où la découpe textuelle en
-         * repli. Une branche `instanceof` couvrant les deux serait morte sur la première.
-         */
+        // `scheduled_date` est CASTÉ en date : son accès rend un Carbon ou `null`, jamais une chaîne.
         $jour = $rendezVous->scheduled_date?->toDateString()
             ?? substr((string) $rendezVous->date, 0, 10);
 

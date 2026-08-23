@@ -6,10 +6,7 @@ use App\Services\Country\CountryConfigService;
 use App\Services\Tax\TaxCalculator;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Pure unit tests for core business-logic services.
- * No Laravel boot — no DB — instant feedback.
- */
+/** Pure unit tests for core business-logic services. No Laravel boot — no DB — instant feedback. */
 class BusinessLogicUnitTest extends TestCase
 {
     // -----------------------------------------------------------------------
@@ -32,13 +29,7 @@ class BusinessLogicUnitTest extends TestCase
             'AT' => 0.20,
         ];
 
-        /*
-         * CINQ VALEURS PAR PAYS, ET LA TABLE ENTIERE D'UN COUP.
-         *
-         * Une assertion par tour s'arretait au premier pays fautif : une grille de TVA decalee
-         * partout aurait demande autant d'executions que de pays. C'est la liste complete qu'on
-         * veut lire avant de corriger un tableau de taux.
-         */
+        // CINQ VALEURS PAR PAYS, ET LA TABLE ENTIERE D'UN COUP.
         $ecarts = [];
 
         foreach ($expected as $code => $rate) {

@@ -16,16 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Les vérifications d'identité à traiter.
- *
- * DÉLÉGATION STRICTE. `approveManually()` et `syncStatus()` portent la règle : journal, décision,
- * horodatage, réveil des modules qui attendaient la vérification. Écrire `status = 'clear'` à la
- * main donnerait un prestataire vérifié que rien n'a vérifié — et personne ne s'en apercevrait
- * avant un contrôle.
- *
- * LE REFUS EXIGE UN MOTIF, et l'action le DÉCLARE (`requires()`) : le moteur ouvre alors une
- * feuille de saisie et valide le motif côté serveur avant d'appeler `rejectManually()`. Un refus
- * d'identité sans explication écrite n'est ni contestable par la personne, ni auditable ensuite.
+ * Les vérifications d'identité à traiter. DÉLÉGATION STRICTE.
  *
  * @implements AdminResource<KycVerification>
  */

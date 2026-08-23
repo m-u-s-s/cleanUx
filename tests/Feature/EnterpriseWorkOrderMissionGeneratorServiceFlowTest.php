@@ -12,16 +12,7 @@ use App\Services\Missions\EnterpriseWorkOrderMissionGeneratorService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Behavioural coverage for the parts of the generator that are runnable under
- * the test schema: the approval guard of runForApprovedWorkOrder() and every
- * branch of applyContractToMission() (the contract-stamping helper invoked for
- * each materialised mission).
- *
- * The ensureBatch / seed / materialize happy-path writes to generation columns
- * (generated_batch_id, auto_generate_missions, generation_status, ...) that no
- * migration provisions, so they cannot be exercised against the in-memory DB.
- */
+/** Behavioural coverage for the parts of the generator that are runnable under the test schema: the approval guard of runForApprovedWorkOrder() and every branch of applyContractToMission() (the contract-stamping helper invoked for each materialised mission). */
 class EnterpriseWorkOrderMissionGeneratorServiceFlowTest extends TestCase
 {
     use RefreshDatabase;

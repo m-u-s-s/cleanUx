@@ -67,11 +67,7 @@ class ClientFinanceDocumentScopeTest extends TestCase
     // Enterprise org/site-scope branch tests
     // -------------------------------------------------------------------------
 
-    /**
-     * An org-A user must see invoices belonging to org A (via organization_account_id)
-     * and must NOT see invoices belonging to org B, even when those org-B invoices
-     * happen to share client_id=null (so only the org path could ever match).
-     */
+    /** An org-A user must see invoices belonging to org A (via organization_account_id) and must NOT see invoices belonging to org B, even when those org-B invoices happen to share client_id=null (so only the org path could ever match). */
     #[Test]
     public function test_org_user_sees_own_org_invoices_not_another_org(): void
     {
@@ -114,13 +110,7 @@ class ClientFinanceDocumentScopeTest extends TestCase
         );
     }
 
-    /**
-     * When site_scope='selected' and allowed_site_ids=[site1], an org invoice
-     * attached to a booking at site1 is visible, but one at site2 is excluded.
-     *
-     * The invoices share the same organization_account_id and a client_id that
-     * is NOT the user, so the only path that can match is the org+site branch.
-     */
+    /** When site_scope='selected' and allowed_site_ids=[site1], an org invoice attached to a booking at site1 is visible, but one at site2 is excluded. */
     #[Test]
     public function test_site_scope_selected_filters_to_allowed_sites(): void
     {
@@ -183,11 +173,7 @@ class ClientFinanceDocumentScopeTest extends TestCase
         );
     }
 
-    /**
-     * When site_scope='selected' and allowed_site_ids=[], the org path collapses
-     * to whereRaw('1 = 0'), so no org invoices are returned even though the org
-     * matches — preventing a "see everything" fallback on misconfigured accounts.
-     */
+    /** When site_scope='selected' and allowed_site_ids=[], the org path collapses to whereRaw('1 = 0'), so no org invoices are returned even though the org matches — preventing a "see everything" fallback on misconfigured accounts. */
     #[Test]
     public function test_site_scope_selected_with_empty_allowed_sites_sees_no_org_invoices(): void
     {

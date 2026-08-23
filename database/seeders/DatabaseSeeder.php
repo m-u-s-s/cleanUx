@@ -7,9 +7,7 @@ use InvalidArgumentException;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
+    /** Seed the application's database. */
     public function run(): void
     {
         $profile = $this->resolveProfile();

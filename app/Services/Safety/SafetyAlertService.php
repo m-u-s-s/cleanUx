@@ -15,26 +15,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
-/**
- * LE MODE SÉCURITÉ / SOS (E33).
- *
- * CE QUI EXISTE ET CE QUI MANQUE. Le centre de sécurité traite les SIGNALEMENTS : quelqu'un rapporte
- * un comportement, un administrateur arbitre, des jours plus tard. C'est de la modération. Il
- * n'existe rien pour l'URGENCE — quelqu'un seul chez un inconnu, qui a besoin qu'on sache où il est
- * MAINTENANT.
- *
- * JAMAIS DERRIÈRE UN DRAPEAU. Un bouton d'urgence qu'on peut désactiver par configuration est un
- * bouton dont personne ne peut garantir qu'il répondra. C'est la seule fonctionnalité de ce
- * programme dont l'indisponibilité se compte en intégrité physique.
- *
- * RIEN NE DOIT POUVOIR EMPÊCHER L'ENREGISTREMENT. Notifications, SMS, contact d'urgence : tout est
- * en soft-fail, et l'alerte est écrite AVANT qu'on tente quoi que ce soit. Une alerte perdue parce
- * qu'un serveur de SMS ne répondait pas serait le pire défaut possible de ce module.
- *
- * ON N'EN OUVRE PAS DEUX. Une alerte déjà ouverte est RENDUE plutôt que dupliquée : quelqu'un qui
- * appuie trois fois sur un bouton d'urgence appuie trois fois sur le même bouton, et trois lignes
- * feraient croire à trois personnes en difficulté.
- */
+/** LE MODE SÉCURITÉ / SOS (E33). CE QUI EXISTE ET CE QUI MANQUE. */
 class SafetyAlertService
 {
     /**
@@ -56,14 +37,7 @@ class SafetyAlertService
         $ouverte = $this->alerteOuverteDe($utilisateur);
 
         if ($ouverte !== null) {
-            /*
-             * ON N'EN OUVRE PAS DEUX. Quelqu'un qui appuie trois fois sur un bouton d'urgence appuie
-             * trois fois sur le même bouton ; trois lignes feraient croire à trois personnes en
-             * difficulté, et l'attention se diviserait.
-             *
-             * L'ESCALADE RESTE POSSIBLE : une veille qui devient une urgence monte de niveau sur la
-             * même alerte, et re-prévient.
-             */
+            // ON N'EN OUVRE PAS DEUX.
             if ($niveau === SafetyAlert::LEVEL_EMERGENCY && $ouverte->level !== SafetyAlert::LEVEL_EMERGENCY) {
                 $ouverte->forceFill(['level' => SafetyAlert::LEVEL_EMERGENCY])->save();
                 $this->prevenir($ouverte->fresh(), $utilisateur);
@@ -101,13 +75,7 @@ class SafetyAlertService
         return $alerte->fresh();
     }
 
-    /**
-     * Une position de plus pendant l'alerte.
-     *
-     * `pinged_at` PORTE L'HEURE DU RELEVÉ, pas celle de l'écriture : un téléphone hors réseau
-     * accumule et envoie plus tard, et confondre les deux placerait toute la trace au moment où la
-     * connexion est revenue.
-     */
+    /** Une position de plus pendant l'alerte. */
     public function pointer(
         SafetyAlert $alerte,
         float $lat,
@@ -130,12 +98,7 @@ class SafetyAlertService
         return $ping;
     }
 
-    /**
-     * Un administrateur a VU l'alerte.
-     *
-     * C'EST CE QUE LA PERSONNE SUR PLACE ATTEND DE SAVOIR EN PREMIER — plus que la résolution.
-     * Savoir qu'on est seul est ce qui rend une situation effrayante.
-     */
+    /** Un administrateur a VU l'alerte. */
     public function accuserReception(SafetyAlert $alerte, User $admin): SafetyAlert
     {
         if (! $alerte->estOuverte()) {
@@ -207,20 +170,11 @@ class SafetyAlertService
             ->get();
     }
 
-    /**
-     * Prévenir — la plateforme, puis le contact d'urgence.
-     *
-     * TOUT EN SOFT-FAIL, ET DANS CET ORDRE. L'alerte est déjà écrite : rien de ce qui suit ne doit
-     * pouvoir la faire échouer. Un canal qui tombe ne doit pas empêcher les autres de partir.
-     */
+    /** Prévenir — la plateforme, puis le contact d'urgence. TOUT EN SOFT-FAIL, ET DANS CET ORDRE. */
     protected function prevenir(SafetyAlert $alerte, User $utilisateur): void
     {
         try {
-            /*
-             * L'ÉQUIPE SÉCURITÉ D'ABORD. Ce sont eux qui peuvent agir — appeler, envoyer quelqu'un,
-             * alerter les secours. Le contact d'urgence, lui, est un proche : il rassure, il
-             * n'intervient pas.
-             */
+            // L'ÉQUIPE SÉCURITÉ D'ABORD.
             $this->notifierLEquipeSecurite($alerte, $utilisateur);
         } catch (\Throwable $e) {
             report($e);
@@ -255,13 +209,7 @@ class SafetyAlertService
         Notification::send($admins, new SafetyAlertRaised($alerte, $utilisateur));
     }
 
-    /**
-     * Le proche est prévenu par SMS, jamais par notification interne : il n'a pas l'application.
-     *
-     * LE MESSAGE NE DIT PAS OÙ. Une position transmise à un tiers sans que la personne l'ait
-     * explicitement voulu serait une divulgation ; le proche apprend qu'il se passe quelque chose et
-     * qui appeler. C'est l'équipe sécurité qui dispose de la position.
-     */
+    /** Le proche est prévenu par SMS, jamais par notification interne : il n'a pas l'application. */
     protected function prevenirLeContactDUrgence(SafetyAlert $alerte, User $utilisateur): void
     {
         $telephone = $alerte->emergency_contact_phone;

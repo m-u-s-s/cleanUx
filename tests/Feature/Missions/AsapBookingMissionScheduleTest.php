@@ -10,16 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * Une réservation `confirme` réveille RendezVousObserver, qui synchronise une mission via
- * MissionFromRendezVousSyncService. Ce chemin écrivait planned_start_at = 1970-01-01 00:00:00,
- * valeur qu'une colonne TIMESTAMP MySQL refuse en mode strict (erreur 1292) : le chemin de
- * réservation ASAP échouait donc en production, alors que SQLite acceptait la valeur sans
- * broncher et laissait la suite aveugle.
- *
- * Ces tests portent sur la VALEUR de planned_start_at, pas sur l'absence d'exception : c'est le
- * seul angle qui rend le défaut visible sur SQLite.
- */
+/** Une réservation `confirme` réveille RendezVousObserver, qui synchronise une mission via MissionFromRendezVousSyncService. */
 class AsapBookingMissionScheduleTest extends TestCase
 {
     use RefreshDatabase;
@@ -37,10 +28,7 @@ class AsapBookingMissionScheduleTest extends TestCase
         );
     }
 
-    /**
-     * Anti-régression ciblée : l'epoch est ce que produisait `date(..., strtotime(false))`, et
-     * c'est précisément ce que MySQL rejette. Aucune mission ne doit jamais le porter.
-     */
+    /** Anti-régression ciblée : l'epoch est ce que produisait `date(..., strtotime(false))`, et c'est précisément ce que MySQL rejette. */
     public function test_the_synced_mission_never_carries_the_unix_epoch_as_a_schedule(): void
     {
         $booking = $this->makeConfirmedBooking('2026-07-29', '10:00:00');
@@ -64,12 +52,7 @@ class AsapBookingMissionScheduleTest extends TestCase
         );
     }
 
-    /**
-     * La source du défaut : syncLegacyAliases() recopie scheduled_time (casté datetime:H:i, donc
-     * un Carbon) dans `heure`, colonne TIME sans cast. Tout le code qui lit cet alias fait
-     * `substr((string) $heure, 0, 5|8)` en supposant "10:00:00" — sur un Carbon rendu
-     * "2026-07-28 10:00:00", ce découpage produit "2026-07-", d'où un datetime ininterprétable.
-     */
+    /** La source du défaut : syncLegacyAliases() recopie scheduled_time (casté datetime:H:i, donc un Carbon) dans `heure`, colonne TIME sans cast. */
     public function test_the_legacy_time_alias_holds_a_clock_time_not_a_datetime(): void
     {
         $booking = new Booking(['scheduled_date' => '2026-07-29', 'scheduled_time' => '10:00:00']);

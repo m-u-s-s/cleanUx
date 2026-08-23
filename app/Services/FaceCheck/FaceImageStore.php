@@ -10,23 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-/**
- * LE SEUL ENDROIT QUI ÉCRIT UNE IMAGE DE VISAGE.
- *
- * Deux règles, et elles ne se négocient pas :
- *
- * 1. **Disque privé.** La photo de profil du prestataire, elle, part sur le disque `public` et se
- *    lit sans authentification via `/storage/…` — c'est aujourd'hui le seul portrait stocké de la
- *    plateforme, et il est en accès libre. Une donnée biométrique ne peut pas suivre ce chemin.
- *
- * 2. **Chiffrée au repos.** Le disque privé protège de l'URL, pas de la sauvegarde qu'on recopie,
- *    du volume qu'on monte ailleurs, ni de l'exfiltration d'un dossier. Un visage relève de
- *    l'article 9 du RGPD : il est chiffré avec la clé applicative, comme les colonnes sensibles du
- *    KYC. Un fichier récupéré sans la clé ne montre rien.
- *
- * En conséquence, un fichier écrit ici ne s'ouvre PAS avec une visionneuse : il se lit par `get()`,
- * et lui seul. C'est voulu.
- */
+/** LE SEUL ENDROIT QUI ÉCRIT UNE IMAGE DE VISAGE. Deux règles, et elles ne se négocient pas : 1. */
 class FaceImageStore
 {
     public function putReference(User $user, string $contents, string $mimeType = 'image/jpeg'): string
@@ -57,12 +41,7 @@ class FaceImageStore
         try {
             return Crypt::decryptString($brut);
         } catch (\Throwable $e) {
-            /*
-             * Un fichier illisible n'est pas une panne à propager : c'est une référence perdue. Le
-             * module en tire les conséquences plus haut (contrôle en erreur, revue manuelle), et
-             * l'administrateur voit qu'il manque une image. Laisser remonter l'exception ferait
-             * échouer une mise en ligne pour un fichier corrompu, sans rien expliquer.
-             */
+            // Un fichier illisible n'est pas une panne à propager : c'est une référence perdue.
             Log::warning('[face_check] image de visage illisible', ['path' => $path]);
 
             return null;

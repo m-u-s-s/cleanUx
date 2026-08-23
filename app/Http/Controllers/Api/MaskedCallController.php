@@ -12,21 +12,7 @@ use App\Services\Safety\MaskedCallService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * LE NUMÉRO PAR LEQUEL SE JOINDRE, SANS SE DONNER SON NUMÉRO (F8).
- *
- * `MaskedCallService` était écrit en entier — configuration, pilote de test, ouverture, fermeture,
- * balayage des expirées — et AUCUNE route n'y menait. Les deux parties n'avaient donc que deux
- * options : s'échanger leurs vrais numéros, ou ne pas se parler.
- *
- * LES DEUX SONT MAUVAISES. Le premier laisse au prestataire le téléphone personnel d'une cliente
- * chez qui il est allé une fois, définitivement, hors de tout contrôle ; le second fait sonner à la
- * porte d'un immeuble dont on ne trouve pas l'entrée, sans autre recours que d'annuler.
- *
- * LE VRAI NUMÉRO NE SORT JAMAIS D'ICI. La réponse ne porte que le numéro proxy et une version
- * masquée de celui d'en face — assez pour reconnaître qui rappelle, jamais assez pour le composer
- * en dehors de la plateforme. C'est toute la raison d'être de ce module.
- */
+/** LE NUMÉRO PAR LEQUEL SE JOINDRE, SANS SE DONNER SON NUMÉRO (F8). */
 class MaskedCallController extends Controller
 {
     use AuthorizesClientBooking;
@@ -36,16 +22,10 @@ class MaskedCallController extends Controller
         protected MissionAssignmentStatusService $assignmentStatusService,
     ) {}
 
-    /**
-     * Côté prestataire : par quel numéro joindre le client de cette mission.
-     */
+    /** Côté prestataire : par quel numéro joindre le client de cette mission. */
     public function pourLaMission(Request $request, Mission $mission): JsonResponse
     {
-        /*
-         * Le garde lève une exception ordinaire ; sans ce filet, un prestataire étranger à la
-         * mission recevait une erreur 500 au lieu d'un refus. Une erreur serveur se lit comme une
-         * panne de la plateforme et se signale au support — un refus se comprend tout seul.
-         */
+        // Le garde lève une exception ordinaire ; sans ce filet, un prestataire étranger à la mission recevait une erreur 500 au lieu d'un refus.
         try {
             $this->assignmentStatusService->assertAssignedToMission($mission, $request->user());
         } catch (\RuntimeException $e) {
@@ -67,9 +47,7 @@ class MaskedCallController extends Controller
         ]);
     }
 
-    /**
-     * Côté client : par quel numéro joindre le prestataire de cette réservation.
-     */
+    /** Côté client : par quel numéro joindre le prestataire de cette réservation. */
     public function pourLaReservation(Request $request, Booking $booking): JsonResponse
     {
         $this->assertClientPeutVoirLaReservation($request->user(), $booking);
@@ -90,13 +68,7 @@ class MaskedCallController extends Controller
         ]);
     }
 
-    /**
-     * La session active de ce trio, ou rien.
-     *
-     * ON NE CRÉE PAS ICI. L'ouverture se fait à l'acceptation de la mission, une fois pour toutes :
-     * la créer à la consultation ferait dépendre l'existence d'une ligne du fait que quelqu'un ait
-     * ouvert le bon écran, et consommerait un numéro loué pour une mission que personne n'appellera.
-     */
+    /** La session active de ce trio, ou rien. ON NE CRÉE PAS ICI. */
     protected function session(Booking $booking, int $clientId, int $prestataireId): ?MaskedCallSession
     {
         return MaskedCallSession::query()

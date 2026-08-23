@@ -10,16 +10,7 @@ use App\Services\OnboardingV2\OnboardingStepValidation;
 use App\Services\OnboardingV2\OnboardingStepValidator;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Validator pour le step `contract_sign` (e.g. TOS, provider_agreement).
- *
- * Si `step.metadata.template_code` est défini ET ContractsV2 module installé,
- * on vérifie via `ContractService::userHasValidSignatureFor()` (vraie signature DB).
- *
- * Fallback legacy : sans template_code, on accepte
- * `payload['terms_accepted_version']` matchant `step.metadata.required_version`
- * (compatibilité avec tests onboarding existants).
- */
+/** Validator pour le step `contract_sign` (e.g. TOS, provider_agreement). */
 class ContractSignValidator implements OnboardingStepValidator
 {
     public function validate(User $user, OnboardingStep $step, array $payload): OnboardingStepValidation
@@ -65,10 +56,7 @@ class ContractSignValidator implements OnboardingStepValidator
         );
     }
 
-    /**
-     * Défensif sur le schéma comme le reste du module : la table peut manquer d'un déploiement
-     * où Contracts v2 n'est pas installé, auquel cas il n'y a évidemment aucun modèle.
-     */
+    /** Défensif sur le schéma comme le reste du module : la table peut manquer d'un déploiement où Contracts v2 n'est pas installé, auquel cas il n'y a évidemment aucun modèle. */
     private function templateExists(string $templateCode): bool
     {
         if (! Schema::hasTable('contract_templates')) {

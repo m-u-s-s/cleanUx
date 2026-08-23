@@ -21,13 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * L'écran de confirmation : le dernier, et le seul qui demande une identité.
- *
- * Ce qui est vérifié ici tient aux lois du parcours, pas au rendu. Le prix reste visible SANS
- * compte. Ce qui bloque est ÉCRIT. Confirmer ne se fait pas deux fois. Et une commande confirmée
- * n'est pas lisible par quelqu'un qui devine sa référence.
- */
+/** L'écran de confirmation : le dernier, et le seul qui demande une identité. */
 class OrderConfirmationScreenTest extends TestCase
 {
     use RefreshDatabase;
@@ -44,12 +38,7 @@ class OrderConfirmationScreenTest extends TestCase
         parent::tearDown();
     }
 
-    /**
-     * LA loi du parcours : le prix avant l'identité.
-     *
-     * Un visiteur non connecté doit voir son récapitulatif complet, total inclus. Cacher le prix
-     * derrière l'inscription remet le formulaire de compte devant la décision d'achat.
-     */
+    /** LA loi du parcours : le prix avant l'identité. */
     public function test_a_visitor_without_an_account_sees_the_full_price(): void
     {
         $this->prepareBasket();
@@ -67,12 +56,7 @@ class OrderConfirmationScreenTest extends TestCase
         $this->get(route('order.confirmation'))->assertOk();
     }
 
-    /**
-     * `/commander/{sector?}` ne doit pas avaler « recapitulatif ».
-     *
-     * Sans l'ordre de déclaration correct, le dernier écran devient injoignable — et le parcours
-     * entier ne mène plus nulle part.
-     */
+    /** `/commander/{sector?}` ne doit pas avaler « recapitulatif ». */
     public function test_the_confirmation_route_is_not_swallowed_by_the_journey_route(): void
     {
         $this->assertSame(
@@ -91,11 +75,7 @@ class OrderConfirmationScreenTest extends TestCase
             ->assertDontSee('Confirmer la commande');
     }
 
-    /**
-     * Ce qui bloque est ÉCRIT, pas seulement grisé.
-     *
-     * Un bouton inactif sans explication laisse le client sans aucun moyen de savoir quoi corriger.
-     */
+    /** Ce qui bloque est ÉCRIT, pas seulement grisé. */
     public function test_what_is_missing_is_spelled_out(): void
     {
         $client = User::factory()->client()->create();
@@ -134,11 +114,7 @@ class OrderConfirmationScreenTest extends TestCase
         $this->assertSame(1, Booking::count());
     }
 
-    /**
-     * Une commande confirmée n'est pas lisible par quelqu'un qui devine sa référence.
-     *
-     * Elle porte une adresse, une date et un montant : la référence seule ne doit pas l'ouvrir.
-     */
+    /** Une commande confirmée n'est pas lisible par quelqu'un qui devine sa référence. */
     public function test_another_client_cannot_open_a_confirmed_order_by_its_reference(): void
     {
         $client = $this->prepareBasket();
@@ -167,12 +143,7 @@ class OrderConfirmationScreenTest extends TestCase
             ->assertDontSee('Autoriser le paiement');
     }
 
-    /**
-     * Le professionnel choisi par le client suit jusqu'à la réservation.
-     *
-     * Sans ce report, un client qui a délibérément choisi son prestataire verrait sa commande
-     * repartir en attribution automatique — et le paiement attendrait une assignation déjà faite.
-     */
+    /** Le professionnel choisi par le client suit jusqu'à la réservation. */
     public function test_a_chosen_provider_reaches_the_booking(): void
     {
         $client = $this->prepareBasket();
@@ -188,12 +159,7 @@ class OrderConfirmationScreenTest extends TestCase
         $this->assertSame($provider->id, Booking::firstOrFail()->employe_id);
     }
 
-    /**
-     * Le choix d'un professionnel est ÉCRIT, pas seulement gardé à l'écran.
-     *
-     * Un état qui ne vit que dans le composant disparaît au rechargement, alors que le client croit
-     * avoir choisi.
-     */
+    /** Le choix d'un professionnel est ÉCRIT, pas seulement gardé à l'écran. */
     public function test_choosing_a_provider_survives_a_reload(): void
     {
         $client = User::factory()->client()->create();

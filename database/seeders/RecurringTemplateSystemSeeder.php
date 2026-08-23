@@ -5,12 +5,7 @@ namespace Database\Seeders;
 use App\Models\RecurringTemplate;
 use Illuminate\Database\Seeder;
 
-/**
- * Phase 6.1 — Seeder pour les templates système.
- *
- * Crée une galerie de ~10 templates "1-clic" couvrant les cas d'usage typiques
- * d'une plateforme de services aux entreprises (nettoyage, maintenance, etc.).
- */
+/** Phase 6.1 — Seeder pour les templates système. */
 class RecurringTemplateSystemSeeder extends Seeder
 {
     public function run(): void

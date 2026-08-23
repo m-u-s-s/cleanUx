@@ -12,22 +12,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\Spine\SpineScenario;
 use Tests\TestCase;
 
-/**
- * SAUVEGARDER UNE RÉSERVATION NE DOIT PAS EFFACER LA PROGRESSION DE SA MISSION.
- *
- * Le défaut était muet et global. `RendezVousObserver::saved()` resynchronise à CHAQUE sauvegarde
- * d'une réservation `confirme`, et la synchronisation réécrivait le statut de la mission avec sa
- * valeur initiale. Écrire n'importe quelle colonne d'une réservation confirmée — une note interne,
- * une durée mesurée, un champ de facturation — faisait donc retomber à `assigned` une mission en
- * cours d'exécution.
- *
- * Ce qui rendait la chose introuvable : la cause était une écriture sur un AUTRE objet. Le
- * prestataire perdait son écran de terrain, le client lisait « en attente » pendant que quelqu'un
- * travaillait chez lui, et rien ne reliait les deux.
- *
- * CE FICHIER PORTE SON TÉMOIN. Sans le dernier test, les précédents passeraient au vert en
- * mesurant une synchronisation qui ne fait plus rien du tout.
- */
+/** SAUVEGARDER UNE RÉSERVATION NE DOIT PAS EFFACER LA PROGRESSION DE SA MISSION. */
 class SynchronisationNeRetrogradePasTest extends TestCase
 {
     use RefreshDatabase;
@@ -60,12 +45,7 @@ class SynchronisationNeRetrogradePasTest extends TestCase
         $this->assertSame($statut, $mission->refresh()->status);
     }
 
-    /**
-     * LE CHEMIN RÉEL DU DÉFAUT — par l'observateur, pas par un appel direct au service.
-     *
-     * C'est ainsi qu'il se produisait en exploitation : personne n'appelait la synchronisation, on
-     * écrivait simplement une colonne sans rapport sur la réservation.
-     */
+    /** LE CHEMIN RÉEL DU DÉFAUT — par l'observateur, pas par un appel direct au service. */
     public function test_ecrire_une_colonne_sans_rapport_ne_touche_pas_la_mission(): void
     {
         $scenario = SpineScenario::make()->build();
@@ -79,13 +59,7 @@ class SynchronisationNeRetrogradePasTest extends TestCase
         $this->assertSame(MissionStatus::STARTED, $scenario->mission->refresh()->status);
     }
 
-    /**
-     * LE TÉMOIN POSITIF — la synchronisation fait toujours son travail.
-     *
-     * Tant que la mission n'a pas commencé, la valeur initiale reste juste : nommer un salarié doit
-     * la faire passer de `planned` à `assigned`. C'est la raison pour laquelle cette écriture de
-     * statut existait, et elle est préservée. Sans ce test, « rien ne bouge » serait un succès.
-     */
+    /** LE TÉMOIN POSITIF — la synchronisation fait toujours son travail. */
     public function test_avant_le_demarrage_la_synchronisation_suit_toujours_la_reservation(): void
     {
         $scenario = SpineScenario::make()->build();
@@ -107,15 +81,7 @@ class SynchronisationNeRetrogradePasTest extends TestCase
         );
     }
 
-    /**
-     * L'AUTRE MOITIÉ DU VA-ET-VIENT — et la raison pour laquelle elle se retire sur la MISSION.
-     *
-     * LE PIÈGE DE MONTAGE QUI A FAIT ÉCHOUER LA PREMIÈRE VERSION, et qui vaut pour tout ce dépôt :
-     * le scénario garde en mémoire une réservation dont `employe_id` vaut encore `null`, alors que
-     * la base porte l'identifiant posé par un autre chemin. Un `forceFill(['employe_id' => null])`
-     * n'est alors PAS sale, Eloquent ne l'inclut pas dans son UPDATE, et la colonne reste garnie.
-     * Le test mesurait un état qu'il croyait avoir posé. On écrit donc par requête directe.
-     */
+    /** L'AUTRE MOITIÉ DU VA-ET-VIENT — et la raison pour laquelle elle se retire sur la MISSION. */
     public function test_sans_intervenant_une_mission_non_demarree_revient_a_planned(): void
     {
         $scenario = SpineScenario::make()->build();

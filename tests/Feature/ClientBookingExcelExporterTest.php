@@ -12,15 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use ReflectionMethod;
 use Tests\TestCase;
 
-/**
- * Coverage for ClientBookingExcelExporter.
- *
- * The public export() method depends on phpoffice/phpspreadsheet, which is not
- * installed in this environment, so the .xlsx generation path is not exercisable
- * here. This suite covers the reachable business logic of the exporter — the
- * query scoping/filtering (buildBookingQuery) plus the pure helpers
- * (describePeriod, statusColor) — via reflection.
- */
+/** Coverage for ClientBookingExcelExporter. */
 class ClientBookingExcelExporterTest extends TestCase
 {
     use RefreshDatabase;

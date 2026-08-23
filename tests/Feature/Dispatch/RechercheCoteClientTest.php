@@ -21,19 +21,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
-/**
- * CE QUE LE CLIENT VOIT ET DÉCIDE PENDANT QU'IL ATTEND.
- *
- * La sélection des candidats et la transmission des offres appartiennent au moteur
- * (`MoteurDeRepartitionTest`). Ici on vérifie l'autre moitié : le rayon qui s'élargit sous ses yeux,
- * le coût d'annulation ANNONCÉ AVANT le clic, les états par lesquels sa demande passe, et le fait
- * qu'il n'y a jamais de cul-de-sac.
- *
- * Ce sont trois promesses produit, et chacune se casse silencieusement :
- *  - des frais découverts APRÈS le clic font perdre un client pour de bon ;
- *  - un état qui saute laisse une intervention commencée annulable, donc un travail non payé ;
- *  - un écran d'attente qui finit sur « personne n'est disponible » sans suite est un bug produit.
- */
+/** CE QUE LE CLIENT VOIT ET DÉCIDE PENDANT QU'IL ATTEND. */
 class RechercheCoteClientTest extends TestCase
 {
     use OuvreLeCatalogue;

@@ -19,13 +19,7 @@ use Livewire\Livewire;
 use Mockery;
 use Tests\TestCase;
 
-/**
- * Le mode planifié — les créneaux, et la raison de ceux qui n'en sont pas.
- *
- * Ce que ces tests verrouillent : les créneaux sont RÉELS, ceux qui ne le sont pas restent
- * affichés avec leur raison, et le choix du professionnel demeure facultatif — l'attribution
- * automatique suffit pour continuer.
- */
+/** Le mode planifié — les créneaux, et la raison de ceux qui n'en sont pas. */
 class ScheduledModeTest extends TestCase
 {
     use RefreshDatabase;
@@ -49,12 +43,7 @@ class ScheduledModeTest extends TestCase
         parent::tearDown();
     }
 
-    /**
-     * LA garantie : un créneau indisponible n'est pas masqué, il est expliqué.
-     *
-     * Retiré, il laisserait une grille trouée que le client lirait comme une panne. Grisé avec sa
-     * raison, il informe et rend lisibles ceux qui restent.
-     */
+    /** LA garantie : un créneau indisponible n'est pas masqué, il est expliqué. */
     public function test_an_unavailable_slot_is_shown_with_its_reason(): void
     {
         $trade = $this->peinture();
@@ -95,12 +84,7 @@ class ScheduledModeTest extends TestCase
         $this->assertFalse($slots->first()['available'], 'Un créneau du matin est ouvert alors qu’aucun agenda ne l’est.');
     }
 
-    /**
-     * Une fenêtre trop courte n'ouvre pas de créneau.
-     *
-     * La peinture dure quatre heures : un professionnel libre une heure ne peut pas la tenir.
-     * Proposer ce créneau produirait une réservation qu'il faudrait annuler.
-     */
+    /** Une fenêtre trop courte n'ouvre pas de créneau. */
     public function test_a_window_too_short_for_the_job_opens_nothing(): void
     {
         $trade = $this->peinture(); // 240 minutes estimées
@@ -117,11 +101,7 @@ class ScheduledModeTest extends TestCase
         );
     }
 
-    /**
-     * Un créneau trop proche a SA raison, distincte de « personne n'est libre ».
-     *
-     * Les confondre ferait croire à un service saturé alors qu'il est simplement tard.
-     */
+    /** Un créneau trop proche a SA raison, distincte de « personne n'est libre ». */
     public function test_a_slot_too_soon_is_refused_for_its_own_reason(): void
     {
         $trade = $this->peinture();
@@ -195,12 +175,7 @@ class ScheduledModeTest extends TestCase
         $this->assertNull($component->instance()->selectedSlot);
     }
 
-    /**
-     * Le professionnel n'est JAMAIS obligatoire.
-     *
-     * L'attribution automatique est le défaut et suffit pour confirmer : obliger à trancher entre
-     * douze inconnus transforme un service en corvée de comparaison.
-     */
+    /** Le professionnel n'est JAMAIS obligatoire. */
     public function test_the_order_is_ready_without_choosing_a_provider(): void
     {
         $component = $this->journeyWithOpenCalendar();
@@ -244,11 +219,7 @@ class ScheduledModeTest extends TestCase
         $this->assertLessThan(1, $row['distance_km']);
     }
 
-    /**
-     * Une note qui repose sur un seul avis n'est pas affichée.
-     *
-     * Elle dirait moins que pas de note du tout, tout en prétendant le contraire.
-     */
+    /** Une note qui repose sur un seul avis n'est pas affichée. */
     public function test_a_rating_built_on_almost_nothing_is_withheld(): void
     {
         $trade = $this->peinture();

@@ -9,17 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
-/**
- * L'inscription depuis l'app prestataire menait à un compte définitivement mort.
- *
- * ApiAuthController::register posait `role => 'client'` en dur, et TOUTE la surface prestataire
- * — y compris /provider/onboarding/*, la route censée transformer le compte en prestataire —
- * est gardée par `role:employe`. Un prestataire qui s'inscrivait obtenait donc un compte client
- * qui se connectait au dashboard et recevait 403 sur chaque appel, sans aucun moyen d'en sortir.
- *
- * L'inscription accepte désormais `account_type=provider`. Le compte créé peut compléter son
- * dossier mais rien d'autre, tant qu'il n'est pas approuvé.
- */
+/** L'inscription depuis l'app prestataire menait à un compte définitivement mort. */
 class ProviderSelfRegistrationTest extends TestCase
 {
     use RefreshDatabase;
@@ -46,9 +36,7 @@ class ProviderSelfRegistrationTest extends TestCase
         );
     }
 
-    /**
-     * L'app cliente poste sur le même endpoint et ne doit rien changer à son comportement.
-     */
+    /** L'app cliente poste sur le même endpoint et ne doit rien changer à son comportement. */
     public function test_registering_without_an_account_type_still_creates_a_client(): void
     {
         $this->postJson('/api/auth/register', $this->payload())->assertCreated();
@@ -58,12 +46,7 @@ class ProviderSelfRegistrationTest extends TestCase
         $this->assertNull(ProviderProfile::where('user_id', $user->id)->first());
     }
 
-    /**
-     * `account_type` et `role` decrivent la meme chose : ils ne peuvent pas se contredire.
-     *
-     * L'assertion sur `role` n'est pas decorative, c'est le TEMOIN : sans elle, une inscription
-     * cassee pour une tout autre raison ferait passer l'assertion suivante au vert.
-     */
+    /** `account_type` et `role` decrivent la meme chose : ils ne peuvent pas se contredire. */
     public function test_le_type_de_compte_suit_le_role_pour_un_prestataire(): void
     {
         $this->postJson('/api/auth/register', $this->payload(['account_type' => 'provider']))->assertCreated();
@@ -114,12 +97,7 @@ class ProviderSelfRegistrationTest extends TestCase
         $this->actingAs($user, 'sanctum')->getJson(self::GATED_ROUTE)->assertOk();
     }
 
-    /**
-     * Anti-régression la plus importante de ce lot. Sur la base réelle, 4 comptes prestataires
-     * sur 9 ne sont pas `active` : une garde qui exigerait ce statut mettrait dehors des
-     * prestataires légitimes déjà en production. La restriction ne vise QUE les comptes portant
-     * self_registered_at, que les lignes existantes n'ont pas.
-     */
+    /** Anti-régression la plus importante de ce lot. */
     public function test_a_provider_created_before_this_change_is_never_gated(): void
     {
         $user = User::factory()->employe()->create();
@@ -134,11 +112,7 @@ class ProviderSelfRegistrationTest extends TestCase
         $this->actingAs($user, 'sanctum')->getJson(self::GATED_ROUTE)->assertOk();
     }
 
-    /**
-     * `User implements MustVerifyEmail` et EventServiceProvider écoute Registered avec
-     * SendEmailVerificationNotification — mais l'événement n'était jamais émis à l'inscription :
-     * aucun email de vérification ne partait jamais d'une création de compte mobile.
-     */
+    /** `User implements MustVerifyEmail` et EventServiceProvider écoute Registered avec SendEmailVerificationNotification — mais l'événement n'était jamais émis à l'inscription : aucun email de vérification ne partait jamais d'une création de compte mobile. */
     public function test_registering_dispatches_the_verification_event(): void
     {
         Event::fake([Registered::class]);

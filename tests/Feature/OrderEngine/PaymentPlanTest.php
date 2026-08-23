@@ -17,14 +17,7 @@ use Stripe\Stripe;
 use Tests\Support\Stripe\FakeStripeHttpClient;
 use Tests\TestCase;
 
-/**
- * L'acompte, le solde, et la destination de l'argent.
- *
- * Trois garanties d'argent. La somme des deux commissions vaut EXACTEMENT celle d'un paiement
- * unique — un centime perdu à chaque arrondi devient un écart comptable inexplicable. Un acompte
- * n'est proposé qu'au-dessus d'un seuil, et jamais sur un devis dont le total est inconnu. Et une
- * réservation ne change pas de professionnel tant qu'une somme est bloquée pour l'ancien.
- */
+/** L'acompte, le solde, et la destination de l'argent. Trois garanties d'argent. */
 class PaymentPlanTest extends TestCase
 {
     use RefreshDatabase;
@@ -52,12 +45,7 @@ class PaymentPlanTest extends TestCase
 
     // ─── Le partage de la commission ─────────────────────────────────────────────────────────
 
-    /**
-     * LA garantie comptable : deux commissions valent exactement une.
-     *
-     * Un centime perdu ou gagné à chaque arrondi, sur dix mille commandes, est un écart que
-     * personne ne sait plus expliquer — et qui apparaît au premier rapprochement Stripe.
-     */
+    /** LA garantie comptable : deux commissions valent exactement une. */
     public function test_the_two_fees_add_up_exactly_to_the_single_one(): void
     {
         $planner = app(OrderPaymentPlanner::class);
@@ -132,22 +120,12 @@ class PaymentPlanTest extends TestCase
         $this->assertStringContainsString('270,00', $deposit['detail']);
     }
 
-    /**
-     * Jamais d'acompte sur un devis.
-     *
-     * Le total n'est pas connu : un pourcentage d'un montant inconnu ne veut rien dire, et le
-     * calculer sur une estimation provisoire ferait payer un acompte sur un chiffre qui n'engage
-     * personne.
-     */
+    /** Jamais d'acompte sur un devis. */
     public function test_a_quote_only_booking_never_offers_a_deposit(): void
     {
         $booking = $this->booking(900.00);
 
-        /*
-         * Sans montant estimé, mais AVEC un montant technique déjà posé sur la réservation. Sans
-         * la garde « pas de devis », le seuil serait franchi par ce chiffre-là et le client paierait
-         * un acompte sur un total que personne n'a encore chiffré.
-         */
+        // Sans montant estimé, mais AVEC un montant technique déjà posé sur la réservation.
         $booking->forceFill([
             'estimated_price' => null,
             'devis_estime' => null,
@@ -209,12 +187,7 @@ class PaymentPlanTest extends TestCase
         $this->assertSame(['automatic', 'manual'], $captures->all());
     }
 
-    /**
-     * Les deux commissions envoyées à Stripe valent exactement celle du calcul unique.
-     *
-     * C'est la garantie précédente vérifiée sur ce qui part RÉELLEMENT chez Stripe, et non
-     * seulement sur une fonction de calcul.
-     */
+    /** Les deux commissions envoyées à Stripe valent exactement celle du calcul unique. */
     public function test_the_fees_sent_to_stripe_match_the_single_source(): void
     {
         $booking = $this->bookingWithProvider(900.00);
@@ -241,12 +214,7 @@ class PaymentPlanTest extends TestCase
 
     // ─── La destination de l'argent ──────────────────────────────────────────────────────────
 
-    /**
-     * LA garantie qui compte : on ne change pas de professionnel avec de l'argent bloqué.
-     *
-     * L'autorisation désigne le compte du prestataire. Réassigner sans y toucher enverrait l'argent
-     * chez quelqu'un qui n'a rien fait, et celui qui a travaillé ne serait pas payé.
-     */
+    /** LA garantie qui compte : on ne change pas de professionnel avec de l'argent bloqué. */
     public function test_a_booking_cannot_change_provider_while_money_is_held(): void
     {
         $booking = $this->bookingWithProvider(900.00);
@@ -278,12 +246,7 @@ class PaymentPlanTest extends TestCase
         $this->assertNotNull($booking->fresh()->employe_id);
     }
 
-    /**
-     * Une libération qui échoue chez Stripe ne se déclare PAS réussie.
-     *
-     * Croire la retenue annulée alors qu'elle tient encore ferait créer une seconde empreinte : le
-     * client verrait deux fois le montant bloqué sur sa carte.
-     */
+    /** Une libération qui échoue chez Stripe ne se déclare PAS réussie. */
     public function test_a_failed_release_does_not_pretend_to_have_worked(): void
     {
         $booking = $this->bookingWithProvider(900.00);
@@ -321,14 +284,7 @@ class PaymentPlanTest extends TestCase
         $this->assertSame(27000, $result['deposit_to_settle_cents']);
     }
 
-    /**
-     * Une première attribution n'est jamais bloquée, même sur une ligne incoherente.
-     *
-     * Une reservation « autorisee » sans aucun prestataire ne devrait pas exister — l'autorisation
-     * en exige un. Mais une ligne ancienne ou reparee a la main peut porter cet etat, et la garde
-     * doit alors laisser passer : refuser d'attribuer un professionnel a une reservation qui n'en a
-     * jamais eu la condamnerait definitivement.
-     */
+    /** Une première attribution n'est jamais bloquée, même sur une ligne incoherente. */
     public function test_a_first_assignment_is_never_blocked_even_on_an_odd_row(): void
     {
         $booking = $this->booking(900.00);

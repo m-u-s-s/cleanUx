@@ -11,10 +11,6 @@ use App\Services\FleetV2\CertificationExpiryScanner;
 /**
  * Le matériel de la flotte.
  *
- * L’AFFECTATION à un prestataire passe par le module Flotte, qui vérifie les certifications :
- * confier un équipement à quelqu’un dont la certification a expiré est précisément ce que ce
- * module empêche.
- *
  * @extends EloquentResource<FleetEquipment>
  */
 class FleetEquipmentResource extends EloquentResource
@@ -75,11 +71,7 @@ class FleetEquipmentResource extends EloquentResource
     public function globalActions(): array
     {
         return [
-            /*
-             * Balayer les certifications qui expirent. C'est ce balayage qui BLOQUE l'affectation
-             * d'un prestataire dont la certification est périmée : le lancer à la main est le
-             * geste qu'on veut après avoir corrigé une date.
-             */
+            // Balayer les certifications qui expirent.
             Action::make('scan-expiring', 'Balayer les certifications', function (array $valeurs) {
                 $comptes = app(CertificationExpiryScanner::class)->scanAndUpdate();
 

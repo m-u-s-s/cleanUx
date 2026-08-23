@@ -13,33 +13,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-/**
- * FIXTURE DE DÉVELOPPEMENT : une mission DÉJÀ DÉMARRÉE, chez un prestataire précis.
- *
- * `DevProviderMissionSeeder`, son voisin, s'arrête à `planned` : il donne un marqueur à la carte.
- * Celui-ci va jusqu'au bout du parcours terrain — offre, acceptation, départ, arrivée, code de
- * début consommé — parce que c'est le seul moyen d'obtenir un état `started` QUI SOIT VRAI.
- *
- * RIEN N'EST ÉCRIT À LA MAIN SUR LA MISSION. Un `UPDATE missions SET status = 'started'` produirait
- * une ligne que l'application refuserait ensuite de clôturer : pas d'affectation acceptée, pas de
- * `lead_provider_user_id`, pas de code consommé, pas de checklist, une réservation restée « en
- * attente » côté client. On déroule donc les services réels, dans l'ordre réel :
- *
- *   1. réservation confirmée      → `RendezVousObserver` fait naître la mission (`planned`)
- *   2. `createOffer()`            → l'offre part au prestataire désigné (assignment `assigned`)
- *   3. `accept()`                 → mission `assigned`, `lead_provider_user_id` posé
- *   4. `setEnRoute()`             → mission `en_route`, réservation `en_route`
- *   5. `setArrived()`             → mission `arrived`, réservation `sur_place`, code de début émis
- *   6. `validateStartCode()`      → mission `started`, `actual_start_at`, présence client confirmée
- *
- * LE CODE DE DÉBUT EST RÉÉMIS À L'ÉTAPE 6, et ce n'est pas un oubli : `createVerificationCode()`
- * n'enregistre qu'une empreinte, les six chiffres n'existent que dans sa valeur de retour — et
- * `setArrived()` rend la mission, pas le code. Un seeder qui ne les réémet pas ne peut donc pas
- * franchir sa propre étape suivante.
- *
- * Usage : php artisan db:seed --class=DevMissionDemarreeSeeder
- *         PROVIDER_EMAIL=autre@exemple.test TRADE_SLUG=plumbing php artisan db:seed --class=DevMissionDemarreeSeeder
- */
+/** FIXTURE DE DÉVELOPPEMENT : une mission DÉJÀ DÉMARRÉE, chez un prestataire précis. */
 class DevMissionDemarreeSeeder extends Seeder
 {
     public function run(): void
@@ -150,10 +124,6 @@ class DevMissionDemarreeSeeder extends Seeder
 
     /**
      * LE MÉTIER, SA ZONE ET SON TARIF — les trois ensemble, ou rien.
-     *
-     * Un métier sans ligne `trade_zone_pricing` active est un service FERMÉ : le moteur de commande
-     * ne le propose pas, et une fixture qui en fabriquerait une réservation décrirait un état que
-     * la plateforme ne sait pas produire.
      *
      * @return array{0: ?object, 1: ?int, 2: float}
      */

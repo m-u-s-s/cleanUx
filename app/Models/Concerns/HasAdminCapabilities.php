@@ -35,18 +35,7 @@ trait HasAdminCapabilities
             'manage-entreprises' => 'Gestion entreprises',
             'manage-finance' => 'Gestion finance',
 
-            /*
-             * COMPTABILITÉ ET FISCALITÉ — une capacité À PART de « Gestion finance », et ce n'est
-             * pas un doublon.
-             *
-             * « Finance » ouvre les flux d'exploitation : versements, litiges, gestes commerciaux,
-             * crédits clients. La comptabilité, elle, ouvre le grand livre, la clôture des
-             * périodes, les exports légaux et la position de TVA — un métier différent, exercé par
-             * quelqu'un d'extérieur à l'exploitation.
-             *
-             * Les séparer permet de donner un compte au comptable SANS lui ouvrir la trésorerie
-             * opérationnelle, et sans obliger à faire de lui un super-administrateur.
-             */
+            // COMPTABILITÉ ET FISCALITÉ — une capacité À PART de « Gestion finance », et ce n'est pas un doublon.
             'manage-accounting' => 'Comptabilité & fiscalité',
             'manage-analytics' => 'Analytics',
             'manage-quality' => 'Qualité',
@@ -58,39 +47,12 @@ trait HasAdminCapabilities
             'manage-orchestration' => 'Orchestration terrain',
             'manage-automation' => 'Automatisation',
 
-            /*
-             * TROIS DOMAINES QUI N'AVAIENT AUCUNE CAPACITE, et dont les ecrans etaient donc
-             * ouverts a tout administrateur.
-             *
-             * La liste d'origine a ete ecrite avant que ces modules n'existent. Plutot que de les
-             * ranger de force sous une capacite voisine -- une correspondance approximative masque
-             * un ecran a quelqu'un qui y a droit, ce qui est une regression silencieuse -- on
-             * nomme ce qu'ils sont.
-             *
-             * `manage-compliance` : RGPD, KYC, KYB, assurance, score de risque. Le metier de la
-             * conformite, distinct de la lecture des journaux d'audit.
-             *
-             * `manage-communication` : chat, e-mails, push, SMS, temps reel, preferences de
-             * notification. Ecrire aux clients et aux prestataires n'est ni du marketing ni de
-             * l'exploitation terrain.
-             *
-             * `manage-platform` : jetons d'API, geolocalisation, catalogue geographique, webhooks
-             * sortants, outils, etat de preparation. L'infrastructure, distincte des « Modules
-             * plateforme » qui n'activent que des fonctionnalites.
-             */
+            // TROIS DOMAINES QUI N'AVAIENT AUCUNE CAPACITE, et dont les ecrans etaient donc ouverts a tout administrateur.
             'manage-compliance' => 'Conformite (RGPD, KYC, KYB)',
             'manage-communication' => 'Communication & notifications',
             'manage-platform' => 'Infrastructure plateforme',
 
-            /*
-             * NOS LOCATIONS — une capacite a part, et pas un sous-ensemble de la flotte.
-             *
-             * Fleet est un registre d'employeur : ce qu'une societe confie a ses executants pour
-             * aller travailler. Ici, chaque vehicule est un PRODUIT vendu a un client, avec un
-             * prix, une caution et une garantie. Ce sont deux metiers, et rien ne dit que la meme
-             * personne les tient : on peut confier le comptoir de location sans ouvrir la gestion
-             * de parc interne, et l'inverse.
-             */
+            // NOS LOCATIONS — une capacite a part, et pas un sous-ensemble de la flotte.
             'manage-rentals' => 'Nos locations (vehicules)',
             'perform-critical-admin-actions' => 'Actions critiques',
         ];

@@ -8,23 +8,7 @@ use Illuminate\Support\Facades\Queue;
 use Tests\Support\Spine\SpineScenario;
 use Tests\TestCase;
 
-/**
- * UNE OFFRE OUBLIÉE EST UNE MISSION PERDUE.
- *
- * L'expiration d'une offre repose sur `EscalateMissionAssignmentJob`, mis en file AVEC UN DÉLAI
- * jusqu'à `expires_at` et déclaré `tries = 1`. Efficace, et fragile : un worker redémarré pendant
- * que le job attend, une file vidée, un échec unique sur un hoquet de base — et plus rien ne se
- * déclenche jamais.
- *
- * L'offre reste alors `assigned` indéfiniment. Le prestataire ne répond pas, il ne l'a peut-être
- * même pas vue, la mission n'est JAMAIS proposée au suivant — l'escalade était précisément ce qui
- * devait la relancer — et le client attend quelqu'un qui ne viendra pas. Sans qu'une seule ligne
- * soit en erreur nulle part.
- *
- * CE BALAYAGE REJOUE LE MÊME CHEMIN, pas un chemin parallèle : `expireAndEscalate()` est appelé tel
- * quel. Écrire une seconde expiration ici en ferait une version qui divergerait — et ce serait
- * celle du balayage, jamais relue, qui déciderait du sort des missions oubliées.
- */
+/** UNE OFFRE OUBLIÉE EST UNE MISSION PERDUE. */
 class FiletDesOffresExpireesTest extends TestCase
 {
     use RefreshDatabase;
@@ -43,13 +27,7 @@ class FiletDesOffresExpireesTest extends TestCase
         $this->assertNotNull($offre->declined_at);
     }
 
-    /**
-     * LE BATTEMENT PROTÈGE LE JOB DIFFÉRÉ SUR SON PROPRE CRÉNEAU.
-     *
-     * Une offre qui vient d'expirer appartient encore au job : le doubler ferait deux recherches de
-     * candidat pour rien, à chaque passage. Le balayage ne prend que ce qui a manifestement été
-     * perdu.
-     */
+    /** LE BATTEMENT PROTÈGE LE JOB DIFFÉRÉ SUR SON PROPRE CRÉNEAU. */
     public function test_une_offre_a_peine_expiree_est_laissee_au_job(): void
     {
         Queue::fake();
@@ -63,12 +41,7 @@ class FiletDesOffresExpireesTest extends TestCase
         $this->assertSame('assigned', $offre->refresh()->assignment_status);
     }
 
-    /**
-     * ON NE TOUCHE PAS À CE QUI A ÉTÉ RÉPONDU.
-     *
-     * Réexpirer une offre acceptée retirerait la mission à quelqu'un qui est peut-être déjà en
-     * route. La garde vit dans `expireAndEscalate()` ; ce test vérifie qu'on la traverse bien.
-     */
+    /** ON NE TOUCHE PAS À CE QUI A ÉTÉ RÉPONDU. */
     public function test_une_offre_acceptee_nest_jamais_reprise(): void
     {
         Queue::fake();

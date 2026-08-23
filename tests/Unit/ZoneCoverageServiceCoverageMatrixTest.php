@@ -26,8 +26,7 @@ class ZoneCoverageServiceCoverageMatrixTest extends TestCase
     }
 
     /**
-     * The ZoneServiceRule factory leaves several NOT NULL columns optional;
-     * supply safe non-null defaults so inserts never violate the schema.
+     * The ZoneServiceRule factory leaves several NOT NULL columns optional; supply safe non-null defaults so inserts never violate the schema.
      *
      * @param  array<string, mixed>  $attributes
      */

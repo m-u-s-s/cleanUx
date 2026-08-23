@@ -2,13 +2,7 @@
 
 namespace App\Services\FaceCheck\Data;
 
-/**
- * Le verdict d'un contrôle : réussi, raté, ou pas encore rendu.
- *
- * `PENDING` n'est pas une nuance de `PASSED`. Tant qu'un fournisseur n'a pas conclu, la porte
- * reste fermée : c'est le seul défaut sûr. Un module de contrôle d'identité qui laisse passer
- * pendant qu'il réfléchit ne contrôle rien.
- */
+/** Le verdict d'un contrôle : réussi, raté, ou pas encore rendu. */
 final readonly class FaceVerifyResult
 {
     public const PASSED = 'passed';

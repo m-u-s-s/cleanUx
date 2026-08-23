@@ -14,18 +14,7 @@ use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Créer un métier depuis le catalogue d'une zone.
- *
- * LE TROU QUE ÇA COMBLE. L'écran permettait d'ajouter un secteur et de rattacher un métier
- * EXISTANT, jamais d'en créer un. Il fallait aller sur `/admin/trades`, remplir vingt et un champs,
- * revenir au catalogue rattacher le métier devenu orphelin, puis l'ouvrir dans la zone : trois
- * écrans pour un geste.
- *
- * CE QU'IL FAUT GARDER EN TÊTE EN LISANT CES TESTS. Un métier est un objet GLOBAL — créé une fois,
- * partagé par tous les pays et toutes les zones. Seule son OUVERTURE est propre à la zone. Le créer
- * depuis un écran de zone est commode, mais ne doit pas laisser croire qu'il n'existe qu'ici.
- */
+/** Créer un métier depuis le catalogue d'une zone. LE TROU QUE ÇA COMBLE. */
 class CatalogTradeCreationTest extends TestCase
 {
     use RefreshDatabase;

@@ -11,15 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * Coverage for App\Services\Cancellation\CancelBookingService.
- *
- * Exercises the three public entry points (cancelByClient, cancelByProvider,
- * markClientNoShow) plus the guard and the provider-penalty side effects.
- * Stripe/Mission/Dispatch integrations are reached through their early-return
- * guards (no payment intent, payment_status not authorized, no mission) so the
- * test stays fully self-contained and green.
- */
+/** Coverage for App\Services\Cancellation\CancelBookingService. */
 class CancelBookingServiceTest extends TestCase
 {
     use RefreshDatabase;

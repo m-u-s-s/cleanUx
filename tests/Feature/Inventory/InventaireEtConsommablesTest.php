@@ -17,22 +17,7 @@ use Illuminate\Support\Facades\Notification;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * L'INVENTAIRE DES CONSOMMABLES (E23) ET LA SAISIE SUR PLACE (F7).
- *
- * Une société de nettoyage achète des produits et les distribue à ses équipes. Ce suivi se fait
- * aujourd'hui sur un tableur — quand il se fait : personne ne sait ce qui reste dans quelle agence,
- * et on découvre la rupture le matin où une équipe part sans produit.
- *
- * CE QUE CE FICHIER PROTÈGE AVANT TOUT : le compteur est le RÉSULTAT des mouvements, jamais une
- * valeur qu'on écrit. Dès qu'on peut ajuster le stock à la main sans laisser de trace, le registre
- * et le compteur divergent — et plus personne ne sait lequel croire. Corriger un écart reste
- * légitime, mais c'est un mouvement déclaré, avec son motif.
- *
- * ET LE STOCK NE DESCEND PAS SOUS ZÉRO. Une consommation supérieure au stock signale soit une
- * erreur de saisie, soit un stock déjà faux : l'accepter en silence produirait un compteur négatif
- * que personne ne saurait expliquer.
- */
+/** L'INVENTAIRE DES CONSOMMABLES (E23) ET LA SAISIE SUR PLACE (F7). */
 class InventaireEtConsommablesTest extends TestCase
 {
     use RefreshDatabase;
@@ -70,11 +55,7 @@ class InventaireEtConsommablesTest extends TestCase
 
         $this->assertSame(15, $item->fresh()->quantity);
 
-        /*
-         * LE COMPTEUR DÉCOULE DU REGISTRE. Sans le mouvement, on saurait qu'il reste quinze sans
-         * jamais pouvoir répondre « pourquoi » — or c'est la question qui se pose vraiment quand un
-         * stock fond plus vite que prévu.
-         */
+        // LE COMPTEUR DÉCOULE DU REGISTRE.
         $this->assertDatabaseHas('inventory_movements', [
             'inventory_item_id' => $item->id,
             'type' => InventoryMovement::TYPE_RECEPTION,
@@ -185,11 +166,7 @@ class InventaireEtConsommablesTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('data.remaining', 8);
 
-        /*
-         * LE MOUVEMENT PORTE LA MISSION. C'est ce lien qui permettra d'en calculer le coût réel
-         * (E22) et de facturer les consommables qui le sont — sans lui, on saurait qu'un bidon est
-         * parti sans savoir chez qui.
-         */
+        // LE MOUVEMENT PORTE LA MISSION.
         $this->assertDatabaseHas('inventory_movements', [
             'inventory_item_id' => $item->id,
             'mission_id' => $mission->id,

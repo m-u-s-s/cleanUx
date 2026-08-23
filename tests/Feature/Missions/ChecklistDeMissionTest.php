@@ -20,23 +20,7 @@ use Livewire\Livewire;
 use RuntimeException;
 use Tests\TestCase;
 
-/**
- * LA CHECKLIST QUI EMPÊCHAIT DE TERMINER — deux défauts trouvés en déroulant le parcours à la main.
- *
- * Aucun des deux n'était visible depuis la suite : les tests de cycle de vie construisent leurs
- * missions à la main, sans passer par la création depuis une réservation, et n'utilisent pas
- * l'écran terrain. Il a fallu commander une course dans un navigateur, la conduire, et se heurter
- * au mur.
- *
- *  1. Une COURSE recevait la checklist par défaut — celle du ménage. « Nettoyer surfaces clés »
- *     était obligatoire, donc la course ne se terminait jamais : ni encaissement, ni avis client,
- *     et un chauffeur qui reste « occupé » indéfiniment.
- *
- *  2. Trois vocabulaires se partageaient une seule colonne. La migration déclare « todo, done », la
- *     porte de clôture lit `done`, ce service écrivait `pending` et l'écran terrain basculait vers
- *     `completed`. Cocher les six tâches affichait 100 % et la mission refusait toujours de se
- *     terminer — le refus paraissait absurde, et il l'était.
- */
+/** LA CHECKLIST QUI EMPÊCHAIT DE TERMINER — deux défauts trouvés en déroulant le parcours à la main. */
 class ChecklistDeMissionTest extends TestCase
 {
     use RefreshDatabase;
@@ -95,14 +79,7 @@ class ChecklistDeMissionTest extends TestCase
         $this->assertSame(0, MissionChecklist::where('mission_id', $mission->id)->count());
     }
 
-    /**
-     * LE TÉMOIN : une intervention ordinaire garde bien sa checklist.
-     *
-     * Elle assertait aussi « et ses tâches », ce qui n'est plus vrai depuis que le gabarit propose
-     * au lieu d'imposer — la liste naît vide et c'est le CLIENT qui la remplit. L'assertion est
-     * donc déplacée là où elle a désormais un sens : la liste existe, et elle accueille bien ce
-     * que le client y met.
-     */
+    /** LE TÉMOIN : une intervention ordinaire garde bien sa checklist. */
     public function test_une_intervention_ordinaire_garde_sa_checklist(): void
     {
         [, $mission] = $this->mission(course: false);
@@ -116,11 +93,7 @@ class ChecklistDeMissionTest extends TestCase
         $this->assertSame(1, $checklist->fresh()->items()->count());
     }
 
-    /**
-     * LE VOCABULAIRE : ce que l'écran terrain écrit doit ouvrir la porte de clôture.
-     *
-     * Le test coche par l'écran et termine par le service — les deux extrémités du désaccord.
-     */
+    /** LE VOCABULAIRE : ce que l'écran terrain écrit doit ouvrir la porte de clôture. */
     public function test_cocher_les_taches_depuis_l_ecran_terrain_permet_de_terminer(): void
     {
         [$prestataire, $mission] = $this->mission(course: false);
@@ -152,10 +125,7 @@ class ChecklistDeMissionTest extends TestCase
         $this->assertSame(MissionStatus::COMPLETED, $mission->fresh()->status);
     }
 
-    /**
-     * LE TÉMOIN INVERSE, sans lequel le test précédent passerait au vert si la porte ne gardait
-     * plus rien : une tâche obligatoire non cochée bloque toujours la clôture.
-     */
+    /** LE TÉMOIN INVERSE, sans lequel le test précédent passerait au vert si la porte ne gardait plus rien : une tâche obligatoire non cochée bloque toujours la clôture. */
     public function test_une_tache_obligatoire_non_cochee_bloque_toujours(): void
     {
         [$prestataire, $mission] = $this->mission(course: false);

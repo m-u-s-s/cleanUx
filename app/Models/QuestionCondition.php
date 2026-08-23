@@ -5,12 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Logique conditionnelle : « Type de pistolet » ne s'affiche que si « Application au pistolet »
- * vaut oui.
- *
- * L'evaluation vit dans ConditionEvaluator, pas ici : un modele decrit, il ne decide pas.
- */
+/** Logique conditionnelle : « Type de pistolet » ne s'affiche que si « Application au pistolet » vaut oui. */
 class QuestionCondition extends Model
 {
     protected $fillable = [

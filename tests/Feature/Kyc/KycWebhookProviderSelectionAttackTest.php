@@ -15,27 +15,12 @@ use Illuminate\Support\Facades\Queue;
 use RuntimeException;
 use Tests\TestCase;
 
-/**
- * B5 — tests D'ATTAQUE sur le webhook KYC.
- *
- * L'attaque d'origine : le segment {provider} de l'URL SÉLECTIONNAIT le vérificateur
- * de signature. En demandant /webhooks/kyc/mock, l'attaquant choisissait un
- * vérificateur qui n'authentifie rien (KycMockProvider) et signait ce qu'il voulait.
- *
- * Le pire (M3) : sans identifiant de ressource dans la charge utile, l'événement
- * s'appliquait à la vérification la PLUS RÉCENTE. L'attaquant faisait donc passer en
- * « vérifié » le KYC d'un inconnu, sans même connaître son identifiant.
- *
- * Chaque test ci-dessous EXÉCUTE l'attaque et prouve qu'elle est refusée.
- */
+/** B5 — tests D'ATTAQUE sur le webhook KYC. */
 class KycWebhookProviderSelectionAttackTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * En production le middleware ForceHttps répond 301 sur http:// — on attaque donc
-     * en https, sinon on mesurerait la redirection au lieu de la garde (piège de mesure).
-     */
+    /** En production le middleware ForceHttps répond 301 sur http:// — on attaque donc en https, sinon on mesurerait la redirection au lieu de la garde (piège de mesure). */
     private const URL_PROD = 'https://localhost/webhooks/kyc/mock';
 
     protected function setUp(): void
@@ -53,14 +38,7 @@ class KycWebhookProviderSelectionAttackTest extends TestCase
         config(['app.env' => 'production']);
     }
 
-    /**
-     * (a) ATTAQUE — POST sur /webhooks/kyc/mock en production.
-     *
-     * Sans le correctif : le contrôleur instanciait KycMockProvider, verifyWebhook
-     * acceptait n'importe quoi, et l'événement était stocké puis traité.
-     * Assertion qui tombe si on annule le correctif : assertStatus(404)
-     * (la réponse redevient 200) et assertSame(0, KycWebhookEvent::count()).
-     */
+    /** (a) ATTAQUE — POST sur /webhooks/kyc/mock en production. */
     public function test_attaque_le_provider_mock_est_injoignable_en_production(): void
     {
         $this->basculeEnProduction();
@@ -77,13 +55,7 @@ class KycWebhookProviderSelectionAttackTest extends TestCase
         $this->assertSame(0, KycWebhookEvent::count(), 'aucun événement ne doit être stocké en production via le mock');
     }
 
-    /**
-     * (b) ATTAQUE — le segment d'URL diffère du provider configuré.
-     *
-     * La configuration réelle dit « onfido » (signature HMAC obligatoire) ; l'attaquant
-     * demande « mock » dans l'URL pour choisir un vérificateur qui ne vérifie rien.
-     * Assertion qui tombe si on annule le correctif : assertStatus(404) (redevient 200).
-     */
+    /** (b) ATTAQUE — le segment d'URL diffère du provider configuré. */
     public function test_attaque_un_segment_d_url_different_du_provider_configure_est_refuse(): void
     {
         $this->app->bind(KycProviderInterface::class, OnfidoProvider::class);
@@ -103,10 +75,7 @@ class KycWebhookProviderSelectionAttackTest extends TestCase
         $this->assertSame(0, KycWebhookEvent::count(), 'un segment d\'URL hostile ne doit rien stocker');
     }
 
-    /**
-     * (b bis) CONTRÔLE POSITIF — le segment ÉGAL au provider configuré, avec une
-     * signature valide, reste accepté. La garde confirme, elle ne bloque pas tout.
-     */
+    /** (b bis) CONTRÔLE POSITIF — le segment ÉGAL au provider configuré, avec une signature valide, reste accepté. */
     public function test_le_segment_egal_au_provider_configure_avec_signature_valide_reste_accepte(): void
     {
         Queue::fake();
@@ -133,9 +102,7 @@ class KycWebhookProviderSelectionAttackTest extends TestCase
         $this->assertSame('onfido', KycWebhookEvent::first()->provider);
     }
 
-    /**
-     * (b ter) Une signature INVALIDE sur le bon segment reste refusée (400).
-     */
+    /** (b ter) Une signature INVALIDE sur le bon segment reste refusée (400). */
     public function test_une_signature_invalide_sur_le_bon_segment_est_refusee(): void
     {
         $this->app->bind(KycProviderInterface::class, OnfidoProvider::class);
@@ -151,19 +118,7 @@ class KycWebhookProviderSelectionAttackTest extends TestCase
         $this->assertSame(0, KycWebhookEvent::count());
     }
 
-    /**
-     * (c) ATTAQUE LA PLUS GRAVE — événement SANS identifiant de ressource.
-     *
-     * L'attaquant ne connaît l'identifiant de personne. Il envoie simplement
-     * « decision: approved ». Sans le correctif, la clause `where` enveloppée dans un
-     * `if ($resourceId)` n'ajoutait aucune condition et `latest('id')` désignait la
-     * vérification la plus récente : celle de la victime.
-     *
-     * Assertion qui tombe si on annule le correctif (LA seule qui compte) :
-     *   assertSame('pending', $profil->verification_status)
-     * qui devient 'verified'. Tombent aussi le status IN_REVIEW / decision pending
-     * de la vérification et le statut IGNORED de l'événement.
-     */
+    /** (c) ATTAQUE LA PLUS GRAVE — événement SANS identifiant de ressource. */
     public function test_attaque_un_evenement_sans_identifiant_de_ressource_ne_touche_pas_la_verification_la_plus_recente(): void
     {
         $victime = User::factory()->create(['role' => 'employe', 'email' => 'victime@example.com']);
@@ -202,10 +157,7 @@ class KycWebhookProviderSelectionAttackTest extends TestCase
         $this->assertSame(KycWebhookEvent::STATUS_IGNORED, $evenement->status);
     }
 
-    /**
-     * (c bis) Même refus au niveau du service, avec un identifiant vide ou non exploitable
-     * — la chaîne vide ne doit pas rouvrir le repli sur « la plus récente ».
-     */
+    /** (c bis) Même refus au niveau du service, avec un identifiant vide ou non exploitable — la chaîne vide ne doit pas rouvrir le repli sur « la plus récente ». */
     public function test_un_identifiant_de_ressource_vide_est_traite_comme_absent(): void
     {
         $victime = User::factory()->create(['role' => 'employe', 'email' => 'victime2@example.com']);
@@ -244,10 +196,7 @@ class KycWebhookProviderSelectionAttackTest extends TestCase
         );
     }
 
-    /**
-     * (2) Le vérificateur mock lui-même refuse en production, même atteint autrement
-     * que par le contrôleur (job, commande, appel direct).
-     */
+    /** (2) Le vérificateur mock lui-même refuse en production, même atteint autrement que par le contrôleur (job, commande, appel direct). */
     public function test_le_verificateur_mock_echoue_en_production_meme_appele_directement(): void
     {
         $this->basculeEnProduction();
@@ -257,10 +206,7 @@ class KycWebhookProviderSelectionAttackTest extends TestCase
         (new KycMockProvider)->verifyWebhook('{"decision":"approved"}', []);
     }
 
-    /**
-     * (2 bis) Hors production, le mock refuse aussi dès que la configuration désigne
-     * un autre provider : être appelé signifie que le vrai vérificateur a été contourné.
-     */
+    /** (2 bis) Hors production, le mock refuse aussi dès que la configuration désigne un autre provider : être appelé signifie que le vrai vérificateur a été contourné. */
     public function test_le_verificateur_mock_echoue_si_la_configuration_designe_un_autre_provider(): void
     {
         config(['kyc.default_provider' => 'onfido']);

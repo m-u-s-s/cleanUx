@@ -13,25 +13,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * LA FICHE D'UNE VOITURE, ET LE FORMULAIRE DE LOCATION.
- *
- * ── LES QUESTIONS SONT CELLES D'UNE AGENCE ───────────────────────────────────────────────────
- *
- * Dates et heures de départ et de retour, agence de retrait, conducteur, permis, et le choix de la
- * garantie. Ce sont exactement les informations qu'un comptoir demande, et chacune sert :
- *
- *   LES DATES        décident du prix, de la disponibilité, et de rien d'autre
- *   LA NAISSANCE     l'âge minimum du véhicule s'apprécie AU JOUR DU DÉPART, pas aujourd'hui : un
- *                    client de vingt ans qui réserve pour dans six mois aura l'âge au volant
- *   LE PERMIS        même raison pour son ancienneté ; le numéro sert au comptoir, pas au calcul
- *   LA GARANTIE      elle ne s'impose jamais : le client voit les deux prix et tranche
- *
- * ── LE PRIX AVANT L'IDENTITÉ ─────────────────────────────────────────────────────────────────
- *
- * Comme dans le parcours de commande, rien ici ne réclame de compte. Le devis s'affiche et se
- * recalcule à chaque changement de date ; on ne demande le conducteur qu'au moment de réserver.
- */
+/** LA FICHE D'UNE VOITURE, ET LE FORMULAIRE DE LOCATION. */
 #[Layout('layouts.app')]
 class LocationVehicle extends Component
 {
@@ -64,13 +46,7 @@ class LocationVehicle extends Component
 
     public function mount(RentalVehicle $vehicle): void
     {
-        /*
-         * UNE VOITURE HORS VITRINE N'A PAS DE FICHE PUBLIQUE.
-         *
-         * `is_active` décide seul de la présence au catalogue ; laisser son URL ouverte
-         * permettrait de réserver un véhicule que l'administrateur a justement retiré — en tapant
-         * l'adresse, ou depuis un lien partagé la veille.
-         */
+        // UNE VOITURE HORS VITRINE N'A PAS DE FICHE PUBLIQUE.
         abort_unless($vehicle->is_active, 404);
 
         $this->vehicleId = $vehicle->id;
@@ -111,13 +87,7 @@ class LocationVehicle extends Component
         $debut = Carbon::parse($valide['debut']);
         $fin = Carbon::parse($valide['fin']);
 
-        /*
-         * LA DISPONIBILITÉ EST REVÉRIFIÉE ICI AUSSI.
-         *
-         * Le service la revérifie dans sa transaction — c'est lui qui protège vraiment. Ce
-         * contrôle-ci sert à donner au client un message dans SON formulaire plutôt qu'une
-         * exception après coup, sur une page qu'il n'a pas demandée.
-         */
+        // LA DISPONIBILITÉ EST REVÉRIFIÉE ICI AUSSI.
         if (! app(RentalAvailability::class)->estLibre($vehicule, $debut, $fin)) {
             $this->erreur = 'Ce véhicule n’est plus disponible sur ces dates. Essayez d’autres dates.';
 
@@ -171,12 +141,7 @@ class LocationVehicle extends Component
         }
     }
 
-    /**
-     * Le jeton qui rattache un panier de location à un visiteur sans compte.
-     *
-     * Même principe que le parcours de commande : on ne demande pas d'identité pour voir un prix.
-     * Le jeton vit dans la session ; il permet de retrouver sa réservation en revenant.
-     */
+    /** Le jeton qui rattache un panier de location à un visiteur sans compte. */
     private function jetonDeSession(): string
     {
         $jeton = session()->get('rental_session_token');

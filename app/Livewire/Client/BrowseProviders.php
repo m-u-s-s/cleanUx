@@ -46,11 +46,7 @@ class BrowseProviders extends Component
 
     public array $postalSuggestions = [];
 
-    /**
-     * SP2 Task 6 — quand embarqué dans le picker premium du formulaire de
-     * réservation, chaque carte expose un bouton « Choisir » qui émet l'event
-     * `providerSelected` (capté par le parcours de commande) au lieu de naviguer.
-     */
+    /** SP2 Task 6 — quand embarqué dans le picker premium du formulaire de réservation, chaque carte expose un bouton « Choisir » qui émet l'event `providerSelected` (capté par le parcours de commande) au lieu de naviguer. */
     public bool $selectionMode = false;
 
     public function mount(bool $selectionMode = false): void
@@ -58,11 +54,7 @@ class BrowseProviders extends Component
         $this->selectionMode = $selectionMode;
     }
 
-    /**
-     * SP2 Task 6 — sélection d'un prestataire en mode embarqué : émet l'event
-     * que le composant parent écoute. No-op hors selection
-     * mode (frontière de sécurité = ProviderSelectionResolver côté backend).
-     */
+    /** SP2 Task 6 — sélection d'un prestataire en mode embarqué : émet l'event que le composant parent écoute. */
     public function selectProvider(int $providerId): void
     {
         if ($this->selectionMode) {

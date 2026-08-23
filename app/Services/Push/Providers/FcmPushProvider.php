@@ -9,16 +9,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Firebase Cloud Messaging (FCM v1 HTTP API) provider.
- *
- * Requires:
- *   - FCM_CREDENTIALS_PATH (service account JSON)
- *   - FCM_PROJECT_ID
- *
- * Token errors that mean "delete this token from DB":
- *   - UNREGISTERED, NOT_FOUND, INVALID_ARGUMENT (token format)
- */
+/** Firebase Cloud Messaging (FCM v1 HTTP API) provider. */
 class FcmPushProvider implements PushProviderInterface
 {
     public function name(): string
@@ -107,10 +98,7 @@ class FcmPushProvider implements PushProviderInterface
         return $message;
     }
 
-    /**
-     * Obtain an OAuth2 access token for FCM HTTP v1.
-     * Caches in-memory for the request; in prod use Cache::remember.
-     */
+    /** Obtain an OAuth2 access token for FCM HTTP v1. */
     protected function getAccessToken(): string
     {
         $credentialsPath = (string) Config::get('push.providers.fcm.credentials_path', '');

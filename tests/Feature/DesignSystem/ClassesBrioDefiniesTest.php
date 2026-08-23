@@ -4,29 +4,11 @@ namespace Tests\Feature\DesignSystem;
 
 use Tests\TestCase;
 
-/**
- * UNE CLASSE `brio-` UTILISÉE DANS UNE VUE DOIT EXISTER DANS LE CSS.
- *
- * POURQUOI CE FICHIER EXISTE. Le préfixe s'appelait `cu-` (CleanUx) et a été renommé en `brio-` le
- * 2026-08-07 : 64 classes, 376 usages, plus les variables CSS. Un renommage de ce genre casse sans
- * bruit — une classe oubliée dans une vue ne lève aucune erreur, elle ne style simplement plus
- * rien, et aucune suite verte ne le dit.
- *
- * Le renommage a d'ailleurs manqué les variables `--cu-*` au premier passage : le motif excluait le
- * tiret qui les précède. Elles auraient survécu telles quelles pendant que les classes changeaient
- * de nom.
- *
- * CE QUE CE TEST NE PEUT PAS VOIR : une classe construite dynamiquement (`"brio-btn-{$variante}"`).
- * Il n'y en a aucune aujourd'hui — vérifié au renommage — et c'est une raison de plus de ne pas en
- * introduire.
- */
+/** UNE CLASSE `brio-` UTILISÉE DANS UNE VUE DOIT EXISTER DANS LE CSS. POURQUOI CE FICHIER EXISTE. */
 class ClassesBrioDefiniesTest extends TestCase
 {
     /**
-     * Classes employées dans les vues qui ne stylent RIEN, et le faisaient déjà avant le
-     * renommage. Ce ne sont pas des régressions : ce sont des restes, rendus visibles ici plutôt
-     * que transportés en silence. Chacune veut une décision — lui écrire un style, ou la retirer
-     * des vues.
+     * Classes employées dans les vues qui ne stylent RIEN, et le faisaient déjà avant le renommage.
      *
      * @var list<string>
      */

@@ -9,9 +9,6 @@ use App\Models\ApiTokenUsage;
 /**
  * Le journal d’usage des jetons d’API.
  *
- * La RÉVOCATION d’un jeton ne se fait pas depuis son journal d’usage : elle vit sur la page des
- * jetons, avec le délai de grâce qui évite de couper une intégration en pleine requête.
- *
  * @extends EloquentResource<ApiTokenUsage>
  */
 class ApiTokenUsageResource extends EloquentResource

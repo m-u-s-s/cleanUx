@@ -4,11 +4,7 @@ namespace App\Services\AccountingV2\Exports;
 
 use Illuminate\Database\Eloquent\Builder;
 
-/**
- * FEC = Fichier des Écritures Comptables (norme DGFiP FR).
- * Spec : 18 colonnes pipe-separated dans cet ordre exact.
- * Doc : https://www.economie.gouv.fr/dgfip/le-fichier-des-ecritures-comptables-fec
- */
+/** FEC = Fichier des Écritures Comptables (norme DGFiP FR). */
 class FecExportBuilder implements ExportBuilderContract
 {
     public function format(): string

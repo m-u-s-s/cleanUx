@@ -17,13 +17,7 @@ use Livewire\Livewire;
 use Tests\Feature\FaceCheck\Concerns\ActiveLeControleFacial;
 use Tests\TestCase;
 
-/**
- * LA PARITÉ WEB — et pourquoi elle n'est pas décorative ici.
- *
- * Le middleware et l'exception redirigent une session web vers `provider.face-check`. Sans cette
- * page, la redirection retombe sur l'accueil et le prestataire tourne en rond. Un module de
- * sécurité qui ne couvrirait que le mobile se contournerait, lui, en ouvrant un navigateur.
- */
+/** LA PARITÉ WEB — et pourquoi elle n'est pas décorative ici. */
 class PariteWebDuControleFacialTest extends TestCase
 {
     use ActiveLeControleFacial;
@@ -105,12 +99,7 @@ class PariteWebDuControleFacialTest extends TestCase
         );
     }
 
-    /**
-     * LA PAGE N'OUVRE PAS UN CONTRÔLE QUI N'EST PAS DÛ.
-     *
-     * Sinon un prestataire rechargerait la page au moment de son choix et se fabriquerait un
-     * historique irréprochable — la cadence aléatoire ne servirait plus à rien.
-     */
+    /** LA PAGE N'OUVRE PAS UN CONTRÔLE QUI N'EST PAS DÛ. */
     public function test_la_page_nouvre_pas_un_controle_qui_nest_pas_du(): void
     {
         $this->enroler();
@@ -140,20 +129,13 @@ class PariteWebDuControleFacialTest extends TestCase
         $this->assertTrue($service->profileFor($this->prestataire)->isBlocked());
     }
 
-    /**
-     * LA REDIRECTION WEB, DE BOUT EN BOUT : c'est ce qui distingue un refus utilisable d'un 403 nu.
-     */
+    /** LA REDIRECTION WEB, DE BOUT EN BOUT : c'est ce qui distingue un refus utilisable d'un 403 nu. */
     public function test_un_geste_de_terrain_redirige_vers_la_page_de_remediation(): void
     {
         $this->enroler();
         $this->rendreDu();
 
-        /*
-         * On frappe une route de terrain SANS paramètre de modèle : `SubstituteBindings` vit dans
-         * le groupe `web` et s'exécute AVANT les middlewares de route, donc un identifiant de
-         * mission inexistant rendrait 404 avant même que la garde ne soit consultée — le test
-         * mesurerait alors une mission introuvable, pas un contrôle facial.
-         */
+        // On frappe une route de terrain SANS paramètre de modèle : `SubstituteBindings` vit dans le groupe `web` et s'exécute AVANT les middlewares de route, donc un identifiant de mission inexistant rendrait 404 avant même que la garde ne soit consultée — le test mesurerait alors une mission introuvable, pas un contrôle facial.
         $this->actingAs($this->prestataire)
             ->post('/missions/offline-sync')
             ->assertRedirect(route('provider.face-check'));

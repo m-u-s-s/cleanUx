@@ -8,10 +8,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Log usage row + update last_used_at/usage_count after response.
- * Bypass si pas de token Sanctum (session web).
- */
+/** Log usage row + update last_used_at/usage_count after response. */
 class LogTokenUsage
 {
     public function __construct(protected UsageLogger $logger) {}

@@ -11,13 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * LE SEMIS DE DÉMONSTRATION DOIT PRODUIRE UN PARC QU'ON PEUT RÉELLEMENT REGARDER.
- *
- * Un semis qui pose des lignes sans images montre l'emoji de repli partout, et ne dit donc rien de
- * l'écran qu'il est censé faire voir. Ce fichier vérifie qu'il produit des IMAGES VALIDES, un parc
- * varié, et qu'on peut le relancer.
- */
+/** LE SEMIS DE DÉMONSTRATION DOIT PRODUIRE UN PARC QU'ON PEUT RÉELLEMENT REGARDER. */
 class SemisDeDemonstrationTest extends TestCase
 {
     use RefreshDatabase;
@@ -37,12 +31,7 @@ class SemisDeDemonstrationTest extends TestCase
         $this->assertSame(8, RentalVehicle::query()->actif()->count(), 'Un parc fermé ne montrerait rien.');
     }
 
-    /**
-     * LE PARC EST VARIÉ, sinon les filtres n'ont rien à trier.
-     *
-     * Huit citadines rouges montreraient une grille et rien d'autre : ni catégorie, ni boîte, ni
-     * énergie ne se distingueraient.
-     */
+    /** LE PARC EST VARIÉ, sinon les filtres n'ont rien à trier. */
     public function test_le_parc_donne_de_quoi_filtrer(): void
     {
         $this->seed(NosLocationsDemoSeeder::class);
@@ -54,12 +43,7 @@ class SemisDeDemonstrationTest extends TestCase
         $this->assertGreaterThanOrEqual(3, count($options['fuels']));
     }
 
-    /**
-     * LES IMAGES SONT DE VRAIS PNG, décodables par le navigateur.
-     *
-     * Un fichier mal formé — CRC faux, en-tête tronqué — est refusé EN SILENCE : la balise reste
-     * vide et rien dans le journal ne le dit. On décode donc réellement.
-     */
+    /** LES IMAGES SONT DE VRAIS PNG, décodables par le navigateur. */
     public function test_les_images_produites_sont_des_png_valides(): void
     {
         $this->seed(NosLocationsDemoSeeder::class);
@@ -92,12 +76,7 @@ class SemisDeDemonstrationTest extends TestCase
             'L’ordre EST le sens de rotation : une position manquante fait sauter la voiture.');
     }
 
-    /**
-     * UN VÉHICULE SANS GARANTIE FIGURE AU PARC.
-     *
-     * C'est le cas qui montre que la fiche n'affiche pas un choix entre deux options identiques.
-     * Sans lui, ce comportement ne se verrait jamais à l'écran.
-     */
+    /** UN VÉHICULE SANS GARANTIE FIGURE AU PARC. */
     public function test_le_parc_contient_un_vehicule_sans_garantie(): void
     {
         $this->seed(NosLocationsDemoSeeder::class);
@@ -107,13 +86,7 @@ class SemisDeDemonstrationTest extends TestCase
         $this->assertGreaterThanOrEqual(1, $sansGarantie->count());
     }
 
-    /**
-     * RELANCÉ, LE SEMIS NE DOUBLE RIEN.
-     *
-     * Un semis de démonstration qu'on n'ose pas relancer ne sert qu'une fois : on le relance après
-     * avoir cassé ses données en jouant avec l'écran, et c'est précisément à ce moment-là qu'il
-     * doit tenir.
-     */
+    /** RELANCÉ, LE SEMIS NE DOUBLE RIEN. */
     public function test_le_semis_est_idempotent(): void
     {
         $this->seed(NosLocationsDemoSeeder::class);

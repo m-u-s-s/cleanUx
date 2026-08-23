@@ -8,26 +8,7 @@ use App\Services\Organizations\OrganizationNotifier;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * LES BUDGETS PAR LOCAL (E7) — ce qui a été engagé, contre ce qui était prévu.
- *
- * CE QUI SE PASSE AUJOURD'HUI. Une entreprise cliente donne à ses responsables de site le droit de
- * commander, et découvre le dépassement à la facture — un mois plus tard, quand plus rien n'est
- * annulable.
- *
- * LE PLAFOND ALERTE, IL NE BLOQUE PAS. Une intervention refusée parce qu'un budget mensuel est
- * atteint, c'est une fuite d'eau qu'on laisse couler pour une ligne comptable. L'alerte remonte à
- * ceux qui peuvent arbitrer, et l'arbitrage se fait en connaissance de cause.
- *
- * ON COMPTE L'ENGAGÉ, PAS LE FACTURÉ. Une intervention commandée pour la semaine prochaine
- * consomme déjà le budget du mois : attendre la facture ferait découvrir le dépassement quand il
- * est consommé — exactement le défaut qu'on corrige. Les annulées sont écartées : elles n'engagent
- * plus rien.
- *
- * L'ALERTE NE SE RÉPÈTE PAS À CHAQUE RÉSERVATION. `alerted_at_percent` retient le palier déjà
- * annoncé : sans lui, franchir 80 % puis commander trois fois enverrait quatre messages identiques,
- * et le quatrième serait ignoré comme les trois premiers.
- */
+/** LES BUDGETS PAR LOCAL (E7) — ce qui a été engagé, contre ce qui était prévu. */
 class SiteBudgetService
 {
     public function __construct(
@@ -84,13 +65,7 @@ class SiteBudgetService
             ->values();
     }
 
-    /**
-     * Vérifier les budgets touchés par une réservation, et alerter si un palier vient d'être
-     * franchi.
-     *
-     * APPELÉ APRÈS LA CRÉATION, jamais avant : le plafond n'autorise ni ne refuse. Le faire avant
-     * en ferait une porte, et une intervention urgente attendrait un arbitrage budgétaire.
-     */
+    /** Vérifier les budgets touchés par une réservation, et alerter si un palier vient d'être franchi. */
     public function verifierApresReservation(Booking $booking): void
     {
         $organisationId = (int) ($booking->customer_organization_id ?? 0);
@@ -99,12 +74,7 @@ class SiteBudgetService
             return;
         }
 
-        /*
-         * `Carbon::instance()` PARCE QUE LES DEUX CARBON NE SONT PAS LE MÊME TYPE. Les colonnes
-         * datées rendent un `Carbon\Carbon` ; le modèle attend un `Illuminate\Support\Carbon`.
-         * Ils se ressemblent assez pour passer inaperçus, et assez peu pour que l'analyse statique
-         * refuse — à juste titre.
-         */
+        // `Carbon::instance()` PARCE QUE LES DEUX CARBON NE SONT PAS LE MÊME TYPE.
         $moment = Carbon::instance($booking->scheduled_at ?? $booking->created_at ?? now());
 
         $budgets = OrganizationSiteBudget::query()
@@ -124,12 +94,7 @@ class SiteBudgetService
         }
     }
 
-    /**
-     * Ce qui a été ENGAGÉ sur la période — pas ce qui a été facturé.
-     *
-     * Attendre la facture ferait découvrir le dépassement quand il est consommé, ce qui est
-     * exactement le défaut que ce module corrige.
-     */
+    /** Ce qui a été ENGAGÉ sur la période — pas ce qui a été facturé. */
     public function engageSurLaPeriode(OrganizationSiteBudget $budget): int
     {
         return (int) round(Booking::query()
@@ -147,12 +112,7 @@ class SiteBudgetService
             ->sum('devis_estime') * 100);
     }
 
-    /**
-     * Prévenir, une seule fois par palier.
-     *
-     * DEUX PALIERS SEULEMENT — le seuil d'alerte, et le dépassement. Une alerte à chaque point de
-     * pourcentage transformerait le module en bruit, et le bruit se désactive.
-     */
+    /** Prévenir, une seule fois par palier. */
     protected function alerterSiFranchissement(OrganizationSiteBudget $budget): void
     {
         $etat = $this->etat($budget);
@@ -163,11 +123,7 @@ class SiteBudgetService
         }
 
         try {
-            /*
-             * PRÉVENIR CEUX QUI PEUVENT ARBITRER. `finance.view` désigne exactement les personnes
-             * qui décident d'un budget : alerter les autres ferait du bruit chez des gens sans
-             * moyen d'y répondre.
-             */
+            // PRÉVENIR CEUX QUI PEUVENT ARBITRER.
             $this->notifier->notifierPorteursDe(
                 organisationId: (int) $budget->organization_account_id,
                 permission: 'finance.view',

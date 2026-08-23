@@ -11,15 +11,7 @@ use App\Policies\ChannelPolicy;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Service centralisé pour les actions de modération.
- *
- * Toutes les méthodes :
- *   1) vérifient le droit via ChannelPolicy (sinon DomainException)
- *   2) effectuent l'action en transaction
- *   3) journalisent dans moderation_actions
- *   4) broadcast l'event approprié pour rafraîchir l'UI live
- */
+/** Service centralisé pour les actions de modération. */
 class ModerationService
 {
     public function __construct(

@@ -84,13 +84,7 @@ class MissionLifecycleServiceTest extends TestCase
         Notification::assertSentTo($client, EmployeEnRouteNotification::class);
     }
 
-    /**
-     * L'ARRIVÉE N'ÉMET QUE LE CODE DE DÉBUT.
-     *
-     * Elle émettait les deux : le client recevait le code de FIN avant que le travail commence.
-     * Un code de fin détenu depuis le début n'atteste plus rien de la fin — et il consommait un
-     * deuxième SMS sur un quota plafonné à cinq par heure et par numéro.
-     */
+    /** L'ARRIVÉE N'ÉMET QUE LE CODE DE DÉBUT. */
     public function test_set_arrived_generates_start_code_only_stores_session_and_notifies(): void
     {
         Notification::fake();
@@ -207,15 +201,7 @@ class MissionLifecycleServiceTest extends TestCase
         Notification::assertSentTo($client, MissionCompletedNotification::class);
     }
 
-    /**
-     * UN CODE CORRECT NE DOIT PAS ÊTRE DÉTRUIT PAR UN REFUS QUI NE LE CONCERNE PAS.
-     *
-     * `validateEndCode()` consommait le code PUIS clôturait. Quand la clôture était refusée pour
-     * une autre raison — une tâche obligatoire non cochée, le cas le plus courant — le code
-     * partait avec elle. Constaté sur la base de démonstration : quatre codes de fin consommés,
-     * le dernier VALIDÉ à 21:10, et une mission toujours `started`. Le prestataire devait
-     * redemander un code au client à chaque tentative, pour un motif étranger au code.
-     */
+    /** UN CODE CORRECT NE DOIT PAS ÊTRE DÉTRUIT PAR UN REFUS QUI NE LE CONCERNE PAS. */
     public function test_un_code_correct_n_est_pas_brule_quand_la_cloture_echoue(): void
     {
         [, $provider, $mission] = $this->makeMission(MissionStatus::STARTED);
@@ -255,15 +241,7 @@ class MissionLifecycleServiceTest extends TestCase
         $this->assertNull($record->validated_at);
     }
 
-    /**
-     * CLÔTURER DEUX FOIS NE DOIT RIEN REJOUER.
-     *
-     * `completeMission()` n'avait aucune garde sur son propre état : rappelée sur une mission déjà
-     * terminée, elle recapturait le paiement, recréait la ligne de versement et renotifiait les
-     * deux parties. Constaté en production sur la mission #12 : UN seul événement
-     * `mission_completed`, mais TROIS annonces de gain au prestataire — dont la dernière portait un
-     * montant différent des deux premières. Trois promesses contradictoires pour un même travail.
-     */
+    /** CLÔTURER DEUX FOIS NE DOIT RIEN REJOUER. */
     public function test_cloturer_deux_fois_ne_rejoue_rien(): void
     {
         Notification::fake();
@@ -298,12 +276,7 @@ class MissionLifecycleServiceTest extends TestCase
         $this->service()->completeMission($mission, $provider);
     }
 
-    /**
-     * LA CLÔTURE PARLE AUX DEUX PARTIES.
-     *
-     * Tout partait vers le client ; le prestataire qui venait de travailler ne recevait pas un mot,
-     * et n'avait donc aucun moyen de savoir ce que sa mission lui rapportait ni quand.
-     */
+    /** LA CLÔTURE PARLE AUX DEUX PARTIES. */
     public function test_la_cloture_annonce_son_gain_au_prestataire(): void
     {
         Notification::fake();

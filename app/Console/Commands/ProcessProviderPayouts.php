@@ -214,14 +214,7 @@ class ProcessProviderPayouts extends Command
                     $transfer = Transfer::create(
                         [
                             'amount' => $payoutCents,
-                            /*
-                             * LA DEVISE DU TRANSFERT EST CELLE DE LA RESERVATION.
-                             *
-                             * C'est le seul endroit de ce lot ou de l'argent BOUGE reellement.
-                             * Envoyer `eur` sur un encaissement en dirhams fait convertir Stripe au
-                             * taux du jour, ou refuser le transfert selon le compte destinataire :
-                             * dans les deux cas le prestataire ne recoit pas ce qu'on lui doit.
-                             */
+                            // LA DEVISE DU TRANSFERT EST CELLE DE LA RESERVATION.
                             'currency' => Devise::pourStripe($booking->currency),
                             'destination' => $connectId,
                             'metadata' => [

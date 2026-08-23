@@ -7,20 +7,7 @@ use App\Models\User;
 use App\Services\Notifications\SmsService;
 use Illuminate\Notifications\Notification;
 
-/**
- * Channel Laravel "sms" — permet aux Notifications d'envoyer un SMS.
- *
- * Usage dans une Notification:
- *   public function via($notifiable): array {
- *       return ['mail', 'database', 'sms'];
- *   }
- *
- *   public function toSms($notifiable): string {
- *       return 'Votre mission commence dans 30 min !';
- *   }
- *
- * Le notifiable doit exposer `routeNotificationForSms()` ou avoir `phone`.
- */
+/** Channel Laravel "sms" — permet aux Notifications d'envoyer un SMS. */
 class SmsChannel
 {
     public function __construct(protected SmsService $smsService) {}

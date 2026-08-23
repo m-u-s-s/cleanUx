@@ -8,13 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Phase 3 — Tests des autorisations Broadcasting.
- *
- * Vérifie qu'un user ne peut écouter que ses propres canaux.
- * Empêche la régression du bug "channel.{id} non autorisé" qui rendait
- * le chat équipe inopérant en production.
- */
+/** Phase 3 — Tests des autorisations Broadcasting. */
 class PrivateChannelAuthorizationTest extends TestCase
 {
     use RefreshDatabase;

@@ -9,31 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * UN REPLI NE PARLE QUE QUAND L'AUTRE SE TAIT.
- *
- * `users.role` est la colonne heritee d'avant les profils types. Trois predicats de
- * `HasUserTypeChecks` la consultaient en dernier recours — ce qui est legitime tant que tous les
- * comptes n'ont pas de profil — mais ils la consultaient AUSSI quand le profil existait et disait
- * autre chose. La condition testee etait « le type est-il celui que je cherche ? », jamais « ai-je
- * un type ? ».
- *
- * Consequence, mesuree sur `brio` avant correction — DIX-NEUF comptes sur trente :
- *
- *   10 clients dont `customer_type` vaut `company` repondaient OUI à « etes-vous un particulier ? »
- *    9 prestataires `company_worker` repondaient OUI à « etes-vous independant ? »
- *
- * Aucun n'en souffrait : tous les appelants testent le cas le plus specifique en premier, si bien
- * que la mauvaise reponse n'etait jamais atteinte. C'est un defaut LATENT, et ces tests existent
- * pour qu'il le reste — le premier appelant qui interrogera l'un de ces predicats seul, pour
- * decider d'un versement ou d'un rattachement, ne doit pas heriter du trou.
- *
- * ── CHAQUE REFUS PORTE SON TÉMOIN ────────────────────────────────────────────────────────────
- *
- * Le repli herite doit continuer de fonctionner quand le profil est ABSENT : c'est encore le cas
- * de comptes reels, et de la plupart des fabriques de test. Sans le temoin, « le profil l'emporte »
- * passerait au vert meme si on avait simplement casse le repli.
- */
+/** UN REPLI NE PARLE QUE QUAND L'AUTRE SE TAIT. */
 class ReplisHeritesDuRoleTest extends TestCase
 {
     use RefreshDatabase;
@@ -109,13 +85,7 @@ class ReplisHeritesDuRoleTest extends TestCase
         );
     }
 
-    /**
-     * ET L'ACCÈS N'EST PAS PERDU AU PASSAGE.
-     *
-     * Corriger un predicat ne doit mettre personne dehors : un salarie reste un prestataire, et
-     * ouvre le meme espace qu'avant. C'est le contrôle qui manquerait si l'on se contentait de
-     * verifier que la mauvaise reponse a disparu.
-     */
+    /** ET L'ACCÈS N'EST PAS PERDU AU PASSAGE. */
     public function test_le_salarie_garde_son_espace_prestataire(): void
     {
         $user = User::factory()->create(['role' => 'employe']);
@@ -132,12 +102,7 @@ class ReplisHeritesDuRoleTest extends TestCase
 
     // ─── Les PORTÉES : la meme règle, mais en SQL ─────────────────────────────────────
 
-    /**
-     * LE TÉMOIN DES PORTÉES : le chemin herite fonctionne aussi en base.
-     *
-     * Sans lui, « la portee trouve le prestataire à profil » passerait au vert meme si la portee
-     * avait cesse de voir les comptes sans profil — c'est-à-dire en cassant ce qui marchait.
-     */
+    /** LE TÉMOIN DES PORTÉES : le chemin herite fonctionne aussi en base. */
     public function test_temoin_la_portee_voit_le_prestataire_sans_profil(): void
     {
         $sansProfil = User::factory()->create(['role' => 'employe']);
@@ -145,12 +110,7 @@ class ReplisHeritesDuRoleTest extends TestCase
         $this->assertTrue(User::query()->providers()->whereKey($sansProfil->id)->exists());
     }
 
-    /**
-     * LE CAS QUE LE FILTRE HÉRITÉ MANQUAIT.
-     *
-     * `where('role', 'employe')` voyait 11 prestataires sur `brio` quand la verite typee en
-     * comptait 14. Trois etaient invisibles — y compris pour les rappels de rendez-vous.
-     */
+    /** LE CAS QUE LE FILTRE HÉRITÉ MANQUAIT. */
     public function test_la_portee_voit_le_prestataire_que_seul_son_profil_designe(): void
     {
         $parProfil = User::factory()->create(['role' => 'user']);
@@ -181,13 +141,7 @@ class ReplisHeritesDuRoleTest extends TestCase
         $this->assertFalse(User::query()->providers()->whereKey($client->id)->exists());
     }
 
-    /**
-     * LA GARANTIE QUI COMPTE : LA PORTÉE ET LE PRÉDICAT NE DOIVENT JAMAIS DIVERGER.
-     *
-     * Une portee SQL et un predicat PHP qui repondent à la meme question sont deux ecritures de la
-     * meme règle. C'est exactement la situation qui a produit le defaut d'origine — alors ce test
-     * les confronte sur une population melangee, plutôt que de verifier chacun de son côte.
-     */
+    /** LA GARANTIE QUI COMPTE : LA PORTÉE ET LE PRÉDICAT NE DOIVENT JAMAIS DIVERGER. */
     public function test_la_portee_et_le_predicat_repondent_la_meme_chose(): void
     {
         User::factory()->create(['role' => 'employe']);
@@ -218,16 +172,7 @@ class ReplisHeritesDuRoleTest extends TestCase
         }
     }
 
-    /**
-     * `isAdmin()` GARDE SON REPLI, ET C'EST DÉLIBÉRÉ.
-     *
-     * Les trois predicats corriges s'appuient sur une RELATION, qui peut etre absente : « pas de
-     * profil » a un sens. `platform_role` est `NOT NULL DEFAULT 'user'` — l'absence n'y est pas
-     * exprimable, et gater le repli sur elle retirerait le droit d'administration à tout compte
-     * cree avec `role = 'admin'` seul. Treize fichiers de test font exactement cela.
-     *
-     * Ce test fixe la decision pour qu'on ne la reprenne pas par symetrie apparente.
-     */
+    /** `isAdmin()` GARDE SON REPLI, ET C'EST DÉLIBÉRÉ. */
     public function test_l_administration_conserve_son_repli_herite(): void
     {
         $user = User::factory()->create(['role' => 'admin']);

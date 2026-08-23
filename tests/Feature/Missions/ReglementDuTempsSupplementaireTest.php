@@ -11,26 +11,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\Spine\SpineScenario;
 use Tests\TestCase;
 
-/**
- * LE RÈGLEMENT DU TEMPS SUPPLÉMENTAIRE — prouvé au centime, sans jamais parler à Stripe.
- *
- * Ces tests portent sur le CONSTAT : ce qui est dû, et pourquoi. L'encaissement dépend du réseau ;
- * le constat, lui, doit être juste et reproductible — c'est lui qu'on opposera à un client qui
- * conteste vingt-deux euros un an plus tard.
- *
- * LA GARANTIE CENTRALE : on ne réclame JAMAIS ce qui est déjà couvert par l'empreinte. Le montant
- * dû se calcule comme « ce qui est dû moins ce qui est autorisé », et non comme une addition de
- * lignes — cette forme-là ne peut structurellement pas facturer deux fois la même heure.
- */
+/** LE RÈGLEMENT DU TEMPS SUPPLÉMENTAIRE — prouvé au centime, sans jamais parler à Stripe. */
 class ReglementDuTempsSupplementaireTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * LE CAS COURANT, ET LE PLUS IMPORTANT : la mission tient dans son temps, il n'y a rien à
-     * réclamer. On écrit `not_required` plutôt que rien du tout — l'absence de ligne ne
-     * distinguerait pas « rien à payer » de « jamais calculé ».
-     */
+    /** LE CAS COURANT, ET LE PLUS IMPORTANT : la mission tient dans son temps, il n'y a rien à réclamer. */
     public function test_une_mission_dans_son_temps_ne_doit_rien(): void
     {
         $mission = $this->missionTerminee(achetees: 180, prestees: 175);
@@ -42,12 +28,7 @@ class ReglementDuTempsSupplementaireTest extends TestCase
         $this->assertFalse($reglement->estUneCreance());
     }
 
-    /**
-     * LE CAS DE RÉFÉRENCE DE LA SPÉCIFICATION.
-     *
-     * 3 h achetées à 58,50 €/h effectif, 4 h prestées. Une heure de dépassement, franchise de
-     * 15 min déduite → 45 min facturables. 58,50 × 0,75 × 1,30 = 57,04 €.
-     */
+    /** LE CAS DE RÉFÉRENCE DE LA SPÉCIFICATION. 3 h achetées à 58,50 €/h effectif, 4 h prestées. */
     public function test_le_depassement_est_reclame_au_tarif_majore(): void
     {
         $mission = $this->missionTerminee(achetees: 180, prestees: 240);
@@ -62,10 +43,7 @@ class ReglementDuTempsSupplementaireTest extends TestCase
         $this->assertSame(17550, $reglement->authorized_amount_cents);
     }
 
-    /**
-     * UNE PROLONGATION SE RÈGLE AU TARIF NORMAL, sans majoration — c'est toute la différence
-     * entre décider et subir.
-     */
+    /** UNE PROLONGATION SE RÈGLE AU TARIF NORMAL, sans majoration — c'est toute la différence entre décider et subir. */
     public function test_une_prolongation_est_reclamee_au_tarif_normal(): void
     {
         $mission = $this->missionEnCours(achetees: 180, ecoulees: 100);
@@ -82,12 +60,7 @@ class ReglementDuTempsSupplementaireTest extends TestCase
         $this->assertSame(5850, $reglement->amount_due_cents);
     }
 
-    /**
-     * PROLONGER PUIS DÉBORDER QUAND MÊME — les deux lignes coexistent, chacune à son tarif.
-     *
-     * 3 h achetées, prolongées d'1 h (tarif normal), 5 h prestées. Dépassement d'1 h sur les 4 h
-     * achetées, franchise déduite → 45 min majorées.
-     */
+    /** PROLONGER PUIS DÉBORDER QUAND MÊME — les deux lignes coexistent, chacune à son tarif. */
     public function test_prolongation_et_depassement_coexistent(): void
     {
         $mission = $this->missionEnCours(achetees: 180, ecoulees: 100);
@@ -106,12 +79,7 @@ class ReglementDuTempsSupplementaireTest extends TestCase
         $this->assertSame(11554, $reglement->amount_due_cents);
     }
 
-    /**
-     * L'IDEMPOTENCE — la clôture peut être rejouée, et une reprise planifiée passe derrière.
-     *
-     * Sans elle, chaque passage créerait une seconde créance sur le même dépassement, et le client
-     * serait débité deux fois pour la même heure.
-     */
+    /** L'IDEMPOTENCE — la clôture peut être rejouée, et une reprise planifiée passe derrière. */
     public function test_constater_deux_fois_ne_produit_quune_creance(): void
     {
         $mission = $this->missionTerminee(achetees: 180, prestees: 240);
@@ -125,13 +93,7 @@ class ReglementDuTempsSupplementaireTest extends TestCase
         $this->assertSame(5704, $second->amount_due_cents);
     }
 
-    /**
-     * UN RÈGLEMENT ENCAISSÉ NE SE RECALCULE PAS.
-     *
-     * Le recalculer sur une configuration modifiée depuis — un multiplicateur changé, une franchise
-     * allongée — produirait un montant différent de celui qui a été débité, et le registre
-     * cesserait d'attester quoi que ce soit.
-     */
+    /** UN RÈGLEMENT ENCAISSÉ NE SE RECALCULE PAS. */
     public function test_un_reglement_encaisse_est_intouchable(): void
     {
         $mission = $this->missionTerminee(achetees: 180, prestees: 240);
@@ -153,13 +115,7 @@ class ReglementDuTempsSupplementaireTest extends TestCase
         $this->assertSame(MissionTimeSettlement::STATUT_ENCAISSE, $relu->status);
     }
 
-    /**
-     * LE PRESTATAIRE EST PAYÉ À SON TARIF NORMAL, la majoration revient à la plateforme.
-     *
-     * Décision de produit : lui verser sa part de l'intégralité du montant majoré le paierait 30 %
-     * de plus de l'heure dès qu'il déborde — or c'est lui qui décide du rythme sur place. On
-     * créerait une raison de travailler lentement.
-     */
+    /** LE PRESTATAIRE EST PAYÉ À SON TARIF NORMAL, la majoration revient à la plateforme. */
     public function test_le_prestataire_ne_touche_pas_la_majoration(): void
     {
         $mission = $this->missionTerminee(achetees: 180, prestees: 240);
@@ -171,12 +127,7 @@ class ReglementDuTempsSupplementaireTest extends TestCase
         $this->assertSame(5704, $reglement->amount_due_cents);
     }
 
-    /**
-     * L'HORLOGE S'ARRÊTE À LA CLÔTURE.
-     *
-     * Sans cette borne, un règlement calculé le lendemain facturerait le temps écoulé depuis : le
-     * client découvrirait vingt heures de dépassement sur un ménage de trois heures.
-     */
+    /** L'HORLOGE S'ARRÊTE À LA CLÔTURE. */
     public function test_lhorloge_ne_court_plus_apres_la_cloture(): void
     {
         $mission = $this->missionTerminee(achetees: 180, prestees: 240);

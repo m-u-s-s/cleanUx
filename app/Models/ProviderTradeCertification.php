@@ -8,15 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * ProviderTradeCertification — proof of qualification for a provider on a given trade.
- *
- * certification_type values: diploma | attestation | experience
- * status values:             pending | verified | rejected
- *
- * The unique constraint (user_id, trade_id, certification_type) ensures at most one
- * record per qualification kind per trade per provider.
- */
+/** ProviderTradeCertification — proof of qualification for a provider on a given trade. */
 class ProviderTradeCertification extends Model
 {
     /** @use HasFactory<ProviderTradeCertificationFactory> */

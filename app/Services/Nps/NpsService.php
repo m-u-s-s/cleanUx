@@ -51,9 +51,7 @@ class NpsService
         ]);
     }
 
-    /**
-     * Calcule NPS score = % promoters - % detractors. Range -100..+100.
-     */
+    /** Calcule NPS score = % promoters - % detractors. Range -100..+100. */
     public function calculate(Carbon $since, Carbon $until, ?string $surveyCode = null): array
     {
         $query = NpsResponse::query()

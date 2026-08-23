@@ -23,13 +23,6 @@ class ClientChatInbox extends Component
     /**
      * L'ÉCOUTE EST ASSEMBLÉE, PAS DÉCLARÉE — parce qu'il n'y a pas toujours un fil ouvert.
      *
-     * Livewire interpole `{activeThreadId}` dans le nom de l'événement, et LÈVE une exception quand
-     * la propriété vaut nul : la boîte de réception plantait à l'affichage tant qu'aucune
-     * conversation n'était sélectionnée. Les deux composants voisins qui emploient ce motif
-     * (`DispatchCenter`, `TeamChannels`) l'évitent en typant leur identifiant `int = 0` — ils
-     * s'abonnent alors à un canal `…0` inexistant, ce qui est inoffensif mais confus. Ici
-     * l'identifiant est légitimement nullable, donc on n'ajoute l'abonnement que lorsqu'il existe.
-     *
      * @return array<string, string>
      */
     public function getListeners(): array
@@ -43,12 +36,7 @@ class ClientChatInbox extends Component
         return $listeners;
     }
 
-    /**
-     * Participe-t-il encore à ce fil ?
-     *
-     * Posée à l'aiguillage ET à chaque lecture : quitter un fil doit fermer
-     * l'accès aux messages, pas seulement empêcher d'en ouvrir un nouveau.
-     */
+    /** Participe-t-il encore à ce fil ? */
     private function participeAuFil(?int $threadId): bool
     {
         if (! $threadId) {
@@ -105,23 +93,7 @@ class ClientChatInbox extends Component
         }
     }
 
-    /**
-     * LE FIL SE MET À JOUR TOUT SEUL — ce n'était pas le cas, et le commentaire précédent
-     * (« déclenché par event broadcast côté JS futur ») décrivait un futur qui n'est jamais venu.
-     *
-     * Trois pièces manquaient, et il fallait les trois : l'autorisation du canal côté serveur
-     * (absente de `routes/channels.php`, donc 403 silencieux), l'abonnement mobile sur le bon canal
-     * et le bon événement, et cette écoute-ci côté web. Le client posait une question depuis son
-     * salon, le prestataire devant la porte ne la voyait jamais — chacun devait recharger pour
-     * découvrir que l'autre avait parlé.
-     *
-     * Le nom du canal suit le motif déjà employé par la messagerie interne
-     * (`echo-private:channel.{id},MessageSent`) : `{activeThreadId}` est interpolé par Livewire
-     * depuis la propriété du composant, si bien que changer de fil change d'abonnement.
-     *
-     * Rien à faire dans le corps : les messages viennent de propriétés calculées, et Livewire les
-     * recalcule à chaque requête. Recevoir l'événement suffit à redessiner.
-     */
+    /** LE FIL SE MET À JOUR TOUT SEUL — ce n'était pas le cas, et le commentaire précédent (« déclenché par event broadcast côté JS futur ») décrivait un futur qui n'est jamais venu. */
     public function refresh(): void
     {
         unset($this->activeMessages, $this->threads);

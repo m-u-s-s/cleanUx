@@ -23,10 +23,6 @@ trait HasProviderFeatures
     /**
      * L'ANNOTATION DÉSIGNAIT `AvailabilitySlot`, la relation rend un `ProviderProfile`.
      *
-     * Un copier-coller depuis la relation voisine, invisible tant que personne n'appelait cette
-     * relation depuis un contexte typé : PHPStan croyait donc lire un créneau de disponibilité et
-     * annonçait `commission_rate` inexistante — sur le calcul de commission, précisément.
-     *
      * @return HasOne<ProviderProfile, $this>
      */
     public function providerProfile(): HasOne
@@ -48,11 +44,6 @@ trait HasProviderFeatures
 
     /**
      * Les métiers déclarés par ce prestataire.
-     *
-     * L'annotation disait `EmployeeZoneAssignment` — recopiée de `serviceZones()` juste en dessous.
-     * L'analyse statique décrivait donc ces lignes comme des affectations de zone : toute lecture
-     * d'une colonne de métier y était signalée comme inexistante, et une vraie erreur s'y serait
-     * cachée au milieu du bruit.
      *
      * @return BelongsToMany<Trade, $this, TradeUser, 'pivot'>
      */
@@ -200,20 +191,7 @@ trait HasProviderFeatures
         )->withTimestamps();
     }
 
-    /**
-     * Le prestataire peut-il recevoir des fonds par Stripe Connect ?
-     *
-     * Les colonnes `stripe_connect_*` existent sur `users` ET sur `provider_profiles`. Une seule
-     * est alimentée : StripeConnectService écrit sur `users`, et rien n'écrit jamais sur le
-     * profil. Cette méthode ne lisait pourtant que le profil — elle rendait donc `false` pour
-     * TOUT prestataire, y compris un compte Stripe pleinement configuré, et
-     * MissionPaymentService::authorize() refusait par conséquent chaque autorisation de paiement.
-     *
-     * Le défaut était masqué par son propre test, dont le fixture renseigne les deux tables : une
-     * forme qui ne se produit jamais en production. On lit donc `users` en premier — la seule
-     * source réellement écrite — sans cesser d'accepter le profil, que d'anciens environnements
-     * ont pu remplir.
-     */
+    /** Le prestataire peut-il recevoir des fonds par Stripe Connect ? */
     public function canReceiveStripeConnectPayments(): bool
     {
         if ($this->isStripeConnectActive($this)) {
@@ -225,10 +203,7 @@ trait HasProviderFeatures
         return $profile !== null && $this->isStripeConnectActive($profile);
     }
 
-    /**
-     * Un compte existe dès le début du parcours Stripe : seuls `active` ou une date
-     * d'aboutissement attestent qu'il peut effectivement recevoir des fonds.
-     */
+    /** Un compte existe dès le début du parcours Stripe : seuls `active` ou une date d'aboutissement attestent qu'il peut effectivement recevoir des fonds. */
     private function isStripeConnectActive(object $source): bool
     {
         return ! empty($source->stripe_connect_account_id)
@@ -236,17 +211,7 @@ trait HasProviderFeatures
                 || ($source->stripe_connect_onboarded_at ?? null) !== null);
     }
 
-    /**
-     * CE PRESTATAIRE EST-IL SOUMIS AU CONTRÔLE FACIAL ?
-     *
-     * Sert la visibilité de la case de menu, et rien d'autre : la garde, elle, vit dans
-     * `FaceCheckGate`, appelé par le middleware et par les six autres points de passage. Une
-     * condition d'affichage n'est jamais une autorisation — le menu dit ce qu'on peut voir, pas ce
-     * qu'on peut faire.
-     *
-     * Soft-fail : un module absent, une table pas encore migrée, une config cassée ne doivent pas
-     * faire tomber le rendu de la navigation entière pour une case sur trente.
-     */
+    /** CE PRESTATAIRE EST-IL SOUMIS AU CONTRÔLE FACIAL ? */
     public function estSoumisAuControleFacial(): bool
     {
         try {
@@ -256,10 +221,7 @@ trait HasProviderFeatures
         }
     }
 
-    /**
-     * KYC = BLOCAGE STRICT (décision produit 2026-06-11) : un prestataire ne peut
-     * recevoir/accepter une mission que si sa vérification d'identité est validée.
-     */
+    /** KYC = BLOCAGE STRICT (décision produit 2026-06-11) : un prestataire ne peut recevoir/accepter une mission que si sa vérification d'identité est validée. */
     public function hasClearedKyc(): bool
     {
         return (bool) $this->providerProfile?->isVerified();

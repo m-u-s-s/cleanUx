@@ -11,10 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-/**
- * Provider rates the client (Uber-style reciprocal rating).
- * Accessible after mission completion.
- */
+/** Provider rates the client (Uber-style reciprocal rating). Accessible after mission completion. */
 class EmployeeRateClient extends Component
 {
     #[Url]

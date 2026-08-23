@@ -14,24 +14,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-/**
- * Service SMS unifié (Phase Sms v2 — prod-ready).
- *
- * Améliorations vs. v1 :
- *   - Provider-agnostic via SmsProviderInterface
- *   - Storage en DB de chaque envoi (sms_messages) pour audit + idempotence
- *   - Rate limiting per phone (anti-toll fraud)
- *   - E.164 validation
- *   - DLR webhook handling séparé via applyStatusUpdate()
- *   - Conserve la signature legacy `send(?string, string)` pour rétrocompat
- */
+/** Service SMS unifié (Phase Sms v2 — prod-ready). Améliorations vs. */
 class SmsService
 {
     public function __construct(protected SmsProviderInterface $provider) {}
 
-    /**
-     * Envoi simple (legacy signature, conservée pour le code existant qui l'utilise).
-     */
+    /** Envoi simple (legacy signature, conservée pour le code existant qui l'utilise). */
     public function send(?string $to, string $message): ?SmsMessage
     {
         if (! $to) {
@@ -45,9 +33,7 @@ class SmsService
         return $this->dispatch($to, $message);
     }
 
-    /**
-     * Envoi enrichi avec contexte métier.
-     */
+    /** Envoi enrichi avec contexte métier. */
     public function dispatch(
         string $toPhone,
         string $body,

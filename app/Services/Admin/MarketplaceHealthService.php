@@ -11,26 +11,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-/**
- * LA SANTÉ DU MARCHÉ (E30) — offre contre demande, zone par zone.
- *
- * LA QUESTION QUE PERSONNE NE PEUT POSER AUJOURD'HUI. Le centre de répartition montre les missions
- * en cours ; il ne dit pas si le marché TIENT. Une zone où une recherche sur trois s'épuise sans
- * candidat est une zone qu'il faut peupler — et on l'apprend aujourd'hui par les plaintes des
- * clients, c'est-à-dire trois mois trop tard.
- *
- * LE TAUX DE RECHERCHE SANS CANDIDAT EST LE SEUL CHIFFRE QUI COMMANDE UNE ACTION. Les autres
- * décrivent ; celui-ci dit où recruter. Il est donc calculé sur les recherches ÉPUISÉES, pas sur les
- * annulées : un client qui renonce n'est pas un marché qui manque de bras.
- *
- * LE TEMPS D'ASSIGNATION EST UNE MÉDIANE. Une recherche qui a mis quarante minutes un dimanche soir
- * décalerait une moyenne au point de rendre le chiffre inutilisable, et c'est le comportement
- * ordinaire qu'on cherche à surveiller.
- *
- * UNE ZONE SANS DEMANDE N'EST PAS UNE ZONE EN BONNE SANTÉ. Elle est rendue avec ses zéros et son
- * `has_data` à faux : la masquer ferait disparaître du tableau exactement les zones où l'on n'a
- * jamais rien vendu — celles qu'il faut regarder.
- */
+/** LA SANTÉ DU MARCHÉ (E30) — offre contre demande, zone par zone. */
 class MarketplaceHealthService
 {
     /**
@@ -68,10 +49,7 @@ class MarketplaceHealthService
                     'searches_count' => $total,
                     'accepted_count' => $acceptees,
                     'exhausted_count' => $epuisees,
-                    /*
-                     * LE SEUL CHIFFRE QUI COMMANDE UNE ACTION. Calculé sur les ÉPUISÉES, jamais sur
-                     * les annulées : un client qui renonce n'est pas un marché qui manque de bras.
-                     */
+                    // LE SEUL CHIFFRE QUI COMMANDE UNE ACTION.
                     'no_candidate_rate' => $total > 0 ? round($epuisees / $total * 100, 1) : null,
                     'median_assignment_seconds' => $this->medianeDAssignation($deLaZone),
                     'providers_online' => $offreParZone[$zone->id] ?? 0,
@@ -146,20 +124,11 @@ class MarketplaceHealthService
     /**
      * Combien de prestataires servent chaque zone.
      *
-     * ON COMPTE LES DÉCLARÉS, pas les connectés à l'instant : un tableau de santé qui varie selon
-     * l'heure de consultation ne se compare pas d'une semaine à l'autre. La présence instantanée a
-     * son propre écran.
-     *
      * @return array<int, int>
      */
     protected function offreParZone(): array
     {
-        /*
-         * DEUX CHEMINS, LES MÊMES QUE LE DISPATCH. `CandidateFinder` accepte un prestataire pour une
-         * zone soit par sa zone PRINCIPALE (`users.primary_service_zone_id`), soit par une
-         * affectation active (`employee_zone_assignments`). N'en compter qu'un donnerait un tableau
-         * de santé qui contredit la recherche réelle — et c'est toujours le tableau qu'on croit.
-         */
+        // DEUX CHEMINS, LES MÊMES QUE LE DISPATCH.
         $principales = User::query()
             ->whereNotNull('primary_service_zone_id')
             ->where('is_active', true)
@@ -202,13 +171,7 @@ class MarketplaceHealthService
             ->get();
     }
 
-    /**
-     * Combien d'offres ont été envoyées avant d'échouer — ce qui distingue « personne n'était là »
-     * de « tout le monde a refusé ».
-     *
-     * LES DEUX APPELLENT DES ACTIONS OPPOSÉES : recruter dans la zone, ou comprendre pourquoi la
-     * course est refusée. Les confondre ferait recruter là où le problème est le prix.
-     */
+    /** Combien d'offres ont été envoyées avant d'échouer — ce qui distingue « personne n'était là » de « tout le monde a refusé ». */
     public function diagnostiquer(AsapDispatchRequest $recherche): string
     {
         $offres = MissionAssignment::query()

@@ -12,19 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * Supplementary coverage for App\Services\Cancellation\CancelBookingService.
- *
- * The sibling CancelBookingServiceTest already covers the happy paths through
- * the early-return guards. This batch drives the deeper helper branches:
- *   - tryRefundPartial: payment_status not eligible, refund amount <= 0, and the
- *     full path that reaches StripeConnectPaymentService (caught soft-fail).
- *   - tryCaptureFull: authorized no-show that reaches MissionPaymentService.
- *   - applyProviderPenalty: crossing the 30-day cancellation threshold warning.
- *
- * The external Payment services are reached inside their try/catch blocks, so
- * any Stripe/DB failure is swallowed and the test remains deterministic.
- */
+/** Supplementary coverage for App\Services\Cancellation\CancelBookingService. */
 class CancelBookingServiceCoverageBatch17Test extends TestCase
 {
     use RefreshDatabase;

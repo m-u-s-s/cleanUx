@@ -60,24 +60,7 @@ class BookingObserver
         }
     }
 
-    /**
-     * LA MISSION SUIT LA RÉSERVATION — l'autre moitié de la fusion.
-     *
-     * `MissionAssignmentService` a appris à reporter la mission sur la réservation. Le chemin
-     * INVERSE restait ouvert, et c'est le plus fréquent : le planning d'administration écrit
-     * `bookings.employe_id` et sauvegarde, sans rien dire à la mission. Deux des trois chemins
-     * d'assignation admin appelaient bien `MissionFromRendezVousSyncService` — `MissionsAdmin` et
-     * `AiDispatchCenter` —, le troisième non. Réassigner depuis le planning laissait donc la
-     * mission au nom de la personne précédente : le mobile, le dispatch, le portefeuille, la
-     * présence et `MissionPolicy` continuaient tous de la désigner.
-     *
-     * ON NE CORRIGE PAS LES APPELANTS UN PAR UN. Un chemin d'assignation qu'on ajouterait demain
-     * oublierait la synchronisation exactement comme celui-ci l'a oubliée. La règle vit donc là où
-     * l'écriture passe forcément.
-     *
-     * Pas de boucle : le report inverse écrit les mêmes valeurs, et la mise à jour d'une mission ne
-     * réécrit jamais la réservation d'elle-même.
-     */
+    /** LA MISSION SUIT LA RÉSERVATION — l'autre moitié de la fusion. */
     protected function propagerLIntervenantAuxMissions(Booking $booking): void
     {
         if (! $booking->wasChanged('employe_id')) {
@@ -86,18 +69,7 @@ class BookingObserver
 
         $intervenantId = $booking->employe_id ? (int) $booking->employe_id : null;
 
-        /*
-         * LA DERNIÈRE MISSION, ET ELLE SEULE — le même choix que `Booking::intervenantId()`.
-         *
-         * En production une réservation n'a qu'une mission : `MissionFromRendezVousSyncService`
-         * travaille en `updateOrCreate` sur `booking_id`, et `RendezVousObserver` l'appelle à
-         * chaque enregistrement. Plusieurs lignes n'apparaissent que lorsqu'un appelant court-circuite
-         * ce service.
-         *
-         * Écrire sur TOUTES serait pourtant un choix, et un mauvais : le résolveur, lui, ne lit que
-         * la plus récente. Une écriture plus large que la lecture rouvre précisément l'écart que
-         * cette fusion referme.
-         */
+        // LA DERNIÈRE MISSION, ET ELLE SEULE — le même choix que `Booking::intervenantId()`.
         $mission = $booking->missions()->latest('id')->first();
 
         if ($mission === null) {
@@ -116,11 +88,7 @@ class BookingObserver
             'lead_provider_user_id' => $intervenantId,
         ];
 
-        /*
-         * Le statut ne suit QUE depuis et vers l'attente. Une mission en route ou commencée a
-         * dépassé la question : lui réécrire `assigned` la ferait reculer dans son cycle de vie et
-         * disparaître des écrans terrain.
-         */
+        // Le statut ne suit QUE depuis et vers l'attente.
         if ($intervenantId !== null && $mission->status === MissionStatus::PLANNED) {
             $champs['status'] = MissionStatus::ASSIGNED;
         } elseif ($intervenantId === null && $mission->status === MissionStatus::ASSIGNED) {
@@ -130,33 +98,7 @@ class BookingObserver
         $mission->forceFill($champs)->save();
     }
 
-    /**
-     * TENIR L'HISTORIQUE DES STATUTS, QUE PERSONNE NE TENAIT.
-     *
-     * `booking_status_histories` existait depuis l'origine, complète et sans le moindre écrivain.
-     * Vérifié avant de la brancher : `Booking` ne porte pas `AuditsEloquentEvents` (qui équipe
-     * pourtant sept autres modèles), cet observateur n'en gardait pas trace, `mission_events` tient
-     * la chronologie de TERRAIN et `booking_reschedule_history` les seules reprogrammations.
-     * Personne ne pouvait donc dire qui avait annulé une réservation, ni depuis quel état — alors
-     * que les frais d'annulation se calculent sur ce chemin et qu'un litige se tranche dessus.
-     *
-     * La création ouvre le journal avec `from_status` nul : sans cette première ligne, la deuxième
-     * transition serait la première trace, et l'état initial resterait à deviner.
-     *
-     * `changed_by` est nul quand le changement vient d'une commande ou d'une file — c'est une
-     * information, pas un trou : la colonne l'admet exprès.
-     *
-     * ── POURQUOI `created` ET `updated`, ET SURTOUT PAS `saved` ──────────────────────────────
-     *
-     * La première version tenait dans `saved()` et distinguait l'insertion par
-     * `$booking->wasRecentlyCreated`. C'est faux, et le test l'a montré : ce drapeau reste vrai
-     * pour toute la DURÉE DE VIE de l'instance, pas seulement pendant l'insertion. Modifier
-     * ensuite le même objet — changer un commentaire, par exemple — rouvrait donc le journal une
-     * seconde fois, avec un `from_status` nul mensonger.
-     *
-     * `created` et `updated` ne se prêtent pas à cette confusion : le premier ne se déclenche que
-     * sur une insertion, le second que sur une mise à jour réelle.
-     */
+    /** TENIR L'HISTORIQUE DES STATUTS, QUE PERSONNE NE TENAIT. */
     protected function ouvrirLHistoriqueDesStatuts(Booking $booking): void
     {
         BookingStatusHistory::create([
@@ -238,19 +180,7 @@ class BookingObserver
         }
     }
 
-    /**
-     * LE MONTANT DE LA RÉSERVATION, EN CENTIMES.
-     *
-     * Ces trois émissions lisaient `total_amount_cents`, qui N'EXISTE PAS sur `bookings`. Le
-     * modèle l'annonçait pourtant en `@property`, si bien que l'analyse statique ne voyait rien :
-     * chaque événement d'analyse et chaque webhook partaient avec `amount_cents: null`, et
-     * `booking.completed` annonçait un revenu nul. Depuis toujours.
-     *
-     * La colonne vivante est `payment_amount_cents` — écrite par `OrderPaymentPlanner`,
-     * `MissionPaymentService` et `MissionQuoteRevisionService`. Les deux replis sont en EUROS
-     * (`decimal(10,2)`) et se convertissent ici : une réservation confirmée sans paiement encore
-     * planifié a un devis, et un revenu approché vaut mieux qu'un zéro silencieux.
-     */
+    /** LE MONTANT DE LA RÉSERVATION, EN CENTIMES. */
     protected function montantEnCentimes(Booking $booking): ?int
     {
         if ($booking->payment_amount_cents !== null) {
@@ -285,10 +215,7 @@ class BookingObserver
         }
     }
 
-    /**
-     * Auto-évaluation badges provider après une mission complétée.
-     * Soft-fail : si module Badges absent, skip silencieusement.
-     */
+    /** Auto-évaluation badges provider après une mission complétée. */
     protected function maybeEvaluateProviderBadges(Booking $booking): void
     {
         try {

@@ -76,19 +76,7 @@ class MissionTracking extends Component
                 ->first()
             : null;
 
-        /*
-         * Le code de fin se lit dans la notification du CLIENT, comme celui de début juste au-dessus.
-         *
-         * La vue le prenait dans `session('mission_end_code_…')` — une clé écrite dans la session DU
-         * PRESTATAIRE (MissionActions::prepareEndCode), donc jamais présente dans le navigateur du
-         * client, et carrément inexistante lorsque le prestataire clôture depuis l'application
-         * mobile, authentifiée par jeton et sans session. L'encadré affichait son texte de repli à
-         * la place des six chiffres, quel que soit l'état réel de la mission.
-         *
-         * L'APPARIEMENT SE FAIT SUR `code_id`, PAS SUR L'ORDRE. Chaque émission périme la
-         * précédente ; se contenter de la dernière notification affichait, dans le meilleur des
-         * cas, le bon code — et dans le pire, six chiffres appartenant à un code déjà mort.
-         */
+        // Le code de fin se lit dans la notification du CLIENT, comme celui de début juste au-dessus.
         $latestEndCodeNotification = ($user && $endCodeRecord)
             ? $user->notifications()
                 ->where('type', MissionEndCodeNotification::class)
@@ -97,11 +85,7 @@ class MissionTracking extends Component
                 ->first()
             : null;
 
-        /*
-         * UN CODE EXPIRÉ N'EST PAS UN CODE. Le TTL est de vingt minutes ; l'afficher passé ce
-         * délai envoie le client dicter six chiffres que le prestataire se verra refuser par
-         * « Le code a expiré » — et personne des deux ne comprend pourquoi.
-         */
+        // UN CODE EXPIRÉ N'EST PAS UN CODE.
         $encoreValide = $endCodeRecord
             && ($endCodeRecord->expires_at === null || $endCodeRecord->expires_at->isFuture());
 
@@ -114,17 +98,7 @@ class MissionTracking extends Component
         ]);
     }
 
-    /**
-     * LE CLIENT DEMANDE SON CODE DE FIN LUI-MÊME.
-     *
-     * Il n'existait aucun chemin pour cela : le code naissait à l'arrivée du prestataire, vivait
-     * vingt minutes, et une fois périmé ou consommé le client n'avait plus qu'à attendre que le
-     * prestataire pense à le renvoyer par SMS — un SMS qui, sur cette plateforme, se heurte au
-     * plafond de cinq envois par heure et par numéro. Le prestataire restait devant la porte.
-     *
-     * Émettre PÉRIME LE PRÉCÉDENT, et c'est voulu : deux codes valides pour une même mission
-     * feraient hésiter un client qui a reçu les deux, et le mauvais choix brûle un essai.
-     */
+    /** LE CLIENT DEMANDE SON CODE DE FIN LUI-MÊME. */
     public function genererCodeDeFin(): void
     {
         $this->erreurCode = null;

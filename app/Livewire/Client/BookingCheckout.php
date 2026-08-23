@@ -9,20 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-/**
- * Page checkout Stripe Elements pour un Booking en attente de paiement.
- *
- * Workflow :
- *   1. mount(bookingId) — charge le booking + crée/retrouve un SetupIntent
- *      OU un PaymentIntent selon que la mission est facturée upfront ou auth-hold
- *   2. Stripe.js (Elements) → confirm le PaymentIntent côté client
- *   3. onPaymentSuccess (wire:click) → mark booking comme "paiement autorisé"
- *      et redirect vers la confirmation
- *   4. Webhook payment_intent.succeeded en background → finalise.
- *
- * Le client_secret est exposé via $this->clientSecret (rendu dans le data attr du form),
- * jamais persisté ni transmis hors du flux Stripe.
- */
+/** Page checkout Stripe Elements pour un Booking en attente de paiement. Workflow : 1. */
 class BookingCheckout extends Component
 {
     #[Url]

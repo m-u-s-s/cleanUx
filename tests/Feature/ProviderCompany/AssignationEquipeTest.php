@@ -19,20 +19,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * LOT 3 — UNE ÉQUIPE CRÉÉE DANS L'ESPACE SOCIÉTÉ NE POUVAIT RECEVOIR AUCUNE MISSION.
- *
- * Trois notions d'équipe coexistaient : `provider_teams` (cible de la FK `missions.provider_team_id`,
- * sans modèle Eloquent, alimentée par les seuls seeders), `field_teams` (modèles complets, créées
- * par l'espace société, JAMAIS référencées par `missions`), et un vestige Jetstream. Une société qui
- * créait son « Équipe Nord » sur son propre écran ne pouvait donc rien lui confier.
- *
- * ET DEUX « CHEFS D'ÉQUIPE » QUI S'IGNORAIENT : `OrganizationRole::TEAM_LEAD`, un rang dans la
- * société qui ne dit pas QUELLE équipe, et `field_teams.team_lead_user_id`, la personne qui mène une
- * équipe précise sans rang particulier. Prendre l'une pour l'autre donne deux erreurs opposées —
- * un chef d'équipe réassignant les missions de toute la société, ou le meneur d'une équipe incapable
- * de toucher aux siennes.
- */
+/** LOT 3 — UNE ÉQUIPE CRÉÉE DANS L'ESPACE SOCIÉTÉ NE POUVAIT RECEVOIR AUCUNE MISSION. */
 class AssignationEquipeTest extends TestCase
 {
     use RefreshDatabase;
@@ -142,10 +129,7 @@ class AssignationEquipeTest extends TestCase
 
     public function test_sans_chef_declare_le_premier_membre_actif_prend_la_tete(): void
     {
-        /*
-         * Une mission sans responsable n'est pas assignée du tout : `lead_provider_user_id` est lu
-         * par le tableau de bord, l'autorisation Reverb `mission.{id}` et le suivi de trajet.
-         */
+        // Une mission sans responsable n'est pas assignée du tout : `lead_provider_user_id` est lu par le tableau de bord, l'autorisation Reverb `mission.{id}` et le suivi de trajet.
         $a = $this->membre(OrganizationRole::WORKER);
         $b = $this->membre(OrganizationRole::WORKER);
 
@@ -159,11 +143,7 @@ class AssignationEquipeTest extends TestCase
 
     public function test_un_chef_qui_a_quitte_l_equipe_ne_prend_pas_la_tete(): void
     {
-        /*
-         * `team_lead_user_id` peut désigner quelqu'un qui n'est plus membre actif : la colonne n'est
-         * pas mise à jour par tous les chemins. Le retenir aveuglément assignerait la mission à un
-         * absent, et le répartiteur la croirait couverte.
-         */
+        // `team_lead_user_id` peut désigner quelqu'un qui n'est plus membre actif : la colonne n'est pas mise à jour par tous les chemins.
         $ancienChef = $this->membre(OrganizationRole::TEAM_LEAD);
         $reste = $this->membre(OrganizationRole::WORKER);
 
@@ -209,11 +189,7 @@ class AssignationEquipeTest extends TestCase
 
     public function test_un_membre_suspendu_de_la_societe_n_est_pas_assigne(): void
     {
-        /*
-         * Appartenir à une équipe et appartenir à la société sont deux choses : une équipe garde ses
-         * lignes quand un salarié est suspendu. L'assigner confierait la mission à quelqu'un qui
-         * n'a plus accès à l'application.
-         */
+        // Appartenir à une équipe et appartenir à la société sont deux choses : une équipe garde ses lignes quand un salarié est suspendu.
         $actif = $this->membre(OrganizationRole::WORKER);
         $suspendu = $this->membre(OrganizationRole::WORKER);
 
@@ -239,12 +215,7 @@ class AssignationEquipeTest extends TestCase
 
     public function test_basculer_vers_une_autre_equipe_libere_les_membres_non_repris(): void
     {
-        /*
-         * SANS CELA, LA MISSION ACCUMULE LES INTERVENANTS de toutes les équipes qui y sont passées,
-         * et le répartiteur la croit sur-dotée. `assigner()` ne libère que les RESPONSABLES des
-         * autres — délibérément, sinon remplacer le chef la veille désassignerait toute l'équipe :
-         * les renforts sont donc à la charge d'`assignerEquipe()`.
-         */
+        // SANS CELA, LA MISSION ACCUMULE LES INTERVENANTS de toutes les équipes qui y sont passées, et le répartiteur la croit sur-dotée.
         $chefA = $this->membre(OrganizationRole::TEAM_LEAD);
         $renfortA = $this->membre(OrganizationRole::WORKER);
         $chefB = $this->membre(OrganizationRole::TEAM_LEAD);
@@ -315,11 +286,7 @@ class AssignationEquipeTest extends TestCase
 
     public function test_le_chef_d_equipe_reassigne_dans_son_equipe_et_pas_ailleurs(): void
     {
-        /*
-         * LA MOITIÉ DE L'EXIGENCE 5 QUE LA MATRICE NE PEUT PAS EXPRIMER. Le lot 1 a accordé
-         * `missions.assign` à `team_lead` en notant que la portée serait bornée ici : sans cette
-         * borne, un chef d'équipe redistribuait les missions de toute la société.
-         */
+        // LA MOITIÉ DE L'EXIGENCE 5 QUE LA MATRICE NE PEUT PAS EXPRIMER.
         $chef = $this->membre(OrganizationRole::TEAM_LEAD);
         $coequipier = $this->membre(OrganizationRole::WORKER);
 
@@ -353,12 +320,7 @@ class AssignationEquipeTest extends TestCase
 
     public function test_le_meneur_d_equipe_sans_rang_reassigne_les_siennes(): void
     {
-        /*
-         * LES DEUX NOTIONS DE CHEF D'ÉQUIPE, RÉCONCILIÉES. `field_teams.team_lead_user_id` désigne
-         * quelqu'un qui répond de l'équipe au quotidien, sans forcément porter le RANG
-         * `OrganizationRole::TEAM_LEAD` ni la clé `missions.assign`. Lui refuser d'échanger deux de
-         * ses membres l'obligerait à appeler le bureau pour un geste qui lui revient.
-         */
+        // LES DEUX NOTIONS DE CHEF D'ÉQUIPE, RÉCONCILIÉES.
         $meneur = $this->membre(OrganizationRole::WORKER);
         $equipier = $this->membre(OrganizationRole::WORKER);
 
@@ -463,13 +425,7 @@ class AssignationEquipeTest extends TestCase
 
     public function test_le_renfort_d_une_equipe_voit_et_ouvre_sa_mission(): void
     {
-        /*
-         * LE CRITÈRE QUI RÉVÈLE UN TROU AILLEURS. `/provider/missions/active` n'admettait que le
-         * responsable et les assignments `accepted` — l'état du parcours MARKETPLACE, où un
-         * indépendant répond oui à une proposition. Un salarié n'accepte rien : son employeur
-         * décide, et l'assignation naît `assigned`. Les renforts d'une équipe envoyée sur un
-         * chantier ne trouvaient donc leur mission nulle part, et se voyaient refuser son ouverture.
-         */
+        // LE CRITÈRE QUI RÉVÈLE UN TROU AILLEURS.
         $chef = $this->membre(OrganizationRole::TEAM_LEAD);
         $renfort = $this->membre(OrganizationRole::WORKER);
 
@@ -494,12 +450,7 @@ class AssignationEquipeTest extends TestCase
 
     public function test_une_offre_marketplace_en_attente_ne_devient_pas_une_mission_active(): void
     {
-        /*
-         * L'AUTRE MOITIÉ DE LA RÈGLE, ET ELLE COMPTE AUTANT. `assigned` désigne aussi une OFFRE
-         * envoyée à un indépendant et pas encore acceptée. Ouvrir la liste sur ce seul statut
-         * laisserait démarrer une mission qu'on a seulement proposée — c'est l'appartenance de la
-         * MISSION à une société qui distingue une décision d'une proposition.
-         */
+        // L'AUTRE MOITIÉ DE LA RÈGLE, ET ELLE COMPTE AUTANT.
         $independant = User::factory()->employe()->create(['email_verified_at' => now()]);
         $independant->providerProfile()->create([
             'provider_type' => ProviderType::INDEPENDENT->value,
@@ -534,11 +485,7 @@ class AssignationEquipeTest extends TestCase
 
     public function test_la_societe_peuple_et_vide_ses_propres_equipes(): void
     {
-        /*
-         * `field_team_members` n'était manipulable que depuis l'administration de la PLATEFORME :
-         * une société qui créait son équipe ne pouvait pas la peupler, et une équipe vide ne peut
-         * recevoir aucune mission.
-         */
+        // `field_team_members` n'était manipulable que depuis l'administration de la PLATEFORME : une société qui créait son équipe ne pouvait pas la peupler, et une équipe vide ne peut recevoir aucune mission.
         $owner = $this->membre(OrganizationRole::OWNER);
         $recrue = $this->membre(OrganizationRole::WORKER);
         $equipe = $this->equipe([]);
@@ -598,11 +545,7 @@ class AssignationEquipeTest extends TestCase
 
     public function test_retirer_le_meneur_lui_retire_aussi_la_barre(): void
     {
-        /*
-         * Laisser `team_lead_user_id` désigner un partant donnerait la mission au premier membre
-         * actif à l'assignation suivante — sans que rien ne l'explique — et `ReassignmentPolicy`
-         * continuerait de lui accorder la main sur les missions de l'équipe.
-         */
+        // Laisser `team_lead_user_id` désigner un partant donnerait la mission au premier membre actif à l'assignation suivante — sans que rien ne l'explique — et `ReassignmentPolicy` continuerait de lui accorder la main sur les missions de l'équipe.
         $owner = $this->membre(OrganizationRole::OWNER);
         $meneur = $this->membre(OrganizationRole::WORKER);
         $equipe = $this->equipe([$meneur], chef: $meneur);
@@ -619,12 +562,7 @@ class AssignationEquipeTest extends TestCase
 
     public function test_l_ecran_web_rend_les_boutons_de_composition(): void
     {
-        /*
-         * DÉCLARER N'EST PAS RENDRE JOIGNABLE. Une action Livewire sans bouton dans la vue est du
-         * code mort, et ce dépôt en a déjà payé le prix — cinq écrans société livrés, testés,
-         * atteignables par personne. On vérifie donc le RENDU, pas seulement l'existence des
-         * méthodes.
-         */
+        // DÉCLARER N'EST PAS RENDRE JOIGNABLE.
         $owner = $this->membre(OrganizationRole::OWNER);
         $recrue = $this->membre(OrganizationRole::WORKER);
         $equipe = $this->equipe([]);

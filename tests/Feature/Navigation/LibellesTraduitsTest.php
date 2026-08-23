@@ -7,18 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
 use Tests\TestCase;
 
-/**
- * LA NAVIGATION DOIT PARLER LA LANGUE DU VISITEUR.
- *
- * Les libellés de `config/modules.php` sortaient bruts — `{{ $link['label'] }}` — donc
- * toujours en français, quelle que soit la langue choisie. Sur une plateforme belge servie
- * en français, néerlandais et anglais, un client anglophone lisait « Historique » à côté de
- * « New booking » : la moitié de l'écran traduite, l'autre non.
- *
- * Mesuré au moment de la correction : 189 libellés de tuiles sur 193 n'avaient aucune
- * traduction anglaise. Poser `__()` ne les invente pas — une clé absente s'affiche
- * inchangée — mais rend enfin applicables celles qui existent, et celles qu'on ajoutera.
- */
+/** LA NAVIGATION DOIT PARLER LA LANGUE DU VISITEUR. */
 class LibellesTraduitsTest extends TestCase
 {
     use RefreshDatabase;
@@ -41,13 +30,7 @@ class LibellesTraduitsTest extends TestCase
         $this->assertSame('Mijn dag', __('Ma journée'));
     }
 
-    /**
-     * L'INVARIANT — la vue passe le libellé par la traduction.
-     *
-     * Sans ce contrôle, quelqu'un remettrait `{{ $link['label'] }}` un jour, et la
-     * navigation redeviendrait monolingue sans qu'aucun test ne s'en aperçoive : les
-     * libellés français continueraient de s'afficher, identiques.
-     */
+    /** L'INVARIANT — la vue passe le libellé par la traduction. */
     public function test_les_vues_passent_les_libelles_par_la_traduction(): void
     {
         $vues = [

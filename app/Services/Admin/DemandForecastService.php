@@ -7,27 +7,7 @@ use App\Models\ServiceZone;
 use App\Models\Trade;
 use Illuminate\Support\Carbon;
 
-/**
- * LA PRÉVISION DE DEMANDE (E29) — où recruter, avant que ça manque.
- *
- * À QUOI ÇA SERT VRAIMENT. Recruter un prestataire prend des semaines : vérification, KYC,
- * formation, premières courses. Constater le manque le jour où les recherches s'épuisent, c'est
- * arriver avec trois mois de retard. La prévision ne sert pas à prédire l'avenir — elle sert à
- * lancer un recrutement au bon moment.
- *
- * LA MÉTHODE EST VOLONTAIREMENT SIMPLE ET EXPLICABLE : moyenne mobile sur les semaines observées,
- * appliquée à la semaine suivante. Un modèle plus fin donnerait un chiffre plus juste et une
- * décision moins défendable — un responsable qui ne peut pas expliquer pourquoi le système demande
- * trois recrutements à Liège n'en lancera aucun.
- *
- * L'INTERVALLE DE CONFIANCE EST LE CHIFFRE HONNÊTE. Une projection à partir de trois semaines
- * d'historique n'a pas la même valeur qu'à partir de douze, et l'écart-type le dit. Rendre une
- * projection nue ferait prendre une extrapolation pour une mesure.
- *
- * ON NE PROJETTE PAS SOUS QUATRE SEMAINES D'OBSERVATION. En dessous, la moyenne mobile décrit un
- * accident, pas une tendance : `has_enough_history` est rendu à faux plutôt qu'un chiffre qui serait
- * lu comme un objectif.
- */
+/** LA PRÉVISION DE DEMANDE (E29) — où recruter, avant que ça manque. À QUOI ÇA SERT VRAIMENT. */
 class DemandForecastService
 {
     /** En dessous, la moyenne mobile décrit un accident, pas une tendance. */
@@ -78,10 +58,7 @@ class DemandForecastService
                     // La projection est la moyenne mobile : simple, explicable, et donc défendable
                     // devant quelqu'un qui doit signer un recrutement.
                     'next_week_forecast' => (int) round((float) $moyenne),
-                    /*
-                     * L'INTERVALLE EST LE CHIFFRE HONNÊTE. Rendre une projection nue ferait prendre
-                     * une extrapolation pour une mesure.
-                     */
+                    // L'INTERVALLE EST LE CHIFFRE HONNÊTE.
                     'forecast_low' => max(0, (int) round($moyenne - $ecartType)),
                     'forecast_high' => (int) round($moyenne + $ecartType),
                     // En dessous du seuil, on ne projette pas : la moyenne décrirait un accident.

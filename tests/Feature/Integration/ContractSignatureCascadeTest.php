@@ -14,9 +14,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
-/**
- * Test E2E Contract v2 : render → sign → vérifier hash + webhook + audit.
- */
+/** Test E2E Contract v2 : render → sign → vérifier hash + webhook + audit. */
 class ContractSignatureCascadeTest extends TestCase
 {
     use RefreshDatabase;

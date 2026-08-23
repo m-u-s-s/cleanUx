@@ -5,19 +5,7 @@ namespace Database\Seeders;
 use App\Models\Trade;
 use Illuminate\Database\Seeder;
 
-/**
- * Questions posées au prestataire, par métier, au moment de l'inscription.
- *
- * `booking_form_schema` décrit ce qu'on demande au CLIENT qui réserve. Ce schéma-ci décrit ce
- * qu'on demande au PRESTATAIRE qui déclare exercer le métier : un électricien et un babysitter ne
- * relèvent ni des mêmes certifications ni des mêmes assurances.
- *
- * Les deux questions transverses (expérience, disponibilité) sont posées partout. Les questions
- * réglementaires découlent des drapeaux déjà portés par chaque métier — `requires_certification`
- * et `requires_insurance_proof` — plutôt que d'une liste tenue à la main qui divergerait d'eux.
- *
- * Idempotent, et ne réécrit pas un schéma déjà personnalisé à la main en base.
- */
+/** Questions posées au prestataire, par métier, au moment de l'inscription. */
 class ProviderTradeQuestionsSeeder extends Seeder
 {
     public function run(): void

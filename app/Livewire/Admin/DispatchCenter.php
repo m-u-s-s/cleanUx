@@ -18,22 +18,6 @@ use Livewire\WithPagination;
 /**
  * LE CENTRE DE RÉPARTITION — raconter l'histoire d'une recherche, pas afficher un compteur.
  *
- * Quand une course n'aboutit pas, la seule question qui compte est « pourquoi ». Elle a exactement
- * quatre réponses possibles, et il faut pouvoir les distinguer d'un coup d'œil :
- *
- *   1. personne n'a été trouvé (métier ou zone sans prestataire déclaré) ;
- *   2. des gens ont été trouvés mais aucun n'était en ligne ;
- *   3. ils ont refusé ;
- *   4. ils n'ont pas répondu.
- *
- * Sans la chaîne d'offres complète — qui, quand, à quelle distance, refus ou silence — les quatre se
- * ressemblent, et l'exploitation conclut « pas assez de prestataires » alors que le problème est un
- * réglage de rayon.
- *
- * LE SIMULATEUR répond à l'autre question : « pour CETTE réservation, qui serait candidat, et dans
- * quel ordre ». Il appelle le VRAI `CandidateFinder`, pas une approximation : une simulation qui
- * n'emprunterait pas le même chemin que le dispatch ne prouverait rien.
- *
  * @property-read array<string, int> $compteurs
  */
 #[Layout('layouts.app')]
@@ -58,9 +42,6 @@ class DispatchCenter extends Component
 
     /**
      * Les compteurs d'exploitation.
-     *
-     * `no_candidate` est celui qui compte : c'est le nombre de clients qui ont attendu pour rien.
-     * Le laisser invisible fait découvrir le problème par les avis clients.
      *
      * @return array<string, int>
      */
@@ -126,12 +107,7 @@ class DispatchCenter extends Component
             ->all();
     }
 
-    /**
-     * « Pour cette réservation, qui serait candidat, et dans quel ordre. »
-     *
-     * Appelle le MÊME service que le dispatch. Une simulation qui recalculerait les candidats
-     * autrement donnerait un ordre plausible et faux — le pire des deux mondes.
-     */
+    /** « Pour cette réservation, qui serait candidat, et dans quel ordre. */
     public function simuler(): void
     {
         $this->simulation = null;

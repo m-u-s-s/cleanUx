@@ -22,18 +22,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
-/**
- * LE MOTEUR DE RÉPARTITION, BOUT EN BOUT — consignes 1, 3, 4, 5, 6, 10.
- *
- * Le déroulé qu'on vérifie ici est celui des plateformes VTC, adapté :
- *
- *   offre séquentielle 20 s → refus ou silence → suivant du MÊME MÉTIER → vague épuisée →
- *   rayon élargi → rayon maximal → broadcast premier-accepte-gagne → échéance globale → sortie.
- *
- * Chaque test correspond à une façon dont la chaîne pouvait casser, et chacune a existé : deux
- * moteurs qui s'ignoraient, un job d'escalade qui rejouait sans garde, une acceptation qui
- * n'annulait pas les autres offres.
- */
+/** LE MOTEUR DE RÉPARTITION, BOUT EN BOUT — consignes 1, 3, 4, 5, 6, 10. */
 class MoteurDeRepartitionTest extends TestCase
 {
     use OuvreLeCatalogue;
@@ -115,13 +104,7 @@ class MoteurDeRepartitionTest extends TestCase
     {
         return Booking::factory()->create([
             'client_id' => User::factory()->client()->create()->id,
-            /*
-             * PERSONNE N'EST ENCORE DÉSIGNÉ, et c'est le point de départ de tout le moteur.
-             *
-             * La fabrique pose un `employe_id` par défaut ; laissé tel quel, la mission naîtrait
-             * déjà `assigned` avec son chef, et la recherche n'aurait plus rien à chercher. C'est
-             * exactement ce que le moteur remplace : l'assignation d'office silencieuse.
-             */
+            // PERSONNE N'EST ENCORE DÉSIGNÉ, et c'est le point de départ de tout le moteur.
             'employe_id' => null,
             'assigned_employee_id' => null,
             'service_zone_id' => $this->zone->id,
@@ -424,15 +407,7 @@ class MoteurDeRepartitionTest extends TestCase
 
     // ─── Le mode ne se perd jamais en route ──────────────────────────────────────────────────
 
-    /**
-     * UNE RÉSERVATION IMMÉDIATE ENTRÉE PAR UN AUTRE CHEMIN RESTE IMMÉDIATE.
-     *
-     * `CreateBookingFromApiAction` — l'API cliente mobile — appelle directement l'escalade sans
-     * passer par `dispatchBooking()`. Sans garde, la course partait avec les règles du RENDEZ-VOUS :
-     * zones déclarées au lieu de la position GPS, trente minutes au lieu de vingt secondes, aucune
-     * vague. Le client attendait devant sa porte pendant qu'on interrogeait des prestataires hors
-     * ligne à l'autre bout de la zone.
-     */
+    /** UNE RÉSERVATION IMMÉDIATE ENTRÉE PAR UN AUTRE CHEMIN RESTE IMMÉDIATE. */
     #[Test]
     public function une_reservation_immediate_sans_recherche_ouverte_en_ouvre_une(): void
     {
@@ -460,13 +435,7 @@ class MoteurDeRepartitionTest extends TestCase
 
     // ─── Occupé dès l'acceptation ────────────────────────────────────────────────────────────
 
-    /**
-     * LE PRESTATAIRE DEVIENT OCCUPÉ DÈS L'ACCEPTATION, pas au démarrage de l'intervention.
-     *
-     * Sans cela, celui qui vient d'accepter reste `online` et redevient candidat à la seconde
-     * suivante : il pouvait recevoir une deuxième course alors qu'il est déjà en route pour la
-     * première, et l'une des deux clientes attendait pour rien.
-     */
+    /** LE PRESTATAIRE DEVIENT OCCUPÉ DÈS L'ACCEPTATION, pas au démarrage de l'intervention. */
     #[Test]
     public function accepter_rend_le_prestataire_occupe(): void
     {
@@ -504,13 +473,7 @@ class MoteurDeRepartitionTest extends TestCase
 
     // ─── Le catalogue ferme réellement ───────────────────────────────────────────────────────
 
-    /**
-     * FERMER UN COUPLE (MÉTIER, ZONE) ARRÊTE LES OFFRES, y compris sur une recherche déjà ouverte.
-     *
-     * La confirmation bloque déjà les NOUVELLES commandes. Mais une recherche en cours continuait
-     * de proposer la course : l'administration croyait avoir fermé un service et des prestataires
-     * continuaient d'y être envoyés.
-     */
+    /** FERMER UN COUPLE (MÉTIER, ZONE) ARRÊTE LES OFFRES, y compris sur une recherche déjà ouverte. */
     #[Test]
     public function fermer_le_metier_dans_la_zone_arrete_les_offres(): void
     {

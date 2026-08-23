@@ -5,14 +5,7 @@ namespace Tests\Feature\Navigation;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
-/**
- * LE CATALOGUE DOIT COUVRIR CE QUI EXISTE, PAS CE QU'ON CROIT AVOIR ÉCRIT.
- *
- * Ce test part de la table de routes réelle — la seule source qui ne peut pas mentir sur ce qui
- * existe. Un test qui lirait `config/modules.php` pour vérifier `config/modules.php` ne prouverait
- * rien : c'est exactement le piège dans lequel les tests de joignabilité de ce dépôt sont déjà
- * tombés, en asserant qu'une route était DÉCLARÉE plutôt qu'ATTEIGNABLE.
- */
+/** LE CATALOGUE DOIT COUVRIR CE QUI EXISTE, PAS CE QU'ON CROIT AVOIR ÉCRIT. */
 class CatalogueDesModulesTest extends TestCase
 {
     /** Les pages de tableau de bord réellement servies, par nom de route. */
@@ -62,12 +55,7 @@ class CatalogueDesModulesTest extends TestCase
 
     public function test_chaque_case_declare_un_contexte_et_une_categorie_connus(): void
     {
-        /*
-         * `*` est un contexte à part entière : celui des modules TRANSVERSAUX — profil,
-         * notifications, aide, textes légaux. Ces pages ne vivent sous aucun tableau de bord et
-         * appartiennent aux cinq espaces à la fois ; les recopier cinq fois serait cinq occasions
-         * d'en oublier une.
-         */
+        // `*` est un contexte à part entière : celui des modules TRANSVERSAUX — profil, notifications, aide, textes légaux.
         $contextes = ['*', 'client', 'employe', 'admin', 'client-company', 'provider-company'];
         $categories = array_keys(config('modules.categories'));
 

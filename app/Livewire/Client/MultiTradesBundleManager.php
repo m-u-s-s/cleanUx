@@ -154,9 +154,7 @@ class MultiTradesBundleManager extends Component
         $this->dispatch('toast', 'Bundle annulé.', 'success');
     }
 
-    /**
-     * P3 — Le client retient un devis reçu pour un item de son chantier.
-     */
+    /** P3 — Le client retient un devis reçu pour un item de son chantier. */
     public function selectQuote(int $quoteId): void
     {
         $quote = MultiTradeBundleItemQuote::query()

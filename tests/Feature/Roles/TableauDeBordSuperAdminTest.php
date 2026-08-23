@@ -8,14 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
-/**
- * LE SEUL DES SIX RÔLES QUI N'AVAIT PAS DE TABLEAU DE BORD.
- *
- * `admin`, `client_individuelle` et `provider_individuelle` gardent le leur — ils sont écrits,
- * testés, utilisés. `client_societe` et `provider_societe` ont les espaces société. Le super
- * administrateur, lui, atterrissait sur la console d'administration : rien ne distinguait son
- * pouvoir de celui d'un administrateur ordinaire.
- */
+/** LE SEUL DES SIX RÔLES QUI N'AVAIT PAS DE TABLEAU DE BORD. */
 class TableauDeBordSuperAdminTest extends TestCase
 {
     use RefreshDatabase;
@@ -47,13 +40,7 @@ class TableauDeBordSuperAdminTest extends TestCase
 
     public function test_un_administrateur_ordinaire_est_refuse(): void
     {
-        /*
-         * LA GARDE QUI DONNE SON SENS AU RÔLE.
-         *
-         * `isAdmin()` est vrai pour un super administrateur comme pour un administrateur : une
-         * garde écrite dessus laisserait les deux entrer, et le sixième rôle ne serait qu'un
-         * libellé. La garde interroge le rôle RÉSOLU.
-         */
+        // LA GARDE QUI DONNE SON SENS AU RÔLE.
         $this->actingAs(User::factory()->admin()->create())
             ->get(route('super-admin.dashboard'))
             ->assertForbidden();

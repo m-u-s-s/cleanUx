@@ -6,12 +6,7 @@ use App\Models\Message;
 use App\Models\MessageReaction;
 use App\Models\User;
 
-/**
- * Toggle de réaction emoji sur un message.
- *
- * Whitelist anti-abus : on ne valide pas exhaustivement l'emoji (le navigateur
- * renvoie un caractère unicode quelconque) mais on cap la longueur à 32 chars.
- */
+/** Toggle de réaction emoji sur un message. */
 class ReactionService
 {
     public const ALLOWED_PRESET = ['👍', '❤️', '🔥', '😂', '🎉', '👀', '✅', '❌', '🙏', '💡'];
@@ -45,13 +40,7 @@ class ReactionService
         return ['action' => 'added', 'emoji' => $emoji];
     }
 
-    /**
-     * Retourne le résumé pour l'UI :
-     *   [
-     *     ['emoji' => '👍', 'count' => 3, 'me' => true,  'users' => [...names]],
-     *     ['emoji' => '🎉', 'count' => 1, 'me' => false, 'users' => [...]],
-     *   ]
-     */
+    /** Retourne le résumé pour l'UI : [ ['emoji' => '👍', 'count' => 3, 'me' => true, 'users' => [...names]], ['emoji' => '🎉', 'count' => 1, 'me' => false, 'users' => [...]], ] */
     public function summarize(Message $message, ?User $forUser = null): array
     {
         $rows = $message->reactions()

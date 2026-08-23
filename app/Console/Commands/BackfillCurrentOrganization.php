@@ -6,28 +6,7 @@ use App\Models\OrganizationMember;
 use App\Models\User;
 use Illuminate\Console\Command;
 
-/**
- * RATTRAPAGE : DONNER UNE ORGANISATION COURANTE AUX MEMBRES QUI N'EN ONT PAS.
- *
- * `EnsureOrganizationType` — la garde des deux espaces société — lit
- * `users.current_organization_id`. Appartenir activement à une organisation ne suffit donc pas :
- * sans ce champ, la porte reste fermée, et l'utilisateur ne voit aucun écran de sa propre société.
- *
- * Constaté en base avant écriture : 7 membres actifs pour 1 seul utilisateur pourvu d'une
- * organisation courante.
- *
- * CE N'EST PAS UN CORRECTIF, C'EST UN RATTRAPAGE. `OrganizationMembershipService`, écrit en
- * phase 0, renseigne bien le champ à l'adhésion : le code actuel ne produit plus ce cas. Restent
- * les comptes créés AVANT, quand rien ne le faisait.
- *
- * DEUX PRUDENCES :
- *
- *   - Simulation par défaut. Écrire sur la table des utilisateurs sans avoir vu ce qui va changer
- *     est le genre de geste qu'on regrette ; `--apply` est explicite.
- *   - Une seule organisation, sinon rien. Un membre actif de PLUSIEURS sociétés n'a pas
- *     d'organisation courante évidente ; en choisir une le placerait quelque part au hasard, et il
- *     verrait les données d'une société qu'il n'a pas demandée. On le signale et on passe.
- */
+/** RATTRAPAGE : DONNER UNE ORGANISATION COURANTE AUX MEMBRES QUI N'EN ONT PAS. */
 class BackfillCurrentOrganization extends Command
 {
     protected $signature = 'organizations:backfill-current {--apply : Écrire réellement les changements}';

@@ -4,28 +4,11 @@ namespace App\Services\Assistant\Llm;
 
 use App\Services\Assistant\Streaming\StreamEvent;
 
-/**
- * Phase 5.2 — Streaming temps réel avec callback pattern.
- *
- * Différence clé avec Phase 5.1 :
- *   AVANT : accumulait tous les events curl dans un array, puis yield après
- *           curl_exec (= pseudo-streaming, l'utilisateur attend toute la réponse).
- *   APRÈS : invoque le callback à CHAQUE event SSE reçu, depuis l'intérieur
- *           du WRITEFUNCTION callback de curl. Le contrôleur peut donc écrire
- *           sur le flux de réponse HTTP au fur et à mesure → vrai streaming.
- *
- * Usage :
- *   $provider->chatStream($system, $messages, $tools, function (StreamEvent $event) {
- *       echo "event: {$event->type}\n";
- *       echo "data: " . json_encode($event->payload) . "\n\n";
- *       flush();
- *   });
- */
+/** Phase 5.2 — Streaming temps réel avec callback pattern. */
 class AnthropicStreamingProvider
 {
     /**
-     * Stream une conversation, invoquant $onEvent pour chaque StreamEvent
-     * dès qu'il arrive du serveur Anthropic.
+     * Stream une conversation, invoquant $onEvent pour chaque StreamEvent dès qu'il arrive du serveur Anthropic.
      *
      * @param  callable(StreamEvent): void  $onEvent
      */
@@ -113,10 +96,7 @@ class AnthropicStreamingProvider
         }
     }
 
-    /**
-     * Parse une frame SSE :
-     *   "event: content_block_delta\ndata: {...json...}"
-     */
+    /** Parse une frame SSE : "event: content_block_delta\ndata: {...json...}" */
     private function parseSseFrame(string $raw): array
     {
         $event = null;
@@ -137,9 +117,7 @@ class AnthropicStreamingProvider
         return ['event' => $event, 'data' => $data];
     }
 
-    /**
-     * Mappe un event Anthropic vers notre StreamEvent normalisé.
-     */
+    /** Mappe un event Anthropic vers notre StreamEvent normalisé. */
     private function mapToStreamEvent(array $frame): ?StreamEvent
     {
         $type = $frame['event'] ?? ($frame['data']['type'] ?? null);

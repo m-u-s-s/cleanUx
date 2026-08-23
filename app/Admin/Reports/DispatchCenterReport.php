@@ -8,21 +8,7 @@ use App\Models\AsapDispatchRequest;
 use App\Models\MissionAssignment;
 use App\Support\Domain\AsapStatus;
 
-/**
- * LA RÉPARTITION, VUE DE LA CONSOLE MOBILE — les mêmes chiffres que l'écran web.
- *
- * Ce n'est pas une liste de lignes d'une table, et c'est pourquoi ce module est un RAPPORT : ce
- * qu'un exploitant veut savoir — « combien de clients ont attendu pour rien » — se lit en croisant
- * les recherches et les offres, pas en parcourant une table.
- *
- * `sans_candidat` est la tuile qui compte. Sa valeur normale est zéro : toute valeur non nulle
- * désigne des clients qui ont attendu devant leur porte sans que personne ne vienne. Le ton bascule
- * dès un — c'est un compteur d'anomalie, pas un indicateur d'activité.
- *
- * REFUS ET SILENCES SONT SÉPARÉS, et ce n'est pas cosmétique : un refus dit qu'on a proposé la
- * mauvaise course à la bonne personne (rayon, prix, métier), un silence dit que la notification
- * n'est pas arrivée ou que la fenêtre est trop courte. Les additionner rendrait les deux invisibles.
- */
+/** LA RÉPARTITION, VUE DE LA CONSOLE MOBILE — les mêmes chiffres que l'écran web. */
 class DispatchCenterReport implements AdminReport
 {
     public function key(): string

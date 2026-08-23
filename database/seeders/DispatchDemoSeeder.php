@@ -15,28 +15,7 @@ use Database\Seeders\Concerns\BoucleLeDossierPrestataire;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-/**
- * LE SCÉNARIO DE DÉMONSTRATION DU MOTEUR DE RÉPARTITION.
- *
- * Après `migrate:fresh --seed`, on doit pouvoir dérouler À LA MAIN, sans toucher au code :
- *
- *   commande immédiate → modale 20 s chez le plus proche → refus → escalade au suivant →
- *   acceptation → mission.
- *
- * C'EST LE PIÈGE HABITUEL DE CE DÉPÔT : un module complet dont personne ne crée les lignes. Le
- * dispatch immédiat exige quatre choses simultanément — un métier ouvert en immédiat dans la zone,
- * des prestataires VÉRIFIÉS, déclarés sur ce métier, et EN LIGNE avec une position fraîche. Il
- * suffit qu'une seule manque pour que la recherche s'épuise en silence, et rien à l'écran ne dit
- * laquelle.
- *
- * LES POSITIONS SONT ÉCHELONNÉES autour de l'adresse de démonstration : 400 m, 1,2 km, 3 km. C'est
- * ce qui rend l'ordre d'escalade VISIBLE — trois prestataires au même endroit donneraient un ordre
- * arbitraire, et la démonstration ne montrerait pas que la proximité prime.
- *
- * LE BATTEMENT EST POSÉ À `now()`. Il expire au bout de cinq minutes
- * (`dispatch.position_freshness_minutes`) : après une longue pause, rejouer ce seeder suffit à
- * remettre tout le monde en ligne.
- */
+/** LE SCÉNARIO DE DÉMONSTRATION DU MOTEUR DE RÉPARTITION. */
 class DispatchDemoSeeder extends Seeder
 {
     use BoucleLeDossierPrestataire;
@@ -99,11 +78,7 @@ class DispatchDemoSeeder extends Seeder
             ->first();
 
         if (! $ligne) {
-            /*
-             * Aucun métier n'accepte l'immédiat ici : on en OUVRE un, parmi ceux que leur nature
-             * autorise. Une démonstration qui exige d'aller cocher une case en base avant de
-             * pouvoir montrer quoi que ce soit n'est pas une démonstration.
-             */
+            // Aucun métier n'accepte l'immédiat ici : on en OUVRE un, parmi ceux que leur nature autorise.
             $candidat = TradeZonePricing::query()
                 ->where('service_zone_id', $zone->id)
                 ->where('is_active', true)
@@ -144,11 +119,7 @@ class DispatchDemoSeeder extends Seeder
         // le filtrage par zone de la console d'administration s'appuie dessus.
         $utilisateur->forceFill(['primary_service_zone_id' => $zone->id])->save();
 
-        /*
-         * VÉRIFIÉ, et pas seulement actif. Le KYC est un blocage strict du dispatch : un
-         * prestataire `pending` ne reçoit aucune offre, et la démonstration s'arrêterait sur une
-         * recherche épuisée sans que rien ne dise pourquoi.
-         */
+        // VÉRIFIÉ, et pas seulement actif.
         ProviderProfile::query()->updateOrCreate(
             ['user_id' => $utilisateur->id],
             [
@@ -181,21 +152,7 @@ class DispatchDemoSeeder extends Seeder
             ['assignment_type' => 'primary', 'is_active' => true, 'status' => 'active', 'coverage_priority' => 100],
         );
 
-        /*
-         * DISPONIBLE À L'AGENDA, PAS SEULEMENT EN LIGNE.
-         *
-         * `provider_presence` sert le dispatch IMMÉDIAT — « qui est en ligne, là, maintenant ». Le
-         * parcours « prendre rendez-vous » pose une tout autre question — « qui travaille lundi à
-         * 10 h » — et la réponse vit dans `availability_slots`.
-         *
-         * Ces trois prestataires sont précisément ceux qui couvrent l'adresse de démonstration.
-         * Sans créneaux, l'écran de commande annonçait « 3 professionnels à moins de 8 km » et,
-         * juste dessous, « Aucun professionnel disponible sur ce créneau » — tous les jours. Être
-         * en ligne et être réservable sont deux notions distinctes ; les semer séparément, c'est
-         * n'en semer qu'une.
-         *
-         * ⚠️ `weekday` suit la convention de `date('w')` : 0 = dimanche, 1 = lundi.
-         */
+        // DISPONIBLE À L'AGENDA, PAS SEULEMENT EN LIGNE.
         foreach (range(1, 5) as $jourDeSemaine) {
             foreach ([['09:00:00', '12:00:00'], ['14:00:00', '17:00:00']] as [$debut, $fin]) {
                 AvailabilitySlot::query()->updateOrCreate(

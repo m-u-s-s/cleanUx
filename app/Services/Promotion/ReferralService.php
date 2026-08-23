@@ -246,10 +246,7 @@ class ReferralService
         }
     }
 
-    /**
-     * Returns shareable data for the authenticated user:
-     * referral_code, invite_url, share messages per locale, viral tier info.
-     */
+    /** Returns shareable data for the authenticated user: referral_code, invite_url, share messages per locale, viral tier info. */
     public function getShareData(User $user, string $locale = 'fr'): array
     {
         $code = $this->ensureReferralCode($user);

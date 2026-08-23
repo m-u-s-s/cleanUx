@@ -10,11 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Coverage for the CalendrierInterne admin Livewire component: mount defaults,
- * computed properties (zones/services/employes/stats/calendarEvents/upcoming)
- * and the filter / preset actions.
- */
+/** Coverage for the CalendrierInterne admin Livewire component: mount defaults, computed properties (zones/services/employes/stats/calendarEvents/upcoming) and the filter / preset actions. */
 class CalendrierInterneTest extends TestCase
 {
     use RefreshDatabase;

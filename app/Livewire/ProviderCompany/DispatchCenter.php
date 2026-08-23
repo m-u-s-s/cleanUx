@@ -40,19 +40,7 @@ class DispatchCenter extends Component
 
     public string $filterStatus = '';
 
-    /**
-     * L'IMPLANTATION QU'ON PILOTE — le dépôt de Bruxelles, l'antenne d'Anvers.
-     *
-     * Une société multi-villes voyait TOUTES ses missions dans une seule liste : le répartiteur
-     * d'Anvers faisait défiler les interventions bruxelloises pour trouver les siennes, et finissait
-     * par assigner quelqu'un qui part de l'autre bout de la région. Le filtre est vide par défaut —
-     * la plupart des sociétés n'ont qu'une implantation, et pour elles rien ne change.
-     *
-     * Ce n'est PAS une garde d'autorisation, seulement une commodité de lecture : les missions
-     * restent scopées sur l'organisation active, filtre ou pas. Une propriété publique Livewire est
-     * retournable depuis le navigateur par `$set` ; s'en servir comme d'un mur donnerait un mur en
-     * papier.
-     */
+    /** L'IMPLANTATION QU'ON PILOTE — le dépôt de Bruxelles, l'antenne d'Anvers. */
     public ?int $filterAgencyId = null;
 
     public int $assigningId = 0;
@@ -79,11 +67,7 @@ class DispatchCenter extends Component
             )
             ->when($this->filterStatus, fn ($q) => $q->where('status', $this->filterStatus)
             )
-            /*
-             * Une mission relève d'une implantation SOIT directement, SOIT par l'équipe qui la porte.
-             * Ne regarder que `missions.provider_agency_id` masquerait toutes celles qu'un
-             * répartiteur a confiées à une équipe rattachée — c'est-à-dire le cas normal.
-             */
+            // Une mission relève d'une implantation SOIT directement, SOIT par l'équipe qui la porte.
             ->when($this->agenceFiltree(), fn ($q, $agenceId) => $q->where(
                 fn ($sous) => $sous->where('provider_agency_id', $agenceId)
                     ->orWhereHas('fieldTeam', fn ($e) => $e->where('provider_agency_id', $agenceId))
@@ -110,12 +94,7 @@ class DispatchCenter extends Component
             ->get();
     }
 
-    /**
-     * L'implantation retenue, si elle appartient bien à cette société.
-     *
-     * L'identifiant vient du navigateur : le valider ici plutôt qu'à l'affectation évite qu'un
-     * identifiant forgé rende une liste vide sans que rien ne l'explique.
-     */
+    /** L'implantation retenue, si elle appartient bien à cette société. */
     private function agenceFiltree(): ?int
     {
         if ($this->filterAgencyId === null) {
@@ -134,7 +113,6 @@ class DispatchCenter extends Component
 
     /**
      * Contrats-cadres B2B où MON org est le partenaire prestataire (lecture seule).
-     * Isolation stricte : filtré sur provider_organization_id = current_organization_id.
      *
      * @return Collection<int, OrganizationContract>
      */
@@ -153,19 +131,7 @@ class DispatchCenter extends Component
             ->get();
     }
 
-    /**
-     * Ouvrir l'assignation — en proposant le référent du site, quand il y en a un.
-     *
-     * C'est la raison d'être du référent : une société qui dessert vingt immeubles y place des
-     * habitués, et cette connaissance ne servait à rien tant que le répartiteur repartait d'une
-     * liste alphabétique à chaque mission. La désignation devient utile ici, ou nulle part.
-     *
-     * SUGGESTION, PAS DÉCISION : le champ reste modifiable, et l'assignation passe par les mêmes
-     * gardes qu'avant. Un référent absent ou déjà pris se remplace d'un geste.
-     *
-     * Sans référent, on laisse `null` plutôt que de proposer un premier venu — une suggestion au
-     * hasard se fait accepter par habitude, ce qui est pire que pas de suggestion du tout.
-     */
+    /** Ouvrir l'assignation — en proposant le référent du site, quand il y en a un. */
     public function startAssign(int $missionId): void
     {
         $this->assigningId = $missionId;
@@ -188,36 +154,21 @@ class DispatchCenter extends Component
             return;
         }
 
-        /*
-         * Scopé sur NOTRE organisation : deux prestataires peuvent desservir le même immeuble, et
-         * suggérer l'employé d'un concurrent serait à la fois absurde et une fuite.
-         */
+        // Scopé sur NOTRE organisation : deux prestataires peuvent desservir le même immeuble, et suggérer l'employé d'un concurrent serait à la fois absurde et une fuite.
         $this->assigneeId = ProviderSiteAssignment::query()
             ->where('provider_organization_id', $orgId)
             ->where('organization_site_id', $siteId)
             ->where('role', ProviderSiteAssignment::ROLE_LEAD)
             ->value('user_id');
 
-        /*
-         * L'ÉQUIPE HABITUELLE DU SITE, pré-proposée elle aussi.
-         *
-         * Nommer des PERSONNES ne suffit pas sur un grand immeuble : c'est une équipe entière qui y
-         * va. La proposer évite de la rechercher dans une liste à chaque mission — et comme le
-         * référent, ce n'est qu'une SUGGESTION : le champ reste modifiable et l'assignation passe
-         * par les mêmes gardes.
-         */
+        // L'ÉQUIPE HABITUELLE DU SITE, pré-proposée elle aussi.
         $this->equipeSuggereeId = ProviderSiteTeam::query()
             ->where('provider_organization_id', $orgId)
             ->where('organization_site_id', $siteId)
             ->value('field_team_id');
     }
 
-    /**
-     * L'équipe que le site désigne habituellement — suggestion, jamais décision.
-     *
-     * `#[Locked]` : une propriété publique Livewire est modifiable depuis le navigateur, et
-     * `assignerLEquipe()` revérifie de toute façon l'appartenance de l'équipe à la société.
-     */
+    /** L'équipe que le site désigne habituellement — suggestion, jamais décision. */
     #[Locked]
     public ?int $equipeSuggereeId = null;
 
@@ -229,30 +180,11 @@ class DispatchCenter extends Component
 
         $user = Auth::user();
 
-        /*
-         * LA PERMISSION SE VÉRIFIE AU MOMENT D'AGIR, PAS À L'OUVERTURE DE L'ÉCRAN.
-         *
-         * `mount()` exige `missions.dispatch` — le droit de CONSULTER le tableau. Rien ne gardait
-         * plus rien ensuite, et Livewire ne rejoue pas `mount()` entre deux actions : la
-         * vérification avait lieu une fois, puis l'assignation restait ouverte pour toute la durée
-         * de vie du composant.
-         *
-         * `missions.assign` est la clé qui manquait à l'appel — déclarée dans la matrice depuis le
-         * début, consultée par personne. La distinction porte un vrai choix de gestion : une
-         * société peut vouloir que ses dispatcheurs VOIENT le plan de charge sans redistribuer le
-         * travail, et `organization_role_permissions` le lui permet désormais pour de bon.
-         */
+        // LA PERMISSION SE VÉRIFIE AU MOMENT D'AGIR, PAS À L'OUVERTURE DE L'ÉCRAN.
         $mission = Mission::where('provider_organization_id', $user->current_organization_id)
             ->findOrFail($this->assigningId);
 
-        /*
-         * LA GARDE PORTE SUR LA MISSION, PLUS SEULEMENT SUR LA CLÉ.
-         *
-         * `missions.assign` ouvre la CAPACITÉ ; elle ne dit rien du PÉRIMÈTRE. L'exigence 5 borne le
-         * chef d'équipe à SON équipe — ce qu'une matrice de clés ne peut pas exprimer, et ce que le
-         * lot 1 avait laissé ouvert en accordant la clé à `team_lead` sans frontière.
-         * `ReassignmentPolicy` est la même règle des deux côtés, web et API.
-         */
+        // LA GARDE PORTE SUR LA MISSION, PLUS SEULEMENT SUR LA CLÉ.
         abort_unless(
             app(ReassignmentPolicy::class)->peutReassigner($user, $mission),
             403
@@ -265,25 +197,8 @@ class DispatchCenter extends Component
         // Créer l'assignment (colonnes réelles de mission_assignments :
         // user_id, role_on_mission, assignment_status, assigned_at —
         // pas de provider_user_id ni assigned_by ; cf. MissionAssignmentStatusService).
-        /*
-         * RÉASSIGNER, C'EST AUSSI DÉSASSIGNER (corrigé le 2026-08-05).
-         *
-         * On ne créait que le nouvel assignment : la mission finissait avec DEUX lignes actives,
-         * et `lead_provider_user_id` continuait de désigner le travailleur remplacé. En cascade,
-         * le tableau de bord affichait l'ancien (il lit `leadProvider`), l'autorisation Reverb
-         * `mission.{id}` lui restait ouverte, et le suivi de trajet le visait encore.
-         *
-         * On libère donc les leads actifs des AUTRES personnes avant d'installer le nouveau.
-         * `reassigned` — et non `cancelled` — parce que l'historique doit distinguer un
-         * remplacement d'un abandon.
-         */
-        /*
-         * LA RÈGLE D'ASSIGNATION VIT DÉSORMAIS DANS UN SERVICE PARTAGÉ (2026-08-06).
-         *
-         * L'API mobile en a besoin à son tour. La recopier aurait créé deux versions d'une règle
-         * délicate — libérer les leads actifs des autres, puis synchroniser
-         * `lead_provider_user_id` — vouées à diverger au premier ajustement.
-         */
+        // RÉASSIGNER, C'EST AUSSI DÉSASSIGNER (corrigé le 2026-08-05).
+        // LA RÈGLE D'ASSIGNATION VIT DÉSORMAIS DANS UN SERVICE PARTAGÉ (2026-08-06).
         app(MissionAssignmentService::class)->assigner($mission, $worker, $user->id);
 
         // Broadcast du changement de statut
@@ -293,13 +208,7 @@ class DispatchCenter extends Component
         $this->assigneeId = null;
     }
 
-    /**
-     * Confier la mission à une ÉQUIPE entière.
-     *
-     * C'est le geste ordinaire d'une société : on n'envoie pas une personne dans un immeuble de dix
-     * étages. Il n'existait sur aucune surface — composer une équipe demandait un responsable puis
-     * N renforts, un par un, sans que rien n'enregistre QUELLE équipe.
-     */
+    /** Confier la mission à une ÉQUIPE entière. */
     public function assignerLEquipe(int $missionId, int $fieldTeamId): void
     {
         $user = Auth::user();
@@ -336,13 +245,7 @@ class DispatchCenter extends Component
         }
     }
 
-    /**
-     * Ajouter un renfort sur une mission.
-     *
-     * Même permission et mêmes gardes que l'assignation : les deux redistribuent du travail, et
-     * seule la place occupée diffère. Les deux identifiants viennent du client et ne sont crus ni
-     * l'un ni l'autre.
-     */
+    /** Ajouter un renfort sur une mission. */
     public function ajouterRenfort(int $missionId, int $userId): void
     {
         [$mission, $membre] = $this->missionEtMembreSousGarde($missionId, $userId);
@@ -371,10 +274,6 @@ class DispatchCenter extends Component
 
     /**
      * La mission et le membre, ou deux `null`.
-     *
-     * Rend `null` plutôt que d'échouer bruyamment : la différence entre « introuvable » et
-     * « refusé » dirait déjà si la mission existe et si cette personne appartient à une autre
-     * société.
      *
      * @return array{0: Mission|null, 1: OrganizationMember|null}
      */
@@ -408,23 +307,8 @@ class DispatchCenter extends Component
     /**
      * Qui est déjà pris sur le créneau de la mission qu'on s'apprête à confier.
      *
-     * INDICATIF, JAMAIS BLOQUANT. Un répartiteur qui connaît son équipe passe outre pour de bonnes
-     * raisons — un échange entre collègues, une heure supplémentaire consentie, un client qui a
-     * décalé sans prévenir. L'outil l'informe ; il ne décide pas à sa place, sans quoi il faudrait
-     * lui donner un moyen de forcer, et ce moyen deviendrait le geste ordinaire.
-     *
-     * POURQUOI PAS `AvailabilityService::isAvailable()`, QUE LE CAHIER DES CHARGES DÉSIGNAIT.
-     * Mesuré : il rend `false` pour un employé sans créneaux déclarés, et coûte ~200 ms par
-     * personne. Or les créneaux sont un concept de prestataire INDÉPENDANT — celui qui publie ses
-     * disponibilités sur la place de marché. Un salarié de société ne s'en déclare aucun : c'est
-     * son patron qui le planifie. L'indicateur aurait donc affiché « indisponible » sur toute
-     * l'équipe, en permanence, et fait attendre l'écran plusieurs secondes pour cela.
-     *
-     * La question qu'un répartiteur pose réellement est « cette personne est-elle déjà prise à
-     * cette heure-là », et la réponse vit dans SES PROPRES missions. Une seule requête pour toute
-     * l'équipe, pas une par personne.
-     *
      * @return array<int, bool> user_id => libre
+     *                          /
      */
     public function getDisponibilitesProperty(): array
     {
@@ -439,13 +323,7 @@ class DispatchCenter extends Component
             return [];
         }
 
-        /*
-         * LA REQUÊTE A ÉTÉ EXTRAITE, PAS RECOPIÉE.
-         *
-         * Le moteur d'auto-assignation et l'API mobile posent la même question ; deux
-         * implémentations de « libre » auraient divergé, et la divergence se serait vue du côté
-         * le plus permissif — quelqu'un envoyé à deux endroits à la même heure.
-         */
+        // LA REQUÊTE A ÉTÉ EXTRAITE, PAS RECOPIÉE.
         return app(WorkerAvailabilityService::class)->libresPour(
             organisationId: (int) Auth::user()->current_organization_id,
             debut: $debut,
@@ -461,14 +339,7 @@ class DispatchCenter extends Component
         );
     }
 
-    /**
-     * « Assigner tout ce qui n'a personne ».
-     *
-     * EN FILE, PAS ICI. Deux cents missions, c'est deux cents décisions et autant de notifications :
-     * les traiter pendant que le navigateur attend donnerait un écran figé puis un timeout, avec le
-     * travail à moitié fait et rien pour dire où il s'est arrêté. Le job est `ShouldBeUnique` par
-     * société — un double-clic ne lance pas deux passages sur le même arriéré.
-     */
+    /** « Assigner tout ce qui n'a personne ». EN FILE, PAS ICI. */
     public function autoAssignerTout(): void
     {
         $user = Auth::user();
@@ -486,13 +357,7 @@ class DispatchCenter extends Component
         AutoAssignerMissionsJob::dispatch((int) $orgId, $user->id);
     }
 
-    /**
-     * Le MODE CONTINU : toute nouvelle mission de la société est auto-assignée.
-     *
-     * Réglage de société, pas préférence d'écran : il agit sur des missions créées quand personne
-     * n'est devant l'application. C'est aussi pourquoi il est faux par défaut — aucune société ne
-     * doit se mettre à distribuer son travail toute seule du fait d'un déploiement.
-     */
+    /** Le MODE CONTINU : toute nouvelle mission de la société est auto-assignée. */
     public function basculerLeModeContinu(): void
     {
         $user = Auth::user();
@@ -524,15 +389,7 @@ class DispatchCenter extends Component
             && (bool) OrganizationAccount::query()->whereKey($orgId)->value('auto_assign_enabled');
     }
 
-    /**
-     * LE DÉPLACEMENT — date, heure et LIEU.
-     *
-     * `BookingRescheduleService` était strictement client/admin : une société qui devait décaler
-     * d'une heure appelait le client pour qu'il le fasse lui-même. Le lieu, lui, ne bougeait jamais.
-     *
-     * `#[Locked]` sur l'identifiant : une propriété publique Livewire est modifiable depuis le
-     * navigateur, et celle-ci désigne la mission qu'on s'apprête à déplacer.
-     */
+    /** LE DÉPLACEMENT — date, heure et LIEU. */
     #[Locked]
     public int $reprogrammeId = 0;
 
@@ -612,11 +469,7 @@ class DispatchCenter extends Component
                 motif: $this->motifReprogrammation !== '' ? $this->motifReprogrammation : null,
             );
         } catch (\DomainException $e) {
-            /*
-             * La fenêtre de gel et le lieu illégitime ne sont pas des refus d'AUTORISATION : la
-             * personne avait le droit de déplacer, c'est cette demande-là qui ne passe pas. Un 403
-             * l'enverrait chercher une permission qu'elle possède déjà.
-             */
+            // La fenêtre de gel et le lieu illégitime ne sont pas des refus d'AUTORISATION : la personne avait le droit de déplacer, c'est cette demande-là qui ne passe pas.
             $this->addError('nouvelleDate', $e->getMessage());
 
             return;

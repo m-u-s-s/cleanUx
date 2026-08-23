@@ -20,14 +20,7 @@ use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * CE QUE LES ÉCRANS DISENT D'UNE COURSE — relevé en la conduisant à la main.
- *
- * Aucun de ces défauts n'empêchait la course d'aboutir, et c'est pour cela qu'aucun test ne les
- * voyait : ils portaient tous sur ce qu'on MONTRE à quelqu'un qui doit décider. Un client qui
- * confirme sans savoir où il va, un chauffeur qui accepte sans savoir la longueur du trajet, une
- * ligne d'assignation qui affirme une acceptation postérieure à l'arrivée.
- */
+/** CE QUE LES ÉCRANS DISENT D'UNE COURSE — relevé en la conduisant à la main. */
 class CeQueLesEcransDisentTest extends TestCase
 {
     use RefreshDatabase;
@@ -126,9 +119,7 @@ class CeQueLesEcransDisentTest extends TestCase
             ->assertSee('Adresse');
     }
 
-    /**
-     * `accepted_at` s'écrit une fois. La ligne affirmait une acceptation postérieure à l'arrivée.
-     */
+    /** `accepted_at` s'écrit une fois. La ligne affirmait une acceptation postérieure à l'arrivée. */
     public function test_la_date_d_acceptation_ne_se_reecrit_pas(): void
     {
         [$prestataire, $mission] = $this->course();
@@ -169,12 +160,7 @@ class CeQueLesEcransDisentTest extends TestCase
         $this->assertNotNull($assignation->fresh()->accepted_at);
     }
 
-    /**
-     * LE TAUX ANNONCÉ EST CELUI QUI A ÉTÉ RETENU.
-     *
-     * Sur une course de 4,81 €, le plancher de 2 € prélève 41 %. Le versement annonçait « 20 % » à
-     * côté du montant : le prestataire faisait la division et trouvait autre chose.
-     */
+    /** LE TAUX ANNONCÉ EST CELUI QUI A ÉTÉ RETENU. */
     public function test_le_versement_annonce_le_taux_reellement_retenu(): void
     {
         $partage = app(CommissionService::class)->calculateForAmount(481);
@@ -197,12 +183,7 @@ class CeQueLesEcransDisentTest extends TestCase
         );
     }
 
-    /**
-     * La page terrain suit le statut sans qu'on ait à la recharger.
-     *
-     * Elle affirmait « le tracking devient disponible quand la mission passe en route » alors que
-     * la mission venait précisément d'y passer.
-     */
+    /** La page terrain suit le statut sans qu'on ait à la recharger. */
     public function test_le_changement_de_statut_est_annonce_a_la_page(): void
     {
         [$prestataire, $mission] = $this->course();
@@ -213,10 +194,7 @@ class CeQueLesEcransDisentTest extends TestCase
             ->assertDispatched('mission-statut-change');
     }
 
-    /**
-     * En développement, taper une VRAIE adresse ne rendait aucune suggestion : plus l'adresse
-     * était réaliste, moins elle fonctionnait.
-     */
+    /** En développement, taper une VRAIE adresse ne rendait aucune suggestion : plus l'adresse était réaliste, moins elle fonctionnait. */
     public function test_le_geocodeur_de_developpement_accepte_une_adresse_complete(): void
     {
         config()->set('geolocation_v2.provider', 'mock');

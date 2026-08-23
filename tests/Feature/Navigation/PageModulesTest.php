@@ -35,11 +35,7 @@ class PageModulesTest extends TestCase
 
     public function test_ne_propose_pas_l_espace_entreprise_a_un_client_particulier(): void
     {
-        /*
-         * L'ancienne navbar conditionnait cette porte à `belongsToClientCompany()`. Une case sans
-         * condition la montre à tout le monde : un particulier cliquerait vers un 403, et une
-         * liste de modules qui ment sur ce qu'on peut ouvrir vaut moins que pas de liste.
-         */
+        // L'ancienne navbar conditionnait cette porte à `belongsToClientCompany()`.
         $client = User::factory()->client()->create();
 
         $reponse = $this->actingAs($client)->get(route('client.modules'));

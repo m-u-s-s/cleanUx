@@ -10,21 +10,17 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * Phase 11 — Endpoints API mobile pour accept/decline d'une mission. Routes : Sécurité :
+ *
  * @group Mission Assignments
  *
  * @authenticated
- *
- * Phase 11 — Endpoints API mobile pour accept/decline d'une mission.
- *
- * Routes :
- *   GET    /api/provider/assignments/inbox        Mes offres en attente
- *   POST   /api/provider/assignments/{id}/accept  Accepter
- *   POST   /api/provider/assignments/{id}/decline Refuser
- *   GET    /api/provider/assignments/{id}         Détail d'une offre
- *
- * Sécurité :
- *   - Sanctum auth
- *   - L'assignment doit appartenir au user authentifié
+ * GET    /api/provider/assignments/inbox        Mes offres en attente
+ * POST   /api/provider/assignments/{id}/accept  Accepter
+ * POST   /api/provider/assignments/{id}/decline Refuser
+ * GET    /api/provider/assignments/{id}         Détail d'une offre
+ * - Sanctum auth
+ * - L'assignment doit appartenir au user authentifié
  */
 class ProviderMissionAssignmentController extends Controller
 {
@@ -34,9 +30,7 @@ class ProviderMissionAssignmentController extends Controller
         protected MissionDispatchService $dispatch,
     ) {}
 
-    /**
-     * Liste des offres en attente d'accept/decline pour le prestataire.
-     */
+    /** Liste des offres en attente d'accept/decline pour le prestataire. */
     public function inbox(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -67,9 +61,7 @@ class ProviderMissionAssignmentController extends Controller
         ]);
     }
 
-    /**
-     * Détail d'une offre.
-     */
+    /** Détail d'une offre. */
     public function show(Request $request, MissionAssignment $assignment): JsonResponse
     {
         $this->authorizeOwnership($request, $assignment);
@@ -86,9 +78,7 @@ class ProviderMissionAssignmentController extends Controller
         ]);
     }
 
-    /**
-     * Accepter l'offre.
-     */
+    /** Accepter l'offre. */
     public function accept(Request $request, MissionAssignment $assignment): JsonResponse
     {
         $this->authorizeOwnership($request, $assignment);
@@ -107,9 +97,7 @@ class ProviderMissionAssignmentController extends Controller
         ]);
     }
 
-    /**
-     * Refuser l'offre.
-     */
+    /** Refuser l'offre. */
     public function decline(Request $request, MissionAssignment $assignment): JsonResponse
     {
         $this->authorizeOwnership($request, $assignment);
@@ -141,10 +129,7 @@ class ProviderMissionAssignmentController extends Controller
         );
     }
 
-    /**
-     * Payload de liste — plat, aligné sur le type TS MissionAssignment consommé par
-     * DashboardScreen et MissionInboxScreen. Distinct du payload de détail, qui reste imbriqué.
-     */
+    /** Payload de liste — plat, aligné sur le type TS MissionAssignment consommé par DashboardScreen et MissionInboxScreen. */
     protected function serializeForList(MissionAssignment $a): array
     {
         $mission = $a->mission;

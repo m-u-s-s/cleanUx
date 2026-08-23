@@ -23,13 +23,7 @@ class Country extends Model
         'phone_code',
         'timezone',
         'is_active',
-        /*
-         * Ces trois colonnes existaient en base sans être assignables en masse.
-         *
-         * Un `Country::create([... 'booking_enabled' => true])` les perdait EN SILENCE : aucune
-         * erreur, et un pays qui s'affiche « réservations fermées » sans qu'on comprenne pourquoi.
-         * C'est le mode d'échec propre à `$fillable` — il refuse sans le dire.
-         */
+        // Ces trois colonnes existaient en base sans être assignables en masse.
         'booking_enabled',
         'market_stage',
         'settings',

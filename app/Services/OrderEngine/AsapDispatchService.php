@@ -8,47 +8,10 @@ use App\Support\Domain\AsapStatus;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Validation\ValidationException;
 
-/**
- * LE CÔTÉ CLIENT d'une recherche immédiate : élargir, expirer, annoncer le coût, annuler.
- *
- * CE QUI A QUITTÉ CE FICHIER. Il ouvrait la recherche ET prévenait les prestataires du rayon,
- * pendant qu'une chaîne d'offres à compte à rebours tournait ailleurs, sur un autre objet. Deux
- * moitiés du même patron VTC, aucune complète, et une même course qui pouvait sortir par les deux.
- * L'ouverture, la sélection des candidats et la transmission des offres appartiennent désormais à
- * `App\Services\Dispatch\DispatchEngine` — une seule porte, pour les deux modes.
- *
- * CE QUI RESTE ICI est ce que le CLIENT voit et décide pendant qu'il attend : le rayon qui
- * s'élargit, le coût d'annulation annoncé AVANT le clic, les suites proposées quand personne ne
- * répond, et les états par lesquels sa demande passe.
- *
- * Trois règles gouvernent tout ce fichier.
- *
- * L'ÉTAT NE SAUTE PAS. Les transitions sont écrites, pas devinées : une demande ne passe jamais de
- * « en recherche » à « terminée », et une intervention commencée ne s'annule plus — on la termine,
- * et le litige se règle après. Laisser annuler à ce stade priverait le prestataire d'un travail
- * déjà fourni.
- *
- * LES FRAIS S'ANNONCENT AVANT. `quoteCancellation()` existe pour que l'écran dise ce que
- * l'annulation coûtera AVANT que le client clique. Des frais découverts après le clic font perdre
- * un client pour de bon, et le montant récupéré ne compense jamais.
- *
- * JAMAIS DE CUL-DE-SAC. Quand personne ne répond, `waysForward()` propose d'élargir, de basculer
- * en rendez-vous planifié, ou d'être prévenu. Un écran d'attente qui finit sur « personne n'est
- * disponible » sans rien d'autre est un bug produit.
- */
+/** LE CÔTÉ CLIENT d'une recherche immédiate : élargir, expirer, annoncer le coût, annuler. */
 class AsapDispatchService
 {
-    /**
-     * Élargit le rayon d'un palier, et relance la recherche depuis le moteur.
-     *
-     * Borné : au-delà, on ne cherche plus, on l'annonce. Continuer d'élargir indéfiniment enverrait
-     * un prestataire à quarante kilomètres pour une intervention d'une heure, et le client
-     * attendrait une heure de trajet qu'il n'a pas demandée.
-     *
-     * LA SÉLECTION DES CANDIDATS APPARTIENT AU MOTEUR. Cette méthode ne fait que pousser la borne
-     * et lui rendre la main : dupliquer ici la recherche de candidats ferait diverger le rayon
-     * affiché au client de celui réellement interrogé.
-     */
+    /** Élargit le rayon d'un palier, et relance la recherche depuis le moteur. */
     public function expand(AsapDispatchRequest $request): AsapDispatchRequest
     {
         if ($request->status !== AsapStatus::SEARCHING) {
@@ -73,26 +36,14 @@ class AsapDispatchService
         return $request->fresh();
     }
 
-    /**
-     * La recherche a-t-elle assez duré ?
-     *
-     * Le délai est un choix produit, pas une limite technique : au-delà, mieux vaut proposer une
-     * suite que de laisser quelqu'un devant un sablier.
-     */
+    /** La recherche a-t-elle assez duré ? */
     public function hasTimedOut(AsapDispatchRequest $request): bool
     {
         if ($request->status !== AsapStatus::SEARCHING) {
             return false;
         }
 
-        /*
-         * L'ÉCHÉANCE EST ÉCRITE SUR LA RECHERCHE, pas recalculée à la lecture.
-         *
-         * Le moteur la pose à l'ouverture (`config('dispatch.search_deadline_seconds')`). La
-         * recalculer ici la ferait bouger avec la configuration entre deux rafraîchissements de
-         * l'écran — le client verrait son sablier reculer. Le repli couvre les recherches
-         * antérieures à la colonne.
-         */
+        // L'ÉCHÉANCE EST ÉCRITE SUR LA RECHERCHE, pas recalculée à la lecture.
         if ($request->deadline_at !== null) {
             return $request->deadline_at->isPast();
         }
@@ -106,14 +57,7 @@ class AsapDispatchService
         return $this->transition($request, AsapStatus::EXPIRED);
     }
 
-    /**
-     * Relance une recherche expirée, avec un rayon élargi — « continuer à attendre ».
-     *
-     * Les exclusions ne sont PAS remises à zéro : réoffrir la course à qui vient de la refuser
-     * ferait vibrer son téléphone pour rien. En revanche ceux qui n'avaient jamais été joints —
-     * hors ligne il y a trois minutes, en ligne maintenant — entrent naturellement, puisque la
-     * liste de candidats est recalculée à chaque offre.
-     */
+    /** Relance une recherche expirée, avec un rayon élargi — « continuer à attendre ». */
     public function retry(AsapDispatchRequest $request): AsapDispatchRequest
     {
         $request = $this->transition($request, AsapStatus::SEARCHING);
@@ -122,10 +66,7 @@ class AsapDispatchService
     }
 
     /**
-     * Ce que l'annulation coûterait MAINTENANT.
-     *
-     * Appelé pour AFFICHER, avant tout clic. C'est la différence entre un client qui décide et un
-     * client qui découvre.
+     * Ce que l'annulation coûterait MAINTENANT. Appelé pour AFFICHER, avant tout clic.
      *
      * @return array{free: bool, fee_cents: int, reason: string, free_seconds_left: int|null}
      */
@@ -164,11 +105,7 @@ class AsapDispatchService
         ];
     }
 
-    /**
-     * Annule, en appliquant exactement ce qui vient d'être annoncé.
-     *
-     * Le montant est relu de `quoteCancellation()` : l'écran et la facture ne peuvent pas diverger.
-     */
+    /** Annule, en appliquant exactement ce qui vient d'être annoncé. */
     public function cancel(AsapDispatchRequest $request, string $by = 'client', ?string $reason = null): AsapDispatchRequest
     {
         $quote = $this->quoteCancellation($request);
@@ -219,8 +156,6 @@ class AsapDispatchService
 
     /**
      * Les suites proposées quand personne ne répond.
-     *
-     * Jamais moins d'une : un écran d'attente qui finit sur un constat est un bug produit.
      *
      * @return list<array{key: string, label: string, detail: string}>
      */

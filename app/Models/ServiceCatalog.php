@@ -15,13 +15,6 @@ use Illuminate\Support\Str;
 /**
  * ServiceCatalog — catalogue de services proposés par la plateforme.
  *
- * PHASE 1 multi-métiers : un service appartient désormais à un Trade
- * (corps de métier). Voir migration extend_service_catalogs_with_trade_and_v3_columns.
- *
- * Champs ajoutés en Phase 1 :
- *   trade_id, billing_unit, vat_rate, min_lead_time_hours, requires_site_visit,
- *   icon, color, cover_image_path, tags, skills_required, is_featured
- *
  * @property bool $is_active
  * @property bool $requires_quote
  * @property bool $requires_manual_validation

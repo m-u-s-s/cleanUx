@@ -11,23 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Webhook;
 
-/**
- * Webhook Stripe Connect — hardened version (Phase Stripe v2).
- *
- * Workflow:
- *   1. Vérifier signature Stripe
- *   2. Stocker l'event en DB (firstOrCreate sur stripe_event_id → idempotence)
- *   3. Dispatch async job pour traitement (queue)
- *   4. Return 200 immédiatement (Stripe veut < 5s)
- *
- * Si la même requête arrive 2 fois (Stripe retry après timeout), le firstOrCreate
- * trouve l'event existant et ne le re-dispatch que si pas encore en cours.
- *
- * Le traitement asynchrone permet :
- *   - Retry avec backoff si DB/Stripe API échoue temporairement
- *   - Pas de timeout côté Stripe pendant qu'on fait des syncs lents
- *   - Dead letter après N tentatives pour alerter admin
- */
+/** Webhook Stripe Connect — hardened version (Phase Stripe v2). Workflow: 1. */
 class StripeConnectWebhookController extends Controller
 {
     public function handle(Request $request): JsonResponse

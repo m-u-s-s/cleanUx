@@ -9,10 +9,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 /**
  * Un objet du catalogue dont les libellés se traduisent.
  *
- * L'interface existe pour que le TYPE dise ce qui est réellement exigé. Un trait ne peut pas servir
- * de type : accepter un `Model` quelconque laissait passer, à l'analyse comme à la relecture, un
- * appel qui plante à l'exécution sur un modèle sans `setTranslation()`.
- *
  * @property-read Collection<int, CatalogTranslation> $translations
  */
 interface TranslatesCatalogLabels

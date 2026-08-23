@@ -12,18 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Tests pour l'intégration multi-métier (Phase 1 — vague mai 2026).
- *
- * Vérifie que :
- *   1. L'admin CatalogueServices accepte trade_id et le persiste
- *   2. Le filtre par trade dans la liste fonctionne
- *   3. La propriété servicesGroupedByTrade groupe correctement
- *   4. Le seeder MultiTradeDemoServicesSeeder crée les services attendus
- *
- * Sans ces tests, n'importe quel refactor ultérieur peut casser le pipeline
- * multi-métier sans alerte.
- */
+/** Tests pour l'intégration multi-métier (Phase 1 — vague mai 2026). Vérifie que : 1. */
 class MultiTradeIntegrationTest extends TestCase
 {
     use RefreshDatabase;

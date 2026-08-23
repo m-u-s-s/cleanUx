@@ -9,10 +9,7 @@ use App\Services\GeolocationV2\GeocodingResult;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Google Maps Places + Geocoding + Distance Matrix.
- * Skeleton — appel HTTP réel via Illuminate\Http. Nécessite GOOGLE_MAPS_API_KEY.
- */
+/** Google Maps Places + Geocoding + Distance Matrix. Skeleton — appel HTTP réel via Illuminate\Http. */
 class GoogleGeocodingProvider implements GeocodingProviderContract
 {
     public function name(): string

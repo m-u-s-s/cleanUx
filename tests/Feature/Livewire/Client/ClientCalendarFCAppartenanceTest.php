@@ -10,18 +10,7 @@ use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyExceptio
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Le panneau de détail du calendrier client affiche l'adresse du lieu
- * d'intervention — donc, sur cette plateforme, le domicile de quelqu'un.
- *
- * `selectEvent()` est appelable depuis le navigateur avec n'importe quel
- * identifiant. La lecture doit donc revérifier l'appartenance, et pas se
- * reposer sur le fait que le calendrier n'affiche que les réservations
- * de l'utilisateur.
- *
- * Les deux cas vont ensemble : sans le témoin positif, le test de refus
- * passerait au vert en mesurant un composant qui ne rend jamais rien.
- */
+/** Le panneau de détail du calendrier client affiche l'adresse du lieu d'intervention — donc, sur cette plateforme, le domicile de quelqu'un. */
 class ClientCalendarFCAppartenanceTest extends TestCase
 {
     use RefreshDatabase;

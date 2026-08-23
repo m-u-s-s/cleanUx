@@ -78,18 +78,7 @@ class SiteManager extends Component
     {
         $orgId = Auth::user()->current_organization_id;
 
-        /*
-         * L'ACCÈS PAR SITE (E10) FILTRE CETTE LISTE.
-         *
-         * `organization_member_site_access` existait avec sa relation, écrite par personne et lue
-         * par personne : un responsable de site voyait TOUS les locaux de sa société — adresses,
-         * codes d'accès et réservations des autres agences comprises. L'écran de réglage a été
-         * posé en phase 0 ; sans ce filtre, il réglait une restriction que rien n'appliquait.
-         *
-         * `null` = AUCUNE RESTRICTION DÉCLARÉE, et surtout pas « aucun accès » : la restriction est
-         * une décision positive. L'inverse aurait vidé les écrans de toutes les entreprises
-         * existantes au premier déploiement.
-         */
+        // L'ACCÈS PAR SITE (E10) FILTRE CETTE LISTE.
         $autorises = app(MemberSiteAccessService::class)->sitesAutorises(Auth::user());
 
         return OrganizationSite::forOrg($orgId)

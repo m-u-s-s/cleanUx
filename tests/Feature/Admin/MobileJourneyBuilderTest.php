@@ -12,21 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Le parcours de questions d'un métier, servi à l'application mobile.
- *
- * POURQUOI CETTE API EXISTE. Le constructeur web est le seul endroit où l'on écrit ce que le client
- * verra : les questions, leurs réponses, et surtout le PRIX que chaque réponse ajoute. Le mobile
- * n'y avait aucun accès — un métier créé en déplacement restait sans parcours, donc impubliable,
- * et rien à l'écran ne le disait.
- *
- * CE QUI EST SERVI ICI est le nécessaire pour tenir un parcours : lire, écrire, ordonner, et régler
- * les suppléments. Ce qui reste au web — traductions, révisions, import/export, duplication — sont
- * des gestes de bureau, pas de terrain, et chacun demanderait son propre écran.
- *
- * L'ORDRE DES QUESTIONS EST LE PARCOURS LUI-MÊME : une question de prix posée après une question
- * de confort fait abandonner. Le réordonnancement n'est donc pas un confort d'écran.
- */
+/** Le parcours de questions d'un métier, servi à l'application mobile. POURQUOI CETTE API EXISTE. */
 class MobileJourneyBuilderTest extends TestCase
 {
     use RefreshDatabase;
@@ -120,10 +106,7 @@ class MobileJourneyBuilderTest extends TestCase
         $this->postJson("/api/admin/catalogue/questions/{$ordre[1]}/move", ['direction' => -1])
             ->assertOk();
 
-        /*
-         * L'ordre EST le parcours. Une question de prix posée après une question de confort fait
-         * abandonner : c'est mesuré par les statistiques d'abandon de l'écran web.
-         */
+        // L'ordre EST le parcours.
         $apres = Question::query()
             ->where('trade_id', $this->metier->id)
             ->orderBy('sort_order')->orderBy('id')
@@ -181,10 +164,7 @@ class MobileJourneyBuilderTest extends TestCase
     {
         $reponse = $this->getJson("/api/admin/catalogue/trades/{$this->metier->id}/journey")->assertOk();
 
-        /*
-         * Le verdict du validateur, servi avec le parcours. Sans lui, on règle un parcours sans
-         * savoir s'il partira — et l'écran web, lui, le dit.
-         */
+        // Le verdict du validateur, servi avec le parcours.
         $this->assertIsArray($reponse->json('publication'));
         $this->assertArrayHasKey('can_publish', $reponse->json('publication'));
     }

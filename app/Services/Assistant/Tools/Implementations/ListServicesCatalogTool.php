@@ -7,11 +7,7 @@ use App\Models\Trade;
 use App\Models\User;
 use App\Services\Assistant\Tools\Contracts\AssistantTool;
 
-/**
- * Donne au LLM la liste des services disponibles pour qu'il puisse :
- *   - répondre à "quels services proposez-vous ?"
- *   - choisir le bon service_catalog_id avant create_booking
- */
+/** Donne au LLM la liste des services disponibles pour qu'il puisse : - répondre à "quels services proposez-vous ?" - choisir le bon service_catalog_id avant create_booking */
 class ListServicesCatalogTool implements AssistantTool
 {
     public function name(): string

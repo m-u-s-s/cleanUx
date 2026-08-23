@@ -9,11 +9,7 @@ use App\Services\Bundles\MultiTradeBundleService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Bundle Marketplace P5 — ordonnancement des interventions : à l'acceptation, les
- * bookings reçoivent un ordre d'exécution respectant depends_on (ex: carrelage
- * avant peinture), même si l'ordre de saisie diffère.
- */
+/** Bundle Marketplace P5 — ordonnancement des interventions : à l'acceptation, les bookings reçoivent un ordre d'exécution respectant depends_on (ex: carrelage avant peinture), même si l'ordre de saisie diffère. */
 class BundleDependencyOrderTest extends TestCase
 {
     use RefreshDatabase;

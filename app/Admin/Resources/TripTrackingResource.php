@@ -9,11 +9,7 @@ use App\Models\TripTrackingSession;
 use App\Services\TripTracking\TripTrackingService;
 
 /**
- * Les sessions de suivi de trajet.
- *
- * LECTURE SEULE. Une session porte la preuve de présence sur le lieu d’intervention — code
- * confirmé, distance au point, verdict géographique. La corriger à la main effacerait justement
- * ce qu’elle sert à établir en cas de litige.
+ * Les sessions de suivi de trajet. LECTURE SEULE.
  *
  * @extends EloquentResource<TripTrackingSession>
  */

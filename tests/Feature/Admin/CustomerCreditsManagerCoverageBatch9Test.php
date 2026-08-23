@@ -11,12 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Coverage for the CustomerCreditsManager admin Livewire component: render with the
- * clientFacing client list + booking filter + credit search, createCredit happy path
- * (with and without a linked rendez_vous), validation guard, and cancelCredit on both
- * active and non-active credits.
- */
+/** Coverage for the CustomerCreditsManager admin Livewire component: render with the clientFacing client list + booking filter + credit search, createCredit happy path (with and without a linked rendez_vous), validation guard, and cancelCredit on both active and non-active credits. */
 class CustomerCreditsManagerCoverageBatch9Test extends TestCase
 {
     use RefreshDatabase;

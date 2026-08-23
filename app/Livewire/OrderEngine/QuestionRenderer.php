@@ -12,23 +12,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-/**
- * Rend UNE question, depuis la base, sans qu'une ligne de son contenu soit écrite en dur.
- *
- * Le même composant sert le parcours client et l'aperçu du constructeur d'administration. C'est
- * délibéré et c'est la seule façon de tenir la promesse « ce que voit l'administrateur est
- * exactement ce que verra le client » : un aperçu qui réimplémenterait le rendu finirait par
- * mentir, et personne ne s'en apercevrait avant la mise en ligne.
- *
- * La délégation par type passe par des PARTIELS Blade, pas par des sous-composants Livewire. Sept
- * questions à l'écran feraient sinon sept composants, donc sept états serveur et autant
- * d'allers-retours pour un simple changement de réponse. Le partiel rend le même balisage sans
- * ce coût.
- *
- * Ce composant ne connaît ni le prix, ni la commande, ni l'étape suivante : il émet la réponse et
- * le parent en fait ce qu'il veut. C'est ce qui lui permet de vivre dans deux contextes qui n'ont
- * rien à voir.
- */
+/** Rend UNE question, depuis la base, sans qu'une ligne de son contenu soit écrite en dur. */
 class QuestionRenderer extends Component
 {
     public Question $question;
@@ -39,12 +23,7 @@ class QuestionRenderer extends Component
     /** La porte de sortie a été empruntée : « je ne sais pas, à évaluer sur place ». */
     public bool $unknown = false;
 
-    /**
-     * Le champ a-t-il été quitté au moins une fois ?
-     *
-     * Aucune erreur ne s'affiche avant. Reprocher un champ vide à quelqu'un qui n'a pas fini de le
-     * remplir est la façon la plus sûre de lui donner tort pendant qu'il a raison.
-     */
+    /** Le champ a-t-il été quitté au moins une fois ? Aucune erreur ne s'affiche avant. */
     public bool $touched = false;
 
     public ?string $error = null;
@@ -57,14 +36,7 @@ class QuestionRenderer extends Component
 
     public ?float $helperWidth = null;
 
-    /**
-     * Ce que le client TAPE dans un champ de localisation, distinct de ce qu'il a CHOISI.
-     *
-     * Les deux ne se confondent pas : la réponse d'une localisation est un point — libellé,
-     * latitude, longitude — et une frappe en cours n'en est pas un. Les mélanger produirait une
-     * réponse à moitié écrite, sans coordonnées, que la commande accepterait puis que le dispatch
-     * ne saurait pas servir.
-     */
+    /** Ce que le client TAPE dans un champ de localisation, distinct de ce qu'il a CHOISI. */
     public string $locationQuery = '';
 
     public function mount(Question $question, mixed $value = null, bool $unknown = false, bool $preview = false): void
@@ -73,13 +45,7 @@ class QuestionRenderer extends Component
         $this->preview = $preview;
         $this->unknown = $unknown;
 
-        /*
-         * Le défaut intelligent (loi 5) : la réponse la plus fréquente est déjà là, et c'est
-         * l'administrateur qui l'a désignée. Le client valide plus qu'il ne remplit.
-         *
-         * Il n'écrase JAMAIS une réponse existante — sans quoi revenir en arrière effacerait ce
-         * qu'on vient de saisir, ce qui est précisément ce que la loi 10 interdit.
-         */
+        // Le défaut intelligent (loi 5) : la réponse la plus fréquente est déjà là, et c'est l'administrateur qui l'a désignée.
         $this->value = $value ?? $this->defaultValue();
 
         // Revenir en arrière doit retrouver le lieu déjà choisi, écrit dans le champ : le laisser
@@ -93,11 +59,6 @@ class QuestionRenderer extends Component
 
     /**
      * Les propositions d'adresse, pendant la frappe.
-     *
-     * Le géocodage échoue EN SILENCE sur ce produit, par conception : une faute de frappe ne doit
-     * jamais bloquer une commande. Mais sur un trajet, une adresse mal située ne coûte pas une
-     * phrase rassurante — elle envoie une voiture au mauvais endroit. Les propositions sont donc le
-     * chemin normal, et la saisie libre le repli.
      *
      * @return list<AddressSuggestion>
      */
@@ -132,13 +93,7 @@ class QuestionRenderer extends Component
         unset($this->locationSuggestions);
     }
 
-    /**
-     * Le client retient une proposition : elle porte déjà sa position.
-     *
-     * Quand elle ne la porte pas — certains fournisseurs ne renvoient qu'un libellé —, on géocode.
-     * Sans coordonnées, une localisation n'est qu'une chaîne de caractères, et tout ce qui suit
-     * (distance, prix au kilomètre, itinéraire, zone) devient impossible.
-     */
+    /** Le client retient une proposition : elle porte déjà sa position. */
     public function chooseLocation(string $description, ?float $lat = null, ?float $lng = null, ?string $postalCode = null): void
     {
         $this->locationQuery = $description;
@@ -163,13 +118,7 @@ class QuestionRenderer extends Component
         $this->applyLocation($description, $lat, $lng, $postalCode);
     }
 
-    /**
-     * « Utiliser ma position » — sur un trajet, c'est le geste principal, pas un raccourci.
-     *
-     * Le départ d'une course est presque toujours là où se trouve le téléphone. Les coordonnées sont
-     * retenues MÊME si le serveur ne sait pas les nommer : ce sont elles qui comptent, le libellé
-     * n'est qu'un confort de lecture.
-     */
+    /** « Utiliser ma position » — sur un trajet, c'est le geste principal, pas un raccourci. */
     public function useMyLocation(float $lat, float $lng): void
     {
         $libelle = null;
@@ -191,18 +140,7 @@ class QuestionRenderer extends Component
         $this->applyLocation($libelle, $lat, $lng, $codePostal);
     }
 
-    /**
-     * UN POINT POSÉ SUR LA CARTE, arrivé depuis le parcours.
-     *
-     * Le même traitement que « utiliser ma position », et c'est délibéré : géocodage inverse pour
-     * le libellé, coordonnées retenues même si le serveur ne sait pas les nommer, validation,
-     * remontée de la réponse. Réécrire ces quatre étapes ici en ferait une seconde version qui
-     * divergerait — et deux façons d'enregistrer un lieu, c'est deux façons de le perdre.
-     *
-     * LE FILTRAGE PAR CODE EST INDISPENSABLE. Chaque question du parcours est une instance du même
-     * composant : l'événement leur parvient à toutes. Sans ce garde, poser le point d'arrivée
-     * écraserait aussi le point de départ, et le client verrait ses deux marqueurs se superposer.
-     */
+    /** UN POINT POSÉ SUR LA CARTE, arrivé depuis le parcours. */
     #[On('place-location')]
     public function placerDepuisLaCarte(string $code, float $lat, float $lng): void
     {
@@ -224,13 +162,7 @@ class QuestionRenderer extends Component
         $this->emitAnswer();
     }
 
-    /**
-     * La forme d'une réponse de localisation — c'est un CONTRAT.
-     *
-     * `lat` et `lng` sont ce que lisent le calcul de distance, la résolution de zone et le suivi de
-     * mission. Changer ces clés ici sans les changer là-bas ferait silencieusement disparaître le
-     * point de la carte, sans qu'aucune validation ne s'en plaigne.
-     */
+    /** La forme d'une réponse de localisation — c'est un CONTRAT. */
     private function applyLocation(string $label, ?float $lat, ?float $lng, ?string $postalCode): void
     {
         $this->value = [
@@ -254,12 +186,7 @@ class QuestionRenderer extends Component
         $this->emitAnswer();
     }
 
-    /**
-     * « Je ne sais pas — à évaluer sur place ».
-     *
-     * Ne bloque rien et n'efface rien : la réponse prend la forme que le moteur tarifaire attend
-     * pour élargir la fourchette entre l'option la moins chère et la plus chère.
-     */
+    /** « Je ne sais pas — à évaluer sur place ». */
     public function markUnknown(): void
     {
         $this->unknown = true;
@@ -311,13 +238,7 @@ class QuestionRenderer extends Component
         $this->updatedValue();
     }
 
-    /**
-     * Validation bienveillante.
-     *
-     * Le message dit QUOI FAIRE, pas seulement ce qui ne va pas : « Indiquez une surface entre 5
-     * et 400 m² » plutôt que « valeur invalide ». Un message qui décrit le problème sans indiquer
-     * l'issue laisse la personne exactement où elle était.
-     */
+    /** Validation bienveillante. */
     public function validateAnswer(): void
     {
         $this->error = null;
@@ -326,15 +247,7 @@ class QuestionRenderer extends Component
             return;
         }
 
-        /*
-         * UNE LOCALISATION SANS COORDONNÉES N'EST PAS UNE RÉPONSE.
-         *
-         * Un libellé seul passerait la garde du « champ rempli » et laisserait la commande aller
-         * jusqu'au bout — puis le calcul de distance rendrait zéro, le prix au kilomètre serait
-         * gratuit et la carte n'aurait aucun point à afficher. Le refus est posé ici, au moment où
-         * la personne peut encore corriger, plutôt qu'à la confirmation où il ne reste qu'à
-         * recommencer.
-         */
+        // UNE LOCALISATION SANS COORDONNÉES N'EST PAS UNE RÉPONSE.
         if ($this->question->isLocation()) {
             $situee = is_array($this->value)
                 && ($this->value['lat'] ?? null) !== null
@@ -378,13 +291,7 @@ class QuestionRenderer extends Component
         }
     }
 
-    /**
-     * La réponse, sous la forme exacte que le moteur tarifaire lit.
-     *
-     * Cette forme est un CONTRAT : `['unknown' => true]` est ce que PricingEngine reconnaît pour
-     * élargir la fourchette. La changer ici sans la changer là-bas ferait silencieusement
-     * disparaître la porte de sortie du calcul.
-     */
+    /** La réponse, sous la forme exacte que le moteur tarifaire lit. */
     public function answerPayload(): mixed
     {
         return $this->unknown ? ['unknown' => true] : $this->value;

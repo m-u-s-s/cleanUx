@@ -5,9 +5,7 @@ namespace Tests\Unit\Services;
 use App\Services\Assistant\KnowledgeBase;
 use Tests\TestCase;
 
-/**
- * 7.11 — KnowledgeBase substring search.
- */
+/** 7.11 — KnowledgeBase substring search. */
 class KnowledgeBaseTest extends TestCase
 {
     private KnowledgeBase $kb;

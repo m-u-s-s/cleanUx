@@ -5,12 +5,7 @@ namespace App\Services\CancellationV2;
 use App\Models\CancellationPolicy;
 use App\Models\CancellationPolicyTier;
 
-/**
- * Immutable DTO représentant une cotation de cancellation avant exécution.
- *
- * Computed by CancellationEngine::quote(). Exposed to client / provider /
- * admin to preview impact (fee, refund) before they commit to cancel.
- */
+/** Immutable DTO représentant une cotation de cancellation avant exécution. */
 class CancellationQuote
 {
     public function __construct(

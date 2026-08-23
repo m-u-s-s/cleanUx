@@ -16,25 +16,12 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * FxService — orchestre fetch + persist + cache + convert.
- *
- * Workflow getRate(base, quote) :
- *   1. Pair identique (base == quote) → 1.0 immédiat
- *   2. Lookup cache (TTL minutes)
- *   3. Lookup DB le plus récent (si fresh selon cache_ttl_minutes)
- *   4. Sinon → refreshRates() → essaie primary provider, puis fallback chain
- *   5. Si tout échoue → ExchangeRate::SOURCE_FALLBACK 1:1 + log warning
- *
- * Convert: rate × amount × (1 + fee_percent/100). Loggué dans currency_conversions.
- */
+/** FxService — orchestre fetch + persist + cache + convert. Workflow getRate(base, quote) : 1. */
 class FxService
 {
     public function __construct(protected FxProviderInterface $defaultProvider) {}
 
-    /**
-     * Resolve the current rate (most recent ExchangeRate) for the pair.
-     */
+    /** Resolve the current rate (most recent ExchangeRate) for the pair. */
     public function getRate(string $base, string $quote): ?ExchangeRate
     {
         $base = strtoupper($base);
@@ -147,9 +134,7 @@ class FxService
         return null;
     }
 
-    /**
-     * Force-refresh rates for all active currencies vs base.
-     */
+    /** Force-refresh rates for all active currencies vs base. */
     public function refreshAll(?string $base = null): int
     {
         $base = strtoupper($base ?? (string) Config::get('fx.base_currency', 'EUR'));

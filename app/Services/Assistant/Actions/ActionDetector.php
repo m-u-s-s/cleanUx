@@ -4,14 +4,7 @@ namespace App\Services\Assistant\Actions;
 
 use App\Models\User;
 
-/**
- * Detects which data-fetching actions are relevant to a user's message
- * by matching keywords and role guards.
- *
- * This is the lightweight keyword-based approach; the LLM still generates
- * the final response, but the detected action results are pre-fetched and
- * injected into the conversation context before the LLM call.
- */
+/** Detects which data-fetching actions are relevant to a user's message by matching keywords and role guards. */
 class ActionDetector
 {
     /**

@@ -35,9 +35,7 @@ class ProductionDemoSeeder extends Seeder
     }
 
     /**
-     * `forceFill` ET NON `firstOrCreate` : `role` n'est plus assignable en masse — c'est une
-     * colonne d'élévation que l'inscription publique ne doit jamais pouvoir se poser. Un semis
-     * l'écrit volontairement, depuis des valeurs codées ici.
+     * `forceFill` ET NON `firstOrCreate` : `role` n'est plus assignable en masse — c'est une colonne d'élévation que l'inscription publique ne doit jamais pouvoir se poser.
      *
      * @param  array<string, mixed>  $attributs
      */

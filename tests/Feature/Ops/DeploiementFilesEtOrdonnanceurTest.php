@@ -6,16 +6,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
-/**
- * Aucun test ne lisait les fichiers de deploy/ : c'est exactement pour cela qu'un worker lancé sur
- * la connexion « database » a pu cohabiter des mois avec une production configurée en Redis. Les
- * workers drainaient la table `jobs` pendant que l'application poussait dans Redis — zéro job
- * traité, donc aucune escalade du moteur de répartition (EscalateMissionAssignmentJob part sur la
- * file « default » avec un delay).
- *
- * Ce test lit les exemples de déploiement comme le ferait l'ops qui les copie, et échoue dès qu'ils
- * décrivent autre chose que ce que l'application fait réellement.
- */
+/** Aucun test ne lisait les fichiers de deploy/ : c'est exactement pour cela qu'un worker lancé sur la connexion « database » a pu cohabiter des mois avec une production configurée en Redis. */
 class DeploiementFilesEtOrdonnanceurTest extends TestCase
 {
     // ----------------------------------------------------------------------------------
@@ -227,9 +218,7 @@ class DeploiementFilesEtOrdonnanceurTest extends TestCase
     // Outils de lecture
     // ----------------------------------------------------------------------------------
 
-    /**
-     * Connexion de file déclarée par le profil de production (source de vérité du test).
-     */
+    /** Connexion de file déclarée par le profil de production (source de vérité du test). */
     protected function connexionDeProduction(): string
     {
         $contenu = File::get(base_path('.env.production.example'));
@@ -285,9 +274,7 @@ class DeploiementFilesEtOrdonnanceurTest extends TestCase
         return $lignes;
     }
 
-    /**
-     * Argument POSITIONNEL de queue:work, c'est-à-dire la connexion. null = suit config('queue.default').
-     */
+    /** Argument POSITIONNEL de queue:work, c'est-à-dire la connexion. */
     protected function connexionDuWorker(string $commande): ?string
     {
         $tokens = preg_split('/\s+/', trim($commande)) ?: [];
@@ -332,9 +319,7 @@ class DeploiementFilesEtOrdonnanceurTest extends TestCase
     }
 
     /**
-     * Files réellement employées : celles nommées dans app/, celles résolues par configuration,
-     * et les groupes de priorité que config/queue.php demande de recopier « verbatim » dans les
-     * configs Supervisor / Forge.
+     * Files réellement employées : celles nommées dans app/, celles résolues par configuration, et les groupes de priorité que config/queue.php demande de recopier « verbatim » dans les configs Supervisor / Forge.
      *
      * @return list<string>
      */

@@ -10,14 +10,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LE RÔLE EST ATTRIBUÉ À L'INSCRIPTION, DES DEUX CÔTÉS.
- *
- * Un compte dont le rôle se résout mal n'atterrit pas au bon endroit, ne voit pas les bons modules
- * et se fait refuser par des gardes qui devraient le laisser passer. Ce fichier exerce les deux
- * parcours — web (`CreateNewUser`, via Fortify) et mobile (`/api/auth/register`) — parce que
- * l'histoire de ce dépôt montre qu'ils divergent dès qu'on ne les mesure pas ensemble.
- */
+/** LE RÔLE EST ATTRIBUÉ À L'INSCRIPTION, DES DEUX CÔTÉS. */
 class RoleALInscriptionTest extends TestCase
 {
     use RefreshDatabase;
@@ -84,12 +77,7 @@ class RoleALInscriptionTest extends TestCase
 
     public function test_web_le_role_plateforme_est_une_valeur_declaree(): void
     {
-        /*
-         * `platform_role` n'a que TROIS valeurs déclarées : `user`, `admin`, `super_admin`.
-         * L'inscription web posait `client` — une quatrième, qu'aucune constante ne reconnaît.
-         * Elle est inerte aujourd'hui puisque `isAdmin()` ne la lit pas, mais une valeur hors
-         * nomenclature finit toujours par être testée par quelqu'un.
-         */
+        // `platform_role` n'a que TROIS valeurs déclarées : `user`, `admin`, `super_admin`.
         $user = $this->inscrireSurLeWeb(['account_type' => 'client_personal']);
 
         $this->assertContains($user->fresh()->platform_role, ['user', 'admin', 'super_admin']);
@@ -136,17 +124,7 @@ class RoleALInscriptionTest extends TestCase
 
     public function test_mobile_une_societe_prestataire_devient_provider_societe_et_proprietaire(): void
     {
-        /*
-         * LE DÉFAUT QUE CE TEST RÉVÈLE.
-         *
-         * Le web pose `provider_type = COMPANY_WORKER` pour le fondateur ; l'API posait `COMPANY`.
-         * Or `isProviderCompanyWorker()` ne reconnaît que `COMPANY_WORKER` : le fondateur inscrit
-         * depuis le mobile ne résolvait donc NI en société NI en prestataire, et retombait sur le
-         * repli `client_individuelle` — un patron de société de nettoyage traité en particulier.
-         *
-         * Deux parcours qui écrivent la même identité par des chemins différents, et une seule des
-         * deux écritures reconnue en lecture.
-         */
+        // LE DÉFAUT QUE CE TEST RÉVÈLE.
         $user = $this->inscrireSurMobile([
             'account_type' => 'provider',
             'provider_kind' => 'company',

@@ -6,17 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * L'ADMINISTRATION NE PROPOSE PAS DE PORTE DONT ON N'A PAS LA CLÉ.
- *
- * Les panneaux de raccourcis filtraient sur `Route::has()`, qui teste l'EXISTENCE de la route et
- * non le DROIT. Trois écrans portent pourtant une permission granulaire en plus du rôle —
- * `manage-modules`, `manage-services`, `manage-entreprises`. Un administrateur sans elles voyait
- * la carte « Modules », cliquait, et tombait sur un 403 nu.
- *
- * C'est exactement le défaut corrigé sur le bandeau de communication : la même erreur, ailleurs.
- * Elle mérite son garde ici, sans quoi elle reviendra au prochain panneau ajouté.
- */
+/** L'ADMINISTRATION NE PROPOSE PAS DE PORTE DONT ON N'A PAS LA CLÉ. */
 class NavAdminNOffrePasDePorteFermeeTest extends TestCase
 {
     use RefreshDatabase;

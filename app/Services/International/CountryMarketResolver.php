@@ -27,24 +27,7 @@ class CountryMarketResolver
         return $this->buildMarketContext($country, $catalog);
     }
 
-    /**
-     * LA DEVISE D'UNE COMMANDE QU'ON EST EN TRAIN DE CREER, EN UN SEUL APPEL.
-     *
-     * Il existait TROIS reponses a cette question, selon le chemin emprunte :
-     *
-     *   `CreateBookingAction`         le marche-pays -- la bonne
-     *   `CreateBookingFromApiAction`  `preferred_currency` du COMPTE client
-     *   `CreateBookingTool`           `'EUR'` en dur
-     *
-     * La deuxieme est la plus trompeuse : une preference de compte n'est pas une position. Un
-     * client dont le profil dit « EUR » commandant un menage a Casablanca obtenait une reservation
-     * en euros pour un service paye en dirhams -- et le prix, lui, venait bien du marche marocain.
-     * Les deux nombres decrivaient des monnaies differentes sans que rien ne le signale.
-     *
-     * Cette methode donne UNE reponse, tiree de la position : site, zone, code postal, puis le code
-     * pays de l'adresse saisie quand aucune table ne couvre encore le marche. C'est le meme
-     * enchainement que pour une reservation existante, offert aux appelants qui n'en ont pas encore.
-     */
+    /** LA DEVISE D'UNE COMMANDE QU'ON EST EN TRAIN DE CREER, EN UN SEUL APPEL. */
     public function deviseAttendue(
         ?User $client = null,
         ?PostalCode $postalCode = null,
@@ -60,14 +43,7 @@ class CountryMarketResolver
                 ? Country::query()->where('iso_code', $code)->first()
                 : null;
 
-            /*
-             * AUCUNE FICHE PAYS N'EXISTE ENCORE POUR CE MARCHE.
-             *
-             * On repond quand meme depuis la table ISO plutot que de retomber sur la devise de
-             * base : c'est le cas d'un pays tout juste ouvert, ou d'une adresse saisie hors des
-             * zones deja maillees. Ne rien deduire ici libellerait la commande en euros, ce qui
-             * est precisement le defaut corrige.
-             */
+            // AUCUNE FICHE PAYS N'EXISTE ENCORE POUR CE MARCHE.
             if (! $country) {
                 $deduite = DeviseParPays::pour($code);
 
@@ -98,19 +74,7 @@ class CountryMarketResolver
             ?: $rendezVous->serviceZone?->country
             ?: $rendezVous->postalCode?->country
             ?: $rendezVous->client?->organizationAccount?->country
-            /*
-             * DERNIER RECOURS : LE PAYS ECRIT SUR LA RESERVATION ELLE-MEME.
-             *
-             * `bookings.country` porte le code ISO de l'adresse saisie. Toutes les pistes ci-dessus
-             * passent par une TABLE -- site, zone, code postal, organisation -- et rendent donc
-             * `null` sur un marche tout juste ouvert, ou l'adresse existe avant le maillage
-             * geographique. Le contexte retombait alors sur la devise de base, c'est-a-dire l'euro,
-             * pour une commande passee au Maroc.
-             *
-             * C'est bien la POSITION qu'on lit, simplement sous sa forme la plus brute : ce que le
-             * client a saisi. On la place en dernier parce qu'un texte se trompe plus facilement
-             * qu'une ligne de reference.
-             */
+            // DERNIER RECOURS : LE PAYS ECRIT SUR LA RESERVATION ELLE-MEME.
             ?: $this->paysDeLAdresse($rendezVous);
 
         return $this->buildMarketContext($country, $rendezVous->serviceCatalog);
@@ -159,23 +123,7 @@ class CountryMarketResolver
         return $multiplier > 0 ? $multiplier : 1.0;
     }
 
-    /**
-     * LA DEVISE SUIT LA POSITION, ET NE RETOMBE SUR L'EURO QU'EN DERNIER.
-     *
-     * Le repli etait `'EUR'` en dur juste apres la fiche pays. Un pays ouvert sans devise
-     * renseignee -- le formulaire d'administration proposait `EUR` par defaut, quel que soit le
-     * pays -- libellait donc en euros des commandes passees au Maroc, et rien ne le disait.
-     *
-     * L'ordre va du plus explicite au plus deduit :
-     *
-     *   1. le profil de facturation, quand la plateforme a choisi une devise pour ce marche ;
-     *   2. la devise posee sur la fiche pays, que l'administration peut corriger ;
-     *   3. la table ISO 3166 -> 4217, qui sait que le Maroc paie en dirhams ;
-     *   4. la devise de base de la plateforme, et seulement la.
-     *
-     * Le cran 3 est celui qui manquait. Il ne prend jamais le pas sur une valeur posee : il repond
-     * quand personne n'a repondu.
-     */
+    /** LA DEVISE SUIT LA POSITION, ET NE RETOMBE SUR L'EURO QU'EN DERNIER. */
     public function effectiveCurrency(array $context): string
     {
         $posee = data_get($context['billing_profile'] ?? null, 'currency_code')
@@ -276,13 +224,7 @@ class CountryMarketResolver
         ];
     }
 
-    /**
-     * La fiche pays correspondant au code ISO porte par la reservation, si elle existe.
-     *
-     * On ne FABRIQUE pas de pays : rendre `null` laisse `effectiveCurrency()` faire son propre
-     * repli, qui sait, lui, consulter la table ISO. Creer une ligne a la volee depuis une saisie
-     * client peuplerait le catalogue geographique de pays qu'aucun administrateur n'a ouverts.
-     */
+    /** La fiche pays correspondant au code ISO porte par la reservation, si elle existe. */
     protected function paysDeLAdresse(Booking $rendezVous): ?Country
     {
         $code = strtoupper(trim((string) ($rendezVous->country ?? '')));

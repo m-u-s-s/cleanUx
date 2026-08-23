@@ -21,19 +21,7 @@ use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Tests\TestCase;
 
-/**
- * LE SECOND PARCOURS DE MISSION : la course, sans un seul code.
- *
- * Ce fichier tient DEUX promesses à la fois, et la seconde est la plus importante :
- *
- *  1. Une course se déroule sans code, se termine au point de dépose, et le prestataire redevient
- *     disponible ;
- *  2. Une intervention ORDINAIRE, elle, ne change en RIEN — ses deux codes restent exigés, sa
- *     geofence reste calée sur le lieu d'intervention.
- *
- * Chaque interdiction est doublée de son témoin. Sans cela, un test « aucun code n'est émis »
- * passerait au vert le jour où plus aucun code ne serait jamais émis pour personne.
- */
+/** LE SECOND PARCOURS DE MISSION : la course, sans un seul code. */
 class ParcoursCourseTest extends TestCase
 {
     use RefreshDatabase;
@@ -107,14 +95,7 @@ class ParcoursCourseTest extends TestCase
     }
 
     /** LE TÉMOIN : sur une intervention ordinaire, les deux codes sont toujours émis. */
-    /**
-     * LE TÉMOIN DU PARCOURS CLASSIQUE : une intervention ordinaire exige toujours ses codes.
-     *
-     * L'arrivée n'en émet plus qu'UN. Le code de fin, lui, naît quand le prestataire le demande,
-     * mission démarrée : émis dès l'arrivée, le client le détenait avant que le travail commence
-     * et il n'attestait plus rien de la fin. Ce qui compte ici reste inchangé — une intervention
-     * ordinaire passe par des codes, une course par aucun.
-     */
+    /** LE TÉMOIN DU PARCOURS CLASSIQUE : une intervention ordinaire exige toujours ses codes. */
     public function test_arriver_sur_une_intervention_emet_toujours_son_code_de_debut(): void
     {
         Notification::fake();
@@ -170,14 +151,7 @@ class ParcoursCourseTest extends TestCase
         $this->assertSame(0, $this->codes($mission));
     }
 
-    /**
-     * LE PIÈGE QUE CE TEST FERME.
-     *
-     * `OnSiteVerifier` compare la position au lieu de l'INTERVENTION. Sur une course, ce lieu est le
-     * point de prise en charge : sans le paramètre explicite de lieu attendu, toute fin de course
-     * serait refusée avec « vous semblez être à 12 km du lieu de l'intervention » — techniquement
-     * vrai, et complètement à côté.
-     */
+    /** LE PIÈGE QUE CE TEST FERME. `OnSiteVerifier` compare la position au lieu de l'INTERVENTION. */
     public function test_terminer_loin_du_point_de_depose_est_refuse(): void
     {
         Notification::fake();
@@ -200,14 +174,7 @@ class ParcoursCourseTest extends TestCase
         $this->assertSame(MissionStatus::COMPLETED, $resultat->fresh()->status);
     }
 
-    /**
-     * LE PRESTATAIRE REDEVIENT DISPONIBLE À LA FIN DE LA COURSE.
-     *
-     * Rien n'a été écrit pour ça : `PresenceAutoTransitioner` fait déjà repasser `busy → online`
-     * quand la réservation devient `termine`. Ce test PROUVE que la chaîne tient sur le nouveau
-     * parcours — un prestataire resté occupé après sa course cesserait en silence de recevoir la
-     * moindre offre, et c'est un défaut que ce dépôt a déjà connu.
-     */
+    /** LE PRESTATAIRE REDEVIENT DISPONIBLE À LA FIN DE LA COURSE. */
     public function test_le_prestataire_repasse_en_ligne_a_la_fin_de_la_course(): void
     {
         Notification::fake();

@@ -12,14 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Webhook DLR SMS — pattern hardening Stripe / KYC.
- *
- * 1. Sélectionne provider depuis l'URL `{provider}`
- * 2. Parse + verify signature (provider-specific)
- * 3. Stocke l'event (idempotence sur external_event_id)
- * 4. Dispatch async, return 200
- */
+/** Webhook DLR SMS — pattern hardening Stripe / KYC. 1. */
 class SmsWebhookController extends Controller
 {
     public function handle(Request $request, string $provider): JsonResponse

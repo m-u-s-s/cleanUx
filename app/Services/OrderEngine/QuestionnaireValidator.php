@@ -9,17 +9,7 @@ use App\Support\Domain\ConditionAction;
 use App\Support\Domain\QuestionType;
 use Illuminate\Support\Facades\Config;
 
-/**
- * Les garde-fous du constructeur de parcours.
- *
- * Un administrateur non technique peut écrire un questionnaire irréprochable sur le fond et
- * catastrophique pour la conversion : quinze questions d'affilée, aucune échappatoire, deux
- * réponses par défaut sur la même question. Rien de tout cela ne lève d'erreur — le parcours
- * fonctionne, il perd simplement des clients, et personne ne sait pourquoi.
- *
- * Ce validateur rend ces défauts VISIBLES au moment de la saisie. Il n'interdit rien, sauf ce qui
- * casse réellement : une dépendance circulaire rend deux questions définitivement invisibles.
- */
+/** Les garde-fous du constructeur de parcours. */
 class QuestionnaireValidator
 {
     /** Rompt le parcours : la publication doit être refusée. */
@@ -56,13 +46,7 @@ class QuestionnaireValidator
         return true;
     }
 
-    /**
-     * Loi 3 — cinq à sept questions, pas quinze.
-     *
-     * Le seuil n'est pas technique. Au-delà de sept d'affilée, un client sur trois abandonne, et
-     * c'est un seuil qu'on franchit sans s'en apercevoir : une question à la fois, chacune
-     * parfaitement justifiable prise isolément.
-     */
+    /** Loi 3 — cinq à sept questions, pas quinze. Le seuil n'est pas technique. */
     protected function checkLength(Trade $trade, $questions): array
     {
         $issues = [];
@@ -125,12 +109,7 @@ class QuestionnaireValidator
         return $issues;
     }
 
-    /**
-     * Loi 5 — un défaut, et un seul.
-     *
-     * Zéro défaut fait remplir au lieu de valider. Deux défauts ne se voient pas en base et font
-     * dépendre l'écran de l'ordre de tri : le client validerait une réponse qu'il n'a pas choisie.
-     */
+    /** Loi 5 — un défaut, et un seul. Zéro défaut fait remplir au lieu de valider. */
     protected function checkDefaults($questions): array
     {
         $issues = [];
@@ -164,16 +143,7 @@ class QuestionnaireValidator
         return $issues;
     }
 
-    /**
-     * Détection des dépendances circulaires.
-     *
-     * A ne s'affiche que si B est répondue, B que si A l'est : ni l'une ni l'autre ne s'affichera
-     * jamais. C'est le seul défaut de ce validateur qui BLOQUE la publication, parce qu'il ne
-     * dégrade pas le parcours — il en supprime silencieusement une partie.
-     *
-     * Parcours en profondeur avec pile d'exploration : une simple visite marquée ne distinguerait
-     * pas un cycle d'un losange (deux chemins vers la même question), qui est parfaitement légal.
-     */
+    /** Détection des dépendances circulaires. */
     protected function checkCircularDependencies($questions): array
     {
         $graph = [];
@@ -217,12 +187,7 @@ class QuestionnaireValidator
         return $issues;
     }
 
-    /**
-     * Une condition qui pointe vers une question archivée ou d'un autre métier.
-     *
-     * Elle ne peut plus jamais être remplie : la question dépendante devient invisible pour
-     * toujours, sans que rien ne le signale.
-     */
+    /** Une condition qui pointe vers une question archivée ou d'un autre métier. */
     protected function checkDanglingConditions($questions): array
     {
         $ids = $questions->pluck('id')->all();

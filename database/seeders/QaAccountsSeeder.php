@@ -16,45 +16,7 @@ use Database\Seeders\Concerns\BoucleLeDossierPrestataire;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-/**
- * QaAccountsSeeder — versioned, idempotent provisioning of the 5 QA accounts
- * used by the visual-QA harness (`tools/visual-qa/`) and the embed render sweep
- * (`scripts/embed_sweep.php`).
- *
- * These accounts log in per role (shared password — see `config/brio.php`, `seed.password`)
- * so the harness can sweep
- * every embedded page by role and assert role-scoped pages render 200 (not 403).
- * They were originally provisioned by hand on the dev MySQL DB; this seeder
- * versions that EXACT known-working state so it can be reproduced on CI / a fresh
- * machine without manual steps.
- *
- * The 5 roles (cf. tools/visual-qa/modules.mjs CREDENTIALS):
- *   - admin@brio.test               → platform admin (platform_role=admin)
- *   - qa-provider-company@brio.test → OWNER of a PROVIDER_COMPANY org
- *                                        (current_organization_id set → dispatch/equipe/canaux)
- *   - dominique.monnier@example.org    → OWNER of a CLIENT_COMPANY org
- *                                        (current_organization_id set → contrats/membres/facturation)
- *   - bsanchez@example.org             → independent provider (ProviderProfile INDEPENDENT)
- *   - lemoine.gabrielle@example.net    → personal client (CustomerProfile PERSONAL)
- *
- * Admin determination: User::isAdmin() reads `platform_role IN (admin, super_admin)`
- * first, with a legacy `role` column fallback. We set BOTH (platform_role=admin,
- * role=admin) to satisfy either path.
- *
- * Org-scoped permissions (e.g. missions.dispatch) derive from the OWNER role via
- * PermissionService, so the member `permissions` array stays empty `[]` — matching
- * the inspected DB state.
- *
- * Idempotent: every write goes through updateOrCreate keyed on a deterministic
- * identifier (email / org slug / (org,user) / user). Re-running produces no
- * duplicates and no unique-constraint errors.
- *
- * Self-contained: it creates the two QA orgs if absent — it does NOT depend on
- * any demo seeder. NOT wired into DatabaseSeeder (QA accounts must never reach the
- * production seed path). Run explicitly:
- *
- *     php artisan db:seed --class=QaAccountsSeeder
- */
+/** QaAccountsSeeder — versioned, idempotent provisioning of the 5 QA accounts used by the visual-QA harness (`tools/visual-qa/`) and the embed render sweep (`scripts/embed_sweep.php`). */
 class QaAccountsSeeder extends Seeder
 {
     use BoucleLeDossierPrestataire;
@@ -170,9 +132,7 @@ class QaAccountsSeeder extends Seeder
         $this->command?->info('✅ QaAccountsSeeder: 5 visual-QA accounts provisioned (idempotent).');
     }
 
-    /**
-     * Create or update a QA organization, keyed on its deterministic slug.
-     */
+    /** Create or update a QA organization, keyed on its deterministic slug. */
     private function seedOrganization(
         string $slug,
         string $name,
@@ -197,10 +157,7 @@ class QaAccountsSeeder extends Seeder
         );
     }
 
-    /**
-     * Un métier déclaré — sans quoi l'étape « Déclarer vos métiers » refuse, et le dispatch ne
-     * rendrait ce compte candidat à rien.
-     */
+    /** Un métier déclaré — sans quoi l'étape « Déclarer vos métiers » refuse, et le dispatch ne rendrait ce compte candidat à rien. */
     private function declareUnMetier(User $utilisateur): void
     {
         $metier = Trade::query()->where('slug', 'nettoyage')->where('is_active', true)->first();
@@ -210,10 +167,7 @@ class QaAccountsSeeder extends Seeder
         }
     }
 
-    /**
-     * Create or update a QA user, keyed on email. Password is always reset to the
-     * shared QA password so the harness keeps working after a re-run.
-     */
+    /** Create or update a QA user, keyed on email. */
     private function seedUser(
         string $email,
         string $name,
@@ -231,12 +185,7 @@ class QaAccountsSeeder extends Seeder
 
         $utilisateur = User::firstOrNew(['email' => $email]);
 
-        /*
-         * `forceFill` ET NON `updateOrCreate` : `platform_role`, `role`, `current_organization_id`
-         * et `organization_account_id` ne sont plus assignables en masse — ce sont les colonnes
-         * qu'une inscription publique ne doit jamais pouvoir se poser elle-même. Un semis les
-         * écrit en connaissance de cause, depuis des valeurs codées ici, jamais depuis une requête.
-         */
+        // `forceFill` ET NON `updateOrCreate` : `platform_role`, `role`, `current_organization_id` et `organization_account_id` ne sont plus assignables en masse — ce sont les colonnes qu'une inscription publique ne doit jamais pouvoir se poser elle-même.
         $utilisateur->forceFill([
             'name' => $name,
             'phone' => $telephone,
@@ -258,11 +207,7 @@ class QaAccountsSeeder extends Seeder
         return $utilisateur;
     }
 
-    /**
-     * Create or update the membership linking a user to an org, keyed on
-     * (org, user). Org-scoped permissions derive from the role via
-     * PermissionService, so the explicit permissions array stays empty.
-     */
+    /** Create or update the membership linking a user to an org, keyed on (org, user). */
     private function seedMembership(
         OrganizationAccount $org,
         User $user,
@@ -282,9 +227,7 @@ class QaAccountsSeeder extends Seeder
         );
     }
 
-    /**
-     * Create or update a provider profile, keyed on user.
-     */
+    /** Create or update a provider profile, keyed on user. */
     private function seedProviderProfile(
         User $user,
         ProviderType $type,
@@ -301,9 +244,7 @@ class QaAccountsSeeder extends Seeder
         );
     }
 
-    /**
-     * Create or update a customer profile, keyed on user.
-     */
+    /** Create or update a customer profile, keyed on user. */
     private function seedCustomerProfile(
         User $user,
         CustomerType $type,

@@ -13,30 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * UN COMPTABLE DOIT POUVOIR TENIR SES LIVRES SANS DÉVELOPPEUR.
- *
- * L'intention est simple à dire : on donne un compte d'administration à son comptable, et il gère
- * tout ce qui concerne la comptabilité et la fiscalité. Elle butait sur trois choses mesurées dans
- * le code, dont aucune n'était visible depuis l'écran.
- *
- * IL N'EXISTAIT AUCUNE CAPACITÉ POUR LUI. Les quinze capacités d'administration couvraient la
- * finance d'EXPLOITATION — versements, litiges, gestes commerciaux — et rien pour le grand livre.
- * Confier la comptabilité imposait donc de faire du comptable un super-administrateur, avec les
- * clients, les prestataires et les paiements en prime.
- *
- * LA FISCALITÉ VIVAIT DANS DES VARIABLES D'ENVIRONNEMENT. La position de TVA des frais
- * d'annulation, le modèle de revenu, l'interrupteur du postage : trois décisions qui ENGAGENT LE
- * COMPTABLE, et qu'il fallait un accès serveur et un redéploiement pour changer.
- *
- * LA RÉOUVERTURE D'UNE PÉRIODE N'AVAIT PAS DE BOUTON. `PeriodCloser::reopen()` existait depuis
- * l'origine ; l'écran ne proposait que la clôture. Une clôture prématurée était donc définitive
- * pour qui n'appelle pas l'API à la main.
- *
- * Ce fichier vérifie le parcours ENTIER, du menu au fichier téléchargé, avec les deux témoins qui
- * comptent : un administrateur SANS la capacité est refusé, et un réglage enregistré change
- * réellement ce qui est écrit au journal.
- */
+/** UN COMPTABLE DOIT POUVOIR TENIR SES LIVRES SANS DÉVELOPPEUR. */
 class LeComptableGereSonPerimetreTest extends TestCase
 {
     use RefreshDatabase;
@@ -50,13 +27,7 @@ class LeComptableGereSonPerimetreTest extends TestCase
         $this->assertTrue($this->voitLeModule('admin:admin.accounting-v2.center'));
     }
 
-    /**
-     * TÉMOIN INVERSE — un administrateur d'exploitation ne la voit pas.
-     *
-     * Sans lui, le test précédent serait vert sur un filtre qui laisse tout passer, et la capacité
-     * ne servirait à rien. C'est aussi la moitié utile de la séparation : donner la comptabilité
-     * sans donner le reste suppose que le reste ne donne pas la comptabilité.
-     */
+    /** TÉMOIN INVERSE — un administrateur d'exploitation ne la voit pas. */
     public function test_temoin_un_admin_sans_la_capacite_ne_voit_pas_la_tuile(): void
     {
         $this->actingAs($this->admin(['manage-finance']));
@@ -64,12 +35,7 @@ class LeComptableGereSonPerimetreTest extends TestCase
         $this->assertFalse($this->voitLeModule('admin:admin.accounting-v2.center'));
     }
 
-    /**
-     * ET L'ÉCRAN LUI-MÊME EST FERMÉ — pas seulement la tuile.
-     *
-     * Cacher la case en laissant l'écran ouvert serait l'inverse du défaut habituel : une porte
-     * invisible mais déverrouillée. Une URL devinée suffirait.
-     */
+    /** ET L'ÉCRAN LUI-MÊME EST FERMÉ — pas seulement la tuile. */
     public function test_lecran_refuse_un_admin_sans_la_capacite(): void
     {
         $this->actingAs($this->admin(['manage-finance']));
@@ -105,13 +71,7 @@ class LeComptableGereSonPerimetreTest extends TestCase
         $this->assertTrue($reglages->postageAutomatique());
     }
 
-    /**
-     * ZÉRO ET VIDE SONT DEUX RÉPONSES, et les confondre ferait déclarer une TVA non due.
-     *
-     * Vide dit « applique le taux du pays » ; zéro dit « ces frais sont hors champ ». C'est le
-     * piège récurrent de ce dépôt — un zéro voulu pris pour une valeur manquante — et il porte ici
-     * sur une position fiscale.
-     */
+    /** ZÉRO ET VIDE SONT DEUX RÉPONSES, et les confondre ferait déclarer une TVA non due. */
     public function test_un_taux_a_zero_nest_pas_confondu_avec_un_champ_vide(): void
     {
         $this->actingAs($this->comptable());
@@ -141,12 +101,7 @@ class LeComptableGereSonPerimetreTest extends TestCase
         $this->assertNull(app(ReglagesComptables::class)->tvaDesFraisDAnnulation());
     }
 
-    /**
-     * UN TAUX ABSURDE EST REFUSÉ — et le dire évite un journal faux.
-     *
-     * Une faute de frappe sur une position fiscale ne se rattrape pas : les écritures déjà passées
-     * gardent le taux du jour.
-     */
+    /** UN TAUX ABSURDE EST REFUSÉ — et le dire évite un journal faux. */
     public function test_un_taux_hors_bornes_est_refuse(): void
     {
         $this->actingAs($this->comptable());
@@ -160,13 +115,7 @@ class LeComptableGereSonPerimetreTest extends TestCase
         $this->assertNull(app(ReglagesComptables::class)->tvaDesFraisDAnnulation());
     }
 
-    /**
-     * TÉMOIN QUI COMPTE VRAIMENT — le réglage change ce qui est ÉCRIT.
-     *
-     * Tous les tests ci-dessus prouvent qu'une valeur est rangée. Aucun ne prouve qu'elle sert.
-     * Sans celui-ci, on aurait un écran de réglages parfaitement fonctionnel et parfaitement
-     * décoratif — la forme d'échec exacte que ce dépôt collectionne.
-     */
+    /** TÉMOIN QUI COMPTE VRAIMENT — le réglage change ce qui est ÉCRIT. */
     public function test_le_reglage_pris_par_le_comptable_change_le_postage(): void
     {
         $this->assertFalse(
@@ -207,12 +156,7 @@ class LeComptableGereSonPerimetreTest extends TestCase
         $this->assertFalse((bool) $periode->refresh()->is_closed);
     }
 
-    /**
-     * LA RÉOUVERTURE SANS MOTIF EST REFUSÉE.
-     *
-     * Le service exige dix caractères ; l'écran refuse déjà le vide, pour que l'utilisateur voie un
-     * message plutôt qu'une exception. Rouvrir un exercice clos se justifie devant un contrôle.
-     */
+    /** LA RÉOUVERTURE SANS MOTIF EST REFUSÉE. */
     public function test_une_reouverture_sans_motif_ne_passe_pas(): void
     {
         $this->actingAs($this->comptable());
@@ -230,14 +174,7 @@ class LeComptableGereSonPerimetreTest extends TestCase
 
     // ── Les exports ──────────────────────────────────────────────────────
 
-    /**
-     * LE COMPTABLE GÉNÈRE PUIS TÉLÉCHARGE — et c'est le téléchargement qui compte.
-     *
-     * Le lien de l'écran pointe vers une route de l'API, protégée par un contrôle de portée de
-     * jeton. Depuis un navigateur il n'y a pas de jeton, seulement une session : « la porte
-     * existe » ne dit rien de « on a la clé », et un export qu'on ne peut pas récupérer ne sert à
-     * personne. Ce test emprunte le chemin réel, avec une session web.
-     */
+    /** LE COMPTABLE GÉNÈRE PUIS TÉLÉCHARGE — et c'est le téléchargement qui compte. */
     public function test_le_comptable_telecharge_un_export_depuis_sa_session(): void
     {
         $comptable = $this->comptable();

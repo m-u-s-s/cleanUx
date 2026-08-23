@@ -10,13 +10,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * L'appariement avec la pièce d'identité tourne en file : chez un fournisseur réel il prend
- * plusieurs secondes, et il n'a aucune raison de faire attendre un prestataire devant sa caméra.
- *
- * Un identifiant scalaire, pas le modèle : `SerializesModels` rechargerait une ligne qui a pu
- * changer entre-temps, et le job doit travailler sur l'état du moment où il s'exécute.
- */
+/** L'appariement avec la pièce d'identité tourne en file : chez un fournisseur réel il prend plusieurs secondes, et il n'a aucune raison de faire attendre un prestataire devant sa caméra. */
 class CompareFaceWithIdDocumentJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;

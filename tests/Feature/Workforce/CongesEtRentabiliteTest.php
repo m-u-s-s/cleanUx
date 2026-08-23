@@ -20,22 +20,7 @@ use Illuminate\Support\Facades\Notification;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LES CONGÉS (E21) ET LA RENTABILITÉ (E22).
- *
- * E21 — CE QUI COMPTE N'EST PAS LE TABLEAU DES CONGÉS, c'est qu'une demande APPROUVÉE empêche
- * l'assignation. Sans ce lien, le prestataire reçoit sa course le premier jour de ses vacances,
- * refuse, et le moteur cherche quelqu'un d'autre — après avoir perdu vingt secondes et une occasion.
- *
- * E22 — UNE SOCIÉTÉ SAIT CE QU'ELLE FACTURE, PAS CE QUE ÇA LUI COÛTE. C'est pourtant la question
- * qui décide de renégocier un contrat, ou de s'apercevoir qu'un site précis mange toute la marge des
- * autres. Les trois termes du calcul n'existaient pas avant cette phase : les heures viennent des
- * pointages (E20), les consommables des mouvements d'inventaire (E23 et F7).
- *
- * ET LE COÛT HORAIRE EST UNE HYPOTHÈSE, QUI SE DIT. La plateforme ne connaît pas les salaires : une
- * marge calculée sur un taux inventé et présentée sans réserve serait plus dangereuse qu'une absence
- * de marge — on la lirait comme un fait.
- */
+/** LES CONGÉS (E21) ET LA RENTABILITÉ (E22). */
 class CongesEtRentabiliteTest extends TestCase
 {
     use RefreshDatabase;
@@ -84,11 +69,7 @@ class CongesEtRentabiliteTest extends TestCase
             'ends_on' => Carbon::now()->addDays(7)->toDateString(),
         ]);
 
-        /*
-         * C'EST TOUT L'INTÉRÊT DE LA FONCTIONNALITÉ. Une demande approuvée qui n'empêche pas
-         * l'assignation ne sert qu'à faire un tableau — et le prestataire reçoit sa course le
-         * premier jour de ses vacances.
-         */
+        // C'EST TOUT L'INTÉRÊT DE LA FONCTIONNALITÉ.
         $this->assertFalse(
             app(WorkerAvailabilityService::class)
                 ->libresPour($organisation->id, $jour->copy()->addHours(10))[$worker->id],
@@ -219,11 +200,7 @@ class CongesEtRentabiliteTest extends TestCase
 
         $resultat = app(ProfitabilityService::class)->pourLaMission($mission);
 
-        /*
-         * SANS CE DRAPEAU, la mission afficherait une marge de 100 % — et l'agrégat d'un site
-         * entier paraîtrait florissant parce que personne n'y a pointé. Une rentabilité flatteuse
-         * et fausse est pire que pas de rentabilité du tout.
-         */
+        // SANS CE DRAPEAU, la mission afficherait une marge de 100 % — et l'agrégat d'un site entier paraîtrait florissant parce que personne n'y a pointé.
         $this->assertFalse($resultat['has_timesheet']);
         $this->assertSame(0, $resultat['worked_minutes']);
     }

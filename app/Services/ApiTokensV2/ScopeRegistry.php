@@ -6,9 +6,7 @@ use App\Models\ApiTokenScope;
 
 class ScopeRegistry
 {
-    /**
-     * Liste des codes scope autorisés (whitelist config + DB).
-     */
+    /** Liste des codes scope autorisés (whitelist config + DB). */
     public function allowedCodes(): array
     {
         $configCodes = (array) config('api_tokens_v2.allowed_scopes', []);
@@ -18,8 +16,7 @@ class ScopeRegistry
     }
 
     /**
-     * Filtre le tableau de scopes demandés pour ne garder que ceux autorisés
-     * pour le role donné. Retourne les codes valides + invalides séparés.
+     * Filtre le tableau de scopes demandés pour ne garder que ceux autorisés pour le role donné.
      *
      * @return array{valid: string[], invalid: string[]}
      */
@@ -59,9 +56,7 @@ class ScopeRegistry
         return (bool) ApiTokenScope::query()->where('code', $code)->where('is_dangerous', true)->exists();
     }
 
-    /**
-     * Le scope 'admin:everything' couvre tous les scopes.
-     */
+    /** Le scope 'admin:everything' couvre tous les scopes. */
     public function tokenHasScope(array $tokenScopes, string $required): bool
     {
         if (in_array('admin:everything', $tokenScopes, true)) {

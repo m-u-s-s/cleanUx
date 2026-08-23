@@ -9,18 +9,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * « Tout se passe bien ? » — au milieu de l'intervention, pas après.
- *
- * C'est le moment qui fait toute la valeur de ce message. Posée à la fin, la question ne sert plus
- * à rien : il ne reste que l'avis à écrire et le litige à ouvrir, et les deux coûtent bien plus cher
- * à tout le monde qu'un mot dit au prestataire pendant qu'il est encore là.
- *
- * DISCRET PAR CONSTRUCTION. Pas de SMS : ce message n'attend pas de réponse urgente et ne doit pas
- * consommer le plafond d'envois du client — celui-ci doit rester disponible pour un code de présence
- * ou un imprévu. Et pas de courriel non plus si la personne est joignable en push : recevoir un mail
- * « tout va bien ? » pendant qu'un prestataire travaille chez soi inquiète plus qu'il ne rassure.
- */
+/** « Tout se passe bien ? » — au milieu de l'intervention, pas après. */
 class MissionCheckInPingNotification extends Notification
 {
     use InteractsWithUserNotificationPreferences;

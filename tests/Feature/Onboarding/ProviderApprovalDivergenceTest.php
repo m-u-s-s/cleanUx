@@ -16,19 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Les deux voies d'approbation doivent dire la même chose du même prestataire.
- *
- * `ProviderOnboardingService::approveOnboarding()` exige une pièce d'identité approuvée, une
- * assurance approuvée et un compte de paiement actif. `ProviderRegistrationsCenter::approve()` —
- * l'écran par lequel passent en pratique les inscriptions de l'app mobile — posait
- * `status = 'active'` sans rien vérifier : un administrateur approuvait à l'aveugle un prestataire
- * n'ayant franchi aucune vérification, le profil restait `verification_status = 'unverified'`
- * indéfiniment, et le parcours v2 n'était jamais marqué terminé.
- *
- * L'approbation reste un geste unique. Ce qui change : elle sait ce qu'elle approuve, et elle
- * n'affirme jamais une vérification qui n'a pas eu lieu.
- */
+/** Les deux voies d'approbation doivent dire la même chose du même prestataire. */
 class ProviderApprovalDivergenceTest extends TestCase
 {
     use RefreshDatabase;
@@ -71,10 +59,7 @@ class ProviderApprovalDivergenceTest extends TestCase
         );
     }
 
-    /**
-     * Le cœur de la divergence : approuver l'accès n'est pas certifier une identité. Un dossier
-     * forcé ne doit surtout pas repartir avec `verification_status = 'verified'`.
-     */
+    /** Le cœur de la divergence : approuver l'accès n'est pas certifier une identité. */
     public function test_forcing_an_incomplete_dossier_never_claims_a_verification(): void
     {
         $profile = $this->selfRegistered();
@@ -101,10 +86,7 @@ class ProviderApprovalDivergenceTest extends TestCase
         $this->assertNotNull($profile->verified_at);
     }
 
-    /**
-     * L'autre moitié de la divergence : le parcours v2 n'était jamais synchronisé, si bien qu'un
-     * prestataire approuvé gardait un cockpit affichant des étapes en attente.
-     */
+    /** L'autre moitié de la divergence : le parcours v2 n'était jamais synchronisé, si bien qu'un prestataire approuvé gardait un cockpit affichant des étapes en attente. */
     public function test_approving_a_complete_dossier_closes_the_v2_journey(): void
     {
         $profile = $this->completeDossier();
@@ -118,10 +100,7 @@ class ProviderApprovalDivergenceTest extends TestCase
         $this->assertEqualsWithDelta(100, (float) $progress->percent_complete, 0.01);
     }
 
-    /**
-     * Marquer 100 % un parcours dont les étapes ne sont pas franchies ferait mentir le cockpit
-     * du prestataire, qui afficherait un dossier terminé avec des cartes encore à faire.
-     */
+    /** Marquer 100 % un parcours dont les étapes ne sont pas franchies ferait mentir le cockpit du prestataire, qui afficherait un dossier terminé avec des cartes encore à faire. */
     public function test_forcing_an_incomplete_dossier_does_not_close_the_v2_journey(): void
     {
         $profile = $this->selfRegistered();
@@ -181,11 +160,7 @@ class ProviderApprovalDivergenceTest extends TestCase
         return $profile->refresh();
     }
 
-    /**
-     * Dossier réellement complet : toutes les étapes franchies, la pièce d'identité approuvée,
-     * et l'identité vérifiée. Le métier employé n'exige ni assurance ni certification, pour que
-     * ce test porte sur l'approbation et non sur la dérivation des justificatifs.
-     */
+    /** Dossier réellement complet : toutes les étapes franchies, la pièce d'identité approuvée, et l'identité vérifiée. */
     private function completeDossier(): ProviderProfile
     {
         $profile = $this->selfRegistered();

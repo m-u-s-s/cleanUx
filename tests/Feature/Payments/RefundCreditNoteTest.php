@@ -12,9 +12,7 @@ use Stripe\Stripe;
 use Tests\Support\Stripe\FakeStripeHttpClient;
 use Tests\TestCase;
 
-/**
- * Audit HIGH — un remboursement capturé génère un avoir comptable.
- */
+/** Audit HIGH — un remboursement capturé génère un avoir comptable. */
 class RefundCreditNoteTest extends TestCase
 {
     use RefreshDatabase;

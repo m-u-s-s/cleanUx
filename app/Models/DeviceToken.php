@@ -18,13 +18,7 @@ class DeviceToken extends Model
 
     public const PLATFORM_WEB = 'web';
 
-    /**
-     * LE SERVICE PUSH D'EXPO — celui que les deux applications mobiles emploient reellement.
-     *
-     * Il manquait a cette liste, et `DeviceTokenService::register()` refusait donc tout
-     * enregistrement venu du terrain : « Provider push inconnu. » C'etait la SECONDE barriere, plus
-     * profonde que la validation du controleur -- lever l'une sans l'autre n'aurait rien change.
-     */
+    /** LE SERVICE PUSH D'EXPO — celui que les deux applications mobiles emploient reellement. */
     public const PROVIDER_EXPO = 'expo';
 
     public const PROVIDER_FCM = 'fcm';

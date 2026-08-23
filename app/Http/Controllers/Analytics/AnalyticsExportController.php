@@ -8,16 +8,7 @@ use App\Services\Analytics\DateRangeResolver;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/**
- * Phase 7 — Endpoints d'export pour le dashboard analytics.
- *
- * Routes (à enregistrer) :
- *   GET /analytics/exports/kpis.csv?preset=last_30d
- *   GET /analytics/exports/monthly-revenue.csv?months=12
- *   GET /analytics/exports/bookings.csv?preset=this_month
- *
- * Tous les endpoints scopent automatiquement à l'organisation du user (ou null = global).
- */
+/** Phase 7 — Endpoints d'export pour le dashboard analytics. */
 class AnalyticsExportController extends Controller
 {
     public function __construct(

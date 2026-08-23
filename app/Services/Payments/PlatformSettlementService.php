@@ -9,27 +9,11 @@ use Illuminate\Support\Facades\Schema;
 use Stripe\Stripe;
 use Stripe\StripeClient;
 
-/**
- * CE QUE BRIO A ENCAISSÉ, ET OÙ CELA PART RÉELLEMENT.
- *
- * Le registre local dit ce qu'on CROIT ; Stripe dit ce qui EST. Ce service tient les deux côte à
- * côte, parce qu'un registre qu'on ne confronte jamais au réel finit par décrire une banque dont
- * on est parti depuis six mois — et c'est exactement le genre d'écart qu'on découvre le jour d'un
- * contrôle.
- *
- * Toutes les lectures Stripe sont en échec doux : sans clé d'API, hors ligne, ou en cas de refus,
- * la page doit rester consultable. Un tableau de bord financier qui tombe en panne parce qu'un
- * appel réseau échoue n'est pas consultable au moment où on en a le plus besoin.
- */
+/** CE QUE BRIO A ENCAISSÉ, ET OÙ CELA PART RÉELLEMENT. */
 class PlatformSettlementService
 {
     /**
      * La commission encaissée, par devise, en euros.
-     *
-     * Lue sur `platform_fee_cents`, la colonne que `completeMission()` écrit à la capture depuis
-     * `CommissionService` — donc la même source que le portefeuille prestataire et que le montant
-     * réellement prélevé par Stripe. La recalculer ici rouvrirait la divergence que l'unification
-     * de 2026-06-11 a fermée.
      *
      * @return array<string, array{montant: float, missions: int}>
      */
@@ -77,11 +61,6 @@ class PlatformSettlementService
     /**
      * LES DEVISES SANS SECOURS VÉRIFIÉ — le seul indicateur qui compte vraiment.
      *
-     * Changer de banque chez Stripe prend deux minutes ; faire vérifier un IBAN ajouté dans
-     * l'urgence prend des jours ouvrés. Une devise encaissée sans compte de secours déjà vérifié
-     * est donc une devise sur laquelle un changement de banque prendra une semaine, quoi qu'il
-     * arrive. C'est ce que cette page doit crier, pas le solde.
-     *
      * @return array<int, string>
      */
     public function devisesSansSecours(): array
@@ -109,9 +88,6 @@ class PlatformSettlementService
 
     /**
      * Les derniers versements réellement effectués par Stripe vers la banque de la plateforme.
-     *
-     * C'est la pièce qui transforme ce registre en attestation : elle montre la destination et la
-     * date d'arrivée telles que Stripe les a exécutées, pas telles qu'on les a saisies.
      *
      * @return array{disponible: bool, raison?: string, versements?: array<int, array<string, mixed>>}
      */
@@ -148,13 +124,7 @@ class PlatformSettlementService
         }
     }
 
-    /**
-     * Promeut un compte de secours en compte principal pour sa devise.
-     *
-     * NE DÉPLACE AUCUN ARGENT, et ne prétend pas le faire : c'est l'enregistrement d'une décision,
-     * à faire suivre du même changement dans le Dashboard Stripe, qui seul redirige les versements.
-     * L'ancien principal est retiré plutôt que supprimé — un registre financier garde ses traces.
-     */
+    /** Promeut un compte de secours en compte principal pour sa devise. */
     public function promouvoir(PlatformSettlementAccount $compte): void
     {
         DB::transaction(function () use ($compte) {

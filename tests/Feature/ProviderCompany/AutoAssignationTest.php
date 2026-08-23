@@ -22,17 +22,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
-/**
- * LOT 4 — RÉPARTIR SANS QUE PERSONNE NE REGARDE.
- *
- * Un moteur qui distribue le travail d'une société doit répondre à trois questions avant qu'on lui
- * fasse confiance : sur quoi il se fonde, ce qu'il fait quand il ne trouve personne, et comment il
- * se comporte quand on appuie deux fois.
- *
- * LA DISPONIBILITÉ EST UN FILTRE, PAS UN SCORE. Quelqu'un déjà pris sort du classement au lieu d'y
- * descendre — le pondérer laisserait un très bon score compenser une impossibilité physique, et
- * enverrait la même personne à deux endroits.
- */
+/** LOT 4 — RÉPARTIR SANS QUE PERSONNE NE REGARDE. */
 class AutoAssignationTest extends TestCase
 {
     use RefreshDatabase;
@@ -94,12 +84,7 @@ class AutoAssignationTest extends TestCase
 
     public function test_la_disponibilite_se_calcule_en_une_requete_sans_creneaux_publies(): void
     {
-        /*
-         * INTERDIT DE PASSER PAR `AvailabilityService` : les créneaux publiés sont un concept
-         * d'INDÉPENDANT. Il rend `false` pour un salarié qui n'en déclare aucun — c'est-à-dire tous
-         * — et coûte ~200 ms par personne. Ce test vaut donc autant par ce qu'il affirme (libre)
-         * que par ce qu'il interdit.
-         */
+        // INTERDIT DE PASSER PAR `AvailabilityService` : les créneaux publiés sont un concept d'INDÉPENDANT.
         $a = $this->membre();
         $b = $this->membre();
 
@@ -164,11 +149,7 @@ class AutoAssignationTest extends TestCase
 
     public function test_le_referent_du_site_passe_devant(): void
     {
-        /*
-         * C'EST LE CŒUR DU SUJET. Une société qui dessert vingt immeubles y place des habitués :
-         * celui qui connaît le code de la porte et l'étage à ne pas déranger avant 10 h. C'est la
-         * connaissance la plus chère à reconstituer, et la seule que le client remarque.
-         */
+        // C'EST LE CŒUR DU SUJET.
         $referent = $this->membre();
         $quelconque = $this->membre();
 
@@ -212,14 +193,7 @@ class AutoAssignationTest extends TestCase
 
     public function test_la_rotation_departage_celui_qu_on_oublie(): void
     {
-        /*
-         * Sans rotation, le moteur choisirait toujours le même : le mieux placé le reste, son score
-         * ne bouge pas, et l'équipe se partage entre surchargés et oubliés.
-         *
-         * Jamais assigné = le PLAFOND de rotation. Un nouvel arrivant doit passer devant celui qui
-         * sort d'une mission hier ; lui donner 0 le laisserait au fond du classement précisément
-         * parce qu'on ne lui a rien donné.
-         */
+        // Sans rotation, le moteur choisirait toujours le même : le mieux placé le reste, son score ne bouge pas, et l'équipe se partage entre surchargés et oubliés.
         $recent = $this->membre();
         $jamaisVu = $this->membre();
 
@@ -257,11 +231,7 @@ class AutoAssignationTest extends TestCase
 
     public function test_sans_horaire_le_moteur_s_abstient(): void
     {
-        /*
-         * Toute la notion de disponibilité repose sur un créneau. Choisir au hasard serait pire que
-         * ne rien faire : la mission paraîtrait couverte, et le conflit n'apparaîtrait que le jour
-         * même.
-         */
+        // Toute la notion de disponibilité repose sur un créneau.
         $this->membre();
 
         $sansHoraire = Mission::factory()->create([
@@ -309,11 +279,7 @@ class AutoAssignationTest extends TestCase
 
     public function test_une_mission_deja_pourvue_est_laissee_tranquille(): void
     {
-        /*
-         * La revérification après verrou. Un humain a pu prendre la mission entre le moment où on
-         * l'a listée et celui où on la traite : la réassigner par-dessus son choix serait pire que
-         * ne rien faire.
-         */
+        // La revérification après verrou.
         $humain = $this->membre();
         $mission = $this->mission();
         $mission->update(['lead_provider_user_id' => $humain->id]);
@@ -463,11 +429,7 @@ class AutoAssignationTest extends TestCase
 
     public function test_le_prestataire_enregistre_son_appareil_sur_une_route_honnete(): void
     {
-        /*
-         * L'enregistrement des jetons ne vivait que sous `/api/client/devices/*`. Une application
-         * PRESTATAIRE devait donc appeler une route « client » pour recevoir ses notifications — ou
-         * ne pas les recevoir, ce qui rendrait muettes toutes les alertes d'assignation.
-         */
+        // L'enregistrement des jetons ne vivait que sous `/api/client/devices/*`.
         $this->actingAs($this->membre(), 'sanctum')
             ->postJson('/api/provider/devices/register', [
                 'token' => 'jeton-de-test-'.uniqid(),

@@ -11,33 +11,13 @@ use App\Services\Calendar\Contracts\GoogleBusyFetcher;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Synchro Google Calendar BIDIRECTIONNELLE.
- *
- * Sens sortant (existant) : GoogleCalendarSyncService pousse les RDV Brio →
- * Google Calendar (cron google-calendar:sync).
- *
- * Sens entrant (ce service) : un créneau bloqué dans Google Calendar devient une
- * exception d'indisponibilité côté Brio.
- *   - registerWatch()          : ouvre un canal push Google (table google_calendar_watch_channels).
- *   - webhook POST /webhooks/google-calendar → handlePushNotification()
- *   - handlePushNotification() : récupère les créneaux occupés (GoogleBusyFetcher)
- *                                → importBusyEvents() les mappe en AvailabilityException
- *                                (PARTIAL pour un créneau horaire, CLOSED pour une journée).
- *   - hasConflict()            : détecte un chevauchement entre une réservation et un blocage Google.
- *
- * Provider-agnostic via GoogleBusyFetcher (Mock par défaut). Pièces externes
- * restantes : lier le fetcher Google API réel (appels Calendar API) + cron de
- * renouvellement des canaux (expirent après ~7 j) + brancher hasConflict() en
- * soft-warn au moment de l'assignation dispatch si souhaité.
- */
+/** Synchro Google Calendar BIDIRECTIONNELLE. */
 class GoogleCalendarBidirectionalService
 {
     public function __construct(protected GoogleBusyFetcher $fetcher) {}
 
     /**
-     * Enregistre un canal de notification push sur le calendrier du prestataire et
-     * persiste ses identifiants (pour router les notifications entrantes).
+     * Enregistre un canal de notification push sur le calendrier du prestataire et persiste ses identifiants (pour router les notifications entrantes).
      *
      * @return array{channel_id: string, resource_id: string, expiry: string}
      */
@@ -65,10 +45,7 @@ class GoogleCalendarBidirectionalService
         return $channel;
     }
 
-    /**
-     * Traite une notification push Google : retrouve le prestataire via le canal,
-     * récupère ses créneaux occupés et les importe en exceptions d'indisponibilité.
-     */
+    /** Traite une notification push Google : retrouve le prestataire via le canal, récupère ses créneaux occupés et les importe en exceptions d'indisponibilité. */
     public function handlePushNotification(string $channelId, string $resourceId): void
     {
         $channel = GoogleCalendarWatchChannel::query()
@@ -98,13 +75,7 @@ class GoogleCalendarBidirectionalService
     }
 
     /**
-     * Sens entrant — mappe les événements « busy » Google d'un prestataire vers des
-     * exceptions d'indisponibilité Brio. Remplacement complet des exceptions
-     * issues de Google (source=google) ; les exceptions manuelles sont préservées.
-     *
-     * Événement attendu : ['external_id', 'start', 'end', 'all_day'(bool), 'summary'?].
-     * Événement horaire même jour → PARTIAL (soustrait la plage). Journée entière ou
-     * multi-jours → CLOSED pour chaque jour concerné.
+     * Sens entrant — mappe les événements « busy » Google d'un prestataire vers des exceptions d'indisponibilité Brio.
      *
      * @param  array<int, array<string, mixed>>  $events
      * @return array{created: int}
@@ -174,9 +145,7 @@ class GoogleCalendarBidirectionalService
         return $count;
     }
 
-    /**
-     * Détecte si un créneau de réservation chevauche un blocage Google du prestataire.
-     */
+    /** Détecte si un créneau de réservation chevauche un blocage Google du prestataire. */
     public function hasConflict(User $provider, Booking $booking): bool
     {
         $date = $booking->date;

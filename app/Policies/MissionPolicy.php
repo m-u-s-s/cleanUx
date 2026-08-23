@@ -10,35 +10,14 @@ use App\Services\PermissionService;
 
 class MissionPolicy
 {
-    /**
-     * LA GARDE SERVEUR DE L'EXIGENCE 8.
-     *
-     * « Un worker ne peut ni voir ni suivre une mission qui ne lui est pas assignée — ni à l'écran,
-     * ni via l'API. » Masquer un bouton ne suffit pas : l'URL reste tapable.
-     *
-     * DEUX MANQUES CORRIGÉS ICI, symétriques :
-     *
-     * - L'ORGANISATION ÉTAIT IGNORÉE. Un owner ne pouvait pas ouvrir `/missions/{id}` de sa PROPRE
-     *   société : la politique regardait le rôle plateforme (`isEmploye()`) et l'assignation
-     *   nominative, jamais l'appartenance. Un gérant qui répartit les missions ne peut pas en
-     *   ouvrir une seule — l'écran de détail société n'avait aucun moyen d'exister.
-     * - LE RANG NE TRAVERSE PAS LES SOCIÉTÉS. Être owner quelque part n'ouvre rien ailleurs :
-     *   l'appartenance ET la permission sont évaluées sur `mission.provider_organization_id`,
-     *   jamais sur l'organisation courante de qui regarde.
-     */
+    /** LA GARDE SERVEUR DE L'EXIGENCE 8. */
     public function view(User $user, Mission $mission): bool
     {
         if ($user->isAdmin()) {
             return true;
         }
 
-        /*
-         * Assigné : la voie la plus courte, et la seule qu'un worker emprunte.
-         *
-         * `lead_employee_id` seul laissait entrer la personne REMPLACÉE — la réassignation
-         * n'écrivait que `lead_provider_user_id` — et l'existence d'une affectation ne disait pas
-         * si elle valait encore : une ligne `reassigned` ouvrait la mission comme une active.
-         */
+        // Assigné : la voie la plus courte, et la seule qu'un worker emprunte.
         if ($mission->estIntervenant($user)) {
             return true;
         }
@@ -54,12 +33,7 @@ class MissionPolicy
         return false;
     }
 
-    /**
-     * Membre ACTIF de la société qui exécute la mission, et porteur de `missions.view_all`.
-     *
-     * L'appartenance seule ne suffit pas : un worker est membre actif, et c'est précisément à lui
-     * que l'exigence 8 ferme la porte.
-     */
+    /** Membre ACTIF de la société qui exécute la mission, et porteur de `missions.view_all`. */
     private function piloteLaSocieteDeLaMission(User $user, Mission $mission): bool
     {
         $organisationId = $mission->provider_organization_id;

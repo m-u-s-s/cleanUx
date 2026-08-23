@@ -5,11 +5,7 @@ namespace App\Services\Fx\Providers;
 use App\Services\Fx\FxProviderInterface;
 use App\Services\Fx\FxRate;
 
-/**
- * Provider FX mock — taux figés pour dev/tests, déterministe.
- *
- * Comportement spécial : quote === "FAIL" → renvoie un tableau vide (simule provider down).
- */
+/** Provider FX mock — taux figés pour dev/tests, déterministe. */
 class FxMockProvider implements FxProviderInterface
 {
     protected const RATES_FROM_EUR = [

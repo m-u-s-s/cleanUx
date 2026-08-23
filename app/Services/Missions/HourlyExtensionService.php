@@ -11,38 +11,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
-/**
- * PROLONGER — la décision du client d'acheter du temps en plus, au tarif normal.
- *
- * Elle est possible AVANT et PENDANT l'intervention, et c'est tout l'intérêt : personne ne sait à
- * l'avance qu'un appartement demandera quatre heures plutôt que trois. Ce qui la distingue du
- * dépassement, c'est qu'elle est DÉCIDÉE — donc facturée au tarif normal, sans la majoration.
- *
- * LA FENÊTRE SE FERME À LA FIN DE LA FRANCHISE, et pas plus tard. Sans cette limite, un client
- * attendrait la fin de l'intervention pour prolonger rétroactivement : il paierait les heures,
- * jamais la majoration, et la majoration ne majorerait plus rien. La franchise de quinze minutes
- * fait donc double emploi, à dessein — c'est le temps offert, et c'est le dernier moment pour
- * décider.
- *
- * PASSÉ CETTE FENÊTRE, ON NE REFUSE PAS LE SERVICE : le prestataire continue et le temps
- * supplémentaire est facturé automatiquement, majoré et plafonné. Prolonger n'aurait plus d'objet,
- * puisque le temps est déjà couvert.
- *
- * ─────────────────────────────────────────────────────────────────────────────────────────────
- *
- * LE PIÈGE QUI A DICTÉ TOUTE LA CONCEPTION : **on n'écrit QUE `purchased_minutes`.**
- *
- * `duree_estimee` est la BASE DU CALCUL DU TARIF. `HourlyRateResolver` déduit le tarif horaire
- * réellement payé en divisant le montant autorisé par cette durée — c'est ainsi qu'il retrouve les
- * majorations que le moteur de prix applique puis oublie. Faire suivre `duree_estimee` à chaque
- * prolongation ferait donc glisser le tarif déduit à chaque fois : trois heures à 58,50 € devenues
- * quatre heures rendraient un tarif de 43,88 €, et le client paierait sa quatrième heure moins cher
- * que la première — puis le dépassement serait majoré sur cette base erodée.
- *
- * Les deux colonnes portent bien DEUX notions : `duree_estimee` est ce qui a été VENDU au moment de
- * l'autorisation, `purchased_minutes` est ce qui est DÛ aujourd'hui. Elles coïncident jusqu'à la
- * première prolongation, et c'est exactement ce qui rend la confusion facile.
- */
+/** PROLONGER — la décision du client d'acheter du temps en plus, au tarif normal. */
 class HourlyExtensionService
 {
     public function __construct(
@@ -68,13 +37,7 @@ class HourlyExtensionService
         $apres = $avant + $minutes;
 
         DB::transaction(function () use ($booking, $apres, $avant, $minutes, $auteur) {
-            /*
-             * ÉCRITURE SANS ÉVÉNEMENT — et ici c'est un choix de coût, pas de correction.
-             *
-             * `RendezVousObserver::saved()` déclenche sur toute sauvegarde d'une réservation
-             * confirmée une resynchronisation complète : géocodage, checklist, SLA,
-             * auto-assignation. Acheter une demi-heure n'a aucune raison de provoquer tout cela.
-             */
+            // ÉCRITURE SANS ÉVÉNEMENT — et ici c'est un choix de coût, pas de correction.
             Booking::query()->whereKey($booking->getKey())->update(['purchased_minutes' => $apres]);
 
             $booking->forceFill(['purchased_minutes' => $apres]);
@@ -82,11 +45,7 @@ class HourlyExtensionService
             $this->journaliser($booking, $avant, $apres, $minutes, $auteur);
         });
 
-        /*
-         * On relit la mission : l'horloge lit `mission->booking`, et une relation déjà chargée
-         * porterait encore l'ancienne valeur — le client verrait sa prolongation refusée par
-         * l'écran qu'il vient de faire changer.
-         */
+        // On relit la mission : l'horloge lit `mission->booking`, et une relation déjà chargée porterait encore l'ancienne valeur — le client verrait sa prolongation refusée par l'écran qu'il vient de faire changer.
         return $mission !== null
             ? $this->horloge->etat($mission->fresh(['booking']) ?? $mission)
             : ['applies' => false];
@@ -94,9 +53,6 @@ class HourlyExtensionService
 
     /**
      * Cette réservation accepte-t-elle encore une prolongation, et jusqu'à combien ?
-     *
-     * Rend `null` quand elle n'est pas vendue au temps. Sert aux écrans, qui doivent savoir
-     * MONTRER le bouton avant que quiconque appuie dessus.
      *
      * @return array{allowed: bool, reason: string|null, max_minutes: int, increment_minutes: int, options: list<array{minutes: int, label: string, amount_cents: int|null}>}|null
      */
@@ -120,11 +76,6 @@ class HourlyExtensionService
 
     /**
      * LES CHOIX PROPOSÉS, AVEC LEUR PRIX — calculé ici, jamais par l'application.
-     *
-     * Le client voit un montant AVANT de confirmer : c'est sur ce chiffre qu'il décide. Le laisser
-     * fabriquer par l'écran, fût-ce par une multiplication triviale, créerait un second prix pour
-     * la même prestation — et c'est celui de l'appareil que le client aurait lu au moment de dire
-     * oui. Le serveur propose, le téléphone affiche.
      *
      * @return list<array{minutes: int, label: string, amount_cents: int|null}>
      */
@@ -253,14 +204,7 @@ class HourlyExtensionService
         return Mission::query()->where('booking_id', $booking->getKey())->latest('id')->first();
     }
 
-    /**
-     * LA TRACE, ET POURQUOI ELLE N'EST PAS OPTIONNELLE.
-     *
-     * Une prolongation change ce que le client doit. Sans journal, un litige sur la facture se
-     * réglerait en comparant deux souvenirs : le sien et celui du prestataire. On garde qui, quand,
-     * combien — et le montant du moment, parce que le tarif se déduit et pourrait se relire
-     * autrement un an plus tard.
-     */
+    /** LA TRACE, ET POURQUOI ELLE N'EST PAS OPTIONNELLE. */
     private function journaliser(Booking $booking, int $avant, int $apres, int $minutes, ?User $auteur): void
     {
         $tarif = $this->rates->tarifEffectifDeLaReservation($booking);

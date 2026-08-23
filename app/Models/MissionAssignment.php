@@ -58,9 +58,7 @@ class MissionAssignment extends Model
     }
 
     /**
-     * Alias du worker assigné (clé réelle : user_id). Le DispatchCenter société
-     * charge `assignments.provider` et la vue lit `$a->provider` ; cette relation
-     * pointe sur le même User que `user()`.
+     * Alias du worker assigné (clé réelle : user_id).
      *
      * @return BelongsTo<User, $this>
      */

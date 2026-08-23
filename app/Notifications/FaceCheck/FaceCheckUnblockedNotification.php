@@ -6,17 +6,7 @@ use App\Support\Notifications\InteractsWithUserNotificationPreferences;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * « VOUS POUVEZ RETRAVAILLER » — et un contrôle vous sera demandé tout de suite.
- *
- * Sans ce message, un prestataire débloqué le découvrait en réessayant, parfois des jours plus
- * tard. Une décision d'administrateur qui change la journée de quelqu'un doit lui parvenir ; le
- * silence transforme une bonne nouvelle en temps perdu.
- *
- * La seconde ligne compte autant que la première : la levée rend la POSSIBILITÉ de prouver son
- * identité, elle n'en dispense pas. La laisser deviner produirait un second blocage vécu comme
- * une injustice.
- */
+/** « VOUS POUVEZ RETRAVAILLER » — et un contrôle vous sera demandé tout de suite. */
 class FaceCheckUnblockedNotification extends Notification
 {
     use InteractsWithUserNotificationPreferences;

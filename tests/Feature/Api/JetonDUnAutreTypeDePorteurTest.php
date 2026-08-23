@@ -13,19 +13,7 @@ use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * UN IDENTIFIANT NE DÉSIGNE PAS UN PROPRIÉTAIRE DANS UNE TABLE POLYMORPHE.
- *
- * `personal_access_tokens` porte `tokenable_type` + `tokenable_id`. `rotateMyToken` et
- * `revokeMyToken` ne comparaient QUE `tokenable_id` à `$request->user()->id` : « l'utilisateur
- * numéro 7 » et « l'organisation numéro 7 » étaient donc le même propriétaire aux yeux de ces deux
- * routes. `listMyTokens()` filtrait déjà sur les deux colonnes — seules ces deux portes n'en
- * regardaient qu'une.
- *
- * L'enjeu n'est pas symbolique : `rotate` REND LE NOUVEAU JETON EN CLAIR dans sa réponse, et
- * `revoke` supprime la ligne. C'est une prise de contrôle d'un côté, une coupure de service de
- * l'autre.
- */
+/** UN IDENTIFIANT NE DÉSIGNE PAS UN PROPRIÉTAIRE DANS UNE TABLE POLYMORPHE. */
 class JetonDUnAutreTypeDePorteurTest extends TestCase
 {
     use RefreshDatabase;
@@ -40,10 +28,7 @@ class JetonDUnAutreTypeDePorteurTest extends TestCase
         Config::set('api_tokens_v2.default_expiry_days', 365);
     }
 
-    /**
-     * Fabrique un jeton porté par une entité d'un AUTRE type, dont l'identifiant coïncide avec
-     * celui de l'attaquant. C'est la collision que la garde d'origine ne voyait pas.
-     */
+    /** Fabrique un jeton porté par une entité d'un AUTRE type, dont l'identifiant coïncide avec celui de l'attaquant. */
     private function jetonDUnAutrePorteur(int $memeIdentifiant): PersonalAccessTokenV2
     {
         $jeton = new PersonalAccessTokenV2;
@@ -60,13 +45,7 @@ class JetonDUnAutreTypeDePorteurTest extends TestCase
         return $jeton->refresh();
     }
 
-    /**
-     * ATTAQUE (b) — révoquer le jeton d'un porteur d'un autre type.
-     *
-     * Sans la vérification de type, la réponse était 200 et la ligne DISPARAISSAIT :
-     * `assertStatus(403)` tombe d'abord, et `assertDatabaseHas` juste après. Les deux portent la
-     * faille, la seconde en mesure le dégât.
-     */
+    /** ATTAQUE (b) — révoquer le jeton d'un porteur d'un autre type. */
     public function test_revoquer_le_jeton_d_un_autre_type_de_porteur_est_refuse(): void
     {
         $attaquant = User::factory()->create();
@@ -83,13 +62,7 @@ class JetonDUnAutreTypeDePorteurTest extends TestCase
         ]);
     }
 
-    /**
-     * ATTAQUE (b bis) — faire tourner le jeton d'un porteur d'un autre type.
-     *
-     * Sans la vérification de type, l'exécution atteignait `ApiTokenManager::rotate()` : la réponse
-     * n'était plus un refus mais une 422 de validation. `assertStatus(403)` tombe — la route
-     * cessait de dire « ce jeton n'est pas le vôtre » alors que c'est exactement le cas.
-     */
+    /** ATTAQUE (b bis) — faire tourner le jeton d'un porteur d'un autre type. */
     public function test_faire_tourner_le_jeton_d_un_autre_type_de_porteur_est_refuse(): void
     {
         $attaquant = User::factory()->create();
@@ -104,10 +77,7 @@ class JetonDUnAutreTypeDePorteurTest extends TestCase
         $this->assertNull($jetonVise->refresh()->rotation_grace_until);
     }
 
-    /**
-     * Le pendant positif : sur son propre jeton, la rotation et la révocation marchent toujours.
-     * Sans lui, on ne saurait pas distinguer « la faille est fermée » de « la route est cassée ».
-     */
+    /** Le pendant positif : sur son propre jeton, la rotation et la révocation marchent toujours. */
     public function test_le_porteur_legitime_fait_toujours_tourner_et_revoque_son_jeton(): void
     {
         $proprietaire = User::factory()->create();

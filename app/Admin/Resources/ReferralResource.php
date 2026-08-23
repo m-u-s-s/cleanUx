@@ -12,9 +12,6 @@ use App\Support\ActivityLogger;
 /**
  * Les parrainages et leurs récompenses.
  *
- * Aucune requalification manuelle : un parrainage devient qualifiant parce qu’une commande a
- * été honorée, et le forcer ici créerait une récompense sans contrepartie.
- *
  * @extends EloquentResource<Referral>
  */
 class ReferralResource extends EloquentResource
@@ -76,11 +73,7 @@ class ReferralResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Marquer un parrainage frauduleux RÉVOQUE aussi ses récompenses. Les séparer
-             * laisserait des points acquis sur une fraude reconnue — et le filleul les dépenserait
-             * avant qu'on s'en aperçoive.
-             */
+            // Marquer un parrainage frauduleux RÉVOQUE aussi ses récompenses.
             Action::make('flag-fraud', 'Marquer frauduleux', function (Referral $referral) {
                 $referral->forceFill(['status' => Referral::STATUS_FRAUD])->save();
 

@@ -11,15 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-/**
- * DispatchCampaignStepJob — two modes:
- *
- *  - Scheduled (no recipientId): processes all due recipients via CampaignEngine::dispatchDueRecipients().
- *    Called every 10 min by Kernel::schedule().
- *
- *  - Per-recipient (recipientId provided): dispatches one specific recipient.
- *    Useful for targeted re-sends.
- */
+/** DispatchCampaignStepJob — two modes: - Scheduled (no recipientId): processes all due recipients via CampaignEngine::dispatchDueRecipients(). */
 class DispatchCampaignStepJob implements ShouldQueue
 {
     use Dispatchable;

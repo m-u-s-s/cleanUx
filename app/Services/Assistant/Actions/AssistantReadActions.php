@@ -10,11 +10,7 @@ use App\Models\Mission;
 use App\Models\ProviderPayout;
 use App\Models\User;
 
-/**
- * Read-only assistant actions.
- *
- * Each method returns a formatted French text string.
- */
+/** Read-only assistant actions. Each method returns a formatted French text string. */
 class AssistantReadActions
 {
     private const WEEKDAYS_FR = [
@@ -27,9 +23,7 @@ class AssistantReadActions
         6 => 'Samedi',
     ];
 
-    /**
-     * Dispatch a read-only action by name and return its formatted French text.
-     */
+    /** Dispatch a read-only action by name and return its formatted French text. */
     public function execute(string $actionName, User $user, array $params = []): string
     {
         return match ($actionName) {

@@ -16,25 +16,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
-/**
- * LA CRÉATION PAR L'API DOIT ÉGALER LE CHEMIN WEB (H7, H8).
- *
- * DEUX DÉFAUTS, DONT UN TOTALEMENT SILENCIEUX.
- *
- * H7 — seule une réservation IMMÉDIATE déclenchait quelque chose. Une réservation PLANIFIÉE créée
- * par l'API n'était jamais confiée au moteur de répartition : elle restait en base, visible du
- * client, et aucun prestataire ne la voyait jamais. Rien ne paraît anormal des deux côtés jusqu'au
- * jour de l'intervention, où personne ne vient.
- *
- * H8 — ni `service_zone_id` ni `trade_id` n'étaient écrits sur la réservation. Ces deux colonnes
- * sont exactement celles sur lesquelles `CandidateFinder` filtre les prestataires. Sans elles, la
- * recherche ne filtre plus ce qu'elle prétend filtrer.
- *
- * CE POINT D'ENTRÉE N'EST APPELÉ PAR AUCUN ÉCRAN AUJOURD'HUI — l'application mobile réserve par la
- * WebView `/commander`, et `useCreateBooking` n'a pas d'appelant. Il reste atteignable par tout
- * jeton client, et c'est déjà une raison suffisante. Ces tests figent aussi la parité pour le jour
- * où un écran s'y branchera : c'est précisément le moment où un défaut silencieux coûte le plus.
- */
+/** LA CRÉATION PAR L'API DOIT ÉGALER LE CHEMIN WEB (H7, H8). */
 class CreationParApiPariteTest extends TestCase
 {
     use OuvreLeCatalogue;
@@ -99,13 +81,7 @@ class CreationParApiPariteTest extends TestCase
         );
     }
 
-    /**
-     * H7 — LE MODE PLANIFIÉ DOIT ATTEINDRE LE MOTEUR.
-     *
-     * On espionne `DispatchEngine` plutôt que d'observer ses effets : ce qu'on veut prouver est
-     * précisément que l'appel a lieu, indépendamment de ce que le moteur décide ensuite (il peut
-     * légitimement ne trouver personne).
-     */
+    /** H7 — LE MODE PLANIFIÉ DOIT ATTEINDRE LE MOTEUR. */
     #[Test]
     public function une_reservation_planifiee_est_confiee_au_moteur(): void
     {
@@ -119,13 +95,7 @@ class CreationParApiPariteTest extends TestCase
             ->execute($client, $this->donnees($catalogue, 'scheduled'));
     }
 
-    /**
-     * L'IMMÉDIAT SE REFUSE QUAND LA ZONE NE L'AUTORISE PAS.
-     *
-     * Le couple (métier, zone) porte `asap_enabled`. Accepter la demande quand il vaut faux ouvre
-     * une recherche qui ne trouvera jamais personne : le client attend, échoue, et rien n'explique
-     * pourquoi. Le refus immédiat est plus honnête que l'attente.
-     */
+    /** L'IMMÉDIAT SE REFUSE QUAND LA ZONE NE L'AUTORISE PAS. */
     #[Test]
     public function l_immediat_est_refuse_la_ou_la_zone_ne_l_autorise_pas(): void
     {

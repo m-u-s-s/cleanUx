@@ -84,10 +84,7 @@ class ClientCompanyDashboard extends Component
             ->get();
     }
 
-    /**
-     * Booking counts grouped by trade name for the selected period.
-     * Returns an array of ['trade' => string, 'count' => int] sorted by count desc.
-     */
+    /** Booking counts grouped by trade name for the selected period. */
     public function getBookingsByTradeProperty(): array
     {
         $orgId = Auth::user()->current_organization_id;
@@ -112,17 +109,6 @@ class ClientCompanyDashboard extends Component
 
     /**
      * LE TABLEAU DE BORD IGNORAIT LE PÉRIMÈTRE DE QUI LE REGARDE.
-     *
-     * Toutes ses requêtes filtraient sur la SOCIÉTÉ et rien d'autre. Un responsable restreint à une
-     * agence y lisait donc le nom et la ville des autres locaux, leurs réservations récentes avec
-     * l'adresse du client, et les demandes en attente d'approbation — pendant que l'écran des
-     * locaux, lui, le restreignait correctement. Deux écrans voisins, deux réponses.
-     *
-     * Aucune erreur n'était levée : la page s'affichait, elle affichait simplement trop.
-     *
-     * `null` veut dire « aucune restriction déclarée », pas « aucun accès » — la distinction est la
-     * même que dans `MemberSiteAccessService`, et l'inverse viderait le tableau de bord de toutes
-     * les sociétés qui n'ont jamais restreint personne.
      *
      * @param  Builder<Booking>  $requete
      * @return Builder<Booking>

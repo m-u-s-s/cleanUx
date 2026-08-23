@@ -13,10 +13,6 @@ use App\Services\Booking\SmartDispatchService;
 /**
  * Les décisions de matching et leur explication.
  *
- * Cette table EST la trace d’explicabilité : elle conserve les poids appliqués et le détail des
- * candidats au moment de la décision. La modifier reviendrait à réécrire l’explication après
- * coup — ce qui la vide de sa valeur.
- *
  * @extends EloquentResource<BookingMatchingDecision>
  */
 class MatchingDecisionResource extends EloquentResource
@@ -63,12 +59,7 @@ class MatchingDecisionResource extends EloquentResource
     public function globalActions(): array
     {
         return [
-            /*
-             * SIMULER n'écrit rien : le geste explique pourquoi tel prestataire a été retenu, ou
-             * pourquoi aucun ne l'a été. C'est une action plutôt qu'une colonne parce qu'elle
-             * demande un paramètre — la mission à expliquer — et qu'aucune liste ne peut le
-             * deviner.
-             */
+            // SIMULER n'écrit rien : le geste explique pourquoi tel prestataire a été retenu, ou pourquoi aucun ne l'a été.
             Action::make('simulate', 'Simuler le matching', function (array $valeurs) {
                 $rdv = Booking::find((int) $valeurs['booking_id']);
 

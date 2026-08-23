@@ -11,16 +11,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * Cible les branches non couvertes du scoring de SmartDispatchService :
- * zoneScore via les affectations employee_zone_assignments (primary/secondary/
- * backup/inconnu) et l'absence d'affectation, plus la charge de travail
- * (workloadScore) à partir de rendez_vous existants.
- *
- * Scoring déterministe hors zone : pas de table client_provider_preferences
- * (favori 0), pas de missions notées (qualité défaut 100), client non premium
- * (premium 0), booking scheduled (asap 0), pas de coordonnées (distance 0).
- */
+/** Cible les branches non couvertes du scoring de SmartDispatchService : zoneScore via les affectations employee_zone_assignments (primary/secondary/ backup/inconnu) et l'absence d'affectation, plus la charge de travail (workloadScore) à partir de rendez_vous existants. */
 class SmartDispatchServiceCoverageBatch16Test extends TestCase
 {
     use CreatesZoneAwareFixtures;

@@ -8,18 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LA FABRIQUE DOIT PRODUIRE UNE SOCIÉTÉ CLIENTE QUI TIENT DEBOUT.
- *
- * Vingt-huit composants d'espace société exigent quatre choses simultanément :
- * profil `company`, organisation rattachée, adhésion active, et rattachement
- * lisible par `organizationContextId()`. Les fixtures écrites à la main en
- * oubliaient toujours une — et les 403 qui en résultaient passaient pour des
- * défauts du code.
- *
- * Ce test garde la fabrique elle-même : si elle cesse de produire un compte
- * complet, on l'apprend ici plutôt qu'à travers vingt-huit écrans.
- */
+/** LA FABRIQUE DOIT PRODUIRE UNE SOCIÉTÉ CLIENTE QUI TIENT DEBOUT. */
 class FabriqueSocieteClienteTest extends TestCase
 {
     use RefreshDatabase;

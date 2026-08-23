@@ -19,14 +19,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * SkeletalModulesTest — covers the 5 completed modules:
- *   Marketing (admin CRUD campaigns/segments)
- *   Fleet (provider my-vehicles endpoint)
- *   Accounting (PeriodCloser::canClose + validate endpoint)
- *   Insurance (updateClaimStatus state machine + client claims list)
- *   Webhooks (markDeadLetter + admin dead-letter endpoint)
- */
+/** SkeletalModulesTest — covers the 5 completed modules: Marketing (admin CRUD campaigns/segments) Fleet (provider my-vehicles endpoint) Accounting (PeriodCloser::canClose + validate endpoint) Insurance (updateClaimStatus state machine + client claims list) Webhooks (markDeadLetter + admin dead-letter endpoint) */
 class SkeletalModulesTest extends TestCase
 {
     use RefreshDatabase;

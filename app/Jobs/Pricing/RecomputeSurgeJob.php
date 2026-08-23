@@ -11,17 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Phase 14 — Job de recalcul du surge pour toutes les zones actives.
- *
- * Lancé toutes les 60s (config surge.recompute_every_seconds) par le scheduler.
- *
- * Pour chaque zone active : recompute → upsert pricing_zones_state.
- *
- * Si une zone a 0 booking sur la lookback window ET 0 prestataire offline,
- * on ne calcule PAS (le state restera à expires_at < now() → multiplier 1.0
- * par defaut au prochain calcul de prix).
- */
+/** Phase 14 — Job de recalcul du surge pour toutes les zones actives. */
 class RecomputeSurgeJob implements ShouldQueue
 {
     use Dispatchable;

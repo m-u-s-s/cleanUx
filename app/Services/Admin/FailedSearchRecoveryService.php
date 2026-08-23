@@ -13,27 +13,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-/**
- * RATTRAPER UNE RECHERCHE ÉCHOUÉE (E31).
- *
- * CE QUI SE PASSE AUJOURD'HUI. Une recherche s'épuise sans candidat : le client voit un écran
- * d'échec et s'en va. La ligne reste en base, personne ne la regarde, et le client ne revient pas.
- * Chaque recherche épuisée est une vente perdue ET un client qui a essayé une fois.
- *
- * TROIS GESTES, ET UN SEUL CLIC CHACUN. Relancer la recherche — parce que le marché de 14 h n'est
- * pas celui de 9 h. Contacter le client — parce qu'un appel vaut mieux qu'un courriel automatique.
- * Offrir un geste commercial — parce qu'un client qui a essayé et échoué mérite mieux qu'un
- * silence.
- *
- * LE GESTE COMMERCIAL PASSE PAR `PromoCode`, NOMINATIF. Le module existe, avec ses règles de cumul
- * et son registre de rachats : inventer un crédit ici créerait une seconde monnaie sans
- * comptabilité. Le code est nominatif parce qu'un code générique fuit — il se retrouve sur un
- * forum, et un dédommagement devient une promotion publique.
- *
- * ON NE RELANCE PAS UNE RECHERCHE ENCORE OUVERTE. Le moteur en ouvrirait une seconde sur la même
- * réservation, et deux prestataires se déplaceraient — c'est le défaut exact que la porte amont
- * unique a corrigé.
- */
+/** RATTRAPER UNE RECHERCHE ÉCHOUÉE (E31). CE QUI SE PASSE AUJOURD'HUI. */
 class FailedSearchRecoveryService
 {
     public function __construct(
@@ -49,10 +29,7 @@ class FailedSearchRecoveryService
     public function relancer(AsapDispatchRequest $recherche, User $admin): AsapDispatchRequest
     {
         if ($recherche->status !== AsapStatus::EXPIRED) {
-            /*
-             * Le moteur ouvrirait une SECONDE recherche sur la même réservation, et deux
-             * prestataires se déplaceraient — le défaut exact que la porte amont unique a corrigé.
-             */
+            // Le moteur ouvrirait une SECONDE recherche sur la même réservation, et deux prestataires se déplaceraient — le défaut exact que la porte amont unique a corrigé.
             throw new DomainException('Cette recherche n’est pas épuisée : elle suit encore son cours.');
         }
 
@@ -83,10 +60,7 @@ class FailedSearchRecoveryService
     }
 
     /**
-     * Prévenir le client qu'on s'occupe de lui.
-     *
-     * PAS UN COURRIEL AUTOMATIQUE DE PLUS. Ce message dit qu'un humain a regardé — c'est la seule
-     * chose qui distingue une plateforme d'un formulaire, au moment précis où le client en doute.
+     * Prévenir le client qu'on s'occupe de lui. PAS UN COURRIEL AUTOMATIQUE DE PLUS.
      *
      * @throws DomainException
      */
@@ -139,26 +113,14 @@ class FailedSearchRecoveryService
 
         /** @var PromoCode $code */
         $code = PromoCode::query()->create([
-            /*
-             * NOMINATIF, ET C'EST TOUT L'ENJEU. Un code générique fuit : il se retrouve sur un
-             * forum, et un dédommagement devient une promotion publique que personne n'a budgétée.
-             */
+            // NOMINATIF, ET C'EST TOUT L'ENJEU.
             'code' => 'DESOLE-'.Str::upper(Str::random(6)),
             'name' => 'Geste commercial — recherche sans réponse',
             'description' => sprintf('Émis par %s après une recherche épuisée.', $admin->name ?? 'l’équipe'),
-            /*
-             * `percent` ET NON `percentage` : la colonne porte une contrainte d'énumération, et la
-             * constante du modèle fait foi. Écrire la valeur à la main dans un module voisin est
-             * exactement la façon dont deux vocabulaires divergent.
-             */
+            // `percent` ET NON `percentage` : la colonne porte une contrainte d'énumération, et la constante du modèle fait foi.
             'discount_type' => PromoCode::TYPE_PERCENT,
             'discount_value' => $pourcentage,
-            /*
-             * `issued_to_user_id` ET NON `user_id` : c'est la colonne que le module de promotions
-             * lit réellement pour restreindre un code à son destinataire. Se tromper de colonne
-             * aurait produit un code NOMINATIF EN APPARENCE, utilisable par n'importe qui — et le
-             * défaut ne se serait vu qu'à la première fuite.
-             */
+            // `issued_to_user_id` ET NON `user_id` : c'est la colonne que le module de promotions lit réellement pour restreindre un code à son destinataire.
             'issued_to_user_id' => $client->id,
             'max_total_uses' => 1,
             'max_uses_per_user' => 1,

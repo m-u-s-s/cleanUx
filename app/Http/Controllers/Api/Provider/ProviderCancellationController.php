@@ -9,14 +9,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * Phase 14 — API d'annulation côté prestataire.
+ *
  * @group Provider — Cancellation
  *
  * @authenticated
- *
- * Phase 14 — API d'annulation côté prestataire.
- *
- *   POST /api/provider/missions/{mission}/cancel       → annulation prestataire
- *   POST /api/provider/missions/{mission}/no-show      → déclarer client no-show
+ * POST /api/provider/missions/{mission}/cancel       → annulation prestataire
+ * POST /api/provider/missions/{mission}/no-show      → déclarer client no-show
  */
 class ProviderCancellationController extends Controller
 {

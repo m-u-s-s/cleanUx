@@ -17,16 +17,7 @@ use App\Support\Domain\QuestionType;
 use Illuminate\Support\Collection;
 use Tests\TestCase;
 
-/**
- * Le moteur tarifaire — sans base de données.
- *
- * Les modèles sont instanciés et leurs relations posées à la main : un prix ne dépend pas d'un
- * schéma, il dépend d'une formule. La tester sans base la rend rapide, déterministe, et surtout
- * lisible — l'arithmétique est visible dans le test, pas cachée derrière des fixtures.
- *
- * L'application est bootée (le moteur lit sa configuration), mais aucune table n'est touchée :
- * pas de RefreshDatabase, pas de fixture, pas de migration.
- */
+/** Le moteur tarifaire — sans base de données. */
 class PricingEngineTest extends TestCase
 {
     private PricingEngine $engine;
@@ -46,12 +37,7 @@ class PricingEngineTest extends TestCase
         $this->assertTrue($quote->isExact());
     }
 
-    /**
-     * LA garantie arithmétique : on ADDITIONNE d'abord, on MULTIPLIE ensuite.
-     *
-     * Inverser donne un autre prix, et les deux paraissent également plausibles à la lecture.
-     * Ici : (100 + 50) × 1,5 = 225 €, tandis que 100 × 1,5 + 50 = 200 €. Le test distingue.
-     */
+    /** LA garantie arithmétique : on ADDITIONNE d'abord, on MULTIPLIE ensuite. */
     public function test_modifiers_are_summed_before_multipliers_are_applied(): void
     {
         $question = $this->choiceQuestion('finition', [
@@ -64,13 +50,7 @@ class PricingEngineTest extends TestCase
         $this->assertNotSame(20000, $quote->minCents, 'Le multiplicateur a été appliqué avant la somme.');
     }
 
-    /**
-     * L'arrondi n'a lieu QU'UNE FOIS, à la fin.
-     *
-     * 101 × 1,5 × 1,5 = 227,25 → 227. En arrondissant à chaque étape : 152 puis 228. Un centime
-     * de dérive par étape suffit à ce qu'une facture ne tombe pas juste, sans que personne ne
-     * comprenne pourquoi.
-     */
+    /** L'arrondi n'a lieu QU'UNE FOIS, à la fin. 101 × 1,5 × 1,5 = 227,25 → 227. */
     public function test_rounding_happens_once_at_the_end(): void
     {
         $q1 = $this->choiceQuestion('a', [['value' => 'oui', 'price_multiplier' => 1.5]]);
@@ -92,12 +72,7 @@ class PricingEngineTest extends TestCase
         $this->assertSame(15000, $quote->minCents);
     }
 
-    /**
-     * La porte de sortie borne le prix au lieu de le bloquer.
-     *
-     * « Je ne sais pas » sur un choix se borne entre l'option la moins chère et la plus chère :
-     * le client voit ce qu'il risque RÉELLEMENT, pas une marge inventée.
-     */
+    /** La porte de sortie borne le prix au lieu de le bloquer. */
     public function test_an_unknown_choice_widens_the_range_to_the_real_option_spread(): void
     {
         $question = $this->choiceQuestion('etendue', [
@@ -131,13 +106,7 @@ class PricingEngineTest extends TestCase
         $this->assertSame(6000, $quote->maxCents);
     }
 
-    /**
-     * Une question CACHÉE ne pèse pas sur le prix.
-     *
-     * Sans cette règle, répondre « au pistolet » puis revenir sur « au rouleau » laisserait le
-     * supplément dans le devis — un montant que le client ne pourrait rattacher à aucune question
-     * visible, et qu'il contesterait à raison.
-     */
+    /** Une question CACHÉE ne pèse pas sur le prix. */
     public function test_a_hidden_question_never_reaches_the_price(): void
     {
         $trigger = $this->choiceQuestion('application', [

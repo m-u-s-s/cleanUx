@@ -17,12 +17,7 @@ class AiDispatchServiceScoringTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Le métier commun à toutes les fixtures.
-     *
-     * Il est OBLIGATOIRE depuis que le filtre métier n'a plus de repli : une réservation sans
-     * métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous.
-     */
+    /** Le métier commun à toutes les fixtures. */
     protected function trade(): Trade
     {
         return Trade::firstOrCreate(

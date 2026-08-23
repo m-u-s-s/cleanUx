@@ -9,9 +9,7 @@ use App\Services\Finance\FinanceCreditNoteService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Audit HIGH — génération d'avoirs sur remboursement (conformité BE/FR).
- */
+/** Audit HIGH — génération d'avoirs sur remboursement (conformité BE/FR). */
 class FinanceCreditNoteServiceTest extends TestCase
 {
     use RefreshDatabase;

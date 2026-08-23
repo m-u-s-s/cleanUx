@@ -6,22 +6,11 @@ use App\Models\User;
 use App\Services\Enterprise\EnterpriseRoutingService;
 use Illuminate\Database\Eloquent\Builder;
 
-/**
- * Single source of truth for scoping client-facing finance documents
- * (invoices/quotes) to what a given client may see — own documents plus, for
- * enterprise clients, their organization's documents honoring site-scope.
- * Used by FinanceDocumentsClient (Livewire) AND the client invoices API so the
- * two can never drift into a cross-tenant leak.
- */
+/** Single source of truth for scoping client-facing finance documents (invoices/quotes) to what a given client may see — own documents plus, for enterprise clients, their organization's documents honoring site-scope. */
 class ClientFinanceDocumentScope
 {
     /**
      * LE TYPE DU MODÈLE TRAVERSE LA PORTÉE.
-     *
-     * Sans ces paramètres de gabarit, un `Builder<FinanceInvoice>` entrait et un `Builder<Model>`
-     * ressortait : tout appelant perdait le type de ses colonnes, et l'analyse statique cessait de
-     * vérifier ce qu'il en lisait. La portée ne change pas de modèle — la signature le dit
-     * désormais.
      *
      * @template TModel of \Illuminate\Database\Eloquent\Model
      *

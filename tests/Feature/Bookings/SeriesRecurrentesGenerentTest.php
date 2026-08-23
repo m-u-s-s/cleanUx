@@ -11,24 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
-/**
- * AUCUNE RÉSERVATION RÉCURRENTE N'ÉTAIT JAMAIS GÉNÉRÉE.
- *
- * DEUX DÉFAUTS, ET IL SUFFISAIT DU SECOND POUR TOUT ÉTEINDRE.
- *
- * 1. `ApplyRecurringTemplateService::apply()` contenait DEUX FOIS le même bloc de création : le
- *    tableau était construit, la série créée, puis tout était reconstruit à l'identique sous un
- *    autre nom de variable et créé une seconde fois. Chaque application de modèle laissait donc
- *    une série orpheline en base — et le jour où la génération aurait fonctionné, deux
- *    réservations seraient parties pour chaque échéance.
- *
- * 2. `next_occurrence_at` n'était initialisée par PERSONNE. La colonne est `nullable` et sans
- *    défaut ; `ProcessRecurringBookings` ne fait que l'AVANCER, et sa requête filtre sur
- *    `whereNotNull('next_occurrence_at')`. Toute série créée était donc invisible à la commande
- *    planifiée. La fonctionnalité existait de bout en bout et ne produisait rien.
- *
- * Un silence complet : aucune erreur, aucun journal, aucune réservation.
- */
+/** AUCUNE RÉSERVATION RÉCURRENTE N'ÉTAIT JAMAIS GÉNÉRÉE. */
 class SeriesRecurrentesGenerentTest extends TestCase
 {
     use RefreshDatabase;
@@ -44,11 +27,7 @@ class SeriesRecurrentesGenerentTest extends TestCase
         );
     }
 
-    /**
-     * LA SÉRIE EST VISIBLE PAR LA COMMANDE — c'est tout l'enjeu.
-     *
-     * Sans `next_occurrence_at`, elle existe en base et n'est vue par rien.
-     */
+    /** LA SÉRIE EST VISIBLE PAR LA COMMANDE — c'est tout l'enjeu. */
     public function test_la_serie_porte_sa_premiere_echeance(): void
     {
         $serie = $this->appliquer();
@@ -68,13 +47,7 @@ class SeriesRecurrentesGenerentTest extends TestCase
         );
     }
 
-    /**
-     * L'HEURE VIENT DU MODÈLE, ET NON D'UN DÉFAUT RÉINVENTÉ.
-     *
-     * La commande relit les deux moitiés de cette date pour dater la réservation :
-     * `toDateString()` d'un côté, `format('H:i')` de l'autre. Une heure fausse ici produit une
-     * intervention à une heure que le client n'a jamais choisie.
-     */
+    /** L'HEURE VIENT DU MODÈLE, ET NON D'UN DÉFAUT RÉINVENTÉ. */
     public function test_lheure_de_la_premiere_echeance_est_celle_du_modele(): void
     {
         $serie = $this->appliquer(heureDuModele: '14:30');
@@ -93,13 +66,7 @@ class SeriesRecurrentesGenerentTest extends TestCase
         $this->assertSame('17:15', Carbon::parse($serie->next_occurrence_at)->format('H:i'));
     }
 
-    /**
-     * LA PREUVE QUI COMPTE : la commande produit vraiment une réservation.
-     *
-     * Les tests précédents montrent que la série est VISIBLE. Celui-ci montre qu'elle GÉNÈRE — la
-     * seule chose que le client constate. Sans lui, on aurait prouvé qu'une requête trouve une
-     * ligne, ce qui n'a jamais fait venir personne chez qui que ce soit.
-     */
+    /** LA PREUVE QUI COMPTE : la commande produit vraiment une réservation. */
     public function test_la_commande_planifiee_genere_enfin_une_reservation(): void
     {
         $serie = $this->appliquer();
@@ -123,12 +90,7 @@ class SeriesRecurrentesGenerentTest extends TestCase
         Carbon::setTestNow();
     }
 
-    /**
-     * TÉMOIN — un modèle inactif reste refusé.
-     *
-     * Sans lui, les tests ci-dessus passeraient au vert sur un service qui aurait perdu ses gardes
-     * en même temps que son doublon.
-     */
+    /** TÉMOIN — un modèle inactif reste refusé. */
     public function test_temoin_un_modele_inactif_est_refuse(): void
     {
         $modele = $this->modele();

@@ -16,14 +16,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * LE CLIENT SUIT SA COURSE SUR TOUTES LES SURFACES, PAS SEULEMENT SUR UNE.
- *
- * Trois écrans montrent la même chose au client, et un seul avait été mis à jour : la carte
- * Livewire dédiée. Le suivi « fil complet » continuait de pointer le lieu de PRISE EN CHARGE
- * pendant que le passager s'en éloignait — l'ETA se rapprochait de zéro alors que la voiture
- * partait — et la page publique partagée annonçait « il arrive dans 12 min » sans rien montrer.
- */
+/** LE CLIENT SUIT SA COURSE SUR TOUTES LES SURFACES, PAS SEULEMENT SUR UNE. */
 class SuiviPartoutTest extends TestCase
 {
     use RefreshDatabase;
@@ -131,12 +124,7 @@ class SuiviPartoutTest extends TestCase
         $this->assertCount(3, $apercu['tracking']['route']['points']);
     }
 
-    /**
-     * LA PAGE PUBLIQUE RESTE PAUVRE : des points, jamais une adresse ni un nom complet.
-     *
-     * Ce lien circule par SMS et peut être transféré. Y ajouter une carte ne doit pas y ajouter des
-     * données personnelles au passage.
-     */
+    /** LA PAGE PUBLIQUE RESTE PAUVRE : des points, jamais une adresse ni un nom complet. */
     public function test_la_page_publique_ne_diffuse_ni_adresse_ni_nom_complet(): void
     {
         [, , $booking] = $this->course(MissionStatus::STARTED);

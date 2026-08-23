@@ -17,13 +17,13 @@ class ApiTokenManager
      * Issue a new token. Returns the wrapper with plain text token (single shot).
      *
      * @param array{
-     *   name: string,
-     *   display_name?: ?string,
-     *   description?: ?string,
-     *   scopes?: string[],
-     *   owner_role?: ?string,
-     *   rate_limit_per_minute?: ?int,
-     *   expires_in_days?: ?int,
+     * name: string,
+     * display_name?: ?string,
+     * description?: ?string,
+     * scopes?: string[],
+     * owner_role?: ?string,
+     * rate_limit_per_minute?: ?int,
+     * expires_in_days?: ?int,
      * } $payload
      */
     public function createForUser(User $user, array $payload): NewAccessToken
@@ -65,10 +65,7 @@ class ApiTokenManager
         return $new;
     }
 
-    /**
-     * Rotate a token : issue a new one with same scopes/owner_role/expiry,
-     * keep old token valid during rotation grace period.
-     */
+    /** Rotate a token : issue a new one with same scopes/owner_role/expiry, keep old token valid during rotation grace period. */
     public function rotate(PersonalAccessTokenV2 $token, ?int $graceHours = null): NewAccessToken
     {
         $graceHours ??= (int) config('api_tokens_v2.rotation_grace_hours', 24);

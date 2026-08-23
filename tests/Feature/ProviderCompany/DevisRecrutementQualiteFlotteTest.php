@@ -33,22 +33,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * PHASE 2, SECONDE MOITIÉ — LE DEVIS SOCIÉTÉ (E24), LE RECRUTEMENT (E25), LE SCORE QUALITÉ (E26) ET
- * LA FLOTTE (E27).
- *
- * CE QUE CE FICHIER PROTÈGE EN PRIORITÉ, ce sont les quatre décisions qui font que ces modules
- * servent à quelque chose plutôt qu'à produire des tableaux :
- *
- *   1. un devis ACCEPTÉ crée des missions — sinon les deux parties sont d'accord et personne n'est
- *      au travail ;
- *   2. EMBAUCHER émet l'invitation — sinon une candidature est marquée « embauché » et personne
- *      n'apparaît dans l'organigramme ;
- *   3. un score SANS MATIÈRE ne se fabrique pas — une moyenne sur une mission serait lue comme un
- *      jugement ;
- *   4. la flotte d'une société ne montre PAS celle des autres — la colonne est nullable, et `null`
- *      veut dire « à la plateforme ».
- */
+/** PHASE 2, SECONDE MOITIÉ — LE DEVIS SOCIÉTÉ (E24), LE RECRUTEMENT (E25), LE SCORE QUALITÉ (E26) ET LA FLOTTE (E27). */
 class DevisRecrutementQualiteFlotteTest extends TestCase
 {
     use RefreshDatabase;
@@ -147,10 +132,7 @@ class DevisRecrutementQualiteFlotteTest extends TestCase
 
         $service->accepter($devis->fresh(), $client);
 
-        /*
-         * C'EST TOUT L'INTÉRÊT. Un devis accepté qui ne crée rien laisse les deux parties d'accord
-         * et personne au travail — c'est un PDF qu'on se renvoie par courriel.
-         */
+        // C'EST TOUT L'INTÉRÊT.
         $this->assertSame(2, Booking::query()->where('client_id', $client->id)->count());
 
         $this->assertDatabaseHas('bookings', [
@@ -193,10 +175,7 @@ class DevisRecrutementQualiteFlotteTest extends TestCase
 
         $devis->forceFill(['valid_until' => Carbon::now()->subDay()->toDateString()])->save();
 
-        /*
-         * L'ÉCHÉANCE COMPTE MÊME SI LE BALAYAGE N'EST PAS PASSÉ. Accepter au prix d'il y a trois
-         * mois ferait dépendre la validité d'un devis de l'heure du cron.
-         */
+        // L'ÉCHÉANCE COMPTE MÊME SI LE BALAYAGE N'EST PAS PASSÉ.
         $this->expectException(DomainException::class);
 
         $service->accepter($devis->fresh(), $client);
@@ -337,10 +316,7 @@ class DevisRecrutementQualiteFlotteTest extends TestCase
 
         $candidature = $service->embaucher($candidature, $patron);
 
-        /*
-         * UN MÊME GESTE, PAS DEUX ÉCRANS. Séparer les deux produit exactement le défaut qu'on
-         * répare : une candidature marquée « embauché » et personne dans l'organigramme.
-         */
+        // UN MÊME GESTE, PAS DEUX ÉCRANS.
         $this->assertSame(JobApplication::STATUS_HIRED, $candidature->status);
         $this->assertNotNull($candidature->organization_invitation_id);
 
@@ -415,10 +391,7 @@ class DevisRecrutementQualiteFlotteTest extends TestCase
             ->test(RecruitmentCenter::class)
             ->call('statuerSurLaCandidature', $candidature->id, 'hire');
 
-        /*
-         * Une candidature ne porte pas d'organisation : charger par son seul identifiant exposerait
-         * des données personnelles de gens qui n'ont postulé nulle part ici.
-         */
+        // Une candidature ne porte pas d'organisation : charger par son seul identifiant exposerait des données personnelles de gens qui n'ont postulé nulle part ici.
         $this->assertSame(JobApplication::STATUS_RECEIVED, $candidature->fresh()->status);
     }
 
@@ -455,10 +428,7 @@ class DevisRecrutementQualiteFlotteTest extends TestCase
 
         $reponse = $this->getJson('/api/provider/company/quality-scores')->assertOk();
 
-        /*
-         * Trois missions ne disent rien de personne. Un nombre affiché avec deux décimales sur un
-         * échantillon d'une mission serait lu comme un jugement.
-         */
+        // Trois missions ne disent rien de personne.
         $this->assertFalse($reponse->json('data.0.has_enough_data'));
         $this->assertNull($reponse->json('data.0.score'));
         $this->assertSame(3, $reponse->json('meta.missions_minimum'));
@@ -537,11 +507,7 @@ class DevisRecrutementQualiteFlotteTest extends TestCase
 
         $reponse = $this->getJson('/api/provider/company/fleet')->assertOk();
 
-        /*
-         * DÉCOUVRIR L'EXPIRATION QUAND LE MOTEUR REFUSE L'ASSIGNATION, c'est la découvrir trop
-         * tard : le blocage sur certification expirée fonctionne déjà, et la société ne comprenait
-         * pas pourquoi son camion n'était plus assignable.
-         */
+        // DÉCOUVRIR L'EXPIRATION QUAND LE MOTEUR REFUSE L'ASSIGNATION, c'est la découvrir trop tard : le blocage sur certification expirée fonctionne déjà, et la société ne comprenait pas pourquoi son camion n'était plus assignable.
         $this->assertCount(1, $reponse->json('expiring'));
         $this->assertSame('controle_technique', $reponse->json('expiring.0.certification_type'));
     }
@@ -593,11 +559,7 @@ class DevisRecrutementQualiteFlotteTest extends TestCase
 
         Booking::factory()->create(['client_id' => $etranger->id]);
 
-        /*
-         * OFFRIR LA LISTE COMPLÈTE DES CLIENTS ferait de cet écran un annuaire : n'importe quelle
-         * société pourrait énumérer la clientèle de ses concurrentes, et adresser un devis à
-         * quelqu'un qui n'a jamais entendu parler d'elle.
-         */
+        // OFFRIR LA LISTE COMPLÈTE DES CLIENTS ferait de cet écran un annuaire : n'importe quelle société pourrait énumérer la clientèle de ses concurrentes, et adresser un devis à quelqu'un qui n'a jamais entendu parler d'elle.
         Livewire::actingAs($patron)
             ->test(QuoteBuilder::class)
             ->assertViewHas('clients', fn ($clients) => $clients->pluck('id')->all() === [$sien->id]);

@@ -16,13 +16,7 @@ use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * « GÉRER MA MISSION » SUR LE WEB — la parité que le porteur demande.
- *
- * Le suivi web portait la carte, les codes et les QR. Il lui manquait les deux choses qui ATTENDENT
- * une réponse : la liste du client et le nouveau devis. Un client sur ordinateur devait prendre son
- * téléphone pour répondre à une révision de prix.
- */
+/** « GÉRER MA MISSION » SUR LE WEB — la parité que le porteur demande. */
 class GererMaMissionWebTest extends TestCase
 {
     use RefreshDatabase;
@@ -118,11 +112,7 @@ class GererMaMissionWebTest extends TestCase
         $this->assertSame(50.0, (float) $mission->booking->fresh()->devis_estime);
     }
 
-    /**
-     * LA CONSIGNE DE DERNIÈRE MINUTE N'A PAS DE FENÊTRE, contrairement à la liste : un digicode qui
-     * change à 17 h doit pouvoir se dire à 17 h. Elle ne remplace pas le carnet du client — elle
-     * s'ajoute, et c'est la plus récente qui fait foi.
-     */
+    /** LA CONSIGNE DE DERNIÈRE MINUTE N'A PAS DE FENÊTRE, contrairement à la liste : un digicode qui change à 17 h doit pouvoir se dire à 17 h. */
     public function test_le_client_pose_une_consigne_de_derniere_minute(): void
     {
         $mission = $this->mission();

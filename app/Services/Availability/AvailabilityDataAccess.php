@@ -7,13 +7,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * AvailabilityDataAccess
- *
- * Cohesive sub-service extracted from AvailabilityService.
- * Owns all booking/hold data-access and schema-defensive column resolution.
- * Pure query logic — no business rules.
- */
+/** AvailabilityDataAccess Cohesive sub-service extracted from AvailabilityService. */
 class AvailabilityDataAccess
 {
     /**

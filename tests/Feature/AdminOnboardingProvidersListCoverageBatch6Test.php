@@ -12,13 +12,7 @@ use Livewire\Livewire;
 use ReflectionMethod;
 use Tests\TestCase;
 
-/**
- * Coverage batch 6 — exercises the secondary / private count-recalculation
- * helpers of AdminOnboardingProvidersList that the primary feature test does
- * not reach: calculateCounts buckets, getCountsProperty, the "stable" and
- * "signal/bucket" recalculation strategies, document readiness probing and the
- * various refresh entry points.
- */
+/** Coverage batch 6 — exercises the secondary / private count-recalculation helpers of AdminOnboardingProvidersList that the primary feature test does not reach: calculateCounts buckets, getCountsProperty, the "stable" and "signal/bucket" recalculation strategies, document readiness probing and the various refresh entry points. */
 class AdminOnboardingProvidersListCoverageBatch6Test extends TestCase
 {
     use RefreshDatabase;

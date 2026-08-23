@@ -8,9 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * M21 — the 7-day bookings trend must be computed in a single grouped query, not 7.
- */
+/** M21 — the 7-day bookings trend must be computed in a single grouped query, not 7. */
 class AdminHomeDashboardTest extends TestCase
 {
     use RefreshDatabase;

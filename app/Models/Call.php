@@ -22,12 +22,7 @@ class Call extends Model
 
     public const STATUS_ENDED = 'ended';
 
-    /**
-     * Personne n'a décroché.
-     *
-     * L'ÉTAT LE PLUS UTILE DES QUATRE, et le seul que le serveur de médias ne connaît pas : LiveKit
-     * sait qui est dans une salle à l'instant T, pas qu'un appel a sonné dans le vide à 7 h.
-     */
+    /** Personne n'a décroché. */
     public const STATUS_MISSED = 'missed';
 
     protected $fillable = [

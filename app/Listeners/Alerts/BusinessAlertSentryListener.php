@@ -6,18 +6,7 @@ use App\Events\BusinessAlertRaised;
 use Sentry\Severity;
 use Sentry\State\Scope;
 
-/**
- * Forwards business-event alerts (payment/payout/reconciliation/etc. failures)
- * to Sentry so money-path failures actually page someone. No-op when Sentry
- * isn't bound (e.g. local/test without the DSN configured).
- *
- * Sentry API used (sentry/sentry ^3.x):
- *   - Severity::fatal() / Severity::error()  — static factory methods
- *   - app('sentry')->withScope(callable)      — scoped context isolation
- *   - $scope->setContext(string, array)       — attach structured context
- *   - $scope->setTag(string, string)          — searchable tag
- *   - app('sentry')->captureMessage(string, Severity) — send the alert
- */
+/** Forwards business-event alerts (payment/payout/reconciliation/etc. */
 class BusinessAlertSentryListener
 {
     public function handle(BusinessAlertRaised $event): void

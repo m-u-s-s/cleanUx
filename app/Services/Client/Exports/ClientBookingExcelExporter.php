@@ -12,20 +12,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/**
- * Phase 6.1 — Export Excel multi-onglets.
- *
- * Différence avec ClientBookingExporter (Phase 6, CSV/PDF) :
- *   - Format .xlsx natif Excel
- *   - Plusieurs onglets : Synthèse / Détails / Par site / Par mois
- *   - Formules Excel pour totaux
- *   - Mise en forme : headers gras, couleurs par statut, formats nombres
- *
- * Requiert : composer require phpoffice/phpspreadsheet
- *
- * Streaming : on construit le fichier en mémoire puis on stream le binaire.
- * Pour 5000 bookings → ~30 MB RAM, 5s de génération. Au-delà préférer CSV.
- */
+/** Phase 6.1 — Export Excel multi-onglets. */
 class ClientBookingExcelExporter
 {
     public function export(User $user, array $filters = []): StreamedResponse
@@ -56,21 +43,7 @@ class ClientBookingExcelExporter
 
         $filename = sprintf('rendez-vous_%s.xlsx', now()->format('Y-m-d_Hi'));
 
-        /*
-            LA GÉNÉRATION SE FAIT MAINTENANT, PAS DANS LE CALLBACK.
-
-            Le callback d'un `StreamedResponse` s'exécute après la fin du cycle de
-            requête : le conteneur est déjà démonté, et PhpSpreadsheet — qui résout
-            des services pendant `save()` — mourait sur « Class "config" does not
-            exist », en plein milieu d'une réponse déjà partie avec un code 200. Le
-            client recevait donc une trace PHP déguisée en fichier Excel.
-
-            On écrit dans un fichier temporaire tant que l'application est vivante,
-            et le callback ne fait plus que rendre les octets. Passer par
-            `php://output` sous tampon ne suffit pas : le serveur applicatif tient
-            son propre tampon de sortie, et les deux se marchent dessus. C'est d'ailleurs ce que l'en-tête de
-            cette classe décrit depuis le début.
-        */
+        // LA GÉNÉRATION SE FAIT MAINTENANT, PAS DANS LE CALLBACK.
         $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
         $fichier = tempnam(sys_get_temp_dir(), 'export_xlsx_');
         $writer->save($fichier);

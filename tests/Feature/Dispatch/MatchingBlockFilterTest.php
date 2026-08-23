@@ -13,10 +13,7 @@ use App\Services\Dispatch\AiDispatchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Audit HIGH — le matching ne doit jamais proposer un prestataire bloqué (dans un
- * sens ou l'autre) vis-à-vis du client de la réservation.
- */
+/** Audit HIGH — le matching ne doit jamais proposer un prestataire bloqué (dans un sens ou l'autre) vis-à-vis du client de la réservation. */
 class MatchingBlockFilterTest extends TestCase
 {
     use RefreshDatabase;
@@ -33,12 +30,7 @@ class MatchingBlockFilterTest extends TestCase
         $this->zone = ServiceZone::factory()->create();
         $this->client = User::factory()->client()->create();
 
-        /*
-         * LE MÉTIER EST DÉSORMAIS OBLIGATOIRE. Le filtre métier n'a plus de repli : une
-         * réservation sans métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous.
-         * C'est l'invariant « jamais un peintre en babysitting », et ce test doit donc poser un
-         * métier des deux côtés, comme la vraie vie.
-         */
+        // LE MÉTIER EST DÉSORMAIS OBLIGATOIRE.
         $this->trade = Trade::create([
             'slug' => 'nettoyage-block-test',
             'code' => 'CLEAN-BT',

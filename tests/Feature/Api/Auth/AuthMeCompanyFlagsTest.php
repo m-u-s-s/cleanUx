@@ -10,18 +10,7 @@ use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LA REPRISE DE SESSION DOIT DIRE LA MÊME CHOSE QUE LA CONNEXION — CASQUETTE SOCIÉTÉ COMPRISE.
- *
- * `ApiAuthController::serializeUser()` expose déjà `is_entreprise` et `organization_account_id`
- * à la connexion ; `me` construisait sa réponse sur `$user->toArray()`, qui ne porte que des
- * colonnes. Un compte société redevenait donc un particulier à chaque redémarrage de
- * l'application, avec un jeton pourtant valide.
- *
- * C'est exactement le défaut déjà corrigé pour `is_admin` (voir AuthMeAdminFlagTest) : l'aiguillage
- * d'espace serait juste au login et faux ensuite. Sans `organization_type`, l'application ne peut
- * pas non plus distinguer une société CLIENTE d'une société PRESTATAIRE — deux espaces différents.
- */
+/** LA REPRISE DE SESSION DOIT DIRE LA MÊME CHOSE QUE LA CONNEXION — CASQUETTE SOCIÉTÉ COMPRISE. */
 class AuthMeCompanyFlagsTest extends TestCase
 {
     use RefreshDatabase;

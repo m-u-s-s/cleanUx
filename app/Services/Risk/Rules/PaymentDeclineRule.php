@@ -6,10 +6,7 @@ use App\Services\Risk\RiskContext;
 use App\Services\Risk\RiskRuleHit;
 use App\Services\Risk\RiskRuleInterface;
 
-/**
- * Évalue le risque sur la base des déclines récents (cartes refusées).
- * Lit `decline_count_last_24h` depuis $context->extra (envoyé par le caller).
- */
+/** Évalue le risque sur la base des déclines récents (cartes refusées). */
 class PaymentDeclineRule implements RiskRuleInterface
 {
     public function code(): string

@@ -15,23 +15,7 @@ use Illuminate\Support\Carbon;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LE PLANNING D'ÉQUIPE (E19) ET LES FEUILLES D'HEURES (E20).
- *
- * E19 — « QUI TRAVAILLE QUAND » N'ÉTAIT ÉCRIT NULLE PART. `WorkerAvailabilityService` ne savait
- * répondre qu'à la moitié de la question — « cette personne est-elle déjà prise » — faute de
- * planning. Quelqu'un qui ne travaillait pas ce jour-là passait donc pour disponible, et
- * l'auto-assignation lui envoyait une course à vingt-trois heures un dimanche.
- *
- * CE QUE CE FICHIER PROTÈGE SURTOUT : le planning ne s'impose QUE s'il existe. Une société qui n'a
- * pas encore saisi ses shifts verrait sinon toute son équipe devenir indisponible du jour au
- * lendemain — la mise en service créerait la panne qu'elle devait éviter.
- *
- * E20 — LE POINTAGE SE REMPLIT TOUT SEUL, sinon personne ne le remplit. Celui qui demande un geste
- * de plus au moment où l'on range son matériel n'est pas rempli, ou l'est de mémoire trois jours
- * plus tard — c'est-à-dire faux. La correction manuelle reste possible, mais approuvée : sans quoi
- * le pointage redevient déclaratif, ce que ni la paie ni le client ne peuvent accepter.
- */
+/** LE PLANNING D'ÉQUIPE (E19) ET LES FEUILLES D'HEURES (E20). */
 class PlanningEtPointageTest extends TestCase
 {
     use RefreshDatabase;
@@ -70,11 +54,7 @@ class PlanningEtPointageTest extends TestCase
             Carbon::now()->addDay()->setTime(10, 0),
         );
 
-        /*
-         * C'EST LA GARANTIE QUI COMPTE À LA MISE EN SERVICE. « Aucun planning saisi » n'est pas
-         * « personne ne travaille » : confondre les deux rendrait indisponible toute l'équipe de
-         * chaque société qui n'a pas encore ouvert l'écran de planning.
-         */
+        // C'EST LA GARANTIE QUI COMPTE À LA MISE EN SERVICE.
         $this->assertTrue($verdicts[$worker->id]);
     }
 

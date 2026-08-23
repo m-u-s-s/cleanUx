@@ -15,7 +15,6 @@ class WebhookDispatcher
 {
     /**
      * Persist event + fanout deliveries for every active subscription matching event_code.
-     * Idempotent : if idempotency_key given and already used, returns the existing event.
      *
      * @return WebhookEvent|null null if event not whitelisted or feature disabled
      */
@@ -90,9 +89,7 @@ class WebhookDispatcher
         return $event;
     }
 
-    /**
-     * Re-enqueue a specific delivery (admin replay).
-     */
+    /** Re-enqueue a specific delivery (admin replay). */
     public function replay(WebhookDelivery $delivery): WebhookDelivery
     {
         $delivery->update([

@@ -134,35 +134,26 @@ final class BookingStatus
         return $status === self::EN_ATTENTE;
     }
 
-    /**
-     * Statuses that represent an active/in-progress booking (provider is working).
-     * Used to consolidate legacy aliases in observers/listeners.
-     */
+    /** Statuses that represent an active/in-progress booking (provider is working). */
     public static function activeAliases(): array
     {
         return [self::EN_ROUTE, self::SUR_PLACE, self::CONFIRME];
     }
 
-    /**
-     * Statuses that represent a booking that has been cancelled (all aliases).
-     */
+    /** Statuses that represent a booking that has been cancelled (all aliases). */
     public static function cancelledAliases(): array
     {
         return [self::ANNULE];
     }
 
-    /**
-     * Statuses that represent a completed booking (all aliases).
-     */
+    /** Statuses that represent a completed booking (all aliases). */
     public static function completedAliases(): array
     {
         return [self::TERMINE];
     }
 
     /**
-     * Terminal statuses for which a (new) cancellation must be refused: a booking that is
-     * already completed or already cancelled cannot be cancelled again. Includes the
-     * defensive completion aliases ('completed'/'done') used elsewhere (e.g. payouts cron).
+     * Terminal statuses for which a (new) cancellation must be refused: a booking that is already completed or already cancelled cannot be cancelled again.
      *
      * @return string[]
      */

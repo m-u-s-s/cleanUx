@@ -6,15 +6,7 @@ use App\Services\WebhooksV2\WebhookDispatcher;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Helper façade pour émettre des webhook events business depuis les Observers
- * / Services / Controllers, sans risque de crasher le flow appelant.
- *
- * - Skip silencieusement si le module Webhooks v2 n'est pas installé (table absente).
- * - Skip si le module est désactivé (config webhooks_v2.enabled=false).
- * - Skip si l'event_code n'est pas whitelisté (le Dispatcher s'en charge déjà).
- * - try/catch tout en interne — jamais throw.
- */
+/** Helper façade pour émettre des webhook events business depuis les Observers / Services / Controllers, sans risque de crasher le flow appelant. */
 class BusinessEventEmitter
 {
     public static function emit(

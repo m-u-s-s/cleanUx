@@ -7,10 +7,7 @@ use App\Services\SubscriptionsV2\BillingResult;
 use App\Services\SubscriptionsV2\Contracts\BillingProviderContract;
 use Illuminate\Support\Str;
 
-/**
- * Mock provider for CI/staging — toujours succès sauf si le subscription metadata
- * `force_fail_billing=true` (utile pour tester past_due flow).
- */
+/** Mock provider for CI/staging — toujours succès sauf si le subscription metadata `force_fail_billing=true` (utile pour tester past_due flow). */
 class MockBillingProvider implements BillingProviderContract
 {
     public function name(): string

@@ -205,10 +205,7 @@ class CancellationEngineTest extends TestCase
         app(CancellationEngine::class)->execute(99999, $client, 'client');
     }
 
-    /**
-     * B1: a completed booking must not be cancellable (which would trigger a refund/reversal
-     * on an already-delivered, already-paid mission).
-     */
+    /** B1: a completed booking must not be cancellable (which would trigger a refund/reversal on an already-delivered, already-paid mission). */
     public function test_execute_rejects_cancellation_of_completed_booking(): void
     {
         $client = User::factory()->client()->create();

@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Admin\OrderEngine;
 
-use App\Livewire\OrderEngine\QuestionRenderer;
 use App\Models\Contracts\TranslatesCatalogLabels;
 use App\Models\Question;
 use App\Models\QuestionCondition;
@@ -25,7 +24,6 @@ use App\Support\Domain\QuestionType;
 use App\Support\Domain\TradeRouteRules;
 use App\Support\Livewire\Concerns\Admin\ManagesCatalogTranslations;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -42,62 +40,28 @@ use Livewire\WithFileUploads;
 /**
  * Le constructeur de parcours : édition à gauche, aperçu à droite.
  *
- * L'aperçu monte le VRAI {@see QuestionRenderer} — celui que le client
- * utilisera. C'est ce qui rend la promesse tenable : un aperçu qui réimplémenterait le rendu
- * finirait par diverger, et personne ne s'en apercevrait avant la mise en ligne.
- *
- * Le simulateur de prix n'est pas un gadget. Une grille tarifaire faite d'additions, de
- * multiplicateurs et de coefficients par unité ne se vérifie pas de tête : répondre au
- * questionnaire et voir le prix se construire ligne par ligne est le seul moyen fiable de la
- * valider avant de la mettre en ligne.
- *
  * @property-read Collection<string, array<string, mixed>> $insights
  */
 #[Layout('layouts.app')]
 class QuestionnaireBuilder extends Component
 {
-    /**
-     * Défense en profondeur : le refus vaut au niveau du COMPOSANT, pas seulement de la route.
-     *
-     * `/admin/*` est déjà derrière `role:admin`, mais un composant Livewire se monte aussi hors de
-     * ce chemin — et cet écran-ci écrit le catalogue, verrouille des codes et archive des
-     * questions. La garantie doit survivre à un remaniement de routes.
-     */
+    /** Défense en profondeur : le refus vaut au niveau du COMPOSANT, pas seulement de la route. */
     use EnforcesAdminAccess;
 
-    /*
-     * La liste des langues à traduire vit dans ce trait, partagée avec `CatalogCenter`. Elle y a
-     * été déplacée parce que le second écran en avait besoin à l'identique : deux copies auraient
-     * fini par diverger, et une langue activée mais oubliée dans l'une d'elles serait simplement
-     * introuvable dans cet écran, sans message.
-     */
+    // La liste des langues à traduire vit dans ce trait, partagée avec `CatalogCenter`.
     use ManagesCatalogTranslations;
     use WithFileUploads;
 
-    /**
-     * En deçà, aucun verdict n'est rendu : le service se tait, et l'écran DIT qu'il se tait.
-     * La même valeur que le seuil de `QuestionInsights::worstOffenders()`.
-     */
+    /** En deçà, aucun verdict n'est rendu : le service se tait, et l'écran DIT qu'il se tait. */
     private const MINIMUM_ORDERS_TO_CONCLUDE = 20;
 
     public Trade $trade;
 
-    /**
-     * Fichier JSON d'un parcours exporté, en attente d'import.
-     *
-     * `mixed` et non un type de fichier : Livewire y pose un `TemporaryUploadedFile` pendant
-     * le téléversement, et la valeur brute du formulaire avant. Le déclarer plus étroit
-     * ferait échouer l'hydratation sur une valeur parfaitement normale.
-     */
+    /** Fichier JSON d'un parcours exporté, en attente d'import. */
     public mixed $importFile = null;
 
     /**
      * Condition en cours d'écriture : « Afficher X SI Y EST Z ».
-     *
-     * `question_id` à `null` = aucun éditeur ouvert. Le moteur de conditions existait complet et
-     * testé sans aucune interface : un administrateur ne pouvait ni créer, ni supprimer une seule
-     * règle, ce qui rendait faux « ajouter un métier et ses questions sans une ligne de code » dès
-     * le premier exemple de la spécification.
      *
      * @var array<string, mixed>
      */
@@ -148,12 +112,7 @@ class QuestionnaireBuilder extends Component
             ->get();
     }
 
-    /**
-     * Les avertissements du validateur, tels que l'administrateur doit les voir.
-     *
-     * Distingués par gravité : ce qui coûte des clients est signalé, ce qui casse le parcours
-     * empêche la publication.
-     */
+    /** Les avertissements du validateur, tels que l'administrateur doit les voir. */
     #[Computed]
     public function issues(): array
     {
@@ -178,12 +137,7 @@ class QuestionnaireBuilder extends Component
         );
     }
 
-    /**
-     * Le simulateur écoute le vrai composant client.
-     *
-     * L'administrateur répond donc exactement comme un client, et voit le même prix — pas une
-     * approximation calculée à part.
-     */
+    /** Le simulateur écoute le vrai composant client. */
     #[On('question-answered')]
     public function recordAnswer(string $code, mixed $value, bool $valid): void
     {
@@ -226,13 +180,7 @@ class QuestionnaireBuilder extends Component
         ];
     }
 
-    /**
-     * Deux départs ne décrivent pas un trajet, ils décrivent une erreur.
-     *
-     * Le refus est posé ICI plutôt que dans une contrainte de base : l'administrateur doit lire
-     * pourquoi son enregistrement est refusé, et une violation d'unicité SQL ne dit rien
-     * d'exploitable. La question déjà en place est nommée, pour qu'il sache laquelle modifier.
-     */
+    /** Deux départs ne décrivent pas un trajet, ils décrivent une erreur. */
     private function roleDejaPris(string $role): ?Question
     {
         return $this->questions()
@@ -248,13 +196,7 @@ class QuestionnaireBuilder extends Component
         $this->resetForm();
     }
 
-    /**
-     * Le CODE ne se modifie plus dès qu'une réponse existe.
-     *
-     * C'est la clé sous laquelle les réponses sont enregistrées : le renommer rendrait
-     * inexplicables tous les devis qui le citent — ils pointeraient vers une clé qui n'existe
-     * plus. L'interface le verrouille donc, plutôt que de compter sur la prudence de qui l'emploie.
-     */
+    /** Le CODE ne se modifie plus dès qu'une réponse existe. */
     public function codeIsLocked(): bool
     {
         if (! $this->editingId) {
@@ -266,26 +208,10 @@ class QuestionnaireBuilder extends Component
         return $question !== null && app(CatalogArchiver::class)->impactOf($question)['used_count'] > 0;
     }
 
-    /**
-     * Le lecteur seul lit.
-     *
-     * `EnforcesAdminAccess` s'arrête à « est-ce un administrateur » et le dit lui-même : les
-     * restrictions d'écriture du lecteur seul restent à la charge du composant. Un `platform_role`
-     * à « admin » assorti d'un `access_scope` à « readonly » franchit donc la garde et atteint cet
-     * écran — qui écrit le catalogue, verrouille des codes et fige des contrats de prix.
-     *
-     * Le refus est ANNONCÉ plutôt que silencieux : un bouton qui ne fait rien fait recommencer,
-     * puis appeler le support.
-     */
+    /** Le lecteur seul lit. */
     private function refusesWrite(string $errorKey = 'publication'): bool
     {
-        /*
-         * La règle vit dans la Policy, pas ici.
-         *
-         * Cette garde la CONSULTE au lieu de la redire : trois copies d'une même règle finissent
-         * par diverger, et c'est alors la plus permissive qui décide sans que personne ne le
-         * remarque. Elle reste en place — défense en profondeur — mais sur une seule source.
-         */
+        // La règle vit dans la Policy, pas ici.
         if (Gate::allows('publish', Trade::class)) {
             return false;
         }
@@ -389,12 +315,7 @@ class QuestionnaireBuilder extends Component
 
     // ─── Ordre, activation, archivage ────────────────────────────────────────────────────────
 
-    /**
-     * Réordonnancement enregistré IMMÉDIATEMENT.
-     *
-     * Un ordre qu'il faut penser à enregistrer finit par être perdu : l'administrateur réorganise,
-     * change d'écran, et retrouve son ancien parcours sans comprendre.
-     */
+    /** Réordonnancement enregistré IMMÉDIATEMENT. */
     public function move(int $questionId, int $direction): void
     {
         if ($this->refusesWrite()) {
@@ -425,10 +346,6 @@ class QuestionnaireBuilder extends Component
     /**
      * Réordonne d'un geste : la liste complète arrive du navigateur.
      *
-     * Le serveur ne fait PAS confiance à l'ordre reçu — il ne retient que les identifiants qui
-     * appartiennent réellement à ce métier. Sans ce tri, un identifiant glissé dans la requête
-     * réordonnerait le questionnaire d'un autre métier.
-     *
      * @param  list<int|string>  $orderedIds
      */
     public function reorder(array $orderedIds): void
@@ -457,13 +374,7 @@ class QuestionnaireBuilder extends Component
         $this->refreshDerived();
     }
 
-    /**
-     * Reprend une question de la bibliothèque dans ce métier.
-     *
-     * Une COPIE, pas un partage. Les questions restent au niveau du métier : un libellé partagé en
-     * direct entre douze métiers ferait qu'un ajustement de prix pour la peinture déplacerait aussi
-     * celui de la plomberie.
-     */
+    /** Reprend une question de la bibliothèque dans ce métier. Une COPIE, pas un partage. */
     public function adoptFromLibrary(int $questionId): void
     {
         if ($this->refusesWrite()) {
@@ -507,12 +418,7 @@ class QuestionnaireBuilder extends Component
         $this->refreshDerived();
     }
 
-    /**
-     * Écrit — ou retire — un libellé traduit.
-     *
-     * Vider le champ SUPPRIME la traduction : revenir au libellé de base doit être aussi simple
-     * que d'effacer, et ne doit surtout pas produire une question blanche en production.
-     */
+    /** Écrit — ou retire — un libellé traduit. */
     public function saveTranslation(int $questionId, string $locale, string $field, ?string $value): void
     {
         if ($this->refusesWrite()) {
@@ -549,13 +455,7 @@ class QuestionnaireBuilder extends Component
             ->get();
     }
 
-    /**
-     * Recopie les libellés traduits d'un objet du catalogue vers sa copie.
-     *
-     * Le type dit ce qui est réellement exigé : un modèle PORTANT le trait de traduction. Accepter
-     * un `Model` quelconque laissait passer, à la compilation comme à l'analyse, un appel qui
-     * planterait à l'exécution sur un modèle sans `setTranslation()`.
-     */
+    /** Recopie les libellés traduits d'un objet du catalogue vers sa copie. */
     protected function copyTranslations(TranslatesCatalogLabels $from, TranslatesCatalogLabels $to): void
     {
         foreach ($from->translations()->get() as $translation) {
@@ -621,13 +521,7 @@ class QuestionnaireBuilder extends Component
         return app(TradeFormPublisher::class)->currentRevision($this->trade);
     }
 
-    /**
-     * Le brouillon diffère-t-il de ce qui est en ligne ?
-     *
-     * Comparaison sur le CONTENU : renommer une question puis annuler laisse une trace dans
-     * `updated_at` sans rien changer au parcours, et signaler « en attente » dans ce cas
-     * apprendrait à l'administrateur à ignorer l'avertissement.
-     */
+    /** Le brouillon diffère-t-il de ce qui est en ligne ? */
     #[Computed]
     public function hasUnpublishedChanges(): bool
     {
@@ -652,13 +546,7 @@ class QuestionnaireBuilder extends Component
         $this->refreshDerived();
     }
 
-    /**
-     * Recopie ce questionnaire vers un autre métier.
-     *
-     * « Peinture intérieure » et « Peinture extérieure » partagent l'essentiel de leurs questions ;
-     * les ressaisir produit deux formulations légèrement différentes de la même chose, et un client
-     * qui ne comprend pas pourquoi le même mur coûte deux prix.
-     */
+    /** Recopie ce questionnaire vers un autre métier. */
     public function duplicateTo(int $targetTradeId): void
     {
         if ($this->refusesWrite()) {
@@ -686,25 +574,13 @@ class QuestionnaireBuilder extends Component
     /**
      * L'abandon par question, indexé par code.
      *
-     * Ces chiffres n'ont de valeur QUE sous les yeux de qui ajoute la question suivante. Un
-     * parcours ne devient pas trop long d'un coup : il s'allonge d'une question à la fois, chacune
-     * justifiable prise isolément, et la conversion s'érode sans que personne ne sache où.
-     *
-     * Calculé UNE fois pour tout l'écran : le service parcourt déjà l'ensemble des lignes de
-     * commande du métier, l'appeler par question multiplierait ce parcours par dix.
-     *
      * @return Collection<string, array<string, mixed>>
      */
     #[Computed]
     public function insights(): Collection
     {
         /**
-         * `keyBy()` ne peut pas prouver que la clé est une chaîne : il lit une colonne à
-         * l'exécution, et l'analyse en déduit `int|string`. Ici `code` est un code de question,
-         * toujours textuel — l'annotation le dit, et c'est le contrat sur lequel la vue s'appuie
-         * pour retrouver une question par son code.
-         *
-         * Le bloc doit s'ouvrir par `/**` : dans un commentaire ordinaire, `@var` est du texte.
+         * `keyBy()` ne peut pas prouver que la clé est une chaîne : il lit une colonne à l'exécution, et l'analyse en déduit `int|string`.
          *
          * @var Collection<string, array<string, mixed>> $parCode
          */
@@ -715,10 +591,6 @@ class QuestionnaireBuilder extends Component
 
     /**
      * Les codes des questions qui font réellement décrocher.
-     *
-     * Le service tient les deux garde-fous : un seuil de taux ET un volume minimum. Un abandon sur
-     * trois commandes ne dit rien, et l'afficher comme « 33 % » ferait supprimer une question
-     * parfaitement saine.
      *
      * @return array<int, string>
      */
@@ -731,13 +603,7 @@ class QuestionnaireBuilder extends Component
             ->all();
     }
 
-    /**
-     * Y a-t-il assez de commandes pour se prononcer ?
-     *
-     * Un écran qui se contente de ne rien afficher laisse croire que tout va bien. Il doit
-     * distinguer « aucun problème » de « pas encore de quoi conclure » — sinon l'absence de
-     * signal se lit comme un satisfecit.
-     */
+    /** Y a-t-il assez de commandes pour se prononcer ? */
     #[Computed]
     public function hasEnoughOrdersToConclude(): bool
     {
@@ -763,16 +629,7 @@ class QuestionnaireBuilder extends Component
         $this->conditionForm['question_id'] = null;
     }
 
-    /**
-     * Enregistre « Afficher X SI Y EST Z ».
-     *
-     * DEUX REFUS À LA SAISIE, et non à la publication.
-     *
-     * Le validateur bloquait déjà les cycles au moment de mettre en ligne. Mais un administrateur
-     * qui a écrit trois règles et découvre à la publication que l'une d'elles est fautive doit
-     * refaire le chemin à l'envers pour trouver laquelle. Refuser au moment du geste dit QUELLE
-     * règle pose problème, pendant qu'il l'a encore sous les yeux.
-     */
+    /** Enregistre « Afficher X SI Y EST Z ». DEUX REFUS À LA SAISIE, et non à la publication. */
     public function saveCondition(): void
     {
         if ($this->refusesWrite('conditionForm.depends_on_question_id')) {
@@ -868,14 +725,7 @@ class QuestionnaireBuilder extends Component
             ->all();
     }
 
-    /**
-     * Ajouter cette dépendance créerait-il un cycle ?
-     *
-     * On remonte la chaîne depuis la question DONT on veut dépendre : si elle dépend déjà, de
-     * proche en proche, de celle qu'on est en train de configurer, les deux s'attendraient l'une
-     * l'autre et ni l'une ni l'autre ne s'afficherait jamais. Le défaut ne lève aucune erreur : il
-     * supprime silencieusement une partie du parcours.
-     */
+    /** Ajouter cette dépendance créerait-il un cycle ? */
     protected function wouldLoop(int $subjectId, int $dependsOnId): bool
     {
         $edges = QuestionCondition::query()
@@ -909,9 +759,6 @@ class QuestionnaireBuilder extends Component
     /**
      * Les opérateurs, dits comme on les lirait à voix haute.
      *
-     * « equals » ne se lit pas ; « est égal à » se lit. C'est toute la différence entre un éditeur
-     * qu'un responsable non technique emploie seul et un formulaire qu'il faut lui traduire.
-     *
      * @return array<string, string>
      */
     #[Computed]
@@ -938,17 +785,7 @@ class QuestionnaireBuilder extends Component
         ];
     }
 
-    /**
-     * Import JSON — l'autre moitié du voyage.
-     *
-     * Le service savait déjà écrire un questionnaire depuis un fichier ; rien ne l'appelait. Sortir
-     * un parcours d'un environnement sans pouvoir le faire entrer dans l'autre ne sert à rien, et
-     * la moitié manquante n'était atteignable qu'avec un tinker ouvert.
-     *
-     * L'import ne SUPPRIME rien : une question absente du fichier reste en place, et une question
-     * archivée n'est pas ressuscitée. Rejouer deux fois le même fichier met à jour au lieu de
-     * dupliquer — c'est ce qui permet de synchroniser deux environnements sans les empiler.
-     */
+    /** Import JSON — l'autre moitié du voyage. */
     public function import(): void
     {
         if ($this->refusesWrite('importFile')) {
@@ -962,10 +799,7 @@ class QuestionnaireBuilder extends Component
 
         $payload = json_decode((string) file_get_contents($this->importFile->getRealPath()), true);
 
-        /*
-         * Le refus est EXPLICITE et dit quoi faire. Un import silencieux qui ne crée rien laisse
-         * l'administrateur relancer trois fois avant d'appeler quelqu'un.
-         */
+        // Le refus est EXPLICITE et dit quoi faire.
         if (! is_array($payload) || ! isset($payload['questions']) || ! is_array($payload['questions'])) {
             $this->addError('importFile', 'Ce fichier n’est pas un parcours exporté : il doit contenir une liste « questions ».');
 
@@ -985,13 +819,7 @@ class QuestionnaireBuilder extends Component
         );
     }
 
-    /**
-     * Remet une version publiée en ligne.
-     *
-     * Figer des versions sans pouvoir y revenir ne sert qu'à constater les dégâts : une grille
-     * tarifaire fautive partie en production se répare autrement à la main, question par question,
-     * pendant que les clients commandent au mauvais prix.
-     */
+    /** Remet une version publiée en ligne. */
     public function restoreRevision(int $revisionId): void
     {
         if ($this->refusesWrite('publication')) {
@@ -1086,17 +914,6 @@ class QuestionnaireBuilder extends Component
     /**
      * Modifie une option de réponse — libellé, supplément, multiplicateur, durée, défaut.
      *
-     * C'EST LE SEUL CHEMIN POUR UN SUPPLÉMENT CONDITIONNEL. « Voulez-vous l'installation ?
-     * Oui / Non », où seul « Oui » ajoute 150 € : le montant vit sur l'OPTION, pas sur la question.
-     * Le mode `add` posé sur la question ajouterait son montant dès qu'elle est répondue — donc
-     * aussi quand le client répond « Non ».
-     *
-     * LA LISTE BLANCHE N'EST PAS DÉCORATIVE. Cette méthode recevait un tableau libre venu du
-     * navigateur et le passait tel quel à `update()`. `question_id` étant `fillable`, un appel
-     * forgé déplaçait l'option vers une question d'un autre métier : la commande la citerait sans
-     * qu'elle apparaisse dans son parcours. Rien ne l'exploitait tant qu'aucune vue n'appelait la
-     * méthode ; la câbler rendait le trou atteignable.
-     *
      * @param  array<string, mixed>  $values
      */
     public function updateOption(int $optionId, array $values): void
@@ -1129,13 +946,7 @@ class QuestionnaireBuilder extends Component
         if (array_key_exists('price_multiplier', $values)) {
             $brut = $this->nombreDepuis($values['price_multiplier']);
 
-            /*
-             * Le multiplicateur est borné à [0,1 ; 10].
-             *
-             * Un facteur 999 n'est pas une intention, c'est une faute de frappe — et il produirait
-             * un devis à six chiffres qu'aucun garde-fou en aval n'attraperait. Hors bornes, on
-             * ignore la saisie plutôt que d'écrire une valeur qu'on aurait « corrigée » en silence.
-             */
+            // Le multiplicateur est borné à [0,1 ; 10].
             if ($brut !== null && $brut >= 0.1 && $brut <= 10) {
                 $changements['price_multiplier'] = $brut;
             } elseif ($brut === null) {
@@ -1170,13 +981,7 @@ class QuestionnaireBuilder extends Component
         $this->refreshDerived();
     }
 
-    /**
-     * Des euros saisis à la main vers des centimes en base.
-     *
-     * LA VIRGULE EST ACCEPTÉE : c'est la façon française d'écrire un prix, et la refuser serait
-     * hostile. Sans cette conversion, « 150 » deviendrait 150 centimes — un supplément de 1,50 €
-     * que personne ne remarque avant la première facture.
-     */
+    /** Des euros saisis à la main vers des centimes en base. */
     private function centimesDepuisEuros(mixed $saisie): int
     {
         $euros = $this->nombreDepuis($saisie);
@@ -1256,13 +1061,7 @@ class QuestionnaireBuilder extends Component
         return LocationRole::label($role);
     }
 
-    /**
-     * Ce parcours décrit-il déjà un trajet complet ?
-     *
-     * Sert à l'écran : tant qu'il manque une des deux localisations, l'administrateur doit savoir
-     * que son métier n'a PAS encore basculé sur le parcours mission des courses — sans quoi il
-     * croirait avoir activé quelque chose qui n'existe pas.
-     */
+    /** Ce parcours décrit-il déjà un trajet complet ? */
     #[Computed]
     public function estUnTrajet(): bool
     {

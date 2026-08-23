@@ -4,28 +4,11 @@ namespace Tests\Feature\Navigation;
 
 use Tests\TestCase;
 
-/**
- * UN BOUTON QUI APPELLE UNE MÉTHODE ABSENTE NE SE VOIT QU'AU CLIC.
- *
- * `wire:click="maMethode"` sur une vue dont le composant n'expose pas `maMethode` ne casse
- * rien au chargement : la page s'affiche, le bouton paraît normal, aucun test de rendu ne
- * bronche. Il rend 500 au CLIC — « Unable to call component method ».
- *
- * Trouvé ainsi sur l'écran des litiges client : le bouton « Envoyer la réclamation » appelait
- * `openClaim()` quand le composant expose `createClaim()`. Aucun client ne pouvait déposer de
- * réclamation, et rien ne le signalait.
- *
- * Ce contrôle rapproche chaque composant de la vue qu'il déclare rendre, et vérifie que ce
- * que la vue appelle existe.
- */
+/** UN BOUTON QUI APPELLE UNE MÉTHODE ABSENTE NE SE VOIT QU'AU CLIC. */
 class BoutonsVivantsTest extends TestCase
 {
     /**
      * PLUS AUCUN CAS CONNU — et cette liste doit le rester.
-     *
-     * Elle a porté `select()` et `postReply()` de l'écran des litiges client, écrits dans la
-     * vue sans exister sur le composant. Ils existent désormais. Y réinscrire un nom serait
-     * admettre un bouton qui rend 500 au clic : on le corrige, on ne l'inscrit pas.
      *
      * @var list<string>
      */

@@ -75,12 +75,6 @@ class FieldTeam extends Model
     /**
      * Les membres encore dans l'équipe.
      *
-     * SON ANNOTATION ÉTAIT FAUSSE : elle annonçait `MissionTeamAssignment` alors que la méthode
-     * dérive de `members()`, donc de `FieldTeamMember`. Personne ne l'avait remarqué faute
-     * d'appelant — le premier (`FieldTeams`, lot 3) a fait tomber PHPStan, qui cherchait une
-     * relation `user` sur le mauvais modèle. Même famille que les gardes écrites et jamais branchées
-     * de ce dépôt : une annotation que rien n'exerce ne dit pas la vérité, elle la promet.
-     *
      * @return HasMany<FieldTeamMember, $this>
      */
     public function activeMembers(): HasMany

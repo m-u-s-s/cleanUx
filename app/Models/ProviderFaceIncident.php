@@ -12,10 +12,6 @@ use Illuminate\Support\Carbon;
 /**
  * Ce qui appelle un humain : une panne signalée par le prestataire, ou un motif de soupçon.
  *
- * Les deux vivent dans la même table parce que l'admin les traite au même endroit et avec les
- * mêmes gestes (accuser réception, résoudre, écarter). Ce qui les distingue est `type`, et
- * `severity` dit à quel point ça presse.
- *
  * @property string $type
  * @property string $severity
  * @property string $status
@@ -70,11 +66,7 @@ class ProviderFaceIncident extends Model
         'resolution_note',
     ];
 
-    /**
-     * Le défaut SQL ne remplit pas l'objet en mémoire : `status` n'est pas assignable en masse,
-     * `create()` le rendrait donc à `null` et `isOpen()` répondrait faux sur un incident qu'on
-     * vient d'ouvrir. Voir le même commentaire sur `ProviderFaceCheck`.
-     */
+    /** Le défaut SQL ne remplit pas l'objet en mémoire : `status` n'est pas assignable en masse, `create()` le rendrait donc à `null` et `isOpen()` répondrait faux sur un incident qu'on vient d'ouvrir. */
     protected static function booted(): void
     {
         static::creating(function (self $incident): void {

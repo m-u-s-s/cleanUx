@@ -13,10 +13,7 @@ class BillingProcessor
 {
     public function __construct(protected BillingProviderContract $provider) {}
 
-    /**
-     * Process a single cycle : génère invoice → tente charge → update statuts.
-     * Idempotent : si déjà paid, return existing.
-     */
+    /** Process a single cycle : génère invoice → tente charge → update statuts. */
     public function processCycle(SubscriptionCycleV2 $cycle): SubscriptionCycleV2
     {
         if ($cycle->isPaid()) {

@@ -5,10 +5,7 @@ namespace Tests\Unit\Models;
 use App\Support\Domain\BookingStatus;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Unit tests for BookingStatus domain object — status constants, groups, and labels.
- * Complements the existing BookingStatusTest with cancelled/active/completed groups.
- */
+/** Unit tests for BookingStatus domain object — status constants, groups, and labels. */
 class BookingStatusGroupsTest extends TestCase
 {
     // ─────────────────────────────────────────────────────────────────

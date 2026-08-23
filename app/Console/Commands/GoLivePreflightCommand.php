@@ -5,11 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 
-/**
- * Pré-vol go-live — exécute les contrôles AUTOMATISABLES des drills D1–D6 et rend
- * un go/no-go consolidé, avant les drills manuels (D2/D3/D4) que l'opérateur joue
- * contre staging + Stripe test-mode. Gate sur parité + missions bloquées.
- */
+/** Pré-vol go-live — exécute les contrôles AUTOMATISABLES des drills D1–D6 et rend un go/no-go consolidé, avant les drills manuels (D2/D3/D4) que l'opérateur joue contre staging + Stripe test-mode. */
 class GoLivePreflightCommand extends Command
 {
     protected $signature = 'golive:preflight {--with-restore : Inclure aussi le restore-drill (connexion drill)}';

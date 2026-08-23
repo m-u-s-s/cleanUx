@@ -9,27 +9,7 @@ use DomainException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-/**
- * LE CARNET DE LIEUX D'UN CLIENT (E2).
- *
- * UN CLIENT A PLUSIEURS LIEUX, et la plateforme n'en connaissait qu'un : `customer_profiles` porte
- * UNE adresse par défaut. Quelqu'un qui fait nettoyer son appartement et la maison de sa mère
- * retape l'adresse, l'étage et le code à chaque commande — et se trompe une fois sur cinq, ce qui
- * envoie un prestataire à la mauvaise porte.
- *
- * LA ZONE EST RÉSOLUE À L'ENREGISTREMENT, pas à la commande. C'est elle qui décide du prix et de la
- * disponibilité du mode immédiat : la calculer au moment de commander ferait payer à chaque
- * commande une résolution qu'on peut faire une fois — et un lieu hors zone se découvrirait au
- * paiement plutôt qu'à la saisie, quand il est encore temps d'en discuter.
- *
- * UN SEUL LIEU PAR DÉFAUT, et le basculement est TRANSACTIONNEL. Deux défauts simultanés rendraient
- * le pré-remplissage arbitraire : le parcours prendrait le premier venu, qui varierait selon
- * l'ordre de lecture.
- *
- * ON ARCHIVE, ON NE SUPPRIME PAS. Les missions passées portent ce lieu : l'effacer viderait
- * l'historique d'un client de ses adresses, et personne ne saurait plus où une intervention a eu
- * lieu.
- */
+/** LE CARNET DE LIEUX D'UN CLIENT (E2). */
 class ClientPlaceService
 {
     /** Au-delà, ce n'est plus un carnet mais un fichier — et le sélecteur devient inutilisable. */
@@ -104,12 +84,7 @@ class ClientPlaceService
         });
     }
 
-    /**
-     * Archiver — jamais supprimer.
-     *
-     * Si le lieu archivé était le défaut, un autre le devient : sans quoi le parcours ne
-     * pré-remplirait plus rien, sans que le client comprenne pourquoi.
-     */
+    /** Archiver — jamais supprimer. */
     public function archiver(ClientPlace $lieu): ClientPlace
     {
         return DB::transaction(function () use ($lieu) {
@@ -152,12 +127,7 @@ class ClientPlaceService
         return $this->pour($client)->firstWhere('is_default', true);
     }
 
-    /**
-     * Un lieu QUI M'APPARTIENT, ou `null`.
-     *
-     * Le scoping fait partie de la requête : un lieu porte l'adresse, l'étage et le code d'alarme
-     * du domicile de quelqu'un. Un identifiant forgé ne doit jamais en charger un autre.
-     */
+    /** Un lieu QUI M'APPARTIENT, ou `null`. */
     public function lieuDuClient(User $client, int $lieuId): ?ClientPlace
     {
         return ClientPlace::query()
@@ -182,11 +152,7 @@ class ClientPlaceService
             $attributs['service_zone_id'] = app(ZonePricingResolver::class)
                 ->resolveZone($codePostal, $ville)?->id;
         } catch (\Throwable $e) {
-            /*
-             * SOFT-FAIL DÉLIBÉRÉ. Un lieu sans zone reste enregistrable : la zone est RE-RÉSOLUE à
-             * la confirmation de commande, et refuser l'enregistrement ferait perdre l'étage et le
-             * digicode que le client vient de saisir, pour une raison qu'il ne comprendrait pas.
-             */
+            // SOFT-FAIL DÉLIBÉRÉ.
             report($e);
         }
 

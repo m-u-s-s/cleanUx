@@ -9,10 +9,6 @@ use Illuminate\Support\Carbon;
 /**
  * LE RÈGLEMENT DU TEMPS SUPPLÉMENTAIRE D'UNE MISSION — l'attestation, puis l'encaissement.
  *
- * Cet objet fige le calcul au moment où il est fait : ce qui avait été acheté, ce qui a été
- * presté, le tarif appliqué, la franchise, le plafond. Un litige porte sur le passé — le
- * recalculer un an plus tard, avec la configuration du jour, donnerait un autre chiffre.
- *
  * @property int $id
  * @property int $mission_id
  * @property int $booking_id
@@ -53,13 +49,7 @@ class MissionTimeSettlement extends Model
 
     protected $table = 'mission_time_settlements';
 
-    /**
-     * LES COLONNES D'ARGENT ET DE STATUT SONT HORS `$fillable`, délibérément.
-     *
-     * Ce dépôt refuse explicitement une affectation de masse au lieu de l'écarter en silence : ces
-     * colonnes s'écrivent par `forceFill()`, depuis le service de règlement et lui seul. Aucun
-     * `update()` venu d'un formulaire ne doit pouvoir déclarer un dépassement encaissé.
-     */
+    /** LES COLONNES D'ARGENT ET DE STATUT SONT HORS `$fillable`, délibérément. */
     protected $fillable = [
         'mission_id',
         'booking_id',
@@ -94,13 +84,7 @@ class MissionTimeSettlement extends Model
         'last_attempt_at' => 'datetime',
     ];
 
-    /**
-     * LES DÉFAUTS SQL NE PEUPLENT PAS L'OBJET EN MÉMOIRE.
-     *
-     * Piège vérifié sur ce dépôt : une colonne hors `$fillable` avec un `default()` en base rend
-     * `null` en PHP juste après `create()`. Un règlement qu'on vient de créer répondrait donc
-     * « statut inconnu » à la ligne suivante, et le premier `if` le prendrait pour déjà traité.
-     */
+    /** LES DÉFAUTS SQL NE PEUPLENT PAS L'OBJET EN MÉMOIRE. */
     protected static function booted(): void
     {
         static::creating(function (self $reglement) {

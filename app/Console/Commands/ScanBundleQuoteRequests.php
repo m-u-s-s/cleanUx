@@ -6,11 +6,7 @@ use App\Services\Bundles\MultiTradeBundleService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Bundle Marketplace P4 — cron : expire les demandes de devis dépassées et
- * ré-escalade les items de chantier sous-quotés en sollicitant de nouveaux
- * prestataires.
- */
+/** Bundle Marketplace P4 — cron : expire les demandes de devis dépassées et ré-escalade les items de chantier sous-quotés en sollicitant de nouveaux prestataires. */
 class ScanBundleQuoteRequests extends Command
 {
     protected $signature = 'bundles:scan-quote-requests';

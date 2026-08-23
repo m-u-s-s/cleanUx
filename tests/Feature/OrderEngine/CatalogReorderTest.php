@@ -13,24 +13,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * L'ordre du catalogue se règle à la souris, et pas seulement pour les secteurs.
- *
- * L'ordre n'est pas cosmétique : c'est celui du carrousel et celui du dock, donc le premier métier
- * que voit un client. Le régler tenait à une paire de flèches sur les secteurs — rien du tout sur
- * les métiers, alors que ce sont eux qui se vendent.
- *
- * Les flèches RESTENT. Le glisser-déposer ne fonctionne ni au clavier ni avec un lecteur d'écran,
- * et le catalogue est un écran de travail quotidien.
- */
+/** L'ordre du catalogue se règle à la souris, et pas seulement pour les secteurs. */
 class CatalogReorderTest extends TestCase
 {
     /**
      * Le contexte géographique exigé par l'écran, créé à la demande.
-     *
-     * Ces tests ne portent pas sur la géographie : ils ont seulement besoin d'un couple pays/zone
-     * cohérent pour monter le composant. La fabrique est paresseuse pour ne pas alourdir les tests
-     * qui ne montent pas l'écran.
      *
      * @return array{country: Country, zone: ServiceZone}
      */
@@ -100,13 +87,7 @@ class CatalogReorderTest extends TestCase
         $this->assertSame($ids[0], $after[1]);
     }
 
-    /**
-     * Une liste PARTIELLE est refusée.
-     *
-     * L'ordre vient du navigateur ; accepter une liste incomplète laisserait des métiers sans rang
-     * défini, donc à une place arbitraire au prochain affichage. On refuse plutôt que de
-     * réordonner à moitié — même règle que le constructeur de questions.
-     */
+    /** Une liste PARTIELLE est refusée. */
     public function test_a_partial_list_is_refused_rather_than_half_applied(): void
     {
         $sector = $this->batiment();
@@ -117,12 +98,7 @@ class CatalogReorderTest extends TestCase
         $this->assertSame($before, $sector->trades()->orderBy('sort_order')->pluck('id')->all());
     }
 
-    /**
-     * Un métier d'un AUTRE secteur ne se glisse pas ici.
-     *
-     * L'ordre arrive du navigateur : il n'est pas cru sur parole. Sans ce contrôle, une liste
-     * forgée réordonnerait un secteur voisin.
-     */
+    /** Un métier d'un AUTRE secteur ne se glisse pas ici. */
     public function test_a_trade_from_another_sector_is_ignored(): void
     {
         $sector = $this->batiment();
@@ -150,12 +126,7 @@ class CatalogReorderTest extends TestCase
         $this->assertSame($before, Sector::ordered()->pluck('id')->all());
     }
 
-    /**
-     * L'écran câble ce qu'il annonce — et les flèches survivent au glisser-déposer.
-     *
-     * Septième défaut de ce module : un service vert sans porte d'entrée. Et le glisser-déposer
-     * seul exclurait du catalogue quiconque travaille au clavier.
-     */
+    /** L'écran câble ce qu'il annonce — et les flèches survivent au glisser-déposer. */
     public function test_the_screen_offers_both_ways(): void
     {
         $html = Livewire::test(CatalogCenter::class, $this->contexteCatalogue())->html();

@@ -19,18 +19,7 @@ use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * LA LISTE QUE LE CLIENT ÉCRIT, ET LA FENÊTRE QUI LA FERME.
- *
- * Deux abus symétriques sont possibles, et chaque garde en ferme un :
- *
- *  - sans fenêtre, un client ajoute trois tâches lourdes à 18 h et retient le prestataire chez lui
- *    sans contrepartie ;
- *  - sans droit de retrait, un client qui s'est trompé ne peut plus rien corriger.
- *
- * Chaque refus est accompagné de son TÉMOIN : sans lui, un test « ceci est refusé » passe au vert
- * en mesurant une panne.
- */
+/** LA LISTE QUE LE CLIENT ÉCRIT, ET LA FENÊTRE QUI LA FERME. */
 class MissionTodoListTest extends TestCase
 {
     use RefreshDatabase;
@@ -224,11 +213,7 @@ class MissionTodoListTest extends TestCase
         Carbon::setTestNow();
     }
 
-    /**
-     * `locked_at` ATTESTE, il ne PILOTE pas : la fenêtre se calcule depuis `actual_start_at`, et
-     * cette colonne ne fait qu'enregistrer l'instant où le refus a été opposé. Le support la
-     * relira le jour où un client affirmera avoir ajouté à temps.
-     */
+    /** `locked_at` ATTESTE, il ne PILOTE pas : la fenêtre se calcule depuis `actual_start_at`, et cette colonne ne fait qu'enregistrer l'instant où le refus a été opposé. */
     public function test_la_fenetre_fermee_atteste_le_verrouillage(): void
     {
         Carbon::setTestNow('2026-08-18 10:00:00');
@@ -291,11 +276,7 @@ class MissionTodoListTest extends TestCase
 
     public function test_le_motif_porte_la_date_des_qu_on_sort_du_jour_meme(): void
     {
-        /*
-         * Relevé dans l'application cliente : une intervention démarrée le 18 août, rouverte le 21,
-         * affichait « La liste est figée depuis 05:02 ». À 03 h 40 ce jour-là, cela se lit comme un
-         * gel À VENIR — pour une liste fermée depuis trois jours.
-         */
+        // Relevé dans l'application cliente : une intervention démarrée le 18 août, rouverte le 21, affichait « La liste est figée depuis 05:02 ».
         Carbon::setTestNow('2026-08-18 10:00:00');
         $mission = $this->mission(demarree: Carbon::parse('2026-08-18 10:00:00'));
         Sanctum::actingAs($this->client);
@@ -324,12 +305,7 @@ class MissionTodoListTest extends TestCase
         Carbon::setTestNow();
     }
 
-    /**
-     * CÔTÉ PRESTATAIRE, la tâche du client doit se reconnaître.
-     *
-     * Elle se discute avec lui — il est dans la pièce. Une tâche générique, non. Sans la source à
-     * l'écran, les deux se ressemblent et la demande du client devient une case de plus.
-     */
+    /** CÔTÉ PRESTATAIRE, la tâche du client doit se reconnaître. */
     public function test_le_prestataire_voit_qui_a_demande_chaque_tache(): void
     {
         $mission = $this->mission();

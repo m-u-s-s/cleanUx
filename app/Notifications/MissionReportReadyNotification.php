@@ -10,18 +10,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * « Votre intervention est terminée, voici ce qui a été fait. »
- *
- * LE RAPPORT ÉTAIT PRODUIT ET RANGÉ SUR UN DISQUE PRIVÉ que le client ne peut pas atteindre.
- * Un compte rendu que le destinataire ne reçoit pas est un fichier, pas un compte rendu — et c'est
- * précisément la pièce qu'on cherche trois semaines plus tard, quand une contestation arrive et que
- * plus personne ne se souvient de l'état du lieu.
- *
- * PAS DE SMS ICI, contrairement à l'arrivée ou aux suppléments. Ce message n'attend rien du client
- * et ne périme pas : il se lit le soir, tranquillement. Occuper son plafond d'envois pour cela
- * priverait la plateforme d'un SMS le jour où quelque chose d'urgent devra passer.
- */
+/** « Votre intervention est terminée, voici ce qui a été fait. */
 class MissionReportReadyNotification extends Notification
 {
     use InteractsWithUserNotificationPreferences;

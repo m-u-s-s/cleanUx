@@ -7,24 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * EMBARQUÉ DANS UNE WEBVIEW — et le rester en naviguant.
- *
- * Le mode retire la barre de navigation web et la barre d'onglets du bas : dans une WebView, elles
- * DOUBLENT l'en-tête et les onglets natifs qui les entourent déjà.
- *
- * IL ÉTAIT LU SUR LA SEULE REQUÊTE COURANTE, et c'est là qu'il cassait. `?embed=1` n'existe que sur
- * la page d'entrée ; dès le premier lien interne — `route('order.confirmation')`, généré sans
- * paramètre, comme tous les liens de l'application — le drapeau retombait à faux et les deux
- * chromes web réapparaissaient AU MILIEU de la page. Sur le récapitulatif de commande, la barre du
- * bas se dépliait en une colonne d'icônes qui poussait le bouton « Confirmer » hors de l'écran :
- * un client pouvait tout remplir et ne jamais pouvoir valider.
- *
- * LA SESSION EST LE BON PORTEUR. Une WebView a son propre bocal à témoins, distinct du navigateur
- * de l'utilisateur : y coller le drapeau ne peut pas déborder sur une session de bureau, qui ne
- * passe jamais par `webview.enter`. `?embed=0` reste une porte de sortie explicite — utile pour
- * ouvrir une page dans le navigateur du système depuis l'application.
- */
+/** EMBARQUÉ DANS UNE WEBVIEW — et le rester en naviguant. */
 class EmbedMode
 {
     public const SESSION_KEY = 'ui.embedded';

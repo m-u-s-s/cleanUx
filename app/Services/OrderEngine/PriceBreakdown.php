@@ -2,15 +2,7 @@
 
 namespace App\Services\OrderEngine;
 
-/**
- * Le résultat d'un calcul de prix, et son explication.
- *
- * `lines` n'est pas un confort de débogage : c'est ce qui rend le devis explicable ligne par
- * ligne, chaque euro rattaché à une réponse. Un client qui voit d'où vient chaque montant ne
- * conteste pas — la majorité des litiges disparaît avant d'exister.
- *
- * Objet immuable : un prix qu'on peut modifier après coup est un prix dont on ne peut rien dire.
- */
+/** Le résultat d'un calcul de prix, et son explication. */
 final class PriceBreakdown
 {
     /**

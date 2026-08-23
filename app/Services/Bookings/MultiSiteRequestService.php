@@ -10,22 +10,7 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
-/**
- * UNE DEMANDE COUVRANT PLUSIEURS SITES.
- *
- * `bookings.organization_site_id` est singulier : une réservation ne concerne qu'un local. Une
- * société multi-sites devait donc répéter la même demande site par site, sans rien pour les relier
- * ensuite.
- *
- * On s'appuie sur `bookings.parent_booking_id`, présent depuis la migration initiale mais resté
- * DORMANT : aucune relation sur le modèle, aucun écrivain dans le code, zéro ligne en base
- * (vérifié). La récurrence passant par `recurring_series_id`, ce champ était bien un lien de
- * parenté générique disponible. L'activer évite une table et une migration structurelle.
- *
- * Forme retenue : une réservation MÈRE porte l'intention commune (métier, date, demandeur) et
- * chaque site reçoit sa FILLE. Les traitements existants — matching, facturation, litiges — voient
- * des réservations ordinaires et continuent de fonctionner sans les connaître.
- */
+/** UNE DEMANDE COUVRANT PLUSIEURS SITES. */
 class MultiSiteRequestService
 {
     /**
@@ -41,11 +26,7 @@ class MultiSiteRequestService
         Carbon $quand,
         array $options = [],
     ): ?Booking {
-        /*
-         * Les identifiants viennent du client : on ne retient que les sites actifs appartenant à
-         * l'organisation. Sans ce filtre, une société pourrait faire intervenir un prestataire
-         * chez une autre — et lire son adresse au passage.
-         */
+        // Les identifiants viennent du client : on ne retient que les sites actifs appartenant à l'organisation.
         $sites = OrganizationSite::query()
             ->where('organization_account_id', $organisation->id)
             ->whereIn('id', $siteIds)

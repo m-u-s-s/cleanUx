@@ -9,10 +9,7 @@ use App\Services\OnboardingV2\OnboardingStepValidator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Vérifie que l'utilisateur a une BookingInsurance active OU a accepté
- * les terms d'assurance par défaut (cf payload['accepted_default_terms']).
- */
+/** Vérifie que l'utilisateur a une BookingInsurance active OU a accepté les terms d'assurance par défaut (cf payload['accepted_default_terms']). */
 class InsurancePurchaseValidator implements OnboardingStepValidator
 {
     public function validate(User $user, OnboardingStep $step, array $payload): OnboardingStepValidation

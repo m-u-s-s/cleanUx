@@ -14,24 +14,13 @@ use Laravel\Sanctum\Sanctum;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * SP3 Task 7 — GET /api/client/companies liste les SOCIÉTÉS prestataires
- * éligibles pour un métier (via service_catalog_id) + zone (service_zone_id),
- * triées par note décroissante, avec un providers_count par société.
- *
- * Réutilise EligibleCompaniesResolver (SP3 Task 3) : une société sans worker
- * couvrant le métier demandé est ABSENTE du listing. Auth Sanctum requise.
- */
+/** SP3 Task 7 — GET /api/client/companies liste les SOCIÉTÉS prestataires éligibles pour un métier (via service_catalog_id) + zone (service_zone_id), triées par note décroissante, avec un providers_count par société. */
 class CompanyDirectoryApiTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
     use RefreshDatabase;
 
-    /**
-     * Crée un worker société par ailleurs éligible (User actif rattaché à la zone,
-     * ProviderProfile company_worker actif+vérifié rattaché à l'org, disponibilité
-     * couvrant le créneau) et le tagge du métier donné.
-     */
+    /** Crée un worker société par ailleurs éligible (User actif rattaché à la zone, ProviderProfile company_worker actif+vérifié rattaché à l'org, disponibilité couvrant le créneau) et le tagge du métier donné. */
     private function companyWorker(int $zoneId, int $orgId, int $tradeId, string $date): User
     {
         $user = User::factory()->create([

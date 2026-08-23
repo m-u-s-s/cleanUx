@@ -11,17 +11,7 @@ use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * Les rapports d'administration — les modules qui ne sont pas des listes.
- *
- * Mêmes garde-fous que pour les descripteurs, dans les deux sens : un module annoncé `report`
- * sans rapport enregistré ouvrirait un écran vide ; un rapport écrit mais laissé « à venir »
- * serait du travail livré que personne ne voit.
- *
- * ET UN DE PLUS, propre aux rapports : chaque tuile doit être MESURABLE. Le contrat rattrape les
- * erreurs pour qu'une table absente coûte une tuile plutôt que l'écran ; sans ce test, une
- * requête cassée rendrait zéro et tout aurait l'air normal.
- */
+/** Les rapports d'administration — les modules qui ne sont pas des listes. */
 class ReportsTest extends TestCase
 {
     use RefreshDatabase;
@@ -90,14 +80,7 @@ class ReportsTest extends TestCase
         $tuiles = collect($sections)->flatMap(fn (array $s) => $s['tiles']);
         $this->assertNotEmpty($tuiles, "Le rapport « {$report} » n’a aucune tuile.");
 
-        /*
-         * TOUTES LES TUILES FAUTIVES, PAS LA PREMIÈRE.
-         *
-         * Le contrat rattrape les erreurs pour qu'une table absente coûte une TUILE et non
-         * l'écran. Une requête cassée rendrait donc zéro sans bruit — le vert qui ne prouve rien.
-         * Et quand une table manque, ce sont en général plusieurs tuiles du même rapport qui
-         * tombent : les nommer toutes évite autant d'exécutions que de tuiles.
-         */
+        // TOUTES LES TUILES FAUTIVES, PAS LA PREMIÈRE.
         $fautives = [];
 
         foreach ($tuiles as $tuile) {

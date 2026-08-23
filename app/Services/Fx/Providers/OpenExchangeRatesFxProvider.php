@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Open Exchange Rates — multi-base via /api/latest.json?base=XXX (free tier = USD only).
- */
+/** Open Exchange Rates — multi-base via /api/latest.json?base=XXX (free tier = USD only). */
 class OpenExchangeRatesFxProvider implements FxProviderInterface
 {
     public function name(): string

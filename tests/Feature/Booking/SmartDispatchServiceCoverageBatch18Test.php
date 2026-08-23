@@ -13,17 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * Couvre les branches encore non exercées de SmartDispatchService :
- * - workloadScore aux paliers 1 / 2 / 3+ missions le même jour ;
- * - asapScore quand l'employé porte déjà >= 3 missions du jour (pénalité) ;
- * - assignBestEmployee via le prestataire préféré (assigned puis unavailable) ;
- * - premiumScore + favoriteScore quand la réservation n'a pas de client.
- *
- * Scoring déterministe hors charge : employé sur sa zone primaire (zone 500),
- * aucune mission notée (qualité 100), pas de table client_provider_preferences
- * (favori 0), pas de coordonnées employé (distance 0).
- */
+/** Couvre les branches encore non exercées de SmartDispatchService : - workloadScore aux paliers 1 / 2 / 3+ missions le même jour ; - asapScore quand l'employé porte déjà >= 3 missions du jour (pénalité) ; - assignBestEmployee via le prestataire préféré (assigned puis unavailable) ; - premiumScore + favoriteScore quand la réservation n'a pas de client. */
 class SmartDispatchServiceCoverageBatch18Test extends TestCase
 {
     use CreatesZoneAwareFixtures;

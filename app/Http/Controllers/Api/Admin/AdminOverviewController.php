@@ -14,37 +14,12 @@ use App\Support\Domain\MissionStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * Les indicateurs d'accueil de la console d'administration mobile.
- *
- * SEPT NOMBRES, PAS UN TABLEAU DE BORD. Un accueil de téléphone se lit en trois secondes : sept
- * compteurs exacts y valent mieux qu'une batterie de graphiques dont on ne sait plus ce qu'ils
- * mesurent. Les analyses fines restent sur les pages dédiées.
- *
- * CHAQUE COMPTEUR S'ADOSSE À LA SOURCE D'AUTORITÉ DU DOMAINE — `Booking::PENDING_STATUSES`,
- * `MissionStatus::trackable()`, `KycVerification::scopePending()` — jamais à des chaînes
- * recopiées. La colonne `bookings.status` porte historiquement des valeurs françaises ET
- * anglaises : compter sur une seule des deux formes donnerait un chiffre faux qui a l'air juste.
- *
- * UN COMPTEUR QUI ÉCHOUE VAUT ZÉRO, PAS UNE PANNE D'ACCUEIL. Les tables citées ici sont posées par
- * des migrations de modules distincts ; sur un environnement où l'une manque, l'administrateur
- * doit garder ses six autres chiffres plutôt que perdre l'écran entier.
- */
+/** Les indicateurs d'accueil de la console d'administration mobile. */
 class AdminOverviewController extends Controller
 {
     public function __invoke(): JsonResponse
     {
-        /*
-         * LE PÉRIMÈTRE DE ZONE VAUT AUSSI ICI.
-         *
-         * Un administrateur peut être borné à une zone (`access_scope = 'zone'`), et
-         * `AdminScope` sert cette règle aux six écrans web qui l'appliquent. Cet
-         * accueil d'API ne la posait pas : le même administrateur voyait les chiffres
-         * de SA zone sur le web, et ceux de TOUTE la plateforme sur mobile.
-         *
-         * `AdminScope` reste la seule source de la règle — on l'appelle, on ne la
-         * réécrit pas.
-         */
+        // LE PÉRIMÈTRE DE ZONE VAUT AUSSI ICI.
         $admin = Auth::user();
 
         return response()->json([
@@ -64,17 +39,7 @@ class AdminOverviewController extends Controller
                 $this->kpi('missions_active', 'Missions en cours', 'briefcase-outline',
                     fn () => Mission::whereIn('status', MissionStatus::trackable())->count()),
 
-                /*
-                 * DEUX MODÈLES DE LITIGE COEXISTENT, et ce compteur doit désigner le bon.
-                 *
-                 * `ComplaintCase` (complaint_cases) est celui de la page admin « Litiges » et du
-                 * `DisputeResolutionService` ; `CustomerClaim` (customer_claims) est un modèle
-                 * parallèle. Compter le second afficherait un chiffre qui ne correspond à rien de
-                 * ce qu'un administrateur peut ouvrir depuis cet écran.
-                 *
-                 * Le complément plutôt que la liste : un statut ajouté demain doit apparaître
-                 * comme ouvert, pas disparaître silencieusement du compteur.
-                 */
+                // DEUX MODÈLES DE LITIGE COEXISTENT, et ce compteur doit désigner le bon.
                 $this->kpi('claims_open', 'Litiges ouverts', 'alert-circle-outline',
                     fn () => ComplaintCase::whereNotIn('status', [
                         ComplaintCase::STATUS_RESOLVED,

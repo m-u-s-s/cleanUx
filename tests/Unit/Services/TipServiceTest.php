@@ -6,13 +6,7 @@ use App\Models\Booking;
 use App\Services\Tips\TipService;
 use Tests\TestCase;
 
-/**
- * Unit tests for TipService::suggestionsForBooking().
- *
- * These tests focus on the pure calculation logic and do not require a
- * database, because suggestionsForBooking() works only with in-memory
- * Booking attributes and config values.
- */
+/** Unit tests for TipService::suggestionsForBooking(). */
 class TipServiceTest extends TestCase
 {
     private TipService $service;

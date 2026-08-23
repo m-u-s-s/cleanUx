@@ -26,17 +26,7 @@ class QualityInspectionServiceTest extends TestCase
         Config::set('quality.enabled', true);
     }
 
-    /**
-     * UNE VRAIE MISSION, DONT ON RÉUTILISE L'IDENTIFIANT.
-     *
-     * Ce fichier appelait le service avec les identifiants 1 et 42 — inventés, ne désignant aucune
-     * ligne. Rien ne s'y opposait tant que `mission_quality_inspections.mission_id` ne portait
-     * aucune contrainte ; la clé étrangère posée depuis rend l'insertion impossible, et c'est son
-     * rôle : une inspection qualité rattachée à une mission qui n'existe pas ne veut rien dire.
-     *
-     * Ce que ces tests vérifient — que le service reporte fidèlement la mission qu'on lui donne —
-     * ne change pas : on lui donne simplement une mission qui existe.
-     */
+    /** UNE VRAIE MISSION, DONT ON RÉUTILISE L'IDENTIFIANT. */
     private function missionId(): int
     {
         $this->mission ??= Mission::factory()->create();

@@ -20,10 +20,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
 
 /**
- * CreateBookingFromApiAction
- *
- * Encapsulates the simplified mobile-API booking creation flow.
- * Extracted from ClientBookingController::store() to keep the controller thin.
+ * CreateBookingFromApiAction Encapsulates the simplified mobile-API booking creation flow.
  *
  * @see App\Http\Controllers\Api\Client\ClientBookingController
  */
@@ -57,20 +54,7 @@ final class CreateBookingFromApiAction
             'contract_price_label' => Arr::get($data, 'contract_price_label'),
         ], fn ($v) => $v !== null && $v !== '');
 
-        /*
-         * ZONE ET MÉTIER, RÉSOLUS ET PERSISTÉS (H8).
-         *
-         * Ces deux colonnes existent sur `bookings`, le chemin web les remplit, et celui-ci ne les
-         * écrivait pas. Ce n'est pas cosmétique : `CandidateFinder` filtre les prestataires par
-         * zone ET par métier. Sans elles, la recherche ne filtre plus rien — elle propose la
-         * mission à des prestataires qui ne couvrent pas l'adresse ou n'exercent pas le métier,
-         * ou n'en trouve aucun selon la branche empruntée. Une réservation créée par l'API ne
-         * pouvait donc pas être répartie correctement.
-         *
-         * On réutilise les services du chemin web plutôt que de refaire la résolution : la
-         * couverture par code postal a ses cas particuliers (implantation choisie, zone nationale
-         * de repli) qu'une seconde implémentation finirait par contredire.
-         */
+        // ZONE ET MÉTIER, RÉSOLUS ET PERSISTÉS (H8).
         $couverture = app(ZoneCoverageService::class);
         $codePostal = $couverture->resolvePostalCode($data['postal_code'] ?? null, $data['city'] ?? null);
         $zone = $couverture->resolveServiceZone($codePostal);
@@ -78,14 +62,7 @@ final class CreateBookingFromApiAction
         $catalogue = ServiceCatalog::query()->find($data['service_catalog_id'] ?? null);
         $metierId = $catalogue?->trade_id;
 
-        /*
-         * L'IMMÉDIAT SE REFUSE ICI, PAS PLUS TARD (H8).
-         *
-         * Un métier peut être ouvert dans une zone sans y autoriser l'intervention immédiate — le
-         * catalogue géographique le dit ligne par ligne. Accepter l'asap quand la zone l'interdit
-         * ouvre une recherche qui ne trouvera jamais personne : le client attend vingt secondes,
-         * voit sa demande échouer, et rien n'explique pourquoi. Mieux vaut le dire tout de suite.
-         */
+        // L'IMMÉDIAT SE REFUSE ICI, PAS PLUS TARD (H8).
         if ($isAsap && $catalogue?->trade && ! app(ZonePricingResolver::class)->allowsImmediate($catalogue->trade, $zone?->id)) {
             throw ValidationException::withMessages([
                 'booking_mode' => "L'intervention immédiate n'est pas disponible pour ce service à cette adresse.",
@@ -116,15 +93,7 @@ final class CreateBookingFromApiAction
             'contact_phone' => $data['contact_phone'] ?? ($user->phone ?? null),
             'destination_lat' => $data['destination_lat'] ?? null,
             'destination_lng' => $data['destination_lng'] ?? null,
-            /*
-             * LA DEVISE VIENT DE LA POSITION, PLUS DE LA PREFERENCE DU COMPTE.
-             *
-             * `$user->preferred_currency` decrit ce que le client AIME VOIR, pas ce dans quoi la
-             * prestation se paie. Un compte regle sur l'euro commandant a Casablanca produisait une
-             * reservation libellee en euros alors que le prix venait du marche marocain : deux
-             * nombres, deux monnaies, aucune alerte. La zone et le code postal sont deja resolus
-             * quelques lignes plus haut pour le filtrage des candidats -- c'est la meme position.
-             */
+            // LA DEVISE VIENT DE LA POSITION, PLUS DE LA PREFERENCE DU COMPTE.
             'currency' => app(CountryMarketResolver::class)->deviseAttendue(
                 client: $user,
                 postalCode: $codePostal,
@@ -149,19 +118,7 @@ final class CreateBookingFromApiAction
             'metadata' => ! empty($contractMetadata) ? $contractMetadata : null,
         ]);
 
-        /*
-         * LES DEUX MODES PASSENT PAR LE MOTEUR (H7).
-         *
-         * Seul l'ASAP déclenchait quelque chose : une réservation PLANIFIÉE créée par l'API
-         * n'était jamais répartie. Elle restait en base, visible du client, et aucun prestataire
-         * ne la voyait jamais — la panne la plus silencieuse qui soit, puisque tout paraît normal
-         * des deux côtés jusqu'au jour de l'intervention.
-         *
-         * `DispatchEngine::dispatchBooking()` est la porte amont unique du chemin web : il aiguille
-         * lui-même vers l'immédiat ou le planifié selon `booking_mode`. Appeler le moteur plutôt
-         * que de refaire l'aiguillage ici, c'est ce qui garantit que les deux chemins vieillissent
-         * ensemble.
-         */
+        // LES DEUX MODES PASSENT PAR LE MOTEUR (H7).
         $this->repartir($booking, $now, $isAsap);
 
         // SP4 — si le contrat exige une approbation manuelle (entreprise_approval_required
@@ -182,13 +139,7 @@ final class CreateBookingFromApiAction
         return $booking->fresh();
     }
 
-    /**
-     * Préparer la mission puis confier la réservation au moteur de répartition.
-     *
-     * L'ASAP garde son amorçage particulier — mission planifiée, géocodage différé, SLA de contrat —
-     * parce que ces trois choses doivent exister AVANT la première offre. Le planifié n'en a pas
-     * besoin : le moteur ouvre sa propre recherche.
-     */
+    /** Préparer la mission puis confier la réservation au moteur de répartition. */
     private function repartir(Booking $booking, Carbon $now, bool $isAsap): void
     {
         if ($isAsap) {
@@ -197,11 +148,7 @@ final class CreateBookingFromApiAction
             return;
         }
 
-        /*
-         * SOFT-FAIL DÉLIBÉRÉ, comme pour l'ASAP ci-dessus. Une réservation acceptée puis perdue
-         * parce que la répartition a trébuché serait pire que le défaut d'origine : le client a
-         * déjà reçu sa confirmation. On journalise, et les filets planifiés reprennent la main.
-         */
+        // SOFT-FAIL DÉLIBÉRÉ, comme pour l'ASAP ci-dessus.
         try {
             app(DispatchEngine::class)->dispatchBooking($booking);
         } catch (\Throwable $e) {
@@ -212,9 +159,7 @@ final class CreateBookingFromApiAction
         }
     }
 
-    /**
-     * Create a planned Mission and attempt auto-dispatch for ASAP bookings.
-     */
+    /** Create a planned Mission and attempt auto-dispatch for ASAP bookings. */
     private function maybeDispatchAsap(Booking $booking, Carbon $now): void
     {
         if (! class_exists(Mission::class)) {

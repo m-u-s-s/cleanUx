@@ -18,9 +18,7 @@ class Handler extends ExceptionHandler
         'password_confirmation',
     ];
 
-    /**
-     * Register the exception handling callbacks for the application.
-     */
+    /** Register the exception handling callbacks for the application. */
     public function register(): void
     {
         // Sentry intégration si package présent
@@ -31,12 +29,7 @@ class Handler extends ExceptionHandler
         });
     }
 
-    /**
-     * Render an exception into an HTTP response.
-     *
-     * Sprint 0 — Task 2 : all /api/* requests receive a unified JSON shape.
-     * Non-API requests fall through to the default Laravel HTML renderer.
-     */
+    /** Render an exception into an HTTP response. */
     public function render($request, Throwable $e)
     {
         if ($json = ApiJsonRenderer::render($request, $e)) {

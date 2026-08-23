@@ -5,25 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Seeder à exécuter sur une installation production fraîche.
- *
- *   php artisan db:seed --class=ProductionBootstrapSeeder
- *
- * Idempotent : tous les seeders appelés utilisent updateOrCreate ou firstOrCreate.
- *
- * Charge UNIQUEMENT les données de référence et les catalogues v2 minimums :
- *  - Réfs plateforme (rôles, statuts, etc.)
- *  - Catalogues services + trades + geo BE
- *  - Tiers/badges loyalty + récompenses base
- *  - API token scopes + audit defaults + currencies
- *  - Insurance plans + KYB sanctions + risk rules + quality checklists
- *  - Onboarding journeys + pricing v2 + contracts templates
- *  - Subscription plans v2 + webhook endpoints
- *
- * N'inclut PAS : demo data, fake users, fake bookings. Pour démo, utiliser
- * `DemoPlatformBootstrapSeeder`.
- */
+/** Seeder à exécuter sur une installation production fraîche. */
 class ProductionBootstrapSeeder extends Seeder
 {
     public function run(): void
@@ -69,9 +51,7 @@ class ProductionBootstrapSeeder extends Seeder
         $this->command?->line('   Lance ensuite : php artisan ops:check-providers --strict');
     }
 
-    /**
-     * Exécute un seeder en soft-fail (log + continue si erreur).
-     */
+    /** Exécute un seeder en soft-fail (log + continue si erreur). */
     protected function safeCall(string $class): void
     {
         try {
@@ -81,9 +61,7 @@ class ProductionBootstrapSeeder extends Seeder
         }
     }
 
-    /**
-     * Exécute un seeder uniquement si la table associée existe (module activé).
-     */
+    /** Exécute un seeder uniquement si la table associée existe (module activé). */
     protected function safeIf(string $table, string $class): void
     {
         if (! Schema::hasTable($table)) {

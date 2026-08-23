@@ -4,16 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 
-/**
- * Vérifie que l'environnement qui tourne correspond au profil de production.
- *
- * Attrape les réglages dangereux en prod (queue=sync, cache=file…) ET les secrets
- * manquants avant qu'ils n'atteignent staging ou la prod. Appelée par les flux de
- * déploiement APRÈS `config:cache` (pour valider exactement ce que l'application lira)
- * et AVANT `migrate --force` (pour qu'une config incomplète n'entraîne aucune écriture
- * en base) :
- *   php artisan config:parity-check
- */
+/** Vérifie que l'environnement qui tourne correspond au profil de production. */
 class ConfigParityCheck extends Command
 {
     protected $signature = 'config:parity-check
@@ -21,48 +12,23 @@ class ConfigParityCheck extends Command
 
     protected $description = 'Assert running config matches the production parity profile (exit 1 on mismatch).';
 
-    /**
-     * Marqueur de gabarit. `.env.production.example` livre des valeurs `CHANGE_ME…` :
-     * une valeur qui en contient encore n'a jamais été renseignée, elle vaut donc « vide ».
-     * Sans cela, copier le gabarit sans le remplir suffirait à faire passer le contrôle.
-     */
+    /** Marqueur de gabarit. */
     private const GABARIT = 'CHANGE_ME';
 
     /**
      * Règles de parité avec la production.
      *
-     * Chaque entrée décrit une clé de config et l'ensemble des valeurs acceptées.
-     *
-     * - `allowed` non vide : la valeur doit appartenir à la liste blanche.
-     * - `allowed` VIDE : toute valeur renseignée est acceptée (le contrôle porte alors sur
-     *   la simple présence — c'est le cas des secrets, dont on ne peut pas énumérer les
-     *   valeurs licites).
-     * - `secret` : la valeur réelle n'est JAMAIS écrite dans la sortie. Ces commandes
-     *   tournent dans des journaux de CI et de déploiement conservés longtemps ; on n'y
-     *   recopie pas une clé Stripe. On n'affiche que « défini / vide / gabarit ».
-     *
      * @var array<int, array{setting: string, allowed: list<string>, label: string, secret: bool}>
      */
     private array $rules = [
-        /*
-         * `app.env` EN TÊTE, PARCE QUE TROIS PROTECTIONS EN DÉPENDENT ET SE TAISENT.
-         *
-         * HSTS, la CSP de production et la redirection HTTPS sont toutes conditionnées à
-         * `app()->environment('production')`. Un hôte de production laissé à APP_ENV=staging sert
-         * donc sans HSTS, sans CSP et sans redirection — et rien ne le signale : les pages
-         * s'affichent normalement. C'est le genre de défaut qu'on ne découvre qu'après.
-         */
+        // `app.env` EN TÊTE, PARCE QUE TROIS PROTECTIONS EN DÉPENDENT ET SE TAISENT.
         [
             'setting' => 'app.env',
             'allowed' => ['production'],
             'label' => 'production',
             'secret' => false,
         ],
-        /*
-         * APP_DEBUG expose la trace d'exécution, les requêtes SQL et les variables d'environnement
-         * sur la page d'erreur. La valeur lue est un booléen ; on la compare à sa forme chaîne,
-         * comme le reste des règles.
-         */
+        // APP_DEBUG expose la trace d'exécution, les requêtes SQL et les variables d'environnement sur la page d'erreur.
         [
             'setting' => 'app.debug',
             'allowed' => ['', '0', 'false'],
@@ -100,14 +66,7 @@ class ConfigParityCheck extends Command
             'secret' => false,
         ],
 
-        /*
-         * Secrets de paiement. Sans eux l'application démarre, sert des pages, et ne casse
-         * qu'au moment où un client paie : la panne est différée jusqu'au premier euro.
-         *
-         * `connect_webhook_secret` est le trou constaté (H5) : le contrôleur de webhook
-         * Connect vérifie la signature avec ce secret ; absent, chaque notification Stripe
-         * part en erreur alors que rien, au déploiement, ne le signalait.
-         */
+        // Secrets de paiement.
         [
             'setting' => 'services.stripe.key',
             'allowed' => [],
@@ -133,17 +92,7 @@ class ConfigParityCheck extends Command
             'secret' => true,
         ],
 
-        /*
-         * CHIFFREMENT DE LA SAUVEGARDE — la règle qui garde une étape du déploiement.
-         *
-         * Le script de déploiement lance `backup:run --only-db` juste avant la migration. Sans ce
-         * mot de passe, spatie/laravel-backup écrit l'archive EN CLAIR : chaque déploiement dépose
-         * alors sur le serveur applicatif une copie complète de la base — données personnelles
-         * soumises au RGPD, empreintes de mots de passe, jetons d'API — conservée plusieurs jours.
-         *
-         * La règle est ici plutôt que dans le script parce qu'un contrôle qu'on peut oublier de
-         * copier dans le prochain flux de déploiement n'est pas un contrôle.
-         */
+        // CHIFFREMENT DE LA SAUVEGARDE — la règle qui garde une étape du déploiement.
         [
             'setting' => 'backup.backup.password',
             'allowed' => [],
@@ -202,12 +151,7 @@ class ConfigParityCheck extends Command
         return self::SUCCESS;
     }
 
-    /**
-     * Lit une clé de config et la normalise en chaîne.
-     *
-     * Une clé absente, nulle ou non scalaire (un tableau de config mal ciblé) vaut « vide » :
-     * on préfère un échec du contrôle à une exception de conversion.
-     */
+    /** Lit une clé de config et la normalise en chaîne. */
     private function valeurLue(string $setting): string
     {
         $brut = config($setting);

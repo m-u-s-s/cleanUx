@@ -7,13 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * Notification "tu as été mentionné dans un message".
- *
- * Stockée en base (badge persistant) ET envoyée par email si l'utilisateur
- * n'est pas en ligne ou si la mention est plus vieille que X minutes
- * (logique de digestion à affiner Phase 4.1).
- */
+/** Notification "tu as été mentionné dans un message". */
 class MentionedInMessageNotification extends Notification
 {
     use Queueable;

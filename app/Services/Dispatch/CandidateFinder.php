@@ -15,32 +15,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
-/**
- * QUI PEUT RECEVOIR CETTE MISSION — une seule réponse, une seule requête.
- *
- * Tout le dispatch passe par ici : l'immédiat, le planifié, le simulateur admin. Deux annuaires
- * divergents finiraient par proposer un prestataire que l'autre refuserait, et personne ne saurait
- * lequel a raison.
- *
- * LES DEUX INVARIANTS VIVENT DANS LE SQL, PAS DANS UN `if`.
- *
- * 1. LE MÉTIER. La jointure sur `trade_user` est ce qui garantit qu'un peintre ne reçoit JAMAIS une
- *    mission de babysitting. Un filtre appliqué APRÈS la requête se rattrape par un repli le jour
- *    où il vide la liste — c'est exactement ce que faisaient `AiDispatchService::applyTradeFilter()`
- *    et `MatchingV2Service::applyTradeFilter()`, qui rendaient la liste NON filtrée « pour ne pas
- *    bloquer le dispatch ». Une mission non pourvue est un incident ; une mission pourvue par le
- *    mauvais métier est un client qui ne revient pas. Sans métier résolvable, on ne rend PERSONNE.
- *
- * 2. LA POSITION. En immédiat, le candidat doit être EN LIGNE avec une position FRAÎCHE
- *    (`provider_presence`), pas seulement porter le miroir binaire `provider_profiles.is_online` —
- *    lequel reste vrai quand l'application est morte depuis vingt minutes. La boîte englobante
- *    pré-filtre en SQL, la haversine tranche ensuite : calculer la distance exacte sur toute la
- *    table à chaque vague coûterait le temps qu'on prétend faire gagner au client.
- *
- * UN PRESTATAIRE NE VOIT QU'UNE OFFRE À LA FOIS (patron Uber). Celui qui a déjà une offre en main
- * est exclu : deux modales concurrentes sur le même téléphone font accepter la mauvaise course, et
- * la première expire pendant qu'il lit la seconde.
- */
+/** QUI PEUT RECEVOIR CETTE MISSION — une seule réponse, une seule requête. */
 class CandidateFinder
 {
     public function __construct(
@@ -50,10 +25,6 @@ class CandidateFinder
 
     /**
      * Les candidats d'une INTERVENTION IMMÉDIATE, du plus proche au plus lointain.
-     *
-     * L'ordre est la PROXIMITÉ d'abord, le score en départage. C'est le choix d'Uber et il se
-     * justifie tout seul : le client attend devant sa porte, et cinq minutes de trajet de moins
-     * valent plus qu'un dixième d'étoile.
      *
      * @param  list<int>  $excludeUserIds
      * @return Collection<int, DispatchCandidate>
@@ -113,9 +84,6 @@ class CandidateFinder
 
     /**
      * Les candidats d'un RENDEZ-VOUS PLANIFIÉ, du meilleur au moins bon.
-     *
-     * Ici le score prime : personne n'attend derrière la porte, et la zone déclarée suffit — un
-     * prestataire hors ligne aujourd'hui sera peut-être le meilleur pour jeudi 14 h.
      *
      * @param  list<int>  $excludeUserIds
      * @return Collection<int, DispatchCandidate>
@@ -179,12 +147,7 @@ class CandidateFinder
         return $value === null || $value === '' ? null : (float) $value;
     }
 
-    /**
-     * Le métier exigé par cette réservation.
-     *
-     * `bookings.trade_id` d'abord — écrit par le moteur de commande, qui SAIT quel métier a été
-     * choisi. Le service au catalogue n'est qu'un repli pour les réservations antérieures.
-     */
+    /** Le métier exigé par cette réservation. */
     public function tradeIdFor(Booking $booking): ?int
     {
         return $booking->resolveTradeId();
@@ -192,9 +155,6 @@ class CandidateFinder
 
     /**
      * Le socle commun : métier, éligibilité, société, exclusions.
-     *
-     * Rend `null` — et non une requête vide — quand le métier est introuvable : l'appelant doit
-     * pouvoir distinguer « personne ne correspond » de « on ne sait pas ce qu'on cherche ».
      *
      * @param  list<int>  $excludeUserIds
      * @return Builder<User>|null
@@ -213,19 +173,7 @@ class CandidateFinder
 
         $excluded = array_values(array_unique(array_map('intval', array_merge($excludeUserIds, $blocked))));
 
-        /*
-         * LE COUPLE (MÉTIER, ZONE) DOIT ÊTRE OUVERT AU CATALOGUE.
-         *
-         * Fermer « peinture-Liège » bloque déjà les NOUVELLES commandes à la confirmation. Mais une
-         * recherche déjà ouverte, ou une réservation entrée par un autre chemin, continuait de
-         * proposer la course : l'administration croyait avoir fermé un service et des prestataires
-         * continuaient d'y être envoyés.
-         *
-         * La zone de la réservation est celle qui compte, pas celles du prestataire : c'est là que
-         * l'intervention a lieu. Sans zone connue, on ne filtre pas ici — la confirmation s'en
-         * charge en amont, et refuser tout le monde ici priverait les réservations d'archive de
-         * tout candidat.
-         */
+        // LE COUPLE (MÉTIER, ZONE) DOIT ÊTRE OUVERT AU CATALOGUE.
         if ($booking->service_zone_id
             && ! $this->catalogue->isOpen($tradeId, (int) $booking->service_zone_id)) {
             return null;
@@ -234,11 +182,7 @@ class CandidateFinder
         $query = User::query()
             ->select('users.*')
             ->join('provider_profiles as dispatch_profile', 'dispatch_profile.user_id', '=', 'users.id')
-            /*
-             * LA JOINTURE QUI TIENT L'INVARIANT. Pas un `whereHas` sur une relation chargée après
-             * coup, pas un filtre en mémoire : le SQL lui-même ne peut pas rendre un prestataire
-             * qui n'exerce pas ce métier.
-             */
+            // LA JOINTURE QUI TIENT L'INVARIANT.
             ->join('trade_user as dispatch_trade', function ($join) use ($tradeId) {
                 $join->on('dispatch_trade.user_id', '=', 'users.id')
                     ->where('dispatch_trade.trade_id', '=', $tradeId);
@@ -261,40 +205,17 @@ class CandidateFinder
             $query->whereNotIn('users.id', $excluded);
         }
 
-        /*
-         * ON NE CONDUIT PAS SANS PERMIS — et la règle vaut MÉTIER PAR MÉTIER.
-         *
-         * C'est ce qui distingue ce verrou de `verification_status` juste au-dessus : celui-là
-         * porte sur le compte entier, celui-ci sur ce métier-ci. Un prestataire peintre et
-         * chauffeur, sans permis, garde ses missions de peinture et perd ses courses — le couper
-         * partout pour une pièce qui ne concerne que la moitié de son activité serait une punition
-         * qu'aucune règle ne demande.
-         *
-         * Comme le filtre de métier, elle vit DANS le SQL : un contrôle appliqué après coup se
-         * rattrape par un repli le jour où il vide la liste, et ce dépôt en a déjà fait
-         * l'expérience.
-         */
+        // ON NE CONDUIT PAS SANS PERMIS — et la règle vaut MÉTIER PAR MÉTIER.
         $trade = Trade::with('questions')->find($tradeId);
 
         if ($trade) {
             app(ConduiteRequirements::class)->appliquerAuxCandidats($query, $trade);
         }
 
-        /*
-         * LE VISAGE, POUR LES MÉTIERS QUI L'EXIGENT.
-         *
-         * Même logique que la conduite juste au-dessus : la règle vaut MÉTIER PAR MÉTIER et ZONE
-         * PAR ZONE, elle ne coupe pas un compte entier. Ne sont écartés que les états définitifs —
-         * jamais enrôlé, consentement retiré, bloqué. Celui dont le contrôle est simplement dû
-         * reste candidat : il sera arrêté à la porte qu'il traverse vraiment, où on peut le lui
-         * dire, plutôt que privé de missions en silence.
-         */
+        // LE VISAGE, POUR LES MÉTIERS QUI L'EXIGENT.
         app(FaceCheckDispatchFilter::class)->appliquerAuxCandidats($query, $booking);
 
-        /*
-         * UNE SEULE OFFRE À LA FOIS. Celui qui a déjà une offre vivante en main est hors jeu :
-         * deux modales concurrentes font accepter la mauvaise course.
-         */
+        // UNE SEULE OFFRE À LA FOIS.
         $query->whereNotExists(function ($sub) {
             $sub->select(DB::raw(1))
                 ->from('mission_assignments')

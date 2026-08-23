@@ -10,22 +10,7 @@ use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * `customer_credits` : LE MODÈLE ET LA TABLE DISENT LA MÊME CHOSE, ET ON LE VÉRIFIE.
- *
- * Ce désalignement était consigné comme un piège du dépôt — « écrire via `CustomerCredit::create`
- * casse » — sans qu'aucun test ne le mesure. Il a en fait été réparé par la consolidation de juin
- * 2026, qui a tranché la forme canonique (`client_id`, `amount`, `remaining_amount`, `status`) et
- * retiré les colonnes « portefeuille » héritées. Personne ne l'a su, faute de test : un piège dont
- * on ignore s'il est encore là coûte à chaque fois qu'on le contourne.
- *
- * DEUX COLONNES SURVIVAIENT POURTANT À LA CONSOLIDATION : `customer_user_id` et
- * `customer_organization_id`, qu'aucun code n'écrivait ni ne lisait, avec zéro ligne renseignée.
- * Sur une table d'argent, une colonne nommée `customer_user_id` à côté de `client_id` est un
- * piège actif : celui qui cherche « le client d'un crédit » a une chance sur deux d'écrire dans
- * celle que personne ne lit, et son crédit disparaîtra du portefeuille sans message d'erreur. Ce
- * dépôt a déjà payé ce prix avec les deux colonnes de `missions` vers `bookings`.
- */
+/** `customer_credits` : LE MODÈLE ET LA TABLE DISENT LA MÊME CHOSE, ET ON LE VÉRIFIE. */
 class CreditsClientsAlignesTest extends TestCase
 {
     use RefreshDatabase;
@@ -96,11 +81,7 @@ class CreditsClientsAlignesTest extends TestCase
             'reason' => 'Geste',
         ]);
 
-        /*
-         * LE CONSOMMATEUR EST INTERROGÉ, pas seulement la table. Un crédit écrit dans la bonne
-         * colonne mais invisible du portefeuille ne vaut rien pour le client — et c'est exactement
-         * ce que produirait une écriture sur une colonne orpheline.
-         */
+        // LE CONSOMMATEUR EST INTERROGÉ, pas seulement la table.
         $solde = CustomerCredit::query()
             ->where('client_id', $client->id)
             ->where('status', 'active')

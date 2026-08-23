@@ -15,10 +15,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
-/**
- * Test E2E Fleet : provider assigns vehicle → uses it → returns damaged →
- * vehicle pushed to maintenance + auto corrective maintenance log created.
- */
+/** Test E2E Fleet : provider assigns vehicle → uses it → returns damaged → vehicle pushed to maintenance + auto corrective maintenance log created. */
 class FleetAssignmentChainTest extends TestCase
 {
     use RefreshDatabase;

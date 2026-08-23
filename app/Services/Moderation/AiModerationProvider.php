@@ -5,28 +5,7 @@ namespace App\Services\Moderation;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * LA MODÉRATION ASSISTÉE PAR IA (E32) — elle PROPOSE, l'administrateur DISPOSE.
- *
- * CE QUI EXISTE ET SA LIMITE. `ModerationService` bloque sur une liste de mots et masque les données
- * personnelles par expressions régulières. C'est rapide, prévisible, et complètement aveugle à tout
- * ce qui n'est pas littéral : une menace polie passe, une insulte mal orthographiée passe, et un
- * numéro de téléphone écrit en toutes lettres passe.
- *
- * L'IA NE BLOQUE JAMAIS TOUTE SEULE, ET C'EST LA DÉCISION CENTRALE DE CE MODULE. Elle produit un
- * verdict et une confiance ; le blocage automatique reste au ressort des règles déterministes, qui
- * sont explicables à quelqu'un dont on vient de masquer le message. Un faux positif automatique sur
- * une conversation entre un client et un prestataire casse une intervention en cours — et personne
- * ne saurait dire pourquoi.
- *
- * SOUS DRAPEAU, ET COUPÉ PAR DÉFAUT EN L'ABSENCE DE CLÉ. Un service de modération qui dépend d'un
- * tiers doit pouvoir disparaître sans emporter la messagerie : sans clé ou en cas de panne, le
- * verdict est `unknown` et la chaîne déterministe continue seule.
- *
- * LE TEXTE ANALYSÉ NE SORT PAS SANS RAISON. On n'envoie que le corps du message — jamais l'identité
- * des interlocuteurs, jamais l'identifiant de la conversation : un prestataire de modération n'a pas
- * besoin de savoir QUI parle pour dire si un texte est menaçant.
- */
+/** LA MODÉRATION ASSISTÉE PAR IA (E32) — elle PROPOSE, l'administrateur DISPOSE. */
 class AiModerationProvider
 {
     /** Ce qu'on rend quand l'IA n'est pas disponible : ni blanc-seing, ni condamnation. */
@@ -94,10 +73,7 @@ class AiModerationProvider
                 'reason' => isset($donnees['reason']) ? (string) $donnees['reason'] : null,
             ];
         } catch (\Throwable $e) {
-            /*
-             * SOFT-FAIL TOTAL. Un service de modération qui dépend d'un tiers doit pouvoir
-             * disparaître sans emporter la messagerie : la chaîne déterministe continue seule.
-             */
+            // SOFT-FAIL TOTAL.
             Log::info('[ai_moderation] indisponible', ['error' => $e->getMessage()]);
 
             return $this->indisponible('exception');

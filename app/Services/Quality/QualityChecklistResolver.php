@@ -6,15 +6,7 @@ use App\Models\QualityChecklist;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * QualityChecklistResolver — picks the most appropriate checklist for a
- * (mission, phase) couple. Schema-defensive sur la chaîne mission→booking→trade.
- *
- *   - Plus spécifique trade match wins (checklist.trade_codes contient le trade)
- *   - Sinon catch-all (trade_codes=null) gagne
- *   - Filtré par phase (matches exact OR 'all')
- *   - Filtré par is_active=true
- */
+/** QualityChecklistResolver — picks the most appropriate checklist for a (mission, phase) couple. */
 class QualityChecklistResolver
 {
     public function resolveForMission(int $missionId, string $phase): ?QualityChecklist

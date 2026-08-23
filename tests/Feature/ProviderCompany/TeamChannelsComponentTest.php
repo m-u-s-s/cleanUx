@@ -21,10 +21,6 @@ class TeamChannelsComponentTest extends TestCase
 
     /**
      * Build an org + a user with an active membership granting `channels.create`.
-     * The user is NOT attached to any channel, so mount() leaves
-     * activeChannelId = 0 and loadMessages() always early-returns — this keeps
-     * the component green despite the latent attachments-column shadowing bug
-     * (see class-level notes returned to the orchestrator).
      *
      * @return array{org: OrganizationAccount, user: User}
      */
@@ -44,8 +40,7 @@ class TeamChannelsComponentTest extends TestCase
     }
 
     /**
-     * Build a full context where the user owns and belongs to a channel that
-     * has NO messages (so the initial render / openChannel stays green).
+     * Build a full context where the user owns and belongs to a channel that has NO messages (so the initial render / openChannel stays green).
      *
      * @return array{org: OrganizationAccount, owner: User, channel: Channel}
      */
@@ -419,9 +414,7 @@ class TeamChannelsComponentTest extends TestCase
             ->assertSet('messages', []);
     }
 
-    /**
-     * Create a channel owned by $owner in $org (no member attached unless owner).
-     */
+    /** Create a channel owned by $owner in $org (no member attached unless owner). */
     private function bareChannel(OrganizationAccount $org, User $owner): Channel
     {
         return Channel::create([

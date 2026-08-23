@@ -9,19 +9,15 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 /**
+ * Phase 11 — Endpoints API mobile pour la presence prestataire.
+ *
  * @group Provider Presence (Legacy)
  *
  * @authenticated
- *
- * Phase 11 — Endpoints API mobile pour la presence prestataire.
- *
- * Routes (à déclarer dans routes/api.php) :
- *   POST /api/provider/presence/online      go online + position initiale
- *   POST /api/provider/presence/offline     go offline volontaire
- *   POST /api/provider/presence/heartbeat   ping périodique (toutes les 30s)
- *   GET  /api/provider/presence/me          mon état actuel
- *
- * Toutes ces routes sont sous middleware auth:sanctum + abort si pas prestataire.
+ * POST /api/provider/presence/online      go online + position initiale
+ * POST /api/provider/presence/offline     go offline volontaire
+ * POST /api/provider/presence/heartbeat   ping périodique (toutes les 30s)
+ * GET  /api/provider/presence/me          mon état actuel
  */
 class ProviderPresenceController extends Controller
 {

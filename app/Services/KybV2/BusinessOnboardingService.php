@@ -21,10 +21,7 @@ class BusinessOnboardingService
         protected RiskScoreEngine $riskEngine,
     ) {}
 
-    /**
-     * Crée (ou retourne) une BusinessEntity pour un user/contact.
-     * Idempotent par (country_code, identifier_type, identifier_value).
-     */
+    /** Crée (ou retourne) une BusinessEntity pour un user/contact. */
     public function startVerification(array $payload, ?User $owner = null): BusinessEntity
     {
         $required = ['legal_name', 'country_code', 'identifier_type', 'identifier_value'];
@@ -73,9 +70,7 @@ class BusinessOnboardingService
         });
     }
 
-    /**
-     * Lance les vérifs provider (identity + vat si présent). Soft-fail.
-     */
+    /** Lance les vérifs provider (identity + vat si présent). Soft-fail. */
     public function runVerifications(BusinessEntity $entity): BusinessEntity
     {
         // identity
@@ -140,9 +135,7 @@ class BusinessOnboardingService
         );
     }
 
-    /**
-     * Lance sanctions screening contre toutes les listes config.
-     */
+    /** Lance sanctions screening contre toutes les listes config. */
     public function runSanctionsScreening(BusinessEntity $entity): BusinessEntity
     {
         $lists = (array) config('kyb_v2.sanctions_lists', ['eu', 'us_ofac']);
@@ -181,9 +174,7 @@ class BusinessOnboardingService
         return $this->refreshRiskAndStatus($entity->fresh());
     }
 
-    /**
-     * Recompute risk score + propose un status (sans auto-approuver sauf si config).
-     */
+    /** Recompute risk score + propose un status (sans auto-approuver sauf si config). */
     public function refreshRiskAndStatus(BusinessEntity $entity): BusinessEntity
     {
         $risk = $this->riskEngine->compute($entity);

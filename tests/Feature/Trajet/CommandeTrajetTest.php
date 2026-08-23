@@ -22,18 +22,7 @@ use Livewire\Livewire;
 use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
-/**
- * COMMANDER UNE COURSE : deux points, une distance, et un prix annoncé AVANT.
- *
- * Le point de DÉPART écrit les colonnes d'adresse qui existent déjà — c'est le choix central du
- * lot, et ce qui permet à la zone, au catalogue, au dispatch de proximité et à la geofence de
- * continuer à lire exactement ce qu'ils lisaient. Le point d'ARRIVÉE va dans ses propres colonnes :
- * lui donner `destination_lat/lng` ferait dire deux choses à une même colonne selon le métier, et
- * la clôture d'une course serait refusée pour éloignement du lieu où elle a commencé.
- *
- * LE TÉMOIN EST OBLIGATOIRE. Chaque test qui vérifie qu'une course se comporte autrement est
- * doublé du métier ordinaire qui, lui, ne doit RIEN voir changer.
- */
+/** COMMANDER UNE COURSE : deux points, une distance, et un prix annoncé AVANT. */
 class CommandeTrajetTest extends TestCase
 {
     use OuvreLeCatalogue, RefreshDatabase;
@@ -231,12 +220,7 @@ class CommandeTrajetTest extends TestCase
             'route_source' => 'mock',
         ] : []));
 
-        /*
-         * La zone est résolue ICI parce que `blockers()` la LIT sans la résoudre — c'est
-         * `confirm()` qui appelle `ensureZoneFor()`. Un panier fabriqué à la main sans ce geste
-         * décrirait une adresse hors couverture, et le test mesurerait ce défaut de fixture plutôt
-         * que la règle qu'il prétend vérifier.
-         */
+        // La zone est résolue ICI parce que `blockers()` la LIT sans la résoudre — c'est `confirm()` qui appelle `ensureZoneFor()`.
         $zone = app(ZonePricingResolver::class)->ensureZoneFor($draft);
         $draft->refresh();
 

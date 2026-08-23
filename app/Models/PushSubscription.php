@@ -8,10 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Phase 8 — Souscription Web Push d'un device pour un user.
- * Un user peut avoir plusieurs subscriptions (multi-device).
- */
+/** Phase 8 — Souscription Web Push d'un device pour un user. */
 class PushSubscription extends Model
 {
     /** @use HasFactory<PushSubscriptionFactory> */
@@ -55,9 +52,7 @@ class PushSubscription extends Model
         return $q->where('user_id', $userId);
     }
 
-    /**
-     * Format attendu par minishlink/web-push.
-     */
+    /** Format attendu par minishlink/web-push. */
     public function toWebPushArray(): array
     {
         return [
@@ -87,9 +82,7 @@ class PushSubscription extends Model
         }
     }
 
-    /**
-     * Hash de l'endpoint pour déduplication (sha256 de 64 chars).
-     */
+    /** Hash de l'endpoint pour déduplication (sha256 de 64 chars). */
     public static function hashEndpoint(string $endpoint): string
     {
         return hash('sha256', $endpoint);

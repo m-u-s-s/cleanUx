@@ -125,14 +125,7 @@ class AiDispatchService
                     return false;
                 }
 
-                /*
-                 * EN LIGNE SELON PRESENCE V2, pas selon le miroir binaire.
-                 *
-                 * `provider_profiles.is_online` reste vrai quand l'application est morte depuis
-                 * vingt minutes : c'est un drapeau qu'on pose, pas un signe de vie. Presence v2
-                 * exige un etat `online` ET un battement recent, et c'est la seule facon de ne pas
-                 * envoyer une course a un telephone eteint.
-                 */
+                // EN LIGNE SELON PRESENCE V2, pas selon le miroir binaire.
                 if ($rdv->booking_mode === 'asap' && ! in_array((int) $employee->id, $enLigne, true)) {
                     return false;
                 }
@@ -152,17 +145,7 @@ class AiDispatchService
             ->values();
     }
 
-    /**
-     * Exclut les prestataires non habilités au métier requis par le booking.
-     *
-     * Le métier est résolu via le ServiceCatalog du booking. Si aucun trade
-     * n'est rattaché au service, on ne filtre pas (back-compat).
-     *
-     * Fallback : si le filtre vide complètement la liste alors que des
-     * candidats existaient, on retourne la liste originale + log warning.
-     * Évite de bloquer le dispatch en phase de transition où les employés
-     * n'ont pas encore tous été tagués trade.
-     */
+    /** Exclut les prestataires non habilités au métier requis par le booking. */
     protected function applyTradeFilter(Collection $candidates, Booking $rdv): Collection
     {
         if ($candidates->isEmpty()) {
@@ -171,17 +154,7 @@ class AiDispatchService
 
         $tradeId = $rdv->resolveTradeId();
 
-        /*
-         * SANS METIER CONNU, ON NE REND PERSONNE.
-         *
-         * L'ancienne version rendait la liste NON filtree — et le faisait deux fois : quand le
-         * booking n'avait pas de metier, et quand le filtre vidait la liste « pour ne pas bloquer
-         * le dispatch ». C'est exactement la porte par laquelle un peintre recoit du babysitting.
-         *
-         * Une mission non pourvue est un incident qu'on voit et qu'on traite ; une mission pourvue
-         * par le mauvais metier est un client qui ne revient pas, et un prestataire qui perd son
-         * deplacement.
-         */
+        // SANS METIER CONNU, ON NE REND PERSONNE.
         if (! $tradeId) {
             Log::warning('AiDispatch: reservation sans metier resolvable, aucun candidat rendu.', [
                 'booking_id' => $rdv->id,
@@ -253,11 +226,7 @@ class AiDispatchService
         return $avg > 0 ? (int) round($avg * 2) : 120;
     }
 
-    /**
-     * Calcule la moyenne de quality via les MissionQualityReview liées aux
-     * missions menées par l'employé. Renvoie le score par défaut si la table
-     * ou la colonne n'existe pas.
-     */
+    /** Calcule la moyenne de quality via les MissionQualityReview liées aux missions menées par l'employé. */
     protected function qualityScoreFromReviews(User $employee): int
     {
         if (! Schema::hasTable('mission_quality_reviews')

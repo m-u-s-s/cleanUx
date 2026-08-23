@@ -17,14 +17,6 @@ class UpdateUserPassword implements UpdatesUserPasswords
     /**
      * Valide et met à jour le mot de passe depuis le profil.
      *
-     * ET COUPE LES AUTRES ACCÈS : jetons mobiles, sessions web enregistrées, cookie « se souvenir de
-     * moi ». Un changement de mot de passe qui laisse les autres appareils connectés n'est pas un
-     * changement de mot de passe, c'est une formalité.
-     *
-     * La session COURANTE est épargnée : se faire déconnecter du geste qu'on vient de faire ferait
-     * croire à un échec, et renvoyer sur l'écran de connexion juste après avoir choisi un mot de
-     * passe fait douter de celui qu'on vient de taper.
-     *
      * @param  array<string, string>  $input
      */
     public function update(User $user, array $input): void

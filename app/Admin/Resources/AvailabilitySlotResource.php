@@ -9,10 +9,6 @@ use App\Models\AvailabilitySlot;
 /**
  * Les créneaux de disponibilité récurrents des prestataires.
  *
- * Les EXCEPTIONS et les réservations temporaires vivent dans leurs propres tables : un créneau
- * récurrent dit ce qui est possible en général, pas ce qui reste libre aujourd’hui. Confondre
- * les deux ferait proposer des heures déjà prises.
- *
  * @extends EloquentResource<AvailabilitySlot>
  */
 class AvailabilitySlotResource extends EloquentResource

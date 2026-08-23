@@ -11,12 +11,7 @@ use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-/**
- * Admin — Tarification par zone pour un métier donné.
- *
- * Accessed via: GET /admin/trades/{trade}/pricing
- * Patterns: same monolithic single-component style as Trades.php
- */
+/** Admin — Tarification par zone pour un métier donné. */
 #[Layout('layouts.app')]
 class TradeZonePricingManager extends Component
 {
@@ -40,14 +35,7 @@ class TradeZonePricingManager extends Component
 
     public bool $form_is_active = true;
 
-    /*
-     * LE PRIX AU KILOMETRE — eteint par defaut, y compris ici.
-     *
-     * Ces champs ne s'appliquent qu'aux metiers de trajet : ailleurs, ils resteraient a zero sans
-     * rien changer. Les afficher partout est volontaire — un administrateur qui ouvre un metier de
-     * course dans une nouvelle zone doit trouver le reglage la ou il regle deja le tarif, pas sur
-     * un troisieme ecran.
-     */
+    // LE PRIX AU KILOMETRE — eteint par defaut, y compris ici.
     public bool $form_distance_pricing_enabled = false;
 
     public string $form_pickup_fee_cents = '0';
@@ -58,17 +46,7 @@ class TradeZonePricingManager extends Component
 
     public string $form_included_km = '0';
 
-    /*
-     * LE TARIF HORAIRE DE LA ZONE — la surcharge que le formulaire du métier promettait déjà.
-     *
-     * La colonne existait, `HourlyRateResolver::tarifCatalogue()` la lisait, et AUCUN écran ne
-     * l'écrivait : la promesse « surchargeable zone par zone » n'était tenue par personne, et une
-     * heure de ménage coûtait le même prix à Bruxelles et dans un village.
-     *
-     * CHAÎNE VIDE, PAS ZÉRO — exactement comme le tarif au kilomètre juste au-dessus. « Cette zone
-     * n'a pas de tarif horaire propre » et « cette zone facture zéro euro de l'heure » sont deux
-     * réponses différentes, et la seconde offrirait le travail.
-     */
+    // LE TARIF HORAIRE DE LA ZONE — la surcharge que le formulaire du métier promettait déjà.
     public string $form_price_per_hour_cents = '';
 
     // ── Add zone dropdown ──
@@ -237,15 +215,7 @@ class TradeZonePricingManager extends Component
         return view('livewire.admin.trade-zone-pricing-manager', [
             'zonePricings' => $zonePricings,
             'availableZones' => $availableZones,
-            /*
-             * LE TARIF HORAIRE NE S'AFFICHE QUE S'IL VEUT DIRE QUELQUE CHOSE.
-             *
-             * Contrairement au prix au kilomètre — que cet écran montre partout, à dessein, parce
-             * qu'une même zone peut porter des métiers de trajet et d'autres non — le mode de
-             * facturation est une propriété du MÉTIER, et cette page n'en traite qu'un. Le champ
-             * serait donc soit utile sur toutes les lignes, soit inutile sur toutes. Le montrer sur
-             * un métier au forfait donnerait un réglage que rien ne lit.
-             */
+            // LE TARIF HORAIRE NE S'AFFICHE QUE S'IL VEUT DIRE QUELQUE CHOSE.
             'factureALHeure' => (bool) Trade::query()->whereKey($this->tradeId)->value('hourly_billing'),
         ]);
     }

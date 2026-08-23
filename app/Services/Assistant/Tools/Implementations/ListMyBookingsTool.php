@@ -6,11 +6,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Services\Assistant\Tools\Contracts\AssistantTool;
 
-/**
- * Tool de lecture : liste les réservations de l'utilisateur courant.
- *
- * Lecture seule → executesImmediately = true (pas de confirmation requise).
- */
+/** Tool de lecture : liste les réservations de l'utilisateur courant. */
 class ListMyBookingsTool implements AssistantTool
 {
     public function name(): string

@@ -14,15 +14,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Throwable;
 
-/**
- * Sprint 0 — Task 2 : JSON exception handler unifié pour l'API mobile.
- *
- * Tous les appels sur /api/* (ou expectsJson) reçoivent un format unifié :
- *   { ok: false, error_code, message, errors? }
- *
- * En mode debug (APP_DEBUG=true), les 500 embarquent un champ `debug`
- * avec le nom de la classe et le fichier:ligne — jamais en production.
- */
+/** Sprint 0 — Task 2 : JSON exception handler unifié pour l'API mobile. */
 class ApiJsonRenderer
 {
     public static function render(Request $request, Throwable $e): ?JsonResponse

@@ -17,13 +17,7 @@ use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * LE RENFORT — la troisième issue, celle qui manquait.
- *
- * Un prestataire devant un chantier deux fois plus gros n'avait que deux sorties : réviser le devis,
- * ou abandonner. Le mécanisme existait, atteignable seulement par un chef d'équipe sur le web, et il
- * exigeait un segment de chantier découpé — qu'une intervention ordinaire n'a pas.
- */
+/** LE RENFORT — la troisième issue, celle qui manquait. */
 class RenfortDepuisLeTerrainTest extends TestCase
 {
     use RefreshDatabase;
@@ -76,10 +70,7 @@ class RenfortDepuisLeTerrainTest extends TestCase
         $this->assertNotNull($demande->needed_at, 'le prestataire est déjà sur place');
     }
 
-    /**
-     * UNE SEULE DEMANDE OUVERTE PAR MISSION : deux renforts viendraient pour le même besoin, et le
-     * second se déplacerait pour rien, à la charge de la plateforme.
-     */
+    /** UNE SEULE DEMANDE OUVERTE PAR MISSION : deux renforts viendraient pour le même besoin, et le second se déplacerait pour rien, à la charge de la plateforme. */
     public function test_une_seule_demande_ouverte_a_la_fois(): void
     {
         $mission = $this->mission();

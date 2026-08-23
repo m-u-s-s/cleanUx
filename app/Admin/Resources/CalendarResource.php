@@ -9,10 +9,6 @@ use App\Models\Booking;
 /**
  * La vue calendrier des interventions.
  *
- * Une vraie grille mensuelle ne tient pas sur un téléphone sans devenir illisible : cette
- * lecture donne la même matière — quoi, quand, où — sous une forme qui se parcourt au pouce.
- * La grille reste sur le web, qui a la place de l’afficher.
- *
  * @extends EloquentResource<Booking>
  */
 class CalendarResource extends EloquentResource

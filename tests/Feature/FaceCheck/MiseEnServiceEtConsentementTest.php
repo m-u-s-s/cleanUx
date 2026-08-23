@@ -19,13 +19,7 @@ use Livewire\Livewire;
 use Tests\Feature\FaceCheck\Concerns\ActiveLeControleFacial;
 use Tests\TestCase;
 
-/**
- * MISE EN SERVICE, CONSENTEMENT ET NOTIFICATIONS.
- *
- * Ce qui se joue ici tient en une phrase : un module de contrôle d'identité n'est utile que s'il
- * est ALLUMÉ sur les bons métiers, que la personne a VRAIMENT consenti, et qu'elle SAIT quand on
- * lui coupe l'accès. Les trois manquaient à la première livraison.
- */
+/** MISE EN SERVICE, CONSENTEMENT ET NOTIFICATIONS. */
 class MiseEnServiceEtConsentementTest extends TestCase
 {
     use ActiveLeControleFacial;
@@ -81,14 +75,7 @@ class MiseEnServiceEtConsentementTest extends TestCase
         $this->assertSame([], $exigeants, 'Ces metiers ne devraient rien exiger.');
     }
 
-    /**
-     * LE CHOIX DE L'ADMINISTRATEUR SURVIT AU SEEDER.
-     *
-     * Un administrateur qui décoche un métier ne doit pas voir son choix effacé au prochain
-     * passage. Comparer `created_at` à `updated_at` aurait semblé équivalent et ne l'est pas : un
-     * métier ancien jamais modifié porte les deux dates identiques, et se serait vu re-cocher à
-     * chaque passage — sans que rien ne le signale.
-     */
+    /** LE CHOIX DE L'ADMINISTRATEUR SURVIT AU SEEDER. */
     public function test_le_seeder_nefface_pas_le_choix_de_ladministrateur(): void
     {
         $this->seed(TradeSeeder::class);
@@ -152,12 +139,7 @@ class MiseEnServiceEtConsentementTest extends TestCase
         $this->assertStringNotContainsString(':days', (string) $en);
     }
 
-    /**
-     * LE MÊME TEXTE DES DEUX CÔTÉS — c'est tout l'intérêt de le servir depuis le serveur.
-     *
-     * Deux copies d'un texte relu une seule fois, et c'est celle qu'on n'a pas relue qui
-     * s'affiche.
-     */
+    /** LE MÊME TEXTE DES DEUX CÔTÉS — c'est tout l'intérêt de le servir depuis le serveur. */
     public function test_le_web_et_lapi_affichent_le_meme_texte_de_consentement(): void
     {
         Storage::fake('private');
@@ -259,12 +241,7 @@ class MiseEnServiceEtConsentementTest extends TestCase
         Notification::assertSentToTimes($prestataire, FaceCheckBlockedNotification::class, 1);
     }
 
-    /**
-     * UNE PANNE DE MESSAGERIE N'ANNULE PAS UN BLOCAGE.
-     *
-     * Le blocage est déjà écrit quand la notification part. Laisser remonter l'exception annulerait
-     * un geste de sécurité pour un e-mail — le mauvais arbitrage.
-     */
+    /** UNE PANNE DE MESSAGERIE N'ANNULE PAS UN BLOCAGE. */
     public function test_une_panne_de_notification_nannule_pas_le_blocage(): void
     {
         Storage::fake('private');

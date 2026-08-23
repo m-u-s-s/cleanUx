@@ -7,21 +7,11 @@ use App\Models\Mission;
 use App\Models\MissionQualityInspection;
 use App\Models\User;
 
-/**
- * Ownership resolution for Quality inspections (C1).
- *
- * A Quality inspection belongs to a mission, which is tied to a booking. Only the booking's
- * client (the party who can validate/dispute) and the mission's assigned provider(s) (the
- * party who can fill it in) may read or mutate an inspection. These helpers are the single
- * source of truth, reused by the policy (controller layer) and by the service guards
- * (defense-in-depth), so an inspection id cannot be enumerated to read or alter another
- * user's quality records.
- */
+/** Ownership resolution for Quality inspections (C1). */
 class QualityInspectionAccess
 {
     /**
-     * Resolve the client + provider user ids tied to a mission (and an optional booking id
-     * carried directly on the inspection).
+     * Resolve the client + provider user ids tied to a mission (and an optional booking id carried directly on the inspection).
      *
      * @return array{clients: int[], providers: int[]}
      */

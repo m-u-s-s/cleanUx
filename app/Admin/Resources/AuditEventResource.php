@@ -9,11 +9,7 @@ use App\Models\AuditEvent;
 use App\Services\Audit\AuditService;
 
 /**
- * Le journal d’audit.
- *
- * LECTURE SEULE, sans exception. Un journal d’audit modifiable depuis une console
- * d’administration ne vaut rien : c’est précisément contre les actes d’administration qu’il
- * existe. L'épinglage et l’export restent sur la page web, qui les journalise a leur tour.
+ * Le journal d’audit. LECTURE SEULE, sans exception.
  *
  * @extends EloquentResource<AuditEvent>
  */
@@ -73,11 +69,7 @@ class AuditEventResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Épingler un évènement le SOUSTRAIT à la purge de rétention. C'est le geste qu'on
-             * fait quand une trace devient une pièce : un litige, un contrôle. Le perdre au
-             * prochain nettoyage serait irréparable, et c'est pourquoi il vit ici.
-             */
+            // Épingler un évènement le SOUSTRAIT à la purge de rétention.
             Action::make('toggle-pin', 'Épingler / désépingler', function (AuditEvent $event) {
                 $event->is_pinned
                     ? app(AuditService::class)->unpin($event)

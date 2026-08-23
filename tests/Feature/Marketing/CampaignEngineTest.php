@@ -90,10 +90,7 @@ class CampaignEngineTest extends TestCase
         $this->assertSame(MarketingCampaign::STATUS_SCHEDULED, $campaign->fresh()->status);
     }
 
-    /**
-     * G1 — materialize() must not run per-member queries. The number of SELECTs must stay
-     * bounded regardless of segment size (previously ~3 SELECTs per member×step).
-     */
+    /** G1 — materialize() must not run per-member queries. */
     public function test_schedule_does_not_run_per_member_queries(): void
     {
         $users = User::factory()->client()->count(10)->create();

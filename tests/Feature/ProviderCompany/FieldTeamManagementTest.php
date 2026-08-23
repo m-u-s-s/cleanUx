@@ -13,21 +13,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * UNE SOCIÉTÉ PRESTATAIRE DOIT POUVOIR ORGANISER SES PROPRES AGENCES.
- *
- * POURQUOI CE FICHIER EXISTE. Le modèle `FieldTeam` existe et porte tout ce qu'il faut —
- * organisation, zone de service, chef d'équipe, capacité maximale, statut. Mais il n'est piloté
- * que depuis les écrans d'ADMINISTRATION de la plateforme (`Admin/GestionEquipesPartenaires`,
- * `Admin/B2BOperationsCenter`, `Admin/OrchestrationTerrainCenter`) et un écran employé.
- *
- * Vérifié : les cinq écrans de l'espace société prestataire sont `dashboard`, `channels`, `tasks`,
- * `dispatch` et `team` (les MEMBRES, pas les équipes). Une société voulant ouvrir une agence, la
- * rattacher à une zone ou en nommer le responsable devait donc passer par un administrateur.
- *
- * Ce n'est pas une capacité manquante en base : c'est une capacité existante sans porte d'entrée
- * pour celui qu'elle concerne.
- */
+/** UNE SOCIÉTÉ PRESTATAIRE DOIT POUVOIR ORGANISER SES PROPRES AGENCES. POURQUOI CE FICHIER EXISTE. */
 class FieldTeamManagementTest extends TestCase
 {
     use RefreshDatabase;

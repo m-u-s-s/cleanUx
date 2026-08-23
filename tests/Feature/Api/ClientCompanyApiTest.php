@@ -15,27 +15,7 @@ use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * L'API DE L'ESPACE SOCIÉTÉ CLIENTE.
- *
- * POURQUOI CE FICHIER EXISTE. `config/parity.php` déclare depuis longtemps six modules
- * `entreprise-client` — Accueil, Locaux, Réservations, Membres, Facturation, Contrats — et les
- * marque `mobile => 'webview'`. En pratique l'application cliente n'en montrait AUCUN : ni écran
- * natif, ni lien WebView, et `ModuleHubScreen` (la seule porte générique vers ces modules) n'était
- * monté dans aucun navigateur. Six modules déclarés, zéro joignable.
- *
- * Ces points d'entrée sont la condition préalable aux écrans natifs, exactement comme
- * `/provider/company/*` l'a été pour la société prestataire.
- *
- * Chaque test éprouve les deux mêmes exigences que son pendant prestataire :
- *   1. la réponse est limitée à l'organisation ACTIVE de l'appelant ;
- *   2. la lecture sensible comme l'écriture exigent une permission, pas la seule appartenance.
- *
- * La facturation fait exception au miroir, et c'est délibéré : l'écran web `BillingCenter` renvoie
- * des zéros codés en dur (« Données simulées — à connecter à Invoice model »). Recopier ce stub
- * aurait donné un écran natif qui ne peut RIEN afficher. L'API s'appuie donc sur
- * `ClientFinanceDocumentScope`, déjà org-aware et déjà utilisé par `/api/client/invoices`.
- */
+/** L'API DE L'ESPACE SOCIÉTÉ CLIENTE. POURQUOI CE FICHIER EXISTE. */
 class ClientCompanyApiTest extends TestCase
 {
     use RefreshDatabase;
@@ -375,18 +355,7 @@ class ClientCompanyApiTest extends TestCase
     #[Test]
     public function le_compte_tel_que_db_seed_le_produit_atteint_bien_son_espace(): void
     {
-        /*
-         * LA FORME EXACTE QUE `DemoPlatformSeeder` ÉCRIT, ET ELLE NE PASSAIT PAS.
-         *
-         * Le seeder rattache le contact entreprise par `organization_account_id` et laisse
-         * `current_organization_id` à NULL — vérifié sur une base fraîchement semée :
-         * `facilities@atlasfacilities.test | org_account_id=1 | current_org_id=NULL`.
-         *
-         * Les contrôleurs société lisaient `currentOrganization`, c'est-à-dire l'autre colonne.
-         * Tous les écrans société répondaient donc 403 à tout compte de démonstration — porte
-         * d'entrée rouverte comprise. Les tests ne le voyaient pas : ils renseignent LES DEUX
-         * colonnes, une forme que le seeder ne produit jamais.
-         */
+        // LA FORME EXACTE QUE `DemoPlatformSeeder` ÉCRIT, ET ELLE NE PASSAIT PAS.
         $org = OrganizationAccount::factory()->clientCompany()->create();
 
         $user = User::factory()->create([
@@ -413,12 +382,7 @@ class ClientCompanyApiTest extends TestCase
     #[Test]
     public function un_contexte_d_organisation_sans_adhesion_active_ne_donne_rien(): void
     {
-        /*
-         * Durcissement, pas maintien. L'ancienne garde FAISAIT CONFIANCE à la colonne : elle
-         * servait l'organisation qui y était inscrite sans consulter `organization_members`.
-         * Le repli de `organizationContextId()` lit aussi `metadata` — qu'aucun point d'API
-         * n'écrit aujourd'hui, mais dont on ne veut pas dépendre pour rester clos.
-         */
+        // Durcissement, pas maintien.
         $etrangere = OrganizationAccount::factory()->clientCompany()->create();
 
         $intrus = User::factory()->create([

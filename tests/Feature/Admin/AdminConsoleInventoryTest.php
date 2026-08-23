@@ -5,16 +5,7 @@ namespace Tests\Feature\Admin;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
-/**
- * La garantie « rien n'est oublié » de la console d'administration mobile.
- *
- * Ce test — et non un jugement — décide quand le chantier est terminé : toute page ajoutée à
- * l'administration web sans entrée correspondante dans le registre fait rougir la suite, et toute
- * entrée qui survit à la disparition de sa route aussi.
- *
- * Il ne dit RIEN de la qualité de la couverture : un module marqué `pending` le satisfait. Il dit
- * seulement que la plateforme sait ce qu'il lui reste à faire, et que ce décompte est honnête.
- */
+/** La garantie « rien n'est oublié » de la console d'administration mobile. */
 class AdminConsoleInventoryTest extends TestCase
 {
     /**

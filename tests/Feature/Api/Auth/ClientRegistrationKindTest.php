@@ -10,17 +10,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Particulier ou société : deux inscriptions clientes distinctes.
- *
- * L'inscription mobile ne créait AUCUN CustomerProfile, là où la voie web en crée un
- * systématiquement. Ce profil est pourtant lu par le moteur de sélection de prestataire, la prise
- * de rendez-vous et l'identité renvoyée par /auth/me : un client inscrit depuis l'application en
- * était dépourvu, sans que rien ne le signale.
- *
- * Et une société cliente n'avait aucun moyen de s'inscrire depuis le mobile, alors que
- * `client_company` existe, est employé en base, et porte le multi-sites comme les contrats B2B.
- */
+/** Particulier ou société : deux inscriptions clientes distinctes. */
 class ClientRegistrationKindTest extends TestCase
 {
     use RefreshDatabase;
@@ -79,11 +69,7 @@ class ClientRegistrationKindTest extends TestCase
         ]);
     }
 
-    /**
-     * Une société cliente est active d'emblée, contrairement à une société prestataire : rien
-     * n'est à vérifier avant qu'elle commande un service, et l'y contraindre bloquerait une
-     * cliente légitime.
-     */
+    /** Une société cliente est active d'emblée, contrairement à une société prestataire : rien n'est à vérifier avant qu'elle commande un service, et l'y contraindre bloquerait une cliente légitime. */
     public function test_a_client_company_is_active_immediately(): void
     {
         $this->postJson('/api/auth/register', $this->payload([

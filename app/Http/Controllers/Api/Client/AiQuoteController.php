@@ -15,14 +15,7 @@ use Illuminate\Http\Request;
  */
 class AiQuoteController extends Controller
 {
-    /**
-     * POST /api/client/ai-quote/photo
-     *
-     * Body : multipart/form-data
-     *   - photo : fichier image (PNG/JPG/WEBP, max 5MB)
-     *   - trade_code : code du trade (ex: "peinture_interieure")
-     *   - note : (optionnel) texte additionnel client
-     */
+    /** POST /api/client/ai-quote/photo Body : multipart/form-data - photo : fichier image (PNG/JPG/WEBP, max 5MB) - trade_code : code du trade (ex: "peinture_interieure") - note : (optionnel) texte additionnel client */
     public function estimateFromPhoto(Request $request, PhotoQuoteEstimator $estimator): JsonResponse
     {
         $data = $request->validate([

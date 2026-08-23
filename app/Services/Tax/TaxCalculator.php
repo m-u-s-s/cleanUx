@@ -2,18 +2,10 @@
 
 namespace App\Services\Tax;
 
-/**
- * Multi-country EU VAT calculator.
- *
- * Provides standard VAT rates for supported European countries.
- * Used for invoice generation, pricing display, and accounting exports.
- */
+/** Multi-country EU VAT calculator. Provides standard VAT rates for supported European countries. */
 class TaxCalculator
 {
-    /**
-     * Standard VAT rates per EU country code (ISO 3166-1 alpha-2).
-     * Rates as of 2024 — update when legislation changes.
-     */
+    /** Standard VAT rates per EU country code (ISO 3166-1 alpha-2). */
     private const VAT_RATES = [
         'BE' => 0.21,
         'FR' => 0.20,
@@ -26,9 +18,7 @@ class TaxCalculator
         'AT' => 0.20,
     ];
 
-    /**
-     * Default fallback rate when country not found (Belgium standard).
-     */
+    /** Default fallback rate when country not found (Belgium standard). */
     private const FALLBACK_RATE = 0.21;
 
     /**
@@ -37,11 +27,11 @@ class TaxCalculator
      * @param  float  $amountExclVat  Amount before VAT in major currency units (e.g. EUR)
      * @param  string  $countryCode  ISO 3166-1 alpha-2 country code
      * @return array{
-     *   amount_excl_vat: float,
-     *   vat_rate: float,
-     *   vat_amount: float,
-     *   amount_incl_vat: float,
-     *   country_code: string
+     * amount_excl_vat: float,
+     * vat_rate: float,
+     * vat_amount: float,
+     * amount_incl_vat: float,
+     * country_code: string
      * }
      */
     public function calculateVat(float $amountExclVat, string $countryCode): array
@@ -60,9 +50,7 @@ class TaxCalculator
         ];
     }
 
-    /**
-     * Get the VAT rate for a country (returns fallback for unsupported countries).
-     */
+    /** Get the VAT rate for a country (returns fallback for unsupported countries). */
     public function getVatRate(string $countryCode): float
     {
         return self::VAT_RATES[strtoupper($countryCode)] ?? self::FALLBACK_RATE;
@@ -78,9 +66,7 @@ class TaxCalculator
         return array_keys(self::VAT_RATES);
     }
 
-    /**
-     * Convert a VAT-inclusive amount to the excl-VAT equivalent.
-     */
+    /** Convert a VAT-inclusive amount to the excl-VAT equivalent. */
     public function extractVat(float $amountInclVat, string $countryCode): array
     {
         $code = strtoupper(trim($countryCode));

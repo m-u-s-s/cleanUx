@@ -9,16 +9,7 @@ use App\Notifications\Nps\NpsSurveyNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Send NPS survey notifications to clients whose booking was completed
- * X days ago and who have not yet received a survey invitation.
- *
- * "Received" is tracked by checking for an existing NpsResponse row for the
- * booking. This avoids needing a new DB column and respects the idempotency
- * already built into NpsService.
- *
- * Registered as a daily cron in app/Console/Kernel.php.
- */
+/** Send NPS survey notifications to clients whose booking was completed X days ago and who have not yet received a survey invitation. */
 class SendNpsSurveys extends Command
 {
     protected $signature = 'nps:send-surveys

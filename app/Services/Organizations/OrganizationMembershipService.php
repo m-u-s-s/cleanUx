@@ -10,27 +10,10 @@ use App\Models\ProviderProfile;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-/**
- * REJOINDRE UNE SOCIÉTÉ, C'EST DEVENIR MEMBRE *ET* POUVOIR TRAVAILLER.
- *
- * POURQUOI CE SERVICE EXISTE. `TeamManagement::invite()` créait un `OrganizationMember` et rien
- * d'autre. Or `ProviderDashboard::mount()` exige `isProviderCompanyWorker()`, qui repose sur un
- * `ProviderProfile` de type `company_worker`. L'employé rejoignait donc bien la société, puis
- * recevait un 403 sur son écran principal — un état à moitié créé, impossible à diagnostiquer
- * depuis l'interface.
- *
- * Les deux écritures sont désormais indissociables et dans une transaction : on ne peut plus
- * obtenir l'une sans l'autre. Deux appelants s'en servent — l'invitation d'un utilisateur déjà
- * inscrit, et l'acceptation d'une invitation par lien.
- */
+/** REJOINDRE UNE SOCIÉTÉ, C'EST DEVENIR MEMBRE *ET* POUVOIR TRAVAILLER. POURQUOI CE SERVICE EXISTE. */
 class OrganizationMembershipService
 {
-    /**
-     * Rattache un utilisateur à une organisation, avec le profil prestataire qui va avec lorsque
-     * l'organisation fournit du service.
-     *
-     * Idempotent : rejouer l'opération ne duplique ni le membre ni le profil.
-     */
+    /** Rattache un utilisateur à une organisation, avec le profil prestataire qui va avec lorsque l'organisation fournit du service. */
     public function rattacher(
         OrganizationAccount $organisation,
         User $utilisateur,
@@ -53,19 +36,7 @@ class OrganizationMembershipService
             );
 
             if ($this->fournitDuService($organisation)) {
-                /*
-                 * `updateOrCreate` ET NON `firstOrCreate`.
-                 *
-                 * `firstOrCreate` ne touche PAS un profil existant : un prestataire indépendant qui
-                 * rejoint une société gardait `provider_type = independent` et
-                 * `organization_account_id = null`. Il devenait membre de l'organisation sans que
-                 * rien ne le rattache côté prestataire — donc 403 sur tout l'espace société, et ses
-                 * missions restaient hors du dispatch, `ProviderOrganisationResolver` lisant
-                 * précisément cette colonne.
-                 *
-                 * Le statut n'est PAS écrasé : un dossier en cours de vérification ne doit pas
-                 * passer `active` du simple fait d'un rattachement.
-                 */
+                // `updateOrCreate` ET NON `firstOrCreate`.
                 $profil = ProviderProfile::firstOrNew(['user_id' => $utilisateur->id]);
 
                 $profil->organization_account_id = $organisation->id;
@@ -76,11 +47,7 @@ class OrganizationMembershipService
                 $profil->save();
             }
 
-            /*
-             * Sans organisation courante, l'utilisateur retombe sur son espace particulier et ne
-             * voit rien de la société qu'il vient de rejoindre. On ne l'impose qu'à ceux qui n'en
-             * ont pas encore : basculer quelqu'un déjà rattaché ailleurs serait une surprise.
-             */
+            // Sans organisation courante, l'utilisateur retombe sur son espace particulier et ne voit rien de la société qu'il vient de rejoindre.
             if ($utilisateur->current_organization_id === null) {
                 $utilisateur->forceFill([
                     'current_organization_id' => $organisation->id,

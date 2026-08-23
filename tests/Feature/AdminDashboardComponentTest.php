@@ -11,10 +11,7 @@ use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Coverage for the AdminDashboard Livewire component and its admin concerns
- * (data computation, filtering, planning / replanification, preferences).
- */
+/** Coverage for the AdminDashboard Livewire component and its admin concerns (data computation, filtering, planning / replanification, preferences). */
 class AdminDashboardComponentTest extends TestCase
 {
     use RefreshDatabase;

@@ -11,13 +11,7 @@ use Database\Seeders\OrderEngineCatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Le panier : deux lois du parcours, rendues vérifiables.
- *
- * Le prix s'affiche avant qu'on demande un compte — le panier existe donc sans client. Et revenir
- * en arrière ne perd jamais rien — les réponses sont écrites au fil de l'eau, avec l'instantané de
- * ce que le client a VU, pas de ce que la base dira demain.
- */
+/** Le panier : deux lois du parcours, rendues vérifiables. */
 class OrderDraftManagerTest extends TestCase
 {
     use RefreshDatabase;
@@ -55,12 +49,7 @@ class OrderDraftManagerTest extends TestCase
         $this->assertSame($first->id, $second->id);
     }
 
-    /**
-     * Le panier anonyme suit le client qui se connecte.
-     *
-     * Sans ce rattachement, l'inscription du dernier écran ferait perdre tout ce qui la précède —
-     * exactement ce que le parcours promet d'éviter, et au pire moment.
-     */
+    /** Le panier anonyme suit le client qui se connecte. */
     public function test_an_anonymous_basket_follows_the_client_who_signs_in(): void
     {
         $draft = $this->manager->resumeOrCreate('jeton-visiteur');
@@ -92,12 +81,7 @@ class OrderDraftManagerTest extends TestCase
         $this->assertSame(1, $draft->fresh()->items()->count());
     }
 
-    /**
-     * L'INSTANTANÉ : on enregistre ce que le client a vu.
-     *
-     * Le libellé de la réponse, pas sa valeur technique — « Murs et plafonds », pas
-     * « murs_plafonds ». Un devis se lit par un humain, parfois devant un médiateur.
-     */
+    /** L'INSTANTANÉ : on enregistre ce que le client a vu. */
     public function test_each_answer_keeps_a_human_readable_snapshot(): void
     {
         $draft = $this->manager->resumeOrCreate('jeton');
@@ -133,13 +117,7 @@ class OrderDraftManagerTest extends TestCase
         );
     }
 
-    /**
-     * LA garantie contre le devis fantôme.
-     *
-     * Une question devenue cachée voit sa réponse SUPPRIMÉE. Le moteur l'ignore déjà pour le prix ;
-     * la laisser en base ferait diverger le devis stocké de celui qu'on affiche — et c'est le
-     * stocké qui fait foi devant un litige.
-     */
+    /** LA garantie contre le devis fantôme. Une question devenue cachée voit sa réponse SUPPRIMÉE. */
     public function test_an_answer_to_a_hidden_question_is_removed_not_kept(): void
     {
         $draft = $this->manager->resumeOrCreate('jeton');

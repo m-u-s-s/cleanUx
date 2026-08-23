@@ -17,14 +17,7 @@ use Illuminate\Support\Facades\App;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * La bibliothèque, les traductions, l'audit et le réordonnancement.
- *
- * Trois principes s'y jouent. Une question de bibliothèque se COPIE — elle n'est jamais partagée
- * en direct, sinon ajuster le prix pour la peinture déplacerait aussi celui de la plomberie. Une
- * traduction manquante retombe sur le libellé de base — un écran blanc est pire qu'une mauvaise
- * langue. Et l'instantané du devis garde ce que le client A VU, dans SA langue.
- */
+/** La bibliothèque, les traductions, l'audit et le réordonnancement. Trois principes s'y jouent. */
 class CatalogLibraryAndTranslationTest extends TestCase
 {
     use RefreshDatabase;
@@ -55,12 +48,7 @@ class CatalogLibraryAndTranslationTest extends TestCase
         );
     }
 
-    /**
-     * Reprendre crée une COPIE, pas un partage.
-     *
-     * C'est la décision de fond : les questions restent au niveau du métier. Ajuster le prix de la
-     * copie ne doit rien déplacer chez les autres métiers qui l'ont reprise.
-     */
+    /** Reprendre crée une COPIE, pas un partage. */
     public function test_adopting_creates_an_independent_copy(): void
     {
         $template = $this->libraryQuestion('ascenseur');
@@ -121,12 +109,7 @@ class CatalogLibraryAndTranslationTest extends TestCase
 
     // ─── Les traductions ─────────────────────────────────────────────────────────────────────
 
-    /**
-     * Sans traduction, on retombe sur le libellé de base — JAMAIS sur du vide.
-     *
-     * Une question muette est pire qu'une question dans la mauvaise langue : elle ne peut même pas
-     * être devinée.
-     */
+    /** Sans traduction, on retombe sur le libellé de base — JAMAIS sur du vide. */
     public function test_a_missing_translation_falls_back_instead_of_going_blank(): void
     {
         $question = $this->peinture()->questions()->firstOrFail();
@@ -166,12 +149,7 @@ class CatalogLibraryAndTranslationTest extends TestCase
         $this->assertNotContains('nl', $question->fresh()->missingLocales());
     }
 
-    /**
-     * L'INSTANTANÉ garde ce que le client a vu, dans SA langue.
-     *
-     * Enregistrer la version française d'une question lue en néerlandais rendrait le devis
-     * inopposable : ce n'est pas ce à quoi le client a répondu.
-     */
+    /** L'INSTANTANÉ garde ce que le client a vu, dans SA langue. */
     public function test_the_quote_snapshot_keeps_the_language_the_client_read(): void
     {
         $trade = $this->peinture();
@@ -199,12 +177,7 @@ class CatalogLibraryAndTranslationTest extends TestCase
 
     // ─── L'audit ─────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Toucher au catalogue laisse une trace.
-     *
-     * C'est le seul moyen de répondre à « pourquoi cette prestation coûtait 40 € hier et 60 € ce
-     * matin » autrement qu'en devinant.
-     */
+    /** Toucher au catalogue laisse une trace. */
     public function test_changing_a_price_leaves_a_trace(): void
     {
         $question = $this->peinture()->questions()->firstOrFail();
@@ -238,12 +211,7 @@ class CatalogLibraryAndTranslationTest extends TestCase
         );
     }
 
-    /**
-     * Le serveur ne croit pas l'ordre reçu du navigateur.
-     *
-     * Sans ce tri, un identifiant glissé dans la requête réordonnerait le questionnaire d'un autre
-     * métier — ou masquerait une question en la laissant hors de la liste.
-     */
+    /** Le serveur ne croit pas l'ordre reçu du navigateur. */
     public function test_an_order_containing_a_foreign_question_is_refused(): void
     {
         $trade = $this->peinture();

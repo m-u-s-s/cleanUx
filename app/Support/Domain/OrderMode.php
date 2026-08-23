@@ -2,13 +2,7 @@
 
 namespace App\Support\Domain;
 
-/**
- * Les trois façons de commander.
- *
- * Le mode n'est pas cosmétique : il change les questions posées, la structure du prix et le
- * parcours qui suit. Il est donc choisi tôt et visiblement, et seuls les modes que le métier
- * autorise (`trades.allows_*`) sont proposés.
- */
+/** Les trois façons de commander. */
 final class OrderMode
 {
     /** Rendez-vous planifié — le parcours de référence, et le défaut. */

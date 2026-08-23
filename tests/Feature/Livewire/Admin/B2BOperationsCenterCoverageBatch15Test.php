@@ -172,11 +172,7 @@ class B2BOperationsCenterCoverageBatch15Test extends TestCase
     {
         $contract = OrganizationContract::factory()->create();
 
-        /*
-         * De VRAIES missions : `contract_sla_events.mission_id` porte désormais une clé étrangère.
-         * Les identifiants 1, 2 et 3 ne désignaient aucune ligne — le test comptait des
-         * agrégats sur des événements rattachés à rien.
-         */
+        // De VRAIES missions : `contract_sla_events.mission_id` porte désormais une clé étrangère.
         [$m1, $m2, $m3] = [Mission::factory()->create(), Mission::factory()->create(), Mission::factory()->create()];
 
         ContractSlaEvent::factory()->create([

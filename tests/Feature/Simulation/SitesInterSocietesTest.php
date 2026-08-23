@@ -16,21 +16,7 @@ use Livewire\Livewire;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * UN SITE D'UNE SOCIÉTÉ, UNE INTERVENTION D'UNE AUTRE.
- *
- * C'est la relation B2B complète, et elle met en présence trois périmètres qui ne doivent jamais se
- * confondre : la société CLIENTE, qui possède le local ; la société PRESTATAIRE, qui exécute ; le
- * TRAVAILLEUR, qui s'y rend. Chacun doit voir ce qui le concerne, et rien de plus.
- *
- * LES DEUX ERREURS OPPOSÉES SE LISENT AU MÊME ENDROIT. Si la société cliente ne voit pas
- * l'intervention sur son site, elle ne peut ni la suivre ni la contester. Si la société prestataire
- * — ou pire, une société tierce — voit le local d'un client qui n'est pas le sien, on a exposé une
- * adresse d'entreprise et le nom de son responsable.
- *
- * Ce parcours suit une intervention du bon de commande jusqu'à l'exécution, en interrogeant à chaque
- * étape les surfaces réelles : l'écran de la société cliente et l'API de l'application prestataire.
- */
+/** UN SITE D'UNE SOCIÉTÉ, UNE INTERVENTION D'UNE AUTRE. */
 class SitesInterSocietesTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
@@ -75,10 +61,7 @@ class SitesInterSocietesTest extends TestCase
         return $user->fresh();
     }
 
-    /**
-     * Une intervention commandée par la société cliente pour l'un de ses locaux, confiée à la
-     * société prestataire.
-     */
+    /** Une intervention commandée par la société cliente pour l'un de ses locaux, confiée à la société prestataire. */
     private function intervention(
         OrganizationAccount $cliente,
         OrganizationSite $site,
@@ -116,9 +99,7 @@ class SitesInterSocietesTest extends TestCase
         return collect($reponse->json('data'))->pluck('id')->sort()->values()->all();
     }
 
-    /**
-     * LE PARCOURS COMPLET : la commande d'un site atterrit chez le bon travailleur.
-     */
+    /** LE PARCOURS COMPLET : la commande d'un site atterrit chez le bon travailleur. */
     public function test_une_intervention_sur_site_arrive_au_travailleur_de_la_societe_prestataire(): void
     {
         $cliente = $this->societe(OrganizationType::CLIENT_COMPANY);
@@ -156,11 +137,7 @@ class SitesInterSocietesTest extends TestCase
         );
     }
 
-    /**
-     * LA SOCIÉTÉ CLIENTE SUIT L'INTERVENTION SUR SON LOCAL.
-     *
-     * C'est ce pour quoi elle a signé : savoir ce qui se passe chez elle, local par local.
-     */
+    /** LA SOCIÉTÉ CLIENTE SUIT L'INTERVENTION SUR SON LOCAL. */
     public function test_la_societe_cliente_voit_l_intervention_sur_son_local(): void
     {
         $cliente = $this->societe(OrganizationType::CLIENT_COMPANY);
@@ -179,13 +156,7 @@ class SitesInterSocietesTest extends TestCase
             ->assertSee('SITEDUCLIENTZZ', escape: false);
     }
 
-    /**
-     * L'ÉTANCHÉITÉ : une société prestataire tierce ne voit rien du local d'un client qui n'est pas
-     * le sien.
-     *
-     * Ce n'est pas une question de confort d'affichage : ce qui fuiterait, c'est l'adresse d'un site
-     * d'entreprise, l'horaire d'intervention et le nom du responsable sur place.
-     */
+    /** L'ÉTANCHÉITÉ : une société prestataire tierce ne voit rien du local d'un client qui n'est pas le sien. */
     public function test_une_societe_prestataire_tierce_ne_voit_rien_du_local(): void
     {
         $cliente = $this->societe(OrganizationType::CLIENT_COMPANY);
@@ -216,9 +187,7 @@ class SitesInterSocietesTest extends TestCase
             ->assertForbidden();
     }
 
-    /**
-     * ET UNE AUTRE SOCIÉTÉ CLIENTE NE VOIT PAS LE LOCAL DU VOISIN.
-     */
+    /** ET UNE AUTRE SOCIÉTÉ CLIENTE NE VOIT PAS LE LOCAL DU VOISIN. */
     public function test_une_autre_societe_cliente_ne_voit_pas_le_local(): void
     {
         $cliente = $this->societe(OrganizationType::CLIENT_COMPANY);

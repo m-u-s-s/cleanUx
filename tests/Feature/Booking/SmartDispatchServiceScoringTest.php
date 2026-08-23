@@ -13,15 +13,7 @@ use Illuminate\Support\Collection;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * Couvre le moteur de scoring de SmartDispatchService :
- * score() et ses sous-scores (zone/qualité/charge/premium/asap/distance),
- * assignBestEmployee() (happy + garde), explainScores() et explainBestMatch().
- *
- * Le scoring est déterministe : pas de rendez_vous existants (charge 0 → 250),
- * pas de table client_provider_preferences (favori 0), pas de missions notées
- * (qualité défaut → 100). Brussels = 50.8503, 4.3517.
- */
+/** Couvre le moteur de scoring de SmartDispatchService : score() et ses sous-scores (zone/qualité/charge/premium/asap/distance), assignBestEmployee() (happy + garde), explainScores() et explainBestMatch(). */
 class SmartDispatchServiceScoringTest extends TestCase
 {
     use CreatesZoneAwareFixtures;

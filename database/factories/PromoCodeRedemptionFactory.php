@@ -17,13 +17,7 @@ class PromoCodeRedemptionFactory extends Factory
             'promo_code_id' => fn () => PromoCode::factory()->create()->id,
             'user_id' => fn () => User::factory()->create()->id,
             'booking_id' => null,
-            /*
-             * NI LES NOMS NI L'UNITÉ N'ÉTAIENT LES BONS. La table ne porte pas
-             * `discount_amount_cents` / `original_amount_cents` / `final_amount_cents` mais
-             * `discount_amount`, `booking_amount_before` et `booking_amount_after` — en unité
-             * monétaire, pas en centimes. Les trois montants sont désormais COHÉRENTS entre eux :
-             * un jeu tiré au hasard pouvait rendre un « après » supérieur à l'« avant ».
-             */
+            // NI LES NOMS NI L'UNITÉ N'ÉTAIENT LES BONS.
             'status' => 'applied',
             'currency' => 'EUR',
             'booking_amount_before' => $avant = fake()->randomFloat(2, 50, 300),

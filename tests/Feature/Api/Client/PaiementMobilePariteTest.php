@@ -11,26 +11,7 @@ use Stripe\Stripe;
 use Tests\Support\Stripe\FakeStripeHttpClient;
 use Tests\TestCase;
 
-/**
- * LE PAIEMENT MOBILE DOIT ÊTRE LE MÊME PAIEMENT QUE LE WEB (B4, M2).
- *
- * CE CHEMIN EST VIVANT, contrairement à ce qu'on pourrait croire. L'application mobile réserve par
- * la WebView `/commander` et non par l'API native — `useCreateBooking` existe mais aucun écran ne
- * l'appelle. Le PAIEMENT, lui, est bien natif : `BookingDetailScreen` navigue vers
- * `PaymentCheckout`, qui appelle `POST /api/client/bookings/{booking}/payment-intent`. Un client
- * qui réserve puis appuie sur « Payer » passe donc ici, avec de l'argent réel.
- *
- * QUATRE DÉFAUTS TENAIENT SUR CE SEUL POINT D'ENTRÉE, et chacun a son test ci-dessous :
- *   1. aucun `transfer_data.destination` — la plateforme encaissait 100 % de la course ;
- *   2. aucun `application_fee_amount` — donc aucun split commission/prestataire ;
- *   3. `capture_method: automatic` — l'argent partait à la commande, avant le travail ;
- *   4. `stripe_payment_intent_id` jamais écrit — le webhook ne retrouvait pas la réservation,
- *      donc aucun statut de paiement ne remontait jamais.
- *
- * ON MESURE LA CHARGE ENVOYÉE À STRIPE, pas la forme du code. Le client HTTP factice enregistre les
- * paramètres réellement transmis : c'est la seule façon de distinguer « le service a été appelé »
- * de « la charge porte bien un destinataire ».
- */
+/** LE PAIEMENT MOBILE DOIT ÊTRE LE MÊME PAIEMENT QUE LE WEB (B4, M2). */
 class PaiementMobilePariteTest extends TestCase
 {
     use RefreshDatabase;
@@ -128,13 +109,7 @@ class PaiementMobilePariteTest extends TestCase
         );
     }
 
-    /**
-     * L'INTENT DOIT ÊTRE RATTACHÉ À LA RÉSERVATION, SINON LE WEBHOOK EST AVEUGLE.
-     *
-     * `StripeWebhookHandlers` retrouve la réservation par `stripe_payment_intent_id`. Tant que cette
-     * colonne restait nulle, chaque notification Stripe arrivait sans destinataire : le paiement
-     * réussissait chez Stripe et la réservation restait éternellement « en attente de paiement ».
-     */
+    /** L'INTENT DOIT ÊTRE RATTACHÉ À LA RÉSERVATION, SINON LE WEBHOOK EST AVEUGLE. */
     #[Test]
     public function l_intent_est_rattache_a_la_reservation_et_repris_dans_les_metadonnees(): void
     {
@@ -161,13 +136,7 @@ class PaiementMobilePariteTest extends TestCase
         );
     }
 
-    /**
-     * M2 — UN SECOND INTENT EST UN SECOND DÉBIT.
-     *
-     * Rien n'empêchait de rappeler ce point d'entrée : double appui, retour arrière puis nouvel
-     * appui, reprise de connexion. Chaque appel créait une empreinte de plus sur la carte, et deux
-     * empreintes capturables valent deux prélèvements.
-     */
+    /** M2 — UN SECOND INTENT EST UN SECOND DÉBIT. */
     #[Test]
     public function un_second_appel_ne_cree_pas_un_second_paiement(): void
     {
@@ -197,16 +166,7 @@ class PaiementMobilePariteTest extends TestCase
         $this->assertCount(1, $creations, 'Deux empreintes capturables valent deux prélèvements.');
     }
 
-    /**
-     * SANS PRESTATAIRE ASSIGNÉ, ON REFUSE — ON N'ENCAISSE PAS « EN ATTENDANT ».
-     *
-     * L'écran mobile propose « Payer » dès le statut `pending`, c'est-à-dire avant qu'un prestataire
-     * soit assigné. Or une charge à destination exige un compte destinataire. Le seul intent
-     * possible dans ce cas encaisserait tout sur la plateforme : exactement le défaut qu'on ferme.
-     *
-     * Le refus porte un 409 et non un 500 : c'est une règle métier, pas une panne. Un 500 ferait
-     * retenter l'application et remonterait comme incident.
-     */
+    /** SANS PRESTATAIRE ASSIGNÉ, ON REFUSE — ON N'ENCAISSE PAS « EN ATTENDANT ». */
     #[Test]
     public function sans_prestataire_assigne_le_paiement_est_refuse_sans_rien_encaisser(): void
     {

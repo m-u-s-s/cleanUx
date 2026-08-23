@@ -4,23 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 
-/**
- * Phase 8 — Génère les icônes PWA depuis un logo source ou crée des
- * placeholders monogramme.
- *
- *   php artisan pwa:icons                    # placeholders "CU" sur fond #2563eb
- *   php artisan pwa:icons --source=logo.png  # depuis un PNG/JPG/SVG existant
- *   php artisan pwa:icons --bg="#10b981"     # changer le fond
- *
- * Sortie : public/icons/icon-{72,96,128,144,152,192,384,512}.png
- *          public/icons/icon-{192,512}-maskable.png
- *
- * Dépendance : ext-imagick OU /usr/bin/convert (ImageMagick CLI).
- *
- * Pourquoi cette commande existe : sans icônes, le manifest référence des
- * fichiers absents et la PWA refuse de s'installer (Chrome ne propose pas
- * "Ajouter à l'écran d'accueil").
- */
+/** Phase 8 — Génère les icônes PWA depuis un logo source ou crée des placeholders monogramme. */
 class GeneratePwaIconsCommand extends Command
 {
     protected $signature = 'pwa:icons

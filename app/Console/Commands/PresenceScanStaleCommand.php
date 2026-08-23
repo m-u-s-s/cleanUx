@@ -5,13 +5,7 @@ namespace App\Console\Commands;
 use App\Services\Presence\ProviderPresenceService;
 use Illuminate\Console\Command;
 
-/**
- * Auto-marque offline les providers actifs sans heartbeat depuis N minutes.
- *
- * À scheduler en prod : toutes les 1-2 minutes.
- *
- *   $schedule->command('presence:scan-stale')->everyTwoMinutes();
- */
+/** Auto-marque offline les providers actifs sans heartbeat depuis N minutes. */
 class PresenceScanStaleCommand extends Command
 {
     protected $signature = 'presence:scan-stale

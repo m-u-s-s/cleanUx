@@ -4,11 +4,7 @@ namespace App\Services\AccountingV2\Exports;
 
 use Illuminate\Database\Eloquent\Builder;
 
-/**
- * Sage import (Format BNC/PNM simplifié — CSV avec colonnes propres).
- * Skeleton — variantes Sage 100, Sage Saari, Sage 50c possibles.
- * Cette implémentation suit le format CSV générique compatible Sage Import Plus.
- */
+/** Sage import (Format BNC/PNM simplifié — CSV avec colonnes propres). */
 class SageExportBuilder implements ExportBuilderContract
 {
     public function format(): string

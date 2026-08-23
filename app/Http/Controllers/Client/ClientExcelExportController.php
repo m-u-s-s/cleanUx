@@ -9,9 +9,7 @@ use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/**
- * Phase 6.1 — Endpoint d'export Excel multi-onglets.
- */
+/** Phase 6.1 — Endpoint d'export Excel multi-onglets. */
 class ClientExcelExportController extends Controller
 {
     public function __construct(

@@ -13,24 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * LA CARTE DU TRAJET — poser le départ et l'arrivée au doigt, pas seulement au clavier.
- *
- * CE QUE CES TESTS PROTÈGENT.
- *
- * La carte est un COMPLÉMENT : les champs d'adresse restent le chemin principal, et le seul
- * utilisable au clavier ou au lecteur d'écran. Ce que la carte apporte, c'est la précision —
- * « Rue de la Loi 1 » désigne un bâtiment, pas la porte de service ni le côté du terre-plein où le
- * conducteur doit s'arrêter.
- *
- * Elle N'ÉCRIT RIEN elle-même. Le point traverse la question concernée, qui applique le même
- * traitement que « utiliser ma position ». Un écrivain de plus sur la même donnée ferait diverger
- * le panier de ce que la question affiche — le client verrait son adresse changer toute seule au
- * geste suivant.
- *
- * Ses paramètres viennent du NAVIGATEUR : un rôle inconnu et des coordonnées hors du monde sont
- * refusés ici, pas ailleurs.
- */
+/** LA CARTE DU TRAJET — poser le départ et l'arrivée au doigt, pas seulement au clavier. */
 class CarteDuTrajetTest extends TestCase
 {
     use RefreshDatabase;
@@ -62,13 +45,7 @@ class CarteDuTrajetTest extends TestCase
             ->assertSee('Départ')
             ->assertSee('Arrivée');
 
-        /*
-         * LE SCRIPT N'EST PAS DANS LE HTML DU COMPOSANT, et c'est normal : il vit dans
-         * `@push('scripts')`, une pile rendue par le layout. Un `assertSeeHtml` le chercherait donc
-         * en vain — ce qui a fait échouer la première version de ce test. Le câblage réel de
-         * `placerSurLaCarte` est prouvé par les tests de diffusion ci-dessous, qui appellent la
-         * méthode ; c'est une meilleure preuve qu'une chaîne trouvée dans du texte.
-         */
+        // LE SCRIPT N'EST PAS DANS LE HTML DU COMPOSANT, et c'est normal : il vit dans `@push('scripts')`, une pile rendue par le layout.
     }
 
     /** TÉMOIN : un métier ordinaire n'a pas de trajet, donc pas de carte. */
@@ -84,12 +61,7 @@ class CarteDuTrajetTest extends TestCase
             ->assertDontSeeHtml('id="carte-trajet"');
     }
 
-    /**
-     * DÉPLACER UN REPÈRE ENVOIE LE POINT À SA QUESTION, et pas ailleurs.
-     *
-     * C'est l'invariant central : le parcours diffuse, la question applique. Sans lui, deux
-     * écrivains se disputeraient les colonnes du panier.
-     */
+    /** DÉPLACER UN REPÈRE ENVOIE LE POINT À SA QUESTION, et pas ailleurs. */
     public function test_deplacer_un_repere_diffuse_vers_la_bonne_question(): void
     {
         $course = $this->course();
@@ -112,12 +84,7 @@ class CarteDuTrajetTest extends TestCase
             ->assertDispatched('place-location', code: 'depart');
     }
 
-    /**
-     * LE RÔLE VIENT DU NAVIGATEUR — donc il est vérifié.
-     *
-     * Une méthode publique Livewire est une porte ouverte sur Internet. Un rôle inventé ne doit
-     * rien déclencher du tout, pas retomber sur un point par défaut.
-     */
+    /** LE RÔLE VIENT DU NAVIGATEUR — donc il est vérifié. */
     public function test_un_role_inconnu_ne_fait_rien(): void
     {
         $course = $this->course();
@@ -143,13 +110,7 @@ class CarteDuTrajetTest extends TestCase
         }
     }
 
-    /**
-     * LA QUESTION N'ÉCOUTE QUE SON PROPRE CODE.
-     *
-     * Chaque question du parcours est une instance du même composant : l'événement leur parvient à
-     * toutes. Sans le filtre, poser l'arrivée écraserait aussi le départ, et les deux repères se
-     * superposeraient sur la carte.
-     */
+    /** LA QUESTION N'ÉCOUTE QUE SON PROPRE CODE. */
     public function test_une_question_ignore_le_point_dune_autre(): void
     {
         $course = $this->course();
@@ -182,13 +143,7 @@ class CarteDuTrajetTest extends TestCase
         $composant->assertDispatched('question-answered', code: 'depart');
     }
 
-    /**
-     * LA CARTE APPREND LES DÉPLACEMENTS PAR ÉVÉNEMENT, jamais par le rendu.
-     *
-     * Elle vit sous `wire:ignore` — Leaflet possède son nœud et refuse qu'on le remplace. Sans
-     * cette annonce, elle afficherait indéfiniment l'état du premier chargement : le client
-     * changerait d'adresse au clavier et verrait son repère rester en place.
-     */
+    /** LA CARTE APPREND LES DÉPLACEMENTS PAR ÉVÉNEMENT, jamais par le rendu. */
     public function test_le_serveur_annonce_le_trajet_a_chaque_point(): void
     {
         $course = $this->course();

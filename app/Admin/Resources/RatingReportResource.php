@@ -10,10 +10,6 @@ use App\Models\RatingReport;
 /**
  * Les signalements d’avis à modérer.
  *
- * La DÉCISION de modération passe par le module Avis : masquer un avis recalcule les agrégats
- * du prestataire et sa note publique. Poser un statut ici laisserait la note inchangée, et
- * l’avis masqué continuerait de compter.
- *
  * @extends EloquentResource<RatingReport>
  */
 class RatingReportResource extends EloquentResource
@@ -70,11 +66,7 @@ class RatingReportResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Rejeter un signalement, c'est décider que l'avis RESTE. Le geste est symétrique de
-             * celui du masquage, et le web le sépare pour cette raison : refuser un signalement
-             * n'est pas la même décision que juger l'avis lui-même.
-             */
+            // Rejeter un signalement, c'est décider que l'avis RESTE.
             Action::make('dismiss', 'Rejeter le signalement', function (RatingReport $report) {
                 $report->forceFill([
                     'status' => RatingReport::STATUS_DISMISSED,

@@ -14,26 +14,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * SP3 Task 5 — PreferredCompanyResolver (parité SP2 PreferredProviderResolver,
- * mais au niveau SOCIÉTÉ).
- *
- * Quand un booking porte assigned_provider_organization_id, le resolver décide :
- * la société a ≥1 worker company dispo sur le créneau -> 'assigned' (ce worker) ;
- * aucun worker dispo -> 'unavailable' + créneaux alternatifs où la société a un
- * worker dispo.
- */
+/** SP3 Task 5 — PreferredCompanyResolver (parité SP2 PreferredProviderResolver, mais au niveau SOCIÉTÉ). */
 class PreferredCompanyResolverTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
     use RefreshDatabase;
 
-    /**
-     * Crée un worker société PAR AILLEURS éligible : User actif rattaché à la zone,
-     * ProviderProfile company_worker actif+vérifié rattaché à l'org, disponibilité
-     * couvrant le créneau (08:00-18:00). L'indispo réelle se force via un RDV
-     * concurrent (cf. PreferredProviderResolverTest).
-     */
+    /** Crée un worker société PAR AILLEURS éligible : User actif rattaché à la zone, ProviderProfile company_worker actif+vérifié rattaché à l'org, disponibilité couvrant le créneau (08:00-18:00). */
     private function companyWorker(int $zoneId, int $orgId, string $date): User
     {
         $user = User::factory()->create([

@@ -23,21 +23,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LES TROIS FAÇONS DE COMMANDER, SUR LE WEB, POUR LES DEUX SORTES DE CLIENTS.
- *
- * L'application mobile posait la question en premier — immédiat, rendez-vous, multi-services. Le web
- * arrivait directement sur le catalogue COMPLET : l'intervention immédiate ne se découvrait qu'après
- * avoir choisi un métier, parfois pour apprendre que ce métier ne la permet pas. Et une entreprise
- * cliente n'y avait aucun accès : son formulaire maison ne servait que le rendez-vous, si bien qu'une
- * société avec une fuite dans ses bureaux ne pouvait appeler personne tout de suite, là où un
- * particulier le pouvait — la même plateforme, deux promesses selon le type de compte.
- *
- * CE QUE CE FICHIER PROTÈGE SURTOUT : « intervention immédiate » ne doit contenir QUE ce qui se fait
- * dans l'heure. Un catalogue qui propose un ravalement de façade en immédiat fait cliquer dans le
- * vide, puis reculer — et la deuxième chose qu'un client apprend de la plateforme est qu'elle
- * propose ce qu'elle ne sait pas faire.
- */
+/** LES TROIS FAÇONS DE COMMANDER, SUR LE WEB, POUR LES DEUX SORTES DE CLIENTS. */
 class TroisModesWebTest extends TestCase
 {
     use RefreshDatabase;
@@ -262,13 +248,7 @@ class TroisModesWebTest extends TestCase
         $this->assertSame($this->zone->id, $composant->get('serviceZoneId'));
     }
 
-    /**
-     * LA COMMANDE APPARTIENT À LA SOCIÉTÉ, pas seulement à la personne qui l'a passée.
-     *
-     * Sans ce rattachement, la facture part au nom du collaborateur, la commande n'apparaît pas dans
-     * les réservations de l'entreprise, et le local desservi n'est nulle part — trois conséquences
-     * d'une même colonne oubliée.
-     */
+    /** LA COMMANDE APPARTIENT À LA SOCIÉTÉ, pas seulement à la personne qui l'a passée. */
     #[Test]
     public function la_commande_d_une_societe_porte_sa_societe_et_son_local(): void
     {
@@ -350,10 +330,7 @@ class TroisModesWebTest extends TestCase
             ['surface_m2' => 40, 'etendue' => 'murs_plafonds'],
         );
 
-        /*
-         * Le panier a pu être ouvert hier. Faire confiance à ce qu'il porte rattacherait la
-         * commande — et sa facture — à une société dont l'auteur n'est plus membre.
-         */
+        // Le panier a pu être ouvert hier.
         OrganizationMember::query()
             ->where('user_id', $user->id)
             ->update(['status' => 'removed']);

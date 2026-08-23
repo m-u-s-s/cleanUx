@@ -7,13 +7,7 @@ use App\Models\MultiTradeBundleItemQuote;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * `MultiTradeBundleItemQuote` employait `HasFactory` sans qu'aucune fabrique existe : tout appel à
- * `::factory()` échouait sur « Class not found ». Ses deux sœurs — `MultiTradeBundle` et
- * `MultiTradeBundleItem` — en avaient une ; seule celle-ci manquait.
- *
- * Les clés suivent le schéma réel de `multi_trade_bundle_item_quotes`, vérifié colonne par colonne.
- */
+/** `MultiTradeBundleItemQuote` employait `HasFactory` sans qu'aucune fabrique existe : tout appel à `::factory()` échouait sur « Class not found ». */
 class MultiTradeBundleItemQuoteFactory extends Factory
 {
     protected $model = MultiTradeBundleItemQuote::class;

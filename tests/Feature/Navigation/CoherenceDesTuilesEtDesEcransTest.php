@@ -12,38 +12,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * UNE CASE DOIT ÊTRE VISIBLE EXACTEMENT QUAND SON ÉCRAN S'OUVRE.
- *
- * `CatalogueDesModulesTest` vérifie que chaque page EST DÉCLARÉE. Rien ne vérifiait qu'elle est
- * ATTEIGNABLE PAR QUI Y A DROIT — et c'est là que le registre a dérivé, dans les deux sens :
- *
- *  - CASE PLUS STRICTE QUE L'ÉCRAN : « Planning et absences » exigeait `team.view` alors que
- *    `WorkforcePlanning` ne garde pas son montage. Sept sous-rôles sur onze, dont l'exécutant à qui
- *    l'écran est d'abord destiné, n'avaient aucune porte vers leur propre planning. La capacité
- *    existait et n'était atteignable qu'en tapant l'URL.
- *  - CASE PLUS LARGE QUE L'ÉCRAN : « Équipe » annonçait `team.view` quand `TeamManagement` exige
- *    `members.invite`. Le coordinateur et le chef d'équipe voyaient la case et récoltaient un 403.
- *
- * CE TEST NE LIT PAS LE CODE, IL FRAPPE LES ROUTES. Une première version comparait la clé du
- * registre au `abort_unless` du composant par expression régulière : elle a produit deux faux
- * positifs en dix minutes — `SiteOperations` et `RolePermissionsMatrix` gardent bien leur montage,
- * l'une sur plusieurs lignes, l'autre dans une méthode privée. Comparer deux textes ne prouve rien
- * sur un comportement ; seule la réponse HTTP fait foi.
- *
- * L'ÉQUIVALENCE EST STRICTE dans les deux sens, parce que les deux écarts nuisent : l'un cache un
- * module à qui y a droit, l'autre promet une page et rend un refus.
- */
+/** UNE CASE DOIT ÊTRE VISIBLE EXACTEMENT QUAND SON ÉCRAN S'OUVRE. */
 class CoherenceDesTuilesEtDesEcransTest extends TestCase
 {
     use RefreshDatabase;
 
     /**
      * Tous les sous-rôles d'organisation — pas une sélection.
-     *
-     * Choisir « les rôles intéressants » reviendrait à décider d'avance où le défaut peut se
-     * trouver : les deux dérives ci-dessus concernaient justement des rôles qu'on n'aurait pas
-     * pensé à tester.
      *
      * @return list<OrganizationRole>
      */
@@ -102,8 +77,7 @@ class CoherenceDesTuilesEtDesEcransTest extends TestCase
     }
 
     /**
-     * Le cœur : pour chaque sous-rôle, l'ensemble des cases visibles doit être exactement
-     * l'ensemble des écrans qui répondent 200.
+     * Le cœur : pour chaque sous-rôle, l'ensemble des cases visibles doit être exactement l'ensemble des écrans qui répondent 200.
      *
      * @param  list<array{route: string, label: string}>  $cases
      * @return list<string> les incohérences, en clair
@@ -122,14 +96,7 @@ class CoherenceDesTuilesEtDesEcransTest extends TestCase
         foreach ($cases as $case) {
             $laCaseEstVisible = in_array($case['route'], $visibles, true);
 
-            /*
-             * ON SUIT LES REDIRECTIONS, PARCE QU'UN 302 N'EST PAS UN REFUS.
-             *
-             * Plusieurs portes redirigent vers le moteur de commande plutôt que de rendre un écran
-             * — c'est un chemin qui marche, pas une porte fermée. Compter le 302 comme fermé
-             * signalait « Prendre rendez-vous » en défaut pour les onze sous-rôles, propriétaire
-             * compris : un test qui accuse tout le monde ne désigne personne.
-             */
+            // ON SUIT LES REDIRECTIONS, PARCE QU'UN 302 N'EST PAS UN REFUS.
             $statut = $this->followingRedirects()->get(route($case['route']))->getStatusCode();
             $lEcranSOuvre = $statut === 200;
 

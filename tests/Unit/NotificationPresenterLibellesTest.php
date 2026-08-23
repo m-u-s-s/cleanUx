@@ -8,15 +8,7 @@ use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * « SYSTÈME / SYSTÈME / NOTIFICATION », TROIS FOIS DE SUITE.
- *
- * Relevé à l'écran dans l'application cliente : le fil de notifications n'affichait que ce triplet
- * générique. Mesuré ensuite en base : huit des treize notifications ne portent NI `title` NI
- * `message` dans leur charge utile, alors que leur `type` est parfaitement précis
- * (`mission_started`, `employee_arrived`…) et que la charge utile contient le nom du prestataire et
- * la référence de réservation.
- */
+/** « SYSTÈME / SYSTÈME / NOTIFICATION », TROIS FOIS DE SUITE. */
 class NotificationPresenterLibellesTest extends TestCase
 {
     private function notification(array $data, string $type = 'App\Notifications\GenericNotification'): DatabaseNotification
@@ -51,11 +43,7 @@ class NotificationPresenterLibellesTest extends TestCase
 
     public function test_le_texte_de_la_charge_utile_gagne_toujours(): void
     {
-        /*
-         * TÉMOIN POSITIF. Sans lui, on ne saurait pas si la table de libellés ÉCRASE le texte que
-         * certaines notifications fournissent déjà — `kyc_completed` en porte un. On aurait alors
-         * remplacé un défaut par un autre, et la suite serait restée verte.
-         */
+        // TÉMOIN POSITIF.
         $presenter = app(NotificationPresenter::class);
 
         $notification = $this->notification([

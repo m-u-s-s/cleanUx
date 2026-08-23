@@ -8,12 +8,7 @@ use App\Models\BusinessVerification;
 
 class RiskScoreEngine
 {
-    /**
-     * Calcule un score de risque 0-100 + risk_level basé sur le state actuel de l'entité.
-     * Convention :
-     *   - Plus le score est haut, PLUS le risque est élevé.
-     *   - Score 0 = idéal, score 100 = critique.
-     */
+    /** Calcule un score de risque 0-100 + risk_level basé sur le state actuel de l'entité. */
     public function compute(BusinessEntity $entity): array
     {
         $weights = (array) config('kyb_v2.risk_weights', []);

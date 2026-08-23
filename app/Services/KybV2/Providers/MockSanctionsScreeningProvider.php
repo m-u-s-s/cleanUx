@@ -5,10 +5,7 @@ namespace App\Services\KybV2\Providers;
 use App\Services\KybV2\Contracts\SanctionsScreeningProviderContract;
 use App\Services\KybV2\SanctionsResult;
 
-/**
- * Mock sanctions screening — match si l'identifier ou name contient certains tokens.
- * Pour CI/dev. En prod, remplacer par ComplyAdvantage / Refinitiv / Dow Jones / Sayari.
- */
+/** Mock sanctions screening — match si l'identifier ou name contient certains tokens. Pour CI/dev. */
 class MockSanctionsScreeningProvider implements SanctionsScreeningProviderContract
 {
     /** Tokens qui déclenchent un faux match (case-insensitive substring match) */

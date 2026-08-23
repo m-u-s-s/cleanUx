@@ -10,39 +10,12 @@ use Laravel\Jetstream\Jetstream;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * S'INSCRIRE NE DOIT PAS PERMETTRE DE CHOISIR SON RANG.
- *
- * Fortify appelle `CreateNewUser::create()` avec `$request->all()` — c'est le framework qui le fait,
- * pas nous, et cela ne se change pas depuis l'application. Tant que `platform_role`, `role`,
- * `organization_account_id` et `current_organization_id` figuraient dans `User::$fillable`, le
- * formulaire public d'inscription ouvrait quatre colonnes de décision :
- *
- *   - `platform_role=admin`         → toute la console d'administration (`canAccessAdminModule()`) ;
- *   - `role=admin` / `role=dispatcher` → les gardes `CreateNewUser` lisaient même `$input['role']`
- *                                     explicitement, et la callback de diffusion
- *                                     `providers.presence` autorisait sur cette valeur ;
- *   - `organization_account_id` / `current_organization_id` → l'organisation dont on lit les
- *                                     données, c'est-à-dire les locaux, contrats et factures
- *                                     d'une société qui n'est pas la sienne.
- *
- * DEUX NIVEAUX DE PREUVE, ET ILS NE SE VALENT PAS. `platform_role` et `role` étaient ATTEIGNABLES :
- * `CreateNewUser` les lisait explicitement dans `$input`, et le test d'inscription ci-dessous
- * échouait avant le correctif. Les deux colonnes d'organisation n'avaient, elles, aucun appelant
- * connu qui les exposait : elles étaient assignables sans être offertes. Le test par `fill()` est
- * ce qui prouve leur fermeture — on ne prétend pas avoir refermé une porte qui était close.
- */
+/** S'INSCRIRE NE DOIT PAS PERMETTRE DE CHOISIR SON RANG. */
 class EscaladeParAssignationDeMasseTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * ATTAQUE (a) — une inscription publique qui réclame le rang d'administrateur de plateforme.
-     *
-     * Sans le correctif, `CreateNewUser` lisait `$input['platform_role'] ?? User::PLATFORM_USER` :
-     * la valeur postée gagnait, et `assertFalse($compte->isPlatformAdmin())` tombait. C'est
-     * l'assertion qui porte la faille.
-     */
+    /** ATTAQUE (a) — une inscription publique qui réclame le rang d'administrateur de plateforme. */
     public function test_une_inscription_ne_peut_pas_se_declarer_administrateur_de_plateforme(): void
     {
         if (! Features::enabled(Features::registration())) {
@@ -76,18 +49,7 @@ class EscaladeParAssignationDeMasseTest extends TestCase
         $this->assertFalse($compte->canAccessAdminModule());
     }
 
-    /**
-     * GARDE DE NON-RÉGRESSION — pas une attaque qui réussissait.
-     *
-     * Soyons exacts : `CreateNewUser` construit un tableau littéral, il n'a jamais lu
-     * `$input['organization_account_id']`. Ces deux colonnes étaient assignables en masse sans
-     * qu'un appelant connu ne les expose — le trou était en profondeur, pas ouvert. Ce test tombe
-     * donc AVANT comme APRÈS le correctif ; c'est la preuve par `fill()` un peu plus bas qui porte
-     * le changement de `$fillable`.
-     *
-     * Il reste utile : le jour où quelqu'un élargit ce tableau littéral ou branche un
-     * `fill($donneesValidees)` sur `User`, cette assertion est la première à parler.
-     */
+    /** GARDE DE NON-RÉGRESSION — pas une attaque qui réussissait. */
     public function test_une_inscription_ne_peut_pas_se_rattacher_a_une_organisation_choisie(): void
     {
         if (! Features::enabled(Features::registration())) {
@@ -114,10 +76,6 @@ class EscaladeParAssignationDeMasseTest extends TestCase
     /**
      * Les quatre colonnes de décision, une par une.
      *
-     * `Model::preventSilentlyDiscardingAttributes` étant actif hors production, la tentative LÈVE
-     * au lieu d'être ignorée : la garantie est plus forte qu'un attribut resté nul, et une
-     * régression qui les remettrait dans `$fillable` fait tomber ce test immédiatement.
-     *
      * @return array<int, array{0: string, 1: mixed}>
      */
     public static function colonnesDeDecision(): array
@@ -142,10 +100,7 @@ class EscaladeParAssignationDeMasseTest extends TestCase
         (new User)->fill([$colonne => $valeur]);
     }
 
-    /**
-     * Les points d'écriture légitimes passent par `forceFill()` : le rattachement d'une société
-     * cliente créée pendant l'inscription doit continuer de fonctionner.
-     */
+    /** Les points d'écriture légitimes passent par `forceFill()` : le rattachement d'une société cliente créée pendant l'inscription doit continuer de fonctionner. */
     public function test_l_inscription_d_une_societe_cliente_rattache_toujours_son_signataire(): void
     {
         if (! Features::enabled(Features::registration())) {

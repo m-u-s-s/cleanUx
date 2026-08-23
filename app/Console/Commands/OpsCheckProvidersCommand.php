@@ -19,16 +19,7 @@ use App\Services\Sms\SmsProviderInterface;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\App;
 
-/**
- * Health check : détecte les Mock providers actifs en production.
- *
- * En `APP_ENV=production`, chaque module v2 (SMS, Push, KYC, Insurance, Geo, FX)
- * DOIT avoir un real provider configuré sinon les Mock kicks in silently.
- *
- * Usage :
- *   php artisan ops:check-providers
- *   php artisan ops:check-providers --strict   # exit 1 si mock détecté hors test
- */
+/** Health check : détecte les Mock providers actifs en production. */
 class OpsCheckProvidersCommand extends Command
 {
     protected $signature = 'ops:check-providers
@@ -36,9 +27,7 @@ class OpsCheckProvidersCommand extends Command
 
     protected $description = 'Audit les bindings de providers (SMS/Push/KYC/Insurance/Geo/FX). Detecte les Mock en prod.';
 
-    /**
-     * Map des providers checked : interface → liste des mock class names à interdire en prod.
-     */
+    /** Map des providers checked : interface → liste des mock class names à interdire en prod. */
     protected array $providerChecks = [
         'sms' => [
             'interface' => SmsProviderInterface::class,

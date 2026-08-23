@@ -31,24 +31,7 @@ use Illuminate\Support\Facades\Notification;
 use Tests\Support\CreatesDomainFixtures;
 use Tests\TestCase;
 
-/**
- * LE PARCOURS COMPLET, POUR CHAQUE COUPLE DE RÔLES.
- *
- * Ce fichier ne teste pas une fonction : il JOUE une intervention du début à la fin — commande,
- * mise en route, arrivée, code de début, tâches obligatoires, code de fin, clôture, avis — et le
- * fait pour chaque combinaison de client et de prestataire.
- *
- * POURQUOI UN PARCOURS ENTIER PLUTÔT QUE DES TESTS UNITAIRES. Chacune de ces étapes était déjà
- * couverte séparément, et pourtant le chemin complet était cassé en cinq endroits : le code de fin
- * n'atteignait pas le client, la clôture ne terminait pas la réservation, un code valide était
- * détruit par un refus étranger, les tâches bloquantes étaient invisibles, et clôturer deux fois
- * rejouait tout. Aucun de ces défauts n'était visible depuis une seule étape — ils vivaient dans
- * les JOINTURES, que seul un parcours traverse.
- *
- * LES QUATRE COUPLES SONT JOUÉS AVEC LE MÊME CORPS. Un défaut qui n'apparaîtrait que pour un
- * client société servi par une société indépendante se verrait immédiatement, puisque la seule
- * chose qui change entre deux cas est le montage des acteurs.
- */
+/** LE PARCOURS COMPLET, POUR CHAQUE COUPLE DE RÔLES. */
 class ParcoursCompletTest extends TestCase
 {
     use CreatesDomainFixtures;
@@ -198,13 +181,7 @@ class ParcoursCompletTest extends TestCase
             'planned_start_at' => now()->subHour(),
         ]);
 
-        /*
-         * L'ASSIGNATION D'UN SALARIÉ NAÎT `assigned`, PAS `accepted`.
-         *
-         * `accepted` est l'état du parcours MARKETPLACE — un indépendant à qui l'on propose et qui
-         * répond oui. Un salarié n'accepte rien : son employeur décide. Confondre les deux fait
-         * disparaître les missions d'équipe des listes du renfort.
-         */
+        // L'ASSIGNATION D'UN SALARIÉ NAÎT `assigned`, PAS `accepted`.
         foreach (array_merge($independant ? [$independant] : [], $chef ? [$chef] : [], $renforts) as $acteur) {
             MissionAssignment::factory()->create([
                 'mission_id' => $mission->id,
@@ -245,17 +222,7 @@ class ParcoursCompletTest extends TestCase
     {
         $cycle = app(MissionLifecycleService::class);
 
-        /*
-         * ── Départ et arrivée ────────────────────────────────────────────────
-         *
-         * LA RÉSERVATION DOIT SUIVRE LA MISSION, à chaque étape et pas seulement à la fin.
-         *
-         * Rien n'écrivait `en_route` ni `sur_place` sur une réservation : le client passait de
-         * « confirmé » à « terminé » sans jamais voir que son prestataire était en route ou chez
-         * lui. Le bouton « Scanner QR — Terminer » de l'application cliente, conditionné à
-         * `in_progress`, était donc inatteignable — et les tableaux de bord employé, missions et
-         * planning comptaient des statuts que personne n'écrivait, affichant zéro en permanence.
-         */
+        // ── Départ et arrivée ──────────────────────────────────────────────── LA RÉSERVATION DOIT SUIVRE LA MISSION, à chaque étape et pas seulement à la fin.
         $mission = $cycle->setEnRoute($mission, $intervenant);
         $this->assertSame(MissionStatus::EN_ROUTE, $mission->fresh()->status);
         $this->assertSame(
@@ -295,12 +262,7 @@ class ParcoursCompletTest extends TestCase
             'Toutes les tâches cochées, la clôture devrait être possible.',
         );
 
-        /*
-         * ── Le code de FIN est DEMANDÉ, puis doit atteindre le client ─────────
-         *
-         * Il n'est plus émis à l'arrivée : détenu depuis le début, il n'attestait rien de la fin.
-         * Le prestataire le réclame quand il a terminé — c'est le geste que reproduit cette ligne.
-         */
+        // ── Le code de FIN est DEMANDÉ, puis doit atteindre le client ───────── Il n'est plus émis à l'arrivée : détenu depuis le début, il n'attestait rien de la fin.
         $cycle->generateEndCode($mission->fresh());
 
         $codeFin = $this->codeDepuisLaNotification($client, MissionEndCodeNotification::class, 'endCode');
@@ -316,12 +278,7 @@ class ParcoursCompletTest extends TestCase
         // ── Les deux parties sont prévenues ───────────────────────────────────
         Notification::assertSentTo($client, MissionCompletedNotification::class);
 
-        /*
-         * L'ANNONCE DE GAIN NE VAUT QUE POUR UN INDÉPENDANT.
-         *
-         * Dans une société, l'argent va à l'entreprise : chef d'équipe et renforts sont salariés.
-         * Leur promettre un virement personnel serait faux — c'est ce que ce parcours a révélé.
-         */
+        // L'ANNONCE DE GAIN NE VAUT QUE POUR UN INDÉPENDANT.
         if ($mission->fresh()->provider_organization_id === null) {
             Notification::assertSentTo($intervenant, MissionPayoutAnnouncedNotification::class);
         } else {
@@ -352,10 +309,6 @@ class ParcoursCompletTest extends TestCase
 
     /**
      * Le code en clair ne vit QUE dans la notification du client — il n'est jamais stocké.
-     *
-     * `MissionVerificationCodeService` n'enregistre qu'une empreinte : lire la base ne rendrait
-     * jamais les six chiffres. Le parcours doit donc les récupérer là où le client les lit, ce qui
-     * vérifie du même coup que le porteur fonctionne vraiment.
      *
      * @param  class-string  $classe
      */
@@ -390,21 +343,7 @@ class ParcoursCompletTest extends TestCase
         $this->assertSame(MissionStatus::COMPLETED, $rapport['mission']);
     }
 
-    /**
-     * LE PRESTATAIRE REDEVIENT DISPONIBLE À LA CLÔTURE — sans quoi il disparaît de la répartition.
-     *
-     * `DispatchEngine` bascule le prestataire en `busy` dès qu'il accepte, pour qu'une seconde
-     * course ne lui parvienne pas pendant la première. Le retour à `online` dépend de
-     * `PresenceAutoTransitioner::bookingEnded()`, que `BookingObserver` ne déclenche QUE si la
-     * RÉSERVATION passe à un statut terminé.
-     *
-     * Tant que la clôture ne terminait pas la réservation, ce retour n'arrivait jamais : celui qui
-     * acceptait une mission restait `busy` indéfiniment, et `CandidateFinder` — qui exige `online`
-     * — cessait à jamais de le proposer. Un prestataire sortait donc de la répartition après sa
-     * PREMIÈRE course, en silence.
-     *
-     * Ce test épingle le circuit entier : clôture → réservation terminée → observateur → présence.
-     */
+    /** LE PRESTATAIRE REDEVIENT DISPONIBLE À LA CLÔTURE — sans quoi il disparaît de la répartition. */
     public function test_le_prestataire_occupe_redevient_disponible_apres_la_cloture(): void
     {
         Notification::fake();
@@ -472,9 +411,7 @@ class ParcoursCompletTest extends TestCase
         $this->assertSame(MissionStatus::COMPLETED, $rapport['mission']);
     }
 
-    /**
-     * UNE MISSION IMMÉDIATE suit le même chemin — seul le mode de commande change.
-     */
+    /** UNE MISSION IMMÉDIATE suit le même chemin — seul le mode de commande change. */
     public function test_mission_immediate_de_bout_en_bout(): void
     {
         Notification::fake();
@@ -489,12 +426,7 @@ class ParcoursCompletTest extends TestCase
         $this->assertSame(MissionStatus::COMPLETED, $rapport['mission']);
     }
 
-    /**
-     * UN RENFORT DOIT POUVOIR MENER LA MISSION DE SON ÉQUIPE.
-     *
-     * Il n'a rien « accepté » — son employeur a décidé pour lui — et son assignation naît donc
-     * `assigned`. Une garde écrite sur `accepted` seul le laisserait dehors.
-     */
+    /** UN RENFORT DOIT POUVOIR MENER LA MISSION DE SON ÉQUIPE. */
     public function test_un_renfort_de_societe_peut_mener_la_mission(): void
     {
         Notification::fake();

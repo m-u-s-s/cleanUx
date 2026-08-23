@@ -8,21 +8,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Lang;
 use Tests\TestCase;
 
-/**
- * PERSONNE NE DOIT LIRE « validation.unique » NI « auth.failed ».
- *
- * Mesuré le 2026-08-16, dans un navigateur et dans l'application : aucun dossier de `lang` ne
- * contenait `validation.php` ni `auth.php`, alors que `locale` et `fallback_locale` valent tous deux
- * `fr`. Laravel rendait donc la clé elle-même. Ce que voyaient les utilisateurs :
- *
- *   • connexion web, mauvais mot de passe   → « Whoops! Something went wrong. » puis « auth.failed »
- *   • inscription web, e-mail déjà pris     → « validation.unique », « validation.confirmed »
- *   • application mobile                    → {"message":"validation.required (and 4 more errors)"}
- *
- * CE FICHIER TESTE DEUX CHOSES DIFFÉRENTES, et les deux comptent : ce que rend l'écran (un vrai
- * POST, pas une lecture de fichier), et la COMPLÉTUDE du catalogue — sans quoi la prochaine règle de
- * validation employée dans le projet ressortirait en clé nue sans que rien ne le signale.
- */
+/** PERSONNE NE DOIT LIRE « validation.unique » NI « auth.failed ». */
 class MessagesLisiblesTest extends TestCase
 {
     use RefreshDatabase;
@@ -108,10 +94,7 @@ class MessagesLisiblesTest extends TestCase
     // ─── La complétude du catalogue ──────────────────────────────────────────────────────────
 
     /**
-     * TOUTES les règles de validation du framework doivent être traduites, pas seulement celles
-     * qu'un formulaire déclenche aujourd'hui. Une règle ajoutée demain ressortirait sinon en clé
-     * nue, et c'est exactement ainsi que ce défaut a vécu : `min:8` et `unique` n'avaient jamais
-     * été traduits parce que personne n'avait regardé le formulaire après un refus.
+     * TOUTES les règles de validation du framework doivent être traduites, pas seulement celles qu'un formulaire déclenche aujourd'hui.
      *
      * @dataProvider languesServies
      */
@@ -158,12 +141,7 @@ class MessagesLisiblesTest extends TestCase
         $this->assertSame([], $intraduites, "Ces cles ne sont pas traduites en « {$locale} » : l utilisateur verra la cle brute.");
     }
 
-    /**
-     * Les langues NON traduites doivent retomber sur le français, jamais sur une clé nue.
-     *
-     * `fallback_locale = fr` s'en charge — mais il faut que ce soit vérifié, sinon un nl_BE verrait
-     * « validation.required » là où un fr_BE lit une phrase, et rien dans les tests ne le dirait.
-     */
+    /** Les langues NON traduites doivent retomber sur le français, jamais sur une clé nue. */
     public function test_une_langue_non_traduite_retombe_sur_le_francais(): void
     {
         app()->setLocale('nl');

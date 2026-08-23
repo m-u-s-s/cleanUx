@@ -10,23 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * Niveau 1 du catalogue : le secteur (Batiment, Nettoyage, Espaces verts...).
- *
- * Une carte du carrousel d'accueil. `accent_color` est le seul endroit du produit ou la couleur
- * est saturee : la carte active s'en teinte, tout le reste vit en neutres.
- *
- * ── POURQUOI LE SECTEUR SE TRADUIT ───────────────────────────────────────────────────────────
- *
- * C'est la PREMIÈRE chose qu'un client voit en commandant. Le questionnaire qui suit était
- * traduisible depuis longtemps — `Question`, `QuestionStep`, `QuestionOption` portent ce trait —
- * mais le carrousel qui y mène ne l'était pas : un client néerlandophone choisissait son secteur
- * en français, puis répondait à des questions en néerlandais. La chaîne se traduisait par le
- * milieu.
- *
- * Les champs traduisibles sont `name` et `tagline`, et la liste est FERMÉE côté écran
- * d'administration : voir `CatalogCenter::CHAMPS_TRADUISIBLES`.
- */
+/** Niveau 1 du catalogue : le secteur (Batiment, Nettoyage, Espaces verts...). */
 class Sector extends Model implements TranslatesCatalogLabels
 {
     use AuditsEloquentEvents, HasCatalogTranslations, SoftDeletes;
@@ -64,13 +48,7 @@ class Sector extends Model implements TranslatesCatalogLabels
         return $q->orderBy('sort_order')->orderBy('name');
     }
 
-    /*
-     * Même domaine que les questions : « catalog ».
-     *
-     * Les trois niveaux se lisent alors dans un seul flux d'audit. Archiver un secteur retire tout
-     * un pan du carrousel d'un geste ; répondre à « pourquoi Espaces verts a disparu jeudi »
-     * demande de retrouver ce geste-là, pas de deviner.
-     */
+    // Même domaine que les questions : « catalog ».
     protected function auditEventDomain(): string
     {
         return 'catalog';

@@ -12,13 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-/**
- * InsuranceClaimsService — lifecycle of insurance claims.
- *
- *   - fileClaim(...)       → InsuranceClaim
- *   - updateClaimStatus(…) → InsuranceClaim (state machine)
- *   - applyWebhookUpdate(…) → policy or claim record (or null)
- */
+/** InsuranceClaimsService — lifecycle of insurance claims. */
 class InsuranceClaimsService
 {
     public function __construct(
@@ -118,10 +112,7 @@ class InsuranceClaimsService
         });
     }
 
-    /**
-     * Transitions d'état d'une réclamation avec machine à états explicite.
-     * Lève InvalidArgumentException pour les transitions non permises.
-     */
+    /** Transitions d'état d'une réclamation avec machine à états explicite. */
     public function updateClaimStatus(InsuranceClaim $claim, string $newStatus, ?string $notes = null): InsuranceClaim
     {
         $validTransitions = [

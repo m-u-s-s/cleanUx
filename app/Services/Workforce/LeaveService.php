@@ -10,18 +10,7 @@ use DomainException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * LES CONGÉS ET ABSENCES (E21) — poser, approuver, refuser.
- *
- * TOUT L'INTÉRÊT EST AILLEURS QUE DANS CE SERVICE : une demande approuvée doit empêcher
- * l'assignation, et c'est `WorkerAvailabilityService` qui le fait. Un module de congés qui ne
- * parlerait qu'à lui-même produirait un joli tableau et enverrait quand même la course au salarié le
- * premier jour de ses vacances.
- *
- * ON NE POSE PAS UN CONGÉ POUR QUELQU'UN D'AUTRE, et on n'approuve pas le sien. Les deux gardes
- * disent la même chose sous deux angles : une absence engage deux personnes, celle qui s'absente et
- * celle qui assume le trou dans le planning.
- */
+/** LES CONGÉS ET ABSENCES (E21) — poser, approuver, refuser. */
 class LeaveService
 {
     public function __construct(
@@ -65,11 +54,7 @@ class LeaveService
             ->exists();
 
         if ($chevauche) {
-            /*
-             * DEUX ABSENCES QUI SE CHEVAUCHENT NE VEULENT RIEN DIRE. Le responsable devrait deviner
-             * laquelle fait foi, et le décompte de jours — celui qui finit sur la fiche de paie —
-             * compterait deux fois la même semaine.
-             */
+            // DEUX ABSENCES QUI SE CHEVAUCHENT NE VEULENT RIEN DIRE.
             throw new DomainException('Une demande couvre déjà tout ou partie de ces dates.');
         }
 
@@ -135,9 +120,6 @@ class LeaveService
 
     /**
      * Le demandeur retire sa demande.
-     *
-     * Possible même APRÈS approbation : un congé annulé rend la personne assignable, ce qui est
-     * exactement ce qu'on veut quand quelqu'un renonce à ses vacances.
      *
      * @throws DomainException
      */

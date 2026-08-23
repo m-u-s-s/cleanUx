@@ -8,23 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-/**
- * « NOS LOCATIONS » NE DOIT RIEN EMPRUNTER À FLEET NI AU MOTEUR DE COMMANDE.
- *
- * La demande est explicite sur ce point : inspiré de Fleet, mais sans le modifier ; ajouté au
- * catalogue, sans en toucher le reste ; fonctionnant différemment, et différencié dans le code.
- * Trois exigences qu'une relecture ne peut pas tenir dans la durée — d'où ce fichier.
- *
- * ── POURQUOI L'ISOLATION SE TESTE ────────────────────────────────────────────────────────────
- *
- * Le mélange ne se produit jamais d'un coup. Il arrive une ligne à la fois, chacune raisonnable :
- * « les deux ont un véhicule, autant partager la table », « le catalogue sait déjà lister, autant
- * réutiliser le composant ». Six mois plus tard, changer un prix de location casse une affectation
- * de chantier. Ce dépôt en a plusieurs exemples, et il les appelle « deux notions, un événement ».
- *
- * Ce test ne dit pas que le partage est interdit pour toujours. Il dit qu'il devient un geste
- * VISIBLE : on ne peut plus le faire sans venir ici l'écrire.
- */
+/** « NOS LOCATIONS » NE DOIT RIEN EMPRUNTER À FLEET NI AU MOTEUR DE COMMANDE. */
 class LeModuleLocationResteIsoleTest extends TestCase
 {
     use RefreshDatabase;
@@ -45,14 +29,7 @@ class LeModuleLocationResteIsoleTest extends TestCase
         'app/Livewire/Admin/Rental/NosLocationsCenter.php',
     ];
 
-    /**
-     * LES DEUX PARCS SONT DEUX TABLES, ET ELLES LE RESTENT.
-     *
-     * Fleet est un registre d'employeur — ce qu'une société confie à ses exécutants pour aller
-     * travailler, sans transaction. Ici le véhicule est un produit vendu. Une seule table aurait
-     * porté deux cycles de vie qui ne se rencontrent jamais, et la moitié des colonnes de chaque
-     * ligne serait vide selon le cas.
-     */
+    /** LES DEUX PARCS SONT DEUX TABLES, ET ELLES LE RESTENT. */
     public function test_les_deux_parcs_sont_deux_tables_distinctes(): void
     {
         $this->assertTrue(Schema::hasTable('fleet_vehicles'));
@@ -80,12 +57,7 @@ class LeModuleLocationResteIsoleTest extends TestCase
         $this->assertSame(1, FleetVehicle::query()->count());
     }
 
-    /**
-     * AUCUN FICHIER DU MODULE N'IMPORTE FLEET NI LE MOTEUR DE COMMANDE.
-     *
-     * C'est la forme la plus simple de l'isolation, et la plus facile à briser : un `use` ajouté
-     * « juste pour lire une valeur » suffit à créer le couplage qu'on veut éviter.
-     */
+    /** AUCUN FICHIER DU MODULE N'IMPORTE FLEET NI LE MOTEUR DE COMMANDE. */
     public function test_le_module_nimporte_ni_fleet_ni_le_moteur_de_commande(): void
     {
         $interdits = [
@@ -119,12 +91,7 @@ class LeModuleLocationResteIsoleTest extends TestCase
         );
     }
 
-    /**
-     * TÉMOIN DU MOTIF — la recherche saurait voir un import interdit.
-     *
-     * Sans lui, le test précédent serait vert sur une comparaison qui ne mord jamais : il compterait
-     * zéro coupable en ne sachant reconnaître aucun coupable.
-     */
+    /** TÉMOIN DU MOTIF — la recherche saurait voir un import interdit. */
     public function test_temoin_le_motif_reconnait_un_import_interdit(): void
     {
         $factice = "<?php\nuse App\\Models\\FleetVehicle;\n";
@@ -133,13 +100,7 @@ class LeModuleLocationResteIsoleTest extends TestCase
         $this->assertFalse(str_contains("<?php\nuse App\\Models\\RentalVehicle;\n", 'use App\\Models\\FleetVehicle'));
     }
 
-    /**
-     * LE MOTEUR DE COMMANDE NE CONNAÎT PAS LA LOCATION NON PLUS — sauf par la case du catalogue.
-     *
-     * `OrderJourney.php` ne doit pas avoir bougé d'une ligne : la case est un composant autonome,
-     * inséré dans la VUE. Si la classe se mettait à parler de location, les deux parcours
-     * commenceraient à se tenir par la main.
-     */
+    /** LE MOTEUR DE COMMANDE NE CONNAÎT PAS LA LOCATION NON PLUS — sauf par la case du catalogue. */
     public function test_le_moteur_de_commande_ignore_la_location(): void
     {
         $source = (string) file_get_contents(base_path('app/Livewire/OrderEngine/OrderJourney.php'));
@@ -161,12 +122,7 @@ class LeModuleLocationResteIsoleTest extends TestCase
         );
     }
 
-    /**
-     * LES DEUX CATALOGUES ONT DEUX ADRESSES, ET AUCUNE NE MASQUE L'AUTRE.
-     *
-     * `/commander` et `/location` sont deux racines distinctes. Le jour où l'une passerait sous
-     * l'autre, un changement de préfixe casserait les deux d'un coup.
-     */
+    /** LES DEUX CATALOGUES ONT DEUX ADRESSES, ET AUCUNE NE MASQUE L'AUTRE. */
     public function test_les_deux_catalogues_ont_des_adresses_distinctes(): void
     {
         $this->assertSame('location', route('location.catalogue', absolute: false) === '/location' ? 'location' : 'autre');

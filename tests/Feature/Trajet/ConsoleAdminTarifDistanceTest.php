@@ -13,13 +13,7 @@ use App\Support\Domain\QuestionType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LA CONSOLE MOBILE PEUT RÉGLER LE PRIX AU KILOMÈTRE — pas seulement le web.
- *
- * Sans ces routes, un administrateur en déplacement ouvre un métier de course dans une zone et
- * repart sans avoir pu y poser un tarif : la course s'y vend alors au FORFAIT, c'est-à-dire au même
- * prix pour deux kilomètres que pour vingt. L'erreur ne se voit qu'à la première facture contestée.
- */
+/** LA CONSOLE MOBILE PEUT RÉGLER LE PRIX AU KILOMÈTRE — pas seulement le web. */
 class ConsoleAdminTarifDistanceTest extends TestCase
 {
     use RefreshDatabase;
@@ -119,10 +113,7 @@ class ConsoleAdminTarifDistanceTest extends TestCase
         ]);
     }
 
-    /**
-     * « Aucun tarif au kilomètre » et « zéro centime le kilomètre » ne sont pas la même chose : le
-     * premier laisse le forfait décider, le second facturerait la distance gratuitement.
-     */
+    /** « Aucun tarif au kilomètre » et « zéro centime le kilomètre » ne sont pas la même chose : le premier laisse le forfait décider, le second facturerait la distance gratuitement. */
     public function test_un_champ_vide_efface_le_tarif_sans_le_mettre_a_zero(): void
     {
         $course = $this->metierDeCourse();

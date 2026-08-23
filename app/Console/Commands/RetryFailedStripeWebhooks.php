@@ -6,16 +6,7 @@ use App\Jobs\Payments\ProcessStripeWebhookJob;
 use App\Models\StripeWebhookEvent;
 use Illuminate\Console\Command;
 
-/**
- * M9 — re-dispatch Stripe Connect webhook events that failed transiently.
- *
- * ProcessStripeWebhookJob has tries=1, and the controller always answers Stripe 200, so a
- * transiently-failed event (DB blip, Stripe API timeout) is never retried by the queue and
- * Stripe never re-sends it. The processor marks such events STATUS_FAILED with next_retry_at;
- * this command (scheduled) re-dispatches the ones now due, until they succeed or hit
- * max_attempts (then the processor moves them to dead_letter). Without it, a missed
- * payout.failed / charge.refunded silently desyncs the wallet + booking from Stripe.
- */
+/** M9 — re-dispatch Stripe Connect webhook events that failed transiently. */
 class RetryFailedStripeWebhooks extends Command
 {
     protected $signature = 'stripe:retry-failed-webhooks {--limit=200 : Max events to re-dispatch per run}';

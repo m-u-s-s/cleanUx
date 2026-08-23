@@ -12,13 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Tests\TestCase;
 
-/**
- * LE PRIX QUAND ON VEND DU TEMPS.
- *
- * Le moteur facturait un forfait, quelle que soit la durée : 45 € pour une heure comme pour
- * quatre. Ces tests fixent le contrat inverse, et surtout ses BORDS — ce sont eux qui coûtent
- * cher en production.
- */
+/** LE PRIX QUAND ON VEND DU TEMPS. */
 class PrixALHeureTest extends TestCase
 {
     use RefreshDatabase;
@@ -31,12 +25,7 @@ class PrixALHeureTest extends TestCase
         $this->assertSame(13500, $devis->maxCents);
     }
 
-    /**
-     * LA DURÉE DEVIENT UN ENGAGEMENT, PAS UNE ESTIMATION.
-     *
-     * C'est ce qui servira de repère au dépassement. Si le moteur rendait l'estimation du métier,
-     * un client ayant acheté 4 h basculerait en dépassement au bout de 2 h.
-     */
+    /** LA DURÉE DEVIENT UN ENGAGEMENT, PAS UNE ESTIMATION. */
     public function test_la_duree_rendue_est_celle_achetee_pas_celle_estimee(): void
     {
         $devis = $this->devis(heures: 4, tarifCents: 4500, estimationDuMetier: 120);
@@ -44,10 +33,7 @@ class PrixALHeureTest extends TestCase
         $this->assertSame(240, $devis->durationMin);
     }
 
-    /**
-     * Le forfait du métier ET celui de la zone sont ignorés : les additionner ferait payer deux
-     * fois la même prestation.
-     */
+    /** Le forfait du métier ET celui de la zone sont ignorés : les additionner ferait payer deux fois la même prestation. */
     public function test_le_forfait_du_metier_est_ignore(): void
     {
         $devis = $this->devis(heures: 2, tarifCents: 5000, forfaitMetierCents: 9900);
@@ -78,12 +64,7 @@ class PrixALHeureTest extends TestCase
 
     // ── Les bords ────────────────────────────────────────────────────────
 
-    /**
-     * SANS HEURES CHOISIES, ON GARDE LE FORFAIT — surtout pas 0 €.
-     *
-     * C'est l'état du panier avant que le client ait touché au sélecteur. Annoncer 0 € y ferait
-     * commander une prestation gratuite.
-     */
+    /** SANS HEURES CHOISIES, ON GARDE LE FORFAIT — surtout pas 0 €. */
     public function test_sans_heures_choisies_le_forfait_tient(): void
     {
         $devis = $this->devis(heures: null, tarifCents: 4500, forfaitMetierCents: 9900);
@@ -108,10 +89,7 @@ class PrixALHeureTest extends TestCase
 
     // ── L'empilement des multiplicateurs ─────────────────────────────────
 
-    /**
-     * LE MODE IMMÉDIAT MULTIPLIE LE TOTAL HORAIRE, pas le tarif seul — et c'est ce qui permettra
-     * de retrouver le tarif effectif par simple division.
-     */
+    /** LE MODE IMMÉDIAT MULTIPLIE LE TOTAL HORAIRE, pas le tarif seul — et c'est ce qui permettra de retrouver le tarif effectif par simple division. */
     public function test_le_mode_immediat_majore_le_total_horaire(): void
     {
         $devis = $this->devis(heures: 3, tarifCents: 4500, mode: OrderMode::ASAP);
@@ -120,13 +98,7 @@ class PrixALHeureTest extends TestCase
         $this->assertSame(17550, $devis->minCents);
     }
 
-    /**
-     * LA DIVISION QUI PORTE TOUTE LA RÈGLE DU DÉPASSEMENT.
-     *
-     * Le moteur oublie ses multiplicateurs ; la durée, elle, n'est jamais multipliée. Le quotient
-     * `montant ÷ heures` rend donc le tarif horaire TOUT COMPRIS — celui sur lequel le ×1,30 du
-     * dépassement viendra s'empiler.
-     */
+    /** LA DIVISION QUI PORTE TOUTE LA RÈGLE DU DÉPASSEMENT. */
     public function test_le_tarif_effectif_se_retrouve_par_division(): void
     {
         $devis = $this->devis(heures: 3, tarifCents: 4500, mode: OrderMode::ASAP);

@@ -7,14 +7,7 @@ use App\Models\User;
 use App\Services\OnboardingV2\OnboardingStepValidation;
 use App\Services\OnboardingV2\OnboardingStepValidator;
 
-/**
- * Vérifie que les champs minimum du user sont remplis :
- *   - name, email (toujours)
- *   - phone (toujours pour provider, optionnel pour client)
- *   - locale (toujours)
- *
- * Liste configurable via step.metadata.required_user_fields[].
- */
+/** Vérifie que les champs minimum du user sont remplis : - name, email (toujours) - phone (toujours pour provider, optionnel pour client) - locale (toujours) Liste configurable via step.metadata.required_user_fields[]. */
 class ProfileCompleteValidator implements OnboardingStepValidator
 {
     public function validate(User $user, OnboardingStep $step, array $payload): OnboardingStepValidation

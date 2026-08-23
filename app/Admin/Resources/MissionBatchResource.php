@@ -9,10 +9,6 @@ use App\Models\MissionBatch;
 /**
  * Les lots de missions confiés aux équipes de terrain.
  *
- * La COMPOSITION d’un lot engage la capacité d’une équipe sur une période : l’éditer depuis une
- * liste ferait accepter plus de missions que l’équipe ne peut en tenir, et le sur-engagement ne
- * se voit qu’au moment où quelqu’un ne vient pas.
- *
  * @extends EloquentResource<MissionBatch>
  */
 class MissionBatchResource extends EloquentResource

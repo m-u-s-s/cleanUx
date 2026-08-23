@@ -11,15 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
-/**
- * Décision produit 2026-06-11 : KYC = BLOCAGE STRICT.
- * Aucune mission ne peut être offerte/assignée à un prestataire dont le KYC
- * n'est pas validé (verification_status === 'verified').
- *
- * Le pool de candidats (EmployeeAvailabilityService) filtre déjà les non-vérifiés,
- * mais createOffer() peut être appelé en direct (force-assign admin, prestataire
- * préféré) — d'où cette garde au chokepoint universel.
- */
+/** Décision produit 2026-06-11 : KYC = BLOCAGE STRICT. */
 class KycDispatchGateTest extends TestCase
 {
     use RefreshDatabase;

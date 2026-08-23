@@ -7,42 +7,13 @@ use App\Models\User;
 use App\Services\Geo\GeoDistanceService;
 use Illuminate\Support\Carbon;
 
-/**
- * MA FICHE DU JOUR ET LA TOURNÉE (E17 + E34).
- *
- * CE QUI SE PASSE AUJOURD'HUI. Un prestataire a quatre interventions dans la journée et les découvre
- * dans une liste triée par heure. Il ne sait pas combien de temps il lui faut entre la deuxième et
- * la troisième, ni si l'ordre proposé lui fait traverser la ville deux fois. Il l'apprend en le
- * faisant, et arrive en retard à la troisième.
- *
- * L'HEURE PRÉVUE FAIT FOI, TOUJOURS. La tournée n'est pas une optimisation libre : un client attend
- * à 14 h, et le prestataire ne peut pas décider d'arriver à 16 h parce que c'est plus court. On
- * ordonne donc par HORAIRE, et le calcul de trajet sert à dire si l'enchaînement TIENT — pas à
- * réordonner.
- *
- * C'EST LA DIFFÉRENCE ENTRE UN OUTIL UTILE ET UN OUTIL QU'ON DÉSACTIVE. Un optimiseur qui propose de
- * décaler des rendez-vous pris ne sert à personne ; un écran qui dit « vous avez 25 minutes de
- * trajet et 20 minutes de battement » permet de prévenir avant, ce qui change tout pour le client.
- *
- * LA DISTANCE EST À VOL D'OISEAU, ET C'EST DIT. Sans service de routage, prétendre à une durée de
- * trajet exacte serait mentir : on majore prudemment et on annonce l'approximation. Un temps
- * sous-estimé ferait rater le rendez-vous suivant.
- */
+/** MA FICHE DU JOUR ET LA TOURNÉE (E17 + E34). CE QUI SE PASSE AUJOURD'HUI. */
 class DailyRouteService
 {
-    /**
-     * Vitesse moyenne retenue en ville, en km/h.
-     *
-     * DÉLIBÉRÉMENT BASSE : surestimer le temps de trajet fait partir plus tôt, ce qui se rattrape en
-     * attendant cinq minutes. Le sous-estimer fait arriver en retard, ce qui ne se rattrape pas.
-     */
+    /** Vitesse moyenne retenue en ville, en km/h. */
     public const VITESSE_KMH = 22.0;
 
-    /**
-     * Le coefficient qui transforme la distance à vol d'oiseau en distance routière.
-     *
-     * Une ville n'est pas un plan : 1,4 est l'ordre de grandeur admis pour un tissu urbain dense.
-     */
+    /** Le coefficient qui transforme la distance à vol d'oiseau en distance routière. */
     public const COEFFICIENT_ROUTIER = 1.4;
 
     /**
@@ -84,10 +55,7 @@ class DailyRouteService
                 // afficher « 0 min » laisserait croire qu'elle est à côté de chez soi.
                 'travel_km' => $trajet['km'],
                 'travel_minutes' => $trajet['minutes'],
-                /*
-                 * LE BATTEMENT EST LE CHIFFRE QUI COMPTE. Négatif, l'enchaînement ne tient pas :
-                 * c'est ce qu'il faut savoir la veille, pas en route.
-                 */
+                // LE BATTEMENT EST LE CHIFFRE QUI COMPTE.
                 'slack_minutes' => $trajet['slack_minutes'],
                 'is_tight' => $trajet['slack_minutes'] !== null && $trajet['slack_minutes'] < 0,
             ];
@@ -128,25 +96,13 @@ class DailyRouteService
         $lat2 = $arrivee->destination_lat;
         $lng2 = $arrivee->destination_lng;
 
-        /*
-         * `is_numeric` ET NON `=== null`. Ces colonnes sont déclarées NON nullables et rendent une
-         * CHAÎNE : une réservation sans coordonnées porte une chaîne vide, pas `null`. Comparer à
-         * `null` était donc toujours faux, et le garde-fou ne gardait rien — on aurait calculé une
-         * distance depuis le point zéro de l'Atlantique.
-         *
-         * SANS COORDONNÉES, ON NE DEVINE PAS : rendre `null` fait afficher « — », tandis
-         * qu'inventer une distance ferait planifier une journée sur un chiffre faux.
-         */
+        // `is_numeric` ET NON `=== null`.
         if (! is_numeric($lat1) || ! is_numeric($lng1) || ! is_numeric($lat2) || ! is_numeric($lng2)) {
             return ['km' => null, 'minutes' => null, 'slack_minutes' => null];
         }
 
         $km = round(
-            /*
-             * `haversineKm` ET NON `drivingDistanceKm` : le second appelle un service externe, et
-             * une fiche du jour qui dépend d'un tiers ne s'affiche pas le matin où ce tiers est en
-             * panne. On majore une distance à vol d'oiseau, et on l'annonce.
-             */
+            // `haversineKm` ET NON `drivingDistanceKm` : le second appelle un service externe, et une fiche du jour qui dépend d'un tiers ne s'affiche pas le matin où ce tiers est en panne.
             app(GeoDistanceService::class)->haversineKm((float) $lat1, (float) $lng1, (float) $lat2, (float) $lng2)
                 * self::COEFFICIENT_ROUTIER,
             1,

@@ -28,14 +28,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * L'écran d'attente d'une course immédiate.
- *
- * Le plus anxiogène du parcours. Ce qui est vérifié ici tient aux promesses faites au client :
- * l'annulation reste ATTEIGNABLE et son coût est ANNONCÉ AVANT le clic ; l'attente n'est jamais un
- * cul-de-sac ; et une course acceptée devient une intervention RÉELLE — sans quoi le prestataire
- * ne verrait rien dans son application et ne serait jamais payé.
- */
+/** L'écran d'attente d'une course immédiate. Le plus anxiogène du parcours. */
 class AsapSearchScreenTest extends TestCase
 {
     use RefreshDatabase;
@@ -56,12 +49,7 @@ class AsapSearchScreenTest extends TestCase
         parent::tearDown();
     }
 
-    /**
-     * Confirmer en mode immédiat OUVRE la recherche.
-     *
-     * Sans cela, le client confirmerait une course « dès que possible » et se retrouverait devant
-     * un écran d'attente que rien n'alimente.
-     */
+    /** Confirmer en mode immédiat OUVRE la recherche. */
     public function test_confirming_an_immediate_order_opens_the_search(): void
     {
         // Un candidat, sinon la recherche s'épuise dans la seconde : le moteur ne laisse pas une
@@ -117,12 +105,7 @@ class AsapSearchScreenTest extends TestCase
             ->assertSee('5 km');
     }
 
-    /**
-     * L'annulation est TOUJOURS atteignable, et son coût est ANNONCÉ avant le clic.
-     *
-     * Cacher le bouton pour retenir quelqu'un ne le retient pas : il ferme l'onglet, et on perd la
-     * course ET le client.
-     */
+    /** L'annulation est TOUJOURS atteignable, et son coût est ANNONCÉ avant le clic. */
     public function test_cancelling_is_always_reachable_and_its_cost_is_announced(): void
     {
         [$request, $client] = $this->searching();
@@ -133,12 +116,7 @@ class AsapSearchScreenTest extends TestCase
             ->assertSee('l’annulation est gratuite');
     }
 
-    /**
-     * Une fois le professionnel en route, le montant est annoncé AVANT, pas découvert après.
-     *
-     * Des frais découverts après le clic font perdre un client pour de bon, et le montant récupéré
-     * ne compense jamais.
-     */
+    /** Une fois le professionnel en route, le montant est annoncé AVANT, pas découvert après. */
     public function test_the_fee_is_shown_before_the_click_not_after(): void
     {
         [$request, $client] = $this->searching();
@@ -170,12 +148,7 @@ class AsapSearchScreenTest extends TestCase
         $this->assertSame(AsapStatus::CANCELLED, $accepted->fresh()->status);
     }
 
-    /**
-     * Personne n'a répondu : jamais un simple constat d'échec.
-     *
-     * Un écran d'attente qui finit sur « personne n'est disponible » sans rien d'autre est un bug
-     * produit.
-     */
+    /** Personne n'a répondu : jamais un simple constat d'échec. */
     public function test_nobody_answering_is_never_a_dead_end(): void
     {
         [$request, $client] = $this->searching();
@@ -208,11 +181,7 @@ class AsapSearchScreenTest extends TestCase
             ->assertSee('10 km');
     }
 
-    /**
-     * Une demande ne se lit pas parce qu'on connaît son numéro : elle porte une adresse.
-     *
-     * Un 404 plutôt qu'un 403 : répondre « interdit » confirmerait que la demande existe.
-     */
+    /** Une demande ne se lit pas parce qu'on connaît son numéro : elle porte une adresse. */
     public function test_another_client_cannot_watch_someone_elses_search(): void
     {
         [$request, $owner] = $this->searching();
@@ -238,13 +207,7 @@ class AsapSearchScreenTest extends TestCase
 
     // ─── La reprise en intervention réelle ───────────────────────────────────────────────────
 
-    /**
-     * Accepter une course la transforme en intervention RÉELLE.
-     *
-     * Sans ce passage, la course serait « acceptée » dans son coin pendant que la réservation
-     * resterait en attente : le prestataire ne la verrait pas dans son application, n'aurait ni
-     * codes de démarrage ni clôture — donc aucun encaissement.
-     */
+    /** Accepter une course la transforme en intervention RÉELLE. */
     public function test_accepting_hands_the_ride_over_to_a_real_mission(): void
     {
         $provider = $this->providerAt($this->peinture());
@@ -261,12 +224,7 @@ class AsapSearchScreenTest extends TestCase
             ->orWhere('rendez_vous_id', $booking->id)->exists());
     }
 
-    /**
-     * UN SEUL CANAL D'ASSIGNATION.
-     *
-     * Si la réservation porte déjà un autre professionnel, l'acceptation est refusée : deux
-     * personnes partiraient pour la même intervention, et une seule serait payée.
-     */
+    /** UN SEUL CANAL D'ASSIGNATION. */
     public function test_a_booking_already_assigned_is_not_stolen(): void
     {
         $provider = $this->providerAt($this->peinture());
@@ -311,13 +269,7 @@ class AsapSearchScreenTest extends TestCase
         return Trade::where('slug', 'peinture')->firstOrFail();
     }
 
-    /**
-     * Un candidat REEL au sens du moteur.
-     *
-     * Le profil ne suffit plus : le dispatch immediat exige une VERIFICATION validee et une
-     * position FRAICHE dans `provider_presence`. Un prestataire qui n'a que
-     * `provider_profiles.is_online` a vrai est un telephone eteint depuis vingt minutes.
-     */
+    /** Un candidat REEL au sens du moteur. */
     private function providerAt(Trade $trade, float $lat = self::LAT, float $lng = self::LNG): User
     {
         $provider = User::factory()->create([
@@ -352,12 +304,7 @@ class AsapSearchScreenTest extends TestCase
         return $provider->fresh();
     }
 
-    /**
-     * L'acceptation par le chemin de PRODUCTION : l'offre nominative, pas la recherche.
-     *
-     * Une seule voie d'acceptation existe desormais — `MissionDispatchService::accept()`, avec son
-     * verrou pessimiste. Accepter la recherche elle-meme laissait l'offre de l'autre encore vivante.
-     */
+    /** L'acceptation par le chemin de PRODUCTION : l'offre nominative, pas la recherche. */
     private function accepterParLOffre(AsapDispatchRequest $request, User $provider): void
     {
         $offre = MissionAssignment::query()
@@ -409,12 +356,7 @@ class AsapSearchScreenTest extends TestCase
         return [AsapDispatchRequest::firstOrFail(), $client, Booking::firstOrFail()];
     }
 
-    /**
-     * Accepte la course par l'offre nominative en cours, et rend la recherche à jour.
-     *
-     * Les écrans client parlent d'une course ACCEPTÉE : ce raccourci sert à les amener dans cet
-     * état sans réécrire le chemin d'acceptation dans chaque test.
-     */
+    /** Accepte la course par l'offre nominative en cours, et rend la recherche à jour. */
     private function accepterLaCourse(AsapDispatchRequest $request): AsapDispatchRequest
     {
         $offre = MissionAssignment::query()

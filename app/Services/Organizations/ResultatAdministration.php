@@ -4,12 +4,7 @@ namespace App\Services\Organizations;
 
 use App\Models\OrganizationMember;
 
-/**
- * Ce qu'une action d'administration a fait, ou pourquoi elle n'a rien fait.
- *
- * `applique` et `motif` sont exclusifs : une action appliquée n'a pas de motif de refus, un refus
- * n'a pas de membre. Le type le dit plutôt que la documentation.
- */
+/** Ce qu'une action d'administration a fait, ou pourquoi elle n'a rien fait. */
 final class ResultatAdministration
 {
     private function __construct(

@@ -9,28 +9,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 
-/**
- * Builder PDF/A-3 + XML CII embedded (norme Factur-X / ZUGFeRD).
- *
- * OBLIGATOIRE en France à partir du 01/09/2026 pour B2B.
- * Compatible avec Peppol BIS Billing 3.0 (réseau européen).
- *
- * Workflow :
- *   1. Build XML CII (Cross Industry Invoice) UN/CEFACT depuis FinanceInvoice
- *   2. Build PDF/A-3 standard avec library DomPDF (déjà installée)
- *   3. Embed XML dans PDF/A-3 via pdf-attach (lib externe : moustahanafa/pdf-attach OU symfony/pdf-toolkit)
- *
- * Pour la prod : route via PDP (Plateforme de Dématérialisation Partenaire) certifiée DGFiP
- * ou PPF (Plateforme Publique de Facturation, ChorusPro extension).
- *
- * En MVP : génère PDF + XML séparés. Peppol routing à brancher via partenaire.
- */
+/** Builder PDF/A-3 + XML CII embedded (norme Factur-X / ZUGFeRD). */
 class FacturXBuilder
 {
-    /**
-     * Génère le XML CII Cross Industry Invoice depuis une FinanceInvoice.
-     * Conforme UN/CEFACT D16B (Factur-X 1.0.06 minimum / Peppol BIS Billing 3.0).
-     */
+    /** Génère le XML CII Cross Industry Invoice depuis une FinanceInvoice. */
     public function buildXml(FinanceInvoice $invoice): string
     {
         $client = $invoice->client;
@@ -92,13 +74,7 @@ XML;
         return $xml;
     }
 
-    /**
-     * Génère le PDF/A-3 + embed XML. Retourne le path local du PDF.
-     * NOTE : l'embedding XML dans PDF/A-3 nécessite une lib externe.
-     * En MVP, on génère PDF + XML séparés ; en prod, intégrer:
-     *   - "atgp/factur-x" (recommended) : composer require atgp/factur-x
-     *   - OU FPDI/FPDF + manual /Filespec entry
-     */
+    /** Génère le PDF/A-3 + embed XML. Retourne le path local du PDF. */
     public function buildPdf(FinanceInvoice $invoice): array
     {
         $xml = $this->buildXml($invoice);

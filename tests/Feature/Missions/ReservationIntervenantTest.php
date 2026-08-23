@@ -18,22 +18,7 @@ use Illuminate\Validation\ValidationException;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * QUI INTERVIENT — UNE SEULE RÉPONSE, PARTOUT.
- *
- * TROIS COLONNES NOMMAIENT LA MÊME PERSONNE : `bookings.employe_id` (le prestataire de la commande),
- * `missions.lead_employee_id` (l'historique, écrit à la création) et `missions.lead_provider_user_id`
- * (ce qu'écrivent le dispatch et la réassignation). Sur un parcours nominal elles disent toutes la
- * même chose — c'est exactement ce qui a rendu l'écart invisible.
- *
- * ELLES NE DIVERGENT QU'À LA RÉASSIGNATION. `MissionAssignmentService` n'écrivait que la troisième :
- * l'ancien intervenant gardait l'accès au client, touchait le pourboire et recevait les étoiles,
- * pendant que celui qui avait fait le travail n'avait rien — et aucune erreur n'était levée nulle
- * part, des deux côtés la moitié lue semblait juste.
- *
- * Ce test tient la fusion : la réassignation remet les trois d'accord, et les lecteurs passent par
- * `Booking::intervenantId()` / `Mission::estIntervenant()` plutôt que par une colonne.
- */
+/** QUI INTERVIENT — UNE SEULE RÉPONSE, PARTOUT. */
 class ReservationIntervenantTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
@@ -82,8 +67,7 @@ class ReservationIntervenantTest extends TestCase
     }
 
     /**
-     * Une réservation confirmée, sa mission, et un premier intervenant nommé partout — l'état
-     * nominal, celui où les trois colonnes s'accordent.
+     * Une réservation confirmée, sa mission, et un premier intervenant nommé partout — l'état nominal, celui où les trois colonnes s'accordent.
      *
      * @return array{0: Booking, 1: Mission, 2: User}
      */
@@ -97,13 +81,7 @@ class ReservationIntervenantTest extends TestCase
                 $this->contexte['zone'],
                 $this->contexte['postalCode'],
             )
-            /*
-             * TOUJOURS CRÉÉE `confirme`, quel que soit l'état demandé.
-             *
-             * `RendezVousObserver` ne fabrique la mission que pour une réservation confirmée (ou en
-             * cours). Naître directement `termine` donnait une réservation SANS mission — un état
-             * qu'aucun parcours réel ne produit, puisqu'on ne termine que ce qu'on a confirmé.
-             */
+            // TOUJOURS CRÉÉE `confirme`, quel que soit l'état demandé.
             ->create([
                 'client_id' => $client->id,
                 'customer_user_id' => $client->id,
@@ -112,13 +90,7 @@ class ReservationIntervenantTest extends TestCase
                 'employe_id' => $intervenant->id,
             ]);
 
-        /*
-         * ON REPREND LA MISSION QUE LA RÉSERVATION A DÉJÀ.
-         *
-         * `RendezVousObserver` en crée une à chaque enregistrement, via `updateOrCreate` sur
-         * `booking_id` : en fabriquer une seconde construirait un état que la production ne peut
-         * pas atteindre, et un test qui part d'un état impossible ne mesure plus le produit.
-         */
+        // ON REPREND LA MISSION QUE LA RÉSERVATION A DÉJÀ.
         $mission = $reservation->missions()->latest('id')->firstOrFail();
         $mission->forceFill([
             'provider_organization_id' => $this->societe->id,
@@ -143,9 +115,7 @@ class ReservationIntervenantTest extends TestCase
         return [$reservation->fresh(), $mission->fresh(), $client];
     }
 
-    /**
-     * LE CŒUR DE LA FUSION : après réassignation, une seule personne répond, et c'est la bonne.
-     */
+    /** LE CŒUR DE LA FUSION : après réassignation, une seule personne répond, et c'est la bonne. */
     public function test_apres_reassignation_la_reservation_nomme_le_nouvel_intervenant(): void
     {
         $ancien = $this->salarie();
@@ -168,9 +138,7 @@ class ReservationIntervenantTest extends TestCase
         $this->assertSame($nouveau->id, (int) $reservation->fresh()->employe_id);
     }
 
-    /**
-     * LE DROIT DE REGARD SUIT LE TRAVAIL, dans les deux sens : le nouveau l'obtient, l'ancien le perd.
-     */
+    /** LE DROIT DE REGARD SUIT LE TRAVAIL, dans les deux sens : le nouveau l'obtient, l'ancien le perd. */
     public function test_le_droit_de_regard_sur_le_rendez_vous_suit_la_reassignation(): void
     {
         $ancien = $this->salarie();
@@ -184,13 +152,7 @@ class ReservationIntervenantTest extends TestCase
         $this->assertFalse($ancien->can('view', $reservation), 'La personne remplacée garde l’accès au client.');
     }
 
-    /**
-     * UNE AFFECTATION RÉVOQUÉE N'OUVRE PLUS LA MISSION.
-     *
-     * Les lignes d'affectation ne sont pas supprimées mais marquées `reassigned` : tout code qui
-     * demandait « existe-t-il une affectation ? » répondait oui pour la personne qu'on venait
-     * justement d'écarter — y compris `MissionPolicy`, donc le tableau d'exécution et la clôture.
-     */
+    /** UNE AFFECTATION RÉVOQUÉE N'OUVRE PLUS LA MISSION. */
     public function test_une_affectation_revoquee_ne_donne_plus_acces_a_la_mission(): void
     {
         $ancien = $this->salarie();
@@ -214,12 +176,7 @@ class ReservationIntervenantTest extends TestCase
         $this->assertFalse($ancien->can('start', $mission), 'La personne remplacée peut encore démarrer la mission.');
     }
 
-    /**
-     * LE POURBOIRE VA À CELUI QUI EST VENU.
-     *
-     * Le bénéficiaire est résolu AVANT le portefeuille, dans `TipService` : corriger la ligne
-     * comptable en aval ne rattrapait pas un `BookingTip` déjà émis au mauvais nom.
-     */
+    /** LE POURBOIRE VA À CELUI QUI EST VENU. */
     public function test_le_pourboire_revient_a_celui_qui_a_fait_le_travail(): void
     {
         $ancien = $this->salarie();
@@ -237,15 +194,7 @@ class ReservationIntervenantTest extends TestCase
         );
     }
 
-    /**
-     * QUAND LA MISSION NE DÉSIGNE PERSONNE, LA RÉSERVATION RESTE LA SOURCE.
-     *
-     * C'est la moitié conservatrice de la fusion, et elle n'est pas facultative :
-     * `MissionFromRendezVousSyncService` crée les missions du parcours web avec
-     * `lead_provider_user_id` à null. Faire de la mission une autorité absolue rendrait « personne »
-     * pour toutes ces réservations — et fermerait l'accès, le pourboire et les étoiles à des
-     * intervenants parfaitement assignés.
-     */
+    /** QUAND LA MISSION NE DÉSIGNE PERSONNE, LA RÉSERVATION RESTE LA SOURCE. */
     public function test_sans_responsable_sur_la_mission_la_reservation_fait_foi(): void
     {
         $intervenant = $this->salarie();
@@ -271,14 +220,7 @@ class ReservationIntervenantTest extends TestCase
         $this->assertNull($reservation->intervenant());
     }
 
-    /**
-     * LE CHEMIN INVERSE : la mission suit la réservation.
-     *
-     * Le planning d'administration écrit `bookings.employe_id` et sauvegarde, sans appeler la
-     * synchronisation de mission — contrairement aux deux autres écrans d'assignation admin. La
-     * mission restait donc au nom de la personne précédente, et c'est elle que lisent le mobile, le
-     * dispatch, le portefeuille et la présence.
-     */
+    /** LE CHEMIN INVERSE : la mission suit la réservation. */
     public function test_assigner_depuis_la_reservation_entraine_la_mission(): void
     {
         $ancien = $this->salarie();
@@ -295,15 +237,7 @@ class ReservationIntervenantTest extends TestCase
         $this->assertSame($nouveau->id, $reservation->fresh()->intervenantId());
     }
 
-    /**
-     * UNE MISSION EN COURS NE RECULE PAS. Le statut ne suit que depuis et vers l'attente : réécrire
-     * `assigned` sur une mission commencée la ferait disparaître des écrans terrain.
-     *
-     * L'état de départ est celui qu'un vrai parcours produit — réservation `sur_place`, mission
-     * `started` — et non une mission commencée sous une réservation encore `confirme` : c'est
-     * `MissionLifecycleService` qui fait avancer la réservation avec sa mission, les deux ne se
-     * désynchronisent pas.
-     */
+    /** UNE MISSION EN COURS NE RECULE PAS. */
     public function test_le_statut_d_une_mission_commencee_ne_recule_pas(): void
     {
         $ancien = $this->salarie();
@@ -322,13 +256,7 @@ class ReservationIntervenantTest extends TestCase
         $this->assertSame($nouveau->id, (int) $mission->lead_provider_user_id);
     }
 
-    /**
-     * LE DÉPART D'UN SALARIÉ REND L'INTERVENTION À RÉATTRIBUER — et il faut la VOIR.
-     *
-     * Libérer la mission ne suffisait pas : la réservation continuait de nommer la personne
-     * partie, et c'est cette colonne que lisent les listes « sans employé ». L'intervention à venir
-     * n'apparaissait donc nulle part comme à réattribuer.
-     */
+    /** LE DÉPART D'UN SALARIÉ REND L'INTERVENTION À RÉATTRIBUER — et il faut la VOIR. */
     public function test_le_depart_d_un_salarie_rend_la_reservation_visible_comme_non_attribuee(): void
     {
         $partant = $this->salarie();
@@ -344,17 +272,7 @@ class ReservationIntervenantTest extends TestCase
         );
     }
 
-    /**
-     * UNE RETENUE ACTIVE ARRÊTE LE NETTOYAGE DU DÉPART — et c'est voulu.
-     *
-     * Délier la réservation ici produirait une ligne « autorisée » sans personne, c'est-à-dire
-     * exactement l'état où la garde d'argent s'efface : une telle ligne est censée n'avoir jamais
-     * eu de professionnel. Le départ offrirait alors un contournement en deux temps — libérer, puis
-     * attribuer sans contrôle —, et l'encaissement partirait chez quelqu'un qui a quitté la
-     * société.
-     *
-     * La réservation reste donc nommée, et attend une décision humaine.
-     */
+    /** UNE RETENUE ACTIVE ARRÊTE LE NETTOYAGE DU DÉPART — et c'est voulu. */
     public function test_une_retenue_active_laisse_la_reservation_au_nom_du_partant(): void
     {
         $partant = $this->salarie();
@@ -382,13 +300,7 @@ class ReservationIntervenantTest extends TestCase
         $reservation->save();
     }
 
-    /**
-     * LES DEUX FORMULATIONS DE LA MÊME RÈGLE DOIVENT RENDRE LE MÊME VERDICT.
-     *
-     * `intervenantId()` répond réservation par réservation, `scopeIntervenantEst()` filtre en SQL.
-     * Deux écritures d'une même règle sont exactement ce qui a produit le défaut d'origine : ce
-     * test les confronte sur un jeu mélangé, divergences héritées comprises.
-     */
+    /** LES DEUX FORMULATIONS DE LA MÊME RÈGLE DOIVENT RENDRE LE MÊME VERDICT. */
     public function test_le_filtre_sql_et_le_resolveur_disent_la_meme_chose(): void
     {
         $a = $this->salarie();
@@ -470,17 +382,7 @@ class ReservationIntervenantTest extends TestCase
         $this->assertNull($personne->fresh()->intervenantId());
     }
 
-    /**
-     * LA GARDE — pour que l'écart ne se rouvre pas ligne par ligne.
-     *
-     * La chaîne de repli `employe_id ?? assigned_provider_user_id` était la SIGNATURE du défaut :
-     * elle disait « je résous qui intervient », et le faisait sans jamais regarder la mission. Elle
-     * ne doit exister qu'à l'endroit qui porte désormais la règle.
-     *
-     * `InsurancePricingEngine` est la seule exception, et elle est motivée : cette méthode lit la
-     * table en direct (`DB::table`), sans modèle, donc sans accès au résolveur — elle en recopie
-     * l'ordre de priorité, mission d'abord, et le commentaire le dit.
-     */
+    /** LA GARDE — pour que l'écart ne se rouvre pas ligne par ligne. */
     public function test_aucun_lecteur_ne_resout_l_intervenant_depuis_la_seule_reservation(): void
     {
         $autorises = [
@@ -512,24 +414,11 @@ class ReservationIntervenantTest extends TestCase
         );
     }
 
-    /**
-     * ET AUCUN FILTRE NE CHERCHE UN INTERVENANT SUR LA SEULE COLONNE.
-     *
-     * `where('employe_id', $id)` sur des réservations pose la même question que `intervenantEst()`
-     * et y répond moins bien : elle rate la mission réassignée. C'est ce qui faisait qu'un salarié
-     * remplaçant ne voyait pas l'intervention dans son espace, que la détection de conflit le
-     * croyait libre, et que les badges créditaient l'autre.
-     *
-     * Deux familles échappent à la règle, et pour deux raisons distinctes.
-     */
+    /** ET AUCUN FILTRE NE CHERCHE UN INTERVENANT SUR LA SEULE COLONNE. */
     public function test_aucun_filtre_ne_cherche_un_intervenant_sur_la_seule_colonne(): void
     {
         $autorises = [
-            /*
-             * `feedback.employe_id` est une AUTRE COLONNE, sur une autre table : elle nomme le
-             * destinataire d'un avis déjà déposé, pas qui doit se rendre quelque part. Le nom
-             * identique est un piège, pas une parenté.
-             */
+            // `feedback.employe_id` est une AUTRE COLONNE, sur une autre table : elle nomme le destinataire d'un avis déjà déposé, pas qui doit se rendre quelque part.
             'app/Models/Feedback.php',
             'app/Services/Badges/ProviderBadgeEngine.php',
             'app/Services/Matching/ProviderPerformanceCalculator.php',

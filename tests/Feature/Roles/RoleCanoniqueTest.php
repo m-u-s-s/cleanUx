@@ -12,22 +12,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LES SIX RÔLES DE LA PLATEFORME, ET UNE SEULE FAÇON DE LES LIRE.
- *
- * POURQUOI CE FICHIER EXISTE. Le rôle d'un compte se déduisait de CINQ signaux répartis dans autant
- * d'endroits : `platform_role`, la colonne `role` (héritée), `customer_type`, `provider_type` et le
- * type de l'organisation courante. 217 appels dans 65 fichiers interrogeaient ces signaux
- * séparément, chacun avec sa propre idée de l'ordre de priorité — c'est ainsi que la navbar a
- * montré le menu client à un administrateur pendant toute une livraison.
- *
- * `Role` tranche une fois pour toutes. Les prédicats `is*()` restent : ils deviennent
- * l'implémentation, plus la décision.
- *
- * L'ORDRE DE RÉSOLUTION EST LE PROPOS DE CE TEST. Un compte peut satisfaire plusieurs signaux à la
- * fois — un administrateur reste souvent client, un gérant de société intervient parfois sur le
- * terrain. Chaque cas ci-dessous fige une priorité, pas une commodité.
- */
+/** LES SIX RÔLES DE LA PLATEFORME, ET UNE SEULE FAÇON DE LES LIRE. POURQUOI CE FICHIER EXISTE. */
 class RoleCanoniqueTest extends TestCase
 {
     use RefreshDatabase;
@@ -60,13 +45,7 @@ class RoleCanoniqueTest extends TestCase
 
     public function test_un_administrateur_aussi_client_reste_administrateur(): void
     {
-        /*
-         * LE DÉFAUT QUE CE TEST EMPÊCHE DE REVENIR.
-         *
-         * Promouvoir un client en administrateur ne lui retire pas son profil client. Tant que
-         * `isClient()` était testé en premier, le compte gardait le menu client sans le moindre
-         * lien vers l'administration, et le changement de rôle semblait sans effet.
-         */
+        // LE DÉFAUT QUE CE TEST EMPÊCHE DE REVENIR.
         $user = User::factory()->admin()->create();
         $user->customerProfile()->create(['customer_type' => CustomerType::PERSONAL->value]);
 

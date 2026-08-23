@@ -7,12 +7,7 @@ use App\Services\Risk\RiskRuleHit;
 use App\Services\Risk\RiskRuleInterface;
 use Illuminate\Support\Facades\Config;
 
-/**
- * Flag les IPs présentes dans la liste `risk.flagged_networks` ou
- * passées via params['cidrs'].
- *
- * Vérifie via IPv4/IPv6 in_cidr basique. Pour prod, brancher MaxMind ou IPQS.
- */
+/** Flag les IPs présentes dans la liste `risk.flagged_networks` ou passées via params['cidrs']. */
 class IpReputationRule implements RiskRuleInterface
 {
     public function code(): string

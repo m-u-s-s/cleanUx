@@ -15,21 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * LE DEVIS QUE LA SOCIÉTÉ BÂTIT ELLE-MÊME (E24).
- *
- * « Je passe voir, je chiffre, je vous envoie ça » est le geste le plus ordinaire d'une société de
- * services, et il n'existait que dans l'écran d'administration de la PLATEFORME : un opérateur
- * tapait le prix à la main pour le compte de la société. Deux personnes dans la boucle pour un
- * document que l'une des deux n'a pas écrit.
- *
- * LE MOTEUR SUGGÈRE, LA SOCIÉTÉ DÉCIDE. Le tarif de la plateforme est une base de départ, jamais un
- * prix imposé : une société qui ne peut pas descendre sous son propre tarif ne peut pas répondre à
- * un appel d'offres.
- *
- * UN DEVIS ENVOYÉ NE SE MODIFIE PLUS. Le corriger après coup ferait diverger ce que le client a reçu
- * de ce qu'il accepte — et c'est le montant reçu qui fait foi dans une conversation commerciale.
- */
+/** LE DEVIS QUE LA SOCIÉTÉ BÂTIT ELLE-MÊME (E24). */
 class QuoteBuilder extends Component
 {
     use EnforcesActiveOrgMembership;
@@ -200,14 +186,7 @@ class QuoteBuilder extends Component
                     ->find($this->devisOuvertId)
                 : null,
             'metiers' => Trade::query()->orderBy('name')->get(['id', 'name']),
-            /*
-             * SES CLIENTS, PAS CEUX DE LA PLATEFORME.
-             *
-             * Offrir la liste complète des clients ferait de cet écran un annuaire : n'importe
-             * quelle société pourrait énumérer la clientèle de ses concurrentes, et adresser un
-             * devis à quelqu'un qui n'a jamais entendu parler d'elle. On ne propose donc que les
-             * personnes pour qui la société a déjà travaillé.
-             */
+            // SES CLIENTS, PAS CEUX DE LA PLATEFORME.
             'clients' => User::query()
                 ->whereIn('id', Booking::query()
                     ->where('assigned_provider_organization_id', $orgId)

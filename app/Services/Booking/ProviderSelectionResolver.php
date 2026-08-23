@@ -8,22 +8,7 @@ use App\Models\CustomerProfile;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 
-/**
- * Résout et valide la sélection du prestataire par le client.
- *
- * Paliers WORKER (SP2) — sélection d'un prestataire NOMINATIF :
- *   - palier auto    : aucun presta imposé (preferred null)              → tous
- *   - palier favori  : presta déjà favori du client                      → tous
- *   - palier nouveau : presta NON favori (découverte)                    → premium only
- *
- * Palier SOCIÉTÉ (SP3 Task 6) — sélection d'une SOCIÉTÉ prestataire :
- *   - gaté au Premium (frontière sécurité, comme le palier "nouveau prestataire"),
- *   - validé contre l'éligibilité de l'org pour CE booking (zone+métier) via
- *     EligibleCompaniesResolver, lorsqu'un $context est fourni.
- *   - org et worker précis sont mutuellement exclusifs : l'org PRIME.
- *
- * Retourne ce qu'on persiste sur la réservation.
- */
+/** Résout et valide la sélection du prestataire par le client. */
 class ProviderSelectionResolver
 {
     private const TYPES = ['independent', 'company', 'any'];

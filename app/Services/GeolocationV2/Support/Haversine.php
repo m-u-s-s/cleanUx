@@ -4,9 +4,7 @@ namespace App\Services\GeolocationV2\Support;
 
 class Haversine
 {
-    /**
-     * Distance to-fly (great-circle) between two coordinates in meters.
-     */
+    /** Distance to-fly (great-circle) between two coordinates in meters. */
     public static function distanceMeters(
         float $lat1,
         float $lng1,
@@ -27,9 +25,7 @@ class Haversine
         return $R * $c;
     }
 
-    /**
-     * Initial bearing in degrees (0-360) from (lat1,lng1) to (lat2,lng2).
-     */
+    /** Initial bearing in degrees (0-360) from (lat1,lng1) to (lat2,lng2). */
     public static function bearingDegrees(float $lat1, float $lng1, float $lat2, float $lng2): float
     {
         $lat1Rad = deg2rad($lat1);

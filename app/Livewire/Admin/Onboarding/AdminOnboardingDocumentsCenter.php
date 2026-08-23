@@ -14,19 +14,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-/**
- * Phase 14.1 — Centre admin de validation des documents KYC.
- *
- * Route : /admin/onboarding-documents
- *
- * Affiche :
- *   - Counts (pending / approved / rejected)
- *   - Filtres par status, type de doc, recherche provider
- *   - Tableau des documents avec actions approve/reject
- *   - Modal de visualisation du fichier (PDF embed ou image)
- *
- * Utilise ProviderOnboardingService::reviewDocument() pour la persistance.
- */
+/** Phase 14.1 — Centre admin de validation des documents KYC. */
 class AdminOnboardingDocumentsCenter extends Component
 {
     use EnforcesAdminAccess;
@@ -92,14 +80,6 @@ class AdminOnboardingDocumentsCenter extends Component
 
     /**
      * LE VÉHICULE DÉCLARÉ, EN FACE DE LA CARTE GRISE À RELIRE.
-     *
-     * L'administrateur devait juger l'âge du véhicule sur une photo de certificat, en lisant une
-     * date en petits caractères et en la soustrayant de tête. Le calcul existe pourtant déjà côté
-     * serveur, et c'est LUI qui décide du dispatch : ne pas le montrer ici laissait la revue humaine
-     * et le verrou automatique juger séparément — avec la possibilité qu'ils divergent.
-     *
-     * Chargé pour la PAGE COURANTE seulement, en une requête : un appel par ligne ferait vingt
-     * allers-retours pour un écran qu'on parcourt en trois secondes.
      *
      * @param  iterable<int, ProviderOnboardingDocument>  $documents  La page affichée. Passée en
      *                                                                paramètre plutôt que relue :
@@ -228,9 +208,7 @@ class AdminOnboardingDocumentsCenter extends Component
             ->find($this->previewingDocumentId);
     }
 
-    /**
-     * Génère une URL signée temporaire pour télécharger/voir le fichier privé.
-     */
+    /** Génère une URL signée temporaire pour télécharger/voir le fichier privé. */
     public function getPreviewUrlProperty(): ?string
     {
         $doc = $this->previewDocument;

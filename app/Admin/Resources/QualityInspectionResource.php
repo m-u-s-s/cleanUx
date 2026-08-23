@@ -12,9 +12,6 @@ use App\Services\Quality\QualityInspectionService;
 /**
  * Les inspections qualité des missions.
  *
- * Une inspection est VERSIONNÉE et signée : elle atteste d’un état constaté à un instant. La
- * rejouer depuis une liste produirait une attestation sans constat.
- *
  * @extends EloquentResource<MissionQualityInspection>
  */
 class QualityInspectionResource extends EloquentResource

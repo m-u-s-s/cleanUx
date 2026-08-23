@@ -11,10 +11,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * UN CONSOMMABLE EN STOCK, DANS UNE AGENCE.
  *
- * Le stock est par agence et jamais global : une société qui opère à Bruxelles et à Liège ne
- * partage pas ses cartons, et un total consolidé annoncerait du disponible à quarante kilomètres de
- * l'équipe qui en a besoin.
- *
  * @property int $id
  * @property int $organization_account_id
  * @property int|null $provider_agency_id
@@ -74,13 +70,7 @@ class InventoryItem extends Model
         return $this->belongsTo(ProviderAgency::class, 'provider_agency_id');
     }
 
-    /**
-     * Faut-il réapprovisionner ?
-     *
-     * Le seuil vit sur l'article et non sur le magasin, parce qu'il dépend du délai de réappro :
-     * deux sacs poubelle ne s'alertent pas au même niveau que deux bidons de dégraissant qu'on
-     * attend trois semaines.
-     */
+    /** Faut-il réapprovisionner ? */
     public function doitEtreReapprovisionne(): bool
     {
         return $this->is_active && $this->quantity <= $this->reorder_threshold;

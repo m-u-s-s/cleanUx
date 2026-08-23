@@ -10,13 +10,7 @@ use Stripe\Stripe;
 use Tests\Support\Stripe\FakeStripeHttpClient;
 use Tests\TestCase;
 
-/**
- * Coverage for App\Services\Payments\StripeConnectService.
- *
- * Drives every Stripe-touching method through the project's FakeStripeHttpClient
- * (registered at the SDK HTTP boundary) so no network is hit, plus the early-return
- * guards that never reach Stripe.
- */
+/** Coverage for App\Services\Payments\StripeConnectService. */
 class StripeConnectServiceCoverageBatch7Test extends TestCase
 {
     use RefreshDatabase;

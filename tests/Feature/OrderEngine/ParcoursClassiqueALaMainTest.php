@@ -18,14 +18,7 @@ use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * CE QUE LE PARCOURS CLASSIQUE FAISAIT VIVRE — relevé en le déroulant à la main.
- *
- * Le parcours aboutit, mais il fallait franchir trois murs avant d'y arriver, et aucun ne levait
- * d'exception : un écran qui réclame une adresse déjà donnée, un panier vide après une commande
- * complète, et des créneaux introuvables sur une plateforme pourtant peuplée. C'est la classe de
- * défauts qu'une suite ne voit pas, parce que rien n'échoue — l'utilisateur, lui, est arrêté.
- */
+/** CE QUE LE PARCOURS CLASSIQUE FAISAIT VIVRE — relevé en le déroulant à la main. */
 class ParcoursClassiqueALaMainTest extends TestCase
 {
     use RefreshDatabase;
@@ -41,13 +34,7 @@ class ParcoursClassiqueALaMainTest extends TestCase
         return Trade::where('slug', 'peinture')->firstOrFail();
     }
 
-    /**
-     * CHOISIR UN MÉTIER L'INSCRIT AU PANIER.
-     *
-     * Il n'y était inscrit qu'à la première réponse. Or l'écran ouvre le questionnaire, nomme le
-     * service et annonce son prix dès la sélection : un client qui n'avait touché aucune question
-     * — toutes facultatives — arrivait sur « Votre panier est vide ».
-     */
+    /** CHOISIR UN MÉTIER L'INSCRIT AU PANIER. Il n'y était inscrit qu'à la première réponse. */
     public function test_choisir_un_metier_cree_la_ligne_de_panier(): void
     {
         $client = User::factory()->client()->create();
@@ -78,13 +65,7 @@ class ParcoursClassiqueALaMainTest extends TestCase
         $this->assertSame(1, $composant->instance()->draft()->items()->count());
     }
 
-    /**
-     * UN LIEU ENREGISTRÉ SANS COORDONNÉES EST GÉOCODÉ, PAS SUBI.
-     *
-     * Sans latitude ni longitude, les créneaux, la liste des professionnels et la distance
-     * s'éteignent — et l'écran répondait « Indiquez d'abord l'adresse » à quelqu'un qui venait
-     * d'appuyer sur son adresse enregistrée.
-     */
+    /** UN LIEU ENREGISTRÉ SANS COORDONNÉES EST GÉOCODÉ, PAS SUBI. */
     public function test_un_lieu_enregistre_sans_coordonnees_est_geocode(): void
     {
         $client = User::factory()->client()->create();
@@ -106,13 +87,7 @@ class ParcoursClassiqueALaMainTest extends TestCase
         );
     }
 
-    /**
-     * LA MISSION DURE LE TEMPS ANNONCÉ, pas zéro minute.
-     *
-     * `planned_end_at` valait `planned_start_at` : une fenêtre de durée nulle ne chevauche rien,
-     * donc la détection de conflit ne protégeait aucun créneau, et le planning affichait
-     * « 10:00 → 10:00 ».
-     */
+    /** LA MISSION DURE LE TEMPS ANNONCÉ, pas zéro minute. */
     public function test_la_mission_ne_dure_pas_zero_minute(): void
     {
         $client = User::factory()->client()->create();
@@ -141,12 +116,7 @@ class ParcoursClassiqueALaMainTest extends TestCase
         );
     }
 
-    /**
-     * LE LIBELLÉ DU SERVICE N'EST PAS DÉFORMÉ.
-     *
-     * `headline()` rend lisible un identifiant technique. Appliqué à un nom déjà rédigé, il
-     * produisait « Nettoyage À Domicile ».
-     */
+    /** LE LIBELLÉ DU SERVICE N'EST PAS DÉFORMÉ. `headline()` rend lisible un identifiant technique. */
     public function test_le_libelle_du_service_n_est_pas_deforme(): void
     {
         $booking = new Booking(['pricing_snapshot' => ['service_name' => 'Nettoyage à domicile']]);
@@ -162,14 +132,7 @@ class ParcoursClassiqueALaMainTest extends TestCase
         $this->assertSame('Cleaning Residential', $booking->service_display_name);
     }
 
-    /**
-     * LE SEEDER PEUPLE LA TABLE QUE LA PLATEFORME LIT.
-     *
-     * Il remplissait `provider_availabilities` — quarante-deux lignes que rien ne lit. Les
-     * créneaux viennent de `availability_slots`, qui restait vide : sur une plateforme fraîchement
-     * semée, la page annonçait « 3 professionnels à moins de 8 km » au-dessus de « Aucun
-     * professionnel disponible sur ce créneau », tous les jours.
-     */
+    /** LE SEEDER PEUPLE LA TABLE QUE LA PLATEFORME LIT. */
     public function test_le_seeder_de_demonstration_peuple_les_creneaux_lus_par_la_plateforme(): void
     {
         $this->assertSame(0, AvailabilitySlot::count(), 'Témoin de départ.');

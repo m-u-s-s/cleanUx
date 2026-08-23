@@ -8,16 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Sprint 0-bis — Payment API endpoints
- *
- * Coverage:
- *   - GET    /api/client/payment-methods          (list)
- *   - POST   /api/client/payment-methods/setup-intent
- *   - DELETE /api/client/payment-methods/{id}
- *   - POST   /api/client/bookings/{booking}/payment-intent
- *   - 401 when unauthenticated on all four endpoints
- */
+/** Sprint 0-bis — Payment API endpoints Coverage: - GET /api/client/payment-methods (list) - POST /api/client/payment-methods/setup-intent - DELETE /api/client/payment-methods/{id} - POST /api/client/bookings/{booking}/payment-intent - 401 when unauthenticated on all four endpoints */
 class PaymentMethodTest extends TestCase
 {
     use RefreshDatabase;

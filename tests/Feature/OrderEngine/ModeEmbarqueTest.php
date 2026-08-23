@@ -8,22 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LE MODE EMBARQUÉ DOIT SURVIVRE À LA NAVIGATION.
- *
- * Dans une WebView, la barre de navigation web et la barre d'onglets du bas DOUBLENT l'en-tête et
- * les onglets natifs qui les entourent déjà. Le mode embarqué les retire — mais il était lu sur la
- * seule requête courante, et `?embed=1` n'existe que sur la page d'entrée.
- *
- * DÈS LE PREMIER LIEN INTERNE, le drapeau retombait. `route('order.confirmation')` est généré sans
- * paramètre, comme tous les liens de l'application : le récapitulatif de commande s'ouvrait donc
- * avec les deux chromes web au milieu de l'écran natif. Et comme la barre d'onglets porte `z-50`
- * contre `z-30` pour la barre d'action, elle RECOUVRAIT « Confirmer la commande » : un client
- * pouvait tout remplir et ne jamais pouvoir valider.
- *
- * Le même empilement existait sur le web mobile, sans WebView : la barre d'action est désormais
- * posée au-dessus de la barre d'onglets, pas dessous.
- */
+/** LE MODE EMBARQUÉ DOIT SURVIVRE À LA NAVIGATION. */
 class ModeEmbarqueTest extends TestCase
 {
     use RefreshDatabase;

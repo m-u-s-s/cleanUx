@@ -4,14 +4,7 @@ namespace App\Admin\Console;
 
 use InvalidArgumentException;
 
-/**
- * Un champ de formulaire, et les règles qui le valident.
- *
- * LES RÈGLES NE SONT PAS PUBLIÉES. Le mobile reçoit le type et le caractère obligatoire — de quoi
- * dessiner le champ et éviter un aller-retour évident — mais pas la liste de validation. La
- * publier donnerait l'illusion que le téléphone peut valider seul, alors que l'autorité est ici :
- * une règle qui interroge la base (unicité, existence) ne se rejoue pas côté client.
- */
+/** Un champ de formulaire, et les règles qui le valident. LES RÈGLES NE SONT PAS PUBLIÉES. */
 final class Field
 {
     public const TYPE_TEXT = 'text';

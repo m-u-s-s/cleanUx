@@ -15,14 +15,6 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Les badges décernés aux prestataires — leurs DÉFINITIONS, pas les attributions.
  *
- * Ce descripteur édite le catalogue : quel badge existe, à quel palier, sur quel critère et à
- * partir de quel seuil. Les attributions elles-mêmes (`ProviderBadgeAward`) sont posées par le
- * moteur d'évaluation et ne se saisissent pas à la main : décerner un badge « 100 missions » à
- * quelqu'un qui en a fait douze viderait le badge de son sens pour tous les autres.
- *
- * DÉSACTIVER PLUTÔT QUE SUPPRIMER : les badges déjà décernés pointent sur la définition, et
- * l'effacer laisserait des prestataires porteurs d'une distinction que plus rien ne décrit.
- *
  * @implements AdminResource<ProviderBadge>
  */
 class BadgeResource implements AdminResource

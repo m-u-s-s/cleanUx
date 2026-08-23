@@ -6,41 +6,7 @@ use App\Models\Booking;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LE MOT « URGENT » N'ARRIVE PAS JUSQU'AUX FILTRES QUI LE CHERCHENT.
- *
- * `bookings` porte deux colonnes pour une seule notion de priorité, et elles ne parlent pas la
- * même langue :
- *
- *   `priorite` — la colonne que TOUTE la plateforme interroge. Ses valeurs viennent des listes
- *                de choix : `normale`, `haute`, `urgente`
- *                (resources/views/livewire/admin/missions/filters.blade.php:36-38,
- *                 resources/views/livewire/employe/mes-rendez-vous.blade.php:8-10).
- *   `priority` — la colonne que l'API renseigne, validée `in:normal,urgent,low`
- *                (app/Http/Requests/Api/Client/StoreBookingRequest.php:30). AUCUN filtre du dépôt
- *                ne l'interroge sur cette table.
- *
- * `HasLegacyBookingAliases::propagerLaPaire()` recopie l'une dans l'autre SANS traduire :
- * `normaliseLegacyAliasValue()` ne traite que les dates et rend toute autre valeur telle quelle.
- *
- * ── LA CONSÉQUENCE, ET ELLE PORTE SUR LE CHEMIN LE PLUS PRESSÉ ───────────────────────────────
- *
- * `CreateBookingFromApiAction.php:112` écrit `'urgent'` pour une réservation immédiate. Le trait
- * la recopie telle quelle dans `priorite`. Or ces lecteurs cherchent `'urgente'` :
- *
- *   SendRendezVousReminders.php:126   l'alerte d'urgence — elle n'est jamais envoyée
- *   PlanningAdmin.php:160, 185, 229   le compte et la section « urgentes » du planning
- *   AgendaHebdomadaire.php:94         le compte d'urgences du jour
- *   ProfilClient.php:95               le compte d'urgences du client
- *
- * Autrement dit : une réservation immédiate passée par l'API n'est urgente pour personne.
- *
- * ── LE TÉMOIN ────────────────────────────────────────────────────────────────────────────────
- *
- * Le premier test n'est pas décoratif. Sans lui, « la réservation n'est pas trouvée » passerait au
- * vert même si la requête était cassée pour une tout autre raison : on mesurerait une panne au
- * lieu de mesurer le défaut.
- */
+/** LE MOT « URGENT » N'ARRIVE PAS JUSQU'AUX FILTRES QUI LE CHERCHENT. */
 class PrioriteVocabulaireTest extends TestCase
 {
     use RefreshDatabase;

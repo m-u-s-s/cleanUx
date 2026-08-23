@@ -20,10 +20,7 @@ use Tests\Support\Stripe\FakeStripeHttpClient;
 use Tests\Support\Stripe\StripeFakeResponses;
 use Tests\TestCase;
 
-/**
- * F5 — Payout routes to the ASSIGNED provider only.
- * F8 — Reconciliation DETECTS DB ↔ Stripe divergence rather than silently passing.
- */
+/** F5 — Payout routes to the ASSIGNED provider only. */
 class PayoutRoutingTest extends TestCase
 {
     use RefreshDatabase;
@@ -49,11 +46,7 @@ class PayoutRoutingTest extends TestCase
     // F5 — Payout routes to the assigned provider only
     // ──────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Given two providers with distinct Stripe Connect accounts, capturing
-     * provider-A's mission must route the ProviderPayout exclusively to A and
-     * record A's connect account on the booking. Provider B must never appear.
-     */
+    /** Given two providers with distinct Stripe Connect accounts, capturing provider-A's mission must route the ProviderPayout exclusively to A and record A's connect account on the booking. */
     public function test_f5_payout_routes_to_assigned_provider_not_to_bystander(): void
     {
         // ── Scenario A (the real booking) ──────────────────────────────────
@@ -179,20 +172,7 @@ class PayoutRoutingTest extends TestCase
     // F8 — Reconciliation detects divergence
     // ──────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Divergence tested: DB booking says "captured" but the Stripe PI reports
-     * "requires_capture" (status mismatch type = payment_status_mismatch, severity error).
-     *
-     * This is divergence (a) from the task spec — the one StripeReconciliationService
-     * ::reconcilePaymentIntents() actually inspects via mapPiStatusToBookingStatus():
-     *   requires_capture → 'authorized'  (expected by Stripe)
-     *   booking.payment_status = 'captured' → mismatch
-     *
-     * The service calls PaymentIntent::all({created:…}) which maps to
-     * GET /v1/payment_intents with query params. The fake client matches on the path
-     * without query strings (GET /v1/payment_intents). We stub that path and return a
-     * Stripe list object containing our deliberate-mismatch PI.
-     */
+    /** Divergence tested: DB booking says "captured" but the Stripe PI reports "requires_capture" (status mismatch type = payment_status_mismatch, severity error). */
     public function test_f8_reconciliation_detects_status_mismatch_between_stripe_and_db(): void
     {
         $piId = 'pi_f8_mismatch';
@@ -283,16 +263,7 @@ class PayoutRoutingTest extends TestCase
         );
     }
 
-    /**
-     * Clean case: a booking that is "captured" in DB and Stripe also reports
-     * "succeeded" → reconciliation must report ZERO payment_status_mismatch AND
-     * ZERO captured_booking_missing_payout entries for this PI.
-     *
-     * This booking is seeded WITHOUT an associated Mission (no lead_provider_user_id),
-     * so the scope guard in reconcilePaymentIntents() correctly determines that no
-     * payout is expected and does NOT emit a captured_booking_missing_payout mismatch.
-     * This prevents alarm fatigue from legacy captures that never had a payout row.
-     */
+    /** Clean case: a booking that is "captured" in DB and Stripe also reports "succeeded" → reconciliation must report ZERO payment_status_mismatch AND ZERO captured_booking_missing_payout entries for this PI. */
     public function test_f8_reconciliation_reports_no_mismatch_when_db_and_stripe_agree(): void
     {
         $piId = 'pi_f8_clean';
@@ -360,21 +331,7 @@ class PayoutRoutingTest extends TestCase
         );
     }
 
-    /**
-     * Clean case: a captured booking that DOES have a ProviderPayout row (with the
-     * correct metadata.stripe_payment_intent_id) must produce ZERO
-     * captured_booking_missing_payout mismatches.
-     *
-     * This test would have caught Fix 1's crash (whereJsonContains on a scalar string
-     * throws "malformed JSON" in SQLite once a ProviderPayout row exists) because it
-     * requires a real ProviderPayout row to be present when the JSON query runs.
-     *
-     * The scenario:
-     *   1. Authorize + captureMissionPayment (creates a real ProviderPayout row with
-     *      metadata.stripe_payment_intent_id set).
-     *   2. Stub reconciliation's PaymentIntent::all to return the PI as "succeeded".
-     *   3. Run reconciliation; assert ZERO captured_booking_missing_payout mismatches.
-     */
+    /** Clean case: a captured booking that DOES have a ProviderPayout row (with the correct metadata.stripe_payment_intent_id) must produce ZERO captured_booking_missing_payout mismatches. */
     public function test_f8_reconciliation_silent_when_captured_booking_has_payout(): void
     {
         $piId = 'pi_f8_haspayout';
@@ -478,20 +435,7 @@ class PayoutRoutingTest extends TestCase
         );
     }
 
-    /**
-     * F8 gap (finding 4c) — A booking marked "captured" with NO ProviderPayout row
-     * is a real launch-blocking gap: the provider's money ledger entry is missing.
-     *
-     * StripeReconciliationService::reconcilePaymentIntents() does NOT currently flag
-     * this case because it only checks PI.status ↔ booking.payment_status; it never
-     * cross-references the payout table.
-     *
-     * A minimal check has been added to reconcilePaymentIntents() that, after the
-     * status-map comparison, also verifies a ProviderPayout exists for every
-     * "captured" booking found via a Stripe PI.
-     *
-     * This test acts as a regression guard for that addition.
-     */
+    /** F8 gap (finding 4c) — A booking marked "captured" with NO ProviderPayout row is a real launch-blocking gap: the provider's money ledger entry is missing. */
     public function test_f8_reconciliation_flags_captured_booking_with_missing_payout_row(): void
     {
         $piId = 'pi_f8_nopayout';
@@ -549,20 +493,7 @@ class PayoutRoutingTest extends TestCase
         $this->assertSame($piId, $mismatch['stripe_id']);
     }
 
-    /**
-     * UNE ERREUR DE BASE NE DOIT PAS ÊTRE MAQUILLÉE EN RÉCONCILIATION RÉUSSIE.
-     *
-     * C'est ce qui a permis au défaut du 10 août de vivre trois jours : la suppression de
-     * `missions.rendez_vous_id` a laissé une requête pointant sur une colonne disparue, l'erreur
-     * SQL a été avalée par un `catch (\Throwable)`, consignée sous l'étiquette trompeuse
-     * `stripe_api_error`, et le run s'est déclaré COMPLETED avec zéro anomalie. Un filet de
-     * sécurité sur l'argent était débranché tout en affichant qu'il fonctionnait.
-     *
-     * La distinction est délibérée : une panne de l'API Stripe est une condition ATTENDUE, qu'on
-     * consigne et qui laisse le run se terminer — la réconciliation reprendra au passage suivant.
-     * Une requête cassée est un défaut de programmation, et un contrôle d'intégrité financière
-     * qui n'a pas pu s'exécuter doit le dire.
-     */
+    /** UNE ERREUR DE BASE NE DOIT PAS ÊTRE MAQUILLÉE EN RÉCONCILIATION RÉUSSIE. */
     public function test_une_erreur_de_base_fait_echouer_le_run_au_lieu_de_le_declarer_reussi(): void
     {
         $piId = 'pi_f8_db_broken';

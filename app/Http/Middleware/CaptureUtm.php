@@ -8,11 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Capture UTM params (utm_source, utm_medium, utm_campaign, etc.) en session
- * pour attribution. Persisté 90 jours via cookie. À brancher au login pour
- * tag le User avec sa source d'acquisition.
- */
+/** Capture UTM params (utm_source, utm_medium, utm_campaign, etc.) en session pour attribution. */
 class CaptureUtm
 {
     protected const UTM_KEYS = [
@@ -50,9 +46,7 @@ class CaptureUtm
         return $next($request);
     }
 
-    /**
-     * Track event AnalyticsEvent type="acquisition.utm_captured" pour funnel attribution.
-     */
+    /** Track event AnalyticsEvent type="acquisition.utm_captured" pour funnel attribution. */
     protected function trackAttributionEvent(Request $request, array $utm): void
     {
         try {
@@ -75,10 +69,7 @@ class CaptureUtm
         }
     }
 
-    /**
-     * Si l'utilisateur est authentifié, store sur le User pour attribution lifetime.
-     * Idempotent : on ne ré-écrit que si pas déjà set (first-touch attribution).
-     */
+    /** Si l'utilisateur est authentifié, store sur le User pour attribution lifetime. */
     protected function persistOnUser(Request $request, array $utm): void
     {
         try {

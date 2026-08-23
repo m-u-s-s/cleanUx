@@ -12,10 +12,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * M19 — finishing the legacy provider onboarding (the real path) must reflect in the
- * OnboardingV2 journey, instead of leaving it permanently never-started.
- */
+/** M19 — finishing the legacy provider onboarding (the real path) must reflect in the OnboardingV2 journey, instead of leaving it permanently never-started. */
 class OnboardingV2SyncTest extends TestCase
 {
     use RefreshDatabase;

@@ -9,9 +9,6 @@ use App\Models\AnalyticsEvent;
 /**
  * Le journal des événements produit.
  *
- * Lecture seule, et définitivement : un journal qu’on peut modifier ne prouve plus rien. Les
- * analyses agrégées vivent sur la page dédiée ; ici on lit la trace brute.
- *
  * @extends EloquentResource<AnalyticsEvent>
  */
 class AnalyticsEventResource extends EloquentResource

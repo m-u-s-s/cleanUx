@@ -9,10 +9,7 @@ use App\Services\Subscription\SubscriptionScheduler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * L12 — the recurring scheduler must batch its duplicate-check (one query, not one per
- * subscription) and stay idempotent.
- */
+/** L12 — the recurring scheduler must batch its duplicate-check (one query, not one per subscription) and stay idempotent. */
 class SubscriptionSchedulerTest extends TestCase
 {
     use RefreshDatabase;

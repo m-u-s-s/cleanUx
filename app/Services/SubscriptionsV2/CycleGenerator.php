@@ -8,10 +8,7 @@ use Carbon\Carbon;
 
 class CycleGenerator
 {
-    /**
-     * Crée (idempotent) le prochain cycle pour une subscription.
-     * Renvoie le cycle créé ou existant.
-     */
+    /** Crée (idempotent) le prochain cycle pour une subscription. Renvoie le cycle créé ou existant. */
     public function generateNextCycle(SubscriptionV2 $sub, ?Carbon $forceStartAt = null): SubscriptionCycleV2
     {
         $nextNumber = (int) $sub->billing_cycle_count + 1;
@@ -41,10 +38,7 @@ class CycleGenerator
         ]);
     }
 
-    /**
-     * Met à jour les dates de cycle courant + next_billing_at sur la subscription
-     * après création / paiement d'un cycle.
-     */
+    /** Met à jour les dates de cycle courant + next_billing_at sur la subscription après création / paiement d'un cycle. */
     public function advanceSubscriptionWindows(SubscriptionV2 $sub, SubscriptionCycleV2 $cycle): void
     {
         $sub->update([

@@ -4,12 +4,7 @@ namespace App\Services\ChatV2;
 
 class ModerationService
 {
-    /**
-     * Scan a message body :
-     *  1. Block if matches toxic words
-     *  2. Redact PII (email/phone/IBAN/credit_card)
-     *  3. Return ModerationResult with status + redacted body
-     */
+    /** Scan a message body : 1. Block if matches toxic words 2. */
     public function scan(string $body): ModerationResult
     {
         $cfg = (array) config('chat_v2.moderation');

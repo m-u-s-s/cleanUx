@@ -12,13 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * LA PAGE WEB ÉCRIT LÀ OÙ TOUT LE MONDE LIT.
- *
- * Elle écrivait dans `disponibilites` — table à zéro ligne que rien ne lisait hors d'elle-même.
- * Un prestataire saisissait son horaire et restait introuvable à la planification, sans erreur ni
- * message. Ces tests fixent la table de destination : la voir changer doit casser quelque chose.
- */
+/** LA PAGE WEB ÉCRIT LÀ OÙ TOUT LE MONDE LIT. */
 class DisponibilitesEmployePageTest extends TestCase
 {
     use RefreshDatabase;
@@ -74,10 +68,7 @@ class DisponibilitesEmployePageTest extends TestCase
         $this->assertSame(1, AvailabilitySlot::where('provider_user_id', $user->id)->count());
     }
 
-    /**
-     * L'ancienne version ne vérifiait le chevauchement QU'À LA CRÉATION : éditer un créneau pour
-     * le faire recouvrir un autre passait sans un mot.
-     */
+    /** L'ancienne version ne vérifiait le chevauchement QU'À LA CRÉATION : éditer un créneau pour le faire recouvrir un autre passait sans un mot. */
     public function test_le_chevauchement_est_refuse_aussi_a_la_modification(): void
     {
         $user = $this->prestataire();
@@ -125,12 +116,7 @@ class DisponibilitesEmployePageTest extends TestCase
         $this->assertSame('11:00:00', substr((string) $slot->fresh()->end_time, 0, 8));
     }
 
-    /**
-     * LE CŒUR DU DÉFAUT CORRIGÉ.
-     *
-     * L'ancien « Bloquer » supprimait les créneaux de la date. Comme ils sont RÉCURRENTS, fermer
-     * « ce mardi » fermait tous les mardis à venir — sans confirmation ni retour possible.
-     */
+    /** LE CŒUR DU DÉFAUT CORRIGÉ. L'ancien « Bloquer » supprimait les créneaux de la date. */
     public function test_fermer_un_jour_pose_une_exception_et_laisse_la_semaine_intacte(): void
     {
         $user = $this->prestataire();
@@ -184,10 +170,7 @@ class DisponibilitesEmployePageTest extends TestCase
         $this->assertSame(0, AvailabilityException::where('provider_user_id', $user->id)->count());
     }
 
-    /**
-     * L'appartenance vit dans la requête, pas dans un contrôle à côté : le créneau d'autrui
-     * n'existe pas pour cette page. Avec son témoin — le sien, lui, s'édite.
-     */
+    /** L'appartenance vit dans la requête, pas dans un contrôle à côté : le créneau d'autrui n'existe pas pour cette page. */
     public function test_on_ne_touche_pas_au_creneau_d_autrui(): void
     {
         $user = $this->prestataire();

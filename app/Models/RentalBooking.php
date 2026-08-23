@@ -9,23 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
-/**
- * UNE LOCATION DE VÉHICULE.
- *
- * CE N'EST PAS UN {@see Booking}, et c'est délibéré. Une réservation de mission fait venir un
- * professionnel chez un client ; elle a un métier, une zone, un dispatch, un prestataire à trouver.
- * Une location n'a rien de tout cela : le client se déplace, le « prestataire » est la plateforme
- * elle-même, et l'objet loué est déjà identifié au moment du choix. Les faire cohabiter dans la
- * même table aurait donné une réservation dont la moitié des colonnes sont vides selon le cas —
- * exactement la forme de dette que ce dépôt paie ailleurs.
- *
- * ── LE PRIX EST FIGÉ ICI, ET CE N'EST PAS UNE DUPLICATION ────────────────────────────────────
- *
- * Relire le tarif du véhicule des mois plus tard donnerait un autre chiffre que celui accepté par
- * le client — les tarifs bougent, c'est même le travail de l'administrateur. Une location doit
- * pouvoir se relire telle qu'elle a été conclue, y compris devant un litige. Même raison pour
- * l'adresse de retrait : l'agence peut déménager, la promesse ne bouge pas.
- */
+/** UNE LOCATION DE VÉHICULE. CE N'EST PAS UN {@see Booking}, et c'est délibéré. */
 class RentalBooking extends Model
 {
     /** @use HasFactory<RentalBookingFactory> */
@@ -44,13 +28,6 @@ class RentalBooking extends Model
 
     /**
      * LES STATUTS QUI RENDENT LE VÉHICULE INDISPONIBLE.
-     *
-     * Un brouillon n'en fait PAS partie, et c'est un choix : le panier vit avant l'identité et
-     * peut être abandonné. Bloquer une voiture sur un panier ouvert la retirerait du catalogue
-     * parce que quelqu'un a cliqué puis fermé l'onglet.
-     *
-     * Une location rendue ou annulée ne réserve plus rien non plus. Restent celles qui sont
-     * réellement engagées.
      *
      * @var list<string>
      */

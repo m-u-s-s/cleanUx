@@ -21,29 +21,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
-/**
- * NOS LOCATIONS — TOUT CE QUE L'ADMINISTRATEUR PILOTE, AU MÊME ENDROIT.
- *
- * Un comptoir d'agence tient quatre choses, et cet écran leur donne un onglet chacun :
- *
- *   LE PARC       les voitures, leur fiche, leur prix, leur caution, leur garantie, et
- *                 l'interrupteur `is_active` qui décide seul de leur présence au catalogue
- *   LES MÉDIAS    la galerie, la rotation à 360°, le modèle 3D — choisis VÉHICULE PAR VÉHICULE
- *   LES AGENCES   les adresses où le client vient chercher sa voiture
- *   LES LOCATIONS les réservations en cours, du retrait au retour
- *
- * ── POURQUOI CE N'EST PAS L'ÉCRAN FLEET ──────────────────────────────────────────────────────
- *
- * Fleet gère ce qu'un employeur confie à ses exécutants pour aller travailler : pas de prix, pas de
- * client, pas de caution. Ici, chaque voiture est un produit vendu. Les deux écrans ne partagent
- * aucune ligne, et Fleet n'est pas modifié.
- *
- * ── LA MISE EN VITRINE EST UN GESTE SÉPARÉ ───────────────────────────────────────────────────
- *
- * Une voiture créée arrive FERMÉE. C'est la même prudence que pour un pays neuf dans le catalogue
- * géographique : une faute de frappe sur un tarif ne doit pas rendre un véhicule louable dans la
- * seconde. L'ouvrir est un clic distinct, et il se voit.
- */
+/** NOS LOCATIONS — TOUT CE QUE L'ADMINISTRATEUR PILOTE, AU MÊME ENDROIT. */
 #[Layout('layouts.app')]
 class NosLocationsCenter extends Component
 {
@@ -62,13 +40,7 @@ class NosLocationsCenter extends Component
 
     // ── Fiche véhicule ───────────────────────────────────────────────────
 
-    /**
-     * L'identifiant en cours d'édition.
-     *
-     * `#[Locked]` parce qu'une propriété publique de Livewire se retourne depuis le navigateur par
-     * `$set` : sans cela, un administrateur en lecture seule pourrait se désigner une autre fiche
-     * entre l'affichage et l'enregistrement. Le piège est documenté dans ce dépôt.
-     */
+    /** L'identifiant en cours d'édition. */
     #[Locked]
     public ?int $vehiculeEnEdition = null;
 
@@ -83,9 +55,6 @@ class NosLocationsCenter extends Component
 
     /**
      * Le fichier glTF en cours de televersement.
-     *
-     * Non type : Livewire y place tantot `null`, tantot un `TemporaryUploadedFile`, et le typer
-     * strictement ferait echouer l'hydratation entre deux requetes.
      *
      * @var mixed
      */
@@ -110,12 +79,7 @@ class NosLocationsCenter extends Component
         $this->reinitialiserLAgence();
     }
 
-    /**
-     * LA CAPACITÉ EST VÉRIFIÉE SUR LE COMPOSANT, PAS SEULEMENT DANS LE MENU.
-     *
-     * `boot()` et non `boot{NomDuComposant}` : Livewire ne reconnaît la seconde forme que pour les
-     * traits, et une garde écrite ainsi n'est jamais appelée. Ce dépôt s'est déjà fait prendre.
-     */
+    /** LA CAPACITÉ EST VÉRIFIÉE SUR LE COMPOSANT, PAS SEULEMENT DANS LE MENU. */
     public function boot(): void
     {
         abort_unless(Gate::allows('manage-rentals'), 403);
@@ -193,13 +157,7 @@ class NosLocationsCenter extends Component
             RentalVehicle::query()->findOrFail($this->vehiculeEnEdition)->update($attributs);
             $this->flash = 'Véhicule mis à jour.';
         } else {
-            /*
-             * UNE VOITURE NEUVE ARRIVE FERMÉE.
-             *
-             * Même prudence que pour un pays neuf du catalogue géographique : une faute de frappe
-             * sur un tarif ne doit pas rendre un véhicule louable dans la seconde. La mise en
-             * vitrine est un clic distinct, et il se voit.
-             */
+            // UNE VOITURE NEUVE ARRIVE FERMÉE.
             RentalVehicle::query()->create($attributs + [
                 'code' => RentalVehicle::genererUnCode(),
                 'currency' => $this->deviseDeLAgence($attributs['pickup_point_id']),
@@ -221,12 +179,7 @@ class NosLocationsCenter extends Component
             : $vehicule->nomComplet().' est retiré du catalogue.';
     }
 
-    /**
-     * SUPPRIMER UN VÉHICULE NE DÉTRUIT PAS SON HISTOIRE.
-     *
-     * `softDeletes` : les locations passées gardent leur véhicule, y compris devant un litige. Une
-     * voiture qui a servi ne s'efface pas de la comptabilité parce qu'on l'a revendue.
-     */
+    /** SUPPRIMER UN VÉHICULE NE DÉTRUIT PAS SON HISTOIRE. */
     public function supprimerLeVehicule(int $id): void
     {
         $vehicule = RentalVehicle::query()->findOrFail($id);
@@ -264,14 +217,7 @@ class NosLocationsCenter extends Component
         $this->vehiculePourMedias = RentalVehicle::query()->findOrFail($id)->id;
     }
 
-    /**
-     * LES PHOTOS PASSENT PAR LA RÈGLE PARTAGÉE, comme partout ailleurs.
-     *
-     * `ImagesTeleversees` est la seule liste de formats du dépôt : elle exclut le svg — un document
-     * XML qui porte du script et s'exécuterait dans notre origine — et accepte le heic des iPhone.
-     * Recopier une liste ici la ferait diverger, et c'est toujours la copie la plus permissive qui
-     * décide.
-     */
+    /** LES PHOTOS PASSENT PAR LA RÈGLE PARTAGÉE, comme partout ailleurs. */
     public function ajouterDesPhotos(): void
     {
         $this->exigerUnVehiculePourMedias();
@@ -296,13 +242,7 @@ class NosLocationsCenter extends Component
         $this->flash = 'Photos ajoutées.';
     }
 
-    /**
-     * LA SÉQUENCE DE ROTATION — L'ORDRE DES FICHIERS EST LE SENS DE ROTATION.
-     *
-     * On remplace la séquence entière plutôt que d'y ajouter : une rotation à 360° n'a de sens que
-     * complète et régulière. Ajouter trois images à une séquence de vingt-quatre ferait sauter la
-     * voiture en arrière au milieu du geste, et la cause serait introuvable depuis l'écran.
-     */
+    /** LA SÉQUENCE DE ROTATION — L'ORDRE DES FICHIERS EST LE SENS DE ROTATION. */
     public function remplacerLaRotation(): void
     {
         $this->exigerUnVehiculePourMedias();
@@ -328,13 +268,7 @@ class NosLocationsCenter extends Component
         $this->flash = 'Rotation 360° enregistrée.';
     }
 
-    /**
-     * LE MODÈLE 3D — un fichier par véhicule, et seulement pour ceux qui en ont un.
-     *
-     * `ImagesTeleversees` ne convient pas ici : ce n'est pas une image. On valide donc
-     * explicitement l'extension glTF, et on le dit — recopier la règle des photos sur un binaire
-     * 3D l'aurait rejeté sans que le message n'explique quoi que ce soit.
-     */
+    /** LE MODÈLE 3D — un fichier par véhicule, et seulement pour ceux qui en ont un. */
     public function remplacerLeModele3d(): void
     {
         $this->exigerUnVehiculePourMedias();
@@ -448,12 +382,7 @@ class NosLocationsCenter extends Component
         $this->flash = 'Location '.$location->reference.' : véhicule remis au client.';
     }
 
-    /**
-     * LE RETOUR LIBÈRE LE VÉHICULE.
-     *
-     * C'est ce geste qui le remet au catalogue : tant qu'il est `picked_up`, il reste bloqué. Ne
-     * pas l'enregistrer laisserait la voiture invisible indéfiniment.
-     */
+    /** LE RETOUR LIBÈRE LE VÉHICULE. */
     public function marquerRendue(int $id): void
     {
         $location = RentalBooking::query()->findOrFail($id);
@@ -568,12 +497,7 @@ class NosLocationsCenter extends Component
         }
     }
 
-    /**
-     * La devise d'un véhicule suit le pays de son agence.
-     *
-     * Une agence marocaine loue en dirhams. La table ISO donne la réponse quand aucune fiche pays
-     * n'existe encore — c'est la même autorité que le reste de la plateforme, jamais un littéral.
-     */
+    /** La devise d'un véhicule suit le pays de son agence. Une agence marocaine loue en dirhams. */
     private function deviseDeLAgence(?int $pointId): string
     {
         $point = $pointId ? RentalPickupPoint::query()->find($pointId) : null;

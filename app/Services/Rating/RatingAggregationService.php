@@ -7,10 +7,7 @@ use App\Models\ProviderProfile;
 
 class RatingAggregationService
 {
-    /**
-     * Recompute rating aggregates for a single provider user.
-     * Considers only client→provider ratings that are PUBLISHED and not hidden.
-     */
+    /** Recompute rating aggregates for a single provider user. */
     public function recalculateForProvider(int $providerUserId): void
     {
         $profile = ProviderProfile::query()

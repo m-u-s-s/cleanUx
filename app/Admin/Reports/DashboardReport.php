@@ -8,13 +8,7 @@ use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\User;
 
-/**
- * Le tableau de bord d’administration.
- *
- * Ce module n’a AUCUNE table derrière lui : c’est une synthèse. Le forcer dans le moteur de
- * liste aurait demandé d’inventer une entité qui n’existe pas, et l’écran aurait montré une
- * liste vide en prétendant couvrir le domaine.
- */
+/** Le tableau de bord d’administration. */
 class DashboardReport implements AdminReport
 {
     public function key(): string

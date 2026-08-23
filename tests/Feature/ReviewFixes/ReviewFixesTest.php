@@ -14,11 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * Tests anti-régression pour les 4 fix-ups appliqués après review.
- *
- * Chaque test cible UN bug précis identifié dans REVIEW_REPORT.md.
- */
+/** Tests anti-régression pour les 4 fix-ups appliqués après review. */
 class ReviewFixesTest extends TestCase
 {
     use RefreshDatabase;

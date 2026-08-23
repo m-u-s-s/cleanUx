@@ -7,19 +7,7 @@ use App\Support\ActivityLogger;
 use App\Support\TradeFormSchema;
 use Illuminate\Support\Str;
 
-/**
- * Le formulaire d'un métier — champs, règles et persistance — en UN seul endroit.
- *
- * POURQUOI CE TRAIT EXISTE. Le formulaire vit désormais sur deux écrans : la gestion des métiers
- * (`/admin/trades`) et le catalogue d'une zone. Un métier porte vingt et un champs, dont des
- * multiplicateurs tarifaires et un schéma de questionnaire en JSON. Deux copies auraient divergé au
- * premier champ ajouté, et l'écran oublié aurait continué d'enregistrer des métiers incomplets —
- * sans erreur, puisque les colonnes manquantes prennent leur valeur par défaut.
- *
- * CE QU'IL NE FAIT PAS. Il ne gère ni l'ouverture ni la fermeture d'une fenêtre, ni les messages de
- * confirmation : ces gestes appartiennent à chaque écran, qui les enchaîne différemment. Le trait
- * s'arrête au métier enregistré.
- */
+/** Le formulaire d'un métier — champs, règles et persistance — en UN seul endroit. */
 trait ManagesTradeForm
 {
     public ?int $tradeId = null;
@@ -44,16 +32,7 @@ trait ManagesTradeForm
 
     public bool $requires_insurance_proof = false;
 
-    /**
-     * LE CONTROLE FACIAL SE DECIDE METIER PAR METIER.
-     *
-     * Un babysitting ou une aide a domicile mettent quelqu'un seul face a une personne
-     * vulnerable ; un nettoyage de bureaux la nuit, non. Imposer le controle partout serait une
-     * friction que rien ne justifie sur la moitie du catalogue -- et la friction inutile est
-     * precisement ce qui fait desinstaller une application prestataire.
-     *
-     * La zone, elle, se regle dans /admin/modules : les deux conditions doivent etre vraies.
-     */
+    /** LE CONTROLE FACIAL SE DECIDE METIER PAR METIER. */
     public bool $requires_face_check = false;
 
     public bool $is_b2b_default = true;
@@ -64,19 +43,7 @@ trait ManagesTradeForm
 
     public ?string $default_hourly_rate = null;
 
-    /**
-     * LE METIER SE FACTURE AU TEMPS PASSE.
-     *
-     * Coche cette case et le client choisira son nombre d'heures a la commande : le prix devient
-     * `tarif horaire x heures` au lieu d'un forfait. Sans elle, `default_hourly_rate` juste
-     * au-dessus n'est qu'un chiffre d'affichage -- c'est d'ailleurs l'etat dans lequel la
-     * plateforme se trouvait : la vitrine annoncait « a partir de 45 EUR/heure » et le parcours
-     * facturait 45 EUR forfaitaires, quelle que soit la duree.
-     *
-     * Sa place ici, et pas dans les drapeaux operationnels : ceux-la disent ce qu'on EXIGE DU
-     * PRESTATAIRE (certification, assurance, visage, vehicule). Celui-ci dit comment le service
-     * est VENDU AU CLIENT, et il pilote le champ situe juste au-dessus.
-     */
+    /** LE METIER SE FACTURE AU TEMPS PASSE. */
     public bool $hourly_billing = false;
 
     public string $emergency_multiplier = '1.00';
@@ -89,13 +56,7 @@ trait ManagesTradeForm
 
     public bool $requires_quote_by_default = false;
 
-    /**
-     * Règles du transport de personnes : véhicule récent, carte grise, assurance.
-     *
-     * Indépendante du fait que le parcours décrive un trajet — une dépanneuse va d'un point à un
-     * autre sans obéir aux règles taxi. Les confondre reviendrait à réclamer une voiture de moins
-     * de quatre ans à une remorqueuse.
-     */
+    /** Règles du transport de personnes : véhicule récent, carte grise, assurance. */
     public bool $taxi_rules = false;
 
     public ?string $sla_response_minutes = null;
@@ -104,12 +65,7 @@ trait ManagesTradeForm
 
     public bool $showFormSchemaPreview = false;
 
-    /**
-     * Slug et code déduits du nom, à la CRÉATION seulement.
-     *
-     * Les recalculer en édition changerait l'identifiant d'un métier déjà référencé ailleurs —
-     * dans des devis, des parcours publiés, des URL.
-     */
+    /** Slug et code déduits du nom, à la CRÉATION seulement. */
     public function updatedName(mixed $value): void
     {
         if ($this->tradeId !== null) {
@@ -207,11 +163,7 @@ trait ManagesTradeForm
             'is_b2b_default' => ['boolean'],
             'is_personal_default' => ['boolean'],
             'sort_order' => ['integer', 'min:0', 'max:9999'],
-            /*
-             * `required_if` : cocher « facture a l'heure » sans donner de tarif produirait un
-             * metier qui multiplie des heures par rien. Le refus tombe ici plutot qu'a la premiere
-             * commande, ou il serait vecu comme une panne.
-             */
+            // `required_if` : cocher « facture a l'heure » sans donner de tarif produirait un metier qui multiplie des heures par rien.
             'default_hourly_rate' => ['nullable', 'numeric', 'min:0', 'max:99999.99', 'required_if:hourly_billing,true'],
             'hourly_billing' => ['boolean'],
             'emergency_multiplier' => ['required', 'numeric', 'min:1', 'max:10'],
@@ -225,13 +177,7 @@ trait ManagesTradeForm
         ];
     }
 
-    /**
-     * Valide et enregistre le métier. Rend `null` si quelque chose s'y oppose.
-     *
-     * ON REND `null` PLUTÔT QUE DE LEVER. L'appelant est un composant Livewire : les erreurs sont
-     * déjà posées dans le sac d'erreurs, et une exception ferait disparaître le formulaire avec les
-     * vingt champs que l'administrateur venait de remplir.
-     */
+    /** Valide et enregistre le métier. Rend `null` si quelque chose s'y oppose. */
     protected function persistTradeForm(): ?Trade
     {
         $validated = $this->validate($this->tradeFormRules());
@@ -275,12 +221,7 @@ trait ManagesTradeForm
 
         unset($validated['booking_form_schema_json']);
 
-        /*
-         * L'unicité s'ignore elle-même en édition.
-         *
-         * Sans le `where('id', '!=')`, aucun métier ne serait modifiable une fois créé : son propre
-         * slug déclencherait le conflit.
-         */
+        // L'unicité s'ignore elle-même en édition.
         if ($this->slugOuCodeDejaPris('slug', (string) $validated['slug'], 'Ce slug est déjà utilisé.')) {
             return null;
         }
@@ -289,12 +230,7 @@ trait ManagesTradeForm
             return null;
         }
 
-        /*
-         * `taxi_rules_since` n'est PAS posé ici. Ce formulaire n'est qu'une des portes qui écrivent
-         * `taxi_rules` — la console mobile en est une autre, les seeders une troisième — et une date
-         * posée dans chacune finirait par manquer dans la quatrième. Elle est stampée par
-         * {@see \App\Observers\TradeTaxiRulesObserver}, qui suit la colonne qu'elle décrit.
-         */
+        // `taxi_rules_since` n'est PAS posé ici.
         if ($this->tradeId !== null) {
             $trade = Trade::findOrFail($this->tradeId);
             $trade->update($validated);

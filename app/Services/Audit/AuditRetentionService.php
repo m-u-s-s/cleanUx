@@ -8,15 +8,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * AuditRetentionService — purge périodique des audit_events au-delà de leur retention.
- *
- *   - Respecte les policies DB (audit_retention_policies par domain + severity)
- *   - Sinon utilise config 'audit.retention_days_by_domain' (default mapping)
- *   - Ne purge JAMAIS les rows is_pinned=true
- *   - Ne purge JAMAIS la severity 'critical' (configurable)
- *   - Batch + time-limit pour éviter long-running query
- */
+/** AuditRetentionService — purge périodique des audit_events au-delà de leur retention. */
 class AuditRetentionService
 {
     public function purge(): int
@@ -59,6 +51,7 @@ class AuditRetentionService
 
     /**
      * @return array<string, int> domain => retention_days
+     *                            /
      */
     public function resolveAllDomains(): array
     {

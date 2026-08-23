@@ -27,20 +27,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * PHASE 5 — SÉCURITÉ (E33), HEATMAP (E12), OBJECTIFS (E13), CASH-OUT (E14), OFFRES (E15),
- * ACADÉMIE (E16), TOURNÉE (E17/E34) ET FISCAL (E18).
- *
- * CE QUE CE FICHIER PROTÈGE EN PRIORITÉ :
- *
- *   1. L'ALERTE S'ÉCRIT AVANT toute notification, et rien ne peut l'empêcher — c'est la seule
- *      fonctionnalité de ce programme dont l'échec se compte en intégrité physique ;
- *   2. ON N'OUVRE PAS DEUX ALERTES : trois appuis sur un bouton d'urgence ne font pas trois
- *      personnes en difficulté ;
- *   3. LES FRAIS EXPRESS S'AFFICHENT EN EUROS avant le bouton, et le plancher protège le
- *      prestataire du ratio, pas la plateforme de la dépense ;
- *   4. LA TOURNÉE NE RÉORDONNE RIEN : un client attend à 14 h.
- */
+/** PHASE 5 — SÉCURITÉ (E33), HEATMAP (E12), OBJECTIFS (E13), CASH-OUT (E14), OFFRES (E15), ACADÉMIE (E16), TOURNÉE (E17/E34) ET FISCAL (E18). */
 class SecuriteEtProgressionTest extends TestCase
 {
     use RefreshDatabase;
@@ -85,10 +72,7 @@ class SecuriteEtProgressionTest extends TestCase
 
         $alerte = app(SafetyAlertService::class)->declencher($prestataire);
 
-        /*
-         * UNE ALERTE SANS POSITION VAUT INFINIMENT MIEUX qu'un refus renvoyé à quelqu'un qui a peur.
-         * L'écriture ne dépend d'aucune donnée facultative.
-         */
+        // UNE ALERTE SANS POSITION VAUT INFINIMENT MIEUX qu'un refus renvoyé à quelqu'un qui a peur.
         $this->assertSame(SafetyAlert::STATUS_OPEN, $alerte->status);
         $this->assertSame(SafetyAlert::LEVEL_EMERGENCY, $alerte->level);
     }
@@ -131,10 +115,7 @@ class SecuriteEtProgressionTest extends TestCase
         $alerte = app(SafetyAlertService::class)->declencher($prestataire);
         $alerte = app(SafetyAlertService::class)->accuserReception($alerte, $admin);
 
-        /*
-         * SAVOIR QUE QUELQU'UN A VU L'ALERTE est ce que la personne sur place attend en premier —
-         * plus que la résolution. Savoir qu'on est seul est ce qui rend une situation effrayante.
-         */
+        // SAVOIR QUE QUELQU'UN A VU L'ALERTE est ce que la personne sur place attend en premier — plus que la résolution.
         $this->assertSame(SafetyAlert::STATUS_ACKNOWLEDGED, $alerte->status);
         $this->assertNotNull($alerte->acknowledged_at);
     }
@@ -217,10 +198,7 @@ class SecuriteEtProgressionTest extends TestCase
     {
         $devis = app(ExpressPayoutService::class)->devis(1000);
 
-        /*
-         * LE PLANCHER PROTÈGE DU RATIO, PAS DE LA DÉPENSE. Sur dix euros, un euro de frais fait
-         * 10 % : on ne propose pas une mauvaise affaire à quelqu'un qui n'a pas le choix.
-         */
+        // LE PLANCHER PROTÈGE DU RATIO, PAS DE LA DÉPENSE.
         $this->assertFalse($devis['eligible']);
 
         $this->expectException(ValidationException::class);
@@ -247,10 +225,7 @@ class SecuriteEtProgressionTest extends TestCase
 
         $stats = app(OfferStatsService::class)->pour($prestataire);
 
-        /*
-         * UNE EXPIRATION SE CORRIGE EN RÉPONDANT PLUS VITE, un refus en changeant ce qu'on accepte :
-         * les mélanger donnerait un conseil faux.
-         */
+        // UNE EXPIRATION SE CORRIGE EN RÉPONDANT PLUS VITE, un refus en changeant ce qu'on accepte : les mélanger donnerait un conseil faux.
         $this->assertSame(1, $stats['expired_count']);
         $this->assertSame(0, $stats['declined_count']);
     }
@@ -290,10 +265,7 @@ class SecuriteEtProgressionTest extends TestCase
 
         $lignes = app(QuestService::class)->pour($prestataire);
 
-        /*
-         * CE QU'IL RESTE est le seul chiffre qui fait faire la course de trop. Une quête sans
-         * compteur visible n'est pas une quête, c'est une surprise.
-         */
+        // CE QU'IL RESTE est le seul chiffre qui fait faire la course de trop.
         $this->assertSame(2, $lignes[0]['progress']);
         $this->assertSame(3, $lignes[0]['remaining']);
         $this->assertFalse($lignes[0]['is_completed']);
@@ -345,10 +317,7 @@ class SecuriteEtProgressionTest extends TestCase
 
         app(AcademyService::class)->terminer($prestataire, $cours);
 
-        /*
-         * RÉUSSIR DOIT CHANGER QUELQUE CHOSE, sinon personne ne suit. Un catalogue de cours sans
-         * effet est un catalogue que personne n'ouvre deux fois.
-         */
+        // RÉUSSIR DOIT CHANGER QUELQUE CHOSE, sinon personne ne suit.
         $bonus = data_get($prestataire->fresh()->providerProfile?->metadata, 'academy.specialty_bonus');
 
         $this->assertSame(7, $bonus[$cours->code] ?? null);
@@ -380,10 +349,7 @@ class SecuriteEtProgressionTest extends TestCase
 
         $tournee = app(DailyRouteService::class)->pourLaJournee($prestataire, $jour);
 
-        /*
-         * ON NE RÉORDONNE RIEN. Un client attend à 14 h : un outil qui propose de décaler des
-         * rendez-vous pris ne sert à personne.
-         */
+        // ON NE RÉORDONNE RIEN.
         $heures = array_map(
             fn (array $etape) => (int) Carbon::parse($etape['planned_start_at'])->hour,
             $tournee['steps'],
@@ -416,11 +382,7 @@ class SecuriteEtProgressionTest extends TestCase
 
         $tournee = app(DailyRouteService::class)->pourLaJournee($prestataire, $jour);
 
-        /*
-         * INVENTER UNE DISTANCE ferait planifier une journée sur un chiffre faux. La garde
-         * comparait ces colonnes à `null` alors qu'elles rendent une CHAÎNE : elle ne gardait rien,
-         * et on aurait calculé une distance depuis le point zéro de l'Atlantique.
-         */
+        // INVENTER UNE DISTANCE ferait planifier une journée sur un chiffre faux.
         $this->assertNull($tournee['steps'][1]['travel_km']);
         $this->assertNull($tournee['steps'][1]['travel_minutes']);
     }

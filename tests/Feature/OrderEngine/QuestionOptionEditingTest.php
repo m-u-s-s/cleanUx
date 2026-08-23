@@ -13,18 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Éditer une option de réponse — libellé, prix, multiplicateur, durée, défaut.
- *
- * LE TROU QUE ÇA COMBLE. Le constructeur savait AJOUTER une option — elle s'appelait « Nouvelle
- * réponse » et valait 0 € — et l'AFFICHER, mais rien ne permettait de la renommer ni de lui donner
- * un prix. `updateOption()` existait dans le composant et n'était appelée par aucune vue.
- *
- * POURQUOI ÇA COMPTE. C'est le seul chemin pour un supplément conditionnel : « Voulez-vous
- * l'installation ? Oui / Non », où seul « Oui » ajoute 150 €. Le mode `add` posé sur la QUESTION ne
- * convient pas — il ajoute son montant dès que la question est répondue, donc aussi quand on
- * répond « Non ». Le prix doit vivre sur l'OPTION.
- */
+/** Éditer une option de réponse — libellé, prix, multiplicateur, durée, défaut. */
 class QuestionOptionEditingTest extends TestCase
 {
     use RefreshDatabase;
@@ -77,12 +66,7 @@ class QuestionOptionEditingTest extends TestCase
         Livewire::test(QuestionnaireBuilder::class, ['trade' => $option->question->trade])
             ->call('updateOption', $option->id, ['price_modifier_euros' => '150']);
 
-        /*
-         * L'administrateur saisit des EUROS, la base stocke des CENTIMES.
-         *
-         * C'est le bug classique de ce genre d'écran : 150 saisis, 150 centimes enregistrés, et un
-         * supplément de 1,50 € que personne ne remarque avant la première facture.
-         */
+        // L'administrateur saisit des EUROS, la base stocke des CENTIMES.
         $this->assertSame(15000, (int) $option->fresh()->price_modifier_cents);
     }
 
@@ -158,11 +142,7 @@ class QuestionOptionEditingTest extends TestCase
         Livewire::test(QuestionnaireBuilder::class, ['trade' => $option->question->trade])
             ->call('updateOption', $option->id, ['question_id' => $ailleurs->id]);
 
-        /*
-         * `question_id` est `fillable`, et la méthode recevait un tableau LIBRE venu du navigateur.
-         * Un appel forgé aurait déplacé l'option vers une question d'un autre métier — la
-         * commande la citerait sans qu'elle apparaisse nulle part dans son parcours.
-         */
+        // `question_id` est `fillable`, et la méthode recevait un tableau LIBRE venu du navigateur.
         $this->assertSame($option->question_id, $option->fresh()->question_id);
     }
 

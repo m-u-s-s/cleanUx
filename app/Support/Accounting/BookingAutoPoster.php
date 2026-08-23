@@ -11,13 +11,7 @@ use App\Services\International\CountryMarketResolver;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Helper safe-fail pour brancher AccountingV2 sur les events Booking sans
- * casser le flow business si le module est désactivé ou si la table n'existe pas.
- *
- * Désactivé par défaut via config('accounting_v2.auto_post_enabled')=false.
- * Activer en prod uniquement après validation manuelle des écritures par compta.
- */
+/** Helper safe-fail pour brancher AccountingV2 sur les events Booking sans casser le flow business si le module est désactivé ou si la table n'existe pas. */
 class BookingAutoPoster
 {
     public static function postSale(Booking $booking): void
@@ -82,15 +76,7 @@ class BookingAutoPoster
         }
     }
 
-    /**
-     * FRAIS D'ANNULATION ENCAISSÉS — le seul flux d'argent qui n'atteignait aucun livre.
-     *
-     * Le taux de TVA se résout ici et non dans le service de passage : c'est ce fichier qui sait
-     * déjà lire le pays d'une réservation, et le dupliquer plus bas ferait diverger les deux
-     * copies. Le réglage dédié l'emporte quand il existe — y compris à zéro, qui est une position
-     * fiscale voulue (« hors champ ») et non une absence de valeur, d'où le test sur `null` plutôt
-     * que sur la vacuité.
-     */
+    /** FRAIS D'ANNULATION ENCAISSÉS — le seul flux d'argent qui n'atteignait aucun livre. */
     public static function postCancellationFee(
         Booking $booking,
         int $feeCents,
@@ -145,13 +131,7 @@ class BookingAutoPoster
         }
     }
 
-    /**
-     * L'INTERRUPTEUR APPARTIENT AU COMPTABLE, PAS AU FICHIER `.env`.
-     *
-     * Il reste coupé par défaut — la compta valide les écritures avant qu'elles ne s'accumulent —
-     * mais le lever ne demande plus un accès au serveur et un redéploiement. Le repli reste la
-     * configuration, si bien qu'une base neuve se comporte exactement comme avant.
-     */
+    /** L'INTERRUPTEUR APPARTIENT AU COMPTABLE, PAS AU FICHIER `.env`. */
     protected static function glEnabled(): bool
     {
         return app(ReglagesComptables::class)->postageAutomatique()
@@ -163,9 +143,7 @@ class BookingAutoPoster
         return self::glEnabled();
     }
 
-    /**
-     * Cherche le montant TTC dans plusieurs colonnes possibles (compatible legacy schemas).
-     */
+    /** Cherche le montant TTC dans plusieurs colonnes possibles (compatible legacy schemas). */
     protected static function extractTtcCents(Booking $booking): int
     {
         $candidates = [
@@ -190,31 +168,7 @@ class BookingAutoPoster
         return 0;
     }
 
-    /**
-     * LA TVA COMPTABLE LIT DÉSORMAIS LA MÊME AUTORITÉ QUE LE RESTE DE LA PLATEFORME.
-     *
-     * Il y en avait TROIS, et le comptable n'en tenait aucune :
-     *
-     *   `CountryBillingProfile.default_tax_rate`     lue par le calcul de prix
-     *   `CountryOperationalSetting.default_tax_rate` éditable depuis les opérations internationales
-     *   `config('accounting_v2.vat_rates')`          lue ICI, et seulement ici
-     *
-     * Un administrateur qui corrigeait le taux d'un pays dans l'écran prévu pour cela changeait le
-     * prix facturé au client SANS changer la TVA portée au journal. Les deux nombres divergeaient
-     * en silence, et c'est le journal qui sert à déclarer.
-     *
-     * L'ORDRE VA DU PLUS PRÉCIS AU PLUS GÉNÉRAL, et chaque cran a sa raison :
-     *
-     *   1. le taux porté par la réservation elle-même — figé au moment de la vente, il fait foi ;
-     *   2. le profil de facturation puis le réglage du pays — l'autorité que le reste de la
-     *      plateforme consulte, celle que l'administration édite ;
-     *   3. la table de la configuration comptable, conservée en REPLI pour ne rien casser là où
-     *      aucune donnée pays n'existe encore : `FR` y vaut 20 %, et basculer d'autorité sans ce
-     *      cran l'aurait fait passer à 21 % sans que personne le demande.
-     *
-     * Zéro reste une valeur : un pays exonéré doit rendre `0.0`, pas retomber au cran suivant.
-     * D'où les tests sur `null` plutôt que sur la vacuité.
-     */
+    /** LA TVA COMPTABLE LIT DÉSORMAIS LA MÊME AUTORITÉ QUE LE RESTE DE LA PLATEFORME. */
     protected static function resolveVatRate(Booking $booking): float
     {
         if (isset($booking->vat_rate) && is_numeric($booking->vat_rate)) {
@@ -235,17 +189,7 @@ class BookingAutoPoster
         return (float) ($rates[$country] ?? 21.0);
     }
 
-    /**
-     * Le taux RÉELLEMENT renseigné pour le pays de la réservation, ou `null` si aucun ne l'est.
-     *
-     * On ne passe pas par `CountryMarketResolver::effectiveTaxRate()` bien qu'il lise les mêmes
-     * sources : il retombe sur 21 % quand rien n'est posé, et cette valeur de politesse est
-     * indiscernable d'un vrai 21 %. Le repli sur la table comptable ne serait alors JAMAIS
-     * emprunté — la France passerait de 20 à 21 % sans que rien ne le signale.
-     *
-     * La résolution du pays, elle, est bien celle du reste de la plateforme : elle part de la
-     * POSITION — site, code postal, zone de service — et non d'une préférence de compte.
-     */
+    /** Le taux RÉELLEMENT renseigné pour le pays de la réservation, ou `null` si aucun ne l'est. */
     private static function tauxPoseParLePays(Booking $booking): ?float
     {
         try {

@@ -12,19 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-/**
- * LE DOSSIER DE CONDUITE : permis, assurance du véhicule, carte grise, et la voiture elle-même.
- *
- * POURQUOI CET ÉCRAN EXISTE. Un prestataire ne pouvait déposer son permis NULLE PART. La table des
- * certifications de flotte connaît bien un type « permis de conduire », mais son champ de fichier
- * n'est écrit par aucun code et la seule voie de création est un administrateur via l'API : sur le
- * web comme sur le mobile, l'écran manquait tout simplement.
- *
- * ET IL DIT POURQUOI. L'angle mort connu de cette plateforme est le compte ACTIF mais jamais
- * VÉRIFIÉ : l'application s'ouvre normalement, et le téléphone cesse simplement de sonner. Ici, ce
- * qui manque est nommé, avec la date à laquelle ça deviendra bloquant — un prestataire qui sait
- * quoi faire le fait ; un prestataire qui attend appelle le support, puis part.
- */
+/** LE DOSSIER DE CONDUITE : permis, assurance du véhicule, carte grise, et la voiture elle-même. */
 class ProviderDrivingDossier extends Component
 {
     use WithFileUploads;
@@ -65,10 +53,6 @@ class ProviderDrivingDossier extends Component
 
     /**
      * Les seules pièces que CET écran accepte.
-     *
-     * La liste est fermée volontairement : l'écran des justificatifs généraux traite le reste, et
-     * laisser passer n'importe quel type ici permettrait de déposer une pièce d'identité sous
-     * l'étiquette d'un permis — que la revue admin découvrirait, plusieurs jours plus tard.
      *
      * @return array<int, string>
      */

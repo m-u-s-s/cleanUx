@@ -14,20 +14,7 @@ use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Retrouver son panier quand le cookie a disparu.
- *
- * Le panier vit en base, retrouvé par un jeton de session. Effacer ses cookies, ou une session
- * expirée, le rendait introuvable — alors qu'il est toujours là, avec ses réponses et son prix.
- *
- * CE QU'ON NE MET PAS DANS `localStorage`. Le jeton de session ouvre un panier contenant l'adresse
- * du domicile de quelqu'un, et le cookie qui le porte est `httpOnly` : aucune XSS ne le lit. Le
- * recopier le rendrait lisible par n'importe quel script injecté, pour toujours.
- *
- * La clé de rattrapage a donc trois limites que le jeton n'a pas : hachée au repos, tournante à
- * chaque usage, et expirante. Ces trois-là sont testées ici — sans elles, ce serait le jeton de
- * session sous un autre nom.
- */
+/** Retrouver son panier quand le cookie a disparu. */
 class DraftRecoveryTest extends TestCase
 {
     use RefreshDatabase;
@@ -48,9 +35,7 @@ class DraftRecoveryTest extends TestCase
         $this->assertSame($draft->id, $recovered->id);
     }
 
-    /**
-     * LA CLÉ EST HACHÉE. Une fuite de la base ne donne aucune clé utilisable.
-     */
+    /** LA CLÉ EST HACHÉE. Une fuite de la base ne donne aucune clé utilisable. */
     public function test_the_key_is_never_stored_in_the_clear(): void
     {
         [$draft, $key] = $this->basketWithKey();
@@ -61,12 +46,7 @@ class DraftRecoveryTest extends TestCase
         $this->assertSame(hash('sha256', $key), $stored);
     }
 
-    /**
-     * ELLE TOURNE À CHAQUE USAGE.
-     *
-     * Une clé volée ne sert donc qu'une fois. C'est ce qui distingue ce rattrapage d'un second
-     * jeton de session permanent posé à la portée de toute XSS.
-     */
+    /** ELLE TOURNE À CHAQUE USAGE. Une clé volée ne sert donc qu'une fois. */
     public function test_the_key_rotates_and_the_old_one_dies(): void
     {
         [, $key] = $this->basketWithKey();
@@ -103,12 +83,7 @@ class DraftRecoveryTest extends TestCase
         $this->assertNull(app(OrderDraftManager::class)->recoverByKey($key));
     }
 
-    /**
-     * Une commande DÉJÀ PASSÉE ne se rouvre pas.
-     *
-     * Sans cette borne, une clé oubliée dans un navigateur rouvrirait indéfiniment une commande
-     * payée, avec l'adresse qu'elle porte.
-     */
+    /** Une commande DÉJÀ PASSÉE ne se rouvre pas. */
     public function test_a_converted_order_is_not_recoverable(): void
     {
         [$draft, $key] = $this->basketWithKey();
@@ -125,11 +100,7 @@ class DraftRecoveryTest extends TestCase
         $this->assertNull(app(OrderDraftManager::class)->recoverByKey('n’importe quoi'));
     }
 
-    /**
-     * L'écran expose la clé au navigateur et sait la reprendre.
-     *
-     * Huitième fois que ce module produit un service sans porte : le test lit le rendu.
-     */
+    /** L'écran expose la clé au navigateur et sait la reprendre. */
     public function test_the_journey_hands_the_key_to_the_browser(): void
     {
         $html = Livewire::test(OrderJourney::class)

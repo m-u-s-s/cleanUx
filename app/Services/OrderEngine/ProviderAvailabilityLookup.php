@@ -12,18 +12,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Combien de prestataires, à quelle distance, et pour quand.
- *
- * Ce service ne sert qu'à une chose : permettre au parcours d'annoncer quelque chose de VRAI dès
- * que l'adresse est connue. Il ne réserve rien, ne verrouille rien, et n'a aucun effet de bord —
- * c'est une photographie, prise pour rassurer, et qui n'engage que ce qu'elle constate.
- *
- * Le compte est volontairement CONSERVATEUR. Un prestataire dont on ignore la position n'est pas
- * compté : mieux vaut annoncer moins que promettre une proximité qu'on ne peut pas établir. Le
- * premier client qui attend parce qu'on a gonflé le chiffre coûte plus cher que les dix qu'il
- * aurait convaincus.
- */
+/** Combien de prestataires, à quelle distance, et pour quand. */
 class ProviderAvailabilityLookup
 {
     public function __construct(
@@ -46,10 +35,7 @@ class ProviderAvailabilityLookup
         $withinRadius = $this->within($locatable, $lat, $lng, $radiusM);
 
         if ($withinRadius->isEmpty()) {
-            /*
-             * Impasse : jamais d'écran mort. On regarde ce qu'un rayon élargi donnerait et quels
-             * métiers voisins sont, eux, couverts — de quoi proposer une suite plutôt qu'un constat.
-             */
+            // Impasse : jamais d'écran mort.
             $wider = (int) Config::get('order_engine.availability_wider_radius_m', 25000);
 
             return new AvailabilitySnapshot(
@@ -74,10 +60,6 @@ class ProviderAvailabilityLookup
     /**
      * Les prestataires du métier réellement dans le rayon, avec leur distance.
      *
-     * Exposé pour que le calcul de créneaux réutilise exactement la même définition de « proche » :
-     * deux définitions divergentes finiraient par afficher un compte de professionnels que les
-     * créneaux ne confirmeraient pas.
-     *
      * @return Collection<int, array{id: int, distance_m: int}>
      */
     public function nearby(Trade $trade, float $lat, float $lng, ?int $radiusM = null): Collection
@@ -101,25 +83,11 @@ class ProviderAvailabilityLookup
     /**
      * Prestataires actifs qui exercent ce métier.
      *
-     * On lit `trade_user` : c'est la déclaration explicite de qui fait quoi. Se rabattre sur les
-     * compétences textuelles du profil ferait apparaître dans « Plomberie » quiconque a écrit le
-     * mot quelque part.
-     *
      * @return Collection<int, object>
      */
     protected function providersOf(Trade $trade): Collection
     {
-        /*
-         * LA POSITION VIENT DE PRESENCE V2, avec repli sur le profil.
-         *
-         * `provider_profiles.current_lat/lng` est ecrit au fil de l'eau et n'expire jamais : un
-         * prestataire parti en vacances y reste a l'adresse de sa derniere mission. La table
-         * `provider_presence` porte la position ACCOMPAGNEE de son battement, ce qui permet de
-         * distinguer « il est la » de « il y etait ». Le repli sur le profil garde un compte pour
-         * les prestataires qui n'ont pas encore ouvert l'application v2 — mieux vaut une
-         * approximation qu'un ecran qui annonce zero professionnel dans une ville qui en compte
-         * trente.
-         */
+        // LA POSITION VIENT DE PRESENCE V2, avec repli sur le profil.
         return DB::table('trade_user')
             ->join('users', 'users.id', '=', 'trade_user.user_id')
             ->join('provider_profiles', 'provider_profiles.user_id', '=', 'users.id')
@@ -141,13 +109,7 @@ class ProviderAvailabilityLookup
      */
     protected function within(Collection $providers, float $lat, float $lng, int $radiusM): Collection
     {
-        /*
-         * Pré-filtre par boîte englobante avant le calcul exact.
-         *
-         * La distance haversine sur chaque ligne coûte cher dès que le nombre de prestataires
-         * grandit, et cet appel arrive à CHAQUE frappe dans le champ d'adresse. Un degré de
-         * latitude vaut ~111 km ; en longitude il rétrécit avec le cosinus de la latitude.
-         */
+        // Pré-filtre par boîte englobante avant le calcul exact.
         $latDelta = $radiusM / 111_320;
         $lngDelta = $radiusM / max(1, 111_320 * cos(deg2rad($lat)));
 
@@ -162,12 +124,6 @@ class ProviderAvailabilityLookup
 
     /**
      * Le premier créneau réellement libre, parmi les prestataires les plus proches.
-     *
-     * Interrogés en nombre BORNÉ : la disponibilité se calcule prestataire par prestataire, et
-     * cet appel se déclenche à la saisie de l'adresse. Consulter cinquante agendas pour afficher
-     * une phrase rassurante ferait ramer l'écran qu'elle est censée servir.
-     *
-     * Rend `null` plutôt qu'une date approximative — mieux vaut taire l'heure que l'inventer.
      *
      * @param  Collection<int, object>  $providers
      */
@@ -201,11 +157,7 @@ class ProviderAvailabilityLookup
                     }
                 }
             } catch (\Throwable $e) {
-                /*
-                 * Soft-fail volontaire : la disponibilité est un CONFORT d'affichage. Un agenda
-                 * illisible ne doit pas empêcher quelqu'un de commander — il doit juste priver la
-                 * page d'une phrase rassurante.
-                 */
+                // Soft-fail volontaire : la disponibilité est un CONFORT d'affichage.
                 Log::warning('[order_engine] agenda prestataire illisible', [
                     'provider_id' => $row->id,
                     'error' => $e->getMessage(),
@@ -257,10 +209,6 @@ class ProviderAvailabilityLookup
 
     /**
      * Les métiers voisins qui, eux, sont couverts.
-     *
-     * C'est la porte de sortie de l'impasse : plutôt qu'un « aucun prestataire », on propose ce qui
-     * existe réellement autour. Limité au même secteur — proposer de la plomberie à qui cherche un
-     * élagueur ne serait pas une suggestion, mais un aveu d'impuissance déguisé.
      *
      * @return list<array{trade_id: int, name: string, slug: string, provider_count: int}>
      */

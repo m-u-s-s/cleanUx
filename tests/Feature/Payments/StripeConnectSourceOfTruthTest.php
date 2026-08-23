@@ -7,27 +7,12 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Où se lit l'état d'un compte Stripe Connect.
- *
- * Les colonnes `stripe_connect_*` existent sur `users` ET sur `provider_profiles`. Une seule est
- * alimentée : StripeConnectService écrit sur `users`, rien n'écrit jamais sur le profil.
- *
- * `canReceiveStripeConnectPayments()` ne lisait pourtant que le profil. Elle rendait donc `false`
- * pour TOUT prestataire, y compris un compte Stripe pleinement configuré — et
- * MissionPaymentService::authorize() refusait chaque autorisation de paiement en conséquence.
- *
- * Le défaut était masqué par son propre test, dont le fixture renseigne les deux tables : une
- * forme qui ne se produit jamais en production. Ce test-ci décrit la forme réelle.
- */
+/** Où se lit l'état d'un compte Stripe Connect. */
 class StripeConnectSourceOfTruthTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * La forme que produit réellement StripeConnectService : le compte est sur `users`, le profil
-     * n'en sait rien. C'est le cas de tous les prestataires en production.
-     */
+    /** La forme que produit réellement StripeConnectService : le compte est sur `users`, le profil n'en sait rien. */
     public function test_an_account_written_only_on_the_user_is_recognised(): void
     {
         $user = User::factory()->employe()->create([
@@ -75,14 +60,7 @@ class StripeConnectSourceOfTruthTest extends TestCase
         $this->assertFalse($user->fresh()->canReceiveStripeConnectPayments());
     }
 
-    /**
-     * `stripe_connect_onboarded_at` atteste l'aboutissement au même titre que le statut : un
-     * compte peut être marqué terminé sans que le statut ait été rafraîchi.
-     *
-     * La date est portée par le PROFIL : `users` n'a pas cette colonne. StripeConnectService
-     * tente pourtant de l'y écrire — la clé n'étant pas assignable en masse, elle est ignorée
-     * en silence, ce qui explique qu'aucune erreur ne l'ait jamais signalé.
-     */
+    /** `stripe_connect_onboarded_at` atteste l'aboutissement au même titre que le statut : un compte peut être marqué terminé sans que le statut ait été rafraîchi. */
     public function test_an_onboarded_date_is_enough(): void
     {
         $user = User::factory()->employe()->create();

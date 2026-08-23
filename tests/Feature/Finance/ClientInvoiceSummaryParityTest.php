@@ -12,17 +12,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * Parity guard: ClientInvoiceSummary::for() (mobile API) must return numbers
- * that match the Livewire web component's computed properties for the same
- * seeded dataset.
- *
- * Any future edit to either side that diverges the invoice counts, outstanding
- * total, or payment-health tone WILL fail these assertions.
- *
- * The intentional difference (currency_symbol) is explicitly excluded —
- * see ClientInvoiceSummary class docblock.
- */
+/** Parity guard: ClientInvoiceSummary::for() (mobile API) must return numbers that match the Livewire web component's computed properties for the same seeded dataset. */
 class ClientInvoiceSummaryParityTest extends TestCase
 {
     use RefreshDatabase;
@@ -32,12 +22,7 @@ class ClientInvoiceSummaryParityTest extends TestCase
     // ──────────────────────────────────────────────────────────────────────────
 
     /**
-     * Seed a deterministic dataset for $me:
-     *   - 1 PAID invoice with a FinancePayment (balance_due = 0)
-     *   - 1 OVERDUE invoice (status='overdue', balance_due > 0, due_at in the past)
-     *   - 1 PARTIAL invoice (balance_due > 0, status='partial')
-     *
-     * Also creates another client's invoice to prove isolation.
+     * Seed a deterministic dataset for $me: - 1 PAID invoice with a FinancePayment (balance_due = 0) - 1 OVERDUE invoice (status='overdue', balance_due > 0, due_at in the past) - 1 PARTIAL invoice (balance_due > 0, status='partial') Also creates another client's invoice to prove isolation.
      *
      * @return array{paid: FinanceInvoice, overdue: FinanceInvoice, partial: FinanceInvoice, payment: FinancePayment, other_invoice: FinanceInvoice}
      */
@@ -100,13 +85,7 @@ class ClientInvoiceSummaryParityTest extends TestCase
     // Tests
     // ──────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Core parity test: invoice-level counts and outstanding total must be
-     * identical between the API class and the Livewire computed property.
-     *
-     * Uses Livewire::test()->instance() to call the real computed methods on
-     * the component instance — NOT a re-implementation of the math in the test.
-     */
+    /** Core parity test: invoice-level counts and outstanding total must be identical between the API class and the Livewire computed property. */
     #[Test]
     public function invoice_summary_counts_match_livewire_computed_property(): void
     {
@@ -164,12 +143,7 @@ class ClientInvoiceSummaryParityTest extends TestCase
         $this->assertEqualsWithDelta(130.75, $apiSummary['outstanding_total'], 0.01, 'outstanding_total should be 80.50 + 50.25');
     }
 
-    /**
-     * Payment-health tone, label, title, and message must be identical between
-     * the API class and the Livewire computed property.
-     *
-     * With overdue_count = 1, both sides must return tone='rose'.
-     */
+    /** Payment-health tone, label, title, and message must be identical between the API class and the Livewire computed property. */
     #[Test]
     public function payment_health_matches_livewire_computed_property(): void
     {
@@ -213,10 +187,7 @@ class ClientInvoiceSummaryParityTest extends TestCase
         $this->assertSame('rose', $apiHealth['tone']);
     }
 
-    /**
-     * When there are no overdue invoices but an outstanding balance, both sides
-     * must return tone='amber'.
-     */
+    /** When there are no overdue invoices but an outstanding balance, both sides must return tone='amber'. */
     #[Test]
     public function payment_health_amber_matches_when_outstanding_no_overdue(): void
     {
@@ -245,9 +216,7 @@ class ClientInvoiceSummaryParityTest extends TestCase
         $this->assertSame('amber', $apiHealth['tone']);
     }
 
-    /**
-     * When all invoices are paid, both sides must return tone='emerald'.
-     */
+    /** When all invoices are paid, both sides must return tone='emerald'. */
     #[Test]
     public function payment_health_emerald_matches_when_all_paid(): void
     {
@@ -275,13 +244,7 @@ class ClientInvoiceSummaryParityTest extends TestCase
         $this->assertSame('emerald', $apiHealth['tone']);
     }
 
-    /**
-     * latest_payment_events count and ordering must match between API and Livewire.
-     *
-     * Note: the API returns a plain list<array>, while the Livewire component
-     * returns a Collection of FinancePayment models — we compare count and the
-     * first item's id to confirm identical ordering.
-     */
+    /** latest_payment_events count and ordering must match between API and Livewire. */
     #[Test]
     public function latest_payment_events_count_and_order_match_livewire(): void
     {
@@ -310,12 +273,7 @@ class ClientInvoiceSummaryParityTest extends TestCase
         }
     }
 
-    /**
-     * Cross-tenant isolation: the other client's invoice must be excluded by
-     * BOTH sides identically. If one side leaks, the counts will disagree and
-     * the parity assertions above will catch it. This test is an additional,
-     * explicit isolation guard.
-     */
+    /** Cross-tenant isolation: the other client's invoice must be excluded by BOTH sides identically. */
     #[Test]
     public function both_sides_exclude_other_clients_invoices(): void
     {

@@ -11,13 +11,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * Coverage for the ClientTipBooking Livewire component.
- *
- * Exercises mount, preset/custom selection, render (both the no-booking and
- * the resolved-booking branches incl. suggestions + existingTip), and the
- * submit() action across its no-amount, ValidationException and happy paths.
- */
+/** Coverage for the ClientTipBooking Livewire component. */
 class ClientTipBookingCoverageBatch8Test extends TestCase
 {
     use RefreshDatabase;

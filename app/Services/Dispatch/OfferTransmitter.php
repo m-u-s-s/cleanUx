@@ -9,22 +9,7 @@ use App\Models\PushNotification;
 use App\Services\Push\PushService;
 use Illuminate\Support\Facades\Log;
 
-/**
- * FAIRE ARRIVER L'OFFRE — trois canaux, parce qu'aucun ne suffit seul.
- *
- * 1. TEMPS RÉEL sur `user.{id}` : le seul assez rapide pour un compte à rebours de vingt secondes,
- *    et le seul qui ouvre la modale sans que le prestataire touche son téléphone. Il ne marche que
- *    si l'application est au premier plan et la socket vivante.
- * 2. PUSH : réveille l'application en arrière-plan. Il traverse les portails et les métros, mais
- *    arrive quand il arrive — jamais garanti sous vingt secondes.
- * 3. POLLING sur l'inbox : la SOURCE DE VÉRITÉ. Quand la socket et le push manquent tous les deux,
- *    l'offre est quand même dans la liste — c'est ce qui empêche un défaut d'infrastructure de
- *    rendre la plateforme muette.
- *
- * AUCUN ÉCHEC N'ARRÊTE LE DISPATCH. Un jeton mort ou un module de diffusion éteint doit priver ce
- * prestataire de son alerte, pas la recherche de sa suite : `config/broadcasting.php` a `null` pour
- * défaut sur ce dépôt, et une exception ici ferait tomber toute la chaîne d'offres en local.
- */
+/** FAIRE ARRIVER L'OFFRE — trois canaux, parce qu'aucun ne suffit seul. 1. */
 class OfferTransmitter
 {
     public function __construct(

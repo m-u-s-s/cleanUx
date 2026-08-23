@@ -8,13 +8,7 @@ use App\Events\Promotion\PromoCodeRedeemed;
 use App\Events\Rating\RatingPublished;
 use Illuminate\Events\Dispatcher;
 
-/**
- * Subscriber Laravel qui écoute les typed events existants des autres modules
- * et les traduit en events analytics standardisés.
- *
- * Soft-fail : si AnalyticsService échoue, le flow business n'est pas affecté
- * (try/catch dans le service).
- */
+/** Subscriber Laravel qui écoute les typed events existants des autres modules et les traduit en events analytics standardisés. */
 class AnalyticsAutoTracker
 {
     public function __construct(protected AnalyticsService $analytics) {}

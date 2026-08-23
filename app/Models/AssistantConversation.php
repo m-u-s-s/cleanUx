@@ -9,13 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * Conversation entre un utilisateur et l'assistant LLM.
- *
- * Phase 5 — model créé pour combler le manque (la migration
- * assistant_and_audit_tables crée la table mais ce model n'existait pas
- * → AssistantWidget plantait au runtime).
- */
+/** Conversation entre un utilisateur et l'assistant LLM. */
 class AssistantConversation extends Model
 {
     /** @use HasFactory<AssistantConversationFactory> */

@@ -14,14 +14,7 @@ use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * L'écran multi-métiers : ajouter, ordonner, chiffrer.
- *
- * Une douche à refaire, c'est un plombier ET un carreleur. Le client ne gère qu'une commande, mais
- * il doit VOIR le séquencement — sinon il croit que tout le monde arrive le même matin. Et quand
- * il réordonne quelque chose d'impossible, le refus est AFFICHÉ : corriger en silence lui ferait
- * croire que son geste a été pris en compte.
- */
+/** L'écran multi-métiers : ajouter, ordonner, chiffrer. */
 class BundleJourneyTest extends TestCase
 {
     use RefreshDatabase;
@@ -49,13 +42,7 @@ class BundleJourneyTest extends TestCase
         $component->assertSee('Votre chantier');
     }
 
-    /**
-     * Le chemin réel du bouton « Ajouter un autre service ».
-     *
-     * Il ramène au dock, où le client clique un métier — sans passer par une suggestion. Ce
-     * métier doit apparaître au chantier TOUT DE SUITE : sinon le client compose son chantier et
-     * n'y voit rien s'ajouter tant qu'il n'a pas répondu à une question.
-     */
+    /** Le chemin réel du bouton « Ajouter un autre service ». */
     public function test_picking_a_trade_from_the_dock_lands_it_on_the_site_plan(): void
     {
         $component = $this->bundleJourney();
@@ -69,12 +56,7 @@ class BundleJourneyTest extends TestCase
         );
     }
 
-    /**
-     * L'adresse n'est demandée QU'UNE FOIS.
-     *
-     * La redemander à chaque service ajouté est le frottement qui fait abandonner un panier déjà
-     * rempli. Elle vit sur la commande, jamais sur la ligne.
-     */
+    /** L'adresse n'est demandée QU'UNE FOIS. */
     public function test_the_address_is_never_asked_twice(): void
     {
         $component = $this->bundleJourney();
@@ -158,12 +140,7 @@ class BundleJourneyTest extends TestCase
         $component->assertSet('tradeId', null);
     }
 
-    /**
-     * Réordonner l'impossible est REFUSÉ, et le refus est écrit.
-     *
-     * Le client peut passer le nettoyage avant la peinture ; il ne peut pas faire poser le
-     * carrelage avant la plomberie. Corriger en silence serait pire que refuser.
-     */
+    /** Réordonner l'impossible est REFUSÉ, et le refus est écrit. */
     public function test_an_impossible_order_is_refused_out_loud(): void
     {
         TradeBundleSuggestion::create([

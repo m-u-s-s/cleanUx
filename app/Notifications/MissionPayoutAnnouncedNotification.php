@@ -9,18 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Carbon;
 
-/**
- * LE PRESTATAIRE N'ÉTAIT PRÉVENU DE RIEN À LA CLÔTURE.
- *
- * Tout partait vers le client — notification, SMS, rapport — et celui qui venait de travailler ne
- * recevait pas un mot. Il quittait le chantier sans savoir si sa mission avait été enregistrée, ni
- * ce qu'elle lui rapportait, ni quand. C'est le moment où la question se pose, et le seul où la
- * réponse est facile à donner.
- *
- * La date annoncée est celle du VERSEMENT BANCAIRE, pas d'un virement de la plateforme : la part
- * du prestataire est déjà sur son compte Connect depuis la capture (charge à destination). Voir
- * `PayoutAnnouncementService` et `config('brio.payout_delay_days')`.
- */
+/** LE PRESTATAIRE N'ÉTAIT PRÉVENU DE RIEN À LA CLÔTURE. */
 class MissionPayoutAnnouncedNotification extends Notification
 {
     use InteractsWithUserNotificationPreferences;

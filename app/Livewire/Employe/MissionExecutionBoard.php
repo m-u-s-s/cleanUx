@@ -108,14 +108,6 @@ class MissionExecutionBoard extends Component
     /**
      * UN SEUL CHEMIN D'ENREGISTREMENT, partagé avec l'application mobile.
      *
-     * Ce composant écrivait ses lignes lui-même : pas d'empreinte du fichier, aucune diffusion au
-     * client, rien dans l'historique de la mission. Une photo déposée depuis le navigateur ne
-     * valait donc pas la même chose qu'une photo déposée depuis le téléphone — et c'est celle qui
-     * vaut le moins qu'on aurait produite le jour du litige.
-     *
-     * La position vient de la MISSION et non de l'appareil : un navigateur de bureau n'en a pas
-     * d'utile, et inventer un relevé serait pire que de n'en avoir aucun.
-     *
      * @param  list<mixed>  $photos
      * @param  MissionMedia::TYPE_*  $type
      */

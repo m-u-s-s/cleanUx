@@ -11,19 +11,7 @@ use App\Services\Kyc\KycStatusResult;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
-/**
- * Adapter Onfido (https://documentation.onfido.com/).
- *
- * Skeleton — appels HTTP de base. À enrichir selon les besoins :
- *   - Workflow SDK token pour iframe / mobile SDK
- *   - Multi-document support
- *   - Custom check configurations
- *
- * Configuration via `config/kyc.php > providers.onfido` :
- *   - api_token (REST API token)
- *   - region (eu|us|ca)
- *   - webhook_token (token HMAC pour vérifier signature webhooks)
- */
+/** Adapter Onfido (https://documentation.onfido.com/). Skeleton — appels HTTP de base. */
 class OnfidoProvider implements KycProviderInterface
 {
     public function name(): string
@@ -168,17 +156,6 @@ class OnfidoProvider implements KycProviderInterface
     /**
      * LE TYPE D'UN RAPPORT SE LIT SUR LE RAPPORT, PAS SUR LA VÉRIFICATION.
      *
-     * `/checks/{id}` ne rend que `report_ids` : une liste d'identifiants, sans nature. L'adaptateur
-     * les rangeait tous en `document`. Conséquence directe : `config/kyc.php` demande bien un
-     * rapport `facial_similarity` à chaque vérification, Onfido le rend, et il était enregistré
-     * comme un contrôle de document — le seul résultat facial de la plateforme était perdu à
-     * l'écriture, et le type `KycCheck::TYPE_FACIAL_SIMILARITY` n'était jamais posé par personne.
-     *
-     * On lit donc les rapports. Trois sources, dans l'ordre : ceux déjà présents dans la charge
-     * utile (certains webhooks les embarquent), sinon un appel à `/reports?check_id=…`, sinon —
-     * réseau coupé, jeton absent — les identifiants seuls, typés `unknown`. Ne pas savoir se dit ;
-     * ça ne s'invente pas.
-     *
      * @param  array<string, mixed>  $body
      * @return list<array<string, mixed>>
      */
@@ -248,11 +225,7 @@ class OnfidoProvider implements KycProviderInterface
             return [];
         }
 
-        /*
-         * Soft-fail volontaire : l'appel des rapports enrichit le résultat, il ne le conditionne
-         * pas. Une panne réseau ne doit pas transformer une vérification aboutie en échec — le
-         * repli ci-dessus enregistre alors les identifiants sans leur inventer de nature.
-         */
+        // Soft-fail volontaire : l'appel des rapports enrichit le résultat, il ne le conditionne pas.
         try {
             $response = $this->client()->get('/reports', ['check_id' => (string) $checkId]);
 
@@ -270,13 +243,7 @@ class OnfidoProvider implements KycProviderInterface
         }
     }
 
-    /**
-     * Noms de rapports Onfido → types de contrôle CleanUx.
-     *
-     * Onfido décline la similarité faciale en trois variantes (`_photo`, `_video`, `_motion`) et
-     * les listes de surveillance en cinq : on compare donc par préfixe, sinon la prochaine variante
-     * repartirait en `unknown` sans que rien ne le signale.
-     */
+    /** Noms de rapports Onfido → types de contrôle CleanUx. */
     protected function reportType(string $name): string
     {
         $name = strtolower(trim($name));

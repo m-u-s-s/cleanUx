@@ -9,23 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 
-/**
- * LE VÉHICULE DU PRESTATAIRE, ET SON ÂGE.
- *
- * La règle « moins de quatre ans » est celle qu'appliquent Uber, Bolt et Heetch dans la plupart des
- * villes. Elle ne se vérifie pas à l'œil sur une photo de carte grise : elle se CALCULE, depuis la
- * date de première immatriculation, et elle se re-vérifie — parce qu'une voiture vieillit. Un
- * contrôle passé une fois à l'inscription laisserait rouler, trois ans plus tard, exactement ce
- * qu'on prétendait interdire.
- *
- * IL RÉUTILISE `fleet_vehicles`. La table porte déjà marque, modèle, plaque, année, pays et date de
- * première immatriculation, et un scanner quotidien sait déjà faire expirer ce qui doit l'être. En
- * créer une seconde pour les mêmes données aurait produit deux inventaires de véhicules qui
- * finiraient par se contredire — le défaut dominant de ce dépôt.
- *
- * CE QU'IL NE FAIT PAS : décider qui reçoit des missions. Cette question se pose au dispatch, et
- * elle s'y pose métier par métier.
- */
+/** LE VÉHICULE DU PRESTATAIRE, ET SON ÂGE. */
 class ProviderVehicleService
 {
     /** Un prestataire ne déclare qu'UN véhicule : celui avec lequel il conduit. */
@@ -55,11 +39,7 @@ class ProviderVehicleService
             'registered_at' => $donnees['registered_at'] ?? null,
             'registered_country' => $donnees['registered_country'] ?? null,
             'current_provider_id' => $user->id,
-            /*
-             * Le véhicule appartient à la SOCIÉTÉ quand le prestataire est salarié : c'est elle qui
-             * l'assure et le renouvelle. Le rattacher au seul conducteur ferait disparaître la
-             * flotte de l'espace société le jour où il change d'employeur.
-             */
+            // Le véhicule appartient à la SOCIÉTÉ quand le prestataire est salarié : c'est elle qui l'assure et le renouvelle.
             'organization_account_id' => $user->providerProfile?->organization_account_id,
         ];
 
@@ -75,14 +55,7 @@ class ProviderVehicleService
         ]);
     }
 
-    /**
-     * L'âge du véhicule en années, depuis sa PREMIÈRE immatriculation.
-     *
-     * L'année du modèle (`year`) ne sert que de repli, et elle est volontairement plus indulgente :
-     * elle ne dit pas quand la voiture a été mise en circulation, seulement de quelle génération
-     * elle est. Refuser sur cette base seule reprocherait au prestataire une donnée approximative
-     * que la plateforme a elle-même acceptée.
-     */
+    /** L'âge du véhicule en années, depuis sa PREMIÈRE immatriculation. */
     public function ageEnAnnees(FleetVehicle $vehicule, ?Carbon $maintenant = null): ?float
     {
         $maintenant ??= Carbon::now();
@@ -101,12 +74,7 @@ class ProviderVehicleService
         return null;
     }
 
-    /**
-     * L'âge maximal toléré, en années.
-     *
-     * Le plafond varie d'une ville à l'autre chez tous les concurrents ; la surcharge par pays
-     * permet de le dire sans déploiement.
-     */
+    /** L'âge maximal toléré, en années. */
     public function limiteDAge(?string $codePays = null): int
     {
         $parPays = (array) Config::get('fleet_v2.taxi_rules.by_country', []);
@@ -121,11 +89,6 @@ class ProviderVehicleService
 
     /**
      * Le dossier VÉHICULE du prestataire, avec son verdict.
-     *
-     * Rendu comme un état complet plutôt qu'un booléen : un refus doit pouvoir DIRE ce qui cloche —
-     * « pas de véhicule déclaré », « date d'immatriculation manquante », « six ans, la limite est à
-     * quatre ». Un `false` nu laisse le prestataire deviner, et c'est ainsi qu'on se retrouve avec
-     * un compte actif qui ne reçoit rien sans que personne ne sache pourquoi.
      *
      * @return array{requis: bool, vehicule: FleetVehicle|null, age: float|null, limite: int, conforme: bool, motif: string|null}
      */
@@ -189,13 +152,7 @@ class ProviderVehicleService
             ->exists();
     }
 
-    /**
-     * La pièce qui atteste l'immatriculation est-elle déposée et non refusée ?
-     *
-     * Le calcul d'âge repose sur une date que le prestataire a saisie lui-même. La carte grise est
-     * ce qui la rend opposable : sans elle, on refuserait des véhicules conformes et on accepterait
-     * des dates inventées.
-     */
+    /** La pièce qui atteste l'immatriculation est-elle déposée et non refusée ? */
     public function carteGriseDeposee(User $user): bool
     {
         return ProviderOnboardingDocument::query()

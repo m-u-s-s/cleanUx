@@ -144,8 +144,7 @@ class KycVerificationService
     }
 
     /**
-     * Identifiant de la ressource visée par l'événement. Rend null dès que la charge
-     * utile n'en porte pas un exploitable : aucun repli implicite n'est toléré.
+     * Identifiant de la ressource visée par l'événement.
      *
      * @param  array<string, mixed>  $payload
      */

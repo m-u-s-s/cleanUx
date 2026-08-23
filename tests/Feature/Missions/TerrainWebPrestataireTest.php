@@ -20,13 +20,7 @@ use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * LE TERRAIN WEB DU PRESTATAIRE — la parité que le porteur demande.
- *
- * « Il doit pouvoir effectuer la mission même avec un ordinateur. » Le cycle de vie complet y était
- * déjà ; trois outils manquaient — fiche d'accès, imprévu, supplément — dont deux existaient en
- * composants web sur d'AUTRES pages. Un défaut de joignabilité, pas de fonctionnalité.
- */
+/** LE TERRAIN WEB DU PRESTATAIRE — la parité que le porteur demande. */
 class TerrainWebPrestataireTest extends TestCase
 {
     use RefreshDatabase;
@@ -122,10 +116,7 @@ class TerrainWebPrestataireTest extends TestCase
             ->assertSee('Proposer un supplément');
     }
 
-    /**
-     * LA FICHE D'ACCÈS SE REFUSE AVEC SON MOTIF, jamais avec une fiche vide : une fiche vide se lit
-     * comme une donnée manquante et fait appeler le support pour rien.
-     */
+    /** LA FICHE D'ACCÈS SE REFUSE AVEC SON MOTIF, jamais avec une fiche vide : une fiche vide se lit comme une donnée manquante et fait appeler le support pour rien. */
     public function test_la_fiche_d_acces_dit_pourquoi_elle_est_verrouillee(): void
     {
         $mission = $this->mission('domicile', MissionStatus::ASSIGNED);
@@ -186,11 +177,7 @@ class TerrainWebPrestataireTest extends TestCase
             ->assertDontSee('Nouveau devis');
     }
 
-    /**
-     * LES DEUX RÉPONSES AU MÊME CONSTAT vivent côte à côte. Le renfort se demande depuis le même
-     * bloc que la révision : les séparer ferait choisir le premier trouvé, et le premier trouvé
-     * serait la renégociation — celle qui met le client sous pression.
-     */
+    /** LES DEUX RÉPONSES AU MÊME CONSTAT vivent côte à côte. */
     public function test_le_prestataire_demande_du_renfort_depuis_le_web(): void
     {
         $mission = $this->mission('domicile');

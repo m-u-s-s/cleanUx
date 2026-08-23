@@ -17,16 +17,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LES INVITATIONS EN ATTENTE, QUE PERSONNE NE POUVAIT VOIR.
- *
- * `TeamManagement::$activeTab` déclarait trois onglets — `members | invitations | performance` —
- * depuis l'origine, et la vue n'en rendait qu'un. Une invitation partait donc dans le vide : aucun
- * écran ne disait si elle avait été envoyée, à qui, ni si elle avait expiré. Le seul recours était
- * de réinviter, ce qui n'apprenait rien de plus.
- *
- * C'est le motif dominant de ce dépôt sous une forme de plus : un nom qui ne désigne rien.
- */
+/** LES INVITATIONS EN ATTENTE, QUE PERSONNE NE POUVAIT VOIR. */
 class OngletInvitationsTest extends TestCase
 {
     use RefreshDatabase;
@@ -152,18 +143,7 @@ class OngletInvitationsTest extends TestCase
     #[Test]
     public function revoquer_revoit_la_permission_au_moment_d_agir(): void
     {
-        /*
-         * LE SCÉNARIO RÉEL, ET LA RAISON DE LA GARDE D'ACTION.
-         *
-         * `mount()` exige déjà `members.invite` : quelqu'un qui ne l'a pas n'ouvre même pas
-         * l'écran. On pourrait en conclure que re-vérifier est superflu — c'est faux, et c'est le
-         * défaut corrigé au lot 2A sur l'assignation : LIVEWIRE NE REJOUE PAS `mount()` entre deux
-         * actions. Le composant reste vivant dans le navigateur, la permission peut être retirée
-         * entre-temps, et sans cette seconde vérification l'écran continuerait d'obéir.
-         *
-         * On reproduit exactement cela : l'écran s'ouvre avec le droit, la société le retire, et
-         * l'action suivante doit refuser.
-         */
+        // LE SCÉNARIO RÉEL, ET LA RAISON DE LA GARDE D'ACTION.
         [$org, $patron] = $this->societeAvecPatron();
 
         $responsable = User::factory()->create([

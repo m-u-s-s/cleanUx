@@ -13,10 +13,6 @@ use Illuminate\Support\Carbon;
 /**
  * Un contrôle facial : demandé, puis répondu (ou abandonné, ou expiré).
  *
- * `abandoned` n'est PAS `failed`. Un prestataire qui quitte l'écran n'a rien prouvé, mais il n'a
- * rien raté non plus : un réseau qui lâche, une batterie vide, un appel entrant produisent le même
- * état. C'est la RÉPÉTITION de l'abandon qui devient un signal — jamais la première fois.
- *
  * @property string $status
  * @property string $triggered_by
  * @property ?string $decision_source
@@ -70,8 +66,7 @@ class ProviderFaceCheck extends Model
     public const SOURCE_MANUAL = 'manual';
 
     /**
-     * `status`, `score`, `liveness_result` et `decision_source` sont hors `$fillable` : ce sont les
-     * colonnes de verdict. Seul `FaceCheckService` les écrit, par `forceFill()`.
+     * `status`, `score`, `liveness_result` et `decision_source` sont hors `$fillable` : ce sont les colonnes de verdict.
      *
      * @var list<string>
      */
@@ -95,17 +90,7 @@ class ProviderFaceCheck extends Model
         'review_notes',
     ];
 
-    /**
-     * LE DÉFAUT SQL NE REMPLIT PAS L'OBJET EN MÉMOIRE.
-     *
-     * `status` n'est pas assignable en masse — c'est voulu, c'est la colonne de verdict. Mais du
-     * coup `create()` rend un modèle dont `status` vaut `null` en PHP alors que la ligne vaut bien
-     * `pending` en base : la valeur par défaut est posée par le moteur, pas par Eloquent.
-     *
-     * Conséquence mesurée : le contrôle qu'on venait d'ouvrir était refusé à la soumission avec
-     * « ce contrôle est déjà clos », parce que `null !== 'pending'`. Le défaut appartient donc au
-     * code, la colonne n'en garde qu'une copie de sécurité.
-     */
+    /** LE DÉFAUT SQL NE REMPLIT PAS L'OBJET EN MÉMOIRE. */
     protected static function booted(): void
     {
         static::creating(function (self $controle): void {

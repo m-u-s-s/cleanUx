@@ -12,10 +12,6 @@ use App\Services\Safety\UserSafetyService;
 /**
  * Les signalements entre utilisateurs.
  *
- * La DÉCISION passe par le module Sécurité, qui peut bloquer un compte et notifier les deux
- * parties. Poser un statut ici classerait le signalement sans rien empêcher — la personne
- * signalée continuerait d’intervenir.
- *
  * @extends EloquentResource<UserReport>
  */
 class UserReportResource extends EloquentResource
@@ -73,10 +69,7 @@ class UserReportResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Clore un signalement. La RÉSOLUTION est demandée : un signalement clos sans dire
-             * comment ne se relit pas, et c'est précisément ce qu'on rouvre six mois plus tard.
-             */
+            // Clore un signalement.
             Action::make('resolve', 'Clore le signalement', function (UserReport $report, array $valeurs) {
                 app(UserSafetyService::class)->resolveReport(
                     $report,

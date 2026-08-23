@@ -12,13 +12,7 @@ use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * Les files de décision servies par le moteur.
- *
- * Ce qui est vérifié ici n'est pas « l'action a marché » mais « l'action a DÉLÉGUÉ » : que l'état
- * résultant est celui que produit le service du domaine, avec ses effets de bord — pas une
- * colonne écrite à la main qui laisserait le journal vide et les notifications muettes.
- */
+/** Les files de décision servies par le moteur. */
 class DecisionResourcesTest extends TestCase
 {
     use RefreshDatabase;

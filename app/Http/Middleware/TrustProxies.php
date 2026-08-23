@@ -10,14 +10,6 @@ class TrustProxies extends Middleware
     /**
      * Proxies de confiance de l'application.
      *
-     * La valeur vient de config/trustedproxy.php, qui normalise TRUSTED_PROXIES :
-     * "*" (n'importe quel proxy), une liste CIDR, ou null. On passe par la config
-     * et non par env(), qui rend null une fois `config:cache` exécuté.
-     *
-     * Rien de configuré => la propriété RESTE à null. Ce n'est pas un tableau
-     * vide : seul null laisse le framework faire confiance automatiquement aux
-     * plateformes gérées (Laravel Cloud, Forge, Vapor).
-     *
      * @var array<int, string>|string|null
      */
     protected $proxies;

@@ -11,19 +11,7 @@ use Livewire\Component;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * `EnforcesActiveOrgMembership` garde 28 composants d'espace société : c'est lui
- * qui empêche un membre d'une organisation d'atteindre les données d'une autre.
- *
- * Il ne lisait que `current_organization_id`, alors que l'organisation active du
- * dépôt vit dans DEUX colonnes et que l'API, elle, passe par
- * `User::organizationContextId()`. Un membre parfaitement légitime dont seule
- * l'autre colonne est renseignée se voyait répondre « Aucune organisation
- * active » — 403 sur son propre espace.
- *
- * Les deux refus comptent autant que les deux témoins : élargir la résolution de
- * l'identifiant ne doit RIEN relâcher sur l'appartenance elle-même.
- */
+/** `EnforcesActiveOrgMembership` garde 28 composants d'espace société : c'est lui qui empêche un membre d'une organisation d'atteindre les données d'une autre. */
 class AppartenanceOrganisationActiveTest extends TestCase
 {
     use RefreshDatabase;

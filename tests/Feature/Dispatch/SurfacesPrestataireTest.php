@@ -18,17 +18,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
-/**
- * LES SURFACES PRESTATAIRE — l'offre doit ARRIVER, pas seulement exister (consignes 6, 12).
- *
- * Le mode d'échec de ce dépôt est documenté : `AssignmentOfferScreen` était un écran d'offre
- * complet, avec compte à rebours, monté NULLE PART. Les tests passaient, le code était juste, et
- * aucun prestataire n'a jamais vu la modale.
- *
- * Ces tests portent donc sur la JOIGNABILITÉ : le point d'entrée répond, le composant web s'affiche
- * et ses boutons agissent. La modale native est couverte côté mobile par un test qui PRESSE
- * (`mobile/provider/__tests__/offers/OfferModal.test.tsx`).
- */
+/** LES SURFACES PRESTATAIRE — l'offre doit ARRIVER, pas seulement exister (consignes 6, 12). */
 class SurfacesPrestataireTest extends TestCase
 {
     use OuvreLeCatalogue;
@@ -134,26 +124,8 @@ class SurfacesPrestataireTest extends TestCase
         $this->assertNotNull($charge['ttl_seconds']);
     }
 
-    /**
-     * L'OFFRE VIVANTE EST AUSSI DANS LA BOÎTE DE RÉCEPTION.
-     *
-     * La modale est le canal principal, mais elle peut ne jamais s'afficher : application fermée à
-     * l'arrivée, notification refusée, temps réel injoignable. Sans cette redondance, l'offre
-     * n'existe alors NULLE PART pour le prestataire, et le seul témoin de son existence est le
-     * compteur de silences côté exploitation.
-     *
-     * La liste est la SOURCE DE VÉRITÉ par sondage : elle ne montre que ce qui est encore ouvert,
-     * donc une offre expirée en disparaît d'elle-même sans qu'aucun écran n'ait à la retirer.
-     */
-    /**
-     * LA DISTANCE EST LÀ SUR TOUS LES CANAUX, pas seulement en temps réel.
-     *
-     * Le moteur la connaît — c'est elle qui classe les candidats — et la passait au canal temps
-     * réel. Le SONDAGE et la MODALE WEB, eux, construisaient la charge utile sans elle : la même
-     * offre affichait « 1,2 km » ou « — » selon le chemin par lequel elle arrivait. Or le sondage
-     * est le canal de repli, celui qui marche toujours, et la distance est le premier critère d'un
-     * refus : l'afficher vide revient à demander une décision sans son élément principal.
-     */
+    /** L'OFFRE VIVANTE EST AUSSI DANS LA BOÎTE DE RÉCEPTION. */
+    /** LA DISTANCE EST LÀ SUR TOUS LES CANAUX, pas seulement en temps réel. */
     #[Test]
     public function l_offre_porte_sa_distance_sur_le_canal_de_sondage(): void
     {
@@ -299,11 +271,7 @@ class SurfacesPrestataireTest extends TestCase
 
         $curieux = $this->prestataire();
 
-        /*
-         * LIVEWIRE NE REJOUE PAS `mount()` : l'identifiant qui arrive avec l'action vient du
-         * navigateur. Sans relecture filtrée sur l'utilisateur connecté, accepter la mission d'un
-         * collègue tiendrait à changer un nombre dans les outils de développement.
-         */
+        // LIVEWIRE NE REJOUE PAS `mount()` : l'identifiant qui arrive avec l'action vient du navigateur.
         Livewire::actingAs($curieux)
             ->test(OfferWatcher::class)
             ->call('accept', $offre->id);

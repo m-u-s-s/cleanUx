@@ -12,34 +12,12 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Wallet provider unifié — ledger immuable type comptabilité partie double.
- *
- * Chaque opération crée une `ProviderWalletTransaction` avec idempotency_key
- * pour éviter les doublons sur retry de webhooks.
- *
- * Solde = somme des credits - somme des debits (filtré par status).
- */
+/** Wallet provider unifié — ledger immuable type comptabilité partie double. */
 class ProviderWalletService
 {
     public const MIN_WITHDRAW_AMOUNT = 10.0;
 
-    /**
-     * LE SOLDE D'UN PRESTATAIRE, DANS SA MONNAIE — PLUS DANS LA NOTRE.
-     *
-     * Le parametre valait `'EUR'` par defaut, et deux appelants sur trois ne le passaient pas. Le
-     * filtre `where('currency', 'EUR')` ne trouvait alors AUCUNE ligne pour un prestataire paye en
-     * dirhams : son portefeuille s'affichait a zero. Pas d'erreur, pas de trace — juste un
-     * professionnel a qui l'on montre qu'on ne lui doit rien.
-     *
-     * `null` demande desormais « sa monnaie a lui », deduite de ses propres ecritures. Passer une
-     * devise explicitement reste possible et inchange : c'est ce que fait le versement express, qui
-     * sait deja dans quelle monnaie il travaille.
-     *
-     * LIMITE ASSUMEE : un portefeuille qui melangerait deux monnaies rend le solde de la PLUS
-     * RECENTE, et le dit dans la cle `currency` du retour. Rendre un total unique melangeant des
-     * monnaies serait un faux, et convertir ici ferait dependre un solde du taux du jour.
-     */
+    /** LE SOLDE D'UN PRESTATAIRE, DANS SA MONNAIE — PLUS DANS LA NOTRE. */
     public function balance(int $providerUserId, ?string $currency = null): array
     {
         $currency = Devise::normaliser($currency) ?? $this->deviseDuPortefeuille($providerUserId);
@@ -76,34 +54,13 @@ class ProviderWalletService
         ];
     }
 
-    /**
-     * QUI A RÉELLEMENT FAIT LE TRAVAIL — et donc qui doit être crédité ou repris.
-     *
-     * Le portefeuille lisait `bookings.employe_id`, le nom resté sur la COMMANDE. Or
-     * `completeMission()` désigne le bénéficiaire du VERSEMENT par la mission
-     * (`lead_provider_user_id`), et les deux divergent dès qu'une mission est réassignée — la
-     * réservation garde l'ancien nom — comme pour toute mission qu'une société confie à un salarié.
-     *
-     * La ligne comptable nommait alors une personne pendant que le solde retirable allait à une
-     * autre. Chacune des deux moitiés, lue seule, semblait juste : c'est ce qui l'a rendue
-     * invisible.
-     *
-     * La règle vit désormais à UN SEUL endroit, `Booking::intervenantId()` : la dupliquer ici
-     * reviendrait à rouvrir l'écart le jour où l'une des deux copies évoluerait seule.
-     */
+    /** QUI A RÉELLEMENT FAIT LE TRAVAIL — et donc qui doit être crédité ou repris. */
     protected function intervenant(Booking $booking): int
     {
         return (int) ($booking->intervenantId() ?? 0);
     }
 
-    /**
-     * LA MONNAIE DANS LAQUELLE CE PRESTATAIRE EST REELLEMENT PAYE.
-     *
-     * On la lit dans ses ecritures plutot que dans une preference ou une constante : c'est le seul
-     * endroit qui dit la verite, puisque c'est la que l'argent a ete inscrit. Le repli sur la
-     * devise de la plateforme ne sert qu'au portefeuille encore vide, ou l'affichage n'a de toute
-     * facon rien a montrer.
-     */
+    /** LA MONNAIE DANS LAQUELLE CE PRESTATAIRE EST REELLEMENT PAYE. */
     public function deviseDuPortefeuille(int $providerUserId): string
     {
         $derniere = ProviderWalletTransaction::query()
@@ -213,14 +170,7 @@ class ProviderWalletService
 
         $idempotencyKey = sprintf('refund:booking:%d:%s', $booking->id, $stripeChargeId ?? 'manual');
 
-        /*
-         * L'IDEMPOTENCE PASSE AVANT LE PLAFOND, et l'ordre n'est pas cosmetique.
-         *
-         * Un webhook Stripe est re-livre : le meme remboursement repasse ici avec la meme cle. Si
-         * le plafond etait evalue en premier, la reprise deja enregistree aurait epuise le
-         * reprenable, la seconde livraison rendrait `null` -- et l'appelant, qui attend sa ligne,
-         * lirait une propriete sur du vide. Mesure sur `RefundClawbackTest`.
-         */
+        // L'IDEMPOTENCE PASSE AVANT LE PLAFOND, et l'ordre n'est pas cosmetique.
         $existing = ProviderWalletTransaction::query()
             ->where('idempotency_key', $idempotencyKey)
             ->first();
@@ -229,25 +179,7 @@ class ProviderWalletService
             return $existing;
         }
 
-        /*
-         * ON NE REPREND PAS CE QU'ON N'A JAMAIS VERSÉ.
-         *
-         * La reprise était calculée depuis le montant remboursé et la part prestataire de la
-         * COMMANDE, sans jamais regarder si ce prestataire avait effectivement été crédité. Un
-         * portefeuille pouvait donc partir en négatif sur une mission jamais payée.
-         *
-         * LE CAS QUI L'A RÉVÉLÉ. Quand une empreinte est partiellement capturée — les frais
-         * d'annulation encaissés, le reste libéré —, Stripe fait revenir le solde relâché sous
-         * forme de REMBOURSEMENT sur la charge, objet `re_…` compris. Le webhook ne peut pas
-         * distinguer cette libération d'un vrai remboursement client, et facturait au prestataire
-         * une reprise sur une prestation qu'il n'avait jamais été payé pour faire.
-         *
-         * Plafonner au crédit réel règle les deux d'un coup, et ne demande de deviner aucune
-         * sémantique Stripe : sans gain enregistré, il n'y a rien à reprendre.
-         *
-         * LE PLAFOND EST NET DES REPRISES DÉJÀ FAITES : deux remboursements partiels successifs
-         * doivent pouvoir reprendre chacun leur part, mais jamais plus que le total versé.
-         */
+        // ON NE REPREND PAS CE QU'ON N'A JAMAIS VERSÉ.
         $creditee = (float) ProviderWalletTransaction::query()
             ->where('source_type', 'booking')
             ->where('source_id', $booking->id)
@@ -314,20 +246,7 @@ class ProviderWalletService
         ]);
     }
 
-    /**
-     * LES FRAIS D'UN VIREMENT EXPRESS, ÉCRITS COMME TELS.
-     *
-     * `ExpressPayoutService` calculait ses frais et les rangeait dans les métadonnées de la ligne
-     * de versement. Une métadonnée ne se totalise pas, ne se rapproche d'aucun relevé et n'entre
-     * dans aucun export comptable : la plateforme prélevait donc une somme que ses propres
-     * comptes ignoraient, pendant que le prestataire était débité du brut.
-     *
-     * NE PAS CONFONDRE AVEC LE DÉFAUT M4. La commission ordinaire est déduite À LA SOURCE — le
-     * gain est crédité NET — et lui ajouter un débit `platform_fee` déduisait deux fois, ce qu'un
-     * test voisin interdit désormais explicitement. Les frais express sont l'inverse : un
-     * prélèvement RÉEL et distinct, sur un montant déjà crédité, qui doit donc exister comme
-     * écriture. Le `source_type` `provider_payout` les distingue sans ambiguïté.
-     */
+    /** LES FRAIS D'UN VIREMENT EXPRESS, ÉCRITS COMME TELS. */
     public function recordExpressFee(ProviderPayout $payout, int $feeCents): ?ProviderWalletTransaction
     {
         if ($feeCents <= 0) {
@@ -383,17 +302,7 @@ class ProviderWalletService
             ]);
     }
 
-    /**
-     * LE RETRAIT SE FAIT DANS LA MONNAIE DU PORTEFEUILLE.
-     *
-     * Le defaut `'EUR'` traversait toute la methode : il servait au message d'erreur, au filtre du
-     * solde, ET a la ligne de versement creee. Pour un prestataire paye en dirhams, `balance()`
-     * rendait donc zero et le retrait etait refuse pour « solde insuffisant » -- alors que l'argent
-     * etait bien la. Le seul recours aurait ete de deviner qu'il fallait passer `MAD` a une API qui
-     * ne le documente nulle part.
-     *
-     * `null` demande sa monnaie a lui. `ExpressPayoutService` continue de passer la sienne.
-     */
+    /** LE RETRAIT SE FAIT DANS LA MONNAIE DU PORTEFEUILLE. */
     public function requestWithdraw(User $provider, float $amount, ?string $currency = null): ProviderPayout
     {
         $currency = Devise::normaliser($currency) ?? $this->deviseDuPortefeuille((int) $provider->id);

@@ -6,11 +6,7 @@ use App\Services\GeolocationV2\DistanceCalculator;
 use App\Services\GeolocationV2\Support\Haversine;
 use Tests\TestCase;
 
-/**
- * Unit tests for the Haversine-based distance / ETA calculations.
- *
- * These are pure function tests — no DB required.
- */
+/** Unit tests for the Haversine-based distance / ETA calculations. */
 class EtaCalculatorTest extends TestCase
 {
     private DistanceCalculator $calculator;

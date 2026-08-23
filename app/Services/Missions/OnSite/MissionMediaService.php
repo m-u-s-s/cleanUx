@@ -15,31 +15,10 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
-/**
- * L'ÉTAT DES LIEUX : ce que le prestataire a vu, quand, et où.
- *
- * Le dépôt savait déjà stocker une photo de mission — depuis le web, et seulement là. Ce service
- * en fait une pièce opposable et l'ouvre aux deux autres surfaces :
- *
- * 1. L'EMPREINTE. `sha256` est calculée sur l'octet reçu, avant écriture. Deux clichés identiques
- *    partagent leur empreinte : reprendre la photo d'une mission précédente se voit. C'est la
- *    seule chose qui distingue une preuve d'une illustration.
- * 2. LA POSITION. Elle vient du téléphone, pas du fichier : les métadonnées EXIF sont absentes des
- *    captures d'écran, retirées par la plupart des applications, et de toute façon éditables.
- *    Écrite ici, elle est celle que l'appareil déclarait à l'instant de l'appel.
- * 3. L'HEURE DÉCLARÉE ET L'HEURE REÇUE. `taken_at` est ce qu'annonce l'appareil, `created_at` ce
- *    que le serveur constate. Les garder toutes deux permet de voir un écart au lieu de choisir
- *    d'avance à qui faire confiance.
- *
- * Le disque est `private`. Une photo de l'intérieur d'un logement sur une adresse publique serait
- * lisible par quiconque devine le chemin — et ces chemins sont devinables.
- */
+/** L'ÉTAT DES LIEUX : ce que le prestataire a vu, quand, et où. */
 class MissionMediaService
 {
-    /**
-     * Une photo, pas un film : la vidéo se filme volontiers en quatre minutes et remplit le disque
-     * comme la connexion d'un chantier. Le plafond est celui d'une photo de téléphone moderne.
-     */
+    /** Une photo, pas un film : la vidéo se filme volontiers en quatre minutes et remplit le disque comme la connexion d'un chantier. */
     public const MAX_SIZE_BYTES = 12 * 1024 * 1024;
 
     /** @var list<string> */
@@ -130,9 +109,6 @@ class MissionMediaService
     /**
      * Les clichés d'une mission, du plus ancien au plus récent.
      *
-     * L'ordre est chronologique et non « avant puis après » : c'est celui du déroulé, et c'est lui
-     * qu'on relit quand on cherche à quel moment quelque chose a changé.
-     *
      * @return Collection<int, MissionMedia>
      */
     public function pourLaMission(Mission $mission, bool $clientSeulement = false): Collection
@@ -148,9 +124,6 @@ class MissionMediaService
 
     /**
      * Forme d'un cliché telle que les deux applications la lisent.
-     *
-     * L'adresse est signée et courte : trente minutes suffisent à regarder une mission, et une
-     * adresse recopiée hors de l'application cesse de fonctionner avant d'avoir servi.
      *
      * @return array<string, mixed>
      */

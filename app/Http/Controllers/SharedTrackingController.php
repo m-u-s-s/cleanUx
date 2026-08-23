@@ -6,17 +6,7 @@ use App\Models\Booking;
 use App\Services\Client\SharedTrackingService;
 use Illuminate\Contracts\View\View;
 
-/**
- * LA PAGE PUBLIQUE DE SUIVI PARTAGÉ (E3).
- *
- * PUBLIQUE, MAIS PAS OUVERTE. La route porte le middleware `signed` : sans signature valide et non
- * périmée, Laravel répond 403 avant d'arriver ici. Un identifiant de réservation dans une URL
- * publique se devine en comptant ; un lien signé, non.
- *
- * AUCUNE AUTHENTIFICATION, ET C'EST TOUT L'INTÉRÊT. Le destinataire est la personne chez qui
- * l'intervention a lieu — souvent quelqu'un qui n'a pas de compte et n'en veut pas. Lui demander de
- * s'inscrire pour savoir à quelle heure sonner reviendrait à ne pas partager du tout.
- */
+/** LA PAGE PUBLIQUE DE SUIVI PARTAGÉ (E3). PUBLIQUE, MAIS PAS OUVERTE. */
 class SharedTrackingController extends Controller
 {
     public function __invoke(Booking $booking): View

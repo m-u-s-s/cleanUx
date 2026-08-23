@@ -4,14 +4,7 @@ namespace App\Admin\Console;
 
 use InvalidArgumentException;
 
-/**
- * Une colonne de liste, telle que le rendu natif la comprend.
- *
- * Le `type` n'est pas décoratif : c'est lui qui décide du formatage sur le téléphone (montant
- * aligné et cadré, date relative, pastille de statut…). Un type inconnu ne planterait rien — il
- * produirait une cellule vide que personne ne saurait expliquer. On refuse donc à la construction,
- * là où la pile d'appel désigne encore le descripteur fautif.
- */
+/** Une colonne de liste, telle que le rendu natif la comprend. */
 final class Column
 {
     public const TYPE_TEXT = 'text';

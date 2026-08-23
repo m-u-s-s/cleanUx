@@ -18,25 +18,7 @@ use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * Une réservation ASAP ne doit produire QU'UNE mission, et cette mission doit partir en offre.
- *
- * `missions` portait DEUX colonnes vers `bookings` — `booking_id` et `rendez_vous_id` — et deux
- * chemins écrivaient chacun la sienne sans voir l'autre :
- *
- *  - RendezVousObserver, sur toute réservation enregistrée en `confirme`, créait une mission via
- *    `rendez_vous_id` (MissionFromRendezVousSyncService) ;
- *  - CreateBookingFromApiAction::maybeDispatchAsap créait la SIENNE via `booking_id`, puis
- *    dispatchait celle-là.
- *
- * L'ASAP passant par `confirme`, les deux se déclenchaient : deux missions pour une réservation,
- * dont une seule dispatchée. Risque de double assignation et comptage faussé.
- *
- * LES DEUX COLONNES SONT DEPUIS FUSIONNÉES en une seule, `booking_id`, qui porte une contrainte de
- * clé étrangère là où l'autre n'en a jamais eu. Ce test garde sa raison d'être : il vérifie qu'une
- * réservation ASAP ne produit qu'une mission, ce que l'unicité de la colonne rend structurel plutôt
- * que fortuit.
- */
+/** Une réservation ASAP ne doit produire QU'UNE mission, et cette mission doit partir en offre. */
 class AsapSingleDispatchTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
@@ -71,21 +53,8 @@ class AsapSingleDispatchTest extends TestCase
         $this->assertSame($mission->id, $dispatched[0], 'La mission dispatchée doit être celle de la réservation.');
     }
 
-    /**
-     * Une réservation planifiée ne passe pas par l'offre ASAP : elle ne doit ni créer de seconde
-     * mission, ni déclencher de dispatch immédiat.
-     */
-    /**
-     * UNE RÉSERVATION PLANIFIÉE PASSE PAR LE MOTEUR, PAS PAR L'ANCIEN CHEMIN.
-     *
-     * Ce test s'appelait « … is not dispatched » et n'assérait qu'une chose : que
-     * `MissionDispatchService` n'était pas appelé. C'était exact, et c'était le BUG (H7) — une
-     * réservation planifiée créée par l'API n'était confiée à personne. Elle restait en base,
-     * visible du client, invisible de tout prestataire, jusqu'au jour où personne ne venait.
-     *
-     * Le nom affirmait donc le défaut. On mesure maintenant les deux moitiés de la vérité :
-     * l'ancien chemin d'offre immédiate reste inutilisé, ET le moteur reçoit bien la réservation.
-     */
+    /** Une réservation planifiée ne passe pas par l'offre ASAP : elle ne doit ni créer de seconde mission, ni déclencher de dispatch immédiat. */
+    /** UNE RÉSERVATION PLANIFIÉE PASSE PAR LE MOTEUR, PAS PAR L'ANCIEN CHEMIN. */
     public function test_a_scheduled_booking_creates_one_mission_and_goes_through_the_engine(): void
     {
         $dispatched = [];
@@ -106,14 +75,7 @@ class AsapSingleDispatchTest extends TestCase
         $this->assertCount(0, $dispatched);
     }
 
-    /**
-     * LE CHEMIN WEB ENTRE PAR LA PORTE UNIQUE : `DispatchEngine::dispatchBooking()`.
-     *
-     * Il testait auparavant `isset($mission)` sur une variable jamais assignée : la garde valait
-     * toujours faux et l'offre ASAP ne partait jamais. Il portait ensuite DEUX chemins — l'offre
-     * immédiate d'un côté, la confirmation directe du planifié de l'autre, chacun avec sa propre
-     * liste de candidats. Le moteur tient les deux modes ; c'est lui qu'on observe ici.
-     */
+    /** LE CHEMIN WEB ENTRE PAR LA PORTE UNIQUE : `DispatchEngine::dispatchBooking()`. */
     public function test_an_asap_web_booking_is_dispatched(): void
     {
         $dispatched = [];
@@ -199,14 +161,7 @@ class AsapSingleDispatchTest extends TestCase
     {
         $client = User::factory()->create();
 
-        /*
-         * OUVRIR LE CATALOGUE — sans quoi ce test ne mesure plus la répartition.
-         *
-         * `trades.allows_asap` vaut FAUX par défaut en base, et une zone sans ligne de
-         * `trade_zone_pricing` vaut « fermé » : la création refuse donc désormais l'immédiat,
-         * comme le fait le chemin web. Cette fixture décrivait un service que la plateforme ne
-         * vend nulle part — elle passait parce que rien ne vérifiait le catalogue à la création.
-         */
+        // OUVRIR LE CATALOGUE — sans quoi ce test ne mesure plus la répartition.
         $zone = ServiceZone::factory()->create(['status' => 'active']);
         $trade = Trade::factory()->create(['allows_asap' => true]);
         $this->ouvrirAuCatalogue($trade, $zone);

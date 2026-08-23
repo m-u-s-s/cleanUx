@@ -11,10 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use RuntimeException;
 use Tests\TestCase;
 
-/**
- * M23 — direct error-path coverage for the mission verification code guard (start/end of the
- * money-critical QR flow), including the brute-force cap.
- */
+/** M23 — direct error-path coverage for the mission verification code guard (start/end of the money-critical QR flow), including the brute-force cap. */
 class MissionVerificationCodeServiceTest extends TestCase
 {
     use RefreshDatabase;
@@ -65,11 +62,7 @@ class MissionVerificationCodeServiceTest extends TestCase
         app(MissionVerificationCodeService::class)->consumeValidCode($mission, 'end', '000000', $user);
     }
 
-    /**
-     * Le refus DIT QUOI FAIRE. Le code de fin n'étant plus émis à l'arrivée mais à la demande, son
-     * absence est une étape pas encore franchie — pas une anomalie. « Aucun code valide trouvé »
-     * laissait le prestataire devant un mur alors que le bouton qui le débloque est au-dessus.
-     */
+    /** Le refus DIT QUOI FAIRE. */
     public function test_no_unconsumed_code_throws(): void
     {
         [$mission] = $this->makeCode(['is_consumed' => true]);

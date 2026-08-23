@@ -5,12 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * M3 — move existing mission/dispute media from the PUBLIC disk to the PRIVATE disk, preserving the
- * relative path (so the stored path strings keep resolving, now served via the signed media route).
- * Idempotent: files already on private (or absent from public) are skipped. Public provider-profile
- * / avatar images are intentionally NOT moved.
- */
+/** M3 — move existing mission/dispute media from the PUBLIC disk to the PRIVATE disk, preserving the relative path (so the stored path strings keep resolving, now served via the signed media route). */
 class MigrateMediaToPrivate extends Command
 {
     protected $signature = 'media:migrate-to-private {--dry-run : List what would move without moving}';

@@ -12,21 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * UNE DEMANDE POUR PLUSIEURS SITES, EN UN SEUL GESTE.
- *
- * POURQUOI CE FICHIER EXISTE. `bookings.organization_site_id` est SINGULIER : une réservation ne
- * concerne qu'un local. Une société qui gère dix sites devait donc répéter dix fois la même
- * demande, sans rien pour les relier ensuite — ni suivi commun, ni annulation groupée.
- *
- * LE SCHÉMA PRÉVOYAIT DÉJÀ LE LIEN. `bookings.parent_booking_id` existe depuis la migration
- * initiale (FK nullable vers `bookings`, `nullOnDelete`), mais aucune relation ne l'exposait sur le
- * modèle, aucun code ne l'écrivait, et zéro ligne ne l'utilisait — vérifié en base. La récurrence
- * passant par `recurring_series_id`, ce champ était un lien de parenté générique resté dormant.
- *
- * On l'active plutôt que d'ajouter une table : une demande MÈRE porte l'intention commune, chaque
- * site reçoit sa réservation FILLE. Aucune migration structurelle, donc aucun risque destructif.
- */
+/** UNE DEMANDE POUR PLUSIEURS SITES, EN UN SEUL GESTE. POURQUOI CE FICHIER EXISTE. */
 class MultiSiteRequestTest extends TestCase
 {
     use RefreshDatabase;

@@ -172,9 +172,6 @@ class ServiceZone extends Model
     /**
      * Les metiers vendus dans cette zone.
      *
-     * Le pivot est `trade_zone_pricing` et plus `trade_zone_settings` : deux tables decrivaient le
-     * meme fait, l'administration reglait l'une et le parcours client lisait l'autre.
-     *
      * @return BelongsToMany<Trade, $this>
      */
     public function trades(): BelongsToMany

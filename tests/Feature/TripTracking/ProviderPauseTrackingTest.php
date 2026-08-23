@@ -11,11 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
-/**
- * Audit LOW (UX/RGPD) — le prestataire doit pouvoir mettre en pause le partage de
- * sa position en cours de mission ; aucune position ne doit être enregistrée
- * pendant la pause.
- */
+/** Audit LOW (UX/RGPD) — le prestataire doit pouvoir mettre en pause le partage de sa position en cours de mission ; aucune position ne doit être enregistrée pendant la pause. */
 class ProviderPauseTrackingTest extends TestCase
 {
     use RefreshDatabase;

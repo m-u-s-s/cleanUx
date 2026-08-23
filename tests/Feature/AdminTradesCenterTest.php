@@ -11,14 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Phase 1 — Tests Livewire admin pour la gestion des Trades.
- *
- * Calque sur le pattern de AdminGestionZonesTest:
- *   User::factory()->admin()->create([...permissions, access_scope, is_active])
- *   $this->actingAs($admin)
- *   Livewire::test(Component::class)->call(...)
- */
+/** Phase 1 — Tests Livewire admin pour la gestion des Trades. */
 class AdminTradesCenterTest extends TestCase
 {
     use RefreshDatabase;

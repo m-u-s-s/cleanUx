@@ -11,10 +11,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Live provider GPS position pushed during a mission.
- * Broadcast on private channel mission.{id}.
- */
+/** Live provider GPS position pushed during a mission. Broadcast on private channel mission.{id}. */
 class MissionLivePosition implements ShouldBroadcastNow, TracksBroadcastLedger
 {
     use Dispatchable;

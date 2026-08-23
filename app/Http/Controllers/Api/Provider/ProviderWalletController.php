@@ -17,10 +17,7 @@ use Illuminate\Validation\ValidationException;
  */
 class ProviderWalletController extends Controller
 {
-    /**
-     * Abort with 403 if the authenticated user is not a provider.
-     * Mirrors the same guard used by ProviderPayoutsController.
-     */
+    /** Abort with 403 if the authenticated user is not a provider. */
     protected function abortIfNotProvider(?User $user): void
     {
         abort_if(

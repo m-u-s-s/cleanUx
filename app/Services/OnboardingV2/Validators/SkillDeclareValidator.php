@@ -9,10 +9,7 @@ use App\Services\OnboardingV2\OnboardingStepValidator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Vérifie que le provider a déclaré au moins N trades / skills.
- * Schema-defensive : utilise provider_trades si dispo, sinon provider_profiles.metadata.trade_codes.
- */
+/** Vérifie que le provider a déclaré au moins N trades / skills. */
 class SkillDeclareValidator implements OnboardingStepValidator
 {
     public function validate(User $user, OnboardingStep $step, array $payload): OnboardingStepValidation

@@ -20,17 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * La passe qualité du parcours : accessibilité, performance, bout en bout.
- *
- * Ces vérifications sont des TESTS et non un audit ponctuel. Un audit passé une fois se périme au
- * premier écran ajouté ; ce fichier échoue le jour où quelqu'un pose un champ sans étiquette ou
- * réintroduit une requête par ligne.
- *
- * Ce qui se vérifie ici est ce qui se vérifie côté serveur : noms accessibles, régions vivantes,
- * hiérarchie des titres, budget de requêtes. Les contrastes et les zones tactiles se mesurent dans
- * un navigateur — c'est le rôle du harnais Playwright, pas de celui-ci.
- */
+/** La passe qualité du parcours : accessibilité, performance, bout en bout. */
 class OrderEngineQualityTest extends TestCase
 {
     use RefreshDatabase;
@@ -49,16 +39,7 @@ class OrderEngineQualityTest extends TestCase
 
     // ─── Accessibilité ───────────────────────────────────────────────────────────────────────
 
-    /**
-     * Tout champ de saisie porte un nom accessible.
-     *
-     * Sans étiquette, un lecteur d'écran annonce « zone de texte » et rien d'autre : la question
-     * est posée à l'écran, mais pas à qui ne le voit pas.
-     *
-     * Le nom doit être EXPLICITE — `for`/`id`, `aria-label` ou `aria-labelledby`. Une étiquette qui
-     * se contente d'envelopper son champ fonctionne aujourd'hui et casse dès qu'on insère un
-     * conteneur entre les deux, sans que rien ne le signale.
-     */
+    /** Tout champ de saisie porte un nom accessible. */
     public function test_every_input_has_an_accessible_name(): void
     {
         $html = $this->journeyHtml();
@@ -68,13 +49,7 @@ class OrderEngineQualityTest extends TestCase
                 continue;
             }
 
-            /*
-             * Un champ retiré de l'arbre d'accessibilité n'a pas de nom accessible à porter — la
-             * question ne se pose pas. Mais un champ `aria-hidden` ATTEIGNABLE au clavier est un
-             * vrai défaut : le focus s'y pose sans que le lecteur d'écran n'annonce quoi que ce
-             * soit. L'exception est donc conditionnée à `tabindex="-1"`, ce qui rend la règle plus
-             * stricte qu'avant, pas plus permissive.
-             */
+            // Un champ retiré de l'arbre d'accessibilité n'a pas de nom accessible à porter — la question ne se pose pas.
             if ($this->attr($control, 'aria-hidden') === 'true') {
                 $this->assertSame(
                     '-1',
@@ -97,14 +72,7 @@ class OrderEngineQualityTest extends TestCase
         }
     }
 
-    /**
-     * Chaque TYPE de question porte des noms accessibles — y compris ceux qu'un écran donné
-     * n'affiche pas.
-     *
-     * Le parcours ne rend que les widgets du métier testé : un curseur, un sélecteur de date ou un
-     * champ photo peuvent n'apparaître nulle part et passer pour corrects sans avoir jamais été
-     * regardés. On les rend donc un par un.
-     */
+    /** Chaque TYPE de question porte des noms accessibles — y compris ceux qu'un écran donné n'affiche pas. */
     public function test_every_question_widget_names_its_controls(): void
     {
         $question = $this->peinture()->questions()->where('code', 'surface_m2')->firstOrFail();
@@ -139,12 +107,7 @@ class OrderEngineQualityTest extends TestCase
         $this->assertSame([], $muets, 'Ces contrôles ont perdu leur nom accessible.');
     }
 
-    /**
-     * Tout bouton porte un nom accessible.
-     *
-     * Un bouton dont le contenu se réduit à une flèche ou une croix est annoncé « bouton » : on ne
-     * sait pas ce qu'il fait, donc on ne l'utilise pas.
-     */
+    /** Tout bouton porte un nom accessible. */
     public function test_every_button_has_an_accessible_name(): void
     {
         $muets = [];
@@ -164,13 +127,7 @@ class OrderEngineQualityTest extends TestCase
         $this->assertSame([], $muets, 'Ces boutons sont annoncés « bouton » et rien de plus.');
     }
 
-    /**
-     * Le prix qui bouge est annoncé.
-     *
-     * Le parcours promet un retour de prix immédiat ; sans région vivante, l'utilisateur d'un
-     * lecteur d'écran répond aux questions sans jamais savoir que le montant a changé — c'est
-     * exactement l'information qui l'aide à décider.
-     */
+    /** Le prix qui bouge est annoncé. */
     public function test_the_live_price_is_announced(): void
     {
         $html = $this->journeyHtml();
@@ -182,12 +139,7 @@ class OrderEngineQualityTest extends TestCase
         );
     }
 
-    /**
-     * Une erreur de saisie est RATTACHÉE à son champ, pas seulement affichée à côté.
-     *
-     * Le test PROVOQUE l'erreur au lieu d'attendre d'en croiser une : parcourir un écran sans
-     * erreur et ne rien trouver à vérifier passerait pour un succès.
-     */
+    /** Une erreur de saisie est RATTACHÉE à son champ, pas seulement affichée à côté. */
     public function test_an_error_is_tied_to_its_field(): void
     {
         $question = $this->peinture()->questions()->where('code', 'surface_m2')->firstOrFail();
@@ -252,12 +204,7 @@ class OrderEngineQualityTest extends TestCase
         $this->assertSame([], $sauts, 'Le plan de la page saute des niveaux : illisible pour qui l’écoute.');
     }
 
-    /**
-     * Aucun `tabindex` positif.
-     *
-     * Un seul suffit à désordonner la navigation clavier de TOUTE la page : l'élément passe devant
-     * tout le reste, y compris ce qui le précède visuellement.
-     */
+    /** Aucun `tabindex` positif. */
     public function test_no_positive_tabindex_hijacks_the_keyboard(): void
     {
         foreach ([$this->journeyHtml(), $this->confirmationHtml()] as $html) {
@@ -265,12 +212,7 @@ class OrderEngineQualityTest extends TestCase
         }
     }
 
-    /**
-     * Le glisser-déposer n'est jamais le SEUL moyen de réordonner.
-     *
-     * Il ne fonctionne ni au clavier ni avec un lecteur d'écran. Sans commande équivalente, une
-     * partie des clients ne peut tout simplement pas ordonner son chantier.
-     */
+    /** Le glisser-déposer n'est jamais le SEUL moyen de réordonner. */
     public function test_drag_and_drop_is_never_the_only_way(): void
     {
         $builder = file_get_contents(resource_path('views/livewire/admin/order-engine/questionnaire-builder.blade.php'));
@@ -296,22 +238,12 @@ class OrderEngineQualityTest extends TestCase
 
     // ─── Performance ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Le parcours ne part pas en requête par question.
-     *
-     * Un budget plutôt qu'un chiffre exact : il laisse respirer les évolutions tout en faisant
-     * échouer une régression franche — c'est-à-dire une boucle qui interroge la base par ligne.
-     */
+    /** Le parcours ne part pas en requête par question. */
     public function test_the_journey_stays_within_its_query_budget(): void
     {
         $trade = $this->peinture();
 
-        /*
-         * On mesure une VRAIE requête HTTP, pas une séquence du harnais Livewire.
-         * `Livewire::test()->call()->html()` enchaîne trois cycles de rendu : le total qu'il donne
-         * mesure surtout le harnais, et un budget calé dessus se déclencherait au premier appel
-         * ajouté dans un test.
-         */
+        // On mesure une VRAIE requête HTTP, pas une séquence du harnais Livewire.
         $count = $this->countQueries(function () use ($trade) {
             $this->get(route('order.journey', [$trade->sector?->slug, $trade->slug]))->assertOk();
         });
@@ -335,13 +267,7 @@ class OrderEngineQualityTest extends TestCase
         $this->assertLessThan(45, $count, sprintf('Le récapitulatif a exécuté %d requêtes.', $count));
     }
 
-    /**
-     * Ajouter une question ne doit pas ajouter de requêtes.
-     *
-     * C'est la signature du N+1 : le coût qui suit le nombre de lignes. Un questionnaire de vingt
-     * questions rendrait alors l'écran inutilisable, et personne ne s'en apercevrait avant la
-     * production.
-     */
+    /** Ajouter une question ne doit pas ajouter de requêtes. */
     public function test_more_questions_do_not_mean_more_queries(): void
     {
         $trade = $this->peinture();
@@ -369,12 +295,7 @@ class OrderEngineQualityTest extends TestCase
 
     // ─── Bout en bout ────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Le parcours complet, du secteur à la réservation — sans compte jusqu'au dernier écran.
-     *
-     * C'est le test qui vérifie que les morceaux tiennent ENSEMBLE : chacun passe isolément sans
-     * garantir que l'enchaînement fonctionne.
-     */
+    /** Le parcours complet, du secteur à la réservation — sans compte jusqu'au dernier écran. */
     public function test_the_whole_journey_from_sector_to_booking(): void
     {
         $trade = $this->peinture();

@@ -18,23 +18,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * RESTREINDRE UN MEMBRE À SES LOCAUX — la table dormait depuis sa création.
- *
- * `organization_member_site_access` existait, avec sa relation `authorizedMembers()` sur
- * `OrganizationSite`. Rien ne l'écrivait, rien ne la lisait. Pendant ce temps, la restriction
- * réelle passait par un objet JSON posé sur l'utilisateur — qu'aucun écran ne réglait non plus.
- * Deux mécanismes pour le même fait, aucune porte pour les actionner.
- *
- * CE QUE CELA DONNAIT : un responsable de site d'une entreprise cliente voyait TOUS les locaux de
- * sa société. Les adresses des autres agences, leurs réservations, leurs factures. La donnée qui
- * aurait dû l'en empêcher était modélisée depuis le premier jour.
- *
- * L'ABSENCE DE RESTRICTION N'EST PAS UNE RESTRICTION VIDE, et c'est la distinction que ce fichier
- * protège. Un membre sans ligne voit tout, comme avant. Faire l'inverse aurait vidé les écrans de
- * toutes les entreprises existantes au premier déploiement — une régression bien pire que le trou
- * qu'on referme.
- */
+/** RESTREINDRE UN MEMBRE À SES LOCAUX — la table dormait depuis sa création. */
 class AccesParSiteDesMembresTest extends TestCase
 {
     use RefreshDatabase;
@@ -123,11 +107,7 @@ class AccesParSiteDesMembresTest extends TestCase
             ->pluck('invoice_number')
             ->all();
 
-        /*
-         * C'EST L'ASSERTION QUI COMPTE. Écrire la ligne ne prouve rien : ce qu'il fallait, c'est que
-         * les écrans qui SCOPENT déjà par site lisent cette restriction-là. Sans ce chaînage, la
-         * table serait passée de dormante à décorative.
-         */
+        // C'EST L'ASSERTION QUI COMPTE.
         $this->assertContains('FAC-'.$autorise->id, $visibles);
         $this->assertNotContains('FAC-'.$interdit->id, $visibles);
     }

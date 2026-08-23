@@ -15,22 +15,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LES DÉROGATIONS DE PERMISSION : POUVOIR LES RETIRER, ET SAVOIR QUI LES A POSÉES.
- *
- * `togglePermission()` écrit une dérogation NOMINATIVE dans `organization_members.permissions`
- * (étage 1 de la résolution, prioritaire sur la matrice de la société puis sur le défaut du dépôt).
- * Deux manques :
- *
- *   1. AUCUN RETOUR EN ARRIÈRE. Le seul geste disponible était d'inverser le booléen, ce qui écrit
- *      une SECONDE dérogation — l'inverse — au lieu d'effacer la première. Un membre remis « comme
- *      les autres » gardait donc une ligne figée : changer le rôle de la société ne le suivait
- *      plus, et personne ne pouvait le deviner en lisant la matrice.
- *
- *   2. AUCUNE TRACE. Distribuer des droits est l'action la plus sensible de cet écran, et rien ne
- *      l'enregistrait. Le module Audit v2 et son trait `AuditsEloquentEvents` existent depuis
- *      2026-05-19 ; `OrganizationMember` ne l'utilisait pas.
- */
+/** LES DÉROGATIONS DE PERMISSION : POUVOIR LES RETIRER, ET SAVOIR QUI LES A POSÉES. */
 class PermissionOverridesTest extends TestCase
 {
     use RefreshDatabase;

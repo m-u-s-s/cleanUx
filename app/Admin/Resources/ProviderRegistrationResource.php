@@ -12,10 +12,6 @@ use App\Support\ActivityLogger;
 /**
  * Les inscriptions de prestataires à instruire.
  *
- * L’APPROBATION passe par le module d’onboarding : elle débloque le parcours, déclenche les
- * vérifications restantes et prévient l’intéressé. Poser `verification_status = ’verified’` ici
- * ferait un prestataire vérifié que rien n’a vérifié — et il recevrait des missions.
- *
  * @extends EloquentResource<ProviderProfile>
  */
 class ProviderRegistrationResource extends EloquentResource
@@ -75,12 +71,7 @@ class ProviderRegistrationResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Refuser une inscription. L'approbation reste sur le web : elle consulte le dossier
-             * complet — pièces, journey, blocages — et peut exiger un motif de dérogation quand il
-             * est incomplet. Porter cela sur un téléphone donnerait un bouton « Approuver » sans
-             * ce que l'administrateur doit avoir lu avant d'appuyer.
-             */
+            // Refuser une inscription.
             Action::make('reject', 'Refuser l’inscription', function (ProviderProfile $profile, array $valeurs) {
                 $profile->forceFill([
                     'status' => 'rejected',

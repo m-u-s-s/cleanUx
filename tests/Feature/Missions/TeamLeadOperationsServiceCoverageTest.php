@@ -11,23 +11,7 @@ use App\Services\Missions\TeamLeadOperationsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Coverage for the reachable public behavior of TeamLeadOperationsService.
- *
- * NOTE: assignSegment(), updateMemberStatus(), syncCollectiveProgress() and
- * closeInterventionGlobally() are NOT exercised here. They all funnel through
- * syncCollectiveProgress(), which calls `$mission->taskSegments()` and
- * `$segment->assignments` — relations that do not exist on App\Models\Mission
- * nor App\Models\MissionTaskSegment in the current model layer. Invoking them
- * throws `BadMethodCallException: Call to undefined method
- * App\Models\Mission::taskSegments()`. Since the rules forbid touching the
- * source/models, those paths are genuinely unreachable from a green test.
- *
- * requestReinforcement() does not touch those relations, so this suite covers
- * its happy path (every override taken) and its default/clamp path (every
- * `??` fallback + the max(1, …) / max(15, …) guards), including the
- * `$segment->missionBatchDay?->...` null-safe access.
- */
+/** Coverage for the reachable public behavior of TeamLeadOperationsService. */
 class TeamLeadOperationsServiceCoverageTest extends TestCase
 {
     use RefreshDatabase;

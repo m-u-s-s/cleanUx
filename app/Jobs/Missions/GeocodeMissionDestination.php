@@ -12,18 +12,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Résout les coordonnées de destination d'une mission depuis l'adresse de sa réservation.
- *
- * Pourquoi un job plutôt qu'un appel en ligne : GeocodingService interroge Nominatim en HTTP
- * (timeout 12 s). Les deux chemins de création rattachés à `booking_id` sont sur le trajet de
- * réservation du client — y poser un appel réseau tiers ralentirait un chemin d'argent, et le
- * dispatch ASAP qui suit immédiatement. Le géocodage est donc différé, et sans destination la
- * carte retombe simplement sur celle du booking (voir ProviderMissionAssignmentController).
- *
- * Idempotent : une mission déjà géolocalisée ressort sans écriture ni appel réseau. Le cache
- * `location_geocodes` de GeocodingService rend par ailleurs gratuit tout réemploi d'adresse.
- */
+/** Résout les coordonnées de destination d'une mission depuis l'adresse de sa réservation. */
 class GeocodeMissionDestination implements ShouldQueue
 {
     use Dispatchable;
@@ -55,10 +44,7 @@ class GeocodeMissionDestination implements ShouldQueue
         public int $missionId,
     ) {}
 
-    /**
-     * Renvoie l'issue plutôt que void : la file l'ignore, mais le rattrapage de masse s'en sert
-     * pour ne temporiser qu'après un appel réseau réel, et pour compter ce qu'il a résolu.
-     */
+    /** Renvoie l'issue plutôt que void : la file l'ignore, mais le rattrapage de masse s'en sert pour ne temporiser qu'après un appel réseau réel, et pour compter ce qu'il a résolu. */
     public function handle(GeocodingService $geocoding): string
     {
         $mission = Mission::query()
@@ -138,9 +124,7 @@ class GeocodeMissionDestination implements ShouldQueue
         return self::OUTCOME_GEOCODED;
     }
 
-    /**
-     * Même chaîne de repli que MissionFromRendezVousSyncService.
-     */
+    /** Même chaîne de repli que MissionFromRendezVousSyncService. */
     protected function countryCodeFor(Booking $booking): string
     {
         return strtoupper((string) (
@@ -150,9 +134,7 @@ class GeocodeMissionDestination implements ShouldQueue
         ));
     }
 
-    /**
-     * Tag pour Horizon.
-     */
+    /** Tag pour Horizon. */
     public function tags(): array
     {
         return ['missions', 'geocode-mission-'.$this->missionId];

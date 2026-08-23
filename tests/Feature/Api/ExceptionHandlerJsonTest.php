@@ -10,12 +10,7 @@ use Laravel\Sanctum\Sanctum;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Tests\TestCase;
 
-/**
- * Sprint 0 — Task 2 : JSON exception handler unifié.
- *
- * Vérifie que toutes les erreurs API retournent le shape unifié :
- *   { ok: false, error_code, message, errors? }
- */
+/** Sprint 0 — Task 2 : JSON exception handler unifié. */
 class ExceptionHandlerJsonTest extends TestCase
 {
     use RefreshDatabase;

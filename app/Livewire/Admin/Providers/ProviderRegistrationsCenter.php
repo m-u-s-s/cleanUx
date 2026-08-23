@@ -13,24 +13,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-/**
- * Approbation des prestataires inscrits en libre-service depuis l'app mobile.
- *
- * Route : /admin/inscriptions-prestataires
- *
- * Ces comptes naissent en `status = pending` avec `self_registered_at` renseigné. Le middleware
- * provider.approved les cantonne à leur dossier d'onboarding tant qu'un humain ne les a pas
- * approuvés : cet écran est la bascule, qui se faisait sinon à la main en base.
- *
- * Volontairement distinct d'AdminOnboardingProvidersList, malgré la proximité apparente. Cet
- * écran-là traite l'approbation FINALE sur pièces justificatives et refuse tout profil sans
- * document — donc précisément ces nouveaux comptes, qui n'en ont encore aucun. Les deux flux
- * s'enchaînent : approbation d'inscription ici, validation du dossier là-bas.
- *
- * Le périmètre est la garantie principale : seuls les profils portant `self_registered_at` sont
- * listés. Les prestataires antérieurs ne sont soumis à aucune attente d'approbation et ne
- * doivent jamais apparaître ici — un test le verrouille.
- */
+/** Approbation des prestataires inscrits en libre-service depuis l'app mobile. */
 class ProviderRegistrationsCenter extends Component
 {
     use EnforcesAdminAccess;
@@ -44,8 +27,7 @@ class ProviderRegistrationsCenter extends Component
     public string $filter = 'pending';
 
     /**
-     * Motif saisi pour approuver un dossier incomplet, indexé par profil. Consigné dans les
-     * métadonnées du profil : un passage en force doit laisser une trace de qui et pourquoi.
+     * Motif saisi pour approuver un dossier incomplet, indexé par profil.
      *
      * @var array<int, string>
      */
@@ -61,27 +43,7 @@ class ProviderRegistrationsCenter extends Component
         $this->resetPage();
     }
 
-    /**
-     * Ouvre l'accès complet à la surface prestataire.
-     *
-     * Cette méthode posait `status = 'active'` sans rien vérifier : un administrateur approuvait
-     * à l'aveugle un prestataire n'ayant franchi aucune vérification, et le profil restait
-     * `verification_status = 'unverified'` indéfiniment — alors que l'autre voie d'approbation,
-     * ProviderOnboardingService::approveOnboarding(), exige identité, assurance et compte de
-     * paiement. Les deux voies affirmaient des choses différentes du même prestataire.
-     *
-     * L'approbation reste un geste unique, mais elle sait désormais ce qu'elle approuve :
-     *
-     *  - dossier complet → `verification_status` passe à `verified` et le parcours v2 est marqué
-     *    terminé, ce qui aligne les deux moteurs ;
-     *  - dossier incomplet → l'approbation exige un motif, qui est consigné, et le statut de
-     *    vérification n'est PAS touché : on n'affirme pas une vérification qui n'a pas eu lieu.
-     *
-     * Pour une société, l'organisation créée à l'inscription est activée dans la même
-     * transaction : c'est elle que consomment l'espace provider-company et le rattachement des
-     * missions. L'oublier laisserait l'organisation en `pending`, dans un état intermédiaire que
-     * plus personne ne viendrait débloquer.
-     */
+    /** Ouvre l'accès complet à la surface prestataire. */
     public function approve(int $profileId): void
     {
         $profile = $this->selfRegisteredProfile($profileId);
@@ -154,10 +116,7 @@ class ProviderRegistrationsCenter extends Component
             : ['is_complete' => false, 'blockers' => ['Compte introuvable'], 'warnings' => [], 'journey' => ['percent' => 0, 'done' => 0, 'total' => 0, 'missing' => []]];
     }
 
-    /**
-     * Le compte reste en base et conserve son historique — on ne supprime pas un utilisateur
-     * depuis un écran de modération. La garde provider.approved continue de le bloquer.
-     */
+    /** Le compte reste en base et conserve son historique — on ne supprime pas un utilisateur depuis un écran de modération. */
     public function reject(int $profileId): void
     {
         $profile = $this->selfRegisteredProfile($profileId);
@@ -178,10 +137,7 @@ class ProviderRegistrationsCenter extends Component
         session()->flash('success', "Inscription refusée : {$profile->user?->name} n'a pas accès à l'application.");
     }
 
-    /**
-     * Ne résout QUE des profils auto-inscrits : cet écran ne doit pas devenir un moyen détourné
-     * de modifier le statut d'un prestataire historique.
-     */
+    /** Ne résout QUE des profils auto-inscrits : cet écran ne doit pas devenir un moyen détourné de modifier le statut d'un prestataire historique. */
     private function selfRegisteredProfile(int $profileId): ProviderProfile
     {
         return ProviderProfile::query()

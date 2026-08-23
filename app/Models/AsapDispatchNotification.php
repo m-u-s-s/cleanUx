@@ -6,14 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Une course proposée à un prestataire.
- *
- * Le registre nominatif de la recherche : qui a été prévenu, à quelle distance, à quel palier de
- * rayon, et ce qu'il en a fait. C'est lui qui empêche de renotifier quelqu'un à chaque
- * élargissement — un prestataire qui reçoit quatre fois la même course coupe les notifications,
- * et une fois coupées elles ne reviennent pas.
- */
+/** Une course proposée à un prestataire. */
 class AsapDispatchNotification extends Model
 {
     protected $fillable = [

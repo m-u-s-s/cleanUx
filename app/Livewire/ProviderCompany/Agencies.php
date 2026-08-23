@@ -14,25 +14,7 @@ use Illuminate\Support\Str;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * LES IMPLANTATIONS DE LA SOCIÉTÉ — le dépôt de Bruxelles, l'antenne d'Anvers.
- *
- * À NE PAS CONFONDRE AVEC `organization_sites`, qui désigne les locaux du CLIENT : un prestataire ne
- * possède pas les immeubles où il intervient. Les deux notions se ressemblent — une adresse, une
- * ville — et n'ont rien à voir dans le domaine. C'est pourquoi elles ont deux écrans, deux tables et
- * deux permissions.
- *
- * POURQUOI CET ÉCRAN EXISTE MAINTENANT. L'API (`/api/provider/company/agencies`) et l'écran natif
- * existaient depuis le lot société ; le web, non. Une société qui pilote depuis un ordinateur ne
- * pouvait donc pas déclarer ses implantations, alors que `ProviderAgency` est lue par le moteur de
- * répartition interne — une société multi-villes envoyait ses équipes à travers la région sans que
- * rien ne puisse dire d'où elles partaient. La parité web/mobile n'est pas un confort ici : c'est
- * la moitié des utilisateurs.
- *
- * LES PERMISSIONS SONT REVÉRIFIÉES À CHAQUE ACTION. Livewire ne rejoue jamais `mount()` : une garde
- * posée à l'ouverture de l'écran vaut pour l'ouverture, et pour rien d'autre. Ce piège a déjà coûté
- * une faille sur `DispatchCenter::confirmAssign()`.
- */
+/** LES IMPLANTATIONS DE LA SOCIÉTÉ — le dépôt de Bruxelles, l'antenne d'Anvers. */
 class Agencies extends Component
 {
     use EnforcesActiveOrgMembership;
@@ -47,14 +29,7 @@ class Agencies extends Component
 
     public ?int $zoneId = null;
 
-    /**
-     * L'implantation dont on regarde le rattachement.
-     *
-     * `#[Locked]` parce qu'elle vient du navigateur : une propriété publique Livewire est
-     * modifiable par `$set`. Elle ne porte aucune décision d'autorisation — chaque action rescope sa
-     * requête sur l'organisation active — mais la verrouiller évite qu'un identifiant forgé désigne
-     * une agence qu'on n'a pas ouverte.
-     */
+    /** L'implantation dont on regarde le rattachement. */
     #[Locked]
     public ?int $agenceOuverteId = null;
 
@@ -100,13 +75,7 @@ class Agencies extends Component
         $this->reset(['nom', 'ville', 'adresse', 'codePostal', 'zoneId']);
     }
 
-    /**
-     * Archiver une implantation.
-     *
-     * La ligne SURVIT : les équipes et les membres qui y étaient rattachés gardent leur histoire, et
-     * les missions passées citent une agence qui doit rester nommable. Rouvrir un dépôt fermé
-     * l'hiver ne doit pas demander de tout recréer.
-     */
+    /** Archiver une implantation. */
     public function archiver(int $agencyId): void
     {
         $acteur = Auth::user();
@@ -136,12 +105,7 @@ class Agencies extends Component
         $this->agenceOuverteId = $this->agenceDeLaSociete($agencyId)?->id;
     }
 
-    /**
-     * Rattacher une équipe terrain à une implantation, ou l'en détacher.
-     *
-     * `null` détache : une société réorganise, et un rattachement qu'on ne pourrait pas défaire
-     * obligerait à recréer l'équipe — donc à perdre sa composition et son historique.
-     */
+    /** Rattacher une équipe terrain à une implantation, ou l'en détacher. */
     public function rattacherEquipe(int $agencyId, int $teamId, bool $detacher = false): void
     {
         $acteur = Auth::user();

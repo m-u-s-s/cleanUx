@@ -16,13 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use Tests\Feature\FaceCheck\Concerns\ActiveLeControleFacial;
 use Tests\TestCase;
 
-/**
- * LE VISAGE EST UNE DONNÉE DE L'ARTICLE 9 — et la plateforme doit pouvoir le prouver.
- *
- * Trois obligations distinctes, trois tests qui vérifient LE DISQUE et pas seulement la colonne :
- * effacer une ligne en laissant l'image en place donne un registre conforme et un stockage qui ne
- * l'est pas. C'est le défaut exact que `DataErasureService` avait sur les pièces d'identité.
- */
+/** LE VISAGE EST UNE DONNÉE DE L'ARTICLE 9 — et la plateforme doit pouvoir le prouver. */
 class RgpdDuControleFacialTest extends TestCase
 {
     use ActiveLeControleFacial;
@@ -74,9 +68,7 @@ class RgpdDuControleFacialTest extends TestCase
         $this->assertTrue(Storage::disk('private')->exists($controle->refresh()->selfie_path));
     }
 
-    /**
-     * LA DURÉE VIENT DES RÉGLAGES DU MODULE, pas d'une seconde source.
-     */
+    /** LA DURÉE VIENT DES RÉGLAGES DU MODULE, pas d'une seconde source. */
     public function test_la_duree_de_conservation_suit_le_reglage_de_ladministrateur(): void
     {
         $controle = $this->unControlePasse(ilYA: 10);

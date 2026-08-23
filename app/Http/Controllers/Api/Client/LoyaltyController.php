@@ -30,14 +30,7 @@ class LoyaltyController extends Controller
         return response()->json([
             'lifetime_points' => $account->lifetime_points,
             'period_points' => $account->period_points,
-            /*
-             * LE SOLDE ÉCHANGEABLE, que l'écran mobile affiche depuis toujours sans le recevoir.
-             *
-             * `loyalty_accounts.redeemable_points` est la colonne que `LoyaltyRedemptionService`
-             * débite et que l'écran web lit déjà. Cette réponse l'omettait : l'application native
-             * affichait donc une case « Points échangeables » vide, à côté d'un bouton d'échange
-             * dont elle ne pouvait pas vérifier le solde.
-             */
+            // LE SOLDE ÉCHANGEABLE, que l'écran mobile affiche depuis toujours sans le recevoir.
             'redeemable_points' => (int) ($account->redeemable_points ?? 0),
             'tier' => $account->currentTier ? [
                 'slug' => $account->currentTier->slug,

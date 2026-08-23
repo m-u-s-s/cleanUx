@@ -13,14 +13,7 @@ use App\Services\Assistant\Tools\Implementations\ListServicesCatalogTool;
 use App\Services\Assistant\Tools\Implementations\RegisterSiteTool;
 use App\Services\Assistant\Tools\Implementations\ReportIssueTool;
 
-/**
- * Phase 5.1 — Registre central avec les nouveaux tools.
- *
- * Ajout par rapport à Phase 5 :
- *   - GetInvoiceTool      (read, immediate)
- *   - RegisterSiteTool    (write, requires confirm)
- *   - ReportIssueTool     (write, requires confirm)
- */
+/** Phase 5.1 — Registre central avec les nouveaux tools. */
 class AssistantToolRegistry
 {
     /**
@@ -118,9 +111,7 @@ class AssistantToolRegistry
         );
     }
 
-    /**
-     * Whitelist de tool names par rôle.
-     */
+    /** Whitelist de tool names par rôle. */
     private function allowedToolNamesForRole(string|\BackedEnum $role): array
     {
         $role = $role instanceof \BackedEnum ? $role->value : $role;

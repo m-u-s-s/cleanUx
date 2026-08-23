@@ -8,19 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
-/**
- * UN NUMÉRO D'ENTREPRISE DÉSIGNE UNE SEULE SOCIÉTÉ — et il est PUBLIC.
- *
- * Mesuré le 2026-08-16 : deux sociétés prestataires distinctes se sont inscrites avec le même
- * `BE0123456749`, sans un mot. Ces numéros figurent sur chaque facture et dans les registres
- * officiels : n'importe qui pouvait donc inscrire une société au nom d'une autre. Et la vérification
- * d'entreprise l'aurait déclarée conforme — elle contrôle que le numéro existe et à qui il
- * appartient dans les registres, jamais que la personne qui le saisit possède l'entreprise. Le
- * dossier ressortait « société vérifiée » avec l'identité d'un tiers.
- *
- * LA RÈGLE VAUT SUR LES DEUX CANAUX. La poser d'un seul côté ne servirait à rien : c'est exactement
- * ainsi que l'attente d'approbation se contournait plus tôt dans la journée, en changeant de canal.
- */
+/** UN NUMÉRO D'ENTREPRISE DÉSIGNE UNE SEULE SOCIÉTÉ — et il est PUBLIC. */
 class NumeroDEntrepriseUniqueTest extends TestCase
 {
     use RefreshDatabase;
@@ -55,10 +43,7 @@ class NumeroDEntrepriseUniqueTest extends TestCase
         $this->assertNull(User::where('email', 'sosie@presta.test')->first());
     }
 
-    /**
-     * La forme n'est pas un contournement : `BE 0202.239.951` est le même numéro. Une règle qui
-     * comparerait les chaînes brutes se laisserait berner par un point.
-     */
+    /** La forme n'est pas un contournement : `BE 0202.239.951` est le même numéro. */
     public function test_la_ponctuation_ne_contourne_pas_la_regle(): void
     {
         $this->inscrireSocietePrestataireParLApi('premiere@presta.test', 'Première SRL')->assertCreated();
@@ -70,11 +55,7 @@ class NumeroDEntrepriseUniqueTest extends TestCase
         ]))->assertStatus(422)->assertJsonValidationErrors('vat_number');
     }
 
-    /**
-     * LE TÉMOIN QUI DÉLIMITE LA RÈGLE : une même entreprise peut être cliente ET prestataire — une
-     * société de nettoyage qui commande aussi du jardinage. Deux organisations, une par casquette.
-     * Interdire cela au nom de l'unicité casserait un cas légitime.
-     */
+    /** LE TÉMOIN QUI DÉLIMITE LA RÈGLE : une même entreprise peut être cliente ET prestataire — une société de nettoyage qui commande aussi du jardinage. */
     public function test_la_meme_entreprise_peut_etre_cliente_et_prestataire(): void
     {
         $this->inscrireSocietePrestataireParLApi('presta@double.test', 'Double Casquette SRL')->assertCreated();

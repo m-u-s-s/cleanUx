@@ -10,13 +10,7 @@ use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * LE CLIENT CHOISIT SES HEURES.
- *
- * Ce que ces tests protègent : le sélecteur borne, arrondit, persiste sur LA BONNE LIGNE de
- * panier, et n'apparaît jamais sur un métier forfaitaire. Chacun de ces quatre points, raté,
- * produit un prix faux que personne ne remarque avant la facture.
- */
+/** LE CLIENT CHOISIT SES HEURES. */
 class ChoixDesHeuresTest extends TestCase
 {
     use RefreshDatabase;
@@ -71,9 +65,7 @@ class ChoixDesHeuresTest extends TestCase
         );
     }
 
-    /**
-     * ZÉRO HEURE PRODUIRAIT UNE PRESTATION GRATUITE — c'est la borne qui compte le plus.
-     */
+    /** ZÉRO HEURE PRODUIRAIT UNE PRESTATION GRATUITE — c'est la borne qui compte le plus. */
     public function test_zero_heure_est_impossible(): void
     {
         $composant = $this->parcours()->call('choisirLesHeures', 0);
@@ -109,13 +101,7 @@ class ChoixDesHeuresTest extends TestCase
         $this->assertSame(180, $ligne->purchased_minutes);
     }
 
-    /**
-     * LES HEURES VIVENT PAR MÉTIER, PAS PAR PANIER.
-     *
-     * Deux heures de ménage et trois de repassage dans la même commande sont deux lignes. Les
-     * ranger au niveau du panier écraserait l'une par l'autre — et le client paierait deux fois
-     * la même durée.
-     */
+    /** LES HEURES VIVENT PAR MÉTIER, PAS PAR PANIER. */
     public function test_deux_metiers_du_meme_panier_gardent_chacun_leurs_heures(): void
     {
         $menage = $this->metierHoraire('menage-h', 'MEN_H');

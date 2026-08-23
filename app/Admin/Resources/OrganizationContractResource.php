@@ -10,15 +10,6 @@ use App\Models\OrganizationContract;
 /**
  * Les contrats-cadres des comptes entreprise.
  *
- * LE TROISIÈME MODÈLE de la page « Opérations B2B », après les ordres de travail et les grilles
- * tarifaires. Chacun avait besoin de son descripteur : le moteur en sert un par modèle, et servir
- * trois modèles depuis un seul aurait demandé d'inventer un mécanisme que rien d'autre n'emploie.
- *
- * CE QUE LE FORMULAIRE N'OFFRE PAS, et ce n'est pas un oubli : les règles de service, de prix et de
- * SLA sont des structures JSON que le web édite par des écrans dédiés. Les exposer en champ texte
- * sur un téléphone inviterait à saisir du JSON à la main, avec une chance sérieuse de casser le
- * contrat d'un client en le sauvegardant.
- *
  * @extends EloquentResource<OrganizationContract>
  */
 class OrganizationContractResource extends EloquentResource

@@ -13,10 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
-/**
- * Bundle Marketplace — raffinement : quand le chantier a une zone, seuls les
- * prestataires couvrant cette zone (et habilités au métier + KYC) sont sollicités.
- */
+/** Bundle Marketplace — raffinement : quand le chantier a une zone, seuls les prestataires couvrant cette zone (et habilités au métier + KYC) sont sollicités. */
 class BundleZoneFilteringTest extends TestCase
 {
     use RefreshDatabase;

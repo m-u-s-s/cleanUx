@@ -14,10 +14,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Raw database queries that fetch data for KPI calculations.
- * Returns collections / primitive values — no formatting logic here.
- */
+/** Raw database queries that fetch data for KPI calculations. */
 class KpiAggregator
 {
     // ──────────────────────────────────────────────────────
@@ -304,10 +301,7 @@ class KpiAggregator
         return ['termine', 'terminé', 'completed', 'done'];
     }
 
-    /**
-     * Apply a date-range filter to a query, respecting date vs datetime columns.
-     * Uses whereDate for plain date columns (avoids SQLite string-comparison pitfall).
-     */
+    /** Apply a date-range filter to a query, respecting date vs datetime columns. */
     private function applyDateRange(Builder $query, CarbonImmutable $from, CarbonImmutable $to): Builder
     {
         $column = $this->bookingDateColumn();

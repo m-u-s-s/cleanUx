@@ -9,14 +9,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * L'offre n'est plus à prendre : ferme la modale, chez tout le monde.
- *
- * Indispensable À CAUSE de la dernière vague, qui propose la même course à plusieurs prestataires
- * en même temps. Sans ce message, les perdants gardent une modale vivante et un compte à rebours
- * qui tourne sur une course déjà partie — ils appuient sur « Accepter », reçoivent une erreur, et
- * apprennent à ne plus croire les offres.
- */
+/** L'offre n'est plus à prendre : ferme la modale, chez tout le monde. */
 class MissionOfferWithdrawn implements ShouldBroadcast
 {
     use Dispatchable;

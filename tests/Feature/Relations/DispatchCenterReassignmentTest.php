@@ -14,15 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * SP3 §3 / DoD 6 — quand une société est choisie, la mission porte
- * provider_organization_id = l'org et le DispatchCenter société doit pouvoir
- * RÉASSIGNER un autre worker de la même org.
- *
- * On part d'une mission auto-suggérée (provider_organization_id rempli + un
- * lead initial workerA) et on prouve, via le composant Livewire réel, qu'un
- * dispatcher de l'org peut la réassigner à workerB de la même org.
- */
+/** SP3 §3 / DoD 6 — quand une société est choisie, la mission porte provider_organization_id = l'org et le DispatchCenter société doit pouvoir RÉASSIGNER un autre worker de la même org. */
 class DispatchCenterReassignmentTest extends TestCase
 {
     use RefreshDatabase;
@@ -87,17 +79,7 @@ class DispatchCenterReassignmentTest extends TestCase
         $this->assertSame('assigned', $mission->fresh()->status);
     }
 
-    /**
-     * RÉASSIGNER, C'EST AUSSI DÉSASSIGNER.
-     *
-     * `confirmAssign()` créait le nouvel assignment sans toucher à l'ancien : la mission se
-     * retrouvait avec DEUX assignments actifs, et `missions.lead_provider_user_id` continuait de
-     * désigner le travailleur remplacé. Trois conséquences en chaîne :
-     *
-     *   - le tableau de bord affiche l'ancien (il lit `leadProvider`) ;
-     *   - l'autorisation Reverb `mission.{id}` reste ouverte à celui qui n'y est plus ;
-     *   - le suivi de trajet et la présence continuent de le viser.
-     */
+    /** RÉASSIGNER, C'EST AUSSI DÉSASSIGNER. */
     public function test_reassigner_libere_l_ancien_travailleur_et_synchronise_le_lead(): void
     {
         $org = OrganizationAccount::factory()->create();

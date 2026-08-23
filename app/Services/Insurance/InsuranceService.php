@@ -12,17 +12,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-/**
- * InsuranceService — facade: orchestre la vie d'une police + délègue les claims.
- *
- *   - purchase($bookingId, $planCode, $user) → BookingInsurance (status=active)
- *   - cancel($insurance) → marque cancelled, appelle le provider
- *   - fileClaim($insurance, ...) → delegates to InsuranceClaimsService
- *   - updateClaimStatus(…)       → delegates to InsuranceClaimsService
- *   - applyWebhookUpdate(…)      → delegates to InsuranceClaimsService
- *
- * Idempotence : `idempotency_key` UNIQUE sur booking_insurances + insurance_claims.
- */
+/** InsuranceService — facade: orchestre la vie d'une police + délègue les claims. */
 class InsuranceService
 {
     public function __construct(

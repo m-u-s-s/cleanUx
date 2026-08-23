@@ -14,14 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Le composant qui rend une question — le même pour le client et pour l'aperçu du constructeur.
- *
- * Ce qui est verrouillé ici tient en trois points. La forme de la réponse est un CONTRAT avec le
- * moteur tarifaire. Le défaut ne doit jamais écraser ce que le client a déjà saisi. Et l'erreur
- * n'apparaît qu'une fois le champ quitté — reprocher un champ vide à quelqu'un qui n'a pas fini de
- * le remplir, c'est lui donner tort pendant qu'il a raison.
- */
+/** Le composant qui rend une question — le même pour le client et pour l'aperçu du constructeur. */
 class QuestionRendererTest extends TestCase
 {
     use RefreshDatabase;
@@ -38,13 +31,7 @@ class QuestionRendererTest extends TestCase
             ->assertSet('value', 'murs');
     }
 
-    /**
-     * Loi 10 — revenir en arrière ne perd rien.
-     *
-     * Le défaut ne doit s'appliquer qu'à une question VIERGE. S'il écrasait une réponse existante,
-     * naviguer en arrière effacerait ce que le client vient de choisir, et il faudrait tout
-     * refaire — le contraire exact de ce que promet un retour arrière.
-     */
+    /** Loi 10 — revenir en arrière ne perd rien. */
     public function test_the_default_never_overwrites_an_existing_answer(): void
     {
         $question = $this->choice([
@@ -56,14 +43,7 @@ class QuestionRendererTest extends TestCase
             ->assertSet('value', 'murs_plafonds');
     }
 
-    /**
-     * LE contrat avec le moteur tarifaire.
-     *
-     * `['unknown' => true]` est exactement ce que PricingEngine reconnaît pour élargir la
-     * fourchette. Changer cette forme d'un côté sans l'autre ferait disparaître la porte de sortie
-     * du calcul, en silence : le prix redeviendrait ferme sur une réponse que le client n'a jamais
-     * donnée.
-     */
+    /** LE contrat avec le moteur tarifaire. */
     public function test_the_way_out_produces_exactly_what_the_pricing_engine_reads(): void
     {
         $trade = Trade::create([
@@ -120,12 +100,7 @@ class QuestionRendererTest extends TestCase
             ->assertDispatched('question-answered', code: $question->code, value: 'b', valid: true);
     }
 
-    /**
-     * L'erreur n'apparaît qu'une fois le champ quitté.
-     *
-     * Une question obligatoire est vide à l'ouverture : l'accuser tout de suite reviendrait à
-     * accueillir le client par un reproche.
-     */
+    /** L'erreur n'apparaît qu'une fois le champ quitté. */
     public function test_no_error_is_shown_before_the_field_has_been_left(): void
     {
         $question = Question::create([
@@ -203,12 +178,7 @@ class QuestionRendererTest extends TestCase
             ->assertSet('value', ['haies']);
     }
 
-    /**
-     * Chaque question du catalogue livré se rend sans erreur.
-     *
-     * Un type non géré ne doit jamais faire tomber la page : c'est de la donnée saisie en
-     * back-office, et un administrateur peut créer demain un type que ce composant ne connaît pas.
-     */
+    /** Chaque question du catalogue livré se rend sans erreur. */
     public function test_every_seeded_question_renders(): void
     {
         $this->seed(OrderEngineCatalogSeeder::class);

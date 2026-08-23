@@ -7,12 +7,7 @@ use App\Admin\Console\ReportTile;
 use App\Models\SubscriptionsV2\SubscriptionCycleV2;
 use App\Models\SubscriptionsV2\SubscriptionV2;
 
-/**
- * Les abonnements et leur santé.
- *
- * Un abonnement en défaut de paiement finit annulé automatiquement s’il n’est pas rattrapé :
- * le compteur `past_due` est donc le seul qui appelle une action, et il est annoncé comme tel.
- */
+/** Les abonnements et leur santé. */
 class SubscriptionsReport implements AdminReport
 {
     public function key(): string

@@ -22,16 +22,7 @@ use RuntimeException;
  */
 class TripTrackingController extends Controller
 {
-    /**
-     * PARTAGER LE SUIVI (E3) — le patron « suivez ma course ».
-     *
-     * Quelqu'un commande un ménage pour sa mère et n'est pas sur place : il veut qu'elle sache
-     * quand sonner, et elle n'a pas de compte. C'est depuis le téléphone qu'on partage — le lien
-     * part par SMS dans la foulée, sur le même appareil.
-     *
-     * LA PROPRIÉTÉ EST REVÉRIFIÉE : émettre un lien signé pour la réservation d'un autre
-     * donnerait à qui devine un numéro un accès au suivi d'un inconnu.
-     */
+    /** PARTAGER LE SUIVI (E3) — le patron « suivez ma course ». */
     public function share(Request $request, Booking $booking): JsonResponse
     {
         if ((int) $booking->client_id !== (int) $request->user()->id) {
@@ -67,11 +58,7 @@ class TripTrackingController extends Controller
                     'lat' => $session->destination_lat,
                     'lng' => $session->destination_lng,
                 ],
-                /*
-                 * LE TRACÉ, quand il existe. Une carte qui montre un véhicule avancer sans montrer
-                 * où il va laisse le client deviner : sur une course, il est DANS la voiture, et
-                 * c'est précisément ce trait qui lui dit qu'on l'emmène au bon endroit.
-                 */
+                // LE TRACÉ, quand il existe.
                 'route' => $service->routePayload($session),
                 'provider' => [
                     'lat' => $session->last_lat,
@@ -94,13 +81,6 @@ class TripTrackingController extends Controller
 
     /**
      * Issue the single-use code the client shows so the provider can confirm being on site.
-     *
-     * The geofence proves proximity, not presence. This code is displayed as a QR by the client
-     * and scanned by the provider, which requires both devices in the same place.
-     *
-     * A POST, not a GET: each call mints a new code and invalidates the previous one. The client
-     * app must therefore call it once and hold the result — polling would rotate the code out
-     * from under the provider mid-scan.
      *
      * @response 200 {"data": {"session_code": "trip_abc", "code": "482951", "expires_at": "2026-07-30T18:50:00+00:00"}}
      * @response 409 {"error": "not_in_mission"}
@@ -140,13 +120,6 @@ class TripTrackingController extends Controller
 
     /**
      * Issue the code the client shows to close the mission.
-     *
-     * Mirror of the presence code, at the other end of the visit: the client attests that the
-     * work is done by showing a code the provider scans. Closing the mission captures the
-     * pre-authorised payment, so the client's assent must be a deliberate gesture.
-     *
-     * A POST for the same reason as the presence code: each call mints a new code and burns the
-     * previous one, so the app must call it once and hold the result.
      *
      * @response 200 {"data": {"mission_id": 4, "code": "731204", "expires_at": "2026-07-30T21:10:00+00:00"}}
      * @response 409 {"error": "not_started"}

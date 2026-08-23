@@ -8,14 +8,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Service de gestion des favoris booking (rebook 1-click style Uber repeat order).
- *
- * Workflow :
- *   - createFromBooking : capture le snapshot d'un booking pour repeat plus tard
- *   - markUsed : incrémente compteur + last_used_at (analytics)
- *   - delete : retire un favori
- */
+/** Service de gestion des favoris booking (rebook 1-click style Uber repeat order). */
 class BookingFavoriteService
 {
     public function createFromBooking(User $client, Booking $booking, ?string $label = null): BookingFavorite
@@ -81,12 +74,7 @@ class BookingFavoriteService
     {
         $parts = [];
 
-        /*
-         * `adresse_complete` N'EXISTE PAS sur `bookings` — le modèle l'annonçait en `@property`,
-         * l'analyse statique ne voyait donc rien, et la garde `getAttribute()` renvoyait toujours
-         * null. Résultat : l'étiquette d'un favori retombait TOUJOURS sur « Favori #12 », jamais
-         * sur l'adresse. Les colonnes réelles sont `adresse` et sa jumelle anglaise `address`.
-         */
+        // `adresse_complete` N'EXISTE PAS sur `bookings` — le modèle l'annonçait en `@property`, l'analyse statique ne voyait donc rien, et la garde `getAttribute()` renvoyait toujours null.
         $adresse = $booking->adresse ?: $booking->address;
         if ($adresse) {
             $parts[] = mb_substr((string) $adresse, 0, 40);

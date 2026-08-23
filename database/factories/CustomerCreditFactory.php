@@ -6,20 +6,7 @@ use App\Models\CustomerCredit;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * ÉCRITE CONTRE UN SCHÉMA IMAGINAIRE, RÉÉCRITE CONTRE LE VRAI.
- *
- * Cette fabrique posait `user_id`, `currency`, `source_type`, `source_id` et `metadata` — cinq
- * clés dont AUCUNE n'existe sur `customer_credits`. Un `CustomerCredit::factory()->create()`
- * échouait donc, et personne ne s'en apercevait : la fabrique n'avait aucun appelant.
- *
- * La table porte `client_id`, `rendez_vous_id`, `type`, `amount`, `remaining_amount`, `status`,
- * `reason`, `notes` et `expires_at` — ce que déclare aussi `CustomerCredit::$fillable`.
- *
- * `remaining_amount` part égal à `amount` : un avoir naît entier. Les états ci-dessous couvrent
- * les deux autres cas plutôt que de les tirer au sort — un avoir à moitié consommé issu d'un
- * `random` rendrait les tests non reproductibles.
- */
+/** ÉCRITE CONTRE UN SCHÉMA IMAGINAIRE, RÉÉCRITE CONTRE LE VRAI. */
 class CustomerCreditFactory extends Factory
 {
     protected $model = CustomerCredit::class;

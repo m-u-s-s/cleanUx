@@ -11,9 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 /**
- * Portail client société — lecture seule des contrats-cadres B2B où
- * l'organisation courante est la partie cliente. Isolation inter-org
- * STRICTE : la requête filtre sur `organization_account_id`.
+ * Portail client société — lecture seule des contrats-cadres B2B où l'organisation courante est la partie cliente.
  *
  * @property-read Collection<int, OrganizationContract> $contracts
  * @property-read ?OrganizationContract $selectedContract
@@ -24,10 +22,7 @@ class ClientContractsCenter extends Component
 
     public ?int $selectedContractId = null;
 
-    /**
-     * Ouvre le détail d'un contrat — org-safe : ne sélectionne QUE si le
-     * contrat appartient à l'org du membre courant. Lecture seule.
-     */
+    /** Ouvre le détail d'un contrat — org-safe : ne sélectionne QUE si le contrat appartient à l'org du membre courant. */
     public function viewContract(int $contractId): void
     {
         $orgId = Auth::user()?->organizationContextId();
@@ -45,9 +40,7 @@ class ClientContractsCenter extends Component
         $this->selectedContractId = null;
     }
 
-    /**
-     * Détail du contrat sélectionné — re-filtré sur l'org du membre.
-     */
+    /** Détail du contrat sélectionné — re-filtré sur l'org du membre. */
     public function getSelectedContractProperty(): ?OrganizationContract
     {
         if (! $this->selectedContractId) {

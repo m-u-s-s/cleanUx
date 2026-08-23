@@ -179,12 +179,7 @@ class WorkOrderContractTest extends TestCase
         $this->assertTrue(true); // no exception thrown
     }
 
-    /**
-     * Targeted proof of the generator's contract wiring: exercises the exact
-     * production helper applyContractToMission() that materializePendingMissionsForBatch
-     * calls after each Mission::create. (The full ensureBatch/materialize flow is
-     * not runnable under the test schema — see class docblock note.)
-     */
+    /** Targeted proof of the generator's contract wiring: exercises the exact production helper applyContractToMission() that materializePendingMissionsForBatch calls after each Mission::create. */
     public function test_generator_stamps_contract_provider_and_sla_on_mission(): void
     {
         $clientOrg = OrganizationAccount::factory()->create();

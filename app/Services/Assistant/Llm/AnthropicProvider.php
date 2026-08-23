@@ -7,21 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-/**
- * Provider LLM utilisant l'API Anthropic Messages.
- *
- * Doc: https://docs.anthropic.com/en/api/messages
- *      https://docs.anthropic.com/en/docs/build-with-claude/tool-use
- *
- * Configuration requise (config/services.php) :
- *   'anthropic' => [
- *       'key'         => env('ANTHROPIC_API_KEY'),
- *       'model'       => env('ANTHROPIC_MODEL', 'claude-sonnet-4-20250514'),
- *       'max_tokens'  => env('ANTHROPIC_MAX_TOKENS', 1024),
- *       'timeout'     => env('ANTHROPIC_TIMEOUT', 30),
- *       'retries'     => env('ANTHROPIC_RETRIES', 1),
- *   ],
- */
+/** Provider LLM utilisant l'API Anthropic Messages. */
 class AnthropicProvider implements LlmProvider
 {
     public function name(): string
@@ -87,9 +73,7 @@ class AnthropicProvider implements LlmProvider
         }
     }
 
-    /**
-     * Convertit la réponse brute Anthropic en LlmResponse normalisée.
-     */
+    /** Convertit la réponse brute Anthropic en LlmResponse normalisée. */
     private function parseResponse(array $data): LlmResponse
     {
         $stopReason = (string) ($data['stop_reason'] ?? 'end_turn');

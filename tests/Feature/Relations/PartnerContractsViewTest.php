@@ -12,11 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Task 11 — portail partenaire société : un membre d'une org PROVIDER voit, en
- * lecture seule, les contrats-cadres où SON org est provider_organization_id.
- * Isolation stricte : un contrat où l'org n'est pas partenaire n'apparaît pas.
- */
+/** Task 11 — portail partenaire société : un membre d'une org PROVIDER voit, en lecture seule, les contrats-cadres où SON org est provider_organization_id. */
 class PartnerContractsViewTest extends TestCase
 {
     use RefreshDatabase;

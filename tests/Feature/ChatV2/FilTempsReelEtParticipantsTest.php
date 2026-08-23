@@ -11,24 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LE CHAT CLIENT ↔ PRESTATAIRE : DIFFUSION AUTORISÉE, ET COMPOSITION CONTRÔLÉE.
- *
- * DEUX DÉFAUTS SE COUVRAIENT L'UN L'AUTRE. Le serveur diffusait depuis toujours sur
- * `chat.thread.{id}`, mais aucune callback ne couvrait ce motif dans `routes/channels.php` : toute
- * souscription recevait un 403, en silence. Et le mobile écoutait un autre canal
- * (`private-channel.{id}`, la messagerie interne des sociétés) avec un autre nom d'événement. Deux
- * fautes indépendantes, dont chacune suffisait à rendre le fil muet — ce qui explique qu'aucune
- * n'ait été trouvée : corriger l'une n'aurait rien changé de visible.
- *
- * Concrètement, le client posait une question depuis son salon et le prestataire devant la porte ne
- * la lisait jamais. Il fallait recharger la page pour découvrir que l'autre avait parlé.
- *
- * LE SECOND VOLET EST UNE PORTE DE HARCÈLEMENT. `createThread` n'exigeait aucune relation : un
- * compte authentifié ouvrait un fil avec n'importe quel utilisateur dont il connaissait
- * l'identifiant, et s'y déclarait `admin` du fil au passage. Et `left_at`, lu par les scopes,
- * n'était écrit par RIEN : on ne pouvait sortir personne d'une conversation.
- */
+/** LE CHAT CLIENT ↔ PRESTATAIRE : DIFFUSION AUTORISÉE, ET COMPOSITION CONTRÔLÉE. */
 class FilTempsReelEtParticipantsTest extends TestCase
 {
     use RefreshDatabase;
@@ -108,11 +91,7 @@ class FilTempsReelEtParticipantsTest extends TestCase
 
         app(ChatService::class)->removeParticipant($fil, $prestataire->id);
 
-        /*
-         * C'EST LE POINT QUI RELIE LES DEUX RÉPARATIONS. Retirer quelqu'un d'un fil ne sert à rien
-         * si sa session Echo, déjà ouverte, continue de recevoir les messages. L'autorisation du
-         * canal exige donc la même condition que les scopes de lecture : participation VIVANTE.
-         */
+        // C'EST LE POINT QUI RELIE LES DEUX RÉPARATIONS.
         $this->actingAs($prestataire)
             ->postJson('/broadcasting/auth', [
                 'socket_id' => '12345.67890',

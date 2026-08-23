@@ -11,35 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
-/**
- * B5 — le segment {provider} de l'URL ne SÉLECTIONNE plus le vérificateur de
- * signature ; il ne fait que confirmer celui que la configuration a déjà choisi.
- * Laisser l'appelant désigner son vérificateur, c'est le laisser désigner
- * « aucune vérification » via /webhooks/insurance/mock.
- *
- * PORTE VOLONTAIREMENT STRICTE — décision assumée, pas un oubli.
- * On a soupçonné cette porte de casser /webhooks/insurance/hiscox en production, où
- * le modèle d'environnement livré disait INSURANCE_PROVIDER=mock. Elle ne casse rien
- * qui fonctionnait, pour trois raisons vérifiables :
- *   1. le provider est un binding GLOBAL unique (InsuranceServiceProvider) : avec
- *      « mock » configuré, aucune police n'est jamais souscrite chez Hiscox, donc
- *      Hiscox n'a aucune raison de nous notifier quoi que ce soit ;
- *   2. même avant ce lot, cette URL ne marchait pas de bout en bout :
- *      ProcessInsuranceWebhookJob::handle() type-hinte InsuranceProviderInterface et
- *      reçoit donc le provider CONFIGURÉ. Une charge utile Hiscox (event_type /
- *      policy_id) était mappée par InsuranceMockProvider::mapWebhookEvent(), qui
- *      exige target/external_id/status : l'événement finissait « ignored ».
- *      Assouplir la porte restaurerait un stockage inutile, pas une intégration ;
- *   3. « mock » en production n'est pas une configuration à accommoder, c'est une
- *      configuration à interdire : InsuranceMockProvider::purchase() rend « accepté »
- *      avec un numéro de police inventé — le client paierait une assurance qui
- *      n'existe chez personne. Le correctif est donc dans .env.production.example.
- *
- * Conséquence opérationnelle à connaître lors d'un CHANGEMENT de provider : pendant
- * la bascule, l'ancien assureur peut encore notifier des polices en cours et ces
- * webhooks seront refusés (404). Il faut vider les polices en cours avant de changer
- * INSURANCE_PROVIDER, pas rouvrir la porte.
- */
+/** B5 — le segment {provider} de l'URL ne SÉLECTIONNE plus le vérificateur de signature ; il ne fait que confirmer celui que la configuration a déjà choisi. */
 class InsuranceWebhookController extends Controller
 {
     public function handle(Request $request, string $provider): JsonResponse
@@ -93,10 +65,7 @@ class InsuranceWebhookController extends Controller
         ]);
     }
 
-    /**
-     * B5 — la seule source de vérité est la configuration (le conteneur). Le segment
-     * d'URL doit lui être ÉGAL, sinon 404 sans révéler le provider réellement configuré.
-     */
+    /** B5 — la seule source de vérité est la configuration (le conteneur). */
     protected function resolveProvider(string $name): ?InsuranceProviderInterface
     {
         $configured = $this->providerConfigure();

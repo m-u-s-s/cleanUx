@@ -8,26 +8,7 @@ use App\Support\Finance\ClientFinanceDocumentScope;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * L'EXPORT COMPTABLE EN LIBRE-SERVICE D'UNE ENTREPRISE CLIENTE (E11).
- *
- * CE QUI MANQUAIT N'EST PAS LE MOTEUR. `AccountingV2` sait produire du FEC, du Sage, du QuickBooks —
- * pour la PLATEFORME. Une entreprise cliente qui veut donner ses factures à son comptable n'a que
- * les téléchargements un par un : douze PDF par mois, à ressaisir à la main.
- *
- * ON NE RÉUTILISE PAS `ExportManager`, ET C'EST DÉLIBÉRÉ. Il exporte le grand livre de la
- * plateforme — toutes sociétés confondues, sans notion d'organisation. L'ouvrir à un client
- * exposerait la comptabilité de ses concurrents. Ce service part des FACTURES de cette société-là,
- * et d'elles seules.
- *
- * LA PORTÉE PASSE PAR `ClientFinanceDocumentScope`, la même qui garde l'écran de facturation. Deux
- * lectures divergentes de « quelles factures sont les miennes » finiraient par diverger — et c'est
- * toujours celle qu'on n'a pas testée qui fuit.
- *
- * POINT-VIRGULE ET NON VIRGULE : les tableurs francophones ouvrent le CSV avec le séparateur
- * régional, et une virgule empilerait tout dans la première colonne. Ce fichier est destiné à être
- * ouvert par un humain avant d'être versé à un logiciel comptable.
- */
+/** L'EXPORT COMPTABLE EN LIBRE-SERVICE D'UNE ENTREPRISE CLIENTE (E11). */
 class ClientAccountingExportService
 {
     /**
@@ -64,9 +45,6 @@ class ClientAccountingExportService
 
     /**
      * L'export FEC — le format que réclame un expert-comptable français ou belge.
-     *
-     * TABULATION COMME SÉPARATEUR, parce que la norme FEC l'impose : produire un « FEC » en
-     * point-virgule donnerait un fichier refusé au dépôt, après que le client aura cru l'avoir.
      *
      * @return array{filename: string, content: string, rows: int}
      */

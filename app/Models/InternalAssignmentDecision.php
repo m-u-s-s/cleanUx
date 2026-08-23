@@ -8,10 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Pourquoi cette personne-là, et pas une autre.
  *
- * Un moteur qu'on ne peut pas expliquer ne se fait pas confiance : sans cette trace, la première
- * question d'un gérant — « pourquoi Karim et pas Nadia ? » — n'a aucune réponse, et la seule issue
- * est de désactiver la fonction.
- *
  * @property array<int, array<string, mixed>> $candidates
  */
 class InternalAssignmentDecision extends Model

@@ -12,10 +12,6 @@ use App\Services\Onboarding\ProviderOnboardingService;
 /**
  * Les pièces déposées par les prestataires pendant leur inscription.
  *
- * La VALIDATION passe par le module d’onboarding, qui débloque les étapes suivantes du parcours.
- * Poser `status = ’approved’` ici laisserait le dossier bloqué à l’étape précédente, sans que
- * le prestataire comprenne pourquoi.
- *
  * @extends EloquentResource<ProviderOnboardingDocument>
  */
 class OnboardingDocumentResource extends EloquentResource
@@ -80,11 +76,7 @@ class OnboardingDocumentResource extends EloquentResource
                 return ['ok' => true];
             }),
 
-            /*
-             * LE MOTIF EST OBLIGATOIRE, et long d'au moins cinq caractères comme sur le web. Un
-             * document refusé sans raison laisse le prestataire deviner ce qu'il doit refaire — il
-             * renvoie le même, et le dossier tourne en rond.
-             */
+            // LE MOTIF EST OBLIGATOIRE, et long d'au moins cinq caractères comme sur le web.
             Action::make('reject', 'Refuser le document', function (ProviderOnboardingDocument $document, array $valeurs) {
                 app(ProviderOnboardingService::class)->reviewDocument(
                     $document,

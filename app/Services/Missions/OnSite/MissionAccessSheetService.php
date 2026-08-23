@@ -8,30 +8,7 @@ use App\Services\Missions\MissionAssignmentStatusService;
 use App\Support\Domain\MissionStatus;
 use DomainException;
 
-/**
- * LA FICHE D'ACCÈS AU LIEU — codes, étage, consignes (F5).
- *
- * Le prestataire arrive devant un immeuble et cherche : quel bâtiment, quel étage, quel code, la
- * clé est-elle chez la voisine. Aujourd'hui ces informations existent — `organization_sites` les
- * porte pour le B2B, le commentaire du client pour le reste — et elles ne sont exposées nulle part
- * sur l'écran terrain. Le prestataire appelle, ou renonce.
- *
- * ELLE N'EST RÉVÉLÉE QU'À L'ARRIVÉE, et c'est la décision qui structure ce service.
- *
- * Un code d'alarme, un digicode, l'emplacement d'une boîte à clés : ce sont les clés du domicile de
- * quelqu'un. Les rendre lisibles dès l'assignation — parfois plusieurs jours à l'avance, parfois à
- * un prestataire qui annulera — reviendrait à distribuer ces clés à tous ceux qui passent dans la
- * file d'affectation. Le contrôle de présence sur place existe précisément pour attester que la
- * personne est devant la porte : c'est lui qui ouvre la fiche.
- *
- * DEUX SOURCES, ET LA PREMIÈRE EST LE CARNET DU CLIENT (E2). `organization_sites` couvre le B2B ;
- * pour un particulier, l'étage et le digicode vivent désormais sur `client_places`. Sans ce lien,
- * le carnet ne serait qu'un formulaire d'adresse de plus : c'est ici qu'il sert à quelque chose.
- *
- * LE REFUS EST EXPLICITE, jamais une fiche vide. « Vous verrez les codes en confirmant votre
- * arrivée » se comprend et se corrige ; une fiche vide se lit comme une donnée manquante, et fait
- * appeler le support pour rien.
- */
+/** LA FICHE D'ACCÈS AU LIEU — codes, étage, consignes (F5). */
 class MissionAccessSheetService
 {
     public function __construct(
@@ -78,56 +55,27 @@ class MissionAccessSheetService
             'access_instructions' => $site?->access_instructions
                 ?: ($lieu?->access_instructions
                     ?: ($booking?->commentaire_client ?: $booking?->customer_comment)),
-            /*
-             * LA CONSIGNE DE DERNIÈRE MINUTE, À PART ET AU-DESSUS.
-             *
-             * Les trois sources ci-dessus sont écrites avant l'intervention, souvent des semaines
-             * avant. Celle-ci se pose pendant que le prestataire est en route — « le digicode a
-             * changé ce matin » — et c'est la plus récente qui fait foi.
-             *
-             * Rendue dans SON PROPRE champ et non fondue dans les consignes : l'écran doit pouvoir
-             * la distinguer visuellement, sinon elle se perd au milieu d'un paragraphe qu'on a déjà
-             * lu la fois d'avant.
-             */
+            // LA CONSIGNE DE DERNIÈRE MINUTE, À PART ET AU-DESSUS.
             'live_note' => $booking?->live_access_note,
             'live_note_at' => $booking?->live_access_note_at?->toIso8601String(),
             // Un code d'alarme demande une manœuvre chronométrée : le prestataire doit le savoir
             // AVANT d'ouvrir la porte, pas en entendant la sirène.
             'alarm_code_required' => (bool) ($site->alarm_code_required ?? $lieu->alarm_code_required ?? false),
             'access_window' => $this->fenetreDAcces($site ?: $lieu),
-            /*
-             * LES PRÉFÉRENCES DU LIEU — produits, allergies, animaux.
-             *
-             * Elles se redonnaient oralement à chaque nouveau prestataire, ou se perdaient. Rendues
-             * MÊME VIDES, avec leurs clés : une fiche dont les champs apparaissent et disparaissent
-             * selon ce qui est rempli fait douter de ce qui manque.
-             */
+            // LES PRÉFÉRENCES DU LIEU — produits, allergies, animaux.
             'preferences' => $lieu?->preferencesLisibles() ?? [
                 'products' => null,
                 'allergies' => null,
                 'pets' => null,
                 'notes' => null,
             ],
-            /*
-             * LE BÉNÉFICIAIRE (E1). Arriver en demandant celui qui a payé quand c'est sa mère qui
-             * ouvre la porte, c'est commencer l'intervention par un malentendu.
-             */
+            // LE BÉNÉFICIAIRE (E1).
             'beneficiary' => $booking?->beneficiary_name === null ? null : [
                 'name' => $booking->beneficiary_name,
                 'phone' => $booking->beneficiary_phone,
                 'note' => $booking->beneficiary_note,
             ],
-            /*
-             * LA CONSIGNE DU CLIENT, ET NON `bookings.notes` — QUE RIEN N'ÉCRIVAIT.
-             *
-             * Cette fiche annonçait donc toujours `notes: null`, comme la carte « Client & accès »
-             * de la fiche terrain, qui souffrait du même défaut. Le commentaire laissé à la
-             * commande vit dans `customer_comment` / `commentaire_client` : c'est là que le
-             * parcours le range et là que les autres écrans prestataire le lisent.
-             *
-             * La clé de sortie garde son nom `notes` : elle appartient au contrat de la fiche, que
-             * le mobile consomme, et le renommer casserait un écran pour ne rien gagner.
-             */
+            // LA CONSIGNE DU CLIENT, ET NON `bookings.notes` — QUE RIEN N'ÉCRIVAIT.
             'notes' => $booking?->customer_comment,
         ];
     }

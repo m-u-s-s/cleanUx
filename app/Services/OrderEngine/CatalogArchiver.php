@@ -9,22 +9,7 @@ use App\Models\Trade;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Retirer une entrée du catalogue sans détruire l'histoire.
- *
- * Une suppression est TOUJOURS un archivage. Un `DELETE` physique sur un métier ou une question
- * emporterait avec lui la lisibilité de tous les devis et de toutes les factures qui s'y
- * rattachent — des documents comptables, opposables, parfois vieux de plusieurs années. Aucune
- * interface d'administration ne doit pouvoir provoquer ça, même par accident, même en connaissant
- * le mot de passe.
- *
- * L'archivage combine deux gestes distincts, et c'est délibéré : `is_active` retire du parcours
- * client, `deleted_at` retire des écrans d'administration. Un catalogue peut ainsi être dépublié
- * sans être rangé, ou rangé sans disparaître des historiques.
- *
- * Avant d'archiver, l'interface DOIT annoncer l'impact — « ce métier est utilisé par 312
- * commandes ». Un administrateur qui découvre les conséquences après coup n'a plus de recours.
- */
+/** Retirer une entrée du catalogue sans détruire l'histoire. */
 class CatalogArchiver
 {
     /**
@@ -43,12 +28,7 @@ class CatalogArchiver
         };
     }
 
-    /**
-     * Archive : retire du catalogue, conserve l'historique.
-     *
-     * Transaction volontaire — désactiver sans ranger, ou l'inverse, laisserait une entrée dans un
-     * état que ni le parcours client ni l'administration ne saurait présenter.
-     */
+    /** Archive : retire du catalogue, conserve l'historique. */
     public function archive(Model $entity): Model
     {
         return DB::transaction(function () use ($entity) {
@@ -80,13 +60,7 @@ class CatalogArchiver
         });
     }
 
-    /**
-     * Archiver un secteur ne touche pas ses métiers.
-     *
-     * Ils restent utilisables ailleurs — devis en cours, réservations, matching prestataire — mais
-     * disparaissent du carrousel faute de secteur publié. C'est précisément ce qu'un administrateur
-     * doit savoir avant de cliquer.
-     */
+    /** Archiver un secteur ne touche pas ses métiers. */
     protected function sectorImpact(Sector $sector): array
     {
         $trades = $sector->trades()->count();
@@ -107,14 +81,7 @@ class CatalogArchiver
 
     protected function tradeImpact(Trade $trade): array
     {
-        /*
-         * Deux sources, et il FAUT les deux.
-         *
-         * Le moteur de commande écrit dans `order_draft_items` ; les réservations d'avant — la
-         * grande majorité — sont rattachées au métier par leur service au catalogue. Ne compter que
-         * les brouillons annonce « utilisé par 0 commande » sur un métier qui en porte trois cents,
-         * et cet impact-là ne fait pas hésiter : il autorise.
-         */
+        // Deux sources, et il FAUT les deux.
         $used = DB::table('order_draft_items')->where('trade_id', $trade->id)->count()
             + DB::table('bookings')
                 ->whereIn(
@@ -139,18 +106,7 @@ class CatalogArchiver
         ];
     }
 
-    /**
-     * Le compte se fait sur le CODE, pas sur la clé étrangère.
-     *
-     * Le code est la clé sous laquelle les réponses sont enregistrées : compter dessus fait porter
-     * l'impact annoncé sur exactement ce que les instantanés retiennent.
-     *
-     * À ne PAS justifier par une détache de `question_id` à l'archivage : une suppression douce ne
-     * déclenche pas la clé étrangère, l'identifiant survit. Une première version de ce commentaire
-     * l'affirmait ; la mutation a montré qu'aucun test ne la démentait, donc qu'elle était fausse.
-     * Sur le schéma actuel, compter par identifiant donnerait le même résultat — l'index unique
-     * `(trade_id, code)` couvrant les lignes archivées, un code ne peut pas être réattribué.
-     */
+    /** Le compte se fait sur le CODE, pas sur la clé étrangère. */
     protected function questionImpact(Question $question): array
     {
         $used = DB::table('order_draft_answers')

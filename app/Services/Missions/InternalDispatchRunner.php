@@ -9,21 +9,7 @@ use App\Services\Organizations\OrganizationNotifier;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-/**
- * EXÉCUTER UNE DÉCISION DU MOTEUR — choisir, assigner, tracer.
- *
- * Le moteur ne fait que classer ; il n'écrit rien, pour qu'on puisse l'interroger à blanc. Ce
- * service est ce qui transforme un classement en travail distribué, et c'est lui qui porte les
- * garde-fous d'une action prise SANS que personne ne regarde :
- *
- *   - le verrou par mission, parce que deux exécutions concurrentes assigneraient deux fois ;
- *   - la revérification après verrou, parce qu'un humain a pu prendre la mission entre-temps ;
- *   - la trace, systématique, y compris quand rien n'a pu être fait.
- *
- * L'ALERTE « AUCUN CANDIDAT » PART IMMÉDIATEMENT, pas dans un résumé de fin de traitement. Une
- * mission de demain matin que personne ne peut prendre est une urgence : la découvrir en fin de
- * lot, ou dans un récapitulatif qu'on lira le lendemain, revient à la découvrir trop tard.
- */
+/** EXÉCUTER UNE DÉCISION DU MOTEUR — choisir, assigner, tracer. */
 class InternalDispatchRunner
 {
     public function __construct(
@@ -32,21 +18,12 @@ class InternalDispatchRunner
         private OrganizationNotifier $notifier,
     ) {}
 
-    /**
-     * Traiter une mission. Rend la décision enregistrée.
-     */
+    /** Traiter une mission. Rend la décision enregistrée. */
     public function traiter(Mission $mission, string $mode, ?int $declencheurId = null): InternalAssignmentDecision
     {
         $organisationId = (int) $mission->provider_organization_id;
 
-        /*
-         * VERROU PUIS REVÉRIFICATION, dans cet ordre.
-         *
-         * `lockForUpdate()` est un no-op sous SQLite — la suite de tests ne peut donc pas prouver le
-         * verrou lui-même. Ce qu'elle prouve, et qui compte autant, c'est que la LOGIQUE de
-         * revérification existe : une mission déjà pourvue entre le moment où on l'a listée et celui
-         * où on la traite est laissée tranquille, plutôt que réassignée par-dessus un choix humain.
-         */
+        // VERROU PUIS REVÉRIFICATION, dans cet ordre.
         $decision = DB::transaction(function () use ($mission, $mode, $declencheurId, $organisationId) {
             $fraiche = Mission::query()->lockForUpdate()->find($mission->id);
 
@@ -96,10 +73,7 @@ class InternalDispatchRunner
     }
 
     /**
-     * Les missions d'une société qui attendent quelqu'un.
-     *
-     * À VENIR SEULEMENT. Assigner rétroactivement une mission d'hier ne sert personne et fausserait
-     * la charge du jour de celui qu'on désignerait.
+     * Les missions d'une société qui attendent quelqu'un. À VENIR SEULEMENT.
      *
      * @return Collection<int, Mission>
      */
@@ -116,14 +90,7 @@ class InternalDispatchRunner
             ->get();
     }
 
-    /**
-     * L'ALERTE IMMÉDIATE — décision produit du 2026-08-08.
-     *
-     * Un résumé de fin de job aurait suffi à la machine ; pas au gérant. Une mission de demain matin
-     * que personne ne peut prendre demande un arbitrage humain tout de suite : appeler un
-     * intérimaire, décaler le client, y aller soi-même. Le savoir le lendemain, c'est le savoir trop
-     * tard.
-     */
+    /** L'ALERTE IMMÉDIATE — décision produit du 2026-08-08. */
     private function alerterSurLAbsenceDeCandidat(Mission $mission, int $organisationId, ?int $declencheurId): void
     {
         $quand = $mission->planned_start_at?->format('d/m à H:i') ?? 'à une date à préciser';

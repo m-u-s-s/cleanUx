@@ -14,19 +14,7 @@ use Illuminate\Testing\TestResponse;
 use RuntimeException;
 use Tests\TestCase;
 
-/**
- * Le lot B5 avait fermé le provider « mock » et laissé grande ouverte la porte que la
- * configuration de production emprunte réellement : Hiscox et Wakam écrivaient
- * `if ($secret && $signature) { ... }`. Sans en-tête de signature, la condition était
- * fausse, aucune vérification n'avait lieu et la charge utile était acceptée — il
- * suffisait de ne rien signer pour n'être vérifié par personne.
- *
- * Ces tests fixent les trois propriétés attendues :
- *   (a) charge utile SANS en-tête de signature  → refusée (400, rien stocké)
- *   (b) webhook légitime du provider configuré  → accepté (contrôle positif : sans lui,
- *       on ne prouve pas que la porte laisse encore passer quelqu'un)
- *   (c) segment d'URL ≠ provider configuré      → refusé (404, rien stocké)
- */
+/** Le lot B5 avait fermé le provider « mock » et laissé grande ouverte la porte que la configuration de production emprunte réellement : Hiscox et Wakam écrivaient `if ($secret && $signature) { ... */
 class WebhookAssuranceSignatureObligatoireTest extends TestCase
 {
     use RefreshDatabase;
@@ -87,12 +75,7 @@ class WebhookAssuranceSignatureObligatoireTest extends TestCase
 
     // ------------------------------------------------------------- (b) contrôle positif
 
-    /**
-     * (b) CONTRÔLE POSITIF — Hiscox configuré, signature valide : le webhook passe.
-     * Sans lui, les tests de refus seraient satisfaits par une porte murée.
-     * Assertion qui tombe si on annule le correctif : aucune — c'est justement le
-     * point, le correctif ne doit RIEN changer pour un appelant légitime.
-     */
+    /** (b) CONTRÔLE POSITIF — Hiscox configuré, signature valide : le webhook passe. */
     public function test_controle_positif_le_webhook_signe_du_provider_configure_est_accepte(): void
     {
         $corps = $this->chargeUtileHiscox();
@@ -133,11 +116,7 @@ class WebhookAssuranceSignatureObligatoireTest extends TestCase
 
     // -------------------------------------------------------------- (a) signature absente
 
-    /**
-     * (a) ATTAQUE — la charge utile n'est pas signée du tout.
-     * Assertion qui tombe si on annule le correctif : assertStatus(400) (redevient 200),
-     * assertSame(0, InsuranceWebhookEvent::count()) et Queue::assertNothingPushed().
-     */
+    /** (a) ATTAQUE — la charge utile n'est pas signée du tout. */
     public function test_attaque_une_charge_utile_sans_entete_de_signature_est_refusee(): void
     {
         $this->envoyer('/webhooks/insurance/hiscox', $this->chargeUtileHiscox('evt_non_signe'))
@@ -147,10 +126,7 @@ class WebhookAssuranceSignatureObligatoireTest extends TestCase
         Queue::assertNothingPushed();
     }
 
-    /**
-     * (a bis) Un en-tête présent mais VIDE ne vaut pas mieux qu'un en-tête absent.
-     * Assertion qui tombe sans le correctif : assertStatus(400).
-     */
+    /** (a bis) Un en-tête présent mais VIDE ne vaut pas mieux qu'un en-tête absent. */
     public function test_attaque_un_entete_de_signature_vide_est_refuse(): void
     {
         $this->envoyer('/webhooks/insurance/hiscox', $this->chargeUtileHiscox('evt_signature_vide'), [
@@ -201,11 +177,7 @@ class WebhookAssuranceSignatureObligatoireTest extends TestCase
 
     // ------------------------------------------------------------ (c) segment d'URL faux
 
-    /**
-     * (c) ATTAQUE — segment « mock » alors que la configuration dit « hiscox ».
-     * C'est l'attaque d'origine : choisir un vérificateur qui ne vérifie rien.
-     * Assertion qui tombe si on annule la porte : assertStatus(404) (redevient 200).
-     */
+    /** (c) ATTAQUE — segment « mock » alors que la configuration dit « hiscox ». */
     public function test_attaque_le_segment_mock_est_refuse_quand_la_configuration_dit_hiscox(): void
     {
         $this->postJson('/webhooks/insurance/mock', [
@@ -219,10 +191,7 @@ class WebhookAssuranceSignatureObligatoireTest extends TestCase
         Queue::assertNothingPushed();
     }
 
-    /**
-     * (c bis) Même un AUTRE vrai provider est refusé : la configuration désigne un
-     * seul assureur joignable, et le segment doit lui être égal.
-     */
+    /** (c bis) Même un AUTRE vrai provider est refusé : la configuration désigne un seul assureur joignable, et le segment doit lui être égal. */
     public function test_attaque_le_segment_wakam_est_refuse_quand_la_configuration_dit_hiscox(): void
     {
         $corps = $this->chargeUtileHiscox('evt_segment_wakam');
@@ -238,12 +207,7 @@ class WebhookAssuranceSignatureObligatoireTest extends TestCase
 
     // ------------------------------------------------ vérificateurs appelés directement
 
-    /**
-     * La garde vit dans le VÉRIFICATEUR, pas seulement dans le contrôleur : elle tient
-     * donc même si on atteignait Hiscox par un autre chemin.
-     * Assertion qui tombe si on annule le correctif : expectException (aucune exception
-     * n'était levée, la charge utile était décodée et retournée).
-     */
+    /** La garde vit dans le VÉRIFICATEUR, pas seulement dans le contrôleur : elle tient donc même si on atteignait Hiscox par un autre chemin. */
     public function test_le_verificateur_hiscox_refuse_une_charge_utile_non_signee(): void
     {
         $this->expectException(RuntimeException::class);
@@ -275,12 +239,7 @@ class WebhookAssuranceSignatureObligatoireTest extends TestCase
         $this->assertSame('policy.cancelled', $decode['event_type']);
     }
 
-    /**
-     * Secret absent = aucune signature vérifiable. En PRODUCTION c'est un refus :
-     * accepter reviendrait à traiter la charge utile de n'importe qui sur une route
-     * publique. (Hors production, deux tests hors périmètre épinglent encore le
-     * comportement permissif — voir le commentaire des vérificateurs.)
-     */
+    /** Secret absent = aucune signature vérifiable. */
     public function test_sans_secret_configure_le_verificateur_hiscox_refuse_en_production(): void
     {
         Config::set('insurance.providers.hiscox.webhook_secret', '');

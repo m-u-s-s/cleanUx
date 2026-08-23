@@ -10,18 +10,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Les créneaux d'une journée — les vrais, et la raison de ceux qui ne le sont pas.
- *
- * Un créneau indisponible n'est PAS caché. Le masquer laisserait le client devant une grille
- * trouée sans comprendre pourquoi, et il en conclurait que le service est vide ou cassé. Grisé et
- * expliqué — « aucun professionnel disponible » — il informe au lieu d'inquiéter, et il rend
- * lisibles ceux qui restent.
- *
- * La disponibilité est lue une seule fois par prestataire pour toute la journée, puis recoupée
- * avec la grille. Interroger chaque agenda pour chaque créneau multiplierait les appels par le
- * nombre d'heures ouvrées, pour un écran que le client regarde trois secondes.
- */
+/** Les créneaux d'une journée — les vrais, et la raison de ceux qui ne le sont pas. */
 class SlotFinder
 {
     public function __construct(
@@ -31,8 +20,8 @@ class SlotFinder
 
     /**
      * @return list<array{
-     *     start: Carbon, end: Carbon, available: bool,
-     *     provider_count: int, reason: string|null
+     * start: Carbon, end: Carbon, available: bool,
+     * provider_count: int, reason: string|null
      * }>
      */
     public function forDay(Trade $trade, float $lat, float $lng, Carbon $day): array
@@ -57,11 +46,7 @@ class SlotFinder
 
         return $this->grid($day, $duration)
             ->map(function (array $slot) use ($windows, $leadTime) {
-                /*
-                 * Un créneau déjà passé, ou trop proche pour qu'un professionnel s'organise, est
-                 * grisé avec SA raison — distincte de « personne n'est libre ». Confondre les deux
-                 * ferait croire à un service saturé alors qu'il est simplement tard.
-                 */
+                // Un créneau déjà passé, ou trop proche pour qu'un professionnel s'organise, est grisé avec SA raison — distincte de « personne n'est libre ».
                 if ($slot['start']->lt($leadTime)) {
                     return $slot + [
                         'available' => false,
@@ -95,9 +80,6 @@ class SlotFinder
 
     /**
      * La grille horaire de la journée.
-     *
-     * Le pas et les bornes viennent de la configuration : ils relèvent de l'exploitation, pas du
-     * code. Une plateforme qui ouvre à 7 h en été ne devrait pas demander un déploiement.
      *
      * @return Collection<int, array{start: Carbon, end: Carbon}>
      */
@@ -148,10 +130,7 @@ class SlotFinder
                     ->values()
                     ->all();
             } catch (\Throwable $e) {
-                /*
-                 * Soft-fail : un agenda illisible retire un professionnel du compte, il ne fait pas
-                 * tomber la page de réservation. Le client verra simplement moins de créneaux.
-                 */
+                // Soft-fail : un agenda illisible retire un professionnel du compte, il ne fait pas tomber la page de réservation.
                 Log::warning('[order_engine] agenda illisible au calcul des créneaux', [
                     'provider_id' => $row['id'],
                     'error' => $e->getMessage(),

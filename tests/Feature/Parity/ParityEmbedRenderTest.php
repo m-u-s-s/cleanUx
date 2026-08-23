@@ -16,10 +16,7 @@ class ParityEmbedRenderTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Roles we assert MUST render. Client + provider are the mobile-first audiences;
-     * B2B (entreprise + provider_company) is now a must-render audience too — parity.
-     */
+    /** Roles we assert MUST render. */
     private const MUST_RENDER_ROLES = ['client', 'provider', 'entreprise', 'provider_company'];
 
     public function test_client_and_provider_webview_fallbacks_render_chrome_less(): void
@@ -70,13 +67,7 @@ class ParityEmbedRenderTest extends TestCase
         $this->assertSame([], $failed, "WebView fallbacks that failed to render chrome-less:\n".implode("\n", $failed));
     }
 
-    /**
-     * Over-hiding guard: when NOT embedded, the company layouts must still emit the
-     * primary-nav chrome (and hide it under ?embed=1). The B2B page COMPONENTS are
-     * currently fixture-heavy (Livewire computed-property pages 500 in this harness,
-     * see the $skipped list), so we exercise the LAYOUTS directly — they are the
-     * thing the embed guard lives in — proving the @unless toggles the marker.
-     */
+    /** Over-hiding guard: when NOT embedded, the company layouts must still emit the primary-nav chrome (and hide it under ?embed=1). */
     public function test_company_layouts_show_nav_when_not_embedded_and_hide_when_embedded(): void
     {
         $this->actingAs(User::factory()->entreprise()->create());
@@ -102,11 +93,7 @@ class ParityEmbedRenderTest extends TestCase
         $this->assertSame([], $ecarts, 'Ces gabarits ne respectent pas le mode incruste.');
     }
 
-    /**
-     * Build the minimal user that lets a given module's page authorize and render.
-     * Most pages need only a bare factory user; a handful gate on a profile row or
-     * an active relationship, so we seed the smallest prerequisite per key.
-     */
+    /** Build the minimal user that lets a given module's page authorize and render. */
     private function userForModule(array $module, array $roles): User
     {
         $user = $this->userForRoles($roles);
@@ -192,10 +179,7 @@ class ParityEmbedRenderTest extends TestCase
         return User::factory()->client()->create();
     }
 
-    /**
-     * Seed an active OWNER OrganizationMember so PermissionService::can() grants the
-     * company-page permissions. OrganizationMember has no factory → create() directly.
-     */
+    /** Seed an active OWNER OrganizationMember so PermissionService::can() grants the company-page permissions. */
     private function seedOwnerMembership(OrganizationAccount $org, User $user): void
     {
         OrganizationMember::create([

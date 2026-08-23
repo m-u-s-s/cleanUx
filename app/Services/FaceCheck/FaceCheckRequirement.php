@@ -7,26 +7,7 @@ use App\Models\User;
 use App\Services\Modules\PlatformModuleResolver;
 use Illuminate\Support\Facades\DB;
 
-/**
- * QUI EST SOUMIS AU CONTRÔLE FACIAL — et c'est le seul endroit qui répond.
- *
- * ATTENTION : il y a DEUX questions ici, et les confondre serait exactement le défaut dominant de
- * ce dépôt — deux notions distinctes réunies sous un seul nom.
- *
- *   NOTION A — « ce PRESTATAIRE est-il soumis ? »  → `appliesToProvider()`
- *       Vrai si au moins un des métiers qu'il a déclarés exige le contrôle, ET si le module est
- *       actif pour au moins une de ses zones. C'est elle qui gouverne l'enrôlement, la cadence,
- *       le blocage, et la porte « passer en ligne ».
- *
- *   NOTION B — « cette RÉSERVATION exige-t-elle un prestataire contrôlé ? » → `appliesToBooking()`
- *       Vrai si LE métier de cette réservation l'exige, ET si le module est actif dans LA zone de
- *       cette réservation. C'est elle qui gouverne le filtre de dispatch et l'acceptation.
- *
- * Un peintre qui fait aussi du babysitting est soumis (notion A) même quand il reçoit une mission
- * de peinture (notion B fausse pour cette mission-là). L'inverse existe aussi : un prestataire
- * hors zone couverte n'est pas soumis, mais une réservation dans une zone couverte exige quand
- * même un intervenant contrôlé — et il en sera donc écarté.
- */
+/** QUI EST SOUMIS AU CONTRÔLE FACIAL — et c'est le seul endroit qui répond. */
 class FaceCheckRequirement
 {
     /** @var list<int>|null */
@@ -36,9 +17,7 @@ class FaceCheckRequirement
         private readonly PlatformModuleResolver $resolver,
     ) {}
 
-    /**
-     * NOTION A. Ce prestataire doit-il enrôler son visage et se soumettre aux contrôles ?
-     */
+    /** NOTION A. Ce prestataire doit-il enrôler son visage et se soumettre aux contrôles ? */
     public function appliesToProvider(User $provider): bool
     {
         if (! $this->moduleAllume()) {
@@ -59,9 +38,7 @@ class FaceCheckRequirement
         return $this->moduleActifPour($provider, $this->zonesDuPrestataire($provider));
     }
 
-    /**
-     * NOTION B. Cette réservation exige-t-elle un intervenant contrôlé ?
-     */
+    /** NOTION B. Cette réservation exige-t-elle un intervenant contrôlé ? */
     public function appliesToBooking(Booking $booking): bool
     {
         if (! $this->moduleAllume()) {
@@ -110,12 +87,7 @@ class FaceCheckRequirement
     {
         $maintenant = now();
 
-        /*
-         * Les MÊMES deux sources que `CandidateFinder::scheduled()` : la zone principale portée par
-         * l'utilisateur, et les affectations actives et en fenêtre. Lire seulement la première —
-         * ce que fait `PlatformModuleResolver::contextFor()` — laisserait hors périmètre tout
-         * prestataire multi-zones dont la zone principale n'est pas couverte.
-         */
+        // Les MÊMES deux sources que `CandidateFinder::scheduled()` : la zone principale portée par l'utilisateur, et les affectations actives et en fenêtre.
         $affectees = DB::table('employee_zone_assignments')
             ->where('user_id', $provider->id)
             ->where('is_active', true)

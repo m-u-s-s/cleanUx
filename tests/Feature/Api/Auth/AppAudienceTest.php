@@ -9,22 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Chaque application n'accepte que le public qu'elle sert.
- *
- * Les deux APK partagent le même point de connexion et les mêmes jetons Sanctum. Un prestataire
- * pouvait donc se connecter à l'application cliente : il obtenait un jeton valide, puis chaque
- * écran appelait des routes `client` que son rôle refuse — une application qui s'ouvre et ne
- * fonctionne nulle part, sans qu'aucun message n'explique pourquoi.
- *
- * L'application se DÉCLARE dans un en-tête, et le serveur tranche. La déclaration est falsifiable,
- * et ce n'est pas grave : ce garde-fou sert le produit, pas les privilèges. Ceux-ci restent tenus
- * par les gardes de rôle sur chaque route — un jeton de prestataire n'ouvre aucune route cliente,
- * en-tête ou pas.
- *
- * PAS de jeton en cas de refus : émettre un jeton puis refuser l'écran laisserait une session
- * valide dans une application qui ne veut pas d'elle.
- */
+/** Chaque application n'accepte que le public qu'elle sert. */
 class AppAudienceTest extends TestCase
 {
     use RefreshDatabase;
@@ -87,12 +72,7 @@ class AppAudienceTest extends TestCase
             ->assertOk();
     }
 
-    /**
-     * Une double casquette entre PARTOUT.
-     *
-     * Un prestataire qui commande aussi des prestations chez lui existe. Le refuser d'un côté
-     * l'obligerait à un second compte, avec un second historique et une seconde facturation.
-     */
+    /** Une double casquette entre PARTOUT. */
     public function test_a_dual_role_account_is_welcome_in_both(): void
     {
         $user = $this->providerAccount();
@@ -105,12 +85,7 @@ class AppAudienceTest extends TestCase
         }
     }
 
-    /**
-     * L'administrateur entre partout.
-     *
-     * Il n'est ni client ni prestataire : la règle appliquée telle quelle l'enfermerait DEHORS des
-     * deux applications, alors que le registre de parité lui sert déjà des modules sur mobile.
-     */
+    /** L'administrateur entre partout. */
     public function test_an_admin_is_welcome_in_both(): void
     {
         $user = User::factory()->admin()->create(['password' => bcrypt('password')]);
@@ -122,12 +97,7 @@ class AppAudienceTest extends TestCase
         }
     }
 
-    /**
-     * Sans en-tête, RIEN ne change.
-     *
-     * Les applications déjà installées ne le connaissent pas. Refuser en son absence déconnecterait
-     * tout le parc jusqu'à la mise à jour, pour un garde-fou de confort.
-     */
+    /** Sans en-tête, RIEN ne change. Les applications déjà installées ne le connaissent pas. */
     public function test_an_app_that_does_not_declare_itself_is_still_served(): void
     {
         $user = $this->providerAccount();
@@ -138,12 +108,7 @@ class AppAudienceTest extends TestCase
 
     // ─── Session déjà ouverte ────────────────────────────────────────────────────────────────
 
-    /**
-     * Le contrôle vaut aussi à la REPRISE de session.
-     *
-     * Sans cela, un jeton obtenu avant ce garde-fou — ou dans l'autre application — resterait
-     * valide indéfiniment : bloquer la porte d'entrée ne sert à rien si la fenêtre reste ouverte.
-     */
+    /** Le contrôle vaut aussi à la REPRISE de session. */
     public function test_a_stored_session_is_rejected_by_the_wrong_app(): void
     {
         Sanctum::actingAs($this->providerAccount());
@@ -153,12 +118,7 @@ class AppAudienceTest extends TestCase
             ->assertForbidden();
     }
 
-    /**
-     * Le RENOUVELLEMENT est une porte lui aussi.
-     *
-     * Bloquer l'entrée sans bloquer le renouvellement laisserait un jeton logé dans la mauvaise
-     * application se reconduire indéfiniment, sans jamais repasser par `/auth/me`.
-     */
+    /** Le RENOUVELLEMENT est une porte lui aussi. */
     public function test_the_wrong_app_cannot_refresh_its_token(): void
     {
         Sanctum::actingAs($this->providerAccount());

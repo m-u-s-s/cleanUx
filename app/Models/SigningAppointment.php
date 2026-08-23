@@ -5,11 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Rendez-vous de signature d'un contrat, généralement dans un local du client.
- *
- * Distinct de `RendezVous`, qui décrit une intervention de prestation.
- */
+/** Rendez-vous de signature d'un contrat, généralement dans un local du client. */
 class SigningAppointment extends Model
 {
     public const STATUT_PLANIFIE = 'scheduled';

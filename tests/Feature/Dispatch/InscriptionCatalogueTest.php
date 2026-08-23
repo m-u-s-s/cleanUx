@@ -16,18 +16,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * L'INSCRIPTION VIENT DU CATALOGUE — et le dispatch ne sert que ce qui a été déclaré (consigne 9).
- *
- * Le lien manquait des deux côtés : l'inscription proposait des métiers sans filtre de zone et
- * AUCUNE zone, si bien qu'un prestataire déclarait « peinture » sans dire où. Le dispatch devait
- * alors deviner son périmètre, et un métier ouvert dans une nouvelle zone n'était déclarable par
- * personne sans déploiement.
- *
- * Les deux tables vérifiées ici — `trade_user` et `employee_zone_assignments` — sont EXACTEMENT
- * celles que lit la requête candidate. C'est ce qui rend la promesse tenable : cocher une case
- * change les offres reçues, tout de suite.
- */
+/** L'INSCRIPTION VIENT DU CATALOGUE — et le dispatch ne sert que ce qui a été déclaré (consigne 9). */
 class InscriptionCatalogueTest extends TestCase
 {
     use RefreshDatabase;
@@ -204,14 +193,7 @@ class InscriptionCatalogueTest extends TestCase
         ]);
     }
 
-    /**
-     * UN MÉTIER ARCHIVÉ EST ÉCARTÉ ; un métier simplement pas encore vendu ne l'est PAS.
-     *
-     * La liste PROPOSÉE à l'inscription se limite aux métiers vendus quelque part — on ne met pas
-     * en avant un service qu'aucune zone ne peut servir. Mais REFUSER une déclaration pour cette
-     * raison effacerait le métier d'un prestataire dès qu'un administrateur ferme temporairement
-     * une zone, et il cesserait de recevoir des missions sans que rien ne le lui dise.
-     */
+    /** UN MÉTIER ARCHIVÉ EST ÉCARTÉ ; un métier simplement pas encore vendu ne l'est PAS. */
     #[Test]
     public function un_metier_archive_est_ecarte_a_l_ecriture(): void
     {
@@ -245,14 +227,7 @@ class InscriptionCatalogueTest extends TestCase
         );
     }
 
-    /**
-     * UNE LISTE VIDE NE VIDE RIEN.
-     *
-     * `sync([])` effacerait la déclaration existante. Ce chemin est appelé par l'inscription, où
-     * les métiers arrivent parfois par un autre champ : effacer en silence ce que l'utilisateur
-     * vient de déclarer est le pire des comportements — aucune erreur, et il découvre des semaines
-     * plus tard qu'il ne reçoit rien.
-     */
+    /** UNE LISTE VIDE NE VIDE RIEN. `sync([])` effacerait la déclaration existante. */
     #[Test]
     public function une_liste_vide_n_efface_pas_la_declaration(): void
     {

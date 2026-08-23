@@ -18,29 +18,10 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Le parcours de questions d'un métier, servi à l'application mobile.
- *
- * POURQUOI CE CONTRÔLEUR EXISTE. Le constructeur web est le seul endroit où l'on écrit ce que le
- * client verra — les questions, leurs réponses, et le PRIX que chaque réponse ajoute. Le mobile
- * n'y avait aucun accès : un métier créé en déplacement restait sans parcours, donc impubliable, et
- * rien à l'écran ne le disait.
- *
- * IL NE RÉIMPLÉMENTE AUCUNE RÈGLE. La validation vient de `QuestionnaireValidator`, la publication
- * de `TradeFormPublisher`, l'ordre de `CatalogOrdering` — les mêmes services que le web. Deux
- * chemins vers la même table produiraient sinon deux verdicts selon la porte empruntée.
- *
- * CE QU'IL NE SERT PAS, et c'est délibéré : traductions, révisions, import/export, duplication vers
- * un autre métier. Ce sont des gestes de bureau, pas de terrain, et chacun demanderait son écran.
- */
+/** Le parcours de questions d'un métier, servi à l'application mobile. */
 class JourneyBuilderController extends Controller
 {
-    /**
-     * Un compte en LECTURE SEULE ne touche pas au parcours.
-     *
-     * `api_admin` s'arrête à « est-ce un administrateur » : la même règle que le web doit valoir
-     * ici, sinon elle dépend de la porte empruntée.
-     */
+    /** Un compte en LECTURE SEULE ne touche pas au parcours. */
     private function refuseLecteurSeul(): ?JsonResponse
     {
         $user = request()->user();
@@ -103,10 +84,7 @@ class JourneyBuilderController extends Controller
                 'taxi_rules' => (bool) $trade->taxi_rules,
             ],
             'data' => $questions->values()->all(),
-            /*
-             * Le verdict, servi AVEC le parcours. Sans lui, on règle des questions sans savoir si
-             * l'ensemble partira — et l'écran web, lui, le dit en permanence.
-             */
+            // Le verdict, servi AVEC le parcours.
             'publication' => [
                 'can_publish' => $validateur->canPublish($trade),
                 'issues' => $validateur->inspect($trade),
@@ -195,22 +173,13 @@ class JourneyBuilderController extends Controller
             }
         }
 
-        /*
-         * LE CODE N'EST PAS MODIFIABLE ICI, et c'est volontaire. Il est cité par les commandes
-         * déjà passées et par les conditions d'affichage : le changer romprait ces liens en
-         * silence. Le web le verrouille dès qu'une commande le cite ; le mobile ne l'offre pas.
-         */
+        // LE CODE N'EST PAS MODIFIABLE ICI, et c'est volontaire.
         $question->forceFill($valide)->save();
 
         return response()->json(['ok' => true, 'data' => ['id' => $question->id]]);
     }
 
-    /**
-     * Une autre question active tient-elle déjà ce rôle sur ce métier ?
-     *
-     * Le contrôle est ici ET dans l'écran web, parce que ce sont deux portes distinctes sur la même
-     * table : garder la règle d'un seul côté laisserait l'autre écrire un parcours à deux départs.
-     */
+    /** Une autre question active tient-elle déjà ce rôle sur ce métier ? */
     private function roleDejaPris(?Trade $trade, string $role, ?int $sauf): ?Question
     {
         if (! $trade) {
@@ -340,10 +309,7 @@ class JourneyBuilderController extends Controller
         try {
             $revision = $publieur->publish($trade, request()->user());
         } catch (ValidationException $e) {
-            /*
-             * 409 et non 422 : le parcours n'est pas mal saisi, il n'est pas PRÊT. La même requête
-             * réussira quand les manques seront comblés, et les motifs disent lesquels.
-             */
+            // 409 et non 422 : le parcours n'est pas mal saisi, il n'est pas PRÊT.
             return response()->json([
                 'ok' => false,
                 'error' => 'not_publishable',
@@ -355,13 +321,7 @@ class JourneyBuilderController extends Controller
         return response()->json(['ok' => true, 'data' => ['version' => $revision->version]]);
     }
 
-    /**
-     * Des euros saisis à la main vers des centimes en base.
-     *
-     * La virgule est acceptée : c'est la façon française d'écrire un prix. Sans cette conversion,
-     * « 150 » deviendrait 150 centimes — un supplément de 1,50 € que personne ne remarque avant la
-     * première facture.
-     */
+    /** Des euros saisis à la main vers des centimes en base. */
     private function centimes(mixed $saisie): int
     {
         $texte = trim(str_replace([' ', ','], ['', '.'], (string) $saisie));

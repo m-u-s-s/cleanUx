@@ -7,20 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * « VÉRIFIÉ PAR NOTRE ÉQUIPE AVANT D'ÊTRE ACTIVÉ » — sur les deux canaux, ou la phrase est fausse.
- *
- * Mesuré le 2026-08-16. `EnsureProviderIsApproved` ne restreint que les profils portant
- * `self_registered_at`, et seule l'inscription MOBILE la posait. Résultat, à état identique en base
- * (`provider_profiles.status = pending`) : inscrit depuis l'application → 403
- * `provider_pending_approval` ; inscrit sur le formulaire web → 200 sur la boîte d'offres, les
- * offres immédiates et les disponibilités. L'écran d'inscription web affiche pourtant cette
- * promesse, juste au-dessus du bouton.
- *
- * Deux corrections, une seule règle : l'inscription web pose la colonne, et le middleware garde
- * aussi l'espace prestataire web — en REDIRIGEANT vers le parcours de vérification plutôt qu'en
- * rendant un 403, parce que le compte n'a rien fait de mal et a un dossier à finir.
- */
+/** « VÉRIFIÉ PAR NOTRE ÉQUIPE AVANT D'ÊTRE ACTIVÉ » — sur les deux canaux, ou la phrase est fausse. */
 class ApprobationPrestataireDeuxCanauxTest extends TestCase
 {
     use RefreshDatabase;
@@ -98,10 +85,7 @@ class ApprobationPrestataireDeuxCanauxTest extends TestCase
         $this->actingAs($user)->get('/dashboard/employe/missions')->assertOk();
     }
 
-    /**
-     * ON NE L'ENFERME PAS DEHORS : les pages par lesquelles on COMPLÈTE le dossier restent
-     * ouvertes, sinon il faudrait une approbation pour fournir ce qui permet d'approuver.
-     */
+    /** ON NE L'ENFERME PAS DEHORS : les pages par lesquelles on COMPLÈTE le dossier restent ouvertes, sinon il faudrait une approbation pour fournir ce qui permet d'approuver. */
     public function test_les_pages_du_dossier_restent_ouvertes(): void
     {
         $user = $this->prestataireAutoInscrit();
@@ -116,11 +100,7 @@ class ApprobationPrestataireDeuxCanauxTest extends TestCase
         }
     }
 
-    /**
-     * Les prestataires ANTÉRIEURS ne portent pas la colonne et ne doivent rien perdre : sur la base
-     * réelle, 4 comptes sur 9 ne sont pas `active`. Une garde fondée sur le statut seul mettrait
-     * dehors des prestataires légitimes déjà en production.
-     */
+    /** Les prestataires ANTÉRIEURS ne portent pas la colonne et ne doivent rien perdre : sur la base réelle, 4 comptes sur 9 ne sont pas `active`. */
     public function test_un_prestataire_anterieur_sans_la_colonne_traverse_sans_condition(): void
     {
         $user = User::factory()->employe()->create(['email_verified_at' => now()]);

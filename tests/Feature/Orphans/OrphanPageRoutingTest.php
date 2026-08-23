@@ -7,23 +7,14 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Récupération d'orphelins — les pages auparavant non routées sont désormais
- * accessibles et s'affichent (smoke), avec la garde de rôle attendue.
- */
+/** Récupération d'orphelins — les pages auparavant non routées sont désormais accessibles et s'affichent (smoke), avec la garde de rôle attendue. */
 class OrphanPageRoutingTest extends TestCase
 {
     use RefreshDatabase;
 
     private function admin(): User
     {
-        /*
-         * LES CAPACITES SONT ACCORDEES, et c'est ce que `EnforceModuleGate` exige desormais.
-         *
-         * Les quatre-vingt-quatre modules d'administration declarent la leur, et la porte les fait
-         * appliquer. Un compte `platform_role = 'admin'` sans capacite recevait donc un 403 sur ces
-         * ecrans -- le garde faisait son travail.
-         */
+        // LES CAPACITES SONT ACCORDEES, et c'est ce que `EnforceModuleGate` exige desormais.
         return User::factory()->adminComplet()->create([
             'email_verified_at' => now(),
             'is_active' => true,

@@ -12,24 +12,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Upgrade du module Referrals existant — ajoute des bonus paliers progressifs.
- *
- * Au lieu de "tu parraines X = 10€ chaque", on a :
- *   - Palier 1 (1 parrainage qualifié) : 10€ + 100 pts loyalty
- *   - Palier 2 (3 parrainages) : +50€ bonus + 500 pts
- *   - Palier 3 (10 parrainages) : badge VIP + abonnement gratuit 1 mois
- *   - Palier 4 (25 parrainages) : statut Ambassador + access early features
- *
- * Idempotent : un parrain ne reçoit le palier qu'une seule fois (table tier_awards).
- *
- * À appeler après chaque qualification de referral via ReferralService::markQualified().
- */
+/** Upgrade du module Referrals existant — ajoute des bonus paliers progressifs. */
 class ReferralViralTierEngine
 {
-    /**
-     * Vérifie si le referrer atteint un nouveau palier et award le bonus.
-     */
+    /** Vérifie si le referrer atteint un nouveau palier et award le bonus. */
     public function checkAndAwardTier(User $referrer): array
     {
         $awarded = [];

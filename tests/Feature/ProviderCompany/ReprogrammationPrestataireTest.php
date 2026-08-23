@@ -17,18 +17,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
-/**
- * LOT 5 — DÉPLACER UNE INTERVENTION : DATE, HEURE ET LIEU.
- *
- * `BookingRescheduleService` était strictement CLIENT/ADMIN : son `authorize()` n'admet que le
- * propriétaire de la réservation ou un membre de l'organisation cliente, et aucun endpoint ne
- * l'exposait au prestataire. Une société qui devait décaler d'une heure — un embouteillage, une clé
- * non remise, un chantier qui déborde — appelait le client pour qu'il le fasse lui-même. Le LIEU,
- * lui, ne bougeait jamais : la notion n'existait dans aucun chemin.
- *
- * LE CHEMIN CLIENT N'EST PAS TOUCHÉ, et ce fichier le vérifie : c'est la moitié du travail sur une
- * méthode partagée.
- */
+/** LOT 5 — DÉPLACER UNE INTERVENTION : DATE, HEURE ET LIEU. */
 class ReprogrammationPrestataireTest extends TestCase
 {
     use RefreshDatabase;
@@ -124,13 +113,7 @@ class ReprogrammationPrestataireTest extends TestCase
 
     public function test_la_mission_suit_le_rendez_vous(): void
     {
-        /*
-         * LA PROPAGATION EXISTE DÉJÀ — `RendezVousObserver` resynchronise les `planned_*`. Ce qui
-         * pouvait manquer, c'est de mettre à jour les colonnes LEGACY `date`/`heure` : ce sont
-         * elles que lit `MissionFromRendezVousSyncService`. Ne toucher que `scheduled_*`
-         * déplacerait le rendez-vous sans déplacer la mission, et l'équipe se présenterait à
-         * l'ancienne heure.
-         */
+        // LA PROPAGATION EXISTE DÉJÀ — `RendezVousObserver` resynchronise les `planned_*`.
         $owner = $this->membre(OrganizationRole::OWNER);
         $rendezVous = $this->rendezVous();
         $mission = $this->missionDe($rendezVous);
@@ -213,10 +196,7 @@ class ReprogrammationPrestataireTest extends TestCase
 
     public function test_on_ne_deplace_pas_vers_le_local_d_un_autre_client(): void
     {
-        /*
-         * Au mieux une erreur de saisie envoyant une équipe ailleurs, au pire une fuite sur
-         * l'existence de ces locaux.
-         */
+        // Au mieux une erreur de saisie envoyant une équipe ailleurs, au pire une fuite sur l'existence de ces locaux.
         $owner = $this->membre(OrganizationRole::OWNER);
 
         $clientOrg = OrganizationAccount::factory()->create(['type' => OrganizationType::CLIENT_COMPANY->value]);
@@ -260,11 +240,7 @@ class ReprogrammationPrestataireTest extends TestCase
 
     public function test_a_moins_de_24h_le_dispatcheur_ne_deplace_plus(): void
     {
-        /*
-         * Déplacer la veille au soir n'est pas la même décision que déplacer la semaine
-         * précédente : le client a organisé sa journée autour. La borne n'interdit pas, elle relève
-         * le niveau de décision.
-         */
+        // Déplacer la veille au soir n'est pas la même décision que déplacer la semaine précédente : le client a organisé sa journée autour.
         $dispatcheur = $this->membre(OrganizationRole::DISPATCHER);
         $rendezVous = $this->rendezVous(now()->addHours(12));
         $mission = $this->missionDe($rendezVous);
@@ -352,11 +328,7 @@ class ReprogrammationPrestataireTest extends TestCase
 
     public function test_le_chemin_client_reste_intact(): void
     {
-        /*
-         * LA MOITIÉ DU TRAVAIL SUR UNE MÉTHODE PARTAGÉE. `reschedule()` garde son autorisation, son
-         * absence de fenêtre de gel et son contexte d'audit — la reprogrammation prestataire est
-         * une méthode À CÔTÉ, pas une modification de celle-ci.
-         */
+        // LA MOITIÉ DU TRAVAIL SUR UNE MÉTHODE PARTAGÉE.
         $client = User::factory()->create();
 
         $rendezVous = Booking::factory()->create([

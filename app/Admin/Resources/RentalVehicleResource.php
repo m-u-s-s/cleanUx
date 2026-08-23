@@ -10,20 +10,6 @@ use App\Models\RentalVehicle;
 /**
  * NOS LOCATIONS — le parc, vu depuis la console d'administration mobile.
  *
- * À NE PAS CONFONDRE AVEC {@see FleetEquipmentResource}, juste à côté. Fleet décrit ce qu'une
- * société confie à ses exécutants pour aller travailler ; ici chaque véhicule est un PRODUIT vendu
- * à un client, avec un prix par jour, une caution et une garantie.
- *
- * ── CE QUE LE MOBILE PORTE, ET CE QU'IL NE PORTE PAS ─────────────────────────────────────────
- *
- * Il porte la consultation du parc et l'INTERRUPTEUR DE VITRINE, parce que c'est le geste qu'on
- * fait loin de son bureau : une voiture rentre accidentée, on la retire du catalogue depuis le
- * parking avant qu'un client ne la réserve.
- *
- * Il ne porte ni la saisie des tarifs, ni les médias. Composer une grille de prix ou déposer
- * trente-six photos de rotation sur un téléphone n'est pas un service qu'on rend à quelqu'un —
- * c'est du travail d'écran, et l'écran web existe.
- *
  * @extends EloquentResource<RentalVehicle>
  */
 class RentalVehicleResource extends EloquentResource
@@ -96,16 +82,7 @@ class RentalVehicleResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * RETIRER OU REMETTRE EN VITRINE — le seul geste qui mérite d'être mobile.
-             *
-             * Une voiture rentre accidentée : on la retire du catalogue depuis le parking, avant
-             * qu'un client ne la réserve. Attendre d'être devant un ordinateur, c'est laisser une
-             * fenêtre pendant laquelle la réservation reste possible.
-             *
-             * L'action bascule au lieu de forcer une valeur : le même bouton sert dans les deux
-             * sens, et il n'y a pas d'état à deviner depuis le mobile.
-             */
+            // RETIRER OU REMETTRE EN VITRINE — le seul geste qui mérite d'être mobile.
             Action::make('toggle-vitrine', 'Basculer la vitrine', function (RentalVehicle $vehicule, array $valeurs) {
                 $vehicule->update(['is_active' => ! $vehicule->is_active]);
 

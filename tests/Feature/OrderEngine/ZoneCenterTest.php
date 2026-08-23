@@ -12,18 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Le deuxième niveau : les zones d'UN pays.
- *
- * LE TEST LE PLUS IMPORTANT EST CELUI DU CLOISONNEMENT. Un écran qui laisserait fuir les zones d'un
- * autre pays n'aurait l'air de rien tant qu'il n'y a qu'un seul pays en base — c'est-à-dire
- * exactement aujourd'hui. Le défaut n'apparaîtrait qu'au deuxième marché ouvert, quand plus
- * personne ne se souviendra de cet écran.
- *
- * À NOTER : la CRÉATION de zone n'existait nulle part avant ce chantier. `saveZone()`, hérité de
- * l'écran des zones, n'édite qu'une zone déjà sélectionnée — il exige un `selectedZoneId` et fait
- * `findOrFail`. Ce composant apporte donc `creerZone()`.
- */
+/** Le deuxième niveau : les zones d'UN pays. LE TEST LE PLUS IMPORTANT EST CELUI DU CLOISONNEMENT. */
 class ZoneCenterTest extends TestCase
 {
     use RefreshDatabase;
@@ -34,25 +23,10 @@ class ZoneCenterTest extends TestCase
         $this->actingAs($this->adminQuiPeutAgir());
     }
 
-    /**
-     * Un administrateur qui a le droit d'AGIR, et pas seulement d'entrer.
-     *
-     * Les actions héritées de l'écran des zones passent par le portail
-     * `perform-critical-admin-actions`, qui refuse un administrateur en lecture seule. Un
-     * `User::factory()->create(['role' => 'admin'])` franchit la porte du composant et échoue
-     * ensuite en silence sur chaque action — le test échouait sans rien dire de la cause.
-     */
+    /** Un administrateur qui a le droit d'AGIR, et pas seulement d'entrer. */
     private function adminQuiPeutAgir(): User
     {
-        /*
-         * LA LISTE EST EXPLICITE, ET PLUS ETROITE QUE `adminComplet()` DE LA FABRIQUE.
-         *
-         * C'est voulu : ce test eprouve un administrateur qui a EXACTEMENT le droit d'agir sur les
-         * zones, pas un compte tout-puissant. `EnforceModuleGate` exige desormais `manage-services`
-         * pour atteindre l'ecran, et `perform-critical-admin-actions` reste necessaire pour que ses
-         * actions aboutissent -- deux portes distinctes, et le test les franchit toutes les deux
-         * sans en ouvrir d'autres.
-         */
+        // LA LISTE EST EXPLICITE, ET PLUS ETROITE QUE `adminComplet()` DE LA FABRIQUE.
         return User::factory()->admin()->create([
             'access_scope' => User::ACCESS_SCOPE_ALL,
             'is_active' => true,
@@ -159,13 +133,7 @@ class ZoneCenterTest extends TestCase
         $france = Country::factory()->create();
         $parisienne = ServiceZone::factory()->create(['country_id' => $france->id]);
 
-        /*
-         * Le cloisonnement doit tenir sur les ACTIONS et pas seulement sur l'affichage : un
-         * identifiant forgé dans la requête ne doit pas atteindre une zone d'un autre marché.
-         *
-         * On attrape l'exception plutôt que d'attendre un statut 404 : dans un test Livewire, une
-         * `ModelNotFoundException` remonte telle quelle au lieu d'être convertie en réponse.
-         */
+        // Le cloisonnement doit tenir sur les ACTIONS et pas seulement sur l'affichage : un identifiant forgé dans la requête ne doit pas atteindre une zone d'un autre marché.
         try {
             Livewire::test(ZoneCenter::class, ['country' => $belgique])
                 ->call('supprimerZone', $parisienne->id);

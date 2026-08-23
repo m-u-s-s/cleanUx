@@ -10,13 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Event utilisé uniquement par le replay admin : ré-émet un payload archivé
- * sur le channel d'origine, sans avoir à reconstruire l'objet event original.
- *
- * Le `broadcastAs` est conservé pour que les listeners JS Echo le matchent
- * comme s'il s'agissait du push initial.
- */
+/** Event utilisé uniquement par le replay admin : ré-émet un payload archivé sur le channel d'origine, sans avoir à reconstruire l'objet event original. */
 class GenericReplayedBroadcast implements ShouldBroadcastNow
 {
     use Dispatchable;

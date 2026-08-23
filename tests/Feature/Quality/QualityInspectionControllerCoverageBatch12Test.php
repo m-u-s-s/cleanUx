@@ -15,12 +15,7 @@ use Laravel\Sanctum\Sanctum;
 use Tests\Support\Spine\SpineScenario;
 use Tests\TestCase;
 
-/**
- * Exercises the provider-facing Quality inspection API controller end-to-end
- * (index / start / show / submitItem / uploadPhoto / submit), focusing on the
- * happy paths and the ValidationException → 422 branches not covered by the
- * IDOR/ownership test.
- */
+/** Exercises the provider-facing Quality inspection API controller end-to-end (index / start / show / submitItem / uploadPhoto / submit), focusing on the happy paths and the ValidationException → 422 branches not covered by the IDOR/ownership test. */
 class QualityInspectionControllerCoverageBatch12Test extends TestCase
 {
     use RefreshDatabase;

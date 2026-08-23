@@ -12,10 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Chat message broadcast on private channel chat.thread.{id}.
- * Implements TracksBroadcastLedger pour idempotency + audit.
- */
+/** Chat message broadcast on private channel chat.thread.{id}. */
 class ChatMessageSentEvent implements ShouldBroadcastNow, TracksBroadcastLedger
 {
     use Dispatchable;

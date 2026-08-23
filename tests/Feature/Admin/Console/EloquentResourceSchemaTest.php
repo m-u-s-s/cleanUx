@@ -10,20 +10,7 @@ use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * Chaque colonne déclarée par un descripteur existe-t-elle vraiment ?
- *
- * POURQUOI. Une colonne mal nommée ne fait pas tomber le serveur : Eloquent rend `null`, et la
- * liste affiche « — » sur toute la colonne. Personne ne le remarque — ça ressemble à une donnée
- * manquante, pas à un défaut. Sur soixante descripteurs, c'est une certitude statistique.
- *
- * C'est la même leçon que les options de liste refusées par une contrainte de la base : une
- * déclaration qui n'a jamais été confrontée au schéma est une déclaration fausse qui a l'air
- * juste.
- *
- * CE QUI EST TOLÉRÉ : les clés en `relation.champ` (traversées par `data_get`) et les accesseurs
- * du modèle, qui n'ont pas de colonne. Le test les distingue plutôt que de les refuser.
- */
+/** Chaque colonne déclarée par un descripteur existe-t-elle vraiment ? POURQUOI. */
 class EloquentResourceSchemaTest extends TestCase
 {
     use RefreshDatabase;

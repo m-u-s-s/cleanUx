@@ -10,20 +10,7 @@ use Laravel\Fortify\RecoveryCode;
 use PragmaRX\Google2FA\Google2FA;
 use Tests\TestCase;
 
-/**
- * LA 2FA OBLIGATOIRE DES ADMINISTRATEURS NE GARDAIT QUE LE NAVIGATEUR.
- *
- * Mesuré le 2026-08-16 avec `ENFORCE_2FA_FOR_ADMINS=true`, c'est-à-dire la configuration de
- * production, sur le même serveur et au même instant :
- *
- *   WEB : /admin/dashboard → 302 vers /user/profile « activez la 2FA avant d'accéder à l'espace admin »
- *   API : /api/auth/login → jeton → /api/admin/overview 200
- *                                 → /api/admin/accounting-v2/entries 200
- *
- * La console d'administration étant entièrement native, ce n'était pas un contournement théorique :
- * c'était le chemin normal. Deux verrous s'ajoutent — le code est réclamé à la connexion de tout
- * compte qui a activé la 2FA, et l'accès administrateur exige que la 2FA soit activée.
- */
+/** LA 2FA OBLIGATOIRE DES ADMINISTRATEURS NE GARDAIT QUE LE NAVIGATEUR. */
 class SecondFacteurParLApiTest extends TestCase
 {
     use RefreshDatabase;
@@ -66,9 +53,7 @@ class SecondFacteurParLApiTest extends TestCase
         $this->assertSame(0, $user->tokens()->count());
     }
 
-    /**
-     * Sans code de secours, une 2FA transforme un téléphone cassé en compte définitivement perdu.
-     */
+    /** Sans code de secours, une 2FA transforme un téléphone cassé en compte définitivement perdu. */
     public function test_un_code_de_secours_ouvre_la_session_et_est_consomme(): void
     {
         $user = $this->compteAvec2fa();
@@ -109,10 +94,7 @@ class SecondFacteurParLApiTest extends TestCase
         ])->assertOk();
     }
 
-    /**
-     * Le refus ne doit pas dire à un inconnu que ce compte existe ET porte une 2FA : sur un mauvais
-     * mot de passe, la réponse reste celle des identifiants incorrects.
-     */
+    /** Le refus ne doit pas dire à un inconnu que ce compte existe ET porte une 2FA : sur un mauvais mot de passe, la réponse reste celle des identifiants incorrects. */
     public function test_un_mauvais_mot_de_passe_ne_revele_pas_la_presence_d_une_2fa(): void
     {
         $user = $this->compteAvec2fa();
@@ -149,11 +131,7 @@ class SecondFacteurParLApiTest extends TestCase
             ->assertOk();
     }
 
-    /**
-     * Le drapeau éteint rend le comportement d'avant : la suite tourne ainsi
-     * (`ENFORCE_2FA_FOR_ADMINS=false` en test), et des dizaines de tests d'administration en
-     * dépendent. Ce test épingle ce repli plutôt que de le laisser implicite.
-     */
+    /** Le drapeau éteint rend le comportement d'avant : la suite tourne ainsi (`ENFORCE_2FA_FOR_ADMINS=false` en test), et des dizaines de tests d'administration en dépendent. */
     public function test_le_drapeau_eteint_laisse_l_administrateur_passer(): void
     {
         config(['auth.enforce_2fa_for_admins' => false]);
@@ -176,11 +154,7 @@ class SecondFacteurParLApiTest extends TestCase
 
         $user = $fabrique->create(array_merge(['password' => bcrypt('password')], $attributs));
 
-        /*
-         * `Crypt::encrypt` et NON `encryptString` : Fortify relit ces deux colonnes avec
-         * `decrypt()`, qui désérialise. Chiffrées en chaîne brute, elles font échouer la lecture sur
-         * « unserialize(): Error at offset 0 » — une panne de test qui ressemble à un bug de code.
-         */
+        // `Crypt::encrypt` et NON `encryptString` : Fortify relit ces deux colonnes avec `decrypt()`, qui désérialise.
         $user->forceFill([
             'two_factor_secret' => Crypt::encrypt(
                 app(TwoFactorAuthenticationProvider::class)->generateSecretKey()

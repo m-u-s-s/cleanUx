@@ -10,12 +10,7 @@ use App\Models\SmsMessage;
 use App\Models\StripeWebhookEvent;
 use App\Models\WebhookEndpoint;
 
-/**
- * Les alertes d’exploitation.
- *
- * Chaque tuile est un COMPTEUR D’ANOMALIE : sa valeur normale est zéro, et toute valeur non
- * nulle appelle une action. C’est pourquoi le ton bascule dès un.
- */
+/** Les alertes d’exploitation. */
 class AlertsReport implements AdminReport
 {
     public function key(): string

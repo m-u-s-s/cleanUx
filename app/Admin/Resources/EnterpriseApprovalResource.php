@@ -18,14 +18,6 @@ use Illuminate\Support\Facades\Auth;
 /**
  * Les demandes d'approbation des réservations d'entreprise.
  *
- * DEUX VALIDATIONS DISTINCTES, ET L'ORDRE COMPTE : le manager d'abord, la finance ensuite. Les
- * deux passent par le service, qui vérifie l'enchaînement, horodate chaque étape et débloque la
- * réservation quand les deux sont posées. Écrire `status = 'approved'` d'un coup sauterait la
- * validation manquante — une réservation d'entreprise engagée sans que la finance l'ait vue.
- *
- * LE REFUS EXIGE UN MOTIF, que l'action DÉCLARE : une commande refusée sans explication écrite
- * laisse le demandeur sans rien à corriger.
- *
  * @implements AdminResource<EnterpriseBookingApproval>
  */
 class EnterpriseApprovalResource implements AdminResource

@@ -11,20 +11,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LA BARRE DU BAS N'APPARTIENT NI AU CLIENT, NI À L'APPLICATION NATIVE.
- *
- * Relevé en ouvrant « Planning et absences » depuis l'application prestataire : sous la barre
- * d'onglets NATIVE s'affichait une seconde barre, web celle-là, proposant « Mes RDV » et
- * « Réserver » — la navigation du CLIENT, dans l'espace d'une société prestataire.
- *
- * Deux causes dans une seule ligne de `layouts/provider-company.blade.php` :
- *   1. `<x-mobile-bottom-nav />` sans `items` retombe sur ses valeurs par défaut, qui pointent vers
- *      `client.rendezvous.*` ;
- *   2. elle était posée HORS du `@unless($embedded)` qui protège tout le reste du gabarit.
- *
- * `layouts/app.blade.php` appliquait déjà ce traitement ; ce gabarit-ci était resté en arrière.
- */
+/** LA BARRE DU BAS N'APPARTIENT NI AU CLIENT, NI À L'APPLICATION NATIVE. */
 class GabaritSocietePrestataireBarreDuBasTest extends TestCase
 {
     use RefreshDatabase;
@@ -74,11 +61,7 @@ class GabaritSocietePrestataireBarreDuBasTest extends TestCase
 
     public function test_la_page_garde_sa_propre_navigation_quand_elle_n_est_pas_embarquee(): void
     {
-        /*
-         * TÉMOIN POSITIF. Sans lui, le test ci-dessus passerait au vert sur une page BLANCHE, ou
-         * sur un gabarit qu'on aurait vidé de toute navigation. On vérifie donc que le chrome
-         * propre à cet espace est bien là quand on l'ouvre depuis un navigateur.
-         */
+        // TÉMOIN POSITIF.
         $reponse = $this->actingAs($this->patron())->get(route('provider-company.planning'));
 
         $reponse->assertOk();

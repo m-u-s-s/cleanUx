@@ -6,14 +6,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
-/**
- * D1 — guards against scheduled commands referencing a signature that does not exist.
- *
- * The GDPR erasure cron silently failed for a long time because Kernel.php scheduled
- * 'gdpr:execute-erasure-requests' while the command was registered as 'gdpr:execute-erasures'
- * — so the right-to-be-forgotten job never ran. This test asserts every artisan command put
- * on the schedule actually resolves, so such a typo fails the build instead of going silent.
- */
+/** D1 — guards against scheduled commands referencing a signature that does not exist. */
 class ScheduleIntegrityTest extends TestCase
 {
     public function test_all_scheduled_commands_are_registered(): void

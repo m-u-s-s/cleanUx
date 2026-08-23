@@ -34,57 +34,23 @@ class Kernel extends ConsoleKernel
         $schedule->command('masked-calls:scan-expired')->hourly()->withoutOverlapping();
         $schedule->command('presence:scan-stale --threshold=5')->everyTwoMinutes()->withoutOverlapping();
 
-        /*
-         * LE FILET SOUS LES OFFRES DE MISSION.
-         *
-         * L'expiration repose sur un job DIFFÉRÉ à `tries = 1` : un worker redémarré pendant qu'il
-         * attend, une file vidée, un échec unique, et l'offre reste `assigned` pour toujours. La
-         * mission n'est alors JAMAIS proposée au suivant, et le client attend quelqu'un qui ne
-         * viendra pas — sans que rien nulle part ne soit en erreur.
-         *
-         * Toutes les deux minutes, comme le balayage de présence : c'est un délai de dispatch, pas
-         * une tâche de nuit. Une offre oubliée pendant une heure est une mission perdue.
-         */
+        // LE FILET SOUS LES OFFRES DE MISSION.
         $schedule->command('dispatch:balayer-les-offres-expirees')->everyTwoMinutes()->withoutOverlapping();
 
-        /*
-         * LA SONDE QUI NE TOURNAIT NULLE PART.
-         *
-         * `spine:check-stuck-missions` existe, rend 1 quand une mission dépasse son démarrage prévu
-         * sans être terminée — et n'était appelée par personne. Une commande qu'aucun ordonnanceur
-         * n'exécute ne signale rien : elle documente une intention.
-         *
-         * Toutes les heures : le seuil par défaut est de six heures, la surveiller à la minute
-         * n'apporterait rien qu'un journal plus bavard.
-         */
+        // LA SONDE QUI NE TOURNAIT NULLE PART.
         $schedule->command('spine:check-stuck-missions')->hourly()->withoutOverlapping();
         $schedule->command('surge:recompute')->everyMinute()->withoutOverlapping();
 
-        /*
-         * Un contrôle facial ouvert et jamais répondu bloque la réouverture du suivant : le
-         * prestataire resterait devant un écran mort. Cinq minutes, comme le balayage de présence
-         * — la durée de vie d'un contrôle est de quinze minutes par défaut.
-         */
+        // Un contrôle facial ouvert et jamais répondu bloque la réouverture du suivant : le prestataire resterait devant un écran mort.
         $schedule->command('face-check:maintenance')->everyFiveMinutes()->withoutOverlapping();
 
-        /*
-         * LE MINUTEUR DE RETARD. Cinq minutes est la granularite du message : au-dela, un client
-         * decouvre le retard avant que la plateforme ne l'en informe, ce qui est exactement la
-         * situation que ce minuteur existe pour eviter.
-         */
+        // LE MINUTEUR DE RETARD.
         $schedule->command('missions:signaler-les-retards')->everyFiveMinutes()->withoutOverlapping();
 
-        /*
-         * Les suppléments acceptés mais jamais encaissés. Toutes les heures : une carte refusée à
-         * 14 h peut passer à 15 h, et le prestataire a déjà fait le travail.
-         */
+        // Les suppléments acceptés mais jamais encaissés.
         $schedule->command('extras:reprendre-les-prelevements')->hourly()->withoutOverlapping();
 
-        /*
-         * Le temps supplémentaire constaté mais jamais encaissé. Toutes les heures, comme les
-         * suppléments : c'est le même mécanisme hors session, avec les mêmes causes d'échec
-         * passager — carte momentanément indisponible, authentification forte réclamée.
-         */
+        // Le temps supplémentaire constaté mais jamais encaissé.
         $schedule->command('temps:reprendre-les-reglements')->hourly()->withoutOverlapping();
         $schedule->command('gdpr:enforce-retention')->dailyAt('04:00')->withoutOverlapping();
         $schedule->command('gdpr:execute-erasures')->dailyAt('04:30')->withoutOverlapping();
@@ -92,12 +58,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('subscriptions:tick --limit=500')->dailyAt('03:00')->withoutOverlapping();
         $schedule->command('accounting:close-previous-month')->monthlyOn(6, '04:00')->withoutOverlapping();
         $schedule->command('fleet:scan-expiring')->dailyAt('05:00')->withoutOverlapping();
-        /*
-         * L'autre moitié du dossier : la flotte savait prévenir qu'un contrôle technique arrivait à
-         * terme, les pièces du prestataire — permis, assurance — ne le savaient pas. Juste après
-         * elle, pour que les deux préavis d'une même personne partent le même matin plutôt qu'à
-         * deux moments qu'elle ne relierait pas.
-         */
+        // L'autre moitié du dossier : la flotte savait prévenir qu'un contrôle technique arrivait à terme, les pièces du prestataire — permis, assurance — ne le savaient pas.
         $schedule->command('provider:scan-expiring-documents')->dailyAt('05:15')->withoutOverlapping();
         $schedule->command('bundles:scan-quote-requests')->hourly()->withoutOverlapping();
 

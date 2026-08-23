@@ -10,23 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Stripe\PaymentIntent;
 
-/**
- * Comment le client règle : tout retenu, ou acompte puis solde.
- *
- * Le défaut est la RETENUE INTÉGRALE — rien n'est débité avant l'intervention, la somme est
- * seulement bloquée. C'est ce qui se comprend le mieux, et c'est ce qui protège le mieux le
- * client : il n'a rien payé tant que rien n'a été fait.
- *
- * L'ACOMPTE N'EXISTE QUE POUR LES GROS MONTANTS. Bloquer deux mille euros sur une carte pendant
- * une semaine est intenable : la limite du client est mangée par une somme qu'il n'a même pas
- * dépensée. En dessous du seuil, proposer un acompte n'apporte rien et complique une décision qui
- * doit rester d'un seul mouvement.
- *
- * LA COMMISSION NE SE DIVISE PAS À LA LOUCHE. Deux paiements, donc deux commissions Stripe — et
- * leur somme doit valoir EXACTEMENT celle qu'aurait produite un paiement unique. Un centime perdu
- * à chaque arrondi, sur dix mille commandes, est un écart comptable que personne ne sait plus
- * expliquer. Le reste d'arrondi est donc porté par le solde, jamais dispersé.
- */
+/** Comment le client règle : tout retenu, ou acompte puis solde. */
 class OrderPaymentPlanner
 {
     public function __construct(
@@ -35,10 +19,6 @@ class OrderPaymentPlanner
 
     /**
      * Les formules ouvertes à cette réservation, montants compris.
-     *
-     * Rendues plutôt qu'imposées : l'écran doit pouvoir les présenter côte à côte avec ce que
-     * chacune coûte AUJOURD'HUI. Un client qui découvre après coup qu'on lui a prélevé un acompte
-     * est un client perdu.
      *
      * @return list<array{plan: string, label: string, due_now_cents: int, held_cents: int, detail: string}>
      */
@@ -72,13 +52,7 @@ class OrderPaymentPlanner
         return $options;
     }
 
-    /**
-     * Un acompte n'a de sens qu'au-dessus d'un certain montant, et jamais sur un devis.
-     *
-     * Sur une prestation « sur devis », le total n'est pas connu : un pourcentage d'un montant
-     * inconnu ne veut rien dire, et le calculer sur une estimation provisoire ferait payer au
-     * client un acompte sur un chiffre qui n'engage personne.
-     */
+    /** Un acompte n'a de sens qu'au-dessus d'un certain montant, et jamais sur un devis. */
     public function depositIsAvailable(Booking $booking, ?int $total = null): bool
     {
         if (! (bool) Config::get('order_engine.deposit_enabled', true)) {
@@ -105,10 +79,6 @@ class OrderPaymentPlanner
     /**
      * Le partage de la commission entre l'acompte et le solde.
      *
-     * La somme des deux parts vaut EXACTEMENT la commission d'un paiement unique : le reste
-     * d'arrondi est porté par le solde. Sans cette règle, chaque commande perdrait ou gagnerait un
-     * centime, et la réconciliation Stripe↔comptabilité deviendrait un exercice de devinette.
-     *
      * @return array{deposit_fee_cents: int, balance_fee_cents: int}
      */
     public function splitFee(int $totalCents, int $depositCents, int $totalFeeCents): array
@@ -128,10 +98,6 @@ class OrderPaymentPlanner
 
     /**
      * Prélève l'acompte et bloque le solde.
-     *
-     * Deux PaymentIntent : l'acompte est capturé immédiatement, le solde reste en attente. Les
-     * confondre rendrait impossible de dire, six mois plus tard, ce qui a été encaissé et ce qui
-     * n'était qu'une empreinte.
      *
      * @throws ValidationException
      */
@@ -210,14 +176,6 @@ class OrderPaymentPlanner
     /**
      * Libère les sommes bloquées quand la réservation change de professionnel.
      *
-     * C'EST UNE GARANTIE D'ARGENT, pas une propreté d'écriture. L'autorisation Stripe désigne le
-     * compte du prestataire comme destination : si un autre intervient, l'argent partirait chez
-     * quelqu'un qui n'a rien fait. La retenue est donc annulée AVANT toute réassignation, et le
-     * client sera redébité une fois le nouveau professionnel connu.
-     *
-     * L'acompte DÉJÀ DÉBITÉ n'est pas touché ici : le rembourser ou le transférer est une décision
-     * commerciale, pas un effet de bord d'une réassignation. Il est signalé pour être traité.
-     *
      * @return array{released: bool, deposit_to_settle_cents: int}
      */
     public function releaseForReassignment(Booking $booking): array
@@ -232,11 +190,7 @@ class OrderPaymentPlanner
         try {
             PaymentIntent::retrieve($held)->cancel();
         } catch (\Throwable $e) {
-            /*
-             * L'annulation a échoué chez Stripe. On NE marque PAS la retenue comme libérée : la
-             * croire annulée alors qu'elle tient encore ferait créer une seconde empreinte sur la
-             * carte du client, et il verrait deux fois le montant bloqué.
-             */
+            // L'annulation a échoué chez Stripe.
             Log::error('OrderPaymentPlanner: libération impossible', [
                 'booking_id' => $booking->id,
                 'payment_intent' => $held,

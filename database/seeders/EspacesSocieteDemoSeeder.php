@@ -7,33 +7,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-/**
- * LES CINQ ÉCRANS DE L'ESPACE SOCIÉTÉ N'AVAIENT AUCUNE DONNÉE À MONTRER.
- *
- * Après un `db:seed` complet sur une base vierge, le profil démo produit 2 organisations, 4 membres
- * et 2 sites — mais 0 équipe terrain, 0 tâche, 0 canal et 0 mission. Les écrans construits cette
- * semaine (Répartition, Équipe, Équipes terrain, Tâches, Canaux) s'ouvrent donc tous sur un état
- * vide, côté web comme en natif.
- *
- * C'est un angle mort connu de ce dépôt : un écran vide se laisse regarder sans rien dire. Il ne
- * distingue pas « cette société n'a pas encore d'équipe » de « la requête est fausse » ni de « la
- * table n'est jamais remplie ». Ce seeder supprime cette ambiguïté à la racine — et l'a d'ailleurs
- * prouvé aussitôt en révélant que le tableau de répartition lisait `scheduled_at`, colonne qui
- * n'existe pas (corrigé dans le même commit).
- *
- * IDEMPOTENCE. Chaque ligne est cherchée sur une clé métier stable avant d'être écrite :
- * le nom pour une équipe, un canal ; le titre pour une tâche ; le couple (canal, auteur, contenu)
- * pour un message. Relancer le seeder mille fois donne la même base.
- *
- * LES MISSIONS FONT EXCEPTION : la table ne porte aucune référence lisible qui puisse servir de clé.
- * On les marque donc dans `metadata` et on les retrouve en PHP après lecture. Ce détour évite
- * d'inventer une colonne — et un `where('metadata->demo')` aurait de toute façon été filtré par
- * `onlyExistingColumns()`, qui ne connaît que de vrais noms de colonnes.
- *
- * Les missions sont replanifiées SUR LE JOUR COURANT à chaque exécution, parce que le tableau de
- * répartition ouvre sur `filterDate = aujourd'hui`. Des missions figées à la date du seed
- * laisseraient l'écran vide dès le lendemain — soit exactement le défaut qu'on corrige ici.
- */
+/** LES CINQ ÉCRANS DE L'ESPACE SOCIÉTÉ N'AVAIENT AUCUNE DONNÉE À MONTRER. */
 class EspacesSocieteDemoSeeder extends Seeder
 {
     use SeedsOnlyExistingColumns;
@@ -69,13 +43,7 @@ class EspacesSocieteDemoSeeder extends Seeder
         $this->command?->info('✅ Espaces société démo : équipes terrain, tâches, canaux et missions à répartir.');
     }
 
-    /**
-     * On cherche par TYPE, pas par nom.
-     *
-     * `DemoPlatformSeeder` nomme la sienne « CleanUx Partner Brussels », mais figer ce nom ici
-     * créerait une dépendance invisible : renommer la société là-bas viderait les espaces ici, sans
-     * la moindre erreur. Le type, lui, est ce que les cinq écrans vérifient réellement.
-     */
+    /** On cherche par TYPE, pas par nom. */
     private function societePrestataire(): ?object
     {
         if (! $this->hasTable('organization_accounts')) {
@@ -176,14 +144,7 @@ class EspacesSocieteDemoSeeder extends Seeder
 
     private function seedTaches(object $societe, object $responsable): void
     {
-        /*
-         * PRIORITÉS PRISES DANS L'ÉNUMÉRATION DE L'API, PAS DANS LE DÉFAUT DE LA COLONNE.
-         *
-         * `tasks.priority` a pour défaut `'normal'`, valeur qu'aucune constante du modèle ne
-         * déclare et que la validation de `CompanyController::createTask` refuse
-         * (`in:low,medium,high,urgent`). Une tâche née du défaut porterait donc une priorité que
-         * l'API elle-même rejetterait. On ne s'appuie jamais sur ce défaut ici.
-         */
+        // PRIORITÉS PRISES DANS L'ÉNUMÉRATION DE L'API, PAS DANS LE DÉFAUT DE LA COLONNE.
         $taches = [
             ['Commander les recharges de produits', 'in_progress', 'high', 2, 'Stock bas sur le dégraissant vitres.'],
             ['Planifier la visite de contrôle Atlas', 'todo', 'medium', 5, 'Trimestrielle, à caler avec le client.'],
@@ -247,14 +208,7 @@ class EspacesSocieteDemoSeeder extends Seeder
                 continue;
             }
 
-            /*
-             * L'APPARTENANCE N'EST PAS DÉCORATIVE.
-             *
-             * `CompanyController::channels()` filtre par `whereHas('members', user_id = moi)`. Un
-             * canal seedé sans sa table pivot serait donc invisible pour tout le monde — présent en
-             * base, absent de l'écran : exactement le genre de « donnée qui existe et ne se voit
-             * pas » qu'on cherche à éliminer.
-             */
+            // L'APPARTENANCE N'EST PAS DÉCORATIVE.
             foreach ($membres as $index => $membre) {
                 $this->updateOrInsertTable('channel_members', [
                     'channel_id' => $canal->id,
@@ -289,26 +243,12 @@ class EspacesSocieteDemoSeeder extends Seeder
 
         $site = $this->siteClient();
 
-        /*
-         * DEUX NOTIONS D'ÉQUIPE COEXISTENT, ET ELLES NE SONT PAS INTERCHANGEABLES.
-         *
-         * `missions.provider_team_id` est contraint sur `provider_teams` — PAS sur `field_teams`,
-         * la table qu'alimente l'écran « Équipes terrain ». Y écrire l'identifiant d'une équipe
-         * terrain a fait échouer le premier seed sur une violation de clé étrangère, et seulement à
-         * la deuxième mission : la première portait l'identifiant 1, qui existait par hasard dans
-         * les deux tables. Une erreur d'un rang plus bas serait passée inaperçue.
-         */
+        // DEUX NOTIONS D'ÉQUIPE COEXISTENT, ET ELLES NE SONT PAS INTERCHANGEABLES.
         $equipePrestataire = $this->hasTable('provider_teams')
             ? DB::table('provider_teams')->where('organization_account_id', $societe->id)->orderBy('id')->first()
             : null;
 
-        /*
-         * TROIS MISSIONS NON ATTRIBUÉES, UNE ATTRIBUÉE.
-         *
-         * Un tableau de répartition dont tout est déjà réparti ne montre pas ce qu'il sait faire :
-         * le bouton d'affectation n'apparaît que pour les statuts `pending` et `assigned`. On seede
-         * donc les deux états, pour que l'écran montre à la fois le travail à faire et son résultat.
-         */
+        // TROIS MISSIONS NON ATTRIBUÉES, UNE ATTRIBUÉE.
         $definitions = [
             ['rang' => 1, 'heure' => 8, 'status' => 'pending', 'notes' => 'Nettoyage bureaux — plateau 2.'],
             ['rang' => 2, 'heure' => 11, 'status' => 'pending', 'notes' => 'Vitrerie hall d\'accueil.'],
@@ -374,12 +314,7 @@ class EspacesSocieteDemoSeeder extends Seeder
         return $trouvees;
     }
 
-    /**
-     * La mission se déroule chez le client, pas chez le prestataire.
-     *
-     * `DemoPlatformSeeder` ne crée de sites que pour la société cliente ; c'est cohérent avec le
-     * métier — une société de nettoyage intervient sur les sites de ses clients.
-     */
+    /** La mission se déroule chez le client, pas chez le prestataire. */
     private function siteClient(): ?object
     {
         if (! $this->hasTable('organization_sites')) {

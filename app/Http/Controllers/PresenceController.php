@@ -6,16 +6,7 @@ use App\Services\Presence\PresenceTracker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * Phase 3 — Endpoints de présence appelés depuis echo-listeners.js.
- *
- * Routes (à ajouter dans routes/web.php ou routes/authenticated.php) :
- *   Route::middleware('auth')->group(function () {
- *       Route::post('/presence/touch', [PresenceController::class, 'touch']);
- *       Route::post('/presence/status', [PresenceController::class, 'setStatus']);
- *       Route::get('/presence/me', [PresenceController::class, 'me']);
- *   });
- */
+/** Phase 3 — Endpoints de présence appelés depuis echo-listeners.js. */
 class PresenceController extends Controller
 {
     public function touch(Request $request): JsonResponse

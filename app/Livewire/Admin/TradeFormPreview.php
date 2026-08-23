@@ -8,13 +8,7 @@ use App\Support\TradeFormSchema;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
-/**
- * Aperçu interactif d'un schema de formulaire de Trade, côté admin.
- *
- * Reçoit en mount un schema (JSON décodé ou objet array). Permet à l'admin
- * de "jouer" avec le formulaire avant de sauver le schema sur le Trade,
- * et voir en live le delta de prix calculé.
- */
+/** Aperçu interactif d'un schema de formulaire de Trade, côté admin. */
 class TradeFormPreview extends Component
 {
     use EnforcesAdminAccess;

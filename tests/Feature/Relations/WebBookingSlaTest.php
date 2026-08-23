@@ -10,13 +10,7 @@ use App\Services\Missions\MissionFromRendezVousSyncService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Le chemin WEB/général de création de mission passe par
- * MissionFromRendezVousSyncService (et non par CreateBookingFromApiAction /
- * Work Orders). Ce test verrouille la fermeture du gap DoD 8 : une réservation
- * d'un client société sous contrat créée via le web doit (a) porter le
- * organization_contract_id sur la mission et (b) armer le snapshot SLA.
- */
+/** Le chemin WEB/général de création de mission passe par MissionFromRendezVousSyncService (et non par CreateBookingFromApiAction / Work Orders). */
 class WebBookingSlaTest extends TestCase
 {
     use RefreshDatabase;

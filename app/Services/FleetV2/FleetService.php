@@ -19,10 +19,7 @@ class FleetService
         protected MaintenanceScheduler $scheduler,
     ) {}
 
-    /**
-     * Assigne un véhicule à un provider pour une fenêtre temporelle.
-     * Idempotent : si une assignment active existe déjà sur ce véhicule pour ce provider+booking, retournée.
-     */
+    /** Assigne un véhicule à un provider pour une fenêtre temporelle. */
     public function assignVehicle(
         FleetVehicle $vehicle,
         User $provider,
@@ -121,9 +118,7 @@ class FleetService
         });
     }
 
-    /**
-     * Termine une assignment. Met à jour le statut du véhicule/équipement selon condition.
-     */
+    /** Termine une assignment. Met à jour le statut du véhicule/équipement selon condition. */
     public function returnAssignment(
         FleetAssignment $assignment,
         string $condition = FleetAssignment::CONDITION_OK,
@@ -195,9 +190,7 @@ class FleetService
         }
     }
 
-    /**
-     * Schedule une maintenance corrective sur le véhicule/équipement d'une assignment.
-     */
+    /** Schedule une maintenance corrective sur le véhicule/équipement d'une assignment. */
     public function scheduleMaintenance(FleetAssignment $assignment, ?string $notes = null, ?int $costCents = null): FleetMaintenanceLog
     {
         return FleetMaintenanceLog::query()->create([
@@ -211,9 +204,7 @@ class FleetService
         ]);
     }
 
-    /**
-     * Retourne les véhicules disponibles (status=available), optionnellement filtrés par type.
-     */
+    /** Retourne les véhicules disponibles (status=available), optionnellement filtrés par type. */
     public function getAvailableVehicles(?string $vehicleType = null): Collection
     {
         $query = FleetVehicle::query()->where('status', FleetVehicle::STATUS_AVAILABLE);
@@ -224,9 +215,7 @@ class FleetService
         return $query->with('certifications')->get();
     }
 
-    /**
-     * Planifie une maintenance préventive/corrective sur un véhicule à une date donnée.
-     */
+    /** Planifie une maintenance préventive/corrective sur un véhicule à une date donnée. */
     public function scheduleMaintenanceForVehicle(
         FleetVehicle $vehicle,
         string $maintenanceType,
@@ -249,9 +238,7 @@ class FleetService
         ]);
     }
 
-    /**
-     * Log explicite d'une maintenance (manuelle, par admin).
-     */
+    /** Log explicite d'une maintenance (manuelle, par admin). */
     public function logMaintenance(
         ?FleetVehicle $vehicle,
         ?FleetEquipment $equipment,

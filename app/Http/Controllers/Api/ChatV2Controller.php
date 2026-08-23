@@ -33,18 +33,7 @@ class ChatV2Controller extends Controller
         $user = $request->user();
         $rows = ChatThread::query()
             ->forUser($user->id)
-            /*
-             * LES PARTICIPANTS SONT CE QUE L'ÉCRAN AFFICHE, et ils ne partaient pas.
-             *
-             * Cette réponse rendait les modèles bruts : ni `participants` (relation non chargée),
-             * ni `unread_count`, ni `last_message`. L'application cliente lisait pourtant
-             * `item.participants[0]` sans garde — la messagerie tombait sur son écran d'erreur au
-             * premier fil de la liste. On charge donc la relation, et on donne à chaque champ le
-             * nom que l'écran attend.
-             *
-             * `with` et non une requête par ligne : sans cela, une liste de cinquante fils
-             * déclencherait cent une requêtes.
-             */
+            // LES PARTICIPANTS SONT CE QUE L'ÉCRAN AFFICHE, et ils ne partaient pas.
             ->with(['participants.user:id,name'])
             ->when($request->boolean('archived'), fn ($q) => $q->where('is_archived', true), fn ($q) => $q->where('is_archived', false))
             ->orderByDesc('last_message_at')
@@ -56,13 +45,7 @@ class ChatV2Controller extends Controller
         ]);
     }
 
-    /**
-     * La forme d'un fil telle que les deux applications la lisent.
-     *
-     * `last_message_preview` est le nom de la colonne ; `last_message` celui du champ affiché. Les
-     * deux sont servis : renommer sans prévenir casserait tout appelant existant, et l'ancien nom
-     * ne coûte rien.
-     */
+    /** La forme d'un fil telle que les deux applications la lisent. */
     /** @return array<string, mixed> */
     private function serialiserLeFil(ChatThread $fil, int $utilisateur): array
     {
@@ -85,13 +68,7 @@ class ChatV2Controller extends Controller
         ]);
     }
 
-    /**
-     * Ce que la personne n'a pas encore lu dans ce fil.
-     *
-     * Sans date de dernière lecture, tout est non lu : un fil qu'on n'a jamais ouvert ne peut pas
-     * être considéré comme lu. Les messages qu'on a soi-même envoyés ne comptent pas — personne
-     * n'a de message non lu de sa propre main.
-     */
+    /** Ce que la personne n'a pas encore lu dans ce fil. */
     private function messagesNonLus(ChatThread $fil, ?ChatParticipant $moi): int
     {
         // `sender_user_id` — mesuré sur la table, pas deviné : `chat_messages` n'a pas de `sender_id`.
@@ -122,10 +99,7 @@ class ChatV2Controller extends Controller
             $data['participants'][] = ['user_id' => $currentUserId, 'role' => 'client'];
         }
 
-        /*
-         * LA RELATION EST VÉRIFIÉE AVANT TOUT. Sans ce garde, un compte quelconque ouvrait un fil
-         * avec n'importe qui — il suffisait d'un identifiant — et s'y déclarait `admin`.
-         */
+        // LA RELATION EST VÉRIFIÉE AVANT TOUT.
         try {
             $this->relations->assertPeutOuvrirUnFil(
                 auteur: $request->user(),
@@ -299,13 +273,7 @@ class ChatV2Controller extends Controller
         return response()->json(['ok' => true, 'message' => $row]);
     }
 
-    /**
-     * AJOUTER DES PARTICIPANTS À UN FIL EXISTANT.
-     *
-     * La même règle de relation s'applique qu'à l'ouverture : on n'introduit pas un inconnu dans une
-     * conversation. Et il faut soi-même y être — sinon n'importe qui pourrait se greffer sur le fil
-     * d'autrui en s'y ajoutant.
-     */
+    /** AJOUTER DES PARTICIPANTS À UN FIL EXISTANT. */
     public function addParticipants(Request $request, ChatThread $thread): JsonResponse
     {
         $user = $request->user();
@@ -336,13 +304,7 @@ class ChatV2Controller extends Controller
         return response()->json(['ok' => true, 'thread' => $thread->fresh('participants')]);
     }
 
-    /**
-     * RETIRER UN PARTICIPANT — lecture ET temps réel coupés du même geste.
-     *
-     * Chacun peut se retirer soi-même : quitter une conversation est un droit, pas une faveur. Y
-     * retirer QUELQU'UN D'AUTRE demande d'être administrateur du fil ou de la plateforme, parce que
-     * c'est une exclusion.
-     */
+    /** RETIRER UN PARTICIPANT — lecture ET temps réel coupés du même geste. */
     public function removeParticipant(Request $request, ChatThread $thread, int $userId): JsonResponse
     {
         $user = $request->user();

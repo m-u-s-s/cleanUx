@@ -12,16 +12,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * `/dashboard` ENVOIE CHACUN CHEZ LUI.
- *
- * L'aiguillage testait trois cas — administrateur, client, prestataire — et refusait tous les
- * autres par un 403. Un membre de société cliente ou prestataire tombait donc dans le cas
- * `isClient()` / `isEmploye()` et atterrissait dans l'espace individuel, jamais dans le sien ; un
- * super administrateur passait pour un administrateur ordinaire.
- *
- * Il lit désormais le rôle canonique, dont la table de correspondance vit dans `Role`.
- */
+/** `/dashboard` ENVOIE CHACUN CHEZ LUI. */
 class AiguillageDuTableauDeBordTest extends TestCase
 {
     use RefreshDatabase;
@@ -59,13 +50,7 @@ class AiguillageDuTableauDeBordTest extends TestCase
 
     public function test_le_membre_de_societe_cliente_va_dans_son_espace(): void
     {
-        /*
-         * LE DÉFAUT QUE CE TEST CORRIGE.
-         *
-         * `isClient()` est vrai pour un membre de société cliente — il délègue à
-         * `isClientCompany()`. L'ancien aiguillage l'envoyait donc dans l'espace personnel, et son
-         * espace société n'était atteignable qu'en tapant l'URL ou par la passerelle du profil.
-         */
+        // LE DÉFAUT QUE CE TEST CORRIGE.
         $org = OrganizationAccount::factory()->clientCompany()->create();
         $user = User::factory()->entreprise()->create([
             'current_organization_id' => $org->id,

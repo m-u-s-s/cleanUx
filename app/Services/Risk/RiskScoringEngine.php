@@ -11,20 +11,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * RiskScoringEngine (Phase Risk v2).
- *
- * Workflow :
- *   1. Charge les règles actives depuis DB (risk_rules)
- *   2. Pour chaque règle, instancie le RuleInterface enregistré dans config
- *   3. Exécute evaluate(RiskContext) → accumule les hits
- *   4. Calcule un score total (somme des score_delta des hits, multipliés par
- *      la sévérité DB si présente)
- *   5. Décide : allow / review / block selon thresholds
- *   6. Crée RiskEvaluation + si non-allow → RiskHold
- *   7. Idempotency via key
- *   8. Soft-fail (Log warning) ne casse jamais le flow business
- */
+/** RiskScoringEngine (Phase Risk v2). Workflow : 1. */
 class RiskScoringEngine
 {
     public function evaluate(RiskContext $context, ?string $idempotencyKey = null): RiskEvaluation

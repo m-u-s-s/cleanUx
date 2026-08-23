@@ -4,17 +4,7 @@ namespace App\Services\Analytics;
 
 use Carbon\CarbonImmutable;
 
-/**
- * Phase 7 — Résolveur de presets de période pour les dashboards analytics.
- *
- * Presets supportés :
- *   - last_7d, last_30d, last_90d
- *   - this_month, last_month
- *   - this_quarter, last_quarter
- *   - this_year, last_year
- *   - ytd (year-to-date)
- *   - custom (avec from/to fournis)
- */
+/** Phase 7 — Résolveur de presets de période pour les dashboards analytics. */
 class DateRangeResolver
 {
     public const PRESETS = [

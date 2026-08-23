@@ -55,11 +55,6 @@ class CustomerClaim extends Model
     /**
      * LA RÉSOLUTION, PRÉSENTÉE COMME UNE LISTE — et il y en a au plus une.
      *
-     * La vue parcourt `resolutions` : c'est la forme qu'elle attend. Cette réclamation-ci ne
-     * porte qu'une issue, dans ses colonnes `resolution` et `resolved_at`. On la rend donc
-     * sous la forme attendue plutôt que de créer une table pour une ligne unique — et sans
-     * emprunter celle de l'autre modèle de litige, qui a ses propres règles.
-     *
      * @return Collection<int, ResolutionAffichee>
      */
     public function getResolutionsAttribute(): Collection
@@ -75,10 +70,7 @@ class CustomerClaim extends Model
         )]);
     }
 
-    /**
-     * La référence lisible. `claim_reference` n'est renseignée par aucun chemin d'écriture :
-     * l'écran affichait un vide là où le client cherche un numéro à citer au support.
-     */
+    /** La référence lisible. */
     public function getReferenceAttribute(): string
     {
         return filled($this->claim_reference)

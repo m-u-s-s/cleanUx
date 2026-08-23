@@ -14,22 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * LE RECRUTEMENT (E25).
- *
- * LA DERNIÈRE ÉTAPE EXISTAIT DÉJÀ. L'invitation à jeton conclut le recrutement depuis longtemps —
- * compte, adhésion, rôle. Ce qui manquait est AVANT : l'offre, les candidatures, le tri. Une société
- * publiait donc son annonce ailleurs, échangeait des courriels, puis revenait ici inviter quelqu'un
- * dont la plateforme n'avait jamais entendu parler. Impossible de savoir quelle annonce avait
- * produit quelle recrue.
- *
- * EMBAUCHER ÉMET L'INVITATION — un même bouton, pas deux écrans. Séparer les deux produirait le
- * défaut exact qu'on répare : une candidature marquée « embauché » et personne dans l'organigramme.
- *
- * DES DONNÉES DE GENS QUI NE SONT PAS DE LA MAISON. Un candidat confie son nom, son courriel et son
- * téléphone à une entreprise, pas à ses employés : `recruitment.view` n'est accordée qu'aux rôles
- * qui décident.
- */
+/** LE RECRUTEMENT (E25). LA DERNIÈRE ÉTAPE EXISTAIT DÉJÀ. */
 class RecruitmentCenter extends Component
 {
     use EnforcesActiveOrgMembership;
@@ -157,11 +142,7 @@ class RecruitmentCenter extends Component
             return null;
         }
 
-        /*
-         * Le scoping passe par l'OFFRE : une candidature ne porte pas d'organisation, et charger
-         * par son seul identifiant exposerait celles d'une autre société — c'est-à-dire des données
-         * personnelles de gens qui n'ont postulé nulle part ici.
-         */
+        // Le scoping passe par l'OFFRE : une candidature ne porte pas d'organisation, et charger par son seul identifiant exposerait celles d'une autre société — c'est-à-dire des données personnelles de gens qui n'ont postulé nulle part ici.
         return JobApplication::query()
             ->whereHas('posting', fn ($q) => $q->where('organization_account_id', $orgId))
             ->find($candidatureId);

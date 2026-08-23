@@ -8,19 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * L'API DIT LE RÔLE, PLUS UNE COLLECTION DE DRAPEAUX À RECOMBINER.
- *
- * `/auth/me` a gagné `is_admin`, puis `is_provider`, puis `is_entreprise`, puis
- * `organization_type`, puis `can_manage_company` — chacun ajouté APRÈS avoir manqué, et chacun
- * documenté par le défaut qu'il a causé : un administrateur redevenu compte ordinaire à la reprise
- * de session, un compte société redevenu particulier, un espace prestataire inatteignable parce
- * que deux drapeaux se contredisaient.
- *
- * Le rôle canonique les subsume : une chaîne, résolue au même endroit que côté web. Les drapeaux
- * restent — les retirer casserait les applications installées — mais l'aiguillage mobile n'a plus
- * à les recombiner lui-même.
- */
+/** L'API DIT LE RÔLE, PLUS UNE COLLECTION DE DRAPEAUX À RECOMBINER. */
 class RoleCanoniqueExposeTest extends TestCase
 {
     use RefreshDatabase;
@@ -38,12 +26,7 @@ class RoleCanoniqueExposeTest extends TestCase
 
     public function test_le_super_admin_se_distingue_de_l_admin(): void
     {
-        /*
-         * LE DÉFAUT QUE CE TEST EMPÊCHE.
-         *
-         * `is_admin` est vrai pour les deux. Une application qui n'aurait que ce drapeau ouvrirait
-         * le même espace aux deux rôles — et le sixième n'existerait pas sur mobile.
-         */
+        // LE DÉFAUT QUE CE TEST EMPÊCHE. `is_admin` est vrai pour les deux.
         $admin = User::factory()->admin()->create();
 
         $reponse = $this->actingAs($admin, 'sanctum')->getJson('/api/auth/me');

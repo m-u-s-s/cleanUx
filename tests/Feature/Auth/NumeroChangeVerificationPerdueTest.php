@@ -6,19 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * CHANGER DE NUMÉRO PERD LA VÉRIFICATION DU NUMÉRO.
- *
- * Mesuré le 2026-08-16 : un compte vérifie le numéro A par SMS à l'inscription, puis
- * `PATCH /api/profile` avec le numéro B — et `phone_verified_at` reste posé. Le compte était donc
- * « vérifié » sur un numéro que personne n'avait prouvé posséder : `EnsurePhoneVerified` laissait
- * passer, et les codes d'arrivée et de fin de mission partaient vers ce numéro-là.
- *
- * Rien dans le dépôt ne remettait cette colonne à zéro — elle n'était que POSÉE, à trois endroits.
- * Le pendant e-mail existait déjà (`UpdateUserProfileInformation` annule `email_verified_at` et
- * renvoie le lien) : ce test épingle la même règle sur le téléphone, et surtout le fait qu'elle vaut
- * pour TOUS les écrivains, présents et futurs — c'est pour cela qu'elle vit dans un observateur.
- */
+/** CHANGER DE NUMÉRO PERD LA VÉRIFICATION DU NUMÉRO. */
 class NumeroChangeVerificationPerdueTest extends TestCase
 {
     use RefreshDatabase;
@@ -76,10 +64,7 @@ class NumeroChangeVerificationPerdueTest extends TestCase
         $this->assertNotNull($user->fresh()->phone_verified_at);
     }
 
-    /**
-     * LE PIÈGE À NE PAS CRÉER : le parcours de vérification écrit le numéro ET sa date dans le même
-     * enregistrement. Une règle posée sans discernement effacerait ce qu'elle vient d'établir.
-     */
+    /** LE PIÈGE À NE PAS CRÉER : le parcours de vérification écrit le numéro ET sa date dans le même enregistrement. */
     public function test_la_verification_elle_meme_pose_bien_les_deux(): void
     {
         $user = User::factory()->create(['phone' => '+32471000001', 'phone_verified_at' => null]);

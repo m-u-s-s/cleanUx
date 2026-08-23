@@ -4,19 +4,7 @@ namespace App\Services\FaceCheck;
 
 use App\Models\PlatformModule;
 
-/**
- * LES RÉGLAGES, LUS AU MÊME ENDROIT PAR TOUT LE MONDE.
- *
- * Deux sources, dans cet ordre : ce que l'administrateur a posé dans `platform_modules.settings`
- * sous la clé `face_check`, puis `config/face_check.php`. Jamais l'inverse, et jamais de troisième.
- *
- * La raison est simple : sans ce point de passage unique, un seuil finirait lu depuis la config
- * dans le service et depuis la base dans l'écran d'administration, et l'admin verrait 75 pendant
- * que le moteur applique 80 — sans qu'aucun test ne le remarque, puisque les deux valeurs sont
- * plausibles.
- *
- * Mémoïsé par instance : le module est résolu une fois par requête, pas à chaque seuil.
- */
+/** LES RÉGLAGES, LUS AU MÊME ENDROIT PAR TOUT LE MONDE. */
 class FaceCheckSettings
 {
     private ?PlatformModule $module = null;
@@ -28,10 +16,7 @@ class FaceCheckSettings
         return max(1, (int) $this->valeur('min_hours', config('face_check.interval.min_hours', 24)));
     }
 
-    /**
-     * La borne haute ne peut pas passer sous la borne basse : un intervalle inversé ferait rendre
-     * un `random_int` inversé, qui lève. Un réglage incohérent doit dégrader, pas planter.
-     */
+    /** La borne haute ne peut pas passer sous la borne basse : un intervalle inversé ferait rendre un `random_int` inversé, qui lève. */
     public function maxHours(): int
     {
         return max($this->minHours(), (int) $this->valeur('max_hours', config('face_check.interval.max_hours', 72)));

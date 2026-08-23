@@ -10,9 +10,6 @@ use App\Models\User;
 /**
  * Les clients premium et leur abonnement.
  *
- * L’OCTROI du premium passe par le module d’abonnement : il crée le cycle de facturation qui va
- * avec. Écrire `plan_type = ’premium’` ici donnerait l’avantage sans jamais le facturer.
- *
  * @extends EloquentResource<User>
  */
 class PremiumClientResource extends EloquentResource
@@ -70,11 +67,7 @@ class PremiumClientResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Les quatre gestes du web, à l'identique. Ce sont de simples écritures d'état — aucun
-             * service ne les porte côté web non plus, et en inventer un ici créerait une règle qui
-             * n'existe nulle part ailleurs.
-             */
+            // Les quatre gestes du web, à l'identique.
             Action::make('set-premium', 'Passer en Premium', function (User $client) {
                 $client->forceFill([
                     'plan_type' => 'premium',

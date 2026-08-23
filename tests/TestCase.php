@@ -19,27 +19,7 @@ abstract class TestCase extends BaseTestCase
         // per test keeps the pool bounded and the suite order-independent.
         fake()->unique(true);
 
-        /*
-         * AUCUN TEST NE DÉPEND D'UN `npm run build`.
-         *
-         * Toute page rendue par la suite passe par `@vite`, qui lève
-         * `ViteManifestNotFoundException` si `public/build/manifest.json` n'existe pas. Le test
-         * échoue alors en 500, et son message parle d'un manifeste — jamais du code qu'il était
-         * censé vérifier.
-         *
-         * CE DÉPÔT L'A PAYÉ DEUX FOIS. Un worktree neuf a produit 91 échecs qui n'avaient que
-         * cette cause. Et le job « Money/GDPR (MySQL, FK activées) » — qui n'installe pas Node,
-         * puisqu'il vérifie des clés étrangères et non des écrans — a viré au rouge le jour où
-         * trois tests d'écran d'administration sont entrés dans son périmètre.
-         *
-         * `withoutVite()` remplace la directive par une chaîne vide. C'est sans perte : aucun test
-         * de ce dépôt n'assertait quoi que ce soit sur les assets construits — vérifié avant
-         * d'écrire cette ligne. Ce qu'ils vérifient, c'est qu'une route répond, qu'une garde tient
-         * et qu'un composant s'affiche ; le nom haché d'un fichier JavaScript n'en fait pas partie.
-         *
-         * L'alternative — construire les assets dans chaque job — ferait payer une à deux minutes
-         * par exécution pour restaurer une dépendance dont on ne veut pas.
-         */
+        // AUCUN TEST NE DÉPEND D'UN `npm run build`.
         $this->withoutVite();
 
         // Tests must never hit the network. The legacy GeocodingService calls

@@ -6,11 +6,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Audit HIGH — 2FA admin obligatoire. Quand enforce_2fa_for_admins est actif
- * (défaut sécurisé en prod), un admin sans 2FA confirmée est redirigé vers son
- * profil pour l'activer avant d'accéder à l'espace admin.
- */
+/** Audit HIGH — 2FA admin obligatoire. */
 class Admin2FAEnforcementTest extends TestCase
 {
     use RefreshDatabase;
@@ -52,11 +48,7 @@ class Admin2FAEnforcementTest extends TestCase
             ->assertSuccessful();
     }
 
-    /**
-     * Anti-loop guard: the page the un-enrolled admin is redirected TO must
-     * render, not bounce back into the enforcement middleware. This locks the
-     * fix that exempts profile.show + 2FA-setup routes from the redirect.
-     */
+    /** Anti-loop guard: the page the un-enrolled admin is redirected TO must render, not bounce back into the enforcement middleware. */
     public function test_redirect_target_does_not_loop(): void
     {
         config(['auth.enforce_2fa_for_admins' => true]);

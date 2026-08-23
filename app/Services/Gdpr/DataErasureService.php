@@ -12,26 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
-/**
- * Droit à l'oubli (art. 17 RGPD).
- *
- * Stratégie : ANONYMISATION (pas hard-delete) pour préserver :
- *   - Cohérence comptable (factures, payouts gardent leur FK user_id)
- *   - Audit/traçabilité (logs ne perdent pas leur attribution)
- *   - Obligations légales de conservation (10 ans pour factures BE/FR)
- *
- * Workflow:
- *   1. schedule() — crée request en `awaiting_grace_period` (30j par défaut)
- *   2. confirm() — user re-confirme par email (optionnel)
- *   3. execute() — après grace period : anonymise + soft-marks
- *   4. cancel() — user/admin annule avant grace expiry
- *
- * Données préservées (anonymisées) : bookings, payments, invoices, ratings
- * (avec client.name remplacé), audit_logs (avec user_id préservé mais user
- * affiché comme "Utilisateur supprimé").
- *
- * Données purgées : phone, email réel, photo, metadata sensible.
- */
+/** Droit à l'oubli (art. 17 RGPD). */
 class DataErasureService
 {
     public function schedule(User $user, ?string $reason = null, ?array $context = null): GdprDataRequest
@@ -161,17 +142,7 @@ class DataErasureService
         $this->anonymizeV2Modules($user);
     }
 
-    /**
-     * LA BIOMETRIE SE SUPPRIME, ELLE NE S'ANONYMISE PAS.
-     *
-     * Partout ailleurs dans ce service, la strategie est l'anonymisation : une reservation doit
-     * survivre a l'effacement de son client, parce que la comptabilite l'exige. Un visage, non.
-     * Aucune obligation legale ne demande de le conserver, et un gabarit biometrique « anonymise »
-     * n'existe pas : c'est l'image elle-meme qui identifie.
-     *
-     * On efface donc les DEUX fichiers -- le visage de reference et les selfies de controle -- puis
-     * on vide les colonnes qui les designent. Les verdicts restent : ils ne portent aucun visage.
-     */
+    /** LA BIOMETRIE SE SUPPRIME, ELLE NE S'ANONYMISE PAS. */
     protected function eraseBiometrics(User $user): void
     {
         if (! Schema::hasTable('provider_face_profiles')) {
@@ -208,49 +179,13 @@ class DataErasureService
         }
     }
 
-    /**
-     * Anonymise the core (Phase 1–14) PII that the original anonymizeUser() missed (D2):
-     * booking postal addresses + notes, free-text feedback / complaint cases, notification
-     * payloads, analytics behavioural rows, and the readable email/name labels persisted in
-     * audit_events. Accounting columns (amounts, dates, FKs) are deliberately preserved for
-     * the legal retention obligation. Schema-defensive so it is safe across environments.
-     */
+    /** Anonymise the core (Phase 1–14) PII that the original anonymizeUser() missed (D2): booking postal addresses + notes, free-text feedback / complaint cases, notification payloads, analytics behavioural rows, and the readable email/name labels persisted in audit_events. */
     protected function anonymizeCorePii(User $user): void
     {
         $anonName = (string) config('gdpr.anonymized_name', 'Utilisateur supprimé');
         $uid = $user->id;
 
-        /*
-         * BOOKINGS — L'ADRESSE DU CLIENT, SES CONTACTS ET SES CONSIGNES.
-         *
-         * Ne nettoyer que les lignes où cet utilisateur est le CLIENT : l'adresse lui appartient,
-         * pas au prestataire affecté.
-         *
-         * ── POURQUOI CETTE LISTE EST SI LONGUE ───────────────────────────────────────────────
-         *
-         * Elle valait `['adresse', 'ville', 'code_postal', 'notes']`, et l'effacement laissait
-         * l'essentiel en place :
-         *
-         *   1. `notes` n'est écrite par AUCUN code — la nettoyer ne faisait rien. La consigne
-         *      réelle du client vit dans `commentaire_client` / `customer_comment`, qui n'était
-         *      pas touchée : « code portail 1234 » survivait à l'effacement.
-         *   2. LES JUMELLES ANGLAISES N'Y ÉTAIENT PAS. `bookings` porte quinze paires FR/EN, et
-         *      cette écriture passe par le CONSTRUCTEUR DE REQUÊTES : `HasLegacyBookingAliases`
-         *      ne s'exécute donc jamais. Vider `adresse` laissait `address` intacte — l'adresse
-         *      postale complète restait en base après un droit à l'effacement.
-         *   3. Ni les téléphones, ni les courriels, ni le bénéficiaire, ni les coordonnées GPS du
-         *      domicile n'étaient nettoyés.
-         *
-         * Chaque paire doit donc être citée DES DEUX CÔTÉS, explicitement. Une paire ajoutée à
-         * `$legacyAliasPairs` demain devra être ajoutée ici aussi.
-         *
-         * ── CE QUI RESTE, ET POURQUOI ────────────────────────────────────────────────────────
-         *
-         * Les montants, les statuts, les dates et les clés étrangères sont conservés pour
-         * l'obligation légale de conservation comptable. `postal_code_id` en fait partie : c'est
-         * une clé étrangère vers un référentiel de codes postaux, conservée comme les autres —
-         * elle garde une maille géographique grossière que le texte, lui, ne garde plus.
-         */
+        // BOOKINGS — L'ADRESSE DU CLIENT, SES CONTACTS ET SES CONSIGNES.
         if (Schema::hasTable('bookings')) {
             $bookingCols = collect([
                 // Adresse d'intervention — les deux côtés de chaque paire.
@@ -362,12 +297,7 @@ class DataErasureService
         }
     }
 
-    /**
-     * Anonymisation des nouveaux modules v2 (KYB/Fleet/Subscriptions/Tenancy/Chat).
-     *
-     * Stratégie : on conserve les ROWS (obligation légale 10 ans pour compta/KYB),
-     * mais on nullify les FKs et PII vers ce user pour qu'il devienne anonyme.
-     */
+    /** Anonymisation des nouveaux modules v2 (KYB/Fleet/Subscriptions/Tenancy/Chat). */
     protected function anonymizeV2Modules(User $user): void
     {
         // KYB B2B : nullify owner/contact + email contact (rows gardés pour audit)

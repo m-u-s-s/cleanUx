@@ -12,17 +12,7 @@ use Database\Seeders\OrderEngineCatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Le supplément d'une réponse arrive bien dans le prix — et seulement si on la choisit.
- *
- * POURQUOI CE TEST EXISTE À CÔTÉ DE CELUI DE L'ÉCRAN. L'écran peut enregistrer parfaitement une
- * valeur qui n'atteint jamais le devis. Ces deux vérités sont indépendantes, et seule la seconde
- * intéresse le client.
- *
- * C'est aussi ce qui distingue le prix de l'OPTION de celui de la QUESTION : le mode `add` posé sur
- * une question ajoute son montant dès qu'elle est répondue, donc aussi quand on répond « Non ».
- * Le test ci-dessous fixe cette distinction pour de bon.
- */
+/** Le supplément d'une réponse arrive bien dans le prix — et seulement si on la choisit. */
 class OptionSupplementReachesPriceTest extends TestCase
 {
     use RefreshDatabase;
@@ -90,11 +80,7 @@ class OptionSupplementReachesPriceTest extends TestCase
     {
         $devis = $this->devis(['installation' => 'non']);
 
-        /*
-         * LE CŒUR DE L'AFFAIRE. Un montant posé sur la QUESTION (mode `add`) s'ajouterait ici
-         * aussi, puisqu'il s'applique dès qu'elle est répondue. Posé sur l'OPTION, il suit le
-         * choix du client — ce que tout le monde attend en lisant « Voulez-vous l'installation ? ».
-         */
+        // LE CŒUR DE L'AFFAIRE.
         $this->assertSame(10000, $devis->minCents);
     }
 

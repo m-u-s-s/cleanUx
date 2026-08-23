@@ -5,27 +5,12 @@ namespace App\Services\TripTracking;
 use App\Models\TripTrackingSession;
 use App\Models\User;
 use App\Services\Geo\OnSiteVerifier;
-use App\Services\Missions\MissionVerificationCodeService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Confirmation de présence du prestataire, par code affiché chez le client.
- *
- * La géo-barrière atteste d'une proximité, pas d'une présence : un téléphone à 100 m de la porte
- * la franchit. Le client affiche donc un code à usage unique, que le prestataire scanne sur place.
- *
- * Mais un code atteste d'une POSSESSION, pas d'une présence : photographié puis envoyé par
- * messagerie, ou simplement dicté au téléphone, il se valide depuis n'importe où pendant ses dix
- * minutes de vie. Les deux preuves sont donc croisées — le code ET la position au moment du scan.
- * Séparément, chacune se contourne ; ensemble, il faut être là.
- *
- * Les garde-fous du code sont ceux de {@see MissionVerificationCodeService}, dont ce mécanisme est
- * le pendant côté suivi : empreinte plutôt que clair, péremption courte, et plafond de tentatives —
- * six chiffres se devinent en un million d'essais, ce qui n'est rien pour une machine.
- */
+/** Confirmation de présence du prestataire, par code affiché chez le client. */
 class PresenceCodeService
 {
     /** Durée de vie d'un code, en minutes. Assez pour scanner, trop peu pour transmettre. */
@@ -34,13 +19,7 @@ class PresenceCodeService
     /** Au-delà, le code est brûlé et il faut en demander un neuf. */
     public const MAX_ATTEMPTS = 5;
 
-    /**
-     * Verdicts, repris de {@see OnSiteVerifier}.
-     *
-     * La politique — rayon, précision tolérée, position simulée — vit là-bas, partagée avec la
-     * clôture : les deux bouts de la visite posent la même question et doivent y répondre pareil.
-     * Ces alias évitent d'avoir à connaître cette classe depuis les tests et les appelants.
-     */
+    /** Verdicts, repris de {@see OnSiteVerifier}. */
     public const GEO_PASSED = OnSiteVerifier::PASSED;
 
     public const GEO_SKIPPED_DISABLED = OnSiteVerifier::SKIPPED_DISABLED;
@@ -58,9 +37,6 @@ class PresenceCodeService
 
     /**
      * Délivre le code courant du client, ou en forge un neuf s'il n'y en a pas d'exploitable.
-     *
-     * Idempotent tant que le code vaut : rouvrir l'écran ne doit pas invalider le code que le
-     * prestataire est en train de scanner.
      *
      * @return array{code: string, expires_at: Carbon}
      */
@@ -91,10 +67,6 @@ class PresenceCodeService
     /**
      * Valide le code scanné par le prestataire et grave la confirmation.
      *
-     * La position est celle relevée AU MOMENT DU SCAN, transmise avec l'appel. Celle de la session
-     * ne conviendrait pas : elle vient du dernier relevé reçu, qu'il suffit de cesser d'émettre en
-     * quittant les lieux pour figer sur une valeur flatteuse.
-     *
      * @param  float|null  $lat  Latitude relevée au scan.
      * @param  float|null  $lng  Longitude relevée au scan.
      * @param  float|null  $accuracyM  Précision annoncée par l'appareil, en mètres.
@@ -112,9 +84,7 @@ class PresenceCodeService
         bool $mocked = false,
     ): TripTrackingSession {
         /**
-         * Le refus est RENVOYÉ, jamais levé depuis la transaction : une exception la ferait
-         * annuler, et avec elle l'incrément du compteur comme la trace du refus. Le plafond
-         * anti-force-brute ne compterait alors jamais — un essai raté ne laisserait aucune trace.
+         * Le refus est RENVOYÉ, jamais levé depuis la transaction : une exception la ferait annuler, et avec elle l'incrément du compteur comme la trace du refus.
          *
          * @var array<string, list<string>>|null $failure
          */
@@ -131,14 +101,7 @@ class PresenceCodeService
                 return $locked;
             }
 
-            /**
-             * Le contrôle de position passe AVANT le compteur de tentatives, délibérément.
-             *
-             * Être au mauvais endroit n'est pas se tromper de code : le prestataire dont le
-             * relevé dérive ne doit pas y consommer les cinq essais dont il aura besoin une fois
-             * la position retrouvée. Et cela n'affaiblit rien — qui est loin ne peut pas
-             * confirmer, quel que soit le nombre d'essais qu'on lui laisse.
-             */
+            /** Le contrôle de position passe AVANT le compteur de tentatives, délibérément. */
             $geo = $this->evaluatePosition($locked, $lat, $lng, $accuracyM, $mocked);
             if ($geo['failure'] !== null) {
                 $this->recordRejection($locked, $lat, $lng, $accuracyM, $geo);
@@ -205,8 +168,6 @@ class PresenceCodeService
     /**
      * Confronte la position du scan au lieu de l'intervention.
      *
-     * Ne lève rien : le refus est renvoyé pour que l'appelant le porte hors de la transaction.
-     *
      * @return array{failure: array<string, list<string>>|null, verdict: string|null, distance_m: int|null}
      */
     protected function evaluatePosition(
@@ -223,11 +184,6 @@ class PresenceCodeService
 
     /**
      * Coordonnées du lieu de l'intervention.
-     *
-     * L'instantané de la session prime : c'est l'adresse telle qu'elle était au départ. Les
-     * sessions ouvertes avant le remplissage des coordonnées de réservation l'ont vide ; la
-     * réservation, elle, a pu être géocodée depuis. La relire évite de neutraliser le contrôle sur
-     * ces sessions-là.
      *
      * @return array{0: float|null, 1: float|null}
      */
@@ -253,10 +209,6 @@ class PresenceCodeService
 
     /**
      * Consigne une confirmation refusée pour position.
-     *
-     * Pas dans les colonnes `presence_confirmed_*` : leur nom dit que la présence a été établie,
-     * y écrire un essai repoussé ferait mentir la ligne. Une tentative depuis 40 km est pourtant
-     * exactement ce qu'une revue de fraude cherche — elle vit donc dans les métadonnées.
      *
      * @param  array{failure: array<string, list<string>>|null, verdict: string|null, distance_m: int|null}  $geo
      */

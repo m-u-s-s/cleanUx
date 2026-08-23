@@ -15,25 +15,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LA MAJORATION PAR MÉTIER ET PAR ZONE : RÉGLABLE, APPLIQUÉE, ET COUPABLE.
- *
- * TROIS DÉFAUTS SE COMPLÉTAIENT.
- *
- * Le multiplicateur vivait sur `trade_zone_pricing`, le moteur de surge le lisait — et AUCUN écran
- * ne permettait de l'écrire. Un réglage qu'on consulte sans pouvoir le changer n'est pas un
- * réglage : pour majorer la plomberie à Bruxelles un soir de tempête, il fallait une requête SQL.
- *
- * Et `surge_pricing` figurait dans `config/features.php`, à `true`, sans qu'aucun code ne
- * l'interroge. Le seul interrupteur censé couper la majoration sans déploiement ne coupait rien.
- * Sur un mécanisme qui change ce que les gens paient, c'est le pire endroit où laisser un
- * interrupteur factice : le jour où une majoration s'emballe, on croit l'éteindre et elle continue.
- *
- * ENFIN, DEUX TABLES DÉCRIVAIENT LE MÊME FAIT — `trade_zone_settings` servait l'écran
- * d'administration, `trade_zone_pricing` servait le parcours de commande. L'administrateur réglait
- * l'une, le client payait selon l'autre. La première a été supprimée ; ce fichier vérifie qu'une
- * seule vérité subsiste, en mesurant l'effet du réglage sur le PRIX.
- */
+/** LA MAJORATION PAR MÉTIER ET PAR ZONE : RÉGLABLE, APPLIQUÉE, ET COUPABLE. */
 class MajorationParMetierEtZoneTest extends TestCase
 {
     use RefreshDatabase;
@@ -88,12 +70,7 @@ class MajorationParMetierEtZoneTest extends TestCase
 
         $resultat = app(SurgePricingEngine::class)->calculate(100.0, $zone, ['trade_id' => $trade->id]);
 
-        /*
-         * C'EST L'ASSERTION QUI FERME LA BOUCLE. Vérifier que la colonne contient 1,50 ne prouverait
-         * que l'écriture ; ce qui comptait, c'est que le moteur de prix lise CETTE table-là. Deux
-         * grilles concurrentes passaient ce genre de test des deux côtés tout en facturant un
-         * montant qui ne correspondait à aucun des deux écrans.
-         */
+        // C'EST L'ASSERTION QUI FERME LA BOUCLE.
         $this->assertSame(1.5, $resultat['factors']['trade_zone']);
         $this->assertGreaterThan(100.0, $resultat['final_price']);
     }

@@ -13,9 +13,6 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Les pays ouverts à l’exploitation.
  *
- * `booking_enabled` coupe la prise de commande dans tout un pays : la bascule est annoncee comme
- * destructive parce qu'elle l’est — plus aucun client de ce pays ne peut commander.
- *
  * @extends EloquentResource<Country>
  */
 class CountryResource extends EloquentResource
@@ -71,12 +68,7 @@ class CountryResource extends EloquentResource
         ];
     }
 
-    /**
-     * Les champs d'un pays.
-     *
-     * `booking_enabled` et `market_stage` restent hors du formulaire : ils engagent l'ouverture
-     * commerciale d'un marché, qui se décide sur le web où l'écran en montre les conséquences.
-     */
+    /** Les champs d'un pays. */
     public function formFields(): array
     {
         return [
@@ -92,13 +84,7 @@ class CountryResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Basculer l'activation ne touche QUE le pays.
-             *
-             * Propager l'extinction aux zones ferait perdre celles qui étaient déjà fermées pour
-             * leur propre raison : la réactivation les rallumerait toutes. La joignabilité se lit
-             * — voir `GeoGuard::zoneEstJoignable()` — elle ne s'écrit pas.
-             */
+            // Basculer l'activation ne touche QUE le pays.
             Action::make('toggle-active', 'Activer / désactiver', function (Country $pays) {
                 $pays->forceFill(['is_active' => ! $pays->is_active])->save();
 

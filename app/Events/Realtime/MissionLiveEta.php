@@ -11,9 +11,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Live ETA update for a mission — broadcast on private channel mission.{id}.
- */
+/** Live ETA update for a mission — broadcast on private channel mission.{id}. */
 class MissionLiveEta implements ShouldBroadcastNow, TracksBroadcastLedger
 {
     use Dispatchable;

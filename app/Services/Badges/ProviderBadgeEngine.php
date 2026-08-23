@@ -11,21 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Engine d'évaluation/attribution des badges providers.
- *
- * Workflow :
- *  - evaluate(user) : check tous les badges actifs et award ceux atteints
- *  - awardBadge(user, badge) : idempotent par UNIQUE(provider_user_id, badge_id)
- *
- * Critères supportés :
- *  - missions_count : count bookings 'termine' par employe_id
- *  - rating_avg : moyenne des feedbacks client_to_provider (>= threshold)
- *  - tips_received : count tips charged/paid_out reçus
- *  - tenure_days : ancienneté en jours depuis users.created_at
- *  - loyalty_points : lifetime_points du provider sur loyalty_accounts
- *  - streak_5stars : nombre consécutif de 5★ récents
- */
+/** Engine d'évaluation/attribution des badges providers. Workflow : - evaluate(user) : check tous les badges actifs et award ceux atteints - awardBadge(user, badge) : idempotent par UNIQUE(provider_user_id, badge_id) Critères supportés : - missions_count : count bookings 'termine' par employe_id - rating_avg : moyenne des feedbacks client_to_provider (>= threshold) - tips_received : count tips charged/paid_out reçus - tenure_days : ancienneté en jours depuis users.created_at - loyalty_points : lifetime_points du provider sur loyalty_accounts - streak_5stars : nombre consécutif de 5� récents */
 class ProviderBadgeEngine
 {
     public function evaluate(User $provider): array
@@ -101,10 +87,7 @@ class ProviderBadgeEngine
             ->count();
     }
 
-    /**
-     * Retourne la moyenne des ratings × 100 (pour stocker en int).
-     * 4.5★ → 450.
-     */
+    /** Retourne la moyenne des ratings × 100 (pour stocker en int). 4.5� → 450. */
     protected function ratingAvgScaled(User $provider): int
     {
         $avg = (float) Feedback::query()
@@ -148,10 +131,7 @@ class ProviderBadgeEngine
         return (int) ($points ?? 0);
     }
 
-    /**
-     * Compte les 5★ consécutifs récents (les N derniers feedbacks ordonnés).
-     * Renvoie le streak courant à partir du plus récent.
-     */
+    /** Compte les 5� consécutifs récents (les N derniers feedbacks ordonnés). Renvoie le streak courant à partir du plus récent. */
     protected function streakFiveStars(User $provider): int
     {
         $recent = Feedback::query()

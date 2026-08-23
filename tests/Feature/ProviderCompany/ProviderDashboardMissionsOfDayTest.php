@@ -16,18 +16,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LE TABLEAU DE BORD PRESTATAIRE TOMBE DÈS QU'UNE MISSION EST PLANIFIÉE AUJOURD'HUI.
- *
- * POURQUOI CE FICHIER EXISTE. `getMissionsOfDayProperty()` chargeait `assignedWorker`, une
- * relation qui N'EXISTE PAS sur `Mission` — le modèle n'expose que `leadProvider()` (le
- * travailleur assigné, via `lead_provider_user_id`) et `assignments()`. La vue la lisait
- * également. Résultat : `RelationNotFoundException` à chaque rendu comportant au moins une
- * mission du jour, donc une page blanche pour toute société prestataire en activité.
- *
- * Aucun test ne montait ce composant : la couverture existante se contentait de requêtes
- * Eloquent directes, qui ne touchent jamais la relation fautive.
- */
+/** LE TABLEAU DE BORD PRESTATAIRE TOMBE DÈS QU'UNE MISSION EST PLANIFIÉE AUJOURD'HUI. */
 class ProviderDashboardMissionsOfDayTest extends TestCase
 {
     use RefreshDatabase;
@@ -51,11 +40,7 @@ class ProviderDashboardMissionsOfDayTest extends TestCase
             'joined_at' => now(),
         ]);
 
-        /*
-         * `ProviderDashboard::mount()` exige `isProviderCompanyWorker()`, donc un ProviderProfile
-         * de type `company_worker`. C'est précisément ce que l'invitation d'un employé NE crée
-         * pas aujourd'hui : un membre invité ne peut même pas ouvrir cet écran.
-         */
+        // `ProviderDashboard::mount()` exige `isProviderCompanyWorker()`, donc un ProviderProfile de type `company_worker`.
         ProviderProfile::factory()->create([
             'user_id' => $patron->id,
             'organization_account_id' => $org->id,

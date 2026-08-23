@@ -11,13 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Le registre de règlement — où part la commission Brio, par devise.
- *
- * Ce que ces tests protègent avant tout : l'alerte sur les devises SANS compte de secours vérifié.
- * C'est le seul indicateur qui décide si un changement de banque prendra une journée ou une
- * semaine, et il doit rester juste devise par devise pour une plateforme multi-pays.
- */
+/** Le registre de règlement — où part la commission Brio, par devise. */
 class PlatformSettlementTest extends TestCase
 {
     use RefreshDatabase;
@@ -113,12 +107,7 @@ class PlatformSettlementTest extends TestCase
         $this->assertNotNull($compte->fresh()->verified_at);
     }
 
-    /**
-     * MULTI-PAYS : un secours en euro ne dépanne pas un versement en livre.
-     *
-     * Stripe verse par devise ; une plateforme qui encaisse dans plusieurs pays a donc autant de
-     * comptes de destination que de devises, et autant de secours.
-     */
+    /** MULTI-PAYS : un secours en euro ne dépanne pas un versement en livre. */
     public function test_un_secours_en_euro_ne_couvre_pas_la_livre(): void
     {
         PlatformSettlementAccount::create([

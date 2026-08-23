@@ -8,16 +8,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * Sprint 0 — Task 3 : Provider Stripe Connect API (RN Phase 2) GET /api/provider/stripe-connect/status → onboarding state + capabilities POST /api/provider/stripe-connect/onboard → create Express account + return account link URL GET /api/provider/stripe-connect/payouts → paginated Stripe payouts list GET /api/provider/stripe-connect/dashboard-link → Stripe Express login link
+ *
  * @group Provider — Stripe Connect
  *
  * @authenticated
- *
- * Sprint 0 — Task 3 : Provider Stripe Connect API (RN Phase 2)
- *
- * GET  /api/provider/stripe-connect/status         → onboarding state + capabilities
- * POST /api/provider/stripe-connect/onboard        → create Express account + return account link URL
- * GET  /api/provider/stripe-connect/payouts        → paginated Stripe payouts list
- * GET  /api/provider/stripe-connect/dashboard-link → Stripe Express login link
  */
 class StripeConnectController extends Controller
 {

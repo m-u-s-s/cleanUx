@@ -6,10 +6,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-/**
- * Liste des cartes Stripe enregistrées du client.
- * Permet d'ajouter (via SetupIntent), supprimer, et set default.
- */
+/** Liste des cartes Stripe enregistrées du client. */
 class SavedPaymentMethods extends Component
 {
     public ?string $newCardSetupIntent = null;

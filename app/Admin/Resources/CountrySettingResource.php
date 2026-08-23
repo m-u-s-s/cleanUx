@@ -10,9 +10,6 @@ use App\Models\CountryOperationalSetting;
 /**
  * Les réglages d’exploitation par pays.
  *
- * Ces bascules coupent des pans entiers d’activité dans un pays : la commande, les missions, la
- * facturation. Elles se règlent sur la page dédiée, qui montre ce qui tombe avec chacune.
- *
  * @extends EloquentResource<CountryOperationalSetting>
  */
 class CountrySettingResource extends EloquentResource

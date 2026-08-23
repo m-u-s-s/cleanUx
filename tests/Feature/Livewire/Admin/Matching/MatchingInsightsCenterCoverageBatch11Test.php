@@ -30,10 +30,7 @@ class MatchingInsightsCenterCoverageBatch11Test extends TestCase
         $this->zone = ServiceZone::factory()->create();
     }
 
-    /**
-     * Le métier commun aux fixtures — obligatoire depuis que le filtre n'a plus de repli : une
-     * réservation sans métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous.
-     */
+    /** Le métier commun aux fixtures — obligatoire depuis que le filtre n'a plus de repli : une réservation sans métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous. */
     private function trade(): Trade
     {
         return Trade::firstOrCreate(

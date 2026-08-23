@@ -10,11 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * UNE CANDIDATURE (E25).
  *
- * LE CANDIDAT N'EST PAS UN UTILISATEUR, et c'est la décision structurante de ce module. Exiger un
- * compte avant de postuler diviserait les candidatures par cinq : le nom, le courriel et le
- * téléphone vivent donc ici, et `user_id` n'est rempli que si la personne se trouve déjà être
- * quelqu'un de la plateforme.
- *
  * @property int $id
  * @property int $job_posting_id
  * @property int|null $user_id

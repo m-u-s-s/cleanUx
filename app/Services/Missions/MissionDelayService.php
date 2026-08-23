@@ -10,27 +10,7 @@ use App\Services\Cancellation\CancellationAnswerVerifier;
 use App\Services\Cancellation\CancellationExemptQuota;
 use Illuminate\Support\Carbon;
 
-/**
- * LE MINUTEUR DE RETARD — dire le retard AVANT que le client ne le découvre.
- *
- * Le fait était déjà mesuré, et pour un seul usage : décider si l'option « il est en retard »
- * pouvait s'afficher dans le formulaire d'annulation. Autrement dit, la plateforme ne parlait du
- * retard qu'à la personne qui avait déjà renoncé — elle constatait l'échec au lieu de l'éviter.
- *
- * ── LE RETARD EST UN FAIT, L'HEURE ANNONCÉE EST UNE PROMESSE ─────────────────────────────────
- *
- * Ce service tient les deux séparément. Le fait vient de `CancellationAnswerVerifier`, seule
- * mesure du dépôt : le minuteur et le formulaire d'annulation doivent basculer à la même minute,
- * sans quoi un client averti d'un retard de vingt-deux minutes se verrait refuser le motif « il
- * est en retard » et lirait une panne. La promesse, elle, vit sur la réservation, et son absence
- * est une information : personne n'a répondu.
- *
- * ── LES TROIS ISSUES ─────────────────────────────────────────────────────────────────────────
- *
- * Attendre, reprogrammer, annuler sans frais. Ce service ne les exécute pas — chacune a déjà son
- * tuyau, et en ouvrir un quatrième créerait une seconde façon d'annuler. Il dit seulement
- * lesquelles sont réellement ouvertes, pour qu'aucun bouton ne soit proposé puis refusé.
- */
+/** LE MINUTEUR DE RETARD — dire le retard AVANT que le client ne le découvre. */
 class MissionDelayService
 {
     public function __construct(
@@ -61,10 +41,6 @@ class MissionDelayService
     /**
      * LA PROMESSE DU PRESTATAIRE, si elle tient encore.
      *
-     * Une heure annoncée qui est elle-même dépassée ne rassure plus personne : on la laisse
-     * visible, mais le client verra qu'elle est passée. C'est volontaire — l'effacer donnerait
-     * l'impression que rien n'a été promis, et c'est la promesse non tenue qui compte.
-     *
      * @return array{arrivee_at: string|null, motif: string|null}|null
      */
     private function annonce(Booking $booking): ?array
@@ -79,14 +55,7 @@ class MissionDelayService
         ];
     }
 
-    /**
-     * L'ANNULATION SANS FRAIS EST-ELLE RÉELLEMENT OUVERTE ?
-     *
-     * On ne redécide pas : on relit le questionnaire. Une option active portant la vérification
-     * « retard », rattachée à un motif exempté qui exonère encore cette personne. Recalculer ici
-     * ferait deux barèmes pour une même règle — et le jour où l'exploitation change le plafond
-     * depuis la console, un seul des deux suivrait.
-     */
+    /** L'ANNULATION SANS FRAIS EST-ELLE RÉELLEMENT OUVERTE ? */
     private function annulationGratuiteOuverte(Booking $booking): bool
     {
         $option = CancellationQuestionOption::query()
@@ -108,15 +77,7 @@ class MissionDelayService
         return $this->quota->exonereEncore($motif, $booking->client_id === null ? null : (int) $booking->client_id);
     }
 
-    /**
-     * PRÉVENIR LE CLIENT — une fois, et une seule.
-     *
-     * La commande repasse toutes les cinq minutes ; sans le tampon, un retard d'une heure enverrait
-     * douze notifications identiques, ce qui est la façon la plus sûre de faire couper les
-     * notifications par celui qu'on voulait aider.
-     *
-     * Rend `true` seulement si l'annonce vient d'être faite.
-     */
+    /** PRÉVENIR LE CLIENT — une fois, et une seule. */
     public function annoncerAuClient(Booking $booking): bool
     {
         if ($booking->late_notified_at !== null) {
@@ -142,13 +103,6 @@ class MissionDelayService
 
     /**
      * LE PRESTATAIRE RÉPOND — et c'est la seule chose qui évite l'annulation.
-     *
-     * Un retard annoncé avec une heure d'arrivée se gère ; un retard muet se subit. Le motif est
-     * facultatif et court : on veut « embouteillage », pas un récit.
-     *
-     * L'heure annoncée n'est pas contrainte d'être dans le futur — un prestataire qui répond avec
-     * cinq minutes de décalage écrirait une heure déjà passée, et refuser sa réponse pour cela le
-     * laisserait muet, ce qui est pire pour le client.
      *
      * @return array{en_retard: bool, minutes: int|null, heure_prevue: string|null, annonce: array{arrivee_at: string|null, motif: string|null}|null, annulation_gratuite: bool, prevenu_at: string|null}
      */

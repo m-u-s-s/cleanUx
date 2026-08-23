@@ -15,24 +15,7 @@ use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LE BALAYAGE — chaque page de chaque espace, une par une.
- *
- * Les tests voisins prouvent que les quatre GABARITS servent la bonne marque. Ce fichier répond à
- * l'autre moitié de la question, la seule qui compte pour un utilisateur : **est-ce qu'une page
- * échappe à son gabarit ?** Une vue qui construirait sa propre coquille, un écran embarqué, une
- * page héritée d'avant la refonte — rien de tout cela n'apparaît dans un relevé de gabarits, et
- * c'est exactement ainsi que quatre identités concurrentes ont pu coexister pendant des mois.
- *
- * LA LISTE VIENT DU RÉPERTOIRE DE MODULES, pas d'un tableau écrit à la main : `config/modules.php`
- * est ce qui peuple les barres de navigation, donc ce qu'un utilisateur peut effectivement
- * atteindre. Un module ajouté demain entre dans ce balayage sans qu'on y touche.
- *
- * CE QUI EST TOLÉRÉ, ET POURQUOI. Une page qui ne rend pas 200 est IGNORÉE : beaucoup d'écrans
- * exigent des données que ce test n'a pas à fabriquer, et les faire échouer ici transformerait un
- * garde-fou de marque en test d'intégration fragile. Le compte de pages réellement inspectées est
- * affirmé — sans cela, un jour où tout redirigerait, ce test passerait en n'ayant rien regardé.
- */
+/** LE BALAYAGE — chaque page de chaque espace, une par une. */
 class BalayageDesEspacesTest extends TestCase
 {
     use RefreshDatabase;
@@ -130,13 +113,7 @@ class BalayageDesEspacesTest extends TestCase
                     continue;
                 }
 
-                /*
-                 * SEULES LES PAGES HTML SONT JUGÉES. Le répertoire de modules contient au moins une
-                 * entrée qui pointe vers un point d'entrée JSON (`presence.me`) : lui reprocher de
-                 * ne pas porter de logo n'aurait aucun sens. Le vrai défaut est ailleurs — un lien
-                 * de navigation qui rend du JSON brut à qui clique dessus — et il est signalé à
-                 * part, pas corrigé sous couvert de marque.
-                 */
+                // SEULES LES PAGES HTML SONT JUGÉES.
                 if (! str_contains((string) $reponse->headers->get('content-type'), 'text/html')) {
                     continue;
                 }
@@ -162,13 +139,7 @@ class BalayageDesEspacesTest extends TestCase
             }
         }
 
-        /*
-         * LE PLANCHER EST HAUT EXPRÈS. Sans lui, un jour où l'authentification redirigerait tout,
-         * ce test passerait en n'ayant regardé aucune page — vert pour la pire des raisons. Le
-         * balayage en inspectait 155 le jour où il a été écrit ; ce seuil laisse de la marge aux
-         * écrans qui deviendront exigeants en données, et se plaint dès qu'un tiers du parc
-         * disparaît d'un coup.
-         */
+        // LE PLANCHER EST HAUT EXPRÈS.
         $this->assertGreaterThan(
             120,
             $inspectees,

@@ -34,17 +34,6 @@ use RuntimeException;
 /**
  * CE QUI SE PASSE CHEZ MOI, PENDANT QUE ÇA SE PASSE.
  *
- * Le client raisonne en RÉSERVATION — c'est le seul identifiant qu'il ait jamais vu, et le seul
- * que porte son application. La mission est un objet d'exécution interne ; l'exiger de lui
- * l'obligerait à en connaître l'existence, et à la demander d'abord.
- *
- * Une réservation sans mission n'est pas une erreur : elle n'a simplement pas encore commencé. La
- * réponse est alors un fil vide, pas un 404 — un écran de suivi qui affiche « introuvable » avant
- * l'heure du rendez-vous inquiète pour rien.
- *
- * Tout ce qui sort d'ici est filtré sur `client_visible`. Le prestataire documente aussi pour
- * lui-même et pour sa société ; ce n'est pas la même audience.
- *
  * @group Mission — sur place (client)
  *
  * @authenticated
@@ -98,13 +87,7 @@ class MissionOnSiteController extends Controller
 
         $medias = $this->mediaService->pourLaMission($mission, clientSeulement: true);
 
-        /*
-         * TROIS PAQUETS, PAS UNE LISTE À PLAT.
-         *
-         * Le comparateur avant/après est la raison d'être de cette vue : le faire reconstruire par
-         * chaque surface (mobile, web, PDF) garantirait trois façons différentes d'apparier une
-         * photo d'avant sans photo d'après.
-         */
+        // TROIS PAQUETS, PAS UNE LISTE À PLAT.
         return response()->json([
             'before' => $this->presenterGroupe($medias, MissionMedia::TYPE_BEFORE_PHOTO),
             'after' => $this->presenterGroupe($medias, MissionMedia::TYPE_AFTER_PHOTO),
@@ -135,9 +118,7 @@ class MissionOnSiteController extends Controller
         ]);
     }
 
-    /**
-     * LES SUPPLÉMENTS PROPOSÉS, ET CELUI QUI ATTEND UNE RÉPONSE (F12).
-     */
+    /** LES SUPPLÉMENTS PROPOSÉS, ET CELUI QUI ATTEND UNE RÉPONSE (F12). */
     public function extras(Request $request, Booking $booking): JsonResponse
     {
         $this->assertClientPeutVoirLaReservation($request->user(), $booking);
@@ -156,18 +137,7 @@ class MissionOnSiteController extends Controller
         ]);
     }
 
-    /**
-     * ACCEPTER EN UN GESTE (F12).
-     *
-     * Le prestataire est sur place, à l'instant : une réponse qui arrive après son départ ne sert
-     * plus à rien. Ce point d'entrée est donc volontairement minimal — pas de formulaire, pas de
-     * confirmation en deux temps.
-     *
-     * L'APPARTENANCE EST VÉRIFIÉE DEUX FOIS, et ce n'est pas une redondance : d'abord que cette
-     * réservation est bien celle de la personne, ensuite que ce supplément appartient bien à CETTE
-     * mission. Sans la seconde, un identifiant de supplément deviné ferait accepter — et payer — le
-     * supplément de quelqu'un d'autre.
-     */
+    /** ACCEPTER EN UN GESTE (F12). */
     public function approveExtra(Request $request, Booking $booking, MissionExtra $extra): JsonResponse
     {
         return $this->repondreAuSupplement($request, $booking, $extra, accepte: true);
@@ -208,14 +178,6 @@ class MissionOnSiteController extends Controller
     /**
      * PROLONGER — acheter du temps en plus, avant ou pendant l'intervention.
      *
-     * LE CLIENT DÉCIDE SEUL, sans passer par le prestataire : c'est son argent et son logement.
-     * Faire transiter la demande par une acceptation ferait perdre les minutes qui comptent — la
-     * fenêtre se ferme à la fin de la franchise.
-     *
-     * LE REFUS EST UNE RÉPONSE, PAS UNE PANNE. `422` avec un message lisible : « la durée maximale
-     * est atteinte », « le temps supplémentaire est déjà facturé ». Un `500` laisserait le client
-     * appuyer trois fois sur un bouton qui ne dit rien.
-     *
      * @response 200 {"clock": {"applies": true, "purchased_minutes": 240, "deadline_at": "..."}}
      */
     public function prolonger(Request $request, Booking $booking): JsonResponse
@@ -223,11 +185,7 @@ class MissionOnSiteController extends Controller
         $this->assertClientPeutVoirLaReservation($request->user(), $booking);
 
         $donnees = $request->validate([
-            /*
-             * BORNE HAUTE ICI AUSSI, et pas seulement dans le service : sans elle, un entier
-             * démesuré traverserait la validation avant d'être refusé plus loin — et un entier
-             * négatif tenterait une RÉDUCTION du temps acheté, ce que personne n'a autorisé.
-             */
+            // BORNE HAUTE ICI AUSSI, et pas seulement dans le service : sans elle, un entier démesuré traverserait la validation avant d'être refusé plus loin — et un entier négatif tenterait une RÉDUCTION du temps acheté, ce que personne n'a autorisé.
             'additional_minutes' => ['required', 'integer', 'min:1', 'max:1440'],
         ]);
 
@@ -249,9 +207,6 @@ class MissionOnSiteController extends Controller
 
     /**
      * MA LISTE DE TÂCHES — ce que je veux qu'on fasse chez moi.
-     *
-     * Elle porte AUSSI la fenêtre et les suggestions : l'écran doit pouvoir afficher le minuteur
-     * et proposer le gabarit sans un second aller-retour. Une seule lecture, un seul instant.
      *
      * @response 200 {"ok": true, "engine": "domicile", "window": {"open": true, "closes_at": null, "minutes_left": null, "reason": null}, "items": [], "suggestions": ["Vérifier accès client"]}
      */
@@ -277,10 +232,7 @@ class MissionOnSiteController extends Controller
         return response()->json(['ok' => true] + $this->todoService->pourLeClient($mission));
     }
 
-    /**
-     * AJOUTER UNE TÂCHE. Elle conditionnera la clôture du prestataire — c'est dit à l'écran avant
-     * l'écriture, et redit ici par la réponse.
-     */
+    /** AJOUTER UNE TÂCHE. */
     public function ajouterUneTache(Request $request, Booking $booking): JsonResponse
     {
         $this->assertClientPeutVoirLaReservation($request->user(), $booking);
@@ -326,13 +278,7 @@ class MissionOnSiteController extends Controller
         return response()->json(['ok' => true] + $this->todoService->pourLeClient($mission->refresh()));
     }
 
-    /**
-     * LE NOUVEAU DEVIS QUE LE PRESTATAIRE PROPOSE — vu du salon.
-     *
-     * Les DEUX totaux, ligne à ligne, avec le nom du code de réduction s'il y en a un. Sans cela,
-     * le client verrait un chiffre plus élevé sans comprendre où est passée sa remise, et refuserait
-     * par réflexe.
-     */
+    /** LE NOUVEAU DEVIS QUE LE PRESTATAIRE PROPOSE — vu du salon. */
     public function revisionDeDevis(Request $request, Booking $booking): JsonResponse
     {
         $this->assertClientPeutVoirLaReservation($request->user(), $booking);
@@ -373,12 +319,7 @@ class MissionOnSiteController extends Controller
         return response()->json(['ok' => true, 'revision' => $this->presenterLaRevision($acceptee)]);
     }
 
-    /**
-     * Le client refuse — et DIT ce qu'il veut ensuite.
-     *
-     * `continue` garde la prestation au prix d'origine, `stop` l'arrête. Le serveur ne choisit pas
-     * à sa place : les deux issues n'ont pas le même coût pour lui.
-     */
+    /** Le client refuse — et DIT ce qu'il veut ensuite. */
     public function refuserLaRevision(
         Request $request,
         Booking $booking,
@@ -432,13 +373,6 @@ class MissionOnSiteController extends Controller
     /**
      * LA CONSIGNE DE DERNIÈRE MINUTE — « le digicode a changé ce matin ».
      *
-     * Elle se pose pendant que le prestataire est en route, et elle prime sur les consignes du
-     * carnet parce qu'elle est la plus récente. Elle ne les REMPLACE pas : écrire dans le carnet
-     * ferait lire un code du jour à quelqu'un d'autre la semaine suivante.
-     *
-     * Une chaîne vide EFFACE la consigne — le client s'est trompé, ou la situation est revenue à
-     * la normale, et lui refuser l'effacement le laisserait avec une fausse consigne affichée.
-     *
      * @bodyParam note string La consigne, ou une chaîne vide pour l'effacer. Example: Le digicode est 4589.
      */
     public function consigneDAcces(Request $request, Booking $booking): JsonResponse
@@ -463,14 +397,7 @@ class MissionOnSiteController extends Controller
         ]);
     }
 
-    /**
-     * LE MINUTEUR DE RETARD, VU DU CLIENT.
-     *
-     * Sur son propre chemin, et pas greffé sur le suivi GPS : `tracking` rend `null` tant
-     * qu'aucune session n'est ouverte, et un prestataire qui n'est jamais parti est exactement le
-     * cas où le retard compte le plus. Le suivi aurait donc été muet précisément quand il fallait
-     * parler.
-     */
+    /** LE MINUTEUR DE RETARD, VU DU CLIENT. */
     public function retard(Request $request, Booking $booking, MissionDelayService $retards): JsonResponse
     {
         $this->assertClientPeutVoirLaReservation($request->user(), $booking);
@@ -478,14 +405,7 @@ class MissionOnSiteController extends Controller
         return response()->json(['data' => $retards->etat($booking)]);
     }
 
-    /**
-     * DÉCALER L'INTERVENTION — la deuxième des trois issues.
-     *
-     * Elle réutilise `BookingRescheduleService`, qui portait déjà l'autorisation, la validation et
-     * l'historique. Ce service n'était atteignable QUE par le glisser-déposer du calendrier web :
-     * un client mobile devant un prestataire en retard n'avait donc le choix qu'entre attendre et
-     * annuler, alors que le décalage existait à quelques lignes de là.
-     */
+    /** DÉCALER L'INTERVENTION — la deuxième des trois issues. */
     public function reprogrammer(Request $request, Booking $booking, BookingRescheduleService $reprogrammation): JsonResponse
     {
         $this->assertClientPeutVoirLaReservation($request->user(), $booking);
@@ -514,12 +434,7 @@ class MissionOnSiteController extends Controller
         ]);
     }
 
-    /**
-     * DÉCLARER SON ABSENCE (F14).
-     *
-     * La déclaration vient du CLIENT, jamais du prestataire : si celui qui doit prouver sa présence
-     * pouvait décider que la preuve ne s'applique pas, il n'y aurait plus de preuve.
-     */
+    /** DÉCLARER SON ABSENCE (F14). */
     public function declarerAbsence(Request $request, Booking $booking): JsonResponse
     {
         $this->assertClientPeutVoirLaReservation($request->user(), $booking);
@@ -552,9 +467,7 @@ class MissionOnSiteController extends Controller
         ]]);
     }
 
-    /**
-     * RÉPONDRE AU PING DE MI-MISSION (F15) — en un geste.
-     */
+    /** RÉPONDRE AU PING DE MI-MISSION (F15) — en un geste. */
     public function repondreAuPing(Request $request, Booking $booking): JsonResponse
     {
         $this->assertClientPeutVoirLaReservation($request->user(), $booking);
@@ -575,18 +488,7 @@ class MissionOnSiteController extends Controller
         ]]);
     }
 
-    /**
-     * LA CLÔTURE GUIDÉE (F16) — un seul flux, dans l'ordre où les choses se décident.
-     *
-     * Rapport, puis pourboire, puis avis. Ce n'est pas un ordre arbitraire : on ne remercie pas
-     * avant de savoir ce qui a été fait, et on ne note pas avant d'avoir décidé si on remercie. Les
-     * trois briques existaient chacune de son côté, atteignables depuis trois endroits différents —
-     * si bien que la plupart des clients n'en voyaient aucune.
-     *
-     * CE POINT D'ENTRÉE NE FAIT RIEN, IL DIT CE QUI RESTE À FAIRE. L'écran s'en sert pour n'afficher
-     * que les étapes encore ouvertes : proposer de noter une intervention déjà notée fait douter de
-     * ce qu'on a validé, et redemander un pourboire déjà versé est franchement gênant.
-     */
+    /** LA CLÔTURE GUIDÉE (F16) — un seul flux, dans l'ordre où les choses se décident. */
     public function closureFlow(Request $request, Booking $booking): JsonResponse
     {
         $this->assertClientPeutVoirLaReservation($request->user(), $booking);

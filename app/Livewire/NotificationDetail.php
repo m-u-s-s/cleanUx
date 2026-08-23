@@ -9,27 +9,12 @@ use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-/**
- * LA FICHE COMPLÈTE D'UNE NOTIFICATION.
- *
- * Le centre montre une ligne par notification ; il ne montre pas tout. Un payload porte souvent
- * plus que son message — références, montants, zone, horodatages, l'URL de résolution — et rien
- * n'exposait ces champs. Cette page les rend TOUS, y compris les clés qu'aucun écran ne connaît
- * encore, et met en avant la seule chose qu'on vient y chercher : où aller pour régler le problème.
- */
+/** LA FICHE COMPLÈTE D'UNE NOTIFICATION. */
 class NotificationDetail extends Component
 {
     public string $notificationId = '';
 
-    /**
-     * L'APPARTENANCE EST DANS LA REQUÊTE, PAS DANS UN CONTRÔLE À CÔTÉ.
-     *
-     * Volontairement pas de liaison implicite de modèle sur `{notification}` : elle résoudrait
-     * l'identifiant SANS regarder à qui la notification appartient, et il faudrait s'en souvenir
-     * pour ajouter un `abort_if()` derrière — une marche qu'on oublie. En passant par
-     * `$user->notifications()`, la notification d'autrui n'existe tout simplement pas : le 404
-     * n'est pas une décision, c'est le résultat de la requête.
-     */
+    /** L'APPARTENANCE EST DANS LA REQUÊTE, PAS DANS UN CONTRÔLE À CÔTÉ. */
     public function mount(string $notification): void
     {
         $this->notificationId = $notification;
@@ -40,11 +25,7 @@ class NotificationDetail extends Component
             abort(404);
         }
 
-        /*
-         * Ouvrir vaut lecture — c'est ce que fait tout centre de notifications, et sans cela le
-         * compteur ne redescendrait jamais qu'à la main. Le geste reste réversible : « Remettre
-         * non lu » est sur cette page.
-         */
+        // Ouvrir vaut lecture — c'est ce que fait tout centre de notifications, et sans cela le compteur ne redescendrait jamais qu'à la main.
         if (is_null($trouvee->read_at)) {
             $trouvee->markAsRead();
         }
@@ -92,11 +73,6 @@ class NotificationDetail extends Component
     /**
      * TOUT LE PAYLOAD, PAS SEULEMENT LES CLÉS QUE CET ÉCRAN CONNAÎT.
      *
-     * Les champs déjà rendus en haut de page (titre, message, lien) sont retirés pour ne pas les
-     * répéter ; tout le reste est affiché tel quel, y compris une clé ajoutée demain par une
-     * notification qu'on n'a pas encore écrite. Un tableau réduit aux clés connues redeviendrait
-     * la moitié du problème qu'on corrige.
-     *
      * @return array<string, string>
      */
     public function payloadDetaille(): array
@@ -129,10 +105,7 @@ class NotificationDetail extends Component
         return $lignes;
     }
 
-    /**
-     * Les clés techniques d'un payload ne se lisent pas. Celles qu'on connaît reçoivent leur nom
-     * français ; les autres sont rendues telles quelles plutôt que masquées.
-     */
+    /** Les clés techniques d'un payload ne se lisent pas. */
     public function libellePayload(string $cle): string
     {
         $connues = [

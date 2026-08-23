@@ -11,9 +11,6 @@ use Illuminate\Support\Carbon;
 /**
  * CE QUI S'EST RÉELLEMENT PASSÉ (E20) — par opposition au shift, qui dit ce qui était prévu.
  *
- * Les confondre reviendrait à payer le prévu : cela arrange l'employeur les jours de retard et le
- * salarié les jours de dépassement, et fâche tout le monde le reste du temps.
- *
  * @property int $id
  * @property int $organization_account_id
  * @property int $user_id

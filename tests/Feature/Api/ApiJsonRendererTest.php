@@ -8,19 +8,7 @@ use Illuminate\Http\Request;
 use PDOException;
 use Tests\TestCase;
 
-/**
- * Le rendu JSON des erreurs d'API plantait lui-même sur les erreurs SQL.
- *
- * `QueryException` hérite de `PDOException`, donc de `RuntimeException`, et `getCode()` y renvoie
- * le SQLSTATE — une CHAÎNE, par exemple '42S22'. La branche « exception métier » testait
- * `$e->getCode() >= 400 && < 600` ; en PHP 8 cette comparaison entre une chaîne non numérique et
- * un entier se fait entre chaînes, et '42S22' passe les deux bornes. Le gestionnaire renvoyait
- * donc '42S22' comme statut HTTP, que le constructeur de JsonResponse refuse (TypeError).
- *
- * Conséquence concrète : une colonne manquante remontait au client sous la forme d'une erreur du
- * gestionnaire, l'erreur SQL d'origine étant perdue. Exactement le genre de panne qu'un
- * gestionnaire d'erreurs doit rendre lisible, pas masquer.
- */
+/** Le rendu JSON des erreurs d'API plantait lui-même sur les erreurs SQL. */
 class ApiJsonRendererTest extends TestCase
 {
     public function test_a_sql_error_renders_as_a_five_hundred_instead_of_crashing_the_renderer(): void
@@ -32,10 +20,7 @@ class ApiJsonRendererTest extends TestCase
         $this->assertSame('server_error', $response->getData(true)['error_code']);
     }
 
-    /**
-     * En mode debug, le message d'origine doit être visible : c'est lui qui nomme la colonne
-     * manquante. Sans lui, il faut rejouer l'appel à la main pour savoir ce qui a échoué.
-     */
+    /** En mode debug, le message d'origine doit être visible : c'est lui qui nomme la colonne manquante. */
     public function test_debug_mode_surfaces_the_underlying_message(): void
     {
         config(['app.debug' => true]);
@@ -55,10 +40,7 @@ class ApiJsonRendererTest extends TestCase
         $this->assertArrayNotHasKey('debug', $payload);
     }
 
-    /**
-     * Les exceptions métier portent un vrai statut HTTP entier dans leur code : cette branche ne
-     * doit pas être perdue en réparant la précédente.
-     */
+    /** Les exceptions métier portent un vrai statut HTTP entier dans leur code : cette branche ne doit pas être perdue en réparant la précédente. */
     public function test_a_domain_exception_still_maps_to_its_own_status(): void
     {
         $response = ApiJsonRenderer::render(
@@ -70,11 +52,7 @@ class ApiJsonRendererTest extends TestCase
         $this->assertSame('domain_error', $response->getData(true)['error_code']);
     }
 
-    /**
-     * Reproduit fidèlement ce que renvoie le pilote MySQL : `getCode()` y vaut la CHAÎNE '42S22',
-     * vérifié sur la vraie base. Le constructeur de PDOException n'accepte qu'un entier, d'où la
-     * réflexion — un code entier ne déclencherait pas le défaut et le test passerait à vide.
-     */
+    /** Reproduit fidèlement ce que renvoie le pilote MySQL : `getCode()` y vaut la CHAÎNE '42S22', vérifié sur la vraie base. */
     private function sqlStateException(): QueryException
     {
         $pdoException = new PDOException(

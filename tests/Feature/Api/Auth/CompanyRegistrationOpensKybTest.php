@@ -10,17 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
-/**
- * L'inscription d'une société ouvre sa vérification d'entreprise.
- *
- * Le module KYB était entièrement construit — immatriculation contre les registres officiels,
- * TVA via VIES, criblage des sanctions, score de risque pondéré — mais AUCUNE `BusinessEntity`
- * n'était jamais créée : il n'avait donc jamais rien à vérifier. Une société s'inscrivait, son
- * organisation était créée, et sa légitimité n'était contrôlée par personne.
- *
- * Les contrôles sortants sont mis en file : les exécuter pendant l'inscription la ralentirait, et
- * l'indisponibilité d'un registre ferait échouer une création de compte par ailleurs valide.
- */
+/** L'inscription d'une société ouvre sa vérification d'entreprise. */
 class CompanyRegistrationOpensKybTest extends TestCase
 {
     use RefreshDatabase;
@@ -47,10 +37,7 @@ class CompanyRegistrationOpensKybTest extends TestCase
         $this->assertSame(BusinessEntity::STATUS_PENDING, $entity->status);
     }
 
-    /**
-     * Chaque pays a son vocabulaire d'identifiant, et le module refuse un type qu'il ne déclare
-     * pas pour ce pays. Un nom générique aurait fait échouer toute création d'entité belge.
-     */
+    /** Chaque pays a son vocabulaire d'identifiant, et le module refuse un type qu'il ne déclare pas pour ce pays. */
     public function test_a_belgian_number_is_registered_as_a_kbo(): void
     {
         Queue::fake();
@@ -122,10 +109,7 @@ class CompanyRegistrationOpensKybTest extends TestCase
         $this->assertSame(0, BusinessEntity::query()->count());
     }
 
-    /**
-     * Garantie principale : la vérification d'entreprise est un effet de bord. Son échec ne doit
-     * jamais compromettre une inscription par ailleurs valide.
-     */
+    /** Garantie principale : la vérification d'entreprise est un effet de bord. */
     public function test_a_failing_verification_never_breaks_the_registration(): void
     {
         Queue::fake();

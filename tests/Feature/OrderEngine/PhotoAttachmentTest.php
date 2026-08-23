@@ -12,17 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * « Une photo vaut dix questions » — et encore faut-il qu'elle arrive quelque part.
- *
- * Le champ existait, le tableau `order_draft_media` existait, le modèle et la relation aussi. Rien
- * ne les reliait : `wire:model` sur un `<input type="file">` sans le trait d'upload ne fait
- * strictement rien. Le client choisissait une photo, voyait « Envoi en cours… », et le fichier
- * disparaissait — sans erreur, sans trace, et sans que le prestataire n'en voie jamais la couleur.
- *
- * Ces tests verrouillent le chemin complet : le fichier est stocké, la ligne existe, elle est
- * rattachée à la bonne ligne de commande, et le client peut revenir en arrière.
- */
+/** « Une photo vaut dix questions » — et encore faut-il qu'elle arrive quelque part. */
 class PhotoAttachmentTest extends TestCase
 {
     use RefreshDatabase;
@@ -68,11 +58,7 @@ class PhotoAttachmentTest extends TestCase
         Storage::disk('public')->assertMissing($path);
     }
 
-    /**
-     * Un fichier qui n'est pas une image est refusé EN LE DISANT.
-     *
-     * Un refus muet fait recommencer trois fois avec le même fichier.
-     */
+    /** Un fichier qui n'est pas une image est refusé EN LE DISANT. */
     public function test_a_non_image_is_refused_with_an_explanation(): void
     {
         Livewire::test(OrderJourney::class)
@@ -94,12 +80,7 @@ class PhotoAttachmentTest extends TestCase
             ->assertSee('Retirer cette photo');
     }
 
-    /**
-     * La photo suit le MÉTIER, pas la commande.
-     *
-     * En multi-services, le mur à peindre et la douche à refaire ne se photographient pas
-     * ensemble : chaque prestataire doit voir ce qui le concerne.
-     */
+    /** La photo suit le MÉTIER, pas la commande. */
     public function test_a_photo_belongs_to_the_trade_it_was_attached_to(): void
     {
         $peinture = $this->peinture();

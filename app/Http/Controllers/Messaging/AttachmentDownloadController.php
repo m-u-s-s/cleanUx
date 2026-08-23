@@ -9,14 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/**
- * Contrôleur pour la consultation des pièces jointes.
- *
- * Sécurité :
- *   - URL signée (URL::temporarySignedRoute) → expire en 15 min
- *   - Vérification que l'utilisateur est membre du channel du message
- *   - Refus si scan AV = infected
- */
+/** Contrôleur pour la consultation des pièces jointes. */
 class AttachmentDownloadController extends Controller
 {
     public function download(Request $request, MessageAttachment $attachment): StreamedResponse

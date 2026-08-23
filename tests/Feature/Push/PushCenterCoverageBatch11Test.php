@@ -119,14 +119,7 @@ class PushCenterCoverageBatch11Test extends TestCase
             'locale' => 'fr',
         ]);
 
-        /*
-         * L'HORLOGE EST FIGÉE, sinon ce test tombe une fois de temps en temps.
-         *
-         * La clé d'idempotence est bâtie sur `now()->timestamp` — côté code au moment du renvoi,
-         * côté test au moment de l'assertion. Quand la seconde change entre les deux, le test
-         * attend `retry:1:…585` là où la base porte `retry:1:…584`, et l'échec n'apprend rien sur
-         * le produit : il dit seulement que la suite a franchi une frontière de seconde.
-         */
+        // L'HORLOGE EST FIGÉE, sinon ce test tombe une fois de temps en temps.
         Carbon::setTestNow(Carbon::now());
 
         try {

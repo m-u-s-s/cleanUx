@@ -10,16 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
-/**
- * La présence se prouve par le code ET par la position, jamais par l'un des deux seul.
- *
- * Le code affiché par le client atteste d'une POSSESSION. Photographié puis envoyé par messagerie,
- * ou simplement dicté au téléphone, il se valide depuis n'importe où pendant ses dix minutes de
- * vie — c'est l'écart que ces tests referment.
- *
- * La position, elle, atteste d'une PROXIMITÉ : elle ne dit pas qu'on est entré chez le client. Ni
- * l'une ni l'autre ne suffit ; leur croisement exige d'être sur place avec le client.
- */
+/** La présence se prouve par le code ET par la position, jamais par l'un des deux seul. */
 class PresenceGeoProofTest extends TestCase
 {
     use RefreshDatabase;
@@ -38,10 +29,7 @@ class PresenceGeoProofTest extends TestCase
     /** ~378 m au nord : hors du rayon de base, mais pardonnable avec un relevé imprécis. */
     private const DRIFTED_LAT = 50.8501;
 
-    /**
-     * LA garantie. Sans elle, le client photographie son écran, l'envoie au prestataire, et celui-ci
-     * facture une intervention à laquelle il n'est jamais venu.
-     */
+    /** LA garantie. */
     public function test_a_valid_code_played_from_far_away_is_refused(): void
     {
         [$provider, $session, $code] = $this->scenario();
@@ -67,13 +55,7 @@ class PresenceGeoProofTest extends TestCase
         $this->assertLessThan(200, $session->presence_confirmed_distance_m);
     }
 
-    /**
-     * Le contre-piège du dispositif : la position doit venir DU SCAN, pas du dernier relevé reçu.
-     *
-     * S'appuyer sur `last_lat`/`last_lng` rendrait la fraude triviale — il suffirait de couper le
-     * partage de position en quittant les lieux pour figer la session sur une valeur flatteuse,
-     * puis de confirmer à distance des heures plus tard.
-     */
+    /** Le contre-piège du dispositif : la position doit venir DU SCAN, pas du dernier relevé reçu. */
     public function test_the_session_last_ping_cannot_stand_in_for_the_scan_position(): void
     {
         [$provider, $session, $code] = $this->scenario();
@@ -98,10 +80,7 @@ class PresenceGeoProofTest extends TestCase
         $this->assertNull($session->fresh()->presence_confirmed_at);
     }
 
-    /**
-     * Soupape de déploiement : le temps qu'une ancienne version de l'application disparaisse, on
-     * accepte une confirmation sans position — mais elle reste reconnaissable après coup.
-     */
+    /** Soupape de déploiement : le temps qu'une ancienne version de l'application disparaisse, on accepte une confirmation sans position — mais elle reste reconnaissable après coup. */
     public function test_a_missing_position_can_be_tolerated_by_configuration(): void
     {
         config(['trip_tracking.presence_require_position' => false]);
@@ -130,11 +109,7 @@ class PresenceGeoProofTest extends TestCase
         );
     }
 
-    /**
-     * Un dossier sans coordonnées ne doit pas bloquer une intervention : il n'y a rien à comparer,
-     * et le prestataire n'y est pour rien. Le verdict le dit, plutôt que de laisser une distance
-     * nulle raconter la même chose que trois causes différentes.
-     */
+    /** Un dossier sans coordonnées ne doit pas bloquer une intervention : il n'y a rien à comparer, et le prestataire n'y est pour rien. */
     public function test_a_job_without_coordinates_does_not_block_the_provider(): void
     {
         [$provider, $session, $code] = $this->scenario();
@@ -149,11 +124,7 @@ class PresenceGeoProofTest extends TestCase
         );
     }
 
-    /**
-     * L'instantané de la session peut être vide sur les sessions ouvertes avant le remplissage des
-     * coordonnées. La réservation a pu être géocodée depuis : s'en contenter neutraliserait le
-     * contrôle sur toutes ces sessions.
-     */
+    /** L'instantané de la session peut être vide sur les sessions ouvertes avant le remplissage des coordonnées. */
     public function test_the_booking_coordinates_are_used_when_the_session_snapshot_is_empty(): void
     {
         [$provider, $session, $code] = $this->scenario();
@@ -184,10 +155,7 @@ class PresenceGeoProofTest extends TestCase
         $this->assertNull($session->fresh()->presence_confirmed_at);
     }
 
-    /**
-     * Un relevé honnête mais mauvais mérite d'être jugé sur la précision qu'il annonce. À 378 m, le
-     * rayon de base (250 m) refuserait — la précision annoncée de 400 m rattrape l'écart.
-     */
+    /** Un relevé honnête mais mauvais mérite d'être jugé sur la précision qu'il annonce. */
     public function test_a_poor_but_declared_accuracy_widens_the_accepted_radius(): void
     {
         [$provider, $session, $code] = $this->scenario();
@@ -211,10 +179,7 @@ class PresenceGeoProofTest extends TestCase
             ->assertStatus(422);
     }
 
-    /**
-     * La précision vient de l'appareil, donc de la partie contrôlée. Sans plafond, en annoncer une
-     * énorme rouvrirait la porte en grand.
-     */
+    /** La précision vient de l'appareil, donc de la partie contrôlée. */
     public function test_an_absurd_declared_accuracy_is_capped(): void
     {
         [$provider, $session, $code] = $this->scenario();
@@ -231,10 +196,7 @@ class PresenceGeoProofTest extends TestCase
         $this->assertNull($session->fresh()->presence_confirmed_at);
     }
 
-    /**
-     * Être au mauvais endroit n'est pas se tromper de code. Consommer un essai ici priverait le
-     * prestataire dont le relevé dérive des tentatives dont il aura besoin une fois sur place.
-     */
+    /** Être au mauvais endroit n'est pas se tromper de code. */
     public function test_a_position_refusal_does_not_burn_a_code_attempt(): void
     {
         [$provider, $session, $code] = $this->scenario();
@@ -274,10 +236,7 @@ class PresenceGeoProofTest extends TestCase
         $this->assertCount(10, $session->fresh()->metadata['presence_geo_rejections']);
     }
 
-    /**
-     * Les colonnes `presence_confirmed_*` disent que la présence a été établie. Y écrire un essai
-     * repoussé ferait mentir la ligne — et un litige se plaide sur cette ligne.
-     */
+    /** Les colonnes `presence_confirmed_*` disent que la présence a été établie. */
     public function test_a_refused_attempt_never_pollutes_the_confirmation_columns(): void
     {
         [$provider, $session, $code] = $this->scenario();
@@ -290,11 +249,7 @@ class PresenceGeoProofTest extends TestCase
         $this->assertNull($session->presence_geo_verdict);
     }
 
-    /**
-     * Un double scan reste sans conséquence : la présence est un fait déjà gravé, et le réseau
-     * mobile fait rejouer des appels. La rejuger sur la position d'un prestataire qui a depuis
-     * repris la route effacerait une preuve valide.
-     */
+    /** Un double scan reste sans conséquence : la présence est un fait déjà gravé, et le réseau mobile fait rejouer des appels. */
     public function test_an_already_confirmed_presence_is_not_re_examined(): void
     {
         [$provider, $session, $code] = $this->scenario();

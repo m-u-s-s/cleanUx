@@ -11,34 +11,12 @@ use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * LES ENTITÉS CENTRALES NE DOIVENT PAS ÊTRE REMPLISSABLES DEPUIS UNE REQUÊTE.
- *
- * CE FICHIER PROTÉGEAIT LE MAUVAIS MODÈLE. Il visait `RendezVous`, qui portait une liste noire
- * refusant `status`, `client_id`, `payment_status` et les montants — et son propre commentaire
- * admettait que « rien n'assigne en masse RendezVous aujourd'hui ». C'était exact : `RendezVous`
- * désignait la table miroir `rendez_vous`, aujourd'hui supprimée. La défense en profondeur était
- * posée sur un modèle que personne n'appelait, pendant que `Booking` — celui que traversent tous
- * les contrôleurs — laisse ces mêmes colonnes assignables parmi ses 128 champs.
- *
- * POURQUOI NE PAS SIMPLEMENT RESTREINDRE `Booking::$fillable` : `status` seul apparaît dans plus de
- * 2700 tableaux littéraux du dépôt, et Eloquent ÉCARTE EN SILENCE un attribut non remplissable au
- * lieu de refuser. Retirer ces colonnes ne casserait pas la suite : elle passerait au vert avec des
- * réservations dont le statut ne serait plus écrit. Le remède serait pire que le mal.
- *
- * CE QUI REND LE TROU EXPLOITABLE, c'est qu'un tableau de requête atteigne l'assignation en masse.
- * Tant qu'aucun appelant ne passe `$request->all()`, la largeur de `$fillable` reste théorique.
- * C'est donc cela que ce fichier surveille — la porte, pas la taille de la pièce.
- */
+/** LES ENTITÉS CENTRALES NE DOIVENT PAS ÊTRE REMPLISSABLES DEPUIS UNE REQUÊTE. */
 class MassAssignmentGuardTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Les formes qui font entrer une requête entière dans une écriture de modèle. Chacune a déjà
-     * servi de vecteur d'élévation de privilège dans des applications Laravel réelles : il suffit
-     * d'ajouter `status=termine` ou `employe_id=<soi>` au formulaire.
-     */
+    /** Les formes qui font entrer une requête entière dans une écriture de modèle. */
     private const FORMES_INTERDITES = [
         '/->fill\(\s*\$request->all\(\)/',
         '/->fill\(\s*request\(\)->all\(\)/',
@@ -48,13 +26,7 @@ class MassAssignmentGuardTest extends TestCase
         '/::create\(\s*request\(\)->all\(\)/',
         '/->fill\(\s*\$this->all\(\)/',
 
-        /*
-         * `validated()` EST LA FORME LA PLUS DANGEREUSE, parce qu'elle a l'air prudente. Elle ne
-         * rend que les clés passées par les règles de validation — ce qui protège autant que ces
-         * règles sont serrées. Une règle `'status' => 'nullable|string'` posée un jour pour un
-         * besoin d'écran suffit à rouvrir le passage, et personne ne relit la validation en pensant
-         * élévation de privilège. Le tableau doit être écrit à la main.
-         */
+        // `validated()` EST LA FORME LA PLUS DANGEREUSE, parce qu'elle a l'air prudente.
         '/->fill\(\s*\$request->validated\(\)\s*\)/',
         '/->update\(\s*\$request->validated\(\)\s*\)/',
         '/::create\(\s*\$request->validated\(\)\s*\)/',
@@ -124,9 +96,7 @@ class MassAssignmentGuardTest extends TestCase
     }
 
     /**
-     * Les colonnes par lesquelles l'argent passe. Chacune décide de ce qui est prélevé, de ce qui
-     * est reversé, ou de l'état d'un paiement — les laisser assignables en masse revenait à parier
-     * que personne n'écrirait jamais `fill($donneesDeRequete)` sur une réservation.
+     * Les colonnes par lesquelles l'argent passe.
      *
      * @return array<int, array{0: string, 1: mixed}>
      */

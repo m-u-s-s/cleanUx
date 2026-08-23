@@ -10,18 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Phase 3 — Diffuse l'attribution d'une tâche en temps réel.
- *
- * REVIEW FIX :
- *   - `property_exists($model, $key)` retourne FALSE sur les attributs
- *     Eloquent (qui passent par __get magic). Donc la branche channel_id
- *     n'était JAMAIS prise. Remplacé par `! empty($task->channel_id)`
- *     qui fonctionne correctement avec le magic getter d'Eloquent.
- *
- * Diffusé sur le channel privé de l'utilisateur assigné (pour notification toast)
- * ET sur le channel d'organisation pour rafraîchir le board partagé.
- */
+/** Phase 3 — Diffuse l'attribution d'une tâche en temps réel. */
 class TaskAssigned implements ShouldBroadcast
 {
     use Dispatchable;

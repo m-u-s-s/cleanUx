@@ -6,14 +6,7 @@ use Illuminate\Broadcasting\Broadcasters\Broadcaster;
 use Illuminate\Broadcasting\Broadcasters\UsePusherChannelConventions;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-/**
- * Broadcaster utilisé en environnement de tests.
- *
- * Honore les callbacks de routes/channels.php pour les tests d'auth
- * Broadcasting (private + presence) sans dépendre d'une connexion Pusher
- * réelle, et fait du `broadcast()` un no-op pour éviter les appels HTTP
- * sortants lors des tests qui dispatch des events.
- */
+/** Broadcaster utilisé en environnement de tests. */
 class TestingBroadcaster extends Broadcaster
 {
     use UsePusherChannelConventions;

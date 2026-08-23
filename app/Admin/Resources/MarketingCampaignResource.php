@@ -9,11 +9,7 @@ use App\Models\MarketingCampaign;
 use App\Services\Marketing\CampaignEngine;
 
 /**
- * Les campagnes marketing.
- *
- * PAS DE LANCEMENT NI DE PAUSE ICI. Programmer une campagne engage des envois à un segment
- * entier ; la page dédiée montre la taille du segment et l’aperçu avant de partir, et c’est
- * précisément ce qu’un bouton de liste ne montre pas.
+ * Les campagnes marketing. PAS DE LANCEMENT NI DE PAUSE ICI.
  *
  * @extends EloquentResource<MarketingCampaign>
  */
@@ -76,11 +72,7 @@ class MarketingCampaignResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Planifier une campagne CONSTITUE sa liste de destinataires. C'est le geste coûteux —
-             * il fige qui recevra quoi — et le moteur rend leur nombre : « planifiée » sans chiffre
-             * ne dit pas si le segment était vide, ce qui est la panne la plus fréquente.
-             */
+            // Planifier une campagne CONSTITUE sa liste de destinataires.
             Action::make('schedule', 'Planifier la campagne', function (MarketingCampaign $campagne) {
                 $destinataires = app(CampaignEngine::class)->schedule($campagne);
 

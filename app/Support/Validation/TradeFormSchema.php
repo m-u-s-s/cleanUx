@@ -2,18 +2,7 @@
 
 namespace App\Support\Validation;
 
-/**
- * Traduit `trades.provider_form_schema` en règles de validation Laravel.
- *
- * Les questions propres au métier étaient collectées puis stockées telles quelles : `trade_answers`
- * était `nullable|array`, sans le moindre contrôle. Un prestataire pouvait donc s'inscrire en
- * laissant vides des réponses déclarées obligatoires, ou en envoyant n'importe quoi — et le
- * matching, qui s'appuie sur ces réponses (rayon d'intervention, années d'expérience), travaillait
- * ensuite sur des valeurs absentes ou absurdes.
- *
- * On produit de vraies règles plutôt qu'un validateur maison : messages, traductions et rendu des
- * erreurs restent ceux du framework, déjà consommés par le formulaire mobile.
- */
+/** Traduit `trades.provider_form_schema` en règles de validation Laravel. */
 final class TradeFormSchema
 {
     /** Longueur retenue pour un champ texte sans `max` déclaré. */
@@ -41,8 +30,7 @@ final class TradeFormSchema
     }
 
     /**
-     * Libellés du schéma, pour que les messages d'erreur nomment la question telle qu'elle est
-     * posée à l'écran plutôt que « trade_answers.intervention_radius_km ».
+     * Libellés du schéma, pour que les messages d'erreur nomment la question telle qu'elle est posée à l'écran plutôt que « trade_answers.intervention_radius_km ».
      *
      * @param  array<string, mixed>|null  $schema
      * @return array<string, string>

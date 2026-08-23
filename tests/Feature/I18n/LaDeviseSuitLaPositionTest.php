@@ -10,20 +10,7 @@ use App\Services\Localization\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * DEUX PORTES D'ENTRÉE POUR UNE COMMANDE, UNE SEULE QUI SAVAIT SA MONNAIE.
- *
- * `CreateBookingFromApiAction` résout la devise depuis la position du client, et son commentaire
- * nomme le défaut qu'il corrigeait : « deux nombres, deux monnaies, aucune alerte ».
- *
- * `OrderConfirmationService` — le parcours WEB, celui par lequel passe un particulier — ne posait
- * AUCUNE `currency` sur la réservation qu'il crée. Elle tombait donc sur le défaut de la colonne,
- * `EUR`, quelle que soit la géographie. Un client marocain commandait en dirhams et sa réservation
- * se libellait en euros.
- *
- * Ce test fixe la règle sur le RÉSOLVEUR, qui est le point commun des deux portes : la devise suit
- * la position, jamais un défaut de schéma.
- */
+/** DEUX PORTES D'ENTRÉE POUR UNE COMMANDE, UNE SEULE QUI SAVAIT SA MONNAIE. */
 class LaDeviseSuitLaPositionTest extends TestCase
 {
     use RefreshDatabase;
@@ -43,12 +30,7 @@ class LaDeviseSuitLaPositionTest extends TestCase
         ]);
     }
 
-    /**
-     * TÉMOIN — la position belge donne toujours l'euro.
-     *
-     * Sans ce contrôle, un résolveur qui rendrait n'importe quoi passerait le test marocain
-     * ci-dessous par accident.
-     */
+    /** TÉMOIN — la position belge donne toujours l'euro. */
     public function test_temoin_une_zone_belge_donne_l_euro(): void
     {
         $devise = app(CountryMarketResolver::class)->deviseAttendue(
@@ -69,12 +51,7 @@ class LaDeviseSuitLaPositionTest extends TestCase
         $this->assertSame('MAD', $devise, 'Une commande marocaine se libellait en euros.');
     }
 
-    /**
-     * ET LE MONTANT S'AFFICHE DANS CETTE DEVISE-LÀ.
-     *
-     * Résoudre la bonne devise ne sert à rien si le formateur la réécrit : `Money` ne connaissait
-     * que cinq devises et rendait `MAD` en euros. Les deux moitiés doivent tenir ensemble.
-     */
+    /** ET LE MONTANT S'AFFICHE DANS CETTE DEVISE-LÀ. */
     public function test_le_montant_resolu_s_affiche_dans_la_bonne_devise(): void
     {
         $devise = app(CountryMarketResolver::class)->deviseAttendue(

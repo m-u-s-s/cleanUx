@@ -116,11 +116,7 @@ class DataErasureServiceTest extends TestCase
         $this->assertNull($user->fresh()->processing_restricted_at);
     }
 
-    /**
-     * D2: anonymization must also scrub the PII the original implementation missed —
-     * booking addresses + notes, free-text feedback / complaints, notification payloads,
-     * analytics rows, and audit_events readable labels.
-     */
+    /** D2: anonymization must also scrub the PII the original implementation missed — booking addresses + notes, free-text feedback / complaints, notification payloads, analytics rows, and audit_events readable labels. */
     public function test_execute_scrubs_previously_missed_pii(): void
     {
         $user = User::factory()->client()->create([
@@ -197,22 +193,9 @@ class DataErasureServiceTest extends TestCase
 
         app(DataErasureService::class)->anonymizeUser($user);
 
-        /*
-         * LES DEUX CÔTÉS DE CHAQUE PAIRE, PAS SEULEMENT LE FRANÇAIS.
-         *
-         * Ce test n'affirmait que `adresse`, `ville`, `code_postal` et `notes`. Or `bookings`
-         * porte quinze paires FR/EN et l'effacement passe par le constructeur de requêtes, qui ne
-         * déclenche PAS `HasLegacyBookingAliases` : `adresse` était vidée pendant que `address`
-         * gardait « 12 rue Secrète ». Le test était vert et l'adresse restait en base.
-         */
+        // LES DEUX CÔTÉS DE CHAQUE PAIRE, PAS SEULEMENT LE FRANÇAIS.
         $freshBooking = $booking->fresh();
-        /*
-         * TOUTES LES COLONNES SURVIVANTES, PAS LA PREMIÈRE.
-         *
-         * Un effacement incomplet l'est rarement sur une seule colonne : c'est une famille entière
-         * qui reste — les jumelles anglaises, les contacts, les coordonnées. Les nommer toutes
-         * évite de relancer autant de fois qu'il reste de données personnelles en base.
-         */
+        // TOUTES LES COLONNES SURVIVANTES, PAS LA PREMIÈRE.
         $survivantes = [];
 
         foreach ([

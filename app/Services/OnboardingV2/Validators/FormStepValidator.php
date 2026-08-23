@@ -7,11 +7,7 @@ use App\Models\User;
 use App\Services\OnboardingV2\OnboardingStepValidation;
 use App\Services\OnboardingV2\OnboardingStepValidator;
 
-/**
- * Validator générique pour les steps `form`.
- * Lit `metadata.required_fields` (array de keys) dans la définition du step et
- * vérifie que toutes ces keys sont non-empty dans le payload.
- */
+/** Validator générique pour les steps `form`. */
 class FormStepValidator implements OnboardingStepValidator
 {
     public function validate(User $user, OnboardingStep $step, array $payload): OnboardingStepValidation

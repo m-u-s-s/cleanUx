@@ -23,8 +23,6 @@ class RatingService
 
     /**
      * Submit a rating from client → provider or provider → client.
-     * Auto-publish "blind" style: rating is hidden until the other party rated
-     * too, OR until the rating window expires (whichever comes first).
      *
      * @param  array{rating:int, comment?:string|null, punctuality?:int|null, quality?:int|null, communication?:int|null, value?:int|null, is_public?:bool}  $payload
      */
@@ -104,10 +102,7 @@ class RatingService
         });
     }
 
-    /**
-     * Force-publish all pending ratings on a booking when the rating window expires.
-     * Idempotent — safe to run repeatedly (e.g. from a daily scheduler).
-     */
+    /** Force-publish all pending ratings on a booking when the rating window expires. */
     public function publishExpiredPending(): int
     {
         $cutoff = now()->subDays(self::RATING_WINDOW_DAYS);

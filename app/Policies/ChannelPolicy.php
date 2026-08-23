@@ -8,17 +8,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 4.1 — Policy de modération sur Channel et Message.
- *
- * Hiérarchie des rôles dans channel_members.role :
- *   - owner     : créateur, droits complets
- *   - moderator : peut delete/pin/lock + kick membres
- *   - member    : peut poster, supprimer ses propres messages
- *   - readonly  : ne peut que lire
- *
- * + super-cas : Platform Admin (User::isPlatformAdmin) outrepasse tout.
- */
+/** Phase 4.1 — Policy de modération sur Channel et Message. */
 class ChannelPolicy
 {
     public const ROLE_OWNER = 'owner';
@@ -103,19 +93,7 @@ class ChannelPolicy
         return $this->isAtLeast($user, $channel, self::ROLE_OWNER);
     }
 
-    /**
-     * INVITER QUELQU'UN DANS LE CANAL : modérateur ou propriétaire du FIL.
-     *
-     * La symétrie avec `kickMember` manquait : la politique savait dire qui peut retirer, jamais qui
-     * peut ajouter — si bien que l'ajout de membres, quand il a été écrit côté web, s'est appuyé sur
-     * `channels.manage`, une clé d'ORGANISATION. Les deux ne disent pas la même chose : un
-     * gestionnaire de la société n'est pas forcément dans le fil, et le propriétaire d'une
-     * conversation à deux n'a aucune clé d'organisation.
-     *
-     * C'est le rôle DANS LE CANAL qui décide qui y entre. La cible reste bornée aux collègues
-     * actifs — cette règle-là vit dans `ChannelManagementService`, parce qu'elle regarde
-     * l'organisation et non le fil.
-     */
+    /** INVITER QUELQU'UN DANS LE CANAL : modérateur ou propriétaire du FIL. */
     public function manageMembers(User $user, Channel $channel): bool
     {
         if ($this->isPlatformAdmin($user)) {

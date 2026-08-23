@@ -187,18 +187,7 @@ class PlatformReadinessReport
             'employee_zone_assignments_total' => EmployeeZoneAssignment::query()->where('is_active', true)->count(),
             'rendezvous_total' => Booking::query()->count(),
             'feedbacks_total' => Feedback::query()->count(),
-            /*
-             * LES ESPACES SOCIÉTÉ, AJOUTÉS LE 2026-08-06.
-             *
-             * Ce rapport recensait les utilisateurs, les zones et les rendez-vous, mais rien de ce
-             * que lisent les cinq écrans de l'espace société. Résultat : après un `db:seed` neuf,
-             * `seed_ready` valait vrai alors que Répartition, Équipes terrain, Tâches et Canaux
-             * s'ouvraient tous sur du vide. Un rapport de préparation qui ne regarde pas un écran ne
-             * dit rien sur cet écran — et son silence se lit comme une approbation.
-             *
-             * Ces quatre compteurs alimentent d'un coup le test de readiness, l'écran d'admin
-             * `PlatformReadiness` et la commande `go-live:readiness`.
-             */
+            // LES ESPACES SOCIÉTÉ, AJOUTÉS LE 2026-08-06.
             'field_teams_total' => FieldTeam::query()->count(),
             'tasks_total' => Task::query()->count(),
             'channels_total' => Channel::query()->count(),

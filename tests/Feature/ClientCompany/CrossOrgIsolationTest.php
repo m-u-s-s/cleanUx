@@ -16,16 +16,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * Regression tests: cross-org IDOR leaks must be closed.
- *
- * These tests confirm that a company-A user cannot read or mutate data
- * belonging to company-B by driving Livewire public properties.
- *
- * Note: MembersAccess::render() uses MySQL's FIELD() which is incompatible with
- * the SQLite test DB. For tests that need to render the component we use mock
- * views. For logic-only tests we call component methods directly (no render).
- */
+/** Regression tests: cross-org IDOR leaks must be closed. */
 class CrossOrgIsolationTest extends TestCase
 {
     use RefreshDatabase;
@@ -34,14 +25,7 @@ class CrossOrgIsolationTest extends TestCase
     // Helpers
     // ──────────────────────────────────────────────────────────────
 
-    /**
-     * Create an OrganizationAccount and a user that belongs to it,
-     * with the OWNER role so PermissionService::can() returns true.
-     *
-     * Returns [$orgAccount, $user, $memberRecord].
-     *
-     * Note: OrganizationMember does not include HasFactory so we use ::create().
-     */
+    /** Create an OrganizationAccount and a user that belongs to it, with the OWNER role so PermissionService::can() returns true. */
     private function makeCompanyUser(string $role = OrganizationRole::OWNER->value): array
     {
         $org = OrganizationAccount::factory()->create();
@@ -87,12 +71,7 @@ class CrossOrgIsolationTest extends TestCase
     // MembersAccess – getEditingMemberProperty cross-org isolation
     // ──────────────────────────────────────────────────────────────
 
-    /**
-     * Directly exercises the org-scoped DB query without going through
-     * the render lifecycle (which uses MySQL FIELD() — incompatible with SQLite).
-     * The fix is in the query inside getEditingMemberProperty(); we prove it here
-     * by simulating the identical scoped lookup.
-     */
+    /** Directly exercises the org-scoped DB query without going through the render lifecycle (which uses MySQL FIELD() — incompatible with SQLite). */
     #[Test]
     public function editing_member_from_other_org_resolves_to_null(): void
     {
@@ -112,10 +91,7 @@ class CrossOrgIsolationTest extends TestCase
     // MembersAccess – toggleCustomPermission cross-org isolation
     // ──────────────────────────────────────────────────────────────
 
-    /**
-     * Calls toggleCustomPermission() directly on the component instance
-     * (bypassing render) to confirm the cross-org member is not mutated.
-     */
+    /** Calls toggleCustomPermission() directly on the component instance (bypassing render) to confirm the cross-org member is not mutated. */
     #[Test]
     public function toggle_custom_permission_does_not_mutate_other_org_member(): void
     {
@@ -148,10 +124,7 @@ class CrossOrgIsolationTest extends TestCase
     // BookingHub – getSelectedSiteProperty cross-org isolation
     // ──────────────────────────────────────────────────────────────
 
-    /**
-     * Directly exercises the forOrg-scoped query used in the fixed
-     * getSelectedSiteProperty(), without going through a full render.
-     */
+    /** Directly exercises the forOrg-scoped query used in the fixed getSelectedSiteProperty(), without going through a full render. */
     #[Test]
     public function selected_site_from_other_org_resolves_to_null(): void
     {

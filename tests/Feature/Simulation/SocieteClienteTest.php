@@ -15,20 +15,7 @@ use Livewire\Livewire;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * LA SOCIÉTÉ CLIENTE, SUR SES DEUX SURFACES.
- *
- * Une réservation d'entreprise doit être visible par ses membres — et par eux seuls — aussi bien
- * dans l'application mobile que sur le web. Or les deux surfaces ne lisent PAS la même colonne :
- * l'API filtre sur `customer_organization_id`, le périmètre web sur `organization_account_id`.
- * Les deux existent sur `bookings`, et rien dans le schéma n'oblige à les remplir ensemble.
- *
- * C'est la forme même du défaut qu'on a vu trois fois cette semaine : deux notions voisines, une
- * seule renseignée selon le chemin de création, et une moitié de l'application qui devient aveugle
- * sans que personne s'en aperçoive — parce que chaque moitié, testée seule, a raison.
- *
- * Ce parcours interroge donc les DEUX, avec la même réservation et le même utilisateur.
- */
+/** LA SOCIÉTÉ CLIENTE, SUR SES DEUX SURFACES. */
 class SocieteClienteTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
@@ -70,13 +57,7 @@ class SocieteClienteTest extends TestCase
             'status' => 'active',
         ]);
 
-        /*
-         * LES DEUX COLONNES D'ORGANISATION ACTIVE SONT RENSEIGNÉES.
-         *
-         * `organization_account_id` et `current_organization_id` désignent la même chose et le code
-         * lit tantôt l'une, tantôt l'autre. N'en remplir qu'une donne un 403 sur la moitié des
-         * écrans — c'est un piège déjà rencontré sur ce dépôt.
-         */
+        // LES DEUX COLONNES D'ORGANISATION ACTIVE SONT RENSEIGNÉES.
         $membre->forceFill([
             'organization_account_id' => $societe->id,
             'current_organization_id' => $societe->id,
@@ -85,10 +66,7 @@ class SocieteClienteTest extends TestCase
         return [$societe, $membre->fresh()];
     }
 
-    /**
-     * Une réservation passée POUR la société, par le chemin web : seule
-     * `organization_account_id` est renseignée, comme le fait le portail client.
-     */
+    /** Une réservation passée POUR la société, par le chemin web : seule `organization_account_id` est renseignée, comme le fait le portail client. */
     private function reservationDeSociete(OrganizationAccount $societe, User $auteur): Booking
     {
         return Booking::factory()
@@ -116,12 +94,7 @@ class SocieteClienteTest extends TestCase
             ->pluck('id')->sort()->values()->all();
     }
 
-    /**
-     * LA MÊME RÉSERVATION DOIT SE VOIR SUR LES DEUX SURFACES.
-     *
-     * C'est le test qui compte : il oppose la lecture mobile à la lecture web sur une seule et
-     * même donnée. Si les deux colonnes d'organisation divergent, une moitié devient aveugle.
-     */
+    /** LA MÊME RÉSERVATION DOIT SE VOIR SUR LES DEUX SURFACES. */
     public function test_une_reservation_de_societe_se_voit_sur_mobile_et_sur_web(): void
     {
         [$societe, $membre] = $this->societeCliente();
@@ -138,9 +111,7 @@ class SocieteClienteTest extends TestCase
             ->assertSee($reservation->booking_reference);
     }
 
-    /**
-     * UN COLLÈGUE DE LA SOCIÉTÉ LA VOIT AUSSI — c'est tout l'intérêt d'un compte d'entreprise.
-     */
+    /** UN COLLÈGUE DE LA SOCIÉTÉ LA VOIT AUSSI — c'est tout l'intérêt d'un compte d'entreprise. */
     public function test_un_autre_membre_de_la_societe_voit_la_reservation(): void
     {
         [$societe, $auteur] = $this->societeCliente();
@@ -166,9 +137,7 @@ class SocieteClienteTest extends TestCase
         );
     }
 
-    /**
-     * ET UNE AUTRE SOCIÉTÉ NE LA VOIT JAMAIS — sur aucune des deux surfaces.
-     */
+    /** ET UNE AUTRE SOCIÉTÉ NE LA VOIT JAMAIS — sur aucune des deux surfaces. */
     public function test_une_autre_societe_ne_voit_rien(): void
     {
         [$societeA, $membreA] = $this->societeCliente();
@@ -192,9 +161,7 @@ class SocieteClienteTest extends TestCase
             ->assertForbidden();
     }
 
-    /**
-     * UN PARTICULIER SANS SOCIÉTÉ garde sa propre liste, sans fuite d'entreprise.
-     */
+    /** UN PARTICULIER SANS SOCIÉTÉ garde sa propre liste, sans fuite d'entreprise. */
     public function test_un_particulier_ne_recupere_pas_les_reservations_d_entreprise(): void
     {
         [$societe, $membre] = $this->societeCliente();

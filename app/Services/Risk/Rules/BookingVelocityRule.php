@@ -9,14 +9,7 @@ use App\Services\Risk\RiskRuleInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Détecte une velocity anormale de créations de booking par le même user
- * dans une fenêtre courte (signal type bot / test card / fraude).
- *
- * Params:
- *   - window_minutes (default 60)
- *   - max_per_window (default 5)
- */
+/** Détecte une velocity anormale de créations de booking par le même user dans une fenêtre courte (signal type bot / test card / fraude). */
 class BookingVelocityRule implements RiskRuleInterface
 {
     public function code(): string

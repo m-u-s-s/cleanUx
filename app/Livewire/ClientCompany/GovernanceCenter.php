@@ -19,22 +19,7 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/**
- * LE PILOTAGE D'UNE ENTREPRISE CLIENTE — BUDGETS (E7), APPROBATIONS (E8), NIVEAU DE SERVICE (E9) ET
- * EXPORTS COMPTABLES (E11).
- *
- * QUATRE MODULES SUR UN ÉCRAN PARCE QU'ILS SERVENT UNE SEULE CONVERSATION : celle du responsable qui
- * décide de reconduire un contrat. Il regarde ce qu'il a dépensé, ce qu'il a autorisé, si le
- * prestataire tient ses engagements, et il donne le tout à son comptable. Répartir ces quatre
- * réponses sur quatre écrans oblige à les recomposer de tête.
- *
- * LE PLAFOND ALERTE, IL NE BLOQUE PAS. Une intervention refusée parce qu'un budget mensuel est
- * atteint, c'est une fuite d'eau qu'on laisse couler pour une ligne comptable.
- *
- * ON N'APPROUVE PAS SA PROPRE DEMANDE. Sans cette garde, un demandeur qui possède aussi le droit
- * d'approuver contourne le circuit sans le savoir — et l'entreprise croit avoir un contrôle qu'elle
- * n'a pas.
- */
+/** LE PILOTAGE D'UNE ENTREPRISE CLIENTE — BUDGETS (E7), APPROBATIONS (E8), NIVEAU DE SERVICE (E9) ET EXPORTS COMPTABLES (E11). */
 class GovernanceCenter extends Component
 {
     use EnforcesActiveOrgMembership;

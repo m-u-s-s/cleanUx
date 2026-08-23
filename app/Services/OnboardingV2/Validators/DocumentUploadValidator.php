@@ -10,12 +10,7 @@ use App\Services\OnboardingV2\OnboardingStepValidator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Vérifie qu'un type de document a été uploadé via le system existant
- * (provider_onboarding_documents, phase 14.1).
- *
- * step.metadata.document_types[] : liste de types requis (ex: ['id_card', 'insurance_proof']).
- */
+/** Vérifie qu'un type de document a été uploadé via le system existant (provider_onboarding_documents, phase 14.1). */
 class DocumentUploadValidator implements OnboardingStepValidator
 {
     public function validate(User $user, OnboardingStep $step, array $payload): OnboardingStepValidation

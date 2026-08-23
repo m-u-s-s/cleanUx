@@ -8,16 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/**
- * Phase 14.1 — Sert les documents KYC depuis le disk privé pour les admins.
- *
- * Route signée temporaire (valide 10 min) pour preview dans la modale admin.
- *
- * Sécurité :
- *   - Route signée (URL::temporarySignedRoute)
- *   - Middleware role:admin
- *   - Le fichier est sur disque privé (storage/app/private/)
- */
+/** Phase 14.1 — Sert les documents KYC depuis le disk privé pour les admins. */
 class OnboardingDocumentController extends Controller
 {
     public function show(Request $request, ProviderOnboardingDocument $document): StreamedResponse

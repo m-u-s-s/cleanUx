@@ -6,25 +6,10 @@ use App\Models\Trade;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Service d'estimation de devis à partir d'une photo, via Claude Vision (Anthropic).
- *
- * Différenciation FORT vs Uber/Bolt/Helpling : permet à un client de prendre une
- * photo d'une pièce/d'un mur/d'une toiture et recevoir un devis ±15-20% instantané.
- *
- * Workflow :
- *   1. Client upload photo (multipart) + trade choisi
- *   2. PhotoQuoteEstimator envoie à Claude Vision avec system prompt par trade
- *   3. Claude renvoie JSON : { surface_m2, état, durée_estimée_min, prix_min_cents, prix_max_cents, confiance }
- *   4. Brio affiche le quote + permet booking direct avec prix locked
- *
- * Soft-fail : si pas de clé API ou pas de SDK, retourne null avec raison logged.
- */
+/** Service d'estimation de devis à partir d'une photo, via Claude Vision (Anthropic). */
 class PhotoQuoteEstimator
 {
-    /**
-     * Estime un devis depuis une photo encodée base64 + un trade.
-     */
+    /** Estime un devis depuis une photo encodée base64 + un trade. */
     public function estimateFromPhoto(string $base64Image, Trade $trade, ?string $userNote = null): ?array
     {
         // `services.anthropic.key` est défini dans config/services.php : le repli env()
@@ -152,9 +137,7 @@ PROMPT;
         return 'image/jpeg';
     }
 
-    /**
-     * Extrait le JSON propre depuis la réponse Claude (parfois entouré de markdown).
-     */
+    /** Extrait le JSON propre depuis la réponse Claude (parfois entouré de markdown). */
     protected function parseJsonFromText(string $text, Trade $trade): ?array
     {
         // Strip markdown ```json fences si présents

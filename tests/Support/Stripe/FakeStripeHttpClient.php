@@ -5,12 +5,7 @@ namespace Tests\Support\Stripe;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\HttpClient\ClientInterface;
 
-/**
- * Test double for the Stripe SDK HTTP boundary. Register via
- * \Stripe\ApiRequestor::setHttpClient($fake) in a test's setUp; all static
- * Stripe calls are then served from canned JSON instead of the network.
- * No production code is touched.
- */
+/** Test double for the Stripe SDK HTTP boundary. */
 class FakeStripeHttpClient implements ClientInterface
 {
     /** @var array<string, array{0:array,1:int}> keyed by "METHOD path" */
@@ -48,10 +43,7 @@ class FakeStripeHttpClient implements ClientInterface
         return $this->requests;
     }
 
-    /**
-     * The Stripe idempotency key sent for the first request matching "METHOD /path",
-     * or null if none was sent. The SDK passes it as an "Idempotency-Key: <value>" header.
-     */
+    /** The Stripe idempotency key sent for the first request matching "METHOD /path", or null if none was sent. */
     public function idempotencyKeyFor(string $method, string $path): ?string
     {
         $wanted = strtoupper($method).' '.$path;
@@ -71,11 +63,6 @@ class FakeStripeHttpClient implements ClientInterface
 
     /**
      * Implements Stripe\HttpClient\ClientInterface::request.
-     *
-     * Signature verified via reflection against stripe-php installed in this
-     * project: 7 params ($method, $absUrl, $headers, $params, $hasFile,
-     * $apiMode = 'v1', $maxNetworkRetries = null).
-     * No requestStreaming() method is declared in this interface version.
      *
      * @param  'delete'|'get'|'post'  $method
      * @param  'v1'|'v2'  $apiMode
@@ -107,16 +94,7 @@ class FakeStripeHttpClient implements ClientInterface
             // as it would against the real Stripe API. Non-error stubs (2xx) are
             // returned normally — existing happy-path behaviour is unchanged.
             if ($code >= 400 && isset($body['error'])) {
-                /*
-                 * UNE CLASSE CONCRÈTE, sans quoi ce double ne simulait rien.
-                 *
-                 * `ApiErrorException` est ABSTRAITE : sa fabrique fait `new static(...)` et lève
-                 * « Cannot instantiate abstract class ». Le service enveloppait alors ses appels
-                 * dans un `catch (\Throwable)` qui attrapait cette erreur PHP et la consignait
-                 * comme une anomalie Stripe — si bien que le test censé vérifier le traitement
-                 * d'une erreur d'API vérifiait en réalité le traitement d'un défaut de ce fichier.
-                 * Il passait au vert sans jamais exercer le chemin qu'il prétendait couvrir.
-                 */
+                // UNE CLASSE CONCRÈTE, sans quoi ce double ne simulait rien.
                 throw InvalidRequestException::factory(
                     $body['error']['message'] ?? 'Stripe error',
                     $code,

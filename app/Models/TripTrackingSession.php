@@ -70,10 +70,7 @@ class TripTrackingSession extends Model
         'presence_confirmed_distance_m' => 'integer',
     ];
 
-    /**
-     * L'empreinte du code ne doit jamais quitter le serveur : `$hidden` la retire des
-     * sérialisations, y compris celles qu'on n'a pas écrites soi-même.
-     */
+    /** L'empreinte du code ne doit jamais quitter le serveur : `$hidden` la retire des sérialisations, y compris celles qu'on n'a pas écrites soi-même. */
     protected $hidden = ['presence_code_hash'];
 
     public static function generateCode(): string
@@ -117,17 +114,7 @@ class TripTrackingSession extends Model
         ]);
     }
 
-    /**
-     * LE TEMPS RÉELLEMENT TRAVAILLÉ, pauses déduites (F4).
-     *
-     * C'est cette valeur — pas la durée de présence — que consommeront les feuilles d'heures et le
-     * calcul de rentabilité. Sur une intervention de quatre heures dont une de déjeuner, les
-     * confondre fait payer ou facturer une heure de trop.
-     *
-     * Le compte part de l'entrée en mission, jamais du départ : le trajet n'est pas du travail sur
-     * place. Une session qui n'a pas encore commencé rend zéro plutôt que nul — « rien de
-     * travaillé » est une réponse, pas une absence de réponse.
-     */
+    /** LE TEMPS RÉELLEMENT TRAVAILLÉ, pauses déduites (F4). */
     public function workedSeconds(): int
     {
         if (! $this->in_mission_at) {

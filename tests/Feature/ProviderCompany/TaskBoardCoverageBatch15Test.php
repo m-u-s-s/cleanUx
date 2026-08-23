@@ -12,19 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * NOTE (infra-blocked branches): Task::assignees() declares
- * withPivot(['assigned_by','assigned_at']) but the task_assignees migration
- * never creates those columns. TaskBoard::queryTasks() eager-loads `assignees`
- * on every render, so the board crashes with a "no such column" QueryException
- * the moment any task exists in the current org. That makes the non-empty
- * render, createTask success, updateStatus/deleteTask success and member-filter
- * matching paths unreachable in a green test. The cases below exercise every
- * branch reachable while the current org has zero visible tasks: full mount
- * (403 + success), the four computed properties on an empty board, both
- * queryTasks filter branches, validation, and the early-return guards of
- * updateStatus()/deleteTask().
- */
+/** NOTE (infra-blocked branches): Task::assignees() declares withPivot(['assigned_by','assigned_at']) but the task_assignees migration never creates those columns. */
 class TaskBoardCoverageBatch15Test extends TestCase
 {
     use RefreshDatabase;

@@ -18,23 +18,15 @@ use Illuminate\Http\Request;
 use Laravel\Sanctum\PersonalAccessToken;
 
 /**
+ * LA SURFACE QUE LE PRESTATAIRE TRAVERSE.
+ *
  * @group Provider Face Check
  *
  * @authenticated
- *
- * LA SURFACE QUE LE PRESTATAIRE TRAVERSE. Elle est volontairement exclue du middleware
- * `face.verified` : c'est le parcours de remédiation, l'y soumettre enfermerait le compte dans une
- * boucle où l'on exige un contrôle sans jamais laisser le passer.
- *
- * CE QUI N'EN SORT JAMAIS : `next_check_due_at`. Le connaître suffirait à se présenter en personne
- * juste avant, et à prêter son compte le reste du temps. `status` dit s'il faut agir MAINTENANT,
- * jamais quand il faudra agir ensuite.
  */
 class FaceCheckController extends Controller
 {
-    /**
-     * L'état du contrôle facial pour le prestataire connecté.
-     */
+    /** L'état du contrôle facial pour le prestataire connecté. */
     public function status(
         Request $request,
         FaceCheckGate $gate,
@@ -69,16 +61,7 @@ class FaceCheckController extends Controller
                 'block_reason' => $profil?->block_reason,
                 'id_match_status' => $profil?->id_match_status,
                 'consent_version' => $settings->consentVersion(),
-                /*
-                 * LE TEXTE DE CONSENTEMENT EST SERVI PAR LE SERVEUR, traduit dans la langue du
-                 * prestataire.
-                 *
-                 * C'est le seul texte du module qui engage juridiquement, et l'application mobile
-                 * n'a AUCUN systeme de traduction : le recopier dans le code natif donnerait deux
-                 * versions d'un texte relu une seule fois, et c'est celle qu'on n'aurait pas relue
-                 * qui s'afficherait. Une seule source -- lang/<code>/face_check.php -- et les deux
-                 * surfaces affichent le meme.
-                 */
+                // LE TEXTE DE CONSENTEMENT EST SERVI PAR LE SERVEUR, traduit dans la langue du prestataire.
                 'consent_text' => __('face_check.consent.text', ['days' => $settings->selfieRetentionDays()]),
                 'consent_legal_note' => __('face_check.consent.legal_note'),
                 'max_attempts' => $settings->maxAttempts(),
@@ -132,9 +115,7 @@ class FaceCheckController extends Controller
         ], 201);
     }
 
-    /**
-     * Ouvre un contrôle — ou rend celui qui est déjà ouvert.
-     */
+    /** Ouvre un contrôle — ou rend celui qui est déjà ouvert. */
     public function start(Request $request, FaceCheckGate $gate, FaceCheckService $service): JsonResponse
     {
         $user = $this->prestataire($request);
@@ -148,13 +129,7 @@ class FaceCheckController extends Controller
             return response()->json($verdict->toPayload(), 409);
         }
 
-        /*
-         * ON N'OUVRE PAS UN CONTRÔLE QUI N'EST PAS DÛ.
-         *
-         * Sans cette clause, un client pourrait ouvrir des contrôles à volonté et se fabriquer un
-         * historique irréprochable au moment de son choix — exactement la prévisibilité que la
-         * cadence aléatoire cherche à supprimer. Le motif vient du serveur, jamais de la requête.
-         */
+        // ON N'OUVRE PAS UN CONTRÔLE QUI N'EST PAS DÛ.
         if ($verdict->allowed()) {
             return response()->json([
                 'ok' => true,
@@ -205,9 +180,7 @@ class FaceCheckController extends Controller
         return response()->json(['ok' => true, 'data' => $this->presenter($faceCheck)]);
     }
 
-    /**
-     * Relit un contrôle — le mobile sonde ici tant que le verdict est différé.
-     */
+    /** Relit un contrôle — le mobile sonde ici tant que le verdict est différé. */
     public function show(Request $request, ProviderFaceCheck $faceCheck, FaceCheckService $service): JsonResponse
     {
         $this->autoriser($request, $faceCheck);
@@ -219,9 +192,7 @@ class FaceCheckController extends Controller
         return response()->json(['ok' => true, 'data' => $this->presenter($faceCheck)]);
     }
 
-    /**
-     * Le prestataire renonce. Ce n'est pas une faute — c'est la répétition qui parle.
-     */
+    /** Le prestataire renonce. Ce n'est pas une faute — c'est la répétition qui parle. */
     public function abandon(Request $request, ProviderFaceCheck $faceCheck, FaceCheckService $service): JsonResponse
     {
         $this->autoriser($request, $faceCheck);
@@ -231,12 +202,7 @@ class FaceCheckController extends Controller
         return response()->json(['ok' => true, 'data' => $this->presenter($faceCheck->refresh())]);
     }
 
-    /**
-     * « Le contrôle ne fonctionne pas. » Ouvre un dossier pour un administrateur.
-     *
-     * CE GESTE NE DÉBLOQUE RIEN. Un bouton qui accorderait un sursis serait la porte de sortie de
-     * quiconque veut éviter le contrôle — et il serait emprunté dès la première semaine.
-     */
+    /** « Le contrôle ne fonctionne pas. » Ouvre un dossier pour un administrateur. */
     public function reportIncident(Request $request, FaceCheckIncidentService $incidents): JsonResponse
     {
         $user = $this->prestataire($request);
@@ -284,9 +250,7 @@ class FaceCheckController extends Controller
         ], 201);
     }
 
-    /**
-     * Retrait du consentement — un droit, avec sa conséquence annoncée.
-     */
+    /** Retrait du consentement — un droit, avec sa conséquence annoncée. */
     public function withdrawConsent(Request $request, FaceCheckService $service): JsonResponse
     {
         $user = $this->prestataire($request);
@@ -343,18 +307,7 @@ class FaceCheckController extends Controller
     {
         $jeton = $request->user()?->currentAccessToken();
 
-        /*
-         * `currentAccessToken()` NE REND PAS TOUJOURS UN JETON.
-         *
-         * Sur une requete authentifiee par la SESSION -- le web, et `Sanctum::actingAs()` dans les
-         * tests -- Sanctum rend un `TransientToken` : un objet sans table, sans colonnes, et donc
-         * SANS `name`. Lire `->name` dessus leve « Undefined property » et fait tomber la requete
-         * entiere. Mesure : quatorze tests de mission et de presence sont tombes d'un coup, tous
-         * pour cette seule ligne.
-         *
-         * Une session n'a pas d'identite d'appareil, et c'est tres bien : elle ne declenche alors
-         * aucun controle hors cadence, ce qui est exactement le comportement voulu.
-         */
+        // `currentAccessToken()` NE REND PAS TOUJOURS UN JETON.
         if (! $jeton instanceof PersonalAccessToken) {
             return null;
         }

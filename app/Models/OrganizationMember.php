@@ -33,16 +33,7 @@ class OrganizationMember extends Model
         'joined_at' => 'datetime',
     ];
 
-    /**
-     * L'ADHÉSION EST UNE DONNÉE DE SÉCURITÉ, PAS UNE DONNÉE MÉTIER.
-     *
-     * Ce qu'on y écrit décide de qui répartit les missions, qui voit la facturation et qui peut
-     * retirer un collègue. C'est l'objet le plus sensible des espaces société — et rien n'en
-     * conservait la trace, alors que le module Audit v2 et ce trait existent depuis 2026-05-19.
-     *
-     * Domaine `security` : le rôle et les dérogations relèvent du contrôle d'accès, pas de la
-     * gestion d'équipe. La distinction gouverne la rétention et qui peut relire ces événements.
-     */
+    /** L'ADHÉSION EST UNE DONNÉE DE SÉCURITÉ, PAS UNE DONNÉE MÉTIER. */
     protected function auditEventDomain(): string
     {
         return 'security';
@@ -50,9 +41,6 @@ class OrganizationMember extends Model
 
     /**
      * Ce qu'on enregistre, et rien d'autre.
-     *
-     * `invited_at` / `joined_at` bougent au fil de la vie normale d'une adhésion et noieraient les
-     * trois changements qui comptent réellement.
      *
      * @return array<int, string>
      */
@@ -130,10 +118,7 @@ class OrganizationMember extends Model
         return $this->role->label();
     }
 
-    /**
-     * Définir une permission personnalisée sur ce membre.
-     * Passe-droit au-dessus de la matrice du rôle.
-     */
+    /** Définir une permission personnalisée sur ce membre. */
     public function grantPermission(string $permission): void
     {
         $perms = $this->permissions ?? [];

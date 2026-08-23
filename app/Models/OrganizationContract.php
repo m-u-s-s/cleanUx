@@ -11,9 +11,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
- * OrganizationContract — contrat-cadre B2B entre une organisation cliente et
- * (optionnellement) une organisation prestataire : tarifs négociés, SLA,
- * politique d'approbation et fenêtre de validité.
+ * OrganizationContract — contrat-cadre B2B entre une organisation cliente et (optionnellement) une organisation prestataire : tarifs négociés, SLA, politique d'approbation et fenêtre de validité.
  *
  * @property int $id
  * @property int $organization_account_id

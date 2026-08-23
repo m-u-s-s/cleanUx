@@ -10,26 +10,16 @@ use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 6.1 — Application d'un template pour créer une série en 1 clic.
- *
- * Workflow :
- *   1. User clique "Utiliser ce template" sur la galerie
- *   2. Form de confirmation : site cible, date de démarrage, fin éventuelle
- *   3. Cette classe crée la RecurringBookingSeries (sans encore générer
- *      les bookings — c'est ton CreateRecurringSeriesAction existant qui
- *      s'en charge ensuite, ou un job nocturne)
- *   4. Incrémente le usage_count du template (popularité)
- */
+/** Phase 6.1 — Application d'un template pour créer une série en 1 clic. Workflow : 1. */
 class ApplyRecurringTemplateService
 {
     /**
      * @param array{
-     *   organization_site_id?:int,
-     *   starts_at:string,
-     *   ends_at?:string,
-     *   occurrence_count?:int,
-     *   custom_time?:string,
+     * organization_site_id?:int,
+     * starts_at:string,
+     * ends_at?:string,
+     * occurrence_count?:int,
+     * custom_time?:string,
      * } $params
      */
     public function apply(User $user, RecurringTemplate $template, array $params): RecurringBookingSeries
@@ -71,21 +61,7 @@ class ApplyRecurringTemplateService
                 ];
             }
 
-            /*
-             * LA PREMIÈRE ÉCHÉANCE EST POSÉE ICI, ET PAR PERSONNE D'AUTRE.
-             *
-             * `ProcessRecurringBookings` filtre sur `whereNotNull('next_occurrence_at')` et ne fait
-             * qu'AVANCER cette date une fois la série entamée. Aucun chemin ne l'initialisait :
-             * la colonne est `nullable` et sans valeur par défaut, si bien que TOUTE série créée
-             * était invisible à la commande. Aucune réservation récurrente n'a jamais été générée —
-             * la fonctionnalité existait de bout en bout, et ne produisait rien.
-             *
-             * L'HEURE VIENT DU PAYLOAD, pas d'un défaut réinventé. C'est `buildTemplatePayload()`
-             * qui arbitre déjà entre l'heure demandée par le client et celle du modèle ; en
-             * recalculer une seconde ici ferait deux vérités, et la réservation générée tomberait à
-             * une heure que le client n'a pas choisie. La commande relit d'ailleurs les deux moitiés
-             * de cette date — `toDateString()` et `format('H:i')` — pour dater la réservation.
-             */
+            // LA PREMIÈRE ÉCHÉANCE EST POSÉE ICI, ET PAR PERSONNE D'AUTRE.
             $data['next_occurrence_at'] = $startsAt
                 ->copy()
                 ->setTimeFromTimeString($this->normalizeTemplateTime($payload['time'] ?? null))
@@ -99,11 +75,7 @@ class ApplyRecurringTemplateService
         });
     }
 
-    /**
-     * Cette payload sera utilisée par le job de génération des bookings
-     * pour copier les paramètres du template (service, durée, heure, etc.)
-     * sur chaque booking créé.
-     */
+    /** Cette payload sera utilisée par le job de génération des bookings pour copier les paramètres du template (service, durée, heure, etc.) sur chaque booking créé. */
     private function normalizeTemplateTime(mixed $time): string
     {
         if ($time instanceof CarbonInterface) {

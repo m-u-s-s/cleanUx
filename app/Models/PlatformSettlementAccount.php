@@ -9,9 +9,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Un compte bancaire déclaré comme destination de la commission Brio, pour une devise donnée.
  *
- * Registre d'attestation : la destination réelle des versements est réglée chez Stripe. Voir la
- * migration `creer_le_registre_de_reglement` pour le raisonnement.
- *
  * @property string $currency
  * @property string $role
  * @property string $status
@@ -52,10 +49,7 @@ class PlatformSettlementAccount extends Model
         'activated_at' => 'datetime',
     ];
 
-    /**
-     * Domaine d'audit : ces lignes disent où part l'argent de la plateforme. Les ranger sous
-     * « finance » plutôt que sous le nom du modèle leur applique la rétention de ce domaine.
-     */
+    /** Domaine d'audit : ces lignes disent où part l'argent de la plateforme. */
     protected function auditEventDomain(): string
     {
         return 'finance';

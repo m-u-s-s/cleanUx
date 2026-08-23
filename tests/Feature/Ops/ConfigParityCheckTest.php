@@ -5,27 +5,7 @@ namespace Tests\Feature\Ops;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
-/**
- * `config:parity-check` — le contrôle qui doit refuser une configuration de prod incomplète.
- *
- * DEUX CHOSES SONT MESURÉES ICI.
- *
- * 1. LE COMPORTEMENT DE LA COMMANDE. On règle la config, on lance vraiment la commande, on lit
- *    son code de sortie et sa sortie.
- *
- * 2. SON CÂBLAGE DANS LE DÉPLOIEMENT. Une commande que personne n'appelle ne protège personne :
- *    jusqu'au 2026-08-12, `config:parity-check` n'était invoquée par AUCUN flux. Ces tests-là
- *    lisent les fichiers YAML — c'est la seule mesure possible depuis PHPUnit — et prennent deux
- *    précautions pour ne pas mesurer du vide : les lignes de commentaire sont retirées avant la
- *    recherche (un commentaire ne doit jamais suffire à faire passer le test), et l'absence d'un
- *    jalon fait échouer explicitement au lieu de comparer des positions fantômes.
- *
- * PIÈGE ÉVITÉ DANS CE FICHIER. Les cas d'échec partent tous d'un profil VALIDE et ne cassent
- * qu'un seul réglage. Sans cela, l'ajout des secrets Stripe les aurait laissés verts pour une
- * mauvaise raison : le code 1 aurait été garanti par des secrets vides, plus par la cause que le
- * test prétend mesurer. Chacun vérifie donc aussi que le réglage fautif est bien celui NOMMÉ dans
- * la liste des offenseurs.
- */
+/** `config:parity-check` — le contrôle qui doit refuser une configuration de prod incomplète. */
 class ConfigParityCheckTest extends TestCase
 {
     /** Un profil de production complet : tout est conforme, rien ne doit échouer. */
@@ -88,13 +68,7 @@ class ConfigParityCheckTest extends TestCase
 
     // ── Environnement : les protections qui ne s'arment qu'en production ───────────────────
 
-    /**
-     * UN HÔTE DE PRODUCTION LAISSÉ À `staging` PERD TROIS PROTECTIONS SANS RIEN DIRE.
-     *
-     * HSTS (SecurityHeaders), la CSP de repli et la redirection HTTPS sont toutes conditionnées à
-     * `app()->environment('production')`. Les pages s'affichent normalement, les tests passent,
-     * et rien n'indique que le site est servi sans en-tête de transport strict.
-     */
+    /** UN HÔTE DE PRODUCTION LAISSÉ À `staging` PERD TROIS PROTECTIONS SANS RIEN DIRE. */
     public function test_echoue_quand_l_environnement_n_est_pas_production(): void
     {
         $this->profilDeProductionValide();
@@ -115,13 +89,7 @@ class ConfigParityCheckTest extends TestCase
             ->assertExitCode(1);
     }
 
-    /**
-     * SANS CE MOT DE PASSE, CHAQUE DÉPLOIEMENT DÉPOSE LA BASE EN CLAIR.
-     *
-     * Le script lance `backup:run --only-db` juste avant de migrer. L'archive contient alors des
-     * données personnelles soumises au RGPD, des empreintes de mots de passe et des jetons d'API,
-     * conservées plusieurs jours sur le serveur applicatif.
-     */
+    /** SANS CE MOT DE PASSE, CHAQUE DÉPLOIEMENT DÉPOSE LA BASE EN CLAIR. */
     public function test_echoue_quand_la_sauvegarde_n_est_pas_chiffree(): void
     {
         $this->profilDeProductionValide();
@@ -164,10 +132,7 @@ class ConfigParityCheckTest extends TestCase
             ->assertExitCode(1);
     }
 
-    /**
-     * Le trou de H5 : sans ce secret, le contrôleur de webhook Connect ne peut vérifier aucune
-     * signature. L'application démarre quand même — la panne n'apparaît qu'au premier paiement.
-     */
+    /** Le trou de H5 : sans ce secret, le contrôleur de webhook Connect ne peut vérifier aucune signature. */
     public function test_echoue_quand_le_secret_de_webhook_connect_est_absent(): void
     {
         $this->profilDeProductionValide();
@@ -178,10 +143,7 @@ class ConfigParityCheckTest extends TestCase
             ->assertExitCode(1);
     }
 
-    /**
-     * `.env.production.example` livre `STRIPE_SECRET=sk_live_CHANGE_ME`. Copier le gabarit sans
-     * le remplir ne doit pas suffire à passer le contrôle : la valeur est présente mais fausse.
-     */
+    /** `.env.production.example` livre `STRIPE_SECRET=sk_live_CHANGE_ME`. */
     public function test_echoue_quand_un_secret_est_reste_au_gabarit(): void
     {
         $this->profilDeProductionValide();
@@ -192,10 +154,7 @@ class ConfigParityCheckTest extends TestCase
             ->assertExitCode(1);
     }
 
-    /**
-     * La sortie part dans des journaux de CI et de déploiement conservés longtemps : la valeur
-     * d'un secret ne doit jamais y figurer, même quand tout va bien.
-     */
+    /** La sortie part dans des journaux de CI et de déploiement conservés longtemps : la valeur d'un secret ne doit jamais y figurer, même quand tout va bien. */
     public function test_la_valeur_d_un_secret_n_est_jamais_ecrite_dans_la_sortie(): void
     {
         $this->profilDeProductionValide();
@@ -244,12 +203,7 @@ class ConfigParityCheckTest extends TestCase
         ];
     }
 
-    /**
-     * Le contenu du flux PRIVÉ DE SES COMMENTAIRES.
-     *
-     * Sans ce filtrage, une phrase de commentaire citant une commande suffirait à faire passer
-     * les tests d'ordre — ils mesureraient de la prose au lieu de mesurer le script exécuté.
-     */
+    /** Le contenu du flux PRIVÉ DE SES COMMENTAIRES. */
     private function contenuExecutable(string $chemin): string
     {
         $absolu = base_path($chemin);
@@ -273,23 +227,10 @@ class ConfigParityCheckTest extends TestCase
         return $position;
     }
 
-    /**
-     * B3 — l'inversion qui migrait la base pendant que le job était rapporté en échec.
-     *
-     * `set -e` arrêtait le script à `config:cache`, qui échouait à chaque fois… mais APRÈS
-     * `migrate --force`. La base avait donc déjà été mutée, migrations destructives comprises,
-     * et sans sauvegarde. Tout ce qui peut échouer sans toucher aux données passe désormais avant.
-     */
+    /** B3 — l'inversion qui migrait la base pendant que le job était rapporté en échec. */
     public function test_les_flux_de_deploiement_valident_tout_avant_de_muter_la_base(): void
     {
-        /*
-         * ON RELÈVE TOUS LES DÉSORDRES, PUIS ON LES AFFIRME D'UN COUP.
-         *
-         * Deux flux fois huit préalables : seize positions à vérifier. Une assertion par tour
-         * s'arrêtait à la première, et il fallait seize exécutions pour voir un flux entièrement
-         * réordonné. Sur un script de déploiement, c'est la LISTE qu'on veut lire avant de le
-         * réécrire.
-         */
+        // ON RELÈVE TOUS LES DÉSORDRES, PUIS ON LES AFFIRME D'UN COUP.
         $desordres = [];
 
         foreach ($this->fluxDeDeploiement() as $chemin) {
@@ -320,20 +261,7 @@ class ConfigParityCheckTest extends TestCase
         );
     }
 
-    /**
-     * TROIS COMMANDES QUI DOIVENT ÊTRE CÂBLÉES, ET LA LISTE COMPLÈTE DE CE QUI MANQUE.
-     *
-     * Ces trois contrôles vivaient dans trois méthodes distinctes, chacune bouclant sur les flux
-     * avec son assertion à l'intérieur. Six couples (flux, commande) à vérifier, et une exécution
-     * n'en montrait qu'un — alors que la question est toujours la même : cette commande est-elle
-     * appelée par le déploiement, oui ou non ?
-     *
-     * Une commande que personne n'appelle ne protège personne (low 53). `ops:check-providers`
-     * annonçait « bloque le déploiement » sans y être câblée (H12) : planifiée toutes les trente
-     * minutes, elle CONSTATAIT le problème une demi-heure après la mise en ligne, sur une
-     * plateforme déjà en train de tourner sur des bouchons. Et `storage:link` (M-15) n'était créé
-     * nulle part : les médias publics tombaient en 404.
-     */
+    /** TROIS COMMANDES QUI DOIVENT ÊTRE CÂBLÉES, ET LA LISTE COMPLÈTE DE CE QUI MANQUE. */
     public function test_les_flux_de_deploiement_cablent_les_commandes_de_garde(): void
     {
         $manquantes = [];
@@ -351,14 +279,7 @@ class ConfigParityCheckTest extends TestCase
         $this->assertSame([], $manquantes, 'Ces gardes ne sont pas câblées dans le déploiement.');
     }
 
-    /**
-     * APP_KEY (low 54) — deux exigences opposées dans le même test, exprès.
-     *
-     * Le script doit ABANDONNER si la clé manque : sans elle, `config:cache` échoue et les
-     * données chiffrées sont illisibles. Et il ne doit JAMAIS lancer `key:generate` : ce script
-     * tourne à chaque déploiement, une clé regénérée rendrait définitivement indéchiffrable tout
-     * ce qui l'a été avec l'ancienne (sessions, cookies, colonnes chiffrées).
-     */
+    /** APP_KEY (low 54) — deux exigences opposées dans le même test, exprès. */
     public function test_les_flux_de_deploiement_gardent_la_cle_sans_jamais_la_regenerer(): void
     {
         foreach ($this->fluxDeDeploiement() as $chemin) {
@@ -381,17 +302,7 @@ class ConfigParityCheckTest extends TestCase
         }
     }
 
-    /**
-     * L'ORDRE NE SUFFIT PAS : IL FAUT QUE L'ÉCHEC ARRÊTE LE SCRIPT.
-     *
-     * Les tests d'ordre ci-dessus comparent des positions. Ils restent donc verts si l'on écrit
-     * `php artisan config:parity-check || true` : la sous-chaîne est intacte, la position aussi,
-     * et pourtant la garantie a disparu — le script continuerait jusqu'à `migrate` malgré une
-     * configuration de production incomplète. Même chose si quelqu'un retire `set -e` : chaque
-     * étape échouerait dans le vide et le déploiement se déclarerait réussi.
-     *
-     * Ce test lit LIGNE PAR LIGNE, parce que c'est la ligne qui porte le neutralisant.
-     */
+    /** L'ORDRE NE SUFFIT PAS : IL FAUT QUE L'ÉCHEC ARRÊTE LE SCRIPT. */
     public function test_aucune_etape_bloquante_ne_peut_echouer_en_silence(): void
     {
         $etapesBloquantes = [
@@ -408,14 +319,7 @@ class ConfigParityCheckTest extends TestCase
         // `|| :` est l'écriture courte de `|| true` ; `continue-on-error` est son équivalent GitHub.
         $neutralisants = ['|| true', '||true', '|| :', 'continue-on-error: true', 'set +e'];
 
-        /*
-         * DEUX FLUX x TOUTES LEURS LIGNES x HUIT ÉTAPES x CINQ NEUTRALISANTS.
-         *
-         * L'assertion vivait au fond de trois boucles imbriquées : elle s'arrêtait au PREMIER
-         * `|| true` rencontré. Un script où quelqu'un a désamorcé quatre étapes d'affilée —
-         * exactement ce qui arrive quand on veut « faire passer le déploiement » — demandait
-         * quatre exécutions pour être vu en entier.
-         */
+        // DEUX FLUX x TOUTES LEURS LIGNES x HUIT ÉTAPES x CINQ NEUTRALISANTS.
         $desamorcees = [];
 
         foreach ($this->fluxDeDeploiement() as $chemin) {
@@ -453,14 +357,7 @@ class ConfigParityCheckTest extends TestCase
         );
     }
 
-    /**
-     * LA GARDE DE CHEMIN DOIT TESTER LA CHAÎNE VIDE, PAS SE FIER À `cd`.
-     *
-     * Une version de ce script s'appuyait sur `cd "$CHEMIN"` en supposant qu'un chemin vide ferait
-     * échouer la commande sous `set -e`. C'est faux : `cd ""` rend 0 en bash et ne bouge pas. Un
-     * secret DEPLOY_PATH absent — ce que GitHub rend par une chaîne vide, sans avertir — aurait
-     * donc déroulé tout le déploiement dans le répertoire personnel du compte SSH.
-     */
+    /** LA GARDE DE CHEMIN DOIT TESTER LA CHAÎNE VIDE, PAS SE FIER À `cd`. */
     public function test_les_flux_de_deploiement_refusent_un_chemin_de_deploiement_vide(): void
     {
         foreach ($this->fluxDeDeploiement() as $chemin) {

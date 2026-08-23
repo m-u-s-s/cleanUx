@@ -12,9 +12,6 @@ use App\Support\ActivityLogger;
 /**
  * Le journal des diffusions temps réel.
  *
- * Le REJEU d’une diffusion passe par le module temps réel, qui garde l’idempotence : rejouer
- * depuis ici sans sa cle enverrait un doublon a tous les abonnes du canal.
- *
  * @extends EloquentResource<BroadcastEvent>
  */
 class BroadcastEventResource extends EloquentResource
@@ -73,11 +70,7 @@ class BroadcastEventResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Rejouer une diffusion échouée. Le résultat est RENDU plutôt que supposé : un replay
-             * peut échouer à nouveau, et un écran qui annoncerait « rejoué » sans le vérifier
-             * ferait croire le problème réglé.
-             */
+            // Rejouer une diffusion échouée.
             Action::make('replay', 'Rejouer la diffusion', function (BroadcastEvent $event) {
                 $ok = app(RealtimeBroadcastService::class)->replay($event);
 

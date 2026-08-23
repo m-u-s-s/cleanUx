@@ -8,10 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * P0.4 — downloadDocument declared return type Response but returned a BinaryFileResponse
- * (always TypeError). Now typed correctly. Route is admin-only (auth + role:admin).
- */
+/** P0.4 — downloadDocument declared return type Response but returned a BinaryFileResponse (always TypeError). */
 class OnboardingDocumentDownloadP0Test extends TestCase
 {
     use RefreshDatabase;

@@ -8,10 +8,7 @@ use App\Services\EmailV2\EmailSendResult;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-/**
- * SMTP provider via Laravel Mail facade. Soft-fail.
- * Compatible avec drivers Laravel : smtp | mailgun | ses | postmark | sendgrid.
- */
+/** SMTP provider via Laravel Mail facade. Soft-fail. */
 class SmtpEmailProvider implements EmailProviderContract
 {
     public function name(): string

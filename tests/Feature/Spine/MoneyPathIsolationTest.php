@@ -8,39 +8,7 @@ use Laravel\Sanctum\Sanctum;
 use Tests\Support\Spine\SpineScenario;
 use Tests\TestCase;
 
-/**
- * F4 — Money-path role + organization isolation.
- *
- * Proves that no client/org can read or mutate another tenant's booking,
- * payment, payout, or tip via the real API routes.
- *
- * Discovery (Step 0) — money-path endpoints that accept a resource id:
- *
- * CLIENT side (prefix /api/client):
- *   GET    /api/client/bookings/{booking}                    ClientBookingController@show
- *   POST   /api/client/bookings/{booking}/cancel             ClientBookingController@cancel
- *   GET    /api/client/bookings/{booking}/eta                ClientBookingController@eta
- *   POST   /api/client/bookings/{booking}/payment-intent     BookingPaymentController@createPaymentIntent
- *   GET    /api/client/bookings/{booking}/tip/suggestions    TipController@suggestions
- *   POST   /api/client/bookings/{booking}/tip                TipController@create
- *   GET    /api/client/bookings/{booking}/cancellation-quote CancellationController@quote
- *   POST   /api/client/bookings/{booking}/cancel-with-fee    CancellationController@cancelWithFee
- *   GET    /api/client/bookings/{booking}/tracking           TripTrackingController@currentForBooking
- *
- * PROVIDER side:
- *   GET    /api/provider/missions/{mission}                  ProviderMissionLifecycleController@show
- *   POST   /api/provider/missions/{mission}/start            ProviderMissionLifecycleController@start
- *   GET    /api/provider/wallet/balance                      ProviderWalletController@balance     (user-scoped, no id)
- *   GET    /api/provider/payouts                             ProviderPayoutsController@index      (user-scoped, no id)
- *
- * Chosen for id-based cross-tenant tests (6 endpoints):
- *   1. GET  /api/client/bookings/{booking}
- *   2. POST /api/client/bookings/{booking}/cancel
- *   3. POST /api/client/bookings/{booking}/payment-intent
- *   4. GET  /api/client/bookings/{booking}/tip/suggestions
- *   5. GET  /api/client/bookings/{booking}/cancellation-quote
- *   6. GET  /api/provider/missions/{mission}
- */
+/** F4 — Money-path role + organization isolation. */
 class MoneyPathIsolationTest extends TestCase
 {
     use RefreshDatabase;

@@ -8,21 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * L'API expose un état normalisé, en plus du statut brut.
- *
- * Le domaine emploie un vocabulaire FRANÇAIS — en_attente, confirme, en_route, sur_place,
- * termine, annule — avec des variantes anglaises tolérées pour rétrocompatibilité. Les données
- * réelles mélangent les deux : la base porte aujourd'hui `confirmed` ET `en_attente`.
- *
- * Les applications mobiles filtraient sur des chaînes anglaises devinées. Conséquences : une
- * réservation `en_attente` n'était jamais comptée comme active, et `en_route` ou `sur_place`
- * n'étaient jamais reconnues comme en cours — si bien que la carte de suivi de l'accueil client
- * ne s'affichait JAMAIS, quelle que soit la mission.
- *
- * Le vocabulaire se traduit désormais une seule fois, côté serveur, en réutilisant les aides du
- * modèle qui connaissent déjà les deux formes.
- */
+/** L'API expose un état normalisé, en plus du statut brut. */
 class BookingStateNormalisationTest extends TestCase
 {
     use RefreshDatabase;

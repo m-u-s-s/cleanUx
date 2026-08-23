@@ -5,24 +5,7 @@ namespace Tests\Feature\Navigation;
 use App\Support\Navigation\ModuleCatalogue;
 use Tests\TestCase;
 
-/**
- * CHAQUE RÔLE DOIT DISPOSER DES MODULES DONT IL A BESOIN.
- *
- * Le catalogue a été bâti à partir des registres de navigation, qui ne couvraient que les pages de
- * tableau de bord — `admin/*` et `dashboard/*`. Les pages TRANSVERSALES vivent ailleurs :
- * `user/profile`, `notifications`, `aide`, `legal/*`. Elles n'appartiennent à aucun tableau de
- * bord, donc elles n'appartenaient à AUCUN rôle : cinq contextes sur cinq n'avaient ni profil, ni
- * notifications, ni mentions légales dans leur page Modules.
- *
- * ── POURQUOI CE FICHIER ACCUMULE AU LIEU D'AFFIRMER À CHAQUE TOUR ────────────────────────────
- *
- * Il vérifiait vingt-huit cas dans quatre méthodes, avec une assertion à l'intérieur de chaque
- * boucle. Un `assertContains` qui échoue INTERROMPT la méthode : si le profil manquait à trois
- * contextes, la sortie n'en nommait qu'un. On corrigeait, on relançait, on découvrait le suivant.
- *
- * Chaque contrôle collecte donc TOUS ses manques et les affirme d'un coup. Une seule exécution
- * dit tout ce qui ne va pas — et le nombre de méthodes baisse sans qu'un seul cas soit perdu.
- */
+/** CHAQUE RÔLE DOIT DISPOSER DES MODULES DONT IL A BESOIN. */
 class ModulesEssentielsParRoleTest extends TestCase
 {
     private const CONTEXTES = ['client', 'employe', 'admin', 'client-company', 'provider-company'];
@@ -50,12 +33,7 @@ class ModulesEssentielsParRoleTest extends TestCase
             ->all();
     }
 
-    /**
-     * TÉMOIN — le catalogue rend bien quelque chose pour chaque contexte.
-     *
-     * Sans ce contrôle, les deux suivants passeraient au vert le jour où `pourContexte()` rendrait
-     * une collection vide : aucun manque relevé sur zéro route examinée.
-     */
+    /** TÉMOIN — le catalogue rend bien quelque chose pour chaque contexte. */
     public function test_temoin_chaque_contexte_expose_des_modules(): void
     {
         $vides = [];
@@ -91,11 +69,7 @@ class ModulesEssentielsParRoleTest extends TestCase
 
     public function test_aucun_contexte_ne_laisse_une_categorie_essentielle_vide(): void
     {
-        /*
-         * Trois catégories doivent être servies partout : qui je suis (`comptes`), ce qu'on me dit
-         * (`communication`), et les textes qui m'engagent (`plateforme`). Une page Modules qui n'a
-         * rien à montrer dans ces trois-là n'est pas un répertoire, c'est une liste partielle.
-         */
+        // Trois catégories doivent être servies partout : qui je suis (`comptes`), ce qu'on me dit (`communication`), et les textes qui m'engagent (`plateforme`).
         $manques = [];
 
         foreach (self::CONTEXTES as $contexte) {

@@ -19,23 +19,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * QUAND QUELQU'UN PART, ET QUI PEUT DÉCLASSER QUI.
- *
- * DEUX DÉFAUTS DISTINCTS, tous deux invisibles tant qu'on ne regarde que l'écran :
- *
- *   1. LE DÉPART NE DÉFAISAIT RIEN. `remove()` passait l'adhésion à `left` et s'arrêtait là. Les
- *      missions de la semaine suivante restaient assignées à quelqu'un qui ne viendra pas — le
- *      répartiteur les voyait « couvertes », et le client découvrait l'absence le jour même. La
- *      personne restait aussi dans les canaux d'équipe, à lire les échanges de son ancien
- *      employeur.
- *
- *   2. LA GARDE DE RÔLE NE REGARDAIT QUE LA MOITIÉ DE LA QUESTION. `changeRole()` comparait le
- *      rang du NOUVEAU rôle à celui de l'acteur, jamais le rang ACTUEL de la cible. Un responsable
- *      d'exploitation pouvait donc déclasser un propriétaire en nettoyeur : le rôle visé est de
- *      rang inférieur au sien, la condition passait. `memberSousGarde()` faisait exactement ce
- *      contrôle et cette méthode ne l'appelait pas — elle passait par `getOrgMember()`.
- */
+/** QUAND QUELQU'UN PART, ET QUI PEUT DÉCLASSER QUI. */
 class OffboardingEtRolesTest extends TestCase
 {
     use RefreshDatabase;
@@ -82,16 +66,7 @@ class OffboardingEtRolesTest extends TestCase
 
         $responsable = $this->membre($org, OrganizationRole::OPERATIONS_MANAGER, 'Responsable');
 
-        /*
-         * CE TEST PASSAIT D'ABORD POUR LA MAUVAISE RAISON.
-         *
-         * `OPERATIONS_MANAGER` n'a pas `members.edit_role` par défaut : c'était donc la PERMISSION
-         * qui refusait, et la hiérarchie n'était jamais atteinte. Un vert qui ne prouve rien —
-         * exactement le motif que ce dépôt répète.
-         *
-         * On accorde donc le droit, ce qu'une société peut parfaitement faire depuis que la matrice
-         * est réglable. Il ne reste alors qu'une chose capable de refuser : le rang.
-         */
+        // CE TEST PASSAIT D'ABORD POUR LA MAUVAISE RAISON.
         OrganizationRolePermission::create([
             'organization_account_id' => $org->id,
             'role' => OrganizationRole::OPERATIONS_MANAGER->value,
@@ -176,11 +151,7 @@ class OffboardingEtRolesTest extends TestCase
     #[Test]
     public function le_depart_ne_reecrit_pas_le_travail_deja_fait(): void
     {
-        /*
-         * L'HISTORIQUE EST INTOUCHABLE. Une mission passée dit qui l'a réalisée ; la réécrire
-         * parce que la personne a quitté l'entreprise fausserait la facturation, les évaluations
-         * client et toute réclamation ultérieure.
-         */
+        // L'HISTORIQUE EST INTOUCHABLE.
         $org = OrganizationAccount::factory()->providerCompany()->create();
         $patronne = $this->membre($org, OrganizationRole::OWNER, 'Patronne');
         $partant = $this->membre($org, OrganizationRole::WORKER, 'Partant');

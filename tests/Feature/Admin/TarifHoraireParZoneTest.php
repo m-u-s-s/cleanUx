@@ -12,16 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * LA SURCHARGE HORAIRE PAR ZONE — une promesse que personne ne tenait.
- *
- * `trade_zone_pricing.price_per_hour_cents` existait, `HourlyRateResolver::tarifCatalogue()` la
- * lisait, le formulaire du métier annonçait « surchargeable zone par zone » — et AUCUN écran ne
- * l'écrivait. Une heure de ménage coûtait donc le même prix au centre de Bruxelles et dans un
- * village, sans qu'aucun administrateur puisse y changer quoi que ce soit.
- *
- * Ces tests couvrent les deux moitiés : que l'écran écrive, et que le moteur lise.
- */
+/** LA SURCHARGE HORAIRE PAR ZONE — une promesse que personne ne tenait. */
 class TarifHoraireParZoneTest extends TestCase
 {
     use RefreshDatabase;
@@ -58,12 +49,7 @@ class TarifHoraireParZoneTest extends TestCase
         $this->assertSame(6200, $resolveur->tarifCatalogue($metier->fresh(), $tarif->service_zone_id));
     }
 
-    /**
-     * VIDE ET ZÉRO NE DISENT PAS LA MÊME CHOSE.
-     *
-     * Vide = « suivre le métier ». Zéro = « une heure est offerte dans cette zone ». Confondre les
-     * deux ferait facturer plein tarif une gratuité voulue — ou l'inverse.
-     */
+    /** VIDE ET ZÉRO NE DISENT PAS LA MÊME CHOSE. Vide = « suivre le métier ». */
     public function test_zero_est_une_gratuite_voulue_et_non_une_absence(): void
     {
         [$metier, $tarif] = $this->metierHoraireAvecZone();
@@ -95,12 +81,7 @@ class TarifHoraireParZoneTest extends TestCase
         $this->assertSame(4500, app(HourlyRateResolver::class)->tarifCatalogue($metier, $tarif->service_zone_id));
     }
 
-    /**
-     * TÉMOIN — sur un métier au forfait, le champ n'a rien à faire là et le moteur refuse.
-     *
-     * Sans ce test, tous les précédents pourraient passer au vert sur un résolveur qui répondrait
-     * un tarif à n'importe quel métier.
-     */
+    /** TÉMOIN — sur un métier au forfait, le champ n'a rien à faire là et le moteur refuse. */
     public function test_un_metier_au_forfait_na_ni_champ_ni_tarif(): void
     {
         [$metier, $tarif] = $this->metierHoraireAvecZone();

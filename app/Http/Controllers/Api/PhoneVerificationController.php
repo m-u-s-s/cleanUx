@@ -9,11 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 /**
- * @group Phone Verification (compte existant)
- *
  * Partagé par l'app cliente et l'app prestataire : le contrôleur ne connaît que `$request->user()`.
- * L'inscription prestataire, elle, vérifie le téléphone AVANT que le compte existe et passe donc
- * par RegistrationPhoneController.
+ *
+ * @group Phone Verification (compte existant)
  *
  * @authenticated
  */

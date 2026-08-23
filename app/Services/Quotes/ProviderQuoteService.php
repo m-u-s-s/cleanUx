@@ -14,28 +14,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * LE DEVIS QUE LA SOCIÉTÉ BÂTIT ELLE-MÊME (E24).
- *
- * CE QUI EXISTAIT NE COUVRAIT PAS CE CAS. `MultiTradeBundle` part du CLIENT — il décrit un chantier,
- * les prestataires répondent ligne par ligne. `FinanceQuote` part d'une réservation DÉJÀ prise :
- * c'est un document comptable. Entre les deux manquait le geste le plus ordinaire d'une société de
- * services : « je passe voir, je chiffre, je vous envoie ça ». Il n'existait que dans l'écran
- * d'administration de la plateforme, saisi à la main par un opérateur pour le compte de la société.
- *
- * LE MOTEUR SUGGÈRE, LA SOCIÉTÉ DÉCIDE. Le tarif de la plateforme est une base de départ, pas un
- * prix imposé : une société qui ne peut pas descendre sous son propre tarif ne peut pas répondre à
- * un appel d'offres. L'écart est conservé — au bout de quelques dizaines de devis, il dit si elle
- * vend systématiquement à perte.
- *
- * LE PRIX EST FIGÉ À L'ENVOI, jamais recalculé. Un devis rouvert trois semaines plus tard après un
- * changement de tarif afficherait un autre montant que celui que le client a reçu, et personne ne
- * saurait expliquer l'écart. C'est pourquoi le total vit sur la ligne et non dans une lecture.
- *
- * ET L'ACCEPTATION PRODUIT DES MISSIONS, pas un accusé de réception. Un devis accepté qui ne crée
- * rien laisse les deux parties d'accord et personne au travail : la ligne porte donc un MÉTIER, qui
- * seul permet de savoir qui peut l'exécuter.
- */
+/** LE DEVIS QUE LA SOCIÉTÉ BÂTIT ELLE-MÊME (E24). CE QUI EXISTAIT NE COUVRAIT PAS CE CAS. */
 class ProviderQuoteService
 {
     public function __construct(
@@ -64,10 +43,7 @@ class ProviderQuoteService
     }
 
     /**
-     * Ajouter une ligne.
-     *
-     * `$prixUnitaireCents` à `null` retient la SUGGESTION du moteur. La passer explicitement, même
-     * égale, marque une décision — et c'est cette distinction qui rend l'écart lisible plus tard.
+     * Ajouter une ligne. `$prixUnitaireCents` à `null` retient la SUGGESTION du moteur.
      *
      * @throws DomainException
      */
@@ -166,19 +142,12 @@ class ProviderQuoteService
     /**
      * Le client accepte — et le travail est créé.
      *
-     * UNE MISSION PAR LIGNE, parce qu'une ligne porte un métier et qu'un métier désigne qui peut
-     * l'exécuter. Un devis accepté qui ne crée rien laisse les deux parties d'accord et personne au
-     * travail.
-     *
      * @throws DomainException
      */
     public function accepter(ProviderQuote $devis, User $client): ProviderQuote
     {
         if (! $devis->estOuvert()) {
-            /*
-             * L'ÉCHÉANCE COMPTE MÊME SI LE BALAYAGE N'EST PAS PASSÉ. Accepter au prix d'il y a trois
-             * mois ferait dépendre la validité d'un devis de l'heure du cron.
-             */
+            // L'ÉCHÉANCE COMPTE MÊME SI LE BALAYAGE N'EST PAS PASSÉ.
             throw new DomainException('Ce devis n’est plus valable.');
         }
 
@@ -212,12 +181,7 @@ class ProviderQuoteService
 
                     $ligne->forceFill(['booking_id' => $booking->id])->save();
                 } catch (\Throwable $e) {
-                    /*
-                     * UNE LIGNE QUI ÉCHOUE N'ANNULE PAS LES AUTRES, et l'échec se voit : la ligne
-                     * reste sans `booking_id`. Tout annuler ferait perdre un accord commercial pour
-                     * un métier mal configuré ; échouer en silence laisserait croire que tout est
-                     * planifié.
-                     */
+                    // UNE LIGNE QUI ÉCHOUE N'ANNULE PAS LES AUTRES, et l'échec se voit : la ligne reste sans `booking_id`.
                     Log::warning('[provider_quote] création de mission impossible', [
                         'quote' => $devis->reference,
                         'line_id' => $ligne->id,
@@ -256,12 +220,7 @@ class ProviderQuoteService
         return $devis->fresh();
     }
 
-    /**
-     * Marquer périmés les devis dont l'échéance est passée.
-     *
-     * Le statut suit ce que `estOuvert()` dit déjà : ce balayage sert l'affichage et les relances,
-     * il ne DÉCIDE de rien — sinon la validité d'un devis dépendrait de l'heure du cron.
-     */
+    /** Marquer périmés les devis dont l'échéance est passée. */
     public function perimerLesDevisEchus(): int
     {
         return ProviderQuote::query()
@@ -281,12 +240,7 @@ class ProviderQuoteService
         return $devis;
     }
 
-    /**
-     * Ce que le moteur de prix propose pour cette prestation.
-     *
-     * SOFT-FAIL DÉLIBÉRÉ : un catalogue incomplet ne doit pas empêcher de chiffrer à la main. Le
-     * moteur aide, il ne conditionne pas.
-     */
+    /** Ce que le moteur de prix propose pour cette prestation. */
     protected function suggestionPour(?int $serviceCatalogId, float $quantite): ?int
     {
         if ($serviceCatalogId === null) {

@@ -11,10 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * POST /api/client/bookings/estimate
- *
- * Returns a price estimate for a service before the client commits to booking.
- * No booking record is created — purely read-only.
+ * POST /api/client/bookings/estimate Returns a price estimate for a service before the client commits to booking.
  *
  * @group Client Bookings
  *
@@ -49,16 +46,7 @@ class BookingEstimateController extends Controller
             return response()->json(['message' => 'Service not found.'], 404);
         }
 
-        /*
-         * C'EST ICI QUE LA DEVISE SE DECIDE, PAS DANS LE MOTEUR.
-         *
-         * Le moteur de tarification est un calcul : lui faire resoudre la geographie le couplerait
-         * a une couche qui n'est pas la sienne, et poserait une requete sur le chemin chaud de
-         * l'estimation. Ce controleur, lui, a deja la zone sous la main -- c'est le client qui la
-         * lui a donnee -- et il la passe a l'autorite commune.
-         *
-         * Sans cela, le montant venait du marche marocain et l'etiquette disait « EUR ».
-         */
+        // C'EST ICI QUE LA DEVISE SE DECIDE, PAS DANS LE MOTEUR.
         $zoneId = $validated['service_zone_id'] ?? null;
 
         $estimate = $this->engine->estimate(

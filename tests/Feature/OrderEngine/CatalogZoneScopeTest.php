@@ -14,17 +14,7 @@ use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Le catalogue vu depuis UNE zone.
- *
- * L'ACTIVATION D'UN MÉTIER ET SON PRIX SONT LA MÊME CHOSE : une ligne `(métier, zone)` dans
- * `trade_zone_pricing`. C'est ce qui rend possible qu'un même métier coûte plus cher dans une zone
- * très demandée — il n'y a pas deux réglages à garder cohérents, donc rien qui puisse se
- * contredire.
- *
- * `trade_zone_settings` est le doublon condamné. Un test ci-dessous interdit qu'on y écrive, parce
- * qu'un `drop` seul n'empêche personne de la recréer.
- */
+/** Le catalogue vu depuis UNE zone. */
 class CatalogZoneScopeTest extends TestCase
 {
     use RefreshDatabase;
@@ -149,26 +139,13 @@ class CatalogZoneScopeTest extends TestCase
         Livewire::test(CatalogCenter::class, $this->contexte())
             ->call('basculerMetierDansLaZone', $metier->id);
 
-        /*
-         * `trade_zone_settings` portait elle aussi un `is_active` et un multiplicateur pour le même
-         * couple. Elle est SUPPRIMÉE : deux sources de vérité donnaient un prix que personne ne
-         * savait expliquer — l'administration réglait l'une, le parcours client lisait l'autre.
-         * Ce test est ce qui interdit son retour ; un `drop` seul n'empêche personne de la recréer.
-         */
+        // `trade_zone_settings` portait elle aussi un `is_active` et un multiplicateur pour le même couple.
         $this->assertFalse(Schema::hasTable('trade_zone_settings'));
     }
 
     public function test_l_ecran_annonce_que_le_reglage_atteint_le_client(): void
     {
-        /*
-         * L'AVERTISSEMENT INVERSE. L'écran disait « ce réglage n'a pas encore d'effet client » tant
-         * que le moteur ne lisait pas `trade_zone_pricing` et que le brouillon ne résolvait pas la
-         * zone d'une adresse. Les deux branchements sont faits : laisser la phrase ferait croire
-         * l'inverse de la réalité, et un administrateur n'oserait plus fermer un métier.
-         *
-         * Le test suit le même rôle qu'avant, dans l'autre sens : il empêche qu'on rétrograde
-         * l'écran sans rétrograder le moteur.
-         */
+        // L'AVERTISSEMENT INVERSE.
         Livewire::test(CatalogCenter::class, $this->contexte())
             ->assertSee('Ce que vous réglez ici est ce que voit le client', false)
             ->assertDontSee('n’a pas encore d’effet sur ce que voit un client', false);

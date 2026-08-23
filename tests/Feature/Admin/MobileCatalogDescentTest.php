@@ -13,18 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * La descente Pays → Zones → Métiers, servie à l'application mobile.
- *
- * POURQUOI CES ENDPOINTS PLUTÔT QUE LA LISTE GÉNÉRIQUE. Le moteur de console sait rendre n'importe
- * quel domaine décrit par un descripteur, et il servait jusqu'ici une liste PLATE de secteurs pour
- * ce module. Le web est devenu une descente : le mobile qui montrerait autre chose ferait croire à
- * deux catalogues différents, et c'est l'écran de terrain qu'on croirait.
- *
- * CE QUI EST RÉUTILISÉ : les descripteurs `countries` et `zones`, déjà en place. Ce qui manquait,
- * c'est le CLOISONNEMENT des zones par pays et la vue « métiers de cette zone » — l'état
- * d'ouverture n'appartenant ni au métier ni à la zone, mais à leur couple.
- */
+/** La descente Pays → Zones → Métiers, servie à l'application mobile. */
 class MobileCatalogDescentTest extends TestCase
 {
     use RefreshDatabase;
@@ -176,14 +165,7 @@ class MobileCatalogDescentTest extends TestCase
         $this->postJson("/api/admin/catalogue/zones/{$this->bruxelles->id}/trades/{$metier->id}/toggle")
             ->assertForbidden();
 
-        /*
-         * La règle qui protège le web doit protéger l'API : c'est la même décision, et un compte
-         * en lecture seule passe la garde « est-ce un administrateur ».
-         *
-         * On vérifie l'ÉTAT INCHANGÉ plutôt qu'une table vide : le catalogue est désormais semé
-         * avec sa grille complète (métier × zone), sans quoi aucun métier ne serait vendu nulle
-         * part. Compter les lignes ne dirait plus rien du refus.
-         */
+        // La règle qui protège le web doit protéger l'API : c'est la même décision, et un compte en lecture seule passe la garde « est-ce un administrateur ».
         $this->assertSame(
             $avant,
             TradeZonePricing::query()
@@ -195,14 +177,7 @@ class MobileCatalogDescentTest extends TestCase
 
     public function test_les_pays_se_trient_par_nom(): void
     {
-        /*
-         * LE BUG QUE CE TEST FIXE. `sorts()` est une liste BLANCHE, et elle valait `['id']` seule.
-         * L'écran mobile demandait `sort=name`, l'API répondait 422, et l'application affichait
-         * « Impossible de charger les pays » — un message d'erreur générique pour un tri refusé.
-         *
-         * Un pays trié par identifiant, c'est l'ordre de création : illisible dès qu'il y en a
-         * cinq. Le tri par nom devait donc être PERMIS, pas retiré de l'écran.
-         */
+        // LE BUG QUE CE TEST FIXE. `sorts()` est une liste BLANCHE, et elle valait `['id']` seule.
         $reponse = $this->getJson('/api/admin/console/countries?sort=name&direction=asc')->assertOk();
 
         $noms = collect($reponse->json('rows'))->pluck('name')->all();

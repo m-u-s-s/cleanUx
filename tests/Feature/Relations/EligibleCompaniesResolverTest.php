@@ -15,26 +15,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * SP3 Task 3 — EligibleCompaniesResolver retourne les SOCIÉTÉS prestataires
- * réservables pour une réservation (≥1 worker éligible couvrant métier+zone),
- * triées par note décroissante.
- *
- * On monte 3 orgs PROVIDER_COMPANY, chacune avec un worker actif+vérifié rattaché
- * à la zone et disponible. orgA (4.8) et orgB (4.2) ont un worker taggé du BON métier.
- * orgC (5.0) a un worker taggé d'un AUTRE métier → ABSENTE malgré sa meilleure note,
- * ce qui prouve que le filtre métier (via User::trades) discrimine bien.
- */
+/** SP3 Task 3 — EligibleCompaniesResolver retourne les SOCIÉTÉS prestataires réservables pour une réservation (≥1 worker éligible couvrant métier+zone), triées par note décroissante. */
 class EligibleCompaniesResolverTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
     use RefreshDatabase;
 
-    /**
-     * Crée un worker société PAR AILLEURS éligible (User actif rattaché à la zone,
-     * ProviderProfile company_worker actif+vérifié rattaché à l'org, disponibilité
-     * couvrant le créneau) et le tagge du métier donné.
-     */
+    /** Crée un worker société PAR AILLEURS éligible (User actif rattaché à la zone, ProviderProfile company_worker actif+vérifié rattaché à l'org, disponibilité couvrant le créneau) et le tagge du métier donné. */
     private function companyWorker(int $zoneId, int $orgId, int $tradeId, string $date): User
     {
         $user = User::factory()->create([

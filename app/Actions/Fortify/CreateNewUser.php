@@ -45,18 +45,7 @@ class CreateNewUser implements CreatesNewUsers
                 'max:255',
             ],
 
-            /*
-             * LA MÊME RÈGLE QUE SUR L'INSCRIPTION MOBILE, ET C'EST TOUT LE POINT.
-             *
-             * Un numéro d'entreprise désigne une seule société et il est PUBLIC : sans ce contrôle,
-             * n'importe qui inscrivait une société au nom d'une autre, et la vérification KYB la
-             * déclarait conforme — elle contrôle le numéro, pas qui le saisit. Le poser d'un seul
-             * côté ne servirait à rien : c'est exactement ainsi que l'attente d'approbation se
-             * contournait, en changeant de canal.
-             *
-             * Le numéro n'était même pas validé ici, là où l'API en vérifie la clé de contrôle
-             * depuis longtemps.
-             */
+            // LA MÊME RÈGLE QUE SUR L'INSCRIPTION MOBILE, ET C'EST TOUT LE POINT.
             'tva_number' => [
                 'nullable',
                 'string',
@@ -77,17 +66,7 @@ class CreateNewUser implements CreatesNewUsers
                 'max:255',
             ],
 
-            /*
-             * MÉTIERS ET ZONES — les deux tables que lit la requête candidate du dispatch.
-             *
-             * Le formulaire proposait des métiers sans filtre de zone, et AUCUNE zone : un
-             * prestataire déclarait « peinture » sans dire où, et le dispatch devait deviner son
-             * périmètre à partir de sa position du jour.
-             *
-             * `nullable` : l'inscription cliente n'en envoie pas, et l'assistant d'onboarding peut
-             * les compléter plus tard. Ce qui arrive est validé contre le catalogue à l'écriture —
-             * rien de ce qui vient du navigateur n'est cru sur parole.
-             */
+            // MÉTIERS ET ZONES — les deux tables que lit la requête candidate du dispatch.
             'trade_ids' => ['nullable', 'array'],
             'trade_ids.*' => ['integer'],
             'zone_ids' => ['nullable', 'array'],
@@ -99,11 +78,7 @@ class CreateNewUser implements CreatesNewUsers
         ])->validate();
 
         return DB::transaction(function () use ($input) {
-            /*
-             * Important :
-             * Le test Jetstream standard n’envoie pas account_type.
-             * Donc on met client_personal par défaut.
-             */
+            // Important : Le test Jetstream standard n’envoie pas account_type.
             $accountType = $input['account_type'] ?? 'client_personal';
 
             // ── Créer l'utilisateur de base ──
@@ -111,11 +86,7 @@ class CreateNewUser implements CreatesNewUsers
                 'name' => $input['name'],
                 'email' => $input['email'],
 
-                /*
-                 * Important :
-                 * Si User.php contient le cast 'password' => 'hashed',
-                 * il ne faut PAS faire Hash::make ici.
-                 */
+                // Important : Si User.php contient le cast 'password' => 'hashed', il ne faut PAS faire Hash::make ici.
                 'password' => $input['password'],
 
                 'account_type' => $accountType,
@@ -127,24 +98,7 @@ class CreateNewUser implements CreatesNewUsers
                 'is_active' => true,
             ]);
 
-            /*
-             * LE RÔLE SE DÉDUIT, IL NE SE DEMANDE PAS.
-             *
-             * Fortify appelle cette action avec `$request->all()` : `$input` EST le corps de la
-             * requête d'inscription, sans filtre. Les deux lignes qui vivaient ici lisaient
-             * `$input['role']` et `$input['platform_role']` — un champ caché `platform_role=admin`
-             * dans le formulaire public suffisait donc à s'ouvrir la console d'administration, et
-             * `role=admin` à passer les gardes `CheckRole` et la callback de diffusion
-             * `providers.presence`. Rien dans la validation ci-dessus ne mentionne ces clés : elles
-             * n'ont jamais été des champs d'inscription, seulement des colonnes atteignables.
-             *
-             * `platform_role` n'a que TROIS valeurs déclarées — `user`, `admin`, `super_admin`
-             * (voir `HasAdminCapabilities`). Une inscription publique ne peut produire que la
-             * première ; élever un compte reste un geste d'administrateur, fait ailleurs.
-             *
-             * `forceFill` et non `create` : ces colonnes ne sont plus assignables en masse, c'est
-             * précisément ce qui ferme la porte.
-             */
+            // LE RÔLE SE DÉDUIT, IL NE SE DEMANDE PAS.
             $user->forceFill([
                 'role' => in_array($accountType, ['provider_independent', 'provider_company'], true)
                     ? 'employe'
@@ -262,19 +216,7 @@ class CreateNewUser implements CreatesNewUsers
         $this->provisionDefaultAvailability($user);
     }
 
-    /**
-     * `self_registered_at` — LA COLONNE QUI PORTE L'ATTENTE D'APPROBATION.
-     *
-     * `EnsureProviderIsApproved` ne restreint QUE les profils qui la portent : c'est délibéré, les
-     * prestataires antérieurs à l'inscription en libre-service la laissent vide et traversent sans
-     * condition. Or seule l'inscription mobile la posait. Mesuré le 2026-08-16 : même état en base
-     * (`status = pending`), inscrit depuis l'app → 403 `provider_pending_approval` sur les trois
-     * routes prestataire ; inscrit sur le web → 200 sur les trois. Le formulaire promet pourtant
-     * « Votre compte sera vérifié par notre équipe avant d'être activé ».
-     *
-     * `forceFill` : la colonne n'est pas assignable en masse, et c'est précisément ce qui l'empêche
-     * d'être levée depuis un formulaire — la rendre `fillable` rendrait la restriction optionnelle.
-     */
+    /** `self_registered_at` — LA COLONNE QUI PORTE L'ATTENTE D'APPROBATION. */
     private function marquerLInscriptionEnLibreService(ProviderProfile $profile): void
     {
         $profile->forceFill(['self_registered_at' => now()])->save();
@@ -318,14 +260,7 @@ class CreateNewUser implements CreatesNewUsers
     /**
      * @param  array<string, mixed>  $input
      */
-    /**
-     * LA SEMAINE PAR DÉFAUT, POSÉE À L'INSCRIPTION.
-     *
-     * Un prestataire sans créneau est invisible à la planification : aucune fenêtre calculée,
-     * aucun rendez-vous proposé, et aucun écran qui le lui dise. Les deux inscriptions web
-     * appellent le même écrivain que l'inscription mobile — trois chemins pour une seule règle
-     * finiraient par diverger, et c'est déjà arrivé sur les métiers et les zones.
-     */
+    /** LA SEMAINE PAR DÉFAUT, POSÉE À L'INSCRIPTION. */
     private function provisionDefaultAvailability(User $user): void
     {
         app(DefaultAvailabilityProvisioner::class)->provision($user);
@@ -333,11 +268,6 @@ class CreateNewUser implements CreatesNewUsers
 
     /**
      * La couverture déclarée à l'inscription : métiers ET zones.
-     *
-     * `ProviderCoverageWriter` est le seul endroit qui écrit ces deux tables — l'inscription web,
-     * l'inscription mobile et l'écran de profil l'appellent toutes. Trois écritures séparées
-     * finiraient par diverger, et une écriture manquante quelque part se traduit par un
-     * prestataire qui ne reçoit jamais rien, sans erreur nulle part.
      *
      * @param  array<string, mixed>  $input
      */

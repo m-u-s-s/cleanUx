@@ -8,20 +8,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Simple feature flag service.
- *
- * Resolution order (first match wins):
- *   1. config/features.php value (bool) — kill switch
- *   2. percentage rollout — deterministic per (user_id + feature)
- *   3. explicit user list
- *   4. role-based
- *   5. default false (safe off)
- *
- * Usage:
- *   app(FeatureFlagService::class)->isEnabled('chat_v2', $user)
- *   feature('chat_v2', $user)       // helper
- *
- *   @feature('chat_v2')             // Blade directive
+ * Résout l'état d'un drapeau de fonctionnalité : le premier match l'emporte.
+ * S'emploie en PHP, et depuis une vue par la directive Blade du même nom.
  */
 class FeatureFlagService
 {
@@ -82,8 +70,7 @@ class FeatureFlagService
     }
 
     /**
-     * Admin overrides keyed by flag, loaded once per resolved instance (the service is a
-     * per-request singleton). Soft-fails to an empty set if the table is absent.
+     * Admin overrides keyed by flag, loaded once per resolved instance (the service is a per-request singleton).
      *
      * @return Collection<string,bool>
      */

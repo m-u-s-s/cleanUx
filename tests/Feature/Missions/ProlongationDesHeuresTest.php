@@ -12,18 +12,7 @@ use RuntimeException;
 use Tests\Support\Spine\SpineScenario;
 use Tests\TestCase;
 
-/**
- * PROLONGER — acheter du temps en plus, au tarif normal, avant ou pendant l'intervention.
- *
- * CE QUE CES TESTS PROTÈGENT AVANT TOUT : **la prolongation n'écrit QUE `purchased_minutes`.**
- *
- * `duree_estimee` est la base du calcul du tarif — `HourlyRateResolver` déduit le tarif horaire
- * réellement payé en divisant le montant autorisé par elle. La faire suivre à chaque prolongation
- * ferait glisser ce tarif vers le bas à chaque fois : trois heures à 58,50 € devenues quatre
- * rendraient 43,88 €, le client paierait sa quatrième heure moins cher que la première, et le
- * dépassement serait ensuite majoré sur une base érodée. C'est le genre d'erreur qu'aucune
- * relecture n'attrape, parce que les deux colonnes coïncident jusqu'à la première prolongation.
- */
+/** PROLONGER — acheter du temps en plus, au tarif normal, avant ou pendant l'intervention. */
 class ProlongationDesHeuresTest extends TestCase
 {
     use RefreshDatabase;
@@ -39,12 +28,7 @@ class ProlongationDesHeuresTest extends TestCase
         $this->assertSame(0, $etat['overtime_amount_cents']);
     }
 
-    /**
-     * LE TÉMOIN CENTRAL — le tarif déduit ne bouge pas d'un centime.
-     *
-     * Sans cette assertion, le test précédent passerait au vert sur une implémentation qui fait
-     * suivre `duree_estimee` et sous-facture toutes les heures suivantes.
-     */
+    /** LE TÉMOIN CENTRAL — le tarif déduit ne bouge pas d'un centime. */
     public function test_prolonger_ne_deplace_pas_la_base_du_tarif(): void
     {
         $mission = $this->missionAuTemps(minutesAchetees: 180, prixCents: 17550, ecouleesMinutes: 30);
@@ -59,12 +43,7 @@ class ProlongationDesHeuresTest extends TestCase
         $this->assertSame(5850, app(HourlyRateResolver::class)->tarifEffectifDeLaReservation($booking->refresh()));
     }
 
-    /**
-     * PROLONGER PENDANT LA FRANCHISE ANNULE LE DÉPASSEMENT.
-     *
-     * C'est le sens même de la franchise : quinze minutes pour s'apercevoir que ça déborde et
-     * décider. Le client qui décide dans ce délai paie ses heures, pas de pénalité.
-     */
+    /** PROLONGER PENDANT LA FRANCHISE ANNULE LE DÉPASSEMENT. */
     public function test_prolonger_pendant_la_franchise_efface_la_penalite(): void
     {
         $mission = $this->missionAuTemps(minutesAchetees: 180, prixCents: 17550, ecouleesMinutes: 188);
@@ -79,13 +58,7 @@ class ProlongationDesHeuresTest extends TestCase
         $this->assertSame(52, $etat['remaining_minutes']);
     }
 
-    /**
-     * LA FENÊTRE SE FERME À LA FIN DE LA FRANCHISE.
-     *
-     * Sans cette limite, un client attendrait la fin de l'intervention pour prolonger
-     * rétroactivement : il paierait ses heures, jamais la majoration, et la majoration ne
-     * majorerait plus rien.
-     */
+    /** LA FENÊTRE SE FERME À LA FIN DE LA FRANCHISE. */
     public function test_apres_la_franchise_la_prolongation_est_refusee(): void
     {
         $mission = $this->missionAuTemps(minutesAchetees: 180, prixCents: 17550, ecouleesMinutes: 220);

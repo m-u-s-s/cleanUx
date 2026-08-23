@@ -12,22 +12,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-/**
- * AuditService (Phase Audit v2).
- *
- * Successeur de ActivityLogger pour les events typés v2. ActivityLogger reste
- * en place pour la rétrocompat de toutes les écritures existantes — le mirror
- * vers audit_events peut être activé via `audit.mirror_activity_logger` quand
- * on veut centraliser.
- *
- * Workflow record() :
- *   1. Resolve domain / severity / actor / subject / request context
- *   2. Apply redaction rules (drop_keys, hash_keys, regex patterns DB)
- *   3. Clamp context size (drop if > max_context_size_bytes)
- *   4. Resolve retention policy code
- *   5. Persist row (idempotent via key si fourni)
- *   6. Soft-fail (try/catch + Log::warning) — l'audit ne bloque JAMAIS le flow
- */
+/** AuditService (Phase Audit v2). Successeur de ActivityLogger pour les events typés v2. */
 class AuditService
 {
     /**
@@ -328,13 +313,7 @@ class AuditService
         return null;
     }
 
-    /**
-     * M11 — never persist a full email in actor_label / subject_label (these columns are not
-     * covered by the context redaction and audit rows are retained for years). Mask the local
-     * part of any email while keeping the domain so the label stays recognisable for admins;
-     * the authoritative link to the user remains actor_id / subject_id. Non-email labels
-     * (codes, references) are returned unchanged.
-     */
+    /** M11 — never persist a full email in actor_label / subject_label (these columns are not covered by the context redaction and audit rows are retained for years). */
     protected function maskLabel(?string $value): ?string
     {
         if ($value === null || $value === '') {

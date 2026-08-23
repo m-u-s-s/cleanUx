@@ -24,20 +24,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * PHASE 6 — SURGE PILOTÉ (E28), PRÉVISION (E29), SANTÉ DU MARCHÉ (E30), RATTRAPAGE (E31) ET
- * MODÉRATION IA (E32).
- *
- * CE QUE CE FICHIER PROTÈGE EN PRIORITÉ, ce sont les cinq décisions qui font que ces modules
- * informent au lieu de tromper :
- *
- *   1. le taux « sans candidat » se calcule sur les recherches ÉPUISÉES, pas sur les annulées —
- *      un client qui renonce n'est pas un marché qui manque de bras ;
- *   2. on ne PROJETTE PAS sous quatre semaines d'observation : la moyenne décrirait un accident ;
- *   3. on ne RELANCE PAS une recherche encore ouverte — deux prestataires se déplaceraient ;
- *   4. le geste commercial est NOMINATIF : un code générique fuit ;
- *   5. l'IA ne bloque JAMAIS seule, et son indisponibilité ne vaut pas validation.
- */
+/** PHASE 6 — SURGE PILOTÉ (E28), PRÉVISION (E29), SANTÉ DU MARCHÉ (E30), RATTRAPAGE (E31) ET MODÉRATION IA (E32). */
 class SanteDuMarcheTest extends TestCase
 {
     use RefreshDatabase;
@@ -49,17 +36,7 @@ class SanteDuMarcheTest extends TestCase
         Notification::fake();
     }
 
-    /**
-     * L'ECRAN DEMANDE DESORMAIS `manage-analytics`.
-     *
-     * La sante du marche est un tableau de donnees ; comme les quatre-vingt-trois autres modules
-     * d'administration, il declare la capacite qui lui correspond, et `EnforceModuleGate` la fait
-     * appliquer. Un `platform_role = 'admin'` sans capacite recevait donc un 403 -- le garde
-     * faisait son travail.
-     *
-     * On accorde la capacite plutot que de faire un super-administrateur : celui-ci passe TOUS les
-     * gardes, et ce test cesserait de mesurer celui-la.
-     */
+    /** L'ECRAN DEMANDE DESORMAIS `manage-analytics`. */
     private function admin(): User
     {
         $admin = User::factory()->create([
@@ -150,10 +127,7 @@ class SanteDuMarcheTest extends TestCase
 
         $lignes = collect(app(MarketplaceHealthService::class)->parZone());
 
-        /*
-         * LA MASQUER FERAIT DISPARAÎTRE DU TABLEAU exactement les zones où l'on n'a jamais rien
-         * vendu — celles qu'il faut regarder.
-         */
+        // LA MASQUER FERAIT DISPARAÎTRE DU TABLEAU exactement les zones où l'on n'a jamais rien vendu — celles qu'il faut regarder.
         $ligne = $lignes->firstWhere('zone_id', $zone->id);
 
         $this->assertNotNull($ligne);
@@ -188,10 +162,7 @@ class SanteDuMarcheTest extends TestCase
 
         $lignes = app(DemandForecastService::class)->projection();
 
-        /*
-         * EN DESSOUS DE QUATRE SEMAINES, la moyenne mobile décrit un accident, pas une tendance :
-         * `has_enough_history` à faux vaut mieux qu'un chiffre lu comme un objectif.
-         */
+        // EN DESSOUS DE QUATRE SEMAINES, la moyenne mobile décrit un accident, pas une tendance : `has_enough_history` à faux vaut mieux qu'un chiffre lu comme un objectif.
         $this->assertNotEmpty($lignes);
         $this->assertFalse($lignes[0]['has_enough_history']);
     }
@@ -238,10 +209,7 @@ class SanteDuMarcheTest extends TestCase
             'radius_m' => 5000,
         ]);
 
-        /*
-         * LE MOTEUR EN OUVRIRAIT UNE SECONDE sur la même réservation, et deux prestataires se
-         * déplaceraient — le défaut exact que la porte amont unique a corrigé.
-         */
+        // LE MOTEUR EN OUVRIRAIT UNE SECONDE sur la même réservation, et deux prestataires se déplaceraient — le défaut exact que la porte amont unique a corrigé.
         $this->expectException(DomainException::class);
 
         app(FailedSearchRecoveryService::class)->relancer($ouverte, $admin);
@@ -257,11 +225,7 @@ class SanteDuMarcheTest extends TestCase
 
         $code = app(FailedSearchRecoveryService::class)->offrirUnGeste($recherche, $admin, 20);
 
-        /*
-         * UN CODE GÉNÉRIQUE FUIT : il se retrouve sur un forum, et un dédommagement devient une
-         * promotion publique que personne n'a budgétée. `issued_to_user_id` est la colonne que le
-         * module lit réellement — se tromper aurait produit un code nominatif EN APPARENCE.
-         */
+        // UN CODE GÉNÉRIQUE FUIT : il se retrouve sur un forum, et un dédommagement devient une promotion publique que personne n'a budgétée.
         $this->assertSame($client->id, $code->issued_to_user_id);
         $this->assertSame(1, (int) $code->max_total_uses);
         $this->assertSame(PromoCode::STATUS_ACTIVE, $code->status);
@@ -325,10 +289,7 @@ class SanteDuMarcheTest extends TestCase
 
         $carte = app(SurgeOverviewService::class)->carte();
 
-        /*
-         * LE DÉPASSEMENT EST SIGNALÉ, PAS CORRIGÉ. Sans ce rappel, l'écran afficherait 5,00 et le
-         * client paierait 3,00 : deux chiffres pour la même chose, et personne pour expliquer.
-         */
+        // LE DÉPASSEMENT EST SIGNALÉ, PAS CORRIGÉ.
         $this->assertSame(1, $carte['exceeding_cap_count']);
         $this->assertTrue($carte['rows'][0]['exceeds_cap']);
         $this->assertSame($carte['cap'], $carte['rows'][0]['effective_multiplier']);
@@ -363,10 +324,7 @@ class SanteDuMarcheTest extends TestCase
     {
         $verdict = app(AiModerationProvider::class)->analyser('un message quelconque');
 
-        /*
-         * NI BLANC-SEING, NI CONDAMNATION. Rendre `clean` ferait passer l'indisponibilité pour une
-         * validation — exactement le mensonge à éviter dans un module de modération.
-         */
+        // NI BLANC-SEING, NI CONDAMNATION.
         $this->assertSame(AiModerationProvider::VERDICT_INCONNU, $verdict['verdict']);
         $this->assertSame(0.0, $verdict['confidence']);
         $this->assertSame('feature_off', $verdict['reason']);

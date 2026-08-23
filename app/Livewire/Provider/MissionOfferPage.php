@@ -9,19 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-/**
- * Phase 11 — Page de réponse à une offre de mission (web).
- *
- * Affichée quand le prestataire clique sur la notification push :
- *   /provider/missions/{assignment}/offer
- *
- * Affiche :
- *   - Timer countdown (10, 9, 8…)
- *   - Détails de la mission (service, adresse, prix, planning)
- *   - 2 gros boutons Accepter / Refuser
- *
- * Si déjà accepté/refusé/expiré → affiche le statut sans permettre l'action.
- */
+/** Phase 11 — Page de réponse à une offre de mission (web). */
 class MissionOfferPage extends Component
 {
     public int $assignmentId;

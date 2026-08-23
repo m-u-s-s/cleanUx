@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Config;
 
 class DisputeSlaService
 {
-    /**
-     * Calcule l'échéance SLA d'une dispute en fonction de sa priorité + sévérité.
-     */
+    /** Calcule l'échéance SLA d'une dispute en fonction de sa priorité + sévérité. */
     public function computeDueAt(string $priority, string $severity = ComplaintCase::SEVERITY_MEDIUM, ?Carbon $from = null): Carbon
     {
         $from ??= now();

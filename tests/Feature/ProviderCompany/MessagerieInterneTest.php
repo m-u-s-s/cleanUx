@@ -17,18 +17,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * LOT 7 — LA MESSAGERIE INTERNE, DEPUIS LE TERRAIN.
- *
- * Toute la GESTION des canaux vivait dans `TeamChannels.php`, l'écran web : créer, ajouter
- * quelqu'un, ouvrir une conversation à deux. L'API mobile ne savait que LISTER, LIRE et POSTER —
- * une équipe sur un chantier pouvait donc répondre, jamais ouvrir un fil.
- *
- * ET LES CANAUX INTERNES N'AVAIENT AUCUNE MODÉRATION. `ModerationService` — propos toxiques,
- * caviardage des données personnelles — n'existait que sur ChatV2, le fil client↔prestataire. Une
- * équipe pouvait coller le numéro de carte d'un client sans que rien ne le voie, alors que ces
- * canaux sont précisément là pour éviter que les échanges partent sur WhatsApp.
- */
+/** LOT 7 — LA MESSAGERIE INTERNE, DEPUIS LE TERRAIN. */
 class MessagerieInterneTest extends TestCase
 {
     use RefreshDatabase;
@@ -95,11 +84,7 @@ class MessagerieInterneTest extends TestCase
 
     public function test_la_conversation_a_deux_se_retrouve_au_lieu_de_se_dupliquer(): void
     {
-        /*
-         * ON CHERCHE AVANT DE CRÉER, et c'est le cœur du sujet. Sans cela, chaque appui ajouterait
-         * un canal : la messagerie se remplirait de fils vides entre les deux mêmes personnes, et
-         * l'historique se disperserait entre eux — pire que pas de messagerie du tout.
-         */
+        // ON CHERCHE AVANT DE CRÉER, et c'est le cœur du sujet.
         $ana = $this->membre();
         $patron = $this->membre(OrganizationRole::OWNER);
 
@@ -162,11 +147,7 @@ class MessagerieInterneTest extends TestCase
             ->deleteJson("/api/provider/company/channels/{$canal->id}/members/{$collegue->id}")
             ->assertOk();
 
-        /*
-         * RETIRER COUPE AUSSI L'ACCÈS TEMPS RÉEL : l'autorisation Reverb `channel.{id}` vérifie
-         * l'appartenance à chaque abonnement. C'est pourquoi on détache la ligne au lieu de poser un
-         * drapeau — un membre « inactif » resterait dans le canal aux yeux de la diffusion.
-         */
+        // RETIRER COUPE AUSSI L'ACCÈS TEMPS RÉEL : l'autorisation Reverb `channel.{id}` vérifie l'appartenance à chaque abonnement.
         $this->assertDatabaseMissing('channel_members', [
             'channel_id' => $canal->id,
             'user_id' => $collegue->id,
@@ -252,11 +233,7 @@ class MessagerieInterneTest extends TestCase
 
     public function test_les_non_lus_comptent_les_messages_des_autres_et_pas_les_siens(): void
     {
-        /*
-         * `channel_members.last_read_at` existait depuis l'origine et n'était écrit par PERSONNE :
-         * les non-lus ne pouvaient donc pas exister, et la liste des canaux ne disait jamais où il
-         * se passait quelque chose.
-         */
+        // `channel_members.last_read_at` existait depuis l'origine et n'était écrit par PERSONNE : les non-lus ne pouvaient donc pas exister, et la liste des canaux ne disait jamais où il se passait quelque chose.
         $proprietaire = $this->membre(OrganizationRole::OWNER);
         $collegue = $this->membre();
         $canal = $this->canalAvec($proprietaire);
@@ -302,11 +279,7 @@ class MessagerieInterneTest extends TestCase
 
     public function test_la_moderation_caviarde_les_donnees_personnelles(): void
     {
-        /*
-         * Une équipe pouvait coller le numéro de carte d'un client dans un canal interne sans que
-         * rien ne le voie. `ModerationService` existait — il n'examinait que le fil
-         * client↔prestataire.
-         */
+        // Une équipe pouvait coller le numéro de carte d'un client dans un canal interne sans que rien ne le voie.
         config()->set('messaging.moderation.channels', true);
 
         $proprietaire = $this->membre(OrganizationRole::OWNER);
@@ -320,10 +293,7 @@ class MessagerieInterneTest extends TestCase
 
     public function test_la_moderation_epargne_les_messages_systeme(): void
     {
-        /*
-         * Ce sont des textes que le PRODUIT écrit : les caviarder troue une annonce technique, et un
-         * blocage rendrait la création de canal impossible sur un nom malheureux.
-         */
+        // Ce sont des textes que le PRODUIT écrit : les caviarder troue une annonce technique, et un blocage rendrait la création de canal impossible sur un nom malheureux.
         config()->set('messaging.moderation.channels', true);
 
         $proprietaire = $this->membre(OrganizationRole::OWNER);
@@ -343,11 +313,7 @@ class MessagerieInterneTest extends TestCase
 
     public function test_on_envoie_une_note_vocale(): void
     {
-        /*
-         * Sur un chantier, on ne tape pas : mains prises, gants, téléphone au fond d'une poche. Une
-         * messagerie terrain qui n'accepte que du texte se fait remplacer par WhatsApp — hors de
-         * l'outil, hors de toute trace, et hors de la modération.
-         */
+        // Sur un chantier, on ne tape pas : mains prises, gants, téléphone au fond d'une poche.
         Storage::fake('public');
 
         $proprietaire = $this->membre(OrganizationRole::OWNER);
@@ -404,11 +370,7 @@ class MessagerieInterneTest extends TestCase
 
     public function test_l_historique_se_remonte_par_curseur(): void
     {
-        /*
-         * Un fil vivant reçoit des messages pendant qu'on le remonte : une pagination par décalage
-         * rejouerait ou sauterait des lignes à chaque nouveau message. `before_id` désigne un point
-         * FIXE dans l'historique.
-         */
+        // Un fil vivant reçoit des messages pendant qu'on le remonte : une pagination par décalage rejouerait ou sauterait des lignes à chaque nouveau message.
         $proprietaire = $this->membre(OrganizationRole::OWNER);
         $canal = $this->canalAvec($proprietaire);
 

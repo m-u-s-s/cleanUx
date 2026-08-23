@@ -15,21 +15,7 @@ use Illuminate\Support\Facades\URL;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-/**
- * Phase 5.2 — AssistantWidget enrichi avec streaming UI.
- *
- * Différences avec Phase 5 :
- *   - send() ne lance plus directement LlmClient (qui bloquait Livewire jusqu'à
- *     la fin de la réponse). À la place, il :
- *       1. Persiste le message utilisateur
- *       2. Génère une URL signée vers /assistant/stream
- *       3. Dispatche un browser event 'assistant:stream-start'
- *     Le JS prend le relais avec EventSource pour afficher en temps réel.
- *   - Nouveau handler streamCompleted() appelé quand le JS finit de streamer
- *     pour rafraîchir la liste des messages persistés.
- *
- * Le mode "non-streaming" reste disponible (fallback) via $useStreaming = false.
- */
+/** Phase 5.2 — AssistantWidget enrichi avec streaming UI. */
 class AssistantWidget extends Component
 {
     public bool $isOpen = false;
@@ -74,10 +60,7 @@ class AssistantWidget extends Component
         }
     }
 
-    /**
-     * Triggered when a quick-action button is clicked.
-     * Receives the array index so no string escaping is needed in the blade.
-     */
+    /** Triggered when a quick-action button is clicked. */
     public function sendQuick(int $index): void
     {
         $prompt = $this->quickActions[$index]['prompt'] ?? '';
@@ -95,14 +78,7 @@ class AssistantWidget extends Component
         $this->isOpen = ! $this->isOpen;
     }
 
-    /**
-     * Phase 5.2 — Envoi avec streaming.
-     *
-     * Au lieu d'appeler LlmClient (bloquant), on :
-     *   1. Persiste le message user
-     *   2. Génère une URL signée
-     *   3. Dispatche au front pour qu'il ouvre un EventSource
-     */
+    /** Phase 5.2 — Envoi avec streaming. Au lieu d'appeler LlmClient (bloquant), on : 1. */
     public function send(): void
     {
         $message = trim($this->input);
@@ -174,12 +150,7 @@ class AssistantWidget extends Component
         }
     }
 
-    /**
-     * Appelé par le JS quand le stream est terminé.
-     * On reload la liste des messages depuis la DB pour récupérer le message
-     * assistant final persisté + d'éventuels tool_uses qui ont créé des
-     * AssistantAction en pending_confirmation.
-     */
+    /** Appelé par le JS quand le stream est terminé. */
     #[On('assistant:stream-completed')]
     public function streamCompleted(?int $messageId = null, bool $hasTools = false): void
     {
@@ -335,9 +306,7 @@ class AssistantWidget extends Component
         return $conversation;
     }
 
-    /**
-     * Fallback sync (mode Phase 5 — bloquant) si streaming désactivé.
-     */
+    /** Fallback sync (mode Phase 5 — bloquant) si streaming désactivé. */
     private function sendSync($user, AssistantConversation $conversation, string $message): void
     {
         try {

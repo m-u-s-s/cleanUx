@@ -14,21 +14,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LES ACTIONS DU TABLEAU DE TÂCHES N'ÉTAIENT GARDÉES QU'AU MONTAGE.
- *
- * `TaskBoard::mount()` vérifie une permission de lecture, puis `createTask()` et `updateStatus()`
- * n'en vérifiaient plus aucune : un `viewer` — rôle explicitement en lecture seule — pouvait créer
- * des tâches et déplacer celles des autres. Les clés `tasks.create` et `tasks.assign` existaient
- * pourtant dans la matrice de `PermissionService` sans qu'aucun appelant ne les consulte, comme
- * `channels.manage` avant elles.
- *
- * `createTask()` cachait un second défaut : `assigneeIds` arrivait du navigateur et était attaché
- * sans vérification. On pouvait donc assigner une tâche à un utilisateur d'une AUTRE société.
- *
- * À l'inverse — et contrairement à ce qu'annonçait le programme — `deleteTask()` était DÉJÀ gardé
- * (créateur, ou `tasks.close`). Il n'est pas touché.
- */
+/** LES ACTIONS DU TABLEAU DE TÂCHES N'ÉTAIENT GARDÉES QU'AU MONTAGE. */
 class TaskBoardActionGuardsTest extends TestCase
 {
     use RefreshDatabase;
@@ -52,13 +38,7 @@ class TaskBoardActionGuardsTest extends TestCase
         return $user;
     }
 
-    /**
-     * J'AI D'ABORD ÉCRIT CE TEST À L'ENVERS.
-     *
-     * Je supposais qu'un `viewer` pouvait créer des tâches, faute de garde sur l'action. En fait
-     * `mount()` exige déjà `tasks.create` : un rôle en lecture seule n'ouvre même pas l'écran. La
-     * protection existait, ailleurs que là où je la cherchais. On la fige telle qu'elle est.
-     */
+    /** J'AI D'ABORD ÉCRIT CE TEST À L'ENVERS. */
     #[Test]
     public function un_viewer_n_ouvre_meme_pas_le_tableau(): void
     {
@@ -70,14 +50,7 @@ class TaskBoardActionGuardsTest extends TestCase
             ->assertForbidden();
     }
 
-    /**
-     * CE QUE LA GARDE SUR L'ACTION APPORTE VRAIMENT.
-     *
-     * Puisque `mount()` filtre déjà, on pourrait croire les gardes d'action redondantes. Elles ne
-     * le sont pas : Livewire ne rejoue PAS `mount()` aux requêtes suivantes. Un droit retiré en
-     * cours de session laissait donc la personne continuer d'écrire tant que son onglet restait
-     * ouvert. C'est ce trou-là que ce test ferme.
-     */
+    /** CE QUE LA GARDE SUR L'ACTION APPORTE VRAIMENT. */
     #[Test]
     public function un_droit_retire_apres_le_montage_ne_permet_plus_d_ecrire(): void
     {

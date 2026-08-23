@@ -9,10 +9,6 @@ use App\Models\FinanceInvoice;
 /**
  * Les factures, dont la facturation mensuelle B2B.
  *
- * Ni émission ni annulation ici : une facture émise porte un numéro séquentiel légal, et en
- * annuler une depuis une liste laisserait un trou dans la séquence — ce que l’administration
- * fiscale ne tolère pas.
- *
  * @extends EloquentResource<FinanceInvoice>
  */
 class FinanceInvoiceResource extends EloquentResource

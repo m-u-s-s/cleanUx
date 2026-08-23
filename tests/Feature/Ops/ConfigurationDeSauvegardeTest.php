@@ -6,24 +6,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Spatie\Backup\Config\NotificationMailConfig;
 use Tests\TestCase;
 
-/**
- * LA LIGNE QUI FAISAIT ÉCHOUER TOUT DÉPLOIEMENT, DEPUIS TOUJOURS.
- *
- * `config/backup.php` lisait `env('BACKUP_NOTIFICATION_EMAIL', env('MAIL_FROM_ADDRESS'))` —
- * l'`env()` INTÉRIEUR sans défaut. Sur un runner, `composer install` s'exécute avant qu'un `.env`
- * existe : la valeur vaut alors `null`, et `NotificationMailConfig::fromArray()` la refuse pendant
- * `package:discover`. Le job mourait à l'installation des dépendances, sans jamais atteindre
- * l'étape SSH.
- *
- * Le diagnostic accusait les secrets manquants. Ils n'étaient même pas lus.
- *
- * ── CE QUE CE TEST GARDE ─────────────────────────────────────────────────────────────────────
- *
- * Le fichier de configuration est relu À LA MAIN, avec l'environnement vidé de ses deux clés :
- * c'est la seule façon de reproduire le runner, où `config('backup')` est déjà résolu depuis le
- * `.env` de test. Et le témoin positif est en tête — sans lui, « ça ne lève pas » se mesurerait
- * aussi bien sur une configuration qui n'envoie jamais rien à personne.
- */
+/** LA LIGNE QUI FAISAIT ÉCHOUER TOUT DÉPLOIEMENT, DEPUIS TOUJOURS. */
 class ConfigurationDeSauvegardeTest extends TestCase
 {
     /**
@@ -65,12 +48,7 @@ class ConfigurationDeSauvegardeTest extends TestCase
         }
     }
 
-    /**
-     * LE TÉMOIN POSITIF : une adresse configurée est bien celle qui reçoit.
-     *
-     * Sans lui, le test suivant passerait au vert sur une configuration qui n'envoie jamais rien
-     * à personne — c'est-à-dire en mesurant une panne.
-     */
+    /** LE TÉMOIN POSITIF : une adresse configurée est bien celle qui reçoit. */
     #[Test]
     public function une_adresse_configuree_recoit_bien_les_rapports(): void
     {
@@ -97,13 +75,7 @@ class ConfigurationDeSauvegardeTest extends TestCase
         $this->assertSame('no-reply@exemple.test', $config['notifications']['mail']['to']);
     }
 
-    /**
-     * LE DÉFAUT : aucune des deux clés, exactement l'état du runner avant qu'un `.env` existe.
-     *
-     * Le repli est un TABLEAU VIDE et non une adresse d'exemple : recopier `hello@example.com`
-     * enverrait un rapport de sauvegarde — chemins de serveur et fragments de configuration
-     * inclus — à un domaine qui appartient à quelqu'un d'autre.
-     */
+    /** LE DÉFAUT : aucune des deux clés, exactement l'état du runner avant qu'un `.env` existe. */
     #[Test]
     public function sans_aucune_adresse_la_decouverte_des_paquets_ne_leve_plus(): void
     {

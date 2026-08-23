@@ -12,17 +12,7 @@ use Illuminate\Http\UploadedFile;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Coverage Livewire pour le composant admin d'import CSV (App\Livewire\Admin\ImportCsv).
- *
- * Calque sur AdminTradesCenterTest / AdminTradeZoneSettingsTest :
- *   User::factory()->admin()->create([...permissions, access_scope, is_active])
- *   Livewire::test(ImportCsv::class)->set('csv', ...)->call('import')
- *
- * Exerce : mount/defaults, le gate d'autorisation, le chemin "clients" (client + entreprise
- * + lignes invalides + colonnes invalides) et le chemin "rendez_vous" (booking valide +
- * client/employé invalides + date invalide).
- */
+/** Coverage Livewire pour le composant admin d'import CSV (App\Livewire\Admin\ImportCsv). */
 class AdminImportCsvComponentTest extends TestCase
 {
     use RefreshDatabase;

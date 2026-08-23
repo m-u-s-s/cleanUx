@@ -7,31 +7,10 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * L'ASSISTANT FISCAL D'UN INDÉPENDANT (E18).
- *
- * LE MOMENT OÙ ÇA FAIT MAL. Un indépendant reçoit sa déclaration en avril et doit retrouver ce qu'il
- * a encaissé l'année précédente, plateforme par plateforme. Les données sont là — le registre de
- * portefeuille est immuable et daté — et il n'existe aucun moyen de les sortir autrement qu'en
- * additionnant des virements à la main.
- *
- * L'ESTIMATION DE CHARGES EST UNE ESTIMATION, ET LE MOT COMPTE. Les taux dépendent du statut, du
- * pays, du chiffre d'affaires, d'exonérations de début d'activité. Annoncer un montant à payer sans
- * le dire ferait provisionner faux — dans un sens ou dans l'autre, et le mauvais sens se découvre
- * au moment de payer. Le résultat porte donc `is_estimate` et le taux employé, pour que l'écran
- * puisse le dire plutôt que d'afficher un chiffre qui ressemble à un avis d'imposition.
- *
- * ON COMPTE LES ENCAISSEMENTS NETS DE REPRISES. Un remboursement au client reprend une part au
- * prestataire : l'ignorer gonflerait le revenu déclaré d'un argent qu'il n'a jamais gardé.
- */
+/** L'ASSISTANT FISCAL D'UN INDÉPENDANT (E18). LE MOMENT OÙ ÇA FAIT MAL. */
 class TaxSummaryService
 {
-    /**
-     * Le taux de charges retenu à défaut, en pourcentage.
-     *
-     * DÉLIBÉRÉMENT PRUDENT — surestimer fait provisionner un peu trop, ce qui se corrige en
-     * dépensant ; sous-estimer fait découvrir un trou au moment de payer, ce qui ne se corrige pas.
-     */
+    /** Le taux de charges retenu à défaut, en pourcentage. */
     public const TAUX_DE_CHARGES_DEFAUT = 22.0;
 
     /**
@@ -55,10 +34,7 @@ class TaxSummaryService
             ProviderWalletTransaction::TYPE_BONUS,
         ]);
 
-        /*
-         * LES REPRISES SE DÉDUISENT. Un remboursement au client reprend une part au prestataire :
-         * l'ignorer gonflerait le revenu déclaré d'un argent qu'il n'a jamais gardé.
-         */
+        // LES REPRISES SE DÉDUISENT.
         $reprises = $this->sommeDe($lignes, [ProviderWalletTransaction::TYPE_REFUND_CLAWBACK]);
 
         $net = max(0, $revenus - $reprises);
@@ -71,11 +47,7 @@ class TaxSummaryService
             'net_cents' => $net,
             'estimated_charges_cents' => (int) round($net * $taux / 100),
             'charges_rate_percent' => $taux,
-            /*
-             * `is_estimate` VOYAGE AVEC LE CHIFFRE. Les taux dépendent du statut, du pays, du
-             * chiffre d'affaires : annoncer un montant sans le dire ferait provisionner faux, et
-             * le mauvais sens se découvre au moment de payer.
-             */
+            // `is_estimate` VOYAGE AVEC LE CHIFFRE.
             'is_estimate' => true,
             'by_month' => $this->parMois($lignes, $annee),
         ];
@@ -83,9 +55,6 @@ class TaxSummaryService
 
     /**
      * L'export CSV d'une année — le fichier qu'on donne à son comptable.
-     *
-     * POINT-VIRGULE : les tableurs francophones ouvrent le CSV avec le séparateur régional, et une
-     * virgule empilerait tout dans la première colonne.
      *
      * @return array{filename: string, content: string}
      */
@@ -163,12 +132,7 @@ class TaxSummaryService
             ->sum(fn (ProviderWalletTransaction $ligne) => abs((float) $ligne->amount)) * 100);
     }
 
-    /**
-     * Le taux retenu — celui que le prestataire a déclaré, à défaut le défaut prudent.
-     *
-     * Il vit dans les métadonnées du profil : la plateforme n'a aucun moyen de connaître le statut
-     * fiscal de quelqu'un, et prétendre le déduire produirait un chiffre faux avec l'air d'être sûr.
-     */
+    /** Le taux retenu — celui que le prestataire a déclaré, à défaut le défaut prudent. */
     protected function tauxDeCharges(User $prestataire): float
     {
         $declare = data_get($prestataire->providerProfile?->metadata, 'tax.charges_rate_percent');

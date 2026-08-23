@@ -8,10 +8,6 @@ class ContractRoutingService
 {
     /**
      * Pose le routage contractuel dans les DATA d'un booking (avant création).
-     * Le contrat est le DÉFAUT : il n'écrase NI un choix d'org explicite (SP3)
-     * NI un presta précis (SP2). Il stampe toujours organization_contract_id.
-     * Le dispatch SP3 honore ensuite assigned_provider_organization_id (repli
-     * partenaire indispo via PreferredCompanyResolver + marché ouvert).
      *
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>

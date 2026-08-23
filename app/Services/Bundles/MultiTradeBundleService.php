@@ -7,7 +7,6 @@ use App\Models\MultiTradeBundle;
 use App\Models\MultiTradeBundleItem;
 use App\Models\MultiTradeBundleItemQuote;
 use App\Models\ServiceZone;
-use App\Models\Trade;
 use App\Models\User;
 use App\Notifications\Bundles\BundleQuoteRequestedNotification;
 use App\Services\International\CountryMarketResolver;
@@ -16,22 +15,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Service orchestrant les bundles multi-trades (rénovation, déménagement, etc.).
- *
- * Cas d'usage : client demande "rénovation salle de bain"
- *   → Brio propose 4 items (plomberie + carrelage + peinture + électricité)
- *   → Chaque item est quoted par provider du trade correspondant
- *   → Bundle accepté → 4 missions Booking créées en cascade (depends_on)
- *   → Facture consolidée + discount groupage (-10%)
- *
- * Différenciation FORT vs Uber/Bolt mono-vertical. Killer feature multi-trade.
- */
+/** Service orchestrant les bundles multi-trades (rénovation, déménagement, etc.). */
 class MultiTradeBundleService
 {
-    /**
-     * Crée un bundle draft avec items multi-trades.
-     */
+    /** Crée un bundle draft avec items multi-trades. */
     public function createDraft(
         User $client,
         string $name,
@@ -91,15 +78,7 @@ class MultiTradeBundleService
         });
     }
 
-    /**
-     * Demande de devis aux prestataires (transition draft → quoting).
-     *
-     * Bundle Marketplace P1 : pour chaque item, on sollicite le top-N des
-     * prestataires ÉLIGIBLES (bon métier + actif + KYC validé), on crée une
-     * demande de devis `pending` valable N heures, et on les notifie. Les
-     * prestataires soumettront ensuite leur prix (concurrence) et le client
-     * comparera/choisira.
-     */
+    /** Demande de devis aux prestataires (transition draft → quoting). */
     public function startQuoting(MultiTradeBundle $bundle): MultiTradeBundle
     {
         if ($bundle->status !== MultiTradeBundle::STATUS_DRAFT) {
@@ -122,10 +101,7 @@ class MultiTradeBundleService
         return $bundle->fresh();
     }
 
-    /**
-     * Sollicite le top-N des prestataires éligibles pour un item et leur envoie
-     * une demande de devis. Retourne le nombre de prestataires sollicités.
-     */
+    /** Sollicite le top-N des prestataires éligibles pour un item et leur envoie une demande de devis. */
     public function solicitProvidersForItem(MultiTradeBundleItem $item, int $topN, int $ttlHours): int
     {
         $validUntil = now()->addHours($ttlHours);
@@ -157,11 +133,7 @@ class MultiTradeBundleService
         return $providers->count();
     }
 
-    /**
-     * Prestataires éligibles pour quoter un item, classés par maîtrise du métier.
-     * Éligibilité : actif + KYC validé (verification_status=verified) + habilité au
-     * métier de l'item (pivot trade_user). Tri : proficiency puis métier primaire.
-     */
+    /** Prestataires éligibles pour quoter un item, classés par maîtrise du métier. */
     protected function eligibleProvidersForItem(MultiTradeBundleItem $item): Collection
     {
         $proficiencyRank = ['expert' => 4, 'advanced' => 3, 'intermediate' => 2, 'standard' => 1, 'basic' => 0];
@@ -193,10 +165,7 @@ class MultiTradeBundleService
             ->values();
     }
 
-    /**
-     * P4 — Expire les demandes de devis (pending/submitted) dont le délai est dépassé.
-     * Retourne le nombre de devis expirés.
-     */
+    /** P4 — Expire les demandes de devis (pending/submitted) dont le délai est dépassé. */
     public function expireStaleQuotes(): int
     {
         return MultiTradeBundleItemQuote::query()
@@ -209,11 +178,7 @@ class MultiTradeBundleService
             ->update(['status' => MultiTradeBundleItemQuote::STATUS_EXPIRED]);
     }
 
-    /**
-     * P4 — Ré-escalade : pour chaque bundle en cours de devis, complète les items
-     * non encore retenus jusqu'au top-N de devis actifs en sollicitant de nouveaux
-     * prestataires éligibles. Retourne le nombre de nouvelles sollicitations.
-     */
+    /** P4 — Ré-escalade : pour chaque bundle en cours de devis, complète les items non encore retenus jusqu'au top-N de devis actifs en sollicitant de nouveaux prestataires éligibles. */
     public function escalateQuotingBundles(): int
     {
         $topN = max(1, (int) config('bundles.quote_request_top_n', 5));
@@ -240,10 +205,7 @@ class MultiTradeBundleService
         return $newlySolicited;
     }
 
-    /**
-     * P2 — Le prestataire sollicité soumet (ou met à jour) son devis pour un item.
-     * Gardes : devis du prestataire, KYC validé, demande encore ouverte et non expirée.
-     */
+    /** P2 — Le prestataire sollicité soumet (ou met à jour) son devis pour un item. */
     public function submitQuote(
         MultiTradeBundleItemQuote $quote,
         User $provider,
@@ -293,9 +255,7 @@ class MultiTradeBundleService
         return $quote->fresh();
     }
 
-    /**
-     * P2 — Le prestataire retire son devis (tant qu'il n'a pas été sélectionné).
-     */
+    /** P2 — Le prestataire retire son devis (tant qu'il n'a pas été sélectionné). */
     public function withdrawQuote(
         MultiTradeBundleItemQuote $quote,
         User $provider,
@@ -320,12 +280,7 @@ class MultiTradeBundleService
         return $quote->fresh();
     }
 
-    /**
-     * P3 — Le client retient un devis soumis pour un item.
-     * Le devis choisi passe `selected`, les concurrents `rejected`, l'item est figé
-     * sur le prestataire/prix choisi. Quand tous les items sont quotés, la remise
-     * groupage est appliquée.
-     */
+    /** P3 — Le client retient un devis soumis pour un item. */
     public function selectQuote(MultiTradeBundleItemQuote $quote): MultiTradeBundleItemQuote
     {
         if ($quote->status !== MultiTradeBundleItemQuote::STATUS_SUBMITTED) {
@@ -382,9 +337,7 @@ class MultiTradeBundleService
         });
     }
 
-    /**
-     * Provider quote un item du bundle.
-     */
+    /** Provider quote un item du bundle. */
     public function quoteItem(
         MultiTradeBundleItem $item,
         User $provider,
@@ -410,9 +363,7 @@ class MultiTradeBundleService
         return $item->fresh();
     }
 
-    /**
-     * Client accepte le bundle complet → transition vers accepted + crée les Bookings.
-     */
+    /** Client accepte le bundle complet → transition vers accepted + crée les Bookings. */
     public function accept(MultiTradeBundle $bundle): MultiTradeBundle
     {
         if ($bundle->items()->where('status', '!=', MultiTradeBundleItem::STATUS_QUOTED)->exists()) {
@@ -456,18 +407,7 @@ class MultiTradeBundleService
                         'status' => MultiTradeBundleItem::STATUS_ACCEPTED,
                     ]);
                 } catch (\Throwable $e) {
-                    /*
-                     * UN CHANTIER ACCEPTÉ SANS TOUS SES MÉTIERS EST UN MENSONGE AU CLIENT.
-                     *
-                     * Cette erreur était journalisée puis avalée : le chantier passait en
-                     * « accepté », le client voyait son projet confirmé, et il y manquait un corps
-                     * de métier. Personne ne le lui disait — ni l'écran, ni une notification. Il
-                     * l'aurait découvert le jour où le carreleur ne serait pas venu.
-                     *
-                     * ON RELANCE, et l'acceptation entière est annulée : la transaction qui entoure
-                     * la boucle rend l'opération tout-ou-rien. Un chantier qui refuse de s'accepter
-                     * se voit et se corrige ; un chantier accepté à moitié, non.
-                     */
+                    // UN CHANTIER ACCEPTÉ SANS TOUS SES MÉTIERS EST UN MENSONGE AU CLIENT.
                     Log::error('[multi_trade] création de rendez-vous impossible — acceptation annulée', [
                         'bundle' => $bundle->code,
                         'item_id' => $item->id,
@@ -485,9 +425,7 @@ class MultiTradeBundleService
     }
 
     /**
-     * P5 — tri topologique des items par dépendances (depends_on_item_ids), avec
-     * sequence_order comme départage. Les dépendances absentes du bundle sont
-     * ignorées ; un éventuel cycle est rompu en repli sur sequence_order.
+     * P5 — tri topologique des items par dépendances (depends_on_item_ids), avec sequence_order comme départage.
      *
      * @param  Collection<int, MultiTradeBundleItem>  $items
      * @return list<MultiTradeBundleItem>

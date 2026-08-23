@@ -7,12 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
-/**
- * UNE OPTION RETIRÉE À QUELQU'UN — pour un temps, ou définitivement.
- *
- * `ends_at` nul veut dire définitif, et `lifted_at` reste la porte de l'administrateur : la
- * sanction définitive n'est pas irréversible, elle est seulement hors de portée de l'automate.
- */
+/** UNE OPTION RETIRÉE À QUELQU'UN — pour un temps, ou définitivement. */
 class MissionFeatureSuspension extends Model
 {
     /** Proposer un nouveau devis. */
@@ -48,9 +43,6 @@ class MissionFeatureSuspension extends Model
 
     /**
      * Les suspensions qui MORDENT ENCORE, à cet instant.
-     *
-     * Trois conditions, et l'oubli de n'importe laquelle rendrait la garde fausse dans un sens ou
-     * dans l'autre : commencée, non levée, et pas encore expirée — `ends_at` nul valant « jamais ».
      *
      * @param  Builder<MissionFeatureSuspension>  $query
      */

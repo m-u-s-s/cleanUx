@@ -53,22 +53,13 @@ class AppServiceProvider extends ServiceProvider
         .'(TTL de 20 s ignoré) et fait passer webhooks et courriels dans la requête HTTP. '
         .'Choisir redis, sqs ou database.';
 
-    /**
-     * LA DÉCISION, ISOLÉE DE SON CONTEXTE — pour qu'elle soit mesurable.
-     *
-     * `runningInConsole()` est figé au démarrage du conteneur : sous PHPUnit il vaut TOUJOURS vrai.
-     * Un test qui prétendrait simuler une requête HTTP passerait donc pour une mauvaise raison.
-     * On sort les deux entrées — l'environnement et le contexte — en paramètres : la règle devient
-     * vérifiable telle qu'elle est écrite, et non telle qu'on aimerait la lire.
-     */
+    /** LA DÉCISION, ISOLÉE DE SON CONTEXTE — pour qu'elle soit mesurable. */
     public static function laFileSynchroneEstRefusee(string $environnement, string $pilote, bool $enConsole): bool
     {
         return $environnement === 'production' && $pilote === 'sync' && ! $enConsole;
     }
 
-    /**
-     * Register any application services.
-     */
+    /** Register any application services. */
     public function register(): void
     {
         app(MissionLifecycleService::class);
@@ -104,24 +95,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(FeatureFlagService::class);
     }
 
-    /**
-     * Bootstrap any application services.
-     */
+    /** Bootstrap any application services. */
     public function boot(): void
     {
-        /*
-         * ÉCARTER UN ATTRIBUT EN SILENCE, C'EST PERDRE UNE DONNÉE SANS LE DIRE.
-         *
-         * Par défaut, Eloquent jette sans un mot tout attribut absent de `$fillable`. Ce dépôt en
-         * payait le prix à onze endroits au moins : le contexte de présence des prestataires, le
-         * chemin du rapport de mission, le canal d'origine des réservations, sept colonnes des
-         * sites d'entreprise — tous écrits par du code de production, tous perdus. Aucune erreur,
-         * aucune alerte, aucun test rouge : la ligne s'enregistrait simplement incomplète.
-         *
-         * Le refus n'est PAS activé en production, et c'est délibéré. Là-bas, un appel oublié
-         * lèverait une exception au milieu d'un paiement ou d'une clôture de mission ; ici, il
-         * s'arrête net devant la personne qui peut le corriger.
-         */
+        // ÉCARTER UN ATTRIBUT EN SILENCE, C'EST PERDRE UNE DONNÉE SANS LE DIRE.
         Model::preventSilentlyDiscardingAttributes(! app()->isProduction());
         Model::preventLazyLoading(! app()->isProduction());
 
@@ -177,12 +154,7 @@ class AppServiceProvider extends ServiceProvider
             MissionTrackingPoint::observe(MissionTrackingPointObserver::class);
         }
 
-        /*
-         * Un métier devient — ou cesse d'être — un service de trajet quand ses questions de
-         * localisation changent. La DATE de cette bascule fait courir le délai laissé aux
-         * prestataires déjà inscrits : elle suit donc la table qui la décide, et non les trois
-         * écrans qui l'écrivent.
-         */
+        // Un métier devient — ou cesse d'être — un service de trajet quand ses questions de localisation changent.
         Question::observe(QuestionRouteRulesObserver::class);
 
         // Même raison, autre colonne : « règles taxi » s'écrit depuis le web, depuis la console
@@ -191,13 +163,7 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::policy(Channel::class, ChannelPolicy::class);
 
-        /*
-         * Le catalogue de commande : UNE règle d'écriture, cinq modèles.
-         *
-         * Elle vivait en trois exemplaires — middleware de route, trait d'écran, garde recopiée
-         * dans deux composants. Trois copies finissent par diverger, et c'est alors la plus
-         * permissive qui décide sans que personne ne le remarque.
-         */
+        // Le catalogue de commande : UNE règle d'écriture, cinq modèles.
         foreach ([
             Sector::class,
             Trade::class,
@@ -220,28 +186,7 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 
-    /**
-     * EN PRODUCTION, UNE FILE « sync » N'EST PAS UNE FILE — C'EST UNE PANNE SILENCIEUSE.
-     *
-     * `config/queue.php` a pour défaut `sync`, et `.env.example` le reprend. Avec ce pilote, un job
-     * mis en file s'exécute IMMÉDIATEMENT, dans le processus appelant. Deux conséquences que rien ne
-     * signale :
-     *
-     *  - `EscalateMissionAssignmentJob` est dispatché avec `->delay($assignment->expires_at)`. En
-     *    `sync`, le délai est IGNORÉ : l'escalade part à l'instant même. Le TTL de 20 secondes et
-     *    les vagues du moteur de répartition n'existent plus — la première offre est écrasée avant
-     *    que le prestataire ait vu sa notification.
-     *  - Chaque webhook Stripe, chaque envoi de courriel, chaque géocodage se fait dans la requête
-     *    HTTP. Une lenteur de Stripe devient une lenteur de la page.
-     *
-     * POURQUOI REFUSER LE BOOT PLUTÔT QUE JOURNALISER. `config:parity-check` garde déjà le
-     * DÉPLOIEMENT (lot 0), mais quelqu'un peut éditer `.env` sur le serveur sans redéployer. Un
-     * avertissement dans les journaux ne serait lu par personne — c'est précisément ainsi que ce
-     * réglage a survécu jusqu'ici. Une application qui refuse de démarrer se remarque en une minute ;
-     * des vagues de répartition cassées se remarquent en un mois, à travers des clients perdus.
-     *
-     * Hors production, on ne dit rien : `sync` est le bon réglage pour développer et pour tester.
-     */
+    /** EN PRODUCTION, UNE FILE « sync » N'EST PAS UNE FILE — C'EST UNE PANNE SILENCIEUSE. */
     private function refuserLaFileSynchroneEnProduction(): void
     {
         if (! app()->isProduction()) {
@@ -252,18 +197,7 @@ class AppServiceProvider extends ServiceProvider
             return;
         }
 
-        /*
-         * ON LAISSE PASSER LA CONSOLE, ET C'EST ESSENTIEL.
-         *
-         * Lever depuis boot() bloque TOUTE commande artisan — y compris `config:clear`, qui est
-         * précisément l'outil avec lequel on répare une configuration fautive. Une garde qui
-         * empêche de réparer ce qu'elle signale enferme l'exploitant dehors : il lui resterait à
-         * éditer .env à la main puis à espérer, sans pouvoir vider le cache.
-         *
-         * Le déploiement reste couvert autrement, et mieux : `config:parity-check` refuse `sync`
-         * AVANT la migration, avec un rapport lisible qui nomme le réglage fautif. Ici on garde le
-         * trafic HTTP et les workers, c'est-à-dire ce qui sert réellement les clients.
-         */
+        // ON LAISSE PASSER LA CONSOLE, ET C'EST ESSENTIEL.
         if (app()->runningInConsole()) {
             return;
         }
@@ -271,25 +205,7 @@ class AppServiceProvider extends ServiceProvider
         throw new RuntimeException(self::MESSAGE_FILE_SYNCHRONE);
     }
 
-    /**
-     * UN COMPTE SUSPENDU N'A PLUS DE JETON VALIDE — sur toutes les routes, y compris futures.
-     *
-     * Mesuré le 2026-08-16 : `active.account` était posé sur chaque groupe web et sur AUCUNE route
-     * d'API. Un compte `is_active=false` obtenait un jeton neuf par `/api/auth/login` et gardait
-     * l'application entière — offres, réservations, disponibilités. La suspension ne valait que
-     * dans le navigateur.
-     *
-     * POURQUOI ICI ET PAS EN MIDDLEWARE SUR CHAQUE GROUPE. Les routes d'API sont réparties sur une
-     * douzaine de groupes `auth:sanctum` dans huit fichiers ; en ajouter un par groupe, c'est
-     * accepter qu'on en oublie un — et le groupe oublié est exactement celui qu'on ne testera pas.
-     * Ce point de passage est celui que Sanctum traverse pour CHAQUE requête portant un jeton :
-     * la règle vaut donc aussi pour la route écrite demain.
-     *
-     * Le jeton devient invalide, donc la réponse est 401 « Unauthenticated » et non 403. C'est le
-     * bon signal pour un client mobile : il déconnecte et renvoie à l'écran de connexion, où le 403
-     * explicite de `ApiAuthController::login` nomme la raison. Un 403 en cours de session laisserait
-     * l'application afficher des écrans vides sans savoir pourquoi.
-     */
+    /** UN COMPTE SUSPENDU N'A PLUS DE JETON VALIDE — sur toutes les routes, y compris futures. */
     private function refuserLesJetonsDesComptesSuspendus(): void
     {
         Sanctum::authenticateAccessTokensUsing(function ($accessToken, bool $estValide): bool {

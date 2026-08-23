@@ -16,17 +16,7 @@ use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyExceptio
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * LOT 1 — LES DEUX ÉCRANS QUE LE WORKER PEUT LÉGITIMEMENT OUVRIR.
- *
- * Le tableau de bord et le tableau des tâches ne se refusent pas : un exécutant y a de vraies
- * choses à voir. Leur garde n'est donc pas à l'entrée mais DANS LA REQUÊTE — ce qui les rend
- * beaucoup plus faciles à laisser trop ouverts qu'un écran qu'on ferme d'un `abort_unless`.
- *
- * Trois fuites y vivaient : le trombinoscope complet de la société sur le tableau de bord, toutes
- * les tâches de la maison sur le tableau des tâches, et — la plus sérieuse — une propriété Livewire
- * PUBLIQUE portant la décision d'autorisation, que le navigateur pouvait retourner lui-même.
- */
+/** LOT 1 — LES DEUX ÉCRANS QUE LE WORKER PEUT LÉGITIMEMENT OUVRIR. */
 class RbacEcransSocieteTest extends TestCase
 {
     use RefreshDatabase;
@@ -77,11 +67,7 @@ class RbacEcransSocieteTest extends TestCase
 
     public function test_le_worker_ne_voit_ni_le_trombinoscope_ni_l_effectif(): void
     {
-        /*
-         * `getTeamStatusProperty()` n'avait aucune garde : noms, photos et SOUS-RÔLES de toute la
-         * société s'affichaient sur le tableau de bord d'un nettoyeur. Le sous-rôle dit qui commande
-         * qui — ce n'est pas une donnée de panneau latéral.
-         */
+        // `getTeamStatusProperty()` n'avait aucune garde : noms, photos et SOUS-RÔLES de toute la société s'affichaient sur le tableau de bord d'un nettoyeur.
         $worker = $this->membre(OrganizationRole::WORKER);
         $this->membre(OrganizationRole::OWNER);
 
@@ -107,11 +93,7 @@ class RbacEcransSocieteTest extends TestCase
 
     public function test_le_responsable_qualite_suit_les_missions_sans_voir_l_equipe(): void
     {
-        /*
-         * `missions.view_all` et `team.view` sont deux questions distinctes : combien de missions
-         * tournent, et qui travaille ici. Le responsable qualité a la première, pas la seconde.
-         * Les confondre aurait rouvert le trombinoscope par la porte des missions.
-         */
+        // `missions.view_all` et `team.view` sont deux questions distinctes : combien de missions tournent, et qui travaille ici.
         $qualite = $this->membre(OrganizationRole::QUALITY_MANAGER);
 
         $composant = Livewire::actingAs($qualite)->test(ProviderDashboard::class);
@@ -123,16 +105,7 @@ class RbacEcransSocieteTest extends TestCase
 
     public function test_la_decision_d_autorisation_ne_se_change_pas_depuis_le_navigateur(): void
     {
-        /*
-         * LE TROU LE PLUS SÉRIEUX DE CET ÉCRAN. `peutToutVoir` est une propriété PUBLIQUE Livewire :
-         * elle fait l'aller-retour avec le navigateur, et le client peut demander sa mise à jour.
-         * Un `$set('peutToutVoir', true)` depuis la console retournait donc la garde qui décide si
-         * l'on voit les missions de toute la société — la vérification faite au montage ne valant
-         * plus rien à la requête suivante.
-         *
-         * `#[Locked]` fait refuser l'écriture CÔTÉ SERVEUR. Le test presse le bouton plutôt que de
-         * lire l'attribut : c'est le refus qu'on veut, pas sa déclaration.
-         */
+        // LE TROU LE PLUS SÉRIEUX DE CET ÉCRAN.
         $worker = $this->membre(OrganizationRole::WORKER);
 
         $this->expectException(CannotUpdateLockedPropertyException::class);
@@ -211,11 +184,7 @@ class RbacEcransSocieteTest extends TestCase
 
     public function test_le_worker_ne_deplace_pas_la_tache_qu_il_ne_voit_pas(): void
     {
-        /*
-         * L'identifiant vient du navigateur. Les deux écritures chargeaient la tâche sur la seule
-         * organisation, puis la gardaient par `tasks.create` — accordée jusqu'au nettoyeur : chacun
-         * pouvait marquer « terminée » la tâche d'un collègue en devinant un identifiant.
-         */
+        // L'identifiant vient du navigateur.
         $worker = $this->membre(OrganizationRole::WORKER);
         $owner = $this->membre(OrganizationRole::OWNER);
 

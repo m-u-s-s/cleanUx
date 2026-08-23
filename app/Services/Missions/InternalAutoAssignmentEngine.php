@@ -7,22 +7,7 @@ use App\Models\ProviderSiteAssignment;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
-/**
- * QUI ENVOYER SUR CETTE MISSION — entre les salariés d'UNE MÊME société.
- *
- * RIEN À VOIR AVEC `MatchingScoreEngine`, et la confusion coûterait cher. Celui-là choisit un
- * PRESTATAIRE sur la place de marché : réputation, prix, distance, taux d'acceptation. Ici la
- * société est déjà choisie, et la question est de savoir lequel de ses employés y va. On ne classe
- * pas ses propres salariés sur leur note client.
- *
- * LA DISPONIBILITÉ EST UN FILTRE ÉLIMINATOIRE, PAS UN SCORE. Quelqu'un déjà pris à cette heure-là
- * sort du classement au lieu d'y descendre : le pondérer laisserait un très bon score compenser une
- * impossibilité physique, et enverrait la même personne à deux endroits en même temps.
- *
- * LE MOTEUR N'ÉCRIT RIEN. Il rend une décision — le choisi, les candidats, le détail des points —
- * et l'appelant assigne et trace. Un moteur qui assignerait lui-même serait impossible à
- * interroger « à blanc », et c'est précisément ce qu'un gérant veut faire avant d'appuyer.
- */
+/** QUI ENVOYER SUR CETTE MISSION — entre les salariés d'UNE MÊME société. */
 class InternalAutoAssignmentEngine
 {
     public function __construct(private WorkerAvailabilityService $disponibilites) {}
@@ -32,9 +17,9 @@ class InternalAutoAssignmentEngine
      *
      * @param  ?list<int>  $bassin  restreindre à ces personnes ; tous les membres actifs si `null`
      * @return array{
-     *     chosen_user_id: int|null,
-     *     chosen_score: int|null,
-     *     candidates: list<array{user_id: int, score: int, detail: array<string, int>}>
+     * chosen_user_id: int|null,
+     * chosen_score: int|null,
+     * candidates: list<array{user_id: int, score: int, detail: array<string, int>}>
      * }
      */
     public function choisirPour(Mission $mission, ?array $bassin = null): array
@@ -44,13 +29,7 @@ class InternalAutoAssignmentEngine
         $organisationId = $mission->provider_organization_id;
         $debut = $mission->planned_start_at;
 
-        /*
-         * SANS HORAIRE, ON NE DÉCIDE PAS.
-         *
-         * Toute la notion de disponibilité repose sur un créneau. Choisir « au hasard parmi les
-         * membres » serait pire que ne rien faire : la mission paraîtrait couverte, et le conflit
-         * n'apparaîtrait que le jour même.
-         */
+        // SANS HORAIRE, ON NE DÉCIDE PAS. Toute la notion de disponibilité repose sur un créneau.
         if ($organisationId === null || $debut === null) {
             return $vide;
         }
@@ -106,11 +85,7 @@ class InternalAutoAssignmentEngine
                 $detail['metier'] = (int) $poids['metier'];
             }
 
-            /*
-             * L'AGENCE — activée au lot 6. Le point va à qui est rattaché à la MÊME implantation
-             * que la mission ; une société sans agence déclarée ne voit rien changer, `null` ne
-             * correspondant à rien.
-             */
+            // L'AGENCE — activée au lot 6.
             if ($agenceDeLaMission !== null
                 && ($agenceDesMembres[$userId] ?? null) === $agenceDeLaMission) {
                 $detail['agence'] = (int) $poids['agence'];
@@ -123,13 +98,7 @@ class InternalAutoAssignmentEngine
             ];
         }
 
-        /*
-         * Tri par score décroissant, puis par identifiant CROISSANT.
-         *
-         * Le second critère n'est pas cosmétique : sans lui, deux candidats à égalité seraient
-         * départagés par l'ordre de la base, qui varie. Une décision automatique doit être
-         * REJOUABLE — c'est ce qui permet de répondre « voici pourquoi » un mois plus tard.
-         */
+        // Tri par score décroissant, puis par identifiant CROISSANT.
         usort(
             $candidats,
             fn (array $a, array $b) => $b['score'] <=> $a['score'] ?: $a['user_id'] <=> $b['user_id'],
@@ -142,13 +111,7 @@ class InternalAutoAssignmentEngine
         ];
     }
 
-    /**
-     * De quelle implantation relève cette mission.
-     *
-     * La colonne posée sur la mission d'abord — une décision explicite —, puis l'agence de l'équipe
-     * qui l'exécute. Sans ni l'une ni l'autre, `null` : on ne devine pas une implantation depuis une
-     * adresse, ce serait une géographie inventée.
-     */
+    /** De quelle implantation relève cette mission. */
     private function agenceDeLaMission(Mission $mission): ?int
     {
         if ($mission->provider_agency_id !== null) {
@@ -169,6 +132,7 @@ class InternalAutoAssignmentEngine
     /**
      * @param  list<int>  $userIds
      * @return array<int, ?int> user_id => agence
+     *                          /
      */
     private function agencesDesMembres(int $organisationId, array $userIds): array
     {
@@ -186,10 +150,6 @@ class InternalAutoAssignmentEngine
 
     /**
      * Les points de rotation : un par jour depuis la dernière mission, plafonné.
-     *
-     * Jamais assigné = le plafond. C'est délibéré : un nouvel arrivant, ou quelqu'un qu'on a oublié,
-     * doit passer devant celui qui sort d'une mission hier. Rendre 0 le laisserait au fond du
-     * classement précisément parce qu'on ne lui a rien donné.
      *
      * @param  array<string, int>  $poids
      */
@@ -209,10 +169,8 @@ class InternalAutoAssignmentEngine
     /**
      * Les référents que NOTRE société place sur le site de cette mission.
      *
-     * Scopé sur `provider_organization_id` : plusieurs sociétés concurrentes peuvent desservir le
-     * même immeuble, et lire les référents de l'autre serait à la fois faux et une fuite.
-     *
      * @return array<int, string> user_id => role
+     *                            /
      */
     private function referentsDuSite(Mission $mission): array
     {
@@ -230,10 +188,6 @@ class InternalAutoAssignmentEngine
 
     /**
      * Ceux qui portent le métier de la mission.
-     *
-     * L'ABSENCE DE MÉTIER DÉCLARÉ NE PÉNALISE PERSONNE : on n'accorde pas le bonus, on n'élimine
-     * pas. `trade_user` est peu rempli sur les déploiements existants — en faire un filtre viderait
-     * le bassin de candidats et transformerait une préférence en panne.
      *
      * @param  list<int>  $userIds
      * @return list<int>

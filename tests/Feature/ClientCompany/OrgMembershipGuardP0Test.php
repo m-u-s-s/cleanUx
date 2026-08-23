@@ -13,13 +13,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * P0.1 — org-membership guard (EnforcesActiveOrgMembership).
- *
- * current_organization_id is mass-assignable, so a role check alone lets an entreprise user point
- * at an org they don't belong to (horizontal IDOR). The trait must 403 unless the user is an ACTIVE
- * member of their current organisation — on mount and on every action.
- */
+/** P0.1 — org-membership guard (EnforcesActiveOrgMembership). */
 class OrgMembershipGuardP0Test extends TestCase
 {
     use RefreshDatabase;

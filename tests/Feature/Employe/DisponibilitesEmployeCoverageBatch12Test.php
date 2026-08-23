@@ -10,19 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * MISE À JOUR : CETTE SUITE DÉCRIVAIT UN COMPORTEMENT QU'ON A DÉLIBÉRÉMENT REMPLACÉ.
- *
- * Elle affirmait que la page écrit dans `disponibilites` — table à zéro ligne que rien ne lisait
- * hors d'elle-même — et que « Bloquer » SUPPRIME les créneaux du jour. Les deux étaient le défaut,
- * pas le contrat : un prestataire saisissait son horaire et restait introuvable à la
- * planification, et fermer « ce mardi » fermait tous les mardis à venir puisque les créneaux sont
- * récurrents.
- *
- * Les assertions suivent le nouveau contrat. Le comportement fin — chevauchement à la
- * modification, idempotence de la fermeture, appartenance — vit dans
- * `Tests\Feature\Availability\DisponibilitesEmployePageTest`.
- */
+/** MISE À JOUR : CETTE SUITE DÉCRIVAIT UN COMPORTEMENT QU'ON A DÉLIBÉRÉMENT REMPLACÉ. */
 class DisponibilitesEmployeCoverageBatch12Test extends TestCase
 {
     use RefreshDatabase;
@@ -155,10 +143,7 @@ class DisponibilitesEmployeCoverageBatch12Test extends TestCase
         $this->assertNull($slot->fresh());
     }
 
-    /**
-     * L'ANCIENNE ASSERTION DISAIT L'INVERSE, et c'était le défaut : « Bloquer » supprimait les
-     * créneaux du jour. Comme ils sont récurrents, fermer un mardi les fermait TOUS.
-     */
+    /** L'ANCIENNE ASSERTION DISAIT L'INVERSE, et c'était le défaut : « Bloquer » supprimait les créneaux du jour. */
     public function test_close_day_creates_an_exception_and_keeps_the_week(): void
     {
         $user = $this->employe();

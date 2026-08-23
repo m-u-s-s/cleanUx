@@ -16,25 +16,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * SP3 Task 4 — quand une réservation a $booking->assigned_provider_organization_id
- * posé (le client a choisi une société), le matcher (web SmartDispatch + mobile
- * AiDispatch) doit RESTREINDRE les candidats aux workers de cette org et
- * auto-suggérer le meilleur dispo.
- *
- * On monte deux sociétés (orgA, orgB), chacune avec UN worker company PAR AILLEURS
- * éligible (actif+vérifié, taggé du métier, rattaché à la zone, disponible). La
- * réservation cible orgA. Seul assigned_provider_organization_id doit exclure le
- * worker d'orgB — garde-fou : sans filtre org, les DEUX sont éligibles.
- */
+/** SP3 Task 4 — quand une réservation a $booking->assigned_provider_organization_id posé (le client a choisi une société), le matcher (web SmartDispatch + mobile AiDispatch) doit RESTREINDRE les candidats aux workers de cette org et auto-suggérer le meilleur dispo. */
 class CompanyScopedDispatchTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
     use RefreshDatabase;
 
-    /**
-     * Crée un worker société PAR AILLEURS éligible et le tagge du métier donné.
-     */
+    /** Crée un worker société PAR AILLEURS éligible et le tagge du métier donné. */
     private function companyWorker(int $zoneId, int $orgId, int $tradeId, string $date): User
     {
         $user = User::factory()->create([

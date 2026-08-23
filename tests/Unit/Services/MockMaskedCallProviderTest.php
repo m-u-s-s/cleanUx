@@ -9,9 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * 7.2 — MockMaskedCallProvider and MaskedCallSessionData value object.
- */
+/** 7.2 — MockMaskedCallProvider and MaskedCallSessionData value object. */
 class MockMaskedCallProviderTest extends TestCase
 {
     use RefreshDatabase;

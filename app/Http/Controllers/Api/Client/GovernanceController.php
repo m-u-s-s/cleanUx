@@ -15,21 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * LE PILOTAGE D'UNE ENTREPRISE CLIENTE, SUR LE TÉLÉPHONE — budgets (E7), approbations (E8) et
- * niveau de service (E9).
- *
- * POURQUOI L'APPROBATION EST MOBILE AVANT TOUT. Une demande qui attend bloque une intervention, et
- * l'approbateur est rarement à son bureau : c'est un gérant, un responsable de site, quelqu'un qui
- * se déplace. Chaque heure d'attente est une heure où le prestataire n'est pas cherché — et sur une
- * fuite d'eau, ça compte.
- *
- * LES EXPORTS COMPTABLES RESTENT AU WEB, délibérément : un fichier FEC destiné à un logiciel de
- * comptabilité n'a rien à faire dans le stockage d'un téléphone. Ce n'est pas un oubli.
- *
- * DEUX RÈGLES, COMME PARTOUT : chaque requête est limitée à l'organisation ACTIVE de l'appelant, et
- * chaque écriture exige une permission.
- */
+/** LE PILOTAGE D'UNE ENTREPRISE CLIENTE, SUR LE TÉLÉPHONE — budgets (E7), approbations (E8) et niveau de service (E9). */
 class GovernanceController extends Controller
 {
     use ResolvesActiveOrganization;

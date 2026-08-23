@@ -40,14 +40,7 @@ class ProductionHealthCheckCommandTest extends TestCase
         Config::set('email_v2.provider', 'ses');
         Config::set('masked_calls.provider', 'twilio');
 
-        /*
-         * ENCAISSER FAIT PARTIE D'ÊTRE PRÊT.
-         *
-         * Cette configuration « production-like » énumérait chaque fournisseur réel mais ne disait
-         * rien du paiement : elle décrivait donc une plateforme déclarée prête et pourtant
-         * incapable de prendre un euro. Clé de production, secret de webhook et prestataire
-         * réellement encaissable en font désormais partie.
-         */
+        // ENCAISSER FAIT PARTIE D'ÊTRE PRÊT.
         Config::set('cashier.secret', 'sk_live_'.str_repeat('a', 90));
         Config::set('cashier.webhook.secret', 'whsec_'.str_repeat('b', 32));
         User::factory()->create([

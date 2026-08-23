@@ -15,19 +15,7 @@ use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
-/**
- * La clôture se prouve par le code ET par la position.
- *
- * Le pendant de {@see PresenceGeoProofTest}, à l'autre bout de la visite — mais l'enjeu est plus
- * lourd : clôturer encaisse le paiement pré-autorisé. Le code de fin attestait d'une POSSESSION ;
- * photographié ou dicté au téléphone, il permettait de facturer une intervention quittée depuis
- * longtemps.
- *
- * Six chemins clôturent une mission et tous n'ont pas de position à offrir — une clôture depuis le
- * tableau de bord web se fait derrière un bureau. Ce qui est verrouillé ici : le scan mobile
- * l'exige, une position FOURNIE est toujours vérifiée quel que soit le chemin, et toute clôture
- * repart estampillée de ce que le contrôle a conclu.
- */
+/** La clôture se prouve par le code ET par la position. */
 class CompletionGeoProofTest extends TestCase
 {
     use RefreshDatabase;
@@ -45,10 +33,7 @@ class CompletionGeoProofTest extends TestCase
         Notification::fake();
     }
 
-    /**
-     * LA garantie. Sans elle, le client montre son code de fin, le prestataire s'en va, et
-     * l'encaissement part depuis sa voiture — ou son domicile.
-     */
+    /** LA garantie. */
     public function test_a_valid_end_code_played_from_far_away_closes_nothing(): void
     {
         [$provider, $mission, $code] = $this->scenario();
@@ -62,11 +47,7 @@ class CompletionGeoProofTest extends TestCase
         $this->assertNull($mission->actual_end_at);
     }
 
-    /**
-     * Le code du client est ce qui coûte le plus cher à obtenir : il faut le lui redemander. Un
-     * problème de position ne doit donc pas le consommer — d'autant qu'une fois revenu sur place,
-     * le prestataire en aura besoin.
-     */
+    /** Le code du client est ce qui coûte le plus cher à obtenir : il faut le lui redemander. */
     public function test_a_position_refusal_does_not_consume_the_end_code(): void
     {
         [$provider, $mission, $code] = $this->scenario();
@@ -118,11 +99,7 @@ class CompletionGeoProofTest extends TestCase
         $this->assertSame(MissionStatus::STARTED, $mission->fresh()->status);
     }
 
-    /**
-     * Le tableau de bord web n'a pas de position à offrir : l'exiger rendrait toute clôture
-     * administrative impossible. Elle passe donc — mais repart estampillée, pour qu'on ne puisse
-     * pas la confondre après coup avec une clôture prouvée sur place.
-     */
+    /** Le tableau de bord web n'a pas de position à offrir : l'exiger rendrait toute clôture administrative impossible. */
     public function test_a_deskbound_closure_is_allowed_but_marked(): void
     {
         [$provider, $mission, $code] = $this->scenario();
@@ -134,11 +111,7 @@ class CompletionGeoProofTest extends TestCase
         $this->assertSame(OnSiteVerifier::SKIPPED_NO_POSITION, $mission->end_geo_verdict);
     }
 
-    /**
-     * Garantie qui empêche le contournement : une position FOURNIE est vérifiée sur TOUS les
-     * chemins. Sans cela, il suffirait de passer par un point d'entrée sans exigence pour annoncer
-     * n'importe quelle position et clôturer.
-     */
+    /** Garantie qui empêche le contournement : une position FOURNIE est vérifiée sur TOUS les chemins. */
     public function test_a_far_position_is_refused_even_where_none_is_required(): void
     {
         [$provider, $mission, $code] = $this->scenario();
@@ -170,11 +143,7 @@ class CompletionGeoProofTest extends TestCase
         $this->assertSame(MissionStatus::STARTED, $mission->fresh()->status);
     }
 
-    /**
-     * Une mission sans coordonnées ne doit rien exiger : il n'y a rien à comparer, et réclamer
-     * quand même une position laisserait le prestataire devant la porte du client sans aucun geste
-     * qui le débloque — activer sa localisation n'y changerait rien.
-     */
+    /** Une mission sans coordonnées ne doit rien exiger : il n'y a rien à comparer, et réclamer quand même une position laisserait le prestataire devant la porte du client sans aucun geste qui le débloque — activer sa localisation n'y changerait rien. */
     public function test_a_mission_without_coordinates_never_demands_a_position(): void
     {
         [$provider, $mission, $code] = $this->scenario();

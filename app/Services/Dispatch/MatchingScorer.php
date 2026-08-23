@@ -6,13 +6,7 @@ use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
-/**
- * MatchingScorer — lightweight weighted scoring for provider-to-booking matching.
- *
- * This is the public façade used by dispatch flows and APIs. For complex audit-trail
- * scoring use MatchingScoreEngine (Matching v2 module). MatchingScorer intentionally
- * stays dependency-free for easy unit testing.
- */
+/** MatchingScorer — lightweight weighted scoring for provider-to-booking matching. */
 class MatchingScorer
 {
     private const WEIGHTS = [
@@ -57,19 +51,7 @@ class MatchingScorer
 
     private function scoreDistance(Booking $booking, User $provider): float
     {
-        /*
-         * `current_lat` / `current_lng`, PAS `latitude` / `longitude`.
-         *
-         * Ces deux dernières n'existent pas sur `provider_profiles` : la lecture rendait donc
-         * toujours nul, `$providerLat` valait toujours zéro, et le garde juste en dessous rendait
-         * invariablement le score neutre de 0,5. LE FACTEUR DISTANCE DU SCORING N'A JAMAIS VARIÉ —
-         * un prestataire à deux rues et un autre à quarante kilomètres recevaient la même note de
-         * proximité, sur le repli employé quand Matching v2 échoue.
-         *
-         * Le défaut était masqué par une annotation fausse : le trait déclarait cette relation
-         * comme rendant un `AvailabilitySlot`, si bien que l'analyse statique cherchait `latitude`
-         * sur le mauvais modèle et n'y voyait rien d'anormal.
-         */
+        // `current_lat` / `current_lng`, PAS `latitude` / `longitude`.
         $providerLat = (float) ($provider->providerProfile->current_lat ?? 0);
         $providerLng = (float) ($provider->providerProfile->current_lng ?? 0);
 
@@ -141,9 +123,7 @@ class MatchingScorer
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
-    /**
-     * Haversine great-circle distance in kilometres.
-     */
+    /** Haversine great-circle distance in kilometres. */
     private function haversine(float $lat1, float $lon1, float $lat2, float $lon2): float
     {
         $earthRadius = 6371.0;

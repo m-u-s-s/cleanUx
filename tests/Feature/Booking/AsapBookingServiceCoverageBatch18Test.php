@@ -12,17 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * Couvre les branches de AsapBookingService::findBestAsapSlot :
- *  - chemin "employé préféré" éligible + disponible (retour immédiat),
- *  - employé préféré introuvable (find null) puis repli sur resolveBest,
- *  - employé préféré présent mais ne couvrant pas la zone (court-circuit) → repli,
- *  - employé préféré couvrant la zone mais occupé (indispo) → repli,
- *  - aucun employé éligible → balayage jusqu'à la deadline puis retour null.
- *
- * Le temps est gelé à 10:00 pour que la fenêtre ASAP (now+30min → now+2h) reste
- * sur une seule journée et tombe dans la disponibilité 09:00-20:00 des employés.
- */
+/** Couvre les branches de AsapBookingService::findBestAsapSlot : - chemin "employé préféré" éligible + disponible (retour immédiat), - employé préféré introuvable (find null) puis repli sur resolveBest, - employé préféré présent mais ne couvrant pas la zone (court-circuit) → repli, - employé préféré couvrant la zone mais occupé (indispo) → repli, - aucun employé éligible → balayage jusqu'à la deadline puis retour null. */
 class AsapBookingServiceCoverageBatch18Test extends TestCase
 {
     use CreatesZoneAwareFixtures;

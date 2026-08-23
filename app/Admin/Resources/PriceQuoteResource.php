@@ -7,11 +7,7 @@ use App\Admin\Console\EloquentResource;
 use App\Models\PriceQuote;
 
 /**
- * Le registre des devis calculés.
- *
- * LECTURE SEULE. Chaque ligne conserve l’instantané des variables et des règles appliquées : ce
- * qui rend un prix EXPLICABLE après coup. Modifier une ligne réécrirait l’explication d’un prix
- * déjà annoncé au client.
+ * Le registre des devis calculés. LECTURE SEULE.
  *
  * @extends EloquentResource<PriceQuote>
  */

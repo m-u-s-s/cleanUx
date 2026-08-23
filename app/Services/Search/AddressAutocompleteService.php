@@ -5,10 +5,7 @@ namespace App\Services\Search;
 use App\Models\PostalCode;
 use Illuminate\Support\Collection;
 
-/**
- * Autocomplétion d'adresse basée sur les `postal_codes` connus de la DB.
- * Pas de dépendance externe (Google Places) — fallback local performant.
- */
+/** Autocomplétion d'adresse basée sur les `postal_codes` connus de la DB. */
 class AddressAutocompleteService
 {
     public function search(string $query, ?int $countryId = null, int $limit = 10): Collection

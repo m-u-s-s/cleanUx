@@ -11,33 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Stripe\PaymentIntent;
 
-/**
- * RÉGLER LE TEMPS SUPPLÉMENTAIRE — après l'intervention, jamais avant.
- *
- * POURQUOI APRÈS. Autoriser d'avance le pire des cas immobiliserait l'argent du client sur une
- * hypothèse : trois heures de ménage à 175 € demanderaient une empreinte de 310 € pour couvrir un
- * dépassement plafonné qui, neuf fois sur dix, n'arrivera pas. La page publique promet « paiement
- * après prestation » ; une empreinte au double du devis la démentirait sur le relevé bancaire.
- *
- * CE QU'ON NE TOUCHE JAMAIS : `devis_estime` et `payment_amount_cents`. Ce sont l'engagement et
- * l'autorisation, et la commission du prestataire se calcule dessus. Les gonfler après coup
- * créditerait au prestataire une part d'un argent que personne n'a encaissé — un défaut qui ne se
- * voit qu'au moment du versement, des semaines plus tard.
- *
- * ─────────────────────────────────────────────────────────────────────────────────────────────
- *
- * QUI TOUCHE LA MAJORATION DE 30 % — une décision de produit, énoncée ici parce qu'elle ne se
- * devine pas.
- *
- * Le prestataire est payé à son tarif NORMAL sur tout le temps supplémentaire : il a réellement
- * travaillé ces minutes-là. La majoration, elle, revient à la plateforme.
- *
- * L'alternative — lui verser sa part de l'intégralité du montant majoré — le paierait 30 % de plus
- * de l'heure dès qu'il déborde. Or c'est lui qui décide du rythme sur place. On créerait une raison
- * de travailler lentement, et la règle censée protéger le client financerait son contraire.
- *
- * Cette répartition tient en une ligne, `partPrestataireCents()`, si elle doit être revue.
- */
+/** RÉGLER LE TEMPS SUPPLÉMENTAIRE — après l'intervention, jamais avant. POURQUOI APRÈS. */
 class HourlySettlementService
 {
     public function __construct(
@@ -46,12 +20,7 @@ class HourlySettlementService
         private readonly CommissionService $commissions,
     ) {}
 
-    /**
-     * Constate ce qui reste dû sur une mission terminée, puis tente de l'encaisser.
-     *
-     * IDEMPOTENT : rappelé sur une mission déjà réglée, il ne recalcule rien et ne débite rien.
-     * C'est indispensable — la clôture peut être rejouée, et une reprise planifiée passe derrière.
-     */
+    /** Constate ce qui reste dû sur une mission terminée, puis tente de l'encaisser. */
     public function regler(Mission $mission): ?MissionTimeSettlement
     {
         $reglement = $this->constater($mission);
@@ -65,12 +34,7 @@ class HourlySettlementService
         return $reglement->refresh();
     }
 
-    /**
-     * LE CONSTAT — le calcul figé, sans le moindre appel à Stripe.
-     *
-     * Séparé de l'encaissement à dessein : le constat doit exister même si le réseau tombe, sinon
-     * une panne de paiement effacerait aussi la trace de ce qui était dû.
-     */
+    /** LE CONSTAT — le calcul figé, sans le moindre appel à Stripe. */
     public function constater(Mission $mission): ?MissionTimeSettlement
     {
         $booking = $mission->booking;
@@ -99,26 +63,13 @@ class HourlySettlementService
         $acheteesMinutes = (int) ($etat['purchased_minutes'] ?? 0);
         $depassement = (int) ($etat['billable_overtime_minutes'] ?? 0);
 
-        /*
-         * LES MINUTES DE PROLONGATION SE DÉDUISENT, elles ne se comptent pas.
-         *
-         * `duree_estimee` est la durée VENDUE au moment de l'autorisation et la base du tarif ;
-         * `purchased_minutes` est ce qui est dû aujourd'hui. Leur écart EST la prolongation. Tenir
-         * un compteur séparé en ferait une troisième source, qui divergerait le jour où une
-         * prolongation serait annulée sans qu'on pense à le décrémenter.
-         */
+        // LES MINUTES DE PROLONGATION SE DÉDUISENT, elles ne se comptent pas.
         $prolongation = max(0, $acheteesMinutes - $autoriseMinutes);
 
         $montantProlongation = $this->auTarif($tarif, $prolongation, 1.0);
         $montantDepassement = (int) ($etat['overtime_amount_cents'] ?? 0);
 
-        /*
-         * CE QUI RESTE DÛ = CE QUI EST DÛ − CE QUI EST AUTORISÉ.
-         *
-         * Et non « prolongation + dépassement » calculés à part : cette forme-ci reste juste même
-         * si les deux durées divergeaient d'un arrondi, et elle ne peut structurellement pas
-         * réclamer une seconde fois ce qui est déjà couvert par l'empreinte.
-         */
+        // CE QUI RESTE DÛ = CE QUI EST DÛ − CE QUI EST AUTORISÉ.
         $du = $this->auTarif($tarif, $acheteesMinutes, 1.0) + $montantDepassement;
         $reste = max(0, $du - $autoriseCents);
 
@@ -152,14 +103,7 @@ class HourlySettlementService
         return $reglement;
     }
 
-    /**
-     * L'ENCAISSEMENT HORS SESSION — le même mécanisme que les suppléments acceptés.
-     *
-     * `charged` N'EST ÉCRIT QUE SI STRIPE L'A DIT. Une carte peut réclamer une authentification
-     * forte hors session : l'intention part alors en `requires_action` et rien n'est débité.
-     * L'écrire encaissé refabriquerait exactement le défaut réparé sur les suppléments — une
-     * créance déclarée payée que plus rien ne rattrape.
-     */
+    /** L'ENCAISSEMENT HORS SESSION — le même mécanisme que les suppléments acceptés. */
     public function encaisser(MissionTimeSettlement $reglement): void
     {
         if (! $reglement->estUneCreance()) {
@@ -197,15 +141,7 @@ class HourlySettlementService
             $partPrestataire = $this->partPrestataireCents($reglement);
             $commission = $this->commissions->calculateForAmount($partPrestataire, $prestataire);
 
-            /*
-             * LA COMMISSION SE CALCULE SUR LA PART DU PRESTATAIRE, puis la MAJORATION VIENT S'Y
-             * AJOUTER : `application_fee_amount` est donc « la commission normale + les 30 % ».
-             *
-             * C'est la traduction en centimes de la décision énoncée en tête de fichier — le
-             * prestataire est payé à son tarif normal sur le temps supplémentaire, la plateforme
-             * garde la majoration. La calculer sur le montant total lui verserait 30 % de plus de
-             * l'heure dès qu'il déborde.
-             */
+            // LA COMMISSION SE CALCULE SUR LA PART DU PRESTATAIRE, puis la MAJORATION VIENT S'Y AJOUTER : `application_fee_amount` est donc « la commission normale + les 30 % ».
             $fraisPlateforme = $reglement->amount_due_cents
                 - ($partPrestataire - $commission['platform_fee_cents']);
 
@@ -248,10 +184,7 @@ class HourlySettlementService
         }
     }
 
-    /**
-     * La part qui revient au prestataire, AVANT commission : le temps supplémentaire à son tarif
-     * normal, majoration exclue.
-     */
+    /** La part qui revient au prestataire, AVANT commission : le temps supplémentaire à son tarif normal, majoration exclue. */
     public function partPrestataireCents(MissionTimeSettlement $reglement): int
     {
         $tarif = (int) ($reglement->effective_hourly_rate_cents ?? 0);
@@ -273,13 +206,7 @@ class HourlySettlementService
         return (int) round($tarifCents * ($minutes / 60) * $multiplicateur);
     }
 
-    /**
-     * LA CARTE DÉJÀ UTILISÉE POUR CETTE RÉSERVATION.
-     *
-     * On la relit sur l'intention d'origine plutôt que de prendre « une » carte du client : une
-     * personne peut en avoir plusieurs, et débiter celle qu'elle n'a pas choisie pour cette
-     * réservation est une réclamation garantie.
-     */
+    /** LA CARTE DÉJÀ UTILISÉE POUR CETTE RÉSERVATION. */
     private function carteDuClient(Booking $booking): ?string
     {
         if (! $booking->stripe_payment_intent_id) {
@@ -302,10 +229,7 @@ class HourlySettlementService
         }
     }
 
-    /**
-     * LA TRACE DE L'ÉCHEC — sans elle, un règlement `pending` depuis trois jours ne dit pas si le
-     * prélèvement a seulement été tenté.
-     */
+    /** LA TRACE DE L'ÉCHEC — sans elle, un règlement `pending` depuis trois jours ne dit pas si le prélèvement a seulement été tenté. */
     private function noterLEchec(MissionTimeSettlement $reglement, string $motif): void
     {
         DB::transaction(function () use ($reglement, $motif) {

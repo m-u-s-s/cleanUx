@@ -8,10 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Blade;
 use Tests\TestCase;
 
-/**
- * Additional edge-case coverage for FeatureFlagService, the feature() helper,
- * and the @feature Blade directive.
- */
+/** Additional edge-case coverage for FeatureFlagService, the feature() helper, and the @feature Blade directive. */
 class FeatureFlagEdgeCasesTest extends TestCase
 {
     use RefreshDatabase;

@@ -59,9 +59,6 @@ class PresenceController extends Controller
     /**
      * Send a presence heartbeat to stay online (call every 60-120 seconds).
      *
-     * Providers not sending a heartbeat within the stale threshold (default 5 min) are
-     * automatically set offline by the presence:scan-stale cron job.
-     *
      * @bodyParam lat numeric Updated GPS latitude (-90 to 90). Example: 50.851
      * @bodyParam lng numeric Updated GPS longitude (-180 to 180). Example: 4.351
      *
@@ -93,10 +90,6 @@ class PresenceController extends Controller
 
     /**
      * Mark the provider as busy (manually — e.g. finishing a job off-platform).
-     *
-     * Note: `busy` is also set automatically by BookingObserver when a mission starts, and
-     * reset to `online` when it completes; a manual call here is overridden by that flow.
-     * Like every other transition, this is idempotent.
      *
      * @response 200 {"data": {"status": "busy", "current_lat": 50.85, "current_lng": 4.35, "available_radius_km": 15, "heartbeat_at": "2026-06-15T11:00:00+00:00", "last_online_at": "2026-06-15T09:00:00+00:00", "online_minutes_today": 120, "online_minutes_week": 1960, "is_active": true}}
      */

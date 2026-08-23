@@ -10,25 +10,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Activation automatique d'un compte prestataire.
- *
- * Les contrôles automatiques existaient déjà et rendaient un verdict — l'identité s'auto-approuve
- * au-dessus du score minimal, la vérification d'entreprise sait scorer un risque — mais PERSONNE
- * ne faisait jamais passer `provider_profiles.status` à `active`. Or c'est cette colonne que garde
- * le middleware : un dossier entièrement vert restait bloqué jusqu'au clic d'un administrateur.
- *
- * Règle retenue : le compte s'ouvre dès que l'identité est validée et que les pièces exigées sont
- * DÉPOSÉES, sans attendre leur relecture. C'est ce qui permet d'activer en minutes plutôt qu'en
- * jours. La relecture devient un contrôle a posteriori, et `verification_status` ne devient
- * `verified` que lorsqu'elle a réellement eu lieu — être actif n'est pas être certifié.
- *
- * Ce que ce service ne fait JAMAIS :
- *
- *  - refuser un compte. Un contrôle automatique négatif oriente vers un examen humain, il ne
- *    tranche pas : un faux positif de criblage ne doit pas fermer une inscription légitime.
- *  - toucher un prestataire d'avant l'inscription en libre-service, ni un compte déjà traité.
- */
+/** Activation automatique d'un compte prestataire. */
 class ProviderAutoApproval
 {
     /** Le dossier est complet : le compte vient d'être ouvert. */
@@ -48,12 +30,7 @@ class ProviderAutoApproval
         protected ProviderOnboardingService $onboarding,
     ) {}
 
-    /**
-     * Réévalue le dossier et ouvre le compte s'il est complet.
-     *
-     * Appelée après chaque événement susceptible de changer le verdict : décision d'identité,
-     * dépôt de pièce, étape franchie. Idempotente — un compte déjà actif est simplement ignoré.
-     */
+    /** Réévalue le dossier et ouvre le compte s'il est complet. */
     public function evaluate(User $user): string
     {
         $profile = $user->providerProfile;
@@ -89,13 +66,7 @@ class ProviderAutoApproval
         return self::OUTCOME_APPROVED;
     }
 
-    /**
-     * Motif d'examen humain lié à l'entreprise, s'il y en a un.
-     *
-     * Ne concerne que les sociétés : un indépendant n'a pas d'entité à vérifier. Une entité
-     * encore en cours de contrôle ne bloque pas — le compte s'ouvrira à la réévaluation qui
-     * suivra son verdict.
-     */
+    /** Motif d'examen humain lié à l'entreprise, s'il y en a un. */
     private function businessVerdict(User $user): ?string
     {
         $entity = BusinessEntity::query()
@@ -115,12 +86,7 @@ class ProviderAutoApproval
         };
     }
 
-    /**
-     * Oriente explicitement un dossier vers l'examen humain, sans le refuser.
-     *
-     * Employée aussi depuis l'écoute du refus d'identité, pour que la trace existe même si
-     * l'évaluation complète n'est pas rejouée.
-     */
+    /** Oriente explicitement un dossier vers l'examen humain, sans le refuser. */
     public function flagForManualReview(ProviderProfile $profile, string $reason): void
     {
         $profile->forceFill([
@@ -132,11 +98,7 @@ class ProviderAutoApproval
         ])->save();
     }
 
-    /**
-     * Seuls les comptes créés par l'inscription en libre-service et encore en attente sont
-     * concernés. Les prestataires antérieurs n'ont jamais été soumis à cette attente, et un
-     * compte déjà actif ou refusé a été tranché.
-     */
+    /** Seuls les comptes créés par l'inscription en libre-service et encore en attente sont concernés. */
     private function isEligible(?ProviderProfile $profile): bool
     {
         return $profile !== null

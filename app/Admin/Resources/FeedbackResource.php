@@ -9,9 +9,6 @@ use App\Models\Feedback;
 /**
  * Les retours laisses après une intervention.
  *
- * La MODÉRATION passe par le module Avis, qui porte la règle (masquage, signalements, agrégats
- * prestataire). Rejouer un masquage ici laisserait la note moyenne du prestataire inchangee.
- *
  * @extends EloquentResource<Feedback>
  */
 class FeedbackResource extends EloquentResource

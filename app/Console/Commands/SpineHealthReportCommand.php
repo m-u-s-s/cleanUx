@@ -5,10 +5,7 @@ namespace App\Console\Commands;
 use App\Services\Ops\SpineHealthReport;
 use Illuminate\Console\Command;
 
-/**
- * Go-live drill D1 — rapport de santé du "spine" (DB, cache, queue, Stripe,
- * Reverb, …). Informationnel : affiche le statut de chaque check.
- */
+/** Go-live drill D1 — rapport de santé du "spine" (DB, cache, queue, Stripe, Reverb, …). */
 class SpineHealthReportCommand extends Command
 {
     protected $signature = 'spine:health-report';

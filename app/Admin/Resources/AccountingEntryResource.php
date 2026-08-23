@@ -10,11 +10,7 @@ use App\Models\AccountingEntry;
 use App\Services\AccountingV2\PeriodCloser;
 
 /**
- * Le grand livre comptable.
- *
- * LECTURE SEULE, et c’est le point le plus important de tout ce moteur. Le registre est en
- * partie double et IMMUABLE : une écriture ne se modifie ni ne s’efface, elle se contre-passe.
- * Un bouton de suppression ici casserait l’équilibre débit-crédit sans laisser de trace.
+ * Le grand livre comptable. LECTURE SEULE, et c’est le point le plus important de tout ce moteur.
  *
  * @extends EloquentResource<AccountingEntry>
  */
@@ -76,12 +72,7 @@ class AccountingEntryResource extends EloquentResource
     public function globalActions(): array
     {
         return [
-            /*
-             * Clôturer un mois. Global par nature, et IRRÉVERSIBLE : une période close refuse
-             * toute écriture postérieure, ce qui est précisément son rôle. On demande donc l'année
-             * et le mois plutôt que de supposer « le mois dernier » — se tromper d'un mois
-             * verrouillerait des écritures qu'on avait encore à passer.
-             */
+            // Clôturer un mois.
             Action::make('close-period', 'Clôturer une période', function (array $valeurs) {
                 app(PeriodCloser::class)->close(
                     (int) $valeurs['year'],

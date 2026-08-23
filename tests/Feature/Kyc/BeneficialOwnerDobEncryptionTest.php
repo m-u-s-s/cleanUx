@@ -8,10 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * L7 (part 2) — business_beneficial_owners.date_of_birth is encrypted at rest, while legacy
- * plaintext rows stay readable and get encrypted by the backfill migration.
- */
+/** L7 (part 2) — business_beneficial_owners.date_of_birth is encrypted at rest, while legacy plaintext rows stay readable and get encrypted by the backfill migration. */
 class BeneficialOwnerDobEncryptionTest extends TestCase
 {
     use RefreshDatabase;

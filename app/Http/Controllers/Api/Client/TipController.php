@@ -21,8 +21,6 @@ class TipController extends Controller
     /**
      * Get tip amount suggestions for a booking.
      *
-     * Returns three preset percentage options based on the booking's total amount.
-     *
      * @response 200 {"data": [{"label": "10%", "preset_percent": 10, "amount_cents": 500}, {"label": "15%", "preset_percent": 15, "amount_cents": 750}, {"label": "20%", "preset_percent": 20, "amount_cents": 1000}]}
      * @response 403 {"error": "forbidden"}
      */
@@ -39,9 +37,6 @@ class TipController extends Controller
 
     /**
      * Create a tip for a completed booking.
-     *
-     * Idempotent: a second call for the same booking will be rejected with 422 if a non-final tip already exists.
-     * Client earns 1 loyalty point per euro tipped (soft-fail).
      *
      * @bodyParam amount_cents integer required Tip amount in euro-cents (100-50000). Example: 500
      * @bodyParam preset_label string Optional label for the chosen preset (max 16 chars). Example: 10%

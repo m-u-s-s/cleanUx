@@ -31,11 +31,7 @@ class MatchingV2ServiceTest extends TestCase
 
         $this->zone = ServiceZone::factory()->create();
 
-        /*
-         * LE MÉTIER EST OBLIGATOIRE depuis que le filtre n'a plus de repli : une réservation sans
-         * métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous. Les fixtures
-         * doivent donc poser un métier des deux côtés, comme la vraie vie.
-         */
+        // LE MÉTIER EST OBLIGATOIRE depuis que le filtre n'a plus de repli : une réservation sans métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous.
         $this->trade = Trade::create([
             'slug' => 'matching-v2-trade', 'code' => 'MV2', 'name' => 'Nettoyage',
             'is_active' => true, 'sort_order' => 1,

@@ -2,10 +2,7 @@
 
 namespace App\Services\Analytics;
 
-/**
- * Pure calculation methods for KPI metrics.
- * Takes primitive values and returns computed numbers — no DB, no formatting.
- */
+/** Pure calculation methods for KPI metrics. */
 class KpiCalculator
 {
     public function cancellationRate(int $total, int $cancelled): float
@@ -26,10 +23,7 @@ class KpiCalculator
         return round(($completed / $total) * 100, 1);
     }
 
-    /**
-     * Percentage change between two periods.
-     * Returns null when previous is zero (avoids division by zero).
-     */
+    /** Percentage change between two periods. */
     public function trend(float $previous, float $current): ?float
     {
         if ($previous == 0.0) {

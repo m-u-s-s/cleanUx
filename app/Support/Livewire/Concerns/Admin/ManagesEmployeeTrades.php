@@ -7,18 +7,7 @@ use App\Models\User;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\Gate;
 
-/**
- * Gère l'assignation des métiers (Trade) à un employé ou prestataire.
- *
- * Doit être branché dans un composant Livewire admin. Expose :
- *   - openEmployeeTrades(int $userId)
- *   - cancelEmployeeTrades()
- *   - toggleEmployeeTrade(int $tradeId)
- *   - setEmployeeTradePrimary(int $tradeId)
- *   - saveEmployeeTrades()
- *
- * Sync via belongsToMany avec pivot is_primary/proficiency/notes.
- */
+/** Gère l'assignation des métiers (Trade) à un employé ou prestataire. */
 trait ManagesEmployeeTrades
 {
     /** ID de l'utilisateur dont on édite les métiers (null = modal fermée). */

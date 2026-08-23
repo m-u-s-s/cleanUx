@@ -16,11 +16,11 @@ class AccountingService
      * Poste une transaction comptable (1 batch = N lignes équilibrées).
      *
      * @param array<int, array{
-     *   account_code:string, debit_cents?:int, credit_cents?:int,
-     *   label:string, journal_code?:string, reference?:string,
-     *   vat_rate?:float, vat_amount_cents?:int,
-     *   counterparty_type?:string, counterparty_id?:int,
-     *   metadata?:array,
+     * account_code:string, debit_cents?:int, credit_cents?:int,
+     * label:string, journal_code?:string, reference?:string,
+     * vat_rate?:float, vat_amount_cents?:int,
+     * counterparty_type?:string, counterparty_id?:int,
+     * metadata?:array,
      * }> $lines
      * @return string batch_id généré
      */
@@ -109,10 +109,7 @@ class AccountingService
         return $batchId;
     }
 
-    /**
-     * Idempotence par source : si un batch existe déjà avec ces (source_type, source_id),
-     * retourne le batch_id existant sans repost.
-     */
+    /** Idempotence par source : si un batch existe déjà avec ces (source_type, source_id), retourne le batch_id existant sans repost. */
     public function postIdempotent(string $sourceType, int $sourceId, array $lines, array $opts = []): string
     {
         $existing = AccountingEntry::query()

@@ -12,20 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * SIGNER UN CONTRAT SUR PLACE SUPPOSE D'ABORD POUVOIR EN FIXER LE RENDEZ-VOUS.
- *
- * POURQUOI CE FICHIER EXISTE. La signature électronique existe (`contract_signatures`, eIDAS-lite,
- * rattachée à un `contract_document`) et les rendez-vous existent (`rendez_vous`). Mais RIEN ne
- * relie les deux : aucune colonne, aucune relation, aucun écran. Une société qui exige une
- * signature en présence — cas courant en B2B pour un contrat-cadre — n'avait aucun moyen de la
- * planifier.
- *
- * POURQUOI UNE TABLE DÉDIÉE plutôt qu'une colonne sur `rendez_vous` : ce modèle décrit une
- * INTERVENTION (prestataire, zone de service, surface, prix estimé, fréquence). Y greffer un
- * rendez-vous commercial de signature mêlerait deux objets métier distincts dans les mêmes
- * requêtes, filtres et statistiques.
- */
+/** SIGNER UN CONTRAT SUR PLACE SUPPOSE D'ABORD POUVOIR EN FIXER LE RENDEZ-VOUS. */
 class SigningAppointmentTest extends TestCase
 {
     use RefreshDatabase;

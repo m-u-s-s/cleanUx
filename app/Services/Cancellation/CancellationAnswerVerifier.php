@@ -10,25 +10,10 @@ use App\Support\Domain\MissionStatus;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 
-/**
- * CE QUI SÉPARE UN QUESTIONNAIRE D'UN MENU D'ÉVITEMENT DE FRAIS.
- *
- * Un formulaire entièrement déclaratif n'est pas un questionnaire : c'est une liste de raisons de
- * ne rien payer, et tout le monde coche la plus avantageuse. Chaque option de ce module est donc
- * soit confrontée à un fait que le serveur détient, soit porteuse d'une conséquence pour celui qui
- * la coche.
- *
- * ── UNE OPTION NON VÉRIFIÉE N'EST PAS PROPOSÉE ───────────────────────────────────────────────
- *
- * Et surtout pas proposée puis refusée. Cocher « le prestataire est en retard » pour s'entendre
- * répondre « non » se lit comme une panne, pas comme une règle — et la personne recommence.
- * L'option disparaît simplement de la liste quand le fait ne la soutient pas.
- */
+/** CE QUI SÉPARE UN QUESTIONNAIRE D'UN MENU D'ÉVITEMENT DE FRAIS. */
 class CancellationAnswerVerifier
 {
-    /**
-     * Cette option peut-elle être proposée sur cette réservation ?
-     */
+    /** Cette option peut-elle être proposée sur cette réservation ? */
     public function estSoutenue(CancellationQuestionOption $option, Booking $booking): bool
     {
         return match ($option->verification) {
@@ -39,30 +24,13 @@ class CancellationAnswerVerifier
         };
     }
 
-    /**
-     * LE RETARD SE MESURE, IL NE SE DÉCLARE PAS.
-     *
-     * Deux conditions : l'heure prévue est passée d'au moins la tolérance, et l'intervention n'a
-     * PAS démarré. Sans la seconde, un client pourrait invoquer le retard sur une mission commencée
-     * avec dix minutes de décalage et déjà à moitié faite.
-     */
+    /** LE RETARD SE MESURE, IL NE SE DÉCLARE PAS. */
     public function leProviderEstEnRetard(Booking $booking): bool
     {
         return $this->minutesDeRetard($booking) !== null;
     }
 
-    /**
-     * DE COMBIEN, ET LE MÊME CALCUL POUR TOUT LE MONDE.
-     *
-     * Le minuteur de retard et l'option d'annulation gratuite doivent répondre au même moment :
-     * un client averti « votre prestataire a 22 minutes de retard » puis à qui l'on refuse le
-     * motif « il est en retard » ne lit pas deux règles, il lit une panne. Une seule mesure, donc,
-     * et le booléen n'est plus qu'une lecture de celle-ci.
-     *
-     * Rend les minutes écoulées depuis l'HEURE PRÉVUE — pas depuis la fin de la tolérance. Ce que
-     * le client attend, c'est le retard qu'il vit ; la tolérance décide seulement quand on en
-     * parle.
-     */
+    /** DE COMBIEN, ET LE MÊME CALCUL POUR TOUT LE MONDE. */
     public function minutesDeRetard(Booking $booking): ?int
     {
         $prevu = $this->heurePrevue($booking);
@@ -86,13 +54,7 @@ class CancellationAnswerVerifier
         return (int) $prevu->diffInMinutes(Carbon::now());
     }
 
-    /**
-     * L'HEURE PRÉVUE, quelle que soit la colonne qui la porte.
-     *
-     * `scheduled_at` fait foi quand elle existe ; les réservations anciennes ne portent que le
-     * couple `date` + `heure`. Lire une seule des deux laisserait une moitié du parc sans retard
-     * mesurable — et un retard non mesuré est un retard gratuit.
-     */
+    /** L'HEURE PRÉVUE, quelle que soit la colonne qui la porte. */
     public function heurePrevue(Booking $booking): ?Carbon
     {
         if ($booking->scheduled_at !== null) {
@@ -106,13 +68,7 @@ class CancellationAnswerVerifier
         return null;
     }
 
-    /**
-     * S'EST-IL RÉELLEMENT DÉPLACÉ ?
-     *
-     * Soutient « adresse introuvable ou inaccessible » : quelqu'un qui n'a pas bougé n'a pas pu
-     * constater qu'une adresse était introuvable. Le seuil écarte les quelques mètres d'un GPS qui
-     * dérive sur place.
-     */
+    /** S'EST-IL RÉELLEMENT DÉPLACÉ ? */
     public function ilSEstDeplace(Booking $booking): bool
     {
         $seuil = max(0, (int) Config::get('missions.movement_threshold_m', 300));
@@ -123,13 +79,7 @@ class CancellationAnswerVerifier
             ->exists();
     }
 
-    /**
-     * A-T-ON TENTÉ DE JOINDRE LE CLIENT ?
-     *
-     * Le « tout va bien ? » a-t-il été envoyé sans réponse, ou le prestataire attend-il sur place
-     * depuis assez longtemps ? Sans cette vérification, « le client ne répond pas » deviendrait le
-     * motif universel d'un prestataire qui préfère repartir.
-     */
+    /** A-T-ON TENTÉ DE JOINDRE LE CLIENT ? Le « tout va bien ? */
     public function leClientNeRepondPas(Booking $booking): bool
     {
         if ($booking->checkin_ping_sent_at !== null && $booking->checkin_ping_answered_at === null) {

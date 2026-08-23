@@ -4,9 +4,7 @@ namespace App\Services\AccountingV2;
 
 class ChartOfAccounts
 {
-    /**
-     * Retourne le nom d'un compte ou null si inconnu.
-     */
+    /** Retourne le nom d'un compte ou null si inconnu. */
     public function name(string $code): ?string
     {
         $accounts = (array) config('accounting_v2.chart_of_accounts', []);
@@ -34,9 +32,7 @@ class ChartOfAccounts
         return (array) config('accounting_v2.chart_of_accounts', []);
     }
 
-    /**
-     * Compte client par défaut (PCG 411).
-     */
+    /** Compte client par défaut (PCG 411). */
     public function clientAccount(): string
     {
         return '411000';

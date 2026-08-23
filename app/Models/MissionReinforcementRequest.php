@@ -28,16 +28,7 @@ class MissionReinforcementRequest extends Model
         'resolution_notes',
         'resolved_by_user_id',
         'resolved_at',
-        /*
-         * TROIS COLONNES QUE LA TABLE PORTE ET QU'ELOQUENT ÉCARTAIT EN SILENCE.
-         *
-         * `required_people` est NOT NULL : une demande posée sans elle échouait au niveau SQL. Les
-         * deux autres se perdaient sans un mot — l'équipe assignée et le moment du besoin, c'est-à-
-         * dire précisément ce qui permet de trier les demandes.
-         *
-         * Elles n'avaient jamais servi parce que le seul écrivain était le centre du chef d'équipe,
-         * qui les laissait vides. La demande depuis le terrain les remplit toutes les trois.
-         */
+        // TROIS COLONNES QUE LA TABLE PORTE ET QU'ELOQUENT ÉCARTAIT EN SILENCE.
         'provider_team_id',
         'required_people',
         'needed_at',

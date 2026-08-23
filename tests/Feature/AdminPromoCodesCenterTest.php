@@ -10,14 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Tests Livewire admin pour le centre de gestion des codes promo.
- *
- * Calque sur le pattern de AdminTradesCenterTest:
- *   User::factory()->admin()->create([...])
- *   $this->actingAs($admin)
- *   Livewire::test(PromoCodesCenter::class)->call(...)
- */
+/** Tests Livewire admin pour le centre de gestion des codes promo. */
 class AdminPromoCodesCenterTest extends TestCase
 {
     use RefreshDatabase;

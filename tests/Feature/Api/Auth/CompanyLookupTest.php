@@ -7,17 +7,7 @@ use App\Services\KybV2\VerificationResult;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Recherche d'entreprise pendant l'inscription.
- *
- * Le module KYB savait interroger l'INSEE et VIES, mais uniquement au sein d'une vérification
- * complète exigeant de connaître d'avance la raison sociale — donc de la saisir. Le prestataire
- * tape maintenant son seul numéro et confirme ce que rend le registre.
- *
- * La route est publique par nécessité (le compte n'existe pas encore) et relaie des appels vers
- * un tiers : ce que ces tests vérifient surtout, c'est qu'elle n'appelle RIEN quand le numéro
- * n'est pas plausible, et qu'aucune défaillance du registre ne bloque l'inscription.
- */
+/** Recherche d'entreprise pendant l'inscription. */
 class CompanyLookupTest extends TestCase
 {
     use RefreshDatabase;
@@ -48,11 +38,7 @@ class CompanyLookupTest extends TestCase
             ->assertJsonPath('company.address', 'Boulevard du Roi Albert II 27, 1030 Bruxelles');
     }
 
-    /**
-     * L'INSEE rend sa réponse brute, là où le simulateur rend des clés déjà normalisées. Les deux
-     * doivent produire la même suggestion, sans quoi le pré-remplissage marcherait en test et
-     * resterait vide en production.
-     */
+    /** L'INSEE rend sa réponse brute, là où le simulateur rend des clés déjà normalisées. */
     public function test_it_understands_the_raw_insee_shape(): void
     {
         $this->fakeProvider(new VerificationResult(
@@ -78,10 +64,7 @@ class CompanyLookupTest extends TestCase
             ->assertJsonPath('company.address', '8 RUE DE LONDRES 75009 PARIS');
     }
 
-    /**
-     * Le garde-fou principal : la clé du numéro est contrôlée AVANT tout appel sortant. Sans ça,
-     * cette route publique deviendrait un relais gratuit pour balayer le registre.
-     */
+    /** Le garde-fou principal : la clé du numéro est contrôlée AVANT tout appel sortant. */
     public function test_an_invalid_number_never_reaches_the_registry(): void
     {
         $called = false;

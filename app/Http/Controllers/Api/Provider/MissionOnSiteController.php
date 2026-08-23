@@ -28,15 +28,6 @@ use RuntimeException;
 /**
  * LE KIT « SUR PLACE » CÔTÉ PRESTATAIRE — l'état des lieux et les imprévus.
  *
- * `MissionFieldActionController` (web) prend déjà des photos, mais seulement AU MOMENT d'une
- * transition : au démarrage et à la clôture, jointes au formulaire qui valide le code. Sur le
- * terrain, la photo utile est prise quand on la voit — la trace d'humidité derrière le meuble, à
- * la vingtième minute. Ces points d'entrée-ci sont indépendants du cycle de vie, et c'est tout
- * leur intérêt.
- *
- * L'appartenance est vérifiée par le SERVICE, pas ici : elle porte sur l'affectation à la mission,
- * pas sur le droit de lecture, et la même règle doit valoir pour le web comme pour le mobile.
- *
  * @group Mission — sur place
  *
  * @authenticated
@@ -57,17 +48,7 @@ class MissionOnSiteController extends Controller
         protected InventoryService $inventoryService,
     ) {}
 
-    /**
-     * LES TÂCHES QUI BLOQUENT LA CLÔTURE, enfin lisibles depuis le mobile.
-     *
-     * `assertRequiredChecklistCompleted()` refuse de terminer une mission tant qu'une tâche
-     * obligatoire reste ouverte, et ce refus n'avait AUCUN remède dans l'application : l'écran
-     * terrain montrait la checklist du module Inspection — une autre table — et ces tâches-ci
-     * n'étaient atteignables que par des routes web à session.
-     *
-     * L'endpoint guidé voisin ne les sert pas : il exige un `sort_order` sur chaque tâche, absent
-     * des checklists issues de gabarits.
-     */
+    /** LES TÂCHES QUI BLOQUENT LA CLÔTURE, enfin lisibles depuis le mobile. */
     public function checklist(Request $request, Mission $mission): JsonResponse
     {
         try {
@@ -88,14 +69,7 @@ class MissionOnSiteController extends Controller
             return response()->json(['message' => $e->getMessage()], 403);
         }
 
-        /*
-         * LA TÂCHE DOIT APPARTENIR À CETTE MISSION.
-         *
-         * Les deux paramètres sont résolus indépendamment : sans ce rapprochement, un prestataire
-         * légitimement assigné à une mission pourrait cocher les tâches de N'IMPORTE quelle autre
-         * en changeant le second identifiant dans l'URL. L'assignation autorise l'accès à SA
-         * mission, pas à toutes.
-         */
+        // LA TÂCHE DOIT APPARTENIR À CETTE MISSION.
         if ((int) $item->checklist->mission_id !== (int) $mission->id) {
             return response()->json(['message' => 'Cette tâche n’appartient pas à cette mission.'], 404);
         }
@@ -188,14 +162,7 @@ class MissionOnSiteController extends Controller
      *
      * @response 201 {"data": {"id": 2, "type": "preexisting_damage", "label": "Dégât préexistant", "notified_at": "2026-08-11T09:05:00+00:00"}}
      */
-    /**
-     * PROPOSER UN SUPPLÉMENT DEPUIS LE TERRAIN (F3).
-     *
-     * Le prestataire constate sur place ce que le devis ne couvrait pas. Sans ce geste il n'a que
-     * deux mauvaises réponses — le faire gratuitement, ou ne pas le faire — et une troisième pire
-     * que les deux : s'arranger en espèces, ce qui sort l'argent de la plateforme et le client de
-     * toute protection.
-     */
+    /** PROPOSER UN SUPPLÉMENT DEPUIS LE TERRAIN (F3). */
     public function storeExtra(Request $request, Mission $mission): JsonResponse
     {
         $data = $request->validate([
@@ -223,10 +190,7 @@ class MissionOnSiteController extends Controller
         return response()->json(['data' => $this->extraService->presenter($extra)], 201);
     }
 
-    /**
-     * Les suppléments de cette mission, du point de vue du prestataire : il doit savoir ce que le
-     * client a accepté avant de faire le travail.
-     */
+    /** Les suppléments de cette mission, du point de vue du prestataire : il doit savoir ce que le client a accepté avant de faire le travail. */
     public function extras(Request $request, Mission $mission): JsonResponse
     {
         $this->assignmentStatusService->assertAssignedToMission($mission, $request->user());
@@ -238,13 +202,7 @@ class MissionOnSiteController extends Controller
         ]);
     }
 
-    /**
-     * LA FICHE D'ACCÈS AU LIEU (F5) — codes, étage, consignes.
-     *
-     * Elle ne s'ouvre qu'une fois l'arrivée confirmée : un code d'alarme ou l'emplacement d'une
-     * boîte à clés sont les clés du domicile de quelqu'un, et les rendre lisibles dès l'assignation
-     * reviendrait à les distribuer à tous ceux qui passent dans la file d'affectation.
-     */
+    /** LA FICHE D'ACCÈS AU LIEU (F5) — codes, étage, consignes. */
     public function accessSheet(Request $request, Mission $mission): JsonResponse
     {
         try {
@@ -260,15 +218,7 @@ class MissionOnSiteController extends Controller
         return response()->json(['data' => $fiche]);
     }
 
-    /**
-     * RECUEILLIR LA SIGNATURE DU CLIENT SUR L'ÉCRAN DU PRESTATAIRE (F10).
-     *
-     * Elle vaut par ce qui l'accompagne : horodatage, empreinte du contenu signé, attribution à un
-     * compte. Une case cochée ne prouve rien le jour où le client affirme n'avoir jamais validé.
-     *
-     * ELLE EST FACULTATIVE, et l'écran doit le refléter : le client n'est pas toujours là, et faire
-     * dépendre la clôture de sa présence bloquerait toutes les interventions en son absence.
-     */
+    /** RECUEILLIR LA SIGNATURE DU CLIENT SUR L'ÉCRAN DU PRESTATAIRE (F10). */
     public function storeClientSignature(Request $request, Mission $mission): JsonResponse
     {
         try {
@@ -308,16 +258,7 @@ class MissionOnSiteController extends Controller
         ]], 201);
     }
 
-    /**
-     * ATTESTER SON ARRIVÉE PAR PHOTO QUAND LE CLIENT EST ABSENT (F14).
-     *
-     * Le code à six chiffres suppose deux personnes face à face. Quand le client travaille et laisse
-     * la clé chez la voisine, cette preuve est impossible — et l'intervention se déroulait jusqu'ici
-     * hors du dispositif.
-     *
-     * La photo porte l'horodatage, la position et son empreinte : c'est ce qui sépare un démarrage
-     * TRACÉ d'un simple bouton « je suis arrivé » que rien ne contredit.
-     */
+    /** ATTESTER SON ARRIVÉE PAR PHOTO QUAND LE CLIENT EST ABSENT (F14). */
     public function storeArrivalProof(Request $request, Mission $mission): JsonResponse
     {
         try {
@@ -347,12 +288,7 @@ class MissionOnSiteController extends Controller
         return response()->json(['data' => $this->mediaService->presenter($media)], 201);
     }
 
-    /**
-     * Quelle preuve de présence s'applique, et ce qu'il faut savoir si le client est absent.
-     *
-     * Le prestataire doit le savoir AVANT de sonner : attendre un code qui ne viendra pas fait
-     * perdre dix minutes devant une porte, puis repartir.
-     */
+    /** Quelle preuve de présence s'applique, et ce qu'il faut savoir si le client est absent. */
     public function presenceMode(Request $request, Mission $mission): JsonResponse
     {
         try {
@@ -372,12 +308,7 @@ class MissionOnSiteController extends Controller
         ]]);
     }
 
-    /**
-     * LE GUIDE PAS-À-PAS (F6) — une étape à la fois.
-     *
-     * Afficher les vingt suivantes ramènerait à la liste : ce qu'on veut, c'est qu'une personne les
-     * mains prises sache quoi faire MAINTENANT, sans lire.
-     */
+    /** LE GUIDE PAS-À-PAS (F6) — une étape à la fois. */
     public function guidedStep(Request $request, Mission $mission): JsonResponse
     {
         try {
@@ -422,13 +353,7 @@ class MissionOnSiteController extends Controller
         ]]);
     }
 
-    /**
-     * LES CONSOMMABLES DISPONIBLES POUR CETTE MISSION (F7).
-     *
-     * Ceux de la société qui exécute, pas ceux de la plateforme : un prestataire indépendant n'a
-     * pas de magasin, et lui proposer une liste vide vaut mieux que de lui montrer le stock d'une
-     * société à laquelle il n'appartient pas.
-     */
+    /** LES CONSOMMABLES DISPONIBLES POUR CETTE MISSION (F7). */
     public function consumables(Request $request, Mission $mission): JsonResponse
     {
         try {
@@ -458,14 +383,7 @@ class MissionOnSiteController extends Controller
         ])->values()]);
     }
 
-    /**
-     * DÉCLARER CE QU'ON A CONSOMMÉ SUR PLACE (F7).
-     *
-     * La saisie se fait ICI, pendant qu'on range son matériel — pas le soir sur un tableur, quand
-     * plus personne ne se souvient de ce qui est parti où. Le mouvement porte la mission : c'est ce
-     * lien qui permet ensuite d'en calculer le coût réel (E22), et de facturer les consommables qui
-     * le sont.
-     */
+    /** DÉCLARER CE QU'ON A CONSOMMÉ SUR PLACE (F7). */
     public function storeConsumable(Request $request, Mission $mission): JsonResponse
     {
         try {

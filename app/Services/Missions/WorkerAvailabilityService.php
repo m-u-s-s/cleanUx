@@ -8,28 +8,7 @@ use App\Models\OrganizationMember;
 use App\Models\Shift;
 use Illuminate\Support\Carbon;
 
-/**
- * QUI EST DÉJÀ PRIS SUR CE CRÉNEAU — la disponibilité d'un SALARIÉ.
- *
- * POURQUOI PAS `AvailabilityService::isAvailable()`. Mesuré : il rend `false` pour un employé sans
- * créneaux déclarés, et coûte ~200 ms par personne. Les créneaux sont un concept de prestataire
- * INDÉPENDANT — celui qui publie ses disponibilités sur la place de marché. Un salarié de société ne
- * s'en déclare aucun : c'est son employeur qui le planifie. L'employer ici afficherait
- * « indisponible » sur toute l'équipe, en permanence, et ferait attendre l'écran plusieurs secondes
- * pour cela.
- *
- * La question qu'un répartiteur pose réellement est « cette personne est-elle déjà prise à cette
- * heure-là », et la réponse vit dans SES PROPRES missions. UNE SEULE REQUÊTE pour toute l'équipe,
- * jamais une par personne.
- *
- * INDICATIF POUR UN HUMAIN, ÉLIMINATOIRE POUR LA MACHINE. Un répartiteur qui connaît son équipe
- * passe outre pour de bonnes raisons — un échange entre collègues, une heure supplémentaire
- * consentie. Le moteur d'auto-assignation, lui, n'a pas ce discernement : il élimine, sinon il
- * enverrait quelqu'un à deux endroits en même temps sans que personne ne s'en aperçoive.
- *
- * Cette logique vivait dans `DispatchCenter::getDisponibilitesProperty()`, l'écran web. Le moteur et
- * l'API en ont besoin à leur tour ; la recopier aurait produit deux définitions de « libre ».
- */
+/** QUI EST DÉJÀ PRIS SUR CE CRÉNEAU — la disponibilité d'un SALARIÉ. */
 class WorkerAvailabilityService
 {
     /**
@@ -39,6 +18,7 @@ class WorkerAvailabilityService
      * @param  ?int  $exclureMissionId  la mission qu'on s'apprête à confier — se réassigner à
      *                                  soi-même n'est pas un conflit
      * @return array<int, bool> user_id => libre
+     *                          /
      */
     public function libresPour(
         int $organisationId,
@@ -59,31 +39,10 @@ class WorkerAvailabilityService
 
         $occupes = $this->occupesSur($identifiants, $debut, $fin, $exclureMissionId);
 
-        /*
-         * DISPONIBLE = EN SHIFT **ET** SANS CHEVAUCHEMENT (E19).
-         *
-         * Cette méthode ne savait répondre qu'à la seconde moitié de la question : « cette personne
-         * est-elle déjà prise ». Faute de planning, quelqu'un qui ne travaille pas ce jour-là
-         * passait pour disponible — et l'auto-assignation lui envoyait une course à vingt-trois
-         * heures un dimanche.
-         *
-         * LE PLANNING NE S'IMPOSE QUE S'IL EXISTE. Une société qui n'a pas encore saisi ses shifts
-         * verrait sinon toute son équipe devenir indisponible du jour au lendemain : la migration
-         * créerait la panne qu'elle devait éviter. Tant qu'aucun shift n'est publié pour la journée
-         * concernée, on s'en tient au comportement d'avant.
-         */
+        // DISPONIBLE = EN SHIFT **ET** SANS CHEVAUCHEMENT (E19).
         $planifies = $this->planifiesSur($organisationId, $identifiants, $debut, $fin);
 
-        /*
-         * UN CONGÉ APPROUVÉ BLOQUE (E21), et c'est tout l'intérêt de la fonctionnalité.
-         *
-         * Une demande approuvée qui n'empêche pas l'assignation ne sert qu'à faire un tableau : le
-         * prestataire reçoit sa course le premier jour de ses vacances, refuse, et le moteur cherche
-         * quelqu'un d'autre — après avoir perdu vingt secondes et une occasion.
-         *
-         * Contrairement au planning, l'absence de congé ne signifie rien d'ambigu : personne n'est
-         * en congé, donc personne n'est bloqué. Pas de `null` à interpréter ici.
-         */
+        // UN CONGÉ APPROUVÉ BLOQUE (E21), et c'est tout l'intérêt de la fonctionnalité.
         $enConge = $this->enCongeLe($organisationId, $identifiants, $debut);
 
         $verdicts = [];
@@ -104,29 +63,12 @@ class WorkerAvailabilityService
     /**
      * Qui est PLANIFIÉ sur ce créneau, ou `null` si cette société n'a pas de planning ce jour-là.
      *
-     * Le `null` est significatif et se distingue du tableau vide : « aucun planning saisi » n'est pas
-     * « personne ne travaille ». Confondre les deux rendrait toute une équipe indisponible le jour
-     * où l'on branche cette table.
-     *
-     * Un shift `planned` ne compte pas : un planning en préparation ne doit pas rendre quelqu'un
-     * assignable avant qu'il soit arrêté et communiqué.
-     *
      * @param  list<int>  $userIds
      * @return list<int>|null
      */
     protected function planifiesSur(int $organisationId, array $userIds, Carbon $debut, Carbon $fin): ?array
     {
-        /*
-         * LA QUESTION SE POSE À L'ÉCHELLE DE LA JOURNÉE, PAS DU CRÉNEAU.
-         *
-         * Première version de ce garde : on cherchait les shifts chevauchant la fenêtre demandée, et
-         * l'absence de résultat valait « pas de planning ». À vingt-trois heures, aucun shift ne
-         * chevauche — et le garde concluait donc qu'il n'y avait pas de planning, rendant l'équipe
-         * disponible en pleine nuit. Exactement le défaut qu'E19 devait corriger.
-         *
-         * Ce qui distingue les deux cas, c'est l'existence d'un planning POUR CE JOUR-LÀ : s'il y en
-         * a un, il fait autorité, y compris pour dire que personne ne travaille à cette heure.
-         */
+        // LA QUESTION SE POSE À L'ÉCHELLE DE LA JOURNÉE, PAS DU CRÉNEAU.
         $journeeDebut = $debut->copy()->startOfDay();
         $journeeFin = $debut->copy()->endOfDay();
 
@@ -158,10 +100,6 @@ class WorkerAvailabilityService
     /**
      * Qui est en congé APPROUVÉ ce jour-là.
      *
-     * Une demande en attente ne bloque pas : tant que personne n'a tranché, le salarié est censé
-     * travailler — et bloquer sur une demande non traitée ferait perdre des créneaux qu'un refus
-     * aurait rendus.
-     *
      * @param  list<int>  $userIds
      * @return list<int>
      */
@@ -186,12 +124,9 @@ class WorkerAvailabilityService
     /**
      * Combien de missions cette personne a déjà ce jour-là.
      *
-     * Sert au score de CHARGE du moteur : à disponibilité égale, on préfère celui qui a le moins
-     * couru. Compté sur les assignments actifs, tous rôles confondus — un renfort travaille autant
-     * qu'un responsable.
-     *
      * @param  list<int>  $userIds
      * @return array<int, int> user_id => nombre
+     *                         /
      */
     public function chargeDuJour(array $userIds, Carbon $jour): array
     {
@@ -204,13 +139,7 @@ class WorkerAvailabilityService
             ->where('mission_assignments.assignment_status', 'assigned')
             ->join('missions', 'missions.id', '=', 'mission_assignments.mission_id')
             ->whereNotNull('missions.planned_start_at')
-            /*
-             * Comparaison sur les BORNES DE LA JOURNÉE, pas `whereDate()`.
-             *
-             * `whereDate` sur une colonne datetime empêche l'usage de l'index et se comporte
-             * différemment selon le moteur — un piège déjà payé dans ce dépôt sur les créneaux de
-             * disponibilité en SQLite.
-             */
+            // Comparaison sur les BORNES DE LA JOURNÉE, pas `whereDate()`.
             ->whereBetween('missions.planned_start_at', [$jour->copy()->startOfDay(), $jour->copy()->endOfDay()])
             ->selectRaw('mission_assignments.user_id as uid, count(*) as total')
             ->groupBy('mission_assignments.user_id')
@@ -228,12 +157,9 @@ class WorkerAvailabilityService
     /**
      * Quand chacun a travaillé pour la dernière fois, avant ce moment.
      *
-     * Sert au score de ROTATION : celui qu'on n'a pas fait tourner depuis longtemps passe devant, à
-     * égalité par ailleurs. Sans cela, le moteur choisirait toujours le même — le mieux placé le
-     * reste, et l'équité disparaîtrait derrière un score stable.
-     *
      * @param  list<int>  $userIds
      * @return array<int, ?Carbon> user_id => date, ou `null` si jamais assigné
+     *                             /
      */
     public function dernieresMissions(array $userIds, Carbon $avant): array
     {
@@ -274,9 +200,6 @@ class WorkerAvailabilityService
 
     /**
      * Chevauchement classique : (début_autre < fin_demandée) ET (fin_autre > début_demandée).
-     *
-     * `orWhereNull(planned_end_at)` n'est pas de la prudence : une mission sans fin déclarée occupe
-     * la même fenêtre par défaut, et l'omettre rendrait libre quelqu'un qui ne l'est pas.
      *
      * @param  list<int>  $identifiants
      * @return list<int>

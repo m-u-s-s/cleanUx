@@ -10,14 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Le premier niveau de la descente : les pays.
- *
- * CE QUE CES TESTS PROTÈGENT SURTOUT, c'est la règle « supprimer n'est pas désactiver ». Une
- * cascade sur un pays emporterait ses zones, et avec elles l'historique de facturation qui s'y
- * rattache — un dégât qu'aucun écran ne rend visible avant qu'il soit fait, et qu'aucune
- * sauvegarde ne répare proprement puisque les identifiants auraient changé.
- */
+/** Le premier niveau de la descente : les pays. */
 class CountryCenterTest extends TestCase
 {
     use RefreshDatabase;

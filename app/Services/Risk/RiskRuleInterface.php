@@ -4,9 +4,7 @@ namespace App\Services\Risk;
 
 interface RiskRuleInterface
 {
-    /**
-     * Identifiant stable de la règle (matche RiskRule::code).
-     */
+    /** Identifiant stable de la règle (matche RiskRule::code). */
     public function code(): string;
 
     /**

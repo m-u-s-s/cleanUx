@@ -7,30 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-/**
- * SUPPRIMER UNE COLONNE NE SUFFIT PAS — IL FAUT AUSSI CESSER DE LA NOMMER.
- *
- * CE QUI S'EST PASSÉ, ET QUI JUSTIFIE CE FICHIER. Les colonnes dormantes `role` et `status` de
- * `mission_assignments` ont été retirées le 2026-09-01. La vérification préalable a couvert `app/`,
- * les vues, les fabriques et les semeurs — et PAS `tests/`. Cent seize tests sont tombés d'un coup,
- * tous sur le même `MassAssignmentException`, et le rouge n'est apparu qu'à la suite complète,
- * plusieurs poussées plus tard.
- *
- * PIRE QUE LES TESTS : `OfferStatsService` sélectionnait encore `status` dans une liste de colonnes
- * EXPLICITE. Cela ne casse aucun test tant qu'aucun test n'atteint la requête — et aucun ne
- * l'atteignait, l'exception de masse survenant à la création. En production, MySQL aurait refusé la
- * requête : l'écran des statistiques d'offres du prestataire répondait 500.
- *
- * ── POURQUOI UN TEST PLUTÔT QU'UNE RELECTURE ────────────────────────────────────────────────
- *
- * Parce que la relecture a déjà échoué, et pour une raison structurelle : une colonne retirée ne
- * laisse aucune trace là où on la cherche. `grep` sur `'status'` rend des centaines de résultats
- * dont l'immense majorité concerne d'autres tables — l'œil s'y noie, et c'est exactement ce qui
- * est arrivé. Ce test ne regarde que `mission_assignments`, et il ne se fatigue pas.
- *
- * Ce fichier ne défend PAS le fait que ces colonnes soient supprimées : c'est le rôle de la
- * migration. Il défend le fait que plus personne ne les nomme.
- */
+/** SUPPRIMER UNE COLONNE NE SUFFIT PAS — IL FAUT AUSSI CESSER DE LA NOMMER. */
 class UneColonneSupprimeeNestPlusNommeeTest extends TestCase
 {
     use RefreshDatabase;
@@ -53,13 +30,7 @@ class UneColonneSupprimeeNestPlusNommeeTest extends TestCase
         }
     }
 
-    /**
-     * TÉMOIN — les colonnes VIVANTES, elles, sont bien là.
-     *
-     * Sans lui, le test précédent passerait au vert sur une table absente, mal nommée, ou sur un
-     * `Schema::hasColumn` qui rendrait `false` pour une raison étrangère au sujet. C'est le
-     * contrôle positif qu'exige tout test d'absence : prouver que la mesure sait dire « présent ».
-     */
+    /** TÉMOIN — les colonnes VIVANTES, elles, sont bien là. */
     public function test_temoin_les_colonnes_vivantes_repondent_presentes(): void
     {
         $absentes = array_values(array_filter(
@@ -70,13 +41,7 @@ class UneColonneSupprimeeNestPlusNommeeTest extends TestCase
         $this->assertSame([], $absentes, 'Ces colonnes manquent : la mesure ne prouverait plus rien.');
     }
 
-    /**
-     * AUCUN FICHIER NE DOIT PLUS ÉCRIRE NI SÉLECTIONNER CES COLONNES.
-     *
-     * On cherche les deux formes qui ont réellement mordu : l'affectation en masse
-     * (`'status' => …`) et la liste de colonnes explicite (`'status',` dans un `get([...])`), à
-     * l'intérieur d'un bloc qui parle de `mission_assignments`.
-     */
+    /** AUCUN FICHIER NE DOIT PLUS ÉCRIRE NI SÉLECTIONNER CES COLONNES. */
     public function test_aucune_source_ne_nomme_plus_les_colonnes_retirees(): void
     {
         $coupables = [];
@@ -97,23 +62,14 @@ class UneColonneSupprimeeNestPlusNommeeTest extends TestCase
         $this->assertSame([], array_values(array_unique($coupables)), implode("\n", array_unique($coupables)));
     }
 
-    /**
-     * TÉMOIN DE PORTÉE — la recherche voit bien des fichiers.
-     *
-     * Sans lui, le test précédent serait vert sur un chemin de base faux, un glob qui ne rend rien,
-     * ou une extension mal filtrée : il compterait zéro coupable parmi zéro fichier lu.
-     */
+    /** TÉMOIN DE PORTÉE — la recherche voit bien des fichiers. */
     public function test_temoin_la_recherche_lit_bien_des_fichiers(): void
     {
         $fichiers = $this->fichiersQuiParlentDAffectations();
 
         $this->assertGreaterThan(20, count($fichiers));
 
-        /*
-         * ET LA DÉTECTION MORD QUAND ELLE DOIT — éprouvée sur deux sources fabriquées, une
-         * fautive et une innocente. C'est le vrai contrôle positif de ce fichier : sans lui, un
-         * découpage de blocs qui ne rendrait jamais rien laisserait tout passer en silence.
-         */
+        // ET LA DÉTECTION MORD QUAND ELLE DOIT — éprouvée sur deux sources fabriquées, une fautive et une innocente.
         $fautive = <<<'PHP'
             MissionAssignment::query()->create(['assignment_status' => 'accepted', 'status' => 'accepted']);
             PHP;
@@ -141,16 +97,6 @@ class UneColonneSupprimeeNestPlusNommeeTest extends TestCase
 
     /**
      * LES BLOCS QUI PORTENT VRAIMENT SUR UNE AFFECTATION, et rien d'autre.
-     *
-     * Chercher `'status'` dans un fichier entier ne vaut rien : la première version de ce test
-     * accusait douze fichiers innocents, qui parlaient du statut d'une MISSION ou d'une
-     * RÉSERVATION et mentionnaient `assignment_status` ailleurs. Un garde-fou qui crie au loup
-     * finit désactivé, ce qui est pire que pas de garde-fou du tout.
-     *
-     * On isole donc l'appel : depuis `MissionAssignment::…(` ou `assignments()->…(`, on avance
-     * jusqu'à la parenthèse fermante correspondante, et on ne lit que l'intérieur. C'est
-     * exactement le périmètre où les deux formes fautives se sont trouvées — l'affectation en
-     * masse et la liste de colonnes explicite.
      *
      * @return list<string>
      */
@@ -219,12 +165,7 @@ class UneColonneSupprimeeNestPlusNommeeTest extends TestCase
         return $trouves;
     }
 
-    /**
-     * ET LA TABLE FONCTIONNE ENCORE — une affectation se crée et se relit.
-     *
-     * Le témoin le plus large du fichier : si le retrait des colonnes avait cassé l'écriture, tout
-     * ce qui précède resterait vert en mesurant une table devenue inutilisable.
-     */
+    /** ET LA TABLE FONCTIONNE ENCORE — une affectation se crée et se relit. */
     public function test_temoin_une_affectation_se_cree_toujours(): void
     {
         $affectation = MissionAssignment::factory()->create();

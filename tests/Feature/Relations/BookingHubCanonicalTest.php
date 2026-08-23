@@ -16,24 +16,14 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * SP2 Task 8 — le portail société cliente (BookingHub) doit router via
- * CreateBookingAction (action canonique) au lieu d'un Booking::create() ad-hoc.
- *
- * Bug central corrigé : l'ancien chemin PERDAIT le service_catalog_id (jamais
- * posé) et ne générait ni zone_snapshot ni pricing_snapshot. Ces tests prouvent
- * que la réservation passe désormais par l'action canonique.
- */
+/** SP2 Task 8 — le portail société cliente (BookingHub) doit router via CreateBookingAction (action canonique) au lieu d'un Booking::create() ad-hoc. */
 class BookingHubCanonicalTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
     use RefreshDatabase;
 
     /**
-     * Monte un contexte société complet : org account + membre owner (permissions),
-     * site rattaché à la zone/code postal couverts, métier (Trade) lié au
-     * service_catalog, et un employé éligible (provider profile vérifié +
-     * affectation zone + disponibilité) pour le créneau visé.
+     * Monte un contexte société complet : org account + membre owner (permissions), site rattaché à la zone/code postal couverts, métier (Trade) lié au service_catalog, et un employé éligible (provider profile vérifié + affectation zone + disponibilité) pour le créneau visé.
      *
      * @return array{user: User, org: OrganizationAccount, site: OrganizationSite, trade: Trade, employee: User, context: array<string, mixed>, date: string, time: string}
      */
@@ -136,9 +126,7 @@ class BookingHubCanonicalTest extends TestCase
     }
 
     /**
-     * Variante du contexte société : l'organisation REQUIERT une approbation interne
-     * et le soumetteur est un REQUESTER (peut `bookings.create` mais PAS
-     * `bookings.approve`). Un OWNER approbateur est aussi rattaché à l'org.
+     * Variante du contexte société : l'organisation REQUIERT une approbation interne et le soumetteur est un REQUESTER (peut `bookings.create` mais PAS `bookings.approve`).
      *
      * @return array{requester: User, approver: User, org: OrganizationAccount, site: OrganizationSite, trade: Trade, employee: User, context: array<string, mixed>, date: string, time: string}
      */

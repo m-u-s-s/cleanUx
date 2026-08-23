@@ -19,20 +19,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
-/**
- * L'ANNUAIRE DES CANDIDATS — les filtres qu'on ne peut pas franchir (consignes 1, 2, 5).
- *
- * Chaque test ci-dessous couvre une façon dont le dispatch pouvait se tromper de personne, et
- * chacune de ces façons a réellement existé dans ce dépôt :
- *
- *  - le filtre métier avait un REPLI qui rendait la liste NON filtrée quand elle se vidait ;
- *  - « en ligne » se lisait sur `provider_profiles.is_online`, un drapeau qu'on pose et qui reste
- *    vrai quand l'application est morte depuis vingt minutes ;
- *  - rien n'empêchait d'envoyer une deuxième offre à quelqu'un qui en avait déjà une à l'écran.
- *
- * Les tests portent sur le SQL rendu, pas sur une intention : c'est la requête elle-même qui doit
- * refuser, pas un `if` qu'on peut contourner par un autre appelant.
- */
+/** L'ANNUAIRE DES CANDIDATS — les filtres qu'on ne peut pas franchir (consignes 1, 2, 5). */
 class CandidateFinderTest extends TestCase
 {
     use OuvreLeCatalogue;

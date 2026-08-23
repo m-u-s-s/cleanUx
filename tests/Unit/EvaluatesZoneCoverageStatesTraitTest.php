@@ -11,11 +11,7 @@ use App\Models\ZoneServiceRule;
 use App\Services\Booking\Concerns\EvaluatesZoneCoverageStates;
 use Tests\TestCase;
 
-/**
- * In-file host that uses the trait under test and exposes deterministic
- * stubs for the four collaborator methods the trait depends on, so that
- * every branch of resolveCoverage() can be driven without touching the DB.
- */
+/** In-file host that uses the trait under test and exposes deterministic stubs for the four collaborator methods the trait depends on, so that every branch of resolveCoverage() can be driven without touching the DB. */
 class CoverageStateEvaluatorHost
 {
     use EvaluatesZoneCoverageStates;

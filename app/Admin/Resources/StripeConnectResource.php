@@ -9,10 +9,6 @@ use App\Models\ProviderProfile;
 /**
  * L’état des comptes Stripe Connect des prestataires.
  *
- * LECTURE SEULE : l’état d’un compte Connect appartient à Stripe. L’écrire ici ferait diverger
- * notre base de la vérité, et un prestataire marqué « prêt » chez nous mais pas chez Stripe ne
- * serait jamais payé — sans que rien ne l’explique.
- *
  * @extends EloquentResource<ProviderProfile>
  */
 class StripeConnectResource extends EloquentResource

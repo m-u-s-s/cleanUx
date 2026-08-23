@@ -12,20 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * Verrouille le contrat PLAT de GET /api/provider/missions/{id} et /active.
- *
- * Miroir de ProviderAssignmentInboxContractTest : l'inbox avait été aplatie pour coller au type
- * TS mobile, mais la DESTINATION de la carte (l'écran de détail) était restée imbriquée
- * ({ booking: {...}, client: {...} }) alors que le type Mission de mobile/provider est plat.
- * Résultat : titre vide, « undefined, undefined » en adresse, et TrackingScreen incapable de
- * calculer distance, ETA et géofence d'arrivée faute de latitude/longitude.
- *
- * Le second défaut couvert ici : l'eager load portait sur une relation qui choisissait sa clé À
- * L'EXÉCUTION, depuis un attribut de l'instance. Le chargement anticipé de Laravel résout la
- * relation sur une instance vierge, où l'attribut est vide : il retombait donc toujours du même
- * côté. Les deux colonnes sont depuis fusionnées en une seule, et le choix a disparu avec elles.
- */
+/** Verrouille le contrat PLAT de GET /api/provider/missions/{id} et /active. */
 class ProviderMissionDetailContractTest extends TestCase
 {
     use RefreshDatabase;
@@ -61,12 +48,7 @@ class ProviderMissionDetailContractTest extends TestCase
         $this->assertArrayNotHasKey('client', $payload);
     }
 
-    /**
-     * Les chemins de création écrivaient chacun une colonne différente vers `bookings.id`, et le
-     * détail n'en résolvait qu'une : les missions nées de l'autre s'ouvraient sur des tirets. Les
-     * deux colonnes n'en font plus qu'une, mais le contrat reste vérifié ici — une mission
-     * synchronisée depuis une réservation doit se lire comme n'importe quelle autre.
-     */
+    /** Les chemins de création écrivaient chacun une colonne différente vers `bookings.id`, et le détail n'en résolvait qu'une : les missions nées de l'autre s'ouvraient sur des tirets. */
     public function test_show_resolves_bookings_created_via_the_legacy_rendez_vous_path(): void
     {
         $provider = $this->makeProvider();
@@ -83,10 +65,7 @@ class ProviderMissionDetailContractTest extends TestCase
             ->assertJsonPath('data.city', 'Bruxelles');
     }
 
-    /**
-     * TrackingScreen sort tôt sur `if (!mission?.latitude || !mission?.longitude) return;` :
-     * sans ces deux clés, ni distance, ni ETA, ni géofence d'arrivée à 150 m.
-     */
+    /** TrackingScreen sort tôt sur `if (!mission?.latitude || !mission?.longitude) return;` : sans ces deux clés, ni distance, ni ETA, ni géofence d'arrivée à 150 m. */
     public function test_show_exposes_the_destination_coordinates_the_tracking_screen_needs(): void
     {
         $provider = $this->makeProvider();
@@ -137,10 +116,7 @@ class ProviderMissionDetailContractTest extends TestCase
         $this->assertNull($payload['longitude']);
     }
 
-    /**
-     * Les écrans affichent brut « {scheduled_date} à {scheduled_time} » : un Carbon non formaté
-     * y sortirait en ISO-8601 complet ("2026-06-15T00:00:00.000000Z").
-     */
+    /** Les écrans affichent brut « {scheduled_date} à {scheduled_time} » : un Carbon non formaté y sortirait en ISO-8601 complet ("2026-06-15T00:00:00.000000Z"). */
     public function test_show_normalises_the_schedule_to_a_date_and_a_time(): void
     {
         $provider = $this->makeProvider();

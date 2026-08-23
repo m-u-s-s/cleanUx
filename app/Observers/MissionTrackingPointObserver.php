@@ -6,19 +6,7 @@ use App\Events\Dispatch\MissionEtaUpdated;
 use App\Models\MissionTrackingPoint;
 use App\Services\Eta\EtaService;
 
-/**
- * Phase 13 — Observer sur MissionTrackingPoint.
- *
- * À chaque nouveau point GPS reçu, recalcule l'ETA pour la mission et
- * broadcast le résultat sur le channel privé de la mission.
- *
- * Throttle implicite : si 2 points arrivent à <60s d'intervalle, le cache du
- * service evite l'appel Google. Mais l'event est quand même broadcasté pour
- * rafraîchir la position côté client.
- *
- * Bind dans AppServiceProvider::boot() :
- *   MissionTrackingPoint::observe(MissionTrackingPointObserver::class);
- */
+/** Phase 13 — Observer sur MissionTrackingPoint. */
 class MissionTrackingPointObserver
 {
     public function __construct(

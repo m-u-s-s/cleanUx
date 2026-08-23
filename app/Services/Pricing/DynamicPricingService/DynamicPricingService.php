@@ -6,16 +6,9 @@ use App\Models\ServiceZone;
 use App\Services\Pricing\SurgePricingEngine;
 
 /**
+ * Conservé pour la compatibilité avec le code legacy (booking, devis, estimations) qui injecte encore cette classe.
+ *
  * @deprecated depuis Phase 14 — utiliser directement App\Services\Pricing\SurgePricingEngine.
- *
- * Conservé pour la compatibilité avec le code legacy (booking, devis,
- * estimations) qui injecte encore cette classe. Délègue désormais au
- * SurgePricingEngine et n'exécute la logique historique 4-règles que si
- * SurgePricingEngine n'est pas résolvable (cas défensif).
- *
- * NB : la méthode `boot()` qui était présente ici était du code mort
- * (cette classe n'a jamais été un ServiceProvider). Elle a été retirée :
- * la délégation se fait maintenant en interne dans `calculate()`.
  */
 class DynamicPricingService
 {
@@ -41,10 +34,7 @@ class DynamicPricingService
         return $this->legacyCalculate($basePrice, $context);
     }
 
-    /**
-     * Logique historique pré-Phase 14 (4 règles fixes). Ne plus appeler
-     * directement ; conservée pour le fallback uniquement.
-     */
+    /** Logique historique pré-Phase 14 (4 règles fixes). */
     protected function legacyCalculate(float $basePrice, array $context): float
     {
         $multiplier = 1;

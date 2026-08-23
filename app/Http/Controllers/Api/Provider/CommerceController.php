@@ -21,22 +21,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * L'API NATIVE DES DEVIS (E24), DU RECRUTEMENT (E25), DU SCORE QUALITÉ (E26) ET DE LA FLOTTE (E27).
- *
- * POURQUOI CES QUATRE-LÀ SUR UN TÉLÉPHONE. Un devis se chiffre CHEZ LE CLIENT, pendant la visite —
- * c'est le seul moment où l'on voit la surface, l'état, les accès. Le noter pour le saisir en
- * rentrant, c'est perdre la moitié des détails et deux jours de délai de réponse. Le tri des
- * candidatures et la vérification d'une échéance de permis se font entre deux chantiers. Le score
- * qualité se consulte avant une conversation, pas après.
- *
- * DEUX RÈGLES, COMME PARTOUT DANS L'ESPACE SOCIÉTÉ : chaque requête est limitée à l'organisation
- * ACTIVE de l'appelant, et chaque écriture exige une permission. Le scoping fait partie de la
- * REQUÊTE : une ressource d'une autre société n'est jamais chargée.
- *
- * ET LES REFUS DU DOMAINE SORTENT EN 422. « Un devis envoyé ne se modifie plus » est une règle qu'il
- * faut LIRE : la remplacer par « une erreur est survenue » fait recommencer la saisie.
- */
+/** L'API NATIVE DES DEVIS (E24), DU RECRUTEMENT (E25), DU SCORE QUALITÉ (E26) ET DE LA FLOTTE (E27). */
 class CommerceController extends Controller
 {
     use ResolvesActiveOrganization;
@@ -235,11 +220,7 @@ class CommerceController extends Controller
             'note' => ['nullable', 'string', 'max:500'],
         ]);
 
-        /*
-         * Le scoping passe par l'OFFRE : une candidature ne porte pas d'organisation, et charger
-         * par son seul identifiant exposerait celles d'une autre société — c'est-à-dire des données
-         * personnelles de gens qui n'ont postulé nulle part ici.
-         */
+        // Le scoping passe par l'OFFRE : une candidature ne porte pas d'organisation, et charger par son seul identifiant exposerait celles d'une autre société — c'est-à-dire des données personnelles de gens qui n'ont postulé nulle part ici.
         $candidature = JobApplication::query()
             ->whereHas('posting', fn ($q) => $q->where('organization_account_id', $org->id))
             ->findOrFail($applicationId);
@@ -272,10 +253,7 @@ class CommerceController extends Controller
     public function qualityScores(): JsonResponse
     {
         $org = $this->organisationActive();
-        /*
-         * CE SCORE NE SORT PAS DE LA SOCIÉTÉ, et `missions.quality` est la clé qui le dit : il sert
-         * à repérer qui a besoin d'aide, pas à classer publiquement.
-         */
+        // CE SCORE NE SORT PAS DE LA SOCIÉTÉ, et `missions.quality` est la clé qui le dit : il sert à repérer qui a besoin d'aide, pas à classer publiquement.
         $this->exiger('missions.quality');
 
         return response()->json([
@@ -317,10 +295,7 @@ class CommerceController extends Controller
                     'equipment_type' => $equipement->equipment_type,
                     'status' => $equipement->status,
                 ])->values()->all(),
-            /*
-             * LA SEULE LECTURE QUI CHANGE QUELQUE CHOSE. Le reste est un inventaire ; celle-ci évite
-             * qu'une assignation soit refusée un matin sans que personne ne sache pourquoi.
-             */
+            // LA SEULE LECTURE QUI CHANGE QUELQUE CHOSE.
             'expiring' => $service->echeances((int) $org->id)
                 ->map(fn (FleetCertification $certification) => [
                     'id' => $certification->id,

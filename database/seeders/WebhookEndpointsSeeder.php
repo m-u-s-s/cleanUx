@@ -8,11 +8,7 @@ use Illuminate\Database\Seeder;
 
 class WebhookEndpointsSeeder extends Seeder
 {
-    /**
-     * Pas d'endpoint live par défaut — c'est un module B2B custom configuré par admin.
-     * Cette seeder crée un endpoint "demo" (suspended par défaut) pour donner un exemple
-     * d'intégration aux admins, sans risque d'envoyer du trafic en prod.
-     */
+    /** Pas d'endpoint live par défaut — c'est un module B2B custom configuré par admin. */
     public function run(): void
     {
         if (WebhookEndpoint::query()->exists()) {

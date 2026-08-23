@@ -12,11 +12,7 @@ class WorkOrderContractService
 {
     public function __construct(private ContractPricingResolver $pricing) {}
 
-    /**
-     * Applique le tarif contrat aux lignes d'une WO : agreed_unit_price (grille →
-     * sinon remise sur unit_price) + recalcul line_total. No-op sans contrat.
-     * Idempotent : REMPLACE agreed_unit_price / line_total (n'incrémente pas).
-     */
+    /** Applique le tarif contrat aux lignes d'une WO : agreed_unit_price (grille → sinon remise sur unit_price) + recalcul line_total. */
     public function priceLines(EnterpriseWorkOrder $workOrder): void
     {
         /** @var OrganizationContract|null $contract */
@@ -43,11 +39,7 @@ class WorkOrderContractService
         }
     }
 
-    /**
-     * Gate d'approbation contractuel : lève ContractPolicyException si le contrat
-     * exige un bon de commande (requires_purchase_order) et que la WO n'en porte
-     * pas. No-op sans contrat ou si le PO n'est pas requis.
-     */
+    /** Gate d'approbation contractuel : lève ContractPolicyException si le contrat exige un bon de commande (requires_purchase_order) et que la WO n'en porte pas. */
     public function assertApprovable(EnterpriseWorkOrder $workOrder): void
     {
         /** @var OrganizationContract|null $contract */

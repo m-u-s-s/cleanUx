@@ -12,23 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-/**
- * Le moteur de console : un contrôleur, tous les domaines.
- *
- * Il ne sait rien d'aucun métier. Il lit un descripteur, applique ce que le descripteur a
- * DÉCLARÉ, et lui délègue tout le reste. Trois refus tiennent cette frontière :
- *
- * 1. **Un tri non déclaré est refusé**, jamais transmis. La clé de tri arrive du client : la
- *    passer telle quelle à `orderBy` laisserait trier sur une colonne non exposée, et ouvrirait
- *    une injection selon le pilote.
- * 2. **Un filtre inconnu est ignoré**, jamais deviné. Deviner une colonne depuis la clé reçue
- *    reviendrait à exposer tout le schéma au filtrage.
- * 3. **Un champ non déclaré au formulaire n'est jamais écrit.** Sans cela, une création pourrait
- *    poser `platform_role` et se promouvoir.
- *
- * LA PAGINATION EST PAR CURSEUR. Une console d'administration lit des tables qui bougent pendant
- * qu'on les feuillette (bookings, audit) ; un offset y saute ou répète des lignes sans rien dire.
- */
+/** Le moteur de console : un contrôleur, tous les domaines. Il ne sait rien d'aucun métier. */
 class ResourceController extends Controller
 {
     /** Au-delà, une page cesse d'être une page. */
@@ -41,11 +25,6 @@ class ResourceController extends Controller
     /**
      * Un refus, sous les DEUX conventions de la plateforme.
      *
-     * Le serveur écrit historiquement `error` (voir `EnforceTokenScope`), mais l'intercepteur du
-     * client mobile lit `error_code` — il retombe sur `'unknown_error'` sinon. Les deux
-     * conventions coexistent ; ne servir que l'une rendait chaque refus opaque à l'application,
-     * qui affichait « une erreur est survenue » là où le serveur avait dit précisément quoi.
-     *
      * @param  array<string, mixed>  $extra
      */
     private function refus(string $code, int $status, array $extra = []): JsonResponse
@@ -57,17 +36,7 @@ class ResourceController extends Controller
         ] + $extra, $status);
     }
 
-    /**
-     * Un compte en LECTURE SEULE n'écrit rien, par aucune des quatre portes.
-     *
-     * `api_admin` s'arrête à « est-ce un administrateur », et le scope du jeton dit ce que le jeton
-     * a le droit de demander — ni l'un ni l'autre ne regarde si le COMPTE est en lecture seule. Un
-     * administrateur destiné à consulter pouvait donc créer, modifier et supprimer par l'API ce que
-     * l'écran web lui refusait : la règle dépendait de la porte empruntée.
-     *
-     * Le trou existait depuis toujours sans être atteignable, aucun descripteur ne déclarant de
-     * formulaire. Les rendre éditables le rendait exploitable.
-     */
+    /** Un compte en LECTURE SEULE n'écrit rien, par aucune des quatre portes. */
     private function refuseLecteurSeul(): ?JsonResponse
     {
         $user = request()->user();
@@ -118,15 +87,7 @@ class ResourceController extends Controller
             self::MAX_PER_PAGE,
         );
 
-        /*
-         * `orderBy` explicite puis `cursorPaginate` : le curseur se construit sur la colonne de
-         * tri, donc un tri instable produirait des pages qui se chevauchent.
-         *
-         * D'où le DÉPARTAGE par identifiant dès qu'on trie sur autre chose. Deux zones nommées
-         * « Centre » dans deux pays, deux clients homonymes : sans lui, la pagination répéterait
-         * une ligne et en sauterait une autre — un défaut qui ne se voit qu'à partir de la
-         * deuxième page, donc jamais pendant un test à la main.
-         */
+        // `orderBy` explicite puis `cursorPaginate` : le curseur se construit sur la colonne de tri, donc un tri instable produirait des pages qui se chevauchent.
         $query = $query->orderBy($sort, $direction);
 
         if ($sort !== 'id') {
@@ -247,13 +208,7 @@ class ResourceController extends Controller
             return $this->refus('not_found', 404);
         }
 
-        /*
-         * On DEMANDE au descripteur avant de détruire.
-         *
-         * Le moteur supprimait sans rien consulter : un pays effacé aurait emporté ses zones, et
-         * avec elles l'historique de facturation. 409 plutôt que 403 : ce n'est pas une question
-         * de droit mais d'état — la même requête réussira quand ce qui bloque aura disparu.
-         */
+        // On DEMANDE au descripteur avant de détruire.
         $raisons = $descripteur->reasonsToRefuseDelete($model);
 
         if ($raisons !== []) {
@@ -270,14 +225,7 @@ class ResourceController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    /**
-     * Une action qui ne porte sur aucune ligne.
-     *
-     * Le handler reçoit les valeurs saisies, jamais un modèle : c'est ce qui distingue « clôturer
-     * le mois » de « valider cette inspection ». Le reste — refus du lecteur seul, validation des
-     * champs déclarés — est identique, et le rester est ce qui garantit qu'on ne découvrira pas un
-     * jour que l'une des deux portes valide moins que l'autre.
-     */
+    /** Une action qui ne porte sur aucune ligne. */
     public function globalAction(Request $request, string $resource, string $action): JsonResponse
     {
         if ($refus = $this->refuseLecteurSeul()) {
@@ -357,12 +305,7 @@ class ResourceController extends Controller
             return $this->refus('not_found', 404);
         }
 
-        /*
-         * Les valeurs exigées par l'action sont validées ICI, avec ses propres règles.
-         *
-         * Une action qui déclare un motif obligatoire et l'accepte vide n'aurait déclaré qu'une
-         * intention : c'est le serveur qui tient la règle, le mobile ne fait que la dessiner.
-         */
+        // Les valeurs exigées par l'action sont validées ICI, avec ses propres règles.
         $saisie = [];
 
         if ($declaree->fields() !== []) {
@@ -383,12 +326,7 @@ class ResourceController extends Controller
             $saisie = array_intersect_key($validator->validated(), $rules);
         }
 
-        /*
-         * La confirmation d'une action destructive est une affaire d'INTERFACE. Le serveur
-         * annonce `destructive` et le texte à afficher ; le mobile demande confirmation. Exiger
-         * ici un jeton de confirmation n'ajouterait aucune sécurité — l'appel vient déjà d'un
-         * administrateur authentifié — mais donnerait l'illusion d'un second verrou.
-         */
+        // La confirmation d'une action destructive est une affaire d'INTERFACE.
         $result = ($declaree->handler())($model, $saisie);
 
         return response()->json(['ok' => true, 'result' => $result]);

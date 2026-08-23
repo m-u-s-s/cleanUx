@@ -148,10 +148,7 @@ class PlatformModuleResolver
         return collect((array) ($audience['zone_ids'] ?? []))->intersect($allowedZones)->isNotEmpty();
     }
 
-    /**
-     * Derive a canonical role string from the User's typed role-check methods.
-     * Falls back to the legacy `role` column so existing data is not broken.
-     */
+    /** Derive a canonical role string from the User's typed role-check methods. */
     protected function deriveRole(?User $user): ?string
     {
         if ($user === null) {

@@ -14,9 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * P3 — latent source bugs logged during the coverage campaign, now fixed.
- */
+/** P3 — latent source bugs logged during the coverage campaign, now fixed. */
 class LatentBugsP3Test extends TestCase
 {
     use RefreshDatabase;

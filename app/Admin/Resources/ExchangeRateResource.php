@@ -9,10 +9,7 @@ use App\Models\ExchangeRate;
 use App\Services\Fx\FxService;
 
 /**
- * Les taux de change appliqués.
- *
- * LECTURE SEULE. Les conversions déjà faites référencent le taux qui a servi ; le modifier après
- * coup ferait mentir des montants déjà facturés.
+ * Les taux de change appliqués. LECTURE SEULE.
  *
  * @extends EloquentResource<ExchangeRate>
  */
@@ -60,10 +57,7 @@ class ExchangeRateResource extends EloquentResource
     public function globalActions(): array
     {
         return [
-            /*
-             * Rafraîchir TOUS les taux. Le service rend le nombre de taux insérés, et on le rend à
-             * l'écran : « rafraîchi » sans chiffre ne dit pas si le fournisseur a répondu.
-             */
+            // Rafraîchir TOUS les taux.
             Action::make('refresh-all', 'Rafraîchir les taux', function (array $valeurs) {
                 $inseres = app(FxService::class)->refreshAll();
 

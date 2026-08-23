@@ -19,15 +19,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * Coverage-focused exercise of App\Livewire\ClientCompany\BookingHub.
- *
- * Drives the wizard navigation guards, the computed properties (bookings
- * filters, sites, trades, selected site, available providers ordering),
- * the submit guards (missing catalog / uncovered site / no employee) and the
- * permission guards on approve/cancel — areas not touched by the canonical
- * happy-path suite.
- */
+/** Coverage-focused exercise of App\Livewire\ClientCompany\BookingHub. */
 class BookingHubCoverageBatch18Test extends TestCase
 {
     use CreatesZoneAwareFixtures;

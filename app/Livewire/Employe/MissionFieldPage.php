@@ -15,12 +15,7 @@ class MissionFieldPage extends Component
         $this->mission = $this->recharger($mission);
     }
 
-    /**
-     * Le statut a bougé dans le bloc d'actions : cette page en dépend pour ouvrir ses volets.
-     *
-     * Sans cette écoute, « en route » n'ouvrait le suivi qu'après un rechargement manuel, et
-     * l'écran affirmait entre-temps le contraire de ce qu'il venait de faire.
-     */
+    /** Le statut a bougé dans le bloc d'actions : cette page en dépend pour ouvrir ses volets. */
     #[On('mission-statut-change')]
     public function rafraichirDepuisLeStatut(): void
     {

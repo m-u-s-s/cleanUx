@@ -5,13 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * « Souvent commande avec » : les associations sont des donnees, configurables par
- * l'administrateur sur chaque metier, jamais une liste ecrite en dur.
- *
- * `default_sequence_gap_min` porte le temps de sechage : le carreleur passe apres le plombier,
- * et pas immediatement apres.
- */
+/** « Souvent commande avec » : les associations sont des donnees, configurables par l'administrateur sur chaque metier, jamais une liste ecrite en dur. */
 class TradeBundleSuggestion extends Model
 {
     protected $fillable = [

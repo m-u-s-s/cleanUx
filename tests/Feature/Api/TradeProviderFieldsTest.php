@@ -7,14 +7,7 @@ use Database\Seeders\ProviderTradeQuestionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Questions métier consultables AVANT authentification.
- *
- * Le formulaire d'inscription prestataire doit poser les questions propres au métier visé, or il
- * s'affiche par définition avant l'existence du compte : l'endpoint doit donc être public, comme
- * l'est déjà la liste des métiers (GET /api/trades). L'équivalent authentifié côté client
- * (/api/client/trades/{trade}/form-fields) ne convient pas ici.
- */
+/** Questions métier consultables AVANT authentification. */
 class TradeProviderFieldsTest extends TestCase
 {
     use RefreshDatabase;
@@ -31,10 +24,7 @@ class TradeProviderFieldsTest extends TestCase
         $this->assertContains('intervention_radius_km', $keys);
     }
 
-    /**
-     * Les questions réglementaires découlent des drapeaux du métier plutôt que d'une liste tenue
-     * à la main : un métier certifié demande sa référence, un métier assuré sa police.
-     */
+    /** Les questions réglementaires découlent des drapeaux du métier plutôt que d'une liste tenue à la main : un métier certifié demande sa référence, un métier assuré sa police. */
     public function test_a_regulated_trade_asks_for_its_certification_and_insurance(): void
     {
         $trade = $this->tradeWithQuestions(['requires_certification' => true, 'requires_insurance_proof' => true]);
@@ -61,9 +51,7 @@ class TradeProviderFieldsTest extends TestCase
         $this->assertNotContains('insurance_policy_number', $keys);
     }
 
-    /**
-     * Un métier sans schéma ne doit pas casser le formulaire : il rend simplement une liste vide.
-     */
+    /** Un métier sans schéma ne doit pas casser le formulaire : il rend simplement une liste vide. */
     public function test_a_trade_without_a_schema_returns_an_empty_field_list(): void
     {
         $trade = Trade::factory()->create(['provider_form_schema' => null]);

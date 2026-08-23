@@ -84,18 +84,6 @@ enum OrganizationRole: string
     /**
      * LES ONZE. La société prestataire porte l'intégralité des sous-rôles.
      *
-     * Elle n'en proposait que huit : `manager`, `site_manager` et `requester` étaient réservés à la
-     * société CLIENTE. Le découpage se tenait — un « demandeur » a du sens chez qui commande — mais
-     * il laissait une société qui exécute sans gestionnaire général ni responsable de site, alors
-     * qu'une société de nettoyage a les deux.
-     *
-     * L'ordre suit le rang d'autorité décroissant : c'est celui dans lequel les écrans d'invitation
-     * les présentent, et il évite de faire chercher « propriétaire » au milieu d'une liste.
-     *
-     * LA SOCIÉTÉ CLIENTE GARDE LES SIENS — voir `forClientCompany()`. Le recouvrement est assumé :
-     * un même rôle peut décrire un métier des deux côtés, et les retirer à la société cliente
-     * priverait ses membres de leurs permissions du jour au lendemain.
-     *
      * @return self[]
      */
     public static function forProviderCompany(): array

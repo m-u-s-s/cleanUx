@@ -127,11 +127,7 @@ class InsuranceController extends Controller
         return response()->json(['ok' => true, 'claim' => $claim], 201);
     }
 
-    /**
-     * Ensure the booking belongs to the authenticated client before exposing its insurance
-     * plans / pricing or attaching a policy to it (M2). Without this, any client could read
-     * pricing for, and buy insurance against, another client's booking by id enumeration.
-     */
+    /** Ensure the booking belongs to the authenticated client before exposing its insurance plans / pricing or attaching a policy to it (M2). */
     protected function authorizeBookingAccess(Request $request, int $bookingId): void
     {
         $booking = Booking::query()->find($bookingId);

@@ -13,10 +13,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-/**
- * Test E2E KYB v2 : start → run verifications → run sanctions → approve.
- * Vérifie que les services en cascade produisent les rows attendus + audit events.
- */
+/** Test E2E KYB v2 : start → run verifications → run sanctions → approve. */
 class KybFullFlowIntegrationTest extends TestCase
 {
     use RefreshDatabase;

@@ -15,9 +15,6 @@ use Illuminate\Support\Str;
 /**
  * Les zones de service.
  *
- * Le périmètre postal et les règles de couverture ne s'éditent pas ici : ils engagent le
- * matching et la tarification, et se modifient depuis la page web qui montre leurs conséquences.
- *
  * @extends EloquentResource<ServiceZone>
  */
 class ZoneResource extends EloquentResource
@@ -61,14 +58,7 @@ class ZoneResource extends EloquentResource
                 ['value' => 'inactive', 'label' => 'Inactive'],
             ]],
 
-            /*
-             * Le cloisonnement par pays, servi au mobile.
-             *
-             * Il DOIT vivre ici plutôt que côté client : un filtre appliqué à l'affichage laisse
-             * passer les actions, et l'écran des zones belges montrerait Paris dès qu'un second
-             * marché ouvrirait. Les options sont calculées, faute de quoi il faudrait rééditer ce
-             * fichier à chaque pays ajouté.
-             */
+            // Le cloisonnement par pays, servi au mobile.
             'country_id' => ['Pays', 'country_id', Country::query()
                 ->orderBy('name')
                 ->get()
@@ -87,12 +77,7 @@ class ZoneResource extends EloquentResource
         ];
     }
 
-    /**
-     * Les champs d'une zone.
-     *
-     * `country_id` EST dans le formulaire : une zone doit appartenir à un pays dès sa création, et
-     * l'écran mobile le pré-remplit depuis le contexte de la descente.
-     */
+    /** Les champs d'une zone. */
     public function formFields(): array
     {
         return [
@@ -137,13 +122,7 @@ class ZoneResource extends EloquentResource
         return app(GeoGuard::class)->raisonsDeNePasSupprimerZone($model);
     }
 
-    /**
-     * Une zone créée par l'API naît FERMÉE.
-     *
-     * Même règle que le web : créer une zone ne doit pas la rendre commandable avant qu'on ait
-     * réglé son catalogue et ses prix. Le formulaire n'expose donc pas `is_bookable` — c'est une
-     * action séparée et délibérée.
-     */
+    /** Une zone créée par l'API naît FERMÉE. */
     public function prepareForCreate(array $data): array
     {
         $nom = (string) ($data['name'] ?? 'zone');

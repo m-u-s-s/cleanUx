@@ -169,27 +169,10 @@ class MissionActionsCoverageBatch11Test extends TestCase
         $code = session('mission_end_code_'.$mission->id);
         $this->assertNotNull($code);
 
-        /*
-         * LA POSITION EST FOURNIE, ET CE N'EST PAS UN DÉTAIL DE MONTAGE.
-         *
-         * Ce test passait sans elle, mais pour une raison qui n'avait rien de rassurant : la
-         * fixture ne retrouvait pas la mission créée par l'observateur — celle-ci portait
-         * `rendez_vous_id` quand `Booking::mission()` cherchait sur `booking_id` — et en fabriquait
-         * donc une seconde, sans destination. Or `OnSiteVerifier` LAISSE PASSER quand le dossier
-         * n'a pas de coordonnées : il n'y a rien à comparer. Le contrôle de présence n'était pas
-         * satisfait, il était sauté, et l'assertion de succès mesurait ce contournement.
-         *
-         * Les deux colonnes fusionnées, la mission retrouvée porte l'adresse géocodée du client.
-         * Le contrôle s'exécute pour de bon, et le test doit fournir ce que le téléphone du
-         * prestataire envoie sur place.
-         */
+        // LA POSITION EST FOURNIE, ET CE N'EST PAS UN DÉTAIL DE MONTAGE.
         $destination = $mission->fresh();
 
-        /*
-         * LES TÂCHES OBLIGATOIRES SONT COCHÉES, comme le ferait le prestataire avant de partir.
-         * La mission synchronisée porte la checklist de son métier ; celle que la fixture
-         * fabriquait n'en avait aucune, et la clôture passait donc sans qu'aucune tâche existe.
-         */
+        // LES TÂCHES OBLIGATOIRES SONT COCHÉES, comme le ferait le prestataire avant de partir.
         $destination->loadMissing('checklists.items');
 
         foreach ($destination->checklists->flatMap->items as $item) {

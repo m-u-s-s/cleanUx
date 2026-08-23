@@ -5,24 +5,7 @@ namespace Tests\Feature\Architecture;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * MYSQL REFUSE UN IDENTIFIANT DE PLUS DE 64 CARACTÈRES. SQLITE S'EN MOQUE.
- *
- * POURQUOI CE FICHIER EXISTE. La migration `create_signing_appointments_table` déclarait
- * `$table->index(['organization_account_id', 'status', 'scheduled_at'])`. Laravel en dérive
- * `signing_appointments_organization_account_id_status_scheduled_at_index` — 70 caractères.
- *
- * La suite tournant sur SQLite, qui n'impose aucune limite de longueur, tout était vert en local :
- * 5478 tests, PHPStan, Pint. L'échec n'est apparu qu'à l'étape « Migrate (MySQL) » de la CI, sur
- * une base neuve. Une migration qui ne s'applique pas en production ne se voit nulle part ailleurs.
- *
- * Cette garde lit les migrations et recalcule le nom que Laravel produira, pour que la limite soit
- * franchie ici plutôt qu'au déploiement.
- *
- * LIMITES ASSUMÉES. Elle couvre les formes littérales `index([...])` / `unique([...])` sans nom
- * explicite, dans un bloc `Schema::create()` ou `Schema::table()` identifiable. Les index nommés à
- * la main sont ignorés — c'est précisément la façon de sortir du piège.
- */
+/** MYSQL REFUSE UN IDENTIFIANT DE PLUS DE 64 CARACTÈRES. SQLITE S'EN MOQUE. */
 class NomsDIndexSousLaLimiteMysqlTest extends TestCase
 {
     /** MySQL : 64 caractères pour tout identifiant (table, colonne, index, contrainte). */

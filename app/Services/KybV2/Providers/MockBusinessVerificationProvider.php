@@ -5,14 +5,7 @@ namespace App\Services\KybV2\Providers;
 use App\Services\KybV2\Contracts\BusinessVerificationProviderContract;
 use App\Services\KybV2\VerificationResult;
 
-/**
- * Mock provider — données canned pour CI/dev. Match SIRET français + KBO belges courants.
- *
- * Convention :
- *   - tout identifier valide commence par "VALID-"
- *   - identifier commençant par "FAIL-" simule une vérification échouée
- *   - sinon valide via checksum modulo de longueur (simulé)
- */
+/** Mock provider — données canned pour CI/dev. Match SIRET français + KBO belges courants. */
 class MockBusinessVerificationProvider implements BusinessVerificationProviderContract
 {
     /** @var array<string, array{legal_name:string, legal_form:string, address:array, vat_id:?string, incorporation_date:?string}> */

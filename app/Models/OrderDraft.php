@@ -13,14 +13,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * La commande en cours de construction.
  *
- * `client_id` est nullable, et c'est le cœur du dispositif : le client voit un prix AVANT qu'on
- * lui demande un compte. Le jeton de session est ce qui lui permet de retrouver son panier trois
- * heures plus tard, dans un autre onglet, sans s'être jamais inscrit.
- *
- * Le brouillon se matérialise à la confirmation — une réservation pour un métier seul, un lot
- * multi-métiers pour plusieurs — et n'est jamais purgé : il porte les réponses horodatées qui
- * rendent le devis explicable ligne par ligne, et opposable.
- *
  * @property ?string $beneficiary_name
  * @property ?string $beneficiary_phone
  * @property ?string $beneficiary_note
@@ -43,14 +35,7 @@ class OrderDraft extends Model
         // La géographie résolue PENDANT le parcours : c'est elle qui donne au prix sa grille de
         // zone, et au dispatch un point de départ au lieu d'une adresse à redeviner.
         'postal_code', 'service_zone_id',
-        /*
-         * LE POINT D'ARRIVÉE, sur les seuls métiers de trajet.
-         *
-         * `address`/`lat`/`lng` ci-dessus restent le point de PRISE EN CHARGE — c'est-à-dire le lieu
-         * de l'intervention, celui qui résout la zone et fait partir le dispatch. Le point de dépose
-         * porte son propre nom : réutiliser les colonnes d'adresse pour lui ferait dire deux choses
-         * à une même donnée selon le métier.
-         */
+        // LE POINT D'ARRIVÉE, sur les seuls métiers de trajet.
         'dropoff_address', 'dropoff_lat', 'dropoff_lng', 'dropoff_postal_code',
         // Mesurés à la commande, pour annoncer un prix au kilomètre AVANT que le client valide.
         'route_distance_m', 'route_duration_s', 'route_source',
@@ -58,12 +43,7 @@ class OrderDraft extends Model
         'estimate_min_cents', 'estimate_max_cents', 'total_cents', 'currency',
         'client_notes', 'source',
         'converted_booking_id', 'converted_bundle_id', 'converted_at', 'metadata',
-        /*
-         * LE BÉNÉFICIAIRE (E1) — le client paye, quelqu'un d'autre reçoit.
-         *
-         * Ce cas se bricolait dans le commentaire libre : le prestataire arrivait en demandant
-         * M. Dupont et trouvait sa mère, qui n'attendait personne.
-         */
+        // LE BÉNÉFICIAIRE (E1) — le client paye, quelqu'un d'autre reçoit.
         'beneficiary_name', 'beneficiary_phone', 'beneficiary_note',
         // Le lieu du carnet retenu pour cette commande (E2).
         'client_place_id',
@@ -86,12 +66,7 @@ class OrderDraft extends Model
         'metadata' => 'array',
     ];
 
-    /**
-     * Référence lisible, communicable au téléphone.
-     *
-     * Sans I, O, 0 ni 1 : la référence est destinée à être dictée, et ces quatre caractères sont
-     * la première cause d'erreur de saisie au support.
-     */
+    /** Référence lisible, communicable au téléphone. */
     public static function generateReference(): string
     {
         return HumanReference::prefixed('CLX-', 5);

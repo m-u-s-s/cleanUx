@@ -9,10 +9,6 @@ interface BillingProviderContract
 {
     public function name(): string;
 
-    /**
-     * Charge un cycle. Doit être idempotent : si déjà chargé, retourne success
-     * avec le même reference. Soft-fail : capture les erreurs et retourne
-     * BillingResult avec success=false + error.
-     */
+    /** Charge un cycle. */
     public function chargeCycle(SubscriptionCycleV2 $cycle): BillingResult;
 }

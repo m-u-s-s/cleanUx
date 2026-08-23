@@ -8,14 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sentry\State\Scope;
 use Tests\TestCase;
 
-/**
- * Tests for BusinessAlertSentryListener.
- *
- * We use a minimal anonymous-class spy instead of a Mockery mock because:
- *  - the spy's withScope() needs to synchronously invoke the callback (matching
- *    real Hub behaviour) so that captureMessage() is exercised inside the closure.
- *  - keeping it framework-free makes the test environment-independent.
- */
+/** Tests for BusinessAlertSentryListener. */
 class BusinessAlertSentryListenerTest extends TestCase
 {
     #[Test]

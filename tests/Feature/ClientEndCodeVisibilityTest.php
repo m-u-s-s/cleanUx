@@ -11,13 +11,7 @@ use Livewire\Livewire;
 use Tests\Support\CreatesMissionPortalFixtures;
 use Tests\TestCase;
 
-/**
- * Le client doit pouvoir LIRE son code de fin sur le web.
- *
- * Sans cela, le prestataire se tient devant lui avec un champ à six chiffres que personne ne peut
- * remplir : le code n'est jamais stocké en clair, et son unique SMS peut très bien avoir été
- * avalé par le plafond d'envoi.
- */
+/** Le client doit pouvoir LIRE son code de fin sur le web. */
 class ClientEndCodeVisibilityTest extends TestCase
 {
     use CreatesMissionPortalFixtures;
@@ -42,11 +36,7 @@ class ClientEndCodeVisibilityTest extends TestCase
     {
         $scenario = $this->createMissionPortalContext(['status' => 'assigned']);
 
-        /*
-         * Le code de fin naît quand le prestataire le DEMANDE, mission démarrée — plus à
-         * l'arrivée. Émis dès l'arrivée, il arrivait chez le client avant que le travail
-         * commence : détenu depuis le début, il n'attestait plus rien de la fin.
-         */
+        // Le code de fin naît quand le prestataire le DEMANDE, mission démarrée — plus à l'arrivée.
         app(MissionLifecycleService::class)->setArrived($scenario['mission'], $scenario['employee']);
 
         $mission = $scenario['mission']->fresh();
@@ -75,12 +65,7 @@ class ClientEndCodeVisibilityTest extends TestCase
             ->assertDontSee('Code généré côté employé');
     }
 
-    /**
-     * UN CODE EXPIRÉ NE DOIT PAS S'AFFICHER COMME S'IL ÉTAIT BON.
-     *
-     * Le TTL est de vingt minutes. Passé ce délai, le client dictait six chiffres que le
-     * prestataire se voyait refuser par « Le code a expiré », sans qu'aucun des deux comprenne.
-     */
+    /** UN CODE EXPIRÉ NE DOIT PAS S'AFFICHER COMME S'IL ÉTAIT BON. Le TTL est de vingt minutes. */
     public function test_un_code_expire_n_est_pas_affiche(): void
     {
         $scenario = $this->createMissionPortalContext(['status' => 'assigned']);

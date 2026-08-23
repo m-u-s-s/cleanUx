@@ -30,20 +30,7 @@ class NotificationPresenter
         };
     }
 
-    /**
-     * CE QUE CHAQUE ÉVÉNEMENT DIT, QUAND IL NE LE DIT PAS LUI-MÊME.
-     *
-     * `title()` retombait sur `label()` et `message()` sur le mot « Notification ». Or huit des
-     * treize notifications en base ne portent NI `title` NI `message` dans leur charge utile :
-     * le fil affichait donc « Système / Système / Notification » trois fois de suite, relevé à
-     * l'écran dans l'application cliente. L'information existait pourtant — `type` valait
-     * `mission_started`, et la charge utile portait la référence et le nom du prestataire.
-     *
-     * Les notifications qui apportent leur propre texte ne sont pas touchées : elles gagnent
-     * toujours. Cette table ne sert qu'à celles qui n'en ont pas.
-     *
-     * [étiquette, titre, message]
-     */
+    /** CE QUE CHAQUE ÉVÉNEMENT DIT, QUAND IL NE LE DIT PAS LUI-MÊME. */
     private const PAR_TYPE = [
         'mission_started' => ['Intervention', 'Intervention démarrée', 'Le prestataire a commencé l’intervention.'],
         'employee_en_route' => ['Intervention', 'Prestataire en route', 'Le prestataire est en route vers l’adresse.'],
@@ -121,13 +108,7 @@ class NotificationPresenter
             return 'Notification';
         }
 
-        /*
-         * NOMMER LA PERSONNE QUAND ON LA CONNAÎT.
-         *
-         * `employee_name` et `booking_reference` sont déjà dans la charge utile de ces
-         * événements — les taire revenait à écrire une phrase générique alors qu'on avait de quoi
-         * la rendre précise.
-         */
+        // NOMMER LA PERSONNE QUAND ON LA CONNAÎT.
         $prestataire = $payload['employee_name'] ?? $payload['provider_name'] ?? null;
 
         if (filled($prestataire)) {
@@ -174,16 +155,7 @@ class NotificationPresenter
         ])));
     }
 
-    /**
-     * CE QUE PROMET LE BOUTON DE RÉSOLUTION.
-     *
-     * `actionUrl()` sait OÙ aller ; il ne disait pas ce qu'on y trouve. « Ouvrir » sur une
-     * notification de virement et sur un rappel de mission menaient à deux pages très
-     * différentes derrière le même mot. Le libellé nomme la destination.
-     *
-     * Un `action_url` posé dans le payload vise une page arbitraire : le type ne la décrit plus,
-     * donc le libellé reste générique — mentir sur la destination serait pire que de rester vague.
-     */
+    /** CE QUE PROMET LE BOUTON DE RÉSOLUTION. */
     public function actionLabel(DatabaseNotification $notification, ?User $user): string
     {
         $payload = (array) ($notification->data ?? []);
@@ -213,18 +185,7 @@ class NotificationPresenter
             return '#';
         }
 
-        /*
-         * TROIS RÔLES, TROIS DESTINATIONS — Y COMPRIS POUR `feedback` ET `finance`.
-         *
-         * Ces deux branches ne testaient que `isAdmin()` et envoyaient TOUT le reste sur des
-         * routes client. Un prestataire qui ouvrait une notification de virement atterrissait sur
-         * `/dashboard/client`, gardé par `CheckRole:client` : 403 constaté à l'écran. Le défaut
-         * était resté invisible parce que la vue du centre n'appelait jamais `actionUrl()` — et
-         * parce que le test unitaire créait bien un `$employe` mais ne l'exerçait que sur
-         * `calendar` et `system`, les deux seules branches déjà correctes.
-         *
-         * Le prestataire a ses propres pages : `employe.feedbacks` et `employe.wallet`.
-         */
+        // TROIS RÔLES, TROIS DESTINATIONS — Y COMPRIS POUR `feedback` ET `finance`.
         return match ($this->typeKey($notification)) {
             'feedback' => match (true) {
                 $user->isAdmin() => route('admin.feedbacks'),

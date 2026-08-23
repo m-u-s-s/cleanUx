@@ -6,9 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-/**
- * M20 — bookings.date access paths must be indexed.
- */
+/** M20 — bookings.date access paths must be indexed. */
 class BookingDateIndexTest extends TestCase
 {
     use RefreshDatabase;

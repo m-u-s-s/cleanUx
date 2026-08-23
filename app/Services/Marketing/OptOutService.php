@@ -6,13 +6,7 @@ use App\Models\MarketingOptOut;
 use App\Models\User;
 use App\Support\ActivityLogger;
 
-/**
- * Gestion des opt-outs marketing (RGPD-compliant).
- *
- *   - optOut(user, channel) : crée un record. channel='all' opt-out tous canaux.
- *   - optIn(user, channel)  : supprime le record.
- *   - isOptedOut(user, channel) : true si user OU 'all' présent.
- */
+/** Gestion des opt-outs marketing (RGPD-compliant). - optOut(user, channel) : crée un record. */
 class OptOutService
 {
     public function optOut(User $user, string $channel, ?string $reason = null, ?string $ipAddress = null): MarketingOptOut
@@ -71,6 +65,7 @@ class OptOutService
 
     /**
      * @return array<string,bool> ['email' => false, 'sms' => true, 'push' => false, 'all' => false]
+     *                            /
      */
     public function preferences(User $user): array
     {

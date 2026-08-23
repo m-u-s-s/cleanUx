@@ -7,14 +7,7 @@ use App\Models\DisputeResolution;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\Config;
 
-/**
- * Règles d'auto-résolution simples appliquées juste après l'ouverture
- * d'une dispute. Permet de fluidifier les cas évidents (no-show provider,
- * doublon paiement, etc.) sans intervention humaine.
- *
- * Les règles sont CONSERVATIVES : si moindre doute, on ne fait rien et on
- * laisse le SAV humain trancher.
- */
+/** Règles d'auto-résolution simples appliquées juste après l'ouverture d'une dispute. */
 class DisputeAutoResolver
 {
     public function maybeAutoResolve(ComplaintCase $case): ?DisputeResolution
@@ -77,10 +70,7 @@ class DisputeAutoResolver
         return in_array($case->category, $eligible, true);
     }
 
-    /**
-     * Heuristique simple : booking marqué confirmé mais jamais mission_started_at
-     * + plus de 30 min après l'heure prévue.
-     */
+    /** Heuristique simple : booking marqué confirmé mais jamais mission_started_at + plus de 30 min après l'heure prévue. */
     protected function matchesNoShowPattern(ComplaintCase $case, $booking): bool
     {
         if ($case->category !== ComplaintCase::CATEGORY_NO_SHOW) {

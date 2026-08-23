@@ -11,12 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Coverage for the TripTrackingCenter admin Livewire component: render with live +
- * history sessions and stats, setTab/openSession/closeDetail interactions, the history
- * status + search filters, the selected-session detail with replay points, and the
- * cancelSession action that delegates to TripTrackingService.
- */
+/** Coverage for the TripTrackingCenter admin Livewire component: render with live + history sessions and stats, setTab/openSession/closeDetail interactions, the history status + search filters, the selected-session detail with replay points, and the cancelSession action that delegates to TripTrackingService. */
 class TripTrackingCenterCoverageBatch12Test extends TestCase
 {
     use RefreshDatabase;

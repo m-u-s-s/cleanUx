@@ -9,20 +9,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Carbon;
 
-/**
- * « VOTRE PERMIS EXPIRE DANS TROIS SEMAINES. »
- *
- * Une pièce qui arrive à échéance ne prévient personne. Le prestataire découvre la chose au silence
- * de son téléphone, plusieurs jours après coup, et le support l'apprend par un appel agacé — c'est
- * l'angle mort connu de cette plateforme, transposé aux dates plutôt qu'aux dossiers incomplets.
- *
- * ELLE DIT LA DATE, ET CE QU'ELLE COÛTE. « Pensez à mettre à jour vos documents » ne fait agir
- * personne : ce qui fait agir, c'est de savoir qu'à partir du 12 mars on cesse de recevoir des
- * courses. Le lien mène directement à l'écran où l'on redépose.
- *
- * Catégorie `transactional` : ce n'est pas une information de confort, c'est une conséquence
- * directe sur le revenu de la personne.
- */
+/** « VOTRE PERMIS EXPIRE DANS TROIS SEMAINES. */
 class ProviderDocumentExpiringNotification extends Notification
 {
     use InteractsWithUserNotificationPreferences;

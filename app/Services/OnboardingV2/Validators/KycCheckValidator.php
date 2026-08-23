@@ -9,10 +9,7 @@ use App\Services\OnboardingV2\OnboardingStepValidator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Vérifie que l'utilisateur a une KycVerification approved
- * (voir [[kyc-module]] : table `kyc_verifications`, status `clear`, decision `approved`).
- */
+/** Vérifie que l'utilisateur a une KycVerification approved (voir [[kyc-module]] : table `kyc_verifications`, status `clear`, decision `approved`). */
 class KycCheckValidator implements OnboardingStepValidator
 {
     public function validate(User $user, OnboardingStep $step, array $payload): OnboardingStepValidation

@@ -7,12 +7,7 @@ use App\Models\MissionIncident;
 use App\Models\User;
 use App\Services\Assistant\Tools\Contracts\AssistantTool;
 
-/**
- * Phase 5.1 — Tool: signaler un incident sur une mission en cours.
- *
- * Tous types d'utilisateurs peuvent l'appeler (client, prestataire, admin),
- * mais seuls les utilisateurs liés à la mission peuvent signaler dessus.
- */
+/** Phase 5.1 — Tool: signaler un incident sur une mission en cours. */
 class ReportIssueTool implements AssistantTool
 {
     public function name(): string

@@ -7,12 +7,7 @@ use App\Admin\Console\ReportTile;
 use App\Models\Booking;
 use App\Models\Mission;
 
-/**
- * La lecture business : volumes et valeur.
- *
- * Les MONTANTS sont servis bruts et formatés côté mobile selon leur type déclaré : envoyer une
- * chaîne déjà mise en forme retirerait à l’application le choix de sa présentation.
- */
+/** La lecture business : volumes et valeur. */
 class BusinessReport implements AdminReport
 {
     public function key(): string

@@ -4,10 +4,7 @@ namespace Tests\Feature\GoLive;
 
 use Tests\TestCase;
 
-/**
- * Le restore-drill exige une connexion SCRATCH isolée (jamais la base primaire).
- * Vérifie qu'elle est désormais définie et que la commande est opérable (dry-run).
- */
+/** Le restore-drill exige une connexion SCRATCH isolée (jamais la base primaire). */
 class BackupRestoreDrillScratchTest extends TestCase
 {
     public function test_scratch_connection_is_defined_and_isolated(): void

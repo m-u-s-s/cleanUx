@@ -7,23 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * LE BUDGET MAISON D'UN CLIENT (E4).
- *
- * TOUT EST DÉJÀ EN BASE, et personne ne le voit. Un client reçoit ses factures une par une et n'a
- * aucun moyen de répondre à la seule question qu'il se pose vraiment : « combien est-ce que je
- * dépense en entretien, et est-ce que ça augmente ». C'est cette question qui décide de passer à un
- * abonnement, d'espacer les interventions, ou de renoncer.
- *
- * L'ENGAGÉ, PAS LE FACTURÉ. Le montant retenu est celui de la réservation — devis accepté — et non
- * une facture émise : une intervention prévue la semaine prochaine compte déjà dans le budget du
- * mois, parce que c'est ainsi qu'on raisonne quand on regarde ce qu'on va dépenser. Les annulées
- * sont écartées : elles n'ont rien coûté.
- *
- * LE COMPARATIF ABONNEMENT / À LA DEMANDE EST LE SEUL CHIFFRE QUI SERVE À DÉCIDER. Le reste
- * documente ; celui-ci répond. On le rend même quand une des deux séries est vide — « vous n'avez
- * aucun abonnement » est une réponse utile, un champ absent ne l'est pas.
- */
+/** LE BUDGET MAISON D'UN CLIENT (E4). TOUT EST DÉJÀ EN BASE, et personne ne le voit. */
 class HomeBudgetService
 {
     /**
@@ -88,21 +72,12 @@ class HomeBudgetService
     /**
      * ABONNEMENT CONTRE À LA DEMANDE — le seul chiffre qui serve à décider.
      *
-     * Rendu MÊME QUAND UNE SÉRIE EST VIDE : « vous n'avez aucun abonnement » est une réponse utile,
-     * un champ absent ne l'est pas — l'écran afficherait un trou que le client lirait comme un bug.
-     *
      * @param  Collection<int, Booking>  $reservations
      * @return array<string, mixed>
      */
     protected function comparatif(Collection $reservations): array
     {
-        /*
-         * DEUX SIGNAUX POUR LA MÊME NOTION, et il faut les deux. `is_recurrent` marque la
-         * réservation créée comme récurrente ; `recurring_series_id` rattache les OCCURRENCES
-         * engendrées ensuite, qui ne portent pas toujours le drapeau. N'en lire qu'un ferait
-         * basculer la moitié d'un abonnement du côté « à la demande », et le comparatif dirait
-         * exactement le contraire de la vérité.
-         */
+        // DEUX SIGNAUX POUR LA MÊME NOTION, et il faut les deux.
         [$recurrentes, $ponctuelles] = $reservations->partition(
             fn (Booking $booking) => (bool) $booking->is_recurrent || $booking->recurring_series_id !== null,
         );

@@ -12,16 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Un imprévu vient d'être signalé sur place.
- *
- * Le canal `mission.{id}` porte le client ET les prestataires assignés : le renfort qui arrive
- * dix minutes plus tard apprend ainsi que la porte est bloquée sans qu'on ait à l'appeler.
- *
- * La description N'EST PAS diffusée. Elle est libre, donc écrite par un humain pressé, et le canal
- * est plus large que le destinataire du signalement — le titre et la catégorie suffisent à faire
- * ouvrir la fiche, qui elle vérifie qui regarde.
- */
+/** Un imprévu vient d'être signalé sur place. */
 class MissionIncidentReported implements ShouldBroadcastNow, TracksBroadcastLedger
 {
     use Dispatchable;

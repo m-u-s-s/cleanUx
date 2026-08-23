@@ -7,25 +7,10 @@ use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\ProviderPayout;
 
-/**
- * Named static emitters for money-path business alert events.
- *
- * Each method dispatches exactly ONE BusinessAlertRaised event.
- * The Sentry wiring lives in a listener (BusinessAlertSentryListener), keeping
- * this class testable without a real Sentry connection:
- *
- *   Event::fake([BusinessAlertRaised::class]);
- *   BusinessAlerts::payoutFailed($payout);
- *   Event::assertDispatched(BusinessAlertRaised::class, fn($e) => $e->key === 'payout_failed');
- *
- * Register the listener in App\Providers\EventServiceProvider:
- *   BusinessAlertRaised::class => [BusinessAlertSentryListener::class],
- */
+/** Named static emitters for money-path business alert events. */
 class BusinessAlerts
 {
-    /**
-     * A booking's payment capture failed (e.g. card declined after hold).
-     */
+    /** A booking's payment capture failed (e.g. card declined after hold). */
     public static function paymentCaptureFailed(Booking $booking): void
     {
         event(new BusinessAlertRaised(
@@ -41,9 +26,7 @@ class BusinessAlerts
         ));
     }
 
-    /**
-     * A provider payout attempt failed (Stripe payout.failed webhook).
-     */
+    /** A provider payout attempt failed (Stripe payout.failed webhook). */
     public static function payoutFailed(ProviderPayout $payout): void
     {
         event(new BusinessAlertRaised(
@@ -60,9 +43,7 @@ class BusinessAlerts
         ));
     }
 
-    /**
-     * Outbound webhook delivery queue depth has exceeded a safe threshold.
-     */
+    /** Outbound webhook delivery queue depth has exceeded a safe threshold. */
     public static function webhookBacklog(int $count): void
     {
         event(new BusinessAlertRaised(
@@ -75,9 +56,7 @@ class BusinessAlerts
         ));
     }
 
-    /**
-     * A mission has been running abnormally long while a payment hold is active.
-     */
+    /** A mission has been running abnormally long while a payment hold is active. */
     public static function stuckMissionHoldingFunds(Mission $mission): void
     {
         event(new BusinessAlertRaised(
@@ -99,6 +78,7 @@ class BusinessAlerts
      * A Stripe↔DB reconciliation run found a divergence between amounts.
      *
      * @param  array<string, mixed>  $detail  e.g. ['stripe_total'=>…, 'db_total'=>…, 'delta'=>…]
+     *                                        /
      */
     public static function reconciliationDivergence(array $detail): void
     {

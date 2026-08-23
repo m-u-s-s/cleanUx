@@ -11,13 +11,7 @@ use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * Le lot « création simple et bascules ».
- *
- * Ce que ces trois domaines ont en commun : ils se créent depuis la console, et ils ne se
- * SUPPRIMENT pas — on suspend, on désactive. Les rachats, attributions et historiques déjà posés
- * pointent sur ces lignes ; les effacer laisserait des références que plus rien n'explique.
- */
+/** Le lot « création simple et bascules ». */
 class CreationResourcesTest extends TestCase
 {
     use RefreshDatabase;

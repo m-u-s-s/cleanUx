@@ -10,17 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * L'EXPLORATION MÉTIER, ATTEIGNABLE DEPUIS LA CONSOLE NATIVE.
- *
- * L'écran web croisait les réservations par zone et par service ; le mobile n'avait rien.
- * Le module était déclaré « à venir ». `AnalyticsExplorationResource` sert désormais la
- * liste filtrable au moteur de console générique.
- *
- * Déclarer une couverture ne suffit pas : il faut que la ressource RENDE quelque chose,
- * et que ses filtres filtrent vraiment. Un descripteur qui répond une liste vide serait
- * une case de plus qui ne mène nulle part.
- */
+/** L'EXPLORATION MÉTIER, ATTEIGNABLE DEPUIS LA CONSOLE NATIVE. */
 class ExplorationMetierRessourceTest extends TestCase
 {
     use RefreshDatabase;

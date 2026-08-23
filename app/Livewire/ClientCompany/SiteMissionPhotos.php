@@ -8,11 +8,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-/**
- * Espace société B2B P3 — photos avant/après d'une intervention pour le
- * gestionnaire. Scopé strictement à l'org (anti-IDOR) : la mission doit
- * appartenir à un booking de l'organisation active.
- */
+/** Espace société B2B P3 — photos avant/après d'une intervention pour le gestionnaire. */
 class SiteMissionPhotos extends Component
 {
     use EnforcesActiveOrgMembership;

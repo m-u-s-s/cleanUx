@@ -10,13 +10,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
-/**
- * Fixture de développement : une mission géolocalisée assignée à un prestataire, afin que la
- * carte du dashboard ait quelque chose à afficher. La base de dév n'a aucune mission.
- *
- * Usage : php artisan db:seed --class=DevProviderMissionSeeder
- *         PROVIDER_EMAIL=autre@exemple.test php artisan db:seed --class=DevProviderMissionSeeder
- */
+/** Fixture de développement : une mission géolocalisée assignée à un prestataire, afin que la carte du dashboard ait quelque chose à afficher. */
 class DevProviderMissionSeeder extends Seeder
 {
     public function run(): void

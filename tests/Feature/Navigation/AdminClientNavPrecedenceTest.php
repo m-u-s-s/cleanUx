@@ -7,21 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * POURQUOI CE FICHIER EXISTE. Le 2026-08-05, un compte client promu administrateur continuait de
- * voir l'interface client : « le changement de rôle ne s'effectue pas ». La base était pourtant
- * juste — `role` et `platform_role` à `admin`, les barrières de route et le portail `access-admin`
- * passants. C'est la navigation qui décidait autrement.
- *
- * LES RÔLES NE S'EXCLUENT PAS. Promouvoir un client ne lui retire pas son profil client :
- * `isClient()` et `isAdmin()` sont vrais en même temps. `navigation-menu.blade.php` testait
- * `isClient()` en premier et plaçait `isAdmin()` dans un `elseif` jamais atteint — donc menu
- * client, aucun lien vers l'administration, et un changement de rôle apparemment sans effet.
- *
- * Ailleurs, `routes/authenticated.php` et `HasUserTypeChecks::homeDashboardRoute()` testaient
- * `isAdmin()` D'ABORD. Deux priorités contradictoires : `/dashboard` menait bien à l'administration
- * pendant que le menu, lui, restait client.
- */
+/** POURQUOI CE FICHIER EXISTE. */
 class AdminClientNavPrecedenceTest extends TestCase
 {
     use RefreshDatabase;

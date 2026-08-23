@@ -8,38 +8,18 @@ use Database\Seeders\ProviderOnboardingJourneySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Le parcours `provider_default` n'a qu'un seul propriétaire.
- *
- * Deux seeders l'écrivaient : ProviderOnboardingJourneySeeder, avec les cinq codes que l'app
- * mobile sait rendre, et OnboardingJourneysSeeder, avec sept codes différents et un
- * `steps()->delete()` destructif. ProductionBootstrapSeeder appelant le second APRÈS le
- * référentiel, c'est lui qui gagnait en production — et comme STEP_COMPONENTS
- * (ProviderOnboardingScreen) ne connaît pas ses codes, CHAQUE étape se serait affichée
- * « non disponible ». Le parcours de vérification aurait été entièrement infranchissable.
- *
- * Ce test verrouille l'invariant dans les deux ordres d'exécution, l'ordre réel dépendant du
- * profil de seed employé.
- */
+/** Le parcours `provider_default` n'a qu'un seul propriétaire. */
 class ProviderJourneySeedingTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Exactement les codes que STEP_COMPONENTS sait rendre côté mobile. Toute divergence rend
-     * l'étape correspondante inutilisable dans l'application.
-     */
+    /** Exactement les codes que STEP_COMPONENTS sait rendre côté mobile. */
     private const MOBILE_STEP_CODES = [
         'profile_complete',
         'contract_sign',
         'kyc_check',
         'document_upload',
-        /*
-         * `vehicle_declare` ne concerne que les métiers sous règles taxi, mais elle est dans le
-         * parcours de TOUT LE MONDE — le parcours est unique et partagé. C'est son validateur qui
-         * passe trivialement quand personne n'a de véhicule à déclarer ; une seconde suite d'étapes
-         * « chauffeur » ferait deux parcours à tenir à jour, dont l'un oublierait une exigence.
-         */
+        // `vehicle_declare` ne concerne que les métiers sous règles taxi, mais elle est dans le parcours de TOUT LE MONDE — le parcours est unique et partagé.
         'vehicle_declare',
         'skill_declare',
     ];
@@ -60,10 +40,7 @@ class ProviderJourneySeedingTest extends TestCase
         $this->assertSame(self::MOBILE_STEP_CODES, $this->providerStepCodes());
     }
 
-    /**
-     * Le parcours client vit toujours dans OnboardingJourneysSeeder : en retirer le provider ne
-     * doit pas l'avoir emporté.
-     */
+    /** Le parcours client vit toujours dans OnboardingJourneysSeeder : en retirer le provider ne doit pas l'avoir emporté. */
     public function test_the_client_journey_is_preserved(): void
     {
         $this->seed(OnboardingJourneysSeeder::class);

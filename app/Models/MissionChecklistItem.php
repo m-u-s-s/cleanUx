@@ -27,13 +27,7 @@ class MissionChecklistItem extends Model
         'requires_photo',
         'mission_media_id',
         'guidance',
-        /*
-         * QUI A POSÉ CETTE TÂCHE, ET QUAND LA LISTE S'EST FIGÉE.
-         *
-         * Hors de cette liste, Eloquent les ÉCARTE EN SILENCE : la tâche du client se créerait
-         * avec `source = 'template'`, elle deviendrait indistinguable d'une suggestion, et le
-         * client n'aurait plus le droit de retirer ce qu'il vient d'écrire.
-         */
+        // QUI A POSÉ CETTE TÂCHE, ET QUAND LA LISTE S'EST FIGÉE.
         'source',
         'created_by_user_id',
         'locked_at',
@@ -61,9 +55,6 @@ class MissionChecklistItem extends Model
 
     /**
      * QUI A DEMANDÉ CETTE TÂCHE.
-     *
-     * Distincte de `completedBy()` : l'une dit qui l'a écrite, l'autre qui l'a faite. Le
-     * prestataire a besoin de la première pour savoir ce qui se discute avec le client.
      *
      * @return BelongsTo<User, $this>
      */

@@ -2,13 +2,7 @@
 
 namespace App\Support\Domain;
 
-/**
- * La machine à états du service immédiat, telle que le CLIENT la voit.
- *
- * Elle est affichée, pas seulement enregistrée : quelqu'un qui attend un plombier veut savoir s'il
- * cherche encore, si quelqu'un a accepté, ou si la voiture est en route. Un sablier qui tourne sans
- * rien dire fait annuler.
- */
+/** La machine à états du service immédiat, telle que le CLIENT la voit. */
 final class AsapStatus
 {
     /** On cherche : le rayon s'élargit, les prestataires sont prévenus. */
@@ -41,10 +35,6 @@ final class AsapStatus
 
     /**
      * Les transitions permises.
-     *
-     * Écrites en dur plutôt que devinées : une demande ne doit jamais passer de « en cours de
-     * recherche » à « terminée », ni revenir en arrière. Un état incohérent affiché à quelqu'un
-     * qui attend chez lui vaut plus cher qu'une exception.
      *
      * @return array<string, list<string>>
      */

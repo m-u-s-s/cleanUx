@@ -24,10 +24,7 @@ class ProviderFaceProfileFactory extends Factory
         ];
     }
 
-    /**
-     * Un prestataire enrôlé, consentant, et à jour : le point de départ de la
-     * plupart des tests. `next_check_due_at` dans le futur = aucun contrôle dû.
-     */
+    /** Un prestataire enrôlé, consentant, et à jour : le point de départ de la plupart des tests. */
     public function enrolled(): self
     {
         return $this->state(fn () => [

@@ -7,28 +7,14 @@ use App\Models\Trade;
 use App\Support\Domain\OrderDraftStatus;
 use Illuminate\Support\Collection;
 
-/**
- * Quelle question fait décrocher les clients.
- *
- * C'est l'outil qui permet d'appliquer la règle des sept questions DANS LA DURÉE. Un parcours ne
- * devient pas trop long d'un coup : il s'allonge d'une question à la fois, chacune parfaitement
- * justifiable prise isolément, et la conversion s'érode sans que personne ne sache où.
- *
- * Deux chiffres distincts, et les confondre serait trompeur.
- *
- * Le TAUX DE RÉPONSE dit combien de clients ont répondu. Bas, il signale une question qu'on saute
- * — ce qui est souvent sain sur une question facultative.
- *
- * L'ABANDON dit combien se sont arrêtés LÀ, c'est-à-dire dont c'est la dernière question
- * renseignée d'une commande jamais confirmée. C'est celui-là qui coûte, et lui seul.
- */
+/** Quelle question fait décrocher les clients. */
 class QuestionInsights
 {
     /**
      * @return Collection<int, array{
-     *     code: string, label: string, sort_order: int,
-     *     reached: int, answered: int, answer_rate: float,
-     *     dropped_here: int, drop_rate: float
+     * code: string, label: string, sort_order: int,
+     * reached: int, answered: int, answer_rate: float,
+     * dropped_here: int, drop_rate: float
      * }>
      */
     public function forTrade(Trade $trade): Collection
@@ -83,12 +69,7 @@ class QuestionInsights
         })->values();
     }
 
-    /**
-     * Les questions qui font décrocher au-delà du seuil.
-     *
-     * Le volume compte autant que le taux : un abandon sur deux commandes ne dit rien, et
-     * afficher « 50 % d'abandon » dessus ferait supprimer une question parfaitement saine.
-     */
+    /** Les questions qui font décrocher au-delà du seuil. */
     public function worstOffenders(Trade $trade, float $threshold = 0.15, int $minimumVolume = 20): Collection
     {
         return $this->forTrade($trade)

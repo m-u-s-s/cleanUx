@@ -11,20 +11,7 @@ use App\Support\Domain\MissionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Démarrage d'une mission depuis l'application prestataire.
- *
- * L'API exposait `start` (qui met en route), `arrive` et `complete` — mais RIEN pour faire passer
- * une mission de `arrived` à `started`. Ce passage n'existait que sur des routes web à session
- * (routes/missions.php), inaccessibles à une app authentifiée par jeton : un prestataire arrivé
- * sur place ne pouvait donc pas démarrer sa mission depuis son téléphone.
- *
- * L'écran, lui, proposait un bouton « Démarrer mission » qui postait vers /start — donc vers
- * setEnRoute — et recevait un 422, la transition arrived → en_route étant invalide.
- *
- * Le code de démarrage est envoyé au client par SMS à l'arrivée (setArrived) : c'est lui qui
- * atteste la présence. Cet endpoint le réclame, sur le modèle de `complete` et de son end_code.
- */
+/** Démarrage d'une mission depuis l'application prestataire. */
 class ProviderMissionBeginTest extends TestCase
 {
     use RefreshDatabase;
@@ -43,9 +30,7 @@ class ProviderMissionBeginTest extends TestCase
         $this->assertNotNull($mission->fresh()->actual_start_at);
     }
 
-    /**
-     * Le code atteste la présence du client : sans lui, la mission ne démarre pas.
-     */
+    /** Le code atteste la présence du client : sans lui, la mission ne démarre pas. */
     public function test_starting_without_the_code_is_refused(): void
     {
         [$provider, $mission] = $this->arrivedMission();
@@ -70,9 +55,7 @@ class ProviderMissionBeginTest extends TestCase
         $this->assertSame(MissionStatus::ARRIVED, $mission->fresh()->status);
     }
 
-    /**
-     * Un prestataire ne démarre que SES missions — même garde que les autres actions du cycle.
-     */
+    /** Un prestataire ne démarre que SES missions — même garde que les autres actions du cycle. */
     public function test_another_provider_cannot_start_the_mission(): void
     {
         [, $mission] = $this->arrivedMission();

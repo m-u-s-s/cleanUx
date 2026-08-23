@@ -10,32 +10,10 @@ use DomainException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * LES FEUILLES D'HEURES (E20) — ce qui s'est réellement passé.
- *
- * LE POINTAGE SE REMPLIT TOUT SEUL, sinon personne ne le remplit. C'est la leçon de tous les
- * systèmes de pointage : celui qui demande un geste de plus au moment où l'on range son matériel
- * n'est pas rempli, ou l'est de mémoire trois jours plus tard — c'est-à-dire faux. La session de
- * suivi sait déjà quand la personne est entrée en mission, quand elle a fini, et combien de temps
- * elle a été en pause : ces trois données SONT le pointage.
- *
- * LA CORRECTION MANUELLE EST POSSIBLE, ET APPROUVÉE. Un GPS coupé au sous-sol, une application
- * fermée par erreur : refuser toute correction ferait perdre des heures réellement travaillées.
- * Mais une correction non approuvée rendrait le pointage déclaratif, ce que ni la paie ni le client
- * ne peuvent accepter — la ligne saisie à la main attend donc un responsable.
- *
- * LES MINUTES SONT FIGÉES À L'ÉCRITURE, jamais recalculées. Une feuille d'heures se relit des mois
- * plus tard, après que la mission, le fuseau ou les pauses ont changé : recalculer donnerait une
- * valeur différente de celle qui a été payée, et personne ne saurait expliquer l'écart.
- */
+/** LES FEUILLES D'HEURES (E20) — ce qui s'est réellement passé. */
 class TimesheetService
 {
-    /**
-     * Enregistre le pointage d'une mission depuis sa session de suivi.
-     *
-     * Idempotent par (mission, personne) : une clôture rejouée par la file ne doit pas doubler les
-     * heures de quelqu'un.
-     */
+    /** Enregistre le pointage d'une mission depuis sa session de suivi. */
     public function pointerDepuisLeSuivi(Mission $mission, TripTrackingSession $session): ?TimeEntry
     {
         $userId = (int) ($session->provider_user_id ?? 0);
@@ -157,13 +135,7 @@ class TimesheetService
             ->values();
     }
 
-    /**
-     * L'export paie, en CSV.
-     *
-     * POINT-VIRGULE ET NON VIRGULE : les tableurs francophones ouvrent le CSV avec le séparateur
-     * régional, et une virgule leur ferait tout empiler dans la première colonne. Le fichier est
-     * destiné à être ouvert par un humain avant d'être versé à la paie.
-     */
+    /** L'export paie, en CSV. */
     public function exporterCsv(int $organisationId, Carbon $debut, Carbon $fin): string
     {
         $lignes = ['user_id;nom;lignes;minutes_travaillees;heures_decimales'];

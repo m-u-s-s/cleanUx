@@ -6,20 +6,7 @@ use App\Models\ServiceCatalog;
 use App\Models\Trade;
 use Illuminate\Database\Seeder;
 
-/**
- * Phase 1 — Services de démo pour les corps de métier autres que Nettoyage.
- *
- * Le seeder historique `ServiceCatalogSeeder` ne crée que des services de
- * nettoyage. Sans ce seeder, la liste de services dans /admin/services
- * et dans la réservation client paraît vide pour les métiers Peinture,
- * Bâtiment, Levage, Jardinage — donc le multi-trade reste invisible côté
- * UX même quand TradeSeeder a tourné.
- *
- * Idempotent : updateOrCreate sur (slug). Re-runnable sans danger.
- *
- * À ajouter dans la chaîne de seeding (déjà fait dans ReferencePlatformSeeder
- * en mai 2026 si tu prends le patch correspondant).
- */
+/** Phase 1 — Services de démo pour les corps de métier autres que Nettoyage. */
 class MultiTradeDemoServicesSeeder extends Seeder
 {
     public function run(): void

@@ -10,9 +10,6 @@ use App\Models\TranslationOverride;
 /**
  * Les traductions surchargees sans déploiement.
  *
- * Une surcharge PUBLIÉE prend effet immédiatement pour toute la langue concernée : la bascule
- * de publication est donc annoncee comme destructive, meme si elle n'efface rien.
- *
  * @extends EloquentResource<TranslationOverride>
  */
 class TranslationResource extends EloquentResource
@@ -73,11 +70,7 @@ class TranslationResource extends EloquentResource
     public function formFields(): array
     {
         return [
-            /*
-             * La clé, le groupe et la locale IDENTIFIENT la surcharge : les modifier ne
-             * corrigerait pas une traduction, cela en créerait une autre et laisserait la
-             * première en place. Seule la VALEUR se modifie ici.
-             */
+            // La clé, le groupe et la locale IDENTIFIENT la surcharge : les modifier ne corrigerait pas une traduction, cela en créerait une autre et laisserait la première en place.
             // La locale et la clé sont obligatoires en base : sans elles la création échoue en
             // 500. Les modifier sur une surcharge EXISTANTE en crée une seconde plutôt que de
             // corriger la première — c'est le prix d'un formulaire unique pour créer et éditer.

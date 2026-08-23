@@ -13,12 +13,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-/**
- * Wizard d'onboarding KYB B2B en 3 étapes :
- *   1. Informations légales (nom, pays, identifiant, TVA, adresse)
- *   2. Upload documents (Kbis, articles, etc.)
- *   3. Vérifications + récapitulatif
- */
+/** Wizard d'onboarding KYB B2B en 3 étapes : 1. */
 class ClientKybOnboarding extends Component
 {
     use WithFileUploads;

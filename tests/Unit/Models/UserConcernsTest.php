@@ -11,14 +11,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Unit tests for User model concern traits:
- *   - HasAdminCapabilities  (isPlatformAdmin, isSuperAdmin, canAccessAdminModule)
- *   - HasUserTypeChecks     (isCustomer, isProvider, assistantContextRole)
- *   - HasBillingFeatures    (isPremium, hasBillingIssue)
- *
- * No HTTP stack involved — all assertions on model instances directly.
- */
+/** Unit tests for User model concern traits: - HasAdminCapabilities (isPlatformAdmin, isSuperAdmin, canAccessAdminModule) - HasUserTypeChecks (isCustomer, isProvider, assistantContextRole) - HasBillingFeatures (isPremium, hasBillingIssue) No HTTP stack involved — all assertions on model instances directly. */
 class UserConcernsTest extends TestCase
 {
     use RefreshDatabase;

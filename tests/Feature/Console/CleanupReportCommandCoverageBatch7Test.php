@@ -6,16 +6,7 @@ use App\Console\Commands\CleanupReport;
 use Illuminate\Console\Command;
 use Tests\TestCase;
 
-/**
- * Coverage for {@see CleanupReport}.
- *
- * The 'app:cleanup-report' command scans the application's Livewire components,
- * Blade views and registered routes, then prints a synthetic cleanup report. It
- * has no external dependencies or DB writes, so a single end-to-end run drives
- * handle() plus every private discovery/report helper (component discovery,
- * route-linked detection, view enumeration, alias parsing and the three report
- * sections) against the real application tree.
- */
+/** Coverage for {@see CleanupReport}. */
 class CleanupReportCommandCoverageBatch7Test extends TestCase
 {
     public function test_cleanup_report_runs_and_prints_every_section(): void

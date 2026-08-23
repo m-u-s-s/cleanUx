@@ -8,10 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Espace société B2B P1 — détection d'appartenance à une entreprise cliente,
- * condition du pont de navigation vers l'espace société.
- */
+/** Espace société B2B P1 — détection d'appartenance à une entreprise cliente, condition du pont de navigation vers l'espace société. */
 class BelongsToClientCompanyTest extends TestCase
 {
     use RefreshDatabase;

@@ -6,12 +6,7 @@ use Database\Seeders\Concerns\SeedsOnlyExistingColumns;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Seed the ~50 canonical services across all 12 trades.
- *
- * Idempotent: uses updateOrInsertTable keyed on `code`.
- * Requires TradeSeeder to have run first (resolves trade IDs by slug).
- */
+/** Seed the ~50 canonical services across all 12 trades. */
 class ServiceCatalogSeeder extends Seeder
 {
     use SeedsOnlyExistingColumns;

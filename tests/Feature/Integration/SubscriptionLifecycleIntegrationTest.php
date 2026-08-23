@@ -16,11 +16,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
-/**
- * Test E2E Subscriptions v2 : subscribe → cycle → tick → bill → cancel.
- * Vérifie que les webhooks subscription.created + subscription.cancelled
- * sont émis et que tout le chain produit les rows attendues.
- */
+/** Test E2E Subscriptions v2 : subscribe → cycle → tick → bill → cancel. */
 class SubscriptionLifecycleIntegrationTest extends TestCase
 {
     use RefreshDatabase;

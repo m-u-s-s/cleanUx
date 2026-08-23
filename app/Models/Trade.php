@@ -20,29 +20,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * Trade — corps de métier (Nettoyage, Bâtiment, Peinture, Levage…).
  *
- * Regroupe les ServiceCatalog en familles cohérentes côté UI marketplace
- * et côté matching prestataire (skills_required, certifications…).
- *
  * @property int $id
  * @property string $slug
  * @property string $code
  * @property string $name
  * @property bool $is_active
  * @property int $sort_order
- *
- * La ligne de rattachement `trade_user`, présente UNIQUEMENT quand le métier a été chargé depuis un
- * prestataire (`$user->trades`). Elle porte `is_primary`, `proficiency` et `notes` — le niveau
- * déclaré sur CE métier, qui n'a de sens que pour cette personne-là.
  * @property-read TradeUser|null $pivot
- *
- * ── POURQUOI LE MÉTIER SE TRADUIT ────────────────────────────────────────────────────────────
- *
- * Le questionnaire du métier était traduisible depuis longtemps ; le métier lui-même ne l'était
- * pas. Un client néerlandophone choisissait donc « Nettoyage de vitres » en français, puis
- * répondait en néerlandais aux questions de ce métier. La chaîne se traduisait par le milieu.
- *
- * Trois champs : `name`, `short_description`, `description`. La liste est FERMÉE côté écran
- * d'administration — voir `CatalogCenter::CHAMPS_TRADUISIBLES`.
  */
 class Trade extends Model implements TranslatesCatalogLabels
 {
@@ -74,14 +58,7 @@ class Trade extends Model implements TranslatesCatalogLabels
         'metadata',
         // Chantier A — propriétés métier exploitées par le pricing/workflow
         'default_hourly_rate',
-        /*
-         * LE SEUL DRAPEAU D'UNITÉ QUI PILOTE UN PRIX.
-         *
-         * `billing_unit` et `pricing_unit` existent plus bas et décrivent la même chose ; ni l'une
-         * ni l'autre n'entre dans un calcul (`pricing_unit` n'est testée que contre `QUOTE_ONLY`).
-         * Elles restent pour l'affichage. Quand il faut savoir si un métier se facture au temps
-         * passé, c'est CETTE colonne qu'on lit — et aucune autre.
-         */
+        // LE SEUL DRAPEAU D'UNITÉ QUI PILOTE UN PRIX.
         'hourly_billing',
         'emergency_multiplier',
         'night_multiplier',
@@ -109,11 +86,7 @@ class Trade extends Model implements TranslatesCatalogLabels
         'allows_asap',
         'allows_bundle',
         'published_at',
-        /*
-         * Règles du transport de personnes — véhicule récent, carte grise, assurance. Décision
-         * d'exploitation, indépendante du fait que le parcours décrive un trajet : une dépanneuse
-         * fait un trajet sans obéir aux règles taxi.
-         */
+        // Règles du transport de personnes — véhicule récent, carte grise, assurance.
         'taxi_rules',
         // Quand chaque exigence est née. La période de grâce laissée aux prestataires déjà
         // inscrits part de ces dates, jamais de « maintenant ».
@@ -157,22 +130,6 @@ class Trade extends Model implements TranslatesCatalogLabels
     /**
      * RESTREINDRE UN CATALOGUE AU MODE DEMANDÉ — « l'immédiat ne contient que l'immédiat ».
      *
-     * DEUX VERROUS, ET ILS NE DISENT PAS LA MÊME CHOSE. `allows_asap` dit qu'un métier PEUT se
-     * faire dans l'heure — un ravalement de façade ne le peut nulle part. La ligne `(métier, zone)`
-     * de `trade_zone_pricing` dit qu'on l'a ouvert ICI : c'est la décision d'exploitation, et
-     * promettre un dépannage dans une zone où personne n'est jamais en ligne fait attendre le
-     * client pour rien.
-     *
-     * LE SECOND VERROU N'AGIT QU'UNE FOIS L'ADRESSE CONNUE. Avant, la zone est inconnue : filtrer
-     * dessus viderait l'écran pour tout le monde, y compris là où l'immédiat est ouvert.
-     *
-     * SANS MODE DEMANDÉ, RIEN N'EST RETIRÉ — le client qui entre par le catalogue voit tout, et
-     * choisit son mode métier par métier. C'est le parcours historique, et il reste juste.
-     *
-     * La règle vit ICI et non dans l'écran qui l'emploie : le parcours de commande, le carrousel de
-     * secteurs et le décompte par secteur posent la même question, et trois copies auraient fini
-     * par répondre différemment.
-     *
      * @param  Builder<Trade>  $query
      */
     public function scopeServableEnMode(Builder $query, ?string $mode, ?int $zoneId = null): void
@@ -195,25 +152,13 @@ class Trade extends Model implements TranslatesCatalogLabels
         }
     }
 
-    /**
-     * Le mode est-il ouvert sur ce métier ?
-     *
-     * Tous les métiers ne se prêtent pas au service immédiat : un ravalement de façade n'est pas
-     * un service Uber. Le défaut de `allows_asap` est donc faux — l'ouvrir est une décision
-     * d'administrateur, jamais un oubli.
-     */
+    /** Le mode est-il ouvert sur ce métier ? */
     public function allowsMode(string $mode): bool
     {
         return (bool) $this->getAttribute(OrderMode::tradeFlag($mode));
     }
 
-    /**
-     * Ce métier emmène-t-il quelqu'un d'un point à un autre ?
-     *
-     * La réponse se dérive du PARCOURS — deux questions de localisation, un départ et une arrivée —
-     * et jamais d'un drapeau posé à côté. La règle vit dans {@see TradeRouteRules} et n'est pas
-     * recopiée ici : une règle d'identité qui existe en deux exemplaires finit toujours par diverger.
-     */
+    /** Ce métier emmène-t-il quelqu'un d'un point à un autre ? */
     public function estUnTrajet(): bool
     {
         return TradeRouteRules::estUnTrajet($this);
@@ -241,9 +186,6 @@ class Trade extends Model implements TranslatesCatalogLabels
 
     /**
      * Questions du parcours de commande, propres a ce metier.
-     *
-     * Les questions GLOBALES (trade_id nul) ne sont pas ici : elles sont assemblees par le
-     * constructeur de questionnaire, qui decide lesquelles s'appliquent.
      *
      * @return HasMany<Question, $this>
      */
@@ -285,8 +227,7 @@ class Trade extends Model implements TranslatesCatalogLabels
     }
 
     /**
-     * Alias historique de `zonePricing()` : les deux nommaient deux tables, ils nomment desormais
-     * la meme ligne (metier, zone).
+     * Alias historique de `zonePricing()` : les deux nommaient deux tables, ils nomment desormais la meme ligne (metier, zone).
      *
      * @return HasMany<TradeZonePricing, $this>
      */
@@ -327,9 +268,7 @@ class Trade extends Model implements TranslatesCatalogLabels
             ->withTimestamps();
     }
 
-    /**
-     * Alias filtré sur les utilisateurs ayant le rôle employé ou prestataire.
-     */
+    /** Alias filtré sur les utilisateurs ayant le rôle employé ou prestataire. */
     public function employees(): BelongsToMany
     {
         return $this->users()
@@ -364,13 +303,7 @@ class Trade extends Model implements TranslatesCatalogLabels
         return $this->icon ?: 'briefcase';
     }
 
-    /*
-     * Le métier porte le prix plancher et les trois interrupteurs de mode.
-     *
-     * Ouvrir `allows_asap` sur un ravalement de façade engage la plateforme à dépêcher quelqu'un
-     * dans l'heure sur un chantier qui dure trois jours. C'est un geste d'administration ordinaire
-     * à l'écran, et lourd de conséquences : il doit être attribuable.
-     */
+    // Le métier porte le prix plancher et les trois interrupteurs de mode.
     protected function auditEventDomain(): string
     {
         return 'catalog';

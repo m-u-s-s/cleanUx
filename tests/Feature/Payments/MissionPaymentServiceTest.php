@@ -13,17 +13,7 @@ use Stripe\Stripe;
 use Tests\Support\Stripe\FakeStripeHttpClient;
 use Tests\TestCase;
 
-/**
- * Smoke tests pour MissionPaymentService. Stripe SDK n'est PAS appelé
- * (l'authorize() throw RuntimeException si provider pas onboarded en Stripe Connect).
- *
- * Couvre les guards :
- *   - Refuse si employé n'a pas de compte Stripe Connect prêt
- *   - Refuse si pas de client Stripe customer associable
- *
- * Les flows réels Stripe::PaymentIntent::create sont testés via webhooks mocks
- * dans Tests/Feature/Payments/StripeWebhookSyncTest et StripeReconciliationServiceTest.
- */
+/** Smoke tests pour MissionPaymentService. */
 class MissionPaymentServiceTest extends TestCase
 {
     use RefreshDatabase;
@@ -61,11 +51,7 @@ class MissionPaymentServiceTest extends TestCase
         );
     }
 
-    /**
-     * Le montant prélevé par Stripe (application_fee_amount) DOIT provenir de la
-     * source de vérité unique (CommissionService) et non d'un calcul env dupliqué.
-     * Avec le flag taux-négocié ON et un prestataire à 10%, la charge réelle = 10%.
-     */
+    /** Le montant prélevé par Stripe (application_fee_amount) DOIT provenir de la source de vérité unique (CommissionService) et non d'un calcul env dupliqué. */
     public function test_application_fee_uses_commission_service_single_source(): void
     {
         config([

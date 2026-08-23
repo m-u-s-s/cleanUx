@@ -12,18 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Service de gestion de la présence provider (Uber-style online/offline).
- *
- * Workflow :
- *  - goOnline : provider démarre sa session (heartbeat starts ticking)
- *  - heartbeat : ping toutes les 30s-2min depuis l'app provider
- *  - goBusy : déclenché auto quand provider accepte une mission
- *  - goBreak : pause manuelle (lunch, etc.)
- *  - goOffline : fin de session manuelle ou auto-stale après N min
- *
- * Idempotent : transitions multiples vers même status sont no-op (mise à jour heartbeat seulement).
- */
+/** Service de gestion de la présence provider (Uber-style online/offline). */
 class ProviderPresenceService
 {
     public function presenceFor(User $provider): ProviderPresence
@@ -44,16 +33,7 @@ class ProviderPresenceService
         ?string $deviceInfo = null,
     ): ProviderPresence {
 
-        /*
-         * LA PORTE DE LA MISE EN LIGNE — celle que Bolt a choisie, et c'est la bonne.
-         *
-         * « Passer en ligne » est le moment ou le prestataire declare vouloir travailler : c'est
-         * la qu'il faut savoir qui il est, pas a la connexion. Se connecter pour consulter ses
-         * revenus n'engage personne ; se declarer disponible envoie quelqu'un chez un client.
-         *
-         * `deviceInfo` sert de signal d'appareil : un telephone jamais vu declenche un controle
-         * hors cadence, exactement comme Uber le fait sur les comptes multi-appareils.
-         */
+        // LA PORTE DE LA MISE EN LIGNE — celle que Bolt a choisie, et c'est la bonne.
         $verdict = app(FaceCheckGate::class)->inspectProvider($provider, $deviceInfo);
 
         if (! $verdict->allowed()) {
@@ -140,10 +120,7 @@ class ProviderPresenceService
         return $this->transition($provider, ProviderPresence::STATUS_OFFLINE);
     }
 
-    /**
-     * Auto-marque offline les providers actifs sans heartbeat depuis N minutes.
-     * Retourne le nombre de providers transitionnés.
-     */
+    /** Auto-marque offline les providers actifs sans heartbeat depuis N minutes. */
     public function scanStale(?int $thresholdMinutes = null): int
     {
         $threshold = $thresholdMinutes ?? (int) Config::get('presence.stale_after_minutes', 5);
@@ -184,10 +161,7 @@ class ProviderPresenceService
         });
     }
 
-    /**
-     * Helper pour dispatch matching : retourne les providers online disponibles.
-     * Acceptés : status=online ET heartbeat récent (< stale threshold).
-     */
+    /** Helper pour dispatch matching : retourne les providers online disponibles. */
     public function availableProviderIds(?int $thresholdMinutes = null): array
     {
         $threshold = $thresholdMinutes ?? (int) Config::get('presence.stale_after_minutes', 5);
@@ -226,11 +200,7 @@ class ProviderPresenceService
         return $presence->fresh();
     }
 
-    /**
-     * Mirror the v2 presence state into the legacy ProviderProfile.is_online flag that the
-     * dispatch/matching path reads. No-op if the provider has no profile or the column is
-     * absent. (F2)
-     */
+    /** Mirror the v2 presence state into the legacy ProviderProfile.is_online flag that the dispatch/matching path reads. */
     protected function syncLegacyOnlineFlag(User $provider, bool $online): void
     {
         if (! Schema::hasColumn('provider_profiles', 'is_online')) {

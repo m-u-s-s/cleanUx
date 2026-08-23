@@ -6,12 +6,7 @@ use App\Models\Trade;
 use App\Services\Booking\TradeFormRenderer;
 use Tests\TestCase;
 
-/**
- * Unit tests for TradeFormRenderer.
- *
- * These tests do NOT hit the database — Trade models are built
- * in-memory using make() and manually setting booking_form_schema.
- */
+/** Unit tests for TradeFormRenderer. */
 class TradeFormRendererTest extends TestCase
 {
     private TradeFormRenderer $renderer;

@@ -9,16 +9,7 @@ use App\Services\GeolocationV2\GeocodingService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Enrichit MatchingScoreEngine avec un score basé sur distance géographique réelle.
- *
- * Usage (opt-in) : depuis le code qui orchestre le matching, après scoring legacy,
- * appeler `GeoMatchingEnhancer::applyDistanceBonus($provider, $booking, $score)`
- * pour ajuster le score selon proximité haversine.
- *
- * Soft-fail si module geolocation_v2 absent OU coords manquantes — retourne le
- * score original.
- */
+/** Enrichit MatchingScoreEngine avec un score basé sur distance géographique réelle. */
 class GeoMatchingEnhancer
 {
     public function __construct(
@@ -26,16 +17,7 @@ class GeoMatchingEnhancer
         protected GeocodingService $geocoding,
     ) {}
 
-    /**
-     * Retourne un score 0-100 selon distance provider↔booking.
-     * Convention : proche = haut, loin = bas.
-     *  - <= 5 km   => 100
-     *  - 5..15 km  => 90→60
-     *  - 15..30 km => 60→30
-     *  - 30..50 km => 30→10
-     *  - >  50 km  => 0
-     * Retourne null si pas de coordonnées exploitables (caller doit fallback).
-     */
+    /** Retourne un score 0-100 selon distance provider↔booking. */
     public function proximityScore(User $provider, Booking $booking): ?float
     {
         $providerCoords = $this->coordsFor($provider);
@@ -93,10 +75,7 @@ class GeoMatchingEnhancer
         return $out;
     }
 
-    /**
-     * Coordonnées pour un provider : on essaie les colonnes courantes
-     * (latitude/longitude direct, OU base_address geocodable).
-     */
+    /** Coordonnées pour un provider : on essaie les colonnes courantes (latitude/longitude direct, OU base_address geocodable). */
     protected function coordsFor(User $provider): ?array
     {
         if (isset($provider->latitude, $provider->longitude)

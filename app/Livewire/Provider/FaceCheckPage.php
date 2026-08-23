@@ -16,26 +16,13 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-/**
- * LE CONTRÔLE FACIAL SUR LE WEB — la même porte, la même remédiation.
- *
- * La parité n'est pas un confort ici, c'est une condition de fonctionnement : le middleware
- * `face.verified` et `FaceCheckRequiredException` redirigent une session web vers
- * `provider.face-check`. Sans cette page, la redirection retombait sur l'accueil et le prestataire
- * tournait en rond sans jamais comprendre ce qu'on lui demandait.
- *
- * Et la moitié des prestataires de ce dépôt travaillent depuis le web : un module de sécurité
- * qui ne couvrirait que le mobile serait contournable en ouvrant un navigateur.
- */
+/** LE CONTRÔLE FACIAL SUR LE WEB — la même porte, la même remédiation. */
 class FaceCheckPage extends Component
 {
     use WithFileUploads;
 
     /**
      * L'image capturée par le navigateur, téléversée depuis un canevas.
-     *
-     * `#[Locked]` n'a pas de sens sur un téléversement — c'est la validation qui garde ici, et la
-     * décision, elle, appartient entièrement au serveur.
      *
      * @var mixed
      */
@@ -47,11 +34,7 @@ class FaceCheckPage extends Component
 
     public bool $signalementEnvoye = false;
 
-    /**
-     * L'identifiant du contrôle en cours. VERROUILLÉ : c'est une garde. Sans `#[Locked]`, le
-     * navigateur pourrait le remplacer par celui de quelqu'un d'autre par un simple `$set` —
-     * Livewire ne rejoue pas `mount()`, et la propriété publique est écrivable de l'extérieur.
-     */
+    /** L'identifiant du contrôle en cours. VERROUILLÉ : c'est une garde. */
     #[Locked]
     public ?int $controleId = null;
 
@@ -149,9 +132,7 @@ class FaceCheckPage extends Component
         }
     }
 
-    /**
-     * « Ça ne marche pas. » Ouvre un dossier — et ne débloque rien, l'écran le dit.
-     */
+    /** « Ça ne marche pas. » Ouvre un dossier — et ne débloque rien, l'écran le dit. */
     public function signaler(): void
     {
         $this->validate([

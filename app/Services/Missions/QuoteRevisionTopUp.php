@@ -7,26 +7,7 @@ use App\Services\Payments\CommissionService;
 use Illuminate\Support\Facades\Log;
 use Stripe\PaymentIntent;
 
-/**
- * LE COMPLÉMENT — la seule classe de la révision qui parle à Stripe.
- *
- * ── POURQUOI UN COMPLÉMENT ET PAS UNE RÉ-AUTORISATION ────────────────────────────────────────
- *
- * Stripe capture pour MOINS que l'autorisé, jamais pour PLUS. Un devis de 50 € révisé à 300 € ne
- * peut donc pas s'encaisser sur l'empreinte existante. Deux chemins existaient :
- *
- *   annuler puis recréer  un seul objet, mais un TROU entre les deux appels : si la carte refuse
- *                         les 300 €, le prestataire est sur place sans aucune garantie ;
- *   garder et compléter   deux objets, et l'empreinte d'origine n'est jamais perdue.
- *
- * Le second a été retenu. La carte porte alors exactement le total révisé — 50 + 250 —, jamais un
- * centime de plus, et un échec du complément laisse la garantie initiale intacte.
- *
- * ── LA CLASSE EST ISOLÉE POUR ÊTRE REMPLAÇABLE EN TEST ───────────────────────────────────────
- *
- * Le reste du module — le constat, les remises, la fenêtre, l'arbitrage — se prouve au centime sans
- * jamais parler au réseau. C'est la doctrine déjà suivie par le règlement du temps supplémentaire.
- */
+/** LE COMPLÉMENT — la seule classe de la révision qui parle à Stripe. */
 class QuoteRevisionTopUp
 {
     public function __construct(
@@ -92,11 +73,7 @@ class QuoteRevisionTopUp
                 ],
             ]);
 
-            /*
-             * `requires_capture` EST LE SUCCÈS ATTENDU d'une capture manuelle — pas `succeeded`.
-             * Exiger le second refuserait toutes les autorisations réussies, et la révision
-             * tomberait en `payment_failed` alors que l'argent est bien bloqué.
-             */
+            // `requires_capture` EST LE SUCCÈS ATTENDU d'une capture manuelle — pas `succeeded`.
             $statut = (string) ($intent->status ?? '');
 
             if (! in_array($statut, ['requires_capture', 'succeeded'], true)) {
@@ -114,12 +91,7 @@ class QuoteRevisionTopUp
         }
     }
 
-    /**
-     * La carte DÉJÀ utilisée pour cette réservation — jamais « une » carte du client.
-     *
-     * Débiter celle qu'il n'a pas choisie pour cette commande est une réclamation garantie. Même
-     * règle que le règlement du temps supplémentaire.
-     */
+    /** La carte DÉJÀ utilisée pour cette réservation — jamais « une » carte du client. */
     private function carteDeLaReservation(?string $intentDOrigine): ?string
     {
         if ($intentDOrigine === null) {

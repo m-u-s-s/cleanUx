@@ -7,14 +7,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * VerifyBackup — monthly verification that backups are present and non-empty.
- *
- * Checks the most recent backup file in the configured backup disk,
- * validates its size, and records the outcome via ActivityLogger.
- *
- * Schedule: monthly (registered in Kernel).
- */
+/** VerifyBackup — monthly verification that backups are present and non-empty. */
 class VerifyBackup extends Command
 {
     protected $signature = 'backup:verify

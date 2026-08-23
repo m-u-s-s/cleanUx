@@ -65,18 +65,7 @@ class KycController extends Controller
 
         return response()->json([
             'has_verification' => true,
-            /*
-             * L'ETAT, EN UN MOT, PARCE QUE C'EST CE QUE L'ECRAN DEMANDE.
-             *
-             * `KYCScreen` teste `status.verified` depuis toujours ; cette reponse ne l'a jamais
-             * envoye. La branche « pas encore verifie » etait donc la SEULE atteignable : releve a
-             * l'ecran, un prestataire dont l'identite est validee lisait quand meme « Completez la
-             * verification pour recevoir des missions », sous un badge qui disait le contraire.
-             *
-             * La source de verite reste `provider_profiles.verification_status`, celle que
-             * `KycVerificationService::markProviderApproved()` ecrit. On ne la recalcule pas ici :
-             * on la nomme.
-             */
+            // L'ETAT, EN UN MOT, PARCE QUE C'EST CE QUE L'ECRAN DEMANDE.
             'verified' => $this->estVerifie($request),
             'verification_id' => $verification->id,
             'provider' => $verification->provider,

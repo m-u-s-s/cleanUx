@@ -7,14 +7,7 @@ use App\Models\CancellationPolicyTier;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Résout la policy + tier applicable pour un booking + actor + temps.
- *
- *   - Filtre par actor_role (client/provider/both)
- *   - Filtre par trade (trade specific wins, sinon catch-all)
- *   - Filtre par validity period
- *   - Tier match : min_hours_before ≤ hours < max_hours_before (max null = open-ended)
- */
+/** Résout la policy + tier applicable pour un booking + actor + temps. */
 class CancellationPolicyResolver
 {
     public function resolveForBooking(int $bookingId, string $actorRole, int $hoursBefore, ?\DateTimeInterface $at = null): array

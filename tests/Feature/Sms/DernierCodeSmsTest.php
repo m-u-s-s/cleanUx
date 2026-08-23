@@ -7,18 +7,7 @@ use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * RELIRE LES CODES SANS TÉLÉPHONE — et refuser de le faire en production.
- *
- * Un émulateur ne reçoit pas de SMS, et toute la fin du parcours terrain en dépend : code de début,
- * code de fin, vérification de numéro. En développement le pilote `mock` n'envoie pas le message,
- * il l'ENREGISTRE — la commande ne fait donc que relire ce qui est déjà en clair dans le registre.
- *
- * LE REFUS EN PRODUCTION EST LE CŒUR DE CE FICHIER. Là-bas, ce même registre contient les messages
- * réellement partis vers de vrais numéros : les afficher sur une console serait exactement la fuite
- * que le hachage des codes cherche à éviter, avec la bénédiction d'un outil maison. Un garde qu'on
- * ne teste pas est un garde qu'on retire par mégarde.
- */
+/** RELIRE LES CODES SANS TÉLÉPHONE — et refuser de le faire en production. */
 class DernierCodeSmsTest extends TestCase
 {
     use RefreshDatabase;

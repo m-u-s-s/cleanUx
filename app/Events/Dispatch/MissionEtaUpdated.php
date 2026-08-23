@@ -7,14 +7,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Phase 13 — Event broadcasté quand l'ETA d'une mission est mis à jour.
- *
- * Broadcasté sur le channel privé "mission.{id}" — le client (web ou app
- * mobile) écoute ce channel pour mettre à jour son écran de tracking.
- *
- * Émis automatiquement par MissionTrackingPointObserver après chaque ping GPS.
- */
+/** Phase 13 — Event broadcasté quand l'ETA d'une mission est mis à jour. */
 class MissionEtaUpdated implements ShouldBroadcast
 {
     use Dispatchable;

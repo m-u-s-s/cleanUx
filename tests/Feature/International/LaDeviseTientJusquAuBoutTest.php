@@ -12,44 +12,12 @@ use App\Support\International\Devise;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LA DEVISE NE DOIT PAS SE PERDRE ENTRE LA COMMANDE ET LE VERSEMENT.
- *
- * Le parcours de commande a été ramené sur une autorité unique, tirée de la position. Tout ce qui
- * vient APRÈS — pourboire, devis, facture, forfait, portefeuille, transfert Stripe — recopiait
- * `'EUR'`. Une commande marocaine partait donc juste et devenait fausse à la ligne suivante, sans
- * qu'aucune erreur ne soit levée : quinze littéraux et une trentaine de replis `?? 'EUR'`, chacun
- * parfaitement raisonnable isolément.
- *
- * ── LES DEUX QUI FAISAIENT LE PLUS DE MAL ────────────────────────────────────────────────────
- *
- * LE PORTEFEUILLE. `balance()` prenait `string $currency = 'EUR'` et filtrait dessus. Pour un
- * prestataire payé en dirhams, la requête ne trouvait AUCUNE ligne : son portefeuille affichait
- * zéro. Pas d'erreur, pas de trace — un professionnel à qui l'on montre qu'on ne lui doit rien.
- *
- * LE TRANSFERT STRIPE. `ProcessProviderPayouts` envoyait `'currency' => 'eur'` sur un encaissement
- * qui pouvait être en dirhams. C'est le seul endroit de ce lot où de l'argent BOUGE réellement.
- *
- * ── ET LA LISTE PUBLIQUE DES PAYS ────────────────────────────────────────────────────────────
- *
- * `/api/countries` servait une constante de neuf pays européens. Créer le Maroc dans `/admin`
- * ouvrait bien les zones et posait bien MAD — et le pays n'apparaissait nulle part côté client. Le
- * catalogue géographique et cette liste décrivaient deux mondes.
- */
+/** LA DEVISE NE DOIT PAS SE PERDRE ENTRE LA COMMANDE ET LE VERSEMENT. */
 class LaDeviseTientJusquAuBoutTest extends TestCase
 {
     use RefreshDatabase;
 
-    /*
-     * LES DEUX MOTIFS SONT DES CONSTANTES, ET LE TEMOIN EMPLOIE LES MEMES.
-     *
-     * Ils etaient recopies : le balayage et son temoin portaient deux versions de la meme
-     * expression, dont l'une mal echappee -- `"\$currency"` interpole la variable au lieu de
-     * chercher le texte, et le test tombait sur « Undefined variable ». Le temoin, lui, restait
-     * vert : il eprouvait une expression que le code n'utilisait pas.
-     *
-     * Un temoin qui mesure une COPIE ne prouve rien de l'original. Une seule definition, donc.
-     */
+    // LES DEUX MOTIFS SONT DES CONSTANTES, ET LE TEMOIN EMPLOIE LES MEMES.
 
     /** `'currency' => 'EUR'` — l'affectation d'un litteral. */
     private const MOTIF_AFFECTATION = "/'currency'\s*=>\s*'[A-Za-z]{3}'/";
@@ -76,12 +44,7 @@ class LaDeviseTientJusquAuBoutTest extends TestCase
         );
     }
 
-    /**
-     * TÉMOIN — un prestataire en euros voit toujours le sien.
-     *
-     * Sans lui, le test précédent serait vert sur une implémentation qui aurait simplement retiré
-     * le filtre de devise : les soldes de deux monnaies s'additionneraient, ce qui est un faux.
-     */
+    /** TÉMOIN — un prestataire en euros voit toujours le sien. */
     public function test_temoin_un_prestataire_en_euros_voit_toujours_le_sien(): void
     {
         $prestataire = User::factory()->employe()->create();
@@ -94,12 +57,7 @@ class LaDeviseTientJusquAuBoutTest extends TestCase
         $this->assertSame(80.0, $solde['available']);
     }
 
-    /**
-     * ON N'ADDITIONNE PAS DEUX MONNAIES.
-     *
-     * Un total unique mélangeant euros et dirhams serait un nombre qui ne veut rien dire. Le solde
-     * rendu est celui de la monnaie la plus récente, et la clé `currency` le dit.
-     */
+    /** ON N'ADDITIONNE PAS DEUX MONNAIES. */
     public function test_deux_monnaies_ne_sadditionnent_pas(): void
     {
         $prestataire = User::factory()->employe()->create();
@@ -157,30 +115,10 @@ class LaDeviseTientJusquAuBoutTest extends TestCase
         $this->assertSame('MAD', $reservation->refresh()->currency);
     }
 
-    /**
-     * PLUS AUCUNE DEVISE LITTÉRALE DANS `app/` — ON BALAIE TOUT, PLUS UNE LISTE BLANCHE.
-     *
-     * LA PREMIÈRE VERSION DE CE TEST ÉNUMÉRAIT HUIT FICHIERS, ceux qu'on venait de reprendre. Elle
-     * était verte pendant que `TradePricingEngine` continuait d'étiqueter « EUR » le prix affiché
-     * au client et le devis du prestataire — un chantier marocain chiffré au tarif marocain et
-     * présenté en euros. Une liste blanche ne protège que de ce qu'on a déjà vu ; c'est un
-     * inventaire, pas un garde.
-     *
-     * On balaie donc `app/` en entier. Deux exceptions, et les deux sont des TABLES par pays où
-     * chaque `'eur'` est la donnée juste de sa ligne, pas un repli : {@see StripeCountryMapper} et
-     * {@see CountryConfigService}. Les inscrire ici les rend visibles ; les
-     * omettre du balayage les aurait rendues invisibles.
-     */
+    /** PLUS AUCUNE DEVISE LITTÉRALE DANS `app/` — ON BALAIE TOUT, PLUS UNE LISTE BLANCHE. */
     public function test_aucune_devise_litterale_ne_subsiste_dans_app(): void
     {
-        /*
-         * LES TABLES PAR PAYS, où un code de devise EST la donnée.
-         *
-         * `StripeCountryMapper` dit dans quelle monnaie chaque pays règle chez Stripe ;
-         * `CountryConfigService` porte le socle servi quand la base est vide. Y remplacer les
-         * littéraux par un appel ferait dire à toutes les lignes la même chose, c'est-à-dire
-         * détruirait l'information.
-         */
+        // LES TABLES PAR PAYS, où un code de devise EST la donnée.
         $tablesParPays = [
             'app/Services/Payments/StripeCountryMapper.php',
             'app/Services/Country/CountryConfigService.php',
@@ -217,13 +155,7 @@ class LaDeviseTientJusquAuBoutTest extends TestCase
         );
     }
 
-    /**
-     * TÉMOIN DE PORTÉE — le balayage lit bien tout `app/`.
-     *
-     * Sans lui, le test précédent serait vert sur un chemin faux ou un itérateur vide : il
-     * compterait zéro coupable parmi zéro fichier, et n'annoncerait rien d'autre que sa propre
-     * impuissance. C'est exactement ce qui rend une liste blanche dangereuse.
-     */
+    /** TÉMOIN DE PORTÉE — le balayage lit bien tout `app/`. */
     public function test_temoin_le_balayage_lit_bien_tout_app(): void
     {
         $sources = $this->sourcesDeApp();
@@ -233,11 +165,7 @@ class LaDeviseTientJusquAuBoutTest extends TestCase
         $this->assertArrayHasKey('app/Services/Payments/ProviderWalletService.php', $sources);
     }
 
-    /**
-     * TÉMOIN DU MOTIF — il reconnaît les deux formes fautives, et épargne les innocentes.
-     *
-     * Sans lui, le test précédent serait vert sur une expression qui ne mord jamais.
-     */
+    /** TÉMOIN DU MOTIF — il reconnaît les deux formes fautives, et épargne les innocentes. */
     public function test_temoin_les_motifs_reconnaissent_les_formes_fautives(): void
     {
         $this->assertSame(1, preg_match(self::MOTIF_AFFECTATION, "['currency' => 'eur']"));
@@ -264,13 +192,7 @@ class LaDeviseTientJusquAuBoutTest extends TestCase
         $this->assertSame('MAD', $liste['MA']['currency']);
     }
 
-    /**
-     * UN PAYS CRÉÉ MAIS PAS ENCORE OUVERT RESTE INVISIBLE.
-     *
-     * `CountryCenter` crée tout pays fermé par défaut, pour qu'une faute de frappe ne rende pas un
-     * marché commandable. La liste publique doit suivre la même règle, sinon le garde ne sert à
-     * rien.
-     */
+    /** UN PAYS CRÉÉ MAIS PAS ENCORE OUVERT RESTE INVISIBLE. */
     public function test_un_pays_non_actif_reste_hors_de_la_liste(): void
     {
         Country::factory()->create([
@@ -283,13 +205,7 @@ class LaDeviseTientJusquAuBoutTest extends TestCase
         $this->assertArrayNotHasKey('MA', app(CountryConfigService::class)->all());
     }
 
-    /**
-     * TÉMOIN — sans aucun pays en base, le socle répond encore.
-     *
-     * C'est le cas d'une installation neuve. Sans ce repli, `/api/countries` rendrait un tableau
-     * vide et tous les sélecteurs de pays des applications se videraient d'un coup — on aurait
-     * remplacé une liste incomplète par aucune liste.
-     */
+    /** TÉMOIN — sans aucun pays en base, le socle répond encore. */
     public function test_temoin_une_base_vide_rend_encore_le_socle(): void
     {
         $this->assertSame(0, Country::query()->count());
@@ -300,13 +216,7 @@ class LaDeviseTientJusquAuBoutTest extends TestCase
         $this->assertSame('EUR', $liste['BE']['currency']);
     }
 
-    /**
-     * ON N'INVENTE PAS UN TAUX DE TVA POUR UN PAYS QU'ON NE CONNAÎT PAS.
-     *
-     * Le socle porte des champs que la base n'a pas — taux de référence, documents d'identité,
-     * pays Stripe. Recopier ceux de la Belgique sur le Maroc produirait un faux qui a l'air d'une
-     * donnée, et c'est exactement la classe de défaut que ce lot corrige.
-     */
+    /** ON N'INVENTE PAS UN TAUX DE TVA POUR UN PAYS QU'ON NE CONNAÎT PAS. */
     public function test_un_pays_hors_socle_ne_recupere_pas_la_tva_belge(): void
     {
         Country::factory()->create([

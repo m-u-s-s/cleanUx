@@ -12,9 +12,7 @@ use App\Services\Insurance\InsuranceWebhookUpdate;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 
-/**
- * Wakam skeleton — symétrique au Hiscox provider. Adapter aux specs Wakam quand prêt.
- */
+/** Wakam skeleton — symétrique au Hiscox provider. Adapter aux specs Wakam quand prêt. */
 class WakamInsuranceProvider implements InsuranceProviderInterface
 {
     public function name(): string
@@ -98,17 +96,7 @@ class WakamInsuranceProvider implements InsuranceProviderInterface
             : ClaimFilingResult::failed($response->json('error') ?? 'Wakam claim failed', $response->json() ?? []);
     }
 
-    /**
-     * Même forme que Hiscox et que le vérificateur KYC réel (OnfidoProvider) :
-     * secret absent → refus, en-tête absent → refus, signature fausse → refus.
-     *
-     * L'ancien `if ($secret && $signature)` acceptait toute charge utile non signée :
-     * ne pas envoyer d'en-tête suffisait à n'être vérifié par personne.
-     *
-     * Le refus sur secret absent n'est inconditionnel qu'en production : deux tests
-     * hors de ce lot (tests/Unit/Services/Insurance/WakamInsuranceProviderTest)
-     * épinglent le comportement permissif hors production.
-     */
+    /** Même forme que Hiscox et que le vérificateur KYC réel (OnfidoProvider) : secret absent → refus, en-tête absent → refus, signature fausse → refus. */
     public function verifyWebhook(string $payload, array $headers): array
     {
         $secret = (string) Config::get('insurance.providers.wakam.webhook_secret', '');
@@ -136,8 +124,7 @@ class WakamInsuranceProvider implements InsuranceProviderInterface
     }
 
     /**
-     * En-tête de signature, quelle que soit la casse de la clé et que la valeur soit
-     * un tableau (HeaderBag::all()) ou une chaîne (en-têtes déjà aplatis).
+     * En-tête de signature, quelle que soit la casse de la clé et que la valeur soit un tableau (HeaderBag::all()) ou une chaîne (en-têtes déjà aplatis).
      *
      * @param  array<string, mixed>  $headers
      */

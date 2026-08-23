@@ -12,16 +12,7 @@ use App\Models\MissionQualityReview;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
-/**
- * Phase 5.1 — Calcule les vraies statistiques contextuelles pour le chatbot.
- *
- * Remplace les placeholders zéro-valeur de AssistantContextBuilder.
- * Cache 60s pour éviter de recalculer à chaque message.
- *
- * Usage :
- *   $stats = app(AssistantStats::class)->forUser($user);
- *   $activeMissions = $stats['active_missions'];
- */
+/** Phase 5.1 — Calcule les vraies statistiques contextuelles pour le chatbot. */
 class AssistantStats
 {
     private const CACHE_TTL = 60; // secondes
@@ -137,17 +128,7 @@ class AssistantStats
     private function teamName(User $user): ?string
     {
         try {
-            /*
-             * LA RELATION S'APPELLE `fieldTeam`, PAS `team` (corrigé le 2026-08-05).
-             *
-             * `FieldTeamMember` n'expose que `fieldTeam()` et `user()`. Charger `team` levait donc
-             * une `RelationNotFoundException` à chaque exécution, et la lecture qui suivait
-             * (`$member?->team?->name`) aurait de toute façon toujours rendu `null` : l'opérateur
-             * de sécurité masquait le nom vide au lieu de le signaler.
-             *
-             * Trouvé par `RelationsEagerLoadExistentesTest`, en lisant le code — pas en exécutant
-             * ce chemin, que rien ne couvrait.
-             */
+            // LA RELATION S'APPELLE `fieldTeam`, PAS `team` (corrigé le 2026-08-05).
             $member = FieldTeamMember::query()
                 ->with('fieldTeam')
                 ->where('user_id', $user->id)

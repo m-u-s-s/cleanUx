@@ -14,15 +14,7 @@ use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * ModulesCompleteTest — covers the 9 items added to bring 5 modules to 100%.
- *
- * Marketing  : campaign stats, step CRUD, A/B config endpoint
- * Fleet      : provider return assignment
- * Accounting : closed period blocks entry deletion
- * Insurance  : client claims list (existing route smoke-test)
- * Webhooks   : old secret rejected after rotation (in WebhookApiTest)
- */
+/** ModulesCompleteTest — covers the 9 items added to bring 5 modules to 100%. */
 class ModulesCompleteTest extends TestCase
 {
     use RefreshDatabase;

@@ -19,23 +19,7 @@ use App\Support\Domain\PricingUnit;
 use App\Support\Domain\QuestionType;
 use Illuminate\Database\Seeder;
 
-/**
- * Catalogue de démonstration du moteur de commande : 3 secteurs, 9 métiers, questionnaires complets.
- *
- * Deux règles tenues d'un bout à l'autre.
- *
- * IDEMPOTENT. Tout passe par `updateOrCreate` sur une clé stable — slug pour les secteurs et les
- * métiers, `code` pour les questions, `value` pour les options. Rejouer le seeder ne duplique
- * rien et n'écrase aucune réponse déjà donnée par un client.
- *
- * IL RATTACHE, IL NE DUPLIQUE PAS. Six des neuf métiers existent déjà en base avec leurs tarifs et
- * leurs certifications ; le seeder leur ajoute un secteur et les colonnes du moteur de commande.
- * Créer « Peinture » une seconde fois aurait produit deux vérités pour le même métier.
- *
- * Les questionnaires respectent les lois du parcours : au plus sept questions par étape, une
- * porte de sortie sur chacune, un défaut intelligent partout, et une question photo — qui vaut
- * dix questions mal posées.
- */
+/** Catalogue de démonstration du moteur de commande : 3 secteurs, 9 métiers, questionnaires complets. */
 class OrderEngineCatalogSeeder extends Seeder
 {
     public function run(): void
@@ -58,18 +42,7 @@ class OrderEngineCatalogSeeder extends Seeder
         $this->ensureSellableSomewhere();
     }
 
-    /**
-     * UN CATALOGUE DOIT ÊTRE VENDU QUELQUE PART.
-     *
-     * `trade_zone_pricing` porte l'activation ET le prix : sans une seule ligne, tout ce catalogue
-     * existe et n'est proposé nulle part — le parcours refuse la confirmation, pour une raison
-     * correcte et parfaitement incompréhensible sur une base neuve.
-     *
-     * La zone créée ici est un FILET, pas une politique commerciale : elle n'apparaît que si la
-     * plateforme n'en déclare aucune. Dès qu'une géographie réelle est semée
-     * (`ZoneManagementSeeder`), c'est elle qui sert, et `TradeZonePricingSeeder` pose la grille
-     * complète.
-     */
+    /** UN CATALOGUE DOIT ÊTRE VENDU QUELQUE PART. */
     private function ensureSellableSomewhere(): void
     {
         $zone = ServiceZone::query()
@@ -124,11 +97,7 @@ class OrderEngineCatalogSeeder extends Seeder
         $slug = $data['slug'];
         unset($data['slug']);
 
-        /*
-         * `updateOrCreate` sur le slug : un métier déjà présent est ENRICHI, pas remplacé. Les
-         * colonnes qu'on ne mentionne pas — tarif horaire, certifications, multiplicateurs
-         * d'urgence — restent telles que l'exploitation les a réglées.
-         */
+        // `updateOrCreate` sur le slug : un métier déjà présent est ENRICHI, pas remplacé.
         $trade = Trade::updateOrCreate(['slug' => $slug], $data + [
             'sector_id' => $sector->id,
             'sort_order' => $index,
@@ -192,12 +161,7 @@ class OrderEngineCatalogSeeder extends Seeder
         }
     }
 
-    /**
-     * « Souvent commandé avec » — les associations du chantier réel.
-     *
-     * Le délai porte le temps de séchage : après une plomberie, le carrelage ne pose pas dans la
-     * foulée. C'est ce qui rend la timeline du mode multi-services crédible plutôt que décorative.
-     */
+    /** « Souvent commandé avec » — les associations du chantier réel. */
     private function seedBundleSuggestions(): void
     {
         $pairs = [
@@ -225,12 +189,7 @@ class OrderEngineCatalogSeeder extends Seeder
         }
     }
 
-    /**
-     * Le catalogue, en données pures.
-     *
-     * Ce tableau est exactement ce qu'un administrateur produira depuis le constructeur de
-     * parcours : il n'y a rien ici qu'une interface ne puisse écrire.
-     */
+    /** Le catalogue, en données pures. */
     private function catalog(): array
     {
         return [
@@ -278,13 +237,7 @@ class OrderEngineCatalogSeeder extends Seeder
 
     // ─── Bâtiment ────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Le questionnaire de référence — celui sur lequel les autres se règlent.
-     *
-     * Sept questions en DEUX étapes : au-delà de sept d'un coup, un client sur trois abandonne.
-     * Une seule est conditionnelle, et elle illustre la règle : « type de pistolet » n'a aucun
-     * sens tant qu'on n'a pas dit qu'on peignait au pistolet.
-     */
+    /** Le questionnaire de référence — celui sur lequel les autres se règlent. */
     private function peinture(): array
     {
         return [
@@ -388,12 +341,7 @@ class OrderEngineCatalogSeeder extends Seeder
         ];
     }
 
-    /**
-     * Plomberie — le métier ouvert au service immédiat.
-     *
-     * Trois questions sont marquées essentielles : ce sont les seules posées en mode urgent. Le
-     * reste se règle sur place, et la fourchette annoncée est simplement plus large.
-     */
+    /** Plomberie — le métier ouvert au service immédiat. */
     private function plomberie(): array
     {
         return [
@@ -926,13 +874,7 @@ class OrderEngineCatalogSeeder extends Seeder
         ];
     }
 
-    /**
-     * La question photo, identique partout.
-     *
-     * Jamais obligatoire : c'est un RACCOURCI offert au client, pas un péage. Une photo permet au
-     * prestataire de comprendre en deux secondes ce que dix questions décrivent mal — mais
-     * l'exiger transformerait l'aide en obstacle.
-     */
+    /** La question photo, identique partout. */
     private function photoQuestion(string $label, string $help): array
     {
         return [

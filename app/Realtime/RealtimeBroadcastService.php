@@ -12,20 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Service centralisé de publication d'events broadcast (Phase Realtime v2).
- *
- *   - Stocke chaque broadcast dans `broadcast_events` pour audit / replay / debug
- *   - Idempotence via clé unique (si l'event implémente TracksBroadcastLedger)
- *   - Wrap autour de event() Laravel, ne casse pas les events déjà existants
- *   - ActivityLogger audit
- *
- * Usage :
- *   app(RealtimeBroadcastService::class)->publish($event);
- *
- * Si $event implémente TracksBroadcastLedger → ledger complet + idempotence.
- * Sinon → broadcast direct sans ledger (best-effort).
- */
+/** Service centralisé de publication d'events broadcast (Phase Realtime v2). */
 class RealtimeBroadcastService
 {
     public function publish(ShouldBroadcast|ShouldBroadcastNow $event): ?BroadcastEvent

@@ -55,12 +55,7 @@ class RegisterRequest extends FormRequest
             // Ce numéro n'est pas décoratif : la vérification KYB le soumettra à l'INSEE et à
             // VIES. Accepté sans contrôle, il n'échouait qu'à la revue du dossier, plusieurs
             // jours plus tard — la clé est donc vérifiée dès la saisie.
-            /*
-             * Deux règles, deux questions différentes : `ValidBusinessNumber` demande « ce numéro
-             * est-il un numéro » (clé de contrôle), `NumeroDEntrepriseNonRevendique` demande « est-il
-             * déjà celui d'une société inscrite ». La seconde manquait, et deux sociétés prestataires
-             * distinctes ont pu s'inscrire avec le même numéro — public, donc connu de n'importe qui.
-             */
+            // Deux règles, deux questions différentes : `ValidBusinessNumber` demande « ce numéro est-il un numéro » (clé de contrôle), `NumeroDEntrepriseNonRevendique` demande « est-il déjà celui d'une société inscrite ».
             'vat_number' => [
                 'nullable',
                 'string',
@@ -73,14 +68,7 @@ class RegisterRequest extends FormRequest
             // travailler : le prestataire ne recevrait jamais la moindre mission.
             'trade_id' => ['nullable', 'integer', 'exists:trades,id'],
             'trade_answers' => ['nullable', 'array'],
-            /*
-             * MÉTIERS ET ZONES — les deux tables que lit la requête candidate du dispatch.
-             *
-             * `trade_id` seul ne dit QUE ce que le prestataire fait, jamais où : le dispatch devait
-             * alors deviner son périmètre à partir de sa position du jour. Ces deux listes viennent
-             * du catalogue (`GET /api/catalog/registration-options`) et sont revalidées à
-             * l'écriture — l'application peut envoyer n'importe quoi.
-             */
+            // MÉTIERS ET ZONES — les deux tables que lit la requête candidate du dispatch.
             'trade_ids' => ['nullable', 'array'],
             'trade_ids.*' => ['integer'],
             'zone_ids' => ['nullable', 'array'],
@@ -88,13 +76,7 @@ class RegisterRequest extends FormRequest
         ], TradeFormSchema::rulesFor($this->declaredTradeSchema()));
     }
 
-    /**
-     * Le type d'organisation que cette inscription créerait.
-     *
-     * La portée du contrôle d'unicité, donc : une même entreprise peut être cliente ET prestataire
-     * chez nous — deux organisations, une par casquette. Ce qui n'existe pas, c'est deux sociétés du
-     * MÊME type pour un seul numéro.
-     */
+    /** Le type d'organisation que cette inscription créerait. */
     private function typeDOrganisationDemande(): string
     {
         return $this->input('provider_kind') === 'company'
@@ -113,8 +95,7 @@ class RegisterRequest extends FormRequest
     }
 
     /**
-     * Schéma du métier déclaré, ou null si aucun métier valide n'est demandé — auquel cas aucune
-     * règle par question n'est ajoutée et `trade_answers` reste un tableau libre.
+     * Schéma du métier déclaré, ou null si aucun métier valide n'est demandé — auquel cas aucune règle par question n'est ajoutée et `trade_answers` reste un tableau libre.
      *
      * @return array<string, mixed>|null
      */

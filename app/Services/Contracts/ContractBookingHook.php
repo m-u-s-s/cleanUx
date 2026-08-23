@@ -16,8 +16,6 @@ class ContractBookingHook
 
     /**
      * Hook contrat unifié, appliqué sur $data AVANT création du booking.
-     * No-op si pas de contrat applicable. Lève ContractPolicyException sur
-     * violation dure (service non autorisé, PO manquant).
      *
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>

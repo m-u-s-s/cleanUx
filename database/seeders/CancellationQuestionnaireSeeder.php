@@ -8,27 +8,7 @@ use App\Models\CancellationQuestion;
 use App\Models\CancellationQuestionOption;
 use Illuminate\Database\Seeder;
 
-/**
- * LE QUESTIONNAIRE D'ANNULATION PAR DÉFAUT.
- *
- * ── CE QU'IL REMPLACE ────────────────────────────────────────────────────────────────────────
- *
- * Un champ de texte libre. Un champ libre ne se compte pas, ne se compare pas, ne déclenche aucun
- * palier — et ne peut donc jamais valoir exemption. Le moteur d'annulation attendait un `reason_code`
- * que personne ne lui a jamais donné.
- *
- * ── LE PRINCIPE DE CHAQUE OPTION ─────────────────────────────────────────────────────────────
- *
- * Vérifiable, ou engageante. Rien d'autre. « Le prestataire est en retard » se mesure sur
- * `scheduled_at` et le statut réel ; « le prestataire m'a demandé d'annuler » n'exonère pas par
- * générosité mais parce que c'est le SEUL moyen d'apprendre ce qui se dit sur le palier.
- *
- * ── DEUX QUESTIONS CÔTÉ PRESTATAIRE, ET C'EST VOULU ──────────────────────────────────────────
- *
- * « Le travail ne correspond pas » n'a de sens que là où il existe un devis à réviser : elle vit
- * donc sur une question réservée au moteur à domicile, et disparaît pour un chauffeur. Le
- * questionnaire ne montre jamais une issue qui mènerait à un refus.
- */
+/** LE QUESTIONNAIRE D'ANNULATION PAR DÉFAUT. */
 class CancellationQuestionnaireSeeder extends Seeder
 {
     public function run(): void
@@ -54,13 +34,6 @@ class CancellationQuestionnaireSeeder extends Seeder
     /**
      * LES MOTIFS QUI EXONÈRENT — créés ici parce que le questionnaire en dépend.
      *
-     * `max_per_user_per_30d` est la règle « pas la première fois, mais si c'est fréquent » : au-delà,
-     * l'exemption cesse de jouer et le palier normal s'applique, sans que le motif disparaisse du
-     * dossier.
-     *
-     * Les deux motifs « l'autre m'a demandé d'annuler » n'ont AUCUN plafond, et c'est délibéré :
-     * plafonner le piège à entente le rendrait coûteux à dire, et personne ne le dirait plus.
-     *
      * @return array<string, CancellationExemptReason>
      */
     private function motifsExemptes(CancellationPolicy $client, CancellationPolicy $prestataire): array
@@ -68,14 +41,7 @@ class CancellationQuestionnaireSeeder extends Seeder
         $definitions = [
             ['policy' => $client, 'reason_code' => 'provider_late', 'label' => 'Prestataire en retard', 'requires_proof' => false, 'max_per_user_per_30d' => null],
             ['policy' => $client, 'reason_code' => 'provider_asked_cancel', 'label' => 'Le prestataire m’a demandé d’annuler', 'requires_proof' => false, 'max_per_user_per_30d' => null],
-            /*
-             * LE REFUS D'UN NOUVEAU DEVIS, SUIVI D'UN ARRÊT.
-             *
-             * Gratuit deux fois : un client qui refuse un devis révisé abusif ne doit rien payer, et
-             * le prestataire n'a rien commencé — la fenêtre de révision le garantit. Au-delà, le
-             * plafond mord et le palier normal s'applique : c'est exactement « pas la première fois,
-             * mais si c'est fréquent », et c'est la première des quatre sanctions client.
-             */
+            // LE REFUS D'UN NOUVEAU DEVIS, SUIVI D'UN ARRÊT.
             ['policy' => $client, 'reason_code' => 'quote_revision_declined', 'label' => 'Nouveau devis refusé, intervention arrêtée', 'requires_proof' => false, 'max_per_user_per_30d' => 2],
             ['policy' => $prestataire, 'reason_code' => 'provider_unable', 'label' => 'Empêchement du prestataire (panne, maladie, accident)', 'requires_proof' => true, 'max_per_user_per_30d' => 2],
             ['policy' => $prestataire, 'reason_code' => 'address_unreachable', 'label' => 'Adresse introuvable ou inaccessible', 'requires_proof' => false, 'max_per_user_per_30d' => 3],
@@ -131,13 +97,7 @@ class CancellationQuestionnaireSeeder extends Seeder
                 'sort_order' => 30,
             ],
             [
-                /*
-                 * LE PIÈGE À ENTENTE, et il ne coûte rien à poser.
-                 *
-                 * Un client à qui l'on propose un arrangement en liquide n'a aucune raison de mentir
-                 * ici : cocher lui évite les frais. C'est le seul endroit d'où la plateforme peut
-                 * apprendre ce qui se dit sur le palier.
-                 */
+                // LE PIÈGE À ENTENTE, et il ne coûte rien à poser.
                 'code' => 'client_provider_asked',
                 'label' => 'Le prestataire m’a demandé d’annuler',
                 'exempt_reason_id' => $exempts['provider_asked_cancel']->id,
@@ -203,14 +163,7 @@ class CancellationQuestionnaireSeeder extends Seeder
         ]);
     }
 
-    /**
-     * LA QUESTION QUI N'EXISTE QUE LÀ OÙ IL Y A UN DEVIS À RÉVISER.
-     *
-     * C'est le point le plus important du questionnaire prestataire : celui qui veut partir parce
-     * que le chantier est trop gros ne doit PAS annuler. On le lui montre au moment exact où il
-     * s'apprête à faire le mauvais geste — et l'option disparaît pour un chauffeur, chez qui elle
-     * ne mènerait qu'à un refus.
-     */
+    /** LA QUESTION QUI N'EXISTE QUE LÀ OÙ IL Y A UN DEVIS À RÉVISER. */
     private function questionPrestataireDomicile(): void
     {
         $question = $this->question([

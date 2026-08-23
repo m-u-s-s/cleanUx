@@ -12,14 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * Garde de TYPE d'organisation au niveau route (middleware org.type).
- *
- * EnforcesActiveOrgMembership prouve l'appartenance (anti-IDOR), mais pas le TYPE.
- * Ces tests vérifient en HTTP (le middleware ne s'applique qu'à la route, pas via
- * Livewire::test) qu'un membre d'une org cliente ne peut pas atteindre l'espace
- * prestataire et inversement.
- */
+/** Garde de TYPE d'organisation au niveau route (middleware org.type). */
 class OrgTypeRouteGuardTest extends TestCase
 {
     use RefreshDatabase;

@@ -148,17 +148,7 @@ class MissionFactory extends Factory
         ]);
     }
 
-    /**
-     * Assemble une date et une heure venues de la réservation.
-     *
-     * `date` est casté en Carbon : le convertir en chaîne rend « 2026-08-17 00:00:00 », et le
-     * coller à « 14:30:00 » produisait « 2026-08-17 00:00:00 14:30:00 » — illisible pour
-     * `strtotime`, qui rend `false`. Or `date(..., false)` fabrique 1970-01-01, une valeur hors
-     * des bornes d'une colonne TIMESTAMP MySQL : toutes les missions de test échouaient à
-     * l'insertion, et seulement sur MySQL. SQLite acceptait l'époque sans broncher.
-     *
-     * On ne garde donc que la PARTIE date, exactement comme le service de production.
-     */
+    /** Assemble une date et une heure venues de la réservation. */
     private static function combine(mixed $date, mixed $heure): ?string
     {
         if (! $date || ! $heure) {

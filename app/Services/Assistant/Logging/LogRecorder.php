@@ -7,13 +7,7 @@ use App\Models\AssistantConversation;
 use App\Models\User;
 use App\Services\Assistant\Llm\LlmResponse;
 
-/**
- * Phase 5.1 — Enregistrement des appels API LLM dans assistant_api_logs.
- *
- * Appelé par LlmClient à chaque tour (pas seulement à la fin de la boucle agentic),
- * pour avoir une vraie granularité par appel et pouvoir détecter une explosion
- * de tool_use loops par exemple.
- */
+/** Phase 5.1 — Enregistrement des appels API LLM dans assistant_api_logs. */
 class LogRecorder
 {
     public function __construct(

@@ -10,17 +10,7 @@ use App\Services\Assistant\Tools\AssistantToolDispatcher;
 use App\Services\Assistant\Tools\AssistantToolRegistry;
 use App\Services\AssistantContextBuilder;
 
-/**
- * Orchestrateur de l'assistant.
- *
- * Reçoit un message utilisateur et :
- *   1. Construit le contexte via AssistantContextBuilder
- *   2. Récupère les tools autorisés via AssistantToolRegistry
- *   3. Appelle le LlmProvider
- *   4. Si la réponse contient des tool_uses, les dispatche
- *      et boucle (max 5 itérations) jusqu'à obtenir une réponse texte finale
- *   5. Persiste tous les messages dans assistant_messages
- */
+/** Orchestrateur de l'assistant. Reçoit un message utilisateur et : 1. */
 class LlmClient
 {
     private const MAX_TOOL_ITERATIONS = 5;
@@ -35,7 +25,6 @@ class LlmClient
 
     /**
      * Envoie un message utilisateur et retourne la réponse finale (texte) du LLM.
-     * Persiste tous les messages de la boucle dans la conversation.
      *
      * @return array{text:string, has_pending_action:bool, pending_action_id:?int}
      */
@@ -169,10 +158,7 @@ class LlmClient
         ];
     }
 
-    /**
-     * Reconstruit l'historique d'une conversation au format API.
-     * Filtre system messages et limite à 20 messages les plus récents.
-     */
+    /** Reconstruit l'historique d'une conversation au format API. */
     private function buildApiMessages(AssistantConversation $conversation): array
     {
         $rows = AssistantMessage::query()

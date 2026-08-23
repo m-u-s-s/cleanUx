@@ -11,10 +11,6 @@ use Illuminate\Support\Carbon;
 /**
  * UNE DEMANDE D'ABSENCE (E21).
  *
- * Ce qui compte n'est pas le tableau des congés : c'est qu'une demande APPROUVÉE empêche
- * l'assignation. Sans ce lien, le prestataire reçoit sa course le premier jour de ses vacances,
- * refuse, et le moteur cherche quelqu'un d'autre — après avoir perdu vingt secondes et une occasion.
- *
  * @property int $id
  * @property int $organization_account_id
  * @property int $user_id
@@ -65,12 +61,7 @@ class LeaveRequest extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Cette absence couvre-t-elle ce jour ?
-     *
-     * Bornes INCLUSIVES des deux côtés : un congé du 3 au 7 couvre le 7. L'exclure ferait travailler
-     * quelqu'un le dernier jour de ses vacances, ce qu'aucun formulaire ne laisse supposer.
-     */
+    /** Cette absence couvre-t-elle ce jour ? */
     public function couvre(Carbon $jour): bool
     {
         return $this->status === self::STATUS_APPROVED

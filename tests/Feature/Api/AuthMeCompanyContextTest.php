@@ -11,19 +11,7 @@ use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * CE QUE `/api/auth/me` DOIT DIRE POUR QUE L'AIGUILLAGE SOCIÉTÉ MOBILE SOIT JUSTE.
- *
- * Trois défauts distincts se sont logés ici, et chacun rendait un espace inatteignable :
- *
- *   1. `organization_type` était lu sur `currentOrganization`, donc sur la seule colonne
- *      `current_organization_id` — que les seeders ne renseignaient pas. Type `null`, espace fermé.
- *   2. L'application prestataire combinait `is_entreprise` et `organization_type` en ET, deux
- *      termes qui s'excluent : `is_entreprise` désigne une société CLIENTE.
- *   3. Rien ne distinguait le patron de l'employé : les deux portent
- *      `organization_type = 'provider_company'`, et aiguiller dessus aurait privé le nettoyeur de
- *      ses missions.
- */
+/** CE QUE `/api/auth/me` DOIT DIRE POUR QUE L'AIGUILLAGE SOCIÉTÉ MOBILE SOIT JUSTE. */
 class AuthMeCompanyContextTest extends TestCase
 {
     use RefreshDatabase;
@@ -66,13 +54,7 @@ class AuthMeCompanyContextTest extends TestCase
     #[Test]
     public function le_membre_d_une_societe_prestataire_n_est_jamais_marque_entreprise(): void
     {
-        /*
-         * Le piège qui a condamné les cinq écrans société de l'application prestataire.
-         *
-         * `is_entreprise` délègue à `isClientCompany()` : il vaut `false` ici, et c'est CORRECT.
-         * Ce test fige ce fait pour qu'on cesse de le prendre pour un bogue et de le combiner en ET
-         * avec `organization_type === 'provider_company'` — une conjonction insatisfiable.
-         */
+        // Le piège qui a condamné les cinq écrans société de l'application prestataire.
         $org = OrganizationAccount::factory()->providerCompany()->create();
         $patron = $this->membre($org, OrganizationRole::OWNER);
 
@@ -113,13 +95,7 @@ class AuthMeCompanyContextTest extends TestCase
     #[Test]
     public function le_nettoyeur_ne_pilote_rien_et_garde_son_espace_terrain(): void
     {
-        /*
-         * LE TEST QUI PROTÈGE L'EMPLOYÉ.
-         *
-         * Un nettoyeur est membre de la même organisation que son patron : `organization_type` vaut
-         * `provider_company` pour lui aussi. Aiguiller sur ce champ l'aurait envoyé dans un espace
-         * de pilotage où aucun de ses écrans — missions, revenus, présence — n'existe.
-         */
+        // LE TEST QUI PROTÈGE L'EMPLOYÉ.
         $org = OrganizationAccount::factory()->providerCompany()->create();
 
         Sanctum::actingAs($this->membre($org, OrganizationRole::WORKER), ['*']);

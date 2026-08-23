@@ -11,19 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * LES DEVIS REÇUS, CÔTÉ CLIENT (E24) — sur le téléphone.
- *
- * LA MOITIÉ MANQUANTE DU MODULE. Une société qui bâtit un devis et l'envoie à un client qui ne peut
- * pas y répondre n'a rien envoyé : le client découvre le document par une notification poussée sur
- * son téléphone — et devrait ouvrir un ordinateur pour dire oui.
- *
- * ACCEPTER CRÉE LE TRAVAIL, pas un accusé de réception. Chaque ligne porte un métier et devient une
- * réservation.
- *
- * ET LE SCOPING FAIT PARTIE DE LA REQUÊTE. Un devis porte le nom du client, son adresse et ce qu'il
- * paye : un identifiant forgé ne doit jamais en charger un autre.
- */
+/** LES DEVIS REÇUS, CÔTÉ CLIENT (E24) — sur le téléphone. LA MOITIÉ MANQUANTE DU MODULE. */
 class ReceivedQuoteController extends Controller
 {
     public function index(): JsonResponse

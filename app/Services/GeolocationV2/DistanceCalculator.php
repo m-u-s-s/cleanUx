@@ -8,7 +8,6 @@ class DistanceCalculator
 {
     /**
      * Filtre les points dans un rayon donné autour d'une origine (haversine).
-     * Retourne les points enrichis avec _distance_meters trié ascendant.
      *
      * @param  array<int, array{latitude:float, longitude:float}>  $points
      * @return array<int, array>

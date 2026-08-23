@@ -20,21 +20,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * L'écran catalogue, et les statistiques qui font vivre la règle des sept questions.
- *
- * Cet écran est la porte d'entrée qui manquait : sans lui, le constructeur de parcours n'était
- * atteignable par aucun lien. Et il ne se contente pas de lister — il dit ce qui bloque et ce qui
- * attend d'être publié, faute de quoi personne n'ouvrira dix écrans pour le savoir.
- */
+/** L'écran catalogue, et les statistiques qui font vivre la règle des sept questions. */
 class CatalogCenterTest extends TestCase
 {
     /**
      * Le contexte géographique exigé par l'écran, créé à la demande.
-     *
-     * Ces tests ne portent pas sur la géographie : ils ont seulement besoin d'un couple pays/zone
-     * cohérent pour monter le composant. La fabrique est paresseuse pour ne pas alourdir les tests
-     * qui ne montent pas l'écran.
      *
      * @return array{country: Country, zone: ServiceZone}
      */
@@ -100,12 +90,7 @@ class CatalogCenterTest extends TestCase
         Livewire::test(CatalogCenter::class, $this->contexteCatalogue())->assertSee('modifications non publiées');
     }
 
-    /**
-     * Les métiers sans secteur sont SIGNALÉS, pas tus.
-     *
-     * Ils restent utilisables ailleurs mais n'apparaissent pas dans le parcours de commande : les
-     * taire ferait chercher longtemps pourquoi « Toiture » est introuvable côté client.
-     */
+    /** Les métiers sans secteur sont SIGNALÉS, pas tus. */
     public function test_orphan_trades_are_surfaced_rather_than_hidden(): void
     {
         $orphan = Trade::create([
@@ -169,13 +154,7 @@ class CatalogCenterTest extends TestCase
 
     // ─── Statistiques d'abandon ──────────────────────────────────────────────────────────────
 
-    /**
-     * L'ABANDON se distingue du simple non-réponse.
-     *
-     * Un client qui saute une question facultative puis en répond une suivante n'a rien abandonné.
-     * Celui dont la dernière réponse est la question 2, sur une commande jamais confirmée, s'est
-     * arrêté là — et c'est celui-là qui coûte.
-     */
+    /** L'ABANDON se distingue du simple non-réponse. */
     public function test_skipping_a_question_is_not_dropping_out(): void
     {
         $trade = $this->peinture();
@@ -203,12 +182,7 @@ class CatalogCenterTest extends TestCase
         $this->assertSame(0, $rows['surface_m2']['dropped_here']);
     }
 
-    /**
-     * Le volume compte autant que le taux.
-     *
-     * Un abandon sur deux commandes ne dit rien : afficher « 50 % » dessus ferait supprimer une
-     * question parfaitement saine.
-     */
+    /** Le volume compte autant que le taux. */
     public function test_a_tiny_sample_never_accuses_a_question(): void
     {
         $trade = $this->peinture();

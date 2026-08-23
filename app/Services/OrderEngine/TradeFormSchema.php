@@ -4,19 +4,7 @@ namespace App\Services\OrderEngine;
 
 use App\Models\Trade;
 
-/**
- * Le questionnaire d'un métier, figé sous forme de données.
- *
- * Sert trois usages qui doivent tous produire EXACTEMENT la même chose : la révision publiée,
- * l'export JSON, et la duplication vers un autre métier. Trois sérialisations distinctes
- * divergeraient, et c'est la révision qui en pâtirait — celle qu'on relit six mois plus tard pour
- * expliquer une facture contestée.
- *
- * Les conditions référencent les questions par leur CODE, jamais par leur identifiant. Un
- * identifiant ne survit ni à un export vers un autre environnement, ni à une duplication : les
- * conditions pointeraient alors vers les questions du métier d'origine, et se déclencheraient sur
- * les réponses de quelqu'un d'autre.
- */
+/** Le questionnaire d'un métier, figé sous forme de données. */
 class TradeFormSchema
 {
     /** Version du format lui-même — pour qu'un import sache ce qu'il lit. */

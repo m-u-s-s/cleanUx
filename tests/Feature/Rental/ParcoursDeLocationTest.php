@@ -15,13 +15,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * LE PARCOURS DE LOCATION, DE LA CASE DU CATALOGUE À LA CONFIRMATION.
- *
- * Il ne partage aucun composant avec le parcours de commande : là on va du secteur au métier puis
- * aux questions pour trouver un professionnel, ici l'objet est visible dès la première seconde et
- * c'est le client qui se déplace. Ce fichier vérifie le chemin entier ET l'isolation.
- */
+/** LE PARCOURS DE LOCATION, DE LA CASE DU CATALOGUE À LA CONFIRMATION. */
 class ParcoursDeLocationTest extends TestCase
 {
     use RefreshDatabase;
@@ -41,11 +35,6 @@ class ParcoursDeLocationTest extends TestCase
     /**
      * Une réservation en brouillon, ACCESSIBLE au visiteur du test.
      *
-     * `LocationConfirmation` refuse une référence qui n'appartient ni au compte connecté ni au
-     * jeton de session : la référence est aléatoire, mais un lien se partage, et sans ce contrôle
-     * elle ouvrirait le nom, le téléphone et le permis d'un tiers. Les tests doivent donc porter le
-     * jeton, comme un vrai visiteur.
-     *
      * @param  array<string, mixed>  $attributs
      */
     private function brouillonAMoi(RentalVehicle $vehicule, array $attributs = []): RentalBooking
@@ -61,13 +50,7 @@ class ParcoursDeLocationTest extends TestCase
 
     // ── La case du catalogue ─────────────────────────────────────────────
 
-    /**
-     * SANS VOITURE, LA CASE N'EXISTE PAS.
-     *
-     * C'est la demande, et c'est aussi ce que fait déjà le carrousel des secteurs pour les métiers
-     * non servables : une porte qui promet du choix devant une vitrine vide apprend au client que
-     * la plateforme annonce ce qu'elle ne sait pas faire.
-     */
+    /** SANS VOITURE, LA CASE N'EXISTE PAS. */
     public function test_la_case_location_est_absente_sans_vehicule(): void
     {
         Livewire::test(LocationEntryTile::class)
@@ -84,12 +67,7 @@ class ParcoursDeLocationTest extends TestCase
             ->assertSee('1 véhicule disponible');
     }
 
-    /**
-     * UNE VOITURE FERMÉE NE FAIT PAS APPARAÎTRE LA CASE.
-     *
-     * Sans ce test, l'entrée s'ouvrirait sur un catalogue vide dès qu'un administrateur commence à
-     * saisir une fiche — et une fiche naît fermée, exprès.
-     */
+    /** UNE VOITURE FERMÉE NE FAIT PAS APPARAÎTRE LA CASE. */
     public function test_un_vehicule_ferme_ne_fait_pas_apparaitre_la_case(): void
     {
         RentalVehicle::factory()->create(['is_active' => false]);
@@ -97,13 +75,7 @@ class ParcoursDeLocationTest extends TestCase
         Livewire::test(LocationEntryTile::class)->assertDontSee('Location de voitures');
     }
 
-    /**
-     * UNE VOITURE ENTIÈREMENT LOUÉE NE FAIT PAS APPARAÎTRE LA CASE NON PLUS.
-     *
-     * C'est le lien entre les deux exigences : « ne pas montrer les voitures louées » et « masquer
-     * l'entrée s'il n'y a rien » sont le même calcul. Si l'un des deux passait par une autre
-     * requête, la case promettrait une voiture que la vitrine ne montrerait pas.
-     */
+    /** UNE VOITURE ENTIÈREMENT LOUÉE NE FAIT PAS APPARAÎTRE LA CASE NON PLUS. */
     public function test_une_voiture_louee_maintenant_ne_fait_pas_apparaitre_la_case(): void
     {
         $vehicule = $this->vehiculeEnVitrine();
@@ -153,13 +125,7 @@ class ParcoursDeLocationTest extends TestCase
 
     // ── La fiche et le formulaire ────────────────────────────────────────
 
-    /**
-     * UNE VOITURE HORS VITRINE N'A PAS DE FICHE PUBLIQUE.
-     *
-     * `is_active` décide seul de la présence au catalogue ; laisser son URL ouverte permettrait de
-     * réserver un véhicule que l'administrateur vient justement de retirer — en tapant l'adresse,
-     * ou depuis un lien partagé la veille.
-     */
+    /** UNE VOITURE HORS VITRINE N'A PAS DE FICHE PUBLIQUE. */
     public function test_la_fiche_dune_voiture_fermee_repond_404(): void
     {
         $vehicule = RentalVehicle::factory()->create(['is_active' => false]);
@@ -181,12 +147,7 @@ class ParcoursDeLocationTest extends TestCase
             ->assertSee('Avec garantie');
     }
 
-    /**
-     * LE PARCOURS COMPLET : formulaire, récapitulatif, confirmation.
-     *
-     * C'est le seul test qui prouve que les trois écrans se parlent. Chacun pris isolément peut
-     * être vert pendant que le chemin, lui, est rompu — ce dépôt en a plusieurs exemples.
-     */
+    /** LE PARCOURS COMPLET : formulaire, récapitulatif, confirmation. */
     public function test_un_client_reserve_de_bout_en_bout(): void
     {
         $vehicule = $this->vehiculeEnVitrine(['daily_price_cents' => 5000, 'min_rental_days' => 1]);
@@ -227,12 +188,7 @@ class ParcoursDeLocationTest extends TestCase
         );
     }
 
-    /**
-     * UN CONDUCTEUR TROP JEUNE EST REFUSÉ — au jour du DÉPART, pas au jour de la réservation.
-     *
-     * Un client de vingt ans qui réserve pour dans six mois aura l'âge au volant, et le refuser
-     * aujourd'hui serait faux. Ici il ne l'aura pas : le refus est juste.
-     */
+    /** UN CONDUCTEUR TROP JEUNE EST REFUSÉ — au jour du DÉPART, pas au jour de la réservation. */
     public function test_un_conducteur_trop_jeune_est_refuse(): void
     {
         $vehicule = $this->vehiculeEnVitrine(['min_driver_age' => 25]);
@@ -267,12 +223,7 @@ class ParcoursDeLocationTest extends TestCase
         $this->assertSame(RentalBooking::STATUT_CONFIRMEE, $location->refresh()->status);
     }
 
-    /**
-     * DEUX CLIENTS NE PEUVENT PAS PRENDRE LA MÊME VOITURE.
-     *
-     * Entre l'affichage et le clic, quelqu'un d'autre a pu réserver. C'est le seul défaut de ce
-     * module qui se découvrirait devant le client, au comptoir.
-     */
+    /** DEUX CLIENTS NE PEUVENT PAS PRENDRE LA MÊME VOITURE. */
     public function test_la_voiture_prise_entre_temps_est_refusee(): void
     {
         $vehicule = $this->vehiculeEnVitrine();
@@ -297,12 +248,7 @@ class ParcoursDeLocationTest extends TestCase
         $this->assertSame(RentalBooking::STATUT_BROUILLON, $mien->refresh()->status);
     }
 
-    /**
-     * LA RÉFÉRENCE SEULE N'OUVRE PAS LE RÉCAPITULATIF D'UN AUTRE.
-     *
-     * Elle est aléatoire, mais un lien se partage. Sans ce contrôle, une référence transmise
-     * ouvrirait le nom, le téléphone et le numéro de permis d'un tiers.
-     */
+    /** LA RÉFÉRENCE SEULE N'OUVRE PAS LE RÉCAPITULATIF D'UN AUTRE. */
     public function test_le_recapitulatif_dun_autre_est_refuse(): void
     {
         $vehicule = $this->vehiculeEnVitrine();
@@ -330,12 +276,7 @@ class ParcoursDeLocationTest extends TestCase
             ->assertSee('Faites glisser pour tourner');
     }
 
-    /**
-     * LE MODÈLE 3D PREND LE PAS SUR LA ROTATION PHOTO.
-     *
-     * Un véhicule peut porter les deux ; afficher les deux donnerait deux vues concurrentes de la
-     * même voiture sur le même écran. Le fichier 3D est le plus riche, il gagne.
-     */
+    /** LE MODÈLE 3D PREND LE PAS SUR LA ROTATION PHOTO. */
     public function test_le_modele_3d_prend_le_pas_sur_la_rotation(): void
     {
         $vehicule = $this->vehiculeEnVitrine();
@@ -343,15 +284,7 @@ class ParcoursDeLocationTest extends TestCase
         RentalVehicleMedia::factory()->rotation(0)->create(['rental_vehicle_id' => $vehicule->id]);
         RentalVehicleMedia::factory()->modele3d()->create(['rental_vehicle_id' => $vehicule->id]);
 
-        /*
-         * ON DISTINGUE SUR UN TEXTE PROPRE À CHAQUE VUE.
-         *
-         * Première version : « Faites glisser pour tourner » absent quand la 3D gagne. Elle était
-         * fausse — le visualiseur 3D affiche exactement la même invite, suivie de « molette pour
-         * zoomer ». Le test échouait donc alors que le code faisait ce qu'il fallait.
-         *
-         * On vise donc l'étiquette d'accessibilité, qui nomme sans ambiguïté la vue montée.
-         */
+        // ON DISTINGUE SUR UN TEXTE PROPRE À CHAQUE VUE.
         Livewire::test(LocationVehicle::class, ['vehicle' => $vehicule])
             ->assertSee('modele3dLocation', false)
             ->assertSee('Modèle 3D du véhicule')

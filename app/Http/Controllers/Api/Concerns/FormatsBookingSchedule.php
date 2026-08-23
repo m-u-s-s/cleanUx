@@ -4,15 +4,7 @@ namespace App\Http\Controllers\Api\Concerns;
 
 use DateTimeInterface;
 
-/**
- * Normalisation des date/heure de réservation pour les payloads API mobiles.
- *
- * Booking caste `scheduled_date` en `date` et `scheduled_time` en `datetime:H:i` : ces formats
- * ne s'appliquent QUE lorsque le modèle lui-même est sérialisé. Placés tels quels dans un
- * tableau rendu par response()->json(), les Carbon passent par leur propre jsonSerialize() et
- * ressortent en ISO-8601 complet ("2026-06-15T00:00:00.000000Z"), là où les écrans mobiles
- * affichent brut « {scheduled_date} à {scheduled_time} ».
- */
+/** Normalisation des date/heure de réservation pour les payloads API mobiles. */
 trait FormatsBookingSchedule
 {
     protected function formatScheduledDate(mixed $value): ?string

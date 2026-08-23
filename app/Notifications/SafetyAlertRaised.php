@@ -8,18 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * UNE ALERTE DE SÉCURITÉ VIENT D'ÊTRE DÉCLENCHÉE (E33).
- *
- * ELLE N'EST PAS MISE EN FILE, et c'est délibéré. Toutes les notifications de ce dépôt le sont ;
- * celle-ci ne peut pas l'être : une alerte d'urgence qui attend qu'un worker se réveille est une
- * alerte qui arrive trop tard. Le coût — quelques centaines de millisecondes sur la requête de
- * déclenchement — est exactement ce qu'on accepte de payer ici.
- *
- * TROIS CANAUX, ET LE PREMIER EST LA BASE. `database` garantit que l'alerte apparaît dans le centre
- * de sécurité même si le courriel et le push échouent tous les deux : c'est le canal qui ne dépend
- * d'aucun tiers.
- */
+/** UNE ALERTE DE SÉCURITÉ VIENT D'ÊTRE DÉCLENCHÉE (E33). */
 class SafetyAlertRaised extends Notification
 {
     use Queueable;

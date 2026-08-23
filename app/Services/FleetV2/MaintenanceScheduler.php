@@ -7,9 +7,7 @@ use Carbon\Carbon;
 
 class MaintenanceScheduler
 {
-    /**
-     * Calcule la prochaine date d'entretien preventive selon type de véhicule.
-     */
+    /** Calcule la prochaine date d'entretien preventive selon type de véhicule. */
     public function computeNextDue(FleetVehicle $vehicle, ?Carbon $from = null): Carbon
     {
         $from ??= now();
@@ -19,9 +17,7 @@ class MaintenanceScheduler
         return $from->copy()->addDays($days);
     }
 
-    /**
-     * Vérifie si la maintenance préventive est en retard sur ce véhicule.
-     */
+    /** Vérifie si la maintenance préventive est en retard sur ce véhicule. */
     public function isOverdue(FleetVehicle $vehicle): bool
     {
         $lastLog = $vehicle->maintenanceLogs()

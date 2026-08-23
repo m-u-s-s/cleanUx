@@ -8,18 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Phase 13 — Versement à un prestataire.
- *
- * La table existe déjà (migration 2026_05_04_000009_create_finance_tables.php).
- * Ce modèle expose les colonnes existantes + helpers/scopes.
- *
- * Cycle de vie typique :
- *   1. Mission complétée → captures du PaymentIntent (Stripe transfer auto vers provider Connect account)
- *   2. ProviderPayout créé en status 'pending' (entrée comptable côté plateforme)
- *   3. Stripe regroupe les transfers vers le compte Connect en payouts (via leur logique standard)
- *   4. Webhook Stripe payout.paid / payout.failed → on met à jour status + provider_payout_id
- */
+/** Phase 13 — Versement à un prestataire. */
 class ProviderPayout extends Model
 {
     /** @use HasFactory<ProviderPayoutFactory> */

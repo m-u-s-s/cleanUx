@@ -21,20 +21,7 @@ class MissionCompletedNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        /*
-         * TROIS DÉFAUTS CORRIGÉS ICI LE 2026-08-05.
-         *
-         * 1. `url('/client/dashboard')` était un 404 : la route est `/dashboard/client`. Les deux
-         *    occurrences envoyaient le client sur une page inexistante.
-         * 2. Les chemins étaient écrits en dur, donc figés et invisibles à toute analyse.
-         * 3. TROIS `->action()` se suivaient sur le même MailMessage, alors que Laravel n'en rend
-         *    qu'UN — le dernier. « Voir la mission » et « Donner mon avis » n'ont jamais été
-         *    affichés à personne ; seul le bouton de téléchargement l'était, et il retombait sur
-         *    le 404 quand le rapport manquait.
-         *
-         * Un seul bouton, donc, pour l'action principale ; les autres destinations passent en
-         * liens dans le corps du message, où elles sont réellement visibles.
-         */
+        // TROIS DÉFAUTS CORRIGÉS ICI LE 2026-08-05. 1.
         $tableauDeBord = route('client.dashboard');
         $avis = route('client.feedback.create', $this->mission->booking_id);
 

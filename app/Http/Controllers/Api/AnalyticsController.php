@@ -10,17 +10,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 
 /**
- * @group Analytics
- *
  * Analytics ingestion API — endpoints client SDK (web/mobile).
  *
- *   - POST /api/analytics/track     → track 1 event
- *   - POST /api/analytics/page      → track page view
- *   - POST /api/analytics/identify  → link anonymous_id → user_id
- *
- * Auth optionnelle (auth:sanctum?) : si non authentifié, le tracking
- * fonctionne quand même en mode anonyme via `anonymous_id` + cookie session.
- * Validation stricte du nom d'event (whitelist config).
+ * @group Analytics
+ * - POST /api/analytics/track     → track 1 event
+ * - POST /api/analytics/page      → track page view
+ * - POST /api/analytics/identify  → link anonymous_id → user_id
  */
 class AnalyticsController extends Controller
 {

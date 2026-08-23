@@ -11,10 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 class ContractSlaService
 {
-    /**
-     * Arme le snapshot SLA d'une mission sous contrat (idempotent par mission+kind).
-     * Soft-fail : ne casse jamais la création de mission.
-     */
+    /** Arme le snapshot SLA d'une mission sous contrat (idempotent par mission+kind). */
     public function armForMission(Mission $mission): void
     {
         try {
@@ -55,10 +52,7 @@ class ContractSlaService
         }
     }
 
-    /**
-     * Scanne les événements SLA pending : met si satisfait avant échéance,
-     * breached/escalated si dépassé. Idempotent (escalade une seule fois).
-     */
+    /** Scanne les événements SLA pending : met si satisfait avant échéance, breached/escalated si dépassé. */
     public function scan(): void
     {
         ContractSlaEvent::query()

@@ -8,13 +8,7 @@ use App\Models\TradeZonePricing;
 use App\Services\Pricing\TradePricingEngine;
 use Tests\TestCase;
 
-/**
- * Unit tests for TradePricingEngine::estimate().
- *
- * Zone-pricing tests use StubbedTradePricingEngine (defined at bottom of
- * file) which overrides the protected resolveZonePricing() method so the
- * Eloquent query is never executed. All other tests use the real engine.
- */
+/** Unit tests for TradePricingEngine::estimate(). */
 class TradePricingEngineTest extends TestCase
 {
     private TradePricingEngine $engine;

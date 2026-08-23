@@ -14,10 +14,6 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Les sites d'intervention rattachés aux entreprises.
  *
- * La relation `organizationAccount` est chargée d'avance : une liste de vingt-cinq sites
- * déclencherait sinon vingt-cinq requêtes pour afficher le nom de l'entreprise — invisible en
- * test sur trois lignes, sensible en production.
- *
  * @implements AdminResource<OrganizationSite>
  */
 class SiteResource implements AdminResource

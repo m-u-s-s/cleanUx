@@ -11,32 +11,7 @@ use DomainException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 
-/**
- * LA LISTE QUE LE CLIENT ÉCRIT LUI-MÊME — et qui conditionne la clôture du prestataire.
- *
- * ── POURQUOI ELLE N'A PAS SA PROPRE TABLE ────────────────────────────────────────────────────
- *
- * Elle écrit dans `mission_checklist_items`, celle que
- * `MissionLifecycleService::assertRequiredChecklistCompleted()` interroge. C'est tout l'objet du
- * module : ce que le client demande DOIT être ce qui barre la porte. Une table dédiée aurait donné
- * deux listes — l'une affichée, l'autre bloquante — et ce dépôt a déjà payé ce défaut trois fois.
- *
- * ── LA FENÊTRE, ET LES DEUX ABUS QU'ELLE FERME ───────────────────────────────────────────────
- *
- * Sans borne, un client ajoute trois tâches lourdes à 18 h et retient chez lui un prestataire qui
- * croyait avoir fini. La fenêtre court donc à partir du DÉMARRAGE : avant, personne ne travaille et
- * le client peut écrire librement ; après, il lui reste un temps annoncé, minuteur à l'appui.
- *
- * Et parce qu'une garde qui ne protège qu'un côté devient une arme pour l'autre, chaque ajout
- * ROUVRE au prestataire une fenêtre de révision de devis — la symétrie vit dans
- * `config('missions.requote_reopen_minutes')`, lue par le module de révision.
- *
- * ── `locked_at` ATTESTE, IL NE PILOTE PAS ────────────────────────────────────────────────────
- *
- * La fenêtre se calcule depuis `actual_start_at` : c'est la seule source. La colonne enregistre
- * l'instant où un refus a été opposé, et rien d'autre. En faire le pilote créerait deux vérités,
- * qui divergeraient au premier changement de configuration.
- */
+/** LA LISTE QUE LE CLIENT ÉCRIT LUI-MÊME — et qui conditionne la clôture du prestataire. */
 class MissionTodoService
 {
     public function __construct(
@@ -62,11 +37,7 @@ class MissionTodoService
 
         $debut = $mission->actual_start_at;
 
-        /*
-         * PAS ENCORE DÉMARRÉE = OUVERTE SANS ÉCHÉANCE, et c'est juste : le prestataire n'a rien pu
-         * faire, aucune tâche ajoutée ne le retient. Poser une échéance ici fermerait la liste
-         * d'une réservation prise trois semaines à l'avance.
-         */
+        // PAS ENCORE DÉMARRÉE = OUVERTE SANS ÉCHÉANCE, et c'est juste : le prestataire n'a rien pu faire, aucune tâche ajoutée ne le retient.
         if ($debut === null) {
             return ['open' => true, 'closes_at' => null, 'minutes_left' => null, 'reason' => null];
         }
@@ -91,8 +62,7 @@ class MissionTodoService
     }
 
     /**
-     * Le client ajoute une tâche. Elle est OBLIGATOIRE : c'est tout l'objet du module — sans quoi
-     * elle n'empêcherait pas la clôture et ne serait qu'un commentaire.
+     * Le client ajoute une tâche.
      *
      * @throws DomainException
      */
@@ -129,9 +99,6 @@ class MissionTodoService
 
     /**
      * Le client retire une tâche — la sienne, et pas encore faite.
-     *
-     * ON NE RETIRE PAS CE QUI EST FAIT : le prestataire a travaillé dessus, et l'effacer lui
-     * retirerait la preuve de ce qu'il a accompli.
      *
      * @throws DomainException
      */
@@ -200,11 +167,7 @@ class MissionTodoService
             return;
         }
 
-        /*
-         * LE VERROUILLAGE S'ATTESTE AU MOMENT DU REFUS, jamais sur une lecture. Une écriture
-         * déclenchée par un simple affichage se produirait des dizaines de fois par mission, et
-         * sur une réplique de lecture elle échouerait purement et simplement.
-         */
+        // LE VERROUILLAGE S'ATTESTE AU MOMENT DU REFUS, jamais sur une lecture.
         $this->verrouiller($mission);
 
         throw new DomainException((string) $fenetre['reason']);
@@ -228,16 +191,7 @@ class MissionTodoService
     /**
      * @return array{open: bool, closes_at: ?string, minutes_left: ?int, reason: ?string}
      */
-    /**
-     * UNE HEURE NUE NE DIT PAS QUEL JOUR.
-     *
-     * `format('H:i')` seul donnait « La liste est figée depuis 05:02 ». Relevé dans l'application
-     * cliente à 03 h 40, sur une intervention démarrée TROIS JOURS plus tôt : la phrase annonçait
-     * donc un gel à venir dans la journée en cours, pour une liste fermée depuis avant-hier.
-     *
-     * Le jour même ne change pas — c'est le cas courant, et le test qui épingle « figée depuis
-     * 10:30 » le vérifie. La date n'apparaît que lorsqu'elle porte une information.
-     */
+    /** UNE HEURE NUE NE DIT PAS QUEL JOUR. */
     private function quandLisible(Carbon $moment): string
     {
         if ($moment->isSameDay(Carbon::now())) {

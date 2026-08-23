@@ -10,15 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Feature tests for the multi-trade booking flow API endpoints.
- *
- * Endpoints covered:
- *   GET  /api/trades                          — public trades listing
- *   GET  /api/client/trades/{trade}/form-fields — auth, returns trade form schema
- *   GET  /api/client/trades/{trade}/services   — auth, returns services for a trade
- *   POST /api/client/bookings                  — trade_id + trade_form_answers are accepted
- */
+/** Feature tests for the multi-trade booking flow API endpoints. */
 class TradeBookingFlowTest extends TestCase
 {
     use RefreshDatabase;

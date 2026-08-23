@@ -18,22 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LE RAPPORT DE FIN (F9) ET LA SIGNATURE DU CLIENT (F10).
- *
- * DEUX GÉNÉRATEURS EXISTAIENT SANS SE CONNAÎTRE : l'un fabriquait un PDF sur le disque privé,
- * l'autre écrivait une fiche de synthèse en base. `mission_reports.pdf_path` restait vide — la fiche
- * ne savait pas où trouver le document qu'elle résume.
- *
- * ET SURTOUT, RIEN NE L'ENVOYAIT AU CLIENT. Le rapport était produit puis rangé sur un disque que le
- * destinataire ne peut pas atteindre. Un compte rendu qu'on ne reçoit pas est un fichier, pas un
- * compte rendu — et c'est exactement la pièce qu'on cherche trois semaines plus tard, quand une
- * contestation arrive et que plus personne ne se souvient de l'état du lieu.
- *
- * LA GÉNÉRATION EST EN SOFT-FAIL, ET CE FICHIER LE VÉRIFIE. Une bibliothèque PDF qui échoue ne doit
- * pas empêcher un prestataire de terminer sa journée : c'est la clôture qui compte sur le terrain,
- * pas le rendu d'un document.
- */
+/** LE RAPPORT DE FIN (F9) ET LA SIGNATURE DU CLIENT (F10). */
 class RapportDeFinEtSignatureTest extends TestCase
 {
     use RefreshDatabase;
@@ -90,10 +75,7 @@ class RapportDeFinEtSignatureTest extends TestCase
 
         $this->assertNotNull($rapport->report_number);
 
-        /*
-         * `pdf_path` RENSEIGNÉ : la fiche de synthèse et le PDF s'ignoraient, si bien que retrouver
-         * le document supposait de reconstruire son chemin de mémoire.
-         */
+        // `pdf_path` RENSEIGNÉ : la fiche de synthèse et le PDF s'ignoraient, si bien que retrouver le document supposait de reconstruire son chemin de mémoire.
         $this->assertNotNull($rapport->pdf_path);
         Storage::disk('private')->assertExists($rapport->pdf_path);
     }
@@ -150,11 +132,7 @@ class RapportDeFinEtSignatureTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('data.signed', true);
 
-        /*
-         * LA SIGNATURE VAUT PAR CE QUI L'ACCOMPAGNE : horodatage, empreinte du contenu signé,
-         * attribution à un compte. Une case cochée ne prouverait rien le jour où le client affirme
-         * n'avoir jamais validé l'intervention.
-         */
+        // LA SIGNATURE VAUT PAR CE QUI L'ACCOMPAGNE : horodatage, empreinte du contenu signé, attribution à un compte.
         $signature = ContractSignature::query()->latest('id')->first();
 
         $this->assertNotNull($signature);

@@ -10,15 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
-/**
- * Phase 5.2 — Tests du streaming.
- *
- * NB: on ne teste pas le vrai endpoint streaming (qui appelle l'API Anthropic
- * en direct via curl). On teste :
- *   - la génération d'URL signée + auth
- *   - la conversion StreamEvent ↔ format SSE
- *   - le AssistantWidget en mode streaming (dispatch du browser event)
- */
+/** Phase 5.2 — Tests du streaming. */
 class StreamingFlowTest extends TestCase
 {
     use RefreshDatabase;

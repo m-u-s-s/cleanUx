@@ -11,12 +11,7 @@ class BookingPromoCodeApplier
 {
     public function __construct(protected PromoCodeService $promoCodeService) {}
 
-    /**
-     * Apply a promo code to a freshly-created booking.
-     * Throws ValidationException on invalid code; silently skips when empty.
-     *
-     * Returns the redemption if applied, null otherwise.
-     */
+    /** Apply a promo code to a freshly-created booking. */
     public function applyToBooking(Booking $booking, User $client, ?string $rawCode): ?PromoCodeRedemption
     {
         $code = trim((string) $rawCode);

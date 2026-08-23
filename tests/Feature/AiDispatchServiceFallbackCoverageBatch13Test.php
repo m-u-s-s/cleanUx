@@ -19,12 +19,7 @@ class AiDispatchServiceFallbackCoverageBatch13Test extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Le métier commun aux fixtures — obligatoire depuis que le filtre n'a plus de repli.
-     *
-     * Une réservation sans métier résolvable ne rend AUCUN candidat, au lieu de les rendre tous :
-     * c'est l'invariant « jamais un peintre en babysitting », et il vit dans le SQL.
-     */
+    /** Le métier commun aux fixtures — obligatoire depuis que le filtre n'a plus de repli. */
     protected function trade(): Trade
     {
         return Trade::firstOrCreate(

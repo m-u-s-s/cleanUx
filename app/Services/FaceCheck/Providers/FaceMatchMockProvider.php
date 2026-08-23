@@ -10,25 +10,7 @@ use App\Services\FaceCheck\Data\FaceVerifyRequest;
 use App\Services\FaceCheck\Data\FaceVerifyResult;
 use App\Services\FaceCheck\FaceMatchProviderInterface;
 
-/**
- * LE BOUCHON DÉTERMINISTE — la plateforme entière tourne sans clé, sans facture, sans réseau.
- *
- * Il ne tire rien au sort. Deux images portant la même identité donnent toujours le même score ;
- * c'est ce qui rend les tests reproductibles, là où un faux aléatoire produit une suite qui passe
- * quatre fois sur cinq et qu'on finit par relancer sans lire.
- *
- * L'identité se déclare dans le contenu de l'image, par un marqueur textuel :
- *
- *   "#face:alice"                → c'est Alice
- *   "#face:bob"                  → c'est Bob (donc pas Alice)
- *   "#face:alice#liveness:fail"  → c'est bien Alice, mais sur une photo d'une photo
- *   "#face:alice#pending"        → le fournisseur n'a pas encore conclu
- *   "#unreadable"                → image inexploitable (appariement non concluant)
- *
- * Sans marqueur, l'identité est l'empreinte du contenu : deux fichiers identiques sont la même
- * personne, deux fichiers différents ne le sont pas. C'est le comportement attendu d'un vrai
- * moteur ramené à sa plus simple expression honnête.
- */
+/** LE BOUCHON DÉTERMINISTE — la plateforme entière tourne sans clé, sans facture, sans réseau. */
 class FaceMatchMockProvider implements FaceMatchProviderInterface
 {
     public const MARQUEUR_IDENTITE = '#face:';
@@ -71,11 +53,7 @@ class FaceMatchMockProvider implements FaceMatchProviderInterface
             ? FaceVerifyResult::LIVENESS_FAIL
             : FaceVerifyResult::LIVENESS_PASS;
 
-        /*
-         * Sans référence, on ne peut rien comparer — et on ne l'invente pas. C'est le cas d'un
-         * profil dont le fichier de référence a disparu du disque : le contrôle est en erreur,
-         * pas raté. La nuance compte : un échec compte dans les blocages, une erreur non.
-         */
+        // Sans référence, on ne peut rien comparer — et on ne l'invente pas.
         if ($request->referenceContents === null) {
             return new FaceVerifyResult(
                 outcome: FaceVerifyResult::FAILED,
@@ -100,10 +78,7 @@ class FaceMatchMockProvider implements FaceMatchProviderInterface
 
     public function fetchVerification(string $externalCheckId): FaceVerifyResult
     {
-        /*
-         * Le bouchon conclut toujours favorablement au second passage : c'est ce qui permet de
-         * jouer un verdict différé de bout en bout dans un test, sans horloge ni file d'attente.
-         */
+        // Le bouchon conclut toujours favorablement au second passage : c'est ce qui permet de jouer un verdict différé de bout en bout dans un test, sans horloge ni file d'attente.
         return new FaceVerifyResult(
             outcome: FaceVerifyResult::PASSED,
             score: self::SCORE_MEME_PERSONNE,
@@ -130,9 +105,7 @@ class FaceMatchMockProvider implements FaceMatchProviderInterface
         );
     }
 
-    /**
-     * L'identité portée par une image : le marqueur s'il existe, l'empreinte du contenu sinon.
-     */
+    /** L'identité portée par une image : le marqueur s'il existe, l'empreinte du contenu sinon. */
     private function identite(string $contenu): string
     {
         $position = strpos($contenu, self::MARQUEUR_IDENTITE);

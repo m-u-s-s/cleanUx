@@ -7,21 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * LA CAPACITÉ D'UN MODULE DOIT FERMER LA MÊME PORTE DES DEUX CÔTÉS.
- *
- * `EnforceModuleGate` garde les 86 modules d'administration sur le web : un
- * administrateur limité à `manage-quality` reçoit 403 sur `/admin/accounting-v2`.
- *
- * La pile API ne le portait pas. Le même administrateur, avec le jeton de
- * l'application mobile, atteignait `/api/admin/accounting-v2/entries` — la même
- * comptabilité, sans la garde. La restriction n'était donc qu'une gêne
- * d'affichage.
- *
- * Le témoin positif est indispensable : sans lui, un test « c'est refusé »
- * passerait au vert simplement parce que la route est cassée ou le jeton
- * invalide.
- */
+/** LA CAPACITÉ D'UN MODULE DOIT FERMER LA MÊME PORTE DES DEUX CÔTÉS. */
 class CapaciteAdminSurApiTest extends TestCase
 {
     use RefreshDatabase;

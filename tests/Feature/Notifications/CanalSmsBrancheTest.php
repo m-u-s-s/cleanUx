@@ -13,27 +13,7 @@ use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LE CANAL SMS PART VRAIMENT — et la matrice de préférences décide enfin de quelque chose.
- *
- * DEUX PIÈCES DORMAIENT, ET CHACUNE CACHAIT L'AUTRE.
- *
- * `SmsChannel` était écrit en entier — résolution du numéro, idempotence, catégorie — avec ZÉRO
- * référence dans le dépôt. Aucune notification ne le proposait, et il n'était même pas enregistré
- * auprès de Laravel : une notification qui l'aurait demandé aurait levé « Driver [sms] not
- * supported ». Tout le module SMS (pilotes Twilio et bouchon, registre, plafonnement par numéro)
- * attendait derrière.
- *
- * Et `preferredChannels()` interrogeait `wantsNotificationChannel()` sur le destinataire — une
- * méthode qui n'existait sur AUCUN modèle. Le garde `method_exists()` échouait donc toujours, et la
- * fonction rendait ses valeurs par défaut telles quelles. La matrice de préférences, versionnée,
- * auditée, avec son écran de réglage et sa notion de « forcé légalement », n'était consultée par
- * aucun envoi : couper les rappels dans ses réglages ne changeait rien.
- *
- * CE FICHIER MESURE LES DEUX SENS. Qu'un SMS parte quand l'utilisateur le veut ne prouve que la
- * moitié : il faut aussi qu'il NE parte PAS quand l'utilisateur l'a refusé, sinon la matrice reste
- * décorative.
- */
+/** LE CANAL SMS PART VRAIMENT — et la matrice de préférences décide enfin de quelque chose. */
 class CanalSmsBrancheTest extends TestCase
 {
     use RefreshDatabase;

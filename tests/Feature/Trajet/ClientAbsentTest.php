@@ -16,18 +16,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * LE CLIENT NE VIENT PAS — ce que le conducteur peut faire, et depuis quand.
- *
- * LE DÉFAUT QUE CE LOT CORRIGE. `isNoShow()` calculait son délai depuis `scheduled_date`. Une
- * commande immédiate n'en a pas : la méthode rendait donc TOUJOURS `false`, et le geste « client
- * absent » — qui existe pourtant, avec son endpoint et sa politique de frais — était strictement
- * inatteignable sur une course. Un conducteur devant une porte fermée n'avait rien : ni pour
- * partir, ni pour être payé de son déplacement.
- *
- * Le bon repère est l'ARRIVÉE au point de prise en charge. C'est de là que les plateformes de
- * transport comptent leurs minutes d'attente, et c'est le seul instant horodaté dont on dispose.
- */
+/** LE CLIENT NE VIENT PAS — ce que le conducteur peut faire, et depuis quand. */
 class ClientAbsentTest extends TestCase
 {
     use RefreshDatabase;
@@ -116,19 +105,7 @@ class ClientAbsentTest extends TestCase
     {
         $client = User::factory()->client()->create();
 
-        /*
-         * LE JOUR ET L'HEURE VIENNENT DU MEME INSTANT, ET CE N'EST PAS UN DETAIL DE STYLE.
-         *
-         * La version precedente prenait `now()->toDateString()` pour le jour et
-         * `now()->subMinutes(10)` pour l'heure. Les dix minutes qui suivent minuit font basculer la
-         * seconde sur la VEILLE sans toucher au premier : le trait recomposait alors un
-         * `scheduled_at` a aujourd'hui 23 h 5x, pres de vingt-quatre heures dans le FUTUR, et
-         * l'absence ne pouvait jamais etre constatee.
-         *
-         * Constate le 2026-08-22 a 00 h 08 : la suite complete est passee dans cette fenetre et ce
-         * test seul est tombe. Un echec qui n'arrive que 0,7 % du temps coute plus cher a
-         * diagnostiquer qu'un echec permanent.
-         */
+        // LE JOUR ET L'HEURE VIENNENT DU MEME INSTANT, ET CE N'EST PAS UN DETAIL DE STYLE.
         $prevu = now()->subMinutes(10);
 
         $booking = Booking::create([

@@ -6,10 +6,7 @@ use App\Services\Risk\RiskContext;
 use App\Services\Risk\RiskRuleHit;
 use App\Services\Risk\RiskRuleInterface;
 
-/**
- * Flag les comptes très récents (signal classique de fraude : compte créé,
- * action sensible immédiate).
- */
+/** Flag les comptes très récents (signal classique de fraude : compte créé, action sensible immédiate). */
 class AccountAgeRule implements RiskRuleInterface
 {
     public function code(): string

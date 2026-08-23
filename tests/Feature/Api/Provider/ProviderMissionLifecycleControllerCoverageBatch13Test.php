@@ -153,13 +153,7 @@ class ProviderMissionLifecycleControllerCoverageBatch13Test extends TestCase
         $response->assertStatus(422);
     }
 
-    /**
-     * L'ARRIVÉE ÉMET LE CODE DE DÉBUT — et lui seul.
-     *
-     * Elle émettait les deux : le client recevait le code de FIN avant que le travail commence.
-     * Détenu depuis le début, il n'attestait plus rien de la fin. Il naît désormais à la demande,
-     * mission démarrée.
-     */
+    /** L'ARRIVÉE ÉMET LE CODE DE DÉBUT — et lui seul. */
     public function test_arrive_generates_the_start_code_only(): void
     {
         Notification::fake();
@@ -205,17 +199,7 @@ class ProviderMissionLifecycleControllerCoverageBatch13Test extends TestCase
         $response->assertJsonPath('message', 'Le code de fin est requis pour clôturer cette mission.');
     }
 
-    /**
-     * ON NE CLÔTURE PAS SANS L'ACCORD DU CLIENT — MÊME QUAND AUCUN CODE N'A ENCORE ÉTÉ ÉMIS.
-     *
-     * La garde portait sur « existe-t-il un code de fin en attente ? ». Elle tenait tant que le
-     * code était émis d'office à l'arrivée. Depuis qu'il n'est émis qu'à la demande, l'absence de
-     * code la faisait SAUTER : le prestataire clôturait seul, déclenchait l'encaissement et
-     * terminait l'intervention sans que le client ait rien confirmé.
-     *
-     * Constaté en déroulant le parcours à la main : « Mission terminée », confirmer, clôturée.
-     * `missions.requires_end_code` porte la vraie règle et n'était lu nulle part.
-     */
+    /** ON NE CLÔTURE PAS SANS L'ACCORD DU CLIENT — MÊME QUAND AUCUN CODE N'A ENCORE ÉTÉ ÉMIS. */
     public function test_complete_refuses_without_end_code_even_when_none_was_issued(): void
     {
         Notification::fake();
@@ -235,12 +219,7 @@ class ProviderMissionLifecycleControllerCoverageBatch13Test extends TestCase
         $this->assertSame(MissionStatus::STARTED, $mission->fresh()->status);
     }
 
-    /**
-     * SIX CHIFFRES AU HASARD NE CLÔTURENT PAS NON PLUS.
-     *
-     * La branche de validation était conditionnée à l'existence d'un code en attente : sans code
-     * émis, un `end_code` quelconque tombait dans `completeMission()` et n'était confronté à rien.
-     */
+    /** SIX CHIFFRES AU HASARD NE CLÔTURENT PAS NON PLUS. */
     public function test_complete_refuses_an_unverified_end_code(): void
     {
         Notification::fake();
@@ -253,11 +232,7 @@ class ProviderMissionLifecycleControllerCoverageBatch13Test extends TestCase
         $this->assertSame(MissionStatus::STARTED, $mission->fresh()->status);
     }
 
-    /**
-     * LE TÉMOIN : avec le vrai code, la clôture passe.
-     *
-     * Sans lui, les deux refus ci-dessus resteraient verts le jour où plus rien ne clôturerait.
-     */
+    /** LE TÉMOIN : avec le vrai code, la clôture passe. */
     public function test_complete_succeeds_with_the_real_end_code(): void
     {
         Notification::fake();
@@ -272,13 +247,7 @@ class ProviderMissionLifecycleControllerCoverageBatch13Test extends TestCase
         $this->assertSame(MissionStatus::COMPLETED, $mission->fresh()->status);
     }
 
-    /**
-     * LA RAISON DU REFUS DOIT ARRIVER JUSQU'AU PRESTATAIRE.
-     *
-     * Sans rattrapage, la `RuntimeException` du cycle de vie filait vers le rendu générique et le
-     * téléphone affichait « An unexpected error occurred » — un message qui ne dit rien à
-     * quelqu'un debout chez un client, alors que le serveur sait exactement quoi répondre.
-     */
+    /** LA RAISON DU REFUS DOIT ARRIVER JUSQU'AU PRESTATAIRE. */
     public function test_le_refus_de_cloture_arrive_lisible_et_non_en_erreur_generique(): void
     {
         [, $provider, $mission] = $this->buildMission(MissionStatus::STARTED);
@@ -323,19 +292,7 @@ class ProviderMissionLifecycleControllerCoverageBatch13Test extends TestCase
         $this->assertStringContainsString('invalide', mb_strtolower((string) $reponse->json('message')));
     }
 
-    /**
-     * CE TEST FIGEAIT LE TROU.
-     *
-     * Il affirmait qu'une mission SANS code de fin en attente se clôture — ce qui décrivait
-     * fidèlement le code, et ce que ce code avait de faux. Tant que le code était émis d'office à
-     * l'arrivée, la situation « aucun code en attente » n'existait pas en vrai et le test ne
-     * décrivait qu'un cas de laboratoire. Depuis que le code n'est émis qu'à la demande, c'est le
-     * cas NORMAL — et il ouvrait la clôture sans l'accord du client.
-     *
-     * La règle est portée par `missions.requires_end_code`. Une mission qui n'en exige pas se
-     * clôture sans code : c'est ce que ce test vérifie désormais, et c'est le témoin des deux
-     * refus ci-dessus.
-     */
+    /** CE TEST FIGEAIT LE TROU. */
     public function test_complete_closes_a_mission_that_requires_no_end_code(): void
     {
         Notification::fake();

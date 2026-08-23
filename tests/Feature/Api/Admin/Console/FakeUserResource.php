@@ -15,10 +15,6 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Un descripteur d'essai, adossé à `users` — une table qui existe partout.
  *
- * Il sert à éprouver le MOTEUR, pas un domaine : il porte volontairement une colonne de chaque
- * forme, un filtre de chaque type, une action ordinaire et une destructive, et un formulaire.
- * Éprouver le moteur sur un vrai descripteur mêlerait ses défauts à ceux du domaine.
- *
  * @implements AdminResource<User>
  */
 class FakeUserResource implements AdminResource

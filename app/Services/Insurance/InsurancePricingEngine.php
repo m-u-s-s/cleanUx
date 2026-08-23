@@ -6,16 +6,7 @@ use App\Models\InsurancePlan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * InsurancePricingEngine — calcule la prime due pour un plan + booking.
- *
- * Formule :
- *   premium = clamp(base + percent × booking_amount, min, max)
- *
- * Sélection des plans :
- *   getAvailablePlansForBooking(bookingId) retourne les plans actifs
- *   compatibles avec le trade du booking + validité temporelle.
- */
+/** InsurancePricingEngine — calcule la prime due pour un plan + booking. */
 class InsurancePricingEngine
 {
     /**
@@ -99,13 +90,7 @@ class InsurancePricingEngine
 
         $clientId = $row->client_id ?? $row->customer_user_id ?? null;
 
-        /*
-         * L'ASSURANCE COUVRE CELUI QUI EST SUR PLACE — c'est lui qui casse le vase.
-         *
-         * Cette méthode lit la table en direct, sans modèle : `Booking::intervenantId()` ne s'y
-         * applique pas, mais l'ordre de priorité doit être LE MÊME, sinon la police nomme un
-         * prestataire pendant que le portefeuille en paie un autre.
-         */
+        // L'ASSURANCE COUVRE CELUI QUI EST SUR PLACE — c'est lui qui casse le vase.
         $providerUserId = Schema::hasTable('missions')
             ? DB::table('missions')->where('booking_id', $bookingId)
                 ->orderByDesc('id')->value('lead_provider_user_id')

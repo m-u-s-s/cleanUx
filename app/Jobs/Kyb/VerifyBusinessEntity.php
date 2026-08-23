@@ -12,17 +12,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Vérifie une entreprise auprès des registres officiels, hors du chemin d'inscription.
- *
- * Les contrôles sortants — INSEE ou registre national pour l'immatriculation, VIES pour la TVA,
- * criblage des sanctions — prennent chacun une à deux secondes. Les exécuter pendant l'inscription
- * la ralentirait d'autant, et une indisponibilité de l'un d'eux ferait échouer une création de
- * compte par ailleurs valide. Ils sont donc mis en file.
- *
- * Le verdict peut ouvrir le compte : la réévaluation est rejouée à la fin, comme après une
- * décision d'identité.
- */
+/** Vérifie une entreprise auprès des registres officiels, hors du chemin d'inscription. */
 class VerifyBusinessEntity implements ShouldQueue
 {
     use Dispatchable;

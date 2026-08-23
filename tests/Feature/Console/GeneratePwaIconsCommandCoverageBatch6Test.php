@@ -6,16 +6,7 @@ use App\Console\Commands\GeneratePwaIconsCommand;
 use Illuminate\Console\Command;
 use Tests\TestCase;
 
-/**
- * Coverage for {@see GeneratePwaIconsCommand}.
- *
- * The command depends on ImageMagick ('magick' or 'convert' on the PATH). The
- * test environment does not ship ImageMagick, so detectConvert() returns null
- * and handle() takes the early FAILURE guard. These tests exercise the option
- * parsing (source/bg/label/force) plus detectConvert() and the missing-binary
- * error branch deterministically. The actual image-generation branches require
- * ImageMagick and are not reachable here.
- */
+/** Coverage for {@see GeneratePwaIconsCommand}. */
 class GeneratePwaIconsCommandCoverageBatch6Test extends TestCase
 {
     public function test_fails_cleanly_when_imagemagick_is_missing(): void

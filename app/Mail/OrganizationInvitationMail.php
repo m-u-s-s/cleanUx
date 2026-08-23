@@ -9,13 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * L'email d'invitation à rejoindre une organisation.
- *
- * `emails/team-invitation.blade.php` existait déjà et n'était référencé nulle part : c'est le
- * gabarit Jetstream, qui lit `$invitation->team->name` — une relation absente de notre modèle.
- * On écrit donc notre propre vue plutôt que de tordre une relique.
- */
+/** L'email d'invitation à rejoindre une organisation. */
 class OrganizationInvitationMail extends Mailable
 {
     use Queueable, SerializesModels;

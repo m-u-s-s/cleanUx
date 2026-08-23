@@ -22,17 +22,7 @@ class SearchController extends Controller
     {
         $params = $request->validate([
             'trade_id' => ['nullable', 'integer'],
-            /*
-             * LE MÉTIER ÉCRIT EN TOUTES LETTRES.
-             *
-             * L'écran « Explorer » de l'application cliente propose un champ libre — « nettoyage,
-             * peinture… » — et envoyait `trade`. Ce paramètre n'était pas déclaré ici : `validate()`
-             * l'écartait sans rien dire, la recherche partait SANS filtre et rendait l'annuaire
-             * entier. Mesuré en direct : `?trade=peinture` et `?trade=nettoyage` renvoyaient le
-             * même prestataire de nettoyage.
-             *
-             * Il est résolu en identifiant plus bas ; `trade_id`, s'il est fourni, reste prioritaire.
-             */
+            // LE MÉTIER ÉCRIT EN TOUTES LETTRES.
             'trade' => ['nullable', 'string', 'max:64'],
             'service_catalog_id' => ['nullable', 'integer'],
             'min_rating' => ['nullable', 'numeric', 'min:1', 'max:5'],
@@ -133,16 +123,7 @@ class SearchController extends Controller
         return response()->json(['data' => $results->values()->all()]);
     }
 
-    /**
-     * Traduit un métier écrit en toutes lettres en identifiant de métier.
-     *
-     * On compare au nom, au code et au slug : « nettoyage » doit trouver « Nettoyage à domicile »
-     * (slug `nettoyage`, code `CLN`) sans que l'utilisateur ait à connaître le vocabulaire interne.
-     *
-     * Un libellé qui ne correspond à RIEN doit rendre zéro résultat, et non l'annuaire entier :
-     * c'est le défaut qu'on corrige. On pose donc un identifiant impossible plutôt que de laisser
-     * le filtre tomber.
-     */
+    /** Traduit un métier écrit en toutes lettres en identifiant de métier. */
     /**
      * @param  array<string, mixed>  $params
      * @return array<string, mixed>
@@ -156,15 +137,7 @@ class SearchController extends Controller
             return $params;
         }
 
-        /*
-         * L'EXACTITUDE D'ABORD, sinon le premier venu gagne — et c'est le mauvais.
-         *
-         * Une première version prenait le premier `LIKE '%…%'`. Mesuré : « nettoyage » tombait sur
-         * « Nettoyage fin de chantier » (id 5) avant « Nettoyage à domicile » (id 6), et la
-         * recherche ne rendait plus personne. Un tri par exactitude règle le cas sans deviner :
-         * le slug et le code sont des identifiants, le nom est un libellé, le reste est une
-         * approximation.
-         */
+        // L'EXACTITUDE D'ABORD, sinon le premier venu gagne — et c'est le mauvais.
         $motif = mb_strtolower($libelle);
 
         $id = Trade::query()

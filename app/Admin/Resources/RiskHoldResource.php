@@ -12,16 +12,6 @@ use App\Services\Risk\RiskScoringEngine;
 /**
  * Les blocages de risque en attente de revue.
  *
- * POURQUOI CE DESCRIPTEUR EXISTE À CÔTÉ DE CELUI DES ÉVALUATIONS. La page web du risque montre deux
- * choses : les ÉVALUATIONS, qui expliquent un score, et les BLOCAGES, qui empêchent une action et
- * attendent une décision humaine. Un descripteur ne sert qu'un modèle ; celui des évaluations ne
- * pouvait donc offrir ni approbation ni rejet, et le geste principal de la page manquait au mobile.
- *
- * LA DÉCISION PASSE PAR LE MOTEUR DE SCORE, jamais par une écriture directe : lever un blocage
- * débloque l'utilisateur, journalise la revue et met à jour l'évaluation liée. Écrire `status` à la
- * main laisserait l'utilisateur bloqué avec un blocage marqué résolu — l'inverse exact de ce qu'on
- * croit avoir fait.
- *
  * @extends EloquentResource<RiskHold>
  */
 class RiskHoldResource extends EloquentResource
@@ -79,11 +69,7 @@ class RiskHoldResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Approuver LÈVE le blocage : l'utilisateur retrouve l'action qui lui était refusée.
-             * Rejeter la confirme. Les deux passent par le moteur, qui journalise la revue et
-             * répercute sur l'évaluation liée.
-             */
+            // Approuver LÈVE le blocage : l'utilisateur retrouve l'action qui lui était refusée.
             Action::make('approve', 'Approuver — lever le blocage', function (RiskHold $hold, array $valeurs) {
                 app(RiskScoringEngine::class)->reviewHold(
                     $hold,

@@ -11,40 +11,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Phase 11 — Service de gestion de la presence prestataire.
- *
- * Inspiré d'Uber : un driver passe ONLINE pour recevoir des courses, OFFLINE
- * pour ne plus en recevoir. La position GPS est mise à jour à chaque heartbeat.
- *
- * Workflow :
- *   1. App mobile → POST /api/provider/presence/online (lat, lng)
- *   2. Service met is_online=true, went_online_at=now, broadcast event
- *   3. Toutes les 30s → POST /api/provider/presence/heartbeat (lat, lng)
- *   4. Service met à jour current_lat/lng + last_heartbeat_at
- *   5. Si pas de heartbeat depuis 5 min → CleanStaleOnlineProvidersCommand
- *      met automatiquement is_online=false (l'app a probablement crashé/perdu réseau)
- *
- * Configuration :
- *   - HEARTBEAT_TIMEOUT_MINUTES (défaut 5) : seuil d'auto-offline
- */
+/** Phase 11 — Service de gestion de la presence prestataire. */
 class ProviderPresenceService
 {
     public const HEARTBEAT_TIMEOUT_MINUTES = 5;
 
-    /**
-     * Le prestataire passe online et déclare sa position courante.
-     */
+    /** Le prestataire passe online et déclare sa position courante. */
     public function goOnline(User $user, float $lat, float $lng, array $meta = []): ProviderProfile
     {
-        /*
-         * LA MEME PORTE SUR LES DEUX SERVICES DE PRESENCE.
-         *
-         * Deux services de presence coexistent -- celui-ci (historique, `provider_profiles`) et la
-         * version 2 (`provider_presence`) -- et chacun a sa route d'API. Ne garder que l'un des
-         * deux laisserait la porte ouverte par l'autre : c'est le genre d'oubli qui rend un module
-         * de securite decoratif.
-         */
+        // LA MEME PORTE SUR LES DEUX SERVICES DE PRESENCE.
         $verdict = app(FaceCheckGate::class)->inspectProvider($user, $meta['device_name'] ?? null);
 
         if (! $verdict->allowed()) {
@@ -76,9 +51,7 @@ class ProviderPresenceService
         });
     }
 
-    /**
-     * Le prestataire passe offline volontairement.
-     */
+    /** Le prestataire passe offline volontairement. */
     public function goOffline(User $user): ProviderProfile
     {
         $profile = $this->ensureProfile($user);
@@ -99,12 +72,7 @@ class ProviderPresenceService
         });
     }
 
-    /**
-     * Heartbeat : signale "je suis toujours là" et met à jour la position GPS.
-     *
-     * Si l'utilisateur n'est PAS online, on ne fait rien (un heartbeat sur un
-     * profil offline est suspect — il faut explicitement go_online d'abord).
-     */
+    /** Heartbeat : signale "je suis toujours là" et met à jour la position GPS. */
     public function heartbeat(User $user, float $lat, float $lng, array $meta = []): ?ProviderProfile
     {
         $profile = $this->ensureProfile($user);
@@ -125,9 +93,7 @@ class ProviderPresenceService
     }
 
     /**
-     * Désactive automatiquement les prestataires "online" qui n'ont pas envoyé
-     * de heartbeat depuis HEARTBEAT_TIMEOUT_MINUTES. Appelé par cron via
-     * CleanStaleOnlinePresenceCommand.
+     * Désactive automatiquement les prestataires "online" qui n'ont pas envoyé de heartbeat depuis HEARTBEAT_TIMEOUT_MINUTES.
      *
      * @return int Nombre de profils basculés en offline.
      */
@@ -160,11 +126,7 @@ class ProviderPresenceService
         return $stale->count();
     }
 
-    /**
-     * Retourne les prestataires online dans un rayon (en km) autour d'un point.
-     * Utilise la formule haversine en SQL pour scale jusqu'à ~10K profils
-     * sans recourir à PostGIS.
-     */
+    /** Retourne les prestataires online dans un rayon (en km) autour d'un point. */
     public function findOnlineNear(float $lat, float $lng, float $radiusKm = 50)
     {
         $query = ProviderProfile::query()

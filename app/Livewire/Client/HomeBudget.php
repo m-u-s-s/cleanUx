@@ -8,18 +8,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-/**
- * LE BUDGET MAISON (E4).
- *
- * TOUT EST DÉJÀ EN BASE, et personne ne le voit. Un client reçoit ses factures une par une et n'a
- * aucun moyen de répondre à la seule question qu'il se pose : « combien est-ce que je dépense en
- * entretien, et est-ce que ça augmente ». C'est elle qui décide de passer à un abonnement, d'espacer
- * les interventions, ou de renoncer.
- *
- * LE COMPARATIF ABONNEMENT / À LA DEMANDE EST LE SEUL CHIFFRE QUI SERVE À DÉCIDER. Le reste
- * documente ; celui-ci répond — et c'est aussi le seul qui puisse convaincre quelqu'un de
- * s'abonner, en le montrant plutôt qu'en l'affirmant.
- */
+/** LE BUDGET MAISON (E4). TOUT EST DÉJÀ EN BASE, et personne ne le voit. */
 class HomeBudget extends Component
 {
     /** Fenêtre en mois. Douze par défaut : moins ne montre pas de tendance. */

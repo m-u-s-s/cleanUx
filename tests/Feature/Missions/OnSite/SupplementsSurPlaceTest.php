@@ -17,26 +17,7 @@ use Illuminate\Support\Facades\Notification;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LES SUPPLÉMENTS PROPOSÉS SUR PLACE (F3) ET LA RÉPONSE EN UN GESTE (F12).
- *
- * Le prestataire arrive, constate que les vitres n'étaient pas au devis, et propose vingt-cinq
- * euros. Sans ce chemin il n'a que deux mauvaises réponses — le faire gratuitement, ou ne pas le
- * faire — et une troisième pire que les deux : s'arranger en espèces, ce qui sort l'argent de la
- * plateforme et le client de toute protection, garantie comprise.
- *
- * CE QUI EST VÉRIFIÉ ICI, DANS L'ORDRE OÙ ÇA COMPTE :
- *
- * - Le client est PRÉVENU tout de suite, et par un canal qui l'atteint hors de l'application. La
- *   fenêtre est de quelques minutes : le prestataire est chez lui, maintenant.
- * - Un prestataire non affecté ne propose rien. L'identifiant de mission est un entier ; sans ce
- *   contrôle, il suffit d'en essayer un autre pour facturer chez un inconnu.
- * - Le devis d'origine NE BOUGE PAS. C'est la promesse structurante : un supplément est une ligne
- *   additionnelle, jamais une correction du montant accepté au départ.
- * - Une seule réponse. Un double appui, ou deux appareils, ne doivent pas transformer un accord
- *   déjà encaissé en refus.
- * - Le supplément d'autrui reste hors de portée, même en devinant son identifiant.
- */
+/** LES SUPPLÉMENTS PROPOSÉS SUR PLACE (F3) ET LA RÉPONSE EN UN GESTE (F12). */
 class SupplementsSurPlaceTest extends TestCase
 {
     use RefreshDatabase;
@@ -119,11 +100,7 @@ class SupplementsSurPlaceTest extends TestCase
             ])
             ->assertCreated();
 
-        /*
-         * LA FENÊTRE EST DE QUELQUES MINUTES. Le prestataire est chez le client, à l'instant : une
-         * notification qui n'atteint pas la personne hors de l'application arrive après son départ,
-         * et l'occasion est perdue pour les deux.
-         */
+        // LA FENÊTRE EST DE QUELQUES MINUTES.
         Notification::assertSentTo($client, MissionExtraNotification::class);
     }
 
@@ -208,12 +185,7 @@ class SupplementsSurPlaceTest extends TestCase
             ->postJson("/api/client/bookings/{$booking->id}/onsite/extras/{$extra->id}/approve")
             ->assertOk();
 
-        /*
-         * C'EST LA PROMESSE STRUCTURANTE. Un supplément est une LIGNE ADDITIONNELLE, jamais une
-         * correction du montant accepté au départ : le client doit pouvoir relire son devis
-         * d'origine tel qu'il l'a signé. Un devis qui change après coup fait perdre confiance même
-         * quand le changement est justifié.
-         */
+        // C'EST LA PROMESSE STRUCTURANTE.
         $this->assertSame(120.00, (float) $booking->fresh()->devis_estime);
     }
 

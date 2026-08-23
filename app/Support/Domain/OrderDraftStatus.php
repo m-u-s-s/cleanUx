@@ -2,12 +2,7 @@
 
 namespace App\Support\Domain;
 
-/**
- * Cycle de vie d'un panier.
- *
- * `CONVERTED` est terminal : le brouillon a produit une réservation ou un lot. Il n'est jamais
- * purgé — il porte les réponses horodatées qui rendent le devis explicable et opposable.
- */
+/** Cycle de vie d'un panier. */
 final class OrderDraftStatus
 {
     /** En cours de construction, potentiellement sans compte. */

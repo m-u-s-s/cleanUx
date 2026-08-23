@@ -10,11 +10,7 @@ use App\Models\LoyaltyAccount;
 use App\Services\Loyalty\LoyaltyService;
 
 /**
- * Les comptes de fidélité.
- *
- * Les points ne se corrigent pas ici. Le registre de fidélité est IMMUABLE par construction :
- * chaque mouvement y est une ligne, et écrire un solde à la main le désaccorderait de son
- * historique — un solde que plus rien n’explique.
+ * Les comptes de fidélité. Les points ne se corrigent pas ici.
  *
  * @extends EloquentResource<LoyaltyAccount>
  */
@@ -62,14 +58,7 @@ class LoyaltyAccountResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Ajuster des points À LA MAIN. Le motif est obligatoire et long d'au moins cinq
-             * caractères, comme sur le web : le ledger de fidélité est immuable, chaque écriture y
-             * reste, et une ligne sans raison devient incompréhensible six mois plus tard.
-             *
-             * Zéro est refusé : un ajustement nul n'est pas une intention, c'est un formulaire
-             * envoyé par erreur.
-             */
+            // Ajuster des points À LA MAIN.
             Action::make('adjust', 'Ajuster les points', function (LoyaltyAccount $compte, array $valeurs) {
                 app(LoyaltyService::class)->adminAdjust(
                     $compte->user,

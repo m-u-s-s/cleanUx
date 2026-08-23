@@ -11,15 +11,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * The Blade view livewire.admin.analytics-center embeds a raw SQL query that
- * references a non-existent "bookings"."id" column (the real table is
- * rendez_vous), so a full Livewire render throws regardless of seeding and
- * cannot be exercised without editing the view (out of scope). This suite
- * therefore drives the component's own PHP logic directly: mount defaults,
- * the updating* pagination hooks, every computed analytics property, the
- * filter combinations in baseQuery(), and the CSV export action.
- */
+/** The Blade view livewire.admin.analytics-center embeds a raw SQL query that references a non-existent "bookings"."id" column (the real table is rendez_vous), so a full Livewire render throws regardless of seeding and cannot be exercised without editing the view (out of scope). */
 class AdminAnalyticsCenterCoverageTest extends TestCase
 {
     use CreatesZoneAwareFixtures;

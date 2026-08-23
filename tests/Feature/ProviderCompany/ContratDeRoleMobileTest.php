@@ -13,19 +13,7 @@ use App\Services\PermissionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LOT 2 — CE QUE LE SERVEUR DÉCLARE À L'APPLICATION SUR LE SOUS-RÔLE.
- *
- * Le sous-rôle n'était PAS exposé : `/auth/me` ne renvoyait que `can_manage_company`, un seul
- * booléen pour onze rôles. L'application ne pouvait donc rien conditionner plus finement, et
- * recopier la matrice côté client l'aurait fait diverger de `PermissionService` au premier
- * ajustement — ou ignorer complètement la matrice qu'une société règle chez elle.
- *
- * LA PARITÉ CONNEXION / REPRISE EST L'AUTRE MOITIÉ DU SUJET. Ces deux réponses divergeaient déjà :
- * la connexion n'envoyait ni `can_manage_company` ni `organization_type`. Un défaut intermittent —
- * l'espace société s'ouvrait au redémarrage, pas à la connexion — est le plus coûteux à
- * diagnostiquer.
- */
+/** LOT 2 — CE QUE LE SERVEUR DÉCLARE À L'APPLICATION SUR LE SOUS-RÔLE. */
 class ContratDeRoleMobileTest extends TestCase
 {
     use RefreshDatabase;
@@ -91,11 +79,7 @@ class ContratDeRoleMobileTest extends TestCase
 
     public function test_les_cles_refusees_sont_absentes_et_non_a_faux(): void
     {
-        /*
-         * Le téléphone applique un DÉFAUT-REFUS : une clé absente vaut refusée. Envoyer les deux
-         * moitiés inviterait à traiter l'absence comme un cas indécis — et c'est l'absence qui
-         * arrive quand une version d'application précède une clé nouvelle.
-         */
+        // Le téléphone applique un DÉFAUT-REFUS : une clé absente vaut refusée.
         $worker = $this->membre(OrganizationRole::WORKER);
 
         $cles = $this->actingAs($worker, 'sanctum')
@@ -110,12 +94,7 @@ class ContratDeRoleMobileTest extends TestCase
 
     public function test_la_matrice_de_la_societe_change_ce_que_le_mobile_recoit(): void
     {
-        /*
-         * `allPermissionsFor()` SAUTAIT L'ÉTAGE DU MILIEU : elle ne connaissait que la dérogation
-         * nominative et la matrice par défaut du code, pas la matrice propre à la société. Le
-         * téléphone aurait donc reçu une liste que `PermissionService::can()` contredit — et la
-         * fenêtre des permissions du web affichait déjà l'état par défaut au lieu de l'effectif.
-         */
+        // `allPermissionsFor()` SAUTAIT L'ÉTAGE DU MILIEU : elle ne connaissait que la dérogation nominative et la matrice par défaut du code, pas la matrice propre à la société.
         $worker = $this->membre(OrganizationRole::WORKER);
 
         OrganizationRolePermission::create([
@@ -179,11 +158,7 @@ class ContratDeRoleMobileTest extends TestCase
 
     public function test_le_contrat_reste_coherent_avec_le_service_de_permissions(): void
     {
-        /*
-         * LA VÉRIFICATION QUI COMPTE VRAIMENT. Deux chemins répondent à « a-t-il ce droit » :
-         * `can()` côté serveur, et la liste envoyée au téléphone. S'ils divergent, le mobile
-         * affiche des boutons que l'API refuse — ou cache des écrans autorisés.
-         */
+        // LA VÉRIFICATION QUI COMPTE VRAIMENT.
         $chefDEquipe = $this->membre(OrganizationRole::TEAM_LEAD);
 
         $cles = $this->actingAs($chefDEquipe, 'sanctum')
@@ -218,11 +193,7 @@ class ContratDeRoleMobileTest extends TestCase
 
     public function test_une_adhesion_suspendue_ne_donne_plus_aucune_cle(): void
     {
-        /*
-         * L'organisation résolue ne prouve pas l'appartenance : `current_organization_id` reste
-         * renseigné après une suspension. Sans exigence d'adhésion ACTIVE, un compte écarté gardait
-         * son sous-rôle et ses clés sur son téléphone.
-         */
+        // L'organisation résolue ne prouve pas l'appartenance : `current_organization_id` reste renseigné après une suspension.
         $dispatcher = $this->membre(OrganizationRole::DISPATCHER);
 
         OrganizationMember::where('organization_account_id', $this->org->id)
@@ -286,11 +257,7 @@ class ContratDeRoleMobileTest extends TestCase
 
     public function test_la_connexion_annonce_desormais_l_espace_a_ouvrir(): void
     {
-        /*
-         * `serializeUser()` n'envoyait NI `organization_type` NI `can_manage_company` : à la
-         * connexion, l'application ne savait pas quel espace ouvrir pour un dirigeant de société —
-         * et l'obtenait au redémarrage suivant. Un défaut intermittent dont la cause est invisible.
-         */
+        // `serializeUser()` n'envoyait NI `organization_type` NI `can_manage_company` : à la connexion, l'application ne savait pas quel espace ouvrir pour un dirigeant de société — et l'obtenait au redémarrage suivant.
         $owner = $this->membre(OrganizationRole::OWNER);
 
         $this->postJson('/api/auth/login', [

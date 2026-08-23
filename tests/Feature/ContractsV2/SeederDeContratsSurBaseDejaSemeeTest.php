@@ -7,22 +7,7 @@ use Database\Seeders\ContractTemplatesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * SEMER SUR UNE BASE QUI PORTE DÉJÀ UNE VERSION ANTÉRIEURE.
- *
- * L'ANGLE MORT QUE CE FICHIER FERME. Les seeders sont vérifiés sur une base VIERGE — en test comme
- * en CI, où le service MySQL est neuf à chaque exécution. Or le cas qui casse est l'autre : une
- * base qui contient déjà la version précédente du contrat, c'est-à-dire staging et production, et
- * elles seules.
- *
- * `contract_templates` porte deux contraintes d'unicité : `(code, version)` et `code` tout court.
- * La seconde rend la première inopérante — deux versions d'un même contrat ne peuvent pas
- * coexister. Un `updateOrCreate` cherchant sur le couple ne trouve donc rien quand la version
- * change, tente une insertion, et MySQL la refuse. Le déploiement échoue au premier `db:seed`.
- *
- * Ce test ne vérifie pas un numéro de version : il vérifie qu'INCRÉMENTER reste possible, quelle
- * que soit la valeur du jour.
- */
+/** SEMER SUR UNE BASE QUI PORTE DÉJÀ UNE VERSION ANTÉRIEURE. L'ANGLE MORT QUE CE FICHIER FERME. */
 class SeederDeContratsSurBaseDejaSemeeTest extends TestCase
 {
     use RefreshDatabase;
@@ -49,12 +34,7 @@ class SeederDeContratsSurBaseDejaSemeeTest extends TestCase
         );
     }
 
-    /**
-     * LA RÈGLE DE FACTURATION AU TEMPS DOIT ÊTRE DANS LES DEUX CONTRATS.
-     *
-     * Elle engage de l'argent des deux côtés : le client paie une majoration, le prestataire ne la
-     * touche pas. Une règle appliquée sans être écrite au contrat n'est pas opposable.
-     */
+    /** LA RÈGLE DE FACTURATION AU TEMPS DOIT ÊTRE DANS LES DEUX CONTRATS. */
     public function test_la_regle_du_temps_figure_dans_les_deux_contrats(): void
     {
         $this->seed(ContractTemplatesSeeder::class);

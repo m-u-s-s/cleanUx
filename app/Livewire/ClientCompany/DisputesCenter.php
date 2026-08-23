@@ -12,13 +12,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-/**
- * Espace société B2B P2 — centre de litiges de l'entreprise cliente.
- *
- * Donne au gestionnaire la visibilité des litiges de TOUS les sites/bookings de
- * son organisation, et la possibilité d'en ouvrir un pour n'importe quel booking
- * de l'org. Scopé strictement via EnforcesActiveOrgMembership + organization_account_id.
- */
+/** Espace société B2B P2 — centre de litiges de l'entreprise cliente. */
 class DisputesCenter extends Component
 {
     use EnforcesActiveOrgMembership;

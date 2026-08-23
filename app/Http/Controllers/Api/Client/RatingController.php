@@ -21,8 +21,6 @@ class RatingController extends Controller
     /**
      * Submit a rating for a completed booking.
      *
-     * Uses blind-reveal style (rating hidden until provider rates back, Uber-like).
-     *
      * @bodyParam rating integer required Overall star rating (1-5). Example: 5
      * @bodyParam comment string Optional written review (max 2000 chars). Example: Excellent travail, très ponctuel.
      * @bodyParam punctuality integer Optional sub-rating for punctuality (1-5). Example: 5

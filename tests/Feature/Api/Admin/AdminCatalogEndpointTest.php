@@ -7,12 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * L'annuaire que voit l'administrateur sur mobile.
- *
- * Il expose TOUT le registre, modules non couverts compris, marqués comme tels : masquer ce qui
- * n'est pas prêt donnerait une application qui a l'air complète et un avancement invérifiable.
- */
+/** L'annuaire que voit l'administrateur sur mobile. */
 class AdminCatalogEndpointTest extends TestCase
 {
     use RefreshDatabase;

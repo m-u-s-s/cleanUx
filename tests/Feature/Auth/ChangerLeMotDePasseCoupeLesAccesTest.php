@@ -9,20 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
-/**
- * « J'AI ÉTÉ PIRATÉ, JE CHANGE MON MOT DE PASSE » — ce geste doit couper l'accès du voleur.
- *
- * Mesuré le 2026-08-16 : après une réinitialisation complète par le vrai parcours web (302 vers
- * /login), l'ancien jeton mobile rendait toujours 200 sur `/auth/me` et `/client/bookings`, et le
- * nombre de jetons ne bougeait pas. Ni `ResetUserPassword` ni `UpdateUserPassword` ne révoquaient
- * quoi que ce soit. Comme `/auth/refresh` reconduit un jeton sans re-authentification, le téléphone
- * du voleur restait connecté indéfiniment — la seule réaction possible de la victime ne servait à
- * rien.
- *
- * Trois portes doivent tomber : les jetons Sanctum, les sessions web enregistrées, et le cookie
- * « se souvenir de moi ». Chaque test vérifie aussi CE QU'ON CONSERVE, sans quoi la correction
- * déconnecterait la personne du geste qu'elle vient de faire.
- */
+/** « J'AI ÉTÉ PIRATÉ, JE CHANGE MON MOT DE PASSE » — ce geste doit couper l'accès du voleur. */
 class ChangerLeMotDePasseCoupeLesAccesTest extends TestCase
 {
     use RefreshDatabase;
@@ -44,12 +31,7 @@ class ChangerLeMotDePasseCoupeLesAccesTest extends TestCase
         $this->assertSame(0, $user->fresh()->tokens()->count());
     }
 
-    /**
-     * La suite tourne avec `SESSION_DRIVER=array` (phpunit.xml) et la production avec `database` :
-     * sans cette bascule, le test mesurerait le repli « pilote non interrogeable » au lieu de la
-     * suppression. C'est l'angle mort habituel de ce dépôt — un vert qui décrit la configuration de
-     * test, pas celle qui sert les clients.
-     */
+    /** La suite tourne avec `SESSION_DRIVER=array` (phpunit.xml) et la production avec `database` : sans cette bascule, le test mesurerait le repli « pilote non interrogeable » au lieu de la suppression. */
     public function test_la_reinitialisation_supprime_les_sessions_web_enregistrees(): void
     {
         config(['session.driver' => 'database']);
@@ -111,10 +93,7 @@ class ChangerLeMotDePasseCoupeLesAccesTest extends TestCase
         $this->withHeader('Authorization', 'Bearer '.$autre)->getJson('/api/auth/me')->assertUnauthorized();
     }
 
-    /**
-     * Un mauvais mot de passe actuel ne doit RIEN révoquer : sinon il suffirait de tenter n'importe
-     * quoi sur le profil de quelqu'un pour le déconnecter partout.
-     */
+    /** Un mauvais mot de passe actuel ne doit RIEN révoquer : sinon il suffirait de tenter n'importe quoi sur le profil de quelqu'un pour le déconnecter partout. */
     public function test_un_mot_de_passe_actuel_faux_ne_revoque_rien(): void
     {
         $user = User::factory()->create(['password' => bcrypt('AncienMdp1!')]);

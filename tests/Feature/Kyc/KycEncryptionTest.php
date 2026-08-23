@@ -8,10 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * L7 — KYC identity PII (metadata / result_summary) must be encrypted at rest, while legacy
- * plaintext rows remain readable (fallback cast) and get encrypted by the backfill migration.
- */
+/** L7 — KYC identity PII (metadata / result_summary) must be encrypted at rest, while legacy plaintext rows remain readable (fallback cast) and get encrypted by the backfill migration. */
 class KycEncryptionTest extends TestCase
 {
     use RefreshDatabase;

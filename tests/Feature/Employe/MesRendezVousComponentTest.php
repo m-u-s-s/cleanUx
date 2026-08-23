@@ -15,12 +15,7 @@ class MesRendezVousComponentTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * An admin (non read-only) passes the RendezVous `update` policy, while the
-     * component's listing query filters on `employe_id = Auth::id()`. Assigning
-     * the admin as the booking's employe lets a single actor exercise both the
-     * listing branches and the gate-protected field actions.
-     */
+    /** An admin (non read-only) passes the RendezVous `update` policy, while the component's listing query filters on `employe_id = Auth::id()`. */
     private function actingAdmin(): User
     {
         $admin = User::factory()->admin()->create(['is_active' => true]);
@@ -29,11 +24,7 @@ class MesRendezVousComponentTest extends TestCase
         return $admin;
     }
 
-    /**
-     * Create a booking with an attached Mission so that selecting it resolves a
-     * non-null selectedMissionId (the component resolves the mission via
-     * rendez_vous_id when a booking is selected).
-     */
+    /** Create a booking with an attached Mission so that selecting it resolves a non-null selectedMissionId (the component resolves the mission via rendez_vous_id when a booking is selected). */
     private function bookingWithMission(User $employe, array $attributes = []): Booking
     {
         $booking = Booking::factory()->create(array_merge(['employe_id' => $employe->id], $attributes));

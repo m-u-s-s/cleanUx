@@ -6,13 +6,7 @@ use App\Services\Onboarding\ProviderDocumentExpiryScanner;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Le préavis de péremption des justificatifs prestataire.
- *
- * Jumeau de `fleet:scan-expiring`, pour l'autre moitié du dossier : la flotte savait déjà prévenir
- * qu'un contrôle technique arrivait à terme, les pièces du prestataire — permis, assurance — ne le
- * savaient pas.
- */
+/** Le préavis de péremption des justificatifs prestataire. */
 class ProviderDocumentsScanExpiringCommand extends Command
 {
     protected $signature = 'provider:scan-expiring-documents

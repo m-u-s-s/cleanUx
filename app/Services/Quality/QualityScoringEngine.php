@@ -7,16 +7,7 @@ use App\Models\MissionQualityInspection;
 use App\Models\QualityChecklistItem;
 use Illuminate\Support\Facades\Config;
 
-/**
- * QualityScoringEngine — calcule le score d'une inspection.
- *
- * Pour chaque InspectionItem :
- *   - Si `met=true` → score_awarded = checklist_item.weight
- *   - Sinon → 0 (sauf si rating, où on award rating/max_rating × weight)
- *
- * Score total = sum(score_awarded) / sum(weight des items required)
- * Renvoyé en pourcentage (0..100).
- */
+/** QualityScoringEngine — calcule le score d'une inspection. */
 class QualityScoringEngine
 {
     public function recompute(MissionQualityInspection $inspection): MissionQualityInspection

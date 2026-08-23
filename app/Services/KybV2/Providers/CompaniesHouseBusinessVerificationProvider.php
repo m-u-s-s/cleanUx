@@ -7,10 +7,7 @@ use App\Services\KybV2\VerificationResult;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * UK Companies House (gratuit avec inscription).
- * Doc : https://developer.company-information.service.gov.uk/
- */
+/** UK Companies House (gratuit avec inscription). */
 class CompaniesHouseBusinessVerificationProvider implements BusinessVerificationProviderContract
 {
     public function name(): string

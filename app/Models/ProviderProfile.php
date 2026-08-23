@@ -10,9 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * Colonnes KYC ajoutées par `2026_05_18_140003_add_kyc_fields_to_provider_profiles`. Elles
- * existent en base et sont écrites par `KycVerificationService`, mais n'étaient déclarées nulle
- * part : toute lecture depuis un autre module était donc invisible à l'analyse statique.
+ * Colonnes KYC ajoutées par `2026_05_18_140003_add_kyc_fields_to_provider_profiles`.
  *
  * @property ?string $kyc_provider
  * @property ?string $kyc_external_applicant_id
@@ -26,12 +24,7 @@ class ProviderProfile extends Model
     /** @use HasFactory<ProviderProfileFactory> */
     use HasFactory;
 
-    /**
-     * SECURITY : Tous les setters sensibles (verification_status, stripe_connect_status, etc.)
-     * doivent passer par un Service composant un payload explicite après validation.
-     * NE JAMAIS faire `ProviderProfile::find($id)->update($request->all())` dans un controller —
-     * utiliser `$request->validated()` ou forceFill() depuis un Service.
-     */
+    /** SECURITY : Tous les setters sensibles (verification_status, stripe_connect_status, etc.) doivent passer par un Service composant un payload explicite après validation. */
     protected $fillable = [
         'user_id',
         'organization_account_id',

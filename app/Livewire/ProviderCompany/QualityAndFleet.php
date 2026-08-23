@@ -12,21 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * LE SCORE QUALITÉ INTERNE (E26) ET LA FLOTTE DE LA SOCIÉTÉ (E27).
- *
- * DEUX MODULES SUR UN ÉCRAN PARCE QU'ILS RÉPONDENT À LA MÊME QUESTION : qui peut travailler demain,
- * et avec quoi. Une certification expirée refuse une assignation ; un score de ponctualité en chute
- * annonce le contrat qu'on va perdre. Les séparer obligerait à ouvrir deux écrans pour préparer une
- * seule conversation.
- *
- * LE SCORE NE SORT PAS DE LA SOCIÉTÉ. Il sert à repérer qui a besoin d'aide, pas à classer
- * publiquement : l'exposer côté client en ferait un outil de sélection, ce qu'aucun exécutant n'a
- * accepté en signant.
- *
- * ET UN SCORE SANS MATIÈRE NE SE FABRIQUE PAS. Sous trois missions, l'écran affiche « pas assez de
- * données » plutôt qu'un nombre qui serait lu comme un jugement.
- */
+/** LE SCORE QUALITÉ INTERNE (E26) ET LA FLOTTE DE LA SOCIÉTÉ (E27). */
 class QualityAndFleet extends Component
 {
     use EnforcesActiveOrgMembership;

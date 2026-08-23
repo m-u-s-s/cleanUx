@@ -23,18 +23,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * PHASE 2 — LES SURFACES WEB ET API DU PLANNING (E19), DES HEURES (E20), DES ABSENCES (E21), DE LA
- * RENTABILITÉ (E22) ET DES CONSOMMABLES (E23).
- *
- * LES SERVICES ONT LEURS PROPRES TESTS ; CE FICHIER COMPTE DES PORTES. Un module dont le service est
- * juste et qu'aucun écran n'atteint est un module livré à personne — c'est le défaut exact qui a
- * rendu les implantations invisibles pendant tout un lot.
- *
- * ET CHAQUE GARDE EST REVÉRIFIÉE À L'ACTION, jamais seulement à l'ouverture. Livewire ne rejoue
- * jamais `mount()` : une permission contrôlée à l'affichage ne protège que l'affichage, et le
- * navigateur peut appeler n'importe quelle méthode publique ensuite.
- */
+/** PHASE 2 — LES SURFACES WEB ET API DU PLANNING (E19), DES HEURES (E20), DES ABSENCES (E21), DE LA RENTABILITÉ (E22) ET DES CONSOMMABLES (E23). */
 class PlanningHeuresEtStockWebTest extends TestCase
 {
     use RefreshDatabase;
@@ -129,10 +118,7 @@ class PlanningHeuresEtStockWebTest extends TestCase
             ->call('ajouterUnCreneau')
             ->assertHasNoErrors();
 
-        /*
-         * ON NE PUBLIE PAS EN CRÉANT. Une semaine se construit ligne à ligne : publier à chaque
-         * ajout communiquerait un planning à moitié fait, sur lequel quelqu'un compterait.
-         */
+        // ON NE PUBLIE PAS EN CRÉANT.
         $this->assertDatabaseHas('shifts', [
             'organization_account_id' => $this->org->id,
             'user_id' => $ouvrier->id,
@@ -345,10 +331,7 @@ class PlanningHeuresEtStockWebTest extends TestCase
     {
         $ouvrier = $this->membre(OrganizationRole::WORKER);
 
-        /*
-         * MÊME RÈGLE QUE L'API, DÉLIBÉRÉMENT. Deux surfaces qui liraient deux versions du même droit
-         * rendraient l'une des deux menteuse — et c'est toujours celle qu'on n'a pas testée.
-         */
+        // MÊME RÈGLE QUE L'API, DÉLIBÉRÉMENT.
         Livewire::actingAs($ouvrier)
             ->test(TimesheetCenter::class)
             ->assertOk()
@@ -463,10 +446,7 @@ class PlanningHeuresEtStockWebTest extends TestCase
 
         Sanctum::actingAs($ouvrier, ['*']);
 
-        /*
-         * UNE ABSENCE DIT LA MALADIE, LA GARDE D'ENFANT, L'ACCOMPAGNEMENT D'UN PROCHE. Les exposer à
-         * toute la société ferait de la pose de congé un aveu — et personne n'en poserait.
-         */
+        // UNE ABSENCE DIT LA MALADIE, LA GARDE D'ENFANT, L'ACCOMPAGNEMENT D'UN PROCHE.
         $this->getJson('/api/provider/company/leaves')
             ->assertOk()
             ->assertJsonCount(0, 'data')

@@ -8,24 +8,10 @@ use App\Models\MessageRead;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Phase 4.1 — Marquage de lecture par utilisateur.
- *
- * Stratégie :
- *   - On NE crée PAS un MessageRead par message (volume insoutenable).
- *   - À la place, on stocke un MessageRead pour le DERNIER message lu d'un canal.
- *   - Le compteur "non lus" = SELECT COUNT(*) FROM messages WHERE channel_id = ?
- *     AND id > (SELECT message_id FROM message_reads WHERE user_id = ? AND ...).
- *
- * NB: la migration ajoute un UNIQUE(message_id, user_id), ce qui empêche les
- * doublons. Mais on ne crée qu'1 ligne par canal lu (par user). On supprime
- * les anciennes lignes du même canal pour ce user à chaque markRead.
- */
+/** Phase 4.1 — Marquage de lecture par utilisateur. */
 class ReadReceiptService
 {
-    /**
-     * Marque le message le plus récent du canal comme lu pour cet utilisateur.
-     */
+    /** Marque le message le plus récent du canal comme lu pour cet utilisateur. */
     public function markChannelAsRead(User $user, Channel $channel): ?MessageRead
     {
         $latestMessage = Message::query()
@@ -70,9 +56,7 @@ class ReadReceiptService
         });
     }
 
-    /**
-     * Nombre de messages non lus dans un canal pour un user.
-     */
+    /** Nombre de messages non lus dans un canal pour un user. */
     public function unreadCount(User $user, Channel $channel): int
     {
         $lastReadMessageId = MessageRead::query()
@@ -98,6 +82,7 @@ class ReadReceiptService
      * Compteurs unread pour TOUS les canaux d'un user en une requête (pour sidebar).
      *
      * @return array<int, int> [channel_id => unread_count]
+     *                         /
      */
     public function unreadCountsForUserChannels(User $user, array $channelIds): array
     {

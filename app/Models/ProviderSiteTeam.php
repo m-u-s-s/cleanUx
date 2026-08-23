@@ -5,16 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * L'ÉQUIPE QUI DESSERT HABITUELLEMENT CE SITE.
- *
- * `provider_site_assignments` nomme des PERSONNES ; une équipe entière est le cas ordinaire d'un
- * grand site, et la désigner personne par personne recommence à chaque changement d'effectif.
- *
- * TOUTE LECTURE EST SCOPÉE `provider_organization_id` : plusieurs sociétés concurrentes peuvent
- * desservir le même immeuble — l'une le nettoyage, l'autre les espaces verts — et chacune y a son
- * équipe habituelle.
- */
+/** L'ÉQUIPE QUI DESSERT HABITUELLEMENT CE SITE. */
 class ProviderSiteTeam extends Model
 {
     protected $fillable = [

@@ -14,15 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
-/**
- * Feature tests for trade-aware matching in MatchingV2Service.
- *
- * Verifies that:
- *   1. Only providers who have the booking's trade are returned as candidates.
- *   2. A provider without the trade is excluded even if otherwise top-rated.
- *   3. The tradeScore component gives bonus points for the primary-trade provider.
- *   4. When NO provider matches the trade, the fallback pool (all zone providers) is returned.
- */
+/** Feature tests for trade-aware matching in MatchingV2Service. Verifies that: 1. */
 class TradeFilteredMatchingTest extends TestCase
 {
     use RefreshDatabase;
@@ -122,13 +114,7 @@ class TradeFilteredMatchingTest extends TestCase
     // Test 3 — le repli ouvert est supprimé : personne, plutôt que n'importe qui
     // ──────────────────────────────────────────────────────────────────
 
-    /**
-     * LE FILTRE MÉTIER N'A PLUS DE REPLI.
-     *
-     * Il rendait la liste NON filtrée quand elle se vidait — c'est la porte par laquelle un peintre
-     * pouvait recevoir du babysitting. Une mission non pourvue est un incident visible ; une mission
-     * pourvue par le mauvais métier est un client perdu et un déplacement inutile.
-     */
+    /** LE FILTRE MÉTIER N'A PLUS DE REPLI. */
     public function test_aucun_candidat_quand_personne_n_exerce_le_metier_requis(): void
     {
         $otherTrade = Trade::factory()->create(['billing_unit' => 'fixed', 'is_active' => true]);
@@ -147,13 +133,7 @@ class TradeFilteredMatchingTest extends TestCase
     // Test 4 — une réservation sans métier ne rend personne
     // ──────────────────────────────────────────────────────────────────
 
-    /**
-     * SANS MÉTIER RÉSOLVABLE, ON NE REND PERSONNE.
-     *
-     * L'ancienne règle — « pas de métier requis, donc tout le monde » — paraissait prudente et
-     * produisait l'inverse : une réservation dont le métier n'avait pas été enregistré partait chez
-     * n'importe qui.
-     */
+    /** SANS MÉTIER RÉSOLVABLE, ON NE REND PERSONNE. */
     public function test_une_reservation_sans_metier_ne_rend_personne(): void
     {
         $provider = $this->createProvider(rating: 4.5, ratingCount: 20);

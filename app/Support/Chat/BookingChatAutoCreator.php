@@ -9,12 +9,7 @@ use App\Services\ChatV2\ChatService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Auto-création / archivage du thread Chat associé à un booking.
- *
- * Soft-fail si module chat_v2 absent OU désactivé OU table manquante.
- * Pas de side-effect business si quelque chose plante.
- */
+/** Auto-création / archivage du thread Chat associé à un booking. */
 class BookingChatAutoCreator
 {
     public static function ensureThreadForBooking(Booking $booking): ?ChatThread

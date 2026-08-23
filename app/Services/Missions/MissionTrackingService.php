@@ -90,22 +90,7 @@ class MissionTrackingService
         });
     }
 
-    /**
-     * SUR UNE COURSE, OUVRIR AUSSI LA SESSION v2 — sinon l'approche est invisible ailleurs.
-     *
-     * Deux systèmes de suivi coexistent. Celui-ci, historique, alimente les écrans web. Le v2
-     * (`trip_tracking_sessions`) alimente l'application cliente et le lien de suivi partagé, et
-     * c'est le seul que la course rouvre vers le point de dépose une fois le client à bord.
-     *
-     * Le bouton du web n'ouvrait que l'historique : une course conduite depuis le navigateur
-     * n'apparaissait donc nulle part côté client tant que le trajet n'avait pas commencé — le
-     * passager attendait sans voir personne arriver, ce qui est exactement le moment où il regarde.
-     *
-     * Réservé aux courses À DESSEIN : pour une intervention ordinaire, ouvrir une seconde session
-     * ne montrerait rien de plus et doublerait les écritures de position.
-     *
-     * Soft-fail : un suivi qui ne s'ouvre pas ne doit pas empêcher un prestataire de partir.
-     */
+    /** SUR UNE COURSE, OUVRIR AUSSI LA SESSION v2 — sinon l'approche est invisible ailleurs. */
     protected function ouvrirAussiLeSuiviV2(Mission $mission, User $employee, float $lat, float $lng): void
     {
         $reservation = $mission->booking;
@@ -258,17 +243,7 @@ class MissionTrackingService
             ? (float) $mission->destination_lng
             : ($mission->booking?->destination_lng !== null ? (float) $mission->booking->destination_lng : null);
 
-        /*
-         * SUR UNE COURSE DÉMARRÉE, LA DESTINATION EST LE POINT DE DÉPOSE.
-         *
-         * Ce suivi-ci lit `missions.destination_*`, c'est-à-dire le lieu de PRISE EN CHARGE. Tant
-         * que le client attend son chauffeur, c'est le bon repère. Une fois qu'il est monté, ce
-         * n'est plus qu'un point derrière lui : la carte continuerait de pointer l'endroit qu'on
-         * vient de quitter, et l'ETA se rapprocherait de zéro pendant que la voiture s'en éloigne.
-         *
-         * La bascule suit le STATUT de la mission, pas la seule présence de coordonnées : avant le
-         * démarrage, le trajet à montrer est bien celui qui mène au client.
-         */
+        // SUR UNE COURSE DÉMARRÉE, LA DESTINATION EST LE POINT DE DÉPOSE.
         $course = $mission->booking?->estUneCourse() ? $mission->booking : null;
 
         if ($course && in_array($mission->status, [MissionStatus::STARTED, MissionStatus::PAUSED], true)) {
@@ -317,16 +292,7 @@ class MissionTrackingService
                 'lat' => $destinationLat,
                 'lng' => $destinationLng,
             ],
-            /*
-             * LE TRACÉ, quand un itinéraire a pu être calculé.
-             *
-             * Cet écran reliait la voiture à sa destination par un SEGMENT DROIT. Sur une approche
-             * de trois rues, l'approximation se voit à peine ; sur une course de quinze kilomètres,
-             * elle traverse la ville en diagonale et ne ressemble à aucun trajet possible.
-             *
-             * `null` quand aucun fournisseur d'itinéraire n'est configuré : l'écran garde alors son
-             * segment droit, qui reste plus utile que rien.
-             */
+            // LE TRACÉ, quand un itinéraire a pu être calculé.
             'route' => $this->traceDeLaCourse($mission, $employeeLat, $employeeLng, $destinationLat, $destinationLng),
             'distance_meters' => $distanceMeters,
             'eta_minutes' => $etaMinutes,
@@ -335,14 +301,6 @@ class MissionTrackingService
 
     /**
      * Le tracé à afficher, ou `null`.
-     *
-     * Calculé depuis la position COURANTE : contrairement au tracé figé des sessions de suivi v2,
-     * celui-ci n'est pas rangé en base et se recalcule à chaque sondage. Le service de routage met
-     * en cache par couple de coordonnées arrondies, ce qui absorbe l'essentiel des appels d'un
-     * véhicule à l'arrêt ; en mouvement, on paie un appel par sondage, et c'est le prix d'un tracé
-     * qui suit vraiment la voiture.
-     *
-     * Soft-fail : un fournisseur indisponible ne doit pas vider une page de suivi.
      *
      * @return array{points: list<array{lat: float, lng: float}>, source: string}|null
      */

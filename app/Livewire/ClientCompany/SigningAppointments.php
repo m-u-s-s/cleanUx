@@ -11,12 +11,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-/**
- * Planifier une signature de contrat sur place, et suivre celles à venir.
- *
- * Rien ne reliait jusqu'ici la signature électronique (`contract_signatures`) aux rendez-vous :
- * une société exigeant une signature en présence n'avait aucun moyen de la fixer.
- */
+/** Planifier une signature de contrat sur place, et suivre celles à venir. */
 class SigningAppointments extends Component
 {
     use EnforcesActiveOrgMembership;

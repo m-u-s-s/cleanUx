@@ -11,12 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-/**
- * FeatureFlagsManager — admin UI to toggle feature flags at runtime.
- *
- * Reads flags from config/features.php and merges DB overrides.
- * Toggling a flag writes (or updates) a feature_flag_overrides row.
- */
+/** FeatureFlagsManager — admin UI to toggle feature flags at runtime. */
 #[Layout('layouts.app')]
 class FeatureFlagsManager extends Component
 {

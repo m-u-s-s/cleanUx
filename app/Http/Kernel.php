@@ -58,8 +58,6 @@ class Kernel extends HttpKernel
     /**
      * The application's global HTTP middleware stack.
      *
-     * These middleware are run during every request to your application.
-     *
      * @var array<int, class-string|string>
      */
     protected $middleware = [
@@ -104,8 +102,6 @@ class Kernel extends HttpKernel
     /**
      * The application's middleware aliases.
      *
-     * Aliases may be used instead of class names to conveniently assign middleware to routes and groups.
-     *
      * @var array<string, class-string|string>
      */
     protected $middlewareAliases = [
@@ -125,11 +121,7 @@ class Kernel extends HttpKernel
         'face.verified' => EnsureFaceCheckPassed::class,
         'active.account' => EnsureActiveAccount::class,
         'org.type' => EnsureOrganizationType::class,
-        /*
-         * Le middleware existait depuis longtemps SANS être enregistré : toute route qui l'aurait
-         * invoqué aurait planté sur un alias inconnu. Personne ne s'en apercevait, faute
-         * d'appelant — une garde écrite, jamais branchée.
-         */
+        // Le middleware existait depuis longtemps SANS être enregistré : toute route qui l'aurait invoqué aurait planté sur un alias inconnu.
         'org.permission' => CheckOrganizationPermission::class,
         'field.team.lead' => EnsureFieldTeamLead::class,
         'assistant.ratelimit' => AssistantRateLimit::class,

@@ -10,20 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * LES DEVIS REÇUS, CÔTÉ CLIENT (E24).
- *
- * LA MOITIÉ MANQUANTE DE E24. Une société qui bâtit un devis et l'envoie à un client qui ne peut
- * pas y répondre n'a rien envoyé : elle a produit un document que le client découvre par une
- * notification et auquel il répond par téléphone — c'est-à-dire hors de toute trace.
- *
- * ACCEPTER CRÉE LE TRAVAIL, pas un accusé de réception. Chaque ligne porte un métier et devient une
- * réservation : un devis accepté qui ne crée rien laisse les deux parties d'accord et personne au
- * travail.
- *
- * UN DEVIS PÉRIMÉ NE S'ACCEPTE PAS, même si le balayage n'est pas passé. Le contraire ferait
- * dépendre la validité d'un prix de l'heure d'exécution d'un cron.
- */
+/** LES DEVIS REÇUS, CÔTÉ CLIENT (E24). LA MOITIÉ MANQUANTE DE E24. */
 class ReceivedQuotes extends Component
 {
     #[Locked]
@@ -76,12 +63,7 @@ class ReceivedQuotes extends Component
         }
     }
 
-    /**
-     * Un devis QUI M'EST ADRESSÉ, ou `null`.
-     *
-     * Le scoping fait partie de la requête : un identifiant forgé ne doit jamais charger le devis
-     * d'un autre client — il porte son nom, son adresse et ce qu'il paye.
-     */
+    /** Un devis QUI M'EST ADRESSÉ, ou `null`. */
     private function devisRecu(int $devisId): ?ProviderQuote
     {
         return ProviderQuote::query()

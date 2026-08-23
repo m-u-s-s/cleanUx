@@ -6,11 +6,7 @@ use App\Support\International\Devise;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
-/**
- * Formats KPI results for API / dashboard output.
- * Handles labels, currency, trend indicators, and series gap-filling.
- * No DB queries and no calculation logic here.
- */
+/** Formats KPI results for API / dashboard output. */
 class KpiFormatter
 {
     public function statusLabel(string $status): string

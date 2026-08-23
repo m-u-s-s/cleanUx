@@ -7,18 +7,7 @@ use App\Enums\OrganizationType;
 use App\Enums\Role;
 use Tests\TestCase;
 
-/**
- * LES ONZE SOUS-RÔLES APPARTIENNENT À `provider_societe`.
- *
- * `forProviderCompany()` n'en proposait que huit : `manager`, `site_manager` et `requester`
- * étaient réservés à la société CLIENTE. Le découpage se tenait — un « demandeur » a du sens chez
- * qui commande — mais il laissait une société prestataire sans gestionnaire général ni responsable
- * de site, alors qu'une société de nettoyage a les deux.
- *
- * LA SOCIÉTÉ CLIENTE GARDE LES SIENS. Les lui retirer casserait `MembersAccess`, qui les propose à
- * l'écran, et priverait ses membres de leurs permissions du jour au lendemain. Le recouvrement est
- * assumé : un rôle peut décrire un métier des deux côtés.
- */
+/** LES ONZE SOUS-RÔLES APPARTIENNENT À `provider_societe`. */
 class SousRolesSocietePrestataireTest extends TestCase
 {
     public function test_la_societe_prestataire_dispose_des_onze_sous_roles(): void
@@ -57,11 +46,7 @@ class SousRolesSocietePrestataireTest extends TestCase
 
     public function test_les_rangs_restent_comparables_entre_tous(): void
     {
-        /*
-         * `canManage()` compare des rangs. En élargissant la liste, on met en présence des rôles
-         * qui ne se croisaient pas : un gestionnaire (80) et un chef d'équipe (40) appartenaient à
-         * deux mondes. La hiérarchie doit rester totale, sans rang manquant.
-         */
+        // `canManage()` compare des rangs.
         foreach (OrganizationRole::cases() as $sousRole) {
             $this->assertGreaterThan(0, $sousRole->rank(), $sousRole->value);
         }

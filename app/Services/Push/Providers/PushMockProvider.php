@@ -8,14 +8,7 @@ use App\Services\Push\PushSendResult;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-/**
- * Provider Push mock — log au lieu d'envoyer réellement.
- *
- * Comportement spécial :
- *   - token contenant "invalid" → token_invalid (signale au service d'invalider)
- *   - token contenant "fail" → failed
- *   - sinon → accepted
- */
+/** Provider Push mock — log au lieu d'envoyer réellement. */
 class PushMockProvider implements PushProviderInterface
 {
     public function name(): string

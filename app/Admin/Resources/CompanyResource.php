@@ -12,12 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Les entreprises — clientes comme prestataires.
- *
- * PAS D'ACTIONS ICI, ET C'EST VOULU. Approuver ou refuser une entreprise passe par le module
- * d'approbations, qui porte la règle (vérifications KYB, notification, journal). Rejouer un
- * changement de statut par une écriture de colonne produirait une entreprise « approuvée » que
- * rien n'a vérifiée — deux chemins vers la même table, deux résultats.
+ * Les entreprises — clientes comme prestataires. PAS D'ACTIONS ICI, ET C'EST VOULU.
  *
  * @implements AdminResource<OrganizationAccount>
  */

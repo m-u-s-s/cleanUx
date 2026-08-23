@@ -5,14 +5,7 @@ namespace Tests\Feature\Admin\Console;
 use App\Admin\Console\ResourceRegistry;
 use Tests\TestCase;
 
-/**
- * Le registre des descripteurs, et son garde-fou contre le mensonge.
- *
- * `config/admin_console.php` DÉCLARE ce que le mobile sait servir ; le registre le PROUVE. Sans
- * ce test, basculer un module sur `descriptor` suffirait à le rendre navigable dans l'annuaire —
- * et il ouvrirait un écran vide. C'est pire que de l'annoncer « à venir », parce que personne ne
- * le remarque : l'annuaire dirait que le chantier avance alors qu'il n'a pas bougé.
- */
+/** Le registre des descripteurs, et son garde-fou contre le mensonge. */
 class ResourceRegistryTest extends TestCase
 {
     public function test_tout_module_declare_descriptor_a_bien_un_descripteur(): void
@@ -33,15 +26,7 @@ class ResourceRegistryTest extends TestCase
 
     public function test_tout_descripteur_enregistre_correspond_a_un_module_connu(): void
     {
-        /*
-         * Les clés d'annuaire ET les ressources SECONDAIRES qu'un module déclare.
-         *
-         * Certaines pages web sont des tableaux de bord multi-modèles : « Opérations B2B » gère
-         * contrats, ordres de travail et grilles tarifaires. Le moteur sert un modèle par
-         * descripteur ; le module les rassemble. Sans cette union, un descripteur légitime
-         * passerait pour orphelin — et la seule façon de faire taire le test aurait été de ne pas
-         * l'écrire.
-         */
+        // Les clés d'annuaire ET les ressources SECONDAIRES qu'un module déclare.
         $connus = array_merge(
             array_column(config('admin_console.modules'), 'key'),
             collect(config('admin_console.modules'))->flatMap(fn ($m) => $m['resources'] ?? [])->all(),

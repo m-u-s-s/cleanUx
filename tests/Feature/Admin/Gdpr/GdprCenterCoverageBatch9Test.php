@@ -11,14 +11,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * Coverage for the admin GDPR compliance centre Livewire component.
- *
- * Exercises mount/render across all three tabs (requests, audit, retention),
- * the KPI aggregation block, the requests filters (search / type / status) and
- * every wire action — cancelRequest, executeNow (erasure happy path + the
- * non-erasure guard) and runRetention.
- */
+/** Coverage for the admin GDPR compliance centre Livewire component. */
 class GdprCenterCoverageBatch9Test extends TestCase
 {
     use RefreshDatabase;

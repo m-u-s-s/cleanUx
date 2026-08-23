@@ -9,9 +9,7 @@ use App\Services\GeolocationV2\GeocodingResult;
 use App\Services\GeolocationV2\Support\Haversine;
 use Illuminate\Support\Str;
 
-/**
- * Mock provider — canned data for FR/BE/NL cities. Used in CI/dev/fallback.
- */
+/** Mock provider — canned data for FR/BE/NL cities. Used in CI/dev/fallback. */
 class MockGeocodingProvider implements GeocodingProviderContract
 {
     /** @var array<string, array{lat:float,lng:float,postal:string,locality:string,country:string,formatted:string}> */
@@ -117,18 +115,6 @@ class MockGeocodingProvider implements GeocodingProviderContract
 
     /**
      * LA CORRESPONDANCE VA DANS LES DEUX SENS — elle n'allait que dans un.
-     *
-     * On ne testait que « le texte tapé est-il contenu dans l'entrée ? ». Taper « Bruxelles »
-     * marchait donc, et taper « Rue Neuve 12, 1000 Bruxelles » ne marchait pas : la requête est
-     * plus longue que l'entrée. Autrement dit, plus l'adresse était réaliste, moins elle
-     * fonctionnait.
-     *
-     * Conséquence concrète : en développement — où ce fournisseur est le défaut — on ne pouvait
-     * commander une course qu'en tapant exactement l'un des sept libellés du catalogue, et rien
-     * ne le disait. Le champ restait vide, sans suggestion et sans erreur.
-     *
-     * On accepte donc aussi l'inverse, et la ville ou le code postal seuls. C'est un bouchon de
-     * développement : sa générosité ne coûte rien, son silence coûtait une demi-heure.
      *
      * @param  array{lat:float,lng:float,postal:string,locality:string,country:string,formatted:string}  $entry
      */

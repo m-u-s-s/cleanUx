@@ -7,16 +7,7 @@ use App\Services\Assistant\Streaming\StreamEvent;
 use ReflectionMethod;
 use Tests\TestCase;
 
-/**
- * Couverture de AnthropicStreamingProvider.
- *
- * Le vrai streaming passe par curl direct vers api.anthropic.com (pas le
- * client Http facade), donc on ne peut pas le faker. On teste donc :
- *   - le guard "clé API manquante" (chemin public sans réseau)
- *   - la logique de parsing SSE + mapping vers StreamEvent (méthodes privées
- *     atteignables uniquement depuis le WRITEFUNCTION callback de curl, donc
- *     exercées ici par réflexion).
- */
+/** Couverture de AnthropicStreamingProvider. */
 class AnthropicStreamingProviderTest extends TestCase
 {
     private function provider(): AnthropicStreamingProvider

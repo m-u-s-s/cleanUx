@@ -7,17 +7,7 @@ use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/**
- * Phase 7 — Exports analytiques pour analyse externe (Excel, BI tools).
- *
- * Le format CSV est volontairement plat (1 ligne = 1 enregistrement) pour
- * être directement importable dans Excel, Power BI, Tableau, etc.
- *
- * 3 exports disponibles :
- *   - kpis.csv               : KPIs principaux + comparaison période précédente
- *   - monthly-revenue.csv    : revenu mensuel sur N mois
- *   - bookings-detailed.csv  : tous les bookings de la période avec détails
- */
+/** Phase 7 — Exports analytiques pour analyse externe (Excel, BI tools). */
 class AnalyticsExporter
 {
     public function __construct(

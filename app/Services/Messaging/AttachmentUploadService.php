@@ -10,17 +10,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-/**
- * Service d'upload sécurisé des pièces jointes :
- *   - validation MIME + size côté serveur
- *   - storage sur disk configurable (par défaut 'public')
- *   - génération de thumbnail 480x360 pour les images (si extension imagick/gd)
- *   - status AV initial = 'pending' (job de scan async optionnel)
- *
- * NB: l'ouverture de l'option AV (config.messaging.av.required = true)
- * empêchera les attachments d'apparaître à d'autres users tant qu'ils
- * sont en pending.
- */
+/** Service d'upload sécurisé des pièces jointes : - validation MIME + size côté serveur - storage sur disk configurable (par défaut 'public') - génération de thumbnail 480x360 pour les images (si extension imagick/gd) - status AV initial = 'pending' (job de scan async optionnel) NB: l'ouverture de l'option AV (config.messaging.av.required = true) empêchera les attachments d'apparaître à d'autres users tant qu'ils sont en pending. */
 class AttachmentUploadService
 {
     public const ALLOWED_MIMES = [
@@ -43,17 +33,7 @@ class AttachmentUploadService
         'text/csv',
         // Archives (limité)
         'application/zip',
-        /*
-         * AUDIO — les notes vocales passent par CE chemin et pas par un stockage direct.
-         *
-         * Le contrôleur enregistrait le fichier lui-même, en promettant dans son commentaire « même
-         * scan antivirus » : c'était faux, `store()` ne déclenche rien. Une seconde porte
-         * d'entrée de fichiers, sans analyse, sur une messagerie d'équipe — exactement ce qu'on
-         * finit par oublier de garder.
-         *
-         * Les formats sont ceux que produisent réellement les deux surfaces : `m4a`/`aac` par
-         * `expo-audio` sur mobile, `webm` par `MediaRecorder` sur le web.
-         */
+        // AUDIO — les notes vocales passent par CE chemin et pas par un stockage direct.
         'audio/mp4',
         'audio/aac',
         'audio/m4a',
@@ -62,13 +42,7 @@ class AttachmentUploadService
         'audio/webm',
     ];
 
-    /**
-     * Plafond propre à l'audio, bien plus bas que celui des documents.
-     *
-     * Une note de trente secondes pèse quelques centaines de kilo-octets ; accepter vingt-cinq
-     * méga-octets laisserait passer un fichier renommé, et remplirait le disque d'une équipe
-     * bavarde.
-     */
+    /** Plafond propre à l'audio, bien plus bas que celui des documents. */
     public const MAX_AUDIO_SIZE_BYTES = 5 * 1024 * 1024;
 
     public const MAX_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB

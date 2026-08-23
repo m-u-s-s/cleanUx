@@ -5,19 +5,7 @@ namespace App\Services\KybV2;
 use App\Services\KybV2\Contracts\BusinessVerificationProviderContract;
 use App\Support\Validation\BusinessNumber;
 
-/**
- * Interrogation d'un registre officiel à partir du seul numéro d'entreprise.
- *
- * Le module KYB savait déjà interroger l'INSEE et VIES, mais uniquement au sein d'une
- * vérification complète, qui exige de connaître d'avance la raison sociale — donc de la saisir.
- * Or c'est précisément ce qu'on veut éviter : le prestataire tape son numéro, et sa raison
- * sociale comme son adresse remontent du registre. Il confirme au lieu de recopier.
- *
- * Le résultat est une SUGGESTION, jamais une vérité imposée : le prestataire peut la corriger, et
- * la vérification KYB retranchera de toute façon plus tard. Un registre injoignable, un numéro
- * inconnu ou un fournisseur non configuré rendent simplement `null` — l'inscription se poursuit
- * avec une saisie manuelle plutôt que d'être bloquée par un service tiers.
- */
+/** Interrogation d'un registre officiel à partir du seul numéro d'entreprise. */
 class CompanyLookup
 {
     public function __construct(protected BusinessVerificationProviderContract $provider) {}
@@ -79,9 +67,7 @@ class CompanyLookup
     }
 
     /**
-     * Les fournisseurs ne parlent pas la même langue : le simulateur rend des clés déjà
-     * normalisées, l'INSEE rend sa réponse brute. On lit les deux, et on préfère ne rien
-     * proposer plutôt que de pré-remplir un champ avec une valeur qu'on n'a pas comprise.
+     * Les fournisseurs ne parlent pas la même langue : le simulateur rend des clés déjà normalisées, l'INSEE rend sa réponse brute.
      *
      * @return array{legal_name: ?string, legal_form: ?string, address: ?string, vat_id: ?string, identifier_type: string, source: string}
      */

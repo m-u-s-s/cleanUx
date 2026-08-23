@@ -14,38 +14,14 @@ use App\Services\ChatV2\ModerationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
-/**
- * Orchestrateur central pour les messages.
- *
- * Toutes les écritures sur `messages` doivent passer par ce service pour garantir :
- *   - extraction et persistance des mentions
- *   - notif des utilisateurs mentionnés
- *   - mise à jour du thread parent (replies_count, last_reply_at)
- *   - broadcasting des events
- */
+/** Orchestrateur central pour les messages. */
 class MessageService
 {
     public function __construct(
         protected MentionParser $mentionParser,
     ) {}
 
-    /**
-     * LA MODÉRATION DE CHATV2, APPLIQUÉE AUX CANAUX INTERNES.
-     *
-     * `ModerationService` — détection de propos toxiques, caviardage des données personnelles
-     * (e-mail, téléphone, IBAN, carte) — n'existait que sur ChatV2, le fil client↔prestataire. Les
-     * canaux internes n'en avaient AUCUNE : une équipe pouvait y coller le numéro de carte d'un
-     * client sans que rien ne le voie, alors que ces canaux sont précisément là pour éviter que les
-     * échanges partent sur WhatsApp.
-     *
-     * DERRIÈRE UN RÉGLAGE, et à faux par défaut ailleurs que sur les canaux : une modération qui
-     * s'active silencieusement sur une surface existante réécrit des messages sans prévenir
-     * personne.
-     *
-     * LES MESSAGES SYSTÈME EN SONT EXCLUS. Ce sont des textes que le produit écrit lui-même ; les
-     * soumettre au caviardage remplacerait « Canal créé par Jean Dupont » par une ligne trouée, et
-     * un blocage rendrait la création de canal impossible sur un nom malheureux.
-     */
+    /** LA MODÉRATION DE CHATV2, APPLIQUÉE AUX CANAUX INTERNES. */
     protected function passerLaModeration(string $content, string $type): string
     {
         if ($type === Message::TYPE_SYSTEM || ! config('messaging.moderation.channels', false)) {
@@ -54,11 +30,7 @@ class MessageService
 
         $verdict = app(ModerationService::class)->scan($content);
 
-        /*
-         * Bloqué = REFUSÉ, pas caviardé. Un message toxique qu'on laisserait passer sous forme
-         * expurgée donnerait à son auteur l'impression d'avoir été entendu, et à sa cible celle
-         * d'avoir été visée — la pire des deux moitiés.
-         */
+        // Bloqué = REFUSÉ, pas caviardé.
         if ($verdict->isBlocked()) {
             throw new \DomainException(
                 $verdict->reason ?? 'Ce message ne peut pas être envoyé.'
@@ -68,9 +40,7 @@ class MessageService
         return $verdict->redactedBody;
     }
 
-    /**
-     * Crée un message dans un channel.
-     */
+    /** Crée un message dans un channel. */
     public function send(
         Channel $channel,
         User $sender,

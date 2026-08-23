@@ -8,13 +8,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * European Central Bank — flux XML public, base EUR uniquement.
- *
- * https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml
- *
- * Pour passer d'une autre base, le service caller doit cross-rate via EUR.
- */
+/** European Central Bank — flux XML public, base EUR uniquement. */
 class EcbFxProvider implements FxProviderInterface
 {
     public function name(): string

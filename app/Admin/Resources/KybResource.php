@@ -18,15 +18,6 @@ use Illuminate\Support\Facades\Auth;
 /**
  * Les vérifications d'entreprise (KYB) à traiter.
  *
- * TROIS ACTIONS, TOUTES DÉLÉGUÉES au service d'onboarding : relancer les vérifications, relancer
- * le criblage de sanctions, approuver. Chacune recalcule le score de risque et journalise — un
- * `status = 'verified'` écrit à la main donnerait une entreprise approuvée sans criblage, ce qui
- * est exactement ce que la conformité interdit.
- *
- * LE REFUS EXIGE UN MOTIF d'au moins dix caractères, et l'action le DÉCLARE : le moteur ouvre une
- * feuille de saisie et valide avant d'appeler `reject()`. Un refus sans motif écrit n'est ni
- * contestable ni auditable.
- *
  * @implements AdminResource<BusinessEntity>
  */
 class KybResource implements AdminResource

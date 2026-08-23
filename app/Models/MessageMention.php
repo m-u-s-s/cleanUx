@@ -8,14 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Mention @user, @here, @channel ou @team dans un message.
- *
- * Pré-extrait au moment de saveMessage() pour permettre :
- *   - notifs ciblées (`Notification::send($mentionedUser, …)`)
- *   - badge "X mentions non lues" via scope unread()
- *   - rendu rich text côté client via start_offset/length
- */
+/** Mention @user, @here, @channel ou @team dans un message. */
 class MessageMention extends Model
 {
     /** @use HasFactory<MessageMentionFactory> */

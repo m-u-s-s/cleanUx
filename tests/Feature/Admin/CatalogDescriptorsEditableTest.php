@@ -14,19 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Les quatre domaines du catalogue se PILOTENT depuis le mobile, pas seulement se consultent.
- *
- * CE QUE ÇA COMBLE. Les écrans mobiles montraient des listes et rien d'autre : ni ajout, ni
- * modification, ni suppression. Le moteur de console possédait pourtant déjà les écrans de
- * formulaire — ce qui manquait, c'était que les descripteurs déclarent QUOI éditer. Quatre
- * descripteurs sans un seul champ, et l'application n'avait aucune prise sur le catalogue.
- *
- * LA SUPPRESSION DEMANDE UNE GARDE PROPRE. Le `destroy` du moteur supprimait sans rien consulter :
- * un pays effacé aurait emporté ses zones, et avec elles l'historique de facturation qui s'y
- * rattache. Le web refuse en disant pourquoi ; l'API doit refuser de la même façon, sinon la règle
- * dépend de la porte par laquelle on entre.
- */
+/** Les quatre domaines du catalogue se PILOTENT depuis le mobile, pas seulement se consultent. */
 class CatalogDescriptorsEditableTest extends TestCase
 {
     use RefreshDatabase;

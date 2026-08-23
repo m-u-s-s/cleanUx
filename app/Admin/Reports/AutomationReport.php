@@ -7,12 +7,7 @@ use App\Admin\Console\ReportTile;
 use App\Models\MarketingCampaign;
 use App\Models\RiskEvaluation;
 
-/**
- * L’automatisation : ce qui tourne sans intervention.
- *
- * Le nombre de campagnes actives et de règles de risque déclenchées dit si les automatismes
- * travaillent. Les DÉCLENCHER à la main depuis ici irait contre leur raison d’être.
- */
+/** L’automatisation : ce qui tourne sans intervention. */
 class AutomationReport implements AdminReport
 {
     public function key(): string

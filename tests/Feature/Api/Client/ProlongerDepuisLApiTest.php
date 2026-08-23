@@ -10,13 +10,7 @@ use Laravel\Sanctum\Sanctum;
 use Tests\Support\Spine\SpineScenario;
 use Tests\TestCase;
 
-/**
- * PROLONGER DEPUIS L'APPLICATION — et surtout, ne pas prolonger celle de quelqu'un d'autre.
- *
- * La prolongation ENGAGE DE L'ARGENT sur une carte enregistrée. Un identifiant de réservation
- * deviné suffirait, sans garde, à faire acheter des heures à un inconnu. C'est la première chose
- * que ce fichier vérifie, avant même que la prolongation fonctionne.
- */
+/** PROLONGER DEPUIS L'APPLICATION — et surtout, ne pas prolonger celle de quelqu'un d'autre. */
 class ProlongerDepuisLApiTest extends TestCase
 {
     use RefreshDatabase;
@@ -39,12 +33,7 @@ class ProlongerDepuisLApiTest extends TestCase
         $this->assertSame(240, (int) $scenario->booking->refresh()->purchased_minutes);
     }
 
-    /**
-     * LA GARDE — un tiers ne prolonge pas la réservation d'autrui.
-     *
-     * Sans elle, faire dépenser de l'argent à un inconnu ne demanderait qu'un identifiant
-     * séquentiel.
-     */
+    /** LA GARDE — un tiers ne prolonge pas la réservation d'autrui. */
     public function test_un_tiers_ne_peut_pas_prolonger(): void
     {
         $scenario = $this->scenarioAuTemps(ecouleesMinutes: 100);
@@ -69,13 +58,7 @@ class ProlongerDepuisLApiTest extends TestCase
         )->assertUnauthorized();
     }
 
-    /**
-     * LE REFUS EST UNE RÉPONSE, PAS UNE PANNE.
-     *
-     * 422 avec un message lisible : le client doit comprendre pourquoi, sinon il appuie trois fois
-     * sur un bouton muet — et sur un chemin qui engage de l'argent, appuyer trois fois est
-     * exactement ce qu'on ne veut pas encourager.
-     */
+    /** LE REFUS EST UNE RÉPONSE, PAS UNE PANNE. */
     public function test_apres_la_franchise_lapi_explique_le_refus(): void
     {
         $scenario = $this->scenarioAuTemps(ecouleesMinutes: 220);

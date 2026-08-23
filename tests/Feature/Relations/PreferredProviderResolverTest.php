@@ -12,22 +12,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * SP2 Task 4 — PreferredProviderResolver.
- *
- * Quand un booking porte preferred_provider_user_id (favori ou choix premium),
- * le resolver décide : presta dispo sur le créneau -> 'assigned' ; indispo ->
- * 'unavailable' + créneaux alternatifs proposables par l'UI.
- */
+/** SP2 Task 4 — PreferredProviderResolver. */
 class PreferredProviderResolverTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
     use RefreshDatabase;
 
-    /**
-     * Crée un prestataire PAR AILLEURS éligible : User actif rattaché à la zone,
-     * ProviderProfile actif+vérifié. Disponibilité ajoutée à part selon le cas.
-     */
+    /** Crée un prestataire PAR AILLEURS éligible : User actif rattaché à la zone, ProviderProfile actif+vérifié. */
     private function eligibleProvider(int $zoneId): User
     {
         $user = User::factory()->create([

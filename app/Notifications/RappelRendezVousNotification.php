@@ -21,19 +21,11 @@ class RappelRendezVousNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        /*
-         * LE SMS EST OFFERT, LA MATRICE DÉCIDE. Le canal `sms` existait, complet, sans une seule
-         * référence dans le code : aucune notification ne le proposait, donc personne n'en recevait
-         * jamais — quelles que soient ses préférences. Un rappel d'intervention est justement ce
-         * qu'on veut lire sans ouvrir sa boîte mail.
-         */
+        // LE SMS EST OFFERT, LA MATRICE DÉCIDE.
         return $this->preferredChannels($notifiable, 'booking_reminder', ['mail', 'database', 'sms']);
     }
 
-    /**
-     * Court par nécessité : un SMS se paie au segment de 160 caractères, et le module plafonne les
-     * envois par numéro. Ce qui compte tient en une ligne — quand, et où.
-     */
+    /** Court par nécessité : un SMS se paie au segment de 160 caractères, et le module plafonne les envois par numéro. */
     public function toSms(object $notifiable): string
     {
         return sprintf(

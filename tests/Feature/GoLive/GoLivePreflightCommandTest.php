@@ -6,10 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
-/**
- * Pré-vol go-live — orchestre les contrôles automatisables des drills (D1 parité +
- * santé, D5 stuck-missions) et rappelle les drills manuels restants (D2/D3/D4/D6).
- */
+/** Pré-vol go-live — orchestre les contrôles automatisables des drills (D1 parité + santé, D5 stuck-missions) et rappelle les drills manuels restants (D2/D3/D4/D6). */
 class GoLivePreflightCommandTest extends TestCase
 {
     use RefreshDatabase;

@@ -13,22 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LES APPELS MASQUÉS (F8) — se joindre sans se donner son numéro.
- *
- * `MaskedCallService` était écrit en entier — configuration, pilote de test, ouverture, fermeture,
- * balayage des expirées — et AUCUNE route n'y menait, aucun appelant ne l'invoquait. Les deux
- * parties n'avaient donc que deux options, toutes deux mauvaises : s'échanger leurs vrais numéros,
- * ou ne pas se parler.
- *
- * Le premier cas laisse au prestataire le téléphone personnel d'une cliente chez qui il est allé
- * une fois — définitivement, hors de tout contrôle. Le second fait sonner à la porte d'un immeuble
- * dont on ne trouve pas l'entrée, sans autre recours que d'annuler l'intervention.
- *
- * CE QUE CE FICHIER PROTÈGE AVANT TOUT : le vrai numéro ne sort JAMAIS de la réponse. C'est la
- * raison d'être du module ; une réponse qui laisserait filtrer le numéro réel rendrait tout le
- * reste inutile.
- */
+/** LES APPELS MASQUÉS (F8) — se joindre sans se donner son numéro. */
 class AppelsMasquesTest extends TestCase
 {
     use RefreshDatabase;
@@ -94,11 +79,7 @@ class AppelsMasquesTest extends TestCase
             ->getJson("/api/provider/missions/{$mission->id}/masked-call")
             ->assertOk();
 
-        /*
-         * C'EST L'ASSERTION QUI PORTE TOUT LE MODULE. Une réponse qui laisse filtrer le numéro réel
-         * rend le masquage décoratif : le prestataire l'enregistre, et la cliente reçoit des appels
-         * six mois plus tard sans recours.
-         */
+        // C'EST L'ASSERTION QUI PORTE TOUT LE MODULE.
         $this->assertStringNotContainsString('+32470111222', $reponse->getContent());
         $this->assertNotNull($reponse->json('data.masked_peer_number'));
         $this->assertStringContainsString('*', (string) $reponse->json('data.masked_peer_number'));
@@ -173,11 +154,7 @@ class AppelsMasquesTest extends TestCase
 
         $this->artisan('masked-calls:scan-expired')->assertSuccessful();
 
-        /*
-         * `scanExpired()` existait sans qu'aucune commande ne l'appelle. Une ligne qui reste ouverte
-         * se paie tous les mois — et surtout, elle permet de rappeler une cliente des semaines après
-         * l'intervention, ce que le masquage était censé empêcher.
-         */
+        // `scanExpired()` existait sans qu'aucune commande ne l'appelle.
         $this->assertNotSame(MaskedCallSession::STATUS_ACTIVE, $session->fresh()->status);
     }
 }

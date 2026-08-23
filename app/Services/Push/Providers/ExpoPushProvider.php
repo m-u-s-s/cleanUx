@@ -9,32 +9,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * LE SERVICE PUSH D'EXPO — celui que les deux applications utilisent réellement.
- *
- * POURQUOI IL MANQUAIT, ET CE QUE ÇA COÛTAIT. `mobile/shared/src/push/hooks.ts` enregistre
- * l'appareil avec `provider: 'expo'` ; l'API validait `in:fcm,apns,mock` et répondait 422. AUCUN
- * appareil ne s'enregistrait, donc aucune notification ne pouvait partir — alors que six
- * notifications routaient déjà par `PushChannel`, et que tout le reste de la chaîne fonctionnait.
- * Un contrat rompu à ses deux extrémités, sur une seule ligne de validation.
- *
- * POURQUOI ACCEPTER `expo` NE SUFFISAIT PAS. `expo-notifications` rend un jeton de la forme
- * `ExponentPushToken[…]`, qui n'est ni un jeton FCM ni un jeton APNs : Expo garde la correspondance
- * de son côté et se charge du routage vers Google et Apple. Élargir la validation aurait donc
- * stocké des jetons que plus aucun fournisseur ne savait consommer — un enregistrement réussi, et
- * toujours pas une notification. Il fallait le transport, pas la permission.
- *
- * ── CE QU'EXPO RÉPOND, ET POURQUOI ON LE LIT DE PRÈS ─────────────────────────────────────────
- *
- * L'API rend TOUJOURS 200, même quand l'envoi échoue : le verdict est dans `data.status`, et le
- * motif dans `data.details.error`. Se fier au code HTTP ferait compter comme délivrées des
- * notifications qui ne sont jamais parties — exactement le défaut qu'on vient de réparer sur les
- * suppléments et le temps supplémentaire.
- *
- * `DeviceNotRegistered` signifie que l'application a été désinstallée : ce jeton ne redeviendra
- * jamais valide, et on le signale comme tel pour que `PushService` l'invalide. Les autres erreurs
- * — `MessageRateExceeded`, `MessageTooBig` — sont passagères ou de format : le jeton reste bon.
- */
+/** LE SERVICE PUSH D'EXPO — celui que les deux applications utilisent réellement. */
 class ExpoPushProvider implements PushProviderInterface
 {
     /** Le point d'entrée du service, surchargeable pour les tests et les environnements fermés. */
@@ -45,13 +20,7 @@ class ExpoPushProvider implements PushProviderInterface
         return 'expo';
     }
 
-    /**
-     * Les trois plateformes, parce qu'Expo route lui-même.
-     *
-     * Un jeton Expo ne dit pas de quelle plateforme il vient — c'est Expo qui sait, et qui envoie
-     * vers APNs ou FCM selon l'appareil enregistré. Restreindre ici reviendrait à dupliquer une
-     * connaissance qu'on n'a pas.
-     */
+    /** Les trois plateformes, parce qu'Expo route lui-même. */
     public function supportsPlatforms(): array
     {
         return ['ios', 'android', 'web'];
@@ -72,10 +41,7 @@ class ExpoPushProvider implements PushProviderInterface
             'title' => $request->title,
             'body' => $request->body,
             'data' => $request->data,
-            /*
-             * `default` déclenche le son ET la vignette sur iOS ; sans lui, une notification
-             * transactionnelle arrive muette et passe inaperçue. Le marketing, lui, reste discret.
-             */
+            // `default` déclenche le son ET la vignette sur iOS ; sans lui, une notification transactionnelle arrive muette et passe inaperçue.
             'sound' => $request->category === 'marketing' ? null : 'default',
             'priority' => $request->category === 'marketing' ? 'normal' : 'high',
             'channelId' => $request->category,
@@ -103,11 +69,7 @@ class ExpoPushProvider implements PushProviderInterface
         $corps = (array) $reponse->json();
         $ticket = (array) data_get($corps, 'data', []);
 
-        /*
-         * UN 200 N'EST PAS UN SUCCÈS. Le verdict est dans `data.status` — Expo accuse réception de
-         * la requête, pas de l'envoi. Confondre les deux ferait déclarer délivrées des
-         * notifications jamais parties.
-         */
+        // UN 200 N'EST PAS UN SUCCÈS.
         if ((string) ($ticket['status'] ?? '') !== 'ok') {
             $motif = (string) data_get($ticket, 'details.error', $ticket['message'] ?? 'erreur inconnue');
 
@@ -127,13 +89,7 @@ class ExpoPushProvider implements PushProviderInterface
         );
     }
 
-    /**
-     * LA FORME DU JETON EST VÉRIFIÉE AVANT L'ENVOI.
-     *
-     * Un jeton FCM ou APNs posté par erreur sur ce fournisseur recevrait une erreur d'Expo au bout
-     * d'un aller-retour réseau. Le refuser ici est immédiat, et le marque invalide : il n'a rien à
-     * faire dans cette file.
-     */
+    /** LA FORME DU JETON EST VÉRIFIÉE AVANT L'ENVOI. */
     private function ressembleAUnJetonExpo(string $jeton): bool
     {
         return str_starts_with($jeton, 'ExponentPushToken[')
@@ -142,11 +98,6 @@ class ExpoPushProvider implements PushProviderInterface
 
     /**
      * Le jeton d'accès n'est PAS obligatoire.
-     *
-     * Expo accepte les envois anonymes ; il ne devient nécessaire que si le projet active
-     * « Enhanced Security for Push Notifications » dans sa console. On l'envoie s'il existe, et on
-     * n'échoue pas s'il manque — sinon un projet correctement configuré sans cette option ne
-     * pourrait plus rien envoyer.
      *
      * @return array<string, string>
      */

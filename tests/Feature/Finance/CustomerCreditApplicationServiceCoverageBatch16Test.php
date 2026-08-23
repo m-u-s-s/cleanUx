@@ -9,13 +9,7 @@ use App\Services\Finance\CustomerCreditApplicationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Coverage for CustomerCreditApplicationService::applyAvailableCredits: the
- * zero-devis guard, FIFO consumption across multiple credits (full exhaust ->
- * status "used", partial draw stays active), the remaining-to-pay break path,
- * the active/remaining/expiry filters, and the booking snapshot + activity log
- * side effects.
- */
+/** Coverage for CustomerCreditApplicationService::applyAvailableCredits: the zero-devis guard, FIFO consumption across multiple credits (full exhaust -> status "used", partial draw stays active), the remaining-to-pay break path, the active/remaining/expiry filters, and the booking snapshot + activity log side effects. */
 class CustomerCreditApplicationServiceCoverageBatch16Test extends TestCase
 {
     use RefreshDatabase;

@@ -19,16 +19,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
-/**
- * LOT 8 — APPELER DEPUIS UN CANAL D'ÉQUIPE.
- *
- * GREENFIELD TOTAL : `VideoCallService` était un squelette qui levait sur chaque méthode (supprimé depuis), et
- * `MaskedCallService` (Twilio Proxy) — complet mais jamais câblé — répond à un autre besoin, masquer
- * les numéros entre client et prestataire. Il reste intact.
- *
- * La note vocale du lot 7 couvre la consigne qu'on laisse ; un appel couvre la question qui n'attend
- * pas — « je suis devant la porte, quel est le code ? ».
- */
+/** LOT 8 — APPELER DEPUIS UN CANAL D'ÉQUIPE. */
 class AppelsCanalTest extends TestCase
 {
     use RefreshDatabase;
@@ -96,11 +87,7 @@ class AppelsCanalTest extends TestCase
 
     public function test_le_jeton_est_un_jwt_signe_qui_porte_la_salle(): void
     {
-        /*
-         * Un jeton LiveKit est un JWT HS256 dont la charge décrit la salle et les droits. On le
-         * signe ici plutôt que d'ajouter un SDK : le format est entièrement maîtrisé, et une
-         * dépendance de plus serait une surface de sécurité de plus.
-         */
+        // Un jeton LiveKit est un JWT HS256 dont la charge décrit la salle et les droits.
         $appelant = $this->membre(OrganizationRole::OWNER);
         $canal = $this->canalAvec($appelant);
 
@@ -127,11 +114,7 @@ class AppelsCanalTest extends TestCase
 
     public function test_le_jeton_ne_donne_pas_les_droits_d_administration_de_salle(): void
     {
-        /*
-         * PAS DE `roomCreate`, PAS DE `roomAdmin`. Le participant rejoint une salle que le SERVEUR a
-         * nommée ; lui donner le droit d'en créer laisserait n'importe quel client ouvrir des
-         * salles hors de toute trace côté produit.
-         */
+        // PAS DE `roomCreate`, PAS DE `roomAdmin`.
         $appelant = $this->membre(OrganizationRole::OWNER);
         $canal = $this->canalAvec($appelant);
 
@@ -181,12 +164,7 @@ class AppelsCanalTest extends TestCase
 
     public function test_un_appel_qui_sonnait_encore_devient_manque(): void
     {
-        /*
-         * LA DISTINCTION EST TOUT CE QUI COMPTE quand on reprend son téléphone : « terminé » se lit
-         * comme une conversation qui a eu lieu. C'est aussi le seul état que le serveur de médias ne
-         * connaît pas — LiveKit sait qui est dans une salle à l'instant T, pas qu'un appel a sonné
-         * dans le vide à 7 h du matin.
-         */
+        // LA DISTINCTION EST TOUT CE QUI COMPTE quand on reprend son téléphone : « terminé » se lit comme une conversation qui a eu lieu.
         $appelant = $this->membre(OrganizationRole::OWNER);
         $canal = $this->canalAvec($appelant);
 
@@ -352,11 +330,7 @@ class AppelsCanalTest extends TestCase
 
     public function test_sans_cle_livekit_l_appel_est_refuse_explicitement(): void
     {
-        /*
-         * Un jeton signé avec un secret vide serait rejeté par le serveur LiveKit : mieux vaut un
-         * refus explicite qu'un appel qui échoue à la connexion, sans que personne comprenne
-         * pourquoi.
-         */
+        // Un jeton signé avec un secret vide serait rejeté par le serveur LiveKit : mieux vaut un refus explicite qu'un appel qui échoue à la connexion, sans que personne comprenne pourquoi.
         config()->set('livekit.api_secret', null);
 
         $appelant = $this->membre(OrganizationRole::OWNER);

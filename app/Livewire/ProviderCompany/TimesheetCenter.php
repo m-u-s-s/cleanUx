@@ -15,20 +15,7 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/**
- * LES HEURES (E20) ET CE QU'ELLES COÛTENT (E22).
- *
- * Les deux ne se séparent pas : la rentabilité d'une mission est le produit moins les heures et les
- * consommables. Une société qui regarde ses heures sans leur coût compte des minutes ; une qui
- * regarde sa marge sans les heures invente le terme principal.
- *
- * CE QUE CET ÉCRAN REFUSE DE MASQUER : les missions sans pointage. Les fondre dans la moyenne ferait
- * apparaître une marge de 100 % sur chacune d'elles, et un site entier paraîtrait florissant parce
- * que personne n'y a pointé. Elles sont comptées à part et annoncées.
- *
- * ET LE TAUX HORAIRE EST UNE HYPOTHÈSE, QUI SE DIT. La plateforme ne connaît pas les salaires : une
- * marge calculée sur un taux inventé et présentée sans réserve se lirait comme un fait.
- */
+/** LES HEURES (E20) ET CE QU'ELLES COÛTENT (E22). */
 class TimesheetCenter extends Component
 {
     use EnforcesActiveOrgMembership;
@@ -43,26 +30,14 @@ class TimesheetCenter extends Component
     #[Locked]
     public ?string $refus = null;
 
-    /**
-     * OUVERT À TOUT MEMBRE, FILTRÉ PAR DROIT.
-     *
-     * Ses propres heures ne sont pas une donnée d'exploitation : quelqu'un qui a travaillé a le
-     * droit de savoir ce qui a été compté pour lui, et c'est même la seule façon qu'il ait de
-     * signaler une erreur avant la paie. `team.view` élargit à l'équipe, `analytics.view` ouvre la
-     * marge — la même règle que l'API, pour que les deux surfaces ne divergent pas.
-     */
+    /** OUVERT À TOUT MEMBRE, FILTRÉ PAR DROIT. */
     public function mount(): void
     {
         $this->du = Carbon::now()->startOfMonth()->toDateString();
         $this->au = Carbon::now()->endOfMonth()->toDateString();
     }
 
-    /**
-     * Approuver — ou refuser — une correction saisie à la main.
-     *
-     * Sans approbation, le pointage redevient déclaratif : ni la paie ni le client ne peuvent
-     * l'accepter.
-     */
+    /** Approuver — ou refuser — une correction saisie à la main. */
     public function statuer(int $entryId, bool $approuve): void
     {
         $acteur = Auth::user();
@@ -123,12 +98,7 @@ class TimesheetCenter extends Component
         $permissions = app(PermissionService::class);
         $peutVoirLEquipe = $permissions->can($acteur, 'team.view', $acteur->currentOrganization);
         $peutGerer = $permissions->can($acteur, 'team.manage', $acteur->currentOrganization);
-        /*
-         * LA MARGE N'EST PAS UNE DONNÉE D'ÉQUIPE. Elle dit ce que coûte chaque personne : la
-         * réserver à `analytics.view` évite qu'un exécutant lise le prix de ses propres heures dans
-         * un écran d'exploitation. C'est exactement la règle que l'API applique — deux surfaces qui
-         * en liraient deux versions rendraient l'une des deux menteuse.
-         */
+        // LA MARGE N'EST PAS UNE DONNÉE D'ÉQUIPE.
         $peutVoirLaMarge = $permissions->can($acteur, 'analytics.view', $acteur->currentOrganization);
 
         $rentabilite = $peutVoirLaMarge

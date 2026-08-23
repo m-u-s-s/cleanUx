@@ -9,19 +9,7 @@ use App\Services\Onboarding\ProviderOnboardingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * CE QUE LE DISPATCH ACCEPTE, L'ESPACE DOIT L'ACCEPTER.
- *
- * `ProviderType` porte quatre valeurs pour deux notions : `INDEPENDENT` et `INDIVIDUAL`
- * désignent le prestataire seul, `COMPANY` et `COMPANY_WORKER` celui rattaché à une société.
- *
- * Le moteur de répartition le savait — `CandidateFinder` acceptait les deux valeurs de chaque
- * camp — mais le modèle comparait à la seule valeur canonique. Un prestataire inscrit par
- * `ProviderOnboardingService` recevait `individual` : il était CANDIDAT AUX MISSIONS et
- * pourtant refusé de son propre espace, de sa fiche de disponibilités et des gestes de
- * terrain. Le repli sur la colonne héritée `role` masquait le défaut ; il porte
- * `@deprecated` et doit disparaître.
- */
+/** CE QUE LE DISPATCH ACCEPTE, L'ESPACE DOIT L'ACCEPTER. */
 class TypeDePrestataireCoherentTest extends TestCase
 {
     use RefreshDatabase;

@@ -11,10 +11,6 @@ use Illuminate\Support\Carbon;
 /**
  * UN OBJECTIF PROPOSÉ AUX PRESTATAIRES (E13).
  *
- * CE QUI MANQUE N'EST PAS LA GAMIFICATION, C'EST LA VISIBILITÉ DU PROGRÈS. Les badges existent mais
- * se découvrent une fois obtenus : on n'a jamais dit à quelqu'un qu'il lui manquait deux missions.
- * Une quête sans compteur visible n'est pas une quête, c'est une surprise.
- *
  * @property int $id
  * @property string $code
  * @property string $metric
@@ -60,12 +56,7 @@ class ProviderQuest extends Model
         return $this->hasMany(ProviderQuestProgress::class);
     }
 
-    /**
-     * Cet objectif court-il encore ?
-     *
-     * L'ABSENCE DE DATES N'EST PAS UNE ABSENCE D'OBJECTIF : une quête sans échéance est un palier de
-     * carrière, et elle court indéfiniment. Les traiter comme périmées les ferait disparaître.
-     */
+    /** Cet objectif court-il encore ? */
     public function estEnCours(?Carbon $moment = null): bool
     {
         $moment ??= Carbon::now();

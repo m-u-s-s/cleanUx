@@ -9,12 +9,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Phase 3 — Diffuse un changement de statut d'une tâche.
- *
- * REVIEW FIX : property_exists() ne marche pas sur les attributs Eloquent.
- * Remplacé par ! empty() qui passe par __get correctement.
- */
+/** Phase 3 — Diffuse un changement de statut d'une tâche. */
 class TaskStatusChanged implements ShouldBroadcast
 {
     use Dispatchable;

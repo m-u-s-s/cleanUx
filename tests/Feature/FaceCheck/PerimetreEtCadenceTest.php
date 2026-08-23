@@ -71,10 +71,7 @@ class PerimetreEtCadenceTest extends TestCase
         $this->assertFalse(app(FaceCheckRequirement::class)->appliesToProvider($prestataire));
     }
 
-    /**
-     * Les zones du prestataire ne se réduisent pas à sa zone principale : le résolveur de modules,
-     * lui, ne lit que celle-là. Un prestataire multi-zones doit être vu.
-     */
+    /** Les zones du prestataire ne se réduisent pas à sa zone principale : le résolveur de modules, lui, ne lit que celle-là. */
     public function test_une_zone_affectee_compte_autant_que_la_zone_principale(): void
     {
         $prestataire = $this->prestataireSoumis();
@@ -184,13 +181,7 @@ class PerimetreEtCadenceTest extends TestCase
         $this->assertSame([], $horsBornes, 'La cadence tiree au sort sort de ses bornes.');
     }
 
-    /**
-     * SI L'ÉCHÉANCE EST PRÉVISIBLE, LE MODULE NE PROUVE RIEN.
-     *
-     * Vingt-cinq tirages successifs doivent produire plus d'une valeur. Une implémentation qui
-     * poserait bêtement `now()->addHours(48)` passerait toutes les bornes ci-dessus — et se
-     * contournerait en se présentant toutes les 48 heures.
-     */
+    /** SI L'ÉCHÉANCE EST PRÉVISIBLE, LE MODULE NE PROUVE RIEN. */
     public function test_lecheance_nest_pas_previsible(): void
     {
         $prestataire = $this->prestataireEnrole();
@@ -259,10 +250,7 @@ class PerimetreEtCadenceTest extends TestCase
         $this->assertSame(1, ProviderFaceCheck::query()->where('user_id', $prestataire->id)->count());
     }
 
-    /**
-     * Un prestataire enrôlé, consentant, à jour. Passe par le vrai service pour que l'état soit
-     * celui que produit le code, pas celui qu'une factory imagine.
-     */
+    /** Un prestataire enrôlé, consentant, à jour. */
     private function prestataireEnrole(?string $deviceName = null): User
     {
         $prestataire = $this->prestataireSoumis();

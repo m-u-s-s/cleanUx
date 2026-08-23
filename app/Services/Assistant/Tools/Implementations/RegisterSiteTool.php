@@ -7,12 +7,7 @@ use App\Models\User;
 use App\Services\Assistant\Tools\Contracts\AssistantTool;
 use App\Services\PermissionService;
 
-/**
- * Phase 5.1 — Tool: enregistrer un nouveau site pour une organisation cliente.
- *
- * Réservé aux membres d'une organisation cliente avec permission sites.create.
- * Demande confirmation avant exécution (action d'écriture).
- */
+/** Phase 5.1 — Tool: enregistrer un nouveau site pour une organisation cliente. */
 class RegisterSiteTool implements AssistantTool
 {
     public function name(): string

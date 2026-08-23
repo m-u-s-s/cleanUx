@@ -8,24 +8,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-/**
- * Étape 1 du moteur de commande — le schéma.
- *
- * Ce fichier ne vérifie pas que « les tables existent » : une migration qui vient de tourner le
- * prouve déjà. Il verrouille les quelques propriétés STRUCTURELLES dont la perte serait invisible
- * jusqu'au jour où elle coûte cher — un devis qui se réécrit tout seul, un panier anonyme devenu
- * impossible, un métier existant cassé par l'extension.
- */
+/** Étape 1 du moteur de commande — le schéma. */
 class OrderEngineSchemaTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * LA garantie du catalogue : on a ÉTENDU les métiers, on n'en a pas créé une seconde table.
-     *
-     * Deux vérités pour la même chose est exactement ce qui a valu la suppression de `tenancy_v2`
-     * sur ce projet. Si un jour quelqu'un ajoute `order_trades`, ce test doit être ce qui l'arrête.
-     */
+    /** LA garantie du catalogue : on a ÉTENDU les métiers, on n'en a pas créé une seconde table. */
     public function test_the_engine_extends_the_existing_trades_table(): void
     {
         $this->assertTrue(Schema::hasTable('trades'));
@@ -45,12 +33,7 @@ class OrderEngineSchemaTest extends TestCase
         );
     }
 
-    /**
-     * Les métiers déjà en base doivent survivre à l'extension sans reprise de données.
-     *
-     * Une colonne ajoutée sans défaut sur une table peuplée casse tout ce qui écrit dedans. On
-     * vérifie donc qu'un métier minimal s'insère encore.
-     */
+    /** Les métiers déjà en base doivent survivre à l'extension sans reprise de données. */
     public function test_an_existing_style_trade_still_inserts_without_the_new_columns(): void
     {
         $id = DB::table('trades')->insertGetId([
@@ -69,12 +52,7 @@ class OrderEngineSchemaTest extends TestCase
         $this->assertEquals(0, $trade->allows_asap);
     }
 
-    /**
-     * La loi 1 rendue structurelle : un panier sans compte doit pouvoir exister.
-     *
-     * Si `client_id` redevenait obligatoire, le prix ne pourrait plus s'afficher avant
-     * l'inscription — et la première cause d'abandon reviendrait par la porte du schéma.
-     */
+    /** La loi 1 rendue structurelle : un panier sans compte doit pouvoir exister. */
     public function test_an_order_draft_exists_without_any_account(): void
     {
         $id = DB::table('order_drafts')->insertGetId([
@@ -93,13 +71,7 @@ class OrderEngineSchemaTest extends TestCase
         $this->assertSame('jeton-de-session', $draft->session_token);
     }
 
-    /**
-     * L'instantané est ce qui rend un devis opposable. Il ne peut pas être facultatif.
-     *
-     * Sans lui, renommer une question six mois plus tard réécrirait rétroactivement des factures
-     * déjà émises. On vérifie donc que la base REFUSE une réponse sans libellé figé, plutôt que de
-     * s'en remettre à la discipline du code appelant.
-     */
+    /** L'instantané est ce qui rend un devis opposable. Il ne peut pas être facultatif. */
     public function test_an_answer_cannot_be_written_without_its_snapshot(): void
     {
         [$draftId, $itemId] = $this->draftWithItem();
@@ -134,14 +106,7 @@ class OrderEngineSchemaTest extends TestCase
         DB::table('order_draft_answers')->insert($answer);
     }
 
-    /**
-     * Archiver une question ne doit pas emporter les réponses déjà données.
-     *
-     * C'est le critère d'acceptation le plus lourd de la spécification : les devis anciens restent
-     * lisibles intégralement. Ici on ne teste que le maillon SCHÉMA — la clé étrangère se détache
-     * au lieu de propager la suppression. Le comportement complet (archivage plutôt que DELETE) est
-     * vérifié à l'étape des modèles.
-     */
+    /** Archiver une question ne doit pas emporter les réponses déjà données. */
     public function test_deleting_a_question_detaches_the_answer_instead_of_destroying_it(): void
     {
         [, $itemId] = $this->draftWithItem();

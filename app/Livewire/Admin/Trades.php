@@ -11,16 +11,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-/**
- * Phase 1 — Admin Trades.
- *
- * CRUD complet des corps de métier de la plateforme, sur le même pattern
- * monolithique que CatalogueServices (single-component, queryString sync,
- * ActivityLogger sur les mutations).
- *
- * NB layout : utilise `layouts.app` comme toutes les autres pages admin.
- * (la convention historique du repo n'expose PAS de `layouts.admin`).
- */
+/** Phase 1 — Admin Trades. */
 #[Layout('layouts.app')]
 class Trades extends Component
 {

@@ -9,10 +9,6 @@ use App\Models\NotificationPreference;
 /**
  * La matrice canal × catégorie des préférences de notification.
  *
- * LECTURE SEULE, et ce n’est pas une limitation. Certaines catégories sont forcées à l’envoi
- * pour raison légale ; les basculer depuis une liste contournerait ce verrou sans que rien ne
- * s’y oppose. Le module dédié connaît, lui, ce qui est modifiable.
- *
  * @extends EloquentResource<NotificationPreference>
  */
 class NotificationPreferenceResource extends EloquentResource

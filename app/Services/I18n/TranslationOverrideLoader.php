@@ -8,16 +8,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Decorator du Loader translation Laravel : merge les overrides DB
- * par-dessus les fichiers PHP/JSON.
- *
- * Priorité : DB override > fichier disque > fallback locale.
- *
- * Cache 5 min (configurable via i18n.overrides.cache_ttl_seconds) pour ne pas
- * frapper la DB à chaque __() / trans(). Cache invalidé manuellement par
- * `TranslationOverride::saved` event ou Admin UI.
- */
+/** Decorator du Loader translation Laravel : merge les overrides DB par-dessus les fichiers PHP/JSON. */
 class TranslationOverrideLoader implements Loader
 {
     public function __construct(protected Loader $inner) {}

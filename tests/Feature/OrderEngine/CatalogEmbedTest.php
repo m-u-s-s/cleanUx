@@ -8,17 +8,7 @@ use Database\Seeders\OrderEngineCatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Le catalogue, servi dans l'application mobile, sans le chrome du site.
- *
- * Le balayage de QA visuelle l'a pris en défaut : les cinq critères de mise en page passaient à
- * 390 px, et la navigation principale du site restait affichée à l'intérieur de la vue embarquée.
- * On navigue alors deux fois — une barre pour l'application, une pour le site — et la barre du site
- * mange la hauteur d'un écran déjà étroit.
- *
- * Le test de rendu embarqué existant ne l'avait pas vu : il vérifie que la page RÉPOND, pas qu'elle
- * a retiré son chrome.
- */
+/** Le catalogue, servi dans l'application mobile, sans le chrome du site. */
 class CatalogEmbedTest extends TestCase
 {
     use RefreshDatabase;
@@ -61,13 +51,7 @@ class CatalogEmbedTest extends TestCase
 
     private function admin(): User
     {
-        /*
-         * LES CAPACITES SONT ACCORDEES, et c'est ce que `EnforceModuleGate` exige desormais.
-         *
-         * Les quatre-vingt-quatre modules d'administration declarent la leur, et la porte les fait
-         * appliquer. Un compte `platform_role = 'admin'` sans capacite recevait donc un 403 sur ces
-         * ecrans -- le garde faisait son travail.
-         */
+        // LES CAPACITES SONT ACCORDEES, et c'est ce que `EnforceModuleGate` exige desormais.
         return User::factory()->adminComplet()->create();
     }
 }

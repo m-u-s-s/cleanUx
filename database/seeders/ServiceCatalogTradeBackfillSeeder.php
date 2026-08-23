@@ -7,16 +7,7 @@ use App\Models\Trade;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Phase 1 — Backfill trade_id pour les ServiceCatalog existants.
- *
- * Tous les services pré-existants (avant Phase 1) sont rattachés au Trade "Nettoyage"
- * puisque la plateforme historique Brio ne couvrait que ce métier.
- *
- * À exécuter APRÈS TradeSeeder.
- *
- * Idempotent : ne touche que les services dont trade_id est NULL.
- */
+/** Phase 1 — Backfill trade_id pour les ServiceCatalog existants. */
 class ServiceCatalogTradeBackfillSeeder extends Seeder
 {
     public function run(): void

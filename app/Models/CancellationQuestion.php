@@ -7,13 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * UNE QUESTION DU FORMULAIRE D'ANNULATION — à qui on la pose, et quand.
- *
- * La question porte le CONTEXTE, l'option porte la RÉPONSE. Les fondre obligerait à répéter le
- * contexte sur chaque ligne, et la première divergence entre deux copies rendrait le questionnaire
- * incohérent.
- */
+/** UNE QUESTION DU FORMULAIRE D'ANNULATION — à qui on la pose, et quand. */
 class CancellationQuestion extends Model
 {
     use SoftDeletes;

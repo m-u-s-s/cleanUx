@@ -12,17 +12,11 @@ use Stripe\Balance;
 use Stripe\Stripe;
 
 /**
+ * Phase 13 — API Payouts pour le prestataire mobile.
+ *
  * @group Provider — Payouts
  *
  * @authenticated
- *
- * Phase 13 — API Payouts pour le prestataire mobile.
- *
- * GET /api/provider/payouts            → historique paginé
- * GET /api/provider/payouts/summary    → solde + totaux mois en cours/passé
- * GET /api/provider/balance            → balance Stripe Connect (pending + available)
- *
- * Tous les endpoints sont scoped au user authentifié via ProviderProfile.
  */
 class ProviderPayoutsController extends Controller
 {
@@ -87,13 +81,7 @@ class ProviderPayoutsController extends Controller
 
         return response()->json([
             'ok' => true,
-            /*
-             * LA MONNAIE DE CES TOTAUX EST CELLE DU PRESTATAIRE.
-             *
-             * Les sommes ci-dessus agregent SES versements ; les annoncer en euros a un prestataire
-             * paye en dirhams affichait un montant juste avec un symbole faux -- pire qu'une erreur
-             * franche, parce que le chiffre a l'air bon.
-             */
+            // LA MONNAIE DE CES TOTAUX EST CELLE DU PRESTATAIRE.
             'currency' => app(ProviderWalletService::class)->deviseDuPortefeuille((int) $request->user()->id),
             'this_month' => [
                 'paid_amount' => round((float) $thisMonthPaid, 2),

@@ -2,9 +2,7 @@
 
 namespace App\Services\Search;
 
-/**
- * DTO immuable des critères de recherche provider.
- */
+/** DTO immuable des critères de recherche provider. */
 class ProviderSearchCriteria
 {
     public function __construct(

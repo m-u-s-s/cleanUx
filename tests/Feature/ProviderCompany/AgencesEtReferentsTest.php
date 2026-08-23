@@ -17,22 +17,7 @@ use App\Services\Missions\InternalAutoAssignmentEngine;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LOT 6 — LES RÉFÉRENTS DE SITES, ET LES IMPLANTATIONS DE LA SOCIÉTÉ.
- *
- * `provider_site_assignments` existait depuis le 2026-08-07 avec ZÉRO ligne et AUCUN écrivain : la
- * table était prête, la connaissance qu'elle devait porter — qui connaît le code de la porte,
- * l'ascenseur en panne, l'étage à ne pas déranger avant 10 h — n'avait aucun moyen d'y entrer.
- *
- * LES AGENCES SONT UNE AUTRE NOTION QUE LES SITES, et les confondre coûterait cher.
- * `organization_sites` désigne les locaux du CLIENT ; un prestataire ne possède pas les immeubles où
- * il intervient. Ses propres implantations n'avaient aucune existence, si bien qu'une société
- * multi-villes déclarait tout au même endroit.
- *
- * L'ANTI-FUITE EST LE FIL DE CE FICHIER : plusieurs sociétés concurrentes desservent le même
- * immeuble, l'une le nettoyage, l'autre les espaces verts. Chacune y a ses référents, et ne doit
- * jamais voir ceux de l'autre.
- */
+/** LOT 6 — LES RÉFÉRENTS DE SITES, ET LES IMPLANTATIONS DE LA SOCIÉTÉ. */
 class AgencesEtReferentsTest extends TestCase
 {
     use RefreshDatabase;
@@ -162,11 +147,7 @@ class AgencesEtReferentsTest extends TestCase
 
     public function test_une_societe_ne_voit_jamais_les_referents_d_une_concurrente(): void
     {
-        /*
-         * L'ANTI-FUITE ENTRE SOCIÉTÉS SUR UN MÊME IMMEUBLE. Le site est légitimement visible des
-         * deux côtés — l'une fait le nettoyage, l'autre les espaces verts. La composition de
-         * l'équipe adverse, non.
-         */
+        // L'ANTI-FUITE ENTRE SOCIÉTÉS SUR UN MÊME IMMEUBLE.
         $autreOrg = OrganizationAccount::factory()->create([
             'type' => OrganizationType::PROVIDER_COMPANY->value,
             'status' => 'active',
@@ -389,11 +370,7 @@ class AgencesEtReferentsTest extends TestCase
 
     public function test_l_agence_departage_a_egalite_par_ailleurs(): void
     {
-        /*
-         * L'AGENCE DÉPARTAGE SANS DOMINER. Une société multi-villes préfère envoyer quelqu'un du
-         * dépôt le plus proche, mais un référent du site reste plus précieux qu'une proximité
-         * d'organigramme — d'où un poids modeste, vérifié ici à critères par ailleurs égaux.
-         */
+        // L'AGENCE DÉPARTAGE SANS DOMINER.
         $duDepot = $this->membre();
         $ailleurs = $this->membre();
 

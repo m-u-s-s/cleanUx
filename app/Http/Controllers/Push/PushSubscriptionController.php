@@ -8,15 +8,7 @@ use App\Services\Push\WebPushSender;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * Phase 8 — Endpoints de gestion des subscriptions push.
- *
- * Routes (déjà déclarées dans routes/web.php par le user) :
- *   POST   /push/subscribe      Crée ou réactive une subscription
- *   POST   /push/unsubscribe    Désactive la subscription pour ce device
- *   POST   /push/test           Envoie une notif test (debug)
- *   GET    /push/public-key     Retourne la VAPID public key (pour le JS)
- */
+/** Phase 8 — Endpoints de gestion des subscriptions push. */
 class PushSubscriptionController extends Controller
 {
     public function subscribe(Request $request): JsonResponse

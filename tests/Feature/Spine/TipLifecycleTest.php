@@ -11,18 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Tests\Support\Spine\SpineScenario;
 use Tests\TestCase;
 
-/**
- * F10 — Tip lifecycle: confirmCharge idempotency, markPaidOut wallet credit,
- * cancel guard prevents payout.
- *
- * FINDING: TipService::markPaidOut() does NOT call ProviderWalletService::recordTip.
- * It only updates the BookingTip status to paid_out. The wallet credit via
- * recordTip is a separate action that must be called explicitly (e.g. by a job
- * or a webhook handler). Tests reflect this real behavior.
- *
- * FINDING: TipService::cancel() only allows cancellation of PENDING tips.
- * Charged or paid_out tips cannot be cancelled via cancel() — throws ValidationException.
- */
+/** F10 — Tip lifecycle: confirmCharge idempotency, markPaidOut wallet credit, cancel guard prevents payout. */
 class TipLifecycleTest extends TestCase
 {
     use RefreshDatabase;
@@ -31,9 +20,7 @@ class TipLifecycleTest extends TestCase
     // Helpers
     // ─────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Build a completed booking scenario and return a pending tip on it.
-     */
+    /** Build a completed booking scenario and return a pending tip on it. */
     private function makePendingTip(int $amountCents = 1000): array
     {
         $s = SpineScenario::make()->withDevis(100.00)->build();

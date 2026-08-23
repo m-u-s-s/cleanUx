@@ -7,16 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Audit fix — 6 missing endpoints called by mobile apps
- *
- * Coverage:
- *   - POST /api/auth/forgot-password
- *   - PUT  /api/client/profile
- *   - POST /api/client/profile/avatar
- *   - POST /api/client/nps
- *   - PUT  /api/provider/profile
- */
+/** Audit fix — 6 missing endpoints called by mobile apps Coverage: - POST /api/auth/forgot-password - PUT /api/client/profile - POST /api/client/profile/avatar - POST /api/client/nps - PUT /api/provider/profile */
 class ProfileEndpointsTest extends TestCase
 {
     use RefreshDatabase;

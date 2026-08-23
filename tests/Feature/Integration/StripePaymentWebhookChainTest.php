@@ -16,11 +16,7 @@ use Tests\Support\Stripe\FakeStripeHttpClient;
 use Tests\Support\Stripe\StripeFakeResponses;
 use Tests\TestCase;
 
-/**
- * M22 — genuinely test the chain Stripe webhook event → StripeWebhookEventProcessor →
- * BusinessEventEmitter (the previous version bypassed the processor and called the emitter
- * directly, so a processor that stopped emitting would still pass).
- */
+/** M22 — genuinely test the chain Stripe webhook event → StripeWebhookEventProcessor → BusinessEventEmitter (the previous version bypassed the processor and called the emitter directly, so a processor that stopped emitting would still pass). */
 class StripePaymentWebhookChainTest extends TestCase
 {
     use RefreshDatabase;

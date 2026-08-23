@@ -7,17 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * Contract tests for the Stripe webhook endpoint.
- *
- * These tests validate the endpoint's structural contract:
- *  - correct payloads are accepted and dispatched
- *  - malformed / missing-signature payloads are rejected
- *  - idempotency on duplicate event IDs
- *
- * We do NOT call the real Stripe SDK signature verifier in unit scope,
- * so STRIPE_WEBHOOK_SECRET is left unset (= bypass mode in tests).
- */
+/** Contract tests for the Stripe webhook endpoint. */
 class StripeWebhookContractTest extends TestCase
 {
     use RefreshDatabase;

@@ -9,9 +9,6 @@ use App\Models\NpsResponse;
 /**
  * Les réponses à l'enquête de satisfaction.
  *
- * Aucune action : un score NPS se reçoit, il ne se corrige pas. Le modifier après coup viderait
- * la mesure de son sens — et c’est la seule chose qu’elle apporte.
- *
  * @extends EloquentResource<NpsResponse>
  */
 class NpsResource extends EloquentResource

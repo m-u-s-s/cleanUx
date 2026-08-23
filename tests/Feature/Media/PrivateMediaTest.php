@@ -8,10 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * M3 — mission/dispute photos are served from the private disk through an authenticated,
- * signed route, never via a public /storage link.
- */
+/** M3 — mission/dispute photos are served from the private disk through an authenticated, signed route, never via a public /storage link. */
 class PrivateMediaTest extends TestCase
 {
     use RefreshDatabase;

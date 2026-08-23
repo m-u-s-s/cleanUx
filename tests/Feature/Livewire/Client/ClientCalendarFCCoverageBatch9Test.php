@@ -25,10 +25,7 @@ class ClientCalendarFCCoverageBatch9Test extends TestCase
         $this->fakeCalendarService();
     }
 
-    /**
-     * Binds a test double for the (non-existent) CalendarDataService so that
-     * render() and fetchEvents() are exercisable.
-     */
+    /** Binds a test double for the (non-existent) CalendarDataService so that render() and fetchEvents() are exercisable. */
     private function fakeCalendarService(array $events = [], array $sites = []): object
     {
         $fake = new class

@@ -13,11 +13,7 @@ use App\Services\Tips\TipService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Audit MEDIUM — tips & assurances au grand livre (modèle agent) :
- *   - Pourboire = pass-through au prestataire → dette (467), pas de produit.
- *   - Prime d'assurance = pass-through à l'assureur revendu → dette fournisseur (401).
- */
+/** Audit MEDIUM — tips & assurances au grand livre (modèle agent) : - Pourboire = pass-through au prestataire → dette (467), pas de produit. */
 class TipsInsuranceSettlementPostingTest extends TestCase
 {
     use RefreshDatabase;

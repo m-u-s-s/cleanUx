@@ -17,19 +17,7 @@ class QualityScoringEngineTest extends TestCase
 
     private ?Mission $mission = null;
 
-    /**
-     * UNE VRAIE MISSION, PARCE QUE L'INSPECTION EN DÉPEND VRAIMENT.
-     *
-     * Ces tests écrivaient `'mission_id' => 1` — un identifiant inventé, qui ne désignait aucune
-     * ligne. Rien ne s'y opposait tant qu'aucune contrainte ne reliait
-     * `mission_quality_inspections.mission_id` à `missions` ; la clé étrangère posée depuis rend
-     * l'insertion impossible, et c'est exactement son rôle : une inspection qualité qui ne se
-     * rattache à aucune mission ne veut rien dire.
-     *
-     * La mission est créée UNE FOIS et partagée : ce fichier mesure le moteur de NOTATION, à qui
-     * l'identité de la mission est indifférente. En créer une par test allongerait la suite sans
-     * rien prouver de plus.
-     */
+    /** UNE VRAIE MISSION, PARCE QUE L'INSPECTION EN DÉPEND VRAIMENT. */
     protected function mission(): Mission
     {
         return $this->mission ??= Mission::factory()->create();

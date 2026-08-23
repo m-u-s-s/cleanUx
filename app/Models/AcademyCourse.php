@@ -9,12 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * UNE FORMATION DE L'ACADÉMIE (E16).
- *
- * RÉUSSIR DOIT CHANGER QUELQUE CHOSE, sinon personne ne suit. Une complétion débloque un badge
- * existant ET pèse dans le scoring de matching : c'est ce lien qui transforme un contenu pédagogique
- * en avantage concret. Un catalogue de cours sans effet est un catalogue que personne n'ouvre deux
- * fois.
+ * UNE FORMATION DE L'ACADÉMIE (E16). RÉUSSIR DOIT CHANGER QUELQUE CHOSE, sinon personne ne suit.
  *
  * @property int $id
  * @property string $code

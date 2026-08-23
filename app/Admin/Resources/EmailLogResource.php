@@ -9,9 +9,6 @@ use App\Models\EmailLog;
 /**
  * Le journal des emails partis.
  *
- * Aucun renvoi depuis la console : réexpédier un email demande de savoir POURQUOI il a échoué,
- * et un renvoi aveugle sur une adresse invalide abime la réputation du domaine expéditeur.
- *
  * @extends EloquentResource<EmailLog>
  */
 class EmailLogResource extends EloquentResource

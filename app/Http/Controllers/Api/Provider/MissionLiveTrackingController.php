@@ -11,18 +11,15 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
+ * Endpoints "live" pour un prestataire en mission active.
+ *
  * @group Provider — Mission Live Tracking
  *
  * @authenticated
- *
- * Endpoints "live" pour un prestataire en mission active.
- *
- *   - POST /provider/missions/{mission}/live/position
- *   - POST /provider/missions/{mission}/live/eta
- *
- * Différent de l'historique mission tracking (sessions GPS) :
- *   ici on broadcast just-in-time pour le client en wait, sans
- *   nécessairement persister chaque ping (le ledger broadcast_events suffit).
+ * - POST /provider/missions/{mission}/live/position
+ * - POST /provider/missions/{mission}/live/eta
+ * ici on broadcast just-in-time pour le client en wait, sans
+ * nécessairement persister chaque ping (le ledger broadcast_events suffit).
  */
 class MissionLiveTrackingController extends Controller
 {

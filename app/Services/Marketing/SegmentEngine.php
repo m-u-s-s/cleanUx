@@ -11,30 +11,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * SegmentEngine — évalue la DSL d'un segment et matérialise ses membres.
- *
- * DSL JSON (récursive) :
- *   { "and": [ {leaf}, {leaf}, { "or": [...] } ] }
- *   { "or":  [ {leaf}, {leaf} ] }
- *   { "not": {leaf} }
- *
- * Leaf :
- *   { "field": "role", "op": "eq", "value": "client" }
- *
- * Champs whitelistés (config marketing.segment_fields) :
- *   role, locale, country_code, email_domain,
- *   created_at, last_login_at,
- *   bookings_count, last_booking_at, total_spent_cents
- *
- * Operators whitelistés (config marketing.segment_operators) :
- *   eq, neq, in, not_in, gt, gte, lt, lte,
- *   older_than_days, newer_than_days,
- *   is_null, is_not_null, contains, starts_with, ends_with
- *
- * Pour les champs derived (bookings_count, last_booking_at, total_spent_cents),
- * l'engine compile une subquery sur la table bookings (schema-defensive).
- */
+/** SegmentEngine — évalue la DSL d'un segment et matérialise ses membres. */
 class SegmentEngine
 {
     public function compute(MarketingSegment $segment): int

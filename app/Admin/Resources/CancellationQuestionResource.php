@@ -12,26 +12,6 @@ use App\Services\Cancellation\CancellationQuestionnaireService;
 /**
  * LE QUESTIONNAIRE D'ANNULATION, ADMINISTRÉ.
  *
- * ── POURQUOI LES ACTIONS PASSENT PAR LE SERVICE ──────────────────────────────────────────────
- *
- * Règle de cette console : une action passe par le service du domaine, jamais par une écriture de
- * colonne. Basculer `is_active` à la main produirait l'état sans ses effets — sans le journal, et
- * surtout sans le refus qui empêche d'activer une question dépourvue de toute réponse possible.
- * Le questionnaire afficherait alors une question sans case à cocher, et plus personne ne pourrait
- * annuler.
- *
- * ── POURQUOI « SUPPRIMER » NE SUPPRIME PAS ───────────────────────────────────────────────────
- *
- * Une annulation d'il y a six mois porte le `reason_code` d'une option retirée depuis. Le dossier
- * doit rester lisible : la ligne quitte les écrans, elle ne quitte pas la base. C'est la même
- * raison qui rend `cancellation_policies` versionnée.
- *
- * ── LES OPTIONS NE S'ÉDITENT PAS ICI ─────────────────────────────────────────────────────────
- *
- * Une question porte plusieurs réponses, chacune avec sa vérification et son issue : c'est un arbre,
- * que le rendu générique d'une liste ne sait pas montrer sans mentir sur sa structure. Même choix
- * que la grille tarifaire d'un métier, qui reste sur sa page dédiée.
- *
  * @extends EloquentResource<CancellationQuestion>
  */
 class CancellationQuestionResource extends EloquentResource
@@ -92,10 +72,7 @@ class CancellationQuestionResource extends EloquentResource
         ];
     }
 
-    /**
-     * LE CODE EST SAISISSABLE À LA CRÉATION, ET IMMUABLE ENSUITE — le service le garantit :
-     * `modifierQuestion()` retire la clé avant d'écrire. Il vit dans les dossiers déjà clos.
-     */
+    /** LE CODE EST SAISISSABLE À LA CRÉATION, ET IMMUABLE ENSUITE — le service le garantit : `modifierQuestion()` retire la clé avant d'écrire. */
     public function formFields(): array
     {
         return [
@@ -107,11 +84,7 @@ class CancellationQuestionResource extends EloquentResource
                 ['value' => 'provider', 'label' => 'Prestataire'],
                 ['value' => 'both', 'label' => 'Les deux'],
             ])->rules(['required', 'in:client,provider,both']),
-            /*
-             * VIDE = TOUS LES MOTEURS. C'est le cas courant ; on ne restreint que les questions dont
-             * l'issue n'existe pas partout — « le travail ne correspond pas » n'a de sens que là où
-             * il y a un devis à réviser.
-             */
+            // VIDE = TOUS LES MOTEURS.
             Field::select('engine', 'Moteur (vide = tous)', [
                 ['value' => '', 'label' => 'Tous'],
                 ['value' => 'domicile', 'label' => 'À domicile'],
@@ -136,10 +109,7 @@ class CancellationQuestionResource extends EloquentResource
                 app(CancellationQuestionnaireService::class)->basculerQuestion($question, false);
             }),
 
-            /*
-             * « RETIRER » ET NON « SUPPRIMER » : le mot compte. La ligne quitte les écrans et reste
-             * lisible pour les dossiers d'annulation qui portent encore son code.
-             */
+            // « RETIRER » ET NON « SUPPRIMER » : le mot compte.
             Action::make('retirer', 'Retirer du questionnaire', function (CancellationQuestion $question) {
                 app(CancellationQuestionnaireService::class)->retirerQuestion($question);
             }),

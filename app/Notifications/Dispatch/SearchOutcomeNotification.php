@@ -6,17 +6,7 @@ use App\Models\AsapDispatchRequest;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
-/**
- * CE QUI EST ARRIVÉ À VOTRE DEMANDE — relancée, convertie, ou annulée.
- *
- * Le client vient de choisir une suite sur un écran d'attente. Sans cette notification, il ferme
- * l'onglet et n'a plus aucune trace de ce qu'il a décidé : ni dans ses emails, ni dans son
- * application. La demande semble s'être évaporée, et c'est le support qui l'apprend.
- *
- * CANAL BASE DE DONNÉES SEUL. Une conversion en rendez-vous produit déjà sa propre confirmation, et
- * une annulation son propre récapitulatif : doubler d'un email ferait trois messages pour un seul
- * geste.
- */
+/** CE QUI EST ARRIVÉ À VOTRE DEMANDE — relancée, convertie, ou annulée. */
 class SearchOutcomeNotification extends Notification
 {
     use Queueable;

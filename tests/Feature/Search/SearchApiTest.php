@@ -41,14 +41,7 @@ class SearchApiTest extends TestCase
         $this->assertSame(3, $response->json('meta.total'));
     }
 
-    /**
-     * UN MÉTIER ÉCRIT EN TOUTES LETTRES DOIT FILTRER.
-     *
-     * L'écran « Explorer » envoie `trade=nettoyage` ; le contrôleur ne déclarait que `trade_id`, si
-     * bien que `validate()` écartait le paramètre en silence et rendait l'annuaire ENTIER. Mesuré
-     * en direct avant correction : `?trade=peinture` et `?trade=nettoyage` renvoyaient le même
-     * prestataire de nettoyage.
-     */
+    /** UN MÉTIER ÉCRIT EN TOUTES LETTRES DOIT FILTRER. */
     public function test_providers_search_filtre_sur_un_metier_ecrit_en_toutes_lettres(): void
     {
         $nettoyage = Trade::create(['name' => 'Nettoyage à domicile', 'code' => 'CLN-T', 'slug' => 'nettoyage']);
@@ -64,13 +57,7 @@ class SearchApiTest extends TestCase
         $this->assertSame($laveur->id, $reponse->json('data.0.id'));
     }
 
-    /**
-     * TÉMOIN POSITIF : sans filtre, les DEUX prestataires ressortent.
-     *
-     * Sans lui, le test ci-dessus passerait au vert même si le filtre excluait tout le monde —
-     * ce qui a failli arriver : une première version résolvait « nettoyage » vers le mauvais
-     * métier et ne rendait plus personne.
-     */
+    /** TÉMOIN POSITIF : sans filtre, les DEUX prestataires ressortent. */
     public function test_providers_search_sans_metier_rend_tout_le_monde(): void
     {
         $nettoyage = Trade::create(['name' => 'Nettoyage à domicile', 'code' => 'CLN-T', 'slug' => 'nettoyage']);

@@ -5,18 +5,7 @@ namespace App\Http\Controllers\Api\Concerns;
 use App\Models\Booking;
 use App\Models\User;
 
-/**
- * « Cette réservation est-elle la vôtre ? » — une seule réponse, pour tous les points d'entrée
- * clients.
- *
- * La règle vivait dans `ClientBookingController`, en `protected`, donc inatteignable pour le
- * contrôleur suivant qui en aurait besoin — lequel l'aurait réécrite, et l'aurait réécrite un peu
- * différemment. Trois conditions y tiennent, et chacune couvre un cas que les deux autres
- * manquent : le particulier qui a commandé, le collègue d'une société cliente, l'administrateur.
- *
- * `customer_user_id` ET `client_id` : les deux colonnes désignent le commanditaire selon la porte
- * d'entrée employée. N'en lire qu'une refuse l'accès au propriétaire une fois sur deux.
- */
+/** « Cette réservation est-elle la vôtre ? */
 trait AuthorizesClientBooking
 {
     protected function clientPeutVoirLaReservation(?User $user, Booking $booking): bool

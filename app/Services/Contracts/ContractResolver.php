@@ -9,12 +9,7 @@ use Illuminate\Support\Carbon;
 
 class ContractResolver
 {
-    /**
-     * Contrat-cadre ACTIF applicable pour une org cliente, un service et une date.
-     * Critères : status actif (isActiveOn), provider_organization_id renseigné,
-     * service ∈ allowed_service_catalog_ids SI la liste est non vide (vide = tous).
-     * Multi-contrats : le plus récent (orderByDesc effective_from puis id).
-     */
+    /** Contrat-cadre ACTIF applicable pour une org cliente, un service et une date. */
     public function resolveForBooking(
         OrganizationAccount $clientOrg,
         ?int $serviceCatalogId,
@@ -44,10 +39,7 @@ class ContractResolver
         });
     }
 
-    /**
-     * Variante depuis un User : dérive l'org cliente (current_organization_id /
-     * organizationContextId) puis délègue. Soft : null si pas membre d'une org.
-     */
+    /** Variante depuis un User : dérive l'org cliente (current_organization_id / organizationContextId) puis délègue. */
     public function resolveForClientUser(
         User $client,
         ?int $serviceCatalogId,

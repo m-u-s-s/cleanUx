@@ -15,18 +15,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * LOT 2 — GÉRER SON ÉQUIPE DEPUIS LE TÉLÉPHONE.
- *
- * `CompanyMembersScreen` était en LECTURE SEULE : changer un sous-rôle supposait un poste de
- * travail, alors que l'exigence dit « y compris depuis le mobile ».
- *
- * CE FICHIER VÉRIFIE SURTOUT QUE LES GARDES ONT SUIVI. Ouvrir une seconde surface sur les mêmes
- * données est le moment classique où l'on redécouvre des protections déjà écrites une fois — la
- * hiérarchie, le dernier propriétaire, la libération des missions à venir. Elles vivent désormais
- * dans `OrganizationMemberAdministration`, partagé avec l'écran web ; ces tests sont là pour que
- * l'API ne puisse pas s'en écarter en silence.
- */
+/** LOT 2 — GÉRER SON ÉQUIPE DEPUIS LE TÉLÉPHONE. */
 class ApiAdministrationMembresTest extends TestCase
 {
     use RefreshDatabase;
@@ -108,11 +97,7 @@ class ApiAdministrationMembresTest extends TestCase
 
     public function test_on_ne_declasse_pas_un_rang_superieur_au_sien(): void
     {
-        /*
-         * Le trou fermé le 2026-08-06 côté web : seul le rang du NOUVEAU rôle était comparé, si
-         * bien qu'un directeur d'opérations pouvait déclasser un PROPRIÉTAIRE en nettoyeur. Rien
-         * n'obligeait l'API à s'en souvenir — d'où ce test.
-         */
+        // Le trou fermé le 2026-08-06 côté web : seul le rang du NOUVEAU rôle était comparé, si bien qu'un directeur d'opérations pouvait déclasser un PROPRIÉTAIRE en nettoyeur.
         $ops = $this->membre(OrganizationRole::OPERATIONS_MANAGER);
         $this->utilisateurDe($ops); // acteur
         $owner = $this->membre(OrganizationRole::OWNER);
@@ -146,12 +131,7 @@ class ApiAdministrationMembresTest extends TestCase
 
     public function test_le_dernier_proprietaire_ne_se_declasse_pas(): void
     {
-        /*
-         * Une société sans propriétaire actif n'a plus personne pour inviter, facturer ou céder ses
-         * droits, et aucun écran ne permet d'en nommer un depuis l'extérieur : l'enfermement serait
-         * définitif. 422 et non 403 — l'acteur AVAIT le droit, c'est l'état de la société qui s'y
-         * oppose.
-         */
+        // Une société sans propriétaire actif n'a plus personne pour inviter, facturer ou céder ses droits, et aucun écran ne permet d'en nommer un depuis l'extérieur : l'enfermement serait définitif.
         $owner = $this->membre(OrganizationRole::OWNER);
 
         $this->actingAs($this->utilisateurDe($owner), 'sanctum')
@@ -227,12 +207,7 @@ class ApiAdministrationMembresTest extends TestCase
 
     public function test_le_depart_libere_les_missions_a_venir_et_les_canaux(): void
     {
-        /*
-         * UN DÉPART NE SE CONTENTE PAS DE CHANGER UN STATUT. C'est la règle la plus facile à
-         * oublier en ouvrant une seconde surface, et son oubli ne se verrait qu'une semaine plus
-         * tard : le répartiteur croirait ses missions couvertes, et l'ancien salarié resterait dans
-         * les canaux Reverb de son ex-employeur.
-         */
+        // UN DÉPART NE SE CONTENTE PAS DE CHANGER UN STATUT.
         $owner = $this->membre(OrganizationRole::OWNER);
         $partant = $this->membre(OrganizationRole::WORKER);
 
@@ -292,11 +267,7 @@ class ApiAdministrationMembresTest extends TestCase
         $worker = $this->membre(OrganizationRole::WORKER);
         $acteur = $this->utilisateurDe($owner);
 
-        /*
-         * Pas d'`assertJsonPath` ici : les clés de permission CONTIENNENT un point
-         * (`missions.dispatch`), que la notation par chemin lit comme un niveau imbriqué. On lit
-         * donc le tableau et on l'indexe — le piège vaut aussi pour tout futur consommateur PHP.
-         */
+        // Pas d'`assertJsonPath` ici : les clés de permission CONTIENNENT un point (`missions.dispatch`), que la notation par chemin lit comme un niveau imbriqué.
         $matrice = $this->actingAs($acteur, 'sanctum')
             ->getJson('/api/provider/company/role-permissions')
             ->assertOk()

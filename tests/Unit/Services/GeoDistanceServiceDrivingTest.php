@@ -7,9 +7,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
-/**
- * 7.6 — GeoDistanceService::drivingDistanceKm()
- */
+/** 7.6 — GeoDistanceService::drivingDistanceKm() */
 class GeoDistanceServiceDrivingTest extends TestCase
 {
     private GeoDistanceService $service;

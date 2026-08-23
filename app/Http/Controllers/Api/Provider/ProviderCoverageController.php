@@ -7,18 +7,7 @@ use App\Services\Catalog\ProviderCoverageWriter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * « CE QUE JE FAIS, ET OÙ » — lu et écrit par l'application prestataire.
- *
- * Ces deux tables — `trade_user` et `employee_zone_assignments` — sont EXACTEMENT celles que lit la
- * requête candidate du dispatch. Ce point d'entrée est donc la commande de ce qu'un prestataire
- * reçoit : décocher un métier arrête ses offres, cocher une zone les ouvre, sans déploiement.
- *
- * RIEN DE CE QUI ARRIVE N'EST CRU SUR PAROLE. Les identifiants viennent d'un formulaire :
- * `ProviderCoverageWriter` les valide contre le catalogue avant d'écrire. Accepter un métier fermé
- * donnerait une couverture qui ne peut produire aucune mission — et le prestataire attendrait des
- * offres qui ne viendraient jamais.
- */
+/** « CE QUE JE FAIS, ET OÙ » — lu et écrit par l'application prestataire. */
 class ProviderCoverageController extends Controller
 {
     public function show(Request $request): JsonResponse
@@ -53,13 +42,7 @@ class ProviderCoverageController extends Controller
             array_map('intval', $donnees['zone_ids']),
         );
 
-        /*
-         * On rend CE QUI A ÉTÉ RETENU, pas ce qui a été demandé.
-         *
-         * Un métier fermé au catalogue est écarté en silence côté écriture ; le taire à l'écran
-         * laisserait le prestataire croire qu'il le couvre, et se demander pendant des semaines
-         * pourquoi il ne reçoit rien.
-         */
+        // On rend CE QUI A ÉTÉ RETENU, pas ce qui a été demandé.
         return response()->json([
             'ok' => true,
             'data' => [

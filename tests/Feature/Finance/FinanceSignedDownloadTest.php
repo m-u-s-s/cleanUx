@@ -8,10 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
-/**
- * Durcissement — les PDF finance ne sont accessibles que via une URL signée
- * expirante (en plus de l'auth + ownership déjà en place).
- */
+/** Durcissement — les PDF finance ne sont accessibles que via une URL signée expirante (en plus de l'auth + ownership déjà en place). */
 class FinanceSignedDownloadTest extends TestCase
 {
     use RefreshDatabase;

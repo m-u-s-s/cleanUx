@@ -7,14 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Action initiée par l'assistant et requérant confirmation utilisateur
- * avant exécution.
- *
- * Workflow : pending_confirmation → confirmed → executed
- *                                 ↘ cancelled
- *                                 ↘ failed
- */
+/** Action initiée par l'assistant et requérant confirmation utilisateur avant exécution. */
 class AssistantAction extends Model
 {
     /** @use HasFactory<AssistantActionFactory> */

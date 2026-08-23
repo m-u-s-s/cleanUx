@@ -8,17 +8,7 @@ use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * Le groupe /api/admin/* n'était gardé que par `api_scope`.
- *
- * Or le jeton mobile est émis par `createToken()` sans liste d'abilities : Sanctum y inscrit '*',
- * et `EnforceTokenScope` laisse passer tout jeton qui porte '*'. Le contrôle de scope dit ce qu'un
- * jeton a le droit de faire ; il ne dit pas QUI le porte. Un client connecté depuis l'application
- * mobile atteignait donc la comptabilité, les jetons d'API et la modération.
- *
- * Ce test fige la garde de rôle sur un représentant de chaque famille d'endpoints. Il n'affirme
- * rien de ce que fait l'endpoint ensuite : un 404 ou un 422 métier n'est pas son sujet.
- */
+/** Le groupe /api/admin/* n'était gardé que par `api_scope`. */
 class AdminApiRoleGuardTest extends TestCase
 {
     use RefreshDatabase;

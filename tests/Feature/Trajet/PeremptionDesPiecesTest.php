@@ -17,18 +17,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
-/**
- * UNE PIÈCE PÉRIMÉE NE VAUT PLUS RIEN — et tout le monde doit le dire de la même façon.
- *
- * LE DÉFAUT QUE CE LOT CORRIGE. Le verrou de dispatch excluait déjà les pièces périmées ; le
- * DOSSIER, lui, ne regardait que le statut de relecture. Un permis approuvé en 2026 restait donc
- * « approuvé » indéfiniment : le prestataire cessait de recevoir des missions pendant que son
- * dossier — et l'écran d'administration — affichaient tout au vert. Deux verdicts opposés sur la
- * même pièce, et personne pour les relier.
- *
- * ET PERSONNE NE PRÉVENAIT. Une échéance ne s'annonce pas toute seule : le prestataire la découvrait
- * au silence de son téléphone, plusieurs jours après.
- */
+/** UNE PIÈCE PÉRIMÉE NE VAUT PLUS RIEN — et tout le monde doit le dire de la même façon. */
 class PeremptionDesPiecesTest extends TestCase
 {
     use RefreshDatabase;
@@ -103,12 +92,7 @@ class PeremptionDesPiecesTest extends TestCase
         $this->assertSame([], $dossier['documents']['expired']);
     }
 
-    /**
-     * LE JOUR MÊME DE L'ÉCHÉANCE, la pièce est ENCORE valable.
-     *
-     * `isPast()` la déclarait périmée dès 00 h 01, alors que le verrou SQL la laissait passer toute
-     * la journée. Ce test tient l'alignement des deux.
-     */
+    /** LE JOUR MÊME DE L'ÉCHÉANCE, la pièce est ENCORE valable. */
     public function test_le_jour_de_l_echeance_la_piece_vaut_encore(): void
     {
         Carbon::setTestNow('2026-08-14 23:30:00');

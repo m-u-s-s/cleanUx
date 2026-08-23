@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\AvailabilitySlot;
 use App\Models\EmployeeZoneAssignment;
 use App\Models\ServiceZone;
 use App\Models\Trade;
@@ -59,12 +58,7 @@ class DemoPlatformSeeder extends Seeder
             $this->seedProviderProfile($provider?->id);
             $this->seedProviderCoverage($provider?->id, $villes[$provider?->email] ?? null);
 
-            /*
-             * LE DOSSIER D'INSCRIPTION, PAS SEULEMENT LE PROFIL. `verification_status = verified`
-             * satisfait le dispatch et RIEN D'AUTRE : sans vérification KYC ni parcours bouclé, ce
-             * prestataire reçoit bien les offres mais se heurte à « Vérification KYC non
-             * approuvée » dès qu'il ouvre son espace.
-             */
+            // LE DOSSIER D'INSCRIPTION, PAS SEULEMENT LE PROFIL.
             if ($utilisateur = User::find($provider?->id)) {
                 $this->boucleLeDossier($utilisateur);
             }
@@ -271,14 +265,7 @@ class DemoPlatformSeeder extends Seeder
         ]);
     }
 
-    /**
-     * CE QUE LIT VRAIMENT LE DISPATCH — le pivot `trade_user` et `employee_zone_assignments`.
-     *
-     * `provider_profiles.skills` porte du texte libre (« nettoyage », « vitres », « bureaux ») qu'AUCUNE
-     * requête candidate ne consulte : ces trois prestataires étaient donc vérifiés, actifs, et
-     * candidats à rien. C'est la même erreur que le KYC, un cran plus bas — deux colonnes qui
-     * semblent dire la même chose, une seule qui décide.
-     */
+    /** CE QUE LIT VRAIMENT LE DISPATCH — le pivot `trade_user` et `employee_zone_assignments`. */
     protected function seedProviderCoverage(?int $userId, ?string $nomDeZone): void
     {
         if (! $userId || ! Schema::hasTable('trade_user')) {
@@ -372,29 +359,7 @@ class DemoPlatformSeeder extends Seeder
             'permissions' => [],
         ]);
 
-        /*
-         * L'ADHÉSION NE SUFFISAIT PAS : IL FAUT AUSSI QUE L'UTILISATEUR PORTE SON ORGANISATION.
-         *
-         * Une ligne dans `organization_members` ne dit rien à `User::organizationContextId()`, qui
-         * lit des colonnes de `users`. Après un `db:seed`, aucun membre de la société PRESTATAIRE
-         * ne portait ni `organization_account_id` ni `current_organization_id` — et le contact de la
-         * société cliente ne portait que la première :
-         *
-         *     facilities@atlasfacilities.test | org_account_id=1 | current_org_id=NULL
-         *
-         * Les onze écrans société — cinq prestataire, six client — répondaient donc 403 à tout
-         * compte de démonstration. Le seeder des espaces société pouvait bien remplir équipes,
-         * tâches, canaux et missions : personne ne pouvait les lire.
-         *
-         * Les DEUX colonnes sont posées parce que deux familles de code les lisent séparément :
-         * les composants Livewire interrogent `current_organization_id` en direct, tandis que
-         * `isClientCompany()` passe par `organization_account_id`. N'en renseigner qu'une laisse
-         * l'autre moitié de l'application dans le noir.
-         *
-         * On n'écrase jamais un choix existant : un compte à plusieurs organisations a une
-         * organisation ACTIVE qui lui appartient, et la réécrire à chaque `db:seed` le baladerait
-         * d'un espace à l'autre.
-         */
+        // L'ADHÉSION NE SUFFISAIT PAS : IL FAUT AUSSI QUE L'UTILISATEUR PORTE SON ORGANISATION.
         $colonnes = array_filter([
             'organization_account_id' => Schema::hasColumn('users', 'organization_account_id'),
             'current_organization_id' => Schema::hasColumn('users', 'current_organization_id'),
@@ -462,22 +427,7 @@ class DemoPlatformSeeder extends Seeder
         ]);
     }
 
-    /**
-     * LES DISPONIBILITÉS QUE LA PLATEFORME LIT VRAIMENT.
-     *
-     * Ce seeder remplissait `provider_availabilities` — quarante-deux lignes dans une table que
-     * RIEN ne lit, hors sa propre migration. Les créneaux du parcours de réservation viennent de
-     * `availability_slots`, via `AvailabilityService::getAvailableWindows()`, et cette table-là
-     * restait vide.
-     *
-     * Le résultat était un cul-de-sac silencieux : sur une plateforme fraîchement semée, l'écran
-     * de commande annonçait « 3 professionnels à moins de 8 km » et, juste en dessous, « Aucun
-     * professionnel disponible sur ce créneau » — tous les jours, pour tous les métiers. Aucune
-     * exception, aucun journal : des données semées qui donnaient l'illusion d'être configurées.
-     *
-     * ⚠️ `availability_slots.weekday` suit la convention de `date('w')` — 0 = dimanche, 6 =
-     * samedi — et non `dayOfWeekIso`. {@see AvailabilitySlot::appliesOn()}
-     */
+    /** LES DISPONIBILITÉS QUE LA PLATEFORME LIT VRAIMENT. */
     protected function seedAvailability(?int $userId, ?int $organizationId): void
     {
         if (! $userId || ! $this->hasTable('availability_slots')) {

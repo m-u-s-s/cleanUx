@@ -8,14 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * GET /m/enter?ticket=…
- *
- * Web (session) endpoint. Redeems a single-use ticket issued to a
- * Sanctum-authenticated mobile user, establishes a web session, and redirects
- * to the requested internal path in embed mode. On failure it returns a tiny
- * page (HTTP 419) that tells the WebView bridge the session expired.
- */
+/** GET /m/enter?ticket=… Web (session) endpoint. */
 class WebViewEntryController extends Controller
 {
     public function __construct(private readonly WebViewTicketService $tickets) {}

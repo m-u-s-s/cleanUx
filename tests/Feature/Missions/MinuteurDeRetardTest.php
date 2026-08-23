@@ -25,19 +25,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LE MINUTEUR DE RETARD — la plateforme parle avant que le client ne constate.
- *
- * Le retard était mesuré depuis toujours, pour un seul usage : décider si l'option « il est en
- * retard » pouvait s'afficher dans le formulaire d'annulation. Autrement dit, on n'en parlait
- * qu'à la personne ayant déjà renoncé. Le fait servait à constater l'échec, jamais à l'éviter.
- *
- * ── UNE SEULE MESURE ─────────────────────────────────────────────────────────────────────────
- *
- * L'annonce et l'option d'annulation gratuite basculent à la même minute, parce qu'elles lisent la
- * même méthode. Un client averti « votre prestataire a vingt-deux minutes de retard » à qui l'on
- * refuserait ensuite le motif « il est en retard » ne lirait pas deux règles : il lirait une panne.
- */
+/** LE MINUTEUR DE RETARD — la plateforme parle avant que le client ne constate. */
 class MinuteurDeRetardTest extends TestCase
 {
     use RefreshDatabase;
@@ -102,12 +90,7 @@ class MinuteurDeRetardTest extends TestCase
 
     // ── LA MESURE ─────────────────────────────────────────────────────────────
 
-    /**
-     * LE TÉMOIN POSITIF DE TOUT CE FICHIER.
-     *
-     * Sans lui, chaque assertion « il n'est pas en retard » passerait au vert sur une mesure en
-     * panne : un `minutesDeRetard()` qui rendrait toujours `null` ferait exactement le même effet.
-     */
+    /** LE TÉMOIN POSITIF DE TOUT CE FICHIER. */
     #[Test]
     public function le_retard_se_mesure_en_minutes(): void
     {
@@ -119,13 +102,7 @@ class MinuteurDeRetardTest extends TestCase
         $this->assertFalse($this->retards()->etat($aLHeure)['en_retard']);
     }
 
-    /**
-     * LA TOLÉRANCE EXISTE, et elle se lit en configuration.
-     *
-     * Cinq minutes de décalage ne sont pas un retard : les annoncer transformerait le minuteur en
-     * générateur d'inquiétude, et le client couperait ses notifications avant le jour où elles
-     * comptent.
-     */
+    /** LA TOLÉRANCE EXISTE, et elle se lit en configuration. */
     #[Test]
     public function la_tolerance_retient_l_annonce(): void
     {
@@ -220,12 +197,7 @@ class MinuteurDeRetardTest extends TestCase
 
     // ── LES TROIS ISSUES ──────────────────────────────────────────────────────
 
-    /**
-     * L'ANNULATION GRATUITE SE LIT DANS LE QUESTIONNAIRE, elle ne se recalcule pas.
-     *
-     * Désactiver l'option depuis la console doit fermer le bouton. Un second barème codé dans le
-     * minuteur aurait continué de promettre la gratuité que le formulaire refuserait ensuite.
-     */
+    /** L'ANNULATION GRATUITE SE LIT DANS LE QUESTIONNAIRE, elle ne se recalcule pas. */
     #[Test]
     public function l_annulation_gratuite_suit_le_questionnaire(): void
     {
@@ -240,12 +212,7 @@ class MinuteurDeRetardTest extends TestCase
         $this->assertFalse($this->retards()->etat($booking->fresh())['annulation_gratuite']);
     }
 
-    /**
-     * DÉCALER PLUTÔT QU'ANNULER — la deuxième issue, et elle éteint le retard.
-     *
-     * `BookingRescheduleService` n'était atteignable que par le glisser-déposer du calendrier
-     * web : le client mobile n'avait le choix qu'entre attendre et annuler.
-     */
+    /** DÉCALER PLUTÔT QU'ANNULER — la deuxième issue, et elle éteint le retard. */
     #[Test]
     public function le_client_peut_decaler_l_intervention(): void
     {
@@ -263,12 +230,7 @@ class MinuteurDeRetardTest extends TestCase
 
     // ── LES SURFACES WEB ──────────────────────────────────────────────────────
 
-    /**
-     * LE WEB CLIENT MONTRE LE RETARD ET SES ISSUES.
-     *
-     * Un module complet et injoignable est la famille de défaut la plus coûteuse de ce dépôt : on
-     * PRESSE le bouton, on ne se contente pas de vérifier qu'il s'affiche.
-     */
+    /** LE WEB CLIENT MONTRE LE RETARD ET SES ISSUES. */
     #[Test]
     public function la_page_client_montre_le_retard_et_sait_decaler(): void
     {

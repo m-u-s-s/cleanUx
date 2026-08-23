@@ -8,13 +8,7 @@ use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * LA FICHE D'UNE NOTIFICATION : tout son contenu, et où aller pour régler le problème.
- *
- * Le centre montre une ligne par notification et n'en dit qu'une partie : le payload porte des
- * références, des montants, une zone, une source, des horodatages que la liste ne peut pas
- * afficher. Cette page les rend, et surtout elle porte le lien de résolution.
- */
+/** LA FICHE D'UNE NOTIFICATION : tout son contenu, et où aller pour régler le problème. */
 class NotificationDetailPageTest extends TestCase
 {
     use RefreshDatabase;
@@ -35,9 +29,7 @@ class NotificationDetailPageTest extends TestCase
         return $notification;
     }
 
-    /**
-     * LE CŒUR DE LA DEMANDE : la fiche montre TOUT et dit où aller.
-     */
+    /** LE CŒUR DE LA DEMANDE : la fiche montre TOUT et dit où aller. */
     public function test_la_fiche_rend_le_payload_complet_et_le_lien_de_resolution(): void
     {
         $prestataire = User::factory()->employe()->create();
@@ -67,11 +59,7 @@ class NotificationDetailPageTest extends TestCase
             ->assertSee(__('ui.notifications.action.finance'));
     }
 
-    /**
-     * Une clé inconnue de cet écran doit quand même apparaître : un tableau réduit aux champs
-     * déjà connus recréerait le défaut qu'on corrige — de l'information portée par la
-     * notification et invisible à l'écran.
-     */
+    /** Une clé inconnue de cet écran doit quand même apparaître : un tableau réduit aux champs déjà connus recréerait le défaut qu'on corrige — de l'information portée par la notification et invisible à l'écran. */
     public function test_une_cle_de_payload_inconnue_est_affichee_telle_quelle(): void
     {
         $prestataire = User::factory()->employe()->create();
@@ -88,13 +76,7 @@ class NotificationDetailPageTest extends TestCase
             ->assertSee('Karim Haddad');
     }
 
-    /**
-     * L'APPARTENANCE, ET SON TÉMOIN.
-     *
-     * Le composant cherche la notification dans `$user->notifications()` : celle d'autrui n'existe
-     * pas. Le cas d'admission est indispensable — sans lui, une page cassée qui renverrait 404
-     * pour tout le monde ferait passer ce test au vert en mesurant une panne.
-     */
+    /** L'APPARTENANCE, ET SON TÉMOIN. */
     public function test_la_notification_d_autrui_est_introuvable(): void
     {
         $sofia = User::factory()->employe()->create();
@@ -124,9 +106,7 @@ class NotificationDetailPageTest extends TestCase
             ->assertNotFound();
     }
 
-    /**
-     * Ouvrir vaut lecture : sans cela le compteur ne redescendrait qu'à la main.
-     */
+    /** Ouvrir vaut lecture : sans cela le compteur ne redescendrait qu'à la main. */
     public function test_ouvrir_la_fiche_marque_la_notification_comme_lue(): void
     {
         $prestataire = User::factory()->employe()->create();
@@ -143,12 +123,7 @@ class NotificationDetailPageTest extends TestCase
         $this->assertSame(0, $prestataire->unreadNotifications()->count());
     }
 
-    /**
-     * LA CARTE MÈNE À LA FICHE, PAS DIRECTEMENT À LA RÉSOLUTION.
-     *
-     * La liste pointait droit sur `actionUrl()` : on quittait le centre sans jamais voir le
-     * contenu complet de la notification. Une seule destination par carte, et c'est la fiche.
-     */
+    /** LA CARTE MÈNE À LA FICHE, PAS DIRECTEMENT À LA RÉSOLUTION. */
     public function test_le_centre_pointe_vers_la_fiche(): void
     {
         $prestataire = User::factory()->employe()->create();

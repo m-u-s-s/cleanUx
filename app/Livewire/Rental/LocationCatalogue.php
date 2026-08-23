@@ -9,30 +9,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-/**
- * LA VITRINE : TOUTES NOS VOITURES, AVEC DE QUOI TRIER.
- *
- * ── CE CATALOGUE NE RESSEMBLE PAS À L'AUTRE, ET C'EST VOULU ──────────────────────────────────
- *
- * Le parcours de commande va du SECTEUR au MÉTIER puis aux QUESTIONS, et cherche ensuite un
- * professionnel disponible. Ici, l'objet est visible dès la première seconde : on choisit une
- * voiture précise, comme dans n'importe quelle agence. Aucun dispatch, aucun prestataire, aucune
- * zone de service — le client vient chercher le véhicule là où il est.
- *
- * Les deux parcours ne partagent aucun composant. C'est ce qui permet de faire évoluer l'un sans
- * risquer l'autre.
- *
- * ── LES DATES D'ABORD, PARCE QU'ELLES CHANGENT LA VITRINE ────────────────────────────────────
- *
- * Une voiture louée sur la période demandée ne doit pas s'afficher. Tant que le client n'a pas
- * choisi ses dates, on montre ce qui est physiquement là aujourd'hui — une vitrine vide par excès
- * de prudence serait pire qu'une liste à affiner.
- *
- * ── LES FILTRES SORTENT DU PARC, PAS D'UNE LISTE FIGÉE ───────────────────────────────────────
- *
- * Proposer « monospace » sur un parc qui n'en a aucun apprend au client que la vitrine ment. Les
- * options viennent donc des voitures réellement proposables.
- */
+/** LA VITRINE : TOUTES NOS VOITURES, AVEC DE QUOI TRIER. */
 #[Layout('layouts.app')]
 class LocationCatalogue extends Component
 {
@@ -88,12 +65,7 @@ class LocationCatalogue extends Component
     }
 
     /**
-     * Les dates demandées, ou rien.
-     *
-     * UNE DATE SEULE NE VAUT PAS UNE PÉRIODE. Un client qui a saisi le départ sans le retour n'a
-     * pas encore dit ce qu'il veut ; deviner « une journée » afficherait une disponibilité qu'il
-     * n'a pas demandée. On rend donc `null` tant que les deux ne sont pas là, et le service montre
-     * ce qui est présent aujourd'hui.
+     * Les dates demandées, ou rien. UNE DATE SEULE NE VAUT PAS UNE PÉRIODE.
      *
      * @return array{0: Carbon|null, 1: Carbon|null}
      */

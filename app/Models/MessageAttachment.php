@@ -11,13 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 
-/**
- * Pièce jointe à un message.
- *
- * Stockage : par défaut sur disk 'public' (configurable par instance).
- * Anti-malware : statut pending → clean / infected / error.
- * URLs signées (signed routes) pour les fichiers privés.
- */
+/** Pièce jointe à un message. Stockage : par défaut sur disk 'public' (configurable par instance). */
 class MessageAttachment extends Model
 {
     /** @use HasFactory<MessageAttachmentFactory> */
@@ -99,10 +93,7 @@ class MessageAttachment extends Model
             || (config('messaging.av.required', false) === false && $this->av_status === self::AV_STATUS_PENDING);
     }
 
-    /**
-     * URL signée temporaire pour téléchargement.
-     * Empêche les URLs Storage::url() publiques sans expiration.
-     */
+    /** URL signée temporaire pour téléchargement. */
     public function getSignedUrlAttribute(): ?string
     {
         if ($this->isInfected()) {
@@ -141,9 +132,7 @@ class MessageAttachment extends Model
         return number_format($size / 1024 / 1024 / 1024, 2).' GB';
     }
 
-    /**
-     * Supprime aussi le fichier physique sur le disk.
-     */
+    /** Supprime aussi le fichier physique sur le disk. */
     protected static function booted(): void
     {
         static::deleting(function (MessageAttachment $att) {

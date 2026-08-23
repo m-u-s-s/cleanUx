@@ -8,9 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
-/**
- * M18 — admin DB overrides must actually change runtime flag resolution (kill-switch).
- */
+/** M18 — admin DB overrides must actually change runtime flag resolution (kill-switch). */
 class FeatureFlagOverrideTest extends TestCase
 {
     use RefreshDatabase;

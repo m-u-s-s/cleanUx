@@ -9,24 +9,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Middleware SetLocale data-driven (Phase i18n v2).
- *
- * Délègue à LocaleResolver et applique :
- *   - app()->setLocale()
- *   - setlocale(LC_TIME, ...) selon code (best-effort)
- *   - Carbon::setLocale()
- *   - Cookie 1 an pour visiteurs anonymes
- *
- * Les constantes SUPPORTED et DEFAULT sont conservées pour rétrocompat
- * (du code legacy peut les référencer) — mais elles dérivent maintenant
- * de config('i18n').
- */
+/** Middleware SetLocale data-driven (Phase i18n v2). */
 class SetLocale
 {
     /**
      * @deprecated Conservée pour rétrocompat ; la source de vérité est config/i18n.php.
-     *             Pour le runtime, utiliser app(LocaleResolver::class)->supportedCodes().
+     * Pour le runtime, utiliser app(LocaleResolver::class)->supportedCodes().
      */
     public const SUPPORTED = ['fr', 'nl', 'en', 'es', 'it', 'de'];
 

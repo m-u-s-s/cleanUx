@@ -14,29 +14,13 @@ use RecursiveIteratorIterator;
 use ReflectionClass;
 use Tests\TestCase;
 
-/**
- * CHAQUE MODÈLE DOIT CONCORDER AVEC LE SCHÉMA — ET C'EST VÉRIFIABLE.
- *
- * Une entrée de `$fillable` ou de `$casts` qui ne désigne aucune colonne ne fait rien de visible.
- * Elle attend. Puis, le jour où un appelant s'en sert, elle produit soit une écriture jetée en
- * silence, soit un « Unknown column » en pleine production.
- *
- * Trois écarts de cette famille ont été trouvés le 2026-08-23 : `RecurringBookingSeries`
- * déclarait quatre colonnes disparues (`start_date`, `end_date`, `days_of_week`, `settings`) dans
- * `$fillable` ET dans `$casts` ; `SubscriptionPlan` en portait deux.
- *
- * Ce test ferme la famille entière. Il parcourt TOUS les modèles, pas une liste tenue à la main :
- * un modèle ajouté demain y entre sans que personne y pense.
- */
+/** CHAQUE MODÈLE DOIT CONCORDER AVEC LE SCHÉMA — ET C'EST VÉRIFIABLE. */
 class LesModelesConcordentAvecLeSchemaTest extends TestCase
 {
     use RefreshDatabase;
 
     /**
      * LES SEULES EXCEPTIONS, ET LEUR RAISON.
-     *
-     * Un attribut VIRTUEL — servi par un `Attribute::make()` — peut légitimement figurer dans
-     * `$fillable` sans être une colonne : c'est le mutateur qui range la valeur ailleurs.
      *
      * @var array<class-string, list<string>>
      */
@@ -81,10 +65,7 @@ class LesModelesConcordentAvecLeSchemaTest extends TestCase
 
     public function test_temoin_le_balayage_trouve_bien_les_modeles(): void
     {
-        /*
-         * TÉMOIN POSITIF. Sans lui, les deux tests ci-dessous passeraient au vert sur une liste
-         * vide — un `RecursiveDirectoryIterator` qui ne trouve rien ne se plaint pas.
-         */
+        // TÉMOIN POSITIF.
         $modeles = $this->modeles();
 
         $this->assertGreaterThan(150, count($modeles), 'Le balayage des modèles ne rend presque rien.');
@@ -155,11 +136,7 @@ class LesModelesConcordentAvecLeSchemaTest extends TestCase
         $this->assertSame([], $ecarts, 'Ces transtypages portent sur des colonnes qui n’existent pas.');
     }
 
-    /**
-     * CHAQUE MODÈLE DOIT AVOIR SA TABLE.
-     *
-     * Un modèle dont la table a disparu ne se signale qu'à la première requête, en production.
-     */
+    /** CHAQUE MODÈLE DOIT AVOIR SA TABLE. */
     public function test_chaque_modele_a_bien_sa_table(): void
     {
         $absentes = [];
@@ -176,13 +153,7 @@ class LesModelesConcordentAvecLeSchemaTest extends TestCase
         $this->assertSame([], $absentes, 'Ces modèles interrogent une table qui n’existe pas.');
     }
 
-    /**
-     * `::factory()` DOIT SE RÉSOUDRE.
-     *
-     * Un modèle en sous-espace de noms cherche sa fabrique dans le sous-espace correspondant :
-     * `App\Models\SubscriptionsV2\SubscriptionV2` veut `Database\Factories\SubscriptionsV2\…`.
-     * Trois modèles échouaient ainsi, et cela ne se voit qu'en écrivant le test qui les emploie.
-     */
+    /** `::factory()` DOIT SE RÉSOUDRE. */
     public function test_chaque_fabrique_declaree_se_resout(): void
     {
         $casses = [];
@@ -202,17 +173,7 @@ class LesModelesConcordentAvecLeSchemaTest extends TestCase
         $this->assertSame([], $casses, 'Ces modèles annoncent une fabrique introuvable.');
     }
 
-    /**
-     * LES CLÉS D'UNE FABRIQUE SONT DES COLONNES.
-     *
-     * Quatre fabriques avaient été écrites contre un schéma imaginaire — quatorze clés en tout,
-     * dont trois montants en centimes sur des colonnes qui n'en attendaient pas. Elles ne
-     * cassaient rien : elles n'avaient AUCUN appelant. Le jour où un test les emploie, il découvre
-     * le décalage à sa place.
-     *
-     * On lit `definition()` sans rien créer : instancier la chaîne de dépendances coûterait des
-     * minutes, et la question posée ici est celle des NOMS.
-     */
+    /** LES CLÉS D'UNE FABRIQUE SONT DES COLONNES. */
     public function test_les_cles_de_chaque_fabrique_sont_des_colonnes(): void
     {
         $ecarts = [];
@@ -268,20 +229,7 @@ class LesModelesConcordentAvecLeSchemaTest extends TestCase
         $this->assertSame([], $ecarts, 'Ces fabriques posent des clés qui ne sont pas des colonnes.');
     }
 
-    /**
-     * UNE ANNOTATION NE DOIT PAS NIER LA NULLABILITÉ DU SCHÉMA.
-     *
-     * `@property string $x` sur une colonne NULLABLE apprend à l'analyse statique qu'un
-     * déréférencement est sûr. Il ne l'est pas : la colonne rend `null` dès qu'elle est vide, et
-     * l'erreur ne se manifeste qu'en production, sur la première ligne où personne n'a rempli le
-     * champ.
-     *
-     * Soixante-deux annotations étaient dans ce cas le 2026-08-23, dont vingt-trois sur `Booking`
-     * — coordonnées de destination, durées, montants. Elles ont été alignées.
-     *
-     * Ce test ne juge QUE la nullabilité : le type lui-même (string contre int) reste à la main de
-     * l'auteur, parce qu'Eloquent et les transtypages en décident autrement selon les cas.
-     */
+    /** UNE ANNOTATION NE DOIT PAS NIER LA NULLABILITÉ DU SCHÉMA. */
     public function test_aucune_annotation_ne_nie_la_nullabilite_du_schema(): void
     {
         $ecarts = [];
@@ -317,12 +265,7 @@ class LesModelesConcordentAvecLeSchemaTest extends TestCase
         $this->assertSame([], $ecarts, 'Ces annotations promettent une valeur là où le schéma admet null.');
     }
 
-    /**
-     * La nullabilité réelle, quel que soit le moteur.
-     *
-     * `information_schema` n'existe pas sous SQLite, où la suite tourne : on passe par le
-     * constructeur de schéma, qui répond sur les deux.
-     */
+    /** La nullabilité réelle, quel que soit le moteur. */
     private function colonneEstNullable(string $table, string $colonne): bool
     {
         return Schema::getColumns($table)[

@@ -84,15 +84,7 @@ class DispatchTradeFilterTest extends TestCase
             'Le peintre ne doit PAS être proposé pour une mission serrurier.');
     }
 
-    /**
-     * LE REPLI OUVERT EST SUPPRIMÉ, et c'est le cœur de l'invariant.
-     *
-     * Le filtre rendait la liste NON filtrée quand elle se vidait, « pour ne pas bloquer le
-     * dispatch ». C'est exactement la porte par laquelle un peintre pouvait recevoir du
-     * babysitting. Une mission non pourvue est un incident qu'on voit et qu'on traite ; une mission
-     * pourvue par le mauvais métier est un client qui ne revient pas, et un prestataire qui perd
-     * son déplacement.
-     */
+    /** LE REPLI OUVERT EST SUPPRIMÉ, et c'est le cœur de l'invariant. */
     public function test_aucun_candidat_quand_personne_n_exerce_le_metier(): void
     {
         $zone = ServiceZone::factory()->create();
@@ -127,13 +119,7 @@ class DispatchTradeFilterTest extends TestCase
         $this->assertNotContains($employee->id, $ranking->pluck('employee.id')->all());
     }
 
-    /**
-     * SANS MÉTIER RÉSOLVABLE, ON NE REND PERSONNE.
-     *
-     * L'ancienne règle disait « pas de métier requis, donc tout le monde est éligible ». Elle
-     * paraissait prudente et produisait l'inverse : une réservation dont le métier n'avait pas été
-     * enregistré partait chez n'importe qui.
-     */
+    /** SANS MÉTIER RÉSOLVABLE, ON NE REND PERSONNE. */
     public function test_aucun_candidat_quand_la_reservation_n_a_pas_de_metier(): void
     {
         $zone = ServiceZone::factory()->create();
@@ -173,13 +159,7 @@ class DispatchTradeFilterTest extends TestCase
         $this->assertNotContains($generic->id, $ranking->pluck('employee.id')->all());
     }
 
-    /**
-     * LE MÉTIER SE LIT SUR SA COLONNE, avec le catalogue en REPLI.
-     *
-     * `bookings.trade_id` est écrit par le moteur de commande, qui sait quel métier a été choisi.
-     * Les réservations antérieures à la colonne n'en ont pas : elles restent lisibles par le
-     * service au catalogue, et c'est ce que garantit `resolveTradeId()`.
-     */
+    /** LE MÉTIER SE LIT SUR SA COLONNE, avec le catalogue en REPLI. */
     public function test_le_metier_se_resout_par_la_colonne_puis_par_le_catalogue(): void
     {
         $trade = $this->makeTrade('peinture');

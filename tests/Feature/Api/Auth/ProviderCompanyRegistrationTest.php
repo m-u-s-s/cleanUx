@@ -9,15 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * L'app prestataire propose deux inscriptions : indépendant ou société.
- *
- * Une société prestataire n'est pas un simple drapeau sur le compte : la plateforme la modélise
- * par un OrganizationAccount de type `provider_company`, dont le signataire devient membre
- * `owner`. C'est ce que consomment déjà l'espace web provider-company (dispatch, gestion
- * d'équipe) et le rattachement des missions via `provider_organization_id`. Inscrire une société
- * sans créer cette organisation produirait un compte incapable d'avoir la moindre équipe.
- */
+/** L'app prestataire propose deux inscriptions : indépendant ou société. */
 class ProviderCompanyRegistrationTest extends TestCase
 {
     use RefreshDatabase;
@@ -48,37 +40,13 @@ class ProviderCompanyRegistrationTest extends TestCase
         $this->assertSame('active', $member->status);
 
         $profile = ProviderProfile::where('user_id', $user->id)->firstOrFail();
-        /*
-         * `company_worker`, ET NON `company` — corrigé le 2026-08-08.
-         *
-         * Cette assertion figeait la valeur que l'API posait, et cette valeur n'était lue par
-         * PERSONNE : `isProviderCompanyWorker()` ne reconnaît que `company_worker`, et
-         * `isEmploye()` en dépend. Le fondateur inscrit depuis le mobile ne résolvait donc ni en
-         * société ni en prestataire, et retombait sur le repli `client_individuelle` — patron de
-         * société traité en particulier, sans ses missions, alors que son organisation existait et
-         * qu'il y portait `owner` (les deux assertions ci-dessus le montrent).
-         *
-         * L'inscription WEB posait déjà `company_worker` pour le même choix. Le test disait donc
-         * vrai sur ce que le code faisait, et faux sur ce qu'il devait faire.
-         */
+        // `company_worker`, ET NON `company` — corrigé le 2026-08-08.
         $this->assertSame('company_worker', $profile->provider_type->value);
         $this->assertSame($org->id, $profile->organization_account_id);
         $this->assertNotNull($profile->self_registered_at);
     }
 
-    /**
-     * LE FONDATEUR ATTEINT SA PROPRE SOCIÉTÉ — mesuré le 2026-08-16, il ne l'atteignait pas.
-     *
-     * L'inscription créait l'organisation, le membre `owner` et le profil rattaché, mais n'écrivait
-     * jamais les deux colonnes que TOUT le reste lit : `organization_account_id` et
-     * `current_organization_id`. Le patron obtenait donc 403 « Aucune organisation active » sur
-     * chaque écran de son espace, et sa connexion annonçait `organization_account_id: null` —
-     * l'application n'avait même pas de quoi savoir quel espace ouvrir.
-     *
-     * Le test presse les deux : les colonnes ET une route de l'espace société. Les colonnes seules
-     * prouveraient une écriture, pas un accès ; la route seule ne dirait pas laquelle des quatre
-     * sources de contexte a servi.
-     */
+    /** LE FONDATEUR ATTEINT SA PROPRE SOCIÉTÉ — mesuré le 2026-08-16, il ne l'atteignait pas. */
     public function test_the_founder_reaches_the_company_space_right_after_registering(): void
     {
         $reponse = $this->postJson('/api/auth/register', $this->payload([
@@ -116,11 +84,7 @@ class ProviderCompanyRegistrationTest extends TestCase
         $this->assertSame(0, OrganizationAccount::count());
     }
 
-    /**
-     * Le type de prestataire est optionnel : l'app cliente n'envoie rien, et une version
-     * antérieure de l'app prestataire non plus. On retombe sur l'indépendant, jamais sur une
-     * société fantôme sans nom.
-     */
+    /** Le type de prestataire est optionnel : l'app cliente n'envoie rien, et une version antérieure de l'app prestataire non plus. */
     public function test_omitting_the_provider_kind_falls_back_to_independent(): void
     {
         $this->postJson('/api/auth/register', $this->payload())->assertCreated();
@@ -139,10 +103,7 @@ class ProviderCompanyRegistrationTest extends TestCase
         $this->assertSame(0, User::where('email', 'nouveau@prestataire.test')->count());
     }
 
-    /**
-     * `organization_accounts.slug` porte un index unique : deux sociétés homonymes qui
-     * s'inscrivent ne doivent pas faire échouer la seconde inscription.
-     */
+    /** `organization_accounts.slug` porte un index unique : deux sociétés homonymes qui s'inscrivent ne doivent pas faire échouer la seconde inscription. */
     public function test_two_companies_sharing_a_name_both_register(): void
     {
         $this->postJson('/api/auth/register', $this->payload([
@@ -161,9 +122,7 @@ class ProviderCompanyRegistrationTest extends TestCase
         $this->assertCount(2, $slugs->unique(), 'Les slugs doivent rester distincts.');
     }
 
-    /**
-     * Une société auto-inscrite est soumise à la même attente d'approbation qu'un indépendant.
-     */
+    /** Une société auto-inscrite est soumise à la même attente d'approbation qu'un indépendant. */
     public function test_a_self_registered_company_cannot_reach_the_rest_of_the_provider_surface(): void
     {
         $this->postJson('/api/auth/register', $this->payload([

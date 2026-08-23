@@ -13,11 +13,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
-/**
- * Couverture du AssistantStreamController : guards d'auth/validation + le
- * vrai chemin de streaming (closure StreamedResponse) en faisant émettre une
- * séquence de StreamEvent par un AnthropicStreamingProvider truqué.
- */
+/** Couverture du AssistantStreamController : guards d'auth/validation + le vrai chemin de streaming (closure StreamedResponse) en faisant émettre une séquence de StreamEvent par un AnthropicStreamingProvider truqué. */
 class AssistantStreamControllerTest extends TestCase
 {
     use RefreshDatabase;
@@ -48,8 +44,7 @@ class AssistantStreamControllerTest extends TestCase
     }
 
     /**
-     * Binds a fake streamer that replays the provided StreamEvents through the
-     * controller callback. Returns nothing — side effects land in the closure.
+     * Binds a fake streamer that replays the provided StreamEvents through the controller callback.
      *
      * @param  array<int, StreamEvent>  $events
      */
@@ -101,10 +96,7 @@ class AssistantStreamControllerTest extends TestCase
         $this->app->instance(AnthropicStreamingProvider::class, $fake);
     }
 
-    /**
-     * Drives the StreamedResponse closure while keeping PHPUnit's output
-     * buffering nesting consistent (the controller force-closes every ob level).
-     */
+    /** Drives the StreamedResponse closure while keeping PHPUnit's output buffering nesting consistent (the controller force-closes every ob level). */
     private function drainStream(TestResponse $response): void
     {
         $baseLevel = ob_get_level();

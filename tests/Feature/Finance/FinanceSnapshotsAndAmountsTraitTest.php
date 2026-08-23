@@ -16,18 +16,7 @@ use Illuminate\Support\Collection;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * Exercises the BuildsFinanceSnapshotsAndAmounts trait in isolation.
- *
- * The trait is consumed via a tiny in-file harness so we can call both its
- * public (amountBreakdownFor / invoiceHealthSummary) and protected
- * (quoteStatusFor / invoiceStatusFor / snapshotFor / nextQuoteNumber /
- * nextInvoiceNumber) members directly.
- *
- * Bookings and their relations are built in memory (setRelation) so the money
- * maths is asserted deterministically; the one DB-backed path is the default
- * FinanceInvoice query inside invoiceHealthSummary().
- */
+/** Exercises the BuildsFinanceSnapshotsAndAmounts trait in isolation. */
 class FinanceSnapshotsAndAmountsTraitTest extends TestCase
 {
     use RefreshDatabase;

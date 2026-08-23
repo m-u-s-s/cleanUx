@@ -8,27 +8,14 @@ use App\Services\Payments\MissionPaymentService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Phase 14 — Service d'annulation booking avec calcul + application du fee.
- *
- * Distingue annulation client / annulation prestataire / no-show.
- *
- * Pour le fee client : le service essaie d'utiliser
- * StripeConnectPaymentService::refundMissionPayment (Phase 13) pour ne refund
- * que la partie non-fee, sinon il marque just le booking et laisse l'admin
- * gérer.
- */
+/** Phase 14 — Service d'annulation booking avec calcul + application du fee. */
 class CancelBookingService
 {
     public function __construct(
         protected CancellationFeeCalculator $calculator,
     ) {}
 
-    /**
-     * Annule un booking par le client. Calcule + applique le fee.
-     *
-     * Renvoie un array détaillé pour audit + UI.
-     */
+    /** Annule un booking par le client. Calcule + applique le fee. */
     public function cancelByClient(Booking $booking, User $client, ?string $reason = null): array
     {
         $this->guardCanCancel($booking);
@@ -68,9 +55,7 @@ class CancelBookingService
         });
     }
 
-    /**
-     * Annule par le prestataire. Pénalité + redispatch (via Phase 11 si dispo).
-     */
+    /** Annule par le prestataire. Pénalité + redispatch (via Phase 11 si dispo). */
     public function cancelByProvider(Booking $booking, User $provider, ?string $reason = null): array
     {
         $this->guardCanCancel($booking);
@@ -112,10 +97,7 @@ class CancelBookingService
         });
     }
 
-    /**
-     * Marque un no-show client (le client n'est pas venu).
-     * Utilisé par le prestataire après X min d'attente.
-     */
+    /** Marque un no-show client (le client n'est pas venu). */
     public function markClientNoShow(Booking $booking, User $reportedBy): array
     {
         if (! $this->calculator->isNoShow($booking)) {
@@ -157,25 +139,7 @@ class CancelBookingService
     // Helpers
     // ──────────────────────────────────────────────
 
-    /**
-     * PORTE LES FRAIS JUSQU'À LEUR COLONNE, ET PAS SEULEMENT DANS LE `metadata`.
-     *
-     * `bookings` porte deux colonnes dédiées, `cancellation_fee_amount` et
-     * `cancellation_fee_percent`. Personne ne les écrivait : les frais n'existaient que sous les
-     * clés `cancellation_fee` / `cancellation_fee_percent` du `metadata`. Or le centre d'analyse
-     * des annulations fait `SUM(COALESCE(cancellation_fee_amount, 0))` — il additionnait donc une
-     * colonne vide et annonçait 0 € de frais perçus, depuis toujours.
-     *
-     * Le `metadata` reste écrit tel quel : des tests et des réponses d'API le lisent, et la
-     * question posée ici est de remplir la colonne, pas de déplacer la notion.
-     *
-     * `forceFill` et non `update` : ces deux colonnes sont HORS de `$fillable`, délibérément —
-     * c'est la convention du dépôt pour l'argent, afin qu'aucune charge utile de requête ne
-     * puisse fixer un montant de frais. Passées à `update()`, Eloquent les écarterait en silence.
-     *
-     * Le montant est en EUROS, comme le dit son type `decimal(10,2)` et comme le documente
-     * `CancellationFeeCalculator` (« fee_amount: float (en euros) »).
-     */
+    /** PORTE LES FRAIS JUSQU'À LEUR COLONNE, ET PAS SEULEMENT DANS LE `metadata`. */
     protected function consignerLesFrais(Booking $booking, float $montantEuros, int $pourcentage): void
     {
         $booking->forceFill([
@@ -194,10 +158,7 @@ class CancelBookingService
         }
     }
 
-    /**
-     * Tente un refund partiel via Phase 13 si dispo.
-     * Le client est remboursé (prix - fee).
-     */
+    /** Tente un refund partiel via Phase 13 si dispo. Le client est remboursé (prix - fee). */
     protected function tryRefundPartial(Booking $booking, array $feeDetails): void
     {
         if (! $booking->stripe_payment_intent_id) {
@@ -207,21 +168,7 @@ class CancelBookingService
             return;
         }
 
-        /*
-         * DEUX ÉTATS, DEUX GESTES — et les confondre ne facturait rien du tout.
-         *
-         * `captured` : l'argent est encaissé, on en rend une partie. C'est le chemin historique,
-         * inchangé.
-         *
-         * `authorized` : rien n'est encaissé, une empreinte est posée. `refundMissionPayment()`
-         * LÈVE sur cet état — « Cannot refund booking with payment_status=authorized » — et
-         * l'exception était attrapée quinze lignes plus bas puis journalisée. L'annulation
-         * répondait `ok: true` au client, les frais n'étaient jamais pris, et l'empreinte tenait
-         * sur sa carte jusqu'à expiration, environ sept jours.
-         *
-         * On capture donc partiellement les frais : Stripe libère le solde dans le même appel.
-         * Décision du 2026-08-12, voir `MissionPaymentService::capturerLesFraisDAnnulation()`.
-         */
+        // DEUX ÉTATS, DEUX GESTES — et les confondre ne facturait rien du tout.
         if ($booking->payment_status === 'authorized') {
             $this->encaisserLesFraisSurLEmpreinte($booking, $feeDetails);
 
@@ -259,11 +206,6 @@ class CancelBookingService
 
     /**
      * Les frais d'annulation, pris sur l'empreinte non capturée.
-     *
-     * SOFT-FAIL COMME LE RESTE DE CE SERVICE. Une carte indisponible ne doit pas empêcher un client
-     * d'annuler : il a le droit de renoncer, et le refuser au motif que Stripe ne répond pas
-     * transformerait un problème de paiement en séquestration de rendez-vous. La créance reste
-     * visible — l'empreinte est toujours là, et son statut n'a pas bougé.
      *
      * @param  array{fee_amount: float|int, fee_percent?: mixed, reason_code?: mixed, is_free?: bool}  $feeDetails
      */
@@ -303,9 +245,7 @@ class CancelBookingService
         }
     }
 
-    /**
-     * Tente de redispatcher via Phase 11 si dispo.
-     */
+    /** Tente de redispatcher via Phase 11 si dispo. */
     protected function tryRedispatch(Booking $booking): void
     {
         $mission = $booking->missions()->latest()->first();
@@ -328,9 +268,7 @@ class CancelBookingService
         }
     }
 
-    /**
-     * Applique la pénalité reliability sur ProviderProfile.metadata.
-     */
+    /** Applique la pénalité reliability sur ProviderProfile.metadata. */
     protected function applyProviderPenalty(User $provider, array $penalty): void
     {
         $profile = $provider->providerProfile;

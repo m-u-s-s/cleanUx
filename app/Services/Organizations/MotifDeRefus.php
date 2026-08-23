@@ -2,19 +2,7 @@
 
 namespace App\Services\Organizations;
 
-/**
- * POURQUOI UNE ACTION SUR UN MEMBRE A ÉTÉ REFUSÉE.
- *
- * LE SERVICE DÉCIDE, LA SURFACE RÉPOND. C'est la seule façon d'extraire ces règles sans changer le
- * comportement de l'écran qui les portait : `TeamManagement` refuse EN SILENCE une escalade de
- * hiérarchie — un retour discret sur un bouton qui n'aurait pas dû être là — mais lève un 403 sur
- * une permission manquante et une 404 sur un identifiant étranger. Une API, elle, doit répondre
- * quelque chose dans les trois cas.
- *
- * Un service qui lèverait lui-même ses exceptions HTTP aurait imposé une seule de ces réponses aux
- * deux surfaces, et c'est l'écran existant qui aurait changé de comportement — ce que ses tests
- * figent, à raison.
- */
+/** POURQUOI UNE ACTION SUR UN MEMBRE A ÉTÉ REFUSÉE. LE SERVICE DÉCIDE, LA SURFACE RÉPOND. */
 enum MotifDeRefus: string
 {
     /** L'identifiant ne désigne aucun membre de CETTE organisation. */
@@ -38,12 +26,7 @@ enum MotifDeRefus: string
     /** Le rôle demandé n'existe pas, ou pas pour ce type d'organisation. */
     case ROLE_INCONNU = 'role_inconnu';
 
-    /**
-     * Le message rendu à un humain.
-     *
-     * Il dit la RÈGLE, jamais l'état de la société : « il n'y a qu'un propriétaire » renseignerait
-     * sur l'effectif quelqu'un à qui l'on vient précisément de refuser l'accès.
-     */
+    /** Le message rendu à un humain. */
     public function message(): string
     {
         return match ($this) {
@@ -57,13 +40,7 @@ enum MotifDeRefus: string
         };
     }
 
-    /**
-     * Le code HTTP qui convient, pour les surfaces qui répondent en HTTP.
-     *
-     * Une règle de gestion (dernier propriétaire, auto-action) n'est pas un refus d'autorisation :
-     * la personne AVAIT le droit, c'est l'état du monde qui s'y oppose. Les confondre en 403
-     * enverrait un dirigeant chercher une permission qu'il possède déjà.
-     */
+    /** Le code HTTP qui convient, pour les surfaces qui répondent en HTTP. */
     public function codeHttp(): int
     {
         return match ($this) {

@@ -6,16 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * Une ligne de commande = un métier.
- *
- * C'est cette table qui rend le mode multi-services possible sans cas particulier : une commande
- * à un métier est simplement une commande à une ligne. Le mode « panier » n'est donc pas une
- * branche du code, c'est le cas général.
- *
- * `depends_on_item_id` et `sequence_gap_min` portent l'ordonnancement du chantier réel : le
- * carreleur passe après le plombier, et pas immédiatement après — il faut laisser sécher.
- */
+/** Une ligne de commande = un métier. */
 class OrderDraftItem extends Model
 {
     protected $fillable = [
@@ -74,9 +65,6 @@ class OrderDraftItem extends Model
 
     /**
      * Réponses indexées par code de question.
-     *
-     * Le code, jamais l'identifiant : c'est la seule clé qui traverse un export, une duplication
-     * de questionnaire et l'archivage d'une question.
      *
      * @return array<string, OrderDraftAnswer>
      */

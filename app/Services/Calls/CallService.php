@@ -7,33 +7,10 @@ use App\Models\Channel;
 use App\Models\User;
 use Illuminate\Support\Str;
 
-/**
- * OUVRIR UNE SALLE LIVEKIT, ET DÉLIVRER LE JETON QUI Y DONNE ACCÈS.
- *
- * REMPLACE `VideoCallService`, un squelette qui levait sur chaque méthode depuis son écriture et
- * qui a depuis été supprimé du dépôt.
- * `MaskedCallService` (Twilio Proxy) reste INTACT : il répond à un besoin différent — masquer les
- * numéros entre client et prestataire — et le confondre avec celui-ci donnerait aux deux le pire
- * des deux.
- *
- * LE JETON EST SIGNÉ ICI, SANS SDK. Un jeton LiveKit est un JWT HS256 dont la charge utile décrit la
- * salle et les droits ; le produire tient en vingt lignes. Ajouter une dépendance pour cela
- * imposerait une mise à jour de `composer.lock` et une surface de sécurité de plus, pour un format
- * que l'on maîtrise entièrement.
- *
- * LE SECRET NE SORT JAMAIS D'ICI. Le client reçoit un jeton portant SES droits sur UNE salle et une
- * expiration courte — jamais la clé d'API, qui permettrait d'entrer dans n'importe quelle salle de
- * n'importe quelle société.
- */
+/** OUVRIR UNE SALLE LIVEKIT, ET DÉLIVRER LE JETON QUI Y DONNE ACCÈS. */
 class CallService
 {
-    /**
-     * Les appels sont-ils utilisables ?
-     *
-     * SANS CLÉ, ON NE PROPOSE RIEN. Un jeton signé avec un secret vide serait rejeté par le serveur
-     * LiveKit, et l'application afficherait un bouton qui échoue — ce qui est pire que l'absence du
-     * bouton.
-     */
+    /** Les appels sont-ils utilisables ? SANS CLÉ, ON NE PROPOSE RIEN. */
     public function estConfigure(): bool
     {
         return filled(config('livekit.url'))
@@ -41,13 +18,7 @@ class CallService
             && filled(config('livekit.api_secret'));
     }
 
-    /**
-     * Ouvrir un appel dans un canal.
-     *
-     * Le nom de la salle porte un identifiant ALÉATOIRE, pas celui du canal : deux appels successifs
-     * dans le même fil ne doivent pas partager la salle, sinon un participant en retard rejoindrait
-     * la conversation précédente.
-     */
+    /** Ouvrir un appel dans un canal. */
     public function ouvrir(Channel $canal, User $initiateur, string $type = 'audio'): Call
     {
         return Call::create([
@@ -60,12 +31,7 @@ class CallService
         ]);
     }
 
-    /**
-     * Le jeton d'accès de cette personne à cette salle.
-     *
-     * `identity` est l'identifiant utilisateur : c'est ce que les autres participants voient, et ce
-     * qui permet à LiveKit de refuser deux connexions simultanées du même compte.
-     */
+    /** Le jeton d'accès de cette personne à cette salle. */
     public function jetonPour(Call $appel, User $utilisateur): string
     {
         $maintenant = time();
@@ -84,11 +50,7 @@ class CallService
                 'roomJoin' => true,
                 'canPublish' => true,
                 'canSubscribe' => true,
-                /*
-                 * PAS DE `roomCreate`, PAS DE `roomAdmin`. Le participant rejoint une salle que le
-                 * serveur a nommée ; lui donner le droit d'en créer laisserait n'importe quel
-                 * client ouvrir des salles hors de toute trace côté produit.
-                 */
+                // PAS DE `roomCreate`, PAS DE `roomAdmin`.
                 'canPublishData' => true,
             ],
         ]);
@@ -104,13 +66,7 @@ class CallService
         $appel->update(['status' => Call::STATUS_ACTIVE, 'answered_at' => now()]);
     }
 
-    /**
-     * Terminer.
-     *
-     * UN APPEL QUI SONNAIT ENCORE DEVIENT « MANQUÉ », PAS « TERMINÉ ». La distinction est tout ce
-     * qui compte quand on reprend son téléphone : « terminé » se lit comme une conversation qui a
-     * eu lieu.
-     */
+    /** Terminer. UN APPEL QUI SONNAIT ENCORE DEVIENT « MANQUÉ », PAS « TERMINÉ ». */
     public function terminer(Call $appel): void
     {
         if (in_array($appel->status, [Call::STATUS_ENDED, Call::STATUS_MISSED], true)) {
@@ -125,9 +81,6 @@ class CallService
 
     /**
      * Signer un JWT HS256.
-     *
-     * `base64url` — et non `base64` — parce qu'un JWT voyage dans une URL et un en-tête : `+`, `/`
-     * et `=` y seraient réinterprétés, et la signature ne correspondrait plus.
      *
      * @param  array<string, mixed>  $charge
      */

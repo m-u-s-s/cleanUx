@@ -7,27 +7,7 @@ use App\Models\Mission;
 use App\Models\ProviderProfile;
 use App\Models\User;
 
-/**
- * Builds a complete, Connect-ready money-mission scenario for spine tests.
- * All factory/model knowledge for the money-mission spine lives HERE so
- * individual tests stay declarative and don't re-invent the setup.
- *
- * What makes the provider Connect-ready (do not change without auditing callers):
- *
- *   1. User::stripe_connect_account_id     — satisfies $s->provider->stripe_connect_account_id
- *                                            assertion in the test contract (User-level column).
- *
- *   2. ProviderProfile::stripe_connect_account_id — read by canReceiveStripeConnectPayments()
- *                                            via $this->providerProfile->stripe_connect_account_id.
- *
- *   3. ProviderProfile::stripe_connect_status = 'active'
- *                                            — canReceiveStripeConnectPayments() requires:
- *                                              !empty($profile->stripe_connect_account_id)
- *                                              && ($profile->stripe_connect_status === 'active'
- *                                                  || $profile->stripe_connect_onboarded_at !== null)
- *
- * Source: app/Models/Concerns/HasProviderFeatures.php::canReceiveStripeConnectPayments()
- */
+/** Builds a complete, Connect-ready money-mission scenario for spine tests. */
 class SpineScenario
 {
     public User $client;

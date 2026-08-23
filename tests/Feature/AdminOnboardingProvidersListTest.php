@@ -10,13 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Phase 14.1 — Tests Livewire admin pour la liste d'onboarding des prestataires.
- *
- * Couvre : mount/render, computed providers + counts, filtres, recherche,
- * clearFilters, refreshCounts, documentsCountFor et approveOnboarding
- * (succès + branches de garde).
- */
+/** Phase 14.1 — Tests Livewire admin pour la liste d'onboarding des prestataires. */
 class AdminOnboardingProvidersListTest extends TestCase
 {
     use RefreshDatabase;

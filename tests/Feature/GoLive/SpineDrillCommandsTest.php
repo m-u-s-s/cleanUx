@@ -7,10 +7,7 @@ use App\Support\Domain\MissionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Audit HIGH (go-live drills) — les commandes référencées par le runbook D1/D5
- * doivent exister et fonctionner pour que l'opérateur puisse exécuter les drills.
- */
+/** Audit HIGH (go-live drills) — les commandes référencées par le runbook D1/D5 doivent exister et fonctionner pour que l'opérateur puisse exécuter les drills. */
 class SpineDrillCommandsTest extends TestCase
 {
     use RefreshDatabase;

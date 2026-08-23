@@ -13,10 +13,6 @@ use Illuminate\Support\Str;
 /**
  * UN DEVIS QUE LA SOCIÉTÉ BÂTIT ELLE-MÊME (E24).
  *
- * « Je passe voir, je chiffre, je vous envoie ça » est le geste le plus ordinaire d'une société de
- * services, et il n'existait que dans l'écran d'administration de la plateforme — saisi à la main
- * par un opérateur, pour le compte de la société.
- *
  * @property int $id
  * @property int $organization_account_id
  * @property int|null $client_user_id
@@ -99,13 +95,7 @@ class ProviderQuote extends Model
         return $this->belongsTo(User::class, 'client_user_id');
     }
 
-    /**
-     * Le devis attend-il encore une réponse du client ?
-     *
-     * L'ÉCHÉANCE COMPTE MÊME SI LE BALAYAGE N'EST PAS PASSÉ. Un devis périmé dont le statut dit
-     * encore `sent` ne doit pas pouvoir être accepté au prix d'il y a trois mois — sans quoi la
-     * validité dépendrait de l'heure du cron.
-     */
+    /** Le devis attend-il encore une réponse du client ? */
     public function estOuvert(): bool
     {
         return $this->status === self::STATUS_SENT

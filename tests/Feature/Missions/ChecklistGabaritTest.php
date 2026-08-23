@@ -18,19 +18,7 @@ use Illuminate\Support\Str;
 use RuntimeException;
 use Tests\TestCase;
 
-/**
- * LE GABARIT PROPOSE, IL N'IMPOSE PLUS.
- *
- * Il posait six tâches OBLIGATOIRES génériques — « Nettoyer surfaces clés », « Rangement du
- * matériel » — sur toute mission non-course. Deux conséquences, et la seconde est la vraie :
- *
- *  1. le prestataire cochait six cases que personne ne lui avait demandées ;
- *  2. et surtout, ce que le CLIENT voulait n'était nulle part. Il n'avait aucun moyen de dire
- *     « la hotte, surtout », et la seule liste qui bloquait la clôture ignorait sa demande.
- *
- * Le savoir-faire n'est pas jeté : il devient `suggestionsPour()`, que le client ajoute d'un tap.
- * Ce qui change, c'est qui décide.
- */
+/** LE GABARIT PROPOSE, IL N'IMPOSE PLUS. */
 class ChecklistGabaritTest extends TestCase
 {
     use RefreshDatabase;
@@ -103,14 +91,7 @@ class ChecklistGabaritTest extends TestCase
         $this->assertSame([], app(MissionChecklistService::class)->suggestionsPour($this->mission(course: true)));
     }
 
-    /**
-     * LE COMPORTEMENT DEMANDÉ, prouvé de bout en bout : « si la to-do list est vide il peut fermer
-     * la mission sans valider de tâches, parce que le client ne les aura pas mises ».
-     *
-     * Ce test ne touche PAS la porte de clôture — `assertRequiredChecklistCompleted()` n'a pas
-     * bougé d'une ligne. Elle refusait déjà sur des tâches obligatoires ouvertes, et il n'y en a
-     * simplement plus tant que personne n'en demande.
-     */
+    /** LE COMPORTEMENT DEMANDÉ, prouvé de bout en bout : « si la to-do list est vide il peut fermer la mission sans valider de tâches, parce que le client ne les aura pas mises ». */
     public function test_une_liste_vide_laisse_la_cloture_passer(): void
     {
         $mission = $this->mission();
@@ -123,10 +104,7 @@ class ChecklistGabaritTest extends TestCase
         $this->assertSame(MissionStatus::COMPLETED, $ferme->status);
     }
 
-    /**
-     * LE TÉMOIN INVERSE — sans lui, le test ci-dessus passerait au vert si la porte ne gardait plus
-     * rien du tout, et l'on croirait avoir livré une règle alors qu'on aurait supprimé une garde.
-     */
+    /** LE TÉMOIN INVERSE — sans lui, le test ci-dessus passerait au vert si la porte ne gardait plus rien du tout, et l'on croirait avoir livré une règle alors qu'on aurait supprimé une garde. */
     public function test_une_tache_du_client_bloque_toujours_la_cloture(): void
     {
         $mission = $this->mission();

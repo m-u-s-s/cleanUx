@@ -5,32 +5,13 @@ namespace App\Services\Localization;
 use App\Support\International\DeviseParPays;
 use NumberFormatter;
 
-/**
- * Phase 9 — Service de gestion des devises et formatage monétaire.
- *
- * Fonctions :
- *   - format($amount, 'EUR', 'fr')   → "1 234,56 €"
- *   - format($amount, 'USD', 'en')   → "$1,234.56"
- *   - format($amount, 'GBP', 'nl')   → "£ 1.234,56"
- *   - convert($amount, 'EUR', 'USD') → conversion via taux
- *
- * Les taux de change sont stockés dans la table currency_rates créée par la
- * migration Phase 9. Mise à jour manuelle ou via job artisan
- * `php artisan currencies:refresh` (à brancher sur ECB ou autre source).
- *
- * Les devises supportées sont celles de `DeviseParPays` — soixante et une — et non une
- * seconde liste tenue ici : voir `devisesSupportees()`.
- */
+/** Phase 9 — Service de gestion des devises et formatage monétaire. */
 class Money
 {
     public const DEFAULT_CURRENCY = 'EUR';
 
     /**
      * SYMBOLES — ET SEULEMENT CEUX QUI NE PRÊTENT À AUCUNE CONFUSION.
-     *
-     * Toute devise absente d'ici s'affiche par son CODE ISO. C'est délibéré : « kr » désigne cinq
-     * couronnes différentes et « $ » une quinzaine de dollars. Un code ISO n'est jamais faux ; un
-     * symbole ambigu l'est la moitié du temps.
      *
      * @var array<string, string>
      */
@@ -62,9 +43,6 @@ class Money
     /**
      * DÉCIMALES — les exceptions à la règle des deux, d'après la norme ISO 4217.
      *
-     * Formater 1000 yens en « 1 000,00 ¥ » est aussi faux que d'afficher trois décimales à un
-     * euro : le yen n'a pas de sous-unité, et le dinar koweïtien en a mille.
-     *
      * @var array<string, int>
      */
     private const DECIMALES = [
@@ -74,15 +52,6 @@ class Money
 
     /**
      * LA LISTE DES DEVISES VIENT DE `DeviseParPays`, ET DE NULLE PART AILLEURS.
-     *
-     * Ce service portait sa PROPRE liste de cinq devises — EUR, USD, GBP, CHF, CAD — pendant que
-     * `DeviseParPays` en déclarait soixante et une. Les cinquante-six autres, dont le dirham
-     * marocain d'un marché annoncé, ne tombaient pas en erreur : elles étaient RÉÉCRITES EN EUROS.
-     * `format(100, 'MAD')` rendait « 100,00 € ».
-     *
-     * Afficher une devise fausse avec aplomb est pire que ne rien afficher. Une seule table fait
-     * donc foi désormais, et une devise qu'elle ignore garde son code au lieu d'en emprunter un
-     * autre.
      *
      * @return array<string, array{symbol: string, name: string, decimals: int}>
      */
@@ -107,24 +76,13 @@ class Money
         return $table;
     }
 
-    /**
-     * Formate un montant avec sa devise selon la locale.
-     *
-     * Utilise PHP NumberFormatter (extension intl) si disponible,
-     * fallback manuel sinon.
-     */
+    /** Formate un montant avec sa devise selon la locale. */
     public function format(float $amount, string $currency = self::DEFAULT_CURRENCY, ?string $locale = null): string
     {
         $locale = $this->normalizeLocale($locale ?? app()->getLocale());
         $currency = strtoupper($currency);
 
-        /*
-         * UNE DEVISE INCONNUE GARDE SON CODE — elle n'est plus réécrite en euros.
-         *
-         * Cette ligne valait `$currency = self::DEFAULT_CURRENCY`, et c'est ainsi qu'un montant en
-         * dirhams s'affichait « 100,00 € ». Le repli le plus sûr n'est pas la devise par défaut :
-         * c'est le code ISO tel quel, qui ne ment sur rien.
-         */
+        // UNE DEVISE INCONNUE GARDE SON CODE — elle n'est plus réécrite en euros.
 
         if (class_exists(NumberFormatter::class) && extension_loaded('intl')) {
             $formatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
@@ -137,11 +95,7 @@ class Money
         return $this->fallbackFormat($amount, $currency, $locale);
     }
 
-    /**
-     * Convertit un montant d'une devise vers une autre.
-     *
-     * Lit les taux depuis la table currency_rates ou cache si dispo.
-     */
+    /** Convertit un montant d'une devise vers une autre. */
     public function convert(float $amount, string $from, string $to): float
     {
         $from = strtoupper($from);
@@ -162,14 +116,7 @@ class Money
         return round($amount * $rate, 2);
     }
 
-    /**
-     * Récupère le taux from→to.
-     * Stratégie :
-     *   1. Cherche le taux direct dans currency_rates
-     *   2. Sinon, cherche l'inverse (1 / rate inverse)
-     *   3. Sinon, passe par EUR comme pivot (from → EUR → to)
-     *   4. Sinon null
-     */
+    /** Récupère le taux from→to. Stratégie : 1. Cherche le taux direct dans currency_rates 2. */
     public function getRate(string $from, string $to): ?float
     {
         if ($from === $to) {
@@ -223,9 +170,7 @@ class Money
             ->all();
     }
 
-    /**
-     * Symbole d'une devise (€, $, £, etc.)
-     */
+    /** Symbole d'une devise (€, $, £, etc.) */
     public function symbol(string $currency): string
     {
         return self::devisesSupportees()[strtoupper($currency)]['symbol'] ?? strtoupper($currency);

@@ -8,12 +8,7 @@ use App\Admin\Console\ReportTile;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 
-/**
- * Sert un rapport d'administration : des sections, des tuiles chiffrées.
- *
- * Aucune écriture, par construction : un rapport est une lecture. Les décisions qu'il donne envie
- * de prendre se prennent sur les modules concernés, qui portent leurs règles.
- */
+/** Sert un rapport d'administration : des sections, des tuiles chiffrées. */
 class ReportController extends Controller
 {
     public function __construct(private readonly ReportRegistry $registry) {}

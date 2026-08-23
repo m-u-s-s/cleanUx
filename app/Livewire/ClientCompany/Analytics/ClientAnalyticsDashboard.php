@@ -10,21 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-/**
- * Phase 7 — Dashboard analytics pour client entreprise.
- *
- * Affiche :
- *   - KPI cards (CA, RDV, terminés, taux annulation, satisfaction, sites actifs)
- *   - Graphique CA mensuel (12 derniers mois)
- *   - Graphique répartition par statut
- *   - Top 10 services / sites
- *   - Évolution satisfaction
- *   - Alertes business
- *   - Boutons exports CSV
- *
- * Sélecteur de période avec presets + custom dates.
- * State persisté dans l'URL pour partage de vues filtrées.
- */
+/** Phase 7 — Dashboard analytics pour client entreprise. */
 class ClientAnalyticsDashboard extends Component
 {
     use EnforcesActiveOrgMembership;

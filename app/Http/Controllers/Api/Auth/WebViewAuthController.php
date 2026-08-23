@@ -10,14 +10,11 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 /**
+ * POST /api/auth/webview-ticket Issues a single-use handoff URL the mobile WebView opens to land in an authenticated web session at the requested internal path.
+ *
  * @group Authentication
  *
  * @authenticated
- *
- * POST /api/auth/webview-ticket
- *
- * Issues a single-use handoff URL the mobile WebView opens to land in an
- * authenticated web session at the requested internal path.
  */
 class WebViewAuthController extends Controller
 {
@@ -42,12 +39,7 @@ class WebViewAuthController extends Controller
         ]);
     }
 
-    /**
-     * Reject anything that is not a same-origin absolute path. Guards against
-     * open-redirect via protocol-relative (`//host`), backslash (`/\host`),
-     * scheme (`scheme://`), control characters, and percent-encoded variants
-     * of the above. Checks the raw and the URL-decoded form.
-     */
+    /** Reject anything that is not a same-origin absolute path. */
     private function validateInternalPath(string $path): string
     {
         foreach ([$path, rawurldecode($path)] as $candidate) {

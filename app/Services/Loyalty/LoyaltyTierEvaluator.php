@@ -7,12 +7,7 @@ use App\Models\LoyaltyTier;
 use App\Models\LoyaltyTransaction;
 use Illuminate\Support\Carbon;
 
-/**
- * Évalue le tier d'un account en fonction de ses period_points
- * (= somme des credits sur la fenêtre roulante config('loyalty.tier_period_days')).
- *
- * Le tier choisi est le plus haut dont `min_period_points` est <= period_points.
- */
+/** Évalue le tier d'un account en fonction de ses period_points (= somme des credits sur la fenêtre roulante config('loyalty.tier_period_days')). */
 class LoyaltyTierEvaluator
 {
     public function evaluate(LoyaltyAccount $account): ?LoyaltyTier

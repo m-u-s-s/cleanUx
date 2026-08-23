@@ -13,23 +13,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
-/**
- * TipService — création + lifecycle des pourboires post-mission.
- *
- * Workflow :
- *   1. Client → create() : crée un BookingTip status=pending
- *   2. confirmCharge() : payment intent Stripe captured → status=charged
- *   3. payOut() : transfer Stripe Connect au provider → status=paid_out
- *
- * Soft-fail : si modules Stripe Connect absents, on persiste seulement
- * (pour test/dev) — la confirmation manuelle reste possible côté admin.
- */
+/** TipService — création + lifecycle des pourboires post-mission. Workflow : 1. */
 class TipService
 {
-    /**
-     * Suggestions de montants en fonction du total de la mission.
-     * Retourne un tableau de [label, percent, amount_cents].
-     */
+    /** Suggestions de montants en fonction du total de la mission. */
     public function suggestionsForBooking(Booking $booking): array
     {
         $baseAmount = (int) round(((float) ($booking->devis_estime ?? 0)) * 100);
@@ -55,14 +42,7 @@ class TipService
         })->toArray();
     }
 
-    /**
-     * Crée un BookingTip pour cette mission.
-     * Throws ValidationException si :
-     *  - mission pas terminée
-     *  - client n'est pas le client du booking
-     *  - amount_cents hors limites (min 100, max 50000 = 500€)
-     *  - tip déjà existant non-cancelled
-     */
+    /** Crée un BookingTip pour cette mission. */
     public function create(
         User $client,
         Booking $booking,
@@ -102,13 +82,7 @@ class TipService
             return $existing;
         }
 
-        /*
-         * LE POURBOIRE VA À CELUI QUI A FAIT LE TRAVAIL.
-         *
-         * Le bénéficiaire était résolu ICI, avant d'atteindre le portefeuille : corriger
-         * `ProviderWalletService` ne suffisait pas, la ligne `BookingTip` portait déjà le mauvais
-         * nom. Après une réassignation, le client remerciait quelqu'un qui n'était jamais venu.
-         */
+        // LE POURBOIRE VA À CELUI QUI A FAIT LE TRAVAIL.
         $providerId = (int) ($booking->intervenantId() ?? 0);
         if ($providerId <= 0) {
             throw ValidationException::withMessages([
@@ -126,13 +100,7 @@ class TipService
                 'client_user_id' => $client->id,
                 'provider_user_id' => $providerId,
                 'amount_cents' => $amountCents,
-                /*
-                 * LE POURBOIRE SUIT LA MONNAIE DE LA MISSION, pas une constante.
-                 *
-                 * Il est encaisse sur la meme carte, le meme jour, pour la meme prestation : le
-                 * libeller en euros sur une mission payee en dirhams produisait une dette
-                 * prestataire dans une monnaie que le client n'a jamais versee.
-                 */
+                // LE POURBOIRE SUIT LA MONNAIE DE LA MISSION, pas une constante.
                 'currency' => Devise::premiereRenseignee($booking->currency),
                 'status' => BookingTip::STATUS_PENDING,
                 'preset_label' => $presetLabel,
@@ -143,10 +111,7 @@ class TipService
         });
     }
 
-    /**
-     * Marque un tip comme chargé (Stripe payment intent succeeded).
-     * Soft-fail sur attribution loyalty points (ne bloque pas si module absent).
-     */
+    /** Marque un tip comme chargé (Stripe payment intent succeeded). */
     public function confirmCharge(BookingTip $tip, ?string $paymentIntentId = null): BookingTip
     {
         if ($tip->status === BookingTip::STATUS_CHARGED || $tip->status === BookingTip::STATUS_PAID_OUT) {
@@ -175,9 +140,7 @@ class TipService
         return $tip->fresh();
     }
 
-    /**
-     * Marque un tip comme payé au provider (Stripe transfer).
-     */
+    /** Marque un tip comme payé au provider (Stripe transfer). */
     public function markPaidOut(BookingTip $tip, ?string $transferId = null): BookingTip
     {
         if ($tip->status === BookingTip::STATUS_PAID_OUT) {

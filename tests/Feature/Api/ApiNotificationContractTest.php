@@ -9,18 +9,7 @@ use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * LE CONTRAT ENTRE L'API ET LES APPLICATIONS NATIVES.
- *
- * Les deux écrans natifs affichent `item.title` et `item.body`. `serialize()` ne rendait que
- * `id`, `type`, `data`, `read_at` et `created_at` : la liste chargeait bien ses lignes et les
- * rendait TOUTES VIDES — deux `Text` sans contenu au-dessus d'une date. « Les notifications ne
- * s'affichent pas » ne venait pas d'un appel raté mais d'un contrat jamais tenu.
- *
- * Rien ne pouvait le voir : TypeScript décrit une intention, pas une réponse HTTP, et le test
- * d'écran existant montait la liste avec un tableau VIDE — il ne rendait donc jamais une ligne.
- * Un champ que personne n'assertit peut disparaître sans bruit ; ce test l'assertit.
- */
+/** LE CONTRAT ENTRE L'API ET LES APPLICATIONS NATIVES. */
 class ApiNotificationContractTest extends TestCase
 {
     use RefreshDatabase;
@@ -68,10 +57,7 @@ class ApiNotificationContractTest extends TestCase
             ->assertJsonPath('data.0.action_path', '/dashboard/employe/portefeuille');
     }
 
-    /**
-     * `type` et `data` étaient déjà consommés ailleurs : les retirer casserait un client déjà
-     * installé, qui ne se met pas à jour au même rythme que le serveur.
-     */
+    /** `type` et `data` étaient déjà consommés ailleurs : les retirer casserait un client déjà installé, qui ne se met pas à jour au même rythme que le serveur. */
     public function test_les_champs_historiques_restent_en_place(): void
     {
         $prestataire = User::factory()->employe()->create();
@@ -86,10 +72,7 @@ class ApiNotificationContractTest extends TestCase
             ->assertJsonStructure(['data' => [['id', 'read_at', 'created_at']]]);
     }
 
-    /**
-     * `action_path` reste VIDE hors du domaine de l'application : embarquer une page qui n'est pas
-     * à nous dans l'hôte WebView, qui porte la session, serait pire qu'un lien manquant.
-     */
+    /** `action_path` reste VIDE hors du domaine de l'application : embarquer une page qui n'est pas à nous dans l'hôte WebView, qui porte la session, serait pire qu'un lien manquant. */
     public function test_une_cible_externe_ne_produit_pas_de_chemin_embarquable(): void
     {
         $prestataire = User::factory()->employe()->create();
@@ -126,13 +109,7 @@ class ApiNotificationContractTest extends TestCase
             ->assertJsonPath('data.context.rdv_id', 5120);
     }
 
-    /**
-     * UN GET NE MODIFIE PAS L'ÉTAT.
-     *
-     * La lecture se pose par `POST /notifications/{id}/read`, que la fiche native appelle à
-     * l'ouverture. Si `show` marquait lue au passage, un simple rafraîchissement de cache ou une
-     * pré-lecture ferait disparaître le compteur sans que personne n'ait rien lu.
-     */
+    /** UN GET NE MODIFIE PAS L'ÉTAT. */
     public function test_consulter_la_fiche_ne_marque_pas_lue(): void
     {
         $prestataire = User::factory()->employe()->create();
@@ -169,10 +146,7 @@ class ApiNotificationContractTest extends TestCase
         $this->assertNull($celleDeLAutre->fresh()?->read_at);
     }
 
-    /**
-     * `read-all` est déclarée AVANT `{id}` : dans l'autre ordre, la chaîne « read-all » serait
-     * prise pour un identifiant de notification et l'endpoint deviendrait un 404.
-     */
+    /** `read-all` est déclarée AVANT `{id}` : dans l'autre ordre, la chaîne « read-all » serait prise pour un identifiant de notification et l'endpoint deviendrait un 404. */
     public function test_read_all_n_est_pas_avale_par_la_route_a_parametre(): void
     {
         $prestataire = User::factory()->employe()->create();

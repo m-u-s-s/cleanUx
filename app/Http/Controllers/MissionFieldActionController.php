@@ -200,24 +200,7 @@ class MissionFieldActionController extends Controller
     }
 
     /**
-     * Enregistre les photos du terrain, UNE FOIS la transition acquise.
-     *
-     * L'ordre est le correctif. Les photos étaient stockées avant la validation du code : chaque
-     * tentative refusée — mauvais code, et depuis peu position trop lointaine — laissait donc ses
-     * fichiers et ses lignes en base sur une mission qui n'avait pas bougé. Trois essais, trois
-     * jeux de photos identiques ; et le prestataire qui réessaie est précisément celui dont on
-     * vient de refuser la tentative.
-     *
-     * L'échec d'une photo ne remet PAS la transition en cause : elle est acquise, et pour la
-     * clôture le paiement est déjà encaissé. Répondre en erreur à ce stade inviterait à rejouer
-     * une clôture qui a réussi — le prestataire se heurterait alors à un code déjà consommé, sans
-     * comprendre. Le compte renvoyé dit ce qui a réellement été gardé.
-     *
-     * Le type vient de {@see MissionMedia} et non d'une chaîne écrite ici. Ce contrôleur posait
-     * `before`/`after` quand tout le reste de l'application lit `before_photo`/`after_photo` : les
-     * photos prises sur place étaient donc invisibles pour le client, absentes du rapport PDF et
-     * comptées à zéro par le score qualité. Chaque moitié était cohérente avec elle-même, ce qui
-     * est exactement pourquoi l'écart n'a rien déclenché.
+     * Enregistre les photos du terrain, UNE FOIS la transition acquise. L'ordre est le correctif.
      *
      * @param  MissionMedia::TYPE_*  $mediaType
      * @param  array<string, mixed>  $data
@@ -240,12 +223,7 @@ class MissionFieldActionController extends Controller
 
         foreach ($request->file($field) as $photo) {
             try {
-                /*
-                 * Le service, et non une écriture directe : c'est lui qui calcule l'empreinte du
-                 * fichier, diffuse au client et inscrit le geste dans l'historique de la mission.
-                 * Une photo déposée par ce chemin valait sinon moins qu'une photo déposée depuis le
-                 * téléphone — et c'est celle-là qu'on aurait produite en cas de contestation.
-                 */
+                // Le service, et non une écriture directe : c'est lui qui calcule l'empreinte du fichier, diffuse au client et inscrit le geste dans l'historique de la mission.
                 app(MissionMediaService::class)->capture(
                     $mission,
                     Auth::user(),

@@ -8,20 +8,7 @@ use App\Models\User;
 use App\Support\ActivityLogger;
 use Illuminate\Support\Carbon;
 
-/**
- * MODIFIER LA DISPONIBILITÉ D'UN PRESTATAIRE — un seul écrivain, deux appelants.
- *
- * L'écran du prestataire et celui de l'administration font exactement les mêmes gestes sur les
- * mêmes tables. Écrits deux fois, ils divergent : la règle de chevauchement se durcit d'un côté,
- * la fermeture d'un jour se met à supprimer des créneaux de l'autre, et plus personne ne sait
- * lequel a raison. Ce dépôt en a déjà fait l'expérience — sur les métiers et les zones
- * (`ProviderCoverageWriter`), et sur la disponibilité par défaut
- * (`DefaultAvailabilityProvisioner`).
- *
- * LE PRESTATAIRE CONCERNÉ EST UN PARAMÈTRE, PAS `Auth::user()`. C'est ce qui permet à
- * l'administration d'agir pour quelqu'un d'autre sans qu'aucune règle ne change. Le contrôle
- * d'accès reste à l'appelant : ce service ne sait pas qui a le droit, il sait ce qui est valide.
- */
+/** MODIFIER LA DISPONIBILITÉ D'UN PRESTATAIRE — un seul écrivain, deux appelants. */
 class AvailabilityEditor
 {
     /** Renvoyé quand le créneau demandé en recouvre un autre le même jour. */
@@ -39,13 +26,7 @@ class AvailabilityEditor
         string $fin,
         ?int $slotId = null,
     ): AvailabilitySlot|string {
-        /*
-         * LE CHEVAUCHEMENT SE VÉRIFIE AUSSI À LA MODIFICATION.
-         *
-         * L'ancienne page ne le testait qu'à la création : éditer un créneau pour le faire
-         * recouvrir un autre passait sans un mot. Le créneau édité s'exclut lui-même de la
-         * comparaison, sinon il se chevaucherait toujours.
-         */
+        // LE CHEVAUCHEMENT SE VÉRIFIE AUSSI À LA MODIFICATION.
         $chevauche = AvailabilitySlot::query()
             ->where('provider_user_id', $provider->id)
             ->where('weekday', $weekday)
@@ -98,23 +79,12 @@ class AvailabilityEditor
         $slot->delete();
     }
 
-    /**
-     * FERMER UN JOUR, C'EST POSER UNE EXCEPTION — pas effacer la semaine.
-     *
-     * Les créneaux sont RÉCURRENTS : les supprimer pour fermer une date fermerait tous les mardis
-     * à venir. C'est ce que faisait l'ancien bouton « Bloquer », sans confirmation ni retour.
-     */
+    /** FERMER UN JOUR, C'EST POSER UNE EXCEPTION — pas effacer la semaine. */
     public function closeDay(User $provider, string $date, ?string $motif = null): AvailabilityException
     {
         $jour = Carbon::parse($date)->toDateString();
 
-        /*
-         * `whereDate`, PAS une égalité sur la date.
-         *
-         * `date` est casté sur le modèle : la colonne porte `2026-08-18 00:00:00` quand la
-         * recherche compare `2026-08-18`. L'égalité échoue toujours, et chaque clic crée une
-         * exception de plus — constaté au test.
-         */
+        // `whereDate`, PAS une égalité sur la date.
         $existante = AvailabilityException::query()
             ->where('provider_user_id', $provider->id)
             ->where('exception_type', AvailabilityException::TYPE_CLOSED)

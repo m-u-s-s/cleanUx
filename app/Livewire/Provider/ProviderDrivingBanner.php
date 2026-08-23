@@ -10,20 +10,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-/**
- * « VOUS NE RECEVEZ PLUS DE COURSES, ET VOICI POURQUOI. »
- *
- * L'angle mort de cette plateforme est le compte ACTIF mais NON VÉRIFIÉ : l'application s'ouvre
- * normalement, tout paraît en ordre, et le téléphone cesse simplement de sonner. Personne ne fait
- * le lien — ni le prestataire, qui croit à un creux d'activité, ni le support, qui reçoit un appel
- * trois semaines plus tard.
- *
- * Ce bandeau ferme cet écart pour les exigences de conduite. Il nomme la pièce qui manque, le métier
- * concerné, et la date à laquelle ça devient bloquant — avant qu'elle arrive, pas après.
- *
- * IL NE S'AFFICHE QUE S'IL A QUELQUE CHOSE À DIRE. Un bandeau permanent sur un dossier complet
- * devient du décor, et le jour où il compte vraiment, plus personne ne le lit.
- */
+/** « VOUS NE RECEVEZ PLUS DE COURSES, ET VOICI POURQUOI. */
 class ProviderDrivingBanner extends Component
 {
     public function render(): View
@@ -61,11 +48,6 @@ class ProviderDrivingBanner extends Component
 
     /**
      * Ce qui manque, MÊME PENDANT la période de grâce.
-     *
-     * `manquantsPour()` rend une liste vide tant que la règle n'est pas opposable — c'est juste
-     * pour le dispatch, qui ne doit rien bloquer avant l'échéance. Mais un bandeau qui ne parle
-     * qu'une fois l'échéance passée arrive trop tard : il prévient au moment où le mal est fait.
-     * Ici, on regarde l'état RÉEL du dossier et on annonce la date.
      *
      * @return list<string>
      */

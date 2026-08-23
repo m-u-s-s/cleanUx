@@ -9,28 +9,7 @@ use App\Services\Admin\MarketplaceHealthService;
 use App\Services\Admin\SurgeOverviewService;
 use Illuminate\Support\Carbon;
 
-/**
- * LA SANTÉ DU MARCHÉ, VUE DE LA CONSOLE MOBILE (E29, E30, E28).
- *
- * UN RAPPORT ET NON UNE LISTE, parce que la question n'est pas « quelles lignes existent » mais
- * « est-ce que le marché tient ». Aucune table ne porte cette réponse : elle se lit en croisant les
- * recherches épuisées, la couverture par zone et les majorations en vigueur.
- *
- * `zones_a_risque` EST LA TUILE QUI COMMANDE UNE ACTION. Sa valeur normale est zéro : toute valeur
- * non nulle désigne une zone où une recherche sur cinq s'épuise sans candidat — c'est-à-dire des
- * clients qu'on perd, et un recrutement à lancer. Le ton bascule dès un, parce que c'est un
- * compteur d'anomalie et non un indicateur d'activité.
- *
- * LES TROIS GESTES DE RATTRAPAGE NE SONT PAS ICI, et c'est délibéré. Relancer une recherche,
- * contacter un client, offrir un geste : ces décisions se prennent en regardant le tableau complet,
- * sur l'écran web. Les porter au mobile supposerait de répondre à « on relance quoi » sans le
- * contexte qui précède.
- *
- * CHAQUE TUILE SE CALCULE SEULE. Le contrat de `ReportTile` rattrape les erreurs, si bien qu'une
- * table absente coûte une tuile plutôt que l'écran — mais une requête qui rendrait zéro en silence
- * ferait croire à une plateforme en parfaite santé. C'est pourquoi elles lisent les services, qui
- * eux sont testés.
- */
+/** LA SANTÉ DU MARCHÉ, VUE DE LA CONSOLE MOBILE (E29, E30, E28). */
 class MarketplaceHealthReport implements AdminReport
 {
     public function key(): string
@@ -60,11 +39,7 @@ class MarketplaceHealthReport implements AdminReport
                         'zones_a_risque',
                         'Zones à risque',
                         fn () => count($this->sante()['zones_at_risk'] ?? []),
-                        /*
-                         * SA VALEUR NORMALE EST ZÉRO. Toute valeur non nulle désigne une zone où
-                         * une recherche sur cinq s'épuise sans candidat : des clients qu'on perd,
-                         * et un recrutement à lancer.
-                         */
+                        // SA VALEUR NORMALE EST ZÉRO.
                         tone: fn ($v) => $v > 0 ? ReportTile::TONE_DANGER : ReportTile::TONE_SUCCESS,
                     ),
                     ReportTile::make(
@@ -90,11 +65,7 @@ class MarketplaceHealthReport implements AdminReport
                     ReportTile::make(
                         'couples_projetables',
                         'Couples zone × métier projetables',
-                        /*
-                         * ON NE PROJETTE PAS SOUS QUATRE SEMAINES d'observation : cette tuile dit
-                         * sur combien de couples la projection vaut quelque chose, ce qui empêche
-                         * de lire le total ci-dessus comme une prévision complète.
-                         */
+                        // ON NE PROJETTE PAS SOUS QUATRE SEMAINES d'observation : cette tuile dit sur combien de couples la projection vaut quelque chose, ce qui empêche de lire le total ci-dessus comme une prévision complète.
                         fn () => collect(app(DemandForecastService::class)->projection())
                             ->where('has_enough_history', true)
                             ->count(),
@@ -115,11 +86,7 @@ class MarketplaceHealthReport implements AdminReport
                         'au_dessus_du_plafond',
                         'Au-dessus du plafond',
                         fn () => (int) (app(SurgeOverviewService::class)->carte()['exceeding_cap_count'] ?? 0),
-                        /*
-                         * UNE VALEUR NON NULLE SIGNIFIE QUE L'ÉCRAN MENT quelque part : la grille
-                         * affiche 3,50 et le moteur applique 3,00. Ce n'est pas une majoration
-                         * excessive, c'est un écart inexplicable au client.
-                         */
+                        // UNE VALEUR NON NULLE SIGNIFIE QUE L'ÉCRAN MENT quelque part : la grille affiche 3,50 et le moteur applique 3,00.
                         tone: fn ($v) => $v > 0 ? ReportTile::TONE_DANGER : ReportTile::TONE_SUCCESS,
                     ),
                 ],
@@ -129,9 +96,6 @@ class MarketplaceHealthReport implements AdminReport
 
     /**
      * Le résumé, calculé UNE FOIS pour toutes les tuiles de la première section.
-     *
-     * Sans ce cache d'instance, chaque tuile relancerait le balayage complet des recherches : le
-     * rapport ferait quatre fois le même travail pour afficher quatre nombres du même calcul.
      *
      * @return array<string, mixed>
      */

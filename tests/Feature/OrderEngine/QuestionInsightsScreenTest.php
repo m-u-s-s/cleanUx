@@ -19,27 +19,11 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Le taux d'abandon, VU par l'administrateur.
- *
- * `QuestionInsights` était complet et testé — deux chiffres distincts, un seuil de volume qui évite
- * d'accuser une question sur trois commandes — et n'était appelé par RIEN. Ni composant, ni
- * contrôleur, ni commande. La spécification en fait « l'outil qui permet d'appliquer la règle des
- * sept questions dans la durée » ; il n'était atteignable que depuis un tinker.
- *
- * Or c'est un outil de DURÉE : un parcours ne devient pas trop long d'un coup, il s'allonge d'une
- * question à la fois, chacune justifiable prise isolément, et la conversion s'érode sans que
- * personne ne sache où. Ces chiffres ne servent que s'ils sont sous les yeux de qui ajoute la
- * question suivante.
- */
+/** Le taux d'abandon, VU par l'administrateur. */
 class QuestionInsightsScreenTest extends TestCase
 {
     /**
      * Le contexte géographique exigé par l'écran, créé à la demande.
-     *
-     * Ces tests ne portent pas sur la géographie : ils ont seulement besoin d'un couple pays/zone
-     * cohérent pour monter le composant. La fabrique est paresseuse pour ne pas alourdir les tests
-     * qui ne montent pas l'écran.
      *
      * @return array{country: Country, zone: ServiceZone}
      */
@@ -79,12 +63,7 @@ class QuestionInsightsScreenTest extends TestCase
             ->assertSee('%');
     }
 
-    /**
-     * La question qui fait décrocher est NOMMÉE, et l'écran dit quoi faire.
-     *
-     * Un pourcentage sans verdict se contemple. La spécification demande qu'une question qui perd
-     * 40 % des clients soit visible COMME TELLE.
-     */
+    /** La question qui fait décrocher est NOMMÉE, et l'écran dit quoi faire. */
     public function test_a_losing_question_is_flagged_with_what_to_do(): void
     {
         $trade = $this->peinture();
@@ -94,13 +73,7 @@ class QuestionInsightsScreenTest extends TestCase
             ->assertSee('fait décrocher');
     }
 
-    /**
-     * SOUS LE VOLUME MINIMUM, aucun verdict — et on dit pourquoi.
-     *
-     * Le service se tait déjà en dessous de vingt commandes. Mais un écran qui se contente de ne
-     * rien montrer laisse croire que tout va bien : il doit distinguer « aucun problème » de
-     * « pas encore assez de commandes pour se prononcer ».
-     */
+    /** SOUS LE VOLUME MINIMUM, aucun verdict — et on dit pourquoi. */
     public function test_a_tiny_sample_says_it_cannot_conclude_yet(): void
     {
         $trade = $this->peinture();
@@ -111,12 +84,7 @@ class QuestionInsightsScreenTest extends TestCase
             ->assertSee('pas encore assez de commandes');
     }
 
-    /**
-     * Le catalogue signale le métier concerné.
-     *
-     * Sans ce signal, il faudrait ouvrir les douze métiers un par un pour découvrir lequel perd
-     * ses clients — donc personne ne le découvrirait.
-     */
+    /** Le catalogue signale le métier concerné. */
     public function test_the_catalog_points_at_the_trade_that_loses_clients(): void
     {
         $trade = $this->peinture();
@@ -126,18 +94,7 @@ class QuestionInsightsScreenTest extends TestCase
             ->assertSee('fait décrocher');
     }
 
-    /**
-     * Le coût des statistiques NE GRANDIT PAS avec le nombre de questions.
-     *
-     * C'est la seule garantie qui compte ici. J'avais d'abord écrit un plafond sur le total de
-     * l'écran — 60 requêtes — sans l'avoir mesuré : le constructeur en coûte 117 à lui seul, pour
-     * treize questions dont chacune monte son aperçu. Le test tombait donc sur un chiffre inventé,
-     * et aurait fait chercher un défaut là où il n'y en avait pas.
-     *
-     * Ce qu'il faut empêcher, c'est qu'un jour on appelle le service PAR QUESTION : le coût
-     * passerait alors de deux requêtes à deux par question, sur un écran déjà lourd. On mesure
-     * donc le service, pas l'écran.
-     */
+    /** Le coût des statistiques NE GRANDIT PAS avec le nombre de questions. */
     public function test_the_statistics_do_not_cost_one_query_per_question(): void
     {
         $trade = $this->peinture();

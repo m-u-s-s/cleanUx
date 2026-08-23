@@ -9,11 +9,7 @@ use App\Models\GdprDataRequest;
 use App\Services\Gdpr\RetentionPolicyService;
 
 /**
- * Les demandes RGPD — export et droit à l’oubli.
- *
- * AUCUNE EXÉCUTION DEPUIS LA CONSOLE. Un effacement RGPD est irréversible et traverse une
- * vingtaine de tables ; il passe par le module dédié, qui respecte le délai de grâce pendant
- * lequel la personne peut encore se raviser.
+ * Les demandes RGPD — export et droit à l’oubli. AUCUNE EXÉCUTION DEPUIS LA CONSOLE.
  *
  * @extends EloquentResource<GdprDataRequest>
  */
@@ -78,10 +74,7 @@ class GdprRequestResource extends EloquentResource
     public function globalActions(): array
     {
         return [
-            /*
-             * Appliquer les politiques de rétention à toute la plateforme. Global par nature, et
-             * c'est le geste qui tient la conformité : ce qui doit disparaître disparaît.
-             */
+            // Appliquer les politiques de rétention à toute la plateforme.
             Action::make('run-retention', 'Appliquer la rétention', function (array $valeurs) {
                 $stats = app(RetentionPolicyService::class)->enforceAll();
 

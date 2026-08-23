@@ -9,10 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Audit HIGH — un litige non résolu doit GELER le payout du prestataire : tant que
- * le litige est ouvert, payouts:process ne doit pas libérer la rémunération.
- */
+/** Audit HIGH — un litige non résolu doit GELER le payout du prestataire : tant que le litige est ouvert, payouts:process ne doit pas libérer la rémunération. */
 class PayoutDisputeHoldTest extends TestCase
 {
     use RefreshDatabase;

@@ -11,9 +11,7 @@ class HelpCenter extends Component
 
     public string $category = '';
 
-    /**
-     * FAQ structure : à terme à stocker en DB. Pour MVP, hardcoded.
-     */
+    /** FAQ structure : à terme à stocker en DB. Pour MVP, hardcoded. */
     public function faqs(): array
     {
         return [

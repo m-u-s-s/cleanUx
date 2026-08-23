@@ -14,15 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
 use Tests\TestCase;
 
-/**
- * B5 — le même motif « le segment {provider} de l'URL sélectionne le vérificateur »
- * existait pour Insurance et SMS. Ces tests exécutent l'attaque sur les deux.
- *
- * Insurance : la garde vit dans InsuranceWebhookController::resolveProvider (404).
- * SMS : SmsWebhookController instancie encore d'après l'URL, la garde vit donc dans
- *       SmsMockProvider::verifyWebhook — le contrôleur attrape et répond 400.
- *       Dans les deux cas : rien n'est stocké, rien n'est dispatché.
- */
+/** B5 — le même motif « le segment {provider} de l'URL sélectionne le vérificateur » existait pour Insurance et SMS. */
 class WebhookProviderSelectionAttackTest extends TestCase
 {
     use RefreshDatabase;
@@ -48,11 +40,7 @@ class WebhookProviderSelectionAttackTest extends TestCase
 
     // ---------------------------------------------------------------- Insurance
 
-    /**
-     * (a) ATTAQUE — /webhooks/insurance/mock en production.
-     * Assertion qui tombe sans le correctif : assertStatus(404) (redevient 200)
-     * et assertSame(0, InsuranceWebhookEvent::count()).
-     */
+    /** (a) ATTAQUE — /webhooks/insurance/mock en production. */
     public function test_attaque_insurance_le_provider_mock_est_injoignable_en_production(): void
     {
         $this->basculeEnProduction();
@@ -67,10 +55,7 @@ class WebhookProviderSelectionAttackTest extends TestCase
         $this->assertSame(0, InsuranceWebhookEvent::count());
     }
 
-    /**
-     * (b) ATTAQUE — segment d'URL « mock » alors que la configuration dit « wakam ».
-     * Assertion qui tombe sans le correctif : assertStatus(404) (redevient 200).
-     */
+    /** (b) ATTAQUE — segment d'URL « mock » alors que la configuration dit « wakam ». */
     public function test_attaque_insurance_un_segment_different_du_provider_configure_est_refuse(): void
     {
         $this->app->bind(InsuranceProviderInterface::class, WakamInsuranceProvider::class);
@@ -115,11 +100,7 @@ class WebhookProviderSelectionAttackTest extends TestCase
 
     // ---------------------------------------------------------------------- SMS
 
-    /**
-     * (a) ATTAQUE — /webhooks/sms/mock en production.
-     * Assertion qui tombe sans le correctif : assertStatus(400) (redevient 200)
-     * et assertSame(0, SmsWebhookEvent::count()).
-     */
+    /** (a) ATTAQUE — /webhooks/sms/mock en production. */
     public function test_attaque_sms_le_provider_mock_est_injoignable_en_production(): void
     {
         $this->basculeEnProduction();
@@ -132,11 +113,7 @@ class WebhookProviderSelectionAttackTest extends TestCase
         $this->assertSame(0, SmsWebhookEvent::count());
     }
 
-    /**
-     * (b) ATTAQUE — segment « mock » alors que la configuration dit « twilio ».
-     * L'attaquant contourne ainsi le HMAC Twilio.
-     * Assertion qui tombe sans le correctif : assertStatus(400) (redevient 200).
-     */
+    /** (b) ATTAQUE — segment « mock » alors que la configuration dit « twilio ». */
     public function test_attaque_sms_un_segment_different_du_provider_configure_est_refuse(): void
     {
         $this->app->bind(SmsProviderInterface::class, TwilioSmsProvider::class);

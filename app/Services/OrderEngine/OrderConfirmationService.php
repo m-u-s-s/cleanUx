@@ -21,21 +21,7 @@ use App\Support\HumanReference;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-/**
- * La confirmation : le panier devient une réservation.
- *
- * C'est le seul moment du parcours où une identité est nécessaire — et c'est délibérément le
- * dernier. Tout ce qui précède, y compris le prix, s'est fait sans compte.
- *
- * IDEMPOTENT, et ce n'est pas un confort. Un double-clic, un rechargement, un retour arrière du
- * navigateur : chacun peut renvoyer la confirmation. Sans garde, le client se retrouverait avec
- * deux réservations et deux pré-autorisations pour une seule intervention — et c'est lui qui
- * découvrirait le doublon sur son relevé bancaire.
- *
- * LE DEVIS EST FIGÉ ICI. Le prix affiché au moment du clic est celui qui engage : recalculer plus
- * tard exposerait le client à un montant différent de celui qu'il a accepté, parce qu'un
- * administrateur aura modifié une grille entre-temps.
- */
+/** La confirmation : le panier devient une réservation. */
 class OrderConfirmationService
 {
     public function __construct(
@@ -56,14 +42,7 @@ class OrderConfirmationService
             return $draft;
         }
 
-        /*
-         * DERNIÈRE CHANCE DE RÉSOUDRE LA ZONE — avant de refuser.
-         *
-         * Un panier peut arriver ici sans zone : recomposé depuis une clé de rattrapage, créé par
-         * l'API, converti depuis un rendez-vous. Refuser sans avoir essayé perdrait une commande
-         * parfaitement servable ; passer sans zone donnerait au dispatch une réservation qu'il ne
-         * sait pas servir. On essaie, PUIS on refuse si vraiment rien ne couvre cette adresse.
-         */
+        // DERNIÈRE CHANCE DE RÉSOUDRE LA ZONE — avant de refuser.
         app(ZonePricingResolver::class)->ensureZoneFor($draft);
 
         $this->assertConfirmable($draft->fresh());
@@ -100,18 +79,7 @@ class OrderConfirmationService
                 'total_cents' => $quote['order']->minCents,
             ]);
 
-            /*
-             * LA PORTE AMONT UNIQUE DU DISPATCH.
-             *
-             * Confirmer entre dans le moteur de répartition — immédiat ou planifié, c'est lui qui
-             * décide. Deux entrées existaient : la recherche par rayons ouverte ici, et la chaîne
-             * d'offres ouverte ailleurs à la création de la mission. Une même course pouvait sortir
-             * par les deux, et deux prestataires se déplaçaient.
-             *
-             * DANS LA MÊME TRANSACTION que la réservation : confirmer une course « dès que
-             * possible » sans lancer la recherche laisserait le client devant un écran d'attente
-             * que rien n'alimente.
-             */
+            // LA PORTE AMONT UNIQUE DU DISPATCH.
             foreach ($bookings as $ligne) {
                 $this->dispatch->dispatchBooking($ligne['booking']->fresh(), $ligne['item']);
             }
@@ -122,10 +90,6 @@ class OrderConfirmationService
 
     /**
      * La société et le local à porter sur la réservation, si le panier en désigne un.
-     *
-     * Rend un tableau VIDE quand rien n'est rattaché, ou quand le rattachement ne tient plus : une
-     * commande personnelle est le cas normal, et `array_filter` sur l'appelant écarterait de toute
-     * façon les valeurs nulles — mais silencieusement, sans qu'on sache si c'était voulu.
      *
      * @return array<string, int>
      */
@@ -167,9 +131,6 @@ class OrderConfirmationService
     /**
      * Ce qui manque encore pour confirmer.
      *
-     * Rendu plutôt que levé : l'écran doit pouvoir griser son bouton et DIRE pourquoi, au lieu de
-     * laisser le client cliquer pour découvrir un refus.
-     *
      * @return list<string>
      */
     public function blockers(OrderDraft $draft): array
@@ -184,25 +145,14 @@ class OrderConfirmationService
             $blockers[] = 'L’adresse de l’intervention est nécessaire pour envoyer un professionnel.';
         }
 
-        /*
-         * PAS DE ZONE, PAS DE COMMANDE — et on le dit AVANT le clic.
-         *
-         * Une réservation sans zone est une réservation que le dispatch ne peut pas servir : il ne
-         * saurait ni quel tarif appliquer, ni quels prestataires interroger. Elle serait confirmée,
-         * payée, puis abandonnée faute de candidat — et c'est le client qui découvrirait le
-         * problème, plusieurs minutes après avoir décidé.
-         */
+        // PAS DE ZONE, PAS DE COMMANDE — et on le dit AVANT le clic.
         if ($draft->items()->count() > 0 && ! $draft->service_zone_id) {
             $blockers[] = filled($draft->address)
                 ? 'Nous n’intervenons pas encore à cette adresse. Essayez une autre adresse, ou laissez-nous vos coordonnées pour être prévenu de l’ouverture.'
                 : 'La zone d’intervention n’a pas pu être déterminée à partir de votre adresse.';
         }
 
-        /*
-         * Le métier doit être OUVERT dans cette zone. Le catalogue décide zone par zone : un métier
-         * actif ailleurs mais fermé ici ne doit pas franchir la confirmation, sans quoi la
-         * recherche partirait pour un service qu'on ne vend pas à cette adresse.
-         */
+        // Le métier doit être OUVERT dans cette zone.
         $zoneId = $draft->service_zone_id ? (int) $draft->service_zone_id : null;
         $resolver = app(ZonePricingResolver::class);
 
@@ -218,14 +168,7 @@ class OrderConfirmationService
                 );
             }
 
-            /*
-             * UN TRAJET SANS POINT D'ARRIVÉE N'EST PAS UNE COMMANDE SERVABLE.
-             *
-             * Sans lui, le prestataire accepterait une course dont personne ne sait où elle va : ni
-             * itinéraire à tracer, ni distance à facturer, et à la clôture aucun lieu où confronter
-             * sa position. Le refus est posé ICI, où il reste une décision à corriger, plutôt qu'au
-             * moment où quelqu'un attend déjà sur le trottoir.
-             */
+            // UN TRAJET SANS POINT D'ARRIVÉE N'EST PAS UNE COMMANDE SERVABLE.
             if (TradeRouteRules::estUnTrajet($item->trade)
                 && ($draft->dropoff_lat === null || $draft->dropoff_lng === null)) {
                 $blockers[] = sprintf(
@@ -240,13 +183,6 @@ class OrderConfirmationService
 
     /**
      * Le paiement peut-il être pré-autorisé ?
-     *
-     * L'autorisation Stripe exige un prestataire ASSIGNÉ et raccordé à Connect : la charge est une
-     * « destination charge » vers son compte. Avec l'attribution automatique, personne n'est
-     * désigné à la confirmation — le paiement attend donc l'assignation.
-     *
-     * Ce n'est pas une limitation contournable : sans destination, Stripe n'a nulle part où
-     * envoyer l'argent.
      *
      * @return array{ready: bool, reason: string|null}
      */
@@ -274,9 +210,6 @@ class OrderConfirmationService
     /**
      * Pré-autorise le paiement, ou refuse en disant pourquoi.
      *
-     * Aucun soft-fail ici : une réservation confirmée sans autorisation valide est une
-     * intervention qu'on enverra faire sans garantie d'être payé. Mieux vaut un refus lisible.
-     *
      * @throws ValidationException
      */
     public function authorizePayment(Booking $booking, string $paymentMethodId, string $plan = PaymentPlan::FULL): Booking
@@ -292,11 +225,7 @@ class OrderConfirmationService
             throw ValidationException::withMessages(['payment' => [$readiness['reason']]]);
         }
 
-        /*
-         * Une formule inconnue retombe sur la retenue intégrale plutôt que d'échouer : la valeur
-         * vient du navigateur, et refuser un paiement à cause d'une chaîne inattendue coûterait
-         * une commande là où le défaut est parfaitement acceptable.
-         */
+        // Une formule inconnue retombe sur la retenue intégrale plutôt que d'échouer : la valeur vient du navigateur, et refuser un paiement à cause d'une chaîne inattendue coûterait une commande là où le défaut est parfaitement acceptable.
         if ($plan === PaymentPlan::DEPOSIT) {
             return app(OrderPaymentPlanner::class)->authorizeWithDeposit($booking, $paymentMethodId);
         }
@@ -326,13 +255,7 @@ class OrderConfirmationService
         }
     }
 
-    /**
-     * Une réservation par métier — même en multi-services.
-     *
-     * Chaque ligne peut partir chez un prestataire différent et se suivre séparément, alors que le
-     * client ne voit qu'une commande. Une réservation unique portant trois métiers rendrait
-     * impossible d'en assigner un sans les autres.
-     */
+    /** Une réservation par métier — même en multi-services. */
     protected function createBooking(
         OrderDraft $draft,
         User $client,
@@ -344,27 +267,10 @@ class OrderConfirmationService
         $booking = Booking::create(array_filter([
             'booking_reference' => $this->uniqueReference(),
             'client_id' => $client->id,
-            /*
-             * Le professionnel choisi par le client suit jusqu'ici. Le statut reste « en attente » :
-             * il lui est PROPOSÉ, il n'a pas encore accepté. Sans ce report, un client qui a
-             * délibérément choisi son prestataire verrait sa commande repartir en attribution
-             * automatique — et le paiement attendrait une assignation déjà faite.
-             */
+            // Le professionnel choisi par le client suit jusqu'ici.
             'employe_id' => $item->provider_id,
             'status' => BookingStatus::EN_ATTENTE,
-            /*
-             * LA DEVISE SUIT LA POSITION — ET LE PARCOURS WEB NE LA POSAIT PAS DU TOUT.
-             *
-             * Cette création n'envoyait aucune `currency` : la réservation tombait donc sur le
-             * défaut de la colonne, `EUR`, quelle que soit la géographie. Le chemin API, lui, la
-             * résout depuis 2026 par `CountryMarketResolver::deviseAttendue()` — le commentaire de
-             * `CreateBookingFromApiAction` décrit exactement le défaut corrigé ici : « deux
-             * nombres, deux monnaies, aucune alerte ».
-             *
-             * Deux portes d'entrée pour une même commande, une seule qui savait dans quelle monnaie
-             * elle était libellée. La zone et le code postal du brouillon sont la position du
-             * client : c'est la même que celle qui a servi à chercher les prestataires.
-             */
+            // LA DEVISE SUIT LA POSITION — ET LE PARCOURS WEB NE LA POSAIT PAS DU TOUT.
             'currency' => app(CountryMarketResolver::class)->deviseAttendue(
                 client: $client,
                 zone: $draft->service_zone_id ? ServiceZone::find($draft->service_zone_id) : null,
@@ -372,17 +278,7 @@ class OrderConfirmationService
             'address' => $draft->address,
             'destination_lat' => $draft->lat,
             'destination_lng' => $draft->lng,
-            /*
-             * LE POINT D'ARRIVÉE SUIT LA RÉSERVATION — et c'est LUI qui en fait une course.
-             *
-             * `destination_lat/lng` ci-dessus reste le point A, le lieu de la prise en charge : le
-             * nom trompe, mais tout ce qui le lit (geofence, suivi, dispatch de proximité) désigne
-             * cet endroit-là. Le point de dépose porte son propre nom, et sa présence est ce que
-             * `Booking::estUneCourse()` interroge pour choisir le cycle de vie de la mission.
-             *
-             * La route est FIGÉE ICI, comme le devis : le catalogue peut changer demain, la
-             * distance facturée est celle qu'on a annoncée au client avant qu'il valide.
-             */
+            // LE POINT D'ARRIVÉE SUIT LA RÉSERVATION — et c'est LUI qui en fait une course.
             'dropoff_address' => $draft->dropoff_address,
             'dropoff_lat' => $draft->dropoff_lat,
             'dropoff_lng' => $draft->dropoff_lng,
@@ -390,23 +286,11 @@ class OrderConfirmationService
             'route_distance_m' => $draft->route_distance_m,
             'route_duration_s' => $draft->route_duration_s,
             'route_source' => $draft->route_source,
-            /*
-             * LA GÉOGRAPHIE ET LE MÉTIER SUIVENT LA RÉSERVATION.
-             *
-             * C'est le maillon qui manquait : la réservation naissait sans zone ni métier, et le
-             * dispatch devait les redeviner — ou renoncer à filtrer. Avec ces trois colonnes, la
-             * requête candidate peut imposer « ce métier, cette zone » dans le SQL lui-même.
-             */
+            // LA GÉOGRAPHIE ET LE MÉTIER SUIVENT LA RÉSERVATION.
             'trade_id' => $item->trade_id,
             'service_zone_id' => $draft->service_zone_id,
             'postal_code' => $draft->postal_code,
-            /*
-             * LE CONTEXTE SOCIÉTÉ, REVÉRIFIÉ ICI ET PAS SEULEMENT À L'ENTRÉE.
-             *
-             * Le panier a pu être ouvert hier, par quelqu'un qui a depuis quitté l'organisation ou
-             * changé d'organisation active. Faire confiance à ce qu'il porte rattacherait la
-             * commande — et sa facture — à une société dont l'auteur n'est plus membre.
-             */
+            // LE CONTEXTE SOCIÉTÉ, REVÉRIFIÉ ICI ET PAS SEULEMENT À L'ENTRÉE.
             ...$this->contexteSociete($draft, $client),
             // Le mode voyage aussi : c'est lui qui décide entre la chaîne d'offres immédiate et
             // l'offre planifiée à long délai. Sans lui, tout devenait « planifié ».
@@ -417,15 +301,7 @@ class OrderConfirmationService
             'date' => $scheduledAt?->toDateString(),
             'heure' => $scheduledAt?->format('H:i:s'),
             'commentaire_client' => $draft->client_notes,
-            /*
-             * LE BÉNÉFICIAIRE ET LE LIEU SUIVENT LA RÉSERVATION (E1, E2).
-             *
-             * Sans ce report, le bénéficiaire s'arrêterait au panier : le prestataire arriverait en
-             * demandant celui qui a payé, et trouverait quelqu'un qui n'attendait personne. Le lieu,
-             * lui, porte l'étage, le digicode et les préférences que la fiche d'accès sur place
-             * révèle à l'arrivée — c'est ce chaînon qui fait d'un carnet d'adresses un carnet de
-             * lieux.
-             */
+            // LE BÉNÉFICIAIRE ET LE LIEU SUIVENT LA RÉSERVATION (E1, E2).
             'beneficiary_name' => $draft->beneficiary_name,
             'beneficiary_phone' => $draft->beneficiary_phone,
             'beneficiary_note' => $draft->beneficiary_note,
@@ -435,47 +311,14 @@ class OrderConfirmationService
             // clôture, sur constat.
             'estimated_price' => $quote->quoteOnly ? null : $quote->minCents / 100,
             'devis_estime' => $quote->quoteOnly ? null : $quote->minCents / 100,
-            /*
-             * LA DURÉE ESTIMÉE VOYAGE AVEC LE PRIX — elle ne le faisait pas.
-             *
-             * Le moteur la calcule pourtant question par question : 80 m² ne prennent pas le même
-             * temps que 20. Sans elle sur la réservation, la mission naissait avec une fin égale à
-             * son début — une intervention de zéro minute, quand le métier en déclare 120.
-             *
-             * Ce n'est pas cosmétique : le planning du prestataire, la détection de chevauchement
-             * et les réservations de créneau lisent cette fenêtre. Longue de rien, elle
-             * n'empêchait aucun double-booking.
-             */
+            // LA DURÉE ESTIMÉE VOYAGE AVEC LE PRIX — elle ne le faisait pas.
             'duree_estimee' => $quote->durationMin > 0 ? $quote->durationMin : null,
             'estimated_duration_minutes' => $quote->durationMin > 0 ? $quote->durationMin : null,
-            /*
-             * LE TEMPS ACHETE SUIT LA RESERVATION, et c'est lui qui engage.
-             *
-             * Il part de la ligne de panier, pas de `$quote->durationMin` : sur un metier horaire
-             * les deux valent la meme chose, mais sur un metier forfaitaire la seconde porte une
-             * estimation qu'il ne faut surtout pas confondre avec du temps paye. `null` dit « ce
-             * service n'est pas vendu au temps » -- et c'est ce que le chronometre lira pour savoir
-             * s'il a quelque chose a mesurer.
-             */
+            // LE TEMPS ACHETE SUIT LA RESERVATION, et c'est lui qui engage.
             'purchased_minutes' => $item->purchased_minutes,
-            /*
-             * L'instantané du devis voyage avec la réservation : les libellés, les montants et la
-             * révision du questionnaire employée. C'est ce qui rend la facture explicable ligne
-             * par ligne, six mois plus tard, sans dépendre d'un catalogue qui aura changé.
-             */
+            // L'instantané du devis voyage avec la réservation : les libellés, les montants et la révision du questionnaire employée.
             'pricing_snapshot' => [
-                /*
-                 * LE NOM DU MÉTIER, FIGÉ AVEC LE RESTE.
-                 *
-                 * Tous les écrans qui nomment un service lisent `service_display_name`, qui ne
-                 * consultait que l'ANCIEN catalogue : une commande passée par le moteur actuel
-                 * s'affichait « Service non précisé » partout — jusque sur la fiche terrain du
-                 * prestataire, qui ne savait donc pas ce qu'on lui demandait de faire.
-                 *
-                 * Sa place est ici et pas dans une colonne : cet instantané existe précisément pour
-                 * retenir ce qui était vrai au moment du clic. Un métier renommé demain ne doit pas
-                 * réécrire ce qu'un client a commandé hier.
-                 */
+                // LE NOM DU MÉTIER, FIGÉ AVEC LE RESTE.
                 'service_name' => $item->trade?->name,
                 'currency' => $draft->currency ?? 'EUR',
                 'min_cents' => $quote->minCents,

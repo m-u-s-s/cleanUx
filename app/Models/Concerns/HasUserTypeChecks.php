@@ -33,16 +33,7 @@ trait HasUserTypeChecks
         return $this->plan_type === 'standard';
     }
 
-    /**
-     * Broad "is this user a provider at all?" check — true as soon as a
-     * provider_profile row exists, regardless of provider_type.
-     *
-     * NOTE — this is NOT the check used by the `role:provider` / `role:employe`
-     * route middleware. That middleware resolves through {@see matchesRole()},
-     * which maps both `provider` and `employe` to {@see User::isEmploye()}
-     * (independent OR company-worker). Use isProvider() for "has a provider
-     * profile" gating; use isEmploye() / role:provider for route-level access.
-     */
+    /** Broad "is this user a provider at all?" check — true as soon as a provider_profile row exists, regardless of provider_type. */
     public function isProvider(): bool
     {
         return $this->providerProfile()->exists();
@@ -50,29 +41,6 @@ trait HasUserTypeChecks
 
     /**
      * INTERROGER UNE POPULATION, AVEC LA MÊME RÈGLE QUE POUR UN COMPTE.
-     *
-     * ── LE DÉFAUT QUE CES PORTÉES REMPLACENT ─────────────────────────────────────────────────
-     *
-     * Vingt-quatre endroits du dépôt écrivaient `where('role', 'employe')` ou
-     * `where('role', User::ROLE_ENTREPRISE)` — la colonne HÉRITÉE, interrogée en base, hors de
-     * tout prédicat. Mesuré sur `brio` :
-     *
-     *   `where('role','employe')`      voit 11 prestataires ; la vérité typée en compte 14.
-     *                                  TROIS sont invisibles — dont pour les rappels de
-     *                                  rendez-vous (`SendRendezVousReminders:232`).
-     *   `where('role','entreprise')`   rend ZÉRO, alors que onze comptes portent
-     *                                  `customer_type = 'company'`. Tout filtre sur cette valeur
-     *                                  est aveugle, y compris l'audit d'intégrité des données.
-     *
-     * Contrairement au défaut des prédicats — latent, neutralisé par l'ordre des tests — celui-ci
-     * est ACTIF : les mauvaises lignes sortent vraiment des requêtes.
-     *
-     * ── POURQUOI ICI, ET PAS DANS UN FICHIER DE PORTÉES ──────────────────────────────────────
-     *
-     * Chaque portée reflète EXACTEMENT le prédicat qui vit dix lignes plus bas. Les séparer
-     * créerait une troisième source de vérité, et c'est précisément ce que ce fichier existe pour
-     * empêcher : la version SQL et la version PHP doivent se lire côte à côte pour rester
-     * d'accord.
      *
      * @param  Builder<static>  $query
      */
@@ -92,9 +60,6 @@ trait HasUserTypeChecks
 
     /**
      * Miroir de `isAdmin()`.
-     *
-     * Le repli hérité reste inconditionnel ici, comme dans le prédicat : `platform_role` est
-     * `NOT NULL DEFAULT 'user'`, donc « absent » n'y est pas exprimable.
      *
      * @param  Builder<static>  $query
      */
@@ -146,23 +111,7 @@ trait HasUserTypeChecks
         });
     }
 
-    /**
-     * UN REPLI NE PARLE QUE QUAND L'AUTRE SE TAIT.
-     *
-     * L'ancienne version testait « le type est-il PERSONAL ? », et retombait sur la colonne
-     * héritée dans TOUS les autres cas — y compris quand le profil disait clairement autre chose.
-     * Un client dont `customer_type` vaut `company` et dont `role` vaut `client` répondait donc
-     * OUI à « êtes-vous un particulier ? ».
-     *
-     * Mesuré sur `brio` avant correction : DIX clients société sur trente comptes répondaient oui.
-     * Aucun n'en souffrait — tous les appelants testent la société AVANT le particulier, si bien
-     * que la mauvaise réponse n'était jamais atteinte. C'est un défaut latent, pas une panne : il
-     * attend le premier appelant qui interrogera ce prédicat seul.
-     *
-     * La règle est désormais celle que le commentaire d'origine décrivait déjà — « remove once all
-     * users have a populated customer_profile row » : un profil renseigné TRANCHE, et la colonne
-     * héritée ne parle que s'il n'y en a pas.
-     */
+    /** UN REPLI NE PARLE QUE QUAND L'AUTRE SE TAIT. */
     public function isClientPersonal(): bool
     {
         $customerType = $this->customerProfile?->customer_type;
@@ -175,7 +124,7 @@ trait HasUserTypeChecks
 
         /**
          * @deprecated Reading the legacy `role` column directly. Remove once all users
-         *             have a populated customer_profile row.
+         * have a populated customer_profile row.
          */
         // Legacy fallback: role column still populated during transition
         return ($this->attributes['role'] ?? $this->role ?? null) === 'client';
@@ -207,26 +156,14 @@ trait HasUserTypeChecks
             // type inconnu : on retombe sur le fallback legacy ci-dessous.
         }
 
-        /*
-         * LES DEUX SIGNAUX TYPÉS RESTENT GÉNÉREUX, SEUL L'HÉRITÉ SE TAIT.
-         *
-         * On ne fait PAS trancher `customer_type` seul ici, contrairement à `isClientPersonal()`.
-         * Un particulier peut appartenir à une société cliente — c'est le cas C2B que cette
-         * plateforme sert — et lui refuser l'espace société sur la foi de son profil personnel le
-         * mettrait dehors d'un espace où il a sa place. Les deux signaux valent donc toujours.
-         *
-         * Ce qui change : la colonne héritée ne parle plus que si AUCUN des deux ne s'est exprimé.
-         * Sans cette condition, un profil disant « particulier » et un `role` disant « entreprise »
-         * ouvraient quand même les quatorze écrans gardés par `abort_unless(isClientCompany())`.
-         * Mesuré avant correction : zéro compte dans ce cas — le trou existait sans être emprunté.
-         */
+        // LES DEUX SIGNAUX TYPÉS RESTENT GÉNÉREUX, SEUL L'HÉRITÉ SE TAIT.
         if ($customerType !== null || ! empty($this->organization_account_id)) {
             return false;
         }
 
         /**
          * @deprecated Reading the legacy `role` column directly. Remove once all users
-         *             have a populated customer_profile row.
+         * have a populated customer_profile row.
          */
         // Legacy fallback: role column still populated during transition
         return ($this->attributes['role'] ?? $this->role ?? null) === 'entreprise';
@@ -236,40 +173,16 @@ trait HasUserTypeChecks
     {
         $providerType = $this->providerProfile?->provider_type;
 
-        /*
-         * `provider_type` est CASTÉ en énumération sur le modèle : cette valeur est donc toujours
-         * un `ProviderType` ou nul, jamais une chaîne. La branche qui comparait à `->value` était
-         * morte depuis que le cast existe, et l'analyse statique ne pouvait pas le dire tant que
-         * l'annotation de la relation désignait le mauvais modèle.
-         */
-        /*
-            `isIndependent()` PLUTÔT QU'UNE COMPARAISON DIRECTE.
-
-            `INDEPENDENT` et `INDIVIDUAL` désignent le même prestataire, et deux chemins
-            d'inscription produisent l'une ou l'autre. Comparer à la seule valeur canonique
-            refusait de son espace un prestataire que le dispatch envoyait pourtant en mission.
-            L'énumération porte la règle ; on la lui demande.
-        */
+        // `provider_type` est CASTÉ en énumération sur le modèle : cette valeur est donc toujours un `ProviderType` ou nul, jamais une chaîne.
+        // `isIndependent()` PLUTÔT QU'UNE COMPARAISON DIRECTE.
         if ($providerType !== null) {
-            /*
-             * UN PROFIL RENSEIGNÉ TRANCHE, DANS LES DEUX SENS.
-             *
-             * L'ancienne version ne rendait `true` que sur un type indépendant, puis retombait sur
-             * la colonne héritée — si bien qu'un prestataire SALARIÉ dont `role` valait `employe`
-             * répondait oui à « êtes-vous indépendant ? ». Mesuré sur `brio` : NEUF prestataires
-             * `company_worker` sur trente comptes.
-             *
-             * Sans conséquence à ce jour : le seul appelant est `isEmploye()`, qui unit ce
-             * prédicat à `isProviderCompanyWorker()` par un `||` — les deux vrais donnent la même
-             * réponse. Le défaut attendait le premier appelant qui l'interrogerait seul, pour
-             * décider d'un versement ou d'un rattachement.
-             */
+            // UN PROFIL RENSEIGNÉ TRANCHE, DANS LES DEUX SENS.
             return $providerType->isIndependent();
         }
 
         /**
          * @deprecated Reading the legacy `role` column directly. Remove once all users
-         *             have a populated provider_profile row.
+         * have a populated provider_profile row.
          */
         // Legacy fallback: role column still populated during transition
         return ($this->attributes['role'] ?? $this->role ?? null) === 'employe';
@@ -352,21 +265,7 @@ trait HasUserTypeChecks
         return 'dashboard';
     }
 
-    /**
-     * Single source of truth for the role-string matching used by the
-     * `role:` route middleware ({@see CheckRole}).
-     * Les champs TYPÉS d'abord — mais la colonne `role` N'EST PAS supprimée, contrairement à ce
-     * que ce commentaire affirmait. La migration `2026_05_27_000003_drop_legacy_role_from_users`
-     * porte ce nom et a bien tourné ; son étape 4, celle qui supprime, est EN COMMENTAIRE. La
-     * colonne vit donc encore, elle est lue en repli par les prédicats ci-dessous, et les
-     * portées plus haut la consultent aussi. Voir la note du 2026-08-22.
-     *
-     * Provider aliases (all three resolve to the SAME check, isEmploye):
-     *   - `employe`  / `employee` / `provider` → independent OR company worker
-     *   - `provider_company` / `entreprise_prestataire` → company worker only
-     * Keep `role:employe` as the canonical token in routes; `role:provider`
-     * is an accepted synonym so future code reads naturally either way.
-     */
+    /** Single source of truth for the role-string matching used by the `role:` route middleware ({@see CheckRole}). */
     public function matchesRole(string $role): bool
     {
         return match ($role) {
@@ -377,13 +276,7 @@ trait HasUserTypeChecks
             'entreprise', 'company' => $this->isEntreprise(),
             'provider_company', 'entreprise_prestataire' => $this->isProviderCompanyWorker(),
 
-            /*
-             * LES SIX RÔLES CANONIQUES.
-             *
-             * Ils se comparent au rôle RÉSOLU, pas à un signal isolé : `client_individuelle` doit
-             * être faux pour un administrateur qui garde un profil client, ce qu'un simple
-             * `isClientPersonal()` ne saurait pas dire.
-             */
+            // LES SIX RÔLES CANONIQUES.
             Role::SUPER_ADMIN->value.'_canonique' => $this->roleCanonique() === Role::SUPER_ADMIN,
             'client_individuelle' => $this->roleCanonique() === Role::CLIENT_INDIVIDUELLE,
             'client_societe' => $this->roleCanonique() === Role::CLIENT_SOCIETE,
@@ -394,22 +287,7 @@ trait HasUserTypeChecks
         };
     }
 
-    /**
-     * LE RÔLE DU COMPTE, TRANCHÉ UNE FOIS.
-     *
-     * L'ordre des tests EST la règle, et chaque marche est là pour un défaut déjà vu :
-     *
-     * 1. `super_admin` avant `admin` — sinon le premier n'existerait jamais, `isAdmin()` étant vrai
-     *    pour les deux.
-     * 2. L'administration avant tout le reste — promouvoir un client en administrateur ne lui
-     *    retire pas son profil client, et tester le client d'abord rendait la promotion invisible.
-     * 3. La SOCIÉTÉ avant l'individuel, des deux côtés — un membre de société coche aussi les
-     *    signaux du particulier, jamais l'inverse. Tester l'individuel d'abord enfermerait tout le
-     *    monde dans l'espace perso.
-     * 4. Le client avant le prestataire, à défaut de mieux : un compte qui serait les deux relève
-     *    d'un choix d'espace, pas d'une résolution automatique — voir les sélecteurs des deux
-     *    applications mobiles.
-     */
+    /** LE RÔLE DU COMPTE, TRANCHÉ UNE FOIS. */
     public function roleCanonique(): Role
     {
         if (($this->platform_role ?? null) === 'super_admin') {
@@ -436,11 +314,7 @@ trait HasUserTypeChecks
             return Role::PROVIDER_INDIVIDUELLE;
         }
 
-        /*
-         * Le repli n'est pas un aveu d'échec : un compte tout juste créé n'a encore ni profil
-         * client ni profil prestataire. `client_individuelle` est ce qu'il est dans les faits —
-         * c'est aussi le défaut de la colonne `role` en base.
-         */
+        // Le repli n'est pas un aveu d'échec : un compte tout juste créé n'a encore ni profil client ni profil prestataire.
         return Role::CLIENT_INDIVIDUELLE;
     }
 }

@@ -11,11 +11,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
-/**
- * Unit coverage for the Wakam insurance provider skeleton: purchase, cancel,
- * claim filing, webhook verification + event mapping, including the config-missing
- * guards and HTTP success/failure branches.
- */
+/** Unit coverage for the Wakam insurance provider skeleton: purchase, cancel, claim filing, webhook verification + event mapping, including the config-missing guards and HTTP success/failure branches. */
 class WakamInsuranceProviderTest extends TestCase
 {
     private WakamInsuranceProvider $provider;

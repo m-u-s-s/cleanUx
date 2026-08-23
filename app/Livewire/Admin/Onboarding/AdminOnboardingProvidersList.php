@@ -13,16 +13,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-/**
- * Phase 14.1 — Liste des prestataires en cours d'onboarding (vue admin).
- *
- * Route : /admin/onboarding-providers
- *
- * Permet à l'admin de :
- *   - Voir tous les prestataires par statut (en cours, prêts à valider, validés)
- *   - Cliquer pour voir le détail d'un prestataire (documents, étapes)
- *   - Approuver l'onboarding final pour ceux prêts (tous docs OK + Stripe actif)
- */
+/** Phase 14.1 — Liste des prestataires en cours d'onboarding (vue admin). */
 class AdminOnboardingProvidersList extends Component
 {
     use EnforcesAdminAccess;
@@ -118,9 +109,7 @@ class AdminOnboardingProvidersList extends Component
         session()->flash('success', 'Prestataire validé avec succès.');
     }
 
-    /**
-     * Compte les documents par statut pour un user (helper UI).
-     */
+    /** Compte les documents par statut pour un user (helper UI). */
     public function documentsCountFor(int $userId): array
     {
         return [
@@ -305,10 +294,7 @@ class AdminOnboardingProvidersList extends Component
         $verificationStatus = strtolower((string) ($profile->verification_status ?? ''));
         $onboardingStatus = strtolower((string) ($profile->onboarding_status ?? ''));
 
-        /*
-         * On compte les vrais dossiers onboarding.
-         * Mais on évite de compter un simple profil demo "pending" sans signal onboarding.
-         */
+        // On compte les vrais dossiers onboarding.
         if (in_array($verificationStatus, [
             'in_progress',
             'started',
@@ -434,11 +420,7 @@ class AdminOnboardingProvidersList extends Component
             ->values()
             ->all();
 
-        /*
-         * Ordre important :
-         * verified d'abord, puis ready, puis in_progress.
-         * Comme ça un profil ready/verified n'est pas aussi compté en in_progress.
-         */
+        // Ordre important : verified d'abord, puis ready, puis in_progress.
         if (
             in_array('verified', $values, true)
             || in_array('verifie', $values, true)

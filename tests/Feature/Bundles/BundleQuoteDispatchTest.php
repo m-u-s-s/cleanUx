@@ -13,13 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
-/**
- * Bundle Marketplace P1 — diffusion des demandes de devis.
- * Décisions produit 2026-06-11 : concurrence (plusieurs devis/item) + top-N (3-5)
- * sollicités + KYC strict. startQuoting() doit créer des quote-requests `pending`
- * pour les prestataires éligibles (bon métier + actif + KYC validé), plafonné au
- * top-N, valides 48h, et les notifier.
- */
+/** Bundle Marketplace P1 — diffusion des demandes de devis. */
 class BundleQuoteDispatchTest extends TestCase
 {
     use RefreshDatabase;

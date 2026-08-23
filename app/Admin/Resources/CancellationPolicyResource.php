@@ -10,10 +10,6 @@ use App\Models\CancellationPolicy;
 /**
  * Les politiques d’annulation, versionnées.
  *
- * Une politique est VERSIONNÉE parce que les annulations passées ont été calculées avec la
- * version en vigueur ce jour-là. L’éditer sur place réécrirait rétroactivement des frais déjà
- * facturés : on en publie une nouvelle version, on ne corrige pas l’ancienne.
- *
  * @extends EloquentResource<CancellationPolicy>
  */
 class CancellationPolicyResource extends EloquentResource

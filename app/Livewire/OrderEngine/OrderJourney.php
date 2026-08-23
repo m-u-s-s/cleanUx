@@ -47,24 +47,9 @@ use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-/**
- * Le parcours de commande : secteur, puis métier, puis questions — sans changer de page.
- *
- * L'ordre des écrans n'est pas une commodité de développeur, c'est la première loi du parcours :
- * le client voit une ESTIMATION avant qu'on lui demande son nom, son téléphone ou sa carte. Un
- * prix caché derrière un formulaire de compte est la première cause d'abandon, et rien dans ce
- * composant ne réclame d'identité.
- *
- * Rien n'est perdu non plus. Le panier vit en base, retrouvé par un jeton de session : fermer
- * l'onglet, revenir trois heures plus tard, se connecter au dernier moment — les réponses sont là.
- * C'est pour cela que l'état n'habite pas le composant mais le panier.
- */
+/** Le parcours de commande : secteur, puis métier, puis questions — sans changer de page. */
 /**
  * Les valeurs calculées, accessibles en PROPRIÉTÉ.
- *
- * `#[Computed]` ne met en cache que l'accès propriété : `$this->trade` mémorise, `$this->trade()`
- * réexécute le corps à chaque appel. Ces déclarations disent à l'analyse statique ce que Livewire
- * expose, et rappellent la forme à employer.
  *
  * @property-read Collection<int, Sector> $sectors
  * @property-read Collection<int, Trade> $trades
@@ -108,27 +93,12 @@ class OrderJourney extends Component
      */
     public array $answers = [];
 
-    /**
-     * LES HEURES ACHETÉES, sur un métier facturé au temps passé.
-     *
-     * PAS `#[Locked]`, et c'est délibéré : c'est un champ de saisie, le navigateur DOIT pouvoir le
-     * changer. Ce qu'il ne peut pas changer, c'est le TARIF — il vient du catalogue et de la zone,
-     * résolus côté serveur à chaque calcul. Le pire qu'un client puisse faire en forgeant cette
-     * valeur, c'est acheter plus d'heures qu'il n'en voulait, et les payer.
-     *
-     * Bornée à l'écriture par `choisirLesHeures()` : sans borne, un `0` produirait une prestation
-     * gratuite et un nombre démesuré un devis absurde que personne ne pourrait honorer.
-     */
+    /** LES HEURES ACHETÉES, sur un métier facturé au temps passé. */
     public ?float $heuresChoisies = null;
 
     public string $mode = OrderMode::SCHEDULED;
 
-    /**
-     * L'adresse vit au niveau de la COMMANDE, pas de la ligne.
-     *
-     * En multi-services, elle n'est demandée qu'une fois : redemander la même adresse à chaque
-     * métier ajouté est le genre de frottement qui fait abandonner un panier déjà rempli.
-     */
+    /** L'adresse vit au niveau de la COMMANDE, pas de la ligne. */
     public string $address = '';
 
     public ?float $lat = null;
@@ -139,38 +109,19 @@ class OrderJourney extends Component
      * Le géocodage a échoué : on le dit, plutôt que de laisser un champ muet. */
     public bool $addressUnresolved = false;
 
-    /**
-     * La géographie résolue depuis l'adresse — code postal, puis ZONE.
-     *
-     * Elles ne sont pas décoratives : la zone décide du prix (`trade_zone_pricing`) ET de la
-     * disponibilité du mode immédiat. Elles voyagent par le navigateur comme toute propriété
-     * Livewire, et c'est sans danger : rien n'est cru sur parole côté serveur — la zone est
-     * RE-RÉSOLUE à la confirmation à partir du code postal enregistré sur le panier.
-     */
+    /** La géographie résolue depuis l'adresse — code postal, puis ZONE. */
     public ?string $postalCode = null;
 
     public ?int $serviceZoneId = null;
 
-    /**
-     * LE BÉNÉFICIAIRE (E1) — le client paye, quelqu'un d'autre reçoit.
-     *
-     * Ce cas se bricolait dans le commentaire libre : le prestataire arrivait en demandant
-     * M. Dupont et trouvait sa mère, qui n'attendait personne. Étape FACULTATIVE : l'imposer
-     * ajouterait un obstacle à la commande la plus ordinaire, celle qu'on passe pour soi.
-     */
+    /** LE BÉNÉFICIAIRE (E1) — le client paye, quelqu'un d'autre reçoit. */
     public string $beneficiaryName = '';
 
     public string $beneficiaryPhone = '';
 
     public string $beneficiaryNote = '';
 
-    /**
-     * Le lieu du carnet retenu (E2).
-     *
-     * `#[Locked]` : il vient du navigateur, et un identifiant forgé chargerait l'adresse, l'étage
-     * et le code d'alarme du domicile de quelqu'un d'autre. La vérification d'appartenance reste
-     * faite à la sélection ; verrouiller évite qu'on la contourne après coup.
-     */
+    /** Le lieu du carnet retenu (E2). */
     #[Locked]
     public ?int $clientPlaceId = null;
 
@@ -186,74 +137,39 @@ class OrderJourney extends Component
      * Heure de début du créneau retenu, au format H:i. */
     public ?string $selectedSlot = null;
 
-    /**
-     * Prestataire choisi, ou `null` pour l'attribution automatique.
-     *
-     * `null` est le DÉFAUT et suffit pour continuer : obliger à trancher entre douze inconnus
-     * transforme un service en corvée de comparaison, sur des critères que le client n'a aucun
-     * moyen d'arbitrer.
-     */
+    /** Prestataire choisi, ou `null` pour l'attribution automatique. */
     public ?int $selectedProviderId = null;
 
     /**
      * Photos en attente d'être jointes.
      *
-     * `WithFileUploads` est ce qui manquait : sans lui, `wire:model` sur un champ fichier ne fait
-     * rien du tout — pas d'erreur, pas de fichier, rien.
-     *
      * @var array<int, mixed>
      */
     public array $photos = [];
 
-    /**
-     * Mode demandé par l'URL, en attente d'un métier.
-     *
-     * L'application mobile n'a plus d'écran de réservation natif : ses trois cartes d'entrée —
-     * immédiat, rendez-vous, multi-services — ouvrent toutes ce parcours. Sans cette intention,
-     * elles arriveraient toutes sur le même écran planifié et le choix d'entrée serait décoratif :
-     * le client demanderait « immédiat », puis devrait le redemander.
-     *
-     * Elle ne s'applique pas tout de suite : les modes disponibles dépendent du métier, et aucun
-     * n'est choisi tant que le client regarde le carrousel.
-     */
+    /** Mode demandé par l'URL, en attente d'un métier. */
     public ?string $intendedMode = null;
 
     /** Ce qu'on doit au client quand son intention n'a pas pu être honorée. */
     public string $modeNotice = '';
 
-    /**
-     * L'étape du questionnaire en cours d'affichage.
-     *
-     * Remise à zéro à chaque changement de métier : garder le rang d'un questionnaire précédent
-     * ouvrirait le suivant au milieu, sur des questions auxquelles le client n'a jamais accédé.
-     */
+    /** L'étape du questionnaire en cours d'affichage. */
     public int $stepIndex = 0;
 
     public function mount(?string $sector = null, ?string $trade = null): void
     {
-        /*
-         * Une valeur inventée dans l'URL est ignorée, sans rien casser : la barre d'adresse est
-         * une entrée comme une autre, et rien de ce qui en vient n'est cru sur parole.
-         */
+        // Une valeur inventée dans l'URL est ignorée, sans rien casser : la barre d'adresse est une entrée comme une autre, et rien de ce qui en vient n'est cru sur parole.
         $requested = (string) request()->query('mode', '');
 
         if (in_array($requested, OrderMode::all(), true)) {
             $this->intendedMode = $requested;
         }
 
-        /*
-         * Le jeton vit dans la SESSION, pas dans une propriété exposée : une propriété Livewire
-         * voyage par le navigateur, et le panier de quelqu'un d'autre ne doit pas s'ouvrir en
-         * changeant une valeur dans les outils de développement.
-         */
+        // Le jeton vit dans la SESSION, pas dans une propriété exposée : une propriété Livewire voyage par le navigateur, et le panier de quelqu'un d'autre ne doit pas s'ouvrir en changeant une valeur dans les outils de développement.
         $this->sessionToken = session()->get('order_draft_token') ?: Str::random(48);
         session()->put('order_draft_token', $this->sessionToken);
 
-        /*
-         * Le panier retrouvé porte peut-être déjà sa géographie : la relire évite de repartir sans
-         * zone — donc sans grille de prix locale et sans savoir si l'immédiat est ouvert ici —
-         * alors que le client avait déjà saisi son adresse hier.
-         */
+        // Le panier retrouvé porte peut-être déjà sa géographie : la relire évite de repartir sans zone — donc sans grille de prix locale et sans savoir si l'immédiat est ouvert ici — alors que le client avait déjà saisi son adresse hier.
         $draft = $this->draft();
         $this->address = (string) ($draft->address ?? '');
         $this->lat = $draft->lat !== null ? (float) $draft->lat : null;
@@ -280,21 +196,7 @@ class OrderJourney extends Component
         }
     }
 
-    /**
-     * COMMANDER POUR UN LOCAL DE SA SOCIÉTÉ — le même parcours, situé d'avance.
-     *
-     * Une entreprise cliente disposait de son propre formulaire, à quatre étapes, qui ne servait
-     * que le RENDEZ-VOUS : ni intervention immédiate, ni chantier multi-services. Plutôt que d'y
-     * recopier les trois modes — donc trois fois les questionnaires, la tarification et la
-     * confirmation — son espace ouvre CE parcours, en indiquant simplement pour quel local.
-     *
-     * LE LOCAL EST VÉRIFIÉ CONTRE L'ORGANISATION ACTIVE, jamais cru sur parole : l'identifiant vient
-     * de la barre d'adresse, et le local d'une autre société révélerait son adresse et son code
-     * d'accès à qui devine un numéro.
-     *
-     * L'ADRESSE EST REPRISE DU LOCAL. Sans cela, le client d'une société retaperait l'adresse de
-     * son propre bureau — celle-là même que la plateforme connaît, avec sa zone et ses coordonnées.
-     */
+    /** COMMANDER POUR UN LOCAL DE SA SOCIÉTÉ — le même parcours, situé d'avance. */
     protected function rattacherAuLocalDeLaSociete(): void
     {
         $siteId = (int) request()->query('site', 0);
@@ -320,11 +222,7 @@ class OrderJourney extends Component
             'lng' => $site->lng ?? $draft->lng,
             'postal_code' => $site->postal_code ?: $draft->postal_code,
             'service_zone_id' => $site->service_zone_id ?? $draft->service_zone_id,
-            /*
-             * Le contexte société vit dans `metadata` : `order_drafts` n'a pas de colonne pour lui,
-             * et en ajouter une pour un rattachement qui se revérifie de toute façon à la
-             * confirmation coûterait une migration sans rien garantir de plus.
-             */
+            // Le contexte société vit dans `metadata` : `order_drafts` n'a pas de colonne pour lui, et en ajouter une pour un rattachement qui se revérifie de toute façon à la confirmation coûterait une migration sans rien garantir de plus.
             'metadata' => array_merge((array) $draft->metadata, [
                 'organization_account_id' => $orgId,
                 'organization_site_id' => $site->id,
@@ -338,13 +236,7 @@ class OrderJourney extends Component
         $this->serviceZoneId = $draft->service_zone_id !== null ? (int) $draft->service_zone_id : null;
     }
 
-    /**
-     * PRÉ-REMPLIR DEPUIS LE CARNET DE LIEUX (E2).
-     *
-     * SEULEMENT SI RIEN N'A ENCORE ÉTÉ SAISI. Écraser une adresse déjà tapée — ou celle d'un local
-     * de société rattaché juste avant — ferait recommencer le client sans qu'il comprenne
-     * pourquoi. Le carnet aide, il ne décide pas.
-     */
+    /** PRÉ-REMPLIR DEPUIS LE CARNET DE LIEUX (E2). SEULEMENT SI RIEN N'A ENCORE ÉTÉ SAISI. */
     protected function preremplirDepuisLeCarnet(): void
     {
         if (! Auth::check() || $this->address !== '') {
@@ -360,12 +252,7 @@ class OrderJourney extends Component
         $this->appliquerLeLieu($lieu);
     }
 
-    /**
-     * Choisir un lieu du carnet en cours de parcours.
-     *
-     * L'identifiant vient du navigateur : on ne retient que ce qui appartient bien à l'appelant.
-     * Sans cette garde, un numéro deviné révélerait l'adresse et le code d'accès d'un autre client.
-     */
+    /** Choisir un lieu du carnet en cours de parcours. */
     public function choisirLeLieu(int $lieuId): void
     {
         if (! Auth::check()) {
@@ -392,17 +279,7 @@ class OrderJourney extends Component
         return app(ClientPlaceService::class)->pour(Auth::user());
     }
 
-    /**
-     * UN LIEU ENREGISTRÉ SANS COORDONNÉES EST UN CUL-DE-SAC — on le géocode au lieu de le subir.
-     *
-     * Ce lieu a pu être enregistré avant que le géocodage existe, ou saisi par un import. Sans
-     * latitude ni longitude, tout ce qui suit s'éteint : les créneaux, la liste des professionnels,
-     * la distance. Et l'écran affichait alors « Indiquez d'abord l'adresse » — au client qui venait
-     * précisément d'appuyer sur son adresse enregistrée, sans autre issue que la retaper.
-     *
-     * On résout, puis on RÉÉCRIT sur le lieu : la prochaine fois, il n'y aura plus rien à réparer.
-     * Soft-fail — un géocodeur indisponible ne doit pas empêcher de retenir l'adresse.
-     */
+    /** UN LIEU ENREGISTRÉ SANS COORDONNÉES EST UN CUL-DE-SAC — on le géocode au lieu de le subir. */
     protected function completerLesCoordonnees(ClientPlace $lieu): ClientPlace
     {
         if ($lieu->lat !== null && $lieu->lng !== null) {
@@ -465,12 +342,7 @@ class OrderJourney extends Component
         unset($this->availableModes);
     }
 
-    /**
-     * RÉSERVER POUR UN PROCHE (E1) — enregistré sur le panier, et reporté à la réservation.
-     *
-     * FACULTATIF, et vidé par une chaîne vide : quelqu'un qui se ravise doit pouvoir retirer le
-     * bénéficiaire, sinon la commande partirait au nom d'une personne qu'il a effacée de l'écran.
-     */
+    /** RÉSERVER POUR UN PROCHE (E1) — enregistré sur le panier, et reporté à la réservation. */
     public function enregistrerLeBeneficiaire(): void
     {
         $this->validate([
@@ -486,18 +358,7 @@ class OrderJourney extends Component
         ]);
     }
 
-    /**
-     * L'ASSISTANT DE COMMANDE (E5) — décrire son besoin plutôt que de choisir un secteur.
-     *
-     * Le parcours commence par « choisissez un secteur », puis « un métier ». C'est parfait quand
-     * on sait qu'il faut un plafonneur ; ça ne l'est pas quand on écrit « il y a une auréole
-     * marron au plafond de la salle de bain ». Le client abandonne à l'étape zéro, ou choisit le
-     * mauvais métier et découvre l'erreur quand le professionnel arrive.
-     *
-     * L'ASSISTANT PROPOSE, IL NE COMMANDE PAS. Il sélectionne le métier et rend la main : les
-     * questions, l'adresse et la confirmation restent au client. Une IA qui commanderait à sa
-     * place transformerait une erreur d'interprétation en intervention non désirée.
-     */
+    /** L'ASSISTANT DE COMMANDE (E5) — décrire son besoin plutôt que de choisir un secteur. */
     public string $besoinDecrit = '';
 
     /**
@@ -520,11 +381,7 @@ class OrderJourney extends Component
 
         $this->interpretation = $resultat;
 
-        /*
-         * ON N'APPLIQUE QUE CE DONT ON EST SÛR. Une confiance basse affiche la proposition sans
-         * sélectionner : embarquer le client sur un métier deviné lui ferait remplir un
-         * questionnaire entier avant de comprendre qu'il n'est pas au bon endroit.
-         */
+        // ON N'APPLIQUE QUE CE DONT ON EST SÛR.
         if ($resultat['trade_id'] !== null && $resultat['confidence'] !== 'low') {
             $this->selectTrade((int) $resultat['trade_id']);
         }
@@ -550,35 +407,16 @@ class OrderJourney extends Component
         $sectors = Sector::query()
             ->active()
             ->ordered()
-            /*
-             * Les traductions viennent AVEC, comme celles des questions plus bas (ligne 655).
-             * `translate()` interroge la relation quand elle n'est pas chargée : sans ce
-             * préchargement, afficher le carrousel coûterait une requête par carte et par champ.
-             */
+            // Les traductions viennent AVEC, comme celles des questions plus bas (ligne 655).
             ->with('translations')
             ->withCount(['trades' => fn ($q) => $q->where('is_active', true)
                 ->servableEnMode($this->intendedMode, $this->serviceZoneId)])
-            /*
-             * UN SECTEUR SANS AUCUN MÉTIER SERVABLE N'EST PAS PROPOSÉ.
-             *
-             * En intervention immédiate, la plupart des secteurs n'ont rien à offrir : un
-             * ravalement de façade ne se commande pas dans l'heure. Les afficher quand même ferait
-             * cliquer dans le vide, puis reculer — et la deuxième chose qu'un client apprend de la
-             * plateforme serait qu'elle propose ce qu'elle ne sait pas faire.
-             */
+            // UN SECTEUR SANS AUCUN MÉTIER SERVABLE N'EST PAS PROPOSÉ.
             ->whereHas('trades', fn ($q) => $q->where('is_active', true)
                 ->servableEnMode($this->intendedMode, $this->serviceZoneId))
             ->get();
 
-        /*
-         * Le signal vivant des cartes.
-         *
-         * « 3 métiers » est un fait de catalogue : le client ne peut ni le vérifier ni s'en
-         * servir. La confiance vient de la disponibilité VISIBLE, pas d'un décompte de rubriques.
-         *
-         * EN UNE REQUÊTE, pas une par carte : c'est le premier écran du produit, celui dont dépend
-         * le LCP, et le nombre de secteurs n'a pas de plafond.
-         */
+        // Le signal vivant des cartes.
         $counts = $this->activeProvidersPerSector();
 
         return $sectors->each(function (Sector $sector) use ($counts) {
@@ -588,14 +426,6 @@ class OrderJourney extends Component
 
     /**
      * Combien de professionnels actifs exercent dans chaque secteur.
-     *
-     * La définition est reprise TELLE QUELLE de {@see ProviderAvailabilityLookup} — profil actif,
-     * rôle prestataire ou employé. Deux définitions divergentes afficheraient 42 sur la carte et 0
-     * une fois l'adresse saisie, et c'est le second chiffre que le client retiendrait.
-     *
-     * `distinct` sur l'utilisateur : un professionnel qui exerce deux métiers du même secteur
-     * compte pour un. Le compter deux fois gonflerait la promesse d'autant, et le client s'en
-     * apercevrait au premier créneau introuvable.
      *
      * @return Collection<int, int>
      */
@@ -644,10 +474,6 @@ class OrderJourney extends Component
     /**
      * Les questions à poser, dans l'ordre.
      *
-     * En mode immédiat le questionnaire est volontairement RÉDUIT aux questions essentielles : la
-     * vitesse prime sur la précision, et la fourchette annoncée est simplement plus large. Poser
-     * huit questions à quelqu'un dont l'eau coule dans le couloir serait absurde.
-     *
      * @return Collection<int, Question>
      */
     #[Computed]
@@ -668,7 +494,8 @@ class OrderJourney extends Component
         return $query->orderBy('sort_order')->get();
     }
 
-    /** Celles réellement affichées : une condition non remplie masque sa question.
+    /**
+     * Celles réellement affichées : une condition non remplie masque sa question.
      *
      * @return Collection<int, Question>
      */
@@ -689,10 +516,6 @@ class OrderJourney extends Component
     /**
      * TOUTES les questions visibles, étapes confondues.
      *
-     * À distinguer de {@see visibleQuestions()}, qui ne rend que l'étape courante — c'est elle que
-     * l'écran affiche. Celle-ci sert à raisonner sur le questionnaire entier : le prix se calcule
-     * sur l'ensemble, pas sur ce que le client a sous les yeux à cet instant.
-     *
      * @return Collection<int, Question>
      */
     #[Computed]
@@ -702,21 +525,7 @@ class OrderJourney extends Component
     }
 
     /**
-     * Le questionnaire découpé en étapes RÉELLEMENT visibles.
-     *
-     * Deux règles, dans cet ordre.
-     *
-     * 1. Les étapes écrites par l'administrateur priment. C'est lui qui sait où couper : « vos
-     *    locaux », puis « la prestation ».
-     *
-     * 2. À défaut, on découpe TOUT SEUL au-delà du seuil. Le validateur avertit déjà celui qui
-     *    dépasse sept questions, mais ce n'est qu'une alerte : faire reposer la règle sur sa
-     *    discipline reviendrait à ne pas l'avoir. Un métier de douze questions afficherait douze
-     *    champs empilés — l'anti-pattern que le parcours est censé éviter.
-     *
-     * Les étapes vides ne comptent pas et ne se traversent pas : une étape dont toutes les
-     * questions sont masquées par une condition n'existe plus pour ce client. Annoncer « étape 2
-     * sur 3 » puis sauter la troisième serait un compte malhonnête.
+     * Le questionnaire découpé en étapes RÉELLEMENT visibles. Deux règles, dans cet ordre. 1.
      *
      * @return Collection<int, Collection<int, Question>>
      */
@@ -731,27 +540,14 @@ class OrderJourney extends Component
 
         $declared = $visible->groupBy('step_id');
 
-        /*
-         * L'administrateur a-t-il vraiment découpé ? Une seule étape déclarée — ou aucune — ne
-         * compte pas comme un découpage : on reprend la main.
-         *
-         * La chaîne vide, et non `null` : une clé de collection ne peut PAS être nulle en PHP, et
-         * `groupBy` range les questions sans étape sous `''`. Le test sur `null` ne pouvait donc
-         * jamais être faux — il laissait croire qu'on couvrait un cas qui n'existe pas.
-         */
+        // L'administrateur a-t-il vraiment découpé ?
         $hasRealSteps = $declared->keys()->filter(fn ($id) => $id !== '')->count() > 0
             && $declared->count() > 1;
 
         if ($hasRealSteps) {
             return $declared
-                /*
+                /**
                  * LE `?->` EST NÉCESSAIRE, malgré ce qu'en dit l'analyse statique.
-                 *
-                 * `questions.step_id` est nullable et posé en `nullOnDelete` : une question sans
-                 * découpage n'a pas d'étape, et c'est même le cas le plus courant. Larastan
-                 * suppose toute relation `BelongsTo` non nulle et réclame de retirer le `?->` —
-                 * ce qui ferait tomber l'écran sur la première question sans étape. Le schéma
-                 * tranche, pas l'inférence.
                  *
                  * @phpstan-ignore nullsafe.neverNull
                  */
@@ -786,16 +582,14 @@ class OrderJourney extends Component
 
     public function previousStep(): void
     {
-        /*
-         * Revenir ne perd rien : les réponses vivent dans le panier, en base, pas dans l'écran.
-         * C'est toute la raison pour laquelle l'état n'habite pas le composant.
-         */
+        // Revenir ne perd rien : les réponses vivent dans le panier, en base, pas dans l'écran.
         if ($this->stepIndex > 0) {
             $this->stepIndex--;
         }
     }
 
-    /** Les modes que ce métier autorise. Un ravalement de façade n'est pas un service immédiat.
+    /**
+     * Les modes que ce métier autorise. Un ravalement de façade n'est pas un service immédiat.
      *
      * @return list<string>
      */
@@ -816,19 +610,7 @@ class OrderJourney extends Component
                     return false;
                 }
 
-                /*
-                 * DEUX VERROUS POUR L'IMMÉDIAT, et ils ne disent pas la même chose.
-                 *
-                 * `trades.allows_asap` dit qu'un métier PEUT se faire dans l'heure — un ravalement
-                 * de façade ne le peut nulle part. La ligne `(métier, zone)` dit qu'on l'a ouvert
-                 * ICI. Le second est la décision d'exploitation : promettre un dépannage dans une
-                 * zone où personne n'est jamais en ligne fait attendre le client pour rien.
-                 *
-                 * Tant qu'aucune adresse n'est saisie, la zone est inconnue : on propose le mode,
-                 * et `updatedAddress()` retombera sur le rendez-vous si la zone le refuse. Le
-                 * cacher d'entrée priverait de l'information ceux qui n'ont pas encore tapé leur
-                 * rue — c'est-à-dire tout le monde au moment du choix.
-                 */
+                // DEUX VERROUS POUR L'IMMÉDIAT, et ils ne disent pas la même chose.
                 if ($mode === OrderMode::ASAP && $this->serviceZoneId !== null) {
                     return $resolver->allowsImmediate($trade, $this->serviceZoneId);
                 }
@@ -841,12 +623,7 @@ class OrderJourney extends Component
 
     // ─── Prix ────────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * L'estimation en direct, recalculée à chaque réponse.
-     *
-     * Le calcul est fait par le serveur, et lui seul fait autorité : rien de ce que le navigateur
-     * annoncerait comme prix n'est lu ici.
-     */
+    /** L'estimation en direct, recalculée à chaque réponse. */
     #[Computed]
     public function quote(): ?PriceBreakdown
     {
@@ -864,7 +641,8 @@ class OrderJourney extends Component
         return app(PricingEngine::class)->quoteItem($trade, $this->questions, $this->answers, $context);
     }
 
-    /** Ce que la dernière réponse a changé — « +45 € — plafonds inclus ».
+    /**
+     * Ce que la dernière réponse a changé — « +45 € — plafonds inclus ».
      *
      * @return array<string, mixed>|null
      */
@@ -882,16 +660,7 @@ class OrderJourney extends Component
 
     // ─── Adresse et disponibilité ────────────────────────────────────────────────────────────
 
-    /**
-     * L'adresse débloque la preuve de disponibilité.
-     *
-     * Elle est posée en FIN de parcours, et c'est délibéré : elle récompense le client d'être allé
-     * jusque-là par une information qui le rassure — « 14 peintres à moins de 8 km » — au lieu de
-     * le filtrer à l'entrée.
-     *
-     * Le géocodage échoue en silence : une adresse mal orthographiée ou un service indisponible ne
-     * doivent pas empêcher de commander. On perd la phrase rassurante, pas la commande.
-     */
+    /** L'adresse débloque la preuve de disponibilité. */
     public function updatedAddress(): void
     {
         $this->addressUnresolved = false;
@@ -932,17 +701,7 @@ class OrderJourney extends Component
             Log::warning('[order_engine] géocodage indisponible', ['error' => $e->getMessage()]);
         }
 
-        /*
-         * LA ZONE EST RÉSOLUE ICI, pendant le parcours — pas au moment d'envoyer quelqu'un.
-         *
-         * C'est ce qui permet à la suite de l'écran de dire la vérité : le prix affiché est celui
-         * de la grille locale, et le mode « intervention immédiate » n'apparaît que si le
-         * catalogue l'a ouvert POUR CETTE ZONE. Résolue plus tard, la zone n'aurait plus rien à
-         * corriger — le client aurait déjà vu un prix et choisi un mode.
-         *
-         * Le code postal saisi à la main prime sur celui du géocodeur quand il existe : c'est la
-         * donnée que le client a écrite, et elle vaut mieux qu'une inférence.
-         */
+        // LA ZONE EST RÉSOLUE ICI, pendant le parcours — pas au moment d'envoyer quelqu'un.
         $this->serviceZoneId = app(ZonePricingResolver::class)
             ->resolveZone($this->postalCode, $locality)?->id;
 
@@ -954,11 +713,7 @@ class OrderJourney extends Component
             'service_zone_id' => $this->serviceZoneId,
         ]);
 
-        /*
-         * Le mode retenu peut ne plus être disponible ici : « intervention immédiate » choisie
-         * avant l'adresse, sur une zone qui ne l'ouvre pas. On retombe sur le rendez-vous plutôt
-         * que de laisser une commande impossible aller jusqu'à la confirmation.
-         */
+        // Le mode retenu peut ne plus être disponible ici : « intervention immédiate » choisie avant l'adresse, sur une zone qui ne l'ouvre pas.
         unset($this->availableModes);
 
         if (! in_array($this->mode, $this->availableModes, true)) {
@@ -972,14 +727,7 @@ class OrderJourney extends Component
 
     // ─── Rattrapage du panier ────────────────────────────────────────────────────────────────
 
-    /**
-     * La clé à confier au navigateur, pour retrouver ce panier si le cookie disparaît.
-     *
-     * Le cookie de session reste la voie normale — il est `httpOnly`, donc hors de portée d'une
-     * XSS. Cette clé-ci est un RATTRAPAGE, et c'est pour cela qu'elle est bornée : hachée en base,
-     * tournante à chaque usage, expirante. Sans ces trois limites, ce serait le jeton de session
-     * recopié en clair dans `localStorage`, à la portée de tout script injecté, et pour toujours.
-     */
+    /** La clé à confier au navigateur, pour retrouver ce panier si le cookie disparaît. */
     #[Computed(persist: false)]
     public function recoveryKey(): ?string
     {
@@ -988,13 +736,7 @@ class OrderJourney extends Component
         return $manager->issueRecoveryKey($this->draft());
     }
 
-    /**
-     * Le navigateur présente une clé : on rouvre le panier qu'elle désigne.
-     *
-     * Appelé uniquement quand la session n'a rien — un cookie effacé, une session expirée. Une clé
-     * inconnue, périmée ou pointant sur une commande déjà passée ne fait RIEN : il n'y a personne
-     * à informer, et le client garde le panier vide qu'il avait.
-     */
+    /** Le navigateur présente une clé : on rouvre le panier qu'elle désigne. */
     public function recoverDraft(string $key): void
     {
         $manager = app(OrderDraftManager::class);
@@ -1004,11 +746,7 @@ class OrderJourney extends Component
             return;
         }
 
-        /*
-         * On adopte le jeton du panier retrouvé plutôt que d'y recopier le nôtre : le reste du
-         * composant travaille par jeton de session, et la reprise redevient ainsi le chemin
-         * ordinaire, sans cas particulier.
-         */
+        // On adopte le jeton du panier retrouvé plutôt que d'y recopier le nôtre : le reste du composant travaille par jeton de session, et la reprise redevient ainsi le chemin ordinaire, sans cas particulier.
         $this->sessionToken = $recovered->session_token;
         session()->put('order_draft_token', $this->sessionToken);
 
@@ -1028,15 +766,7 @@ class OrderJourney extends Component
 
     // ─── Chantier : une date par métier ──────────────────────────────────────────────────────
 
-    /**
-     * Le client fixe la date d'UN métier du chantier.
-     *
-     * La séquence calculée reste le défaut — il n'a pas à orchestrer ses artisans. Mais quand le
-     * plombier ne peut que mardi, il doit pouvoir le dire sans renoncer au reste.
-     *
-     * Le refus est AFFICHÉ, jamais corrigé en silence : une date rectifiée sans le dire ferait
-     * croire au client que la sienne a été prise, et il découvrirait autre chose le jour venu.
-     */
+    /** Le client fixe la date d'UN métier du chantier. */
     public function pinItemDate(int $itemId, string $date): void
     {
         $this->sequenceError = '';
@@ -1078,40 +808,14 @@ class OrderJourney extends Component
 
     // ─── Photos ──────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Joint les photos choisies à la ligne de commande du métier courant.
-     *
-     * Le champ existait, `order_draft_media` existait, le modèle et la relation aussi — et rien ne
-     * les reliait. `wire:model` sur un `<input type="file">` sans le trait d'upload ne fait
-     * strictement rien : le client choisissait une photo, lisait « Envoi en cours… », et le fichier
-     * disparaissait. Sans erreur, sans trace, et sans que le prestataire n'en voie la couleur.
-     *
-     * Le refus d'un fichier non conforme est ANNONCÉ. Un refus muet fait recommencer trois fois
-     * avec le même fichier.
-     */
+    /** Joint les photos choisies à la ligne de commande du métier courant. */
     public function attachPhotos(): void
     {
         if (! $this->trade || $this->photos === []) {
             return;
         }
 
-        /*
-         * LA LISTE DES FORMATS N'EST PLUS ÉCRITE ICI.
-         *
-         * Elle l'était, et elle était juste — mais recopiée. `ImagesTeleversees` explique dans son
-         * propre commentaire pourquoi cela ne tient pas : « quand la règle est recopiée à chaque
-         * point d'entrée, elle diverge, et c'est toujours la copie la plus permissive qui décide ».
-         * Ces photos finissent sur le disque `public`, servi tel quel par le serveur web ; un SVG
-         * accepté ici s'exécuterait dans notre origine.
-         *
-         * LE HEIC, LUI, EST DEVENU VRAI. L'ancienne liste écrite ici le mentionnait déjà, mais la
-         * règle `image` qui la précédait vaut `jpg, jpeg, png, gif, bmp, webp` chez Laravel et
-         * rejetait le fichier AVANT que `mimes:` ne soit lu : la mention était décorative, et
-         * aucune photo d'iPhone n'est jamais passée par ce champ. La règle partagée n'emploie plus
-         * `image` et liste `heic`/`heif` explicitement — le format par défaut des iPhone passe donc
-         * réellement, ici comme sur les deux autres parcours, ce qui est tout l'intérêt d'avoir une
-         * seule liste. L'alignement ajoute aussi `gif` et `bmp`, pour les vieux appareils.
-         */
+        // LA LISTE DES FORMATS N'EST PLUS ÉCRITE ICI.
         $this->validate(
             ['photos.*' => ImagesTeleversees::regles(tailleMaxKo: 8192)],
             [
@@ -1138,12 +842,7 @@ class OrderJourney extends Component
         unset($this->attachedPhotos);
     }
 
-    /**
-     * Le client change d'avis.
-     *
-     * Le fichier part avec la ligne : garder l'un sans l'autre laisserait des images orphelines sur
-     * le disque, invisibles et jamais purgées — et il s'agit de photos du domicile de quelqu'un.
-     */
+    /** Le client change d'avis. */
     public function removePhoto(int $mediaId): void
     {
         $media = OrderDraftMedia::query()
@@ -1162,9 +861,6 @@ class OrderJourney extends Component
 
     /**
      * Les photos déjà jointes au métier courant.
-     *
-     * Sans aperçu, on rejoint deux fois la même : le client n'a aucun moyen de savoir ce qui est
-     * déjà parti.
      *
      * @return Collection<int, OrderDraftMedia>
      */
@@ -1185,14 +881,6 @@ class OrderJourney extends Component
     /**
      * Les adresses proposées pendant la frappe.
      *
-     * Le champ était nu, et faire taper une adresse entière au pouce accepte d'avance les fautes de
-     * frappe. Or une faute de frappe fait échouer le géocodage EN SILENCE — par conception, pour ne
-     * jamais bloquer une commande : on perd la preuve de disponibilité, et le prestataire part à la
-     * mauvaise porte.
-     *
-     * La liste se tait dès que l'adresse est située : proposer autre chose à quelqu'un qui a déjà
-     * choisi ne l'aide plus, ça le fait douter.
-     *
      * @return list<AddressSuggestion>
      */
     #[Computed]
@@ -1211,14 +899,7 @@ class OrderJourney extends Component
                 5,
             );
 
-            /*
-             * Une seule proposition, identique à ce qui est écrit : le client a déjà choisi. Lui
-             * reproposer sa propre saisie ne l'aide plus, ça le fait douter d'avoir bien fait.
-             *
-             * Le critère n'est PAS « l'adresse est située » : pendant la frappe, une adresse
-             * partielle se géocode souvent avec succès sur une ville entière, et masquer les
-             * suggestions à ce moment-là retire l'aide juste avant qu'elle ne serve.
-             */
+            // Une seule proposition, identique à ce qui est écrit : le client a déjà choisi.
             return array_values(array_filter(
                 $suggestions,
                 fn (AddressSuggestion $s) => $s->description !== $typed,
@@ -1232,13 +913,7 @@ class OrderJourney extends Component
         }
     }
 
-    /**
-     * Le client retient une suggestion : elle porte déjà sa position.
-     *
-     * Relancer un géocodage sur un libellé qu'on vient de fournir soi-même paierait un appel de
-     * plus pour un résultat déjà en main — et s'exposerait à ce qu'il échoue là où le premier avait
-     * réussi.
-     */
+    /** Le client retient une suggestion : elle porte déjà sa position. */
     public function chooseAddressSuggestion(string $description, ?float $lat = null, ?float $lng = null): void
     {
         $this->address = $description;
@@ -1262,16 +937,7 @@ class OrderJourney extends Component
         $this->refreshDerived();
     }
 
-    /**
-     * « Utiliser ma position » — le client a déjà l'information dans sa poche.
-     *
-     * Le navigateur fournit les coordonnées, le serveur les retourne en adresse lisible. Sur un
-     * téléphone, c'est un geste contre une adresse entière tapée au pouce.
-     *
-     * Les coordonnées sont retenues MÊME si le serveur ne sait pas les nommer : ce sont elles qui
-     * débloquent la preuve de disponibilité et le rayon de recherche, le libellé n'est qu'un
-     * confort de lecture.
-     */
+    /** « Utiliser ma position » — le client a déjà l'information dans sa poche. */
     public function useMyPosition(float $lat, float $lng): void
     {
         $this->lat = $lat;
@@ -1298,17 +964,7 @@ class OrderJourney extends Component
         $this->refreshDerived();
     }
 
-    /**
-     * Le code postal et la zone, depuis une position.
-     *
-     * Écrit UNE FOIS et appelé par les trois chemins d'adresse (frappe, suggestion, « ma
-     * position ») : trois résolutions séparées finiraient par diverger, et le prix dépendrait de
-     * la façon dont le client a saisi son adresse.
-     *
-     * L'échec est muet, comme le géocodage : une zone introuvable ne doit pas bloquer la saisie.
-     * Elle bloquera la CONFIRMATION, avec un message — c'est le bon moment pour le dire, parce que
-     * c'est le moment où ça devient une décision.
-     */
+    /** Le code postal et la zone, depuis une position. */
     protected function resolveGeographyFromCoordinates(float $lat, float $lng): void
     {
         try {
@@ -1339,12 +995,7 @@ class OrderJourney extends Component
         }
     }
 
-    /**
-     * Ce qu'on peut honnêtement promettre. `null` tant que l'adresse n'est pas située.
-     *
-     * On ne promet rien avant de pouvoir le vérifier : une estimation de disponibilité affichée
-     * sans position serait une décoration, et la loi 11 dit exactement le contraire.
-     */
+    /** Ce qu'on peut honnêtement promettre. `null` tant que l'adresse n'est pas située. */
     #[Computed]
     public function availability(): ?AvailabilitySnapshot
     {
@@ -1378,9 +1029,6 @@ class OrderJourney extends Component
     /**
      * La grille du jour retenu — créneaux disponibles ET indisponibles.
      *
-     * Les seconds ne sont pas retirés : masqués, ils laisseraient une grille trouée que le client
-     * lirait comme une panne. Grisés avec leur raison, ils informent.
-     *
      * @return list<array<string, mixed>>
      */
     #[Computed]
@@ -1400,7 +1048,8 @@ class OrderJourney extends Component
         );
     }
 
-    /** Les professionnels proposés, pour qui veut choisir. La liste reste facultative.
+    /**
+     * Les professionnels proposés, pour qui veut choisir. La liste reste facultative.
      *
      * @return Collection<int, array{id: int, name: string, rating: float|null, rating_count: int, missions_count: int, distance_m: int, distance_km: float}>
      */
@@ -1452,12 +1101,7 @@ class OrderJourney extends Component
 
         $this->selectedProviderId = $providerId;
 
-        /*
-         * Le choix est ÉCRIT sur la ligne, pas seulement gardé à l'écran. Un état qui ne vit que
-         * dans le composant disparaît au rechargement — et le client, lui, croit avoir choisi son
-         * professionnel. C'est aussi ce qui permet à la pré-autorisation de partir dès la
-         * confirmation : sans prestataire enregistré, Stripe n'a pas de destination.
-         */
+        // Le choix est ÉCRIT sur la ligne, pas seulement gardé à l'écran.
         if ($trade = $this->trade) {
             app(OrderDraftManager::class)
                 ->itemFor($this->draft(), $trade)
@@ -1482,10 +1126,6 @@ class OrderJourney extends Component
     /**
      * Le chantier tel qu'il se déroulera : chaque métier, son rang, et quand il peut commencer.
      *
-     * L'ordre n'est pas cosmétique — le carreleur ne pose pas avant que le plombier ait fini, et
-     * pas immédiatement après non plus : il faut laisser sécher. Le client doit VOIR ce
-     * séquencement, sinon il croit que tout le monde arrive le même matin.
-     *
      * @return Collection<int, array{item: OrderDraftItem, trade: Trade, starts_at: Carbon, ends_at: Carbon, waits_for: string|null, gap_min: int}>
      */
     #[Computed]
@@ -1501,7 +1141,8 @@ class OrderJourney extends Component
         );
     }
 
-    /** « Souvent commandé avec » — ce que l'administrateur a associé, moins ce qui est déjà là.
+    /**
+     * « Souvent commandé avec » — ce que l'administrateur a associé, moins ce qui est déjà là.
      *
      * @return Collection<int, array{trade: Trade, gap_min: int, after: string}>
      */
@@ -1513,7 +1154,8 @@ class OrderJourney extends Component
             : collect();
     }
 
-    /** Le devis consolidé : un total, le détail dépliable par métier, la remise visible.
+    /**
+     * Le devis consolidé : un total, le détail dépliable par métier, la remise visible.
      *
      * @return array<string, mixed>|null
      */
@@ -1566,10 +1208,6 @@ class OrderJourney extends Component
     /**
      * Réordonne le chantier — en refusant ce qui le casserait.
      *
-     * Le client peut passer le nettoyage avant la peinture ; il ne peut pas faire poser le
-     * carrelage avant la plomberie. Le refus est AFFICHÉ : corriger en silence lui ferait croire
-     * que son geste a été pris en compte.
-     *
      * @param  list<int|string>  $orderedItemIds
      */
     public function reorderServices(array $orderedItemIds): void
@@ -1609,15 +1247,7 @@ class OrderJourney extends Component
         $this->tradeId = $trade->id;
         $this->sectorId = $trade->sector_id ?? $this->sectorId;
 
-        /*
-         * L'intention arrivée par l'URL s'applique ICI, et pas avant.
-         *
-         * Les modes dépendent du métier — un ravalement de façade n'est pas un service immédiat —
-         * et aucun n'est choisi tant que le client est sur le carrousel. L'intention attend donc la
-         * sélection, puis se consomme : elle ne doit pas se réappliquer à chaque changement de
-         * métier, sinon le client qui bascule volontairement en planifié se ferait ramener en
-         * immédiat au métier suivant.
-         */
+        // L'intention arrivée par l'URL s'applique ICI, et pas avant.
         if ($this->intendedMode !== null) {
             $wanted = $this->intendedMode;
             $this->intendedMode = null;
@@ -1627,13 +1257,7 @@ class OrderJourney extends Component
             } else {
                 // On le DIT. Basculer en silence laisserait le client croire qu'il a commandé une
                 // intervention dans l'heure.
-                /*
-                 * Le métier est nommé comme la TUILE que le client vient de choisir. Lui renvoyer
-                 * « Peinture » quand il a cliqué « Schilderwerk » lui ferait chercher un métier
-                 * qu'il n'a jamais sélectionné. La phrase qui l'entoure reste française — tout
-                 * l'habillage du parcours l'est encore, et c'est `translation_overrides` qui le
-                 * traduira ; ce n'est pas une raison pour se tromper aussi de nom.
-                 */
+                // Le métier est nommé comme la TUILE que le client vient de choisir.
                 $this->modeNotice = match ($wanted) {
                     OrderMode::ASAP => sprintf(
                         '« %s » n’accepte pas les interventions immédiates : ce métier demande une préparation. Choisissez une date ci-dessous.',
@@ -1654,43 +1278,14 @@ class OrderJourney extends Component
             $this->mode = OrderMode::SCHEDULED;
         }
 
-        /*
-         * Le mode est ÉCRIT SUR LA COMMANDE, pas seulement porté par l'écran.
-         *
-         * `reprice()` recalcule à partir de `order_drafts.mode` et jamais de la propriété du
-         * composant. Les deux qui divergent, c'est l'écran qui annonce une majoration d'urgence
-         * pendant que le devis enregistré — celui que la confirmation reprend — est calculé au
-         * tarif planifié : le client voit un prix et en paie un autre.
-         *
-         * Le repli ci-dessus produisait exactement cela : passer d'un métier qui accepte
-         * l'immédiat à un métier qui le refuse ramenait l'écran au planifié en laissant la commande
-         * majorée.
-         */
+        // Le mode est ÉCRIT SUR LA COMMANDE, pas seulement porté par l'écran.
         $draft = $this->draft();
 
         if ($draft->mode !== $this->mode) {
             $draft->update(['mode' => $this->mode]);
         }
 
-        /*
-         * CHOISIR UN MÉTIER L'INSCRIT AU PANIER — désormais dans tous les modes.
-         *
-         * La règle précédente était « une ligne n'apparaît qu'à la première réponse : regarder un
-         * métier n'est pas le commander ». L'intention se défend, mais l'écran ne la tenait pas :
-         * dès la sélection, il ouvre le questionnaire, affiche « Nettoyage à domicile » et annonce
-         * « 45 € » dans le panneau d'estimation, bouton « Continuer » actif.
-         *
-         * Un client qui choisit son service, saisit son adresse, retient son créneau et clique
-         * Continuer sans avoir touché une seule question — toutes facultatives, la surface ayant
-         * même une valeur affichée par défaut — atterrissait sur « Votre panier est vide ». Sans
-         * explication, et sans autre issue que tout recommencer.
-         *
-         * Deux notions de « la commande » cohabitaient : la sélection portée par l'écran, et les
-         * lignes portées par le panier. Le prix venait de la première, le récapitulatif lisait la
-         * seconde. On les réunit ici, au moment où le client a effectivement choisi.
-         *
-         * `itemFor()` est idempotent : revenir sur un métier déjà retenu ne crée pas de doublon.
-         */
+        // CHOISIR UN MÉTIER L'INSCRIT AU PANIER — désormais dans tous les modes.
         if ($this->mode === OrderMode::BUNDLE) {
             app(BundleComposer::class)->addTrade($this->draft(), $trade);
         } else {
@@ -1711,12 +1306,7 @@ class OrderJourney extends Component
         $this->refreshDerived();
     }
 
-    /**
-     * Retour au dock, SANS perdre les réponses.
-     *
-     * Elles vivent dans le panier, pas dans le composant : revenir en arrière puis rouvrir le même
-     * métier retrouve exactement ce qui avait été saisi.
-     */
+    /** Retour au dock, SANS perdre les réponses. */
     public function backToTrades(): void
     {
         $this->tradeId = null;
@@ -1724,19 +1314,7 @@ class OrderJourney extends Component
         $this->refreshDerived();
     }
 
-    /**
-     * LE MODE CHOISI À L'ENTRÉE — avant même de savoir de quel métier il s'agit.
-     *
-     * Les trois façons de commander sont des INTENTIONS différentes, pas trois réglages du même
-     * formulaire : « j'ai une fuite maintenant » et « je planifie un grand nettoyage en mai » ne
-     * cherchent pas le même catalogue. L'application mobile posait déjà la question en premier ;
-     * le web arrivait directement sur le catalogue complet, et l'immédiat ne se découvrait qu'après
-     * avoir choisi un métier — parfois pour apprendre qu'il ne le permet pas.
-     *
-     * CHANGER D'INTENTION REPART DU CATALOGUE. Garder le métier en cours donnerait un écran qui
-     * contredit le choix qu'on vient de faire : « intervention immédiate » affichant un ravalement
-     * de façade. Le panier, lui, survit — ses réponses sont dans le brouillon.
-     */
+    /** LE MODE CHOISI À L'ENTRÉE — avant même de savoir de quel métier il s'agit. */
     public function chooseIntent(?string $mode): void
     {
         $this->intendedMode = in_array($mode, OrderMode::all(), true) ? $mode : null;
@@ -1751,12 +1329,7 @@ class OrderJourney extends Component
         $this->refreshDerived();
     }
 
-    /**
-     * Le catalogue est-il restreint à une intention ?
-     *
-     * La vue s'en sert pour dire au client CE QU'IL VOIT — un catalogue filtré sans explication
-     * ressemble à un catalogue vide.
-     */
+    /** Le catalogue est-il restreint à une intention ? */
     #[Computed]
     public function intentIsNarrowing(): bool
     {
@@ -1772,13 +1345,7 @@ class OrderJourney extends Component
         $this->mode = $mode;
         $this->draft()->update(['mode' => $mode]);
 
-        /*
-         * Basculer en multi-services POSE au chantier le métier en cours de configuration.
-         *
-         * Le client vient de dire « en fait il m'en faut plusieurs » : celui qu'il regardait est le
-         * premier du chantier. Sans ce geste, il passe en multi-services et trouve un plan vide,
-         * alors qu'il venait de répondre à ses questions.
-         */
+        // Basculer en multi-services POSE au chantier le métier en cours de configuration.
         if ($mode === OrderMode::BUNDLE && $this->trade) {
             app(BundleComposer::class)->addTrade($this->draft(), $this->trade);
         }
@@ -1788,13 +1355,7 @@ class OrderJourney extends Component
 
     // ─── Réponses ────────────────────────────────────────────────────────────────────────────
 
-    /**
-     * Une réponse arrive du rendu client — le même composant que celui de l'aperçu admin.
-     *
-     * Elle est enregistrée immédiatement. Attendre une validation finale ferait perdre tout le
-     * questionnaire au premier onglet fermé, et c'est précisément ce que le parcours promet
-     * d'éviter.
-     */
+    /** Une réponse arrive du rendu client — le même composant que celui de l'aperçu admin. */
     #[On('question-answered')]
     public function recordAnswer(string $code, mixed $value, bool $valid): void
     {
@@ -1811,13 +1372,7 @@ class OrderJourney extends Component
 
     // ─── Trajet : les deux points, et la route entre eux ─────────────────────────────────────
 
-    /**
-     * Ce métier décrit-il un trajet ?
-     *
-     * Lu par l'écran pour ne pas redemander l'adresse : sur un trajet, la question de DÉPART EST
-     * l'adresse d'intervention. La poser deux fois donnerait à croire qu'on en attend deux
-     * différentes.
-     */
+    /** Ce métier décrit-il un trajet ? */
     #[Computed]
     public function estUnTrajet(): bool
     {
@@ -1828,9 +1383,6 @@ class OrderJourney extends Component
 
     /**
      * La route retenue pour cette commande, telle qu'on l'annonce au client.
-     *
-     * `null` tant que les deux points ne sont pas situés : on ne promet ni distance ni durée avant
-     * de pouvoir les mesurer.
      *
      * @return array{distance_km: float, duration_min: int|null, source: string|null, approximatif: bool}|null
      */
@@ -1855,31 +1407,8 @@ class OrderJourney extends Component
         ];
     }
 
-    /**
-     * Une réponse de localisation vient d'arriver : elle alimente la géographie de la commande.
-     *
-     * LE DÉPART ÉCRIT LES COLONNES D'ADRESSE QUI EXISTENT DÉJÀ. C'est le choix central de ce lot :
-     * zone, catalogue, preuve de disponibilité, dispatch de proximité et geofence continuent de
-     * lire exactement ce qu'ils lisaient, sans une ligne de modification. Le point de dépose, lui,
-     * va dans des colonnes qui portent son nom.
-     */
-    /**
-     * PLACER UN POINT DEPUIS LA CARTE — le geste que le champ d'adresse ne remplace pas.
-     *
-     * Taper une adresse est plus rapide ; la carte sert à la PRÉCISION. « Rue de la Loi 1 » désigne
-     * un bâtiment, pas la porte de service ni le côté du terre-plein où le conducteur doit
-     * s'arrêter. Sur une course, ces trente mètres décident si le client trouve sa voiture.
-     *
-     * ELLE NE RÉÉCRIT RIEN ELLE-MÊME. Le point part vers la question concernée, qui applique la
-     * même logique que « utiliser ma position » — géocodage inverse, libellé, validation — puis
-     * remonte la réponse par le chemin normal. Écrire directement le panier depuis ici créerait un
-     * SECOND écrivain de la même donnée : le brouillon dirait une chose, la question afficherait
-     * l'autre, et le client verrait son adresse changer toute seule au coup suivant.
-     *
-     * LE RÔLE VIENT DU NAVIGATEUR, donc il est vérifié. Un rôle inconnu ne fait rien ; des
-     * coordonnées hors du monde non plus. Ce sont des paramètres de méthode publique Livewire —
-     * c'est-à-dire une porte ouverte sur Internet.
-     */
+    /** Une réponse de localisation vient d'arriver : elle alimente la géographie de la commande. */
+    /** PLACER UN POINT DEPUIS LA CARTE — le geste que le champ d'adresse ne remplace pas. */
     public function placerSurLaCarte(string $role, float $lat, float $lng): void
     {
         $trade = $this->trade;
@@ -1900,21 +1429,12 @@ class OrderJourney extends Component
             return;
         }
 
-        /*
-         * Diffusé à TOUTES les questions, filtré par code à l'arrivée : les rendus de question sont
-         * autant d'instances du même composant, `->to()` ne saurait pas laquelle viser.
-         */
+        // Diffusé à TOUTES les questions, filtré par code à l'arrivée : les rendus de question sont autant d'instances du même composant, `->to()` ne saurait pas laquelle viser.
         $this->dispatch('place-location', code: $question->code, lat: $lat, lng: $lng);
     }
 
     /**
      * La géométrie de la route, pour que la carte trace un trajet et non une corde tendue.
-     *
-     * Lue au service plutôt que stockée sur le panier : elle est déjà mise en cache là-bas, et une
-     * colonne de plus serait une seconde vérité à tenir à jour à chaque déplacement d'un point.
-     *
-     * Deux points seulement veut dire « personne n'a su calculer d'itinéraire » — la carte doit
-     * alors le montrer en pointillé plutôt que de faire passer une ligne droite pour une route.
      *
      * @return list<array{lat: float, lng: float}>
      */
@@ -1998,18 +1518,7 @@ class OrderJourney extends Component
         $this->annoncerLeTrajet();
     }
 
-    /**
-     * DIRE À LA CARTE QUE LES POINTS ONT BOUGÉ.
-     *
-     * La carte vit sous `wire:ignore` — Leaflet possède son nœud et refuse qu'on le remplace sous
-     * lui. Elle ne peut donc RIEN apprendre du rendu : ni un point déplacé, ni un itinéraire
-     * recalculé, ni une adresse corrigée au clavier dans le champ voisin. Sans cet événement, elle
-     * afficherait indéfiniment l'état du premier chargement — et le client verrait son marqueur
-     * rester en place après avoir changé d'adresse.
-     *
-     * UN SEUL POINT D'ÉMISSION, appelé par tous les chemins qui touchent un point. En dispersant
-     * l'annonce, celui qu'on oublierait produirait exactement ce silence-là.
-     */
+    /** DIRE À LA CARTE QUE LES POINTS ONT BOUGÉ. */
     protected function annoncerLeTrajet(): void
     {
         if (! $this->estUnTrajet) {
@@ -2031,15 +1540,7 @@ class OrderJourney extends Component
         ]);
     }
 
-    /**
-     * Mesure la route dès que les deux points sont connus, et l'écrit sur le panier.
-     *
-     * À LA COMMANDE, pas après : c'est ce qui permet d'annoncer un prix au kilomètre AVANT que le
-     * client valide. Un tarif découvert à l'arrivée est exactement ce qu'on reproche aux taxis.
-     *
-     * Soft-fail comme le géocodage : un fournisseur d'itinéraire en panne fait perdre une
-     * estimation de durée, jamais une commande.
-     */
+    /** Mesure la route dès que les deux points sont connus, et l'écrit sur le panier. */
     protected function mesurerLaRoute(): void
     {
         $draft = $this->draft();
@@ -2085,20 +1586,13 @@ class OrderJourney extends Component
         $manager->reprice($draft);
     }
 
-    /**
-     * Le métier courant se facture-t-il au temps passé ?
-     *
-     * C'est cette réponse qui fait apparaître le sélecteur d'heures dans le parcours — et elle se
-     * lit sur le métier, jamais sur une copie.
-     */
+    /** Le métier courant se facture-t-il au temps passé ? */
     public function estFactureALHeure(): bool
     {
         return (bool) $this->trade?->hourly_billing;
     }
 
-    /**
-     * Le tarif horaire applicable ici — métier, ou surcharge de la zone quand elle existe.
-     */
+    /** Le tarif horaire applicable ici — métier, ou surcharge de la zone quand elle existe. */
     public function tarifHoraireCents(): ?int
     {
         $trade = $this->trade;
@@ -2110,12 +1604,7 @@ class OrderJourney extends Component
         return app(HourlyRateResolver::class)->tarifCatalogue($trade, $this->serviceZoneId);
     }
 
-    /**
-     * Les heures choisies, en minutes — la forme que le moteur attend.
-     *
-     * Rend `null` hors métier horaire : le moteur garde alors le forfait, et un métier
-     * forfaitaire ne doit surtout pas voir arriver des minutes achetées.
-     */
+    /** Les heures choisies, en minutes — la forme que le moteur attend. */
     public function heuresEnMinutes(): ?int
     {
         if (! $this->estFactureALHeure() || $this->heuresChoisies === null) {
@@ -2125,16 +1614,7 @@ class OrderJourney extends Component
         return (int) round($this->heuresChoisies * 60);
     }
 
-    /**
-     * Le client choisit sa durée.
-     *
-     * BORNÉE DES DEUX CÔTÉS. En bas, le minimum du métier — descendre sous une heure sur un ménage
-     * vend un déplacement à perte, et le prestataire refusera. En haut, une limite qui empêche
-     * un devis que personne ne peut honorer, et qu'un doigt sur un bouton « + » atteindrait seul.
-     *
-     * Le pas d'une demi-heure : un client qui veut « environ deux heures et demie » ne doit pas
-     * avoir à choisir entre deux et trois.
-     */
+    /** Le client choisit sa durée. BORNÉE DES DEUX CÔTÉS. */
     public function choisirLesHeures(float $heures): void
     {
         $min = (float) Config::get('order_engine.hourly_min_hours', 1.0);
@@ -2157,12 +1637,7 @@ class OrderJourney extends Component
         $this->choisirLesHeures(($this->heuresChoisies ?? $this->heuresParDefaut()) - $this->pasDuSelecteur());
     }
 
-    /**
-     * LE MEME PAS QUE LA PROLONGATION, et c'est la raison pour laquelle il vient de la
-     * configuration : acheter du temps a la commande et en acheter pendant la mission sont le meme
-     * geste. Deux constantes separees auraient fini par diverger -- on aurait commande par
-     * demi-heures et prolonge par quarts d'heure, sur la meme prestation.
-     */
+    /** LE MEME PAS QUE LA PROLONGATION, et c'est la raison pour laquelle il vient de la configuration : acheter du temps a la commande et en acheter pendant la mission sont le meme geste. */
     public function pasDuSelecteur(): float
     {
         $pas = (float) Config::get('order_engine.hourly_step_hours', 0.5);
@@ -2172,12 +1647,7 @@ class OrderJourney extends Component
         return $pas > 0 ? $pas : 0.5;
     }
 
-    /**
-     * La durée proposée d'entrée : celle que le métier estime, arrondie à la demi-heure.
-     *
-     * Proposer une valeur plutôt que de laisser le champ vide évite le prix à zéro et donne au
-     * client un point de départ crédible — il ajuste, il ne devine pas.
-     */
+    /** La durée proposée d'entrée : celle que le métier estime, arrondie à la demi-heure. */
     public function heuresParDefaut(): float
     {
         $estimation = (int) ($this->trade->estimated_duration_min ?? 0);
@@ -2192,12 +1662,7 @@ class OrderJourney extends Component
         return max($min, round(($estimation / 60) / $pas) * $pas);
     }
 
-    /**
-     * Les heures voyagent sur la LIGNE DE PANIER, pas sur le panier.
-     *
-     * Une commande peut porter deux heures de ménage et trois de repassage : les ranger au niveau
-     * du panier écraserait l'une par l'autre.
-     */
+    /** Les heures voyagent sur la LIGNE DE PANIER, pas sur le panier. */
     protected function enregistrerLesHeures(): void
     {
         $trade = $this->trade;

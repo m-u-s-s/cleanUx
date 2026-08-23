@@ -5,10 +5,7 @@ namespace App\Services\Calendar\Contracts;
 use App\Models\GoogleCalendarConnection;
 use Carbon\CarbonInterface;
 
-/**
- * Abstraction de l'accès Google Calendar pour le sens entrant — permet de tester
- * la boucle de synchro sans dépendre de l'API Google réelle (impl Mock vs Google).
- */
+/** Abstraction de l'accès Google Calendar pour le sens entrant — permet de tester la boucle de synchro sans dépendre de l'API Google réelle (impl Mock vs Google). */
 interface GoogleBusyFetcher
 {
     /**

@@ -8,19 +8,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Garde de TYPE d'organisation pour les dashboards entreprise.
- *
- * Le trait EnforcesActiveOrgMembership (composants Livewire) prouve déjà
- * l'appartenance à l'org courante (anti-IDOR horizontal). Ce middleware ajoute
- * la couche manquante : vérifier que le TYPE de l'org courante correspond à la
- * surface demandée, pour qu'un membre d'une provider_company ne charge pas l'UI
- * client_company (et inversement).
- *
- * Usage dans les routes :
- *   ->middleware('org.type:client')     // CLIENT_COMPANY ou HYBRID
- *   ->middleware('org.type:provider')   // PROVIDER_COMPANY / PROVIDER_SOLO ou HYBRID
- */
+/** Garde de TYPE d'organisation pour les dashboards entreprise. */
 class EnsureOrganizationType
 {
     public function handle(Request $request, Closure $next, string $expected): Response

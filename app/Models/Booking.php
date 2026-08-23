@@ -23,18 +23,6 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Booking — entité canonique des réservations Brio.
  *
- * Ce modèle remplace l'ancien doublon `Bookings.php` (qui n'était utilisé nulle part).
- * Les traits HasRecurringSeries / HasBookingDisplayAccessors / ResetsNotificationTracking
- * apportent : gestion des séries récurrentes, accessors d'affichage unifiés FR/EN,
- * et reset auto du tracking de notification quand la date/heure/status change.
- *
- * Les noms FR (client_id, date, heure, adresse…) sont conservés pour rétrocompat
- * et sont synchronisés automatiquement avec leurs équivalents modernes via
- * syncLegacyAliases() au moment du save.
- *
- * Accessors declared in HasBookingDisplayAccessors (Larastan does not infer
- * getXAttribute through traits at level 6):
- *
  * @property ?string $beneficiary_name
  * @property ?string $beneficiary_phone
  * @property ?string $beneficiary_note
@@ -46,21 +34,11 @@ use Illuminate\Support\Facades\Schema;
  * @property ?Carbon $checkin_ping_sent_at
  * @property ?string $checkin_ping_answer
  *                                        ── QUATRE ALIAS DE REQUÊTE, ET DEUX FANTÔMES QUI ONT ÉTÉ RETIRÉS ──────────────────────────
- *
- * Les quatre ci-dessous ne sont PAS des colonnes : ce sont des alias posés par des `select`
- * d'agrégation, sur des lignes hydratées en `Booking`. Ils sont annotés pour que l'analyse
- * statique les accepte là où ils existent vraiment — même idiome que `AccountingEntry::$c`.
- *
- *   $total       COUNT(*) / SUM(...)  AdminAnalyticsService, ClientCompanyDashboard,
- *                                     AssistantReadActions
- *   $trade_name  trades.name AS ...   ClientCompanyDashboard, AssistantReadActions
- *   $month       MONTH(...) AS month  AdminAnalyticsService
- *   $total_cents SUM(...) AS ...      ProviderEarningsDashboard
- *
- * `user_id` et `adresse_complete` figuraient dans la même liste SANS être ni colonne ni
- * alias. Elles n'ont rien documenté : elles ont APPRIS à l'analyse statique que ces lectures
- * étaient valides, et trois défauts réels s'y sont logés — la contrepartie du grand livre, le
- * montant des événements d'analyse, l'étiquette des favoris. Ne pas les réintroduire.
+ *                                        $total       COUNT(*) / SUM(...)  AdminAnalyticsService, ClientCompanyDashboard,
+ *                                        AssistantReadActions
+ *                                        $trade_name  trades.name AS ...   ClientCompanyDashboard, AssistantReadActions
+ *                                        $month       MONTH(...) AS month  AdminAnalyticsService
+ *                                        $total_cents SUM(...) AS ...      ProviderEarningsDashboard
  * @property-read int|string $total
  * @property-read ?string $trade_name
  * @property-read int|string $month
@@ -207,12 +185,7 @@ class Booking extends Model
         'postal_code',
         'country',
         'address_components',
-        /*
-         * ⚠️ `destination_*` EST LE POINT A — le lieu de l'intervention, où le prestataire se rend.
-         * Sur une course, c'est le point de PRISE EN CHARGE. Le nom trompe ; tout ce qui lit ces
-         * colonnes (geofence, suivi, dispatch de proximité, preuve de présence) désigne cet
-         * endroit-là et pas un autre.
-         */
+        // ⚠️ `destination_*` EST LE POINT A — le lieu de l'intervention, où le prestataire se rend.
         'destination_lat',
         'destination_lng',
 
@@ -321,26 +294,14 @@ class Booking extends Model
         'commentaire_client',
         'devis_estime',
         'duree_estimee',
-        /*
-         * LE TEMPS ACHETE, distinct du temps ESTIME juste au-dessus.
-         *
-         * `duree_estimee` dit combien de temps on pense que ca prendra ; celle-ci dit combien le
-         * client a paye. Elles partent egales sur une reservation horaire, puis divergent des la
-         * premiere prolongation -- et c'est la que les fondre aurait menti.
-         */
+        // LE TEMPS ACHETE, distinct du temps ESTIME juste au-dessus.
         'purchased_minutes',
 
         // Timestamps explicites (autorisés pour fixtures de tests rétro-datées)
         'created_at',
         'updated_at',
 
-        /*
-         * LE BÉNÉFICIAIRE (E1) — le client paye, quelqu'un d'autre reçoit.
-         *
-         * Il SURVIT à la conversion du panier : un bénéficiaire qui ne franchirait pas la
-         * confirmation ne servirait à personne, et le prestataire arriverait en demandant celui
-         * qui a payé.
-         */
+        // LE BÉNÉFICIAIRE (E1) — le client paye, quelqu'un d'autre reçoit.
         'beneficiary_name',
         'beneficiary_phone',
         'beneficiary_note',
@@ -373,13 +334,7 @@ class Booking extends Model
 
         // F14 / F15 — déclaration d'absence, contact de secours, et ping de mi-mission.
         'client_absent',
-        /*
-         * LA CONSIGNE DE DERNIÈRE MINUTE — « le digicode a changé ce matin ».
-         *
-         * Distincte des consignes du carnet de lieux, écrites des semaines avant : celle-ci se pose
-         * pendant que le prestataire est en route et ne vaut que pour cette intervention. Les
-         * confondre ferait lire un code périmé à quelqu'un d'autre la semaine suivante.
-         */
+        // LA CONSIGNE DE DERNIÈRE MINUTE — « le digicode a changé ce matin ».
         'live_access_note',
         'live_access_note_at',
         'late_notified_at',
@@ -493,9 +448,7 @@ class Booking extends Model
     // syncLegacyAliases() vit dans HasLegacyBookingAliases.
 
     /**
-     * M8 — backward-compatible bridge for the renamed column. The DB column is now
-     * `surface_range`; legacy code/views/forms still read & write `$booking->surface`, which this
-     * virtual attribute maps to surface_range transparently.
+     * M8 — backward-compatible bridge for the renamed column.
      *
      * @return Attribute<string|null, string|null>
      */
@@ -584,9 +537,6 @@ class Booking extends Model
     /**
      * Le lieu du carnet client (E2) — le pendant particulier de `organizationSite`.
      *
-     * C'est lui qui porte l'étage, le digicode et les préférences que la fiche d'accès sur place
-     * révèle à l'arrivée. Sans cette relation, le carnet ne serait qu'un formulaire d'adresse.
-     *
      * @return BelongsTo<ClientPlace, $this>
      */
     public function clientPlace(): BelongsTo
@@ -596,13 +546,6 @@ class Booking extends Model
 
     /**
      * DEMANDE MÈRE / RÉSERVATIONS FILLES — UN LIEN QUI EXISTAIT SANS ÊTRE LISIBLE.
-     *
-     * `bookings.parent_booking_id` figure dans la migration initiale (FK nullable, `nullOnDelete`)
-     * mais aucune relation ne l'exposait, aucun code ne l'écrivait, et la colonne ne comptait zéro
-     * ligne. Elle sert désormais aux demandes couvrant plusieurs sites : une mère porte l'intention
-     * commune, chaque site reçoit sa fille.
-     *
-     * À ne pas confondre avec `recurring_series_id`, qui gouverne la répétition dans le temps.
      *
      * @return BelongsTo<self, $this>
      */
@@ -630,12 +573,6 @@ class Booking extends Model
     /**
      * LE MÉTIER DE CETTE RÉSERVATION — colonne propre, plus une déduction.
      *
-     * `bookings.trade_id` est écrit par le moteur de commande, qui SAIT quel métier a été choisi.
-     * Auparavant le métier ne se lisait qu'en traversant `service_catalog_id` → `trade_id` : une
-     * chaîne qui casse dès qu'une réservation n'a pas de service au catalogue, ce qui est le cas de
-     * toutes celles du parcours de commande. Le dispatch retombait alors sur « pas de métier connu,
-     * on ne filtre pas » — la porte par laquelle un peintre pouvait recevoir du babysitting.
-     *
      * @return BelongsTo<Trade, $this>
      */
     public function trade(): BelongsTo
@@ -644,8 +581,7 @@ class Booking extends Model
     }
 
     /**
-     * Le métier déduit du service au catalogue — le REPLI, pour les réservations antérieures à la
-     * colonne. Conservé exprès : les archives n'ont pas de `trade_id` et doivent rester lisibles.
+     * Le métier déduit du service au catalogue — le REPLI, pour les réservations antérieures à la colonne.
      *
      * @return HasOneThrough<Trade, ServiceCatalog, $this>
      */
@@ -661,13 +597,7 @@ class Booking extends Model
         );
     }
 
-    /**
-     * Le métier de cette réservation, colonne d'abord, catalogue ensuite.
-     *
-     * Un seul endroit décide de cet ordre. Le dupliquer dans chaque appelant ferait qu'un chemin
-     * lirait la colonne et l'autre le catalogue — et deux chemins trouveraient deux métiers
-     * différents pour la même réservation.
-     */
+    /** Le métier de cette réservation, colonne d'abord, catalogue ensuite. */
     public function resolveTradeId(): ?int
     {
         if ($this->trade_id) {
@@ -705,26 +635,7 @@ class Booking extends Model
         return $this->hasMany(Mission::class);
     }
 
-    /**
-     * QUI INTERVIENT RÉELLEMENT — la seule réponse qui fasse autorité.
-     *
-     * DEUX CHAMPS RÉPONDAIENT À LA MÊME QUESTION. `bookings.employe_id` est le prestataire de la
-     * COMMANDE : `MissionFromRendezVousSyncService` le recopie vers la mission à la création, si
-     * bien que les deux disent la même chose sur un parcours nominal. Ils ne DIVERGENT qu'à la
-     * première réassignation — et pour toute mission qu'une société confie à l'un de ses salariés.
-     *
-     * C'est ce qui a rendu le défaut invisible : il n'apparaît qu'après un changement
-     * d'intervenant, moment où plus personne ne relit le code. Dix-huit lecteurs répondaient alors
-     * faux — l'ancien prestataire gardait l'accès au client, touchait le pourboire, recevait les
-     * étoiles et l'événement d'agenda, pendant que celui qui avait travaillé n'avait rien.
-     *
-     * LA MISSION FAIT AUTORITÉ, la réservation reste en repli : avant qu'une mission existe, elle
-     * porte la seule information disponible, et les parcours qui n'ont jamais divergé gardent leur
-     * comportement.
-     *
-     * Ne PAS lire `employe_id` directement pour répondre à « qui intervient » — c'est le sens de
-     * `ReservationIntervenantTest`, qui refuse toute réapparition.
-     */
+    /** QUI INTERVIENT RÉELLEMENT — la seule réponse qui fasse autorité. */
     public function intervenantId(): ?int
     {
         // Quand l'appelant a déjà chargé `missions`, on ne repart pas en base : ce résolveur est
@@ -734,13 +645,7 @@ class Booking extends Model
             ? $this->missions->sortByDesc('id')->first()?->lead_provider_user_id
             : $this->missions()->latest('id')->value('lead_provider_user_id');
 
-        /*
-         * TROIS COLONNES DE REPLI, PAS QUATRE. `provider_user_id` figurait dans cette chaîne et
-         * n'existe pas sur `bookings` — elle appartient au portefeuille, aux conversations et à la
-         * finance. Sur un modèle Eloquent elle rendait `null` sans bruit ; recopiée dans un `where`,
-         * elle aurait fait tomber la requête en MySQL, et serait restée MUETTE sous SQLite, qui
-         * prend un identifiant inconnu pour une chaîne littérale.
-         */
+        // TROIS COLONNES DE REPLI, PAS QUATRE.
         $id = $depuisLaMission
             ?? $this->employe_id
             ?? $this->assigned_provider_user_id
@@ -761,18 +666,6 @@ class Booking extends Model
     /**
      * LA MÊME RÈGLE, EN SQL — pour les écrans qui filtrent au lieu de parcourir.
      *
-     * Le planning et l'agenda d'administration ne lisent pas une réservation à la fois : ils
-     * filtrent une semaine entière. `intervenantId()` leur est inaccessible, et recopier la règle
-     * dans un `where` est exactement ce qui a produit le défaut d'origine.
-     *
-     * L'ordre est celui du résolveur, et il compte : la mission d'abord, la réservation seulement
-     * quand AUCUNE mission ne désigne personne. LES COLONNES DE REPLI aussi sont les siennes — il
-     * manquait `assigned_employee_id`, si bien que le filtre ignorait des réservations que le
-     * résolveur reconnaissait.
-     *
-     * `ReservationIntervenantTest` compare les deux formulations sur un jeu mélangé, ces colonnes
-     * comprises : si elles se mettaient à diverger, le test le dirait.
-     *
      * @param  Builder<Booking>  $query
      * @return Builder<Booking>
      */
@@ -791,8 +684,7 @@ class Booking extends Model
     }
 
     /**
-     * Les réservations que PERSONNE ne prend en charge — celles qu'une administration doit voir
-     * pour les attribuer.
+     * Les réservations que PERSONNE ne prend en charge — celles qu'une administration doit voir pour les attribuer.
      *
      * @param  Builder<Booking>  $query
      * @return Builder<Booking>
@@ -817,15 +709,7 @@ class Booking extends Model
         return $this->hasOne(Mission::class, 'booking_id');
     }
 
-    /**
-     * La mission de cette réservation.
-     *
-     * Elle interrogeait DEUX colonnes — `booking_id` et `rendez_vous_id` — parce que le chemin de
-     * création décidait laquelle était remplie : deux chemins pouvaient donc créer chacun leur
-     * mission sans jamais se voir. Les deux colonnes sont fusionnées ; la méthode reste, parce que
-     * c'est le point de résolution unique que les appelants connaissent, et qu'un `->mission`
-     * direct rendrait la relation avant que la mission n'existe.
-     */
+    /** La mission de cette réservation. */
     public function resolveMission(): ?Mission
     {
         return Mission::query()
@@ -951,10 +835,6 @@ class Booking extends Model
     /**
      * Les statuts qui valent « en attente », les deux langues confondues.
      *
-     * Extrait de `isPending()` pour que les REQUÊTES puissent compter la même chose que les
-     * OBJETS. Une liste recopiée dans un `whereIn` divergerait à la première valeur ajoutée ici,
-     * et un compteur d'accueil faux ne se remarque pas : il a l'air d'un chiffre.
-     *
      * @var list<string>
      */
     public const PENDING_STATUSES = [
@@ -998,17 +878,7 @@ class Booking extends Model
         ], true);
     }
 
-    /**
-     * CETTE RÉSERVATION EMMÈNE-T-ELLE QUELQU'UN D'UN POINT À UN AUTRE ?
-     *
-     * C'est le discriminant du second parcours mission — celui sans code de début ni de fin, qui se
-     * termine ailleurs qu'il n'a commencé. Il se lit sur la RÉSERVATION, jamais sur le catalogue :
-     * un métier peut cesser d'être un trajet demain, et une course déjà vendue ne doit pas changer
-     * de nature au milieu de son exécution. Ce qui a été commandé fait foi.
-     *
-     * Les COORDONNÉES font autorité, pas le libellé : sans elles, il n'y a ni itinéraire à tracer,
-     * ni lieu où confronter la position à la clôture — c'est-à-dire pas de course exécutable.
-     */
+    /** CETTE RÉSERVATION EMMÈNE-T-ELLE QUELQU'UN D'UN POINT À UN AUTRE ? */
     public function estUneCourse(): bool
     {
         return $this->dropoff_lat !== null && $this->dropoff_lng !== null;
@@ -1055,13 +925,7 @@ class Booking extends Model
         return $this->hasOne(FinanceInvoice::class, 'rendez_vous_id');
     }
 
-    /**
-     * La mission d'exploitation — la plus récente.
-     *
-     * Elle essayait `rendez_vous_id` PUIS `booking_id`, en interrogeant le schéma à chaque appel
-     * pour savoir si la colonne existait. Une seule colonne subsiste, et la question ne se pose
-     * plus.
-     */
+    /** La mission d'exploitation — la plus récente. */
     public function operationalMission(): ?Mission
     {
         return Mission::query()

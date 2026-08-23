@@ -7,17 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * L'ANNONCE QUE PERSONNE NE FAISAIT.
- *
- * Le client attendait, regardait une carte immobile, et apprenait le retard en le vivant. Cette
- * notification part une seule fois par réservation — le tampon est posé par `MissionDelayService`,
- * pas ici : une notification qui déciderait elle-même de son unicité serait contournée dès qu'un
- * autre chemin l'enverrait.
- *
- * Elle dit le retard ET ce qui est ouvert. Annoncer un problème sans dire ce qu'on peut en faire
- * transforme l'information en inquiétude.
- */
+/** L'ANNONCE QUE PERSONNE NE FAISAIT. */
 class MissionEnRetardNotification extends Notification
 {
     use Queueable;

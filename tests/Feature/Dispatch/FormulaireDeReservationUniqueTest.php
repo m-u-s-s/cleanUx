@@ -11,20 +11,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * UN SEUL FORMULAIRE DE RÉSERVATION — la consigne 0, vérifiée là où elle se voit.
- *
- * Deux formulaires coexistaient : le parcours public `/commander` (moteur de commande, questions
- * pilotées par l'admin, prix avant identité) et l'ancien formulaire du tableau de bord client.
- * Deux formulaires, c'est deux façons de fixer un prix, deux façons de résoudre une zone, et
- * surtout DEUX ENTRÉES DE DISPATCH — dont une que les règles du moteur de répartition ne
- * traversaient jamais.
- *
- * CE QUI EST VÉRIFIÉ ICI est l'atteignabilité, pas la présence d'un fichier : la route du tableau
- * de bord doit SERVIR le composant du moteur de commande, et l'ancienne adresse publique doit
- * conduire au même endroit. Un test qui lirait la source ne dirait rien de ce qu'un client obtient
- * en ouvrant l'adresse.
- */
+/** UN SEUL FORMULAIRE DE RÉSERVATION — la consigne 0, vérifiée là où elle se voit. */
 class FormulaireDeReservationUniqueTest extends TestCase
 {
     use RefreshDatabase;

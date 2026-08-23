@@ -2,31 +2,7 @@
 
 namespace App\Sentry;
 
-/**
- * Filtre `before_send` de Sentry, sorti de config/sentry.php.
- *
- * POURQUOI CETTE CLASSE EXISTE
- * `php artisan config:cache` sérialise toute la configuration avec var_export().
- * Une closure ne s'exporte pas : la commande échouait avec « the value at
- * "sentry.before_send" is non-serializable » et aucun déploiement ne pouvait aboutir.
- * Un tableau [classe, méthode] fait de deux chaînes, lui, s'exporte sans problème.
- *
- * POURQUOI LE POINT D'ENTRÉE DÉCLARÉ EST `handle()` ET NON `__invoke()`
- * PHP 8 refuse d'appeler une méthode d'instance de façon statique : [self::class,
- * '__invoke'] n'est donc PAS un callable (is_callable() rend false, vérifié sur PHP 8.5),
- * et `__invoke` ne peut pas être déclarée statique (erreur fatale sur les méthodes
- * magiques). Or Sentry valide l'option `before_send` avec le type `callable`
- * (Sentry\Options::configureOptions → setAllowedTypes('before_send', ['callable'])) :
- * une valeur non appelable ferait échouer la construction du client. `handle()` est
- * donc le point d'entrée statique, et il délègue à `__invoke()` pour que la classe
- * reste invokable.
- *
- * SIGNATURE ATTENDUE
- * Sentry\Client::applyBeforeSendCallback() appelle le filtre avec
- * (\Sentry\Event $event, ?\Sentry\EventHint $hint). Les deux paramètres sont laissés
- * sans type ici pour conserver À L'IDENTIQUE le garde défensif hérité de la closure
- * d'origine (qui vérifiait elle-même is_object() / method_exists()).
- */
+/** Filtre `before_send` de Sentry, sorti de config/sentry.php. */
 class BeforeSend
 {
     /**

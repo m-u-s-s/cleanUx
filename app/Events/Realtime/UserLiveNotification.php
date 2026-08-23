@@ -11,12 +11,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-/**
- * Notification live cross-cutting pour un utilisateur — channel user.{id}.
- *
- * Cas d'usage : push d'un toast/banner en temps réel (booking confirmé,
- * paiement reçu, mission assignée) sans recharger la page.
- */
+/** Notification live cross-cutting pour un utilisateur — channel user.{id}. */
 class UserLiveNotification implements ShouldBroadcastNow, TracksBroadcastLedger
 {
     use Dispatchable;

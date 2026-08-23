@@ -16,25 +16,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * INVITER UN EMPLOYÉ QUI N'A PAS ENCORE DE COMPTE NE FAISAIT RIEN DU TOUT.
- *
- * POURQUOI CE FICHIER EXISTE. `TeamManagement::invite()` se terminait sur
- * `// TODO: Envoyer un email d'invitation et créer un token` — une branche vide. Le formulaire se
- * réinitialisait ensuite exactement comme dans le cas nominal : aucune erreur, aucun message,
- * rien en base. Le patron croyait avoir invité quelqu'un ; personne n'avait rien reçu.
- *
- * Deuxième volet, plus discret : même quand l'utilisateur existait déjà, le membre était créé
- * SANS `ProviderProfile`. Or `ProviderDashboard::mount()` exige `isProviderCompanyWorker()`,
- * lequel repose sur un profil de type `company_worker`. L'employé rejoignait donc une société
- * dont il ne pouvait pas ouvrir le tableau de bord — un 403 sur son écran principal.
- *
- * Note sur l'existant : la table `team_invitations` EXISTE mais est un vestige de Jetstream
- * (fonctionnalité `teams` commentée dans config/jetstream.php, zéro référence dans le code,
- * zéro ligne). Le gabarit `emails/team-invitation.blade.php` en est un autre : il lit
- * `$invitation->team->name`, une relation qui n'existe pas ici. D'où une table et un email
- * propres à l'organisation plutôt qu'un détournement de ces reliques.
- */
+/** INVITER UN EMPLOYÉ QUI N'A PAS ENCORE DE COMPTE NE FAISAIT RIEN DU TOUT. */
 class OrganizationInvitationTest extends TestCase
 {
     use RefreshDatabase;

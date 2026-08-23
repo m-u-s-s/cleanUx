@@ -9,18 +9,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-/**
- * ContractPdfGenerator — render un PDF du document signé.
- *
- *   - Utilise Barryvdh\DomPDF si dispo et engine='dompdf' (default)
- *   - engine='disabled' → no-op (utile en CI/tests)
- *   - Soft-fail : si dompdf indispo, retourne null + Log warning
- */
+/** ContractPdfGenerator — render un PDF du document signé. */
 class ContractPdfGenerator
 {
-    /**
-     * Generate and persist PDF for the document. Returns the storage path.
-     */
+    /** Generate and persist PDF for the document. Returns the storage path. */
     public function generate(ContractDocument $document): ?string
     {
         $engine = (string) Config::get('contracts_v2.pdf_engine', 'dompdf');

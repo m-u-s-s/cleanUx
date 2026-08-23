@@ -9,8 +9,6 @@ class ContractPricingResolver
 {
     /**
      * Applique le tarif négocié d'un contrat à un prix de base EN CENTS.
-     * Grille (ContractRateCard) prioritaire → sinon remise negotiated_discount_percent
-     * → sinon no-op. Retourne le prix résultant + un label de traçabilité.
      *
      * @return array{price_cents:int, label:?string}
      */

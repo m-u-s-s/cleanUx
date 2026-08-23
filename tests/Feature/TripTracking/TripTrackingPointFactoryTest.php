@@ -9,28 +9,12 @@ use Database\Factories\TripTrackingSessionFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * La fabrique de relevés ne doit pas produire de collisions.
- *
- * `trip_tracking_points` porte un index UNIQUE sur `(session_id, client_sequence)`. Cette colonne
- * était tirée au hasard entre 1 et 100 : créer trois relevés sur une même session — ce que fait le
- * test du détail de session — collisionnait environ trois fois sur cent.
- *
- * Concrètement, la suite échouait une exécution sur trente-quatre, sur un test qui n'avait rien
- * fait de mal. Une suite qui rougit au hasard finit par ne plus être crue, et c'est le jour où
- * elle a raison qu'on l'ignore.
- */
+/** La fabrique de relevés ne doit pas produire de collisions. */
 class TripTrackingPointFactoryTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Cent relevés sur une seule session.
-     *
-     * Le nombre est choisi pour être décisif : sur cent valeurs possibles, cent tirages
-     * collisionnent à coup sûr. Trois relevés n'auraient prouvé le correctif que 3 % du temps —
-     * autant dire jamais.
-     */
+    /** Cent relevés sur une seule session. */
     public function test_a_hundred_points_on_one_session_never_collide(): void
     {
         $session = TripTrackingSessionFactory::new()->create();
@@ -44,13 +28,7 @@ class TripTrackingPointFactoryTest extends TestCase
         );
     }
 
-    /**
-     * Deux sessions distinctes peuvent réemployer le même numéro : l'unicité est PAR session.
-     *
-     * Le numéro vient du téléphone du prestataire et sert à dédoublonner ses propres relevés ; il
-     * repart à un pour chaque trajet. Une unicité globale interdirait au second prestataire
-     * d'envoyer son premier relevé.
-     */
+    /** Deux sessions distinctes peuvent réemployer le même numéro : l'unicité est PAR session. */
     public function test_two_sessions_may_share_the_same_sequence_number(): void
     {
         $first = TripTrackingSessionFactory::new()->create();

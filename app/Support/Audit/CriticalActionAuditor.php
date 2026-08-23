@@ -6,15 +6,7 @@ use App\Services\Audit\AuditService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Helper soft-fail pour émettre des AuditEvent depuis les services v2
- * sur les actions critiques (clôture compta, suspension tenant, etc.).
- *
- * Skip silencieusement si :
- *  - Module audit v2 désactivé (config audit.enabled=false)
- *  - Table audit_events absente
- *  - AuditService non bindé
- */
+/** Helper soft-fail pour émettre des AuditEvent depuis les services v2 sur les actions critiques (clôture compta, suspension tenant, etc.). */
 class CriticalActionAuditor
 {
     public static function record(

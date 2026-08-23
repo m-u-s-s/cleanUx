@@ -6,14 +6,7 @@ use App\Services\I18n\LocaleResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
-/**
- * Phase 9+i18n v2 — Switch de langue persisté.
- *
- * POST /locale  (CSRF-protected)
- *   - Met la locale en session
- *   - Persiste sur le user (au format BCP47 stocké : ex 'nl_BE') si connecté
- *   - Redirige back avec cookie 1 an
- */
+/** Phase 9+i18n v2 — Switch de langue persisté. */
 class LocaleController extends Controller
 {
     public function __construct(protected LocaleResolver $resolver) {}

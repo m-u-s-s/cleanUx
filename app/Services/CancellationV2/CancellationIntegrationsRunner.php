@@ -16,15 +16,7 @@ use Illuminate\Support\Facades\Schema;
 use Stripe\Refund;
 use Stripe\Stripe;
 
-/**
- * CancellationIntegrationsRunner — side-effects after a cancellation is committed.
- *
- * Handles (all best-effort / soft-fail):
- *   - Stripe refund
- *   - Loyalty forfeit hook
- *   - Promo code restore
- *   - Insurance policy cancellation
- */
+/** CancellationIntegrationsRunner — side-effects after a cancellation is committed. */
 class CancellationIntegrationsRunner
 {
     public function run(BookingCancellationV2 $row): BookingCancellationV2
@@ -113,14 +105,7 @@ class CancellationIntegrationsRunner
         return $row;
     }
 
-    /**
-     * Effectue le refund réel via Stripe SDK. Idempotent : utilise un metadata
-     * cancellation_id unique pour éviter les double-refunds.
-     *
-     * Récupère payment_intent_id depuis bookings.stripe_payment_intent_id.
-     * Soft-fail : si Stripe SDK absent ou booking sans payment intent, retourne
-     * un status "manual" pour traitement admin.
-     */
+    /** Effectue le refund réel via Stripe SDK. */
     protected function tryStripeRefund(BookingCancellationV2 $row): array
     {
         if ($row->refund_amount_cents <= 0) {

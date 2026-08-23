@@ -17,24 +17,7 @@ class ProcessStripeWebhookJob implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    /**
-     * TROIS TENTATIVES, PARCE QU'UN ÉVÉNEMENT STRIPE PERDU NE REVIENT PAS.
-     *
-     * À une seule tentative, une coupure réseau d'une seconde vers Stripe, un verrou de base ou un
-     * redémarrage du worker suffisaient à perdre définitivement l'événement — et avec lui
-     * l'encaissement, le crédit du portefeuille et l'écriture comptable qui en dépendent. Rien ne
-     * le rattrapait : Stripe considère l'événement remis dès que l'endpoint a répondu 200, ce que
-     * le contrôleur fait AVANT de mettre le traitement en file.
-     *
-     * LE REJEU EST SANS DANGER ICI, et c'est ce qui autorise cette valeur : le traitement est
-     * idempotent de bout en bout — `stripe_webhook_events` déduplique par identifiant d'événement,
-     * les crédits de portefeuille par `idempotency_key`, les écritures comptables par leur propre
-     * clé. Une seconde exécution ne produit rien de neuf.
-     *
-     * L'ATTENTE CROÎT : une seconde, puis dix, puis soixante. Un service momentanément indisponible
-     * a besoin de temps, pas d'insistance — trois appels dans la même seconde échoueraient trois
-     * fois pour la même raison.
-     */
+    /** TROIS TENTATIVES, PARCE QU'UN ÉVÉNEMENT STRIPE PERDU NE REVIENT PAS. */
     public int $tries = 3;
 
     /** @var list<int> */
@@ -54,9 +37,7 @@ class ProcessStripeWebhookJob implements ShouldQueue
         $processor->process($event);
     }
 
-    /**
-     * Backoff exponentiel pour retry de la queue (1m, 5m, 15m, 1h, 6h).
-     */
+    /** Backoff exponentiel pour retry de la queue (1m, 5m, 15m, 1h, 6h). */
     public function backoff(): array
     {
         return [60, 300, 900, 3600, 21600];

@@ -11,27 +11,7 @@ use DomainException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
-/**
- * LE NOUVEAU DEVIS — proposer, accepter, refuser.
- *
- * ── CE QU'IL EST, ET CE QU'IL N'EST PAS ──────────────────────────────────────────────────────
- *
- * Il remplace le prix parce que le devis était faux DÈS LE DÉPART : vingt mètres carrés annoncés,
- * deux cents constatés. Ce n'est pas un supplément — celui-ci ajoute une ligne à un devis juste,
- * pour un imprévu découvert EN TRAVAILLANT. La frontière est tenue par
- * {@see QuoteRevisionWindow} : dès que le prestataire a touché à quelque chose, cette porte se
- * ferme et il ne lui reste que le supplément.
- *
- * ── LE PRESTATAIRE ANNONCE UN SERVICE, JAMAIS UN TOTAL ───────────────────────────────────────
- *
- * {@see QuoteRevisionPricing} réapplique les remises. S'il tapait le total à payer, le code promo
- * du client disparaîtrait dans un chiffre rond.
- *
- * ── LA PREUVE EST OBLIGATOIRE ────────────────────────────────────────────────────────────────
- *
- * Motif ET photo. Sans elles, le client doit croire sur parole et l'arbitre doit trancher sans
- * matière — c'est-à-dire que l'abus devient gratuit.
- */
+/** LE NOUVEAU DEVIS — proposer, accepter, refuser. */
 class MissionQuoteRevisionService
 {
     public function __construct(
@@ -115,23 +95,7 @@ class MissionQuoteRevisionService
         ]);
     }
 
-    /**
-     * LE CLIENT ACCEPTE — et le contrat est renégocié, pas complété.
-     *
-     * ── L'ORDRE DES DEUX ÉCRITURES, ET POURQUOI IL EST CELUI-LÀ ──────────────────────────────
-     *
-     * Le complément est autorisé D'ABORD. Le devis de la réservation n'est réécrit QUE si la carte
-     * a répondu oui. L'ordre inverse annoncerait 300 € au prestataire et à la comptabilité pour un
-     * argent que personne ne détient — et la commission, qui se calcule sur `devis_estime`, lui
-     * créditerait une part de ce vide.
-     *
-     * ── POURQUOI ON A LE DROIT DE RÉÉCRIRE `devis_estime` ICI ────────────────────────────────
-     *
-     * `HourlySettlementService` l'interdit, et il a raison DANS SON CAS : le temps supplémentaire
-     * est constaté APRÈS coup, sur un contrat déjà exécuté. Ici, le client accepte AVANT que le
-     * travail commence — c'est le contrat lui-même qui change, avec son consentement explicite.
-     * La commission se recalcule alors sur un montant réellement autorisé.
-     */
+    /** LE CLIENT ACCEPTE — et le contrat est renégocié, pas complété. */
     public function accepter(
         MissionQuoteRevision $revision,
         User $client,
@@ -195,31 +159,7 @@ class MissionQuoteRevisionService
         });
     }
 
-    /**
-     * LE CLIENT REFUSE — et c'est LUI qui choisit la suite.
-     *
-     * `continue` : la mission va au bout au prix d'origine. Le prestataire n'est pas tenu de faire
-     * 300 € de travail pour 50 € — il peut clôturer en l'état, et le dossier explique pourquoi.
-     *
-     * `stop` : l'intervention s'arrête. Le prestataire n'a rien commencé — la fenêtre le garantit —
-     * et ne touche donc RIEN.
-     *
-     * ── L'ARRÊT ANNULE, ET IL EST GRATUIT DEUX FOIS ──────────────────────────────────────────
-     *
-     * Le motif `quote_revision_declined` est un motif EXEMPTÉ : les frais tombent à zéro, y compris
-     * la pénalité « prestataire déjà en route ». Un client de bonne foi face à un devis abusif ne
-     * paie donc rien.
-     *
-     * Son plafond est de deux par trente jours. Au-delà, l'exemption cesse et le palier normal
-     * s'applique — « pas la première fois, mais si c'est fréquent ». C'est la première des quatre
-     * sanctions client, et elle se règle depuis la console sans toucher au code.
-     *
-     * ── L'ANNULATION NE CONDITIONNE PAS LE REFUS ─────────────────────────────────────────────
-     *
-     * Le refus est enregistré AVANT. Si l'annulation échoue — réservation déjà close, réseau —,
-     * la réponse du client reste acquise et `doitEtreAnnulee()` continue de porter l'intention :
-     * l'écran peut réessayer sans que le client ait à refuser une seconde fois.
-     */
+    /** LE CLIENT REFUSE — et c'est LUI qui choisit la suite. */
     public function refuser(
         MissionQuoteRevision $revision,
         User $client,
@@ -255,13 +195,7 @@ class MissionQuoteRevisionService
         return $revision->fresh();
     }
 
-    /**
-     * ARRÊTER — par le tuyau commun d'annulation, avec son motif exempté.
-     *
-     * Une seule voie d'annulation, quel qu'en soit le déclencheur : politiques, paliers, capture
-     * partielle de l'empreinte, journal. En écrire une seconde ici donnerait deux façons d'annuler
-     * la même réservation, et l'une des deux finirait par diverger sur les frais.
-     */
+    /** ARRÊTER — par le tuyau commun d'annulation, avec son motif exempté. */
     private function arreterLIntervention(MissionQuoteRevision $revision, User $client): void
     {
         try {
@@ -284,14 +218,7 @@ class MissionQuoteRevisionService
         }
     }
 
-    /**
-     * ENREGISTRER LE FAIT, PUIS ARBITRER — et jamais l'inverse.
-     *
-     * SOFT-FAIL DÉLIBÉRÉ. L'arbitrage est une conséquence, pas une condition : une panne de
-     * l'arbitre ne doit pas empêcher un client d'accepter un devis ni de le refuser. Le signal
-     * reste en base et une reprise pourra le rejuger — c'est le traitement déjà appliqué au
-     * règlement du temps supplémentaire, pour la même raison.
-     */
+    /** ENREGISTRER LE FAIT, PUIS ARBITRER — et jamais l'inverse. SOFT-FAIL DÉLIBÉRÉ. */
     private function arbitrer(MissionQuoteRevision $revision): void
     {
         try {
@@ -364,13 +291,7 @@ class MissionQuoteRevisionService
         );
     }
 
-    /**
-     * LE TOTAL D'ORIGINE — la même source que la commission, et ce n'est pas un détail.
-     *
-     * `CommissionService::calculateForBooking()` lit `devis_estime ?? estimated_price`. Prendre un
-     * autre chiffre ici ferait diverger ce qu'on annonce au client de ce qu'on reverse au
-     * prestataire, et l'écart ne se verrait qu'au moment du versement.
-     */
+    /** LE TOTAL D'ORIGINE — la même source que la commission, et ce n'est pas un détail. */
     private function totalOrigineCents(Mission $mission): int
     {
         $reservation = $mission->booking;

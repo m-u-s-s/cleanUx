@@ -11,10 +11,6 @@ use Illuminate\Support\Carbon;
 /**
  * UN CRÉNEAU DE TRAVAIL PLANIFIÉ PAR L'EMPLOYEUR (E19).
  *
- * À ne pas confondre avec les créneaux de disponibilité : ceux-ci sont un concept d'indépendant, qui
- * publie ses horaires sur la place de marché. Un salarié n'en déclare pas — c'est son employeur qui
- * le planifie, et c'est ce que porte cette table.
- *
  * @property int $id
  * @property int $organization_account_id
  * @property int|null $provider_agency_id
@@ -62,13 +58,7 @@ class Shift extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Ce shift couvre-t-il ce moment ?
-     *
-     * Bornes INCLUSIVE à gauche, EXCLUSIVE à droite : une mission qui commence à l'heure exacte de
-     * fin d'un shift n'est pas couverte, sinon deux shifts consécutifs se chevaucheraient d'une
-     * seconde et rendraient la personne « doublement disponible ».
-     */
+    /** Ce shift couvre-t-il ce moment ? */
     public function couvre(Carbon $moment): bool
     {
         return $this->status === self::STATUS_PUBLISHED

@@ -23,19 +23,7 @@ use Illuminate\Support\Str;
 use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
-/**
- * SANS PERMIS, ON PERD LES COURSES — ET SEULEMENT LES COURSES.
- *
- * C'est la promesse entière de ce verrou, et elle a deux moitiés. La première est évidente : un
- * conducteur non conforme ne doit pas recevoir de mission de transport. La seconde l'est moins et
- * compte autant : ce même prestataire, s'il est aussi peintre, doit continuer de recevoir la
- * peinture. Un verrou posé sur le compte entier serait plus simple à écrire, et il punirait
- * quelqu'un pour une pièce qui ne concerne que la moitié de son activité.
- *
- * LA PÉRIODE DE GRÂCE est testée pour la même raison : le jour où un administrateur coche « règles
- * taxi » sur un métier existant, des dizaines de prestataires deviennent non conformes d'un coup.
- * Les couper le matin même ne protège personne — ça vide le métier de ses professionnels.
- */
+/** SANS PERMIS, ON PERD LES COURSES — ET SEULEMENT LES COURSES. */
 class VerrouConduiteTest extends TestCase
 {
     use OuvreLeCatalogue, RefreshDatabase;
@@ -157,13 +145,7 @@ class VerrouConduiteTest extends TestCase
         $this->assertNotContains($sansPermis->id, $this->candidats($this->course($trade)));
     }
 
-    /**
-     * LE TÉMOIN, et il est indispensable.
-     *
-     * Sans lui, le test précédent passerait au vert le jour où PLUS PERSONNE ne serait jamais
-     * candidat — une requête cassée, un filtre trop large, et l'interdiction se mesurerait sur une
-     * panne.
-     */
+    /** LE TÉMOIN, et il est indispensable. */
     public function test_un_conducteur_en_regle_recoit_la_course(): void
     {
         $trade = $this->metierDeCourse();

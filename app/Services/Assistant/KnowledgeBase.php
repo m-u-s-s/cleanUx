@@ -4,21 +4,10 @@ namespace App\Services\Assistant;
 
 use Illuminate\Support\Collection;
 
-/**
- * Static knowledge base for the Brio chatbot assistant.
- *
- * Articles cover the most common client questions.
- * The search() method is intentionally simple (substring match) so it never
- * fails and stays free of external dependencies. More sophisticated
- * embedding-based search can replace it later without changing the interface.
- */
+/** Static knowledge base for the Brio chatbot assistant. */
 class KnowledgeBase
 {
-    /**
-     * Search articles by query string (case-insensitive substring on title + content).
-     * Returns a formatted block ready to inject into a system prompt, or '' when
-     * nothing matches.
-     */
+    /** Search articles by query string (case-insensitive substring on title + content). */
     public function search(string $query): string
     {
         $articles = $this->matchingArticles($query)->take(3);

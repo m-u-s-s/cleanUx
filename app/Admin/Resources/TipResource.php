@@ -11,10 +11,6 @@ use App\Services\Tips\TipService;
 /**
  * Les pourboires laisses aux prestataires.
  *
- * Aucun remboursement depuis la console : un pourboire remboursé touche à l’argent d’un
- * prestataire déjà crédité, et ce chemin passe par le module de remboursement qui tient le
- * registre et la reprise proportionnelle.
- *
  * @extends EloquentResource<BookingTip>
  */
 class TipResource extends EloquentResource
@@ -75,12 +71,7 @@ class TipResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Les trois gestes de rattrapage d'un pourboire. Ils passent TOUS par le service : un
-             * pourboire tient un ledger, et écrire son statut à la main laisserait les écritures
-             * comptables en désaccord avec lui — un écart qu'on ne découvre qu'à la
-             * réconciliation.
-             */
+            // Les trois gestes de rattrapage d'un pourboire.
             Action::make('confirm', 'Marquer chargé', function (BookingTip $tip) {
                 app(TipService::class)->confirmCharge($tip, 'manual_admin_'.$tip->id);
 

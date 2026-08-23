@@ -7,10 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * OÙ EN EST QUELQU'UN D'UN OBJECTIF (E13).
- *
- * `completed_at` ET `rewarded_at` SONT DEUX CHOSES. Atteindre l'objectif et être payé sont deux
- * événements distincts : les confondre ferait payer deux fois au moindre rejeu, ou jamais.
+ * OÙ EN EST QUELQU'UN D'UN OBJECTIF (E13). `completed_at` ET `rewarded_at` SONT DEUX CHOSES.
  *
  * @property int $id
  * @property int $provider_quest_id

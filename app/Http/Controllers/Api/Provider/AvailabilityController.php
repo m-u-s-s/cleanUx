@@ -162,10 +162,7 @@ class AvailabilityController extends Controller
         return response()->json(['data' => $serialized]);
     }
 
-    /**
-     * iCal feed export — RFC 5545 minimal.
-     * Returns text/calendar with each available window as a VEVENT (busy=FREE).
-     */
+    /** iCal feed export — RFC 5545 minimal. */
     public function ical(Request $request): Response
     {
         $user = $request->user();

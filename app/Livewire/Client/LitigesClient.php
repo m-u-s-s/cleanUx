@@ -116,16 +116,7 @@ class LitigesClient extends Component
         };
     }
 
-    /**
-     * OUVRIR UNE RÉCLAMATION — et seulement l'une des siennes.
-     *
-     * La vue appelait `select($id)` depuis chaque ligne de la liste ; la méthode n'existait
-     * pas, si bien que `selected` restait nul et que le panneau de détail n'était jamais
-     * rendu. Le bloc entier — le fil, la résolution, la réponse — était donc mort.
-     *
-     * L'identifiant vient du navigateur : on filtre sur le client AVANT de charger, sinon
-     * n'importe qui lirait la réclamation d'un autre en changeant un nombre.
-     */
+    /** OUVRIR UNE RÉCLAMATION — et seulement l'une des siennes. */
     public function select(int $claimId): void
     {
         $claim = CustomerClaim::query()
@@ -147,12 +138,7 @@ class LitigesClient extends Component
         $this->replyBody = '';
     }
 
-    /**
-     * RÉPONDRE À SA RÉCLAMATION.
-     *
-     * Une réclamation close ne se rouvre pas par une réponse : la vue masque déjà le
-     * formulaire dans ce cas, mais le navigateur peut appeler la méthode quand même.
-     */
+    /** RÉPONDRE À SA RÉCLAMATION. */
     public function postReply(): void
     {
         $this->validate([
@@ -253,17 +239,7 @@ class LitigesClient extends Component
     public function render(): View
     {
         return view('livewire.client.litiges-client', [
-            /*
-                LES DEUX COLONNES DE CLIENT, PARCE QUE LES DEUX EXISTENT.
-
-                `customer_claims` porte `client_id` ET `customer_user_id`. La création
-                (`createClaim()`) renseigne la première ; cette liste filtrait sur la
-                seconde. Une réclamation déposée n'apparaissait donc JAMAIS dans la liste
-                de son auteur — l'écran restait vide quoi qu'il fasse.
-
-                On lit les deux plutôt que d'en élire une : les lignes déjà écrites d'un
-                côté ou de l'autre remontent toutes, et personne ne perd son historique.
-            */
+            // LES DEUX COLONNES DE CLIENT, PARCE QUE LES DEUX EXISTENT.
             'claims' => CustomerClaim::query()
                 ->with('rendezVous')
                 ->where(fn ($q) => $q->where('client_id', Auth::id())

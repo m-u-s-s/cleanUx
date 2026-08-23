@@ -10,14 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RuntimeException;
 
-/**
- * Provider SMS mock — log au lieu d'envoyer réellement.
- *
- * Comportement spécial:
- *   - to_phone contenant "fail" → renvoie failed
- *   - to_phone contenant "undeliver" → undelivered
- *   - sinon → accepté + status=sent
- */
+/** Provider SMS mock — log au lieu d'envoyer réellement. */
 class SmsMockProvider implements SmsProviderInterface
 {
     public function name(): string

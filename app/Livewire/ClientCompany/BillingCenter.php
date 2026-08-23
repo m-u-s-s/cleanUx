@@ -17,19 +17,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 /**
- * FACTURATION DE LA SOCIÉTÉ CLIENTE — sur les vraies factures.
- *
- * CET ÉCRAN MENTAIT. Les quatre indicateurs étaient des zéros écrits en dur (« Données simulées — à
- * connecter à Invoice model ») et la table de factures était une collection vide. Pendant ce temps,
- * l'application mobile affichait les VRAIS montants du même compte, par la même porte
- * (`ClientFinanceDocumentScope`). Une entreprise consultait donc son solde sur son téléphone et
- * voyait 0,00 € sur son ordinateur — l'écart n'était pas une panne, c'était l'écran web qui
- * n'avait jamais été branché.
- *
- * LE SCOPE N'EST PAS RÉÉCRIT ICI, et c'est le point important : `ClientFinanceDocumentScope` porte
- * déjà les règles d'isolation (ses propres factures, plus celles de son organisation, en honorant
- * la restriction par site d'un membre). Les redéfinir aurait créé une seconde vérité — exactement
- * ce qui a produit les fuites inter-organisations corrigées ailleurs dans ce dépôt.
+ * FACTURATION DE LA SOCIÉTÉ CLIENTE — sur les vraies factures. CET ÉCRAN MENTAIT.
  *
  * @property-read array<string, mixed> $summary
  * @property-read LengthAwarePaginator<int, FinanceInvoice> $invoices
@@ -56,10 +44,7 @@ class BillingCenter extends Component
         );
     }
 
-    /**
-     * Chaque filtre remet la pagination à la première page : sans cela, filtrer depuis la page 3
-     * affiche une liste vide et donne l'impression qu'il n'y a rien à voir.
-     */
+    /** Chaque filtre remet la pagination à la première page : sans cela, filtrer depuis la page 3 affiche une liste vide et donne l'impression qu'il n'y a rien à voir. */
     public function updated(string $property): void
     {
         if (in_array($property, ['filterStatus', 'filterSiteId', 'filterPeriod', 'searchRef'], true)) {
@@ -93,11 +78,7 @@ class BillingCenter extends Component
     {
         [$from, $to] = $this->periodDates();
 
-        /*
-         * `issued_at` DATE LA FACTURE, pas `created_at` : une facture de janvier saisie en février
-         * appartient à janvier. Compter sur la date d'écriture ferait sauter des montants d'un mois
-         * à l'autre au gré de la saisie.
-         */
+        // `issued_at` DATE LA FACTURE, pas `created_at` : une facture de janvier saisie en février appartient à janvier.
         $duMois = (clone $this->baseQuery())->whereBetween('issued_at', [$from, $to]);
 
         return [
@@ -145,14 +126,7 @@ class BillingCenter extends Component
             ->active()->orderBy('name')->get(['id', 'name']);
     }
 
-    /**
-     * LE TÉLÉCHARGEMENT PASSE PAR LA ROUTE SIGNÉE EXISTANTE, jamais par une génération maison.
-     *
-     * La vue appelait `downloadInvoice()` depuis toujours ; la méthode n'existait pas, et le bouton
-     * PDF levait une erreur de composant. Le contrôleur de téléchargement, lui, vérifie déjà la
-     * propriété du document ET la restriction par site — dupliquer ce contrôle ici aurait été une
-     * seconde chance de se tromper.
-     */
+    /** LE TÉLÉCHARGEMENT PASSE PAR LA ROUTE SIGNÉE EXISTANTE, jamais par une génération maison. */
     public function downloadInvoice(int $invoiceId): void
     {
         $autorisee = (clone $this->baseQuery())->whereKey($invoiceId)->exists();

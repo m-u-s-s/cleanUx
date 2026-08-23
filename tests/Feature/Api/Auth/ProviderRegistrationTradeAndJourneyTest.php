@@ -10,13 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * L'inscription prestataire déclare le métier visé et ouvre le parcours de vérification.
- *
- * Le module Onboarding v2 était entièrement construit mais AUCUN parcours n'était configuré :
- * `onboarding_journeys` était vide, donc aucune vérification ne s'appliquait jamais. Un compte
- * créé accédait à l'application sans qu'on ait contrôlé son identité, ses pièces ni ses métiers.
- */
+/** L'inscription prestataire déclare le métier visé et ouvre le parcours de vérification. */
 class ProviderRegistrationTradeAndJourneyTest extends TestCase
 {
     use RefreshDatabase;
@@ -35,14 +29,7 @@ class ProviderRegistrationTradeAndJourneyTest extends TestCase
         $progress = OnboardingProgress::where('user_id', $user->id)->firstOrFail();
 
         $this->assertSame(OnboardingProgress::STATUS_IN_PROGRESS, $progress->status);
-        /*
-         * SIX depuis l'ajout de la déclaration de véhicule.
-         *
-         * L'étape est dans le parcours de TOUT LE MONDE — le parcours est unique et partagé — et
-         * son validateur passe trivialement quand aucun métier déclaré n'exige de véhicule. Fabriquer
-         * un second parcours « chauffeur » aurait donné deux suites d'étapes à tenir à jour, dont
-         * l'une finirait par oublier une exigence que l'autre applique.
-         */
+        // SIX depuis l'ajout de la déclaration de véhicule.
         $this->assertSame(
             6,
             $progress->completions()->count(),
@@ -79,10 +66,7 @@ class ProviderRegistrationTradeAndJourneyTest extends TestCase
         $this->assertSame(0, User::where('email', 'nouveau@prestataire.test')->count());
     }
 
-    /**
-     * L'app cliente poste sur le même endpoint : elle ne doit ni déclarer de métier ni ouvrir de
-     * parcours prestataire.
-     */
+    /** L'app cliente poste sur le même endpoint : elle ne doit ni déclarer de métier ni ouvrir de parcours prestataire. */
     public function test_a_client_registration_opens_no_provider_journey(): void
     {
         $this->postJson('/api/auth/register', [
@@ -97,10 +81,7 @@ class ProviderRegistrationTradeAndJourneyTest extends TestCase
         $this->assertSame(0, OnboardingProgress::where('user_id', $user->id)->count());
     }
 
-    /**
-     * Le parcours ne doit jamais faire échouer la création du compte : un module désactivé ou une
-     * configuration absente laisserait sinon l'utilisateur sans compte ET sans explication.
-     */
+    /** Le parcours ne doit jamais faire échouer la création du compte : un module désactivé ou une configuration absente laisserait sinon l'utilisateur sans compte ET sans explication. */
     public function test_registration_still_succeeds_when_the_journey_cannot_start(): void
     {
         DB::table('onboarding_journeys')->update(['is_active' => false]);

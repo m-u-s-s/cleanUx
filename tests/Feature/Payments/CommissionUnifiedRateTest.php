@@ -9,12 +9,7 @@ use App\Services\Payments\CommissionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Décision produit 2026-06-11 : commission = TAUX UNIQUE au lancement.
- * Le taux négocié par prestataire (ProviderProfile.commission_rate) reste en base
- * mais NE DOIT PAS être appliqué tant que brio.use_negotiated_commission est off.
- * Objectif : une seule source de vérité, alignée sur ce que Stripe prélève réellement.
- */
+/** Décision produit 2026-06-11 : commission = TAUX UNIQUE au lancement. */
 class CommissionUnifiedRateTest extends TestCase
 {
     use RefreshDatabase;

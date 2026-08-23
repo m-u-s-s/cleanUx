@@ -14,22 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LA NOTE VOCALE : ENVOYÉE D'UN CÔTÉ, ÉCOUTÉE DE L'AUTRE.
- *
- * L'ENVOI EXISTAIT, L'ÉCOUTE NON. Le terrain pouvait enregistrer depuis son téléphone depuis le lot
- * 8 ; la réponse de l'API ne disait ni que le message était vocal, ni où trouver le son. Le fil
- * affichait « 🎙️ Note vocale » comme une phrase ordinaire, sur mobile comme sur le web. Une
- * messagerie vocale à sens unique se fait remplacer par WhatsApp — hors de l'outil, hors de toute
- * trace, hors de la modération.
- *
- * ET LE SCAN ANTIVIRUS ÉTAIT UNE PROMESSE EN COMMENTAIRE. Le contrôleur écrivait « le fichier passe
- * par le même chemin que les autres pièces jointes : même disque, même plafond, même scan » — et
- * appelait `store()`, qui ne déclenche rien. Une seconde porte d'entrée de fichiers, sans analyse,
- * sur une messagerie d'équipe. Le fichier passe désormais par `AttachmentUploadService`, ce qui lui
- * donne d'un coup le scan, le refus de lecture si infecté, et la route de téléchargement signée qui
- * vérifie déjà l'appartenance au canal.
- */
+/** LA NOTE VOCALE : ENVOYÉE D'UN CÔTÉ, ÉCOUTÉE DE L'AUTRE. L'ENVOI EXISTAIT, L'ÉCOUTE NON. */
 class NoteVocaleTest extends TestCase
 {
     use RefreshDatabase;
@@ -117,11 +102,7 @@ class NoteVocaleTest extends TestCase
             ->getJson("/api/provider/company/channels/{$canal->id}/messages")
             ->assertOk();
 
-        /*
-         * C'EST L'ASSERTION QUI FERMAIT LE TROU. Sans le type, l'application affiche un texte ; sans
-         * l'adresse, le bouton d'écoute n'a rien à ouvrir. Vérifier seulement que le message existe
-         * aurait été vert pendant tout le temps où personne ne pouvait écouter.
-         */
+        // C'EST L'ASSERTION QUI FERMAIT LE TROU.
         $premier = $reponse->json('data.0');
 
         $this->assertSame(Message::TYPE_VOICE, $premier['type']);

@@ -13,28 +13,7 @@ use App\Support\Domain\MissionStatus;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
-/**
- * LE SECOND PARCOURS DE MISSION : la course, d'un point à un autre.
- *
- * Le parcours terrain de la plateforme suppose un lieu unique et deux codes à six chiffres — un que
- * le client donne à l'arrivée, un autre à la fin. C'est juste pour un ménage : les deux personnes
- * sont face à face, et le code atteste de cette rencontre.
- *
- * UNE COURSE NE MARCHE PAS COMME ÇA, et aucune plateforme de transport ne fonctionne ainsi. Le
- * client monte dans la voiture — c'est le démarrage ; on arrive à destination — c'est la fin. La
- * preuve n'est pas un code, c'est la trace GPS de A à B, que le client a suivie en direct sur sa
- * carte. Demander six chiffres à quelqu'un qui vient de s'asseoir à l'arrière ajouterait un geste
- * que personne ne fait ailleurs, et que le conducteur contournerait dès la première pluie.
- *
- * CE SERVICE NE DUPLIQUE RIEN. Les gardes d'assignation, l'historique, et surtout `completeMission()`
- * — la capture du paiement, la commission, la ligne de versement, le passage de la réservation à
- * `termine` qui débloque l'avis — restent dans {@see MissionLifecycleService}. Deux chemins d'argent
- * pour une même clôture, c'est ainsi qu'on finit par payer deux fois.
- *
- * CE QU'IL NE TOUCHE PAS : le parcours classique. Les deux ne peuvent pas se croiser, et chaque
- * porte refuse explicitement ce qui n'est pas pour elle — un 409 qui dit pourquoi, jamais un
- * silence.
- */
+/** LE SECOND PARCOURS DE MISSION : la course, d'un point à un autre. */
 class RideLifecycleService
 {
     public function __construct(
@@ -43,10 +22,7 @@ class RideLifecycleService
     ) {}
 
     /**
-     * LE CLIENT EST À BORD — la course commence.
-     *
-     * `arrived → started`, sans code. C'est le geste qu'un conducteur fait d'une main en démarrant,
-     * et le seul instant où il peut le faire.
+     * LE CLIENT EST À BORD — la course commence. `arrived → started`, sans code.
      *
      * @throws RuntimeException si la mission n'est pas une course, ou pas au bon stade
      */
@@ -65,11 +41,7 @@ class RideLifecycleService
             'status' => MissionStatus::STARTED,
             'actual_start_at' => now(),
             'started_by_user_id' => $user->id,
-            /*
-             * La présence du client EST attestée : il est monté dans le véhicule, et le conducteur
-             * l'affirme au moment où ça se produit. Laisser ce drapeau à faux ferait passer toutes
-             * les courses pour des interventions sans client dans les tableaux de bord qualité.
-             */
+            // La présence du client EST attestée : il est monté dans le véhicule, et le conducteur l'affirme au moment où ça se produit.
             'client_presence_confirmed' => true,
             'start_lat' => $lat ?? $mission->start_lat,
             'start_lng' => $lng ?? $mission->start_lng,
@@ -101,10 +73,6 @@ class RideLifecycleService
     /**
      * ARRIVÉ À DESTINATION — la course se termine.
      *
-     * Sans code, et sans checklist : il n'y a rien à cocher sur un trajet. La position est
-     * confrontée au point de DÉPOSE — c'est `MissionLifecycleService::lieuDeCloture()` qui le sait,
-     * et c'est ce qui empêche de clôturer une course depuis l'autre bout de la ville.
-     *
      * @throws RuntimeException si la mission n'est pas une course, ou pas démarrée
      */
     public function terminerLaCourse(Mission $mission, User $user, ?float $lat = null, ?float $lng = null): Mission
@@ -118,13 +86,7 @@ class RideLifecycleService
 
         $this->fermerLesSuivis($mission, $lat, $lng);
 
-        /*
-         * TOUT L'ARGENT PASSE PAR LA CLÔTURE COMMUNE. Capture Stripe, commission, ligne de
-         * versement, portefeuille, passage de la réservation à `termine` — donc avis client
-         * possible — et retour de la présence du prestataire à « en ligne ». Réécrire cette suite
-         * ici en produirait une seconde version, et c'est exactement ainsi qu'une plateforme finit
-         * par payer deux fois la même course.
-         */
+        // TOUT L'ARGENT PASSE PAR LA CLÔTURE COMMUNE.
         return $this->lifecycle->completeMission($mission, $user, $lat, $lng);
     }
 
@@ -146,17 +108,7 @@ class RideLifecycleService
         }
     }
 
-    /**
-     * LE SECOND SEGMENT DU SUIVI : de A vers B.
-     *
-     * L'approche — le prestataire qui vient chercher le client — est déjà suivie, avec le point de
-     * prise en charge pour destination. La course est un AUTRE déplacement, vers un AUTRE point :
-     * détourner la première session en changeant sa destination effacerait l'histoire de
-     * l'approche, dont on a besoin pour justifier un retard ou une attente.
-     *
-     * Soft-fail : le suivi est un confort d'exécution, pas une condition. Une course doit pouvoir
-     * démarrer même si le module de suivi est indisponible — le client attend dans la voiture.
-     */
+    /** LE SECOND SEGMENT DU SUIVI : de A vers B. */
     private function ouvrirLeSuiviVersLeSecondPoint(Mission $mission, User $user, ?float $lat, ?float $lng): void
     {
         $reservation = $mission->booking;

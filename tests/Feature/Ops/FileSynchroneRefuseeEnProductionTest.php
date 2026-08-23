@@ -6,36 +6,10 @@ use App\Providers\AppServiceProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * EN PRODUCTION, UNE FILE « sync » N'EST PAS UNE FILE (M-6, M-7).
- *
- * `config/queue.php` a pour défaut `sync`, et `.env.example` le reprend. Avec ce pilote, un job mis
- * en file s'exécute IMMÉDIATEMENT, dans le processus appelant — et le délai passé à `->delay()` est
- * purement ignoré.
- *
- * CE QUE ÇA CASSE, CONCRÈTEMENT. `EscalateMissionAssignmentJob` est dispatché avec
- * `->delay($assignment->expires_at)`. En `sync`, l'escalade part à l'instant même : le TTL de vingt
- * secondes et les vagues du moteur de répartition n'existent plus, et la première offre est écrasée
- * avant que le prestataire ait eu le temps de voir sa notification. Rien ne le signale : les
- * missions partent, les offres circulent, seul le rythme est faux.
- *
- * POURQUOI UN REFUS DE DÉMARRAGE. `config:parity-check` garde déjà le déploiement, mais quelqu'un
- * peut éditer `.env` sur le serveur sans redéployer. Un avertissement dans les journaux ne serait lu
- * par personne — c'est exactement ainsi que ce réglage a survécu jusqu'ici.
- *
- * ON N'INSTANCIE PAS UNE VRAIE APPLICATION DE PRODUCTION pour le mesurer : on appelle la garde
- * elle-même, en basculant l'environnement. Faire booter une application en `production` dans la
- * suite entraînerait la moitié des middlewares de sécurité et ne prouverait rien de plus.
- */
+/** EN PRODUCTION, UNE FILE « sync » N'EST PAS UNE FILE (M-6, M-7). */
 class FileSynchroneRefuseeEnProductionTest extends TestCase
 {
-    /**
-     * LA RÈGLE, MESURÉE TELLE QU'ELLE EST ÉCRITE.
-     *
-     * `runningInConsole()` est figé au démarrage du conteneur et vaut TOUJOURS vrai sous PHPUnit :
-     * un test qui prétendrait simuler une requête HTTP passerait pour une mauvaise raison. La
-     * décision est donc isolée dans une méthode pure, dont les deux entrées sont explicites.
-     */
+    /** LA RÈGLE, MESURÉE TELLE QU'ELLE EST ÉCRITE. */
     #[Test]
     public function seule_la_production_hors_console_sur_une_file_synchrone_est_refusee(): void
     {

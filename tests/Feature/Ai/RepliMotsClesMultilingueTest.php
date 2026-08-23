@@ -8,20 +8,7 @@ use App\Services\Ai\OrderIntentInterpreter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LE REPLI PAR MOTS-CLES NE CONNAISSAIT QUE LE FRANCAIS.
- *
- * Quand le modele n'est pas joignable — cle absente, panne, delai depasse — l'assistant retombe
- * sur `interpreterParMotsCles()` : il decoupe la phrase du client et compte les mots presents dans
- * le libelle et la description de chaque metier.
- *
- * Ce corpus etait construit sur le seul libelle FRANCAIS. Un client neerlandophone ecrivant
- * « schilderwerk » obtenait donc zero sur chaque metier, et lisait « Nous n'avons pas reconnu le
- * service » — alors que le service existe et porte ce nom depuis que le catalogue se traduit.
- *
- * Le premier test est le TEMOIN : sans lui, « le neerlandais est reconnu » passerait au vert meme
- * si l'interpreteur etait casse pour une tout autre raison.
- */
+/** LE REPLI PAR MOTS-CLES NE CONNAISSAIT QUE LE FRANCAIS. */
 class RepliMotsClesMultilingueTest extends TestCase
 {
     use RefreshDatabase;

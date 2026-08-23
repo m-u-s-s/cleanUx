@@ -9,12 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * Regroupement optionnel de questions en etapes.
- *
- * Existe pour la loi 3 : au-dela de sept questions, on scinde en deux etapes avec une progression
- * honnete, plutot que d'empiler quinze champs sur une page.
- */
+/** Regroupement optionnel de questions en etapes. */
 class QuestionStep extends Model implements TranslatesCatalogLabels
 {
     use AuditsEloquentEvents, HasCatalogTranslations;

@@ -14,14 +14,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
-/**
- * Le panier multi-métiers : une commande, plusieurs professionnels, un seul suivi.
- *
- * Ce que ces tests verrouillent tient au CHANTIER RÉEL. Le carreleur ne pose pas avant que le
- * plombier ait fini, ni immédiatement après — il faut laisser sécher. Le décalage se propage à
- * toute la suite. Et l'adresse n'est demandée qu'une fois : la redemander à chaque service ajouté
- * est le frottement qui fait abandonner un panier déjà rempli.
- */
+/** Le panier multi-métiers : une commande, plusieurs professionnels, un seul suivi. */
 class BundleComposerTest extends TestCase
 {
     use RefreshDatabase;
@@ -53,12 +46,7 @@ class BundleComposerTest extends TestCase
         $this->assertSame(2, $draft->fresh()->items()->count());
     }
 
-    /**
-     * L'adresse n'est demandée QU'UNE FOIS.
-     *
-     * Elle vit sur la commande, pas sur la ligne : ajouter un service ne doit pas relancer un
-     * formulaire d'adresse déjà rempli.
-     */
+    /** L'adresse n'est demandée QU'UNE FOIS. */
     public function test_the_address_is_never_asked_twice(): void
     {
         $draft = $this->bundle();
@@ -116,10 +104,7 @@ class BundleComposerTest extends TestCase
 
     // ─── Ordonnancement ──────────────────────────────────────────────────────────────────────
 
-    /**
-     * LA règle du chantier : le nettoyage de fin de chantier attend la plomberie, et il attend le
-     * délai configuré par l'administrateur.
-     */
+    /** LA règle du chantier : le nettoyage de fin de chantier attend la plomberie, et il attend le délai configuré par l'administrateur. */
     public function test_a_dependent_trade_waits_for_the_one_before_it(): void
     {
         $draft = $this->bundle();
@@ -130,12 +115,7 @@ class BundleComposerTest extends TestCase
         $this->assertSame(1440, $cleaning->sequence_gap_min);
     }
 
-    /**
-     * Une association SANS délai n'est pas une dépendance.
-     *
-     * « Souvent commandé avec » exprime une habitude commerciale ; en faire une contrainte de
-     * chantier interdirait au client de réordonner librement ce qui peut l'être.
-     */
+    /** Une association SANS délai n'est pas une dépendance. */
     public function test_a_suggestion_without_a_delay_is_not_a_dependency(): void
     {
         $draft = $this->bundle();
@@ -145,13 +125,7 @@ class BundleComposerTest extends TestCase
         $this->assertNull($electrical->depends_on_item_id);
     }
 
-    /**
-     * LE décalage se PROPAGE.
-     *
-     * Si le plombier prend une heure trente et qu'il faut vingt-quatre heures de séchage, le
-     * nettoyage commence le lendemain. Calculer chaque date indépendamment produirait un planning
-     * où trois personnes arrivent en même temps.
-     */
+    /** LE décalage se PROPAGE. */
     public function test_the_delay_propagates_down_the_timeline(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-09-01 08:00:00'));
@@ -188,11 +162,7 @@ class BundleComposerTest extends TestCase
         $this->assertSame('2026-09-02 09:30', $timeline->last()['starts_at']->format('Y-m-d H:i'));
     }
 
-    /**
-     * Le client réordonne ce qui peut l'être, et se voit REFUSER ce qui casserait le chantier.
-     *
-     * Corriger en silence serait pire : il croirait que son geste a été pris en compte.
-     */
+    /** Le client réordonne ce qui peut l'être, et se voit REFUSER ce qui casserait le chantier. */
     public function test_reordering_is_refused_when_it_breaks_the_site(): void
     {
         $draft = $this->bundle();
@@ -214,12 +184,7 @@ class BundleComposerTest extends TestCase
         $this->assertSame($electrical->id, $draft->fresh()->items()->orderBy('sequence')->first()->id);
     }
 
-    /**
-     * Retirer un métier ne laisse pas de dépendance orpheline.
-     *
-     * S'il y avait une raison d'attendre, elle remonte d'un cran — retirer le plombier ne doit pas
-     * faire croire que le carreleur peut poser en premier.
-     */
+    /** Retirer un métier ne laisse pas de dépendance orpheline. */
     public function test_removing_a_trade_reattaches_what_depended_on_it(): void
     {
         $draft = $this->bundle();

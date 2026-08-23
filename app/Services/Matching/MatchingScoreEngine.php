@@ -12,9 +12,7 @@ class MatchingScoreEngine
 {
     public function __construct(protected ProviderPerformanceCalculator $perfCalculator) {}
 
-    /**
-     * Score a provider for a given booking. Returns 0–100 with full breakdown.
-     */
+    /** Score a provider for a given booking. Returns 0–100 with full breakdown. */
     public function score(User $provider, Booking $booking, array $contextOverrides = []): MatchingScoreBreakdown
     {
         $weights = $this->weights();

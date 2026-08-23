@@ -9,10 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * P2 — EnforcesAdminAccess: component-local defense-in-depth on admin Livewire components.
- * A non-admin reaching an admin component (any path) must get 403; an admin must pass.
- */
+/** P2 — EnforcesAdminAccess: component-local defense-in-depth on admin Livewire components. */
 class AdminAccessGuardP2Test extends TestCase
 {
     use RefreshDatabase;

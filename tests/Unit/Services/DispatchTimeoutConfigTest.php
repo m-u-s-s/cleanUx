@@ -4,21 +4,10 @@ namespace Tests\Unit\Services;
 
 use Tests\TestCase;
 
-/**
- * 7.1 — config/dispatch.php defaults and per-trade overrides.
- *
- * These are pure config/unit tests — no DB, no HTTP.
- */
+/** 7.1 — config/dispatch.php defaults and per-trade overrides. */
 class DispatchTimeoutConfigTest extends TestCase
 {
-    /**
-     * VINGT SECONDES, et c'est un choix produit.
-     *
-     * C'est la fenêtre des plateformes VTC : assez pour lire le métier, la distance et la
-     * rémunération ; trop court pour aller consulter son agenda. Le défaut était de quinze
-     * secondes — le client attendait donc moins longtemps par prestataire interrogé, mais les
-     * refus par manque de temps de lecture faisaient parcourir la chaîne plus loin.
-     */
+    /** VINGT SECONDES, et c'est un choix produit. */
     public function test_default_timeout_is_20_seconds(): void
     {
         $this->assertSame(20, config('dispatch.default_timeout'));
@@ -29,12 +18,7 @@ class DispatchTimeoutConfigTest extends TestCase
         $this->assertSame(20, config('dispatch.timeout_per_trade.nettoyage'));
     }
 
-    /**
-     * Les vagues, l'échéance globale et la fraîcheur de position sont EN CONFIG.
-     *
-     * Aucun nombre magique en dur : changer le TTL doit changer le compte à rebours réel, sans
-     * déploiement de code.
-     */
+    /** Les vagues, l'échéance globale et la fraîcheur de position sont EN CONFIG. */
     public function test_les_reglages_du_moteur_sont_tous_en_config(): void
     {
         $this->assertGreaterThan(0, config('dispatch.waves.initial_radius_m'));

@@ -14,10 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
-/**
- * Le socle : les trois tables existent, les colonnes de garde ne sont pas assignables en masse,
- * et le chiffré au repos fait bien un aller-retour.
- */
+/** Le socle : les trois tables existent, les colonnes de garde ne sont pas assignables en masse, et le chiffré au repos fait bien un aller-retour. */
 class SocleDuControleFacialTest extends TestCase
 {
     use RefreshDatabase;
@@ -49,12 +46,7 @@ class SocleDuControleFacialTest extends TestCase
         $this->assertTrue(Schema::hasColumn('trades', 'requires_face_check'));
     }
 
-    /**
-     * TÉMOIN POSITIF DE L'ASSIGNATION DE MASSE.
-     *
-     * Sans lui, le test ci-dessous passerait au vert même si `create()` était cassé pour tout le
-     * monde : on mesurerait une panne, pas une garde.
-     */
+    /** TÉMOIN POSITIF DE L'ASSIGNATION DE MASSE. */
     public function test_les_colonnes_ordinaires_sont_bien_assignables_en_masse(): void
     {
         $user = User::factory()->create();
@@ -69,11 +61,7 @@ class SocleDuControleFacialTest extends TestCase
         $this->assertSame(str_repeat('b', 64), $profil->reference_hash);
     }
 
-    /**
-     * Le dépôt active le refus EXPLICITE hors production : une colonne gardée ne se contente pas
-     * d'être écartée en silence, elle lève. C'est ce qu'on veut ici — un service qui tenterait
-     * d'écrire un verdict par assignation de masse doit exploser, pas passer inaperçu.
-     */
+    /** Le dépôt active le refus EXPLICITE hors production : une colonne gardée ne se contente pas d'être écartée en silence, elle lève. */
     public function test_les_colonnes_de_garde_ne_sont_pas_assignables_en_masse(): void
     {
         $user = User::factory()->create();
@@ -149,17 +137,7 @@ class SocleDuControleFacialTest extends TestCase
         $this->assertFalse($profil->fresh()->hasActiveConsent());
     }
 
-    /**
-     * LE MODULE EST EN SERVICE, EN STRATÉGIE `global`.
-     *
-     * `global` et non `zone` : avec `zone`, une liste de zones vide ne couvre personne, et surtout
-     * une zone créée plus tard n'y entre jamais — le module cesserait silencieusement de
-     * s'appliquer aux nouvelles villes. Un contrôle de sécurité qui se désactive tout seul quand on
-     * grandit est pire que pas de contrôle du tout, parce qu'on croit l'avoir.
-     *
-     * Le périmètre réel reste étroit : seuls les métiers qui cochent `requires_face_check` sont
-     * concernés, et le seeder n'en coche que deux.
-     */
+    /** LE MODULE EST EN SERVICE, EN STRATÉGIE `global`. */
     public function test_le_module_plateforme_est_en_service_et_global(): void
     {
         $this->seed(PlatformModuleSeeder::class);
@@ -171,13 +149,7 @@ class SocleDuControleFacialTest extends TestCase
         $this->assertSame('global', $module->rollout_strategy);
     }
 
-    /**
-     * LES RÉGLAGES SEMÉS SONT CEUX DE LA CONFIG, pas une copie qui dérive.
-     *
-     * Le seeder écrivait `failure_threshold: 3` quand `config/face_check.php` en annonçait 2, et
-     * c'est la base qui gagne : deux chiffres également plausibles pour un même réglage, donc une
-     * divergence que personne ne remarque.
-     */
+    /** LES RÉGLAGES SEMÉS SONT CEUX DE LA CONFIG, pas une copie qui dérive. */
     public function test_les_reglages_semes_suivent_la_config(): void
     {
         $this->seed(PlatformModuleSeeder::class);

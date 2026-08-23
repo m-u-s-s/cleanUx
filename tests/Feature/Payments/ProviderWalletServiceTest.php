@@ -141,17 +141,7 @@ class ProviderWalletServiceTest extends TestCase
         $this->assertEqualsWithDelta(0.0, $balance['available'], 0.01);
     }
 
-    /**
-     * C'EST L'INTERVENANT QUI EST CRÉDITÉ, PAS LE NOM RESTÉ SUR LA COMMANDE.
-     *
-     * `completeMission()` désigne le bénéficiaire du VERSEMENT par la mission
-     * (`lead_provider_user_id`), et créditait le PORTEFEUILLE d'après la réservation
-     * (`employe_id`). Les deux divergent dès qu'une mission est réassignée — la réservation garde
-     * l'ancien nom — et pour toute mission qu'une société confie à l'un de ses salariés.
-     *
-     * La ligne comptable nommait alors une personne pendant que le solde retirable allait à une
-     * autre. Chacune des deux moitiés, lue seule, semblait juste.
-     */
+    /** C'EST L'INTERVENANT QUI EST CRÉDITÉ, PAS LE NOM RESTÉ SUR LA COMMANDE. */
     public function test_c_est_l_intervenant_de_la_mission_qui_est_credite(): void
     {
         $booking = $this->makeBooking(200.0, providerCents: 16000, feeCents: 4000);
@@ -214,13 +204,7 @@ class ProviderWalletServiceTest extends TestCase
         $this->assertEqualsWithDelta(50.0, (float) $debit->amount, 0.01);
     }
 
-    /**
-     * UN RETRAIT ENGAGÉ DOIT RÉDUIRE LE SOLDE DISPONIBLE.
-     *
-     * `recordPayout()` inscrit son débit en `processing`, statut absent de
-     * `scopeAvailableBalance()` — qui ne retient que `available` et `cleared`. Le débit
-     * n'entrait donc dans aucun calcul : le solde restait intact après un retrait.
-     */
+    /** UN RETRAIT ENGAGÉ DOIT RÉDUIRE LE SOLDE DISPONIBLE. */
     public function test_le_solde_disponible_baisse_apres_un_retrait(): void
     {
         $booking = $this->makeBooking(200.0, providerCents: 20000, feeCents: 0);
@@ -242,13 +226,7 @@ class ProviderWalletServiceTest extends TestCase
         );
     }
 
-    /**
-     * LE MÊME SOLDE NE PEUT PAS ÊTRE RETIRÉ DEUX FOIS.
-     *
-     * Conséquence directe du défaut ci-dessus, et la seule qui coûte de l'argent réel : le
-     * contrôle de `requestWithdraw()` lit un solde qui n'a pas bougé, si bien qu'un prestataire
-     * pouvait redemander le même montant autant de fois qu'il le souhaitait.
-     */
+    /** LE MÊME SOLDE NE PEUT PAS ÊTRE RETIRÉ DEUX FOIS. */
     public function test_le_meme_solde_ne_peut_pas_etre_retire_deux_fois(): void
     {
         $booking = $this->makeBooking(200.0, providerCents: 20000, feeCents: 0);

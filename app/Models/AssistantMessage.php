@@ -7,10 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Message individuel dans une conversation assistant.
- * sender_type : user | assistant | system | tool_result
- */
+/** Message individuel dans une conversation assistant. */
 class AssistantMessage extends Model
 {
     /** @use HasFactory<AssistantMessageFactory> */
@@ -51,11 +48,7 @@ class AssistantMessage extends Model
         return $this->sender_type === self::SENDER_ASSISTANT;
     }
 
-    /**
-     * Format ce message pour l'API Anthropic Messages.
-     * Si le message embarque un tool_use ou tool_result dans metadata,
-     * structure le content en blocks (au lieu d'une string).
-     */
+    /** Format ce message pour l'API Anthropic Messages. */
     public function toApiPayload(): array
     {
         $role = match ($this->sender_type) {

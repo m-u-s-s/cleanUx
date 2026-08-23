@@ -2,14 +2,7 @@
 
 namespace App\Admin\Console;
 
-/**
- * Un filtre exposé par un descripteur.
- *
- * Il décrit CE QUE l'utilisateur peut filtrer, pas comment : la traduction en clauses SQL reste
- * dans le descripteur, qui seul connaît sa requête. Un filtre déclaré ici sans traitement dans le
- * descripteur ne fait donc rien — et c'est préférable à un filtre appliqué au hasard sur une
- * colonne devinée depuis sa clé.
- */
+/** Un filtre exposé par un descripteur. */
 final class Filter
 {
     public const TYPE_SEARCH = 'search';

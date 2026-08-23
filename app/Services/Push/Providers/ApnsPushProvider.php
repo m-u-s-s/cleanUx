@@ -9,19 +9,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Apple Push Notification service (APNs HTTP/2) — provider iOS natif.
- *
- * Requires:
- *   - APNS_KEY_PATH   (.p8 token-based key)
- *   - APNS_KEY_ID
- *   - APNS_TEAM_ID
- *   - APNS_BUNDLE_ID
- *   - APNS_ENVIRONMENT (production|sandbox)
- *
- * Reasons (APNs response) qui marquent token invalid :
- *   - BadDeviceToken, Unregistered, DeviceTokenNotForTopic
- */
+/** Apple Push Notification service (APNs HTTP/2) — provider iOS natif. */
 class ApnsPushProvider implements PushProviderInterface
 {
     public function name(): string

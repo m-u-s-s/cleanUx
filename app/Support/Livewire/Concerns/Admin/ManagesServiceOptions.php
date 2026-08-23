@@ -9,13 +9,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
-/**
- * Gère le CRUD des ServiceOption (variantes paramétrables d'un service).
- *
- * Doit être branché dans un composant Livewire qui expose $selectedServiceId.
- * Le composant doit appeler $this->loadOptionsForService($id) après chaque
- * selectService() (cf. trait alias dans CatalogueServices).
- */
+/** Gère le CRUD des ServiceOption (variantes paramétrables d'un service). */
 trait ManagesServiceOptions
 {
     /** Liste des options du service sélectionné, keyé par option id. */
@@ -93,9 +87,7 @@ trait ManagesServiceOptions
         Gate::authorize('perform-critical-admin-actions');
     }
 
-    /**
-     * Normalise les valeurs (textarea → array JSON) pour les types select/multiselect.
-     */
+    /** Normalise les valeurs (textarea → array JSON) pour les types select/multiselect. */
     protected function normalizeOptionPayload(array $payload): array
     {
         $type = $payload['type'] ?? 'number';

@@ -10,17 +10,7 @@ use App\Models\ContractSignature;
 use App\Services\ContractsV2\ContractService;
 
 /**
- * Les signatures de contrat.
- *
- * POURQUOI CE DESCRIPTEUR EXISTE À CÔTÉ DE CELUI DES DOCUMENTS. La page web des contrats montre les
- * DOCUMENTS et leurs SIGNATURES ; le seul geste qu'elle offre — invalider — porte sur la signature,
- * pas sur le document. Le descripteur des documents ne pouvait donc rien en faire, et le geste
- * manquait au mobile.
- *
- * INVALIDER NE SUPPRIME PAS. Une signature invalidée reste en base avec sa raison et son auteur :
- * c'est une pièce à valeur probante, et l'effacer ferait disparaître la trace de ce qui a été signé
- * puis contesté. Le service s'en charge — écrire `is_invalidated` à la main perdrait l'horodatage,
- * l'auteur et le motif.
+ * Les signatures de contrat. POURQUOI CE DESCRIPTEUR EXISTE À CÔTÉ DE CELUI DES DOCUMENTS.
  *
  * @extends EloquentResource<ContractSignature>
  */
@@ -88,10 +78,7 @@ class ContractSignatureResource extends EloquentResource
 
                 return ['ok' => true];
             })->requires([
-                /*
-                 * Le motif est obligatoire, et c'est une exigence de fond plutôt que d'interface :
-                 * une signature invalidée sans raison ne se défend pas devant un litige.
-                 */
+                // Le motif est obligatoire, et c'est une exigence de fond plutôt que d'interface : une signature invalidée sans raison ne se défend pas devant un litige.
                 Field::make('reason', 'Motif de l’invalidation', Field::TYPE_TEXTAREA)
                     ->rules(['required', 'string', 'min:5', 'max:1000']),
             ])->destructive('La signature sera invalidée. Elle reste conservée avec son motif.'),

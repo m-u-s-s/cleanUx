@@ -8,13 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-/**
- * LES COMPTES DE DÉVELOPPEMENT DOIVENT OUVRIR CE QU'ILS ANNONCENT, ET RIEN DE PLUS.
- *
- * Un compte de travail qui reçoit 403 partout ne sert à rien ; un compte « comptable » qui ouvre
- * les paiements ne prouve rien de la séparation qu'on vient de construire. Ce fichier vérifie les
- * deux sens.
- */
+/** LES COMPTES DE DÉVELOPPEMENT DOIVENT OUVRIR CE QU'ILS ANNONCENT, ET RIEN DE PLUS. */
 class ComptesDeDeveloppementTest extends TestCase
 {
     use RefreshDatabase;
@@ -33,12 +27,7 @@ class ComptesDeDeveloppementTest extends TestCase
         $this->get(route('admin.rentals.center'))->assertSuccessful();
     }
 
-    /**
-     * LE COMPTABLE N'ATTEINT QUE SA COMPTABILITÉ.
-     *
-     * C'est ce qu'on veut pouvoir constater de ses yeux avant de remettre le compte à quelqu'un
-     * d'extérieur : la séparation ne se vérifie pas en lisant une liste de capacités.
-     */
+    /** LE COMPTABLE N'ATTEINT QUE SA COMPTABILITÉ. */
     public function test_le_comptable_natteint_que_sa_comptabilite(): void
     {
         $this->seed(ComptesDeDeveloppementSeeder::class);
@@ -72,12 +61,7 @@ class ComptesDeDeveloppementTest extends TestCase
         }
     }
 
-    /**
-     * RELANCÉ, LE SEMIS N'ÉCRASE PAS UN MOT DE PASSE CHOISI.
-     *
-     * Quelqu'un qui l'a changé sur son environnement ne doit pas le retrouver réinitialisé au
-     * prochain semis : c'est le genre de surprise qui fait perdre une demi-heure à chercher ailleurs.
-     */
+    /** RELANCÉ, LE SEMIS N'ÉCRASE PAS UN MOT DE PASSE CHOISI. */
     public function test_le_semis_nefface_pas_un_mot_de_passe_change(): void
     {
         $this->seed(ComptesDeDeveloppementSeeder::class);

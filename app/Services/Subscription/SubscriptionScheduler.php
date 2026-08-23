@@ -58,17 +58,7 @@ class SubscriptionScheduler
                 'heure' => $sub->heure,
                 'status' => 'en_attente',
                 'devis_estime' => $sub->discounted_price,
-                /*
-                 * `is_recurrent`, PAS `is_recurring` : la colonne porte le premier nom, et le second
-                 * était écarté en silence par Eloquent. Toutes les réservations nées d'un abonnement
-                 * naissaient donc NON marquées comme récurrentes — une faute de frappe qu'aucun test
-                 * ne pouvait voir, puisque rien ne signale un attribut jeté.
-                 *
-                 * `subscription_id` a disparu d'ici : `bookings` ne porte pas cette colonne et rien
-                 * ne la lit. La déduplication de cet ordonnanceur repose sur le créneau
-                 * (client + date + heure), pas sur ce lien. Rattacher explicitement une réservation
-                 * à son abonnement reste à faire, et demanderait une colonne.
-                 */
+                // `is_recurrent`, PAS `is_recurring` : la colonne porte le premier nom, et le second était écarté en silence par Eloquent.
                 'is_recurrent' => true,
             ]);
         }

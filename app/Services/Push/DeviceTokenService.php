@@ -11,9 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class DeviceTokenService
 {
-    /**
-     * Register (ou upsert) un device token pour un user.
-     */
+    /** Register (ou upsert) un device token pour un user. */
     public function register(
         User $user,
         string $token,

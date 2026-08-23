@@ -14,23 +14,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LA FUITE ENTRE SOCIÉTÉS N'ÉTAIT FERMÉE QU'À MOITIÉ.
- *
- * La phase 0 a corrigé la LECTURE : `openChannel()` et le rendu vérifient désormais l'organisation
- * et l'appartenance. L'ÉCRITURE, elle, est restée ouverte — je ne l'avais pas regardée.
- *
- * `sendMessage()` fait `Channel::find($this->activeChannelId)` sans scoping ni contrôle de
- * politique, et `MessageService::send()` n'autorise rien de son côté. Comme `$activeChannelId` est
- * une propriété PUBLIQUE Livewire, donc pilotable depuis le navigateur, n'importe quel compte
- * pouvait publier un message dans le canal privé d'une société concurrente — sans jamais l'ouvrir.
- *
- * `ChannelPolicy::postMessage()` encode pourtant la règle exacte (membre, canal ni verrouillé ni
- * archivé) et n'était appelée nulle part. Cinquième garde déclarée sans consommateur rencontrée
- * dans ce programme.
- *
- * Découvert en construisant l'API des canaux : chaque point d'entrée oblige à relire une garde.
- */
+/** LA FUITE ENTRE SOCIÉTÉS N'ÉTAIT FERMÉE QU'À MOITIÉ. */
 class ChannelWriteGuardTest extends TestCase
 {
     use RefreshDatabase;

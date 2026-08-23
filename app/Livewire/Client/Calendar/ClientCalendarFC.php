@@ -11,20 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * Phase 6.1 — Calendrier FullCalendar avec drag-and-drop.
- *
- * Différences avec ClientCalendar de Phase 6 (vue grille HTML simple) :
- *   - Utilise FullCalendar v6 (déjà installé via npm)
- *   - Drag-and-drop pour reprogrammer un RDV
- *   - Eventclick pour voir détails / actions
- *   - Switch entre dayGridMonth, timeGridWeek, listWeek
- *   - Chargement dynamique des events via fetchEvents Livewire method
- *
- * NB : Phase 6 ClientCalendar reste disponible (rendu plus simple, pas de JS).
- * Phase 6.1 ajoute une route séparée /calendrier/interactif si tu veux les
- * deux options.
- */
+/** Phase 6.1 — Calendrier FullCalendar avec drag-and-drop. */
 class ClientCalendarFC extends Component
 {
     #[Locked]
@@ -68,9 +55,7 @@ class ClientCalendarFC extends Component
         ])->all();
     }
 
-    /**
-     * Appelé par le JS quand l'utilisateur drop un événement à une nouvelle date.
-     */
+    /** Appelé par le JS quand l'utilisateur drop un événement à une nouvelle date. */
     public function handleEventDrop(int $bookingId, string $newStartIso): void
     {
         $user = Auth::user();

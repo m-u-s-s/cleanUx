@@ -38,20 +38,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 
-/**
- * Phase 12 — Authentification API mobile (Sanctum tokens).
- *
- * Endpoints :
- *   POST /api/auth/login    → token + user
- *   POST /api/auth/register → token + user (clients seulement)
- *   POST /api/auth/logout   → révoque le token courant
- *
- * Sécurité :
- *   - Rate limit 5 tentatives/min par IP+email sur login
- *   - Email vérification optionnelle (selon ta config Fortify)
- *   - Le token retourné est un PersonalAccessToken Sanctum, durée illimitée
- *     par défaut (configurable via config/sanctum.php)
- */
+/** Phase 12 — Authentification API mobile (Sanctum tokens). */
 /**
  * @group Authentication
  */
@@ -90,17 +77,7 @@ class ApiAuthController extends Controller
             ]);
         }
 
-        /*
-         * UN COMPTE SUSPENDU NE REÇOIT PAS DE JETON.
-         *
-         * Le contrôle vient APRÈS le mot de passe — on ne révèle pas à un inconnu qu'une adresse
-         * existe, ni dans quel état elle est. `Sanctum::authenticateAccessTokensUsing` invalide déjà
-         * les jetons d'un compte suspendu sur toutes les routes ; sans le refus ici, la connexion
-         * réussirait quand même et l'application recevrait un jeton mort-né, puis des 401 partout
-         * sans jamais dire pourquoi.
-         *
-         * La limite de tentatives n'est PAS remise à zéro sur ce chemin, même raison qu'en dessous.
-         */
+        // UN COMPTE SUSPENDU NE REÇOIT PAS DE JETON.
         if (! $user->compteActif()) {
             return response()->json([
                 'ok' => false,
@@ -109,23 +86,7 @@ class ApiAuthController extends Controller
             ], 403);
         }
 
-        /*
-         * LE SECOND FACTEUR VAUT AUSSI PAR L'API.
-         *
-         * Mesuré le 2026-08-16, avec `ENFORCE_2FA_FOR_ADMINS=true` — la configuration de
-         * production : le web renvoyait l'administrateur vers l'activation de la 2FA avant tout
-         * accès à la console, et `/api/auth/login` rendait un jeton sur le seul mot de passe, avec
-         * lequel `/api/admin/overview` et les écritures comptables répondaient 200. La console
-         * d'administration étant entièrement native, ce n'était pas un chemin théorique : c'était le
-         * chemin normal.
-         *
-         * Le contrôle vaut pour TOUT compte qui a activé la 2FA, pas seulement les
-         * administrateurs : quelqu'un qui a pris la peine de l'activer ne s'attend pas à ce qu'un
-         * mot de passe seul suffise depuis un téléphone.
-         *
-         * Il vient APRÈS le mot de passe : réclamer un code avant de savoir si le mot de passe est
-         * bon dirait à un inconnu que ce compte existe et qu'il porte une 2FA.
-         */
+        // LE SECOND FACTEUR VAUT AUSSI PAR L'API.
         if ($user->hasEnabledTwoFactorAuthentication()) {
             $refus = $this->refuserSansSecondFacteur($user, $request, $key);
 
@@ -134,18 +95,7 @@ class ApiAuthController extends Controller
             }
         }
 
-        /*
-         * Chaque application n'accepte que le public qu'elle sert.
-         *
-         * Le contrôle vient APRÈS la vérification du mot de passe et AVANT l'émission du jeton :
-         * après, pour ne pas révéler à un inconnu qu'une adresse existe et de quel type elle est ;
-         * avant, parce qu'émettre un jeton puis refuser l'écran laisserait une session valide dans
-         * une application qui n'en veut pas.
-         *
-         * La limite de tentatives n'est PAS remise à zéro sur ce chemin : le mot de passe était
-         * bon, mais rien ne doit permettre de sonder les comptes application par application sans
-         * compteur.
-         */
+        // Chaque application n'accepte que le public qu'elle sert.
         $app = AppAudience::declared($request);
 
         if (! AppAudience::allows($user, $app)) {
@@ -165,20 +115,7 @@ class ApiAuthController extends Controller
         ]);
     }
 
-    /**
-     * Rend une réponse de refus si le second facteur manque ou ne convient pas, `null` s'il passe.
-     *
-     * DEUX FORMES DE CODE, ET IL FAUT LES DEUX. Le code à six chiffres de l'application
-     * d'authentification, et un code de secours pour qui a perdu son téléphone — sans le second, la
-     * 2FA transforme un téléphone cassé en compte définitivement perdu. Le code de secours est
-     * remplacé après usage, comme sur le web.
-     *
-     * `two_factor_required` est un code d'erreur distinct de l'échec d'identifiants : c'est lui qui
-     * dit à l'application d'afficher le champ du code plutôt que « identifiants incorrects ».
-     *
-     * Chaque code refusé compte comme une tentative : sans cela, six chiffres se devineraient en
-     * boucle sur un mot de passe déjà connu.
-     */
+    /** Rend une réponse de refus si le second facteur manque ou ne convient pas, `null` s'il passe. */
     private function refuserSansSecondFacteur(User $user, Request $request, string $cleDeLimite): ?JsonResponse
     {
         $code = trim((string) $request->input('two_factor_code', ''));
@@ -269,19 +206,7 @@ class ApiAuthController extends Controller
         // `role` et `platform_role` ne sont plus assignables en masse : ce sont les colonnes qui
         // décident de ce que le compte peut atteindre. Elles se posent ici par `forceFill`, à
         // partir du seul `account_type` validé, jamais d'une clé libre du corps de la requête.
-        /*
-         * `account_type` SUIT LA MEME DECISION QUE `role`, ET DANS LA MEME ECRITURE.
-         *
-         * Elle ne l'a pas toujours suivie : ce chemin lisait `account_type` dans la requete pour en
-         * deduire le role, puis ne persistait pas la colonne. Le defaut SQL
-         * (`NOT NULL DEFAULT 'client_personal'`) s'appliquait alors, et une inscription de
-         * prestataire produisait dans UNE SEULE transaction un compte portant `role = 'employe'` et
-         * `account_type = 'client_personal'` — deux colonnes de la meme ligne qui se contredisent.
-         * Mesure sur `brio` avant correction : onze comptes dans ce cas.
-         *
-         * Le chemin web (`CreateNewUser:121`) la posait deja ; seul celui-ci l'oubliait. Les poser
-         * ensemble est ce qui empeche la divergence de revenir.
-         */
+        // `account_type` SUIT LA MEME DECISION QUE `role`, ET DANS LA MEME ECRITURE.
         $user->forceFill([
             'platform_role' => User::PLATFORM_USER,
             'role' => $asProvider ? 'employe' : 'client',
@@ -348,17 +273,6 @@ class ApiAuthController extends Controller
     /**
      * Crée l'identité cliente du compte : particulier ou société.
      *
-     * L'inscription mobile ne créait AUCUN CustomerProfile, là où la voie web en crée un
-     * systématiquement. Or ce profil est lu par le moteur de sélection de prestataire, la prise
-     * de rendez-vous et l'identité renvoyée par /auth/me : un client inscrit depuis l'application
-     * en était donc dépourvu, sans que rien ne le signale.
-     *
-     * Une société cliente donne lieu à un OrganizationAccount `client_company` dont le signataire
-     * est `owner` — c'est ce que consomment le multi-sites, les contrats B2B et la facturation
-     * centralisée. Contrairement à une société prestataire, elle est active d'emblée : rien n'est
-     * à vérifier avant qu'elle puisse commander un service, et l'y contraindre bloquerait une
-     * cliente légitime.
-     *
      * @param  array<string, mixed>  $data
      */
     private function createClientIdentity(User $user, array $data): void
@@ -408,13 +322,7 @@ class ApiAuthController extends Controller
     }
 
     /**
-     * Crée l'identité prestataire du compte : profil seul pour un indépendant, profil rattaché à
-     * une organisation `provider_company` pour une société.
-     *
-     * Une société prestataire est modélisée par un OrganizationAccount dont le signataire est
-     * membre `owner` — c'est ce que consomment l'espace web provider-company (dispatch, équipe)
-     * et le rattachement des missions via `provider_organization_id`. Créer seulement un profil
-     * marqué « société » produirait un compte incapable d'avoir la moindre équipe.
+     * Crée l'identité prestataire du compte : profil seul pour un indépendant, profil rattaché à une organisation `provider_company` pour une société.
      *
      * @param  array<string, mixed>  $data
      */
@@ -446,20 +354,7 @@ class ApiAuthController extends Controller
 
             $organizationId = $organization->id;
 
-            /*
-             * L'ORGANISATION ACTIVE DU COMPTE — les deux colonnes que TOUT le reste lit.
-             *
-             * Elles manquaient ici, et seulement ici : `createClientIdentity()` les pose, et
-             * l'inscription web les pose aussi (`CreateNewUser::createProviderCompany`). Le
-             * fondateur inscrit depuis l'application obtenait donc une organisation, un rôle
-             * `owner` en base, un profil rattaché — et 403 « Aucune organisation active » sur
-             * chaque écran de sa propre société. `organizationContextId()` a quatre replis, aucun
-             * ne regarde la table des membres : une adhésion ne fait pas un contexte.
-             *
-             * `forceFill` : ces colonnes désignent l'organisation dont le compte lira les données,
-             * elles ne sont pas assignables en masse. L'identifiant vient de l'organisation qu'on
-             * vient de créer, jamais du corps de la requête.
-             */
+            // L'ORGANISATION ACTIVE DU COMPTE — les deux colonnes que TOUT le reste lit.
             $user->forceFill([
                 'organization_account_id' => $organization->id,
                 'current_organization_id' => $organization->id,
@@ -471,22 +366,7 @@ class ApiAuthController extends Controller
         $profile = ProviderProfile::create([
             'user_id' => $user->id,
             'organization_account_id' => $organizationId,
-            /*
-             * `COMPANY_WORKER`, ET SURTOUT PAS `COMPANY`.
-             *
-             * Le fondateur d'une société prestataire EST un membre de cette société : c'est ce que
-             * `isProviderCompanyWorker()` teste, et c'est ce que pose l'inscription web
-             * (`CreateNewUser::createProviderCompany`). Cette ligne posait `COMPANY`, qu'aucune
-             * lecture ne reconnaît.
-             *
-             * Conséquence mesurée : un patron inscrit depuis le mobile ne résolvait NI en société
-             * NI en prestataire — `isEmploye()` étant faux pour lui — et retombait sur le repli
-             * `client_individuelle`. Il atterrissait dans l'espace client, sans ses missions, sans
-             * sa société, avec une organisation pourtant créée et un rôle `owner` en base.
-             *
-             * Deux parcours écrivaient la même identité par des chemins différents, et une seule
-             * des deux écritures était reconnue en lecture.
-             */
+            // `COMPANY_WORKER`, ET SURTOUT PAS `COMPANY`.
             'provider_type' => $asCompany ? ProviderType::COMPANY_WORKER : ProviderType::INDEPENDENT,
             'status' => 'pending',
             'verification_status' => 'unverified',
@@ -499,11 +379,7 @@ class ApiAuthController extends Controller
         $this->attachDeclaredTrade($user, $data);
         $this->attachDeclaredCoverage($user, $data);
 
-        /*
-         * Sans le moindre créneau, le compte est INVISIBLE à la planification : aucune fenêtre
-         * calculée, aucune mission planifiée proposée, et rien à l'écran qui l'explique. Le
-         * provisionneur est idempotent — il ne touche jamais un prestataire qui a déjà choisi.
-         */
+        // Sans le moindre créneau, le compte est INVISIBLE à la planification : aucune fenêtre calculée, aucune mission planifiée proposée, et rien à l'écran qui l'explique.
         app(DefaultAvailabilityProvisioner::class)->provision($user);
 
         $this->openVerificationJourney($user);
@@ -511,11 +387,6 @@ class ApiAuthController extends Controller
 
     /**
      * La couverture déclarée : métiers ET zones.
-     *
-     * `trade_id` seul ne dit QUE ce que le prestataire fait, jamais où — et le dispatch devait
-     * alors deviner son périmètre à partir de sa position du jour. `ProviderCoverageWriter` écrit
-     * les deux tables que lit la requête candidate, et valide chaque identifiant contre le
-     * catalogue : ce qui arrive vient de l'application, donc n'est cru sur parole nulle part.
      *
      * @param  array<string, mixed>  $data
      */
@@ -543,11 +414,7 @@ class ApiAuthController extends Controller
     }
 
     /**
-     * Rattache le métier déclaré à l'inscription, avec les réponses aux questions propres à ce
-     * métier (trades.provider_form_schema).
-     *
-     * Sans métier, le matching n'a rien sur quoi travailler et le prestataire ne recevrait aucune
-     * mission — c'est aussi ce que contrôle l'étape « déclarer vos métiers » du parcours.
+     * Rattache le métier déclaré à l'inscription, avec les réponses aux questions propres à ce métier (trades.provider_form_schema).
      *
      * @param  array<string, mixed>  $data
      */
@@ -586,14 +453,7 @@ class ApiAuthController extends Controller
         ]);
     }
 
-    /**
-     * Ouvre le parcours de vérification obligatoire (profil, contrat, identité, documents,
-     * métiers) dès la création du compte.
-     *
-     * Soft-fail délibéré : un module désactivé ou un parcours absent ne doit pas faire échouer la
-     * création du compte. L'utilisateur se retrouverait sans compte ET sans explication, alors que
-     * le middleware provider.approved le bloque de toute façon tant qu'il n'est pas approuvé.
-     */
+    /** Ouvre le parcours de vérification obligatoire (profil, contrat, identité, documents, métiers) dès la création du compte. */
     private function openVerificationJourney(User $user): void
     {
         try {
@@ -606,22 +466,9 @@ class ApiAuthController extends Controller
         }
     }
 
-    /**
-     * `organization_accounts.slug` porte un index unique : deux sociétés homonymes qui
-     * s'inscrivent ne doivent pas faire échouer la seconde inscription.
-     */
+    /** `organization_accounts.slug` porte un index unique : deux sociétés homonymes qui s'inscrivent ne doivent pas faire échouer la seconde inscription. */
     /**
      * Ouvre la vérification d'entreprise d'une société qui s'inscrit.
-     *
-     * Le module de vérification d'entreprise était entièrement construit — immatriculation contre
-     * les registres officiels, TVA via VIES, criblage des sanctions, score de risque pondéré —
-     * mais AUCUNE entité n'était jamais créée : il n'avait donc jamais rien à vérifier. Une
-     * société s'inscrivait, son organisation était créée, et sa légitimité n'était contrôlée par
-     * personne.
-     *
-     * Soft-fail intégral : une inscription valide ne doit pas échouer parce qu'un registre est
-     * injoignable ou qu'un numéro sort des schémas connus. Sans entité, la société suit
-     * simplement la voie manuelle, comme avant.
      *
      * @param  array<string, mixed>  $data
      */
@@ -706,9 +553,7 @@ class ApiAuthController extends Controller
         return response()->json(['ok' => true, 'revoked_all' => true]);
     }
 
-    /**
-     * Serializer minimal utilisé par login + register pour réponse cohérente.
-     */
+    /** Serializer minimal utilisé par login + register pour réponse cohérente. */
     protected function serializeUser(User $user): array
     {
         return array_merge([
@@ -717,11 +562,7 @@ class ApiAuthController extends Controller
             'email' => $user->email,
             'phone' => $user->phone ?? null,
             'platform_role' => $user->platform_role ?? null,
-            /*
-             * Le rôle canonique, identique à celui que `/auth/me` annonce à la reprise de session.
-             * La divergence entre ces deux réponses est ce qui a produit, un par un, les drapeaux
-             * ci-dessous — chacun ajouté après qu'un compte eut perdu sa casquette au redémarrage.
-             */
+            // Le rôle canonique, identique à celui que `/auth/me` annonce à la reprise de session.
             'role' => $user->roleCanonique()->value,
             'is_super_admin' => $user->roleCanonique() === Role::SUPER_ADMIN,
             'locale' => $user->locale ?? 'fr',
@@ -729,35 +570,10 @@ class ApiAuthController extends Controller
             'is_admin' => method_exists($user, 'isPlatformAdmin') && $user->isPlatformAdmin(),
             'is_client' => method_exists($user, 'isClient') && $user->isClient(),
             'is_entreprise' => method_exists($user, 'isEntreprise') && $user->isEntreprise(),
-            /*
-             * L'ÉTAT DE VÉRIFICATION DE L'ADRESSE, ANNONCÉ — parce qu'il ne l'était nulle part.
-             *
-             * Le web est bloqué par `verified` tant que l'adresse n'est pas confirmée ; l'API ne
-             * porte pas cette garde, et c'est un choix (l'imposer déconnecterait tout le parc déjà
-             * inscrit). Mais l'application ne pouvait même pas SAVOIR : elle ne pouvait donc ni le
-             * dire, ni proposer de renvoyer l'e-mail, et la même personne se retrouvait bloquée
-             * sans explication le jour où elle ouvrait le site.
-             *
-             * `/auth/me` l'expose depuis toujours par `toArray()` ; la connexion, non. Deux réponses
-             * qui divergent sur l'identité, c'est le motif exact qui a produit les drapeaux
-             * ci-dessus, un par un.
-             */
+            // L'ÉTAT DE VÉRIFICATION DE L'ADRESSE, ANNONCÉ — parce qu'il ne l'était nulle part.
             'email_verified' => $user->hasVerifiedEmail(),
         ],
-            /*
-             * LA PARITÉ N'EST PLUS UNE INTENTION, C'EST LE MÊME CODE.
-             *
-             * Cette méthode calculait sa propre version du contexte d'organisation : un
-             * `organization_account_id` résolu en deux niveaux là où `/auth/me` en a quatre, et NI
-             * `organization_type` NI `can_manage_company`. Un dirigeant de société prestataire se
-             * connectait donc sans que rien n'indique à l'application quel espace ouvrir — puis
-             * l'obtenait au redémarrage suivant, ce qui rendait le défaut intermittent et sa cause
-             * invisible.
-             *
-             * `organization_account_id` change de source au passage : `organizationContextId()`
-             * plutôt que `organization_account_id ?? current_organization_id`. C'est un ÉLARGISSEMENT
-             * — les deux colonnes lues auparavant restent les deux premiers replis de la méthode.
-             */
+            // LA PARITÉ N'EST PLUS UNE INTENTION, C'EST LE MÊME CODE.
             app(ContratDeRoleMobile::class)->pour($user)
         );
     }

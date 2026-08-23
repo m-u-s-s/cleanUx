@@ -7,17 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Read receipt : un user a lu un message.
- *
- * Combinaison (message_id, user_id) UNIQUE → un user ne marque qu'une fois.
- * Permet de calculer le compteur "messages non lus par canal" :
- *
- *   $unread = Message::query()
- *       ->where('channel_id', $channelId)
- *       ->whereNotIn('id', MessageRead::where('user_id', $userId)->pluck('message_id'))
- *       ->count();
- */
+/** Read receipt : un user a lu un message. */
 class MessageRead extends Model
 {
     /** @use HasFactory<MessageReadFactory> */

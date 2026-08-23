@@ -16,23 +16,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-/**
- * Le panier : le retrouver, l'écrire, le chiffrer.
- *
- * Deux lois du parcours vivent ici, et aucune n'est cosmétique.
- *
- * Le prix s'affiche AVANT qu'on demande un compte. Le panier existe donc sans client, retrouvé par
- * un jeton de session — c'est ce qui permet à un visiteur de composer sa commande, de voir son
- * prix, et de ne s'inscrire qu'au dernier écran.
- *
- * Et revenir en arrière ne perd jamais rien. Les réponses sont écrites au fil de l'eau, pas à la
- * validation : fermer l'onglet, revenir trois heures plus tard, rouvrir sur un autre appareil une
- * fois connecté — le panier est là.
- *
- * Chaque réponse est enregistrée avec un INSTANTANÉ de son libellé et du montant qu'elle a coûté.
- * C'est ce qui rend le devis explicable ligne par ligne, et opposable si la question change ou
- * disparaît six mois plus tard.
- */
+/** Le panier : le retrouver, l'écrire, le chiffrer. */
 class OrderDraftManager
 {
     public function __construct(
@@ -40,32 +24,14 @@ class OrderDraftManager
         protected ConditionEvaluator $conditions,
     ) {}
 
-    /**
-     * Retrouve le panier du visiteur, ou en ouvre un.
-     *
-     * Un compte prime toujours sur un jeton de session : quelqu'un qui vient de se connecter doit
-     * retrouver ce qu'il avait commencé anonymement sur un autre appareil.
-     */
-    /**
-     * Combien de temps une clé de rattrapage reste utilisable.
-     *
-     * Assez long pour couvrir le « je reviens ce week-end », assez court pour qu'une clé oubliée
-     * dans un navigateur ne rouvre pas une adresse de domicile des mois plus tard.
-     */
+    /** Retrouve le panier du visiteur, ou en ouvre un. */
+    /** Combien de temps une clé de rattrapage reste utilisable. */
     private const RECOVERY_LIFETIME_DAYS = 14;
 
     /** La dernière clé émise, en clair — elle n'existe qu'ici, jamais en base. */
     private ?string $lastIssuedKey = null;
 
-    /**
-     * Émet une clé de rattrapage pour ce panier, et rend sa forme en CLAIR.
-     *
-     * Le clair ne quitte jamais cette méthode côté serveur : la base ne reçoit qu'un condensat.
-     * Une fuite de la table ne donne donc aucune clé utilisable.
-     *
-     * Émettre remplace la précédente : deux clés vivantes pour un même panier doubleraient la
-     * surface sans rien apporter.
-     */
+    /** Émet une clé de rattrapage pour ce panier, et rend sa forme en CLAIR. */
     public function issueRecoveryKey(OrderDraft $draft): string
     {
         $key = Str::random(64);
@@ -78,17 +44,7 @@ class OrderDraftManager
         return $this->lastIssuedKey = $key;
     }
 
-    /**
-     * Retrouve un panier depuis une clé, ET FAIT TOURNER LA CLÉ.
-     *
-     * La rotation est ce qui distingue ce rattrapage d'un second jeton de session permanent posé à
-     * la portée de toute XSS : une clé volée ne sert qu'une fois, et son usage invalide celle que
-     * le client détient — l'anomalie finit par se voir.
-     *
-     * Trois refus, tous silencieux parce qu'il n'y a personne à informer : clé inconnue, clé
-     * expirée, commande déjà passée. Rouvrir une commande convertie exposerait indéfiniment
-     * l'adresse qu'elle porte.
-     */
+    /** Retrouve un panier depuis une clé, ET FAIT TOURNER LA CLÉ. */
     public function recoverByKey(?string $key): ?OrderDraft
     {
         if (blank($key)) {
@@ -130,11 +86,7 @@ class OrderDraftManager
         }
 
         if ($existing) {
-            /*
-             * Rattachement du panier anonyme au compte qui vient de se connecter. Sans ce geste,
-             * l'inscription au dernier écran ferait perdre tout ce qui la précède — exactement ce
-             * que le parcours promet d'éviter.
-             */
+            // Rattachement du panier anonyme au compte qui vient de se connecter.
             if ($client && $existing->client_id === null) {
                 $existing->update(['client_id' => $client->id]);
             }
@@ -166,24 +118,13 @@ class OrderDraftManager
             'trade_id' => $trade->id,
             'sequence' => (int) $draft->items()->max('sequence') + 1,
             'status' => OrderDraftStatus::DRAFT,
-            /*
-             * La révision employée est retenue avec la commande.
-             *
-             * Sans elle, on saurait ce que le client a répondu mais plus jamais ce qu'on lui avait
-             * demandé ni comment son prix avait été calculé : le questionnaire aura changé trois
-             * fois d'ici la contestation. C'est ce qui rend un devis REJOUABLE, pas seulement
-             * lisible.
-             */
+            // La révision employée est retenue avec la commande.
             'trade_form_revision_id' => app(TradeFormPublisher::class)->currentRevision($trade)?->id,
         ]);
     }
 
     /**
      * Écrit les réponses avec leurs instantanés, et le montant que chacune a coûté.
-     *
-     * Les réponses aux questions CACHÉES sont supprimées, jamais conservées « au cas où ». Le
-     * moteur les ignore déjà pour le prix ; les laisser en base ferait diverger le devis stocké de
-     * celui qu'on affiche, et c'est le stocké qui fait foi devant un litige.
      *
      * @param  Collection<int, Question>  $questions
      * @param  array<string, mixed>  $answers
@@ -287,12 +228,7 @@ class OrderDraftManager
         ])->all();
     }
 
-    /**
-     * Le libellé de la réponse, tel qu'il figurera sur le devis.
-     *
-     * On enregistre le LIBELLÉ, pas la valeur technique : « Murs et plafonds », pas
-     * « murs_plafonds ». Un devis se lit par un humain, parfois devant un médiateur.
-     */
+    /** Le libellé de la réponse, tel qu'il figurera sur le devis. */
     protected function describeAnswer(Question $question, mixed $value, bool $unknown): string
     {
         if ($unknown) {
@@ -309,12 +245,7 @@ class OrderDraftManager
             return $labels->isNotEmpty() ? $labels->implode(', ') : (string) (is_array($value) ? implode(', ', $value) : $value);
         }
 
-        /*
-         * Une localisation se lit par son ADRESSE, pas par ses coordonnées.
-         *
-         * Sans ce cas, le devis afficherait `{"label":"…","lat":50.84,"lng":4.35,…}` à la ligne
-         * « Point de départ » — un objet JSON là où un médiateur attend une rue et un numéro.
-         */
+        // Une localisation se lit par son ADRESSE, pas par ses coordonnées.
         if ($question->isLocation() && is_array($value)) {
             return (string) ($value['label'] ?? '');
         }
@@ -324,12 +255,7 @@ class OrderDraftManager
         return trim((is_array($value) ? json_encode($value) : (string) $value).' '.$unit);
     }
 
-    /**
-     * Référence lisible et unique.
-     *
-     * Cinq caractères sur un alphabet de 32 laissent une chance de collision non nulle : on
-     * vérifie plutôt que d'espérer, et on renvoie l'échec plutôt que de boucler sans fin.
-     */
+    /** Référence lisible et unique. */
     protected function uniqueReference(): string
     {
         foreach (range(1, 10) as $ignored) {

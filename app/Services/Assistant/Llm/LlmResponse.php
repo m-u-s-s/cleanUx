@@ -2,17 +2,7 @@
 
 namespace App\Services\Assistant\Llm;
 
-/**
- * DTO de réponse LLM normalisée (indépendant du provider).
- *
- * stop_reason : 'end_turn' | 'tool_use' | 'max_tokens' | 'stop_sequence' | 'error'
- *
- * tool_uses : si stop_reason = 'tool_use', contient les blocks tool_use que
- *   le LLM veut exécuter, format :
- *   [
- *     ['id' => 'toolu_xxx', 'name' => 'create_booking', 'input' => [...]],
- *   ]
- */
+/** DTO de réponse LLM normalisée (indépendant du provider). */
 class LlmResponse
 {
     public function __construct(

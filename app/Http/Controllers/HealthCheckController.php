@@ -7,14 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Health check endpoint for load balancers / monitoring.
- *
- *   GET /health        — liveness check (always 200 si app boot OK)
- *   GET /health/deep   — readiness check (DB + Cache + checks externes)
- *
- * En cas de failure deep, retourne 503 pour que le LB sorte de rotation.
- */
+/** Health check endpoint for load balancers / monitoring. */
 class HealthCheckController extends Controller
 {
     public function liveness(): JsonResponse

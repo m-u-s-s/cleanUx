@@ -11,17 +11,7 @@ use App\Services\Kyc\KycStatusResult;
 use Illuminate\Support\Str;
 use RuntimeException;
 
-/**
- * Provider KYC simulé pour développement et tests.
- *
- * Comportement par défaut :
- *   - startVerification → renvoie un applicant_id mock
- *   - fetchStatus → "clear" + score 0.9 + tous les checks "clear"
- *   - Si le user.email contient "reject" → status "rejected"
- *   - Si le user.email contient "review" → status "consider"
- *
- * Permet de tester tout le pipeline sans dépendance externe.
- */
+/** Provider KYC simulé pour développement et tests. */
 class KycMockProvider implements KycProviderInterface
 {
     public function name(): string

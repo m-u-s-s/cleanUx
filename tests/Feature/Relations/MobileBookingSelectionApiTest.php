@@ -19,14 +19,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * SP2 mobile parity — le chemin API booking (ClientBookingController::store +
- * CreateBookingFromApiAction) doit :
- *   - persister provider_type_preference + preferred_provider_user_id
- *   - appliquer le gating premium via ProviderSelectionResolver (frontière sécurité)
- *   - le matching mobile (AiDispatchService::rankEmployees) doit honorer le type
- *   - /auth/me doit exposer is_premium
- */
+/** SP2 mobile parity — le chemin API booking (ClientBookingController::store + CreateBookingFromApiAction) doit : - persister provider_type_preference + preferred_provider_user_id - appliquer le gating premium via ProviderSelectionResolver (frontière sécurité) - le matching mobile (AiDispatchService::rankEmployees) doit honorer le type - /auth/me doit exposer is_premium */
 class MobileBookingSelectionApiTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
@@ -172,12 +165,7 @@ class MobileBookingSelectionApiTest extends TestCase
             ->assertJsonPath('is_premium', false);
     }
 
-    /**
-     * Le matching mobile (AiDispatchService::rankEmployees, utilisé par
-     * MissionDispatchService::dispatchToNextProvider) doit honorer
-     * $booking->provider_type_preference : un booking 'independent' ne doit pas
-     * proposer un company_worker pourtant éligible en mode 'any'.
-     */
+    /** Le matching mobile (AiDispatchService::rankEmployees, utilisé par MissionDispatchService::dispatchToNextProvider) doit honorer $booking->provider_type_preference : un booking 'independent' ne doit pas proposer un company_worker pourtant éligible en mode 'any'. */
     #[Test]
     public function mobile_matching_honors_independent_preference_and_excludes_company_worker(): void
     {

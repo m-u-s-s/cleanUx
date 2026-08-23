@@ -8,17 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Journal d'audit pour la modération de canaux et messages.
- *
- * Action types :
- *   - delete_message       : suppression par modérateur (différent du soft delete par auteur)
- *   - pin_message / unpin
- *   - lock_channel / unlock
- *   - archive_channel / unarchive
- *   - kick_member / mute_member / unmute
- *   - role_change          : promotion/démotion membre (member → moderator par ex.)
- */
+/** Journal d'audit pour la modération de canaux et messages. */
 class ModerationAction extends Model
 {
     /** @use HasFactory<ModerationActionFactory> */

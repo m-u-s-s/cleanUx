@@ -19,14 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * LE SUIVI WEB NE S'ARRÊTE PLUS À LA PORTE.
- *
- * La page client montrait un trajet, puis un point immobile pendant deux heures. Ce qu'on vérifie
- * ici, c'est que le web lit EXACTEMENT ce que lit l'application mobile — mêmes services, mêmes
- * filtres. Deux assemblages distincts pour une même intervention finiraient par se contredire, et
- * c'est le jour du litige qu'on s'en apercevrait.
- */
+/** LE SUIVI WEB NE S'ARRÊTE PLUS À LA PORTE. */
 class SuiviSurPlaceWebTest extends TestCase
 {
     use RefreshDatabase;

@@ -18,24 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LE MODE « JE NE SUIS PAS LÀ » (F14) ET LE PING DE MI-MISSION (F15).
- *
- * F14 — LA PREUVE DE PRÉSENCE SUPPOSAIT UN CLIENT PRÉSENT. Le code à six chiffres est affiché par le
- * client et saisi par le prestataire : il atteste que les deux personnes sont face à face. Parfait
- * quand c'est vrai, impossible quand le client travaille et laisse la clé chez la voisine — le cas
- * ordinaire du ménage à domicile. Ces interventions se déroulaient donc HORS du dispositif : soit le
- * prestataire ne pouvait pas démarrer, soit quelqu'un contournait.
- *
- * CE QUE CE FICHIER PROTÈGE AVANT TOUT : la déclaration vient du CLIENT, jamais du prestataire. Si
- * celui qui doit prouver sa présence pouvait décider que la preuve ne s'applique pas, il n'y aurait
- * plus de preuve du tout — et la photo d'arrivée deviendrait un bouton « je suis arrivé » que rien
- * ne contredit.
- *
- * F15 — LE PING VAUT PAR SON MOMENT. Posé au milieu, il laisse le temps de corriger ; posé à la fin,
- * il ne reste que l'avis à écrire et le litige à ouvrir — et les deux coûtent bien plus cher à tout
- * le monde qu'un mot dit au prestataire pendant qu'il est encore là.
- */
+/** LE MODE « JE NE SUIS PAS LÀ » (F14) ET LE PING DE MI-MISSION (F15). */
 class ModeAbsentEtPingTest extends TestCase
 {
     use RefreshDatabase;
@@ -154,11 +137,7 @@ class ModeAbsentEtPingTest extends TestCase
 
         $media = MissionMedia::query()->where('mission_id', $mission->id)->latest('id')->firstOrFail();
 
-        /*
-         * C'EST L'EMPREINTE QUI FAIT LA DIFFÉRENCE entre un démarrage TRACÉ et un bouton « je suis
-         * arrivé » que rien ne contredit. Sans elle, le mode absent serait un contournement
-         * officialisé.
-         */
+        // C'EST L'EMPREINTE QUI FAIT LA DIFFÉRENCE entre un démarrage TRACÉ et un bouton « je suis arrivé » que rien ne contredit.
         $this->assertNotNull($media->sha256);
         $this->assertNotNull($media->taken_at ?? $media->created_at);
     }
@@ -168,11 +147,7 @@ class ModeAbsentEtPingTest extends TestCase
     {
         [$prestataire, $mission] = $this->scenario();
 
-        /*
-         * L'ASSERTION QUI PORTE F14. Le client n'a rien déclaré : la preuve reste le code. Si celui
-         * qui doit prouver sa présence pouvait décider que la preuve ne s'applique pas, il n'y
-         * aurait plus de preuve du tout.
-         */
+        // L'ASSERTION QUI PORTE F14. Le client n'a rien déclaré : la preuve reste le code.
         $this->actingAs($prestataire, 'sanctum')
             ->postJson("/api/provider/missions/{$mission->id}/arrival-proof", [
                 'photo' => UploadedFile::fake()->create('arrivee.jpg', 90, 'image/jpeg'),

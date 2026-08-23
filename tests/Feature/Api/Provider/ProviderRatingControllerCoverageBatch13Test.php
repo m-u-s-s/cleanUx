@@ -10,13 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * Coverage batch 13 — drives App\Http\Controllers\Api\Provider\ProviderRatingController
- * through its HTTP routes:
- *   - POST /api/provider/bookings/{booking}/rating  (submit: 201, validation 422)
- *   - POST /api/provider/ratings/{feedback}/respond (respond: 200)
- *   - GET  /api/provider/ratings/me                 (mine: 200 with mapping + limit)
- */
+/** Coverage batch 13 — drives App\Http\Controllers\Api\Provider\ProviderRatingController through its HTTP routes: - POST /api/provider/bookings/{booking}/rating (submit: 201, validation 422) - POST /api/provider/ratings/{feedback}/respond (respond: 200) - GET /api/provider/ratings/me (mine: 200 with mapping + limit) */
 class ProviderRatingControllerCoverageBatch13Test extends TestCase
 {
     use RefreshDatabase;

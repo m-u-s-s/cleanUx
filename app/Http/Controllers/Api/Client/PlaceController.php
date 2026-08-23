@@ -10,17 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * LE CARNET DE LIEUX, SUR LE TÉLÉPHONE (E2).
- *
- * C'est SUR PLACE qu'on note ce qu'il faut savoir d'un lieu : le digicode qu'on vient de composer,
- * l'étage, le fait que la clé est chez la voisine du deuxième. Renvoyer cette saisie à un ordinateur
- * revient à ne jamais la faire — et à redonner l'information oralement au prestataire suivant.
- *
- * LE SCOPING FAIT PARTIE DE LA REQUÊTE. Un lieu porte l'adresse, l'étage et le code d'alarme du
- * domicile de quelqu'un : un identifiant forgé ne doit jamais en charger un autre, et la différence
- * entre un 403 et un 404 dirait déjà qu'il existe.
- */
+/** LE CARNET DE LIEUX, SUR LE TÉLÉPHONE (E2). */
 class PlaceController extends Controller
 {
     public function index(): JsonResponse

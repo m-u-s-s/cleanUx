@@ -8,16 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * UN BLOCAGE AUTOMATIQUE VIENT DE TOMBER — et un humain doit le savoir le jour même.
- *
- * L'automate ne se trompe pas souvent, mais quand il se trompe, la personne sanctionnée ne peut
- * rien faire d'autre qu'attendre : la levée est réservée à l'administrateur. Un blocage qui
- * n'atteint personne pendant soixante jours, c'est un compte perdu.
- *
- * Le journal d'activité porte déjà la trace ; il se relit à froid. Cette notification-ci est là
- * pour être VUE.
- */
+/** UN BLOCAGE AUTOMATIQUE VIENT DE TOMBER — et un humain doit le savoir le jour même. */
 class SanctionAutomatiqueNotification extends Notification
 {
     use Queueable;

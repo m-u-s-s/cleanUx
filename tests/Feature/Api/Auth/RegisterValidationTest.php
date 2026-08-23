@@ -7,14 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Ce que l'inscription accepte réellement.
- *
- * Deux champs étaient collectés sans le moindre contrôle : `vat_number` (`nullable|max:32`) et
- * `trade_answers` (`nullable|array`). Le premier part ensuite à l'INSEE et à VIES lors de la
- * vérification KYB, le second alimente le matching. Une saisie fautive n'échouait donc pas devant
- * l'utilisateur mais plusieurs jours plus tard, à la revue du dossier.
- */
+/** Ce que l'inscription accepte réellement. */
 class RegisterValidationTest extends TestCase
 {
     use RefreshDatabase;

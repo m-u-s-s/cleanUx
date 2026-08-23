@@ -12,25 +12,12 @@ class MissionMedia extends Model
     /** @use HasFactory<MissionMediaFactory> */
     use HasFactory;
 
-    /**
-     * Types de médias, nommés ici pour qu'il n'en existe qu'un vocabulaire.
-     *
-     * Deux écrivains employaient deux orthographes : le contrôleur terrain posait `before`/`after`,
-     * tout le reste lit `before_photo`/`after_photo`. Les photos prises sur place étaient donc
-     * écrites dans le vide — invisibles pour le client, absentes du rapport PDF, et comptées à zéro
-     * par le score qualité. Rien ne signalait l'écart, chaque moitié étant cohérente avec elle-même.
-     */
+    /** Types de médias, nommés ici pour qu'il n'en existe qu'un vocabulaire. */
     public const TYPE_BEFORE_PHOTO = 'before_photo';
 
     public const TYPE_AFTER_PHOTO = 'after_photo';
 
-    /**
-     * La photo d'un imprévu — un troisième moment, ni avant ni après.
-     *
-     * La ranger dans `before_photo` la ferait entrer dans le comparateur avant/après du client, où
-     * elle raconterait le contraire de ce qu'elle documente : un dégât préexistant présenté comme
-     * l'état de départ voulu par le prestataire.
-     */
+    /** La photo d'un imprévu — un troisième moment, ni avant ni après. */
     public const TYPE_INCIDENT_PHOTO = 'incident_photo';
 
     /** @return list<string> */

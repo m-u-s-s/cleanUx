@@ -8,12 +8,7 @@ use App\Services\Safety\Contracts\MaskedCallProvider;
 use App\Services\Safety\Data\MaskedCallSessionData;
 use Illuminate\Support\Str;
 
-/**
- * Fake proxy provider for local development and testing.
- *
- * Generates a deterministic-looking Belgian proxy number and a UUID
- * as the external reference. No real API calls are made.
- */
+/** Fake proxy provider for local development and testing. */
 class MockMaskedCallProvider implements MaskedCallProvider
 {
     public function createMaskedSession(

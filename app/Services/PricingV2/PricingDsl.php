@@ -4,21 +4,7 @@ namespace App\Services\PricingV2;
 
 use Illuminate\Support\Facades\Config;
 
-/**
- * PricingDsl — évaluateur whitelisté pour `pricing_rules.applies_when`.
- *
- * DSL JSON (récursif) :
- *   {"and": [ {leaf}, {leaf} ]}
- *   {"or":  [ {leaf}, {leaf} ]}
- *   {"not": {leaf}}
- *
- * Leaf :
- *   {"field": "surface_m2", "op": "gte", "value": 50}
- *
- * Champs whitelistés via `config('pricing_v2.variable_keys')`.
- * Opérateurs whitelistés via `config('pricing_v2.condition_operators')`.
- * Field/op invalide → la rule ne matche jamais (fail-closed).
- */
+/** PricingDsl — évaluateur whitelisté pour `pricing_rules.applies_when`. */
 class PricingDsl
 {
     /**

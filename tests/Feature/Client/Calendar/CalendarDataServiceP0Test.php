@@ -10,9 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * P0.3 — CalendarDataService (previously missing → ClientCalendarFC fatal on render).
- */
+/** P0.3 — CalendarDataService (previously missing → ClientCalendarFC fatal on render). */
 class CalendarDataServiceP0Test extends TestCase
 {
     use RefreshDatabase;

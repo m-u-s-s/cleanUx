@@ -9,14 +9,7 @@ use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * `BrowseCompanies` liste les SOCIÉTÉS prestataires vérifiées — ce que
- * `BrowseProviders` ne fait pas : lui liste les prestataires par métier.
- *
- * Le composant, sa vue et ses tests existaient ; il n'avait aucune route et
- * aucun appelant. Sur une place de marché où les deux côtés peuvent être des
- * sociétés, aucun client ne pouvait donc parcourir les sociétés prestataires.
- */
+/** `BrowseCompanies` liste les SOCIÉTÉS prestataires vérifiées — ce que `BrowseProviders` ne fait pas : lui liste les prestataires par métier. */
 class ParcourirLesSocietesTest extends TestCase
 {
     use RefreshDatabase;

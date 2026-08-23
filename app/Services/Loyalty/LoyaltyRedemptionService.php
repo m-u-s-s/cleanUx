@@ -14,10 +14,7 @@ use Illuminate\Validation\ValidationException;
 
 class LoyaltyRedemptionService
 {
-    /**
-     * Tente une redemption : check eligibility + stock + points → débite + crée row.
-     * Soft-fail si module loyalty absent ou points insuffisants.
-     */
+    /** Tente une redemption : check eligibility + stock + points → débite + crée row. */
     public function redeem(User $user, LoyaltyReward $reward, array $opts = []): LoyaltyRedemption
     {
         if (! $reward->is_active) {
@@ -98,9 +95,7 @@ class LoyaltyRedemptionService
         });
     }
 
-    /**
-     * Envoie le voucher_code par email au client (soft-fail si module Email v2 absent).
-     */
+    /** Envoie le voucher_code par email au client (soft-fail si module Email v2 absent). */
     protected function sendVoucherEmail(User $user, LoyaltyReward $reward, LoyaltyRedemption $redemption): void
     {
         try {

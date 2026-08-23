@@ -9,18 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-/**
- * LE PÉRIMÈTRE DE ZONE DOIT VALOIR DES DEUX CÔTÉS.
- *
- * Un administrateur peut être limité à une zone : `AdminScope` borne alors ses
- * requêtes, et six écrans Livewire l'appliquent. AUCUN contrôleur d'API ne
- * l'appelait — le tableau de bord mobile lui montrait donc les chiffres de toute
- * la plateforme, pendant que le web lui montrait ceux de sa zone.
- *
- * Personne n'est zoné en base aujourd'hui, ce qui explique que rien ne l'ait
- * révélé. Le trou n'en est pas moins réel : il s'ouvrira au premier
- * administrateur régional.
- */
+/** LE PÉRIMÈTRE DE ZONE DOIT VALOIR DES DEUX CÔTÉS. */
 class PerimetreDeZoneSurApiTest extends TestCase
 {
     use RefreshDatabase;

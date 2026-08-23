@@ -7,11 +7,7 @@ use App\Services\KybV2\VerificationResult;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * VIES (VAT Information Exchange System) — validation TVA intracom UE.
- * Endpoint REST officiel : https://ec.europa.eu/taxation_customs/vies/rest-api/ms/{COUNTRY}/vat/{VAT}
- * Pas de clé API requise (gratuit + rate-limited côté Commission Européenne).
- */
+/** VIES (VAT Information Exchange System) — validation TVA intracom UE. */
 class ViesVatVerificationProvider implements BusinessVerificationProviderContract
 {
     public function name(): string

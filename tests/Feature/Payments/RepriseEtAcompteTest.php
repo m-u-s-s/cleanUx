@@ -11,24 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\Spine\SpineScenario;
 use Tests\TestCase;
 
-/**
- * DEUX DÉFAUTS D'ARGENT QUI SE TIENNENT PAR LA MAIN.
- *
- * 1. LA REPRISE REPRENAIT CE QUI N'AVAIT JAMAIS ÉTÉ VERSÉ. `recordRefundClawback` calculait un
- *    débit depuis le montant remboursé et la part prestataire de la COMMANDE, sans regarder si ce
- *    prestataire avait été crédité. Un portefeuille pouvait partir en négatif sur une mission
- *    jamais payée.
- *
- *    Le cas qui le déclenche : lorsqu'une empreinte est partiellement capturée — frais d'annulation
- *    encaissés, solde libéré —, Stripe fait revenir le solde relâché sous forme de REMBOURSEMENT,
- *    objet `re_…` compris. Aucun webhook ne peut le distinguer d'un vrai remboursement client.
- *    Plafonner au crédit réel règle les deux sans deviner la sémantique de Stripe.
- *
- * 2. L'ACOMPTE N'ÉTAIT RATTACHÉ À AUCUNE RÉSERVATION. `deposit_payment_intent_id` était écrit par
- *    le planificateur de paiement et relu par PERSONNE : tout webhook portant sur l'acompte sortait
- *    en `ignored`. Le brancher exige de dire QUEL volet paie — `payment_status` décrit le solde, et
- *    y écrire « remboursé » rendrait ce solde définitivement non capturable.
- */
+/** DEUX DÉFAUTS D'ARGENT QUI SE TIENNENT PAR LA MAIN. 1. */
 class RepriseEtAcompteTest extends TestCase
 {
     use RefreshDatabase;
@@ -57,12 +40,7 @@ class RepriseEtAcompteTest extends TestCase
         $this->assertSame(80.0, (float) $reprise->amount, 'Jamais plus que les 80 € versés.');
     }
 
-    /**
-     * TÉMOIN — une reprise légitime passe toujours, à son montant exact.
-     *
-     * Sans lui, tous les tests ci-dessus passeraient au vert sur une implémentation qui refuserait
-     * TOUTE reprise, et le remboursement d'un client ne serait plus jamais répercuté.
-     */
+    /** TÉMOIN — une reprise légitime passe toujours, à son montant exact. */
     public function test_une_reprise_legitime_passe_a_son_montant(): void
     {
         $scenario = $this->reservationCreditee(providerCents: 8000);
@@ -89,13 +67,7 @@ class RepriseEtAcompteTest extends TestCase
 
     // ── L'acompte ────────────────────────────────────────────────────────
 
-    /**
-     * LE PIÈGE 4 : rembourser l'acompte ne doit pas condamner le solde.
-     *
-     * La capture refuse tout statut autre que `authorized`. Écrire « partiellement remboursé » sur
-     * la réservation rendrait le solde définitivement non capturable — la prestation aurait lieu et
-     * ne serait jamais encaissée.
-     */
+    /** LE PIÈGE 4 : rembourser l'acompte ne doit pas condamner le solde. */
     public function test_rembourser_lacompte_ne_touche_pas_au_statut_du_solde(): void
     {
         $scenario = $this->reservationAvecAcompte();
@@ -131,13 +103,7 @@ class RepriseEtAcompteTest extends TestCase
         $this->assertSame('refunded', $scenario->booking->refresh()->payment_status);
     }
 
-    /**
-     * L'ACOMPTE EST RECONNU, PAS IGNORÉ — mais il ne crédite rien.
-     *
-     * Il est créé en capture automatique avec sa propre commission et sa destination Connect :
-     * Stripe a déjà fait le partage. Le reprendre ici créditerait la part du TOTAL pour un
-     * encaissement partiel, puis une seconde fois à la capture du solde.
-     */
+    /** L'ACOMPTE EST RECONNU, PAS IGNORÉ — mais il ne crédite rien. */
     public function test_lacompte_est_reconnu_sans_crediter_le_portefeuille(): void
     {
         $scenario = $this->reservationAvecAcompte();
@@ -169,13 +135,7 @@ class RepriseEtAcompteTest extends TestCase
 
     // ── Le rejeu des webhooks ────────────────────────────────────────────
 
-    /**
-     * UN ÉVÉNEMENT STRIPE PERDU NE REVIENT PAS.
-     *
-     * Stripe considère l'événement remis dès que l'endpoint répond 200, ce que le contrôleur fait
-     * AVANT de mettre le traitement en file. À une seule tentative, une coupure réseau d'une
-     * seconde suffisait à perdre l'encaissement, le crédit et l'écriture comptable.
-     */
+    /** UN ÉVÉNEMENT STRIPE PERDU NE REVIENT PAS. */
     public function test_le_traitement_dun_webhook_est_rejoue(): void
     {
         $job = new ProcessStripeWebhookJob(1);

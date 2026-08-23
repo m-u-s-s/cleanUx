@@ -20,18 +20,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LA CHAÎNE GÉOGRAPHIQUE, D'UN BOUT À L'AUTRE — consignes 2, 5, 7 et 11.
- *
- * Elle était coupée au dernier maillon : le pivot `service_zone_postal_code` avait zéro ligne, le
- * panier ne portait ni code postal ni zone, et `PricingEngine` acceptait un `zone_multiplier` que
- * personne ne fournissait. Résultat : une grille de prix par zone qui existait en base et
- * n'atteignait jamais un client, et un dispatch qui devait redeviner la zone d'une adresse.
- *
- * CE QUI EST VÉRIFIÉ ICI est le trajet complet — code postal → zone → prix → réservation — sur des
- * données réellement semées. Un test qui poserait la zone à la main ne dirait rien du maillon qu'on
- * vient de réparer.
- */
+/** LA CHAÎNE GÉOGRAPHIQUE, D'UN BOUT À L'AUTRE — consignes 2, 5, 7 et 11. */
 class ChaineGeographiqueTest extends TestCase
 {
     use RefreshDatabase;

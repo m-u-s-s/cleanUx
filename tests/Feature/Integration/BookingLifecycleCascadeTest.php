@@ -14,14 +14,7 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
-/**
- * Test d'intégration cross-modules : valide la cascade BookingObserver
- * après les chantiers A1+A3+A8.
- *
- * Quand un Booking est créé puis complété :
- *  - BookingObserver::created → trackAnalytics + emit booking.created + ChatService::startThread
- *  - BookingObserver::saved (status=completed) → emit booking.completed + BookingAutoPoster::postSale + Chat archive
- */
+/** Test d'intégration cross-modules : valide la cascade BookingObserver après les chantiers A1+A3+A8. */
 class BookingLifecycleCascadeTest extends TestCase
 {
     use RefreshDatabase;

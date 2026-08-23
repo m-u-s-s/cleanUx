@@ -10,10 +10,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-/**
- * Bundle Marketplace P2 — page prestataire : voir ses demandes de devis de
- * chantiers groupés et proposer son prix (concurrence).
- */
+/** Bundle Marketplace P2 — page prestataire : voir ses demandes de devis de chantiers groupés et proposer son prix (concurrence). */
 class BundleQuoteRequests extends Component
 {
     use WithPagination;

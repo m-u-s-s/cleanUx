@@ -5,12 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Un message dans le fil d'une réclamation client.
- *
- * Propre à `CustomerClaim`. Le second modèle de litige du dépôt, `ComplaintCase`, a ses
- * propres événements : les deux fils ne se croisent pas.
- */
+/** Un message dans le fil d'une réclamation client. Propre à `CustomerClaim`. */
 class CustomerClaimEvent extends Model
 {
     protected $fillable = [

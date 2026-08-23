@@ -97,14 +97,7 @@ use App\Admin\Resources\WebhookEndpointResource;
 use App\Admin\Resources\ZoneResource;
 use Illuminate\Support\ServiceProvider;
 
-/**
- * Enregistre les descripteurs de la console d'administration.
- *
- * C'est le SEUL endroit où l'on déclare qu'un domaine est servi par le moteur. Ajouter un
- * descripteur ici sans basculer `coverage` sur `descriptor` dans `config/admin_console.php` — ou
- * l'inverse — fait échouer `ResourceRegistryTest`. Les deux gestes vont ensemble, délibérément :
- * c'est ce qui empêche l'annuaire d'annoncer un module que rien ne sait rendre.
- */
+/** Enregistre les descripteurs de la console d'administration. */
 class AdminConsoleServiceProvider extends ServiceProvider
 {
     public function register(): void
@@ -118,14 +111,7 @@ class AdminConsoleServiceProvider extends ServiceProvider
             // y porter `coverage => 'descriptor'` : ResourceRegistryTest refuse les deux écarts.
 
             // Lot 1 — le CRUD complet : liste, formulaire, édition, suppression.
-            /*
-             * Les modèles servis par une page web MULTI-MODÈLES.
-             *
-             * « Opérations B2B » gère contrats, ordres de travail et grilles tarifaires ; le risque
-             * montre des évaluations ET des blocages ; les contrats, des documents ET des
-             * signatures. Le moteur sert un modèle par descripteur : sans ces clés, les gestes les
-             * plus fréquents de ces pages n'avaient nulle part où vivre.
-             */
+            // Les modèles servis par une page web MULTI-MODÈLES.
             $registry->register('api-tokens-list', ApiTokenV2Resource::class);
             $registry->register('risk-holds', RiskHoldResource::class);
             $registry->register('contract-signatures', ContractSignatureResource::class);
@@ -151,14 +137,7 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('badges', BadgeResource::class);
             $registry->register('feature-flags', FeatureFlagResource::class);
 
-            /*
-             * Lot 4 — les domaines adossés à un modèle unique, décrits par `EloquentResource`.
-             *
-             * Chacun déclare ses colonnes, sa recherche et ses filtres ; le squelette est
-             * mutualisé. `EloquentResourceSchemaTest` confronte chaque colonne déclarée au schéma
-             * réel : une colonne mal nommée afficherait « — » sur toute la colonne sans que rien
-             * ne le signale.
-             */
+            // Lot 4 — les domaines adossés à un modèle unique, décrits par `EloquentResource`.
             $registry->register('nps', NpsResource::class);
             $registry->register('feedbacks', FeedbackResource::class);
             $registry->register('analytics-v2', AnalyticsEventResource::class);
@@ -173,11 +152,7 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('countries', CountryResource::class);
             $registry->register('trades', TradeResource::class);
 
-            /*
-             * Lot 5 — journaux, files et registres. Aucun n'expose d'action : chacun dit dans son
-             * en-tête pourquoi la décision qui lui correspond vit ailleurs, dans le module qui en
-             * porte les effets de bord.
-             */
+            // Lot 5 — journaux, files et registres.
             $registry->register('risk', RiskEvaluationResource::class);
             $registry->register('contracts', ContractDocumentResource::class);
             $registry->register('marketing', MarketingCampaignResource::class);
@@ -193,12 +168,7 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('geolocation', AddressLookupResource::class);
             $registry->register('chat', ChatThreadResource::class);
 
-            /*
-             * Lot 6 — opérations, argent et conformité. Presque tous en lecture seule, et pour la
-             * même raison : ces tables portent des PREUVES (exécution, explicabilité d'un prix,
-             * équilibre comptable, verdict géographique). Les modifier depuis une liste
-             * effacerait ce qu'elles servent à établir.
-             */
+            // Lot 6 — opérations, argent et conformité.
             $registry->register('availability', AvailabilitySlotResource::class);
             $registry->register('presence', PresenceResource::class);
             $registry->register('trip-tracking', TripTrackingResource::class);
@@ -227,22 +197,13 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('missions', MissionResource::class);
             $registry->register('pricing', PriceQuoteResource::class);
 
-            /*
-             * Lot 7 — les lectures opérationnelles. Plusieurs partagent une table en répondant à
-             * des questions différentes (les rendez-vous, le planning, le calendrier, le dispatch
-             * lisent tous `bookings`) : ce sont des VUES distinctes, pas des doublons. Une seule
-             * liste obligerait à re-filtrer à chaque fois pour retrouver la sienne.
-             */
+            // Lot 7 — les lectures opérationnelles.
             $registry->register('bookings', BookingResource::class);
             $registry->register('planning', PlanningResource::class);
             $registry->register('calendar', CalendarResource::class);
             $registry->register('ia-dispatch', DispatchResource::class);
             $registry->register('cancellation-reasons', CancellationReasonResource::class);
-            /*
-             * LE QUESTIONNAIRE, distinct de la liste des motifs juste au-dessus : celle-ci REGARDE
-             * ce qui s'est passé, celui-là DÉCIDE ce qu'on demandera demain. Ses écritures passent
-             * par `CancellationQuestionnaireService`, jamais par la colonne.
-             */
+            // LE QUESTIONNAIRE, distinct de la liste des motifs juste au-dessus : celle-ci REGARDE ce qui s'est passé, celui-là DÉCIDE ce qu'on demandera demain.
             $registry->register('cancellation-questions', CancellationQuestionResource::class);
             $registry->register('provider-registrations', ProviderRegistrationResource::class);
             $registry->register('onboarding-providers', ProviderOnboardingResource::class);
@@ -254,22 +215,12 @@ class AdminConsoleServiceProvider extends ServiceProvider
             return $registry;
         });
 
-        /*
-         * Les rapports — les modules qui ne sont pas des listes.
-         *
-         * Dix pages d'administration n'ont aucune table derrière elles : ce sont des synthèses.
-         * Les forcer dans le moteur de liste aurait demandé d'inventer une entité inexistante,
-         * et l'écran aurait montré une liste vide en prétendant couvrir le domaine.
-         */
+        // Les rapports — les modules qui ne sont pas des listes.
         $this->app->singleton(ReportRegistry::class, function ($app) {
             $reports = new ReportRegistry($app);
 
             $reports->register('dashboard', DashboardReport::class);
-            /*
-             * LA SANTÉ DU MARCHÉ (E29, E30, E28). `coverage => 'report'` dans le registre est une
-             * AFFIRMATION : un module qui l'annonce sans rapport enregistré ouvrirait un écran vide
-             * sur mobile. Le garde-fou l'a rattrapé aussitôt — et il avait raison.
-             */
+            // LA SANTÉ DU MARCHÉ (E29, E30, E28).
             $reports->register('marketplace-health', MarketplaceHealthReport::class);
             $reports->register('home', HomeReport::class);
             $reports->register('business', BusinessReport::class);

@@ -9,29 +9,7 @@ use App\Support\ActivityLogger;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 
-/**
- * L'activation et la tarification d'un métier DANS UNE ZONE — sur la ligne qui fait foi.
- *
- * CE TRAIT ÉCRIT DÉSORMAIS DANS `trade_zone_pricing`, et plus dans `trade_zone_settings`.
- *
- * Trois tables décrivaient le même fait — « ce métier est-il vendu ici, et à quel prix » — et
- * aucune ne parlait au parcours de commande : `trade_zone_settings` servait cet écran-ci,
- * `trade_zone_pricing` servait le catalogue du moteur de commande, et `zone_service_rules` servait
- * l'ancien formulaire. Un administrateur pouvait fermer un métier ici et le voir rester ouvert
- * dans le parcours client, ce qui n'est pas un défaut d'affichage mais une commande qu'on encaisse
- * pour un service qu'on ne rend pas.
- *
- * L'ACTIVATION ET LE PRIX SONT LA MÊME LIGNE. Éteindre ne supprime jamais la ligne : rallumer doit
- * retrouver le tarif saisi, qui a pu demander une négociation qu'on ne veut pas refaire.
- *
- * L'ABSENCE DE LIGNE VAUT « FERMÉ ». C'est l'inverse de l'ancienne règle (« absent = actif par
- * défaut »), et le changement est délibéré : un métier créé après l'ouverture d'un marché ne doit
- * pas s'y vendre du seul fait que personne n'a encore rien décidé. Le seeder pose la grille
- * complète pour que l'état initial reste « tout est ouvert ».
- *
- * Doit être branché dans un composant Livewire qui expose $selectedZoneId, et qui appelle
- * $this->loadTradeSettingsForZone($zoneId) après chaque selectZone().
- */
+/** L'activation et la tarification d'un métier DANS UNE ZONE — sur la ligne qui fait foi. */
 trait ManagesTradeZoneSettings
 {
     public array $tradeSettings = [];

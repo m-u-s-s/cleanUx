@@ -16,17 +16,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-/**
- * Les photos du terrain ne sont gardées que si la transition a eu lieu.
- *
- * Elles étaient enregistrées AVANT la validation du code : chaque tentative refusée laissait ses
- * fichiers et ses lignes en base sur une mission qui n'avait pas bougé. Trois essais donnaient
- * trois jeux de photos identiques — et le prestataire qui réessaie est précisément celui dont on
- * vient de refuser la tentative, si bien que l'accumulation suivait l'échec.
- *
- * L'exigence de position sur la clôture web a rendu ce défaut nettement plus fréquent : un
- * navigateur sans géolocalisation refuse à chaque coup.
- */
+/** Les photos du terrain ne sont gardées que si la transition a eu lieu. */
 class FieldPhotosOnlyOnSuccessTest extends TestCase
 {
     use RefreshDatabase;
@@ -81,10 +71,7 @@ class FieldPhotosOnlyOnSuccessTest extends TestCase
         $this->assertSame(0, $mission->media()->count());
     }
 
-    /**
-     * Le symptôme réel du défaut : l'accumulation. Le prestataire qui réessaie est celui dont on
-     * vient de refuser la tentative, si bien que chaque échec ajoutait un jeu de doublons.
-     */
+    /** Le symptôme réel du défaut : l'accumulation. */
     public function test_retrying_after_refusals_leaves_a_single_set_of_photos(): void
     {
         [$provider, $mission] = $this->scenario(MissionStatus::STARTED);
@@ -136,17 +123,7 @@ class FieldPhotosOnlyOnSuccessTest extends TestCase
         $this->assertSame(MissionStatus::COMPLETED, $mission->fresh()->status);
     }
 
-    /**
-     * La garantie qui compte vraiment : la photo est VUE.
-     *
-     * Ce contrôleur écrivait `media_type` = `after` quand toute l'application lit `after_photo`.
-     * Les photos prises sur place étaient donc invisibles pour le client, absentes du rapport PDF
-     * et comptées à zéro par le score qualité. Chaque moitié était cohérente avec elle-même, ce qui
-     * est exactement pourquoi l'écart n'a jamais rien déclenché.
-     *
-     * Assertion portée sur un LECTEUR réel plutôt que sur la chaîne écrite : vérifier la valeur
-     * stockée n'aurait fait que graver la convention du moment, sans dire si quelqu'un la lit.
-     */
+    /** La garantie qui compte vraiment : la photo est VUE. */
     public function test_a_stored_photo_is_actually_seen_by_the_mission_report(): void
     {
         [$provider, $mission] = $this->scenario(MissionStatus::STARTED);
@@ -166,14 +143,7 @@ class FieldPhotosOnlyOnSuccessTest extends TestCase
         $this->assertSame(1, (int) $report->after_photos_count);
     }
 
-    /**
-     * Les photos déjà écrites sous l'ancienne orthographe redeviennent visibles.
-     *
-     * Corriger l'écrivain ne suffisait pas : les lignes posées avant seraient restées invisibles
-     * pour toujours, sur des missions déjà clôturées et facturées. La migration est rejouée ici
-     * explicitement — sans quoi rien ne prouverait qu'elle fait ce qu'elle annonce, `RefreshDatabase`
-     * l'ayant exécutée bien avant que ces lignes existent.
-     */
+    /** Les photos déjà écrites sous l'ancienne orthographe redeviennent visibles. */
     public function test_the_migration_makes_legacy_photos_visible_again(): void
     {
         [, $mission] = $this->scenario(MissionStatus::STARTED);

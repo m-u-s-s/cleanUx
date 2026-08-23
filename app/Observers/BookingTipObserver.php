@@ -7,13 +7,7 @@ use App\Models\PushNotification;
 use App\Services\Push\PushService;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Réagit aux changements de status d'un BookingTip :
- *   - pending → charged : notif push au provider ("vous avez reçu un tip de X€")
- *   - charged → paid_out : notif push au provider (payout fait)
- *
- * Tout soft-fail : ne bloque jamais le flow business.
- */
+/** Réagit aux changements de status d'un BookingTip : - pending → charged : notif push au provider ("vous avez reçu un tip de X€") - charged → paid_out : notif push au provider (payout fait) Tout soft-fail : ne bloque jamais le flow business. */
 class BookingTipObserver
 {
     public function updated(BookingTip $tip): void

@@ -19,25 +19,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/**
- * LES SIX SOUS-RÔLES QUE LE PARCOURS COMPLET NE TRAVERSAIT PAS.
- *
- * `ParcoursCompletTest` joue l'intervention entière pour quatre couples client/prestataire, mais
- * côté exécution il ne connaît que deux personnes : le travailleur et le renfort. Une société en
- * déclare ONZE. Six d'entre elles — coordinateur, directeur des opérations, responsable qualité,
- * finance, lecteur, demandeur — n'apparaissaient dans AUCUN parcours de mission.
- *
- * ELLES ÉTAIENT TESTÉES, MAIS AU MAUVAIS NIVEAU. La matrice de permissions de `PermissionService`
- * est vérifiée clé par clé, et elle est juste. Or les deux fuites trouvées cette semaine vivaient
- * précisément AU-DESSUS d'un service juste : un écran qui n'appelle pas la garde, un endpoint qui
- * la contourne. Une clé accordée ne prouve pas que le geste aboutit, et une clé refusée ne prouve
- * pas que le geste est bloqué.
- *
- * D'OÙ CE FICHIER : pour chaque sous-rôle, on tente le GESTE, sur la surface réelle, et on regarde
- * ce qui se passe. Deux questions à chaque fois, et il faut les deux — « ce rôle peut-il faire ce
- * qu'on attend de lui ? » et « ne peut-il rien faire de plus ? ». Une porte fermée qui devait être
- * ouverte est un rôle inutilisable ; une porte ouverte qui devait être fermée est une fuite.
- */
+/** LES SIX SOUS-RÔLES QUE LE PARCOURS COMPLET NE TRAVERSAIT PAS. */
 class ParcoursSousRolesTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
@@ -140,18 +122,7 @@ class ParcoursSousRolesTest extends TestCase
             ->postJson("/api/provider/missions/{$this->mission->id}/start");
     }
 
-    /**
-     * LE TÉMOIN — sans lui, tous les refus de ce fichier ne prouveraient rien.
-     *
-     * Chaque test ci-dessous s'appuie sur un 403 pour affirmer qu'un rôle est tenu à l'écart. Mais
-     * un 403 peut venir d'ailleurs : une route mal montée, un jeton refusé, un intergiciel qui
-     * ferme la porte à tout le monde. Dans ce cas les neuf tests passeraient au vert en ne mesurant
-     * rien d'autre qu'une panne.
-     *
-     * Ce témoin-ci exige que la MÊME porte s'ouvre pour la personne assignée. Il faut les deux :
-     * la porte s'ouvre pour qui de droit, elle reste fermée pour les autres. Le premier sans le
-     * second est une fuite, le second sans le premier est une illusion.
-     */
+    /** LE TÉMOIN — sans lui, tous les refus de ce fichier ne prouveraient rien. */
     public function test_temoin_la_personne_assignee_peut_bien_partir_en_mission(): void
     {
         $reponse = $this->tenterDePartirEnMission($this->travailleur);
@@ -169,12 +140,7 @@ class ParcoursSousRolesTest extends TestCase
         );
     }
 
-    /**
-     * MÊME TÉMOIN POUR LA RÉASSIGNATION.
-     *
-     * Le propriétaire de la société doit pouvoir réassigner : si lui-même se voyait refuser, les
-     * 403 opposés au responsable qualité, à la finance et au lecteur ne diraient rien de leur rôle.
-     */
+    /** MÊME TÉMOIN POUR LA RÉASSIGNATION. */
     public function test_temoin_le_proprietaire_peut_bien_reassigner(): void
     {
         $proprietaire = $this->membre(OrganizationRole::OWNER);
@@ -201,11 +167,7 @@ class ParcoursSousRolesTest extends TestCase
             'Le coordinateur ne parvient pas à réassigner, alors que c’est son métier.',
         );
 
-        /*
-         * ET IL NE CONDUIT PAS LA MISSION LUI-MÊME. `missions.assign` ouvre la répartition, pas le
-         * terrain : un coordinateur qui pourrait se déclarer en route fausserait la présence, le
-         * suivi de trajet et, au bout, le versement.
-         */
+        // ET IL NE CONDUIT PAS LA MISSION LUI-MÊME.
         $this->tenterDePartirEnMission($coordinateur)->assertForbidden();
     }
 
@@ -228,13 +190,7 @@ class ParcoursSousRolesTest extends TestCase
     // Responsable qualité — il contrôle, il ne redistribue pas
     // ──────────────────────────────────────────────────────
 
-    /**
-     * LE RESPONSABLE QUALITÉ NE DOIT NI RÉASSIGNER NI PARTIR EN MISSION.
-     *
-     * Sa matrice lui donne `missions.view_all` et `missions.quality` : regarder et contrôler. Pas
-     * `missions.assign` — décider qui va où n'est pas son métier, et le lui laisser reviendrait à
-     * ce que le contrôleur choisisse le contrôlé.
-     */
+    /** LE RESPONSABLE QUALITÉ NE DOIT NI RÉASSIGNER NI PARTIR EN MISSION. */
     public function test_le_responsable_qualite_ne_redistribue_pas_les_missions(): void
     {
         $qualite = $this->membre(OrganizationRole::QUALITY_MANAGER);
@@ -250,18 +206,7 @@ class ParcoursSousRolesTest extends TestCase
         );
     }
 
-    /**
-     * ET L'INSPECTION QUALITÉ RESTE FERMÉE À QUI N'EST PAS INTERVENU — Y COMPRIS À LUI.
-     *
-     * C'est le résultat le plus contre-intuitif de ce fichier, et il mérite d'être écrit noir sur
-     * blanc plutôt que découvert un jour en production : `QualityInspectionAccess` n'admet que le
-     * CLIENT et les INTERVENANTS de la mission. Un responsable qualité qui n'y est pas assigné n'a
-     * donc aucun accès aux inspections de sa propre société, malgré `missions.quality`.
-     *
-     * On fige le comportement réel plutôt que celui qu'on suppose. Si c'est un choix — le contrôle
-     * qualité passe par l'espace société, pas par l'objet inspection —, ce test le documente. Si
-     * c'en est un défaut, il devient visible et discutable, ce qu'il n'était pas.
-     */
+    /** ET L'INSPECTION QUALITÉ RESTE FERMÉE À QUI N'EST PAS INTERVENU — Y COMPRIS À LUI. */
     public function test_l_inspection_qualite_n_est_ouverte_qu_aux_intervenants(): void
     {
         $qualite = $this->membre(OrganizationRole::QUALITY_MANAGER);
@@ -293,13 +238,7 @@ class ParcoursSousRolesTest extends TestCase
         ];
     }
 
-    /**
-     * NI RÉASSIGNER, NI PARTIR — pour les trois rôles qui n'ont rien à faire sur une mission.
-     *
-     * Le lecteur est le cas le plus révélateur : sa matrice ne lui donne AUCUNE clé d'écriture. Un
-     * rôle nommé « lecteur » qui parviendrait à déplacer une intervention serait une contradiction
-     * pure, et le genre de chose que personne ne pense à essayer.
-     */
+    /** NI RÉASSIGNER, NI PARTIR — pour les trois rôles qui n'ont rien à faire sur une mission. */
     #[DataProvider('rolesSansPouvoirSurLeTerrain')]
     public function test_les_roles_administratifs_ne_touchent_pas_a_la_mission(OrganizationRole $role): void
     {
@@ -316,13 +255,7 @@ class ParcoursSousRolesTest extends TestCase
         );
     }
 
-    /**
-     * LE DEMANDEUR COMMANDE — c'est tout ce qu'il fait, et il doit pouvoir le faire.
-     *
-     * Le contre-test du précédent : refuser à un demandeur le seul geste de son rôle le rendrait
-     * inutile, et ce serait aussi grave qu'une porte laissée ouverte. `bookings.create` est la
-     * seule clé d'écriture de sa matrice.
-     */
+    /** LE DEMANDEUR COMMANDE — c'est tout ce qu'il fait, et il doit pouvoir le faire. */
     public function test_le_demandeur_peut_commander_mais_pas_approuver(): void
     {
         $demandeur = $this->membre(OrganizationRole::REQUESTER);
@@ -343,14 +276,7 @@ class ParcoursSousRolesTest extends TestCase
         $this->assertSame([], $accordees, 'Le demandeur dispose de ces capacites, qui depassent son role.');
     }
 
-    /**
-     * LE RÔLE NE TRAVERSE PAS LES SOCIÉTÉS.
-     *
-     * Un coordinateur est coordinateur CHEZ LUI. Être investi quelque part n'ouvre rien ailleurs —
-     * c'est la garde que `ReassignmentPolicy` évalue sur l'organisation de la MISSION, jamais sur
-     * celle de qui regarde. Sans elle, il suffirait de créer sa propre société pour se donner les
-     * clés sur les missions des autres.
-     */
+    /** LE RÔLE NE TRAVERSE PAS LES SOCIÉTÉS. Un coordinateur est coordinateur CHEZ LUI. */
     public function test_un_coordinateur_d_une_autre_societe_ne_peut_rien(): void
     {
         $voisine = OrganizationAccount::factory()->create([

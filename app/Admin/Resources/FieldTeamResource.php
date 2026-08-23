@@ -11,9 +11,6 @@ use App\Models\FieldTeam;
 /**
  * Les équipes de terrain et les partenaires.
  *
- * La COMPOSITION d’une équipe vit dans sa propre table : ajouter un membre engage des
- * vérifications de certification et de zone que le rendu générique ne saurait pas conduire.
- *
  * @extends EloquentResource<FieldTeam>
  */
 class FieldTeamResource extends EloquentResource

@@ -12,14 +12,7 @@ use Database\Seeders\OrderEngineCatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * LE PRIX AU KILOMÈTRE, ET LA PREUVE QU'IL NE CHANGE RIEN AILLEURS.
- *
- * Le premier test de ce fichier est le plus important, et ce n'est pas celui qui teste la nouvelle
- * fonctionnalité : c'est le TÉMOIN. Il fige la sortie du moteur pour un métier ordinaire et exige
- * qu'elle soit identique AU CENTIME. Sans lui, ajouter une composante au calcul déplacerait des
- * prix pour de vrais clients sans que rien ne le signale — un devis faux ne lève aucune exception.
- */
+/** LE PRIX AU KILOMÈTRE, ET LA PREUVE QU'IL NE CHANGE RIEN AILLEURS. */
 class PrixAuKilometreTest extends TestCase
 {
     use RefreshDatabase;
@@ -47,10 +40,7 @@ class PrixAuKilometreTest extends TestCase
         return ['min' => $quote->minCents, 'max' => $quote->maxCents, 'lignes' => $quote->lines];
     }
 
-    /**
-     * LE TÉMOIN. Un métier sans tarification à la distance rend exactement ce qu'il rendait —
-     * y compris quand une route est présente dans le contexte.
-     */
+    /** LE TÉMOIN. */
     public function test_un_metier_sans_prix_au_kilometre_ne_change_pas_d_un_centime(): void
     {
         $peinture = $this->peinture();
@@ -151,16 +141,7 @@ class PrixAuKilometreTest extends TestCase
         $this->assertSame($this->devis($peinture)['min'], $sansRoute['min']);
     }
 
-    /**
-     * LA MAJORATION DE L'IMMÉDIAT PORTE AUSSI SUR LES KILOMÈTRES — c'est voulu.
-     *
-     * C'est le modèle Heetch/Bolt/Uber : quand la demande fait monter les prix, elle fait monter la
-     * course entière. Majorer la seule prise en charge reviendrait à dire qu'un trajet de nuit de
-     * trente kilomètres coûte à peu près comme le même trajet en plein après-midi.
-     *
-     * Ce test existe pour que ce choix soit une DÉCISION et non un effet de bord : quelqu'un qui
-     * jugerait plus tard qu'on ne majore pas des kilomètres le verra tomber, et lira pourquoi.
-     */
+    /** LA MAJORATION DE L'IMMÉDIAT PORTE AUSSI SUR LES KILOMÈTRES — c'est voulu. */
     public function test_la_majoration_de_l_immediat_porte_sur_les_kilometres(): void
     {
         $peinture = $this->peinture();
@@ -185,16 +166,7 @@ class PrixAuKilometreTest extends TestCase
         $this->assertSame(1_625, $immediat, '12,50 € × 1,30 : la majoration de l’immédiat porte sur toute la course.');
     }
 
-    /**
-     * L'ÉLARGISSEMENT D'INCERTITUDE NE TOUCHE PAS UNE DISTANCE MESURÉE.
-     *
-     * Le questionnaire de l'immédiat est volontairement raccourci, alors le moteur élargit le haut
-     * de la fourchette de 15 % pour ne pas donner une fausse précision. Cet élargissement dit ce
-     * que nous IGNORONS de la prestation — il n'a rien à dire sur des kilomètres que nous avons
-     * mesurés, et il s'appliquait pourtant : une course de vingt kilomètres était annoncée « entre
-     * 34,45 € et 39,62 € » alors que les deux bornes portaient exactement les mêmes kilomètres.
-     * Cinq euros de risque affichés là où il n'y en avait pas un centime.
-     */
+    /** L'ÉLARGISSEMENT D'INCERTITUDE NE TOUCHE PAS UNE DISTANCE MESURÉE. */
     public function test_l_elargissement_d_incertitude_ne_touche_pas_les_kilometres_mesures(): void
     {
         $peinture = $this->peinture();
@@ -238,14 +210,7 @@ class PrixAuKilometreTest extends TestCase
         $this->assertSame($avec['max'] - $sans['max'], $avec['min'] - $sans['min']);
     }
 
-    /**
-     * UN MULTIPLICATEUR DE PRIX, LUI, PORTE BIEN SUR LES KILOMÈTRES.
-     *
-     * C'est la contrepartie du test précédent, et ce qui rend la règle tenable : le trajet prend
-     * tout ce qui dit combien la prestation COÛTE, et rien de ce qui dit à quel point nous
-     * l'ignorons. Sans ce contrôle, « ne pas élargir » pourrait dériver en « ne rien multiplier »,
-     * et une option facturée une fois et demie ne s'appliquerait plus qu'à la moitié du prix.
-     */
+    /** UN MULTIPLICATEUR DE PRIX, LUI, PORTE BIEN SUR LES KILOMÈTRES. */
     public function test_un_multiplicateur_de_reponse_porte_sur_les_kilometres(): void
     {
         $peinture = $this->peinture();
@@ -263,13 +228,7 @@ class PrixAuKilometreTest extends TestCase
         $this->assertSame(1_350, $avec['min'] - $sans['min']);
     }
 
-    /**
-     * « Aucun tarif au kilomètre » et « zéro centime le kilomètre » ne sont pas la même chose.
-     *
-     * Le cast `integer` du modèle transformerait un NULL de base en `0`, et la distance se
-     * facturerait alors gratuitement au lieu de laisser le forfait décider. Le contexte doit rendre
-     * `null`, pas `0`.
-     */
+    /** « Aucun tarif au kilomètre » et « zéro centime le kilomètre » ne sont pas la même chose. */
     public function test_le_contexte_distingue_l_absence_de_tarif_du_tarif_a_zero(): void
     {
         $zone = ServiceZone::factory()->create();

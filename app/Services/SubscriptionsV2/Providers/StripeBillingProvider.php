@@ -8,13 +8,7 @@ use App\Services\SubscriptionsV2\Contracts\BillingProviderContract;
 use Illuminate\Support\Facades\Log;
 use Stripe\StripeClient;
 
-/**
- * Stripe PaymentIntent driver. Squelette : nécessite un `stripe_customer_id`
- * et un payment_method par défaut sur l'utilisateur (via Cashier).
- *
- * Soft-fail systématique : toute exception est capturée et renvoyée comme
- * BillingResult(success=false). Le caller (BillingProcessor) sait quoi faire.
- */
+/** Stripe PaymentIntent driver. */
 class StripeBillingProvider implements BillingProviderContract
 {
     public function name(): string

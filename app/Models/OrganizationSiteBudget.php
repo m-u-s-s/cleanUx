@@ -9,13 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * UN PLAFOND DE DÉPENSE POUR UNE PÉRIODE (E7).
- *
- * LE PLAFOND ALERTE, IL NE BLOQUE PAS. Une intervention refusée parce qu'un budget mensuel est
- * atteint, c'est une fuite d'eau qu'on laisse couler pour une ligne comptable.
- *
- * `organization_site_id` À NULL = TOUTE LA SOCIÉTÉ. C'est le premier budget que la plupart poseront,
- * avant de descendre au local.
+ * UN PLAFOND DE DÉPENSE POUR UNE PÉRIODE (E7). LE PLAFOND ALERTE, IL NE BLOQUE PAS.
  *
  * @property int $id
  * @property int $organization_account_id

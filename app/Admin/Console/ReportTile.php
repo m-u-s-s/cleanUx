@@ -5,20 +5,7 @@ namespace App\Admin\Console;
 use Closure;
 use Throwable;
 
-/**
- * Une tuile chiffrée d'un rapport d'administration.
- *
- * ELLE SE MESURE À LA DEMANDE, et attrape ses propres erreurs. Les tables interrogées
- * appartiennent à des modules distincts ; sur un environnement où l'une manque, l'administrateur
- * doit garder ses autres chiffres plutôt que perdre l'écran entier.
- *
- * `available: false` DISTINGUE « zéro mesuré » de « pas mesurable ». Afficher un zéro franc pour
- * une mesure impossible ferait croire à un calme qui n'existe pas — et personne ne va vérifier un
- * chiffre qui a l'air normal.
- *
- * LE TON N'EST PAS DÉCORATIF : il dit si la valeur APPELLE UNE ACTION. Une file d'attente non
- * vide s'annonce ; un compte d'utilisateurs n'a aucune raison d'être alarmant.
- */
+/** Une tuile chiffrée d'un rapport d'administration. */
 final class ReportTile
 {
     public const TONE_NEUTRAL = 'neutral';

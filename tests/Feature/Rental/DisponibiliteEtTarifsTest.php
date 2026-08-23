@@ -10,24 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
-/**
- * LE CATALOGUE DE LOCATION NE MONTRE QUE CE QU'ON PEUT RÉELLEMENT LOUER.
- *
- * Deux exigences se rejoignent ici, et elles ne font qu'un seul calcul : « ne pas afficher les
- * voitures louées » et « masquer l'entrée s'il n'y a aucune voiture ». La seconde découle de la
- * première — c'est le même compte, posé une seule fois dans {@see RentalAvailability}.
- *
- * ── LE CHEVAUCHEMENT EST LE CŒUR, ET SON PIÈGE EST CONNU ─────────────────────────────────────
- *
- * Deux périodes se chevauchent quand l'une commence AVANT que l'autre ne finisse et finit APRÈS
- * que l'autre a commencé. Toute autre écriture laisse passer les locations ENCHÂSSÉES — celles qui
- * tiennent entièrement dans une autre. C'est le cas le plus courant (une location courte pendant
- * une longue), c'est celui qu'un test naïf n'écrit pas, et c'est celui qui donne deux clients au
- * même comptoir le même matin.
- *
- * Chaque cas de recouvrement a donc son test : avant, après, à cheval au début, à cheval à la fin,
- * enchâssée, englobante, et les deux qui se touchent sans se chevaucher.
- */
+/** LE CATALOGUE DE LOCATION NE MONTRE QUE CE QU'ON PEUT RÉELLEMENT LOUER. */
 class DisponibiliteEtTarifsTest extends TestCase
 {
     use RefreshDatabase;
@@ -116,24 +99,13 @@ class DisponibiliteEtTarifsTest extends TestCase
         return [
             'avant' => ['2026-10-01 09:00', '2026-10-05 09:00', 'entièrement avant'],
             'apres' => ['2026-10-20 09:00', '2026-10-25 09:00', 'entièrement après'],
-            /*
-             * LES BORNES SONT STRICTES, ET C'EST CE QUI PERMET D'ENCHAÎNER DEUX CLIENTS.
-             *
-             * Une location qui finit à l'heure exacte où la nôtre commence ne la gêne pas. Traiter
-             * ce contact comme un chevauchement ferait perdre une journée de location par
-             * enchaînement — sur un parc, la perte est continue et invisible.
-             */
+            // LES BORNES SONT STRICTES, ET C'EST CE QUI PERMET D'ENCHAÎNER DEUX CLIENTS.
             'finit quand la notre commence' => ['2026-10-05 09:00', '2026-10-10 09:00', 'se termine au départ'],
             'commence quand la notre finit' => ['2026-10-15 09:00', '2026-10-20 09:00', 'commence au retour'],
         ];
     }
 
-    /**
-     * UNE LOCATION ANNULÉE OU RENDUE NE RÉSERVE PLUS RIEN.
-     *
-     * Sans cela, chaque location passée retirerait la voiture du catalogue pour toujours : le parc
-     * se viderait tout seul au fil des mois, et personne ne comprendrait pourquoi.
-     */
+    /** UNE LOCATION ANNULÉE OU RENDUE NE RÉSERVE PLUS RIEN. */
     public function test_une_location_annulee_ou_rendue_ne_bloque_pas(): void
     {
         $vehicule = $this->vehiculeProposable();
@@ -146,12 +118,7 @@ class DisponibiliteEtTarifsTest extends TestCase
         $this->assertCount(1, app(RentalAvailability::class)->catalogue($d, $f));
     }
 
-    /**
-     * UN PANIER OUVERT NE BLOQUE PAS NON PLUS.
-     *
-     * Le brouillon vit avant l'identité et peut être abandonné. Réserver la voiture dessus la
-     * retirerait du catalogue parce que quelqu'un a cliqué puis fermé l'onglet.
-     */
+    /** UN PANIER OUVERT NE BLOQUE PAS NON PLUS. */
     public function test_un_brouillon_ne_bloque_pas(): void
     {
         $vehicule = $this->vehiculeProposable();
@@ -186,12 +153,7 @@ class DisponibiliteEtTarifsTest extends TestCase
         $this->assertSame(1, app(RentalAvailability::class)->combienDeVehiculesProposables());
     }
 
-    /**
-     * LE COMPTE ET LA LISTE DISENT LA MÊME CHOSE.
-     *
-     * C'est l'invariant qui empêche l'entrée de promettre du choix derrière une vitrine vide. Deux
-     * requêtes distinctes auraient fini par diverger ; celle-ci vérifie qu'elles n'en font qu'une.
-     */
+    /** LE COMPTE ET LA LISTE DISENT LA MÊME CHOSE. */
     public function test_le_compte_de_lentree_et_la_liste_saccordent(): void
     {
         $this->vehiculeProposable();
@@ -210,12 +172,7 @@ class DisponibiliteEtTarifsTest extends TestCase
 
     // ── Les tarifs ───────────────────────────────────────────────────────
 
-    /**
-     * TOUTE JOURNÉE ENTAMÉE EST DUE — comme dans toutes les agences.
-     *
-     * Rendre à 9 h le lendemain d'un retrait à 8 h fait deux jours, pas 1,04. Un `diffInDays`
-     * rendrait 1 et facturerait une journée de moins que l'immobilisation réelle.
-     */
+    /** TOUTE JOURNÉE ENTAMÉE EST DUE — comme dans toutes les agences. */
     public function test_une_journee_entamee_est_facturee(): void
     {
         $vehicule = $this->vehiculeProposable(['daily_price_cents' => 5000, 'min_rental_days' => 1]);
@@ -236,12 +193,7 @@ class DisponibiliteEtTarifsTest extends TestCase
         );
     }
 
-    /**
-     * LES DEUX PRIX SONT RENDUS ENSEMBLE, TOUJOURS.
-     *
-     * C'est ce que la confirmation doit montrer. Un supplément par jour ne veut rien dire seul : en
-     * regard de la caution qu'il fait tomber, il devient un arbitrage que le client peut faire.
-     */
+    /** LES DEUX PRIX SONT RENDUS ENSEMBLE, TOUJOURS. C'est ce que la confirmation doit montrer. */
     public function test_le_devis_donne_le_prix_avec_et_sans_garantie(): void
     {
         $vehicule = $this->vehiculeProposable([
@@ -263,12 +215,7 @@ class DisponibiliteEtTarifsTest extends TestCase
         $this->assertTrue($devis['propose_une_garantie']);
     }
 
-    /**
-     * TÉMOIN — un véhicule sans garantie le dit, et ses deux prix sont identiques.
-     *
-     * Sans lui, l'écran proposerait un choix entre deux options rigoureusement égales, ce qui n'est
-     * pas un choix mais une confusion.
-     */
+    /** TÉMOIN — un véhicule sans garantie le dit, et ses deux prix sont identiques. */
     public function test_temoin_un_vehicule_sans_garantie_nen_propose_pas(): void
     {
         $vehicule = RentalVehicle::factory()->actif()->sansGarantie()->create(['daily_price_cents' => 4000]);

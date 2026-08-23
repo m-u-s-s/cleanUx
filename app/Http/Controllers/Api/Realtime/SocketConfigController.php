@@ -6,13 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 
 /**
- * @group Realtime — Socket Config
- *
  * Sprint 0 — Task 4 : Reverb / WebSocket discovery endpoint.
  *
- * Returns the public WebSocket connection parameters so that the React-Native
- * mobile client can bootstrap its Pusher-JS connection without hard-coding
- * host, port, key, or scheme. The secret is intentionally never included.
+ * @group Realtime — Socket Config
  */
 class SocketConfigController extends Controller
 {

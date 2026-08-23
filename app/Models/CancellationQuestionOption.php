@@ -6,14 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * UNE RÉPONSE POSSIBLE — son code stable, ce qu'on vérifie avant de la proposer, ce qu'elle
- * déclenche.
- *
- * `code` ALIMENTE `booking_cancellations_v2.reason_code`, et c'est sur lui que
- * `CancellationEngine::quote()` retrouve un motif exempté. Il ne se réutilise donc jamais : un code
- * recyclé ferait relire un dossier ancien avec le sens d'aujourd'hui.
- */
+/** UNE RÉPONSE POSSIBLE — son code stable, ce qu'on vérifie avant de la proposer, ce qu'elle déclenche. */
 class CancellationQuestionOption extends Model
 {
     /** Rien à vérifier : la réponse engage celui qui la donne, elle ne se prouve pas. */

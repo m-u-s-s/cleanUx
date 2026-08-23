@@ -6,33 +6,19 @@ use App\Models\RentalVehicle;
 use App\Support\International\Devise;
 use Carbon\CarbonInterface;
 
-/**
- * CE QUE COÛTE UNE LOCATION — AVEC ET SANS GARANTIE, TOUJOURS LES DEUX.
- *
- * Les deux chiffres sont calculés ensemble et rendus ensemble, jamais l'un sans l'autre. C'est ce
- * que demande la confirmation, mais c'est surtout ce qui rend la garantie compréhensible : un
- * supplément par jour ne veut rien dire seul. En regard de la caution qu'il fait tomber, il devient
- * un arbitrage que le client peut faire.
- *
- * ── LE NOMBRE DE JOURS EST UNE DÉCISION, PAS UNE SOUSTRACTION ────────────────────────────────
- *
- * Toutes les agences facturent la journée ENTAMÉE. Rendre à 9 h le lendemain d'un retrait à 8 h,
- * c'est deux jours, pas 1,04. Un `diffInDays` rendrait 1 et facturerait une journée de moins que
- * ce que la voiture a réellement été immobilisée — sur une flotte, c'est une fuite silencieuse.
- * On arrondit donc au jour supérieur, et jamais en dessous du minimum du véhicule.
- */
+/** CE QUE COÛTE UNE LOCATION — AVEC ET SANS GARANTIE, TOUJOURS LES DEUX. */
 class RentalPricing
 {
     /**
      * Le devis complet, dans les deux hypothèses.
      *
      * @return array{
-     *     days: int,
-     *     currency: string,
-     *     daily_price_cents: int,
-     *     sans_garantie: array{total_cents: int, deposit_cents: int},
-     *     avec_garantie: array{total_cents: int, deposit_cents: int, supplement_cents: int},
-     *     propose_une_garantie: bool
+     * days: int,
+     * currency: string,
+     * daily_price_cents: int,
+     * sans_garantie: array{total_cents: int, deposit_cents: int},
+     * avec_garantie: array{total_cents: int, deposit_cents: int, supplement_cents: int},
+     * propose_une_garantie: bool
      * }
      */
     public function devis(RentalVehicle $vehicule, ?CarbonInterface $debut, ?CarbonInterface $fin): array
@@ -60,16 +46,7 @@ class RentalPricing
         ];
     }
 
-    /**
-     * LE NOMBRE DE JOURS FACTURÉS.
-     *
-     * Toute journée entamée est due — c'est la règle de toutes les agences, et elle protège la
-     * disponibilité autant que la recette : une voiture rendue à 18 h n'est pas relouable le même
-     * jour. `ceil` sur les heures, donc, jamais `diffInDays`.
-     *
-     * Le minimum du véhicule s'applique ensuite : une location de deux heures sur un véhicule à
-     * trois jours minimum en facture trois.
-     */
+    /** LE NOMBRE DE JOURS FACTURÉS. */
     public function joursFactures(RentalVehicle $vehicule, ?CarbonInterface $debut, ?CarbonInterface $fin): int
     {
         $minimum = max(1, (int) $vehicule->min_rental_days);

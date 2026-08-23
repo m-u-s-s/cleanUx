@@ -17,13 +17,7 @@ use Livewire\Livewire;
 use Mockery;
 use Tests\TestCase;
 
-/**
- * La preuve de disponibilité — et son honnêteté.
- *
- * « 14 peintres à moins de 8 km » ne vaut que si c'est vrai. Ces tests verrouillent surtout ce que
- * le parcours REFUSE de dire : aucun chiffre quand aucune position n'est connue, aucune heure
- * inventée quand les agendas sont muets, et jamais d'écran mort quand personne n'est disponible.
- */
+/** La preuve de disponibilité — et son honnêteté. */
 class AvailabilityProofTest extends TestCase
 {
     use RefreshDatabase;
@@ -78,12 +72,7 @@ class AvailabilityProofTest extends TestCase
         );
     }
 
-    /**
-     * LA garantie d'honnêteté : sans position connue, on n'annonce RIEN.
-     *
-     * Un compte invérifiable se retourne contre la marque au premier client qui attend. Se taire
-     * coûte une phrase rassurante ; mentir coûte un client et sa recommandation.
-     */
+    /** LA garantie d'honnêteté : sans position connue, on n'annonce RIEN. */
     public function test_it_refuses_to_claim_proximity_when_no_position_is_known(): void
     {
         $trade = $this->peinture();
@@ -96,9 +85,7 @@ class AvailabilityProofTest extends TestCase
         $this->assertSame(0, $snapshot->providerCount);
     }
 
-    /**
-     * L'impasse offre toujours une suite — un écran d'erreur sans action est un bug produit.
-     */
+    /** L'impasse offre toujours une suite — un écran d'erreur sans action est un bug produit. */
     public function test_an_empty_area_still_offers_a_way_forward(): void
     {
         $peinture = $this->peinture();
@@ -168,12 +155,7 @@ class AvailabilityProofTest extends TestCase
             ->assertSee('à moins de 8 km');
     }
 
-    /**
-     * Une adresse non située ne bloque pas la commande.
-     *
-     * Une orthographe approximative ou un service de géocodage indisponible font perdre la phrase
-     * rassurante — pas la commande. Et on le DIT, plutôt que de laisser un champ muet.
-     */
+    /** Une adresse non située ne bloque pas la commande. */
     public function test_an_unresolved_address_never_blocks_the_order(): void
     {
         $this->fakeGeocoder(null, null);
@@ -185,14 +167,7 @@ class AvailabilityProofTest extends TestCase
             ->assertSee('Vous pouvez continuer');
     }
 
-    /**
-     * Le pays qui oriente le géocodage est une DONNÉE, pas une constante dans le code.
-     *
-     * « BE » était écrit en dur au milieu du composant, sur un produit qui parle six langues et vise
-     * plusieurs marchés. Le premier client français aurait vu son adresse résolue quelque part en
-     * Belgique — ou nulle part — sans que rien ne le signale, puisque l'échec est silencieux par
-     * conception.
-     */
+    /** Le pays qui oriente le géocodage est une DONNÉE, pas une constante dans le code. */
     public function test_the_geocoding_country_comes_from_configuration(): void
     {
         config(['order_engine.geocoding_country' => 'FR']);
@@ -215,15 +190,7 @@ class AvailabilityProofTest extends TestCase
 
     // ─── Saisie de l'adresse ─────────────────────────────────────────────────────────────────
 
-    /**
-     * Le champ adresse PROPOSE au lieu de faire deviner.
-     *
-     * C'était un `<input type="text">` nu sur l'écran le plus rentable du produit, alors que la
-     * plateforme sert déjà des suggestions d'adresse ailleurs — l'application mobile s'en sert.
-     * Faire saisir une adresse à la main sur un téléphone, c'est accepter les fautes de frappe, et
-     * une faute de frappe fait échouer le géocodage : plus de preuve de disponibilité, et un
-     * prestataire envoyé à la mauvaise porte.
-     */
+    /** Le champ adresse PROPOSE au lieu de faire deviner. */
     public function test_the_address_field_suggests_completions(): void
     {
         Livewire::test(OrderJourney::class)
@@ -232,13 +199,7 @@ class AvailabilityProofTest extends TestCase
             ->assertSee('1000 Bruxelles, Belgique');
     }
 
-    /**
-     * Choisir une suggestion situe la commande SANS second géocodage.
-     *
-     * La suggestion porte déjà ses coordonnées. Relancer un géocodage sur le libellé qu'on vient de
-     * fournir soi-même, c'est payer un appel de plus pour un résultat qu'on tient déjà — et
-     * s'exposer à ce qu'il échoue là où le premier avait réussi.
-     */
+    /** Choisir une suggestion situe la commande SANS second géocodage. */
     public function test_choosing_a_suggestion_locates_the_order_straight_away(): void
     {
         $this->mock(GeocodingService::class, function ($mock) {
@@ -260,12 +221,7 @@ class AvailabilityProofTest extends TestCase
             ->assertSet('lat', self::LAT);
     }
 
-    /**
-     * « Utiliser ma position » : le client a déjà l'information dans sa poche.
-     *
-     * Le navigateur donne les coordonnées, le serveur les retourne en adresse lisible. Sur un
-     * téléphone, c'est un geste contre une adresse entière à taper au pouce.
-     */
+    /** « Utiliser ma position » : le client a déjà l'information dans sa poche. */
     public function test_the_client_can_hand_over_their_position(): void
     {
         Livewire::test(OrderJourney::class)
@@ -358,13 +314,7 @@ class AvailabilityProofTest extends TestCase
         return $provider->fresh('providerProfile');
     }
 
-    /**
-     * Le géocodeur est remplacé dans le conteneur.
-     *
-     * `TestCase` simule déjà Nominatim globalement, et un `Http::fake()` local ne le supplante pas
-     * — le premier motif enregistré gagne. Substituer le service est le seul moyen fiable de
-     * décider ce que le géocodage renvoie.
-     */
+    /** Le géocodeur est remplacé dans le conteneur. */
     private function fakeGeocoder(?float $lat, ?float $lng): void
     {
         $this->mock(GeocodingService::class, function ($mock) use ($lat, $lng) {

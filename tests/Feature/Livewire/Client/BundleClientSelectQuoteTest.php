@@ -13,10 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Bundle Marketplace P3 — le client compare et choisit un devis depuis son
- * espace "Chantiers groupés".
- */
+/** Bundle Marketplace P3 — le client compare et choisit un devis depuis son espace "Chantiers groupés". */
 class BundleClientSelectQuoteTest extends TestCase
 {
     use RefreshDatabase;

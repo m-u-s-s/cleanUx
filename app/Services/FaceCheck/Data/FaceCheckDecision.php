@@ -2,12 +2,7 @@
 
 namespace App\Services\FaceCheck\Data;
 
-/**
- * La réponse à « ce prestataire peut-il travailler maintenant ? ».
- *
- * Le code est celui que le mobile et le web reçoivent tel quel dans `error_code` : il est donc
- * public, stable, et il ne se reformule pas au gré des appelants.
- */
+/** La réponse à « ce prestataire peut-il travailler maintenant ? ». */
 final readonly class FaceCheckDecision
 {
     public const OK = 'ok';

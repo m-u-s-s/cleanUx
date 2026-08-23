@@ -14,13 +14,6 @@ use Livewire\Component;
 /**
  * SP3 Task 8 — miroir de BrowseProviders pour les SOCIÉTÉS prestataires.
  *
- * Embarqué dans le picker premium du formulaire de réservation : chaque carte
- * société expose un bouton « Choisir » qui émet l'event `companySelected`
- * (capté par le parcours de commande) au lieu de naviguer.
- *
- * La frontière de sécurité reste le ProviderSelectionResolver côté backend
- * (gate premium + validation d'éligibilité zone/métier).
- *
  * @property-read Collection<int, OrganizationAccount> $companies
  */
 class BrowseCompanies extends Component
@@ -32,11 +25,7 @@ class BrowseCompanies extends Component
 
     public ?int $tradeId = null;
 
-    /**
-     * SP-Polish — filtres calqués sur BrowseProviders. Recherche par nom,
-     * note minimale et tri ; appliqués sur la collection retournée par
-     * getCompaniesProperty sans changer son type (Collection Eloquent).
-     */
+    /** SP-Polish — filtres calqués sur BrowseProviders. */
     #[Url(as: 'q')]
     public string $query = '';
 
@@ -66,10 +55,7 @@ class BrowseCompanies extends Component
         $this->sort = 'rating';
     }
 
-    /**
-     * SP3 Task 8 — sélection d'une société en mode embarqué : émet l'event que
-     * le composant parent écoute. No-op hors selection mode.
-     */
+    /** SP3 Task 8 — sélection d'une société en mode embarqué : émet l'event que le composant parent écoute. */
     public function selectCompany(int $organizationId): void
     {
         if ($this->selectionMode) {
@@ -78,9 +64,7 @@ class BrowseCompanies extends Component
     }
 
     /**
-     * Liste des sociétés à présenter. Lorsqu'un contexte zone est connu, on
-     * délègue à EligibleCompaniesResolver (sociétés réellement éligibles pour
-     * cette zone + métier) ; sinon fallback simple par note décroissante.
+     * Liste des sociétés à présenter.
      *
      * @return Collection<int, OrganizationAccount>
      */

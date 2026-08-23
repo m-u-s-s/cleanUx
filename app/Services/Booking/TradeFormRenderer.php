@@ -4,14 +4,7 @@ namespace App\Services\Booking;
 
 use App\Models\Trade;
 
-/**
- * TradeFormRenderer — normalise le booking_form_schema d'un Trade
- * en définitions de champs exploitables côté API et front-end.
- *
- * La normalisation garantit que les champs renvoyés respectent
- * toujours la même structure, indépendamment de ce qui est stocké
- * en base, et ne révèle jamais les données internes de pricing.
- */
+/** TradeFormRenderer — normalise le booking_form_schema d'un Trade en définitions de champs exploitables côté API et front-end. */
 final class TradeFormRenderer
 {
     /** Types de champ exposés au client. */

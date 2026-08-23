@@ -8,24 +8,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * DE A À B : combien, combien de temps, et par où.
- *
- * La plateforme savait déjà mesurer une distance — `GeocodingService::distance()` interroge Google
- * ou Mapbox, et retombe sur la haversine. Elle ne savait pas dire PAR OÙ : aucun service ne rendait
- * de géométrie, et il n'y avait donc rien à tracer sur une carte. Un client qui suit sa course voit
- * la voiture avancer sans savoir où elle va ; un conducteur voit un point, pas une route.
- *
- * CE SERVICE NE REFAIT PAS LA MESURE. Distance et durée viennent de `GeocodingService`, qui porte
- * déjà les fournisseurs, le cache en base et le repli. Ce qu'on ajoute ici, c'est la GÉOMÉTRIE, et
- * elle seule.
- *
- * TOUT EST SOFT-FAIL, et c'est la règle du parcours de commande : le géocodage y échoue déjà en
- * silence, parce qu'une adresse mal orthographiée ne doit pas empêcher de commander. Un itinéraire
- * indisponible fait perdre un tracé, jamais une course. Le repli est la ligne droite, et il
- * s'ANNONCE (`source`) : une ligne droite qui se ferait passer pour un trajet routier promettrait
- * un temps de course qu'aucun conducteur ne tiendra.
- */
+/** DE A À B : combien, combien de temps, et par où. */
 class RoutingService
 {
     /** Repli : les deux extrémités, sans rien entre elles. */
@@ -35,13 +18,7 @@ class RoutingService
         protected GeocodingService $geocoding,
     ) {}
 
-    /**
-     * La route entre deux points.
-     *
-     * Rend TOUJOURS un résultat — au pire une ligne droite. Rendre `null` obligerait chaque
-     * appelant à gérer l'absence, et le premier qui l'oublierait afficherait « 0 km » pour une
-     * course de quinze kilomètres.
-     */
+    /** La route entre deux points. Rend TOUJOURS un résultat — au pire une ligne droite. */
     public function route(float $fromLat, float $fromLng, float $toLat, float $toLng): RouteResult
     {
         $mesure = $this->geocoding->distance($fromLat, $fromLng, $toLat, $toLng, 'driving');
@@ -58,10 +35,6 @@ class RoutingService
 
     /**
      * La suite de coordonnées que la carte trace, ou `null` si personne ne sait la donner.
-     *
-     * Mise en cache : deux personnes qui suivent la même course demandent la même route, et un
-     * itinéraire routier ne change pas d'une minute à l'autre — au contraire d'un ETA, qui, lui,
-     * dépend de la position courante et se recalcule à chaque relevé.
      *
      * @return list<array{lat: float, lng: float}>|null
      */
@@ -82,9 +55,6 @@ class RoutingService
 
     /**
      * Mapbox Directions en GeoJSON — les coordonnées arrivent telles quelles, sans décodage.
-     *
-     * L'endpoint configuré est celui de la matrice de distances (`directions-matrix`), qui ne rend
-     * PAS de géométrie : on vise l'API Directions, sa voisine. Les deux partagent le même jeton.
      *
      * @return list<array{lat: float, lng: float}>|null
      */
@@ -175,10 +145,6 @@ class RoutingService
 
     /**
      * Décode l'algorithme de polyligne encodée de Google.
-     *
-     * Format documenté et stable depuis quinze ans : chaque valeur est une DIFFÉRENCE avec la
-     * précédente, encodée en base 64 par groupes de cinq bits. Le décodeur tient en vingt lignes ;
-     * ajouter une dépendance pour cela coûterait plus cher à maintenir.
      *
      * @return list<array{lat: float, lng: float}>
      */

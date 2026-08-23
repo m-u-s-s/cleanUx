@@ -19,11 +19,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
-/**
- * Test E2E GDPR erasure cascade : vérifie que `DataErasureService::anonymizeUser()`
- * cascade correctement sur les nouveaux modules v2 (KYB, Fleet, Subscriptions,
- * Chat) en nullify-ant les FKs tout en conservant les rows.
- */
+/** Test E2E GDPR erasure cascade : vérifie que `DataErasureService::anonymizeUser()` cascade correctement sur les nouveaux modules v2 (KYB, Fleet, Subscriptions, Chat) en nullify-ant les FKs tout en conservant les rows. */
 class GdprErasureCascadeV2Test extends TestCase
 {
     use RefreshDatabase;

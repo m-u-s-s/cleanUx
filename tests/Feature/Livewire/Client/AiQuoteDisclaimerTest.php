@@ -8,10 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Audit LOW — le devis IA photo doit afficher un disclaimer clair (estimation,
- * pas un devis ferme) pour éviter qu'il soit pris pour un engagement contractuel.
- */
+/** Audit LOW — le devis IA photo doit afficher un disclaimer clair (estimation, pas un devis ferme) pour éviter qu'il soit pris pour un engagement contractuel. */
 class AiQuoteDisclaimerTest extends TestCase
 {
     use RefreshDatabase;

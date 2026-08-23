@@ -7,10 +7,7 @@ use App\Services\KybV2\VerificationResult;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * INSEE Sirene V3 (France). Squelette — nécessite INSEE_API_KEY.
- * Doc : https://api.insee.fr/catalogue/site/themes/wso2/subthemes/insee/pages/item-info.jag?name=Sirene&version=V3
- */
+/** INSEE Sirene V3 (France). Squelette — nécessite INSEE_API_KEY. */
 class InseeBusinessVerificationProvider implements BusinessVerificationProviderContract
 {
     public function name(): string

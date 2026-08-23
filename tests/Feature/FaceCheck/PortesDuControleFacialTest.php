@@ -29,16 +29,7 @@ use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\Feature\FaceCheck\Concerns\ActiveLeControleFacial;
 use Tests\TestCase;
 
-/**
- * LES SEPT POINTS DE PASSAGE QUI MÈNENT UN PRESTATAIRE CHEZ UN CLIENT.
- *
- * Ils posent tous la même question — « cette personne est-elle bien celle qu'elle prétend être ? »
- * — et si chacun se répondait à lui-même, six d'entre eux finiraient par répondre autrement que le
- * septième. La porte se contournerait alors par celui qu'on aurait oublié.
- *
- * CHAQUE REFUS A SON TÉMOIN. Un test qui vérifie qu'une porte se ferme passe au vert si la porte
- * est murée : il faut prouver, dans le même souffle, qu'elle s'ouvre quand elle le doit.
- */
+/** LES SEPT POINTS DE PASSAGE QUI MÈNENT UN PRESTATAIRE CHEZ UN CLIENT. */
 class PortesDuControleFacialTest extends TestCase
 {
     use ActiveLeControleFacial;
@@ -97,13 +88,7 @@ class PortesDuControleFacialTest extends TestCase
         $this->assertNotContains($jamaisEnrole->id, $candidats);
     }
 
-    /**
-     * CELUI DONT LE CONTRÔLE EST SIMPLEMENT DÛ RESTE CANDIDAT — délibérément.
-     *
-     * L'écarter du dispatch le priverait de missions sans qu'aucun écran ne le lui dise : c'est
-     * l'angle mort déjà connu de `verification_status` sur ce dépôt. Il sera arrêté à la porte
-     * qu'il traverse vraiment, où on peut le lui expliquer.
-     */
+    /** CELUI DONT LE CONTRÔLE EST SIMPLEMENT DÛ RESTE CANDIDAT — délibérément. */
     public function test_un_controle_simplement_du_ne_retire_pas_des_candidats(): void
     {
         $du = $this->prestataireEnLigne();
@@ -152,12 +137,7 @@ class PortesDuControleFacialTest extends TestCase
         // TÉMOIN : à jour, l'acceptation passe.
         $this->assertNotNull(app(MissionDispatchService::class)->accept($offre));
 
-        /*
-         * L'ÉCART QUE CE TEST MESURE : l'offre est fabriquée pendant que tout va bien, et
-         * l'échéance tombe PENDANT que la modale est ouverte. C'est exactement le scénario de
-         * quelqu'un qui garde son écran allumé — sans cette seconde garde, l'acceptation
-         * passerait sur la foi d'un contrôle vieux de trois jours.
-         */
+        // L'ÉCART QUE CE TEST MESURE : l'offre est fabriquée pendant que tout va bien, et l'échéance tombe PENDANT que la modale est ouverte.
         $autre = $this->prestataireEnLigne();
         $offre2 = app(DispatchEngine::class)->createOffer($this->mission(), $autre, 600);
         $this->assertNotNull($offre2, "L'offre existe : c'est bien l'acceptation qu'on mesure.");

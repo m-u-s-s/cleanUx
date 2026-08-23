@@ -21,18 +21,7 @@ class MissionExecutionBoardCoverageBatch10Test extends TestCase
     use CreatesMissionPortalFixtures;
     use RefreshDatabase;
 
-    /**
-     * LA LISTE NAÎT VIDE, ET C'EST VOULU.
-     *
-     * Ce test exigeait des tâches dès le montage : `ensureChecklist()` posait alors les six lignes
-     * d'un gabarit, toutes obligatoires. Le prestataire cochait donc six cases que personne ne lui
-     * avait demandées, pendant que ce que le CLIENT voulait n'existait nulle part.
-     *
-     * Le gabarit est devenu une SUGGESTION, et la liste appartient au client. L'assertion change
-     * donc de sens : le porte-liste existe, il est vide, et une mission sans demande du client ne
-     * bloque personne. Le témoin positif est deux lignes plus bas — dès qu'une tâche existe, elle
-     * bloque bien.
-     */
+    /** LA LISTE NAÎT VIDE, ET C'EST VOULU. */
     public function test_lead_employee_can_mount_board_and_checklist_is_seeded(): void
     {
         $scenario = $this->createMissionPortalContext(['status' => 'assigned']);
@@ -56,12 +45,7 @@ class MissionExecutionBoardCoverageBatch10Test extends TestCase
         $this->assertSame(1, MissionChecklistItem::query()->count());
     }
 
-    /**
-     * Pose une tâche comme le client la poserait, et rend la ligne.
-     *
-     * Directement par le modèle : la fenêtre d'édition et les droits du client ont leurs propres
-     * tests. Ce fichier-ci porte sur ce que le TABLEAU DE BORD fait d'une tâche existante.
-     */
+    /** Pose une tâche comme le client la poserait, et rend la ligne. */
     private function tachePosee(int $missionId): MissionChecklistItem
     {
         $checklist = MissionChecklist::query()->where('mission_id', $missionId)->firstOrFail();
@@ -77,15 +61,7 @@ class MissionExecutionBoardCoverageBatch10Test extends TestCase
         ]);
     }
 
-    /**
-     * Ce test figeait `completed` / `pending` — c'est-à-dire exactement le défaut.
-     *
-     * La colonne déclare son vocabulaire dans sa propre migration (« todo, done ») et c'est `done`
-     * que lit la porte de clôture. Cet écran écrivait `completed` : un prestataire pouvait cocher
-     * ses six tâches, lire 100 %, et ne jamais pouvoir terminer sa mission. Le test passait au vert
-     * parce qu'il vérifiait que l'écran écrit ce que l'écran écrit, sans jamais demander si
-     * quelqu'un d'autre le comprenait.
-     */
+    /** Ce test figeait `completed` / `pending` — c'est-à-dire exactement le défaut. */
     public function test_toggle_checklist_item_marks_done_then_todo(): void
     {
         $scenario = $this->createMissionPortalContext(['status' => 'assigned']);

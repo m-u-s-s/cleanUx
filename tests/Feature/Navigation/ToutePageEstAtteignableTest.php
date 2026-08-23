@@ -6,35 +6,11 @@ use Illuminate\Routing\Route as RouteObjet;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
-/**
- * AUCUNE PAGE NE DOIT ÊTRE ATTEIGNABLE SEULEMENT EN TAPANT SON URL.
- *
- * POURQUOI CE FICHIER EXISTE. Un audit du 2026-08-05 a montré que la page d'accueil ne citait que
- * quatre routes : ni le moteur de commande (`order.journey`), ni les pages services publiques n'y
- * étaient reliés. Ces deux ensembles ne se citaient qu'entre eux — des boucles fermées, sans porte
- * d'entrée. Côté administration, le catalogue géographique et le suivi d'onboarding étaient dans le
- * même cas, et `admin.home` — une page bien réelle, distincte d'`admin.dashboard` — n'était liée
- * nulle part.
- *
- * CE QUE « ATTEIGNABLE » VEUT DIRE ICI. Pas « citée quelque part » : un lien posé sur une page
- * elle-même inatteignable ne mène nulle part. On part donc des coquilles de navigation et on
- * MARCHE — une route est atteinte si un fichier appartenant à une route déjà atteinte la cite.
- * C'est cette transitivité qui distingue une page reliée d'une page orpheline dans un îlot.
- *
- * CE QUE CE TEST NE PEUT PAS VOIR. Un lien construit dynamiquement (`route($variable)`) ou une URL
- * écrite en dur lui échappent — il signalera alors un FAUX orphelin, et c'est l'URL qu'il faudra
- * corriger, pas la liste ci-dessous.
- *
- * Ce n'est pas théorique : le 2026-08-05, un balayage a trouvé 51 liens écrits en dur, dont celui
- * par lequel un prestataire accepte une mission, et deux qui pointaient vers `/client/dashboard` —
- * un 404, la route étant `/dashboard/client`. Tous passés en `route()`. La mesure ne vaut donc que
- * tant que le dépôt s'y tient : `scratchpad/urls-en-dur.js` refait le balayage à la demande.
- */
+/** AUCUNE PAGE NE DOIT ÊTRE ATTEIGNABLE SEULEMENT EN TAPANT SON URL. POURQUOI CE FICHIER EXISTE. */
 class ToutePageEstAtteignableTest extends TestCase
 {
     /**
-     * Flux techniques : atteints par une redirection externe, un scan, un flux ou un
-     * téléchargement. Personne ne doit les trouver dans un menu — les y mettre serait le défaut.
+     * Flux techniques : atteints par une redirection externe, un scan, un flux ou un téléchargement.
      *
      * @var list<string>
      */
@@ -58,32 +34,12 @@ class ToutePageEstAtteignableTest extends TestCase
         // `NewConversationMessageNotification` y mène désormais — elle portait déjà le
         // `conversation_id` dans sa charge utile mais renvoyait au tableau de bord.
         'client.conversations.show',
-        /*
-         * `tracking.shared` — LE SUIVI PARTAGÉ (E3), et sa vocation est de N'AVOIR AUCUN MENU.
-         *
-         * C'est un lien SIGNÉ et expirant que le client copie depuis son écran de suivi et envoie
-         * par SMS à la personne qui attend chez elle. Son destinataire n'a pas de compte, n'ouvre
-         * aucun tableau de bord, et n'a rien à trouver dans une navigation : il reçoit un lien, il
-         * clique. Lui donner une entrée de menu supposerait de savoir qui il est — or c'est
-         * précisément ce qu'on ne sait pas, et qu'on n'a pas besoin de savoir.
-         *
-         * La porte qui compte est ailleurs, et elle EST testée : le bouton « Partager le suivi »
-         * de `ClientLiveTrackingMap`, et le point d'API `bookings/{booking}/tracking/share` pour le
-         * mobile. Voir `CarnetBeneficiaireEtProtectionTest`.
-         */
+        // `tracking.shared` — LE SUIVI PARTAGÉ (E3), et sa vocation est de N'AVOIR AUCUN MENU.
         'tracking.shared',
     ];
 
     /**
-     * Des ROUTES SANS PAGE : `routes/missing-route-fixes-advanced.php` enregistre des replis qui
-     * renvoient du texte de remplissage quand la vraie implémentation manque.
-     *
-     * Les relier serait une faute : on offrirait un menu vers « Export PDF global à implémenter. »
-     * ou vers `<h1>Gérer une série récurrente</h1>`. Ce ne sont pas des pages orphelines, ce sont
-     * des fonctionnalités annoncées et non écrites — un manque de code, pas un manque de lien.
-     *
-     * À retirer d'ici le jour où elles sont implémentées : elles redeviendront alors de vraies
-     * pages, à relier comme les autres.
+     * Des ROUTES SANS PAGE : `routes/missing-route-fixes-advanced.php` enregistre des replis qui renvoient du texte de remplissage quand la vraie implémentation manque.
      *
      * @var list<string>
      */
@@ -106,11 +62,6 @@ class ToutePageEstAtteignableTest extends TestCase
 
     /**
      * Ce qui reste à relier, et qu'on ne veut pas voir GRANDIR.
-     *
-     * Cette liste est un constat daté, pas une permission : chaque entrée est une page qu'on
-     * n'atteint aujourd'hui qu'en tapant son URL. Le test échoue si une route en SORT sans être
-     * retirée d'ici (tant mieux, on l'a reliée) comme si une nouvelle y ENTRE (c'est une
-     * régression). Les vider est le travail ; les laisser grossir serait le renoncement.
      *
      * @var list<string>
      */
@@ -145,18 +96,7 @@ class ToutePageEstAtteignableTest extends TestCase
         // plein écran, elle, n'avait aucun lien.
         // `employe.rate.client` a été RELIÉ le 2026-08-05 : l'évaluation est réciproque, mais
         // seule la moitié client avait un lien. Bouton « Évaluer le client » sur les missions terminées.
-        /*
-         * `missions.show` — LACUNE ASSUMÉE, sur décision du 2026-08-05.
-         *
-         * C'est la vue PUBLIQUE d'une mission (`missions/{mission}`). Son unique citant dans tout
-         * le dépôt était `components/admin/mission-admin-card.blade.php`, un composant qu'aucune
-         * page ne rendait — supprimé le même jour. Elle n'est donc plus citée nulle part.
-         *
-         * Elle n'a PAS été reliée depuis l'administration : celle-ci dispose déjà
-         * d'`admin.missions.show`, et l'envoyer vers la vue publique serait un contresens. Le jour
-         * où un usage public existe (partage d'un lien de mission, page de suivi ouverte), c'est
-         * de là qu'elle devra être reliée.
-         */
+        // `missions.show` — LACUNE ASSUMÉE, sur décision du 2026-08-05.
         'missions.show',
         // `providers.show` a été RELIÉ le 2026-08-05 — plus exactement, il l'était déjà : la page
         // de recherche liait la fiche par `url('/providers/'.$u->id)`, une URL écrite en dur.
@@ -198,18 +138,7 @@ class ToutePageEstAtteignableTest extends TestCase
         );
     }
 
-    /**
-     * `Route::has('x')` sur un nom qui n'existe pas cache un bouton EN SILENCE.
-     *
-     * Ce garde protège d'une route absente en production ; il masque tout aussi bien une faute de
-     * frappe. Constaté le 2026-08-05 : le tableau de bord analytique client testait
-     * `analytics.export.*` au lieu de `client.analytics.export.*`, et ses trois boutons d'export
-     * ne s'affichaient JAMAIS — les exports fonctionnaient, personne ne pouvait les déclencher.
-     * Une galerie de récurrences promettait de même une page « Mes récurrences » inexistante.
-     *
-     * Rien ne cassait, rien n'était journalisé : seul ce test peut voir la différence entre
-     * « bouton légitimement absent » et « bouton perdu par une faute de frappe ».
-     */
+    /** `Route::has('x')` sur un nom qui n'existe pas cache un bouton EN SILENCE. */
     public function test_aucun_garde_route_has_ne_vise_une_route_fantome(): void
     {
         $noms = [];
@@ -246,18 +175,7 @@ class ToutePageEstAtteignableTest extends TestCase
         ));
     }
 
-    /**
-     * `route('x')` sur un nom inexistant lève au rendu — ou, pire, est rattrapé par un `catch`
-     * qui renvoie vers une URL morte.
-     *
-     * Constaté le 2026-08-05 : `NpsSurveyNotification` appelait `route('nps.survey')`, qui n'existe
-     * pas (`client.nps.survey`, oui). L'exception était attrapée et le repli pointait vers `/nps`,
-     * que rien ne sert non plus — chaque enquête NPS envoyait vers un 404, silencieusement. Le
-     * try/catch avait transformé une erreur bruyante en lien mort.
-     *
-     * `$request->route('param')` LIT un paramètre d'URL : ce n'est pas une génération de lien, et
-     * ce test doit l'ignorer sous peine de crier sur du code correct.
-     */
+    /** `route('x')` sur un nom inexistant lève au rendu — ou, pire, est rattrapé par un `catch` qui renvoie vers une URL morte. */
     public function test_aucun_appel_route_ne_vise_une_route_fantome(): void
     {
         $fantomes = [];
@@ -316,13 +234,7 @@ class ToutePageEstAtteignableTest extends TestCase
         return $trouves;
     }
 
-    /**
-     * Le garde-fou de la MESURE elle-même.
-     *
-     * Une expression cassée, un dossier renommé, et le parcours ne trouverait plus rien à
-     * mesurer — le test passerait au vert en ne vérifiant plus rien. Ces bornes rendent ce
-     * silence impossible.
-     */
+    /** Le garde-fou de la MESURE elle-même. */
     public function test_la_mesure_mesure_encore_quelque_chose(): void
     {
         $perimetre = $this->routesDuPerimetre();
@@ -380,17 +292,7 @@ class ToutePageEstAtteignableTest extends TestCase
         $fichiers = [
             resource_path('views/navigation-menu.blade.php'),
             resource_path('views/home.blade.php'),
-            /*
-             * LA NAVIGATION A DÉMÉNAGÉ, LA MESURE SUIT.
-             *
-             * Les liens vivaient dans trois tableaux inline de `navigation-menu.blade.php` et dans
-             * les deux layouts société. Ils vivent désormais dans `config/modules.php`, servi à la
-             * page Modules et à la navbar.
-             *
-             * Sans cette ligne, ce test ne trouvait plus que 43 racines au lieu de 143 et
-             * déclarait injoignable la moitié de l'application — un faux positif massif dû à
-             * l'instrument, pas au code.
-             */
+            // LA NAVIGATION A DÉMÉNAGÉ, LA MESURE SUIT.
             config_path('modules.php'),
         ];
 
@@ -463,8 +365,7 @@ class ToutePageEstAtteignableTest extends TestCase
     }
 
     /**
-     * Les fichiers qui « appartiennent » à une route : sa classe, ses vues, et ce qu'elles
-     * incluent — y compris les composants Blade et Livewire, où vivent souvent les liens.
+     * Les fichiers qui « appartiennent » à une route : sa classe, ses vues, et ce qu'elles incluent — y compris les composants Blade et Livewire, où vivent souvent les liens.
      *
      * @return list<string>
      */
@@ -509,12 +410,7 @@ class ToutePageEstAtteignableTest extends TestCase
                 }
             }
 
-            /*
-             * Un composant Livewire imbriqué (`<livewire:admin.export-tools />`) cite souvent ses
-             * routes dans sa CLASSE, pas dans sa vue : `ExportTools` porte ainsi les deux exports
-             * globaux de l'administration. Ne suivre que les vues faisait passer ces exports pour
-             * orphelins alors que la page Outils, bien reliée, les monte.
-             */
+            // Un composant Livewire imbriqué (`<livewire:admin.export-tools />`) cite souvent ses routes dans sa CLASSE, pas dans sa vue : `ExportTools` porte ainsi les deux exports globaux de l'administration.
             foreach ($this->classesLivewireCitees($texte) as $classe) {
                 if (is_file($classe) && ! in_array($classe, $vus, true)) {
                     $file[] = $classe;
@@ -527,8 +423,6 @@ class ToutePageEstAtteignableTest extends TestCase
 
     /**
      * Les fichiers de classe des composants Livewire montés par balise.
-     *
-     * `<livewire:admin.export-tools />` correspond à `App\Livewire\Admin\ExportTools`.
      *
      * @return list<string>
      */

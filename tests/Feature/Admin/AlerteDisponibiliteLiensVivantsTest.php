@@ -8,18 +8,7 @@ use App\Services\Admin\AdminAlertService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * L'ALERTE NE DOIT PROPOSER QUE DES LIENS QUI MÈNENT QUELQUE PART.
- *
- * L'écran d'alertes admin liste les « prestataires sans disponibilité » et rend chaque nom
- * cliquable vers sa fiche de créneaux. Deux définitions de « prestataire » se répondaient :
- *
- *   - l'alerte listait sur `providerProfile` OU la colonne héritée `role` ;
- *   - la fiche refuse tout compte dont `isEmploye()` est faux, par un 404.
- *
- * Résultat mesuré sur l'écran réel : deux clientes porteuses d'un profil prestataire sans
- * type exploitable figuraient dans l'alerte, et leur nom menait à une page vide.
- */
+/** L'ALERTE NE DOIT PROPOSER QUE DES LIENS QUI MÈNENT QUELQUE PART. */
 class AlerteDisponibiliteLiensVivantsTest extends TestCase
 {
     use RefreshDatabase;
@@ -42,18 +31,7 @@ class AlerteDisponibiliteLiensVivantsTest extends TestCase
         );
     }
 
-    /*
-        LE CAS « LISTÉ MAIS REFUSÉ » N'EXISTE PLUS, ET C'EST LE RÉSULTAT VOULU.
-
-        Il tenait à `provider_type` : l'alerte listait sur la présence d'un profil, la fiche
-        refusait tout type qu'elle ne reconnaissait pas. Depuis que `ProviderType` porte ses
-        synonymes — `individual` vaut `independent`, `company` vaut `company_worker` — toute
-        valeur possible ouvre la fiche, et la colonne interdit le nul en base.
-
-        Écrire ici un compte artificiellement refusé demanderait de fabriquer un état que la
-        base n'accepte pas : le test mesurerait sa propre mise en scène. L'invariant ci-dessous
-        suffit, et c'est lui qui garde le lien vivant.
-    */
+    // LE CAS « LISTÉ MAIS REFUSÉ » N'EXISTE PLUS, ET C'EST LE RÉSULTAT VOULU.
 
     /** L'INVARIANT — chaque nom listé mène à une fiche qui s'ouvre. */
     public function test_chaque_compte_liste_ouvre_bien_sa_fiche(): void

@@ -5,22 +5,7 @@ namespace App\Services\Analytics;
 use App\Models\AnalyticsEvent;
 use Illuminate\Support\Carbon;
 
-/**
- * Cohort retention analyzer.
- *
- * Groupe les users par semaine d'apparition (cohort start = première semaine
- * où on observe `$entryEvent`), puis mesure pour chaque semaine N suivante
- * combien de ces users ont déclenché `$returnEvent`.
- *
- * Usage :
- *   AnalyticsCohorts::weekly(
- *     from: now()->subWeeks(8),
- *     to: now(),
- *     entryEvent: 'user.registered',
- *     returnEvent: 'booking.created',
- *     maxWeeks: 6
- *   );
- */
+/** Cohort retention analyzer. */
 class AnalyticsCohorts
 {
     /**

@@ -16,18 +16,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * « Afficher [Type de pistolet] SI [Application au pistolet] EST [Oui]. »
- *
- * Le moteur de conditions était complet et testé — évaluation, détection de cycles, export,
- * import, refus de publication sur une dépendance circulaire — et il n'avait AUCUNE interface.
- * `QuestionCondition` n'apparaissait nulle part dans les composants ni dans les gabarits : un
- * administrateur ne pouvait ni créer, ni modifier, ni supprimer une seule condition.
- *
- * C'est la promesse centrale du module qui tombait : « ajouter un métier et ses questions sans une
- * ligne de code » devient faux dès qu'un parcours a besoin d'une question conditionnelle — c'est-à-
- * dire dès le premier exemple de la spécification.
- */
+/** « Afficher [Type de pistolet] SI [Application au pistolet] EST [Oui]. */
 class ConditionEditorTest extends TestCase
 {
     use RefreshDatabase;
@@ -71,14 +60,7 @@ class ConditionEditorTest extends TestCase
             ->assertSee('est égal à');
     }
 
-    /**
-     * Une dépendance circulaire est refusée À LA SAISIE.
-     *
-     * Le validateur la bloquait déjà à la publication. Mais un administrateur qui a écrit trois
-     * conditions et découvre au moment de publier que l'une d'elles est fautive doit refaire le
-     * chemin à l'envers pour trouver laquelle. Refuser au moment du geste dit QUELLE règle pose
-     * problème, pendant qu'il l'a sous les yeux.
-     */
+    /** Une dépendance circulaire est refusée À LA SAISIE. */
     public function test_a_circular_dependency_is_refused_when_typed(): void
     {
         [$trade, $a, $b] = $this->twoQuestions();
@@ -146,12 +128,7 @@ class ConditionEditorTest extends TestCase
         $this->assertSame(0, QuestionCondition::where('question_id', $type->id)->count());
     }
 
-    /**
-     * L'écran câble ses propres actions.
-     *
-     * Ce module a produit cinq fois un service écrit, testé, vert — et sans porte d'entrée. Un
-     * test qui appelle `saveCondition()` directement ne prouve pas qu'un bouton l'appelle.
-     */
+    /** L'écran câble ses propres actions. */
     public function test_the_screen_wires_the_condition_editor(): void
     {
         [$trade, $pistolet, $type] = $this->twoQuestions();

@@ -71,23 +71,7 @@ class ProductionHealthReport
         $mock = $this->mockProviders();
         $this->pushCheck($checks, 'Aucun provider en mode mock', count($mock) === 0, 'error', count($mock) === 0 ? 'none' : implode(', ', $mock));
 
-        /*
-         * LE CHEMIN DE L'ARGENT, QUE CE RAPPORT NE REGARDAIT PAS.
-         *
-         * Il vérifiait que le SMS ou le KYC ne sont pas en mode simulé, mais rien sur Stripe : une
-         * plateforme pouvait donc être déclarée prête tout en étant incapable d'encaisser un seul
-         * euro. Constaté le 2026-08-13 sur la base de démonstration — clé de gabarit, aucun
-         * prestataire onboardé, zéro empreinte bancaire sur huit réservations, zéro versement,
-         * zéro écriture de portefeuille. Rien ne le signalait.
-         *
-         * Les quatre conditions ci-dessous sont celles SANS LESQUELLES AUCUN PAIEMENT N'EST
-         * POSSIBLE, et chacune échoue aujourd'hui en silence :
-         *   — sans clé exploitable, `PaymentIntent::create` lève une erreur d'authentification ;
-         *   — une clé de test en production encaisse dans le vide ;
-         *   — sans secret de webhook, aucune capture ni aucun remboursement ne revient jamais ;
-         *   — sans prestataire encaissable, `authorize()` refuse toute réservation, la plateforme
-         *     ne pouvant pas reverser ce qu'elle prélèverait.
-         */
+        // LE CHEMIN DE L'ARGENT, QUE CE RAPPORT NE REGARDAIT PAS.
         $stripe = $this->stripeSnapshot();
         $webhookSecret = filled(config('cashier.webhook.secret'));
 
@@ -96,17 +80,7 @@ class ProductionHealthReport
         $this->pushCheck($checks, 'Secret de webhook Stripe défini', $webhookSecret, 'error', $webhookSecret ? 'OK' : 'missing');
         $this->pushCheck($checks, 'Au moins un prestataire encaissable', ($stripe['prestataires_encaissables'] ?? 0) > 0, 'error', $stripe['prestataires_encaissables'] === null ? 'unknown' : (string) $stripe['prestataires_encaissables']);
 
-        /*
-         * L'INTERVENANT DIT DEUX FOIS LA MÊME CHOSE : ON VÉRIFIE QU'IL DIT PAREIL.
-         *
-         * `bookings.employe_id` et `missions.lead_provider_user_id` sont tenus en accord par la
-         * réassignation et par `BookingObserver`. Une divergence signifie donc qu'une écriture est
-         * passée à côté des deux — un chemin ajouté depuis, ou une ligne antérieure au correctif.
-         *
-         * ON COMPTE, ON NE RÉPARE PAS. La donnée seule ne dit pas laquelle des deux décisions est
-         * la plus récente : réaligner au jugé nommerait un intervenant que personne n'a choisi. Un
-         * nombre non nul est une invitation à regarder, pas un incident : d'où `warning`.
-         */
+        // L'INTERVENANT DIT DEUX FOIS LA MÊME CHOSE : ON VÉRIFIE QU'IL DIT PAREIL.
         $intervenantsDivergents = $this->intervenantsDivergents();
         $this->pushCheck(
             $checks,
@@ -169,12 +143,7 @@ class ProductionHealthReport
         ];
     }
 
-    /**
-     * Combien de réservations nomment un intervenant que leur mission contredit.
-     *
-     * `null` quand la question ne peut pas être posée — tables absentes, base injoignable : un
-     * rapport de santé ne tombe pas parce qu'une de ses mesures manque.
-     */
+    /** Combien de réservations nomment un intervenant que leur mission contredit. */
     protected function intervenantsDivergents(): ?int
     {
         if (! $this->safeHasTable('bookings') || ! $this->safeHasTable('missions')) {
@@ -235,21 +204,13 @@ class ProductionHealthReport
     /**
      * L'état du chemin de l'argent, sans jamais appeler Stripe.
      *
-     * Un rapport de santé doit pouvoir être lu quand le réseau est coupé ou la clé absente —
-     * c'est-à-dire précisément dans les situations qu'il sert à détecter.
-     *
      * @return array<string, mixed>
      */
     protected function stripeSnapshot(): array
     {
         $cle = (string) config('cashier.secret');
 
-        /*
-         * LE PRÉFIXE NE SUFFIT PAS, et c'est tout l'intérêt de ce contrôle. Le gabarit livré par
-         * `.env.example` porte le bon préfixe `sk_test_` : ne vérifier que lui laisserait passer
-         * une plateforme incapable d'encaisser. Une vraie clé Stripe dépasse la centaine de
-         * caractères ; le seuil est volontairement bas pour ne jamais rejeter une clé valide.
-         */
+        // LE PRÉFIXE NE SUFFIT PAS, et c'est tout l'intérêt de ce contrôle.
         $cleExploitable = strlen($cle) >= 40
             && (str_starts_with($cle, 'sk_') || str_starts_with($cle, 'rk_'));
 
@@ -265,16 +226,7 @@ class ProductionHealthReport
         ];
     }
 
-    /**
-     * Combien de prestataires peuvent RÉELLEMENT recevoir des fonds.
-     *
-     * Même contrat que `User::canReceiveStripeConnectPayments()` : un identifiant de compte NE
-     * SUFFIT PAS, il naît dès le premier écran du parcours Stripe. Seul le statut `active`
-     * atteste qu'un virement aboutira.
-     *
-     * Le compte est fait sur les deux porteurs possibles — l'utilisateur et son profil — sans
-     * doublon, un même prestataire pouvant renseigner l'un, l'autre, ou les deux.
-     */
+    /** Combien de prestataires peuvent RÉELLEMENT recevoir des fonds. */
     protected function prestatairesEncaissables(): ?int
     {
         try {

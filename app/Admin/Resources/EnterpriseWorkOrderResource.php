@@ -11,17 +11,7 @@ use App\Models\WorkOrderApproval;
 use App\Services\Contracts\WorkOrderContractService;
 
 /**
- * Les ordres de travail des comptes entreprise.
- *
- * POURQUOI CE DESCRIPTEUR EXISTE. La page « Opérations B2B » est un tableau de bord : elle gère les
- * CONTRATS, les ORDRES DE TRAVAIL et les GRILLES TARIFAIRES. Un descripteur ne sert qu'un modèle ;
- * seul celui des grilles existait, et les deux gestes les plus fréquents de la page — approuver ou
- * refuser un ordre de travail — n'avaient nulle part où vivre.
- *
- * L'APPROBATION CONSULTE LE CONTRAT AVANT D'ÉCRIRE. Un ordre de travail peut dépasser le budget
- * mensuel, sortir du catalogue autorisé, ou exiger un bon de commande absent : le service tranche,
- * et son refus est rendu tel quel. Écrire `approval_status` sans lui demander ferait passer des
- * ordres que le contrat interdit — et la facture le découvrirait à la fin du mois.
+ * Les ordres de travail des comptes entreprise. POURQUOI CE DESCRIPTEUR EXISTE.
  *
  * @extends EloquentResource<EnterpriseWorkOrder>
  */
@@ -85,11 +75,7 @@ class EnterpriseWorkOrderResource extends EloquentResource
     {
         return [
             Action::make('approve', 'Approuver l’ordre', function (EnterpriseWorkOrder $ordre) {
-                /*
-                 * Le contrat a le dernier mot. Le service lève si l'ordre le viole — budget
-                 * dépassé, service hors catalogue, bon de commande manquant — et on rend son
-                 * message plutôt qu'un « approuvé » qui serait faux.
-                 */
+                // Le contrat a le dernier mot.
                 try {
                     app(WorkOrderContractService::class)->assertApprovable($ordre);
                 } catch (\Throwable $e) {

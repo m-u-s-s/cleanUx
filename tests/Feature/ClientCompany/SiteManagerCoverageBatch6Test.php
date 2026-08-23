@@ -15,12 +15,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * Coverage-focused exercise of App\Livewire\ClientCompany\SiteManager.
- *
- * Drives the mount guard, the create/edit/delete actions (success, guard and
- * cross-org paths), validation, search filtering and the computed properties.
- */
+/** Coverage-focused exercise of App\Livewire\ClientCompany\SiteManager. */
 class SiteManagerCoverageBatch6Test extends TestCase
 {
     use RefreshDatabase;

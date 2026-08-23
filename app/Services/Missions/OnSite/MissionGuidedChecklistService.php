@@ -11,31 +11,7 @@ use DomainException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 
-/**
- * LE GUIDE PAS-À-PAS DU MÉTIER (F6).
- *
- * Les checklists d'inspection existent par métier, et elles se présentent comme une liste de cases :
- * toutes visibles, cochables dans n'importe quel ordre. C'est parfait pour un professionnel
- * expérimenté qui vérifie qu'il n'a rien oublié — et inutilisable pour celui qui débute, ou qui
- * découvre un métier qu'il ne pratique pas tous les jours.
- *
- * TROIS CHOSES SÉPARENT LA LISTE DU GUIDE, et ce service les porte.
- *
- * L'ORDRE EST IMPOSÉ. Sur une remise en état après travaux, aspirer avant de dépoussiérer les
- * hauteurs fait le travail deux fois. La séquence n'est pas une préférence d'affichage, c'est le
- * métier — et un guide qui laisse sauter des étapes n'en est pas un.
- *
- * UNE SEULE ÉTAPE À LA FOIS. Afficher les vingt suivantes ramène à la liste : ce qu'on veut, c'est
- * qu'une personne les mains prises sache quoi faire MAINTENANT, sans lire.
- *
- * LA PREUVE EST EXIGÉE OÙ ELLE COMPTE. Toutes les étapes ne la méritent pas — photographier chaque
- * geste transformerait l'intervention en séance photo. Mais l'état d'une moquette avant traitement,
- * oui : c'est la pièce qui tranche un litige trois semaines plus tard.
- *
- * LE MODE GUIDÉ NE S'IMPOSE PAS AUX ANCIENNES CHECKLISTS. Sans `sort_order` défini, la checklist
- * reste une liste et se coche librement : basculer tout le monde du jour au lendemain imposerait une
- * séquence que personne n'a écrite.
- */
+/** LE GUIDE PAS-À-PAS DU MÉTIER (F6). */
 class MissionGuidedChecklistService
 {
     public function __construct(
@@ -43,12 +19,7 @@ class MissionGuidedChecklistService
         protected MissionMediaService $mediaService,
     ) {}
 
-    /**
-     * Cette mission a-t-elle une checklist réellement ordonnée ?
-     *
-     * Une seule étape sans ordre suffit à retomber en mode liste : une séquence à trous placerait
-     * arbitrairement les étapes non classées, et le guide mentirait sur l'ordre du métier.
-     */
+    /** Cette mission a-t-elle une checklist réellement ordonnée ? */
     public function estGuidee(Mission $mission): bool
     {
         $items = $this->items($mission);
@@ -109,11 +80,7 @@ class MissionGuidedChecklistService
             throw new DomainException('Toutes les étapes sont déjà faites.');
         }
 
-        /*
-         * ON NE VALIDE QUE L'ÉTAPE EN COURS. Sans ce refus, le mode guidé serait un affichage :
-         * n'importe quel identifiant d'étape passerait, et l'ordre du métier ne serait plus qu'une
-         * suggestion.
-         */
+        // ON NE VALIDE QUE L'ÉTAPE EN COURS.
         if ($courante['id'] !== $itemId) {
             throw new DomainException('Terminez d’abord l’étape en cours.');
         }
@@ -157,9 +124,6 @@ class MissionGuidedChecklistService
 
     /**
      * Les étapes, dans l'ordre du métier.
-     *
-     * `sort_order` d'abord, identifiant ensuite : une checklist partiellement ordonnée garde au
-     * moins un ordre stable d'un affichage à l'autre.
      *
      * @return Collection<int, MissionChecklistItem>
      */

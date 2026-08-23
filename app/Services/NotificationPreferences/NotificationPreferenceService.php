@@ -16,17 +16,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-/**
- * NotificationPreferenceService — single source of truth pour les préférences notif.
- *
- *   - isAllowed(user, channel, category) : check rapide pour le caller (sms/push/email/etc.)
- *   - getPreferences(user) : matrice complète, init lazy depuis default_matrix
- *   - setPreference(user, channel, category, allowed, source, request) : versionné + audit logged
- *   - setMany(user, prefs[]) : bulk
- *   - syncToExternalModules(user) : propage vers push device_tokens + marketing_opt_outs
- *
- * Forced-on (config 'forced_on') : refusé silencieusement si user essaie de désactiver.
- */
+/** NotificationPreferenceService — single source of truth pour les préférences notif. */
 class NotificationPreferenceService
 {
     public function isAllowed(User $user, string $channel, string $category): bool
@@ -53,6 +43,7 @@ class NotificationPreferenceService
      * Returns full matrix for a user, initialising missing pairs from defaults.
      *
      * @return array<string, array<string, bool>> [channel][category] => bool
+     *                                            /
      */
     public function getPreferences(User $user): array
     {
@@ -77,9 +68,7 @@ class NotificationPreferenceService
         return $matrix;
     }
 
-    /**
-     * Set a single preference. Versioned + audit logged + cross-module synced.
-     */
+    /** Set a single preference. Versioned + audit logged + cross-module synced. */
     public function setPreference(
         User $user,
         string $channel,
@@ -185,9 +174,7 @@ class NotificationPreferenceService
         return $results;
     }
 
-    /**
-     * Apply default matrix to a user (idempotent, only creates missing pairs).
-     */
+    /** Apply default matrix to a user (idempotent, only creates missing pairs). */
     public function applyDefaultsFor(User $user): int
     {
         $matrix = (array) Config::get('notification_preferences.default_matrix', []);
@@ -219,9 +206,7 @@ class NotificationPreferenceService
         return $inserted;
     }
 
-    /**
-     * Cross-module sync. Called automatically by setPreference.
-     */
+    /** Cross-module sync. Called automatically by setPreference. */
     public function syncToExternalModules(User $user, string $channel, string $category, bool $isAllowed): void
     {
         $syncCfg = (array) Config::get('notification_preferences.sync_to_modules', []);

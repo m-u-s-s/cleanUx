@@ -56,18 +56,7 @@ class ProviderEarningsDashboardTest extends TestCase
             ->assertSee('Décomposition revenus');
     }
 
-    /**
-     * LE PORTEFEUILLE N'A JAMAIS PU S'AFFICHER SUR CETTE PAGE.
-     *
-     * Deux colonnes inexistantes dans le même bloc : le filtre portait sur `user_id` quand la
-     * colonne s'appelle `provider_user_id`, et la somme sur `amount_cents` quand elle s'appelle
-     * `amount` et vaut des euros. Sur MySQL chacune lève « Unknown column » ; sur SQLite — le
-     * moteur de cette suite — un identifiant inconnu entre guillemets doubles devient une chaîne
-     * littérale, la comparaison est fausse en silence et la somme rend zéro.
-     *
-     * Le défaut était donc invisible aux tests ET masqué par une table vide : même un paiement
-     * réellement encaissé n'aurait rien affiché.
-     */
+    /** LE PORTEFEUILLE N'A JAMAIS PU S'AFFICHER SUR CETTE PAGE. */
     public function test_le_portefeuille_credite_apparait_dans_les_revenus(): void
     {
         $employe = User::factory()->employe()->create();

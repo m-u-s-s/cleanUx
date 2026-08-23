@@ -7,19 +7,7 @@ use App\Support\Navigation\ModuleCatalogue;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * Le catalogue des modules, servi aux applications mobiles.
- *
- * POURQUOI PAR L'API PLUTÔT QU'EN DUR DANS LE MOBILE. Les applications portent déjà
- * `config/parity.php`, une seconde liste de modules tenue à côté de `config/modules.php`. En
- * écrire une troisième, en TypeScript, serait la troisième occasion d'en oublier une — et ce
- * dépôt a déjà payé le prix d'une table dupliquée.
- *
- * LE CONTEXTE SE DÉDUIT DU RÔLE, IL NE SE DEMANDE PAS. Le laisser passer par la requête
- * permettrait à un client de lire la liste des 90 modules d'administration : les cases ne
- * s'ouvriraient pas — chaque route reste gardée — mais la liste elle-même renseigne sur la
- * plateforme, ses fournisseurs et ses zones.
- */
+/** Le catalogue des modules, servi aux applications mobiles. */
 class ModulesController extends Controller
 {
     public function index(Request $request): JsonResponse
@@ -41,12 +29,7 @@ class ModulesController extends Controller
                         'key' => $module['key'],
                         'label' => $module['label'],
                         'icon' => $module['icon'],
-                        /*
-                         * Le CHEMIN, et non le nom de route : le mobile ouvre ces modules dans
-                         * l'hôte WebView, qui ne sait rien du routeur Laravel. Sans lui, la case
-                         * serait un libellé qui ne mène nulle part — le défaut exact que la page
-                         * Modules du web a corrigé.
-                         */
+                        // Le CHEMIN, et non le nom de route : le mobile ouvre ces modules dans l'hôte WebView, qui ne sait rien du routeur Laravel.
                         'path' => '/'.ltrim(route($module['route'], [], false), '/'),
                     ],
                     $groupe['modules'],

@@ -19,19 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
-/**
- * Phase 12 — Lifecycle d'une mission côté prestataire mobile.
- *
- * GET    /api/provider/missions/active            → mes missions actives
- * GET    /api/provider/missions/{id}              → détail
- * POST   /api/provider/missions/{id}/start        → "je pars" (en_route)
- * POST   /api/provider/missions/{id}/arrive       → "je suis arrivé"
- * POST   /api/provider/missions/{id}/complete     → "j'ai terminé" (avec code de fin)
- *
- * Wraps autour du MissionLifecycleService existant (méthodes setEnRoute,
- * setArrived, completeMission). Garantit que le user a bien le droit d'agir
- * sur la mission (assignment ou lead).
- */
+/** Phase 12 — Lifecycle d'une mission côté prestataire mobile. */
 /**
  * @group Mission Lifecycle
  *
@@ -41,19 +29,8 @@ class ProviderMissionLifecycleController extends Controller
 {
     use FormatsBookingSchedule;
 
-    /**
-     * Colonnes de réservation nécessaires au payload plat. Chargées sur LES DEUX chaînes de
-     * résolution unique : `booking()`, la seule relation depuis la fusion des deux colonnes.
-     */
-    /**
-     * Colonnes de réservation nécessaires au payload plat.
-     *
-     * ⚠️ UNE COLONNE ABSENTE D'ICI VAUT `null`, EN SILENCE. C'est ce qui a fait passer les premières
-     * courses pour des interventions ordinaires : `estUneCourse()` lit les coordonnées de dépose,
-     * elles n'étaient pas dans cette liste, et la réponse rendait donc `is_ride: false` sans qu'une
-     * seule exception soit levée. Ajouter une colonne au modèle ne suffit pas — il faut l'ajouter
-     * ICI aussi.
-     */
+    /** Colonnes de réservation nécessaires au payload plat. */
+    /** Colonnes de réservation nécessaires au payload plat. */
     private const BOOKING_COLUMNS = 'id,booking_reference,address,city,postal_code,scheduled_date,scheduled_time,service_catalog_id,trade_id,destination_lat,destination_lng,dropoff_address,dropoff_lat,dropoff_lng,route_distance_m,customer_comment,client_id,customer_user_id';
 
     public function __construct(
@@ -99,21 +76,7 @@ class ProviderMissionLifecycleController extends Controller
                         $q2->where('user_id', $user->id)
                             ->where('assignment_status', 'accepted');
                     })
-                    /*
-                     * LE RENFORT D'UNE MISSION DE SOCIÉTÉ NE VOYAIT RIEN.
-                     *
-                     * Cette liste n'admettait que le responsable et les assignments `accepted`.
-                     * Or `accepted` est l'état du parcours MARKETPLACE — un indépendant à qui l'on
-                     * propose une mission et qui répond oui. Un salarié, lui, n'accepte rien : son
-                     * employeur décide, et l'assignation naît `assigned`. Les deux membres d'une
-                     * équipe envoyée sur un chantier ne trouvaient donc leur mission nulle part.
-                     *
-                     * `assigned` SEUL NE SUFFIT PAS COMME CRITÈRE : c'est aussi l'état d'une OFFRE
-                     * en attente de réponse (`MissionDispatchService`). L'ouvrir sans condition
-                     * laisserait un indépendant démarrer une mission qu'on lui a seulement proposée.
-                     * C'est l'appartenance de la MISSION à une société prestataire qui départage :
-                     * là, l'assignation est une décision, pas une proposition.
-                     */
+                    // LE RENFORT D'UNE MISSION DE SOCIÉTÉ NE VOYAIT RIEN.
                     ->orWhere(function ($q3) use ($user) {
                         $q3->whereNotNull('provider_organization_id')
                             ->whereHas('assignments', function ($q4) use ($user) {
@@ -197,11 +160,6 @@ class ProviderMissionLifecycleController extends Controller
     /**
      * Close the mission with the code the client shows on their screen.
      *
-     * Mirror of the presence scan, at the other end of the visit. The end code was sent to the
-     * client by SMS and typed back by the provider; an SMS travels, a code read off the client's
-     * screen requires both people in the same room. Closing captures the pre-authorised payment,
-     * so the client's assent must be a deliberate gesture rather than a forwarded message.
-     *
      * @bodyParam code string required The 6-digit code read from the client's QR. Example: 731204
      *
      * @response 200 {"ok": true, "mission_id": 12, "status": "completed"}
@@ -281,9 +239,6 @@ class ProviderMissionLifecycleController extends Controller
     /**
      * Mark the mission as completed.
      *
-     * If the booking has an end QR-code set up, `end_code` is required. Pass the 6-digit
-     * code scanned from the client's QR at end-of-service.
-     *
      * @bodyParam lat numeric GPS latitude at completion (-90 to 90). Example: 50.846
      * @bodyParam lng numeric GPS longitude at completion (-180 to 180). Example: 4.352
      * @bodyParam end_code string 6-digit end verification code from client QR (required when booking has end code). Example: 482951
@@ -295,14 +250,6 @@ class ProviderMissionLifecycleController extends Controller
     /**
      * Démarre une mission sur laquelle le prestataire est arrivé (arrived → started).
      *
-     * Ce passage n'existait que sur des routes WEB à session (routes/missions.php), inaccessibles
-     * à une app authentifiée par jeton : un prestataire arrivé sur place ne pouvait pas démarrer
-     * sa mission depuis son téléphone. `start` ci-dessus ne fait PAS cela — il met en route
-     * (setEnRoute), et l'appeler depuis `arrived` produit un 422, la transition étant invalide.
-     *
-     * Le code de début est envoyé au client par SMS à l'arrivée (setArrived) : c'est lui qui
-     * atteste sa présence. Même contrat que `complete` et son end_code.
-     *
      * @bodyParam start_code string Code à six chiffres communiqué par le client. Example: 482915
      *
      * @response 200 {"ok": true, "mission_id": 12, "status": "started"}
@@ -311,21 +258,6 @@ class ProviderMissionLifecycleController extends Controller
      */
     /**
      * RENVOYER AU CLIENT LE CODE QU'IL N'A PAS REÇU.
-     *
-     * Un SMS se perd : réseau du client, numéro mal saisi, message noyé, plafond d'envoi atteint.
-     * Sans ce geste, l'intervention s'arrêtait là — le prestataire est devant la porte, le client
-     * n'a pas ses six chiffres, et aucun des deux ne peut rien y faire. Le seul recours était
-     * d'annuler la mission.
-     *
-     * LE CODE PRÉCÉDENT EST INVALIDÉ, et c'est délibéré : `createVerificationCode()` consomme
-     * l'ancien. Deux codes valides pour la même mission feraient hésiter un client qui a reçu les
-     * deux SMS — et le mauvais choix brûle un essai.
-     *
-     * UNE ATTENTE SÉPARE DEUX RENVOIS. Le plafond du module SMS est de cinq messages par heure et
-     * par numéro : trois pressions distraites suffisaient à l'épuiser, après quoi le client ne
-     * recevait plus RIEN — ni ce code-ci, ni celui de fin. C'est exactement ce qui s'est produit
-     * sur la base de démonstration, et le statut `rate_limited` du registre était le seul endroit
-     * où cela se lisait.
      *
      * @bodyParam type string Le code à renvoyer : `start` ou `end`. Example: start
      *
@@ -342,12 +274,7 @@ class ProviderMissionLifecycleController extends Controller
             'type' => ['required', 'string', 'in:start,end'],
         ]);
 
-        /*
-         * DEUX SOURCES, DANS CET ORDRE : le compte du client, puis le numéro saisi sur la
-         * réservation. Une commande passée pour un tiers — un parent, un locataire — porte le
-         * second et pas le premier ; ne lire que le compte enverrait le code à la mauvaise
-         * personne, ou à personne.
-         */
+        // DEUX SOURCES, DANS CET ORDRE : le compte du client, puis le numéro saisi sur la réservation.
         $rendezVous = $mission->booking;
         $telephone = $rendezVous?->client?->phone ?: $rendezVous?->telephone_client;
 
@@ -369,14 +296,7 @@ class ProviderMissionLifecycleController extends Controller
             ], 409);
         }
 
-        /*
-         * LE CODE DE FIN PASSE PAR LE CYCLE DE VIE, PAS PAR LE SERVICE DE CODES.
-         *
-         * `issueEndCode()` émet le code ET le confie au suivi web du client, en plus du SMS. Créer
-         * le code ici en direct ne laissait qu'un SMS pour le transporter — or c'est justement son
-         * absence qui motive ce renvoi : le client qui n'a rien reçu la première fois ne recevrait
-         * toujours rien si le plafond d'envoi est déjà épuisé.
-         */
+        // LE CODE DE FIN PASSE PAR LE CYCLE DE VIE, PAS PAR LE SERVICE DE CODES.
         if ($data['type'] === 'end') {
             $genere = $this->lifecycle->issueEndCode($mission);
         } else {
@@ -413,13 +333,7 @@ class ProviderMissionLifecycleController extends Controller
             .mb_substr($telephone, -2);
     }
 
-    /**
-     * LE CLIENT EST À BORD — la course démarre.
-     *
-     * Aucun code : ni Uber, ni Bolt, ni Heetch n'en demandent, et pour une raison qui tient. Les six
-     * chiffres attestent qu'un prestataire est face au client devant sa porte ; ici le client est
-     * assis à l'arrière, et la preuve est la trace GPS qu'il suit lui-même sur sa carte.
-     */
+    /** LE CLIENT EST À BORD — la course démarre. */
     public function startRide(Request $request, Mission $mission): JsonResponse
     {
         $this->authorizeProvider($request, $mission);
@@ -447,12 +361,7 @@ class ProviderMissionLifecycleController extends Controller
         ]);
     }
 
-    /**
-     * ARRIVÉ À DESTINATION — la course se termine, et le paiement est capturé.
-     *
-     * La position est confrontée au point de DÉPOSE, pas au point de départ : c'est le seul endroit
-     * du cycle de vie où les deux diffèrent, et c'est celui-là qui compte ici.
-     */
+    /** ARRIVÉ À DESTINATION — la course se termine, et le paiement est capturé. */
     public function completeRide(Request $request, Mission $mission): JsonResponse
     {
         $this->authorizeProvider($request, $mission);
@@ -482,13 +391,7 @@ class ProviderMissionLifecycleController extends Controller
         ]);
     }
 
-    /**
-     * LES DEUX PARCOURS NE SE CROISENT PAS — et le refus DIT pourquoi.
-     *
-     * Sans cette garde, `begin()` chercherait un code de début sur une course qui n'en a jamais eu,
-     * et répondrait « marquez d'abord votre arrivée » à un conducteur déjà sur place : un message
-     * faux, pour une raison qu'il ne peut pas deviner.
-     */
+    /** LES DEUX PARCOURS NE SE CROISENT PAS — et le refus DIT pourquoi. */
     private function refuseSiCourse(Mission $mission): ?JsonResponse
     {
         if (! app(RideLifecycleService::class)->estUneCourse($mission)) {
@@ -574,22 +477,7 @@ class ProviderMissionLifecycleController extends Controller
             'end_code' => ['nullable', 'string', 'size:6'],
         ]);
 
-        /*
-         * L'ACCORD DU CLIENT EST EXIGÉ PARCE QUE LA MISSION L'EXIGE — pas parce qu'un code traîne.
-         *
-         * La garde portait sur « existe-t-il un code de fin en attente ? ». Elle tenait tant que le
-         * code était émis d'office à l'arrivée : il y en avait toujours un, la condition mordait
-         * toujours. Depuis qu'il n'est plus émis qu'à la demande — pour qu'il atteste vraiment de
-         * la FIN —, l'absence de code faisait sauter la garde : le prestataire clôturait seul,
-         * déclenchait l'encaissement et terminait l'intervention SANS l'accord du client.
-         *
-         * Constaté en déroulant le parcours à la main : « Mission terminée », confirmer, clôturée.
-         * Aucun code, aucun refus.
-         *
-         * `missions.requires_end_code` porte la vraie règle, est posé à la création et n'était lu
-         * NULLE PART. C'est lui qui décide désormais ; un code qui n'existe pas encore devient une
-         * étape à franchir, plus une garde qui disparaît.
-         */
+        // L'ACCORD DU CLIENT EST EXIGÉ PARCE QUE LA MISSION L'EXIGE — pas parce qu'un code traîne.
         $exigeUnCodeDeFin = (bool) $mission->requires_end_code;
 
         $codeDeFinEnAttente = $mission->verificationCodes()
@@ -609,28 +497,9 @@ class ProviderMissionLifecycleController extends Controller
         $lat = isset($data['lat']) ? (float) $data['lat'] : null;
         $lng = isset($data['lng']) ? (float) $data['lng'] : null;
 
-        /*
-         * LA RAISON DU REFUS DOIT ARRIVER JUSQU'AU PRESTATAIRE.
-         *
-         * Sans ce rattrapage, toute `RuntimeException` du cycle de vie filait vers le rendu
-         * générique et le téléphone affichait « An unexpected error occurred ». Or ces exceptions
-         * portent exactement ce qu'il faut faire : « certaines tâches obligatoires ne sont pas
-         * cochées », « Le code a expiré », « Code invalide ». Le prestataire lisait un message qui
-         * ne lui disait rien pendant que le serveur, lui, savait précisément quoi répondre.
-         *
-         * `completeByQr` le faisait déjà ; ce chemin-ci et `begin()` avaient été oubliés.
-         */
+        // LA RAISON DU REFUS DOIT ARRIVER JUSQU'AU PRESTATAIRE.
         try {
-            /*
-             * SIX CHIFFRES FOURNIS SE VALIDENT — TOUJOURS.
-             *
-             * La condition portait aussi sur l'existence d'un code en attente : sans code émis, un
-             * `end_code` quelconque tombait dans la branche `completeMission()` et n'était jamais
-             * confronté à quoi que ce soit. Six chiffres au hasard clôturaient la mission.
-             *
-             * `consumeValidCode()` sait déjà refuser proprement quand aucun code n'a été émis, et
-             * son message dit quoi faire. C'est donc lui qui tranche, pas une condition d'appel.
-             */
+            // SIX CHIFFRES FOURNIS SE VALIDENT — TOUJOURS.
             if (! empty($data['end_code'])) {
                 $mission = $this->lifecycle->validateEndCode($mission, $request->user(), $data['end_code'], $lat, $lng);
             } else {
@@ -679,14 +548,7 @@ class ProviderMissionLifecycleController extends Controller
             ->whereIn('assignment_status', ['accepted', 'en_route', 'arrived'])
             ->exists();
 
-        /*
-         * Le RENFORT d'une mission de société — même règle que la liste `active()`.
-         *
-         * Sans cela, un membre d'équipe pouvait voir sa mission dans la liste et se voir refuser
-         * son ouverture : il n'a rien « accepté », son employeur a décidé pour lui. La condition
-         * sur `provider_organization_id` est ce qui distingue une DÉCISION d'une OFFRE en attente
-         * de réponse, les deux portant `assigned`.
-         */
+        // Le RENFORT d'une mission de société — même règle que la liste `active()`.
         $isSalarieAssigne = $mission->provider_organization_id !== null
             && $mission->assignments()
                 ->where('user_id', $userId)
@@ -700,19 +562,8 @@ class ProviderMissionLifecycleController extends Controller
         );
     }
 
-    /**
-     * Payload PLAT, aligné sur le type TS `Mission` (mobile/provider/src/missions/types.ts) que
-     * consomment MissionDetailScreen, TrackingScreen et MissionsListScreen. Même traitement que
-     * ProviderMissionAssignmentController::serializeForList() pour l'inbox : la structure
-     * imbriquée { booking: {...}, client: {...} } rendait chacune de ces lectures `undefined`.
-     */
-    /**
-     * Quand le conducteur pourra déclarer que le client ne s'est pas présenté.
-     *
-     * `null` tant que la question ne se pose pas : pas une course, ou pas encore arrivé au point de
-     * prise en charge. Le repère est l'ARRIVÉE, pas l'horaire prévu — une course immédiate n'en a
-     * pas, et c'est précisément pour cela que le geste était impossible jusqu'ici.
-     */
+    /** Payload PLAT, aligné sur le type TS `Mission` (mobile/provider/src/missions/types.ts) que consomment MissionDetailScreen, TrackingScreen et MissionsListScreen. */
+    /** Quand le conducteur pourra déclarer que le client ne s'est pas présenté. */
     protected function absenceDeclarableA(Mission $mission): ?string
     {
         if (! $mission->booking?->estUneCourse() || $mission->status !== MissionStatus::ARRIVED) {
@@ -745,14 +596,7 @@ class ProviderMissionLifecycleController extends Controller
         $base = [
             'id' => $mission->id,
             'status' => $mission->status,
-            /*
-             * LE CATALOGUE D'ABORD, LE MÉTIER ENSUITE — le même ordre que `OfferPayloadBuilder`.
-             *
-             * L'offre acceptée annonçait « Nettoyage à domicile » et l'écran de mission ouvrait sur
-             * un titre vide : les deux constructeurs répondaient à la même question, un seul
-             * connaissait les deux sources. La décision était déjà prise là-bas, elle est reportée
-             * ici plutôt que reprise autrement.
-             */
+            // LE CATALOGUE D'ABORD, LE MÉTIER ENSUITE — le même ordre que `OfferPayloadBuilder`.
             'service_name' => $booking?->serviceCatalog->name ?? $booking?->trade?->name,
             'client_name' => $client?->name,
             'address' => $booking?->address,
@@ -774,25 +618,9 @@ class ProviderMissionLifecycleController extends Controller
             'actual_end_at' => $mission->actual_end_at?->toIso8601String(),
             'estimated_duration_minutes' => $mission->estimated_duration_minutes,
             'actual_duration_minutes' => $mission->actual_duration_minutes,
-            /*
-             * CE QUI DIT À L'ÉCRAN QUEL PARCOURS DÉROULER.
-             *
-             * Sans ce drapeau, l'application devrait le deviner — par la présence de coordonnées de
-             * dépose, par le nom du métier — et chaque écran devinerait à sa façon. Le serveur
-             * tranche une fois, et les deux plateformes lisent la même réponse.
-             */
+            // CE QUI DIT À L'ÉCRAN QUEL PARCOURS DÉROULER.
             'is_ride' => (bool) $booking?->estUneCourse(),
-            /*
-             * LE MOTEUR, TRANCHÉ PAR LE SERVEUR — et c'est ce qui décide de la page à dérouler.
-             *
-             * `is_ride` juste au-dessus ne répond qu'à une moitié de la question : il distingue la
-             * course du reste, sans dire si ce reste est vendu au temps. L'écran devrait alors
-             * deviner — présence d'un compteur ? nom du métier ? — et chaque écran devinerait à sa
-             * façon. Le premier à se tromper afficherait un formulaire de nouveau devis à quelqu'un
-             * dont le prix est déjà fixé par l'horloge.
-             *
-             * `is_ride` reste servi : des écrans le lisent déjà, et le retirer les casserait.
-             */
+            // LE MOTEUR, TRANCHÉ PAR LE SERVEUR — et c'est ce qui décide de la page à dérouler.
             'engine' => MissionEngine::pourMission($mission),
             // Le point de dépose, pour la carte et pour l'annonce « vous allez à… ».
             'dropoff' => $booking?->estUneCourse() ? [
@@ -801,23 +629,9 @@ class ProviderMissionLifecycleController extends Controller
                 'longitude' => $this->toFloat($booking->dropoff_lng),
                 'distance_m' => $booking->route_distance_m,
             ] : null,
-            /*
-             * L'INSTANT À PARTIR DUQUEL L'ABSENCE PEUT ÊTRE DÉCLARÉE.
-             *
-             * Une date SERVEUR, pas une durée : un décompte envoyé en secondes se remettrait à zéro
-             * à chaque rechargement de l'écran, et il suffirait d'actualiser pour déclarer un
-             * passager absent au bout de trois secondes.
-             */
+            // L'INSTANT À PARTIR DUQUEL L'ABSENCE PEUT ÊTRE DÉCLARÉE.
             'no_show_available_at' => $this->absenceDeclarableA($mission),
-            /*
-             * LE COMPTEUR D'UNE MISSION VENDUE AU TEMPS.
-             *
-             * Même principe que `no_show_available_at` juste au-dessus : ce sont des DATES serveur
-             * qui partent, jamais un nombre de secondes restantes. Le téléphone fait défiler
-             * l'affichage entre deux rafraîchissements, mais l'échéance et le montant du
-             * dépassement ne sont pas à lui — son horloge est réglable par son porteur, et c'est
-             * précisément le porteur que le compteur surveille.
-             */
+            // LE COMPTEUR D'UNE MISSION VENDUE AU TEMPS.
             'clock' => $this->horloge->etat($mission),
         ];
 
@@ -842,13 +656,7 @@ class ProviderMissionLifecycleController extends Controller
         return $value === null ? null : (float) $value;
     }
 
-    /**
-     * LE RETARD, VU DU PRESTATAIRE.
-     *
-     * Il n'a pas besoin qu'on le lui apprenne — il a une montre. Il a besoin de savoir que le
-     * CLIENT le sait, et depuis quand : un prestataire qui ignore que la plateforme a déjà envoyé
-     * l'annonce arrive en s'excusant d'un retard dont l'autre parlait depuis vingt minutes.
-     */
+    /** LE RETARD, VU DU PRESTATAIRE. Il n'a pas besoin qu'on le lui apprenne — il a une montre. */
     public function retard(Request $request, Mission $mission, MissionDelayService $retards): JsonResponse
     {
         $this->authorizeProvider($request, $mission);
@@ -862,13 +670,7 @@ class ProviderMissionLifecycleController extends Controller
         return response()->json(['data' => $retards->etat($booking)]);
     }
 
-    /**
-     * ANNONCER SON RETARD — la seule action qui évite l'annulation.
-     *
-     * Un retard annoncé avec une heure se gère ; un retard muet se subit. On accepte soit une
-     * heure d'arrivée, soit un nombre de minutes — le terrain compte en minutes, pas en horloge,
-     * et convertir côté serveur évite que deux applications le fassent différemment.
-     */
+    /** ANNONCER SON RETARD — la seule action qui évite l'annulation. */
     public function annoncerLeRetard(Request $request, Mission $mission, MissionDelayService $retards): JsonResponse
     {
         $this->authorizeProvider($request, $mission);

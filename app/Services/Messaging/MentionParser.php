@@ -10,34 +10,23 @@ use App\Models\User;
 /**
  * Parser de mentions @user / @here / @channel dans le contenu d'un message.
  *
- * Stratégie :
- *   - On ne fait PAS d'autocomplete côté serveur (UI/JS s'en charge)
- *   - On accepte 2 syntaxes :
+ * @here   ou @channel  → mention spéciale
  *
- *       @here   ou @channel  → mention spéciale
+ * @"prénom nom"        → guillemets pour gérer espaces
  *
- *       @"prénom nom"        → guillemets pour gérer espaces
- *
- *       @username            → format simple sans espace
- *   - On résout les usernames en cherchant les MEMBRES DU CHANNEL uniquement
- *     (pas un user random de la plateforme — sécurité)
- *
- * Usage :
- *   $mentions = MentionParser::extractAndPersist($message);
- *   → crée les MessageMention en base et retourne la collection
+ * @username            → format simple sans espace
+ * - On résout les usernames en cherchant les MEMBRES DU CHANNEL uniquement
+ * (pas un user random de la plateforme — sécurité)
+ * $mentions = MentionParser::extractAndPersist($message);
+ * → crée les MessageMention en base et retourne la collection
  */
 class MentionParser
 {
     public const SPECIAL = ['here', 'channel'];
 
     /**
-     * Pattern :
-     *
-     *   @here / @channel
-     *
-     *   @"first last"
-     *
-     *   @firstname (jusqu'à espace ou ponctuation)
+     * Le motif reconnaît trois formes de mention : les mots-clés « here » et « channel »,
+     * un nom entre guillemets, ou un prénom seul jusqu'au premier espace ou signe de ponctuation.
      */
     private const PATTERN = '/@(?:"([^"]+)"|([a-zA-Z0-9._\-]+))/u';
 
@@ -146,10 +135,7 @@ class MentionParser
         return $results;
     }
 
-    /**
-     * Tente de matcher un token (lowercased) avec un membre du channel.
-     * On essaie : exact name, first word of name, email local-part.
-     */
+    /** Tente de matcher un token (lowercased) avec un membre du channel. */
     private function matchMember($members, string $token): ?User
     {
         foreach ($members as $member) {

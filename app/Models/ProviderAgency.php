@@ -6,17 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * UNE IMPLANTATION DE LA SOCIÉTÉ PRESTATAIRE — le dépôt de Bruxelles, l'antenne d'Anvers.
- *
- * À NE PAS CONFONDRE AVEC `organization_sites`, qui désigne les locaux du CLIENT : un prestataire ne
- * possède pas les immeubles où il intervient. Les deux notions se ressemblent sur le papier — une
- * adresse, une ville — et n'ont rien à voir dans le domaine. Les confondre donnerait à une société
- * un droit sur les locaux de ses clients.
- *
- * Une société qui n'a qu'une implantation n'en déclare aucune : le rattachement reste `null`
- * partout, et le moteur de répartition n'accorde alors aucun point d'agence.
- */
+/** UNE IMPLANTATION DE LA SOCIÉTÉ PRESTATAIRE — le dépôt de Bruxelles, l'antenne d'Anvers. */
 class ProviderAgency extends Model
 {
     protected $fillable = [

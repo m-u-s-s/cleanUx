@@ -5,24 +5,7 @@ namespace Tests\Feature\Devops;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-/**
- * LE PLAFOND MÉMOIRE DES TESTS NE DOIT PAS COMBATTRE CELUI DE LA CI.
- *
- * `phpunit.xml` applique ses directives `<ini>` au DÉMARRAGE de PHPUnit — c'est-à-dire APRÈS le
- * `memory_limit` que le workflow pose dans `php.ini`. Une valeur finie ici annule donc silencieusement
- * celle de la CI, quelle qu'elle soit.
- *
- * CE QUE ÇA A COÛTÉ. Le 2026-08-14, deux poussées de suite sont sorties rouges. La suite passait
- * ENTIÈRE — 6391 tests, 20681 assertions — puis PHPUnit mourait en sérialisant le rapport de
- * couverture, 304 Mo demandés au-delà des 2 Go. Le seuil de couverture n'était jamais évalué,
- * `coverage.xml` n'était jamais produit, le déploiement restait `skipped`. Rien, dans ce rouge, ne
- * disait que le code allait bien — et c'est ainsi qu'on cesse de lire une CI.
- *
- * POURQUOI CE TEST PLUTÔT QU'UN NOMBRE PLUS GRAND. Parce que 2048M était déjà « confortable » le
- * jour où il a été écrit. Toute valeur fixe expire quand la suite grandit, et elle expire de la même
- * façon : un rouge qui n'a rien à voir avec le code. Ce test refuse le retour d'un plafond fini,
- * pas une valeur particulière.
- */
+/** LE PLAFOND MÉMOIRE DES TESTS NE DOIT PAS COMBATTRE CELUI DE LA CI. */
 class LaMemoireDesTestsNestPasPlafonneeTest extends TestCase
 {
     private const CONFIGURATION = __DIR__.'/../../../phpunit.xml';
@@ -47,13 +30,7 @@ class LaMemoireDesTestsNestPasPlafonneeTest extends TestCase
         );
     }
 
-    /**
-     * LE TÉMOIN D'EXÉCUTION — la directive PREND-ELLE EFFET ?
-     *
-     * Le test précédent lit un fichier ; celui-ci interroge le processus. Sans lui, une directive
-     * mal placée — hors du bloc `<php>`, ou dans un fichier de configuration que PHPUnit n'ouvre
-     * pas — passerait au vert en ne mesurant qu'une chaîne de caractères.
-     */
+    /** LE TÉMOIN D'EXÉCUTION — la directive PREND-ELLE EFFET ? */
     public function test_le_processus_de_test_tourne_bien_sans_plafond(): void
     {
         $this->assertSame(
@@ -66,10 +43,6 @@ class LaMemoireDesTestsNestPasPlafonneeTest extends TestCase
 
     /**
      * L'AUTRE MOITIÉ : la CI doit continuer de poser sa propre valeur.
-     *
-     * Le jour où quelqu'un retirerait `ini-values` du workflow en pensant que `phpunit.xml` suffit,
-     * les étapes qui ne passent PAS par PHPUnit — PHPStan, la construction des assets — retomberaient
-     * sur le défaut de 512M. Les deux réglages se complètent, ils ne font pas double emploi.
      *
      * @return list<array{int}>
      */

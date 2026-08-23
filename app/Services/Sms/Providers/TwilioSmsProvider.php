@@ -9,14 +9,7 @@ use App\Services\Sms\SmsStatusUpdate;
 use RuntimeException;
 use Twilio\Rest\Client;
 
-/**
- * Provider SMS Twilio.
- *
- * Webhook DLR : Twilio envoie un POST sur l'URL configurée avec MessageStatus
- * (queued|sending|sent|delivered|failed|undelivered).
- *
- * Signature : X-Twilio-Signature (HMAC-SHA1 du URL + body sorted, avec auth token).
- */
+/** Provider SMS Twilio. */
 class TwilioSmsProvider implements SmsProviderInterface
 {
     public function name(): string
@@ -51,17 +44,7 @@ class TwilioSmsProvider implements SmsProviderInterface
         }
     }
 
-    /**
-     * Vérifie la signature Twilio HMAC SHA1 (X-Twilio-Signature header).
-     *
-     * Algo Twilio :
-     *   1. base = URL complete (incl. query) + params POST triés par clé
-     *   2. HMAC SHA1 avec auth token
-     *   3. base64 encode
-     *   4. compare en time-safe avec X-Twilio-Signature
-     *
-     * Le caller (controller) doit fournir headers['X-Twilio-Signature'] et headers['_url'] (URL pleine).
-     */
+    /** Vérifie la signature Twilio HMAC SHA1 (X-Twilio-Signature header). Algo Twilio : 1. */
     public function verifyWebhook(string $payload, array $headers): array
     {
         $token = (string) config('sms.providers.twilio.token', '');

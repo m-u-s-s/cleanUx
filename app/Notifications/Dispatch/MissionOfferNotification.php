@@ -9,17 +9,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * Phase 11 — Notification poussée au prestataire pour une nouvelle mission.
- *
- * Inspiré du dispatch Uber : push notification avec actions "Accepter / Refuser"
- * pour une réponse en 1 tap. Si l'app est fermée, la push réveille le téléphone.
- *
- * Canaux :
- *   - database (pour l'historique notifications)
- *   - mail (fallback / archive — peut être retiré si volume trop élevé)
- *   - WebPushChannel (Phase 8 — pour la push browser/PWA)
- */
+/** Phase 11 — Notification poussée au prestataire pour une nouvelle mission. */
 class MissionOfferNotification extends Notification
 {
     use Queueable;
@@ -49,13 +39,7 @@ class MissionOfferNotification extends Notification
             ->greeting('Bonjour,')
             ->line("Une nouvelle mission vous est proposée : {$reference}.")
             ->line('Réponse attendue dans 15 secondes.')
-            /*
-             * `route()` PLUTÔT QU'UNE URL ÉCRITE EN DUR (2026-08-05).
-             *
-             * C'est LE lien par lequel un prestataire accepte une mission. Écrit en dur, il figeait
-             * l'URI : le jour où la route change, plus personne n'accepte, et rien ne le signale —
-             * ni erreur, ni journal, seulement des missions qui restent sans réponse.
-             */
+            // `route()` PLUTÔT QU'UNE URL ÉCRITE EN DUR (2026-08-05).
             ->action('Voir la mission', route('provider.missions.offer', $this->assignment))
             ->line('Si vous ne répondez pas à temps, la mission sera proposée à un autre prestataire.');
     }

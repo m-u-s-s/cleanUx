@@ -5,19 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Une réponse, et ce qu'elle a coûté.
- *
- * La question peut disparaître ; la réponse, non. `question_id` se détache si la question est
- * archivée — ce sont le CODE stable et les deux instantanés de libellé qui portent la vérité,
- * tels qu'ils étaient affichés au client au moment où il a répondu.
- *
- * Sans cet instantané, renommer une question six mois plus tard réécrirait rétroactivement des
- * devis et des factures déjà émis, et rendrait indéfendable tout litige portant dessus.
- *
- * `price_impact_cents` est ce qui rend le devis explicable ligne par ligne — chaque euro est
- * rattaché à une réponse. C'est la meilleure prévention des litiges : ils n'ont plus de prise.
- */
+/** Une réponse, et ce qu'elle a coûté. La question peut disparaître ; la réponse, non. */
 class OrderDraftAnswer extends Model
 {
     protected $fillable = [
@@ -41,9 +29,6 @@ class OrderDraftAnswer extends Model
 
     /**
      * La question d'origine, si elle existe encore.
-     *
-     * Peut être nulle sans que la réponse perde son sens : c'est précisément l'intérêt des
-     * instantanés.
      *
      * @return BelongsTo<Question, $this>
      */

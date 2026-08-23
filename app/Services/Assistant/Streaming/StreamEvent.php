@@ -2,24 +2,7 @@
 
 namespace App\Services\Assistant\Streaming;
 
-/**
- * Phase 5.1 — Événement de streaming normalisé (provider-agnostic).
- *
- * Yieldé par AnthropicStreamingProvider::chatStream() au fur et à mesure
- * de la réception de la réponse SSE. Permet à la couche UI d'afficher
- * progressivement le texte token par token.
- *
- * Types :
- *   - start                : début de message (model, usage initial)
- *   - text_block_start     : début d'un bloc texte (index)
- *   - text_delta           : nouveau token texte
- *   - tool_use_start       : début d'un appel tool (id, name)
- *   - tool_input_delta     : chunk de JSON arguments du tool
- *   - content_block_stop   : fin d'un bloc
- *   - message_delta        : update du stop_reason et tokens
- *   - stop                 : fin du message complet
- *   - error                : erreur en cours de stream
- */
+/** Phase 5.1 — Événement de streaming normalisé (provider-agnostic). */
 class StreamEvent
 {
     public const TYPE_START = 'start';

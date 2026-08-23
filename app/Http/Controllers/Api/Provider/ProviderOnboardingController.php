@@ -16,21 +16,17 @@ use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
+ * Phase 14 — API onboarding prestataire (mobile/web).
+ *
  * @group Provider — Onboarding (Legacy)
  *
  * @authenticated
- *
- * Phase 14 — API onboarding prestataire (mobile/web).
- *
- *   POST   /api/provider/onboarding/start             → crée ProviderProfile vide
- *   GET    /api/provider/onboarding/progress          → état d'avancement
- *   POST   /api/provider/onboarding/profile           → étape 0 (bio, photo)
- *   POST   /api/provider/onboarding/documents         → upload doc (multipart)
- *   POST   /api/provider/onboarding/tax               → étape 2 (tax_id)
- *   POST   /api/provider/onboarding/skills            → étape 4 (skills + zones)
- *
- * NB : Stripe Connect onboarding (étape 5) utilise /provider/onboarding/refresh
- * et /provider/onboarding/done (existaient déjà avec le service Stripe Connect).
+ * POST   /api/provider/onboarding/start             → crée ProviderProfile vide
+ * GET    /api/provider/onboarding/progress          → état d'avancement
+ * POST   /api/provider/onboarding/profile           → étape 0 (bio, photo)
+ * POST   /api/provider/onboarding/documents         → upload doc (multipart)
+ * POST   /api/provider/onboarding/tax               → étape 2 (tax_id)
+ * POST   /api/provider/onboarding/skills            → étape 4 (skills + zones)
  */
 class ProviderOnboardingController extends Controller
 {
@@ -59,16 +55,7 @@ class ProviderOnboardingController extends Controller
         ]);
     }
 
-    /**
-     * La photo part sur le disque `public` (voir `ProviderOnboardingService::setProfileBasics`),
-     * donc dans un dossier servi tel quel sur le domaine de l'application. Elle est ensuite regardée
-     * par un administrateur qui instruit le dossier : ce que l'on accepte ici s'exécutera dans SA
-     * session. Un SVG est un document XML, il porte volontiers un `<script>`.
-     *
-     * Le wizard web `ProviderOnboardingWizard::saveStep0()` écrit la MÊME photo sur le MÊME disque.
-     * Les deux lisent donc la même liste, {@see ImagesTeleversees} : durcir un seul des deux ne
-     * ferme rien, l'attaquant prend l'autre porte.
-     */
+    /** La photo part sur le disque `public` (voir `ProviderOnboardingService::setProfileBasics`), donc dans un dossier servi tel quel sur le domaine de l'application. */
     public function setProfile(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -92,14 +79,7 @@ class ProviderOnboardingController extends Controller
         ]);
     }
 
-    /**
-     * Justificatifs attendus de ce prestataire, et où en est chacun.
-     *
-     * Rien ne permettait de lire ses propres documents : l'application ne pouvait donc afficher
-     * ni « en cours de vérification », ni « refusé » avec son motif — la mécanique même qui
-     * permet de corriger un dossier sans attendre un email. Chaque exigence porte ici son
-     * document courant, s'il existe.
-     */
+    /** Justificatifs attendus de ce prestataire, et où en est chacun. */
     public function documents(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -133,18 +113,7 @@ class ProviderOnboardingController extends Controller
         ]);
     }
 
-    /**
-     * Zones où le prestataire peut intervenir.
-     *
-     * `POST /provider/onboarding/skills` accepte `service_zone_ids` depuis toujours, mais aucune
-     * route ne permettait de connaître les zones existantes : aucun écran ne pouvait donc en
-     * proposer, et le champ restait vide. Or sans zone déclarée, le matching géographique n'a
-     * rien sur quoi travailler.
-     *
-     * Seules les zones ouvertes à la réservation et visibles sont listées : proposer une zone
-     * inactive reviendrait à laisser un prestataire s'y positionner sans jamais y recevoir de
-     * mission.
-     */
+    /** Zones où le prestataire peut intervenir. */
     public function serviceZones(): JsonResponse
     {
         $zones = ServiceZone::query()
@@ -178,13 +147,7 @@ class ProviderOnboardingController extends Controller
         $data = $request->validate([
             'document_type' => ['required', 'string', 'max:50'],
             'file' => ['required', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png'], // 10 Mo
-            /*
-             * La date de validité est saisie par le prestataire au moment du dépôt, comme le font
-             * les plateformes de transport : c'est le seul instant où il a la pièce sous les yeux.
-             * La redemander plus tard revient à ne jamais l'obtenir.
-             *
-             * `after:today` : une pièce déjà périmée n'est pas un dossier, c'est un refus déguisé.
-             */
+            // La date de validité est saisie par le prestataire au moment du dépôt, comme le font les plateformes de transport : c'est le seul instant où il a la pièce sous les yeux.
             'expires_at' => ['nullable', 'date', 'after:today'],
         ]);
 
@@ -211,13 +174,7 @@ class ProviderOnboardingController extends Controller
         ], 201);
     }
 
-    /**
-     * LE VÉHICULE DÉCLARÉ — marque, modèle, plaque, et surtout PREMIÈRE immatriculation.
-     *
-     * Cette dernière date est la seule qui permette de calculer un âge. L'année du modèle ne dit
-     * pas quand la voiture a pris la route, et c'est pourtant elle qu'on trouve sur la plupart des
-     * fiches : s'y fier accepterait des véhicules trop vieux et en refuserait de conformes.
-     */
+    /** LE VÉHICULE DÉCLARÉ — marque, modèle, plaque, et surtout PREMIÈRE immatriculation. */
     public function declareVehicle(Request $request, ProviderVehicleService $vehicules): JsonResponse
     {
         $data = $request->validate([

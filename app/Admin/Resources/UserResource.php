@@ -15,17 +15,6 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Les comptes de la plateforme.
  *
- * CE QUE CE DESCRIPTEUR REFUSE DÉLIBÉRÉMENT DE FAIRE :
- *
- * - **Il ne mint aucun super-administrateur.** Le champ de rôle n'offre que `user` et `admin`.
- *   Un compte capable de tout faire ne se crée pas depuis un téléphone, entre deux portes.
- * - **Il ne touche pas aux rôles métier** (client, prestataire). Ceux-là dépendent de profils et
- *   d'organisations liés ; les changer par une écriture de colonne laisserait un compte dont le
- *   rôle affiché et les données ne s'accordent plus.
- *
- * Le mot de passe passe par le cast `hashed` du modèle : il n'est jamais stocké en clair, et
- * n'est jamais servi en lecture — `toRow()` et `toDetail()` ne le nomment pas.
- *
  * @implements AdminResource<User>
  */
 class UserResource implements AdminResource

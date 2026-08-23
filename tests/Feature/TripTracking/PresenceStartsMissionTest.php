@@ -12,18 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
-/**
- * La présence prouvée démarre la mission.
- *
- * Le démarrage exigeait un code à six chiffres envoyé au client par SMS, que le prestataire
- * recopiait. Ce code faisait exactement le travail de la preuve de présence — et moins bien,
- * puisqu'un SMS se transmet à distance alors qu'un code affiché se lit sur place. Le faire
- * saisir une seconde fois n'apportait rien.
- *
- * Ce qui est verrouillé ici : le démarrage suit la confirmation, il ne peut pas écraser une
- * durée déjà en cours, et son échec ne remet jamais en cause la présence — celle-ci est un fait
- * acquis au moment où le prestataire est chez le client.
- */
+/** La présence prouvée démarre la mission. */
 class PresenceStartsMissionTest extends TestCase
 {
     use RefreshDatabase;
@@ -65,11 +54,7 @@ class PresenceStartsMissionTest extends TestCase
         $this->assertSame(MissionStatus::STARTED, $mission->refresh()->status);
     }
 
-    /**
-     * Garantie centrale pour la facturation : `actual_start_at` alimente la durée facturée.
-     * Rejouer la confirmation sur une mission déjà commencée la remettrait à l'heure du second
-     * passage, raccourcissant la prestation.
-     */
+    /** Garantie centrale pour la facturation : `actual_start_at` alimente la durée facturée. */
     public function test_a_started_mission_keeps_its_original_start_time(): void
     {
         Notification::fake();
@@ -96,11 +81,7 @@ class PresenceStartsMissionTest extends TestCase
         $this->assertNotNull($session->fresh()->presence_confirmed_at);
     }
 
-    /**
-     * Le démarrage est un effet de bord. Il échoue quand le prestataire de la session de suivi
-     * n'est rattaché à la mission ni comme responsable ni par une assignation — un remplacement
-     * mal enregistré, par exemple. La présence, elle, a déjà eu lieu : elle doit le rester.
-     */
+    /** Le démarrage est un effet de bord. */
     public function test_a_failing_start_never_undoes_the_presence(): void
     {
         Notification::fake();
@@ -121,13 +102,7 @@ class PresenceStartsMissionTest extends TestCase
         $this->assertSame(MissionStatus::ARRIVED, $mission->fresh()->status);
     }
 
-    /**
-     * La mission part de la position VÉRIFIÉE, pas du dernier relevé reçu.
-     *
-     * `scenario()` place volontairement `last_lat`/`last_lng` sur des valeurs légèrement
-     * différentes du scan : c'est la seule façon de distinguer les deux sources. Seule celle du
-     * scan a été confrontée au lieu de l'intervention.
-     */
+    /** La mission part de la position VÉRIFIÉE, pas du dernier relevé reçu. */
     public function test_the_mission_starts_from_the_verified_position(): void
     {
         Notification::fake();
@@ -190,13 +165,7 @@ class PresenceStartsMissionTest extends TestCase
             return [$client, $provider, $booking, $session];
         }
 
-        /*
-         * UNE RÉSERVATION, UNE MISSION — l'observateur en a déjà créé une.
-         *
-         * Les deux colonnes de `missions` étant fusionnées, le chemin automatique et celui du test
-         * désignent enfin la même ligne. Créer ici en aveugle fabriquerait un doublon, et le code
-         * qui cherche « la mission de cette réservation » trouverait la mauvaise.
-         */
+        // UNE RÉSERVATION, UNE MISSION — l'observateur en a déjà créé une.
         $mission = Mission::query()->updateOrCreate(['booking_id' => $booking->id], [
             'status' => $missionStatus,
             'lead_provider_user_id' => $provider->id,

@@ -14,17 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
-/**
- * OnboardingEngine — orchestre le cycle de vie d'un journey utilisateur.
- *
- *   - startFor(user, journey_code?) : init progress + completions pending pour
- *     chaque step
- *   - getCurrentStep(progress) : 1er step required incomplet respectant depends_on
- *   - markComplete(progress, step, payload, user?) : appelle validator → si OK,
- *     persiste completion + recompute progress (status, percent, current_step)
- *   - markSkip(progress, step, user, reason) : seulement si step.is_skippable
- *   - completeJourney(progress) : marque completed + hook on_complete_user_field
- */
+/** OnboardingEngine — orchestre le cycle de vie d'un journey utilisateur. */
 class OnboardingEngine
 {
     public function startFor(User $user, ?string $journeyCode = null): OnboardingProgress

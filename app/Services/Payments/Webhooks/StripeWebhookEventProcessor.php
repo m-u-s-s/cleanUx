@@ -6,14 +6,7 @@ use App\Models\StripeWebhookEvent;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Traitement idempotent des webhooks Stripe Connect.
- *
- * - Chaque appel à process() est ré-entrant (peut tourner N fois sans effet de bord)
- * - Marquage transactionnel : processing → processed/failed atomique
- * - Backoff exponentiel sur retry
- * - Dead letter après max_attempts
- */
+/** Traitement idempotent des webhooks Stripe Connect. */
 class StripeWebhookEventProcessor
 {
     public function __construct(

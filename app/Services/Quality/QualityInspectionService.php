@@ -18,18 +18,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-/**
- * QualityInspectionService — orchestre le cycle de vie d'une inspection.
- *
- *   - start($missionId, $phase, $provider) → MissionQualityInspection draft
- *   - submitItem($inspection, $checklistItem, $value, $comment) → InspectionItem
- *   - attachPhoto($inspection, $file, $itemId?, $photoType, $uploader) → InspectionPhoto
- *   - submit($inspection, $provider) → status=submitted + score recomputed
- *   - validateByClient($inspection, $client, $signatureData, $signerName)
- *   - dispute($inspection, $client, $reason)
- *   - validateByAdmin($inspection, $admin)
- *   - reject($inspection, $admin, $reason)
- */
+/** QualityInspectionService — orchestre le cycle de vie d'une inspection. */
 class QualityInspectionService
 {
     public function __construct(

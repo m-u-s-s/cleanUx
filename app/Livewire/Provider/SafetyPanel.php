@@ -10,21 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * LE MODE SÉCURITÉ / SOS, CÔTÉ WEB (E33).
- *
- * POURQUOI IL EXISTE AUSSI ICI. Le terrain est mobile, mais tout le monde n'a pas installé
- * l'application : un indépendant qui travaille depuis son navigateur, quelqu'un dont le téléphone
- * est déchargé et qui utilise l'ordinateur du client. Réserver le bouton d'urgence à une surface,
- * c'est le refuser à qui n'y est pas.
- *
- * AUCUNE CONFIRMATION AVANT DE DÉCLENCHER. Une boîte de dialogue « êtes-vous sûr ? » ajoute un geste
- * au moment où les mains tremblent : une alerte de trop coûte une vérification, une alerte
- * manquante coûte autre chose.
- *
- * LE CONTACT D'URGENCE SE RENSEIGNE ICI, À FROID. Le demander au moment du déclenchement
- * reviendrait à ne l'avoir jamais.
- */
+/** LE MODE SÉCURITÉ / SOS, CÔTÉ WEB (E33). POURQUOI IL EXISTE AUSSI ICI. */
 class SafetyPanel extends Component
 {
     public string $message = '';
@@ -75,9 +61,7 @@ class SafetyPanel extends Component
         }
     }
 
-    /**
-     * Enregistrer le contact d'urgence — à froid, jamais au moment du déclenchement.
-     */
+    /** Enregistrer le contact d'urgence — à froid, jamais au moment du déclenchement. */
     public function enregistrerLeContact(): void
     {
         $this->validate([

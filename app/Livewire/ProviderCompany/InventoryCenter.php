@@ -14,20 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * LE STOCK DE CONSOMMABLES (E23).
- *
- * Ce suivi se fait aujourd'hui sur un tableur — quand il se fait : personne ne sait ce qui reste
- * dans quelle agence, et on découvre la rupture le matin où une équipe part sans produit.
- *
- * ON NE SAISIT JAMAIS LE STOCK, on déclare un mouvement. Le compteur est le RÉSULTAT des mouvements :
- * dès qu'on peut l'écrire à la main, le registre et le compteur divergent et plus personne ne sait
- * lequel croire. Corriger un écart reste possible — c'est un ajustement, qui exige un motif.
- *
- * VOIR N'EST PAS COMMANDER. `inventory.view` est accordée jusqu'aux exécutants, qui ont besoin de
- * savoir ce qui reste avant de partir ; `inventory.manage` reste aux gestionnaires. Confondre les
- * deux ferait dépendre l'exactitude du stock de qui a ouvert l'écran en dernier.
- */
+/** LE STOCK DE CONSOMMABLES (E23). */
 class InventoryCenter extends Component
 {
     use EnforcesActiveOrgMembership;

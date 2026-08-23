@@ -12,21 +12,7 @@ use App\Support\Domain\PricingUnit;
 use App\Support\Domain\QuestionType;
 use Illuminate\Database\Seeder;
 
-/**
- * UN MÉTIER DE COURSE, JOUABLE À LA MAIN DÈS LE PREMIER `migrate:fresh --seed`.
- *
- * Sans lui, tout ce chantier serait invisible : le parcours de trajet, le prix au kilomètre, la
- * mission sans code et les exigences de conduite n'existeraient qu'en tests. Le piège classique de
- * ce dépôt est précisément celui-là — un module complet dont personne ne crée les lignes, et qu'on
- * croit livré parce que la suite est verte.
- *
- * AJOUT PUR. Ce seeder ne touche à AUCUN métier existant : il en crée un, avec ses deux questions
- * de localisation et sa grille tarifaire. Les autres métiers gardent leur forfait, leurs codes de
- * début et de fin, et leur parcours terrain.
- *
- * IDEMPOTENT, comme les autres seeders de référentiel : rejouer la chaîne ne doit ni dupliquer le
- * métier ni écraser un tarif ajusté à la main en démonstration.
- */
+/** UN MÉTIER DE COURSE, JOUABLE À LA MAIN DÈS LE PREMIER `migrate:fresh --seed`. */
 class CourseCatalogSeeder extends Seeder
 {
     public function run(): void
@@ -65,10 +51,7 @@ class CourseCatalogSeeder extends Seeder
                 'sector_id' => $secteur->id,
                 'short_description' => 'Un chauffeur vous emmène d’un point à un autre.',
                 'is_active' => true,
-                /*
-                 * L'immédiat est le mode NORMAL d'une course : personne ne réserve un taxi pour
-                 * jeudi 14 h. Le rendez-vous reste ouvert — les transferts d'aéroport se planifient.
-                 */
+                // L'immédiat est le mode NORMAL d'une course : personne ne réserve un taxi pour jeudi 14 h.
                 'allows_asap' => true,
                 'allows_scheduled' => true,
                 'allows_bundle' => false,
@@ -123,12 +106,7 @@ class CourseCatalogSeeder extends Seeder
         }
     }
 
-    /**
-     * Ouvre la course dans toutes les zones actives, avec un tarif au kilomètre.
-     *
-     * L'absence de ligne vaut FERMÉ : sans ce geste, le métier existerait au catalogue et ne serait
-     * vendable nulle part — exactement le genre de module « livré » que personne ne peut essayer.
-     */
+    /** Ouvre la course dans toutes les zones actives, avec un tarif au kilomètre. */
     private function ouvrirDansLesZones(Trade $metier): void
     {
         ServiceZone::query()->where('status', 'active')->get()->each(function (ServiceZone $zone) use ($metier) {

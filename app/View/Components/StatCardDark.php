@@ -8,9 +8,7 @@ use Illuminate\View\Component;
 
 class StatCardDark extends Component
 {
-    /**
-     * Create a new component instance.
-     */
+    /** Create a new component instance. */
     public $title;
 
     public $value;
@@ -27,9 +25,7 @@ class StatCardDark extends Component
         $this->changeColor = $changeColor;
     }
 
-    /**
-     * Get the view / contents that represent the component.
-     */
+    /** Get the view / contents that represent the component. */
     public function render(): View|Closure|string
     {
         return view('components.stat-card-dark');

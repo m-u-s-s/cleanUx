@@ -9,10 +9,7 @@ use App\Services\GeolocationV2\GeocodingResult;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-/**
- * Mapbox Geocoding + Directions Matrix.
- * Skeleton — appel HTTP réel via Illuminate\Http. Nécessite MAPBOX_ACCESS_TOKEN.
- */
+/** Mapbox Geocoding + Directions Matrix. Skeleton — appel HTTP réel via Illuminate\Http. */
 class MapboxGeocodingProvider implements GeocodingProviderContract
 {
     public function name(): string

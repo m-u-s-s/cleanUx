@@ -4,29 +4,7 @@ namespace Tests\Feature\Devops;
 
 use Tests\TestCase;
 
-/**
- * Une SEULE version de PHP, de la CI jusqu'à la production.
- *
- * POURQUOI CE FICHIER EXISTE. Le 2026-08-04, le déploiement a échoué sur douze paquets Symfony
- * exigeant `php >= 8.4.1` : les flux de déploiement épinglaient 8.3 pendant que la CI testait en
- * 8.4. « Test ≠ prod », comme l'avait écrit l'audit du 2026-06-24 sans que rien ne l'empêche de
- * recommencer.
- *
- * LE DÉFAUT ÉTAIT MASQUÉ. `deploy` ne s'exécute que si la CI réussit ; la CI étant rouge depuis dix
- * poussées, ce flux n'avait pas tourné une seule fois. Réparer la CI l'a révélé — un bug caché
- * derrière un autre bug.
- *
- * CE QUE CE TEST NE PEUT PAS FAIRE. Il ne connaît pas la version installée sur le serveur : le
- * provisionnement est manuel. Il garantit que les flux sont d'accord ENTRE EUX et avec ce que le
- * verrou exige — ce qui aurait suffi à attraper la panne.
- *
- * MONTÉE EN 8.5 (2026-08-05). La référence passe de 8.4 à 8.5, le serveur ayant été mis à niveau.
- * Les unités Supervisor/systemd, laissées à `php8.3` en dur lors du passage en 8.4, suivent cette
- * fois : elles ne sont versionnées qu'en `.example` et échappent donc à ce test, mais leur laisser
- * une troisième version n'aidait personne. Le plancher de `composer.json` monte à `^8.5` par la
- * même occasion — c'est un plancher, pas une version d'exécution, et il interdit désormais de
- * retomber sur 8.4 sans nouveau commit.
- */
+/** Une SEULE version de PHP, de la CI jusqu'à la production. POURQUOI CE FICHIER EXISTE. */
 class PhpVersionIsSingleSourcedTest extends TestCase
 {
     /** La version de référence, celle sur laquelle tourne le serveur. */
@@ -65,10 +43,7 @@ class PhpVersionIsSingleSourcedTest extends TestCase
             implode("\n", $divergents),
         ));
 
-        /*
-         * Le garde-fou de la MESURE : un flux renommé, ou une syntaxe changée, ferait passer ce
-         * test en ne trouvant plus rien à comparer.
-         */
+        // Le garde-fou de la MESURE : un flux renommé, ou une syntaxe changée, ferait passer ce test en ne trouvant plus rien à comparer.
         $this->assertGreaterThanOrEqual(4, $declarations, 'La mesure ne trouve presque aucune déclaration : elle a cessé de mesurer.');
     }
 
@@ -86,11 +61,7 @@ class PhpVersionIsSingleSourcedTest extends TestCase
                 continue;
             }
 
-            /*
-             * On ne lit que la borne BASSE d'une contrainte `>=` : c'est la seule qui puisse rendre
-             * un paquet impossible à installer sur la version de référence. Le reste de la syntaxe
-             * Composer n'a pas à être réimplémenté ici.
-             */
+            // On ne lit que la borne BASSE d'une contrainte `>=` : c'est la seule qui puisse rendre un paquet impossible à installer sur la version de référence.
             if (! preg_match('/>=\s*(\d+)\.(\d+)/', $exige, $bornes)) {
                 continue;
             }

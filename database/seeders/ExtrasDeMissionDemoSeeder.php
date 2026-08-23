@@ -7,19 +7,7 @@ use App\Models\MissionExtra;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
-/**
- * LES SUPPLÉMENTS PROPOSÉS SUR PLACE (F3, F12), SUR LA BASE DE DÉMONSTRATION.
- *
- * SANS DONNÉES, LE MODULE NE PROUVE RIEN. Un écran d'extras vide ne distingue pas « ce prestataire
- * n'a rien proposé » de « la requête est fausse » — et le premier cas est l'état nominal de presque
- * toutes les missions, ce qui rend la confusion certaine.
- *
- * DEUX LIGNES, ET LEUR ÉCART EST TOUT L'INTÉRÊT. Une proposée, qui attend le client ; une approuvée
- * mais NON FACTURÉE. `approved` n'est pas `charged`, et c'est la distinction qui protège du double
- * prélèvement : sans deux exemples, personne ne voit que ce sont deux états.
- *
- * IDEMPOTENT : la recherche porte sur (mission, libellé), stable d'une exécution à l'autre.
- */
+/** LES SUPPLÉMENTS PROPOSÉS SUR PLACE (F3, F12), SUR LA BASE DE DÉMONSTRATION. */
 class ExtrasDeMissionDemoSeeder extends Seeder
 {
     public function run(): void
@@ -53,11 +41,7 @@ class ExtrasDeMissionDemoSeeder extends Seeder
                 'label' => 'Détartrage de la douche',
                 'description' => 'Entartrage important constaté à l’arrivée.',
                 'price_cents' => 2500,
-                /*
-                 * APPROUVÉ MAIS PAS FACTURÉ, et c'est le cas qui compte. Confondre les deux états
-                 * ferait prélever à l'acceptation plutôt qu'à la clôture — c'est-à-dire avant que
-                 * le travail soit fait.
-                 */
+                // APPROUVÉ MAIS PAS FACTURÉ, et c'est le cas qui compte.
                 'status' => MissionExtra::STATUS_APPROVED,
                 'approved_at' => now()->subHour(),
             ],

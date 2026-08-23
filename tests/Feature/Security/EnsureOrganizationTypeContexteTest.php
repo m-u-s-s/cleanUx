@@ -10,16 +10,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
-/**
- * L'organisation active se lit à DEUX endroits dans ce dépôt :
- * `organization_account_id` et `current_organization_id`. Tout le code passe
- * par `User::organizationContextId()`, qui essaie les deux — sauf ce
- * middleware, qui ne lisait que la seconde.
- *
- * Conséquence : un membre dont seule la première colonne est renseignée se
- * voyait répondre « Aucune organisation active » sur un espace qui lui est
- * pourtant ouvert partout ailleurs.
- */
+/** L'organisation active se lit à DEUX endroits dans ce dépôt : `organization_account_id` et `current_organization_id`. */
 class EnsureOrganizationTypeContexteTest extends TestCase
 {
     use RefreshDatabase;

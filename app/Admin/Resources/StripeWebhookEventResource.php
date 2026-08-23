@@ -11,10 +11,6 @@ use App\Support\ActivityLogger;
 /**
  * Les événements Stripe reçus et leur traitement.
  *
- * Le REJEU passe par le module Stripe, qui tient l’idempotence : rejouer un événement de
- * paiement sans sa clé pourrait créditer deux fois. C’est exactement le genre de défaut que la
- * plateforme a déjà corrigé une fois.
- *
  * @extends EloquentResource<StripeWebhookEvent>
  */
 class StripeWebhookEventResource extends EloquentResource
@@ -73,11 +69,7 @@ class StripeWebhookEventResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * Le REFUS est repris du web : un évènement qui n'est ni retentable ni en lettre morte
-             * a déjà été traité. Le relancer rejouerait un paiement ou un remboursement — la seule
-                 * catégorie d'erreur de ce chantier qui coûte de l'argent réel.
-             */
+            // Le REFUS est repris du web : un évènement qui n'est ni retentable ni en lettre morte a déjà été traité.
             Action::make('retry', 'Relancer le traitement', function (StripeWebhookEvent $event) {
                 $relancable = $event->canRetry()
                     || $event->status === StripeWebhookEvent::STATUS_DEAD_LETTER;

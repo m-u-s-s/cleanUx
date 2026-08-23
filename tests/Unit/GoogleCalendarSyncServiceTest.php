@@ -21,8 +21,7 @@ class GoogleCalendarSyncServiceTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * Build a sync service whose Guzzle client replays the queued responses
-     * and whose OAuth dependency always yields a fixed access token.
+     * Build a sync service whose Guzzle client replays the queued responses and whose OAuth dependency always yields a fixed access token.
      *
      * @param  array<int, Response>  $responses
      */

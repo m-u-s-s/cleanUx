@@ -9,31 +9,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-/**
- * CONCLURE UNE LOCATION.
- *
- * ── CE QUI EST VÉRIFIÉ, ET POURQUOI CHAQUE CONTRÔLE EXISTE ───────────────────────────────────
- *
- * LA DISPONIBILITÉ EST REVÉRIFIÉE À LA CONFIRMATION, dans la transaction. Entre le moment où le
- * client a vu la voiture et celui où il valide, quelqu'un d'autre a pu la prendre. Se fier à
- * l'affichage donnerait deux clients au même comptoir le même matin, et c'est le seul défaut de ce
- * module qui se découvrirait devant le client.
- *
- * L'ÂGE ET L'ANCIENNETÉ DU PERMIS sont ceux du véhicule, pas une règle globale. Une citadine
- * s'ouvre à 21 ans avec un an de permis ; un utilitaire ou une berline puissante non. C'est
- * l'administrateur qui pose ces seuils par voiture, comme dans toutes les agences.
- *
- * LE PERMIS DOIT COUVRIR TOUTE LA LOCATION. Un permis obtenu il y a treize mois pour un véhicule
- * qui en exige douze passe ; on compare à la date de DÉBUT de location, pas à aujourd'hui, parce
- * qu'une réservation prise trois mois à l'avance se juge au jour où le client prendra le volant.
- *
- * ── LE PAIEMENT SE FAIT À L'AGENCE ───────────────────────────────────────────────────────────
- *
- * La réservation pose une empreinte bancaire et rien de plus : le règlement a lieu au retrait,
- * comme chez les grandes agences. Ce service NE CONTACTE PAS Stripe — il enregistre l'intention et
- * laisse le champ prêt. Brancher l'empreinte quand une vraie clé existera ne demandera pas de
- * revenir sur la logique métier, qui est ici tout entière.
- */
+/** CONCLURE UNE LOCATION. */
 class RentalBookingService
 {
     public function __construct(
@@ -98,13 +74,7 @@ class RentalBookingService
             $this->exigerUnPermisRecevable($location, $vehicule);
             $this->exigerUneDureeRecevable($location, $vehicule);
 
-            /*
-             * LA DISPONIBILITÉ SE REVÉRIFIE ICI, DANS LA TRANSACTION.
-             *
-             * Le catalogue l'a déjà filtrée, le formulaire aussi — et aucun des deux ne prouve
-             * quoi que ce soit au moment du clic. Entre l'affichage et la validation, une autre
-             * location a pu être conclue.
-             */
+            // LA DISPONIBILITÉ SE REVÉRIFIE ICI, DANS LA TRANSACTION.
             if (! $this->disponibilite->estLibre($vehicule, $location->starts_at, $location->ends_at, $location->id)) {
                 throw ValidationException::withMessages([
                     'starts_at' => 'Ce véhicule vient d’être réservé sur ces dates. Choisissez d’autres dates ou une autre voiture.',
@@ -142,10 +112,6 @@ class RentalBookingService
 
     /**
      * LE PERMIS ET L'ÂGE, JUGÉS AU JOUR DU DÉPART.
-     *
-     * Pas au jour de la réservation : un client de vingt ans qui réserve pour dans six mois aura
-     * l'âge requis au volant, et le refuser aujourd'hui serait faux. Un permis de onze mois qui en
-     * aura treize au départ, de même.
      *
      * @throws ValidationException
      */
@@ -200,10 +166,6 @@ class RentalBookingService
 
     /**
      * La protection retenue, ramenée à ce que le véhicule propose réellement.
-     *
-     * Une voiture sans garantie ne peut pas en vendre une : accepter `waiver` sur celle-là
-     * facturerait un supplément de zéro tout en affichant « avec garantie », c'est-à-dire une
-     * promesse sans contrepartie.
      *
      * @param  array<string, mixed>  $donnees
      */

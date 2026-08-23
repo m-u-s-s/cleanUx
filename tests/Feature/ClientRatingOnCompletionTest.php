@@ -12,12 +12,7 @@ use Livewire\Livewire;
 use Tests\Support\CreatesMissionPortalFixtures;
 use Tests\TestCase;
 
-/**
- * L'avis se donne à la clôture, sur la page que le client a déjà sous les yeux.
- *
- * Le formulaire existait, mais sur sa propre page, atteignable seulement par un lien dans un
- * courriel : un avis qu'il faut aller chercher n'est pas donné.
- */
+/** L'avis se donne à la clôture, sur la page que le client a déjà sous les yeux. */
 class ClientRatingOnCompletionTest extends TestCase
 {
     use CreatesMissionPortalFixtures;
@@ -59,13 +54,7 @@ class ClientRatingOnCompletionTest extends TestCase
             ->assertDontSeeLivewire(ClientFeedbackForm::class);
     }
 
-    /**
-     * LE VRAI PARCOURS : le prestataire clôture, PUIS le client note.
-     *
-     * Ce test échouait avant correctif sur « Vous ne pouvez noter qu'une prestation terminée » :
-     * clôturer la mission laissait la réservation en `confirme`, et `RatingService` lit ce
-     * statut-là. Aucun avis client n'était donc enregistrable, par aucun chemin.
-     */
+    /** LE VRAI PARCOURS : le prestataire clôture, PUIS le client note. */
     public function test_l_avis_soumis_est_enregistre_apres_une_vraie_cloture(): void
     {
         $scenario = $this->createMissionPortalContext(['status' => 'started']);

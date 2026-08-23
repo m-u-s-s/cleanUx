@@ -4,13 +4,7 @@ namespace Tests\Feature\Navigation;
 
 use Tests\TestCase;
 
-/**
- * LES DEUX ESPACES SOCIÉTÉ CONSOMMENT LE MÊME REGISTRE QUE LE RESTE.
- *
- * Leurs liens vivaient en dur dans leurs layouts — 11 d'un côté, 6 de l'autre. Deux registres de
- * plus, que personne ne pensait à mettre à jour en ajoutant un module, et qui n'avaient aucune
- * notion de catégorie.
- */
+/** LES DEUX ESPACES SOCIÉTÉ CONSOMMENT LE MÊME REGISTRE QUE LE RESTE. */
 class NavbarSocieteTest extends TestCase
 {
     public function test_les_layouts_societe_ne_declarent_plus_leurs_liens_en_dur(): void

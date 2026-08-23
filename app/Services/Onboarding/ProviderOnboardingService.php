@@ -16,21 +16,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Phase 14 — Service de gestion de l'onboarding prestataire.
- *
- * Étapes (onboarding_step sur ProviderProfile) :
- *   0. profile_basics  (nom, photo, bio)
- *   1. identity        (1 doc parmi: identity_card | passport | residence_permit)
- *   2. tax             (numéro TVA / SIREN)
- *   3. insurance       (attestation responsabilité civile pro)
- *   4. skills          (sélection métiers + zones)
- *   5. stripe_connect  (lien onboarding Stripe via StripeConnectService existant)
- *   6. ready           (admin valide → verification_status = 'verified')
- *
- * Toutes les méthodes sont idempotentes : on peut re-uploader un document,
- * re-définir des skills, etc. tant que onboarding_completed_at est null.
- */
+/** Phase 14 — Service de gestion de l'onboarding prestataire. */
 class ProviderOnboardingService
 {
     public const STEP_PROFILE_BASICS = 0;
@@ -47,22 +33,13 @@ class ProviderOnboardingService
 
     public const STEP_READY = 6;
 
-    /**
-     * Crée un ProviderProfile vide pour un user qui s'inscrit comme prestataire.
-     * Idempotent : si un profil existe déjà, on le retourne tel quel.
-     */
+    /** Crée un ProviderProfile vide pour un user qui s'inscrit comme prestataire. */
     public function startOnboarding(User $user): ProviderProfile
     {
         return ProviderProfile::firstOrCreate(
             ['user_id' => $user->id],
             [
-                /*
-                    LA VALEUR CANONIQUE, celle qu'écrit déjà l'inscription par l'API
-                    (`ApiAuthController`). Ce chemin-ci écrivait `individual` : même notion,
-                    autre chaîne, et un prestataire que le modèle ne reconnaissait pas.
-                    Les deux valeurs restent acceptées à la LECTURE — les profils déjà créés
-                    ne deviennent pas invalides — mais on cesse d'en produire une seconde.
-                */
+                // LA VALEUR CANONIQUE, celle qu'écrit déjà l'inscription par l'API (`ApiAuthController`).
                 'provider_type' => ProviderType::INDEPENDENT->value,
                 'status' => 'pending',
                 'verification_status' => 'pending',
@@ -72,9 +49,7 @@ class ProviderOnboardingService
         );
     }
 
-    /**
-     * Étape 0 — Infos basiques (nom, photo, bio).
-     */
+    /** Étape 0 — Infos basiques (nom, photo, bio). */
     public function setProfileBasics(User $user, array $data, ?UploadedFile $photo = null): ProviderProfile
     {
         $profile = $this->ensureProfile($user);
@@ -111,9 +86,7 @@ class ProviderOnboardingService
         return $profile->fresh();
     }
 
-    /**
-     * Étape 1, 3, 6, 7 — Upload d'un document.
-     */
+    /** Étape 1, 3, 6, 7 — Upload d'un document. */
     /**
      * @param  string|null  $expiresAt  La date de fin de validité, quand la pièce en porte une —
      *                                  permis, assurance, contrôle technique. La colonne
@@ -199,9 +172,7 @@ class ProviderOnboardingService
         return $document;
     }
 
-    /**
-     * Étape 2 — Numéro TVA / fiscal.
-     */
+    /** Étape 2 — Numéro TVA / fiscal. */
     public function setTaxInfo(User $user, ?string $taxId): ProviderProfile
     {
         $profile = $this->ensureProfile($user);
@@ -217,18 +188,7 @@ class ProviderOnboardingService
         return $profile->fresh();
     }
 
-    /**
-     * Étape 4 — Métiers et zones d'intervention déclarés.
-     *
-     * Les zones n'étaient écrites que dans `provider_profiles.metadata.service_zone_ids` — un
-     * endroit que RIEN ne lit pour le matching. ProviderSearchService interroge le pivot
-     * `employee_zone_assignments`, tout comme la relation `serviceZones()` : un prestataire
-     * pouvait donc déclarer ses zones sans qu'aucune recherche ne l'y trouve jamais.
-     *
-     * Les deux sont désormais écrits : le pivot, qui fait foi, et les métadonnées, conservées
-     * pour les lecteurs existants. `sync()` reflète exactement la sélection — décocher une zone
-     * doit la retirer, pas seulement cesser de l'ajouter.
-     */
+    /** Étape 4 — Métiers et zones d'intervention déclarés. */
     public function setSkills(User $user, array $skills, array $serviceZoneIds = []): ProviderProfile
     {
         $profile = $this->ensureProfile($user);
@@ -263,10 +223,7 @@ class ProviderOnboardingService
         return $profile->fresh();
     }
 
-    /**
-     * Étape 5 — Stripe Connect onboarding.
-     * Marque l'étape comme passée si stripe_connect_status='active'.
-     */
+    /** Étape 5 — Stripe Connect onboarding. */
     public function markStripeConnectComplete(User $user): ProviderProfile
     {
         $profile = $this->ensureProfile($user);
@@ -278,10 +235,7 @@ class ProviderOnboardingService
         return $profile->fresh();
     }
 
-    /**
-     * Validation finale par l'admin.
-     * Vérifie que tous les documents requis sont approved + stripe connect actif.
-     */
+    /** Validation finale par l'admin. */
     public function approveOnboarding(User $user, User $admin): ProviderProfile
     {
         $profile = $this->ensureProfile($user);
@@ -337,24 +291,13 @@ class ProviderOnboardingService
         return $profile->fresh();
     }
 
-    /**
-     * Point d'entrée public du pont vers Onboarding v2.
-     *
-     * L'écran d'approbation des inscriptions ne passe pas par approveOnboarding() — il approuve
-     * l'ACCÈS, là où celle-ci valide le DOSSIER sur pièces — mais il doit refléter la même chose
-     * dans le moteur v2, sans quoi un prestataire approuvé garde un cockpit affichant des étapes
-     * en attente. Les deux voies partagent donc ce pont plutôt que d'en écrire chacune un.
-     */
+    /** Point d'entrée public du pont vers Onboarding v2. */
     public function markOnboardingV2Completed(User $user): void
     {
         $this->syncOnboardingV2Completed($user);
     }
 
-    /**
-     * Mark the user's OnboardingV2 journey complete to mirror the legacy approval. Bypasses the
-     * per-step validators on purpose — legacy admin approval is the source of truth — and never
-     * throws (the v2 module / journey seed may be absent in some environments).
-     */
+    /** Mark the user's OnboardingV2 journey complete to mirror the legacy approval. */
     protected function syncOnboardingV2Completed(User $user): void
     {
         if (! config('onboarding_v2.enabled', true)) {
@@ -382,9 +325,7 @@ class ProviderOnboardingService
         }
     }
 
-    /**
-     * Réviser un document (admin) — approuver ou rejeter.
-     */
+    /** Réviser un document (admin) — approuver ou rejeter. */
     public function reviewDocument(
         ProviderOnboardingDocument $document,
         User $admin,
@@ -403,9 +344,7 @@ class ProviderOnboardingService
         return $document->fresh();
     }
 
-    /**
-     * Renvoie l'état d'avancement complet pour la UI.
-     */
+    /** Renvoie l'état d'avancement complet pour la UI. */
     public function getProgress(User $user): array
     {
         $profile = ProviderProfile::where('user_id', $user->id)->first();

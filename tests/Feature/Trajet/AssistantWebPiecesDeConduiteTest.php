@@ -14,17 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * L'ASSISTANT WEB NE DOIT PAS LAISSER CROIRE QU'UN DOSSIER EST COMPLET.
- *
- * Ses six cases sont écrites en dur : profil, identité, fiscal, assurance, compétences, Stripe. Les
- * justificatifs qui dépendent du MÉTIER — permis, carte grise, assurance du véhicule — n'y figurent
- * nulle part. Un chauffeur pouvait donc les traverser toutes et repartir persuadé d'avoir fini,
- * pendant que le dispatch l'excluait pour une pièce dont cet écran ne lui avait jamais parlé.
- *
- * Le trou n'était pas dans le verrou — il était dans ce que l'écran laisse croire, et c'est ce qui
- * compte pour quelqu'un qui pense avoir terminé.
- */
+/** L'ASSISTANT WEB NE DOIT PAS LAISSER CROIRE QU'UN DOSSIER EST COMPLET. */
 class AssistantWebPiecesDeConduiteTest extends TestCase
 {
     use RefreshDatabase;

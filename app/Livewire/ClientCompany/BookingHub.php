@@ -45,14 +45,7 @@ class BookingHub extends Component
 
     public ?int $filterSiteId = null;
 
-    /**
-     * Le local visé par les trois cartes de commande.
-     *
-     * Publique parce que la vue la lie, et sans conséquence de sécurité : `OrderJourney` revérifie
-     * que le local appartient bien à l'organisation active, et la confirmation le revérifie une
-     * seconde fois. Une propriété Livewire est retournable depuis le navigateur ; s'en servir
-     * comme d'un mur donnerait un mur en papier.
-     */
+    /** Le local visé par les trois cartes de commande. */
     public ?int $orderSiteId = null;
 
     public int $step = 1;
@@ -113,13 +106,7 @@ class BookingHub extends Component
     {
         $orgId = Auth::user()->current_organization_id;
 
-        /*
-         * L'ACCÈS PAR SITE (E10) FILTRE CETTE LISTE, et pas seulement le sélecteur.
-         *
-         * Filtrer le seul menu déroulant laisserait la liste complète s'afficher tant qu'aucun
-         * site n'est choisi — c'est-à-dire à l'ouverture de l'écran, le cas le plus fréquent. La
-         * restriction doit vivre dans la REQUÊTE.
-         */
+        // L'ACCÈS PAR SITE (E10) FILTRE CETTE LISTE, et pas seulement le sélecteur.
         $autorises = $this->sitesAutorises();
 
         return Booking::where('customer_organization_id', $orgId)
@@ -166,9 +153,6 @@ class BookingHub extends Component
 
     /**
      * Les locaux auxquels l'appelant est restreint, ou `null` s'il ne l'est pas.
-     *
-     * `null` NE VEUT PAS DIRE « aucun accès » : la restriction est une décision positive, et
-     * l'inverse aurait vidé les écrans de toutes les entreprises existantes au déploiement.
      *
      * @return array<int, int>|null
      */
@@ -412,29 +396,14 @@ class BookingHub extends Component
         $this->step = 1;
         $this->view = 'list';
 
-        /*
-         * PRÉVENIR CEUX QUI PEUVENT TRANCHER (E8), et vérifier les budgets (E7).
-         *
-         * Sans la première, une demande en attente reste invisible tant qu'un responsable n'ouvre
-         * pas l'écran de son propre chef : le demandeur croit avoir commandé, l'approbateur ne sait
-         * pas qu'on l'attend, et la découverte se fait le jour prévu de l'intervention.
-         *
-         * Sans la seconde, le dépassement se découvre à la facture — un mois plus tard, quand plus
-         * rien n'est annulable.
-         */
+        // PRÉVENIR CEUX QUI PEUVENT TRANCHER (E8), et vérifier les budgets (E7).
         app(InternalApprovalService::class)->annoncerLaDemande($booking->fresh(), $user);
         app(SiteBudgetService::class)->verifierApresReservation($booking->fresh());
 
         $this->dispatch('booking-created', bookingId: $booking->id);
     }
 
-    /**
-     * Approuver une demande interne (E8).
-     *
-     * DÉLÉGUÉ AU SERVICE, et ce n'est pas de la forme : basculer le statut ici laissait la
-     * réservation en attente d'un prestataire que PERSONNE ne cherchait. Le service, lui, entre
-     * dans le dispatch, trace la décision et prévient le demandeur.
-     */
+    /** Approuver une demande interne (E8). */
     public function approveBooking(int $bookingId): void
     {
         $user = Auth::user();

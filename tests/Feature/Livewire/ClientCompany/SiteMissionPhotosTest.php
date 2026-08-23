@@ -14,10 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Espace société B2B P3 — photos avant/après d'une intervention, accessibles au
- * gestionnaire pour les missions de SON organisation uniquement (anti-IDOR).
- */
+/** Espace société B2B P3 — photos avant/après d'une intervention, accessibles au gestionnaire pour les missions de SON organisation uniquement (anti-IDOR). */
 class SiteMissionPhotosTest extends TestCase
 {
     use RefreshDatabase;

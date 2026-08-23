@@ -11,11 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * Tests for the TradeZonePricingManager Livewire component.
- *
- * Follows the same pattern as AdminTradesCenterTest.
- */
+/** Tests for the TradeZonePricingManager Livewire component. */
 class AdminTradeZonePricingManagerTest extends TestCase
 {
     use RefreshDatabase;

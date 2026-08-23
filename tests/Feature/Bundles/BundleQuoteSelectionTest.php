@@ -12,11 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
-/**
- * Bundle Marketplace P3 — le client compare les devis reçus et choisit.
- * selectQuote() retient un devis soumis, rejette les concurrents, fige le
- * prestataire/prix sur l'item, et applique la remise groupage quand tout est quoté.
- */
+/** Bundle Marketplace P3 — le client compare les devis reçus et choisit. */
 class BundleQuoteSelectionTest extends TestCase
 {
     use RefreshDatabase;

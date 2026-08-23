@@ -11,29 +11,7 @@ use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * LE QUESTIONNAIRE D'ANNULATION, ADMINISTRÉ DEPUIS LE WEB.
- *
- * ── AUCUNE ÉCRITURE DE COLONNE ───────────────────────────────────────────────────────────────
- *
- * Tout passe par `CancellationQuestionnaireService`. Basculer `is_active` à la main produirait
- * l'état sans ses effets : sans le journal, et surtout sans le refus qui empêche d'activer une
- * question dépourvue de réponse — le questionnaire afficherait alors une question sans case à
- * cocher, et plus personne ne pourrait annuler.
- *
- * ── POURQUOI LES IDENTIFIANTS SONT `#[Locked]` ───────────────────────────────────────────────
- *
- * Une propriété publique Livewire est retournable par le navigateur avec `$set`. Sans le verrou,
- * n'importe qui pourrait désactiver la question d'un autre périmètre en changeant un nombre dans
- * la console de son navigateur — c'est un piège déjà payé par ce dépôt.
- *
- * ── ET POURQUOI LE TRAIT D'ACCÈS ─────────────────────────────────────────────────────────────
- *
- * La route porte déjà la middleware admin. Ce dépôt exige en plus la garde au niveau COMPOSANT,
- * parce qu'un composant Livewire s'atteint par son point d'entrée propre : la protection de la
- * route ne le suit pas. Ce fichier avait été écrit sans, et c'est le test de complétude — pas une
- * relecture — qui l'a dit.
- */
+/** LE QUESTIONNAIRE D'ANNULATION, ADMINISTRÉ DEPUIS LE WEB. */
 class QuestionnaireCenter extends Component
 {
     use EnforcesAdminAccess;

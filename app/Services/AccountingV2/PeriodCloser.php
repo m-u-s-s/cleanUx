@@ -11,9 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class PeriodCloser
 {
-    /**
-     * Ferme une période : calcule totals + freeze + audit user. Inviolable après.
-     */
+    /** Ferme une période : calcule totals + freeze + audit user. Inviolable après. */
     public function close(int $year, int $month, ?User $by = null): AccountingPeriod
     {
         $period = AccountingPeriod::query()->updateOrCreate(
@@ -73,10 +71,7 @@ class PeriodCloser
         return $period->fresh();
     }
 
-    /**
-     * Vérifie si une période peut être fermée sans l'effectuer.
-     * Retourne ['can_close' => bool, 'errors' => string[]].
-     */
+    /** Vérifie si une période peut être fermée sans l'effectuer. */
     public function canClose(AccountingPeriod $period): array
     {
         $errors = [];

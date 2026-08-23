@@ -21,28 +21,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * LES OUTILS DE TERRAIN QUI MANQUAIENT AU WEB.
- *
- * ── UN DÉFAUT DE JOIGNABILITÉ, PAS DE FONCTIONNALITÉ ─────────────────────────────────────────
- *
- * Signaler un imprévu, proposer un supplément, lire la fiche d'accès : les trois existent sur
- * mobile depuis longtemps, et deux d'entre eux existent aussi en composants web — sur d'AUTRES
- * pages. Un prestataire qui conduit sa mission depuis un ordinateur ne les atteignait pas depuis
- * l'écran où il travaille.
- *
- * ── TROIS OUTILS, UN SEUL COMPOSANT ──────────────────────────────────────────────────────────
- *
- * Ils partagent la mission, la garde d'affectation et le même moment d'usage. Les séparer en trois
- * composants triplerait la garde sans rien clarifier — et une garde recopiée trois fois est une
- * garde qui finira par diverger.
- *
- * ── LA GARDE VIT ICI ─────────────────────────────────────────────────────────────────────────
- *
- * Un composant Livewire est une porte HTTP à part entière : l'inclure depuis une page déjà gardée
- * ne le garde pas lui-même. Et `#[Locked]` sur l'identifiant, parce qu'une propriété publique se
- * retourne depuis la console du navigateur.
- */
+/** LES OUTILS DE TERRAIN QUI MANQUAIENT AU WEB. */
 class MissionFieldTools extends Component
 {
     #[Locked]
@@ -123,12 +102,7 @@ class MissionFieldTools extends Component
         }
     }
 
-    /**
-     * PROPOSER UN NOUVEAU DEVIS — moteur à domicile seulement, et le serveur le refusera ailleurs.
-     *
-     * Le prestataire saisit le prix du SERVICE, jamais le total : le serveur réapplique les remises
-     * du client. Taper le total ferait disparaître son code promo dans un chiffre rond.
-     */
+    /** PROPOSER UN NOUVEAU DEVIS — moteur à domicile seulement, et le serveur le refusera ailleurs. */
     public function proposerUnNouveauDevis(): void
     {
         $this->reinitialiser();
@@ -171,13 +145,7 @@ class MissionFieldTools extends Component
         }
     }
 
-    /**
-     * DEMANDER DU RENFORT — l'autre réponse au même constat.
-     *
-     * Le chantier est plus gros que prévu : soit le prix change, soit quelqu'un vient. Le bouton vit
-     * à côté de la révision, et pas ailleurs : séparer les deux gestes ferait choisir le premier
-     * trouvé, et le premier trouvé serait la renégociation, celle qui met le client sous pression.
-     */
+    /** DEMANDER DU RENFORT — l'autre réponse au même constat. */
     public function demanderDuRenfort(): void
     {
         $this->reinitialiser();
@@ -242,10 +210,6 @@ class MissionFieldTools extends Component
     /**
      * LA LIGNE MASQUÉE — un numéro relais, jamais celui de l'autre.
      *
-     * Le service existait depuis longtemps et n'était appelé de NULLE PART, ni mobile ni web. Il
-     * rend `available: false` avec son motif quand la ligne n'est pas ouverte : on affiche ce motif
-     * plutôt que de faire disparaître le bouton, qui ferait chercher puis appeler le support.
-     *
      * @return array<string, mixed>|null
      */
     private function ligneMasquee(int $clientId, int $prestataireId, int $bookingId): ?array
@@ -266,9 +230,7 @@ class MissionFieldTools extends Component
     }
 
     /**
-     * LA FICHE D'ACCÈS NE S'AFFICHE QU'UNE FOIS L'ARRIVÉE CONFIRMÉE — le service le décide, et il
-     * lève quand la condition n'est pas remplie. Un refus attendu n'est pas une erreur : on rend le
-     * message, pas une page cassée.
+     * LA FICHE D'ACCÈS NE S'AFFICHE QU'UNE FOIS L'ARRIVÉE CONFIRMÉE — le service le décide, et il lève quand la condition n'est pas remplie.
      *
      * @return array<string, mixed>
      */
@@ -286,14 +248,7 @@ class MissionFieldTools extends Component
         return Mission::query()->with('booking')->findOrFail($this->missionId);
     }
 
-    /**
-     * « QUI INTERVIENT » NE SE DÉDUIT PAS D'UNE COLONNE — et un test du dépôt le vérifie.
-     *
-     * Trois colonnes ont porté cette question et ont été fusionnées : `lead_provider_user_id`,
-     * `lead_employee_id`, et l'affectation. Les relire à la main ici aurait recréé une quatrième
-     * réponse, qui aurait divergé de la troisième au premier cas limite — un renfort de société, un
-     * chef d'équipe. `Mission::estIntervenant()` est la seule qui fasse autorité.
-     */
+    /** « QUI INTERVIENT » NE SE DÉDUIT PAS D'UNE COLONNE — et un test du dépôt le vérifie. */
     private function assertAssigne(Mission $mission): void
     {
         abort_unless($mission->estIntervenant(Auth::user()), 403);

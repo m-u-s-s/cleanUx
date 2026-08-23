@@ -16,32 +16,7 @@ use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/**
- * LES FRAIS D'ANNULATION ARRIVENT-ILS JUSQU'À LA COLONNE QUI LES ADDITIONNE ?
- *
- * `bookings.cancellation_fee_amount` existe depuis la création de la table. Le centre d'analyse
- * des annulations en fait `SUM(COALESCE(cancellation_fee_amount, 0))`. Personne ne l'écrivait :
- * les frais n'existaient que sous une clé du `metadata` (chemin v1) ou dans
- * `booking_cancellations_v2` (chemin v2). L'écran annonçait donc **0 € de frais perçus**, pour
- * toutes les annulations, depuis toujours.
- *
- * ── POURQUOI LE TEST EXISTANT NE POUVAIT PAS LE VOIR ─────────────────────────────────────────
- *
- * `CancellationReasonsCenterCoverageBatch15Test` posait la valeur lui-même :
- *
- *     // cancellation_fee_amount is guarded; set it directly to exercise the SUM().
- *     $booking->forceFill(['cancellation_fee_amount' => 25.00])->save();
- *
- * Il prouvait que le `SUM()` sait additionner. Il ne pouvait rien dire de la seule question qui
- * comptait — est-ce que quelque chose remplit cette colonne ? — et il n'affirmait d'ailleurs
- * jamais le total obtenu. Les tests ci-dessous passent donc par le SERVICE RÉEL.
- *
- * ── L'UNITÉ, SECOND DÉFAUT EMPILÉ SUR LE PREMIER ─────────────────────────────────────────────
- *
- * La colonne est un `decimal(10,2)` en euros, mais la somme s'appelait `total_fee_cents` et la
- * vue la divisait par cent. Tant que la colonne restait vide, 0/100 valait 0 et l'erreur ne
- * pouvait pas se manifester. Les deux défauts se protégeaient l'un l'autre.
- */
+/** LES FRAIS D'ANNULATION ARRIVENT-ILS JUSQU'À LA COLONNE QUI LES ADDITIONNE ? */
 class FraisDAnnulationDansLaColonneTest extends TestCase
 {
     use RefreshDatabase;
@@ -52,12 +27,7 @@ class FraisDAnnulationDansLaColonneTest extends TestCase
         parent::tearDown();
     }
 
-    /**
-     * TÉMOIN POSITIF — le chemin d'annulation client remplit bien les deux colonnes.
-     *
-     * Sans ce contrôle, les tests d'affichage ci-dessous pourraient passer au vert en mesurant
-     * un écran qui additionne correctement des zéros.
-     */
+    /** TÉMOIN POSITIF — le chemin d'annulation client remplit bien les deux colonnes. */
     public function test_temoin_l_annulation_client_ecrit_les_deux_colonnes(): void
     {
         Carbon::setTestNow(Carbon::create(2026, 5, 14, 10, 0, 0));
@@ -76,21 +46,12 @@ class FraisDAnnulationDansLaColonneTest extends TestCase
 
         $frais = $reservation->fresh();
 
-        /*
-         * COMPARAISON NUMÉRIQUE, PAS TEXTUELLE : la suite tourne sur SQLite, qui n'a pas de type
-         * décimal et rend « 50 » là où MySQL rend « 50.00 ». Une assertion sur la chaîne mesurerait
-         * le moteur de base, pas le service.
-         */
+        // COMPARAISON NUMÉRIQUE, PAS TEXTUELLE : la suite tourne sur SQLite, qui n'a pas de type décimal et rend « 50 » là où MySQL rend « 50.00 ».
         $this->assertEqualsWithDelta(50.0, (float) $frais->cancellation_fee_amount, 0.001, 'Le montant est en EUROS.');
         $this->assertSame(50, (int) $frais->cancellation_fee_percent);
     }
 
-    /**
-     * LE `metadata` N'A PAS BOUGÉ.
-     *
-     * Des réponses d'API et d'autres tests le lisent. La question posée était de remplir la
-     * colonne, pas de déplacer la notion : déplacer aurait cassé ces lecteurs-là.
-     */
+    /** LE `metadata` N'A PAS BOUGÉ. Des réponses d'API et d'autres tests le lisent. */
     public function test_le_metadata_continue_de_porter_les_frais(): void
     {
         Carbon::setTestNow(Carbon::create(2026, 5, 14, 10, 0, 0));
@@ -113,11 +74,7 @@ class FraisDAnnulationDansLaColonneTest extends TestCase
         $this->assertSame(50, (int) $metadata['cancellation_fee_percent']);
     }
 
-    /**
-     * L'ÉCRAN D'ADMINISTRATION ANNONCE LE MONTANT RÉEL, EN EUROS.
-     *
-     * 50 €, pas 0 € (colonne vide) et pas 0,50 € (division par cent héritée de l'alias menteur).
-     */
+    /** L'ÉCRAN D'ADMINISTRATION ANNONCE LE MONTANT RÉEL, EN EUROS. */
     public function test_le_centre_d_analyse_totalise_les_frais_en_euros(): void
     {
         Carbon::setTestNow(Carbon::create(2026, 5, 14, 10, 0, 0));
@@ -143,17 +100,7 @@ class FraisDAnnulationDansLaColonneTest extends TestCase
             });
     }
 
-    /**
-     * LES COLONNES RESTENT HORS DE L'ASSIGNATION EN MASSE — ET C'EST VOULU.
-     *
-     * C'est la convention du dépôt pour l'argent : une charge utile de requête ne doit pas
-     * pouvoir fixer un montant de frais. Ce test fixe la raison pour laquelle le service emploie
-     * `forceFill` : s'il passait par `update()`, les deux colonnes n'arriveraient jamais en base.
-     *
-     * Le refus est BRUYANT ici et SILENCIEUX en production — `Model::preventSilentlyDiscarding`
-     * n'est armé que hors production. C'est justement pourquoi le défaut d'origine pouvait durer :
-     * en production, un `update()` sur ces colonnes ne se plaint de rien.
-     */
+    /** LES COLONNES RESTENT HORS DE L'ASSIGNATION EN MASSE — ET C'EST VOULU. */
     public function test_les_colonnes_d_argent_resistent_a_l_assignation_en_masse(): void
     {
         $reservation = $this->creerReservation();
@@ -172,15 +119,7 @@ class FraisDAnnulationDansLaColonneTest extends TestCase
         }
     }
 
-    /**
-     * LE CHEMIN v2 ÉTAIT ENTIÈREMENT INVISIBLE À L'ÉCRAN.
-     *
-     * `CancellationEngine` écrit tout son détail dans `booking_cancellations_v2` — et c'est bien
-     * sa place. Mais il ne posait NI `cancellation_reason` NI `cancelled_by` sur la réservation,
-     * or le centre d'analyse filtre sur le premier et groupe sur le second. Aucune annulation
-     * passée par la v2 n'apparaissait dans cet écran, et rien ne le signalait : une liste vide
-     * ressemble à « personne n'a annulé ».
-     */
+    /** LE CHEMIN v2 ÉTAIT ENTIÈREMENT INVISIBLE À L'ÉCRAN. */
     public function test_une_annulation_v2_devient_visible_dans_le_centre_d_analyse(): void
     {
         $this->seed(CancellationPoliciesSeeder::class);

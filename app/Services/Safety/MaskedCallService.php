@@ -10,27 +10,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Twilio\Rest\Client;
 
-/**
- * Service de proxy téléphonique anonyme (Twilio Proxy).
- *
- * Protège la PII client/provider : ne se voient JAMAIS le vrai numéro de l'autre.
- * Chacun appelle un numéro Twilio Proxy temporaire (expiration ~ fin mission + 24h).
- *
- * Workflow :
- *   1. Booking créé → openSession(client, provider, booking)
- *   2. Twilio Proxy crée une `Session` avec 2 Participants (client/provider phones)
- *   3. Twilio assigne un numéro proxy unique (numéro Twilio Phone)
- *   4. Notifications envoient `proxy_phone_number` aux deux parties (vs vrai numéro)
- *   5. Booking complet + 24h → closeSession() — Twilio libère le numéro
- *
- * Soft-fail : si TWILIO_PROXY_SERVICE_SID absent, persiste seulement la session
- * en DB avec proxy_phone_number = null (mode dev/test).
- */
+/** Service de proxy téléphonique anonyme (Twilio Proxy). */
 class MaskedCallService
 {
-    /**
-     * Crée (ou récupère) une session Twilio Proxy pour ce booking.
-     */
+    /** Crée (ou récupère) une session Twilio Proxy pour ce booking. */
     public function openSession(User $client, User $provider, ?Booking $booking = null): MaskedCallSession
     {
         if (! $client->phone || ! $provider->phone) {
@@ -111,10 +94,7 @@ class MaskedCallService
         return str_repeat('*', strlen($clean) - 4).substr($clean, -4);
     }
 
-    /**
-     * Appelle l'API Twilio Proxy pour créer une session + assigner un numéro proxy.
-     * Soft-fail : si SDK Twilio absent ou config manquante, retourne sans erreur.
-     */
+    /** Appelle l'API Twilio Proxy pour créer une session + assigner un numéro proxy. */
     protected function createTwilioProxySession(MaskedCallSession $session, User $client, User $provider): void
     {
         try {

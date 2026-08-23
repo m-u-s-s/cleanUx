@@ -8,12 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
-/**
- * LA CLOCHE MONTRE LES MESSAGES SANS QU'ON CHANGE DE PAGE.
- *
- * La navbar portait un bouton « 🔔 Notifications » avec sa pastille : il fallait quitter sa page
- * pour savoir ce qu'il y avait dedans. La cloche seule suffit, et le survol donne l'aperçu.
- */
+/** LA CLOCHE MONTRE LES MESSAGES SANS QU'ON CHANGE DE PAGE. */
 class ClocheDeNotificationsTest extends TestCase
 {
     use RefreshDatabase;
@@ -92,14 +87,7 @@ class ClocheDeNotificationsTest extends TestCase
 
     public function test_la_cloche_sans_libelle_reste_annoncee_aux_lecteurs_d_ecran(): void
     {
-        /*
-         * La cloche n'a plus de texte à côté d'elle : sans `aria-label`, elle deviendrait un lien
-         * muet, annoncé « lien » et rien d'autre. Le compte y figure aussi — une pastille rouge ne
-         * se lit pas à la voix.
-         *
-         * La barre MOBILE garde, elle, sa ligne « Notifications » en toutes lettres : il n'y a pas
-         * de survol sur un écran tactile, et un panneau qu'on ne peut pas ouvrir ne vaut rien.
-         */
+        // La cloche n'a plus de texte à côté d'elle : sans `aria-label`, elle deviendrait un lien muet, annoncé « lien » et rien d'autre.
         $client = User::factory()->client()->create();
         $this->donnerUneNotification($client, 'Une seule');
 

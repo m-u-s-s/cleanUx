@@ -13,13 +13,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
-/**
- * Demander une même prestation pour plusieurs locaux d'un coup.
- *
- * Jusqu'ici une société gérant dix sites répétait dix fois la même demande, sans rien pour les
- * relier ensuite. Le regroupement s'appuie sur `bookings.parent_booking_id`, un lien déjà présent
- * dans le schéma mais resté inutilisé (voir `MultiSiteRequestService`).
- */
+/** Demander une même prestation pour plusieurs locaux d'un coup. */
 class MultiSiteRequest extends Component
 {
     use EnforcesActiveOrgMembership;
@@ -73,15 +67,7 @@ class MultiSiteRequest extends Component
             return;
         }
 
-        /*
-         * LA SÉLECTION VIENT DU NAVIGATEUR, et `siteIds` est une propriété publique : elle se
-         * réécrit par un simple `$set`, quelle que soit la liste affichée. Filtrer l'affichage ne
-         * garde donc rien — c'est ICI que la restriction par local doit tenir.
-         *
-         * Sans cela, un responsable restreint à une agence engageait la société sur des
-         * interventions dans les autres : des réservations créées à des adresses qu'il n'a pas le
-         * droit de connaître, et facturées à la société.
-         */
+        // LA SÉLECTION VIENT DU NAVIGATEUR, et `siteIds` est une propriété publique : elle se réécrit par un simple `$set`, quelle que soit la liste affichée.
         $retenus = $this->filtrerAuxLocauxAutorises(array_map('intval', $this->siteIds));
 
         if ($retenus === []) {
@@ -116,9 +102,6 @@ class MultiSiteRequest extends Component
 
     /**
      * Ne garder que les locaux que ce membre a le droit de piloter.
-     *
-     * `null` veut dire « aucune restriction déclarée » — et non « aucun accès ». Confondre les deux
-     * viderait la liste de toutes les entreprises qui n'ont jamais restreint personne.
      *
      * @param  list<int>  $siteIds
      * @return list<int>

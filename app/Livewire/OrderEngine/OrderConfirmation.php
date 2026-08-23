@@ -20,17 +20,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-/**
- * Le dernier écran : récapitulatif, devis, puis confirmation.
- *
- * C'est ICI, et seulement ici, qu'une identité est demandée. La route reste publique à dessein :
- * un visiteur non connecté doit voir son récapitulatif COMPLET, prix inclus, avant de décider de
- * créer un compte. Mettre l'authentification sur la route replacerait le formulaire d'inscription
- * devant l'estimation — c'est-à-dire devant la première cause d'abandon.
- *
- * Rien n'est perdu en se connectant : le panier est rattaché au compte au retour, parce qu'il vit
- * en base sur un jeton de session et non dans l'écran.
- */
+/** Le dernier écran : récapitulatif, devis, puis confirmation. */
 /**
  * @property-read OrderDraft|null $draft
  * @property-read array<string, mixed>|null $quote
@@ -44,28 +34,12 @@ class OrderConfirmation extends Component
 {
     public string $sessionToken = '';
 
-    /**
-     * Référence de la commande une fois confirmée.
-     *
-     * Après confirmation, le panier n'est plus « ouvert » : le retrouver par jeton en ouvrirait un
-     * nouveau, vide. C'est la référence qui permet de rester sur la commande qu'on vient de passer,
-     * y compris après un rechargement.
-     */
+    /** Référence de la commande une fois confirmée. */
     public ?string $confirmedReference = null;
 
     public string $error = '';
 
-    /**
-     * LE CODE PROMO — la plateforme en émettait sans que personne puisse en saisir.
-     *
-     * `PromoCodeService`, `BookingPromoCodeApplier` et l'administration des campagnes
-     * existent depuis le début ; aucun écran client ne les appelait. Les codes
-     * distribués aux clients ne pouvaient donc être utilisés nulle part.
-     *
-     * Il se saisit ICI et pas dans le parcours : `/commander` est public — le prix
-     * s'affiche avant l'identité — alors qu'un code se valide contre un compte
-     * (premier achat, plafond par personne, campagne réservée).
-     */
+    /** LE CODE PROMO — la plateforme en émettait sans que personne puisse en saisir. */
     public string $promoCode = '';
 
     /** Ce que le code a donné : ni exception, ni silence. */
@@ -100,18 +74,7 @@ class OrderConfirmation extends Component
         return $draft->items()->exists() ? $draft : null;
     }
 
-    /**
-     * AU MOINS UNE PRESTATION DU PANIER EST-ELLE VENDUE AU TEMPS ?
-     *
-     * C'est la condition d'affichage de la règle de dépassement sur cet écran. Le panier peut être
-     * mixte — un ménage horaire et une pose de meuble au forfait — et il n'y a alors qu'une raison
-     * de montrer la règle : elle s'applique à l'un d'eux.
-     *
-     * NON MIS EN CACHE PAR `#[Computed]` À DESSEIN : la méthode est appelée une fois par rendu et
-     * lit un métier par ligne du panier. Le cache d'une propriété calculée ne fonctionne que sur
-     * l'accès propriété (`$this->truc`), jamais sur l'appel (`$this->truc()`) — piège vérifié sur
-     * ce dépôt. La déclarer `#[Computed]` puis l'appeler ici donnerait l'illusion d'un cache.
-     */
+    /** AU MOINS UNE PRESTATION DU PANIER EST-ELLE VENDUE AU TEMPS ? */
     public function panierContientDuTemps(): bool
     {
         $draft = $this->draft;
@@ -136,9 +99,6 @@ class OrderConfirmation extends Component
 
     /**
      * Ce qui manque encore, en toutes lettres.
-     *
-     * Affiché plutôt que caché derrière un bouton grisé muet : un bouton inactif sans explication
-     * est un cul-de-sac, et le client n'a aucun moyen de savoir quoi corriger.
      *
      * @return list<string>
      */
@@ -170,9 +130,6 @@ class OrderConfirmation extends Component
     /**
      * Les formules de règlement, par réservation.
      *
-     * Présentées côte à côte AVEC ce que chacune coûte aujourd'hui. Un client qui découvre après
-     * coup qu'on lui a prélevé un acompte est un client perdu — et il a raison de l'être.
-     *
      * @return array<int, list<array<string, mixed>>>
      */
     #[Computed]
@@ -187,10 +144,6 @@ class OrderConfirmation extends Component
 
     /**
      * Où en est le paiement de chaque réservation.
-     *
-     * L'autorisation exige un professionnel assigné ET raccordé à Stripe : avec l'attribution
-     * automatique, personne n'est désigné à la confirmation. Le client doit le LIRE, plutôt que de
-     * chercher un bouton de paiement qui n'existe pas encore.
      *
      * @return array<int, array{ready: bool, reason: string|null}>
      */
@@ -245,11 +198,7 @@ class OrderConfirmation extends Component
 
         $this->appliquerLeCodePromo($confirmed, $user);
 
-        /*
-         * En mode immédiat, l'écran d'attente EST la suite : la recherche vient d'être ouverte et
-         * quelqu'un peut accepter dans les secondes qui suivent. Laisser le client sur un
-         * récapitulatif figé lui cacherait précisément ce qu'il attend.
-         */
+        // En mode immédiat, l'écran d'attente EST la suite : la recherche vient d'être ouverte et quelqu'un peut accepter dans les secondes qui suivent.
         if ($confirmed->mode === OrderMode::ASAP) {
             $search = AsapDispatchRequest::query()
                 ->where('order_draft_id', $confirmed->id)
@@ -263,14 +212,7 @@ class OrderConfirmation extends Component
         }
     }
 
-    /**
-     * Applique le code saisi aux réservations qui viennent d'être créées.
-     *
-     * UN CODE REFUSÉ N'ANNULE PAS LA COMMANDE. Elle est confirmée, les
-     * réservations existent, le dispatch est peut-être déjà parti : faire échouer
-     * l'ensemble pour une remise ferait perdre au client une commande valide. On
-     * le dit, et on continue.
-     */
+    /** Applique le code saisi aux réservations qui viennent d'être créées. */
     private function appliquerLeCodePromo(OrderDraft $confirmed, User $client): void
     {
         $this->promoApplique = false;

@@ -11,23 +11,7 @@ use App\Support\Domain\MissionEngine;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 
-/**
- * LE QUESTIONNAIRE D'ANNULATION — servi aux écrans, administré depuis la console.
- *
- * ── CETTE CLASSE EST LA SEULE PORTE D'ÉCRITURE ───────────────────────────────────────────────
- *
- * Règle du dépôt pour la console d'administration : une action passe par le service du domaine,
- * jamais par une écriture de colonne. Écrire `is_active = false` à la main produirait l'état sans
- * ses effets — ici, sans le journal, et sans la garantie qu'une question active garde au moins une
- * réponse possible.
- *
- * ── RIEN NE SE SUPPRIME VRAIMENT ─────────────────────────────────────────────────────────────
- *
- * `retirer()` fait un `delete()` doux. Une annulation d'il y a six mois porte le `reason_code`
- * d'une option qu'un administrateur a peut-être retirée depuis : le dossier doit rester lisible.
- * Et le `code` ne se réutilise jamais — recyclé, il ferait relire un dossier ancien avec le sens
- * d'aujourd'hui.
- */
+/** LE QUESTIONNAIRE D'ANNULATION — servi aux écrans, administré depuis la console. */
 class CancellationQuestionnaireService
 {
     public function __construct(
@@ -36,9 +20,6 @@ class CancellationQuestionnaireService
 
     /**
      * CE QUE L'ÉCRAN AFFICHE — les questions de cette audience, et les seules options SOUTENUES.
-     *
-     * Une option dont la vérification échoue n'apparaît pas. La proposer puis la refuser se lirait
-     * comme une panne, et la personne recommencerait.
      *
      * @return list<array<string, mixed>>
      */
@@ -213,13 +194,7 @@ class CancellationQuestionnaireService
     {
         $question = $option->question;
 
-        /*
-         * ON NE DÉSACTIVE PAS LA DERNIÈRE RÉPONSE D'UNE QUESTION ACTIVE.
-         *
-         * Le questionnaire afficherait une question sans aucune case à cocher, et l'annulation
-         * deviendrait impossible pour tout le monde — un blocage total produit par un geste
-         * d'administration qui semblait anodin.
-         */
+        // ON NE DÉSACTIVE PAS LA DERNIÈRE RÉPONSE D'UNE QUESTION ACTIVE.
         if (! $active
             && $question !== null
             && $question->is_active
@@ -250,10 +225,6 @@ class CancellationQuestionnaireService
 
     /**
      * UNE ISSUE QUI RENVOIE VERS UN OUTIL QUI N'EXISTE PAS SUR CE MOTEUR EST UNE IMPASSE.
-     *
-     * « Le travail ne correspond pas » renvoie vers le nouveau devis — qui n'existe que sur le
-     * moteur à domicile. Poser cette option sur une question réservée aux courses enverrait un
-     * chauffeur vers un écran qui lui répondra non.
      *
      * @throws DomainException
      */

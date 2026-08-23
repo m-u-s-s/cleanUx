@@ -7,13 +7,7 @@ use App\Admin\Console\ReportTile;
 use App\Models\AnalyticsEvent;
 use App\Models\AnalyticsSession;
 
-/**
- * La synthèse analytique.
- *
- * Les COURBES restent sur le web. Une série temporelle lisible demande de la largeur ; la
- * réduire à un téléphone produit un graphique qu’on ne peut pas lire, donc qu’on n’utilise pas.
- * Ici, les compteurs qui se lisent d’un coup d’œil.
- */
+/** La synthèse analytique. Les COURBES restent sur le web. */
 class AnalyticsReport implements AdminReport
 {
     public function key(): string

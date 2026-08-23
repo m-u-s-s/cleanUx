@@ -2,10 +2,7 @@
 
 namespace App\Services\Insurance;
 
-/**
- * Update typé issu d'un webhook provider externe — applique à BookingInsurance
- * ou InsuranceClaim selon le `target`.
- */
+/** Update typé issu d'un webhook provider externe — applique à BookingInsurance ou InsuranceClaim selon le `target`. */
 class InsuranceWebhookUpdate
 {
     public const TARGET_POLICY = 'policy';

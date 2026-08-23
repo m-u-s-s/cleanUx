@@ -8,15 +8,7 @@ use App\Services\TripTracking\TripTrackingService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Helper soft-fail pour auto-terminer les sessions Trip Tracking
- * quand un booking passe à completed/cancelled.
- *
- * Appelé depuis BookingObserver::saved. Skip silencieusement si :
- *   - module Trip Tracking pas installé (table absente)
- *   - feature désactivée (config)
- *   - pas de session active sur ce booking
- */
+/** Helper soft-fail pour auto-terminer les sessions Trip Tracking quand un booking passe à completed/cancelled. */
 class TripTrackingAutoCloser
 {
     public static function endSessionForBooking(Booking $booking, string $reason): void

@@ -16,19 +16,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-/**
- * LA MISSION DOIT PORTER LA SOCIÉTÉ QUI L'EXÉCUTE.
- *
- * POURQUOI CE FICHIER EXISTE. `missions` est le modèle d'exécution, et `DispatchCenter` filtre sur
- * `provider_organization_id`. Or `MissionFromRendezVousSyncService` — déclenché par
- * `RendezVousObserver` sur `Booking::saved` en statut `confirme` — ne l'écrivait JAMAIS : zéro
- * occurrence de la colonne dans le service. Conséquence : tous les écrans de l'espace société
- * restaient vides sur le parcours nominal, alors que les missions existaient bien.
- *
- * LA SOURCE DE VÉRITÉ EST `provider_profiles.organization_account_id`. Ce n'est pas
- * `users.organization_account_id` : la société d'un SALARIÉ vit sur son profil prestataire, et
- * `routes/channels.php` s'est déjà trompé de colonne pour la même raison.
- */
+/** LA MISSION DOIT PORTER LA SOCIÉTÉ QUI L'EXÉCUTE. POURQUOI CE FICHIER EXISTE. */
 class TracabiliteSocieteSurMissionTest extends TestCase
 {
     use RefreshDatabase;
@@ -109,11 +97,7 @@ class TracabiliteSocieteSurMissionTest extends TestCase
 
     public function test_la_societe_du_booking_prime_sur_celle_du_salarie(): void
     {
-        /*
-         * Le booking porte parfois déjà `assigned_provider_organization_id` — posé par un dispatch
-         * ou par un contrat-cadre. C'est une DÉCISION, là où le profil du salarié n'est qu'une
-         * déduction : elle prime.
-         */
+        // Le booking porte parfois déjà `assigned_provider_organization_id` — posé par un dispatch ou par un contrat-cadre.
         $societeDuBooking = $this->societePrestataire();
         $autreSociete = $this->societePrestataire();
         $salarie = $this->salarie($autreSociete);
@@ -131,11 +115,7 @@ class TracabiliteSocieteSurMissionTest extends TestCase
 
     public function test_l_ecriture_ne_declenche_pas_de_boucle_d_observateur(): void
     {
-        /*
-         * Le service est déclenché par un observateur sur `Booking::saved`. Compléter le booking
-         * avec `save()` relancerait l'observateur, donc le service, donc `save()` : boucle. Le test
-         * vérifie qu'un rendez-vous confirmé produit UNE mission et une seule.
-         */
+        // Le service est déclenché par un observateur sur `Booking::saved`.
         $org = $this->societePrestataire();
         $salarie = $this->salarie($org);
 
@@ -147,10 +127,7 @@ class TracabiliteSocieteSurMissionTest extends TestCase
 
     public function test_l_equipe_decidee_sur_le_rendez_vous_arrive_sur_la_mission(): void
     {
-        /*
-         * `bookings.provider_team_id` et `missions.provider_team_id` existent des deux côtés, et le
-         * report ne se faisait pas : la décision était prise, la mission naissait sans équipe.
-         */
+        // `bookings.provider_team_id` et `missions.provider_team_id` existent des deux côtés, et le report ne se faisait pas : la décision était prise, la mission naissait sans équipe.
         $org = $this->societePrestataire();
         $salarie = $this->salarie($org);
 
@@ -175,23 +152,7 @@ class TracabiliteSocieteSurMissionTest extends TestCase
 
     public function test_une_equipe_supprimee_ne_laisse_pas_de_reference_morte(): void
     {
-        /*
-         * CE QUE CE TEST PROTÉGEAIT, ET CE QU'IL PROTÈGE MAINTENANT.
-         *
-         * Il posait `provider_team_id = 999999` sur un rendez-vous — un identifiant périmé, comme
-         * en laissait une équipe supprimée — et vérifiait que la mission naissait quand même, sans
-         * hériter de cette référence morte. La garantie était DÉFENSIVE : le code de report devait
-         * penser à écarter l'identifiant.
-         *
-         * `bookings.provider_team_id` porte désormais elle aussi une clé étrangère, en
-         * `nullOnDelete`. Un identifiant périmé ne peut donc plus exister : supprimer l'équipe met
-         * la colonne à NULL séance tenante. Le scénario d'origine n'est plus reproductible, non
-         * parce qu'on a cessé de s'en soucier, mais parce que le schéma l'empêche.
-         *
-         * On vérifie donc la même chose, à l'endroit où elle se joue maintenant : après la
-         * disparition de l'équipe, ni le rendez-vous ni la mission ne pointent vers le vide, et
-         * la mission est toujours là.
-         */
+        // CE QUE CE TEST PROTÉGEAIT, ET CE QU'IL PROTÈGE MAINTENANT.
         $org = $this->societePrestataire();
         $salarie = $this->salarie($org);
 
@@ -224,12 +185,7 @@ class TracabiliteSocieteSurMissionTest extends TestCase
 
     public function test_un_independant_qui_rejoint_une_societe_y_est_vraiment_rattache(): void
     {
-        /*
-         * `rattacher()` créait le profil prestataire avec `firstOrCreate` : un profil EXISTANT
-         * n'était pas mis à jour. L'indépendant devenait membre de l'organisation sans que rien ne
-         * le rattache côté prestataire — 403 sur tout l'espace société, et ses missions hors du
-         * dispatch, `ProviderOrganisationResolver` lisant précisément cette colonne.
-         */
+        // `rattacher()` créait le profil prestataire avec `firstOrCreate` : un profil EXISTANT n'était pas mis à jour.
         $org = $this->societePrestataire();
         $independant = User::factory()->employe()->create();
         $independant->providerProfile()->create([

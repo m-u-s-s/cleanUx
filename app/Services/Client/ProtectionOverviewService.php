@@ -10,26 +10,7 @@ use App\Services\CancellationV2\CancellationPolicyResolver;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * « MA PROTECTION » (E6) — la vitrine des recours d'un client.
- *
- * TOUTES LES BRIQUES EXISTENT : Insurance, Cancellation v2, Disputes. Chacune a son écran, sa
- * logique, ses tests. Et aucun client ne sait ce qu'il a. Il découvre son assurance au moment du
- * sinistre — trop tard pour la souscrire —, ses frais d'annulation en annulant, et l'existence des
- * litiges en cherchant un numéro de téléphone.
- *
- * CE SERVICE N'AJOUTE AUCUNE RÈGLE. Il lit les trois modules et les met côte à côte. C'est
- * exactement le point : une protection qu'on ne peut pas énoncer avant d'en avoir besoin n'en est
- * pas une, quelle que soit la qualité du moteur qui la calcule.
- *
- * LES FRAIS D'ANNULATION SE DISENT AU CONDITIONNEL PRÉSENT — « si vous annuliez maintenant » — et
- * pas en barème abstrait. Un tableau de paliers se lit et ne se retient pas ; un montant se
- * comprend. Ils sont donc calculés RÉSERVATION PAR RÉSERVATION, à l'heure où on regarde.
- *
- * ET LE MOTEUR D'ANNULATION EST APPELÉ EN SOFT-FAIL. Une politique absente pour un métier ne doit
- * pas faire tomber la page entière : le reste — l'assurance, les litiges — garde sa valeur, et un
- * écran blanc en aurait zéro.
- */
+/** « MA PROTECTION » (E6) — la vitrine des recours d'un client. */
 class ProtectionOverviewService
 {
     /**
@@ -55,9 +36,6 @@ class ProtectionOverviewService
 
     /**
      * Les couvertures ACTIVES, et rien d'autre.
-     *
-     * Une police expirée dans la liste ferait croire à une protection qu'on n'a plus — c'est
-     * précisément le malentendu qui se découvre au moment du sinistre.
      *
      * @return array<string, mixed>
      */
@@ -106,10 +84,7 @@ class ProtectionOverviewService
                     $heuresAvant,
                 );
             } catch (\Throwable $e) {
-                /*
-                 * SOFT-FAIL : une politique absente pour un métier ne doit pas faire tomber la
-                 * page. On l'omet, et le reste — assurance, litiges — garde sa valeur.
-                 */
+                // SOFT-FAIL : une politique absente pour un métier ne doit pas faire tomber la page.
                 report($e);
 
                 continue;

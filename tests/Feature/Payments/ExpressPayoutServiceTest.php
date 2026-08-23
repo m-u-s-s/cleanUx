@@ -11,14 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
-/**
- * Le virement express — les frais doivent EXISTER dans les comptes.
- *
- * `demander()` calculait des frais, les rangeait dans les métadonnées de la ligne de versement,
- * puis demandait le retrait du montant BRUT. Les frais n'étaient donc écrits nulle part : ni
- * ligne de portefeuille, ni recette. Le prestataire recevait le brut, la plateforme ne percevait
- * rien, et l'écran continuait d'annoncer un net inférieur.
- */
+/** Le virement express — les frais doivent EXISTER dans les comptes. */
 class ExpressPayoutServiceTest extends TestCase
 {
     use RefreshDatabase;
@@ -71,13 +64,7 @@ class ExpressPayoutServiceTest extends TestCase
         $this->assertTrue($devis['eligible']);
     }
 
-    /**
-     * SOUS LE SEUIL, LE PLANCHER L'EMPORTE.
-     *
-     * Sur 50 €, 1,5 % ne font que 0,75 € — en dessous des 1,00 € de `FRAIS_MINIMUM_CENTS`, qui
-     * s'applique alors. Le distinguer du régime au pourcentage évite de croire à une erreur
-     * d'arrondi en lisant une ligne de frais.
-     */
+    /** SOUS LE SEUIL, LE PLANCHER L'EMPORTE. */
     public function test_sous_le_seuil_le_plancher_de_frais_s_applique(): void
     {
         $devis = $this->express->devis(5000);
@@ -86,9 +73,7 @@ class ExpressPayoutServiceTest extends TestCase
         $this->assertSame(4900, $devis['net_cents']);
     }
 
-    /**
-     * LE VERSEMENT PORTE LE NET, pas le brut : c'est le montant qui part réellement.
-     */
+    /** LE VERSEMENT PORTE LE NET, pas le brut : c'est le montant qui part réellement. */
     public function test_le_versement_porte_le_montant_net(): void
     {
         $this->crediter(200.0);
@@ -103,13 +88,7 @@ class ExpressPayoutServiceTest extends TestCase
         );
     }
 
-    /**
-     * LES FRAIS EXISTENT COMME ÉCRITURE, et pas seulement comme métadonnée.
-     *
-     * Une métadonnée ne se totalise pas, ne se rapproche pas d'un relevé et n'apparaît dans aucun
-     * export comptable. Tant que les frais n'y étaient pas, la plateforme prélevait une somme que
-     * ses propres comptes ignoraient.
-     */
+    /** LES FRAIS EXISTENT COMME ÉCRITURE, et pas seulement comme métadonnée. */
     public function test_les_frais_sont_une_ecriture_de_portefeuille(): void
     {
         $this->crediter(200.0);

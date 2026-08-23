@@ -45,46 +45,17 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-/**
- * L'API DE L'ESPACE SOCIÉTÉ PRESTATAIRE.
- *
- * `routes/api/provider.php` couvrait abondamment le prestataire INDIVIDUEL — missions,
- * disponibilités, badges, litiges, portefeuille — et rien de la société. Les écrans société étaient
- * donc servis en WebView faute de données à consommer côté natif.
- *
- * Deux règles gouvernent chaque méthode, sans exception :
- *   1. toute requête est limitée à l'organisation ACTIVE de l'appelant ;
- *   2. toute écriture exige une permission, jamais la seule appartenance.
- *
- * Les identifiants reçus ne sont jamais tenus pour fiables : le scoping fait partie de la REQUÊTE,
- * si bien qu'une ressource d'une autre société n'est jamais chargée — donc jamais divulguée, même
- * par la différence entre un 403 et un 404.
- */
+/** L'API DE L'ESPACE SOCIÉTÉ PRESTATAIRE. */
 class CompanyController extends Controller
 {
-    /*
-     * La résolution de l'organisation vit dans un trait PARTAGÉ avec le contrôleur société cliente.
-     *
-     * Elle lisait ici `$user->currentOrganization`, donc la seule colonne `current_organization_id`
-     * — que `db:seed` ne renseigne jamais. Les cinq écrans société répondaient 403 à tout compte
-     * de démonstration, y compris après qu'on a rouvert leur porte d'entrée dans le profil.
-     */
+    // La résolution de l'organisation vit dans un trait PARTAGÉ avec le contrôleur société cliente.
     use ResolvesActiveOrganization;
 
     // ──────────────────────────────────────────────────────
     // Accueil
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Le résumé de la journée, en UN appel.
-     *
-     * L'écran d'accueil natif reconstituait ces chiffres à partir des autres points — quatre
-     * requêtes pour cinq nombres, et autant d'occasions de dériver de ce que l'écran web affiche.
-     *
-     * `missions_today` compte les missions PLANIFIÉES aujourd'hui, pas celles créées aujourd'hui :
-     * c'est la charge du jour que regarde un gérant en ouvrant son application, pas son carnet de
-     * commandes.
-     */
+    /** Le résumé de la journée, en UN appel. */
     public function overview(): JsonResponse
     {
         $org = $this->organisationActive();
@@ -125,15 +96,7 @@ class CompanyController extends Controller
     // Sites desservis
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Les sites clients que la société dessert, et le référent qu'elle y place.
-     *
-     * Mêmes deux sources que l'écran web `SiteOperations` — missions et contrats-cadres — parce que
-     * les sites se DÉDUISENT : un prestataire ne possède pas les locaux de ses clients.
-     *
-     * Les référents sont scopés sur notre organisation : deux prestataires peuvent desservir le
-     * même immeuble, et la composition de l'équipe adverse ne nous regarde pas.
-     */
+    /** Les sites clients que la société dessert, et le référent qu'elle y place. */
     public function sites(): JsonResponse
     {
         $org = $this->organisationActive();
@@ -181,13 +144,7 @@ class CompanyController extends Controller
         return response()->json(['data' => $sites]);
     }
 
-    /**
-     * Nommer un référent sur un site desservi.
-     *
-     * `provider_site_assignments` existait depuis le 2026-08-07 avec ZÉRO ligne et AUCUN écrivain :
-     * la table était prête, la connaissance qu'elle devait porter — qui connaît le code de la porte,
-     * l'ascenseur en panne — n'avait aucun moyen d'y entrer.
-     */
+    /** Nommer un référent sur un site desservi. */
     public function assignSiteReferent(Request $request, int $siteId): JsonResponse
     {
         $org = $this->organisationActive();
@@ -235,12 +192,7 @@ class CompanyController extends Controller
         return response()->json(['data' => ['ok' => true]]);
     }
 
-    /**
-     * L'ÉQUIPE HABITUELLE D'UN SITE.
-     *
-     * Nommer des PERSONNES ne suffit pas sur un grand immeuble : c'est une équipe entière qui y va,
-     * et la désigner personne par personne recommence à chaque changement d'effectif.
-     */
+    /** L'ÉQUIPE HABITUELLE D'UN SITE. */
     public function setSiteDefaultTeam(Request $request, int $siteId): JsonResponse
     {
         $org = $this->organisationActive();
@@ -274,13 +226,7 @@ class CompanyController extends Controller
         return response()->json(['data' => ['field_team_id' => $equipe->id]]);
     }
 
-    /**
-     * Desservons-nous ce site ?
-     *
-     * Même déduction que la liste des sites — missions et contrats-cadres. Un prestataire ne possède
-     * pas les locaux de ses clients : il ne peut donc y nommer quelqu'un que s'il y intervient
-     * réellement.
-     */
+    /** Desservons-nous ce site ? */
     private function desservonsNousCeSite(int $organisationId, int $siteId): bool
     {
         $parMission = Mission::query()
@@ -307,13 +253,7 @@ class CompanyController extends Controller
     // Agences — les implantations de la SOCIÉTÉ
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Les implantations de la société.
-     *
-     * À NE PAS CONFONDRE AVEC `organization_sites`, qui désigne les locaux du CLIENT. Les deux se
-     * ressemblent sur le papier — une adresse, une ville — et n'ont rien à voir : une société
-     * multi-villes n'avait aucun moyen de déclarer son dépôt de Bruxelles.
-     */
+    /** Les implantations de la société. */
     public function agencies(): JsonResponse
     {
         $org = $this->organisationActive();
@@ -386,12 +326,7 @@ class CompanyController extends Controller
         return response()->json(['data' => ['id' => $agence->id, 'status' => $agence->fresh()->status]]);
     }
 
-    /**
-     * Rattacher une équipe ou un membre à une agence.
-     *
-     * `null` détache — une société peut réorganiser, et un rattachement qu'on ne pourrait pas défaire
-     * obligerait à recréer l'équipe.
-     */
+    /** Rattacher une équipe ou un membre à une agence. */
     public function attachToAgency(Request $request, int $agencyId): JsonResponse
     {
         $org = $this->organisationActive();
@@ -458,18 +393,7 @@ class CompanyController extends Controller
     // Administration des membres
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Changer le sous-rôle d'un membre depuis le téléphone.
-     *
-     * « L'owner change les sous-rôles de ses employés quand il veut », y compris en déplacement :
-     * `CompanyMembersScreen` était en LECTURE SEULE, et l'écran web supposait un poste de travail.
-     *
-     * Les six règles — isolation, permission, hiérarchie, plafond de promotion, dernier
-     * propriétaire, auto-action — viennent de `OrganizationMemberAdministration`, partagé avec
-     * l'écran web. Les réécrire ici aurait produit deux jeux de garde-fous, et ce dépôt sait ce que
-     * cela donne : l'écran client et l'écran prestataire avaient chacun une protection que l'autre
-     * n'avait pas.
-     */
+    /** Changer le sous-rôle d'un membre depuis le téléphone. */
     public function updateMemberRole(Request $request, int $memberId): JsonResponse
     {
         $org = $this->organisationActive();
@@ -508,13 +432,7 @@ class CompanyController extends Controller
         return $this->transitionDeStatut($memberId, 'active', 'members.suspend');
     }
 
-    /**
-     * Retirer un membre.
-     *
-     * Ce n'est PAS qu'un changement de statut : le service libère aussi les missions à venir et les
-     * canaux d'équipe. Un endpoint qui se contenterait d'écrire `left` laisserait le répartiteur
-     * croire ses missions couvertes, et l'ancien salarié dans les canaux Reverb de la société.
-     */
+    /** Retirer un membre. */
     public function removeMember(int $memberId): JsonResponse
     {
         return $this->transitionDeStatut($memberId, 'left', 'members.remove');
@@ -535,11 +453,7 @@ class CompanyController extends Controller
     }
 
     /**
-     * Traduire une décision du service en réponse HTTP.
-     *
-     * LE MOTIF PORTE SON PROPRE CODE. Un refus d'autorisation (403) et une règle de gestion (422)
-     * ne se confondent pas : le dernier propriétaire ne se retire pas, mais celui qui essaie AVAIT
-     * le droit — répondre 403 l'enverrait chercher une permission qu'il possède déjà.
+     * Traduire une décision du service en réponse HTTP. LE MOTIF PORTE SON PROPRE CODE.
      *
      * @param  callable(OrganizationMember): array<string, mixed>  $serialiser
      */
@@ -565,11 +479,7 @@ class CompanyController extends Controller
     // Matrice rôle → permissions de la société
     // ──────────────────────────────────────────────────────
 
-    /**
-     * L'état EFFECTIF de la matrice : réglage de la société s'il existe, défaut du code sinon.
-     *
-     * Le téléphone ne reconstitue rien — il n'a pas la matrice par défaut et ne doit pas l'avoir.
-     */
+    /** L'état EFFECTIF de la matrice : réglage de la société s'il existe, défaut du code sinon. */
     public function rolePermissions(): JsonResponse
     {
         $org = $this->organisationActive();
@@ -611,12 +521,7 @@ class CompanyController extends Controller
         ]]);
     }
 
-    /**
-     * Régler une case de la matrice.
-     *
-     * `granted` est un booléen EXPLICITE : sans lui la matrice ne saurait qu'élargir, et une société
-     * ne pourrait jamais retirer un droit que le code accorde par défaut.
-     */
+    /** Régler une case de la matrice. */
     public function updateRolePermission(Request $request): JsonResponse
     {
         $org = $this->organisationActive();
@@ -727,14 +632,7 @@ class CompanyController extends Controller
     // Tâches
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Le tableau des tâches, borné à ce que l'appelant a le droit de voir.
-     *
-     * PAS DE MIDDLEWARE ICI, ET C'EST VOLONTAIRE. Les quatre lectures de pilotage se refusent en
-     * bloc à qui n'a pas la clé ; les tâches, non — un nettoyeur a de vraies tâches à consulter.
-     * La garde n'est donc pas à l'entrée mais dans la requête, et la règle est celle de l'écran web,
-     * au même endroit : voir `TaskVisibilityService`.
-     */
+    /** Le tableau des tâches, borné à ce que l'appelant a le droit de voir. */
     public function tasks(): JsonResponse
     {
         $org = $this->organisationActive();
@@ -786,23 +684,14 @@ class CompanyController extends Controller
             ->where('organization_account_id', $org->id)
             ->findOrFail($taskId);
 
-        /*
-         * Déplacer une tâche est une écriture : un rôle en lecture seule ne doit pas marquer
-         * terminé le travail des autres. Le créateur garde la main sur la sienne — même règle que
-         * l'écran web, pour que les deux surfaces ne divergent pas.
-         */
+        // Déplacer une tâche est une écriture : un rôle en lecture seule ne doit pas marquer terminé le travail des autres.
         abort_unless(
             $tache->created_by === Auth::id()
                 || app(PermissionService::class)->can(Auth::user(), 'tasks.create', $org),
             403
         );
 
-        /*
-         * PUIS : cette tâche figure-t-elle sur SON tableau ? `tasks.create` est accordée jusqu'au
-         * nettoyeur, si bien qu'elle laissait déplacer la tâche d'un collègue qu'on n'a pas le droit
-         * de lire, en devinant un identifiant. Deux questions, deux réponses — le refus d'écrire
-         * reste un 403, l'absence du tableau un 404 qui n'apprend rien.
-         */
+        // PUIS : cette tâche figure-t-elle sur SON tableau ?
         abort_unless(
             app(TaskVisibilityService::class)
                 ->requetePour(Auth::user(), $org->id)
@@ -850,14 +739,7 @@ class CompanyController extends Controller
         return response()->json(['data' => $missions]);
     }
 
-    /**
-     * Assigner ou RÉASSIGNER une mission à une personne.
-     *
-     * LA GARDE N'EST PLUS `missions.dispatch` SEULE. Un chef d'équipe doit pouvoir échanger deux de
-     * ses membres sans porter la clé qui ouvre le dispatch de toute la société — c'est l'exigence 5,
-     * et sa PORTÉE (« son équipe seulement ») n'est pas exprimable dans une matrice de clés. Voir
-     * `ReassignmentPolicy`, consommée à l'identique par le web.
-     */
+    /** Assigner ou RÉASSIGNER une mission à une personne. */
     public function assignMission(Request $request, int $missionId): JsonResponse
     {
         $org = $this->organisationActive();
@@ -899,13 +781,7 @@ class CompanyController extends Controller
         ]]);
     }
 
-    /**
-     * Confier la mission à une ÉQUIPE entière.
-     *
-     * On n'envoie pas une personne dans un immeuble de dix étages, on y envoie l'équipe Nord. Le
-     * geste n'existait sur aucune surface : composer une équipe demandait un responsable puis N
-     * renforts, un par un, sans jamais dire QUELLE équipe.
-     */
+    /** Confier la mission à une ÉQUIPE entière. */
     public function assignMissionToTeam(Request $request, int $missionId): JsonResponse
     {
         $org = $this->organisationActive();
@@ -949,15 +825,7 @@ class CompanyController extends Controller
         ]]);
     }
 
-    /**
-     * Ajouter ou retirer un RENFORT.
-     *
-     * Un grand nettoyage à deux est le cas ordinaire d'une société, et il n'était pas représentable
-     * depuis le mobile : l'API ne savait qu'assigner une personne en remplaçant la précédente.
-     *
-     * Même garde que la réassignation — c'est la même redistribution de travail, seule la place
-     * occupée diffère.
-     */
+    /** Ajouter ou retirer un RENFORT. */
     public function missionHelpers(Request $request, int $missionId): JsonResponse
     {
         $org = $this->organisationActive();
@@ -996,16 +864,7 @@ class CompanyController extends Controller
         return response()->json(['data' => ['ok' => true, 'user_id' => $renfort->user_id]], 201);
     }
 
-    /**
-     * DÉPLACER UNE INTERVENTION — date, heure et LIEU.
-     *
-     * `BookingRescheduleService` était strictement client/admin, et aucun endpoint ne l'exposait au
-     * prestataire : une société qui devait décaler d'une heure appelait le client pour qu'il le
-     * fasse lui-même. Le LIEU, lui, ne bougeait jamais — la notion n'existait dans aucun chemin.
-     *
-     * L'application est immédiate et le client notifié systématiquement ; sous la fenêtre de gel
-     * (24 h), seuls le propriétaire et le directeur d'opérations décident, avec motif obligatoire.
-     */
+    /** DÉPLACER UNE INTERVENTION — date, heure et LIEU. */
     public function rescheduleMission(Request $request, int $missionId): JsonResponse
     {
         $org = $this->organisationActive();
@@ -1038,11 +897,7 @@ class CompanyController extends Controller
                 motif: $donnees['motif'] ?? null,
             );
         } catch (\DomainException $e) {
-            /*
-             * 422 ET NON 403. La fenêtre de gel et le site illégitime ne sont pas des refus
-             * d'autorisation : l'acteur AVAIT le droit de déplacer, c'est cette demande-là qui ne
-             * passe pas. Répondre 403 l'enverrait chercher une permission qu'il possède déjà.
-             */
+            // 422 ET NON 403.
             return response()->json(['ok' => false, 'message' => $e->getMessage()], 422);
         }
 
@@ -1059,13 +914,7 @@ class CompanyController extends Controller
     // Disponibilité et auto-assignation
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Qui est libre sur le créneau d'une mission.
-     *
-     * L'écran mobile remplaçait un `Alert.alert` limité à dix noms, SANS indicateur de
-     * disponibilité : le répartiteur choisissait à l'aveugle depuis son téléphone, là où l'écran web
-     * le renseignait déjà.
-     */
+    /** Qui est libre sur le créneau d'une mission. */
     public function availability(Request $request): JsonResponse
     {
         $org = $this->organisationActive();
@@ -1111,13 +960,7 @@ class CompanyController extends Controller
         ]]);
     }
 
-    /**
-     * « Assigner tout ce qui n'a personne » — mis en FILE, pas exécuté ici.
-     *
-     * Deux cents missions, c'est deux cents décisions et autant de notifications : les traiter
-     * pendant que le téléphone attend donnerait un écran figé puis un timeout, avec le travail à
-     * moitié fait et rien pour dire où il s'est arrêté.
-     */
+    /** « Assigner tout ce qui n'a personne » — mis en FILE, pas exécuté ici. */
     public function autoAssign(): JsonResponse
     {
         $org = $this->organisationActive();
@@ -1138,12 +981,7 @@ class CompanyController extends Controller
         ]]);
     }
 
-    /**
-     * Le MODE CONTINU — toute nouvelle mission de la société est auto-assignée.
-     *
-     * Réglage de SOCIÉTÉ, pas préférence d'écran : il agit sur des missions créées quand personne
-     * n'est devant l'application. C'est aussi pourquoi il est faux par défaut.
-     */
+    /** Le MODE CONTINU — toute nouvelle mission de la société est auto-assignée. */
     public function updateAutoAssignSettings(Request $request): JsonResponse
     {
         $org = $this->organisationActive();
@@ -1164,13 +1002,7 @@ class CompanyController extends Controller
     // Composition des équipes terrain
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Les membres d'une équipe — la composition, gérée PAR la société.
-     *
-     * `field_team_members` n'était manipulable que depuis l'administration de la plateforme : une
-     * société qui créait son équipe sur son propre écran ne pouvait pas la peupler, et devait
-     * appeler un administrateur pour y mettre quelqu'un.
-     */
+    /** Les membres d'une équipe — la composition, gérée PAR la société. */
     public function fieldTeamMembers(int $teamId): JsonResponse
     {
         $org = $this->organisationActive();
@@ -1221,11 +1053,7 @@ class CompanyController extends Controller
             ->where('status', 'active')
             ->firstOrFail();
 
-        /*
-         * `updateOrCreate` sur (équipe, personne) : le geste est REJOUABLE. Quelqu'un qui avait
-         * quitté l'équipe la réintègre par le même bouton, sans ligne en double — et `left_at` est
-         * remis à null, sans quoi il resterait invisible des lectures.
-         */
+        // `updateOrCreate` sur (équipe, personne) : le geste est REJOUABLE.
         $ligne = FieldTeamMember::updateOrCreate(
             ['field_team_id' => $equipe->id, 'user_id' => $membreDeLaSociete->user_id],
             ['is_active' => true, 'left_at' => null, 'joined_at' => now()],
@@ -1237,13 +1065,7 @@ class CompanyController extends Controller
         ]], 201);
     }
 
-    /**
-     * Retirer quelqu'un d'une équipe.
-     *
-     * La ligne SURVIT — `is_active` à faux et `left_at` daté. L'historique d'une équipe doit pouvoir
-     * dire qui en a fait partie : les missions passées portent son nom, et une réclamation se règle
-     * sur ce genre de détail.
-     */
+    /** Retirer quelqu'un d'une équipe. La ligne SURVIT — `is_active` à faux et `left_at` daté. */
     public function removeFieldTeamMember(int $teamId, int $userId): JsonResponse
     {
         $org = $this->organisationActive();
@@ -1258,13 +1080,7 @@ class CompanyController extends Controller
             ->where('user_id', $userId)
             ->update(['is_active' => false, 'left_at' => now()]);
 
-        /*
-         * LE MENEUR QUI PART CESSE DE MENER.
-         *
-         * Laisser `team_lead_user_id` désigner un partant donnerait la mission au premier membre
-         * actif à l'assignation suivante — sans que rien n'explique pourquoi — et
-         * `ReassignmentPolicy` continuerait de lui accorder la main sur les missions de l'équipe.
-         */
+        // LE MENEUR QUI PART CESSE DE MENER.
         if ((int) $equipe->team_lead_user_id === $userId) {
             $equipe->update(['team_lead_user_id' => null]);
         }
@@ -1297,12 +1113,7 @@ class CompanyController extends Controller
         return response()->json(['data' => $canaux]);
     }
 
-    /**
-     * Créer un canal depuis le mobile.
-     *
-     * Toute la gestion vivait dans `TeamChannels.php`, l'écran web : l'API ne savait que lister,
-     * lire et poster. Une équipe sur le terrain pouvait donc RÉPONDRE, jamais ouvrir un fil.
-     */
+    /** Créer un canal depuis le mobile. */
     public function createChannel(Request $request): JsonResponse
     {
         $org = $this->organisationActive();
@@ -1327,12 +1138,7 @@ class CompanyController extends Controller
         return response()->json(['data' => ['id' => $canal->id, 'name' => $canal->name]], 201);
     }
 
-    /**
-     * Ouvrir — ou retrouver — la conversation à deux avec un collègue.
-     *
-     * ON CHERCHE AVANT DE CRÉER : sans cela, chaque appui ajouterait un canal, et l'historique se
-     * disperserait entre des fils vides reliant les deux mêmes personnes.
-     */
+    /** Ouvrir — ou retrouver — la conversation à deux avec un collègue. */
     public function openDirectChannel(Request $request): JsonResponse
     {
         $org = $this->organisationActive();
@@ -1364,12 +1170,7 @@ class CompanyController extends Controller
         return response()->json(['data' => $membres]);
     }
 
-    /**
-     * Ajouter un participant — « en deux gestes », comme le demande l'exigence 4.
-     *
-     * La garde est celle du CANAL (`ChannelPolicy`), pas une clé d'organisation : c'est le
-     * propriétaire ou un modérateur du fil qui décide qui y entre, et cette règle existait déjà.
-     */
+    /** Ajouter un participant — « en deux gestes », comme le demande l'exigence 4. */
     public function addChannelMember(Request $request, int $channelId): JsonResponse
     {
         $canal = $this->canalSousGarde($channelId, 'manageMembers');
@@ -1388,12 +1189,7 @@ class CompanyController extends Controller
         return response()->json(['data' => ['ok' => true]], 201);
     }
 
-    /**
-     * Retirer un participant.
-     *
-     * RETIRER COUPE AUSSI LE TEMPS RÉEL : l'autorisation Reverb `channel.{id}` vérifie
-     * l'appartenance à chaque abonnement.
-     */
+    /** Retirer un participant. */
     public function removeChannelMember(int $channelId, int $userId): JsonResponse
     {
         $canal = $this->canalSousGarde($channelId, 'view');
@@ -1428,13 +1224,7 @@ class CompanyController extends Controller
         return response()->json(['data' => ['ok' => true]]);
     }
 
-    /**
-     * Les non-lus par canal.
-     *
-     * `channel_members.last_read_at` existait depuis l'origine et n'était écrit par personne : les
-     * non-lus ne pouvaient donc pas exister, et la liste ne disait jamais où il se passait quelque
-     * chose.
-     */
+    /** Les non-lus par canal. */
     public function channelsUnreadCounts(): JsonResponse
     {
         $org = $this->organisationActive();
@@ -1451,13 +1241,7 @@ class CompanyController extends Controller
         $messages = Message::query()
             ->where('channel_id', $canal->id)
             ->topLevel()
-            /*
-             * PAGINATION PAR CURSEUR, pas par page.
-             *
-             * Un fil vivant reçoit des messages pendant qu'on le remonte : une pagination par
-             * décalage rejouerait ou sauterait des lignes à chaque nouveau message. `before_id`
-             * désigne un point fixe dans l'historique.
-             */
+            // PAGINATION PAR CURSEUR, pas par page.
             ->when(
                 $request->query('before_id'),
                 fn ($q, $avant) => $q->where('id', '<', (int) $avant)
@@ -1475,16 +1259,7 @@ class CompanyController extends Controller
                 'sender_id' => $m->user_id,
                 'is_system' => $m->type === Message::TYPE_SYSTEM,
                 'sent_at' => $m->created_at?->toIso8601String(),
-                /*
-                 * LE TYPE ET L'ADRESSE DE LECTURE VOYAGENT — ils ne voyageaient pas.
-                 *
-                 * On pouvait ENVOYER une note vocale et personne ne pouvait l'écouter : la réponse
-                 * ne disait ni que le message était vocal, ni où trouver le son. Le fil affichait
-                 * « 🎙️ Note vocale » comme un texte ordinaire, sur mobile comme sur le web.
-                 *
-                 * L'adresse est signée et expire : une pièce jointe de messagerie d'équipe n'a pas
-                 * à être lisible par quiconque devine son identifiant.
-                 */
+                // LE TYPE ET L'ADRESSE DE LECTURE VOYAGENT — ils ne voyageaient pas.
                 'type' => $m->type,
                 'duration' => data_get($m->metadata, 'duration'),
                 'audio_url' => $m->type === Message::TYPE_VOICE
@@ -1495,11 +1270,7 @@ class CompanyController extends Controller
         return response()->json(['data' => $messages]);
     }
 
-    /**
-     * L'adresse signée où écouter la note vocale de ce message, ou `null` s'il n'y en a pas.
-     *
-     * Quinze minutes : le temps d'ouvrir le fil et d'appuyer, pas celui de faire circuler un lien.
-     */
+    /** L'adresse signée où écouter la note vocale de ce message, ou `null` s'il n'y en a pas. */
     protected function adresseDeLecture(Message $message): ?string
     {
         $piece = $message->attachments()->latest('id')->first();
@@ -1535,26 +1306,13 @@ class CompanyController extends Controller
         return response()->json(['data' => ['ok' => true]], 201);
     }
 
-    /**
-     * ENVOYER UNE NOTE VOCALE.
-     *
-     * Sur un chantier, on ne tape pas : on a les mains prises, des gants, et le téléphone au fond
-     * d'une poche. Une messagerie d'équipe terrain qui n'accepte que du texte se fait remplacer par
-     * WhatsApp — hors de l'outil, hors de toute trace, et hors de la modération.
-     *
-     * LE FICHIER PASSE PAR LE MÊME CHEMIN QUE LES AUTRES PIÈCES JOINTES : même disque, même
-     * plafond, même scan antivirus. Réécrire un stockage pour l'audio aurait créé une seconde porte,
-     * qu'on aurait fini par oublier de garder.
-     */
+    /** ENVOYER UNE NOTE VOCALE. */
     public function sendVoiceNote(Request $request, int $channelId): JsonResponse
     {
         $canal = $this->canalSousGarde($channelId, 'postMessage');
 
         $donnees = $request->validate([
-            /*
-             * Types AUDIO uniquement, et liste blanche : `mimetypes` regarde le contenu réel, pas
-             * l'extension. Un exécutable renommé `.m4a` ne passe pas.
-             */
+            // Types AUDIO uniquement, et liste blanche : `mimetypes` regarde le contenu réel, pas l'extension.
             'audio' => [
                 'required',
                 'file',
@@ -1564,11 +1322,7 @@ class CompanyController extends Controller
             'duration' => ['nullable', 'integer', 'min:1', 'max:600'],
         ]);
 
-        /*
-         * `MessageService::send()` porte mentions, notifications et diffusion en une transaction.
-         * Le contenu textuel est un LIBELLÉ, pas une transcription : les clients qui ne savent pas
-         * lire le type `voice` affichent au moins quelque chose d'intelligible.
-         */
+        // `MessageService::send()` porte mentions, notifications et diffusion en une transaction.
         $message = app(MessageService::class)->send(
             channel: $canal,
             sender: Auth::user(),
@@ -1577,19 +1331,7 @@ class CompanyController extends Controller
             metadata: ['duration' => $donnees['duration'] ?? null],
         );
 
-        /*
-         * LE FICHIER PASSE PAR `AttachmentUploadService`, ET C'EST UNE CORRECTION.
-         *
-         * Le code stockait le fichier lui-même avec `store()` pendant que son commentaire promettait
-         * « même scan antivirus ». C'était faux : `store()` ne déclenche rien. Une seconde porte
-         * d'entrée de fichiers, sans analyse, sur une messagerie d'équipe — et le seul chemin par
-         * lequel on pouvait ensuite RELIRE le fichier n'existait pas non plus, faute de pièce jointe
-         * à désigner.
-         *
-         * En passant par le service, la note vocale hérite de tout : disque configuré, scan
-         * antivirus asynchrone, refus de lecture si infecté, et la route de téléchargement signée qui
-         * vérifie déjà l'appartenance au canal.
-         */
+        // LE FICHIER PASSE PAR `AttachmentUploadService`, ET C'EST UNE CORRECTION.
         $piece = app(AttachmentUploadService::class)->attach(
             $message,
             Auth::user(),
@@ -1608,17 +1350,7 @@ class CompanyController extends Controller
     // Appels audio / vidéo
     // ──────────────────────────────────────────────────────
 
-    /**
-     * OUVRIR UN APPEL DANS UN CANAL.
-     *
-     * La note vocale du lot 7 couvre la consigne qu'on laisse ; un appel couvre la question qui
-     * n'attend pas — « je suis devant la porte, quel est le code ? ». Rien ne portait cela :
-     * `VideoCallService` était un squelette qui levait sur chaque méthode ; il a été supprimé.
-     *
-     * LE JETON N'EST PAS DIFFUSÉ. La bannière part sur `channel.{id}` avec l'identifiant de
-     * l'appel ; chacun demande ENSUITE le sien. Diffuser un jeton donnerait à tous les membres le
-     * droit d'entrer dans la salle sans avoir décroché.
-     */
+    /** OUVRIR UN APPEL DANS UN CANAL. */
     public function startCall(Request $request, int $channelId): JsonResponse
     {
         $canal = $this->canalSousGarde($channelId, 'postMessage');
@@ -1629,22 +1361,14 @@ class CompanyController extends Controller
 
         $service = app(CallService::class);
 
-        /*
-         * SANS CLÉ, ON NE PROPOSE RIEN — et on le dit. Un jeton signé avec un secret vide serait
-         * rejeté par le serveur LiveKit : mieux vaut un refus explicite qu'un appel qui échoue à la
-         * connexion, sans que personne comprenne pourquoi.
-         */
+        // SANS CLÉ, ON NE PROPOSE RIEN — et on le dit.
         abort_unless($service->estConfigure(), 503, 'Les appels ne sont pas configurés sur cette instance.');
 
         $appel = $service->ouvrir($canal, Auth::user(), $donnees['type'] ?? 'audio');
 
         broadcast(new CallStarted($appel));
 
-        /*
-         * Le PUSH double la diffusion, et ce n'est pas redondant : un collègue dont l'application
-         * est fermée ne reçoit rien de Reverb. C'est précisément le cas d'usage — on appelle
-         * quelqu'un qui n'est pas devant son écran.
-         */
+        // Le PUSH double la diffusion, et ce n'est pas redondant : un collègue dont l'application est fermée ne reçoit rien de Reverb.
         $this->prevenirLesAutresMembres($canal, $appel);
 
         // Le délai de sonnerie produit l'état MANQUÉ : sans lui, un appel que personne ne décroche
@@ -1711,12 +1435,7 @@ class CompanyController extends Controller
         ]]);
     }
 
-    /**
-     * Un appel dont on est membre du canal.
-     *
-     * Le scoping passe par le CANAL : `canalSousGarde()` vérifie à la fois l'organisation et
-     * l'appartenance au fil. Un appel d'une autre société n'est donc jamais chargé.
-     */
+    /** Un appel dont on est membre du canal. */
     private function appelSousGarde(int $callId): Call
     {
         $appel = Call::query()->findOrFail($callId);
@@ -1751,13 +1470,7 @@ class CompanyController extends Controller
         }
     }
 
-    /**
-     * Un canal de l'organisation active, sur lequel l'appelant a l'autorisation demandée.
-     *
-     * Le scoping fait partie de la requête : un canal d'une autre société n'est jamais chargé.
-     * `MessageService::send()` n'autorise rien de son côté — c'est précisément ce qui laissait
-     * l'écriture ouverte côté web avant le 2026-08-06.
-     */
+    /** Un canal de l'organisation active, sur lequel l'appelant a l'autorisation demandée. */
     private function canalSousGarde(int $channelId, string $capacite): Channel
     {
         $org = $this->organisationActive();
@@ -1775,24 +1488,8 @@ class CompanyController extends Controller
     // Garde commune
     // ──────────────────────────────────────────────────────
 
-    /**
-     * L'organisation active de l'appelant.
-     *
-     * Un compte sans organisation n'a rien à faire sur cette API : 403 explicite plutôt qu'une
-     * requête vide qui laisserait croire à une société sans membres.
-     */
-    /**
-     * LE REFUS DOIT SE LIRE — il annonçait « HTTP error. ».
-     *
-     * `abort(403)` sans message laisse `ApiJsonRenderer` retomber sur sa phrase par défaut : vingt et
-     * un refus de permission, tous rendus « HTTP error. » dans l'application. Mesuré le 2026-08-16 en
-     * pressant les écritures société avec un compte `viewer`. Le même refus, sur les membres, dit
-     * pourtant « Vous n'avez pas le droit d'effectuer cette action » — deux formes pour une seule
-     * situation, et c'est la moins claire qui répondait le plus souvent.
-     *
-     * Le message ne nomme PAS la permission manquante : « il vous manque `agencies.manage` » ne
-     * s'adresse à personne, tandis que « demandez ce droit à un responsable » indique quoi faire.
-     */
+    /** L'organisation active de l'appelant. */
+    /** LE REFUS DOIT SE LIRE — il annonçait « HTTP error. ». */
     private function exige(string $permission, OrganizationAccount $organisation): void
     {
         abort_unless(

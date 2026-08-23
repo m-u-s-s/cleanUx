@@ -11,18 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * L'IMPORT CSV NE RÉSOUT AUCUN SITE — IL PLANTE.
- *
- * POURQUOI CE FICHIER EXISTE. `createBookingFromRow()` cherchait le site avec
- * `where('code', $data['site_code'])`, alors que la colonne s'appelle `site_code` :
- * `organization_sites` n'a PAS de colonne `code` (vérifié via le schéma — elle porte
- * `postal_code`, `postal_code_id`, `alarm_code_required` et `site_code`).
- *
- * Toute ligne CSV renseignant un site lève donc une QueryException. Comme l'import enveloppe
- * le lot dans une transaction, une seule ligne avec site fait échouer et annuler TOUT le
- * fichier — l'utilisateur ne voit ni booking créé ni cause.
- */
+/** L'IMPORT CSV NE RÉSOUT AUCUN SITE — IL PLANTE. POURQUOI CE FICHIER EXISTE. */
 class BulkBookingImporterSiteCodeTest extends TestCase
 {
     use RefreshDatabase;

@@ -10,18 +10,7 @@ use App\Support\Domain\MissionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Une réservation qui démarre sans être passée par « confirmé » obtient quand même sa mission.
- *
- * Seul `confirme` déclenchait la synchronisation. Or une réservation peut atteindre l'exécution
- * sans passer par là — c'est le cas du flux ASAP. Elle n'obtenait alors aucune mission et restait
- * invisible dans l'application prestataire : ni mise en route, ni arrivée, ni codes de démarrage
- * et de fin, ni clôture, donc aucun encaissement.
- *
- * Le piège évité ici : `syncFromRendezVous` réécrit le statut de la mission avec sa valeur
- * INITIALE. L'appeler à chaque sauvegarde pendant l'exécution ramènerait une mission démarrée à
- * son point de départ. On crée donc la manquante sans resynchroniser l'existante.
- */
+/** Une réservation qui démarre sans être passée par « confirmé » obtient quand même sa mission. */
 class MissionCreatedOnExecutionTest extends TestCase
 {
     use RefreshDatabase;
@@ -44,10 +33,7 @@ class MissionCreatedOnExecutionTest extends TestCase
         $this->assertDatabaseHas('missions', ['booking_id' => $booking->id]);
     }
 
-    /**
-     * Garantie centrale. Sans elle, chaque sauvegarde de la réservation pendant l'intervention
-     * rembobinerait la mission — et avec elle l'heure de démarrage qui alimente la facturation.
-     */
+    /** Garantie centrale. */
     public function test_it_never_rewinds_a_mission_already_underway(): void
     {
         $booking = $this->booking();

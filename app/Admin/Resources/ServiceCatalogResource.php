@@ -12,9 +12,6 @@ use App\Support\ActivityLogger;
 /**
  * Le catalogue des prestations.
  *
- * Les OPTIONS et le questionnaire de commande ne s’éditent pas ici : ce sont des structures
- * imbriquées, et les aplatir dans un formulaire ferait perdre ce qui dépend de quoi.
- *
  * @extends EloquentResource<ServiceCatalog>
  */
 class ServiceCatalogResource extends EloquentResource

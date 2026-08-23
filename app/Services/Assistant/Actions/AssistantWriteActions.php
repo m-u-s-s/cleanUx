@@ -8,17 +8,10 @@ use App\Models\DisputeResolution;
 use App\Models\ProviderPresence;
 use App\Models\User;
 
-/**
- * Write assistant actions (those that mutate data).
- *
- * Includes the 4 write-action implementations, their confirmation-summary
- * helpers, and the internal dispatch router used by AssistantActionExecutor.
- */
+/** Write assistant actions (those that mutate data). */
 class AssistantWriteActions
 {
-    /**
-     * Route a write action name to its implementation.
-     */
+    /** Route a write action name to its implementation. */
     public function dispatch(string $actionName, User $user, array $params): string
     {
         return match ($actionName) {
@@ -30,9 +23,7 @@ class AssistantWriteActions
         };
     }
 
-    /**
-     * Build a human-readable French confirmation summary for a write action.
-     */
+    /** Build a human-readable French confirmation summary for a write action. */
     public function buildConfirmationSummary(string $actionName, User $user, array $params): string
     {
         return match ($actionName) {
@@ -140,9 +131,7 @@ class AssistantWriteActions
         return "Litige #{$disputeId} ({$dispute->reference}) résolu avec succès.";
     }
 
-    /**
-     * update_availability is low-risk: no confirmation required.
-     */
+    /** update_availability is low-risk: no confirmation required. */
     private function doUpdateAvailability(User $user, array $params): string
     {
         $requestedStatus = $params['status'] ?? null;

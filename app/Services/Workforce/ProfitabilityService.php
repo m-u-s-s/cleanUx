@@ -8,38 +8,10 @@ use App\Models\TimeEntry;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-/**
- * LA RENTABILITÉ D'UNE MISSION, D'UN SITE, D'UNE ÉQUIPE (E22).
- *
- * Une société prestataire sait ce qu'elle facture. Elle ne sait pas ce que ça lui coûte — et donc
- * pas si elle gagne de l'argent sur ce client-là. C'est la question qui décide de renégocier un
- * contrat, de refuser une reconduction, ou de s'apercevoir qu'un site précis mange toute la marge
- * des autres.
- *
- * TROIS TERMES, ET AUCUN N'ÉTAIT DISPONIBLE AVANT CETTE PHASE.
- *
- * Le PRODUIT vient du devis de la réservation. Les HEURES viennent des pointages (E20), qui
- * n'existaient pas : on ne pouvait qu'estimer le temps passé, c'est-à-dire deviner. Les
- * CONSOMMABLES viennent des mouvements d'inventaire rattachés à la mission (E23 et F7), qui
- * n'existaient pas non plus.
- *
- * LE COÛT HORAIRE EST UNE HYPOTHÈSE, ET C'EST DIT. La plateforme ne connaît pas les salaires : le
- * taux vient de la configuration de la société, et à défaut d'un défaut prudent. Une marge calculée
- * sur un taux inventé serait plus dangereuse qu'une absence de marge — on la lirait comme un fait.
- * Le résultat porte donc `hourly_rate_source` pour que l'écran puisse le dire.
- *
- * LES MISSIONS SANS POINTAGE SONT COMPTÉES À PART, jamais fondues dans la moyenne. Une mission dont
- * on ignore les heures ferait apparaître une marge de 100 % : la masquer donnerait une rentabilité
- * flatteuse et fausse, exactement ce qu'on cherche à éviter.
- */
+/** LA RENTABILITÉ D'UNE MISSION, D'UN SITE, D'UNE ÉQUIPE (E22). */
 class ProfitabilityService
 {
-    /**
-     * Le coût horaire retenu quand la société n'en a pas déclaré.
-     *
-     * Volontairement PRUDENT : surestimer le coût fait paraître une mission moins rentable qu'elle
-     * ne l'est, ce qui pousse à vérifier. Le sous-estimer ferait signer des contrats à perte.
-     */
+    /** Le coût horaire retenu quand la société n'en a pas déclaré. */
     public const DEFAULT_HOURLY_COST_CENTS = 2200;
 
     /**
@@ -123,12 +95,7 @@ class ProfitabilityService
             ->keyBy('key');
     }
 
-    /**
-     * Ce que les consommables déclarés sur cette mission ont coûté.
-     *
-     * Les mouvements de consommation portent une quantité NÉGATIVE : on la remet en positif pour
-     * valoriser. Sommer tel quel produirait un coût négatif qui viendrait gonfler la marge.
-     */
+    /** Ce que les consommables déclarés sur cette mission ont coûté. */
     protected function coutDesConsommables(Mission $mission): int
     {
         return (int) InventoryMovement::query()

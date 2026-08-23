@@ -9,25 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Service d'import bulk de bookings depuis un CSV (cas B2B facility management).
- *
- * Format CSV attendu (header sur 1ère ligne, séparateur `,` ou `;`) :
- *   site_code,trade_code,scheduled_at,duration_minutes,budget_max_eur,notes
- *
- * Exemples :
- *   PARIS-RIVOLI,nettoyage_bureaux,2026-06-01 09:00,180,80,Nettoyage hebdo
- *   PARIS-LAFAYETTE,nettoyage_bureaux,2026-06-01 14:00,120,60,
- *
- * Workflow :
- *   1. Parse CSV → array de rows
- *   2. Validate par ligne (site exists, trade exists, date future, etc.)
- *   3. Create Booking via CreateBookingAction (avec context organizational)
- *   4. Retourner rapport : N créés, M erreurs (avec ligne + reason)
- *
- * Soft-fail par ligne : si une ligne échoue, les autres continuent.
- * Idempotent : si une ligne mentionne `external_ref` déjà importé pour cette org → skip.
- */
+/** Service d'import bulk de bookings depuis un CSV (cas B2B facility management). */
 class BulkBookingImporter
 {
     /**
@@ -103,23 +85,13 @@ class BulkBookingImporter
         return $data;
     }
 
-    /**
-     * Crée un Booking depuis une ligne CSV. Throw exception si validation échoue.
-     */
+    /** Crée un Booking depuis une ligne CSV. Throw exception si validation échoue. */
     protected function createBookingFromRow(User $orderer, int $organizationId, array $data): ?Booking
     {
         // Resolve site
         $site = null;
         if (! empty($data['site_code'])) {
-            /*
-             * LA COLONNE S'APPELLE `site_code` (corrigé le 2026-08-05).
-             *
-             * La requête portait sur `code`, qui n'existe sur `organization_sites` ni en MySQL ni
-             * dans le schéma de test — la table porte `postal_code`, `postal_code_id`,
-             * `alarm_code_required` et `site_code`. Aucune ligne renseignant un site ne pouvait
-             * donc être importée, et comme le lot est enveloppé dans une transaction, une seule
-             * de ces lignes annulait TOUT le fichier.
-             */
+            // LA COLONNE S'APPELLE `site_code` (corrigé le 2026-08-05).
             $site = OrganizationSite::query()
                 ->where('site_code', $data['site_code'])
                 ->where('organization_account_id', $organizationId)
@@ -175,14 +147,7 @@ class BulkBookingImporter
             'heure' => $scheduled->format('H:i:s'),
             'duree_estimee' => $duration,
             'devis_estime' => $budgetEur,
-            /*
-             * LE LIEN AU SITE VIT DANS UNE COLONNE, PAS DANS UN BLOB (corrigé le 2026-08-05).
-             *
-             * Le site résolu n'était déposé que dans `address_components`, un JSON de contexte.
-             * `bookings.organization_site_id` — la colonne canonique, celle que lisent le hub, les
-             * filtres et le regroupement par site — restait nulle : l'import produisait des
-             * réservations orphelines de leur local.
-             */
+            // LE LIEN AU SITE VIT DANS UNE COLONNE, PAS DANS UN BLOB (corrigé le 2026-08-05).
             'organization_site_id' => $site?->id,
             'destination_lat' => $site?->latitude ?? null,
             'destination_lng' => $site?->longitude ?? null,

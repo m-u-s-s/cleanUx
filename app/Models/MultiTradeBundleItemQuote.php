@@ -7,10 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Un devis soumis (ou sollicité) par un prestataire pour un item de chantier groupé.
- * Plusieurs devis concurrents peuvent exister par item — le client choisit.
- */
+/** Un devis soumis (ou sollicité) par un prestataire pour un item de chantier groupé. */
 class MultiTradeBundleItemQuote extends Model
 {
     use HasFactory;

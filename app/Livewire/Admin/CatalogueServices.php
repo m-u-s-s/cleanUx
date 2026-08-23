@@ -179,13 +179,7 @@ class CatalogueServices extends Component
         // rend une instance neuve, sans détour.
         $service = ServiceCatalog::findOrNew($this->serviceId);
 
-        /*
-         * LES COLONNES SONT NOMMÉES ICI, PAS DÉDUITES DES RÈGLES DE VALIDATION. Passer `$validated`
-         * tel quel revient à dire « écris ce que la validation a bien voulu laisser passer » : le
-         * jour où quelqu'un ajoute une règle pour un besoin d'écran, il ouvre une écriture qu'il
-         * n'a pas vue. Et dans un composant Livewire, les propriétés publiques sont pilotables
-         * depuis le navigateur — la validation est la seule barrière, pas une seconde.
-         */
+        // LES COLONNES SONT NOMMÉES ICI, PAS DÉDUITES DES RÈGLES DE VALIDATION.
         $service->fill(Arr::only($validated, [
             'code',
             'name',

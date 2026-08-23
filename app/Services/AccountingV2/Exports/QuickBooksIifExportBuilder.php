@@ -4,11 +4,7 @@ namespace App\Services\AccountingV2\Exports;
 
 use Illuminate\Database\Eloquent\Builder;
 
-/**
- * QuickBooks IIF (Intuit Interchange Format).
- * Spec : tab-separated, headers !TRNS / !SPL / !ENDTRNS, transactions groupées par batch.
- * Skeleton suffisant pour import QuickBooks Desktop / Online (via converter).
- */
+/** QuickBooks IIF (Intuit Interchange Format). */
 class QuickBooksIifExportBuilder implements ExportBuilderContract
 {
     public function format(): string

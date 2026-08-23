@@ -12,19 +12,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 /**
- * « CE QUE JE FAIS, ET OÙ » — l'écran qui décide de ce qu'un prestataire reçoit.
- *
- * Il n'existait pas. Le métier se déclarait une fois à l'inscription et ne se modifiait plus ; les
- * zones ne se déclaraient nulle part. Un prestataire qui déménageait, ou qui ajoutait une corde à
- * son arc, devait écrire au support — et attendre qu'un administrateur touche la base.
- *
- * CE QUI EST COCHÉ ICI EST EXACTEMENT CE QUE LIT LE DISPATCH. `trade_user` et
- * `employee_zone_assignments` sont les deux tables de la requête candidate : cocher une case change
- * immédiatement les offres reçues, sans déploiement et sans intervention.
- *
- * LES LISTES VIENNENT DU CATALOGUE. On ne propose que des métiers réellement vendus quelque part,
- * et que des zones actives : laisser déclarer une couverture que rien ne peut servir ferait
- * attendre des offres qui ne viendraient jamais.
+ * « CE QUE JE FAIS, ET OÙ » — l'écran qui décide de ce qu'un prestataire reçoit. Il n'existait pas.
  *
  * @property-read array<string, mixed> $catalogue
  */
@@ -63,13 +51,7 @@ class TradesAndZones extends Component
         );
     }
 
-    /**
-     * Enregistre la déclaration.
-     *
-     * LIVEWIRE NE REJOUE PAS `mount()` : l'identité est relue ici, et les identifiants reçus sont
-     * validés contre le catalogue par `ProviderCoverageWriter`. Ce qui vient du navigateur n'est
-     * jamais cru sur parole — sans quoi on déclarerait une couverture sur un métier fermé.
-     */
+    /** Enregistre la déclaration. */
     public function save(): void
     {
         $prestataire = $this->prestataire();

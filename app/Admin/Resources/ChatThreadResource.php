@@ -11,10 +11,6 @@ use App\Services\ChatV2\ChatService;
 /**
  * Les fils de discussion et leur modération.
  *
- * La MODÉRATION s’exerce sur un MESSAGE, pas sur un fil : c’est le message qui porte le contenu
- * signalé. Cette liste sert à retrouver le fil ; la décision se prend sur la page dédiée, qui
- * montre le contenu en cause.
- *
  * @extends EloquentResource<ChatThread>
  */
 class ChatThreadResource extends EloquentResource

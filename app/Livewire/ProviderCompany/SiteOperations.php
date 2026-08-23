@@ -18,16 +18,6 @@ use Livewire\Component;
 /**
  * LES SITES CLIENTS QUE LA SOCIÉTÉ DESSERT, ET QUI S'EN OCCUPE.
  *
- * Une société de nettoyage qui intervient dans vingt immeubles y place des habitués : celui qui
- * connaît le code de la porte, l'ascenseur en panne, l'étage à ne pas déranger avant 10 h. Cette
- * connaissance ne vivait nulle part — chaque répartition repartait de zéro et de la mémoire du
- * dispatcheur.
- *
- * LES SITES SE DÉDUISENT, ILS NE SE SAISISSENT PAS. Un prestataire ne possède pas les locaux de ses
- * clients : il y intervient. La liste vient donc de ce qui l'y relie réellement — ses missions et
- * ses contrats-cadres. Un formulaire de saisie aurait créé un second registre à tenir à jour, faux
- * dès la première mission oubliée.
- *
  * @property-read Collection<int, OrganizationSite> $sites
  * @property-read Collection<int, OrganizationMember> $membres
  */
@@ -37,16 +27,7 @@ class SiteOperations extends Component
 
     public string $recherche = '';
 
-    /**
-     * LA GARDE DE LECTURE QUI MANQUAIT.
-     *
-     * `sites.view_all` etait DECLAREE par cet ecran — le commentaire de la matrice la mentionne —
-     * mais jamais CONSULTEE : n'importe quel membre actif de la societe voyait les sites clients
-     * desservis, leurs referents et leurs contrats-cadres. Un `worker` compris.
-     *
-     * `mount()` ne suffirait pas seul : Livewire ne le rejoue pas entre deux requetes. Il garde
-     * l'ENTREE ; chaque action publique revoit sa propre permission, comme dans `TeamManagement`.
-     */
+    /** LA GARDE DE LECTURE QUI MANQUAIT. */
     public function mount(): void
     {
         $this->exigeLaPermissionDeLecture();
@@ -71,11 +52,6 @@ class SiteOperations extends Component
     /**
      * Les sites où cette société a une raison d'être.
      *
-     * Deux sources, réunies : les missions déjà planifiées et les contrats-cadres où elle est la
-     * partie prestataire. La seconde compte autant que la première — une société est sous contrat
-     * sur un site avant d'y avoir envoyé quiconque, et c'est précisément le moment où elle veut
-     * désigner un référent.
-     *
      * @return Collection<int, OrganizationSite>
      */
     public function getSitesProperty(): Collection
@@ -92,14 +68,7 @@ class SiteOperations extends Component
                 $this->recherche !== '',
                 fn ($q) => $q->where('name', 'like', '%'.$this->recherche.'%')
             )
-            /*
-             * Les référents sont chargés SCOPÉS sur notre organisation, pas tous.
-             *
-             * Deux prestataires peuvent desservir le même immeuble — l'un le nettoyage, l'autre les
-             * espaces verts. Le site est légitimement visible des deux côtés ; la composition de
-             * l'équipe adverse ne l'est pas. Sans cette contrainte dans l'eager-load, l'écran
-             * afficherait les employés d'un concurrent.
-             */
+            // Les référents sont chargés SCOPÉS sur notre organisation, pas tous.
             ->with([
                 'providerAssignments' => fn ($q) => $q
                     ->where('provider_organization_id', $orgId)
@@ -129,14 +98,7 @@ class SiteOperations extends Component
             ->get();
     }
 
-    /**
-     * Désigner le référent d'un site.
-     *
-     * Les DEUX identifiants viennent du client, et ni l'un ni l'autre n'est cru : le site doit
-     * faire partie de ceux qu'on dessert réellement, et la personne doit être un membre actif de
-     * la maison. Un identifiant étranger ne produit rien plutôt qu'une erreur parlante — la
-     * différence entre un refus et un « introuvable » dirait déjà quelque chose.
-     */
+    /** Désigner le référent d'un site. */
     public function designerReferent(int $siteId, int $userId): void
     {
         $user = Auth::user();
@@ -144,12 +106,7 @@ class SiteOperations extends Component
 
         abort_if($orgId === null, 403);
 
-        /*
-         * `sites.assign_members` : déclarée dans la matrice depuis le début, consultée par
-         * personne jusqu'ici. Ce n'est pas la même chose que répartir les missions du jour —
-         * un dispatcheur organise la journée, il ne redessine pas l'affectation durable des
-         * équipes aux sites.
-         */
+        // `sites.assign_members` : déclarée dans la matrice depuis le début, consultée par personne jusqu'ici.
         abort_unless(
             app(PermissionService::class)->can($user, 'sites.assign_members', $orgId),
             403
@@ -212,11 +169,7 @@ class SiteOperations extends Component
             ->distinct()
             ->pluck('organization_site_id');
 
-        /*
-         * Le contrat-cadre porte l'organisation CLIENTE, pas un site : il couvre par construction
-         * l'ensemble des locaux de ce client. On remonte donc du contrat au client, puis du client
-         * à ses sites.
-         */
+        // Le contrat-cadre porte l'organisation CLIENTE, pas un site : il couvre par construction l'ensemble des locaux de ce client.
         $orgsClientesSousContrat = OrganizationContract::query()
             ->where('provider_organization_id', $orgId)
             ->distinct()

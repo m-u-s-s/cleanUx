@@ -14,21 +14,7 @@ use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/**
- * LA FACTURATION DE LA SOCIÉTÉ CLIENTE AFFICHE CE QUE LA SOCIÉTÉ DOIT VRAIMENT.
- *
- * L'écran web annonçait quatre zéros écrits en dur, avec un commentaire « données simulées — à
- * connecter à Invoice model ». L'application mobile, elle, lisait les VRAIES factures du même
- * compte par `ClientFinanceDocumentScope`. Une entreprise consultait donc son solde sur son
- * téléphone et voyait 0,00 € sur son ordinateur.
- *
- * CE TEST MESURE L'ÉGALITÉ ENTRE LES DEUX SURFACES, pas seulement la présence de chiffres : c'est
- * la seule assertion qu'un écran re-débranché ferait tomber. Vérifier « le total est supérieur à
- * zéro » laisserait passer un web qui recalculerait le montant à sa façon.
- *
- * L'ISOLATION EST VÉRIFIÉE AUSSI, parce qu'un écran de facturation qui fuit est pire qu'un écran
- * vide : la facture d'une autre société ne doit apparaître ni dans le total, ni dans la liste.
- */
+/** LA FACTURATION DE LA SOCIÉTÉ CLIENTE AFFICHE CE QUE LA SOCIÉTÉ DOIT VRAIMENT. */
 class FacturationSocieteReelleTest extends TestCase
 {
     use RefreshDatabase;

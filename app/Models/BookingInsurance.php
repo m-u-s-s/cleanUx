@@ -49,10 +49,6 @@ class BookingInsurance extends Model
     /**
      * La réservation couverte.
      *
-     * `booking_id` existait sur la table depuis toujours ; la relation, non. La vitrine
-     * « Ma protection » (E6) doit pouvoir dire QUELLE intervention est couverte : une police sans
-     * son objet est un numéro que personne ne sait rattacher.
-     *
      * @return BelongsTo<Booking, $this>
      */
     public function booking(): BelongsTo

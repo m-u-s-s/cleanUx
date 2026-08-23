@@ -73,15 +73,7 @@ class TaskBoard extends Component
         return $this->queryTasks()->done()->limit(20)->get();
     }
 
-    /**
-     * Les membres à qui l'on peut confier une tâche.
-     *
-     * CETTE LISTE EST UN TROMBINOSCOPE, et le tableau des tâches est ouvert à toute la maison —
-     * `tasks.create` est accordée jusqu'au nettoyeur. Elle ne sert qu'à deux choses, le sélecteur
-     * d'assignation et le filtre par personne, qui supposent l'une comme l'autre de distribuer le
-     * travail. Sans `tasks.assign`, la rendre reviendrait à publier l'effectif de la société sur le
-     * seul écran que le lot 1 laisse ouvert.
-     */
+    /** Les membres à qui l'on peut confier une tâche. */
     public function getMembersProperty()
     {
         $user = Auth::user();
@@ -112,13 +104,7 @@ class TaskBoard extends Component
         $user = Auth::user();
         $orgId = $user->current_organization_id;
 
-        /*
-         * LES ACTIONS N'ÉTAIENT GARDÉES QU'AU MONTAGE (corrigé le 2026-08-05).
-         *
-         * `mount()` vérifie une permission de lecture, puis cette méthode n'en vérifiait plus
-         * aucune : un `viewer` — rôle en lecture seule — créait des tâches. La clé `tasks.create`
-         * existait dans la matrice de permissions sans qu'aucun appelant ne la consulte.
-         */
+        // LES ACTIONS N'ÉTAIENT GARDÉES QU'AU MONTAGE (corrigé le 2026-08-05).
         abort_unless(
             app(PermissionService::class)->can($user, 'tasks.create', $user->currentOrganization),
             403
@@ -134,13 +120,7 @@ class TaskBoard extends Component
             'due_date' => $this->dueDate ?: null,
         ]);
 
-        /*
-         * LES IDENTIFIANTS D'ASSIGNATION VIENNENT DU NAVIGATEUR (corrigé le 2026-08-05).
-         *
-         * `$assigneeIds` était attaché tel quel : on pouvait assigner une tâche à un utilisateur
-         * d'une AUTRE société. On ne retient donc que les membres actifs de l'organisation, et on
-         * exige `tasks.assign` — clé, elle aussi, déclarée mais jamais consultée.
-         */
+        // LES IDENTIFIANTS D'ASSIGNATION VIENNENT DU NAVIGATEUR (corrigé le 2026-08-05).
         if (! empty($this->assigneeIds)) {
             abort_unless(
                 app(PermissionService::class)->can($user, 'tasks.assign', $user->currentOrganization),
@@ -175,11 +155,7 @@ class TaskBoard extends Component
             return;
         }
 
-        /*
-         * Déplacer une tâche est une écriture : un rôle en lecture seule ne doit pas pouvoir
-         * marquer terminé le travail des autres. `tasks.create` gouverne la participation au
-         * tableau ; le créateur de la tâche garde la main sur la sienne.
-         */
+        // Déplacer une tâche est une écriture : un rôle en lecture seule ne doit pas pouvoir marquer terminé le travail des autres.
         abort_unless(
             $task->created_by === $user->id
                 || app(PermissionService::class)->can($user, 'tasks.create', $user->currentOrganization),
@@ -219,20 +195,7 @@ class TaskBoard extends Component
     // Helpers
     // ──────────────────────────────────────────────────────
 
-    /**
-     * Cette tâche figure-t-elle sur le tableau de l'appelant ?
-     *
-     * L'IDENTIFIANT VIENT DU NAVIGATEUR. Les deux écritures ne bornaient la tâche qu'à
-     * l'organisation, puis la gardaient par `tasks.create` — clé accordée jusqu'au nettoyeur : en
-     * devinant un identifiant, chacun marquait « terminée » la tâche d'un collègue qu'il n'avait
-     * même pas le droit de lire.
-     *
-     * LA VÉRIFICATION VIENT APRÈS LA PERMISSION, ET L'ORDRE COMPTE. Charger d'emblée par la requête
-     * de visibilité rendait silencieux un refus qui doit rester bruyant : `TaskBoardActionGuardsTest`
-     * fige le 403 obtenu quand un droit est retiré pendant qu'un onglet reste ouvert. Les deux
-     * questions sont distinctes — « avez-vous le droit d'écrire ici » se répond par 403, « cette
-     * tâche est-elle la vôtre » par un silence, qui n'apprend rien sur son existence.
-     */
+    /** Cette tâche figure-t-elle sur le tableau de l'appelant ? L'IDENTIFIANT VIENT DU NAVIGATEUR. */
     private function estVisible(int $taskId): bool
     {
         return app(TaskVisibilityService::class)
@@ -241,13 +204,7 @@ class TaskBoard extends Component
             ->exists();
     }
 
-    /**
-     * LE TABLEAU MONTRAIT TOUTES LES TÂCHES DE LA SOCIÉTÉ À QUI POUVAIT L'OUVRIR.
-     *
-     * Le seul filtre était l'organisation. La règle « le tableau entier pour qui distribue le
-     * travail, mes tâches pour qui l'exécute » vit désormais dans `TaskVisibilityService`, partagé
-     * avec l'API mobile : deux filtres écrits séparément auraient dérivé.
-     */
+    /** LE TABLEAU MONTRAIT TOUTES LES TÂCHES DE LA SOCIÉTÉ À QUI POUVAIT L'OUVRIR. */
     private function queryTasks()
     {
         $query = app(TaskVisibilityService::class)

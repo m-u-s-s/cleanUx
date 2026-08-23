@@ -12,13 +12,7 @@ class MissionIncident extends Model
     /** @use HasFactory<MissionIncidentFactory> */
     use HasFactory;
 
-    /**
-     * Les imprévus qu'un prestataire rencontre en arrivant, nommés une fois pour toutes.
-     *
-     * Trois catégories, pas trente : au-delà, personne ne choisit et tout finit en « autre ». Elles
-     * se distinguent par ce qu'elles DÉCLENCHENT — un dégât préexistant se photographie et se
-     * signale au client, un accès impossible arrête la mission, un objet manquant la modifie.
-     */
+    /** Les imprévus qu'un prestataire rencontre en arrivant, nommés une fois pour toutes. */
     public const TYPE_PREEXISTING_DAMAGE = 'preexisting_damage';
 
     public const TYPE_ACCESS_IMPOSSIBLE = 'access_impossible';

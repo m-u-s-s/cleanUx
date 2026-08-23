@@ -6,19 +6,7 @@ use App\Events\Presence\UserPresenceChanged;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
-/**
- * Phase 3 — Service de présence léger (cache-based).
- *
- * Stocke le statut explicite et le "last seen" de chaque utilisateur dans le cache.
- * Le presence channel d'Echo gère la vraie présence "online/offline" automatiquement
- * (via heartbeat WebSocket) — ce service est pour les statuts manuels et pour le
- * fallback "vu il y a X minutes" quand l'utilisateur est offline.
- *
- * Usage :
- *   PresenceTracker::setStatus($user, UserPresenceChanged::STATUS_BUSY, 'En réunion');
- *   PresenceTracker::touch($user); // last seen = maintenant
- *   $info = PresenceTracker::get($user);
- */
+/** Phase 3 — Service de présence léger (cache-based). */
 class PresenceTracker
 {
     private const TTL_LAST_SEEN_SEC = 600;  // 10 min

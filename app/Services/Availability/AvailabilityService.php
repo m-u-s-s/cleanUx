@@ -11,20 +11,7 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\Config;
 
-/**
- * AvailabilityService (Phase Availability v2).
- *
- * Calcule les fenêtres disponibles d'un provider à partir de :
- *   - templates récurrents (AvailabilitySlot par weekday)
- *   - overrides par date (AvailabilityException : closed / open_override / partial)
- *   - holds actifs (AvailabilityHold : soft-lock pendant booking flow)
- *   - bookings existants (table bookings : statut confirmé/encours/etc.)
- *
- * Toutes les comparaisons sont faites en UTC interne ; les inputs/outputs
- * gardent le tz du slot (ou default si absent).
- *
- * Data-access + schema-defensive logic is delegated to AvailabilityDataAccess.
- */
+/** AvailabilityService (Phase Availability v2). */
 class AvailabilityService
 {
     public function __construct(protected AvailabilityDataAccess $dataAccess) {}
@@ -216,9 +203,7 @@ class AvailabilityService
         ]);
     }
 
-    /**
-     * Cleanup expired holds (called from a scheduled command).
-     */
+    /** Cleanup expired holds (called from a scheduled command). */
     public function cleanupExpiredHolds(): int
     {
         return AvailabilityHold::query()
@@ -239,7 +224,6 @@ class AvailabilityService
 
     /**
      * Subtracts the [blockStart, blockEnd] range from a set of windows.
-     * Returns the remaining windows.
      *
      * @param  array<int, array{start:CarbonImmutable, end:CarbonImmutable}>  $windows
      * @return array<int, array{start:CarbonImmutable, end:CarbonImmutable}>

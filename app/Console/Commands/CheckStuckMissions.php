@@ -6,11 +6,7 @@ use App\Models\Mission;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Console\Command;
 
-/**
- * Go-live drill D5 — détecte les missions bloquées dans un état non terminal
- * au-delà de leur début planifié. Sort en échec (exit 1) s'il y en a, pour
- * déclencher l'alerting/monitoring.
- */
+/** Go-live drill D5 — détecte les missions bloquées dans un état non terminal au-delà de leur début planifié. */
 class CheckStuckMissions extends Command
 {
     protected $signature = 'spine:check-stuck-missions {--hours=6 : Ancienneté (h) du planned_start au-delà de laquelle une mission non terminée est considérée bloquée}';

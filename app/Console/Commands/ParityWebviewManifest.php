@@ -5,16 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Régénère la liste des pages embarquées que balaie le harnais de QA visuelle.
- *
- * `storage/app/parity_webview.json` était produit à la main. Il avait donc DÉRIVÉ du registre :
- * 120 modules d'un côté, un registre qui en comptait un de plus de l'autre. Un balayage qui passe
- * au vert sur une liste périmée ne dit rien de la page qu'on vient d'ajouter — il dit seulement
- * qu'on ne l'a pas regardée.
- *
- * La commande est idempotente et sans effet de bord : on la relance après chaque ajout au registre.
- */
+/** Régénère la liste des pages embarquées que balaie le harnais de QA visuelle. */
 class ParityWebviewManifest extends Command
 {
     protected $signature = 'parity:webview-manifest';

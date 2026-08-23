@@ -9,25 +9,7 @@ use App\Support\ActivityLogger;
 use DomainException;
 use Illuminate\Support\Carbon;
 
-/**
- * DEMANDER DU RENFORT DEPUIS LE TERRAIN.
- *
- * ── LA TROISIÈME ISSUE, CELLE QUI MANQUAIT ───────────────────────────────────────────────────
- *
- * Un prestataire qui découvre un chantier deux fois plus gros que prévu n'avait que deux sorties :
- * réviser le devis, ou abandonner. Le renfort est la troisième, et c'est souvent la bonne — le
- * travail se fait, le client garde son intervention, et personne ne renégocie sous pression.
- *
- * C'est aussi pour cela que le questionnaire d'annulation y renvoie : « le chantier est trop gros
- * pour moi seul » n'est pas une annulation.
- *
- * ── POURQUOI CE SERVICE EXISTE À CÔTÉ DE `TeamLeadOperationsService` ─────────────────────────
- *
- * Celui-là demande un `MissionTaskSegment` : c'est le chemin des chantiers découpés en lots, où un
- * chef d'équipe pilote des segments. Un prestataire seul sur une intervention ordinaire n'a aucun
- * segment, et lui en inventer un pour poser une demande créerait une ligne d'exécution fictive dans
- * un module de planification. La table, elle, accepte déjà une demande rattachée à la seule mission.
- */
+/** DEMANDER DU RENFORT DEPUIS LE TERRAIN. */
 class MissionReinforcementService
 {
     public function __construct(
@@ -50,12 +32,7 @@ class MissionReinforcementService
             throw new DomainException('Dites ce qui justifie le renfort : c’est ce que lira celui qui viendra.');
         }
 
-        /*
-         * UNE SEULE DEMANDE OUVERTE PAR MISSION.
-         *
-         * Deux demandes concurrentes feraient venir deux renforts pour le même besoin — et le
-         * second se déplacerait pour rien, à la charge de la plateforme.
-         */
+        // UNE SEULE DEMANDE OUVERTE PAR MISSION.
         $ouverte = MissionReinforcementRequest::query()
             ->where('mission_id', $mission->id)
             ->where('status', 'open')

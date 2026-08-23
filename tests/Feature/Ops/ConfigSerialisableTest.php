@@ -7,19 +7,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Sentry\Event;
 use Tests\TestCase;
 
-/**
- * Garde-fou de déploiement.
- *
- * `php artisan config:cache` écrit la configuration avec var_export() puis relit le
- * fichier produit. Une closure ne s'exporte pas : la commande échoue alors avec
- * « Your configuration files could not be serialized because the value at "x.y" is
- * non-serializable », et plus AUCUN déploiement ne peut aboutir.
- *
- * Ce test reproduit exactement cette cause SANS lancer config:cache : la commande
- * inspecte `$app['config']->all()` (cf. ConfigCacheCommand::getFreshConfiguration()),
- * on inspecte la même chose. On évite ainsi d'écrire dans bootstrap/cache/, partagé
- * avec les autres agents et avec les suites de tests en cours.
- */
+/** Garde-fou de déploiement. */
 class ConfigSerialisableTest extends TestCase
 {
     #[Test]
@@ -37,12 +25,7 @@ class ConfigSerialisableTest extends TestCase
         );
     }
 
-    /**
-     * Sérialisable ne suffit pas : Sentry valide `before_send` avec le type `callable`
-     * (Sentry\Options::configureOptions). Une valeur exportable mais non appelable ferait
-     * échouer la construction du client — pire que le bug d'origine, car silencieuse au
-     * moment du déploiement.
-     */
+    /** Sérialisable ne suffit pas : Sentry valide `before_send` avec le type `callable` (Sentry\Options::configureOptions). */
     #[Test]
     public function le_filtre_sentry_before_send_reste_appelable(): void
     {
@@ -55,10 +38,7 @@ class ConfigSerialisableTest extends TestCase
         );
     }
 
-    /**
-     * Le va-et-vient var_export() → eval() est littéralement ce que fait
-     * ConfigCacheCommand quand il diagnostique une valeur fautive.
-     */
+    /** Le va-et-vient var_export() → eval() est littéralement ce que fait ConfigCacheCommand quand il diagnostique une valeur fautive. */
     #[Test]
     public function la_valeur_du_filtre_sentry_survit_a_var_export(): void
     {
@@ -74,10 +54,7 @@ class ConfigSerialisableTest extends TestCase
         );
     }
 
-    /**
-     * Le comportement de filtrage lui-même, appelé avec la signature réelle du SDK :
-     * Sentry\Client::applyBeforeSendCallback() passe (\Sentry\Event, ?\Sentry\EventHint).
-     */
+    /** Le comportement de filtrage lui-même, appelé avec la signature réelle du SDK : Sentry\Client::applyBeforeSendCallback() passe (\Sentry\Event, ?\Sentry\EventHint). */
     #[Test]
     public function le_filtre_sentry_ecarte_les_soft_fails_attendus(): void
     {

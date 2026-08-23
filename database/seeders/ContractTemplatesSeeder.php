@@ -15,13 +15,7 @@ class ContractTemplatesSeeder extends Seeder
                 'name' => 'Conditions générales client',
                 'type' => ContractTemplate::TYPE_TOS,
                 'role' => ContractTemplate::ROLE_CLIENT,
-                /*
-                 * VERSION INCRÉMENTÉE : la §2.1 ajoute une règle de facturation.
-                 *
-                 * Un consentement donné sur la version précédente ne couvre pas une majoration
-                 * qu'elle ne mentionnait pas. Garder le même numéro laisserait croire que les
-                 * clients déjà signataires l'ont acceptée.
-                 */
+                // VERSION INCRÉMENTÉE : la §2.1 ajoute une règle de facturation.
                 'version' => '2026-08-v2',
                 'body_markdown' => <<<'MD'
 # Conditions générales d'utilisation
@@ -140,23 +134,7 @@ MD,
             ],
         ];
 
-        /*
-         * LA CLÉ EST `code` SEUL, ET C'EST LA SEULE QUI TIENNE.
-         *
-         * `contract_templates` porte DEUX contraintes d'unicité : `(code, version)` et `code` tout
-         * court. La seconde rend la première inopérante — deux versions d'un même contrat ne
-         * peuvent pas coexister, quoi qu'en laisse croire la colonne `supersedes_template_id`.
-         *
-         * Chercher sur `(code, version)` marchait tant que la version ne bougeait jamais : sur une
-         * base vierge, on insère. Le jour où l'on incrémente — ce qui vient d'arriver avec la règle
-         * de facturation au temps —, aucune ligne ne correspond, l'insertion part, et MySQL la
-         * refuse sur l'unicité de `code`. La CI ne l'aurait jamais vu : sa base est neuve à chaque
-         * exécution. Staging et production, elles, l'auraient vu au premier déploiement.
-         *
-         * METTRE À JOUR EN PLACE NE RÉÉCRIT PAS CE QUI A ÉTÉ SIGNÉ : `contract_documents` conserve
-         * son propre `body_rendered_html`. Un signataire garde donc le texte exact qu'il a accepté,
-         * et c'est ce qui rend cette clé acceptable.
-         */
+        // LA CLÉ EST `code` SEUL, ET C'EST LA SEULE QUI TIENNE.
         foreach ($templates as $tpl) {
             ContractTemplate::query()->updateOrCreate(
                 ['code' => $tpl['code']],

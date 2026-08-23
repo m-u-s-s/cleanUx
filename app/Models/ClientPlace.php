@@ -11,13 +11,6 @@ use Illuminate\Support\Carbon;
 /**
  * UN LIEU DU CARNET D'UN CLIENT (E2).
  *
- * CE QUI COMPTE N'EST PAS L'ADRESSE, ce sont les CONSIGNES qui l'accompagnent : l'étage, le
- * digicode, la clé chez la voisine, le chien, l'allergie aux produits chlorés. Ces informations se
- * redonnent oralement à chaque nouveau prestataire — ou se perdent.
- *
- * LES CONSIGNES D'ACCÈS SONT DES CLÉS DE DOMICILE. Elles ne se révèlent au prestataire qu'à
- * l'arrivée confirmée sur place : c'est `MissionAccessSheetService` qui garde cette porte.
- *
  * @property int $id
  * @property int $user_id
  * @property string $label
@@ -85,9 +78,6 @@ class ClientPlace extends Model
 
     /**
      * Les préférences, sous une forme lisible par un humain sur le terrain.
-     *
-     * RENDUE MÊME VIDE, avec les clés attendues : une fiche dont les champs apparaissent et
-     * disparaissent selon ce qui est rempli se lit mal, et fait douter de ce qui manque.
      *
      * @return array<string, mixed>
      */

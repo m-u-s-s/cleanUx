@@ -9,9 +9,7 @@ use Illuminate\Validation\ValidationException;
 
 class AttachmentService
 {
-    /**
-     * Validate + store attachment. Returns array {path, mime, size_bytes} or throws.
-     */
+    /** Validate + store attachment. Returns array {path, mime, size_bytes} or throws. */
     public function store(UploadedFile $file): array
     {
         if (! (bool) config('chat_v2.attachments_enabled', true)) {

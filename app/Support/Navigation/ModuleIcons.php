@@ -2,17 +2,7 @@
 
 namespace App\Support\Navigation;
 
-/**
- * Table emoji → Heroicon, extraite de `navigation-menu.blade.php`.
- *
- * Elle vivait dans la vue, qui était alors la seule à en avoir besoin. La page Modules et les deux
- * layouts société la consomment désormais aussi : la laisser en Blade obligerait à la recopier
- * trois fois, et ce dépôt a déjà payé le prix d'une table dupliquée — deux copies du même hook,
- * donc deux fois le même défaut.
- *
- * Les entrées sont reprises VERBATIM : elles ont été choisies une par une, et les réécrire ferait
- * perdre de l'information sans rien gagner.
- */
+/** Table emoji → Heroicon, extraite de `navigation-menu.blade.php`. */
 class ModuleIcons
 {
     private const TABLE = [
@@ -35,11 +25,7 @@ class ModuleIcons
         '📤' => 'arrow-up', '⚙️' => 'cog-6-tooth',
     ];
 
-    /**
-     * `null` quand l'emoji n'est pas mappé : l'appelant affiche alors l'emoji tel quel, plutôt
-     * qu'une icône vide. C'est le repli d'origine, et il permet d'ajouter une case sans devoir
-     * d'abord enrichir cette table.
-     */
+    /** `null` quand l'emoji n'est pas mappé : l'appelant affiche alors l'emoji tel quel, plutôt qu'une icône vide. */
     public static function heroicon(string $emoji): ?string
     {
         return self::TABLE[$emoji] ?? null;

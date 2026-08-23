@@ -9,12 +9,7 @@ use App\Support\Accounting\BookingAutoPoster;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Audit MEDIUM — auto-posting comptable, MODÈLE AGENT (décision produit 2026-06-11) :
- * seule la commission est un produit ; la part prestataire est une dette (467)
- * jusqu'au payout ; TVA sur la seule commission. Off par défaut (revenue_model
- * 'principal') pour ne pas casser le modèle existant.
- */
+/** Audit MEDIUM — auto-posting comptable, MODÈLE AGENT (décision produit 2026-06-11) : seule la commission est un produit ; la part prestataire est une dette (467) jusqu'au payout ; TVA sur la seule commission. */
 class MarketplaceSettlementPostingTest extends TestCase
 {
     use RefreshDatabase;

@@ -14,19 +14,7 @@ use App\Services\AssistantContextBuilder;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-/**
- * Phase 5.2 — Endpoint SSE de streaming, refactoré pour vrai temps réel.
- *
- * Différence clé avec 5.1 :
- *   AVANT : tous les events étaient accumulés puis émis en bloc à la fin.
- *   APRÈS : chaque event Anthropic est immédiatement émis vers le client
- *           via le callback du AnthropicStreamingProvider.
- *
- * Authentification :
- *   EventSource ne supporte pas les headers custom (CSRF). On utilise donc
- *   une URL signée (URL::temporarySignedRoute) générée par AssistantWidget
- *   pour authentifier l'appel.
- */
+/** Phase 5.2 — Endpoint SSE de streaming, refactoré pour vrai temps réel. */
 class AssistantStreamController extends Controller
 {
     public function stream(
@@ -186,9 +174,7 @@ class AssistantStreamController extends Controller
         ]);
     }
 
-    /**
-     * Émet un StreamEvent au format SSE et flush immédiatement.
-     */
+    /** Émet un StreamEvent au format SSE et flush immédiatement. */
     private function emit(StreamEvent $event): void
     {
         $this->emitRaw($event->type, $event->payload);

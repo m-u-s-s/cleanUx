@@ -9,81 +9,7 @@ use App\Models\OrganizationRolePermission;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
-/**
- * Service central d'autorisation Brio.
- *
- * Toute vérification de permission passe ici — jamais directement
- * sur les colonnes du modèle User ou OrganizationMember.
- *
- * Permissions disponibles (par domaine) :
- *
- * BOOKINGS
- *   bookings.create         Créer une réservation
- *   bookings.view_all       Voir toutes les réservations de l'org
- *   bookings.approve        Approuver les demandes en attente
- *   bookings.cancel         Annuler une réservation
- *
- * AGENCES (implantations de la société PRESTATAIRE — à ne pas confondre avec les locaux du client)
- *   agencies.view           Voir les implantations de la société
- *   agencies.manage         Créer, modifier, rattacher
- *
- * SITES
- *   sites.create            Créer un nouveau local
- *   sites.edit              Modifier un local existant
- *   sites.delete            Supprimer un local
- *   sites.view_all          Voir tous les locaux (sinon : uniquement les assignés)
- *   sites.assign_members    Assigner des membres à un local
- *
- * MEMBERS
- *   members.invite          Inviter un nouveau membre
- *   members.edit_role       Changer le rôle d'un membre
- *   members.suspend         Suspendre un membre
- *   members.remove          Retirer un membre de l'organisation
- *   members.manage_permissions  Accorder ou retirer des permissions à un membre (propriétaire)
- *
- * FINANCE
- *   finance.view            Voir les factures et paiements
- *   finance.download        Télécharger les documents financiers
- *   finance.manage          Gérer Stripe Connect, virements
- *
- * MISSIONS (côté prestataire)
- *   missions.assign         Assigner une mission à un travailleur
- *   missions.dispatch       Dispatcher plusieurs missions en masse
- *   missions.view_all       Voir toutes les missions de l'org
- *   missions.quality        Accéder aux rapports qualité
- *   missions.reschedule     Déplacer une intervention (date, heure, lieu)
- *
- * TEAM (côté prestataire)
- *   team.create             Créer une équipe
- *   team.manage             Gérer les membres d'une équipe
- *   team.view               Voir les équipes existantes
- *
- * COMMUNICATION
- *   channels.create         Créer un canal
- *   channels.manage         Archiver / supprimer un canal
- *   tasks.create            Créer une tâche
- *   tasks.assign            Assigner une tâche à un membre
- *   tasks.close             Clôturer / supprimer une tâche
- *
- * ANALYTICS
- *   analytics.view          Voir les statistiques de l'organisation
- *   analytics.export        Exporter les données
- *
- * EXPLOITATION (côté société prestataire — phase 2)
- *   inventory.view          Voir le stock de consommables
- *   inventory.manage        Réceptionner, prélever, corriger le stock
- *   quotes.view             Suivre les devis que la société a émis
- *   quotes.manage           Chiffrer et envoyer un devis
- *   recruitment.view        Voir les offres et les candidatures
- *   recruitment.manage      Publier une offre, trier, décider
- *   fleet.view              Voir les véhicules, équipements et certifications
- *   fleet.manage            Déclarer et retirer du matériel
- *
- * ADMIN PLATEFORME (platform_role = admin / super_admin)
- *   platform.manage_users
- *   platform.manage_orgs
- *   platform.view_logs
- */
+/** Service central d'autorisation Brio. */
 class PermissionService
 {
     // ──────────────────────────────────────────────────────
@@ -136,11 +62,7 @@ class PermissionService
             // ne peut pas commander ferait du bruit sans recours.
             'inventory.view',
             'inventory.manage',
-            /*
-             * E24 — les devis que la societe batit elle-meme. `view` pour suivre le pipeline
-             * commercial, `manage` pour chiffrer et envoyer : un devis engage un prix, et un prix
-             * engage la marge de toute l'equipe qui l'executera.
-             */
+            // E24 — les devis que la societe batit elle-meme.
             'quotes.view',
             'quotes.manage',
             // E25 — le recrutement. Publier une offre et trier des candidatures touche a des
@@ -159,19 +81,7 @@ class PermissionService
             'bookings.view_all',
             'bookings.approve',
             'bookings.cancel',
-            /*
-             * DEUX ÉCRITURES SANS LEUR LECTURE — le même défaut que `sites.edit` chez le
-             * responsable de site, corrigé plus bas dans ce fichier.
-             *
-             * Mesuré le 2026-08-16 en parcourant les onze sous-rôles : un « gestionnaire général »
-             * invité dans une société prestataire recevait 403 sur l'accueil de sa société
-             * (`missions.view_all`) et sur l'effectif (`team.view`), là où un répartiteur et un chef
-             * d'équipe passaient. Il pouvait donc INVITER dans une équipe qu'il ne pouvait pas
-             * ouvrir, et DÉCALER une mission qu'il ne pouvait pas lister — deux clés mortes.
-             *
-             * Ce n'est pas un élargissement de spécialité : `missions.dispatch` reste au répartiteur
-             * et aux opérations. On ajoute la lecture que ses propres écritures supposent.
-             */
+            // DEUX ÉCRITURES SANS LEUR LECTURE — le même défaut que `sites.edit` chez le responsable de site, corrigé plus bas dans ce fichier.
             'missions.view_all',
             'missions.reschedule',
             'team.view',
@@ -201,16 +111,7 @@ class PermissionService
             'bookings.create',
             'bookings.cancel',
             'sites.edit',
-            /*
-             * `sites.view_all` MANQUAIT, ET `sites.edit` était donc une clé morte : le
-             * responsable de site pouvait modifier un local sur un écran qu'il ne pouvait pas
-             * ouvrir — `SiteManager::mount()` répond 403 sans elle.
-             *
-             * CE QUI REND CET AJOUT SÛR, c'est E10 : la liste est désormais filtrée par
-             * `organization_member_site_access`. Le « all » du nom décrit la CAPACITÉ d'ouvrir la
-             * liste, pas sa portée — qui reste bornée aux locaux qu'on lui a confiés. Avant ce
-             * filtre, la même clé lui aurait montré toutes les agences de la société.
-             */
+            // `sites.view_all` MANQUAIT, ET `sites.edit` était donc une clé morte : le responsable de site pouvait modifier un local sur un écran qu'il ne pouvait pas ouvrir — `SiteManager::mount()` répond 403 sans elle.
             'sites.view_all',
             'tasks.create',
             'tasks.assign',
@@ -292,11 +193,7 @@ class PermissionService
 
         OrganizationRole::TEAM_LEAD->value => [
             'missions.view_all',
-            /*
-             * Le chef d'equipe reassigne — c'est l'exigence 5. La PORTEE (son equipe seulement)
-             * n'est pas exprimable dans une matrice de cles : elle est bornee par le helper
-             * « peut reassigner » du lot 3. Cette cle ouvre la capacite, pas le perimetre.
-             */
+            // Le chef d'equipe reassigne — c'est l'exigence 5.
             'missions.assign',
             'team.view',
             'channels.create',
@@ -318,14 +215,7 @@ class PermissionService
         OrganizationRole::WORKER->value => [
             'channels.create',
             'tasks.create',
-            /*
-             * LE TERRAIN VOIT LE STOCK, IL NE LE GÈRE PAS (F7).
-             *
-             * Déclarer ce qu'on a consommé chez un client suppose de savoir ce qu'il y avait —
-             * mais réceptionner une livraison ou corriger un inventaire relève de l'agence. La
-             * consommation elle-même passe par la mission, gardée par l'affectation, et non par
-             * cette clé : un salarié ne prélève que sur l'intervention qu'il exécute.
-             */
+            // LE TERRAIN VOIT LE STOCK, IL NE LE GÈRE PAS (F7).
             'inventory.view',
         ],
 
@@ -339,9 +229,7 @@ class PermissionService
     // API publique
     // ──────────────────────────────────────────────────────
 
-    /**
-     * L'utilisateur a-t-il la permission sur cette organisation ?
-     */
+    /** L'utilisateur a-t-il la permission sur cette organisation ? */
     public function can(User $user, string $permission, OrganizationAccount|int|null $organization = null): bool
     {
         if ($organization === null) {
@@ -373,9 +261,7 @@ class PermissionService
         });
     }
 
-    /**
-     * Vérifier la permission directement sur un OrganizationMember.
-     */
+    /** Vérifier la permission directement sur un OrganizationMember. */
     public function memberCan(OrganizationMember $member, string $permission): bool
     {
         // 1. Permissions personnalisées sur le membre (JSON) ont priorité
@@ -387,30 +273,9 @@ class PermissionService
 
         $role = $member->role instanceof \BackedEnum ? $member->role->value : $member->role;
 
-        /*
-         * 2. MATRICE PROPRE À L'ORGANISATION (ajouté le 2026-08-06).
-         *
-         * `ROLE_PERMISSIONS` ci-dessous est une constante privée : la correspondance rôle →
-         * permissions était figée dans le code. Un propriétaire pouvait accorder un droit à une
-         * personne précise (étage 1), mais pas décider que « chez nous, les chefs d'équipe
-         * assignent les missions » — cela réclamait un déploiement.
-         *
-         * `granted` est un booléen explicite, non une simple présence : une société peut donc
-         * aussi RETIRER un droit accordé par défaut. Sans réglage, aucune ligne n'existe et la
-         * résolution retombe intégralement sur l'étage 3 — le comportement reste identique.
-         */
-        /*
-         * Pas d'organisation, pas de réglage d'organisation : on n'interroge la base que lorsque
-         * la question a un sens. Sans cette condition, `memberCan()` exigeait une base de données
-         * même pour un membre construit en mémoire — ce que font les tests unitaires de ce
-         * service, et ce qui les a fait échouer alors que mes exécutions ciblées sur
-         * `tests/Feature/ProviderCompany` étaient vertes.
-         */
-        /*
-         * On lit l'ATTRIBUT BRUT plutôt que la propriété typée : le modèle la déclare non
-         * nullable, ce qui vaut pour une instance hydratée depuis la base, mais pas pour un
-         * `new OrganizationMember` construit en mémoire — où elle est simplement absente.
-         */
+        // 2. MATRICE PROPRE À L'ORGANISATION (ajouté le 2026-08-06).
+        // Pas d'organisation, pas de réglage d'organisation : on n'interroge la base que lorsque la question a un sens.
+        // On lit l'ATTRIBUT BRUT plutôt que la propriété typée : le modèle la déclare non nullable, ce qui vaut pour une instance hydratée depuis la base, mais pas pour un `new OrganizationMember` construit en mémoire — où elle est simplement absente.
         $orgIdDuMembre = (int) $member->getAttribute('organization_account_id');
 
         if ($orgIdDuMembre > 0) {
@@ -434,13 +299,6 @@ class PermissionService
     /**
      * Les permissions par défaut d'un rôle, ou aucune si le rôle est inconnu.
      *
-     * L'ACCÈS EST EXTRAIT ICI, ET C'EST DÉLIBÉRÉ. Sur la constante, PHPStan infère la forme
-     * littérale du tableau, conclut que toute clé existe et signale le repli `?? []` comme mort —
-     * alors qu'il protège d'une valeur de rôle lue en base qui ne serait plus dans l'énumération.
-     * Le message imprimait de surcroît la matrice entière, si bien que la moindre permission
-     * ajoutée invalidait l'entrée de baseline correspondante. Ici `$role` est un `string`
-     * ordinaire : le repli redevient ce qu'il est, une garde.
-     *
      * @return list<string>
      */
     private static function permissionsParDefaut(string $role): array
@@ -450,18 +308,6 @@ class PermissionService
 
     /**
      * Retourner toutes les permissions d'un membre (rôle + matrice société + dérogations).
-     *
-     * ELLE SAUTAIT L'ÉTAGE DU MILIEU. `memberCan()` résout en trois temps — dérogation nominative,
-     * matrice propre à la société, matrice par défaut du code — quand cette méthode n'en connaissait
-     * que le premier et le dernier. Les deux répondaient donc différemment à la même question dès
-     * qu'une société réglait sa matrice, et c'est la vue qui s'en servait : la fenêtre des
-     * permissions de `TeamManagement` affichait l'état par défaut du rôle, pas l'état effectif.
-     *
-     * L'écart n'avait encore blessé personne faute d'écran pour ÉCRIRE la matrice ; c'est
-     * précisément ce que ce lot ajoute, et le contrat de rôle mobile lit cette méthode.
-     *
-     * UNE SEULE REQUÊTE pour toute la matrice, pas une par clé : la réponse part vers le téléphone
-     * à chaque reprise de session.
      *
      * @return array<string, bool>
      */
@@ -473,9 +319,8 @@ class PermissionService
 
         $orgId = (int) $member->getAttribute('organization_account_id');
 
-        /*
-         * Même précaution que dans `memberCan()` : un membre construit en mémoire — ce que font les
-         * tests unitaires de ce service — n'a pas d'organisation, donc pas de matrice à interroger.
+        /**
+         * Même précaution que dans `memberCan()` : un membre construit en mémoire — ce que font les tests unitaires de ce service — n'a pas d'organisation, donc pas de matrice à interroger.
          *
          * @var array<string, bool> $matriceSociete
          */
@@ -509,16 +354,7 @@ class PermissionService
         return $result;
     }
 
-    /**
-     * Ce rôle a-t-il cette permission SANS aucun réglage de société ni dérogation ?
-     *
-     * L'écran de matrice en a besoin pour afficher l'état d'une case que la société n'a jamais
-     * réglée : n'afficher que les réglages explicites montrerait un tableau vide au premier usage,
-     * et laisserait croire que personne n'a de droits.
-     *
-     * C'est la SEULE lecture publique du troisième étage. Ailleurs, c'est `can()` ou `memberCan()`
-     * qu'il faut appeler — eux seuls consultent les trois.
-     */
+    /** Ce rôle a-t-il cette permission SANS aucun réglage de société ni dérogation ? */
     public function roleAccordeParDefaut(string $role, string $permission): bool
     {
         return in_array($permission, self::permissionsParDefaut($role), true);
@@ -526,10 +362,6 @@ class PermissionService
 
     /**
      * Les clés ACCORDÉES à un membre — ce que le mobile reçoit.
-     *
-     * Le téléphone n'a pas besoin de la liste des refus : il applique une règle de défaut-refus,
-     * et une clé absente vaut refusée. Envoyer les deux moitiés inviterait à traiter l'absence
-     * comme un cas indécis.
      *
      * @return list<string>
      */
@@ -550,16 +382,8 @@ class PermissionService
         ));
     }
 
-    /**
-     * Invalider le cache des permissions d'un utilisateur sur une organisation.
-     */
-    /**
-     * Purge le cache de TOUS les membres d'une organisation.
-     *
-     * Modifier la matrice de la société change les droits de plusieurs personnes d'un coup :
-     * purger le seul acteur laisserait les autres sur l'ancienne réponse pendant une minute — un
-     * délai invisible et incompréhensible côté utilisateur.
-     */
+    /** Invalider le cache des permissions d'un utilisateur sur une organisation. */
+    /** Purge le cache de TOUS les membres d'une organisation. */
     public function invalidateOrganizationCache(int $orgId): void
     {
         OrganizationMember::query()
@@ -577,18 +401,7 @@ class PermissionService
         }
     }
 
-    /**
-     * L'utilisateur peut-il gérer un autre membre selon la hiérarchie ?
-     *
-     * ELLE NE POUVAIT PAS FONCTIONNER (corrigé le 2026-08-05). Elle appelait
-     * `OrganizationRole::from($actor->role)` alors que `OrganizationMember::$role` est DÉJÀ casté
-     * en enum par le modèle — tout appel levait donc `TypeError: must be of type string|int,
-     * OrganizationRole given`. C'est probablement pourquoi elle n'était appelée nulle part :
-     * elle avait été écrite, jamais exercée, et la hiérarchie n'était appliquée par personne.
-     *
-     * `$role` est désormais accepté sous ses deux formes — l'enum du modèle comme la chaîne d'un
-     * appelant qui lirait la colonne brute.
-     */
+    /** L'utilisateur peut-il gérer un autre membre selon la hiérarchie ? */
     public function canManageMember(
         OrganizationMember $actor,
         OrganizationMember $target
@@ -596,17 +409,7 @@ class PermissionService
         return $this->roleDe($actor)->canManage($this->roleDe($target));
     }
 
-    /**
-     * Le rôle d'un membre.
-     *
-     * `OrganizationMember::$role` est CASTÉ en enum par le modèle : l'accès rend toujours un
-     * `OrganizationRole`, jamais une chaîne. J'avais prévu les deux formes ; PHPStan a montré que
-     * la seconde branche était inatteignable.
-     *
-     * Le bug d'origine n'était donc pas que le rôle pouvait être une chaîne, mais que le code
-     * COMPARAIT cet enum à une chaîne littérale — l'inverse. Garder une conversion défensive ici
-     * n'aurait rien protégé et aurait entretenu la confusion.
-     */
+    /** Le rôle d'un membre. */
     private function roleDe(OrganizationMember $membre): OrganizationRole
     {
         return $membre->role;

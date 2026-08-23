@@ -15,22 +15,7 @@ use Illuminate\Support\Collection;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * LA FICHE DE DISPONIBILITÉ D'UN PRESTATAIRE, CÔTÉ ADMINISTRATION.
- *
- * Le centre listait des prestataires sans permettre d'ouvrir aucun d'eux : voir qu'un compte n'a
- * aucun créneau et ne rien pouvoir y faire est une information sans issue. Cliquer sur un nom
- * ouvre désormais sa semaine.
- *
- * LES GESTES SONT CEUX DU PRESTATAIRE, à l'identique — `AvailabilityEditor` est le même service.
- * Une deuxième implémentation « pour l'admin » finirait par appliquer d'autres règles de
- * chevauchement, ou par refermer un jour en supprimant des créneaux. Ce n'est pas un risque
- * théorique : c'est exactement le défaut qu'on vient de corriger sur la page prestataire.
- *
- * CE QUE L'ADMIN VOIT ET QUE LE PRESTATAIRE NE VOIT PAS : la trace de qui a modifié quoi. Toute
- * écriture passe par `ActivityLogger` avec le `provider_user_id` visé — sans quoi une semaine
- * modifiée depuis l'administration serait indiscernable d'une semaine choisie par l'intéressé.
- */
+/** LA FICHE DE DISPONIBILITÉ D'UN PRESTATAIRE, CÔTÉ ADMINISTRATION. */
 class ProviderAvailabilityDetail extends Component
 {
     use EnforcesAdminAccess;
@@ -54,13 +39,7 @@ class ProviderAvailabilityDetail extends Component
 
     public function mount(User $user): void
     {
-        /*
-         * ON REFUSE ICI, PAS À L'ÉCRITURE.
-         *
-         * Ouvrir la fiche d'un compte qui n'est pas prestataire donnerait un écran de créneaux
-         * pour quelqu'un qui n'en aura jamais — et laisserait croire que la configuration a été
-         * faite.
-         */
+        // ON REFUSE ICI, PAS À L'ÉCRITURE.
         abort_unless($user->isEmploye(), 404);
 
         $this->providerId = $user->id;
@@ -157,13 +136,7 @@ class ProviderAvailabilityDetail extends Component
         $this->dispatch('toast', __('Journée rouverte.'), 'success');
     }
 
-    /**
-     * Poser la semaine par défaut sur un compte qui n'a rien.
-     *
-     * C'est le geste qui manquait : le centre montrait des prestataires sans créneau et ne
-     * proposait rien. Le provisionneur reste idempotent — il ne touche jamais un prestataire qui
-     * a déjà choisi, y compris un jour délibérément fermé.
-     */
+    /** Poser la semaine par défaut sur un compte qui n'a rien. */
     public function applyDefaultWeek(): void
     {
         $crees = app(DefaultAvailabilityProvisioner::class)->provision($this->provider());

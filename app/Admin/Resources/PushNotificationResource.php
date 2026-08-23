@@ -10,9 +10,6 @@ use App\Models\PushNotification;
 /**
  * Le journal des notifications poussées.
  *
- * Aucun renvoi : une notification échouée l’est souvent parce que le jeton d’appareil est mort.
- * La renvoyer en boucle n’atteint personne et use le quota du fournisseur.
- *
  * @extends EloquentResource<PushNotification>
  */
 class PushNotificationResource extends EloquentResource

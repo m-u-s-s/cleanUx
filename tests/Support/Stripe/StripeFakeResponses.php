@@ -2,9 +2,7 @@
 
 namespace Tests\Support\Stripe;
 
-/**
- * Canned, test-mode-shaped Stripe API objects for the fake HTTP client.
- */
+/** Canned, test-mode-shaped Stripe API objects for the fake HTTP client. */
 class StripeFakeResponses
 {
     public static function paymentIntent(string $id, string $status, array $overrides = []): array

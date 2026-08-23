@@ -12,10 +12,6 @@ use App\Support\ActivityLogger;
 /**
  * Les modules de la plateforme et leur activation.
  *
- * Certains modules sont VERROUILLÉS (`is_locked`) : ce sont ceux dont dépend le fonctionnement
- * de base. Le rendu générique montre l’état ; la bascule reste sur la page dédiée, qui refuse
- * de toucher aux modules verrouillés.
- *
  * @extends EloquentResource<PlatformModule>
  */
 class PlatformModuleResource extends EloquentResource
@@ -82,11 +78,7 @@ class PlatformModuleResource extends EloquentResource
     public function actions(): array
     {
         return [
-            /*
-             * UN MODULE VERROUILLÉ NE SE BASCULE PAS, et le refus est explicite. Le verrou existe
-             * pour les modules dont l'extinction casserait la plateforme ; l'ignorer ici donnerait
-             * au mobile un pouvoir que le web refuse.
-             */
+            // UN MODULE VERROUILLÉ NE SE BASCULE PAS, et le refus est explicite.
             Action::make('toggle-enabled', 'Activer / désactiver', function (PlatformModule $module) {
                 if ($module->is_locked) {
                     return ['ok' => false, 'message' => 'Ce module est verrouillé.'];

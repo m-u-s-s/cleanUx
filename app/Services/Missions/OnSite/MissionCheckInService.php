@@ -13,28 +13,7 @@ use DomainException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 
-/**
- * LE MODE « JE NE SUIS PAS LÀ » (F14) ET LE PING DE MI-MISSION (F15).
- *
- * F14 — LA PREUVE DE PRÉSENCE SUPPOSE UN CLIENT PRÉSENT, et c'est la limite du dispositif actuel.
- * Le code à six chiffres est affiché par le client et saisi par le prestataire : il atteste que les
- * deux personnes sont face à face. Parfait quand c'est vrai, impossible quand le client travaille et
- * laisse la clé chez la voisine — c'est-à-dire le cas ordinaire du ménage à domicile.
- *
- * Ces interventions se déroulaient donc HORS du dispositif : soit le prestataire ne pouvait pas
- * démarrer, soit quelqu'un contournait. Déclarer son absence à l'avance bascule la preuve sur une
- * photo d'arrivée horodatée et géolocalisée : moins forte qu'une confrontation, infiniment plus
- * qu'un contournement non tracé.
- *
- * LA DÉCLARATION EST FAITE PAR LE CLIENT, JAMAIS PAR LE PRESTATAIRE. C'est la garantie qui tient
- * tout : si celui qui doit prouver sa présence pouvait décider que la preuve ne s'applique pas, il
- * n'y aurait plus de preuve du tout.
- *
- * F15 — LE PING EST UNE QUESTION, PAS UN FORMULAIRE. « Tout va bien ? », une réponse en un geste. Il
- * vaut par son MOMENT : au milieu, quand il est encore temps de corriger. Après, il ne reste que
- * l'avis à écrire et le litige à ouvrir — et les deux coûtent bien plus cher à tout le monde qu'un
- * mot dit au prestataire pendant qu'il est là.
- */
+/** LE MODE « JE NE SUIS PAS LÀ » (F14) ET LE PING DE MI-MISSION (F15). */
 class MissionCheckInService
 {
     public function __construct(
@@ -81,13 +60,7 @@ class MissionCheckInService
         return $booking->fresh();
     }
 
-    /**
-     * QUELLE PREUVE DE PRÉSENCE S'APPLIQUE À CETTE MISSION.
-     *
-     * `code` par défaut, `photo` quand le client a déclaré son absence. Le rendre explicite plutôt
-     * que de le déduire à trois endroits : deux écrans qui devinent différemment finiraient par
-     * demander une preuve à quelqu'un qui ne peut pas la donner.
-     */
+    /** QUELLE PREUVE DE PRÉSENCE S'APPLIQUE À CETTE MISSION. */
     public function modeDePreuve(Mission $mission): string
     {
         return $mission->booking?->client_absent ? 'photo' : 'code';
@@ -95,10 +68,6 @@ class MissionCheckInService
 
     /**
      * DÉMARRER SANS CODE, EN LAISSANT UNE PREUVE.
-     *
-     * La photo d'arrivée porte l'horodatage, la position et l'empreinte : c'est ce qui distingue un
-     * démarrage tracé d'un démarrage déclaratif. Sans elle, le mode absent ne serait qu'un bouton
-     * « je suis arrivé » que rien ne contredit.
      *
      * @throws DomainException
      */
@@ -139,12 +108,7 @@ class MissionCheckInService
 
     // ── F15 : le ping ────────────────────────────────────────────────────────
 
-    /**
-     * Envoie le « tout va bien ? » au client.
-     *
-     * Une seule fois par intervention : répéter la question transforme une attention en
-     * harcèlement, et personne ne répond à la troisième.
-     */
+    /** Envoie le « tout va bien ? » au client. */
     public function envoyerLePing(Mission $mission): bool
     {
         $booking = $mission->booking;
@@ -168,11 +132,7 @@ class MissionCheckInService
     }
 
     /**
-     * La réponse du client, en un geste.
-     *
-     * UNE RÉPONSE NÉGATIVE ALERTE TOUT DE SUITE. C'est toute la raison d'être du ping : signaler
-     * pendant qu'on peut encore corriger. La transmettre au registre NPS sans prévenir personne
-     * reviendrait à collecter un mécontentement pour l'analyser plus tard.
+     * La réponse du client, en un geste. UNE RÉPONSE NÉGATIVE ALERTE TOUT DE SUITE.
      *
      * @throws DomainException
      */
@@ -203,13 +163,7 @@ class MissionCheckInService
         return $booking->fresh();
     }
 
-    /**
-     * Le ping alimente le NPS — sans prétendre en être un.
-     *
-     * Deux réponses ne font pas une note sur dix : on enregistre les extrêmes (0 pour un problème,
-     * 9 pour un « tout va bien ») et la nuance viendra de l'avis, plus tard. Prétendre à une
-     * précision qu'on n'a pas fausserait la moyenne de tout le monde.
-     */
+    /** Le ping alimente le NPS — sans prétendre en être un. */
     protected function alimenterLeNps(Booking $booking, User $client, string $reponse): void
     {
         try {

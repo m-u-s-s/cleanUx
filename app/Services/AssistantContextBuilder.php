@@ -9,12 +9,7 @@ use App\Services\Assistant\Actions\AssistantActionExecutor;
 use App\Services\Assistant\KnowledgeBase;
 use App\Services\Assistant\Stats\AssistantStats;
 
-/**
- * Construit le contexte dynamique pour le chatbot Brio.
- *
- * Chaque rôle reçoit un system prompt différent, enrichi
- * avec les données temps réel de l'utilisateur.
- */
+/** Construit le contexte dynamique pour le chatbot Brio. */
 class AssistantContextBuilder
 {
     // ──────────────────────────────────────────────────────
@@ -168,10 +163,7 @@ Ne jamais exécuter d'actions destructives sans confirmation explicite.",
         return $prompt;
     }
 
-    /**
-     * Search the static knowledge base for articles matching the user message.
-     * Returns a formatted string block, or '' when nothing matches.
-     */
+    /** Search the static knowledge base for articles matching the user message. */
     private function buildKnowledgeBaseBlock(string $message): string
     {
         try {
@@ -181,10 +173,7 @@ Ne jamais exécuter d'actions destructives sans confirmation explicite.",
         }
     }
 
-    /**
-     * Detect relevant actions for the user message and return a formatted data block.
-     * Returns an empty string when no actions match (soft-fail).
-     */
+    /** Detect relevant actions for the user message and return a formatted data block. */
     private function buildLiveDataBlock(User $user, string $message): string
     {
         try {

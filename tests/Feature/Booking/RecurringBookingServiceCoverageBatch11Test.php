@@ -7,11 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
-/**
- * Couvre RecurringBookingService : normalizeSettings (incl. legacy rules),
- * validateSettings (toutes les gardes), generateOccurrences (daily/weekly/monthly),
- * normalizeDays (numeric/labels/fallback/vide) et toLegacyRule.
- */
+/** Couvre RecurringBookingService : normalizeSettings (incl. */
 class RecurringBookingServiceCoverageBatch11Test extends TestCase
 {
     private RecurringBookingService $service;

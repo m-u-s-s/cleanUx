@@ -6,12 +6,7 @@ use App\Models\Trade;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Seed the 12 canonical trades (corps de métier) for the multi-trade marketplace.
- *
- * Idempotent: uses updateOrCreate keyed on slug.
- * Defensive: only sets billing_unit / requires_site_visit if those columns exist.
- */
+/** Seed the 12 canonical trades (corps de métier) for the multi-trade marketplace. */
 class TradeSeeder extends Seeder
 {
     public function run(): void
@@ -618,20 +613,6 @@ class TradeSeeder extends Seeder
 
     /**
      * LE CONTROLE FACIAL, POSE SUR LES MEMES METIERS QUE LE CASIER JUDICIAIRE.
-     *
-     * `config/onboarding_documents.php` exige deja un extrait de casier pour la garde d'enfants et
-     * le gardiennage, avec sa justification ecrite : intervention aupres de mineurs au domicile
-     * sans temoin, et acces aux locaux et aux biens du client. C'est exactement la population ou
-     * l'identite de la personne qui SE PRESENTE compte le plus -- et c'est la fraude que visent
-     * Bolt et Deliveroo : le compte prete a quelqu'un qui n'a passe aucun controle.
-     *
-     * Reprendre ce critere plutot que d'en inventer un autre evite deux listes qui divergent.
-     *
-     * ON NE POSE LA VALEUR QU'A LA CREATION DU METIER, et `wasRecentlyCreated` est la seule
-     * mesure fiable de « cree par CE passage ». Comparer `created_at` a `updated_at` aurait semble
-     * equivalent et ne l'est pas : un metier ancien que personne n'a jamais modifie porte les deux
-     * dates identiques, et se verrait donc re-coche a chaque passage du seeder -- effacant le choix
-     * d'un administrateur qui l'avait decoche, sans que rien ne le signale.
      *
      * @param  list<string>  $codesCreesMaintenant
      */

@@ -221,10 +221,7 @@ class GeocodingService
         return $result;
     }
 
-    /**
-     * Estime rayon approximatif en mètres pour atteindre N minutes en mode donné.
-     * Pas un vrai isochrone routing, mais un cercle conservateur.
-     */
+    /** Estime rayon approximatif en mètres pour atteindre N minutes en mode donné. */
     public function isochroneRadiusMeters(int $minutes, string $mode = 'driving'): int
     {
         $avgSpeed = (float) (config('geolocation_v2.isochrone_avg_speed_kmh.'.$mode, 35));

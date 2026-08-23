@@ -10,18 +10,7 @@ use App\Support\ActivityLogger;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
-/**
- * CE QUI APPELLE UN HUMAIN — et la gradation qui évite de l'appeler pour rien.
- *
- * ON N'ALERTE PAS AU PREMIER ABANDON. Un réseau qui lâche, une batterie vide, un appel entrant, un
- * tunnel : tous produisent exactement le même état qu'un prestataire qui ferme l'écran pour ne pas
- * se montrer. Alerter dès le premier ferait un canal d'alerte que plus personne ne lit au bout de
- * trois jours — et c'est ainsi qu'une vraie fraude passe inaperçue au milieu du bruit.
- *
- * La gradation est donc : rien, puis un incident `warning` au seuil, puis `critical` quand la
- * répétition ne s'explique plus par la malchance. Ce sont les seuils de l'administrateur, pas les
- * miens : ils vivent dans les réglages du module.
- */
+/** CE QUI APPELLE UN HUMAIN — et la gradation qui évite de l'appeler pour rien. */
 class FaceCheckIncidentService
 {
     public function __construct(
@@ -30,10 +19,6 @@ class FaceCheckIncidentService
 
     /**
      * Le prestataire signale que le contrôle ne marche pas.
-     *
-     * CE GESTE NE DÉBLOQUE RIEN, et c'est tout le point : un bouton « ça ne marche pas » qui
-     * accorderait un sursis serait la porte de sortie que tout fraudeur emprunterait. Il ouvre un
-     * dossier horodaté avec les diagnostics techniques, et un administrateur tranche.
      *
      * @param  array<string, mixed>  $diagnostics
      */
@@ -58,9 +43,7 @@ class FaceCheckIncidentService
         return $incident;
     }
 
-    /**
-     * Un contrôle vient d'être abandonné. On compte, on ne réagit qu'au seuil.
-     */
+    /** Un contrôle vient d'être abandonné. On compte, on ne réagit qu'au seuil. */
     public function noteAbandon(ProviderFaceCheck $check): ?ProviderFaceIncident
     {
         $provider = $check->user;
@@ -113,13 +96,7 @@ class FaceCheckIncidentService
         );
     }
 
-    /**
-     * LA VIVACITÉ RATÉE EST TOUJOURS SIGNALÉE, dès la première fois.
-     *
-     * Elle ne se confond pas avec un mauvais éclairage : elle dit qu'on a présenté une image d'une
-     * image. Il y a des faux positifs — un reflet, un écran derrière — d'où l'incident plutôt que
-     * le blocage sec. Mais un humain doit le voir à chaque fois.
-     */
+    /** LA VIVACITÉ RATÉE EST TOUJOURS SIGNALÉE, dès la première fois. */
     public function noteLivenessFailure(ProviderFaceCheck $check): ?ProviderFaceIncident
     {
         $provider = $check->user;
@@ -151,10 +128,7 @@ class FaceCheckIncidentService
         );
     }
 
-    /**
-     * Un appariement non concluant N'EST PAS un soupçon : c'est un scan de mauvaise qualité.
-     * Il appelle un œil, pas une alerte.
-     */
+    /** Un appariement non concluant N'EST PAS un soupçon : c'est un scan de mauvaise qualité. */
     public function noteIdInconclusive(User $provider, ?string $raison): ?ProviderFaceIncident
     {
         return $this->ouvrirOuEscalader(
@@ -198,12 +172,7 @@ class FaceCheckIncidentService
         return $incident;
     }
 
-    /**
-     * UN INCIDENT OUVERT DU MÊME TYPE SE MET À JOUR, IL NE SE DUPLIQUE PAS.
-     *
-     * Sans cette règle, six abandons produiraient quatre incidents identiques, et l'administrateur
-     * traiterait quatre fois le même dossier — ou n'en traiterait aucun.
-     */
+    /** UN INCIDENT OUVERT DU MÊME TYPE SE MET À JOUR, IL NE SE DUPLIQUE PAS. */
     private function ouvrirOuEscalader(
         User $provider,
         string $type,
@@ -263,10 +232,7 @@ class FaceCheckIncidentService
         };
     }
 
-    /**
-     * Le même ciblage que `SafetyAlertService` : tous les administrateurs actifs, et une trace
-     * dans les journaux s'il n'y en a aucun — une alerte sans destinataire est une alerte perdue.
-     */
+    /** Le même ciblage que `SafetyAlertService` : tous les administrateurs actifs, et une trace dans les journaux s'il n'y en a aucun — une alerte sans destinataire est une alerte perdue. */
     private function notifierLesAdministrateurs(ProviderFaceIncident $incident, User $provider): void
     {
         try {

@@ -12,37 +12,13 @@ use App\Services\Safety\MaskedCallService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * LE CYCLE DE VIE D'UNE OFFRE : accepter, refuser, expirer.
- *
- * CE QUI A CHANGÉ. Cette classe décidait aussi « à qui maintenant », avec sa propre liste de
- * candidats, pendant que la recherche par rayons en utilisait une autre. Deux annuaires, deux
- * ordres, et une même course qui pouvait sortir par les deux chemins. Le choix du destinataire
- * appartient désormais à `DispatchEngine`, qui porte les vagues, l'échéance globale et la dernière
- * vague en broadcast.
- *
- * CE QUI RESTE ICI est le cycle de vie d'UNE offre, et notamment le verrou pessimiste de
- * l'acceptation : deux prestataires peuvent accepter à la même seconde après la dernière vague, et
- * un seul doit gagner. Sans ce verrou, deux personnes partent pour la même intervention et une
- * seule est payée.
- *
- * La classe reste le point d'entrée des contrôleurs et des écrans : la déplacer aurait cassé
- * l'application mobile, l'écran web et le forçage administrateur pour un gain de nommage.
- */
+/** LE CYCLE DE VIE D'UNE OFFRE : accepter, refuser, expirer. CE QUI A CHANGÉ. */
 class MissionDispatchService
 {
-    /**
-     * Le défaut historique, gardé pour les appelants qui le référencent.
-     *
-     * La valeur qui fait foi est `config('dispatch.default_timeout')` : vingt secondes, et
-     * surchargeable par métier.
-     */
+    /** Le défaut historique, gardé pour les appelants qui le référencent. */
     public const RESPONSE_TIMEOUT_SECONDS = 20;
 
-    /**
-     * Resolve the timeout in seconds for a given trade, falling back to the
-     * platform default defined in config/dispatch.php.
-     */
+    /** Resolve the timeout in seconds for a given trade, falling back to the platform default defined in config/dispatch.php. */
     public function resolveTimeoutForMission(Mission $mission): int
     {
         $booking = $mission->booking;
@@ -50,40 +26,17 @@ class MissionDispatchService
         return app(DispatchEngine::class)->immediateTimeout($booking);
     }
 
-    /**
-     * Lance le dispatch d'une mission au top scorer disponible.
-     *
-     * Si previousAssignmentId est fourni, on enchaîne en escalation
-     * et on exclut le prestataire qui vient de refuser.
-     *
-     * Renvoie le nouvel assignment, ou null si aucun candidat disponible.
-     */
+    /** Lance le dispatch d'une mission au top scorer disponible. */
     public function dispatchToNextProvider(
         Mission $mission,
         ?int $previousAssignmentId = null,
     ): ?MissionAssignment {
-        /*
-         * DÉLÉGATION AU MOTEUR — cette méthode ne décide plus « à qui maintenant ».
-         *
-         * Elle le décidait avec sa propre liste (`AiDispatchService::rankEmployees()`), pendant que
-         * la recherche par rayons en utilisait une autre. Deux annuaires, deux ordres, et une même
-         * course qui pouvait sortir par les deux chemins. Le moteur porte les vagues, l'échéance
-         * globale et la dernière vague en broadcast ; les laisser ici en dupliquerait la moitié.
-         *
-         * La signature est CONSERVÉE : les commandes planifiées, le forçage administrateur et le
-         * job d'escalade l'appellent toujours.
-         */
+        // DÉLÉGATION AU MOTEUR — cette méthode ne décide plus « à qui maintenant ».
         return app(DispatchEngine::class)->next($mission);
     }
 
     /**
      * Crée une offre pour un prestataire PRÉCIS — forçage administrateur, prestataire préféré.
-     *
-     * UNE SEULE FABRIQUE D'OFFRES. La création vit dans `DispatchEngine` : c'est elle qui écrit la
-     * ligne, qui la transmet sur les trois canaux et qui arme le compte à rebours serveur. Deux
-     * fabriques donnaient deux offres différentes selon le chemin — l'une notifiée en temps réel,
-     * l'autre non, et un prestataire qui ne voyait jamais la modale quand un administrateur la lui
-     * envoyait.
      *
      * @throws \DomainException si la vérification d'identité du prestataire n'est pas validée
      */
@@ -117,16 +70,7 @@ class MissionDispatchService
         return $assignment->fresh();
     }
 
-    /**
-     * Le prestataire accepte l'offre. Marque l'assignment, marque la mission
-     * comme "assigned", annule les autres offres en cours pour cette mission.
-     *
-     * Race condition : si 2 prestataires acceptent dans la même seconde
-     * (broadcast pattern, double-tap, etc.), on doit garantir qu'UN SEUL
-     * voit son accept réussir. Solution : `lockForUpdate()` sur la mission
-     * dans la transaction. Le second arrivé verra que la mission est déjà
-     * `assigned` et lèvera DomainException via guardAcceptable().
-     */
+    /** Le prestataire accepte l'offre. */
     public function accept(MissionAssignment $assignment): MissionAssignment
     {
         return DB::transaction(function () use ($assignment) {
@@ -217,13 +161,7 @@ class MissionDispatchService
                 'response_seconds' => $responseSeconds,
             ]);
 
-            /*
-             * LES AUTRES MODALES SE FERMENT, ET LA RECHERCHE AUSSI.
-             *
-             * Après la dernière vague, plusieurs prestataires ont la même course à l'écran. Sans ce
-             * geste, leur compte à rebours continue sur une course déjà partie : ils appuient sur
-             * « Accepter », reçoivent une erreur, et apprennent à ne plus croire les offres.
-             */
+            // LES AUTRES MODALES SE FERMENT, ET LA RECHERCHE AUSSI.
             app(DispatchEngine::class)->onAccepted($assignment);
 
             $this->ouvrirLaLigneMasquee($assignment);
@@ -232,22 +170,7 @@ class MissionDispatchService
         });
     }
 
-    /**
-     * OUVRIR LA LIGNE MASQUÉE ENTRE LE CLIENT ET LE PRESTATAIRE (F8).
-     *
-     * `MaskedCallService` existait, complet, avec sa configuration et son pilote de test — et
-     * n'était appelé de NULLE PART. Résultat : les deux parties échangeaient leurs vrais numéros
-     * dès qu'il fallait se parler, ou ne se parlaient pas. Le premier cas laisse au prestataire le
-     * téléphone personnel d'une cliente chez qui il est allé une fois ; le second fait sonner à la
-     * porte sans réponse.
-     *
-     * L'ACCEPTATION EST LE BON MOMENT : avant, on ne sait pas qui viendra ; après, il est trop tard
-     * pour le prestataire qui cherche l'entrée de l'immeuble.
-     *
-     * SOFT-FAIL ASSUMÉ. Un numéro manquant, une configuration absente, un service indisponible :
-     * rien de cela ne justifie de faire échouer une acceptation de mission. L'acceptation est ce
-     * qui compte pour les deux parties ; la ligne masquée est un confort qu'on réessaiera.
-     */
+    /** OUVRIR LA LIGNE MASQUÉE ENTRE LE CLIENT ET LE PRESTATAIRE (F8). */
     protected function ouvrirLaLigneMasquee(MissionAssignment $assignment): void
     {
         try {
@@ -269,9 +192,7 @@ class MissionDispatchService
         }
     }
 
-    /**
-     * Le prestataire refuse l'offre. Lance immédiatement l'escalation au suivant.
-     */
+    /** Le prestataire refuse l'offre. Lance immédiatement l'escalation au suivant. */
     public function decline(MissionAssignment $assignment, ?string $reason = null): ?MissionAssignment
     {
         return DB::transaction(function () use ($assignment, $reason) {
@@ -306,10 +227,7 @@ class MissionDispatchService
         });
     }
 
-    /**
-     * Marque l'assignment comme expiré (timeout) et lance l'escalation.
-     * Appelé par EscalateMissionAssignmentJob.
-     */
+    /** Marque l'assignment comme expiré (timeout) et lance l'escalation. */
     public function expireAndEscalate(MissionAssignment $assignment): ?MissionAssignment
     {
         return DB::transaction(function () use ($assignment) {
@@ -366,18 +284,7 @@ class MissionDispatchService
         $this->guardControleFacial($assignment);
     }
 
-    /**
-     * LE VISAGE EST REVÉRIFIÉ À L'ACCEPTATION, pour la même raison que le permis.
-     *
-     * Entre l'offre et l'acceptation, une échéance peut tomber, un blocage être posé par
-     * l'appariement avec la pièce d'identité, un consentement être retiré. Sans ce second contrôle,
-     * la seule garde serait celle du moment où l'offre est fabriquée — et c'est exactement l'écart
-     * qu'exploite quiconque garde une modale ouverte.
-     *
-     * On interroge la RÉSERVATION autant que le prestataire : une mission d'un métier soumis doit
-     * être portée par quelqu'un de contrôlé, même si aucun des métiers de cet intervenant-là ne
-     * l'exigeait.
-     */
+    /** LE VISAGE EST REVÉRIFIÉ À L'ACCEPTATION, pour la même raison que le permis. */
     protected function guardControleFacial(MissionAssignment $assignment): void
     {
         $user = $assignment->user;
@@ -396,17 +303,7 @@ class MissionDispatchService
         }
     }
 
-    /**
-     * LE PERMIS EST REVÉRIFIÉ À L'ACCEPTATION, pas seulement à l'offre.
-     *
-     * Une offre part et reste acceptable tant qu'elle n'a pas expiré. Entre les deux, un permis peut
-     * arriver à échéance, une pièce être refusée à la relecture, un véhicule franchir sa limite
-     * d'âge. Sans ce second contrôle, la seule garde serait celle du moment où l'offre est
-     * fabriquée — et c'est exactement l'écart qu'exploite quiconque garde une modale ouverte.
-     *
-     * Le refus NOMME ce qui manque : « acceptation impossible » sans dire quoi fait rappeler le
-     * support, et ce que le prestataire comprend alors, c'est que l'application est cassée.
-     */
+    /** LE PERMIS EST REVÉRIFIÉ À L'ACCEPTATION, pas seulement à l'offre. */
     protected function guardConduite(MissionAssignment $assignment): void
     {
         $trade = $assignment->mission?->booking?->trade;

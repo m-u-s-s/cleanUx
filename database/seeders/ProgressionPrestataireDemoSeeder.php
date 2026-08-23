@@ -10,19 +10,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 
-/**
- * LES OBJECTIFS (E13), L'ACADÉMIE (E16) ET UNE ALERTE OUVERTE (E33), SUR LA BASE DE DÉMONSTRATION.
- *
- * SANS DONNÉES, TROIS ÉCRANS S'OUVRENT SUR DU VIDE — et un écran vide ne distingue pas « rien à
- * montrer » de « la requête est fausse ». Pour les quêtes c'est pire encore : leur intérêt EST le
- * compteur, et un catalogue sans quête ne permet pas de voir qu'il fonctionne.
- *
- * L'ALERTE DE DÉMONSTRATION EST UNE VEILLE, jamais une urgence. Une urgence factice dans le centre
- * de sécurité s'y confondrait avec une vraie, et le jour où une vraie arrive on la traiterait comme
- * du décor. La veille montre le mécanisme sans crier au loup.
- *
- * IDEMPOTENT : chaque ligne est cherchée sur son code avant d'être écrite.
- */
+/** LES OBJECTIFS (E13), L'ACADÉMIE (E16) ET UNE ALERTE OUVERTE (E33), SUR LA BASE DE DÉMONSTRATION. */
 class ProgressionPrestataireDemoSeeder extends Seeder
 {
     public function run(): void
@@ -34,13 +22,7 @@ class ProgressionPrestataireDemoSeeder extends Seeder
         $this->command?->info('✅ Progression prestataire : objectifs, académie et une veille de sécurité.');
     }
 
-    /**
-     * Deux objectifs : un atteignable, un de carrière.
-     *
-     * LES DEUX FORMES COMPTENT. « 10 missions ce mois-ci » est un objectif qu'on peut viser ;
-     * « 100 missions » est un palier de carrière, sans échéance. N'en montrer qu'une donnerait à
-     * croire que le module ne sait faire que ça.
-     */
+    /** Deux objectifs : un atteignable, un de carrière. LES DEUX FORMES COMPTENT. */
     private function quetes(): void
     {
         $definitions = [
@@ -76,12 +58,7 @@ class ProgressionPrestataireDemoSeeder extends Seeder
         }
     }
 
-    /**
-     * Deux formations, dont une qui débloque un badge.
-     *
-     * CE QUE ÇA RAPPORTE DOIT ÊTRE VISIBLE : un catalogue de cours sans effet est un catalogue que
-     * personne n'ouvre deux fois.
-     */
+    /** Deux formations, dont une qui débloque un badge. */
     private function formations(): void
     {
         $metier = Trade::query()->orderBy('id')->first();
@@ -115,12 +92,7 @@ class ProgressionPrestataireDemoSeeder extends Seeder
         }
     }
 
-    /**
-     * Une VEILLE ouverte, pour que le centre de sécurité ait quelque chose à montrer.
-     *
-     * JAMAIS UNE URGENCE. Une urgence factice s'y confondrait avec une vraie, et le jour où une
-     * vraie arrive on la traiterait comme du décor.
-     */
+    /** Une VEILLE ouverte, pour que le centre de sécurité ait quelque chose à montrer. */
     private function alerteDeDemonstration(): void
     {
         if (SafetyAlert::query()->exists()) {
