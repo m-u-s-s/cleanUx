@@ -142,15 +142,18 @@ class ThemeUnifieDesEspacesTest extends TestCase
          *
          * `layouts/guest` est exclu — la vitrine est sombre par nature, et ne passe pas par `.dark`.
          */
+        // Les trois gabarits relevés ensemble : un mode sombre forcé l'est souvent partout.
+        $forces = [];
+
         foreach (['app', 'client-company', 'provider-company'] as $layout) {
             $contenu = $this->codeDe(resource_path("views/layouts/{$layout}.blade.php"));
 
-            $this->assertDoesNotMatchRegularExpression(
-                '/<html[^>]*\bclass="[^"]*\bdark\b/',
-                $contenu,
-                "layouts/{$layout} force le mode sombre : le thème doit suivre la préférence du compte.",
-            );
+            if (preg_match('/<html[^>]*\bclass="[^"]*\bdark\b/', $contenu) === 1) {
+                $forces[] = "layouts/{$layout}";
+            }
         }
+
+        $this->assertSame([], $forces, 'Ces gabarits forcent le mode sombre : le thème doit suivre la préférence du compte.');
     }
 
     public function test_un_texte_blanc_repose_toujours_sur_un_fond_sature(): void
@@ -205,12 +208,14 @@ class ThemeUnifieDesEspacesTest extends TestCase
             'views/livewire/client-company/client-company-dashboard.blade.php' => 'ui-page-title',
         ];
 
+        $isolees = [];
+
         foreach ($tableauxDeBord as $vue => $marqueur) {
-            $this->assertStringContainsString(
-                $marqueur,
-                file_get_contents(resource_path($vue)),
-                "{$vue} n'emploie pas l'en-tête de page commun.",
-            );
+            if (! str_contains((string) file_get_contents(resource_path($vue)), $marqueur)) {
+                $isolees[] = $vue;
+            }
         }
+
+        $this->assertSame([], $isolees, 'Ces vues n’emploient pas l’en-tête de page commun.');
     }
 }

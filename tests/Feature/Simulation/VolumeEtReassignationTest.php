@@ -164,21 +164,39 @@ class VolumeEtReassignationTest extends TestCase
             $attendu[$destinataire->id][] = $mission->id;
         }
 
+        // Cinquante missions réparties : si la répartition dérape, elle dérape pour PLUSIEURS
+        // renforts. Une assertion par tour n'en nommerait qu'un.
+        $ecarts = [];
+
         foreach ($renforts as $renfort) {
             sort($attendu[$renfort->id]);
+            $obtenu = $this->saListe($renfort);
 
-            $this->assertSame(
-                $attendu[$renfort->id],
-                $this->saListe($renfort),
-                "Le renfort #{$renfort->id} ne voit pas exactement ses missions.",
-            );
+            if ($obtenu !== $attendu[$renfort->id]) {
+                $ecarts[] = sprintf(
+                    'renfort #%d : attendu [%s], obtenu [%s]',
+                    $renfort->id,
+                    implode(',', $attendu[$renfort->id]),
+                    implode(',', $obtenu),
+                );
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Ces renforts ne voient pas exactement leurs missions.');
 
         // Un chef d'équipe sans assignation personnelle ne récupère pas celles de la société :
         // diriger n'est pas exécuter, et la liste sert à savoir où l'on doit se rendre.
+        $voyants = [];
+
         foreach ($chefs as $chef) {
-            $this->assertSame([], $this->saListe($chef));
+            $liste = $this->saListe($chef);
+
+            if ($liste !== []) {
+                $voyants[] = sprintf('chef #%d voit [%s]', $chef->id, implode(',', $liste));
+            }
         }
+
+        $this->assertSame([], $voyants, 'Un chef d’équipe ne doit voir aucune mission de renfort dans cette liste.');
     }
 
     /**

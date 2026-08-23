@@ -485,15 +485,14 @@ class UploadImageSvgXssTest extends TestCase
          */
         $natifs = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
 
-        foreach ($natifs as $format) {
-            $this->assertContains(
-                $format,
-                ImagesTeleversees::EXTENSIONS,
-                "Le format « {$format} » a disparu de la liste partagee. Refuser un format "
-                .'matriciel legitime ne ferme aucune faille : ca empeche juste un prestataire de '
-                ."s'inscrire.",
-            );
-        }
+        $disparus = array_values(array_diff($natifs, ImagesTeleversees::EXTENSIONS));
+
+        $this->assertSame(
+            [],
+            $disparus,
+            'Ces formats ont disparu de la liste partagee. Refuser un format matriciel legitime ne '
+            .'ferme aucune faille : ca empeche juste un prestataire de s inscrire.',
+        );
 
         /*
          * LES AJOUTS ASSUMES, et le motif de chacun.

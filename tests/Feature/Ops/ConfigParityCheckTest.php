@@ -408,14 +408,22 @@ class ConfigParityCheckTest extends TestCase
         // `|| :` est l'écriture courte de `|| true` ; `continue-on-error` est son équivalent GitHub.
         $neutralisants = ['|| true', '||true', '|| :', 'continue-on-error: true', 'set +e'];
 
+        /*
+         * DEUX FLUX x TOUTES LEURS LIGNES x HUIT ÉTAPES x CINQ NEUTRALISANTS.
+         *
+         * L'assertion vivait au fond de trois boucles imbriquées : elle s'arrêtait au PREMIER
+         * `|| true` rencontré. Un script où quelqu'un a désamorcé quatre étapes d'affilée —
+         * exactement ce qui arrive quand on veut « faire passer le déploiement » — demandait
+         * quatre exécutions pour être vu en entier.
+         */
+        $desamorcees = [];
+
         foreach ($this->fluxDeDeploiement() as $chemin) {
             $lignes = preg_split('/\R/', $this->contenuExecutable($chemin)) ?: [];
 
-            $this->assertTrue(
-                (bool) preg_grep('/^\s*set -e/', $lignes),
-                "{$chemin} : `set -e` est absent. Sans lui, chaque étape peut échouer sans arrêter ".
-                'le déploiement, et tout l’ordre soigneusement établi ne garantit plus rien.',
-            );
+            if (! preg_grep('/^\s*set -e/', $lignes)) {
+                $desamorcees[] = "{$chemin} : `set -e` absent — aucune étape n'arrête plus rien";
+            }
 
             foreach ($lignes as $numero => $ligne) {
                 foreach ($etapesBloquantes as $etape) {
@@ -424,23 +432,25 @@ class ConfigParityCheckTest extends TestCase
                     }
 
                     foreach ($neutralisants as $neutralisant) {
-                        $this->assertStringNotContainsString(
-                            $neutralisant,
-                            $ligne,
-                            sprintf(
-                                "%s ligne %d : « %s » neutralise l'échec de « %s ».\n".
-                                'Une étape bloquante qui ne bloque plus laisse passer exactement ce '.
-                                "qu'elle était censée arrêter.",
+                        if (str_contains($ligne, $neutralisant)) {
+                            $desamorcees[] = sprintf(
+                                '%s ligne %d : « %s » neutralise l\'échec de « %s »',
                                 $chemin,
                                 $numero + 1,
                                 $neutralisant,
                                 $etape,
-                            ),
-                        );
+                            );
+                        }
                     }
                 }
             }
         }
+
+        $this->assertSame(
+            [],
+            $desamorcees,
+            'Une étape bloquante qui ne bloque plus laisse passer exactement ce qu’elle devait arrêter.',
+        );
     }
 
     /**

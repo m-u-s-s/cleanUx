@@ -156,12 +156,14 @@ class CatalogSeederTest extends TestCase
     /** Un chantier de peinture ou une toiture ne se commandent pas dans l'heure. */
     public function test_heavy_trades_stay_closed_to_the_immediate_mode(): void
     {
-        foreach (['peinture', 'roofing', 'elagage'] as $slug) {
-            $this->assertFalse(
-                (bool) Trade::where('slug', $slug)->firstOrFail()->allows_asap,
-                "Le métier « {$slug} » ne devrait pas être commandable dans l'heure.",
-            );
-        }
+        // Les trois metiers releves ensemble : ouvrir l'immediat par erreur les ouvre souvent
+        // tous les trois, et une assertion par tour n'en nommerait qu'un.
+        $ouverts = array_values(array_filter(
+            ['peinture', 'roofing', 'elagage'],
+            fn (string $slug) => (bool) Trade::where('slug', $slug)->firstOrFail()->allows_asap,
+        ));
+
+        $this->assertSame([], $ouverts, 'Ces metiers ne se commandent pas dans l heure.');
     }
 
     /** La question conditionnelle décrite dans la spécification est bien câblée. */
@@ -253,9 +255,19 @@ class CatalogSeederTest extends TestCase
      */
     public function test_it_never_duplicates_a_pre_existing_trade(): void
     {
+        // Un semeur non idempotent duplique TOUT : la liste complete dit l'ampleur, pas seulement
+        // que le premier metier est en double.
+        $doublons = [];
+
         foreach (['peinture', 'plumbing', 'electrical', 'roofing', 'nettoyage', 'jardinage'] as $slug) {
-            $this->assertSame(1, Trade::where('slug', $slug)->count(), "Le métier « {$slug} » a été dupliqué.");
+            $n = Trade::where('slug', $slug)->count();
+
+            if ($n !== 1) {
+                $doublons[] = "{$slug} : {$n} exemplaires";
+            }
         }
+
+        $this->assertSame([], $doublons, 'Le semeur a duplique ces metiers.');
     }
 
     /** Le mode immédiat annonce sa majoration : elle se voit dans le prix, avant confirmation. */

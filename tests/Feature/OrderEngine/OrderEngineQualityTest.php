@@ -204,37 +204,52 @@ class OrderEngineQualityTest extends TestCase
 
         $this->assertNotEmpty($fieldsets, 'La valeur refusée aurait dû marquer le champ invalide.');
 
+        // Tous les champs en erreur d'un coup : un formulaire qui en refuse trois demanderait
+        // sinon trois exécutions pour être rendu annonçable.
+        $muets = [];
+
         foreach ($fieldsets as $fieldset) {
             $describedBy = $this->attr($fieldset, 'aria-describedby');
 
-            $this->assertNotNull($describedBy, 'Un champ en erreur doit désigner son message.');
-            $this->assertStringContainsString(
-                'id="'.trim(explode(' ', $describedBy)[1] ?? '').'"',
-                $html,
-                'Le message désigné doit exister dans la page.',
-            );
+            if ($describedBy === null) {
+                $muets[] = 'champ en erreur sans message désigné : '.mb_substr($fieldset, 0, 90);
+
+                continue;
+            }
+
+            $cible = trim(explode(' ', $describedBy)[1] ?? '');
+
+            if ($cible === '' || ! str_contains($html, 'id="'.$cible.'"')) {
+                $muets[] = "le message désigné « {$cible} » n'existe pas dans la page";
+            }
         }
+
+        $this->assertSame([], $muets, 'Ces champs invalides ne désignent aucun message lisible.');
     }
 
     /** La hiérarchie des titres ne saute pas de niveau : c'est le plan de la page pour qui l'écoute. */
     public function test_the_heading_outline_does_not_skip_levels(): void
     {
-        foreach ([$this->journeyHtml(), $this->confirmationHtml()] as $html) {
-            preg_match_all('/<h([1-6])\b/', $html, $matches);
-            $levels = array_map('intval', $matches[1]);
+        // TOUS les sauts de niveau, sur les deux écrans : un plan mal formé en compte
+        // généralement plusieurs, et corriger le premier ne dit rien des suivants.
+        $sauts = [];
 
-            $previous = null;
-            foreach ($levels as $level) {
-                if ($previous !== null) {
-                    $this->assertLessThanOrEqual(
-                        $previous + 1,
-                        $level,
-                        sprintf('Titre h%d après h%d : un niveau a été sauté.', $level, $previous),
-                    );
+        foreach (['parcours' => $this->journeyHtml(), 'confirmation' => $this->confirmationHtml()] as $ecran => $html) {
+            preg_match_all('/<h([1-6])\b/', $html, $matches);
+            $niveaux = array_map('intval', $matches[1]);
+
+            $precedent = null;
+
+            foreach ($niveaux as $niveau) {
+                if ($precedent !== null && $niveau > $precedent + 1) {
+                    $sauts[] = sprintf('%s : h%d après h%d', $ecran, $niveau, $precedent);
                 }
-                $previous = $level;
+
+                $precedent = $niveau;
             }
         }
+
+        $this->assertSame([], $sauts, 'Le plan de la page saute des niveaux : illisible pour qui l’écoute.');
     }
 
     /**
@@ -264,11 +279,19 @@ class OrderEngineQualityTest extends TestCase
         // un écran de travail quotidien — l'exclure du clavier l'excluerait d'un usage réel.
         $catalog = file_get_contents(resource_path('views/livewire/admin/order-engine/catalog-center.blade.php'));
 
-        foreach ([$builder, $bundle, $catalog] as $view) {
-            $this->assertStringContainsString('draggable="true"', $view);
-            $this->assertStringContainsString('aria-label="Monter"', $view);
-            $this->assertStringContainsString('aria-label="Descendre"', $view);
+        // Trois vues fois trois marqueurs : neuf verifications, et une assertion par tour n'en
+        // rapportait qu'une. Un reordonnancement inaccessible l'est souvent sur les trois ecrans.
+        $manques = [];
+
+        foreach (['constructeur' => $builder, 'panier' => $bundle, 'catalogue' => $catalog] as $nom => $view) {
+            foreach (['draggable="true"', 'aria-label="Monter"', 'aria-label="Descendre"'] as $marqueur) {
+                if (! str_contains($view, $marqueur)) {
+                    $manques[] = "{$nom} : {$marqueur}";
+                }
+            }
         }
+
+        $this->assertSame([], $manques, 'Ces vues n offrent pas de reordonnancement accessible au clavier.');
     }
 
     // ─── Performance ─────────────────────────────────────────────────────────────────────────
