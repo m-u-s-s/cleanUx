@@ -52,14 +52,24 @@ class FileSynchroneRefuseeEnProductionTest extends TestCase
         );
 
         // Une file réelle passe, quel que soit le pilote retenu.
+        // Les sept combinaisons relevees ensemble : un refus trop large les casse toutes a la
+        // fois, et une assertion par tour n'en nommerait qu'une.
+        $refusesAtort = [];
+
         foreach (['redis', 'database', 'sqs', 'beanstalkd'] as $pilote) {
-            $this->assertFalse($refusee('production', $pilote, false), $pilote.' doit être accepté.');
+            if ($refusee('production', $pilote, false)) {
+                $refusesAtort[] = "production + {$pilote}";
+            }
         }
 
-        // Hors production, `sync` est le bon réglage : aucun worker ne tourne sur un poste de dev.
+        // Hors production, `sync` est le bon reglage : aucun worker ne tourne sur un poste de dev.
         foreach (['local', 'testing', 'staging'] as $environnement) {
-            $this->assertFalse($refusee($environnement, 'sync', false));
+            if ($refusee($environnement, 'sync', false)) {
+                $refusesAtort[] = "{$environnement} + sync";
+            }
         }
+
+        $this->assertSame([], $refusesAtort, 'Ces reglages sont legitimes et pourtant refuses.');
     }
 
     /** Le message doit nommer la cause ET la sortie, sinon il ne sert à personne à 3 h du matin. */

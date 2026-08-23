@@ -72,9 +72,17 @@ class BundleComposerTest extends TestCase
         $this->assertSame(2, $fresh->items()->count());
 
         // Aucune ligne ne porte d'adresse propre : il n'y a qu'un seul endroit où la lire.
+        // Tous les articles fautifs d'un coup : un panier de cinq lignes demanderait sinon cinq
+        // executions pour etre nettoye.
+        $porteurs = [];
+
         foreach ($fresh->items as $item) {
-            $this->assertArrayNotHasKey('address', $item->getAttributes());
+            if (array_key_exists('address', $item->getAttributes())) {
+                $porteurs[] = 'article #'.$item->id;
+            }
         }
+
+        $this->assertSame([], $porteurs, 'Ces articles portent une adresse : elle appartient au panier, pas a la ligne.');
     }
 
     /** Les suggestions viennent de l'administrateur, et écartent ce qui est déjà au panier. */
@@ -261,9 +269,17 @@ class BundleComposerTest extends TestCase
 
         $result = $this->composer->consolidatedQuote($draft->fresh());
 
+        // Tous les métiers sans détail d'un coup : un devis groupé en compte plusieurs, et savoir
+        // que le premier est muet ne dit rien des suivants.
+        $sansDetail = [];
+
         foreach ($result['items'] as $line) {
-            $this->assertNotEmpty($line['quote']->lines, "Le métier « {$line['trade']->name} » n’a aucun détail.");
+            if (empty($line['quote']->lines)) {
+                $sansDetail[] = $line['trade']->name;
+            }
         }
+
+        $this->assertSame([], $sansDetail, 'Ces métiers ne détaillent pas leur devis.');
     }
 
     // ─── Fabriques ───────────────────────────────────────────────────────────────────────────

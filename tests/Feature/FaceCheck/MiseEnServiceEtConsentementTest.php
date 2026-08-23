@@ -42,15 +42,21 @@ class MiseEnServiceEtConsentementTest extends TestCase
         $codes = (array) config('face_check.default_trade_codes');
         $this->assertNotEmpty($codes);
 
+        // Tous les metiers fautifs d'un coup : une mise en service partielle en laisse plusieurs
+        // en arriere, et une assertion par tour n'en nommerait qu'un.
+        $ecarts = [];
+
         foreach ($codes as $code) {
             $metier = Trade::query()->where('code', $code)->first();
 
-            $this->assertNotNull($metier, "Métier {$code} absent du catalogue.");
-            $this->assertTrue(
-                (bool) $metier->requires_face_check,
-                "Le métier {$code} devrait exiger le contrôle facial."
-            );
+            if ($metier === null) {
+                $ecarts[] = "{$code} : absent du catalogue";
+            } elseif (! (bool) $metier->requires_face_check) {
+                $ecarts[] = "{$code} : n exige pas le controle facial";
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Ces metiers devraient exiger le controle facial.');
     }
 
     /** TÉMOIN : les autres métiers, eux, ne sont pas cochés. Sinon on mesurerait un `true` global. */
@@ -64,12 +70,15 @@ class MiseEnServiceEtConsentementTest extends TestCase
 
         $this->assertGreaterThan(0, $autres->count());
 
+        $exigeants = [];
+
         foreach ($autres as $metier) {
-            $this->assertFalse(
-                (bool) $metier->requires_face_check,
-                "Le métier {$metier->code} ne devrait rien exiger."
-            );
+            if ((bool) $metier->requires_face_check) {
+                $exigeants[] = $metier->code;
+            }
         }
+
+        $this->assertSame([], $exigeants, 'Ces metiers ne devraient rien exiger.');
     }
 
     /**

@@ -32,12 +32,21 @@ class QuickActionsTest extends TestCase
 
         $this->assertNotEmpty($actions);
 
-        foreach ($actions as $action) {
-            $this->assertArrayHasKey('label', $action);
-            $this->assertArrayHasKey('prompt', $action);
-            $this->assertNotEmpty($action['label']);
-            $this->assertNotEmpty($action['prompt']);
+        // Toutes les actions mal formees d'un coup : trois raccourcis casses demanderaient sinon
+        // trois executions pour etre vus.
+        $mauvaises = [];
+
+        foreach ($actions as $i => $action) {
+            foreach (['label', 'prompt'] as $clef) {
+                if (! array_key_exists($clef, $action)) {
+                    $mauvaises[] = "action #{$i} : cle « {$clef} » absente";
+                } elseif (blank($action[$clef])) {
+                    $mauvaises[] = "action #{$i} : « {$clef} » vide";
+                }
+            }
         }
+
+        $this->assertSame([], $mauvaises, 'Ces raccourcis sont inaffichables.');
     }
 
     public function test_returns_three_actions_for_every_role(): void
@@ -105,9 +114,17 @@ class QuickActionsTest extends TestCase
         $this->assertTrue($hasLoyalty, 'Expected a loyalty quick action for default client');
 
         // Prompts must be non-trivial sentences
+        $trop_courts = [];
+
         foreach ($prompts as $prompt) {
-            $this->assertGreaterThan(10, mb_strlen($prompt));
+            $n = mb_strlen($prompt);
+
+            if ($n <= 10) {
+                $trop_courts[] = "[{$prompt}] : {$n} caracteres";
+            }
         }
+
+        $this->assertSame([], $trop_courts, 'Une amorce trop courte ne dit pas ce qu elle demande.');
     }
 
     // ──────────────────────────────────────────────────────
