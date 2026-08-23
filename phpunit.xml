@@ -22,7 +22,11 @@
 
          Ce bloc fait échouer `paratest` au démarrage sur tout poste sans Xdebug ni PCOV :
          « No code coverage driver available », avant le premier test. C'est pourquoi
-         `composer test:parallele` passe `--no-coverage`.
+         `composer test:parallele` passe l'option qui désactive la couverture.
+
+         (Un commentaire XML ne peut pas contenir deux tirets consécutifs : l'option ne
+         peut donc pas être écrite ici telle quelle. La commande complète vit dans
+         `composer.json`, sous `scripts.test:parallele`.)
 
          La suite complète tient alors en NEUF MINUTES sur seize processus, contre près d'une
          heure en séquentiel — mêmes 7417 tests, mêmes assertions. Le coût n'était pas le

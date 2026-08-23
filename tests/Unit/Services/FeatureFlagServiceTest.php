@@ -55,9 +55,15 @@ class FeatureFlagServiceTest extends TestCase
         $firstResult = $this->service->isEnabled('beta_feature', $user);
 
         // Same user must always get the same result
+        // Cinq tirages relevés, puis comparés d'un coup : si le résultat oscille, on veut savoir
+        // COMBIEN de fois, pas seulement qu'il a bougé une fois.
+        $tirages = [];
+
         for ($i = 0; $i < 5; $i++) {
-            $this->assertSame($firstResult, $this->service->isEnabled('beta_feature', $user));
+            $tirages[] = $this->service->isEnabled('beta_feature', $user);
         }
+
+        $this->assertSame(array_fill(0, 5, $firstResult), $tirages, 'Le tirage doit être stable pour un même compte.');
     }
 
     public function test_percentage_100_enables_for_all_users(): void
@@ -66,9 +72,10 @@ class FeatureFlagServiceTest extends TestCase
 
         $users = User::factory()->count(5)->create();
 
-        foreach ($users as $user) {
-            $this->assertTrue($this->service->isEnabled('full_rollout', $user));
-        }
+        $exclus = $users->filter(fn ($user) => ! $this->service->isEnabled('full_rollout', $user))
+            ->pluck('id')->values()->all();
+
+        $this->assertSame([], $exclus, 'À 100 %, aucun compte ne doit rester en dehors.');
     }
 
     public function test_percentage_0_disables_for_all_users(): void
@@ -77,9 +84,10 @@ class FeatureFlagServiceTest extends TestCase
 
         $users = User::factory()->count(5)->create();
 
-        foreach ($users as $user) {
-            $this->assertFalse($this->service->isEnabled('zero_rollout', $user));
-        }
+        $inclus = $users->filter(fn ($user) => $this->service->isEnabled('zero_rollout', $user))
+            ->pluck('id')->values()->all();
+
+        $this->assertSame([], $inclus, 'À 0 %, aucun compte ne doit être servi.');
     }
 
     public function test_user_list_enables_only_listed_users(): void

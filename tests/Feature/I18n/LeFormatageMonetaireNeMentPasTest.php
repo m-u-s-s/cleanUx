@@ -37,12 +37,20 @@ class LeFormatageMonetaireNeMentPasTest extends TestCase
      */
     public function test_temoin_l_euro_en_francais_est_inchange(): void
     {
+        // Les quatre montants releves puis compares d'un coup : si le format changeait, on veut
+        // savoir sur LESQUELS, pas seulement que le premier a bouge.
+        $ecarts = [];
+
         foreach ([1234.56, 80.0, 0.0, 12.5] as $montant) {
-            $this->assertSame(
-                number_format($montant, 2, ',', ' ').' €',
-                $this->money()->format($montant, 'EUR', 'fr'),
-            );
+            $attendu = number_format($montant, 2, ',', ' ').' €';
+            $obtenu = $this->money()->format($montant, 'EUR', 'fr');
+
+            if ($obtenu !== $attendu) {
+                $ecarts[] = "{$montant} : attendu [{$attendu}], obtenu [{$obtenu}]";
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Le format de l euro en francais a change.');
     }
 
     public function test_une_devise_hors_de_l_ancienne_liste_n_est_plus_rendue_en_euros(): void
@@ -103,9 +111,17 @@ class LeFormatageMonetaireNeMentPasTest extends TestCase
      */
     public function test_les_couronnes_gardent_leur_code_plutot_qu_un_symbole_ambigu(): void
     {
+        $ambigus = [];
+
         foreach (['SEK', 'NOK', 'DKK', 'ISK'] as $code) {
-            $this->assertSame($code, $this->money()->symbol($code));
+            $symbole = $this->money()->symbol($code);
+
+            if ($symbole !== $code) {
+                $ambigus[] = "{$code} rend [{$symbole}]";
+            }
         }
+
+        $this->assertSame([], $ambigus, 'Ces couronnes doivent garder leur code ISO.');
 
         // Contrôle positif : les symboles sans ambiguïté sont bien servis.
         $this->assertSame('€', $this->money()->symbol('EUR'));

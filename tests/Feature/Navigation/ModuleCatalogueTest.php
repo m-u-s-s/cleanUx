@@ -13,16 +13,31 @@ class ModuleCatalogueTest extends TestCase
         $groupes = ModuleCatalogue::pourContexte('client');
 
         $this->assertNotEmpty($groupes);
-        foreach ($groupes as $groupe) {
-            $this->assertArrayHasKey('category', $groupe);
-            $this->assertArrayHasKey('label', $groupe);
-            $this->assertNotEmpty($groupe['modules'], 'Une catégorie vide ne doit pas être rendue');
-            foreach ($groupe['modules'] as $module) {
+        // On relève tout ce qui cloche, puis on l'affirme d'un coup : un groupe mal formé au
+        // milieu de la liste ne doit pas cacher les suivants.
+        $defauts = [];
+
+        foreach ($groupes as $i => $groupe) {
+            foreach (['category', 'label'] as $clef) {
+                if (! array_key_exists($clef, $groupe)) {
+                    $defauts[] = "groupe #{$i} → clé « {$clef} » absente";
+                }
+            }
+
+            if (empty($groupe['modules'])) {
+                $defauts[] = sprintf('groupe « %s » → aucune entrée, il ne devrait pas être rendu', $groupe['category'] ?? $i);
+            }
+
+            foreach ($groupe['modules'] ?? [] as $module) {
                 // `*` = module transversal, servi à tous les contextes : profil, notifications,
                 // aide, textes légaux. Il appartient donc légitimement à celui-ci.
-                $this->assertContains($module['context'], ['client', '*'], $module['key']);
+                if (! in_array($module['context'], ['client', '*'], true)) {
+                    $defauts[] = sprintf('%s → contexte « %s » servi à un client', $module['key'], $module['context']);
+                }
             }
         }
+
+        $this->assertSame([], $defauts, 'Le catalogue rendu à un client est mal formé.');
     }
 
     public function test_retire_les_modules_dont_la_route_n_existe_pas(): void
@@ -47,9 +62,17 @@ class ModuleCatalogueTest extends TestCase
 
     public function test_ne_rend_que_cinq_principaux_au_maximum(): void
     {
+        $trop = [];
+
         foreach (['client', 'employe', 'admin', 'client-company', 'provider-company'] as $contexte) {
-            $this->assertLessThanOrEqual(5, ModuleCatalogue::principaux($contexte)->count(), $contexte);
+            $n = ModuleCatalogue::principaux($contexte)->count();
+
+            if ($n > 5) {
+                $trop[] = "{$contexte} → {$n} entrées principales";
+            }
         }
+
+        $this->assertSame([], $trop, 'Au-delà de cinq entrées principales, la barre cesse d’être un raccourci.');
     }
 
     public function test_traduit_les_emoji_connus_en_heroicon(): void

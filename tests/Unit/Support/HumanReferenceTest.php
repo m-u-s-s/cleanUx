@@ -33,21 +33,30 @@ class HumanReferenceTest extends TestCase
             $tirage .= HumanReference::make(8);
         }
 
-        foreach (['I', 'O', '0', '1'] as $interdit) {
-            $this->assertStringNotContainsString(
-                $interdit,
-                $tirage,
-                sprintf('Le caractère « %s » se confond à la lecture et ne doit pas apparaître.', $interdit),
-            );
-        }
+        // Les QUATRE caractères d'un coup : savoir que « I » sort ne dit rien de « O », et il
+        // faudrait quatre exécutions pour découvrir un alphabet entièrement fautif.
+        $trouves = array_values(array_filter(
+            ['I', 'O', '0', '1'],
+            fn (string $interdit) => str_contains($tirage, $interdit),
+        ));
+
+        $this->assertSame([], $trouves, 'Ces caractères se confondent à la lecture et ne doivent pas être tirés.');
     }
 
     /** La longueur demandée est la longueur rendue. */
     public function test_the_requested_length_is_respected(): void
     {
+        $ecarts = [];
+
         foreach ([1, 5, 6, 10, 32] as $longueur) {
-            $this->assertSame($longueur, strlen(HumanReference::make($longueur)));
+            $obtenue = strlen(HumanReference::make($longueur));
+
+            if ($obtenue !== $longueur) {
+                $ecarts[] = "demandé {$longueur}, obtenu {$obtenue}";
+            }
         }
+
+        $this->assertSame([], $ecarts, 'La longueur demandée n’est pas respectée.');
     }
 
     /** Le tirage varie : une référence constante ferait collisionner toutes les commandes. */

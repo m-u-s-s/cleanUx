@@ -209,6 +209,33 @@ class ConfigParityCheckTest extends TestCase
     // ── Câblage dans les flux de déploiement ──────────────────────────────────────────────
 
     /** @return list<string> */
+    /**
+     * Ce qui doit tourner AVANT que la base ne soit touchée.
+     *
+     * @var list<string>
+     */
+    private const PREALABLES_AVANT_MIGRATION = [
+        'php artisan config:cache',
+        'php artisan route:cache',
+        'php artisan view:cache',
+        'php artisan event:cache',
+        'php artisan config:parity-check',
+        'php artisan ops:check-providers --strict',
+        'php artisan storage:link',
+        'php artisan backup:run',
+    ];
+
+    /**
+     * Commande => ce qui se passe quand elle n'est pas câblée.
+     *
+     * @var array<string, string>
+     */
+    private const COMMANDES_DE_GARDE = [
+        'php artisan config:parity-check' => 'le contrôle de parité ne bloque rien',
+        'php artisan ops:check-providers --strict' => 'le déploiement peut partir sur des bouchons',
+        'php artisan storage:link' => 'le lien public/storage n’est jamais recréé, médias en 404',
+    ];
+
     private function fluxDeDeploiement(): array
     {
         return [
@@ -255,74 +282,73 @@ class ConfigParityCheckTest extends TestCase
      */
     public function test_les_flux_de_deploiement_valident_tout_avant_de_muter_la_base(): void
     {
+        /*
+         * ON RELÈVE TOUS LES DÉSORDRES, PUIS ON LES AFFIRME D'UN COUP.
+         *
+         * Deux flux fois huit préalables : seize positions à vérifier. Une assertion par tour
+         * s'arrêtait à la première, et il fallait seize exécutions pour voir un flux entièrement
+         * réordonné. Sur un script de déploiement, c'est la LISTE qu'on veut lire avant de le
+         * réécrire.
+         */
+        $desordres = [];
+
         foreach ($this->fluxDeDeploiement() as $chemin) {
             $contenu = $this->contenuExecutable($chemin);
-            $migration = $this->positionDe($contenu, 'php artisan migrate --force', $chemin);
+            $migration = strpos($contenu, 'php artisan migrate --force');
 
-            $prealables = [
-                'php artisan config:cache',
-                'php artisan route:cache',
-                'php artisan view:cache',
-                'php artisan event:cache',
-                'php artisan config:parity-check',
-                'php artisan ops:check-providers --strict',
-                'php artisan storage:link',
-                'php artisan backup:run',
-            ];
+            if ($migration === false) {
+                $desordres[] = "{$chemin} : « migrate --force » est absent";
 
-            foreach ($prealables as $prealable) {
-                $this->assertLessThan(
-                    $migration,
-                    $this->positionDe($contenu, $prealable, $chemin),
-                    "{$chemin} : « {$prealable} » doit s'exécuter AVANT « migrate --force ». ".
-                    'Sinon un échec de cette étape laisse une base déjà migrée derrière un job rouge.',
-                );
+                continue;
+            }
+
+            foreach (self::PREALABLES_AVANT_MIGRATION as $prealable) {
+                $position = strpos($contenu, $prealable);
+
+                if ($position === false) {
+                    $desordres[] = "{$chemin} : « {$prealable} » est absent";
+                } elseif ($position >= $migration) {
+                    $desordres[] = "{$chemin} : « {$prealable} » passe APRÈS « migrate --force »";
+                }
             }
         }
-    }
 
-    /** Une commande que personne n'appelle ne protège personne (low 53). */
-    public function test_les_flux_de_deploiement_appellent_le_controle_de_parite(): void
-    {
-        foreach ($this->fluxDeDeploiement() as $chemin) {
-            $this->assertStringContainsString(
-                'php artisan config:parity-check',
-                $this->contenuExecutable($chemin),
-                "{$chemin} : le contrôle de parité n'est pas câblé dans le déploiement.",
-            );
-        }
+        $this->assertSame(
+            [],
+            $desordres,
+            'Un échec de ces étapes laisserait une base déjà migrée derrière un job rouge.',
+        );
     }
 
     /**
-     * H12 — la commande annonçait « bloque le déploiement » et n'y était pas câblée.
+     * TROIS COMMANDES QUI DOIVENT ÊTRE CÂBLÉES, ET LA LISTE COMPLÈTE DE CE QUI MANQUE.
      *
-     * Elle était planifiée toutes les trente minutes : elle CONSTATAIT donc le problème une
-     * demi-heure après la mise en ligne, sur une plateforme déjà en train de tourner sur des
-     * bouchons. Un bouchon réussit silencieusement — les SMS partent dans le vide, les
-     * notifications aussi — et c'est précisément ce que le contrôle de parité ne voit pas :
-     * le conteneur peut résoudre vers un Mock alors que toutes les variables sont présentes.
+     * Ces trois contrôles vivaient dans trois méthodes distinctes, chacune bouclant sur les flux
+     * avec son assertion à l'intérieur. Six couples (flux, commande) à vérifier, et une exécution
+     * n'en montrait qu'un — alors que la question est toujours la même : cette commande est-elle
+     * appelée par le déploiement, oui ou non ?
+     *
+     * Une commande que personne n'appelle ne protège personne (low 53). `ops:check-providers`
+     * annonçait « bloque le déploiement » sans y être câblée (H12) : planifiée toutes les trente
+     * minutes, elle CONSTATAIT le problème une demi-heure après la mise en ligne, sur une
+     * plateforme déjà en train de tourner sur des bouchons. Et `storage:link` (M-15) n'était créé
+     * nulle part : les médias publics tombaient en 404.
      */
-    public function test_les_flux_de_deploiement_refusent_les_fournisseurs_bouchonnes(): void
+    public function test_les_flux_de_deploiement_cablent_les_commandes_de_garde(): void
     {
-        foreach ($this->fluxDeDeploiement() as $chemin) {
-            $this->assertStringContainsString(
-                'php artisan ops:check-providers --strict',
-                $this->contenuExecutable($chemin),
-                "{$chemin} : rien n'empêche un déploiement de partir sur des fournisseurs bouchonnés.",
-            );
-        }
-    }
+        $manquantes = [];
 
-    /** M-15 — le lien public/storage n'était créé nulle part ; les médias publics tombaient en 404. */
-    public function test_les_flux_de_deploiement_relient_le_stockage_public(): void
-    {
         foreach ($this->fluxDeDeploiement() as $chemin) {
-            $this->assertStringContainsString(
-                'php artisan storage:link',
-                $this->contenuExecutable($chemin),
-                "{$chemin} : `storage:link` manque — le lien public/storage n'est jamais recréé.",
-            );
+            $contenu = $this->contenuExecutable($chemin);
+
+            foreach (self::COMMANDES_DE_GARDE as $commande => $consequence) {
+                if (! str_contains($contenu, $commande)) {
+                    $manquantes[] = "{$chemin} : « {$commande} » — {$consequence}";
+                }
+            }
         }
+
+        $this->assertSame([], $manquantes, 'Ces gardes ne sont pas câblées dans le déploiement.');
     }
 
     /**

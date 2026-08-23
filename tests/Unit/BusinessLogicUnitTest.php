@@ -32,15 +32,33 @@ class BusinessLogicUnitTest extends TestCase
             'AT' => 0.20,
         ];
 
-        foreach ($expected as $code => $rate) {
-            $result = $calc->calculateVat(100.00, $code);
+        /*
+         * CINQ VALEURS PAR PAYS, ET LA TABLE ENTIERE D'UN COUP.
+         *
+         * Une assertion par tour s'arretait au premier pays fautif : une grille de TVA decalee
+         * partout aurait demande autant d'executions que de pays. C'est la liste complete qu'on
+         * veut lire avant de corriger un tableau de taux.
+         */
+        $ecarts = [];
 
-            $this->assertSame($rate, $result['vat_rate'], "VAT rate mismatch for {$code}");
-            $this->assertSame(round(100 * $rate, 2), $result['vat_amount'], "VAT amount mismatch for {$code}");
-            $this->assertSame(round(100 + 100 * $rate, 2), $result['amount_incl_vat'], "Total incl VAT mismatch for {$code}");
-            $this->assertSame(100.0, $result['amount_excl_vat'], "Excl amount mutated for {$code}");
-            $this->assertSame($code, $result['country_code'], "Country code mismatch for {$code}");
+        foreach ($expected as $code => $rate) {
+            $r = $calc->calculateVat(100.00, $code);
+
+            foreach ([
+                'vat_rate' => $rate,
+                'vat_amount' => round(100 * $rate, 2),
+                'amount_incl_vat' => round(100 + 100 * $rate, 2),
+                'amount_excl_vat' => 100.0,
+                'country_code' => $code,
+            ] as $champ => $attendu) {
+                if ($r[$champ] !== $attendu) {
+                    $ecarts[] = sprintf('%s.%s : attendu %s, obtenu %s', $code, $champ,
+                        var_export($attendu, true), var_export($r[$champ], true));
+                }
+            }
         }
+
+        $this->assertSame([], $ecarts, 'La grille de TVA ne rend pas les valeurs attendues.');
     }
 
     public function test_tax_calculator_unknown_country_defaults_to_21_percent(): void
@@ -66,14 +84,23 @@ class BusinessLogicUnitTest extends TestCase
     {
         $calc = new TaxCalculator;
 
-        foreach (['BE', 'FR', 'IT', 'LU'] as $code) {
-            $forward = $calc->calculateVat(100.00, $code);
-            $backward = $calc->extractVat($forward['amount_incl_vat'], $code);
+        $ecarts = [];
 
-            // Allow ±0.01 for rounding; the two paths must agree on the rate.
-            $this->assertSame($forward['vat_rate'], $backward['vat_rate'], "Rate mismatch on extract for {$code}");
-            $this->assertEqualsWithDelta(100.00, $backward['amount_excl_vat'], 0.01, "Round-trip failed for {$code}");
+        foreach (['BE', 'FR', 'IT', 'LU'] as $code) {
+            $aller = $calc->calculateVat(100.00, $code);
+            $retour = $calc->extractVat($aller['amount_incl_vat'], $code);
+
+            if ($aller['vat_rate'] !== $retour['vat_rate']) {
+                $ecarts[] = "{$code} : taux aller {$aller['vat_rate']}, taux retour {$retour['vat_rate']}";
+            }
+
+            // Un centime tolere pour l'arrondi ; au-dela, les deux chemins ne s'accordent plus.
+            if (abs(100.00 - $retour['amount_excl_vat']) > 0.01) {
+                $ecarts[] = "{$code} : aller-retour rend {$retour['amount_excl_vat']} au lieu de 100,00";
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Les deux chemins de TVA ne concordent pas.');
     }
 
     public function test_tax_calculator_get_vat_rate_returns_float(): void
@@ -100,9 +127,12 @@ class BusinessLogicUnitTest extends TestCase
 
         $this->assertCount(9, $supported);
 
-        foreach (['BE', 'FR', 'NL', 'DE', 'ES', 'IT', 'PT', 'LU', 'AT'] as $code) {
-            $this->assertContains($code, $supported, "{$code} missing from supported list");
-        }
+        $manquants = array_values(array_diff(
+            ['BE', 'FR', 'NL', 'DE', 'ES', 'IT', 'PT', 'LU', 'AT'],
+            $supported,
+        ));
+
+        $this->assertSame([], $manquants, 'Ces pays manquent a la liste supportee.');
     }
 
     public function test_country_config_returns_correct_data_for_nl(): void
@@ -155,9 +185,16 @@ class BusinessLogicUnitTest extends TestCase
     public function test_country_config_kyc_docs_are_arrays(): void
     {
         $service = new CountryConfigService;
+        $defauts = [];
+
         foreach ($service->all() as $code => $config) {
-            $this->assertIsArray($config['kyc_docs'], "kyc_docs must be array for {$code}");
-            $this->assertNotEmpty($config['kyc_docs'], "kyc_docs empty for {$code}");
+            if (! is_array($config['kyc_docs'] ?? null)) {
+                $defauts[] = "{$code} : kyc_docs n'est pas un tableau";
+            } elseif ($config['kyc_docs'] === []) {
+                $defauts[] = "{$code} : kyc_docs vide, aucune piece ne serait demandee";
+            }
         }
+
+        $this->assertSame([], $defauts, 'Ces pays n exigent aucune piece d identite.');
     }
 }

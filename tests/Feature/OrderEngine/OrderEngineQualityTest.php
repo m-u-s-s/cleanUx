@@ -116,6 +116,10 @@ class OrderEngineQualityTest extends TestCase
 
         $this->assertStringContainsString('type="range"', $html, 'Le curseur aurait dû être rendu.');
 
+        // TOUS les contrôles muets, pas le premier : un écran qui en compte cinq demanderait
+        // sinon cinq exécutions pour être rendu accessible.
+        $muets = [];
+
         foreach ($this->tags($html, 'input|select|textarea') as $control) {
             if (str_contains($control, 'type="hidden"')) {
                 continue;
@@ -123,13 +127,16 @@ class OrderEngineQualityTest extends TestCase
 
             $id = $this->attr($control, 'id');
 
-            $this->assertTrue(
-                ($id !== null && str_contains($html, 'for="'.$id.'"'))
-                    || $this->attr($control, 'aria-label') !== null
-                    || $this->attr($control, 'aria-labelledby') !== null,
-                'Contrôle sans nom accessible : '.mb_substr($control, 0, 120),
-            );
+            $nomme = ($id !== null && str_contains($html, 'for="'.$id.'"'))
+                || $this->attr($control, 'aria-label') !== null
+                || $this->attr($control, 'aria-labelledby') !== null;
+
+            if (! $nomme) {
+                $muets[] = mb_substr($control, 0, 120);
+            }
         }
+
+        $this->assertSame([], $muets, 'Ces contrôles ont perdu leur nom accessible.');
     }
 
     /**
@@ -140,16 +147,21 @@ class OrderEngineQualityTest extends TestCase
      */
     public function test_every_button_has_an_accessible_name(): void
     {
-        foreach ([$this->journeyHtml(), $this->confirmationHtml()] as $html) {
+        $muets = [];
+
+        foreach (['parcours' => $this->journeyHtml(), 'confirmation' => $this->confirmationHtml()] as $ecran => $html) {
             foreach ($this->buttons($html) as [$open, $inner]) {
-                $this->assertTrue(
-                    trim(strip_tags($inner)) !== ''
-                        || $this->attr($open, 'aria-label') !== null
-                        || $this->attr($open, 'aria-labelledby') !== null,
-                    'Bouton sans nom accessible : '.mb_substr($open, 0, 120),
-                );
+                $nomme = trim(strip_tags($inner)) !== ''
+                    || $this->attr($open, 'aria-label') !== null
+                    || $this->attr($open, 'aria-labelledby') !== null;
+
+                if (! $nomme) {
+                    $muets[] = $ecran.' : '.mb_substr($open, 0, 110);
+                }
             }
         }
+
+        $this->assertSame([], $muets, 'Ces boutons sont annoncés « bouton » et rien de plus.');
     }
 
     /**

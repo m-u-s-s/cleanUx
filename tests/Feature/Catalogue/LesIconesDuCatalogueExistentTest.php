@@ -43,13 +43,17 @@ class LesIconesDuCatalogueExistentTest extends TestCase
 
         $this->assertGreaterThan(10, $noms->count(), 'Le catalogue semé ne porte presque aucune icône : la mesure ne prouverait rien.');
 
+        // Toutes les icones manquantes d'un coup : sept l'etaient le jour ou ce test a ete ecrit,
+        // et une assertion par tour n'en aurait nomme qu'une.
+        $rondes = [];
+
         foreach ($noms as $slug => $icone) {
-            $this->assertNotSame(
-                $repli,
-                $this->rendu($icone),
-                "L'icône `{$icone}` de `{$slug}` n'existe pas dans <x-ui.icon> : elle s'affiche en cercle.",
-            );
+            if ($this->rendu($icone) === $repli) {
+                $rondes[] = "{$slug} : {$icone}";
+            }
         }
+
+        $this->assertSame([], $rondes, 'Ces icones du catalogue s affichent en cercle.');
     }
 
     /**
@@ -79,8 +83,11 @@ class LesIconesDuCatalogueExistentTest extends TestCase
     {
         $repli = $this->rendu('nom-qui-n-existe-pas-du-tout');
 
-        foreach (['car', 'broom', 'leaf', 'paint-roller', 'pencil-square', 'user-group', 'window'] as $icone) {
-            $this->assertNotSame($repli, $this->rendu($icone), "L'icône `{$icone}` a disparu du composant.");
-        }
+        $disparues = array_values(array_filter(
+            ['car', 'broom', 'leaf', 'paint-roller', 'pencil-square', 'user-group', 'window'],
+            fn (string $icone) => $this->rendu($icone) === $repli,
+        ));
+
+        $this->assertSame([], $disparues, 'Ces icones ont disparu du composant.');
     }
 }

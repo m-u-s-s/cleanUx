@@ -65,13 +65,17 @@ class CatalogSeederTest extends TestCase
     {
         $max = (int) Config::get('order_engine.max_questions_per_step', 7);
 
+        // On relève TOUTES les étapes trop longues : une assertion par tour n'en nommerait qu'une,
+        // et il faudrait autant d'exécutions que de questionnaires à retailler.
+        $trop_longues = [];
+
         foreach (QuestionStep::withCount('questions')->get() as $step) {
-            $this->assertLessThanOrEqual(
-                $max,
-                $step->questions_count,
-                "L'étape « {$step->title} » pose {$step->questions_count} questions : au-delà de {$max}, un client sur trois abandonne.",
-            );
+            if ($step->questions_count > $max) {
+                $trop_longues[] = "{$step->title} → {$step->questions_count} questions";
+            }
         }
+
+        $this->assertSame([], $trop_longues, "Au-delà de {$max} questions d'un coup, un client sur trois abandonne.");
     }
 
     /** Loi 6 — chaque question offre une porte de sortie. Une question sans échappatoire est un mur. */
@@ -97,26 +101,35 @@ class CatalogSeederTest extends TestCase
 
         $this->assertNotEmpty($questions);
 
-        foreach ($questions as $question) {
-            $defaults = $question->options->where('is_default', true)->count();
+        $mauvaises = [];
 
-            $this->assertSame(
-                1,
-                $defaults,
-                "La question « {$question->code} » a {$defaults} option(s) par défaut au lieu d'une.",
-            );
+        foreach ($questions as $question) {
+            $defauts = $question->options->where('is_default', true)->count();
+
+            if ($defauts !== 1) {
+                $mauvaises[] = "{$question->code} → {$defauts} option(s) par défaut";
+            }
         }
+
+        $this->assertSame([], $mauvaises, 'Chaque question doit offrir exactement une porte de sortie.');
     }
 
     /** Loi 4 — la photo est proposée partout, et n'est jamais obligatoire : c'est un raccourci, pas un péage. */
     public function test_every_trade_offers_an_optional_photo(): void
     {
+        $ecarts = [];
+
         foreach (Trade::whereNotNull('sector_id')->get() as $trade) {
             $photo = $trade->questions()->where('type', QuestionType::PHOTO)->first();
 
-            $this->assertNotNull($photo, "Le métier « {$trade->name} » ne propose aucune photo.");
-            $this->assertFalse((bool) $photo->is_required, 'La photo est un raccourci offert, pas un passage obligé.');
+            if ($photo === null) {
+                $ecarts[] = "{$trade->name} → aucune question photo";
+            } elseif ((bool) $photo->is_required) {
+                $ecarts[] = "{$trade->name} → photo OBLIGATOIRE (c'est un raccourci offert, pas un passage obligé)";
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Ces métiers ne proposent pas correctement la photo.');
     }
 
     /**
@@ -129,13 +142,15 @@ class CatalogSeederTest extends TestCase
 
         $this->assertNotEmpty($asapTrades, 'Aucun métier ouvert au service immédiat : le mode serait mort-né.');
 
+        $muets = [];
+
         foreach ($asapTrades as $trade) {
-            $this->assertGreaterThan(
-                0,
-                $trade->questions()->where('is_essential', true)->count(),
-                "Le métier « {$trade->name} » est ouvert au mode immédiat sans aucune question essentielle.",
-            );
+            if ($trade->questions()->where('is_essential', true)->count() === 0) {
+                $muets[] = $trade->name;
+            }
         }
+
+        $this->assertSame([], $muets, 'Ces métiers sont ouverts au mode immédiat sans rien demander avant d’envoyer quelqu’un.');
     }
 
     /** Un chantier de peinture ou une toiture ne se commandent pas dans l'heure. */
