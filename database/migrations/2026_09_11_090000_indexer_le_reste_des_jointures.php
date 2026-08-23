@@ -228,7 +228,6 @@ return new class extends Migration
         ],
         'order_drafts' => [
             'client_place_id' => 'ix_order_drafts_client_place',
-            'dropoff_place_id' => 'ix_order_drafts_dropoff_place',
         ],
         'organization_contracts' => [
             'default_field_team_id' => 'ix_org_contracts_default_field_team',

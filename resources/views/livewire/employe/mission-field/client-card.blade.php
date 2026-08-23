@@ -81,10 +81,21 @@
             </div>
         @endif
 
-        @if($rdv?->notes)
+        {{--
+            CE PANNEAU LISAIT `bookings.notes`, QUE RIEN N'ÉCRIT — IL NE S'EST JAMAIS AFFICHÉ.
+
+            Le commentaire du client vit dans `customer_comment` / `commentaire_client` : c'est là
+            que le parcours de commande le range, là que l'API le reçoit, et là que le tableau de
+            bord prestataire et la page d'offre le lisent déjà. La confusion vient du formulaire
+            société, dont le champ s'appelle « notes » et qui écrit `commentaire_client`.
+
+            Conséquence : le prestataire sur place ne voyait aucune consigne d'accès — ni « portail
+            au fond de la cour », ni « sonner deux fois » — alors que le client les avait données.
+        --}}
+        @if($rdv?->customer_comment)
             <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:col-span-2">
                 <p class="text-xs font-bold uppercase tracking-wide text-amber-700">Notes client</p>
-                <p class="mt-1 text-sm leading-6 text-amber-900">{{ $rdv->notes }}</p>
+                <p class="mt-1 text-sm leading-6 text-amber-900">{{ $rdv->customer_comment }}</p>
             </div>
         @endif
 

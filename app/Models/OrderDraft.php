@@ -29,7 +29,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?float $dropoff_lat
  * @property ?float $dropoff_lng
  * @property ?string $dropoff_postal_code
- * @property ?string $dropoff_place_id
  * @property ?int $route_distance_m
  * @property ?int $route_duration_s
  * @property ?string $route_source
@@ -52,7 +51,7 @@ class OrderDraft extends Model
          * porte son propre nom : réutiliser les colonnes d'adresse pour lui ferait dire deux choses
          * à une même donnée selon le métier.
          */
-        'dropoff_address', 'dropoff_lat', 'dropoff_lng', 'dropoff_postal_code', 'dropoff_place_id',
+        'dropoff_address', 'dropoff_lat', 'dropoff_lng', 'dropoff_postal_code',
         // Mesurés à la commande, pour annoncer un prix au kilomètre AVANT que le client valide.
         'route_distance_m', 'route_duration_s', 'route_source',
         'scheduled_at', 'asap_requested_at',

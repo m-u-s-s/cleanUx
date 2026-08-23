@@ -172,12 +172,9 @@ return new class extends Migration
 
             $table->unsignedInteger('surface_m2')->nullable();
             $table->unsignedInteger('floor_count')->nullable();
-            $table->unsignedInteger('rooms_count')->nullable();
 
             $table->text('customer_comment')->nullable();
-            $table->text('internal_notes')->nullable();
             $table->text('description')->nullable();
-            $table->text('notes')->nullable();
 
             // Colonnes legacy FR.
             $table->date('date')->nullable();
@@ -191,7 +188,6 @@ return new class extends Migration
 
             $table->decimal('estimated_price', 10, 2)->nullable();
             $table->decimal('final_price', 10, 2)->nullable();
-            $table->decimal('zone_surcharge', 10, 2)->nullable();
             $table->decimal('discount_amount', 10, 2)->nullable();
 
             $table->boolean('requires_quote')->default(false);
@@ -215,7 +211,6 @@ return new class extends Migration
             $table->decimal('dropoff_lat', 10, 7)->nullable();
             $table->decimal('dropoff_lng', 10, 7)->nullable();
             $table->string('dropoff_postal_code', 12)->nullable();
-            $table->string('dropoff_place_id')->nullable();
             $table->unsignedInteger('route_distance_m')->nullable();
             $table->unsignedInteger('route_duration_s')->nullable();
             // `google`, `mapbox`, `haversine`... : une ligne droite ne doit pas se faire passer pour

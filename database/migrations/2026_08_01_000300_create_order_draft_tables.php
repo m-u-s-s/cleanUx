@@ -125,7 +125,6 @@ return new class extends Migration
                 $table->decimal('dropoff_lat', 10, 7)->nullable();
                 $table->decimal('dropoff_lng', 10, 7)->nullable();
                 $table->string('dropoff_postal_code', 12)->nullable();
-                $table->string('dropoff_place_id')->nullable();
                 $table->unsignedInteger('route_distance_m')->nullable();
                 $table->unsignedInteger('route_duration_s')->nullable();
                 // `google`, `mapbox`, `haversine`... : une ligne droite ne doit pas se faire passer pour

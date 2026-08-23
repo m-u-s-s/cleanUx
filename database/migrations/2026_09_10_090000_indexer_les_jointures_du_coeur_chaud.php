@@ -70,7 +70,6 @@ return new class extends Migration
             'organization_account_id' => 'ix_bookings_org_account',
             'postal_code_id' => 'ix_bookings_postal_code',
             'client_place_id' => 'ix_bookings_client_place',
-            'dropoff_place_id' => 'ix_bookings_dropoff_place',
             'deposit_payment_intent_id' => 'ix_bookings_deposit_intent',
             'stripe_transfer_id' => 'ix_bookings_stripe_transfer',
         ],

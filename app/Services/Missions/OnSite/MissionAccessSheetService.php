@@ -117,7 +117,18 @@ class MissionAccessSheetService
                 'phone' => $booking->beneficiary_phone,
                 'note' => $booking->beneficiary_note,
             ],
-            'notes' => $booking?->notes,
+            /*
+             * LA CONSIGNE DU CLIENT, ET NON `bookings.notes` — QUE RIEN N'ÉCRIVAIT.
+             *
+             * Cette fiche annonçait donc toujours `notes: null`, comme la carte « Client & accès »
+             * de la fiche terrain, qui souffrait du même défaut. Le commentaire laissé à la
+             * commande vit dans `customer_comment` / `commentaire_client` : c'est là que le
+             * parcours le range et là que les autres écrans prestataire le lisent.
+             *
+             * La clé de sortie garde son nom `notes` : elle appartient au contrat de la fiche, que
+             * le mobile consomme, et le renommer casserait un écran pour ne rien gagner.
+             */
+            'notes' => $booking?->customer_comment,
         ];
     }
 

@@ -223,6 +223,32 @@ class ChronometreEtFicheDAccesTest extends TestCase
             ->assertJsonPath('data.alarm_code_required', true);
     }
 
+    /**
+     * LA CONSIGNE DU CLIENT ARRIVE SUR LA FICHE.
+     *
+     * `MissionAccessSheetService` renvoyait `'notes' => $booking?->notes`, et `bookings.notes`
+     * n'est écrite par aucun code : la fiche annonçait donc toujours `notes: null`. La consigne
+     * réelle vit dans `commentaire_client` / `customer_comment` — que le scénario ci-dessus posait
+     * déjà, sans qu'aucun test ne vérifie qu'elle ressorte.
+     *
+     * La carte « Client & accès » de la fiche terrain souffrait du même défaut, sur la même
+     * colonne. Deux écrans, un seul malentendu : le formulaire société nomme son champ « notes »
+     * alors qu'il enregistre `commentaire_client`.
+     */
+    #[Test]
+    public function la_fiche_porte_la_consigne_laissee_par_le_client(): void
+    {
+        [$prestataire, $mission] = $this->scenario();
+
+        $mission->forceFill(['status' => MissionStatus::ARRIVED])->save();
+
+        $this->actingAs($prestataire, 'sanctum')
+            ->getJson("/api/provider/missions/{$mission->id}/access-sheet")
+            ->assertOk()
+            ->assertJsonPath('data.available', true)
+            ->assertJsonPath('data.notes', 'Sonner deux fois, le chien aboie.');
+    }
+
     #[Test]
     public function sans_local_d_entreprise_le_commentaire_du_client_fait_office(): void
     {

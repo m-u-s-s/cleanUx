@@ -88,7 +88,6 @@ use Illuminate\Support\Facades\Schema;
  * @property ?string $dropoff_lat
  * @property ?string $dropoff_lng
  * @property ?string $dropoff_postal_code
- * @property ?string $dropoff_place_id
  * @property ?int $route_distance_m
  * @property ?int $route_duration_s
  * @property ?string $route_source
@@ -204,7 +203,6 @@ class Booking extends Model
         'dropoff_lat',
         'dropoff_lng',
         'dropoff_postal_code',
-        'dropoff_place_id',
         // La route mesurée à la commande, figée avec la réservation.
         'route_distance_m',
         'route_duration_s',
@@ -217,7 +215,6 @@ class Booking extends Model
 
         // Commentaires & notes
         'customer_comment',
-        'internal_notes',
         'motif',
 
         // Pricing
@@ -355,7 +352,6 @@ class Booking extends Model
         'booking_channel',
 
         // Écrite par le code, écartée par Eloquent faute de figurer ici.
-        'notes',
 
         // F14 / F15 — déclaration d'absence, contact de secours, et ping de mi-mission.
         'client_absent',
