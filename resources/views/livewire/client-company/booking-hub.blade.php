@@ -255,8 +255,10 @@
                                         {{ $selectedTradeId == $trade->id
                                             ? 'border-sky-500 bg-sky-50 ring-2 ring-sky-100'
                                             : 'border-slate-200 bg-white hover:border-sky-300 hover:bg-sky-50/40' }}">
+                                    {{-- Un NOM d'icône, pas un émoji : imprimé tel quel, ce bouton
+                                         affichait « wrench » ou « paint-roller » sous le métier. --}}
                                     @if ($trade->icon)
-                                        <span class="text-2xl">{{ $trade->icon }}</span>
+                                        <x-ui.icon :name="$trade->icon" class="h-6 w-6 text-slate-600" />
                                     @endif
                                     <span class="text-xs font-semibold text-slate-800">{{ $trade->name }}</span>
                                     @if ($trade->short_description)

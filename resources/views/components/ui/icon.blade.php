@@ -91,6 +91,25 @@
         'check-circle' => '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>',
         'photo' => '<path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>',
         'tag' => '<path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z"/>',
+
+        /*
+         * LES SEPT ICÔNES DU CATALOGUE, QUI RETOMBAIENT TOUTES SUR UN CERCLE.
+         *
+         * `sectors.icon` et `trades.icon` portent des noms depuis leurs semeurs — `car`, `broom`,
+         * `leaf`… — et aucun n'était défini ici. Un nom inconnu prend le `circle` de repli SANS
+         * RIEN DIRE : six métiers et un secteur s'affichaient donc avec la même pastille ronde.
+         *
+         * `pencil-square`, `user-group` et `window` viennent de Heroicons v2 comme le reste. Les
+         * quatre autres n'y existent pas et sont tracées ici, au même gabarit : 24×24, contour
+         * seul, extrémités arrondies.
+         */
+        'pencil-square' => '<path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/>',
+        'user-group' => '<path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/>',
+        'window' => '<path stroke-linecap="round" stroke-linejoin="round" d="M3 8.25V18a2.25 2.25 0 0 0 2.25 2.25h13.5A2.25 2.25 0 0 0 21 18V8.25m-18 0V6a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 6v2.25m-18 0h18M5.25 6h.008v.008H5.25V6Zm2.25 0h.008v.008H7.5V6Zm2.25 0h.008v.008H9.75V6Z"/>',
+        'car' => '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5h16.5M6 13.5l1.62-4.32A2.25 2.25 0 0 1 9.73 7.5h4.54a2.25 2.25 0 0 1 2.11 1.68L18 13.5M4.5 13.5v3.75h2.25m10.5 0h2.25V13.5"/><circle cx="8.25" cy="17.25" r="1.5"/><circle cx="15.75" cy="17.25" r="1.5"/>',
+        'broom' => '<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 3.75 10.5 9m0 0-4.5 6h12l-4.5-6m-3 0h3M7.5 15v5.25m3-5.25v5.25m3-5.25v5.25m3-5.25v5.25"/>',
+        'leaf' => '<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5s-1.5-7.5 3.75-12S19.5 4.5 19.5 4.5s1.5 7.5-3.75 12S4.5 19.5 4.5 19.5Zm0 0 8.25-8.25"/>',
+        'paint-roller' => '<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h12v4.5h-12v-4.5Zm12 2.25h3a1.5 1.5 0 0 1 1.5 1.5v1.5a1.5 1.5 0 0 1-1.5 1.5h-6a1.5 1.5 0 0 0-1.5 1.5v1.5m-1.5 0h3v6h-3v-6Z"/>',
     ];
     $svg = $icons[$name] ?? $icons['circle'];
 @endphp

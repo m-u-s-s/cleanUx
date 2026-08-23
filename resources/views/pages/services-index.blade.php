@@ -61,16 +61,20 @@
                     <div class="h-1 w-full" style="background:{{ $trade->color ?? 'var(--cx-amber)' }}"></div>
 
                     <div class="flex flex-1 flex-col p-6">
-                        {{-- Icon --}}
-                        <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl text-2xl"
+                        {{--
+                            `trades.icon` PORTE UN NOM D'ICÔNE, PAS UN ÉMOJI.
+
+                            Ce bloc l'imprimait en texte : cette page publique affichait les mots
+                            « sparkles », « paint-roller », « hammer » dans la pastille ambre, un
+                            par métier. La branche de repli, elle, dessinait une mallette — donc
+                            personne n'a jamais vu l'icône prévue.
+
+                            `<x-ui.icon>` résout le nom, et retombe sur cette même mallette quand la
+                            colonne est vide.
+                        --}}
+                        <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl"
                              style="background:rgba(255,182,72,0.1)">
-                            @if($trade->icon)
-                                <span>{{ $trade->icon }}</span>
-                            @else
-                                <svg class="h-6 w-6" style="color:var(--cx-amber)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                </svg>
-                            @endif
+                            <x-ui.icon :name="$trade->icon ?: 'briefcase'" class="h-6 w-6" style="color:var(--cx-amber)" />
                         </div>
 
                         <h2 class="text-lg font-bold" style="color:var(--cx-text)">{{ $trade->name }}</h2>
