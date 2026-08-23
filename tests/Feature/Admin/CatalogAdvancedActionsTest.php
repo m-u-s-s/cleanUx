@@ -76,9 +76,11 @@ class CatalogAdvancedActionsTest extends TestCase
         $this->postJson("/api/admin/console/catalog/{$secteur->id}/actions/archive")->assertOk();
 
         // « Ses métiers restent intacts » — la promesse que fait l'écran web, mot pour mot.
-        foreach ($metiers as $id) {
-            $this->assertNotNull(Trade::find($id), "le métier {$id} a disparu avec son secteur");
-        }
+        // Une suppression en cascade emporte TOUS les metiers du secteur : les nommer tous dit
+        // l'ampleur du degat, pas seulement qu'il a eu lieu.
+        $disparus = array_values(array_filter($metiers, fn ($id) => Trade::find($id) === null));
+
+        $this->assertSame([], $disparus, 'Ces metiers ont disparu avec leur secteur.');
     }
 
     public function test_il_deplace_un_metier_dans_son_secteur(): void

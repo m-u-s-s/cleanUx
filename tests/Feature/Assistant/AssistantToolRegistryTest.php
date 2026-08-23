@@ -70,12 +70,27 @@ class AssistantToolRegistryTest extends TestCase
 
         $this->assertNotEmpty($definitions);
 
-        foreach ($definitions as $def) {
-            $this->assertArrayHasKey('name', $def);
-            $this->assertArrayHasKey('description', $def);
-            $this->assertArrayHasKey('input_schema', $def);
-            $this->assertSame('object', $def['input_schema']['type']);
+        // Un outil mal declare rend TOUT le registre inutilisable par le modele : on les nomme
+        // tous, pour ne pas corriger a l'aveugle un outil apres l'autre.
+        $mauvais = [];
+
+        foreach ($definitions as $i => $def) {
+            $nom = $def['name'] ?? "outil #{$i}";
+
+            foreach (['name', 'description', 'input_schema'] as $clef) {
+                if (! array_key_exists($clef, $def)) {
+                    $mauvais[] = "{$nom} : cle « {$clef} » absente";
+                }
+            }
+
+            $type = $def['input_schema']['type'] ?? null;
+
+            if ($type !== 'object') {
+                $mauvais[] = "{$nom} : input_schema.type vaut ".var_export($type, true).' au lieu de « object »';
+            }
         }
+
+        $this->assertSame([], $mauvais, 'Ces outils sont mal declares : le modele ne saura pas les appeler.');
     }
 
     public function test_find_returns_tool_by_name(): void

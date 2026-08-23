@@ -58,12 +58,28 @@ class ResourceEndpointsTest extends TestCase
 
         $actions = $this->getJson('/api/admin/console/fake-users')->json('resource.actions');
 
-        foreach ($actions as $action) {
-            // `fields` décrit ce que l'action EXIGE avant de s'exécuter — des champs à dessiner,
-            // jamais du comportement. La fermeture, elle, ne traverse jamais le JSON.
-            $this->assertSame(['key', 'label', 'destructive', 'confirm', 'fields'], array_keys($action));
-            $this->assertIsArray($action['fields']);
+        /*
+         * `fields` decrit ce que l'action EXIGE avant de s'executer — des champs a dessiner,
+         * jamais du comportement. La fermeture, elle, ne traverse jamais le JSON.
+         *
+         * Toutes les actions mal formees d'un coup : un contrat qui derive derive sur plusieurs.
+         */
+        $fautives = [];
+
+        foreach ($actions as $i => $action) {
+            $nom = $action['key'] ?? "action #{$i}";
+            $clefs = array_keys($action);
+
+            if ($clefs !== ['key', 'label', 'destructive', 'confirm', 'fields']) {
+                $fautives[] = "{$nom} : cles [".implode(', ', $clefs).']';
+            }
+
+            if (! is_array($action['fields'] ?? null)) {
+                $fautives[] = "{$nom} : « fields » n est pas un tableau";
+            }
         }
+
+        $this->assertSame([], $fautives, 'Ces actions ne respectent pas le contrat du descripteur.');
     }
 
     public function test_une_ressource_inconnue_rend_404(): void

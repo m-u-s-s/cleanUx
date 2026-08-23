@@ -90,20 +90,33 @@ class ReportsTest extends TestCase
         $tuiles = collect($sections)->flatMap(fn (array $s) => $s['tiles']);
         $this->assertNotEmpty($tuiles, "Le rapport « {$report} » n’a aucune tuile.");
 
-        foreach ($tuiles as $tuile) {
-            $this->assertNotEmpty($tuile['key']);
-            $this->assertNotEmpty($tuile['label']);
-            $this->assertContains($tuile['tone'], ['neutral', 'success', 'warning', 'danger']);
+        /*
+         * TOUTES LES TUILES FAUTIVES, PAS LA PREMIÈRE.
+         *
+         * Le contrat rattrape les erreurs pour qu'une table absente coûte une TUILE et non
+         * l'écran. Une requête cassée rendrait donc zéro sans bruit — le vert qui ne prouve rien.
+         * Et quand une table manque, ce sont en général plusieurs tuiles du même rapport qui
+         * tombent : les nommer toutes évite autant d'exécutions que de tuiles.
+         */
+        $fautives = [];
 
-            // Le contrat rattrape les erreurs pour qu'une table absente coûte une tuile et non
-            // l'écran. Sans cette assertion, une requête cassée rendrait zéro et le test passerait
-            // — le vert qui ne prouve rien.
-            $this->assertTrue($tuile['available'], sprintf(
-                'La tuile « %s » du rapport « %s » n’a pas pu être mesurée.',
-                $tuile['key'],
-                $report,
-            ));
+        foreach ($tuiles as $tuile) {
+            foreach (['key', 'label'] as $clef) {
+                if (blank($tuile[$clef] ?? null)) {
+                    $fautives[] = sprintf('%s : « %s » vide', $tuile['key'] ?? '?', $clef);
+                }
+            }
+
+            if (! in_array($tuile['tone'] ?? null, ['neutral', 'success', 'warning', 'danger'], true)) {
+                $fautives[] = sprintf('%s : ton « %s » inconnu', $tuile['key'] ?? '?', $tuile['tone'] ?? 'null');
+            }
+
+            if (! ($tuile['available'] ?? false)) {
+                $fautives[] = sprintf('%s : n’a pas pu être mesurée', $tuile['key'] ?? '?');
+            }
         }
+
+        $this->assertSame([], $fautives, "Ces tuiles du rapport « {$report} » sont inexploitables.");
     }
 
     #[DataProvider('rapports')]

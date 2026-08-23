@@ -128,9 +128,19 @@ class AdminParityInventoryTest extends TestCase
 
     public function test_chaque_exception_porte_une_raison_ecrite(): void
     {
+        // Toutes les exceptions trop courtes d'un coup : une liste qu'on etoffe se relit en une
+        // fois, pas exception par exception.
+        $bavardes = [];
+
         foreach (self::HORS_MESURE as $cle => $raison) {
-            $this->assertGreaterThan(80, strlen($raison), "L’exception {$cle} n’explique pas assez.");
+            $n = strlen($raison);
+
+            if ($n <= 80) {
+                $bavardes[] = "{$cle} : {$n} caracteres";
+            }
         }
+
+        $this->assertSame([], $bavardes, 'Ces exceptions n expliquent pas assez pourquoi elles sont hors mesure.');
     }
 
     public function test_la_mesure_trouve_bien_des_gestes(): void

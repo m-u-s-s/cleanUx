@@ -57,10 +57,17 @@ class CreationResourcesTest extends TestCase
 
         $this->assertNotEmpty($destructives, "« {$resource} » n’a aucune bascule d’arrêt.");
 
+        // Une confirmation vide se valide sans qu'on sache ce qu'on arrête. Toutes les actions
+        // muettes d'un coup : une console en compte souvent plusieurs.
+        $muettes = [];
+
         foreach ($destructives as $action) {
-            // Une confirmation vide se valide sans qu'on sache ce qu'on arrête.
-            $this->assertNotEmpty($action['confirm'], "L’action {$action['key']} ne dit pas ce qu’elle change.");
+            if (blank($action['confirm'] ?? null)) {
+                $muettes[] = $action['key'];
+            }
         }
+
+        $this->assertSame([], $muettes, 'Ces actions destructives ne disent pas ce qu’elles changent.');
     }
 
     // ── codes promo ─────────────────────────────────────────────────────────────────────────

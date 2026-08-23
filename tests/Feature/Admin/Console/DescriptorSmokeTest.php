@@ -105,21 +105,26 @@ class DescriptorSmokeTest extends TestCase
             ? [[]]
             : $this->combinaisonsDeSelects($selects);
 
+        /*
+         * TOUTES LES OPTIONS QUE LA BASE REFUSE, PAS LA PREMIÈRE.
+         *
+         * 201 (créé) et 422 (refusé par la validation) sont tous deux des réponses SAINES : le
+         * moteur a parlé. Un 500 signifie que la base a refusé ce que le descripteur annonçait
+         * comme un choix valide — et un descripteur décalé du schéma l'est en général sur
+         * plusieurs options à la fois.
+         */
+        $refusees = [];
+
         foreach ($combinaisons as $index => $forcees) {
             $charge = $this->chargePlausible($champs, $forcees, $index);
-
             $reponse = $this->postJson("/api/admin/console/{$resource}", $charge);
 
-            // 201 (créé) et 422 (refusé par la validation) sont tous deux des réponses SAINES :
-            // le moteur a parlé. Un 500 signifie que la base a refusé ce que le descripteur
-            // annonçait comme un choix valide.
-            $this->assertNotSame(500, $reponse->status(), sprintf(
-                'Option refusée par la base sur « %s » : %s — réponse %d.',
-                $resource,
-                json_encode($forcees, JSON_UNESCAPED_UNICODE),
-                $reponse->status(),
-            ));
+            if ($reponse->status() === 500) {
+                $refusees[] = json_encode($forcees, JSON_UNESCAPED_UNICODE);
+            }
         }
+
+        $this->assertSame([], $refusees, "Ces options annoncées par « {$resource} » sont refusées par la base.");
     }
 
     /**

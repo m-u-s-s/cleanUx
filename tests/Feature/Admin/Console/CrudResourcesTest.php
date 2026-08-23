@@ -201,9 +201,18 @@ class CrudResourcesTest extends TestCase
             ->flatMap(fn (array $g) => $g['modules'])
             ->keyBy('key');
 
+        // Les trois modules relevés ensemble : un inventaire qui prend du retard le prend
+        // rarement sur un seul.
+        $enRetard = [];
+
         foreach (['users', 'companies', 'sites'] as $cle) {
-            $this->assertSame('descriptor', $modules[$cle]['coverage'],
-                "Le module « {$cle} » est livré mais reste annoncé « à venir ».");
+            $couverture = $modules[$cle]['coverage'] ?? 'ABSENT';
+
+            if ($couverture !== 'descriptor') {
+                $enRetard[] = "{$cle} : annoncé « {$couverture} »";
+            }
         }
+
+        $this->assertSame([], $enRetard, 'Ces modules sont livrés mais restent annoncés « à venir ».');
     }
 }

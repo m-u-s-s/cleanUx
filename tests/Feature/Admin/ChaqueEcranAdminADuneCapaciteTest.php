@@ -103,9 +103,13 @@ class ChaqueEcranAdminADuneCapaciteTest extends TestCase
 
         $this->assertGreaterThan(10, $declarees->count());
 
-        foreach ($declarees as $gate) {
-            $this->assertContains($gate, $connues, "« {$gate} » n’est pas une capacité connue.");
-        }
+        // Une faute de frappe dans un `gate` en amene souvent d'autres : on les nomme toutes.
+        $inconnues = array_values(array_diff(
+            is_array($declarees) ? $declarees : $declarees->all(),
+            is_array($connues) ? $connues : $connues->all(),
+        ));
+
+        $this->assertSame([], $inconnues, 'Ces capacites declarees par les ecrans n existent pas.');
     }
 
     // ── La porte, pas seulement la tuile ─────────────────────────────────

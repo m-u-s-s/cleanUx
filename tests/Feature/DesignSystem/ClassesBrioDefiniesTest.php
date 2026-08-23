@@ -126,13 +126,14 @@ class ClassesBrioDefiniesTest extends TestCase
         // n'importe quoi.
         $definies = $this->classesDefinies();
 
-        foreach (self::SANS_STYLE_CONNUES as $classe) {
-            $this->assertNotContains(
-                $classe,
-                $definies,
-                "{$classe} a désormais un style : retirez-la de SANS_STYLE_CONNUES."
-            );
-        }
+        // Toutes celles qui ont recu un style d'un coup : la liste d'exceptions se toilette en
+        // une fois, pas classe par classe.
+        $desormaisStylees = array_values(array_intersect(
+            self::SANS_STYLE_CONNUES,
+            is_array($definies) ? $definies : $definies->all(),
+        ));
+
+        $this->assertSame([], $desormaisStylees, 'Ces classes ont desormais un style : retirez-les de SANS_STYLE_CONNUES.');
     }
 
     public function test_le_prefixe_de_l_ancienne_marque_a_disparu(): void

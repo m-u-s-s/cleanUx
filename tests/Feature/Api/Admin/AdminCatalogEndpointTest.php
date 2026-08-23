@@ -74,13 +74,24 @@ class AdminCatalogEndpointTest extends TestCase
         $modules = collect($this->getJson('/api/admin/catalog')->json('groups'))
             ->flatMap(fn (array $g) => $g['modules']);
 
-        foreach ($modules as $module) {
-            $this->assertNotEmpty($module['key']);
-            $this->assertNotEmpty($module['title']);
-            $this->assertNotEmpty($module['icon']);
-            $this->assertContains($module['coverage'], ['pending', 'descriptor', 'report', 'screen']);
-            $this->assertNotEmpty($module['route']);
+        // Un catalogue mal forme l'est rarement sur une seule entree : on les nomme toutes.
+        $fautifs = [];
+
+        foreach ($modules as $i => $module) {
+            $nom = $module['key'] ?? "module #{$i}";
+
+            foreach (['key', 'title', 'icon', 'route'] as $clef) {
+                if (blank($module[$clef] ?? null)) {
+                    $fautifs[] = "{$nom} : « {$clef} » vide";
+                }
+            }
+
+            if (! in_array($module['coverage'] ?? null, ['pending', 'descriptor', 'report', 'screen'], true)) {
+                $fautifs[] = "{$nom} : couverture « ".($module['coverage'] ?? 'null').' » inconnue';
+            }
         }
+
+        $this->assertSame([], $fautifs, 'Ces modules du catalogue sont inexploitables par le mobile.');
     }
 
     public function test_un_non_admin_est_refuse(): void

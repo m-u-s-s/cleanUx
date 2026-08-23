@@ -38,13 +38,14 @@ class ScheduleIntegrityTest extends TestCase
 
         $this->assertNotEmpty($scheduledCommands, 'Expected at least one scheduled artisan command');
 
-        foreach ($scheduledCommands as $command) {
-            $this->assertContains(
-                $command,
-                $registered,
-                "Scheduled command [{$command}] is not a registered artisan command (typo in Kernel schedule?)."
-            );
-        }
+        // Toutes les commandes fantomes d'un coup : une refonte du noyau en laisse souvent
+        // plusieurs derriere elle, et chacune est une tache qui ne tournera jamais.
+        $fantomes = array_values(array_diff(
+            is_array($scheduledCommands) ? $scheduledCommands : $scheduledCommands->all(),
+            is_array($registered) ? $registered : $registered->all(),
+        ));
+
+        $this->assertSame([], $fantomes, 'Ces commandes planifiees n existent pas : la tache ne tournera jamais.');
     }
 
     public function test_gdpr_erasure_command_is_scheduled_and_exists(): void

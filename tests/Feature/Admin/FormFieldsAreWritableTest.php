@@ -107,11 +107,20 @@ class FormFieldsAreWritableTest extends TestCase
          * Ces six-là n'étendent pas `EloquentResource`. Un filtre sur cette classe les écartait
          * silencieusement — et ce sont les formulaires les plus exposés de la console.
          */
+        // Six descripteurs verifies ensemble : un registre ampute l'est rarement d'une seule
+        // entree, et savoir que le premier manque ne dit rien des cinq autres.
+        $ecarts = [];
+
         foreach (['users', 'companies', 'sites', 'promo-codes', 'badges', 'feature-flags'] as $cle) {
             $descripteur = $registre->for($cle);
 
-            $this->assertNotNull($descripteur, "Le descripteur « {$cle} » a disparu du registre.");
-            $this->assertNotSame([], $descripteur->formFields(), "Le formulaire de « {$cle} » est vide : la mesure ne le regarderait plus.");
+            if ($descripteur === null) {
+                $ecarts[] = "{$cle} : disparu du registre";
+            } elseif ($descripteur->formFields() === []) {
+                $ecarts[] = "{$cle} : formulaire vide, la mesure ne le regarderait plus";
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Ces descripteurs ne portent plus de formulaire mesurable.');
     }
 }

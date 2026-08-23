@@ -227,8 +227,16 @@ class DecisionResourcesTest extends TestCase
             ->flatMap(fn (array $g) => $g['modules'])
             ->keyBy('key');
 
+        $enRetard = [];
+
         foreach (['kyc', 'kyb', 'enterprise-approvals', 'disputes'] as $cle) {
-            $this->assertSame('descriptor', $modules[$cle]['coverage']);
+            $couverture = $modules[$cle]['coverage'] ?? 'ABSENT';
+
+            if ($couverture !== 'descriptor') {
+                $enRetard[] = "{$cle} : annoncé « {$couverture} »";
+            }
         }
+
+        $this->assertSame([], $enRetard, 'Ces modules de décision sont livrés mais annoncés autrement.');
     }
 }
