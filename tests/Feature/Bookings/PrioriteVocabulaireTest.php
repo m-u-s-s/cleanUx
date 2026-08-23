@@ -77,15 +77,23 @@ class PrioriteVocabulaireTest extends TestCase
 
     public function test_les_deux_colonnes_ne_se_contredisent_jamais(): void
     {
-        foreach ([['priorite' => 'normale'], ['priorite' => null, 'priority' => 'normal'], ['priorite' => 'haute']] as $depart) {
-            $reservation = Booking::factory()->create($depart)->fresh();
+        // Les trois points de depart releves ensemble : un vocabulaire desaccorde l'est
+        // generalement dans les deux sens, et savoir que le premier decroche ne dit rien des autres.
+        $ecarts = [];
 
-            $this->assertSame(
-                $this->versLAnglais($reservation->priorite),
-                $reservation->priority,
-                'Les deux colonnes décrivent la même priorité : elles doivent rester traduisibles l’une dans l’autre.'
-            );
+        foreach ([['priorite' => 'normale'], ['priorite' => null, 'priority' => 'normal'], ['priorite' => 'haute']] as $i => $depart) {
+            $reservation = Booking::factory()->create($depart)->fresh();
+            $attendu = $this->versLAnglais($reservation->priorite);
+
+            if ($reservation->priority !== $attendu) {
+                $ecarts[] = sprintf(
+                    'depart #%d : priorite « %s » donne priority « %s », attendu « %s »',
+                    $i, $reservation->priorite, $reservation->priority, $attendu,
+                );
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Les deux colonnes decrivent la meme priorite : elles doivent rester traduisibles l une dans l autre.');
     }
 
     private function versLAnglais(?string $francais): ?string

@@ -62,12 +62,12 @@ class UneColonneSupprimeeNestPlusNommeeTest extends TestCase
      */
     public function test_temoin_les_colonnes_vivantes_repondent_presentes(): void
     {
-        foreach (self::RETIREES as $vivante) {
-            $this->assertTrue(
-                Schema::hasColumn('mission_assignments', $vivante),
-                "« {$vivante} » manque : la mesure ne prouve plus rien.",
-            );
-        }
+        $absentes = array_values(array_filter(
+            self::RETIREES,
+            fn (string $c) => ! Schema::hasColumn('mission_assignments', $c),
+        ));
+
+        $this->assertSame([], $absentes, 'Ces colonnes manquent : la mesure ne prouverait plus rien.');
     }
 
     /**

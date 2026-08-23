@@ -34,17 +34,38 @@ class AdminOverviewEndpointTest extends TestCase
         $kpis = $res->json('kpis');
         $this->assertCount(7, $kpis);
 
-        foreach ($kpis as $kpi) {
-            $this->assertNotEmpty($kpi['key']);
-            $this->assertNotEmpty($kpi['label']);
-            $this->assertIsInt($kpi['value']);
-            $this->assertArrayHasKey('icon', $kpi);
+        /*
+         * TOUS LES INDICATEURS FAUTIFS, PAS LE PREMIER.
+         *
+         * Le controleur rattrape les erreurs pour qu'une table absente ne fasse pas tomber
+         * l'accueil entier. Une requete cassee rendrait donc 0 sans bruit — le vert qui ne prouve
+         * rien. Et quand une table manque, ce sont plusieurs indicateurs qui tombent ensemble.
+         */
+        $fautifs = [];
 
-            // Le contrôleur rattrape les erreurs pour qu'une table absente ne fasse pas tomber
-            // l'accueil entier. Sans cette assertion, une requête cassée rendrait 0 et le test
-            // passerait : c'est exactement le genre de vert qui ne prouve rien.
-            $this->assertTrue($kpi['available'], "L'indicateur {$kpi['key']} n'a pas pu être mesuré.");
+        foreach ($kpis as $i => $kpi) {
+            $nom = $kpi['key'] ?? "indicateur #{$i}";
+
+            foreach (['key', 'label'] as $clef) {
+                if (blank($kpi[$clef] ?? null)) {
+                    $fautifs[] = "{$nom} : « {$clef} » vide";
+                }
+            }
+
+            if (! is_int($kpi['value'] ?? null)) {
+                $fautifs[] = "{$nom} : valeur ".var_export($kpi['value'] ?? null, true).' au lieu d un entier';
+            }
+
+            if (! array_key_exists('icon', $kpi)) {
+                $fautifs[] = "{$nom} : pas d icone";
+            }
+
+            if (! ($kpi['available'] ?? false)) {
+                $fautifs[] = "{$nom} : n a pas pu etre mesure";
+            }
         }
+
+        $this->assertSame([], $fautifs, 'Ces indicateurs de l accueil sont inexploitables.');
     }
 
     public function test_les_cles_d_indicateurs_sont_stables(): void

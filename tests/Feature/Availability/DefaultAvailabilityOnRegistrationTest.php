@@ -49,11 +49,24 @@ class DefaultAvailabilityOnRegistrationTest extends TestCase
             'Dimanche (0) compris : le défaut d’une place de marché est « ouvert ».',
         );
 
+        // Les creneaux semes d'un coup : une plage par defaut mal posee l'est sur tous les jours,
+        // et une assertion par tour n'en nommerait qu'un.
+        $ecarts = [];
+
         foreach ($slots as $slot) {
-            $this->assertSame('08:00:00', substr((string) $slot->start_time, 0, 8));
-            $this->assertSame('17:00:00', substr((string) $slot->end_time, 0, 8));
-            $this->assertTrue($slot->is_active);
+            $debut = substr((string) $slot->start_time, 0, 8);
+            $fin = substr((string) $slot->end_time, 0, 8);
+
+            if ($debut !== '08:00:00' || $fin !== '17:00:00') {
+                $ecarts[] = sprintf('jour %s : %s-%s', $slot->day_of_week ?? '?', $debut, $fin);
+            }
+
+            if (! $slot->is_active) {
+                $ecarts[] = sprintf('jour %s : inactif', $slot->day_of_week ?? '?');
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Ces creneaux par defaut ne sont pas ceux annonces.');
     }
 
     public function test_l_inscription_societe_pose_les_memes_creneaux(): void

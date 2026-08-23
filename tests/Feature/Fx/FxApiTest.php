@@ -48,10 +48,21 @@ class FxApiTest extends TestCase
         $response->assertOk();
         $data = $response->json('data');
         $this->assertCount(2, $data);
+        // Un taux nul ou negatif casse toute conversion qui l'emploie : les nommer tous evite de
+        // corriger la table ligne par ligne.
+        $fautifs = [];
+
         foreach ($data as $r) {
-            $this->assertSame('EUR', $r['base']);
-            $this->assertGreaterThan(0, $r['rate']);
+            if (($r['base'] ?? null) !== 'EUR') {
+                $fautifs[] = sprintf('%s : base « %s »', $r['quote'] ?? '?', $r['base'] ?? 'null');
+            }
+
+            if (($r['rate'] ?? 0) <= 0) {
+                $fautifs[] = sprintf('%s : taux %s', $r['quote'] ?? '?', var_export($r['rate'] ?? null, true));
+            }
         }
+
+        $this->assertSame([], $fautifs, 'Ces taux de change sont inexploitables.');
     }
 
     public function test_convert_endpoint_validates_required_fields(): void

@@ -16,10 +16,19 @@ class FxProvidersTest extends TestCase
         $this->assertContains('USD', $codes);
         $this->assertContains('GBP', $codes);
 
+        $fautifs = [];
+
         foreach ($rates as $r) {
-            $this->assertGreaterThan(0, $r->rate);
-            $this->assertSame('mock', $r->source);
+            if ($r->rate <= 0) {
+                $fautifs[] = sprintf('%s : taux %s', $r->quote ?? '?', var_export($r->rate, true));
+            }
+
+            if ($r->source !== 'mock') {
+                $fautifs[] = sprintf('%s : source « %s » au lieu de « mock »', $r->quote ?? '?', $r->source);
+            }
         }
+
+        $this->assertSame([], $fautifs, 'Ces taux ne viennent pas du fournisseur attendu.');
     }
 
     public function test_mock_provider_cross_rate_via_eur(): void

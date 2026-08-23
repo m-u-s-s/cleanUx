@@ -72,12 +72,21 @@ class ApiControleFacialTest extends TestCase
             $this->postJson('/api/provider/face-check/start'),
         ];
 
-        foreach ($reponses as $reponse) {
-            $corps = $reponse->getContent();
+        // Toutes les reponses qui fuient d'un coup : une serialisation trop bavarde l'est sur
+        // TOUTES les routes de la meme famille, jamais sur une seule.
+        $fuites = [];
 
-            $this->assertStringNotContainsString('next_check_due_at', (string) $corps);
-            $this->assertStringNotContainsString('due_at', (string) $corps);
+        foreach ($reponses as $i => $reponse) {
+            $corps = (string) $reponse->getContent();
+
+            foreach (['next_check_due_at', 'due_at'] as $champ) {
+                if (str_contains($corps, $champ)) {
+                    $fuites[] = "reponse #{$i} : « {$champ} »";
+                }
+            }
         }
+
+        $this->assertSame([], $fuites, 'Ces reponses annoncent au prestataire quand son prochain controle tombera.');
     }
 
     // ─── L'enrôlement ────────────────────────────────────────────────────────

@@ -206,6 +206,15 @@ class DataErasureServiceTest extends TestCase
          * gardait « 12 rue Secrète ». Le test était vert et l'adresse restait en base.
          */
         $freshBooking = $booking->fresh();
+        /*
+         * TOUTES LES COLONNES SURVIVANTES, PAS LA PREMIÈRE.
+         *
+         * Un effacement incomplet l'est rarement sur une seule colonne : c'est une famille entière
+         * qui reste — les jumelles anglaises, les contacts, les coordonnées. Les nommer toutes
+         * évite de relancer autant de fois qu'il reste de données personnelles en base.
+         */
+        $survivantes = [];
+
         foreach ([
             'adresse', 'address',
             'ville', 'city',
@@ -216,8 +225,12 @@ class DataErasureServiceTest extends TestCase
             'beneficiary_name', 'beneficiary_phone',
             'destination_lat', 'destination_lng',
         ] as $colonne) {
-            $this->assertNull($freshBooking->{$colonne}, "La colonne `{$colonne}` a survécu à l'effacement.");
+            if ($freshBooking->{$colonne} !== null) {
+                $survivantes[] = $colonne;
+            }
         }
+
+        $this->assertSame([], $survivantes, 'Ces colonnes ont survécu au droit à l’effacement.');
 
         // La ligne comptable, elle, survit : c'est l'obligation légale de conservation.
         $this->assertSame('termine', $freshBooking->status);

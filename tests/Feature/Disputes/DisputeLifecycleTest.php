@@ -187,10 +187,17 @@ class DisputeLifecycleTest extends TestCase
             ->visibleTo(DisputeEvent::ROLE_PROVIDER)
             ->get();
 
+        // Toutes les fuites d'un coup : une visibilite mal filtree en laisse passer plusieurs, et
+        // sur un litige chaque ligne exposee compte.
+        $fuites = [];
+
         foreach ($providerVisible as $event) {
-            $this->assertNotSame(DisputeEvent::VISIBILITY_PRIVATE, $event->visibility);
-            $this->assertNotSame(DisputeEvent::VISIBILITY_CLIENT, $event->visibility);
+            if (in_array($event->visibility, [DisputeEvent::VISIBILITY_PRIVATE, DisputeEvent::VISIBILITY_CLIENT], true)) {
+                $fuites[] = sprintf('evenement #%s : visibilite « %s »', $event->id, $event->visibility);
+            }
         }
+
+        $this->assertSame([], $fuites, 'Ces evenements ne devraient pas etre visibles du prestataire.');
     }
 
     protected function openTestCase(): ComplaintCase

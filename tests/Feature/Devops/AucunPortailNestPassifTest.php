@@ -41,20 +41,28 @@ class AucunPortailNestPassifTest extends TestCase
         // Garde-fou du test : sans jobs lus, l'assertion serait vraie pour rien.
         $this->assertNotEmpty($workflow['jobs'] ?? [], 'Aucun job lu — le fichier a bougé ou ne parse plus.');
 
+        // TOUS les jobs devenus passifs d'un coup : desamorcer un portail donne envie d'en
+        // desamorcer un second, et c'est la liste entiere qu'on veut voir avant de la tolerer.
+        $passifs = [];
+
         foreach ($workflow['jobs'] as $nom => $job) {
             if (! ($job['continue-on-error'] ?? false)) {
                 continue;
             }
 
-            $this->assertArrayHasKey(
-                $nom,
-                self::PASSIFS_ASSUMES,
-                "Le job « {$nom} » tourne sans que son verdict compte. S’il s’agit d’une "
-                .'stabilisation volontaire, l’inscrire dans PASSIFS_ASSUMES avec son motif, sa date '
-                .'et la condition qui le rendra bloquant — sans quoi l’état provisoire devient '
-                .'définitif sans que personne le décide.',
-            );
+            if (! array_key_exists($nom, self::PASSIFS_ASSUMES)) {
+                $passifs[] = $nom;
+            }
         }
+
+        $this->assertSame(
+            [],
+            $passifs,
+            'Ces jobs tournent sans que leur verdict compte. S il s agit d une stabilisation '
+            .'volontaire, les inscrire dans PASSIFS_ASSUMES avec leur motif, leur date et la '
+            .'condition qui les rendra bloquants — sans quoi l etat provisoire devient definitif '
+            .'sans que personne le decide.',
+        );
     }
 
     /**

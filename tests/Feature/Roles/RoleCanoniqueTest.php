@@ -122,10 +122,21 @@ class RoleCanoniqueTest extends TestCase
         $this->assertTrue(Role::PROVIDER_SOCIETE->porteDesSousRoles());
         $this->assertCount(11, Role::PROVIDER_SOCIETE->sousRoles());
 
+        // Les quatre roles releves ensemble : une hierarchie mal declaree touche generalement
+        // plusieurs roles a la fois.
+        $porteurs = [];
+
         foreach ([Role::SUPER_ADMIN, Role::ADMIN, Role::CLIENT_INDIVIDUELLE, Role::PROVIDER_INDIVIDUELLE] as $role) {
-            $this->assertFalse($role->porteDesSousRoles(), $role->value);
-            $this->assertSame([], $role->sousRoles(), $role->value);
+            if ($role->porteDesSousRoles()) {
+                $porteurs[] = $role->value.' : se declare porteur de sous-roles';
+            }
+
+            if ($role->sousRoles() !== []) {
+                $porteurs[] = $role->value.' : rend ['.implode(', ', $role->sousRoles()).']';
+            }
         }
+
+        $this->assertSame([], $porteurs, 'Ces roles ne portent aucun sous-role.');
     }
 
     public function test_chaque_role_a_son_tableau_de_bord(): void
