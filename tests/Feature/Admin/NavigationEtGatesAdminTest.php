@@ -83,14 +83,17 @@ class NavigationEtGatesAdminTest extends TestCase
 
         $visibles = collect($this->modulesAdmin())->pluck('key')->all();
 
-        foreach (['*:profile.show', 'admin:admin.dashboard', 'admin:admin.home'] as $ouvert) {
-            $this->assertContains(
-                $ouvert,
-                $visibles,
-                "« {$ouvert} » ne déclare aucune capacité et a pourtant disparu : un administrateur "
-                .'au périmètre restreint n’a plus de porte d’entrée.',
-            );
-        }
+        $disparues = array_values(array_diff(
+            ['*:profile.show', 'admin:admin.dashboard', 'admin:admin.home'],
+            $visibles,
+        ));
+
+        $this->assertSame(
+            [],
+            $disparues,
+            'Ces entrees ne declarent aucune capacite et ont pourtant disparu : un administrateur '
+            .'au perimetre restreint n aurait plus de porte d entree.',
+        );
 
         // Et le filtre mord toujours : ce qui déclare une capacité qu'il n'a pas reste caché.
         $this->assertNotContains('admin:admin.finance', $visibles);
@@ -114,9 +117,10 @@ class NavigationEtGatesAdminTest extends TestCase
         // Garde-fou du test : sans aucun gate déclaré, l'assertion serait vraie pour rien.
         $this->assertGreaterThan(0, $declares->count());
 
-        foreach ($declares as $gate) {
-            $this->assertContains($gate, $connues, "« {$gate} » n’est pas une capacité d’administration connue.");
-        }
+        // $declares est une Collection : on la ramene a un tableau avant la difference.
+        $inconnues = array_values(array_diff($declares->all(), $connues));
+
+        $this->assertSame([], $inconnues, 'Ces capacites declarees par la navigation n existent pas.');
     }
 
     // ─────────────────────────────────────────────────────────────────────

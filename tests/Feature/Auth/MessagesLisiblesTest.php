@@ -59,9 +59,14 @@ class MessagesLisiblesTest extends TestCase
 
         $page = $this->followingRedirects()->get('/register')->getContent();
 
-        foreach (['validation.unique', 'validation.confirmed', 'Whoops'] as $interdit) {
-            $this->assertStringNotContainsString($interdit, $page, "« {$interdit} » reste affiché.");
-        }
+        // Les trois fuites relevees ensemble : en corriger une puis relancer pour decouvrir la
+        // suivante coute trois executions pour un seul ecran.
+        $fuites = array_values(array_filter(
+            ['validation.unique', 'validation.confirmed', 'Whoops'],
+            fn (string $interdit) => str_contains($page, $interdit),
+        ));
+
+        $this->assertSame([], $fuites, 'Ces cles techniques restent affichees a l utilisateur.');
 
         // Le message par champ, plus utile que la phrase générique du framework.
         $this->assertStringContainsString('Un compte existe déjà avec cette adresse e-mail.', $page);

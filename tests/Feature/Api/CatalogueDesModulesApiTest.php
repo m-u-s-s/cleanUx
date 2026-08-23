@@ -108,12 +108,23 @@ class CatalogueDesModulesApiTest extends TestCase
         $reponse = $this->actingAs($employe->fresh(), 'sanctum')->getJson('/api/modules');
 
         $reponse->assertOk();
+        // Tous les chemins fautifs d'un coup : un catalogue mal forme en compte souvent plusieurs,
+        // et une assertion par tour n'en nommerait qu'un.
+        $fautifs = [];
+
         foreach ($reponse->json('groups') as $groupe) {
             foreach ($groupe['modules'] as $module) {
-                $this->assertNotEmpty($module['path'], $module['key']);
-                $this->assertStringStartsWith('/', $module['path'], $module['key']);
+                $chemin = $module['path'] ?? '';
+
+                if ($chemin === '' || $chemin === null) {
+                    $fautifs[] = $module['key'].' : chemin vide';
+                } elseif (! str_starts_with($chemin, '/')) {
+                    $fautifs[] = $module['key'].' : chemin ['.$chemin.'] ne commence pas par /';
+                }
             }
         }
+
+        $this->assertSame([], $fautifs, 'Ces modules exposent un chemin inexploitable.');
     }
 
     public function test_les_modules_transversaux_sont_servis_a_tous(): void
@@ -122,9 +133,12 @@ class CatalogueDesModulesApiTest extends TestCase
 
         $contenu = $this->actingAs($client, 'sanctum')->getJson('/api/modules')->getContent() ?: '';
 
-        foreach (['Mon compte', 'Notifications', 'Aide'] as $transversal) {
-            $this->assertStringContainsString($transversal, $contenu);
-        }
+        $absents = array_values(array_filter(
+            ['Mon compte', 'Notifications', 'Aide'],
+            fn (string $t) => ! str_contains($contenu, $t),
+        ));
+
+        $this->assertSame([], $absents, 'Ces modules transversaux ne sont pas servis.');
     }
 
     public function test_un_anonyme_est_refuse(): void

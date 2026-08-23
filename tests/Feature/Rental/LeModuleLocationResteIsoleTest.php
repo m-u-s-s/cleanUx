@@ -146,14 +146,19 @@ class LeModuleLocationResteIsoleTest extends TestCase
 
         $this->assertNotSame('', $source);
 
-        foreach (['Rental', 'Location'] as $mot) {
-            $this->assertStringNotContainsString(
-                'App\\Models\\'.$mot,
-                $source,
-                'OrderJourney a commencé à connaître le module de location : la case doit rester '
-                .'un composant autonome inséré dans la vue.',
-            );
-        }
+        // Les deux mots relevés ensemble : une fuite en amène souvent une seconde, et savoir que
+        // `Rental` est cité ne dit rien de `Location`.
+        $fuites = array_values(array_filter(
+            ['Rental', 'Location'],
+            fn (string $mot) => str_contains($source, 'App\\Models\\'.$mot),
+        ));
+
+        $this->assertSame(
+            [],
+            $fuites,
+            'OrderJourney a commencé à connaître le module de location : la case doit rester '
+            .'un composant autonome inséré dans la vue.',
+        );
     }
 
     /**

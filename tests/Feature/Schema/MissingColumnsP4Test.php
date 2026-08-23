@@ -43,12 +43,14 @@ class MissingColumnsP4Test extends TestCase
 
     public function test_enterprise_work_orders_has_the_generation_columns(): void
     {
-        foreach (['generated_batch_id', 'generation_status', 'generation_started_at'] as $col) {
-            $this->assertTrue(
-                Schema::hasColumn('enterprise_work_orders', $col),
-                "enterprise_work_orders.$col must exist (forceFilled by the mission generator)",
-            );
-        }
+        // Les trois colonnes verifiees ensemble : le generateur les ecrit toutes les trois, et
+        // savoir qu'il en manque une ne dit rien des deux autres.
+        $absentes = array_values(array_filter(
+            ['generated_batch_id', 'generation_status', 'generation_started_at'],
+            fn (string $col) => ! Schema::hasColumn('enterprise_work_orders', $col),
+        ));
+
+        $this->assertSame([], $absentes, 'Le generateur de missions ecrit ces colonnes sur enterprise_work_orders.');
     }
 
     /** P4 — models that previously had a factory but no HasFactory trait now resolve Model::factory(). */

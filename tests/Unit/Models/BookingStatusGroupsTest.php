@@ -80,13 +80,19 @@ class BookingStatusGroupsTest extends TestCase
         $active = BookingStatus::active();
         $final = BookingStatus::final();
 
-        foreach ($active as $status) {
-            $this->assertContains($status, $all, "active status '$status' missing from all()");
+        // Les deux familles relevees ensemble : un `all()` ampute en oublie souvent plusieurs, et
+        // une assertion par tour n'en nommerait qu'un.
+        $manquants = [];
+
+        foreach (['actif' => $active, 'final' => $final] as $famille => $statuts) {
+            foreach ($statuts as $statut) {
+                if (! in_array($statut, $all, true)) {
+                    $manquants[] = "{$famille} : {$statut}";
+                }
+            }
         }
 
-        foreach ($final as $status) {
-            $this->assertContains($status, $all, "final status '$status' missing from all()");
-        }
+        $this->assertSame([], $manquants, 'Ces statuts sont absents de all().');
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -95,11 +101,17 @@ class BookingStatusGroupsTest extends TestCase
 
     public function test_every_status_has_a_non_empty_label(): void
     {
-        foreach (BookingStatus::all() as $status) {
-            $label = BookingStatus::label($status);
-            $this->assertNotEmpty($label, "Label is empty for status '$status'");
-            $this->assertIsString($label);
+        $sansLibelle = [];
+
+        foreach (BookingStatus::all() as $statut) {
+            $libelle = BookingStatus::label($statut);
+
+            if (! is_string($libelle) || $libelle === '') {
+                $sansLibelle[] = $statut.' : '.var_export($libelle, true);
+            }
         }
+
+        $this->assertSame([], $sansLibelle, 'Ces statuts n ont pas de libelle affichable.');
     }
 
     // ─────────────────────────────────────────────────────────────────

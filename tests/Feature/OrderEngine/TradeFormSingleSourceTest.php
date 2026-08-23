@@ -22,13 +22,16 @@ class TradeFormSingleSourceTest extends TestCase
 {
     public function test_les_deux_ecrans_emploient_le_meme_trait(): void
     {
-        foreach ([Trades::class, CatalogCenter::class] as $composant) {
-            $this->assertContains(
-                ManagesTradeForm::class,
-                class_uses_recursive($composant),
-                "{$composant} doit employer ManagesTradeForm plutôt que sa propre copie du formulaire.",
-            );
-        }
+        $sansTrait = array_values(array_filter(
+            [Trades::class, CatalogCenter::class],
+            fn (string $composant) => ! in_array(ManagesTradeForm::class, class_uses_recursive($composant), true),
+        ));
+
+        $this->assertSame(
+            [],
+            $sansTrait,
+            'Ces composants doivent employer ManagesTradeForm plutôt que leur propre copie du formulaire.',
+        );
     }
 
     public function test_aucun_ecran_ne_redeclare_les_champs_du_formulaire(): void
