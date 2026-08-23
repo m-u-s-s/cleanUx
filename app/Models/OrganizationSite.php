@@ -10,12 +10,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @property string $latitude
- * @property string $longitude
- * @property int $surface_m2
- * @property int $floor_count
- * @property array $metadata
- * @property array $trade_preferences
+ * @property ?string $latitude
+ * @property ?string $longitude
+ * @property ?int $surface_m2
+ * @property ?int $floor_count
+ * @property ?array $metadata
+ * @property ?array $trade_preferences
  */
 class OrganizationSite extends Model
 {

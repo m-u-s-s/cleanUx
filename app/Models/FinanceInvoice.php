@@ -23,11 +23,11 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $issued_at
  * @property ?Carbon $due_at
  * @property ?Carbon $paid_at
- * @property array $snapshot
- * @property array $meta
+ * @property ?array $snapshot
+ * @property ?array $meta
  * @property ?Carbon $billing_period_start
  * @property ?Carbon $billing_period_end
- * @property array $site_breakdown
+ * @property ?array $site_breakdown
  */
 class FinanceInvoice extends Model
 {

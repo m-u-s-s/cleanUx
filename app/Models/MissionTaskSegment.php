@@ -13,10 +13,10 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $service_date
  * @property ?Carbon $planned_start_at
  * @property ?Carbon $planned_end_at
- * @property int $estimated_minutes
- * @property int $crew_size
- * @property int $sequence
- * @property array $metadata
+ * @property ?int $estimated_minutes
+ * @property ?int $crew_size
+ * @property ?int $sequence
+ * @property ?array $metadata
  * @property ?int $field_team_id
  * @property ?int $assigned_user_id
  */

@@ -100,8 +100,8 @@ use Illuminate\Support\Facades\Schema;
  * @property float|string|null $estimated_price
  * @property float|string|null $final_price
  * @property float|string|null $devis_estime
- * @property string $destination_lat
- * @property string $destination_lng
+ * @property ?string $destination_lat
+ * @property ?string $destination_lng
  * @property ?string $dropoff_address
  * @property ?string $dropoff_lat
  * @property ?string $dropoff_lng
@@ -109,29 +109,29 @@ use Illuminate\Support\Facades\Schema;
  * @property ?int $route_distance_m
  * @property ?int $route_duration_s
  * @property ?string $route_source
- * @property int $estimated_duration_minutes
- * @property int $duree_estimee
- * @property int $surface_m2
- * @property array $options
- * @property array $options_prestation
- * @property array $zones_specifiques
- * @property array $materiel_specifique
- * @property array $photos_reference
- * @property array $photos_avant
- * @property array $photos_apres
- * @property array $trade_form_answers
- * @property array $terrain_checklist
- * @property array $pricing_snapshot
- * @property array $zone_snapshot
- * @property array $matching_snapshot
- * @property array $address_components
- * @property array $metadata
+ * @property ?int $estimated_duration_minutes
+ * @property ?int $duree_estimee
+ * @property ?int $surface_m2
+ * @property ?array $options
+ * @property ?array $options_prestation
+ * @property ?array $zones_specifiques
+ * @property ?array $materiel_specifique
+ * @property ?array $photos_reference
+ * @property ?array $photos_avant
+ * @property ?array $photos_apres
+ * @property ?array $trade_form_answers
+ * @property ?array $terrain_checklist
+ * @property ?array $pricing_snapshot
+ * @property ?array $zone_snapshot
+ * @property ?array $matching_snapshot
+ * @property ?array $address_components
+ * @property ?array $metadata
  * @property bool $is_series_master
- * @property int $series_position
- * @property int $recurrence_interval
- * @property int $recurrence_count
+ * @property ?int $series_position
+ * @property ?int $recurrence_interval
+ * @property ?int $recurrence_count
  * @property ?Carbon $recurrence_until
- * @property array $recurrence_days
+ * @property ?array $recurrence_days
  */
 class Booking extends Model
 {

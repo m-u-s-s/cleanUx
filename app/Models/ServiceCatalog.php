@@ -29,14 +29,14 @@ use Illuminate\Support\Str;
  * @property bool $is_b2b_available
  * @property bool $is_personal_available
  * @property string $base_price
- * @property array $settings
- * @property array $options
- * @property array $metadata
+ * @property ?array $settings
+ * @property ?array $options
+ * @property ?array $metadata
  * @property string $vat_rate
  * @property int $min_lead_time_hours
  * @property bool $requires_site_visit
- * @property array $tags
- * @property array $skills_required
+ * @property ?array $tags
+ * @property ?array $skills_required
  * @property bool $is_featured
  */
 class ServiceCatalog extends Model

@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property ?Carbon $due_date
  * @property ?Carbon $completed_at
- * @property array $metadata
+ * @property ?array $metadata
  */
 class Task extends Model
 {

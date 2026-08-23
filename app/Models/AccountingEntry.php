@@ -12,10 +12,10 @@ use Illuminate\Support\Str;
  * @property ?Carbon $posting_date
  * @property int $debit_cents
  * @property int $credit_cents
- * @property float $exchange_rate
- * @property float $vat_rate
- * @property int $vat_amount_cents
- * @property array $metadata
+ * @property ?float $exchange_rate
+ * @property ?float $vat_rate
+ * @property ?int $vat_amount_cents
+ * @property ?array $metadata
  * @property-read int $c summed credit_cents (query alias in PeriodCloser)
  * @property-read int $d summed debit_cents (query alias in PeriodCloser)
  */

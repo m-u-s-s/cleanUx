@@ -18,14 +18,14 @@ use Illuminate\Support\Carbon;
  * @property bool $requires_start_code
  * @property bool $requires_end_code
  * @property bool $client_presence_confirmed
- * @property string $start_lat
- * @property string $start_lng
- * @property string $end_lat
- * @property string $end_lng
- * @property string $destination_lat
- * @property string $destination_lng
+ * @property ?string $start_lat
+ * @property ?string $start_lng
+ * @property ?string $end_lat
+ * @property ?string $end_lng
+ * @property ?string $destination_lat
+ * @property ?string $destination_lng
  * @property ?Carbon $client_final_validated_at
- * @property array $quality_summary
+ * @property ?array $quality_summary
  * @property ?Carbon $sla_response_due_at
  * @property ?Carbon $sla_resolution_due_at
  */

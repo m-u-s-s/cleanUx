@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property bool $is_enabled
  * @property bool $is_locked
- * @property array $settings
+ * @property ?array $settings
  * @property ?string $category
  * @property string $rollout_strategy
  */

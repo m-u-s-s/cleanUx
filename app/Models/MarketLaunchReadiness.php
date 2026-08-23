@@ -17,7 +17,7 @@ use Illuminate\Support\Carbon;
  * @property bool $compliance_ready
  * @property bool $support_ready
  * @property ?Carbon $last_audited_at
- * @property array $metadata
+ * @property ?array $metadata
  */
 class MarketLaunchReadiness extends Model
 {

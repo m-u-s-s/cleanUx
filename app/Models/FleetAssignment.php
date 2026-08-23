@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
  * @property ?Carbon $assigned_at
  * @property ?Carbon $expected_return_at
  * @property ?Carbon $returned_at
- * @property array $metadata
+ * @property ?array $metadata
  */
 class FleetAssignment extends Model
 {

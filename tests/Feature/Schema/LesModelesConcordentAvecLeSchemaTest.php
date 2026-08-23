@@ -267,4 +267,66 @@ class LesModelesConcordentAvecLeSchemaTest extends TestCase
 
         $this->assertSame([], $ecarts, 'Ces fabriques posent des clés qui ne sont pas des colonnes.');
     }
+
+    /**
+     * UNE ANNOTATION NE DOIT PAS NIER LA NULLABILITÉ DU SCHÉMA.
+     *
+     * `@property string $x` sur une colonne NULLABLE apprend à l'analyse statique qu'un
+     * déréférencement est sûr. Il ne l'est pas : la colonne rend `null` dès qu'elle est vide, et
+     * l'erreur ne se manifeste qu'en production, sur la première ligne où personne n'a rempli le
+     * champ.
+     *
+     * Soixante-deux annotations étaient dans ce cas le 2026-08-23, dont vingt-trois sur `Booking`
+     * — coordonnées de destination, durées, montants. Elles ont été alignées.
+     *
+     * Ce test ne juge QUE la nullabilité : le type lui-même (string contre int) reste à la main de
+     * l'auteur, parce qu'Eloquent et les transtypages en décident autrement selon les cas.
+     */
+    public function test_aucune_annotation_ne_nie_la_nullabilite_du_schema(): void
+    {
+        $ecarts = [];
+
+        foreach ($this->modeles() as $classe) {
+            /** @var Model $m */
+            $m = (new ReflectionClass($classe))->newInstanceWithoutConstructor();
+            $table = $m->getTable();
+
+            if (! Schema::hasTable($table)) {
+                continue;
+            }
+
+            $src = (string) file_get_contents((new ReflectionClass($classe))->getFileName());
+
+            if (! preg_match_all('/@property(?:-read|-write)?\s+([^\s]+)\s+\$(\w+)/', $src, $trouves, PREG_SET_ORDER)) {
+                continue;
+            }
+
+            foreach ($trouves as [, $type, $prop]) {
+                if (! Schema::hasColumn($table, $prop)) {
+                    continue;   // alias de requête ou attribut virtuel : hors sujet ici
+                }
+
+                $nullableAnnote = str_starts_with($type, '?') || stripos($type, 'null') !== false;
+
+                if (! $nullableAnnote && $this->colonneEstNullable($table, $prop)) {
+                    $ecarts[] = sprintf('%s::$%s annoté `%s` (colonne nullable)', class_basename($classe), $prop, $type);
+                }
+            }
+        }
+
+        $this->assertSame([], $ecarts, 'Ces annotations promettent une valeur là où le schéma admet null.');
+    }
+
+    /**
+     * La nullabilité réelle, quel que soit le moteur.
+     *
+     * `information_schema` n'existe pas sous SQLite, où la suite tourne : on passe par le
+     * constructeur de schéma, qui répond sur les deux.
+     */
+    private function colonneEstNullable(string $table, string $colonne): bool
+    {
+        return Schema::getColumns($table)[
+            array_search($colonne, array_column(Schema::getColumns($table), 'name'), true)
+        ]['nullable'] ?? false;
+    }
 }

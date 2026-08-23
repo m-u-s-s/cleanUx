@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
- * @property array $attachments
- * @property array $meta
+ * @property ?array $attachments
+ * @property ?array $meta
  * @property ?Carbon $first_response_at
  * @property ?Carbon $due_at
  * @property ?Carbon $resolved_at

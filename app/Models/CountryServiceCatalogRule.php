@@ -11,13 +11,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property bool $is_enabled
  * @property bool $requires_manual_validation
  * @property bool $requires_quote
- * @property int $minimum_notice_hours
+ * @property ?int $minimum_notice_hours
  * @property ?int $sla_response_hours
  * @property ?int $sla_resolution_hours
  * @property ?int $default_team_id
  * @property ?int $default_partner_id
  * @property string $pricing_multiplier
- * @property array $settings
+ * @property ?array $settings
  */
 class CountryServiceCatalogRule extends Model
 {
