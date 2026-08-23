@@ -112,7 +112,10 @@ class CompanyController extends Controller
                 // La colonne historique `cleaning_frequency` a été généralisée en
                 // `service_frequency` (migration A2) sans que l'ancienne disparaisse : les deux
                 // cohabitent, et une base ancienne ne porte que la première.
-                'service_frequency' => $s->service_frequency ?? $s->cleaning_frequency,
+                // `cleaning_frequency` n'est pas declaree par le modele : on la lit comme
+                // l'attribut dynamique qu'elle est, exactement comme `active_bookings_count`
+                // ci-dessous. Sans cela l'analyse statique la signale, a juste titre.
+                'service_frequency' => $s->service_frequency ?? $s->getAttributeValue('cleaning_frequency'),
                 // `withCount` pose un attribut dynamique que le modèle ne déclare pas : on le lit
                 // comme tel plutôt que d'ajouter une propriété qui n'existe qu'ici.
                 'active_bookings_count' => (int) $s->getAttributeValue('active_bookings_count'),

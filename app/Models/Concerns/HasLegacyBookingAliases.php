@@ -113,11 +113,44 @@ trait HasLegacyBookingAliases
      */
     public function syncLegacyAliases(): void
     {
+        /*
+         * UN SEUL `getDirty()` PAR ENREGISTREMENT, AU LIEU DE TRENTE.
+         *
+         * `isDirty($colonne)` n'est pas une lecture : Laravel y appelle `getDirty()`, qui parcourt
+         * TOUTES les colonnes du modèle et les compare à leur valeur d'origine
+         * (`HasAttributes::isDirty` → `hasChanges($this->getDirty(), [...])`). Sur `bookings` et ses
+         * 164 colonnes, chaque appel coûtait donc 164 comparaisons — et cette méthode en faisait
+         * trente, soit près de CINQ MILLE comparaisons par enregistrement, pour répondre quinze
+         * fois à « cette colonne a-t-elle changé ? ».
+         *
+         * Mesuré avant correction : `syncLegacyAliases()` prenait 7,97 ms quand un `save()` complet
+         * en prenait 10,62 — les trois quarts du coût d'écriture de la table la plus écrite de la
+         * plateforme, dépensés à recalculer trente fois la même liste.
+         *
+         * L'équivalence est exacte, et vérifiée dans le framework : `isDirty($c)` vaut
+         * `array_key_exists($c, $this->getDirty())`.
+         *
+         * ── LE RELEVÉ VAUT POUR LA BOUCLE, PAS AU-DELÀ ───────────────────────────────────────
+         *
+         * Pendant la boucle il reste juste : les quinze paires portent sur des colonnes DISJOINTES,
+         * propager l'une ne change donc jamais l'état des autres.
+         *
+         * `fillScheduledAt()`, lui, s'exécute APRÈS et doit voir ce que la boucle vient d'écrire.
+         * Une reprogrammation écrit `scheduled_date` ; la boucle en déduit `date` ; le relevé
+         * initial ignore ce changement, la garde sort trop tôt et `scheduled_at` n'est jamais
+         * recalculé — quatre tests de reprogrammation sont tombés là-dessus. Il reçoit donc un
+         * relevé FRAIS. Cela fait deux `getDirty()` par enregistrement au lieu de trente, ce qui
+         * était tout l'objet.
+         *
+         * @var array<string, mixed> $modifiees
+         */
+        $modifiees = $this->getDirty();
+
         foreach (static::$legacyAliasPairs as [$legacy, $modern]) {
-            $this->propagerLaPaire($legacy, $modern);
+            $this->propagerLaPaire($legacy, $modern, $modifiees);
         }
 
-        $this->fillScheduledAt();
+        $this->fillScheduledAt($this->getDirty());
     }
 
     /**
@@ -139,7 +172,10 @@ trait HasLegacyBookingAliases
      * enregistrement, c'est elle qui fait foi. Si les deux ont changé, l'appelant a tranché
      * lui-même et on ne devine pas à sa place. Si aucune n'a changé, il n'y a rien à propager.
      */
-    protected function propagerLaPaire(string $legacy, string $modern): void
+    /**
+     * @param  array<string, mixed>  $modifiees  Le relevé de `getDirty()`, pris UNE fois par enregistrement.
+     */
+    protected function propagerLaPaire(string $legacy, string $modern, array $modifiees): void
     {
         // Un trou se comble toujours — c'est le comportement d'origine, et il reste le premier.
         if (blank($this->{$legacy}) && filled($this->{$modern})) {
@@ -158,8 +194,8 @@ trait HasLegacyBookingAliases
             return;
         }
 
-        $legacyModifiee = $this->isDirty($legacy);
-        $moderneModifiee = $this->isDirty($modern);
+        $legacyModifiee = array_key_exists($legacy, $modifiees);
+        $moderneModifiee = array_key_exists($modern, $modifiees);
 
         if ($legacyModifiee === $moderneModifiee) {
             return;
@@ -184,7 +220,10 @@ trait HasLegacyBookingAliases
      *
      * Invisible sur SQLite, qui stocke `date` en texte et y conserve l'heure.
      */
-    protected function fillScheduledAt(): void
+    /**
+     * @param  array<string, mixed>  $modifiees  Le même relevé que `propagerLaPaire()`, pour la même raison.
+     */
+    protected function fillScheduledAt(array $modifiees): void
     {
         if (blank($this->date) || blank($this->heure)) {
             return;
@@ -193,7 +232,7 @@ trait HasLegacyBookingAliases
         /*
          * L'APPELANT QUI ÉCRIT L'HORODATAGE LUI-MÊME A RAISON. On ne le recalcule jamais par-dessus.
          */
-        if ($this->isDirty('scheduled_at')) {
+        if (array_key_exists('scheduled_at', $modifiees)) {
             return;
         }
 
@@ -202,7 +241,7 @@ trait HasLegacyBookingAliases
          * « déjà rempli », ce qui la rendait muette après toute reprogrammation : l'horodatage
          * gardait l'heure d'avant, et le barème d'annulation facturait contre elle.
          */
-        if (filled($this->scheduled_at) && ! $this->isDirty('date') && ! $this->isDirty('heure')) {
+        if (filled($this->scheduled_at) && ! array_key_exists('date', $modifiees) && ! array_key_exists('heure', $modifiees)) {
             return;
         }
 
