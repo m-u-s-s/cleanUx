@@ -243,9 +243,6 @@ return new class extends Migration
         'personal_access_tokens' => [
             'rotated_from_token_id' => 'ix_personal_access_tokens_rotated_from_token',
         ],
-        'platform_settlement_accounts' => [
-            'stripe_external_account_id' => 'ix_platform_setl_accounts_stripe_external_account',
-        ],
         'postal_codes' => [
             'commune_id' => 'ix_postal_codes_commune',
             'province_id' => 'ix_postal_codes_province',
@@ -305,9 +302,6 @@ return new class extends Migration
         ],
         'subscription_invoices_v2' => [
             'stripe_invoice_id' => 'ix_sub_invoices_v2_stripe_invoice',
-        ],
-        'subscription_items' => [
-            'meter_id' => 'ix_sub_items_meter',
         ],
         'subscriptions_v2' => [
             'stripe_subscription_id' => 'ix_subs_v2_stripe_sub',
