@@ -2,6 +2,7 @@
 
 namespace App\Services\Localization;
 
+use App\Support\International\DeviseParPays;
 use NumberFormatter;
 
 /**
@@ -17,19 +18,94 @@ use NumberFormatter;
  * migration Phase 9. Mise à jour manuelle ou via job artisan
  * `php artisan currencies:refresh` (à brancher sur ECB ou autre source).
  *
- * Devises supportées : EUR, USD, GBP, CHF, CAD (extensible via config).
+ * Les devises supportées sont celles de `DeviseParPays` — soixante et une — et non une
+ * seconde liste tenue ici : voir `devisesSupportees()`.
  */
 class Money
 {
     public const DEFAULT_CURRENCY = 'EUR';
 
-    public const SUPPORTED_CURRENCIES = [
-        'EUR' => ['symbol' => '€',  'name' => 'Euro',          'decimals' => 2],
-        'USD' => ['symbol' => '$',  'name' => 'US Dollar',     'decimals' => 2],
-        'GBP' => ['symbol' => '£',  'name' => 'British Pound', 'decimals' => 2],
-        'CHF' => ['symbol' => 'CHF', 'name' => 'Swiss Franc',   'decimals' => 2],
-        'CAD' => ['symbol' => 'C$', 'name' => 'Canadian Dollar', 'decimals' => 2],
+    /**
+     * SYMBOLES — ET SEULEMENT CEUX QUI NE PRÊTENT À AUCUNE CONFUSION.
+     *
+     * Toute devise absente d'ici s'affiche par son CODE ISO. C'est délibéré : « kr » désigne cinq
+     * couronnes différentes et « $ » une quinzaine de dollars. Un code ISO n'est jamais faux ; un
+     * symbole ambigu l'est la moitié du temps.
+     *
+     * @var array<string, string>
+     */
+    private const SYMBOLES = [
+        'EUR' => '€',
+        'USD' => '$',
+        'GBP' => '£',
+        'JPY' => '¥',
+        'CNY' => '¥',
+        'INR' => '₹',
+        'KRW' => '₩',
+        'ILS' => '₪',
+        'VND' => '₫',
+        'NGN' => '₦',
+        'PHP' => '₱',
+        'THB' => '฿',
+        'UAH' => '₴',
+        'TRY' => '₺',
+        'BRL' => 'R$',
+        'CAD' => 'C$',
+        'AUD' => 'A$',
+        'NZD' => 'NZ$',
+        'HKD' => 'HK$',
+        'SGD' => 'S$',
+        'MXN' => 'MX$',
+        'PLN' => 'zł',
     ];
+
+    /**
+     * DÉCIMALES — les exceptions à la règle des deux, d'après la norme ISO 4217.
+     *
+     * Formater 1000 yens en « 1 000,00 ¥ » est aussi faux que d'afficher trois décimales à un
+     * euro : le yen n'a pas de sous-unité, et le dinar koweïtien en a mille.
+     *
+     * @var array<string, int>
+     */
+    private const DECIMALES = [
+        'JPY' => 0, 'KRW' => 0, 'VND' => 0, 'CLP' => 0, 'ISK' => 0, 'XAF' => 0, 'XOF' => 0,
+        'BHD' => 3, 'JOD' => 3, 'KWD' => 3, 'OMR' => 3, 'TND' => 3, 'LYD' => 3,
+    ];
+
+    /**
+     * LA LISTE DES DEVISES VIENT DE `DeviseParPays`, ET DE NULLE PART AILLEURS.
+     *
+     * Ce service portait sa PROPRE liste de cinq devises — EUR, USD, GBP, CHF, CAD — pendant que
+     * `DeviseParPays` en déclarait soixante et une. Les cinquante-six autres, dont le dirham
+     * marocain d'un marché annoncé, ne tombaient pas en erreur : elles étaient RÉÉCRITES EN EUROS.
+     * `format(100, 'MAD')` rendait « 100,00 € ».
+     *
+     * Afficher une devise fausse avec aplomb est pire que ne rien afficher. Une seule table fait
+     * donc foi désormais, et une devise qu'elle ignore garde son code au lieu d'en emprunter un
+     * autre.
+     *
+     * @return array<string, array{symbol: string, name: string, decimals: int}>
+     */
+    public static function devisesSupportees(): array
+    {
+        static $table = null;
+
+        if ($table !== null) {
+            return $table;
+        }
+
+        $table = [];
+
+        foreach (DeviseParPays::devisesConnues() as $code) {
+            $table[$code] = [
+                'symbol' => self::SYMBOLES[$code] ?? $code,
+                'name' => $code,
+                'decimals' => self::DECIMALES[$code] ?? 2,
+            ];
+        }
+
+        return $table;
+    }
 
     /**
      * Formate un montant avec sa devise selon la locale.
@@ -42,9 +118,13 @@ class Money
         $locale = $this->normalizeLocale($locale ?? app()->getLocale());
         $currency = strtoupper($currency);
 
-        if (! isset(self::SUPPORTED_CURRENCIES[$currency])) {
-            $currency = self::DEFAULT_CURRENCY;
-        }
+        /*
+         * UNE DEVISE INCONNUE GARDE SON CODE — elle n'est plus réécrite en euros.
+         *
+         * Cette ligne valait `$currency = self::DEFAULT_CURRENCY`, et c'est ainsi qu'un montant en
+         * dirhams s'affichait « 100,00 € ». Le repli le plus sûr n'est pas la devise par défaut :
+         * c'est le code ISO tel quel, qui ne ment sur rien.
+         */
 
         if (class_exists(NumberFormatter::class) && extension_loaded('intl')) {
             $formatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
@@ -133,7 +213,7 @@ class Money
      */
     public function supportedList(): array
     {
-        return collect(self::SUPPORTED_CURRENCIES)
+        return collect(self::devisesSupportees())
             ->map(fn ($info, $code) => [
                 'code' => $code,
                 'symbol' => $info['symbol'],
@@ -148,7 +228,7 @@ class Money
      */
     public function symbol(string $currency): string
     {
-        return self::SUPPORTED_CURRENCIES[strtoupper($currency)]['symbol'] ?? $currency;
+        return self::devisesSupportees()[strtoupper($currency)]['symbol'] ?? strtoupper($currency);
     }
 
     // ──────────────────────────────────────────────────────
@@ -173,7 +253,9 @@ class Money
 
     private function fallbackFormat(float $amount, string $currency, string $locale): string
     {
-        $info = self::SUPPORTED_CURRENCIES[$currency] ?? self::SUPPORTED_CURRENCIES['EUR'];
+        // Même règle qu'au-dessus : une devise inconnue garde son code et ses deux décimales,
+        // elle n'emprunte pas le symbole de l'euro.
+        $info = self::devisesSupportees()[$currency] ?? ['symbol' => $currency, 'decimals' => 2];
         $symbol = $info['symbol'];
         $decimals = $info['decimals'];
 

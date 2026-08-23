@@ -44,15 +44,24 @@
         <tbody>
             <tr>
                 <td>{{ data_get($rdv->pricing_snapshot, 'service_name', $rdv->service_display_name) }} · {{ $rdv->location_display }}</td>
-                <td class="right">€ {{ number_format($amountHtva, 2, ',', ' ') }}</td>
+                {{--
+                    LE SYMBOLE SUIT LE MONTANT, ET LA DEVISE SUIT LA RÉSERVATION.
+
+                    Ce document portait « € » en dur, avant le montant. Deux défauts en un : la
+                    position n'est pas celle de l'usage français, et surtout un montant en dirhams
+                    ou en francs CFA se serait présenté en euros — sur une pièce comptable.
+
+                    `<x-money>` lit `bookings.currency` et formate selon la langue du lecteur.
+                --}}
+                <td class="right"><x-money :amount="(float) $amountHtva" :currency="$rdv->currency ?: 'EUR'" /></td>
             </tr>
             <tr>
                 <td class="right"><strong>TVA {{ number_format($taxRate, 0) }}%</strong></td>
-                <td class="right">€ {{ number_format($amountTva, 2, ',', ' ') }}</td>
+                <td class="right"><x-money :amount="(float) $amountTva" :currency="$rdv->currency ?: 'EUR'" /></td>
             </tr>
             <tr>
                 <td class="right"><strong>Total TVAC</strong></td>
-                <td class="right"><strong>€ {{ number_format($amountTvac, 2, ',', ' ') }}</strong></td>
+                <td class="right"><strong><x-money :amount="(float) $amountTvac" :currency="$rdv->currency ?: 'EUR'" /></strong></td>
             </tr>
         </tbody>
     </table>

@@ -7,8 +7,10 @@ use App\Models\OrderDraft;
 use App\Models\OrderDraftItem;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSite;
+use App\Models\ServiceZone;
 use App\Models\User;
 use App\Services\Dispatch\DispatchEngine;
+use App\Services\International\CountryMarketResolver;
 use App\Services\Payments\MissionPaymentService;
 use App\Support\Domain\BookingStatus;
 use App\Support\Domain\OrderDraftStatus;
@@ -350,6 +352,23 @@ class OrderConfirmationService
              */
             'employe_id' => $item->provider_id,
             'status' => BookingStatus::EN_ATTENTE,
+            /*
+             * LA DEVISE SUIT LA POSITION — ET LE PARCOURS WEB NE LA POSAIT PAS DU TOUT.
+             *
+             * Cette création n'envoyait aucune `currency` : la réservation tombait donc sur le
+             * défaut de la colonne, `EUR`, quelle que soit la géographie. Le chemin API, lui, la
+             * résout depuis 2026 par `CountryMarketResolver::deviseAttendue()` — le commentaire de
+             * `CreateBookingFromApiAction` décrit exactement le défaut corrigé ici : « deux
+             * nombres, deux monnaies, aucune alerte ».
+             *
+             * Deux portes d'entrée pour une même commande, une seule qui savait dans quelle monnaie
+             * elle était libellée. La zone et le code postal du brouillon sont la position du
+             * client : c'est la même que celle qui a servi à chercher les prestataires.
+             */
+            'currency' => app(CountryMarketResolver::class)->deviseAttendue(
+                client: $client,
+                zone: $draft->service_zone_id ? ServiceZone::find($draft->service_zone_id) : null,
+            ),
             'address' => $draft->address,
             'destination_lat' => $draft->lat,
             'destination_lng' => $draft->lng,
