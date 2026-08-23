@@ -53,6 +53,15 @@ class ReferencePlatformSeeder extends Seeder
              * tests — le piège maison d'un module complet dont personne ne crée les lignes.
              */
             CourseCatalogSeeder::class,
+            /*
+             * LE RATTACHEMENT MÉTIER → SECTEUR, EN DERNIER ET POUR CETTE RAISON-LÀ.
+             *
+             * `TradeSeeder` passe en troisième position, avant qu'aucun secteur n'existe : il ne
+             * peut rien rattacher. Les catalogues ci-dessus posent chacun les leurs. Ce semeur
+             * arrive quand ils sont tous là, et comble ce qui reste — six métiers entièrement
+             * tarifés qu'aucun écran de commande n'affichait, faute de secteur.
+             */
+            TradeSectorLinkSeeder::class,
         ]);
 
         $this->command?->info('✅ Référentiel plateforme chargé (géographie, trades, services multi-métiers, modules, zones, paramètres, parcours prestataire, catalogue de commande, grille métier × zone).');
