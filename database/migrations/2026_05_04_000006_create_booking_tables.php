@@ -195,9 +195,6 @@ return new class extends Migration
             $table->decimal('discount_amount', 10, 2)->nullable();
 
             $table->boolean('requires_quote')->default(false);
-            $table->boolean('is_urgent')->default(false);
-
-            $table->unsignedInteger('occurrence_index')->nullable();
 
             $table->timestamp('confirmed_at')->nullable();
             $table->timestamp('cancelled_at')->nullable();
@@ -205,9 +202,25 @@ return new class extends Migration
 
             $table->json('zone_snapshot')->nullable();
             $table->json('pricing_snapshot')->nullable();
-            $table->json('service_snapshot')->nullable();
             $table->json('metadata')->nullable();
 
+            /*
+             * Le point d ARRIVEE et la route, fusionnes depuis
+             * 2026_08_28_090000_porter_le_point_d_arrivee_sur_la_commande. Les memes huit colonnes
+             * y etaient posees sur `order_drafts` et `bookings` par une boucle : elles vivent
+             * desormais dans chacun des deux `create`.
+             */
+            $table->string('dropoff_address')->nullable();
+            // Meme precision que `destination_lat` : sept decimales situent a un centimetre.
+            $table->decimal('dropoff_lat', 10, 7)->nullable();
+            $table->decimal('dropoff_lng', 10, 7)->nullable();
+            $table->string('dropoff_postal_code', 12)->nullable();
+            $table->string('dropoff_place_id')->nullable();
+            $table->unsignedInteger('route_distance_m')->nullable();
+            $table->unsignedInteger('route_duration_s')->nullable();
+            // `google`, `mapbox`, `haversine`... : une ligne droite ne doit pas se faire passer pour
+            // une mesure routiere quand on relit le devis six mois plus tard.
+            $table->string('route_source', 24)->nullable();
             $table->timestamps();
 
             $table->index(['customer_user_id', 'status']);
@@ -377,7 +390,6 @@ return new class extends Migration
                 $table->json('options')->nullable();
             }
             if (! Schema::hasColumn('bookings', 'areas')) {
-                $table->json('areas')->nullable();
             }
             if (! Schema::hasColumn('bookings', 'photos_avant')) {
                 $table->json('photos_avant')->nullable();

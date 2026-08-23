@@ -21,60 +21,11 @@ return new class extends Migration
         Schema::dropIfExists('messages');
         Schema::dropIfExists('channel_members');
         Schema::dropIfExists('channels');
-        Schema::dropIfExists('feedbacks');
     }
 
     /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
     private function corpsInitial(): void
     {
-        Schema::create('feedbacks', function (Blueprint $table) {
-            $table->id();
-
-            $table->foreignId('booking_id')
-                ->nullable()
-                ->constrained('bookings')
-                ->cascadeOnDelete();
-
-            $table->unsignedBigInteger('rendez_vous_id')->nullable();
-
-            $table->foreignId('mission_id')
-                ->nullable()
-                ->constrained('missions')
-                ->cascadeOnDelete();
-
-            $table->foreignId('client_user_id')
-                ->nullable()
-                ->constrained('users')
-                ->nullOnDelete();
-
-            $table->foreignId('client_organization_id')
-                ->nullable()
-                ->constrained('organization_accounts')
-                ->nullOnDelete();
-
-            $table->unsignedTinyInteger('note');
-            $table->text('commentaire')->nullable();
-
-            $table->text('reponse_admin')->nullable();
-
-            $table->foreignId('answered_by')
-                ->nullable()
-                ->constrained('users')
-                ->nullOnDelete();
-
-            $table->timestamp('answered_at')->nullable();
-
-            // published, hidden, archived.
-            $table->string('status')->default('published');
-
-            $table->json('metadata')->nullable();
-
-            $table->timestamps();
-
-            $table->index(['mission_id', 'note']);
-            $table->index(['client_user_id', 'created_at']);
-            $table->index(['client_organization_id', 'created_at']);
-        });
 
         Schema::create('channels', function (Blueprint $table) {
             $table->id();

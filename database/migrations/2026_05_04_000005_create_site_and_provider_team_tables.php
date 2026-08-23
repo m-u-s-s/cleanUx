@@ -14,8 +14,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('provider_availabilities');
-        Schema::dropIfExists('provider_team_members');
         Schema::dropIfExists('provider_teams');
         Schema::dropIfExists('organization_member_site_access');
         Schema::dropIfExists('organization_sites');
@@ -140,60 +138,6 @@ return new class extends Migration
             $table->index('service_zone_id');
         });
 
-        Schema::create('provider_team_members', function (Blueprint $table) {
-            $table->id();
-
-            $table->foreignId('provider_team_id')
-                ->constrained('provider_teams')
-                ->cascadeOnDelete();
-
-            $table->foreignId('user_id')
-                ->constrained('users')
-                ->cascadeOnDelete();
-
-            // team_lead, worker, trainee.
-            $table->string('role')->default('worker');
-
-            $table->string('status')->default('active');
-
-            $table->timestamps();
-
-            $table->unique(['provider_team_id', 'user_id']);
-            $table->index(['user_id', 'status']);
-        });
-
-        Schema::create('provider_availabilities', function (Blueprint $table) {
-            $table->id();
-
-            $table->foreignId('user_id')
-                ->constrained('users')
-                ->cascadeOnDelete();
-
-            $table->foreignId('organization_account_id')
-                ->nullable()
-                ->constrained('organization_accounts')
-                ->nullOnDelete();
-
-            // weekly, exception, unavailable.
-            $table->string('type')->default('weekly');
-
-            // 1 = Monday, 7 = Sunday.
-            $table->unsignedTinyInteger('weekday')->nullable();
-
-            $table->date('date')->nullable();
-
-            $table->time('start_time');
-            $table->time('end_time');
-
-            $table->boolean('is_available')->default(true);
-
-            $table->json('metadata')->nullable();
-
-            $table->timestamps();
-
-            $table->index(['user_id', 'type']);
-            $table->index(['organization_account_id', 'type']);
-        });
     }
 
     /** Fusionne depuis 2026_05_28_100038_add_missing_columns_to_organization_sites_table */

@@ -35,13 +35,10 @@ return new class extends Migration
         Schema::dropIfExists('customer_claims');
         Schema::dropIfExists('pricing_logs');
         Schema::dropIfExists('email_logs');
-        Schema::dropIfExists('google_calendar_events');
         Schema::dropIfExists('google_calendar_connections');
-        Schema::dropIfExists('provider_daily_limits');
         Schema::dropIfExists('provider_favorites');
         Schema::dropIfExists('platform_modules');
         Schema::dropIfExists('platform_settings');
-        Schema::dropIfExists('account_subscriptions');
         Schema::dropIfExists('subscription_plans');
         Schema::dropIfExists('subscription_items');
         Schema::dropIfExists('subscriptions');
@@ -114,24 +111,6 @@ return new class extends Migration
             });
         }
 
-        if (! Schema::hasTable('account_subscriptions')) {
-            Schema::create('account_subscriptions', function (Blueprint $table) {
-                $table->id();
-                $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-                $table->foreignId('organization_account_id')->nullable()->constrained('organization_accounts')->nullOnDelete();
-                $table->foreignId('subscription_plan_id')->nullable()->constrained('subscription_plans')->nullOnDelete();
-                $table->string('status')->default('inactive');
-                $table->string('stripe_subscription_id')->nullable()->index();
-                $table->timestamp('started_at')->nullable();
-                $table->timestamp('renews_at')->nullable();
-                $table->timestamp('cancelled_at')->nullable();
-                $table->json('metadata')->nullable();
-                $table->timestamps();
-                $table->index(['user_id', 'status']);
-                $table->index(['organization_account_id', 'status']);
-            });
-        }
-
         if (! Schema::hasTable('platform_settings')) {
             Schema::create('platform_settings', function (Blueprint $table) {
                 $table->id();
@@ -175,21 +154,6 @@ return new class extends Migration
             });
         }
 
-        if (! Schema::hasTable('provider_daily_limits')) {
-            Schema::create('provider_daily_limits', function (Blueprint $table) {
-                $table->id();
-                $table->foreignId('provider_user_id')->constrained('users')->cascadeOnDelete();
-                $table->foreignId('organization_account_id')->nullable()->constrained('organization_accounts')->nullOnDelete();
-                $table->date('date');
-                $table->unsignedInteger('max_bookings')->default(5);
-                $table->unsignedInteger('max_minutes')->nullable();
-                $table->boolean('locked_by_admin')->default(false);
-                $table->timestamps();
-                $table->unique(['provider_user_id', 'date']);
-                $table->index(['organization_account_id', 'date']);
-            });
-        }
-
         if (! Schema::hasTable('google_calendar_connections')) {
             Schema::create('google_calendar_connections', function (Blueprint $table) {
                 $table->id();
@@ -206,23 +170,6 @@ return new class extends Migration
                 $table->timestamps();
                 $table->index(['user_id', 'status']);
                 $table->index(['organization_account_id', 'status']);
-            });
-        }
-
-        if (! Schema::hasTable('google_calendar_events')) {
-            Schema::create('google_calendar_events', function (Blueprint $table) {
-                $table->id();
-                $table->foreignId('google_calendar_connection_id')->constrained('google_calendar_connections')->cascadeOnDelete();
-                $table->foreignId('booking_id')->nullable()->constrained('bookings')->nullOnDelete();
-                $table->foreignId('mission_id')->nullable()->constrained('missions')->nullOnDelete();
-                $table->string('google_event_id')->nullable()->index();
-                $table->string('sync_status')->default('pending');
-                $table->timestamp('last_synced_at')->nullable();
-                $table->json('payload')->nullable();
-                $table->text('last_error')->nullable();
-                $table->timestamps();
-                $table->index(['booking_id', 'sync_status']);
-                $table->index(['mission_id', 'sync_status']);
             });
         }
 
