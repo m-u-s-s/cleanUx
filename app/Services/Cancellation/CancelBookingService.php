@@ -48,6 +48,8 @@ class CancelBookingService
                 ]),
             ]);
 
+            $this->consignerLesFrais($booking, (float) $feeDetails['fee_amount'], (int) $feeDetails['fee_percent']);
+
             // Si payment authorized/captured, déclencher refund partiel
             $this->tryRefundPartial($booking, $feeDetails);
 
@@ -138,6 +140,8 @@ class CancelBookingService
                 ]),
             ]);
 
+            $this->consignerLesFrais($booking, (float) $feeAmount, (int) $feePercent);
+
             // Capture totale du paiement (le client paie 100%)
             $this->tryCaptureFull($booking);
 
@@ -152,6 +156,33 @@ class CancelBookingService
     // ──────────────────────────────────────────────
     // Helpers
     // ──────────────────────────────────────────────
+
+    /**
+     * PORTE LES FRAIS JUSQU'À LEUR COLONNE, ET PAS SEULEMENT DANS LE `metadata`.
+     *
+     * `bookings` porte deux colonnes dédiées, `cancellation_fee_amount` et
+     * `cancellation_fee_percent`. Personne ne les écrivait : les frais n'existaient que sous les
+     * clés `cancellation_fee` / `cancellation_fee_percent` du `metadata`. Or le centre d'analyse
+     * des annulations fait `SUM(COALESCE(cancellation_fee_amount, 0))` — il additionnait donc une
+     * colonne vide et annonçait 0 € de frais perçus, depuis toujours.
+     *
+     * Le `metadata` reste écrit tel quel : des tests et des réponses d'API le lisent, et la
+     * question posée ici est de remplir la colonne, pas de déplacer la notion.
+     *
+     * `forceFill` et non `update` : ces deux colonnes sont HORS de `$fillable`, délibérément —
+     * c'est la convention du dépôt pour l'argent, afin qu'aucune charge utile de requête ne
+     * puisse fixer un montant de frais. Passées à `update()`, Eloquent les écarterait en silence.
+     *
+     * Le montant est en EUROS, comme le dit son type `decimal(10,2)` et comme le documente
+     * `CancellationFeeCalculator` (« fee_amount: float (en euros) »).
+     */
+    protected function consignerLesFrais(Booking $booking, float $montantEuros, int $pourcentage): void
+    {
+        $booking->forceFill([
+            'cancellation_fee_amount' => round($montantEuros, 2),
+            'cancellation_fee_percent' => $pourcentage,
+        ])->save();
+    }
 
     protected function guardCanCancel(Booking $booking): void
     {

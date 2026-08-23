@@ -57,7 +57,7 @@
                                 <td class="px-3 py-2 text-sm">{{ \Illuminate\Support\Str::limit($r->cancellation_reason, 80) }}</td>
                                 <td class="px-3 py-2 text-right font-bold">{{ number_format($r->count) }}</td>
                                 <td class="px-3 py-2 text-right text-slate-600 text-xs">{{ $pct }}%</td>
-                                <td class="px-3 py-2 text-right text-emerald-700">{{ number_format(((int) $r->total_fee_cents) / 100, 2, ',', ' ') }} €</td>
+                                <td class="px-3 py-2 text-right text-emerald-700">{{ number_format((float) $r->total_fee_euros, 2, ',', ' ') }} €</td>
                             </tr>
                         @empty
                             <tr><td colspan="4" class="px-3 py-8 text-center text-slate-400">Aucune annulation sur cette période.</td></tr>

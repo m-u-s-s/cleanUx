@@ -201,10 +201,42 @@ class CancellationEngine
 
             // Update booking status (schema-defensive)
             if (Schema::hasTable('bookings') && Schema::hasColumn('bookings', 'status')) {
-                DB::table('bookings')->where('id', $bookingId)->update([
+                /*
+                 * LE MOTIF ET LES FRAIS DESCENDENT AUSSI SUR LA RÉSERVATION.
+                 *
+                 * Tout le détail de l'annulation vit dans `booking_cancellations_v2`, et c'est
+                 * bien là qu'il doit vivre. Mais le centre d'analyse des annulations interroge
+                 * `bookings` : il filtre sur `cancellation_reason IS NOT NULL` et groupe sur
+                 * `cancelled_by`. Ce moteur n'écrivait ni l'un ni l'autre — AUCUNE annulation
+                 * passée par la v2 n'apparaissait dans cet écran, sans qu'aucune erreur ne le dise.
+                 *
+                 * Les colonnes de `bookings` sont donc le résumé agrégeable, la table v2 la source
+                 * détaillée. Une seule écriture, deux lectures différentes — pas deux vérités.
+                 *
+                 * `fee_amount_cents` est en centimes ; `bookings.cancellation_fee_amount` est un
+                 * `decimal(10,2)` en euros. La conversion se fait ici, une fois.
+                 *
+                 * `feePercent` est un `float` et la colonne un `int unsigned` : l'arrondi est
+                 * EXPLICITE. Laissé au moteur, MySQL arrondirait et SQLite garderait la décimale —
+                 * la suite tourne sur SQLite et n'aurait rien vu de cet écart.
+                 */
+                $surLaReservation = [
                     'status' => $statusAfter,
                     'cancelled_at' => now(),
-                ]);
+                ];
+
+                foreach ([
+                    'cancellation_reason' => $reasonText ?: $reasonCode,
+                    'cancelled_by' => $actor->id,
+                    'cancellation_fee_amount' => round($quote->feeAmountCents / 100, 2),
+                    'cancellation_fee_percent' => (int) round($quote->feePercent),
+                ] as $colonne => $valeur) {
+                    if (Schema::hasColumn('bookings', $colonne)) {
+                        $surLaReservation[$colonne] = $valeur;
+                    }
+                }
+
+                DB::table('bookings')->where('id', $bookingId)->update($surLaReservation);
 
                 /*
                  * CETTE ÉCRITURE-CI NE PASSE PAS PAR L'OBSERVATEUR.

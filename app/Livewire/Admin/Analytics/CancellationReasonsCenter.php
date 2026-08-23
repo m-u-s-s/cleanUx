@@ -60,7 +60,12 @@ class CancellationReasonsCenter extends Component
             : 0;
 
         $rows = (clone $base)
-            ->selectRaw('cancellation_reason, COUNT(*) as count, SUM(COALESCE(cancellation_fee_amount,0)) as total_fee_cents')
+            /*
+             * `cancellation_fee_amount` est un `decimal(10,2)` EN EUROS — son alias annonçait des
+             * centimes, et la vue divisait donc le total par cent. La somme n'a jamais montré
+             * l'erreur : personne n'écrivait cette colonne, et elle affichait 0 €.
+             */
+            ->selectRaw('cancellation_reason, COUNT(*) as count, SUM(COALESCE(cancellation_fee_amount,0)) as total_fee_euros')
             ->whereNotNull('cancellation_reason')
             ->where('cancellation_reason', '!=', '')
             ->groupBy('cancellation_reason')
