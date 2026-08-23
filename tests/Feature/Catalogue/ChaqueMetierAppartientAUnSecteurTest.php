@@ -58,6 +58,15 @@ class ChaqueMetierAppartientAUnSecteurTest extends TestCase
 
         $this->assertGreaterThanOrEqual(16, Trade::query()->count());
 
+        /*
+         * ON COLLECTE, PUIS ON AFFIRME UNE FOIS.
+         *
+         * Une assertion par tour de boucle interrompt la méthode au PREMIER manque : si quatre des
+         * six métiers étaient mal rattachés, la sortie n'en nommerait qu'un, et il faudrait quatre
+         * exécutions pour les voir tous.
+         */
+        $ecarts = [];
+
         foreach ([
             'batiment' => 'batiment-renovation',
             'renovation' => 'batiment-renovation',
@@ -68,14 +77,22 @@ class ChaqueMetierAppartientAUnSecteurTest extends TestCase
         ] as $metier => $secteurAttendu) {
             $trade = Trade::query()->where('slug', $metier)->first();
 
-            $this->assertNotNull($trade, "Le métier `{$metier}` n'a pas été semé.");
-            $this->assertNotNull($trade->sector_id, "Le métier `{$metier}` n'a aucun secteur.");
-            $this->assertSame(
-                $secteurAttendu,
-                Sector::query()->whereKey($trade->sector_id)->value('slug'),
-                "Le métier `{$metier}` n'est pas dans le secteur attendu.",
-            );
+            if ($trade === null) {
+                $ecarts[] = "{$metier} → pas semé";
+
+                continue;
+            }
+
+            $obtenu = $trade->sector_id
+                ? Sector::query()->whereKey($trade->sector_id)->value('slug')
+                : 'AUCUN SECTEUR';
+
+            if ($obtenu !== $secteurAttendu) {
+                $ecarts[] = "{$metier} → attendu `{$secteurAttendu}`, obtenu `{$obtenu}`";
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Ces métiers ne sont pas dans le secteur attendu.');
     }
 
     /**
@@ -88,13 +105,21 @@ class ChaqueMetierAppartientAUnSecteurTest extends TestCase
     {
         $this->seed(ReferencePlatformSeeder::class);
 
+        $fermes = [];
+
         foreach (['services-a-la-personne', 'securite'] as $slug) {
             $secteur = Sector::query()->where('slug', $slug)->first();
 
-            $this->assertNotNull($secteur, "Le secteur `{$slug}` est absent.");
-            $this->assertTrue((bool) $secteur->is_active, "Le secteur `{$slug}` est inactif.");
-            $this->assertNotNull($secteur->published_at, "Le secteur `{$slug}` n'est pas publié.");
+            if ($secteur === null) {
+                $fermes[] = "{$slug} → absent";
+            } elseif (! $secteur->is_active) {
+                $fermes[] = "{$slug} → inactif";
+            } elseif ($secteur->published_at === null) {
+                $fermes[] = "{$slug} → non publié";
+            }
         }
+
+        $this->assertSame([], $fermes, 'Ces secteurs laisseraient leurs métiers aussi invisibles qu’avant.');
     }
 
     /**
@@ -136,11 +161,11 @@ class ChaqueMetierAppartientAUnSecteurTest extends TestCase
         ], $restants);
 
         // Mais les deux qu'il possède sont rattachés, seul et sans aide.
-        foreach (['childcare', 'security'] as $slug) {
-            $this->assertNotNull(
-                Trade::query()->where('slug', $slug)->value('sector_id'),
-                "`{$slug}` dépend d'un secteur que ce semeur possède : il doit être rattaché sans les catalogues.",
-            );
-        }
+        $orphelins = collect(['childcare', 'security'])
+            ->filter(fn (string $slug) => Trade::query()->where('slug', $slug)->value('sector_id') === null)
+            ->values()
+            ->all();
+
+        $this->assertSame([], $orphelins, 'Ces métiers dépendent d’un secteur que ce semeur possède : il doit les rattacher seul.');
     }
 }

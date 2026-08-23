@@ -94,22 +94,47 @@ class RbacServeurTest extends TestCase
     {
         $worker = $this->membre(OrganizationRole::WORKER);
 
+        /*
+         * ON RELÈVE LES QUATRE CODES, PUIS ON LES AFFIRME D'UN COUP.
+         *
+         * Une assertion par tour interrompt la méthode au premier écart : si trois de ces quatre
+         * lectures s'ouvraient à un simple exécutant, la sortie n'en nommerait qu'une. Sur une
+         * matrice de droits, c'est précisément la liste complète qu'on veut voir.
+         */
+        $ouverts = [];
+
         foreach (['overview', 'members', 'sites', 'field-teams'] as $chemin) {
-            $this->actingAs($worker, 'sanctum')
+            $code = $this->actingAs($worker, 'sanctum')
                 ->getJson("/api/provider/company/{$chemin}")
-                ->assertForbidden();
+                ->getStatusCode();
+
+            if ($code !== 403) {
+                $ouverts[] = "{$chemin} → {$code} au lieu de 403";
+            }
         }
+
+        $this->assertSame([], $ouverts, 'Ces lectures de pilotage s’ouvrent à un simple exécutant.');
     }
 
     public function test_l_owner_accede_aux_lectures_de_pilotage(): void
     {
         $owner = $this->membre(OrganizationRole::OWNER);
 
+        // TÉMOIN POSITIF du refus ci-dessus : sans lui, un 403 pour TOUT LE MONDE — une panne de
+        // route, un intergiciel mal branché — passerait pour une garde qui fonctionne.
+        $fermes = [];
+
         foreach (['overview', 'members', 'sites', 'field-teams'] as $chemin) {
-            $this->actingAs($owner, 'sanctum')
+            $code = $this->actingAs($owner, 'sanctum')
                 ->getJson("/api/provider/company/{$chemin}")
-                ->assertOk();
+                ->getStatusCode();
+
+            if ($code !== 200) {
+                $fermes[] = "{$chemin} → {$code} au lieu de 200";
+            }
         }
+
+        $this->assertSame([], $fermes, 'Le dirigeant devrait lire ces quatre écrans.');
     }
 
     public function test_le_dispatcher_lit_les_sites_desservis(): void
@@ -202,14 +227,14 @@ class RbacServeurTest extends TestCase
 
         $routes = $this->routesDuMenuSociete();
 
-        foreach ([
+        $fuites = array_values(array_intersect([
             'provider-company.dispatch',
             'provider-company.team',
             'provider-company.field-teams',
             'provider-company.sites',
-        ] as $interdite) {
-            $this->assertNotContains($interdite, $routes, $interdite.' ne doit pas figurer au menu d’un worker');
-        }
+        ], $routes));
+
+        $this->assertSame([], $fuites, 'Ces entrées ne doivent pas figurer au menu d’un simple exécutant.');
     }
 
     public function test_la_navbar_de_l_owner_garde_tout(): void
@@ -218,9 +243,12 @@ class RbacServeurTest extends TestCase
 
         $routes = $this->routesDuMenuSociete();
 
-        foreach (['provider-company.dispatch', 'provider-company.team', 'provider-company.sites'] as $attendue) {
-            $this->assertContains($attendue, $routes, $attendue);
-        }
+        $manquantes = array_values(array_diff(
+            ['provider-company.dispatch', 'provider-company.team', 'provider-company.sites'],
+            $routes,
+        ));
+
+        $this->assertSame([], $manquantes, 'Ces entrées manquent au menu du dirigeant.');
     }
 
     public function test_le_worker_est_refuse_sur_l_ecran_des_sites(): void
