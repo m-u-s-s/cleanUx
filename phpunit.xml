@@ -18,6 +18,15 @@
             <directory>tests/Feature</directory>
         </testsuite>
     </testsuites>
+    <!-- LA COUVERTURE EXIGE UN PILOTE, ET SON ABSENCE BLOQUE L'EXÉCUTION PARALLÈLE.
+
+         Ce bloc fait échouer `paratest` au démarrage sur tout poste sans Xdebug ni PCOV :
+         « No code coverage driver available », avant le premier test. C'est pourquoi
+         `composer test:parallele` passe `--no-coverage`.
+
+         La suite complète tient alors en NEUF MINUTES sur seize processus, contre près d'une
+         heure en séquentiel — mêmes 7417 tests, mêmes assertions. Le coût n'était pas le
+         NOMBRE de tests : c'était de les jouer un par un. -->
     <coverage>
         <report>
             <clover outputFile="coverage.xml"/>
