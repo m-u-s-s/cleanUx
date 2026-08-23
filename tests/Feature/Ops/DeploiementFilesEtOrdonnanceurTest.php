@@ -29,22 +29,29 @@ class DeploiementFilesEtOrdonnanceurTest extends TestCase
 
         $this->assertNotEmpty($lignes, 'Aucune commande queue:work trouvée dans deploy/ : les workers ne sont plus provisionnés.');
 
+        // TOUS les workers mal branches d'un coup : un fichier de provisionnement en declare
+        // souvent plusieurs, et chacun draine une banque de jobs qui n'est pas la bonne.
+        $desalignes = [];
+
         foreach ($lignes as $ligne) {
             $connexion = $this->connexionDuWorker($ligne['commande']);
 
-            $this->assertTrue(
-                $connexion === null || $connexion === $attendue,
-                sprintf(
-                    "%s lance « queue:work %s » alors que .env.production.example déclare QUEUE_CONNECTION=%s.\n".
-                    "L'argument positionnel de queue:work est la CONNEXION : le worker draine alors une autre ".
-                    "banque que celle où l'application pousse ses jobs. Laisse l'argument vide (artisan lit ".
-                    'config(\'queue.default\')) ou aligne-le sur la production.',
-                    $ligne['fichier'],
-                    (string) $connexion,
-                    $attendue
-                )
-            );
+            if ($connexion !== null && $connexion !== $attendue) {
+                $desalignes[] = sprintf('%s : queue:work %s', $ligne['fichier'], (string) $connexion);
+            }
         }
+
+        $this->assertSame(
+            [],
+            $desalignes,
+            sprintf(
+                ".env.production.example declare QUEUE_CONNECTION=%s.\n".
+                "L'argument positionnel de queue:work est la CONNEXION : ces workers drainent une autre ".
+                "banque que celle ou l'application pousse ses jobs. Laisser l'argument vide (artisan lit ".
+                'config(\'queue.default\')) ou l aligner sur la production.',
+                $attendue,
+            ),
+        );
     }
 
     // ----------------------------------------------------------------------------------
@@ -199,14 +206,21 @@ class DeploiementFilesEtOrdonnanceurTest extends TestCase
         $doc = $this->documentation();
         $connues = array_keys(Artisan::all());
 
+        // Les deux verifications sur toutes les taches d'un coup : une refonte du noyau laisse
+        // derriere elle plusieurs commandes fantomes ET plusieurs trous dans l'inventaire.
+        $ecarts = [];
+
         foreach ($planifiees as $commande) {
-            $this->assertContains($commande, $connues, sprintf('Kernel.php planifie « %s », qui n\'est pas une commande artisan existante.', $commande));
-            $this->assertStringContainsString(
-                $commande,
-                $doc,
-                sprintf('La tâche planifiée « %s » ne figure pas dans l\'inventaire de QUEUE_CRON_SCHEDULER.md.', $commande)
-            );
+            if (! in_array($commande, is_array($connues) ? $connues : $connues->all(), true)) {
+                $ecarts[] = "{$commande} : planifiee mais n existe pas comme commande artisan";
+            }
+
+            if (! str_contains($doc, $commande)) {
+                $ecarts[] = "{$commande} : absente de l inventaire QUEUE_CRON_SCHEDULER.md";
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Ces taches planifiees ne tiennent pas leurs promesses.');
     }
 
     // ----------------------------------------------------------------------------------

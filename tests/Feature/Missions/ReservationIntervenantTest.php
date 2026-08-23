@@ -428,6 +428,10 @@ class ReservationIntervenantTest extends TestCase
 
         $toutes = Booking::query()->with('missions')->get();
 
+        // Les deux utilisateurs releves ensemble : quand le filtre SQL diverge du resolveur, il
+        // diverge pour TOUS, et voir les deux ecarts dit si c'est la meme cause.
+        $divergences = [];
+
         foreach ([$a, $b] as $utilisateur) {
             $parLeResolveur = $toutes
                 ->filter(fn (Booking $r) => $r->intervenantId() === $utilisateur->id)
@@ -436,12 +440,17 @@ class ReservationIntervenantTest extends TestCase
             $parLeFiltre = Booking::query()->intervenantEst($utilisateur->id)
                 ->pluck('id')->sort()->values()->all();
 
-            $this->assertSame(
-                $parLeResolveur,
-                $parLeFiltre,
-                "Le filtre SQL et le résolveur divergent pour l’utilisateur #{$utilisateur->id}.",
-            );
+            if ($parLeResolveur !== $parLeFiltre) {
+                $divergences[] = sprintf(
+                    'utilisateur #%d : resolveur [%s], filtre SQL [%s]',
+                    $utilisateur->id,
+                    implode(',', $parLeResolveur),
+                    implode(',', $parLeFiltre),
+                );
+            }
         }
+
+        $this->assertSame([], $divergences, 'Le filtre SQL et le resolveur ne designent pas les memes reservations.');
 
         $sansParLeResolveur = $toutes
             ->filter(fn (Booking $r) => $r->intervenantId() === null)

@@ -53,20 +53,40 @@ class NotificationPayloadsTest extends TestCase
             new UrgenceRendezVousNotification($rdv),
         ];
 
-        foreach ($notifications as $notification) {
-            $this->assertContains('database', $notification->via($admin));
-            $this->assertInstanceOf(MailMessage::class, $notification->toMail($admin));
-            $payload = $notification->toArray($admin);
-            $this->assertIsArray($payload);
+        // Toutes les notifications fautives d'un coup : un libelle de service qui derive derive
+        // sur TOUTE la famille, et le destinataire recoit alors plusieurs messages incoherents.
+        $defauts = [];
 
-            if (array_key_exists('service_label', $payload)) {
-                $this->assertSame($rdv->service_display_name, $payload['service_label']);
+        foreach ($notifications as $notification) {
+            $nom = class_basename($notification);
+
+            if (! in_array('database', $notification->via($admin), true)) {
+                $defauts[] = "{$nom} : pas de canal « database »";
             }
 
-            if (array_key_exists('location_display', $payload)) {
-                $this->assertSame($rdv->location_display, $payload['location_display']);
+            if (! $notification->toMail($admin) instanceof MailMessage) {
+                $defauts[] = "{$nom} : toMail() ne rend pas un MailMessage";
+            }
+
+            $payload = $notification->toArray($admin);
+
+            if (! is_array($payload)) {
+                $defauts[] = "{$nom} : toArray() ne rend pas un tableau";
+
+                continue;
+            }
+
+            foreach ([
+                'service_label' => $rdv->service_display_name,
+                'location_display' => $rdv->location_display,
+            ] as $clef => $attendu) {
+                if (array_key_exists($clef, $payload) && $payload[$clef] !== $attendu) {
+                    $defauts[] = sprintf('%s : %s vaut « %s », attendu « %s »', $nom, $clef, $payload[$clef], $attendu);
+                }
             }
         }
+
+        $this->assertSame([], $defauts, 'Ces notifications ne portent pas ce qu elles annoncent.');
 
         $feedbackNotification = new FeedbackAjouteNotification($feedback);
         $this->assertSame(['database'], $feedbackNotification->via($admin));

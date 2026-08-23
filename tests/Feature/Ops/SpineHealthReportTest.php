@@ -38,13 +38,33 @@ class SpineHealthReportTest extends TestCase
     {
         $result = $this->report->collect();
 
+        // Les cinq sondes verifiees ensemble : un rapport de sante mal forme l'est generalement
+        // sur toutes ses sondes, et c'est precisement le rapport qu'on lit quand tout va mal.
+        $malFormees = [];
+
         foreach (['db', 'redis', 'queue', 'stripe', 'reverb'] as $key) {
-            $probe = $result[$key];
-            $this->assertArrayHasKey('ok', $probe, "Probe [{$key}] missing 'ok'");
-            $this->assertArrayHasKey('detail', $probe, "Probe [{$key}] missing 'detail'");
-            $this->assertIsBool($probe['ok'], "Probe [{$key}].ok must be bool");
-            $this->assertIsString($probe['detail'], "Probe [{$key}].detail must be string");
+            $probe = $result[$key] ?? null;
+
+            if (! is_array($probe)) {
+                $malFormees[] = "{$key} : sonde absente";
+
+                continue;
+            }
+
+            if (! array_key_exists('ok', $probe)) {
+                $malFormees[] = "{$key} : « ok » absent";
+            } elseif (! is_bool($probe['ok'])) {
+                $malFormees[] = "{$key}.ok : ".get_debug_type($probe['ok']).' au lieu d un booleen';
+            }
+
+            if (! array_key_exists('detail', $probe)) {
+                $malFormees[] = "{$key} : « detail » absent";
+            } elseif (! is_string($probe['detail'])) {
+                $malFormees[] = "{$key}.detail : ".get_debug_type($probe['detail']).' au lieu d une chaine';
+            }
         }
+
+        $this->assertSame([], $malFormees, 'Ce rapport de sante est inexploitable.');
     }
 
     #[Test]

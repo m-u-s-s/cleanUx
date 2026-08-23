@@ -35,9 +35,15 @@ class OnboardingEngineTest extends TestCase
 
         $completions = OnboardingStepCompletion::query()->where('progress_id', $progress->id)->get();
         $this->assertCount(3, $completions);
+        $avancees = [];
+
         foreach ($completions as $c) {
-            $this->assertSame(OnboardingStepCompletion::STATUS_PENDING, $c->status);
+            if ($c->status !== OnboardingStepCompletion::STATUS_PENDING) {
+                $avancees[] = sprintf('etape #%s : « %s »', $c->onboarding_step_id ?? $c->id, $c->status);
+            }
         }
+
+        $this->assertSame([], $avancees, 'Ces etapes ne sont pas en attente alors qu elles devraient l etre.');
 
         $this->assertNotNull($progress->current_step_code);
     }

@@ -30,13 +30,29 @@ class BusinessDashboardServiceCoverageBatch16Test extends TestCase
         $this->assertSame(0.0, $metrics['avg_booking_value']);
 
         $this->assertCount(6, $metrics['weekly_revenue']);
-        foreach ($metrics['weekly_revenue'] as $week) {
-            $this->assertArrayHasKey('label', $week);
-            $this->assertArrayHasKey('revenue', $week);
-            $this->assertArrayHasKey('bookings', $week);
-            $this->assertSame(0.0, $week['revenue']);
-            $this->assertSame(0, $week['bookings']);
+        // Toutes les semaines fautives d'un coup : une serie hebdomadaire mal construite l'est
+        // sur plusieurs semaines, et le graphique est alors faux sur toute sa longueur.
+        $fautives = [];
+
+        foreach ($metrics['weekly_revenue'] as $i => $week) {
+            $nom = $week['label'] ?? "semaine #{$i}";
+
+            foreach (['label', 'revenue', 'bookings'] as $clef) {
+                if (! array_key_exists($clef, $week)) {
+                    $fautives[] = "{$nom} : cle « {$clef} » absente";
+                }
+            }
+
+            if (($week['revenue'] ?? null) !== 0.0) {
+                $fautives[] = "{$nom} : revenu ".var_export($week['revenue'] ?? null, true).' au lieu de 0.0';
+            }
+
+            if (($week['bookings'] ?? null) !== 0) {
+                $fautives[] = "{$nom} : ".var_export($week['bookings'] ?? null, true).' reservations au lieu de 0';
+            }
         }
+
+        $this->assertSame([], $fautives, 'Cette serie hebdomadaire est mal construite.');
     }
 
     public function test_metrics_aggregates_current_month_activity(): void

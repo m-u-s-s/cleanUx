@@ -24,10 +24,21 @@ class MigrateMediaToPrivateTest extends TestCase
 
         $this->artisan('media:migrate-to-private')->assertSuccessful();
 
+        // Les trois fichiers verifies ensemble : une migration de media qui rate en rate
+        // generalement plusieurs, et chacun reste alors PUBLIQUEMENT accessible.
+        $ecarts = [];
+
         foreach (['claims/a.jpg', 'rendezvous/photos-avant/b.jpg', 'reports/mission-1.pdf'] as $p) {
-            $this->assertTrue(Storage::disk('private')->exists($p), "$p moved to private");
-            $this->assertFalse(Storage::disk('public')->exists($p), "$p removed from public");
+            if (! Storage::disk('private')->exists($p)) {
+                $ecarts[] = "{$p} : absent du disque prive";
+            }
+
+            if (Storage::disk('public')->exists($p)) {
+                $ecarts[] = "{$p} : TOUJOURS accessible publiquement";
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Ces medias n ont pas ete deplaces vers le disque prive.');
 
         // Avatar (public by design) untouched.
         $this->assertTrue(Storage::disk('public')->exists('avatars/keep.jpg'));

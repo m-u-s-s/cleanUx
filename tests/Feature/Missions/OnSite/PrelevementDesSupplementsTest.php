@@ -66,18 +66,24 @@ class PrelevementDesSupplementsTest extends TestCase
      */
     public function test_la_reprise_ignore_ce_qui_nest_pas_accepte(): void
     {
+        // Les trois statuts releves ensemble : une garde de rejeu trop laxiste laisse passer
+        // PLUSIEURS statuts, et chacun est un prelevement effectue deux fois sur un client.
+        $rejoues = [];
+
         foreach ([MissionExtra::STATUS_PROPOSED, MissionExtra::STATUS_DECLINED, MissionExtra::STATUS_CHARGED] as $statut) {
             $extra = $this->extraApprouve();
             $extra->forceFill(['status' => $statut])->save();
 
             app(MissionExtraService::class)->reprendreLePrelevement($extra);
 
-            $this->assertSame(
-                $statut,
-                $extra->refresh()->status,
-                "Un extra « {$statut} » ne doit pas être rejoué.",
-            );
+            $apres = $extra->refresh()->status;
+
+            if ($apres !== $statut) {
+                $rejoues[] = "« {$statut} » est devenu « {$apres} »";
+            }
         }
+
+        $this->assertSame([], $rejoues, 'Ces extras ont ete rejoues : le client serait preleve deux fois.');
     }
 
     public function test_la_commande_de_reprise_compte_les_creances(): void

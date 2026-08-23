@@ -47,15 +47,41 @@ class ScenarioDeDemonstrationTest extends TestCase
 
         $this->assertCount(3, $prestataires, 'Trois prestataires échelonnés : c’est ce qui rend l’escalade visible.');
 
-        foreach ($prestataires as $prestataire) {
-            $this->assertSame('verified', $prestataire->providerProfile->verification_status);
-            $this->assertTrue($prestataire->trades()->exists(), 'Sans métier déclaré, aucune offre.');
+        // TOUS les prestataires non demontrables d'un coup : un semis incomplet en laisse
+        // plusieurs de cote, et la demonstration echoue alors sans qu'on sache combien.
+        $defauts = [];
 
-            $presence = ProviderPresence::query()->where('provider_user_id', $prestataire->id)->firstOrFail();
-            $this->assertSame('online', $presence->status);
-            $this->assertNotNull($presence->current_lat);
-            $this->assertTrue($presence->heartbeat_at->diffInMinutes(now()) < 5, 'Position fraîche exigée.');
+        foreach ($prestataires as $prestataire) {
+            $nom = $prestataire->name ?? ('#'.$prestataire->id);
+
+            if ($prestataire->providerProfile->verification_status !== 'verified') {
+                $defauts[] = "{$nom} : profil « {$prestataire->providerProfile->verification_status} »";
+            }
+
+            if (! $prestataire->trades()->exists()) {
+                $defauts[] = "{$nom} : aucun metier declare, donc aucune offre";
+            }
+
+            $presence = ProviderPresence::query()->where('provider_user_id', $prestataire->id)->first();
+
+            if ($presence === null) {
+                $defauts[] = "{$nom} : aucune ligne de presence";
+
+                continue;
+            }
+
+            if ($presence->status !== 'online') {
+                $defauts[] = "{$nom} : presence « {$presence->status} »";
+            }
+
+            if ($presence->current_lat === null) {
+                $defauts[] = "{$nom} : aucune position";
+            } elseif ($presence->heartbeat_at->diffInMinutes(now()) >= 5) {
+                $defauts[] = "{$nom} : position trop ancienne";
+            }
         }
+
+        $this->assertSame([], $defauts, 'Ces prestataires ne sont pas en etat de recevoir une offre.');
 
         $this->assertTrue(
             TradeZonePricing::query()->where('asap_enabled', true)->where('is_active', true)->exists(),

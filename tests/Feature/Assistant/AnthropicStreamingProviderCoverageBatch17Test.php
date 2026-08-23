@@ -60,19 +60,36 @@ class AnthropicStreamingProviderCoverageBatch17Test extends TestCase
 
         // Le chemin curl a été traversé sans exception. Selon l'environnement,
         // soit une erreur réseau a été émise, soit la connexion a abouti.
-        foreach ($events as $event) {
-            $this->assertInstanceOf(StreamEvent::class, $event);
+        $mauvais = [];
+
+        foreach ($events as $i => $event) {
+            if (! $event instanceof StreamEvent) {
+                $mauvais[] = "evenement #{$i} : ".get_debug_type($event);
+            }
         }
+
+        $this->assertSame([], $mauvais, 'Ces elements du flux ne sont pas des evenements.');
 
         $errorEvents = array_values(array_filter(
             $events,
             fn (StreamEvent $e) => $e->type === StreamEvent::TYPE_ERROR,
         ));
 
-        foreach ($errorEvents as $errorEvent) {
-            $this->assertArrayHasKey('message', $errorEvent->payload);
-            $this->assertStringContainsStringIgnoringCase('anthropic', $errorEvent->payload['message']);
+        // Toutes les erreurs mal formees d'un coup : un message d'erreur sans origine nommee
+        // laisse l'exploitant chercher de quel fournisseur vient la panne.
+        $mauvaises = [];
+
+        foreach ($errorEvents as $i => $errorEvent) {
+            $message = $errorEvent->payload['message'] ?? null;
+
+            if ($message === null) {
+                $mauvaises[] = "erreur #{$i} : pas de message";
+            } elseif (! str_contains(mb_strtolower((string) $message), 'anthropic')) {
+                $mauvaises[] = "erreur #{$i} : le message ne nomme pas le fournisseur";
+            }
         }
+
+        $this->assertSame([], $mauvaises, 'Ces erreurs de flux ne disent pas d ou vient la panne.');
 
         $this->assertGreaterThanOrEqual(0, count($events));
     }
@@ -90,19 +107,29 @@ class AnthropicStreamingProviderCoverageBatch17Test extends TestCase
         // tente d'établir une connexion.
         $events = $this->runStream([], ['timeout' => 2]);
 
+        // Tous les types inconnus d'un coup : un flux qui derive introduit generalement plusieurs
+        // types nouveaux a la fois, et c'est la liste qui dit lesquels ajouter au contrat.
+        $connus = [
+            StreamEvent::TYPE_ERROR,
+            StreamEvent::TYPE_START,
+            StreamEvent::TYPE_TEXT_BLOCK_START,
+            StreamEvent::TYPE_TEXT_DELTA,
+            StreamEvent::TYPE_TOOL_USE_START,
+            StreamEvent::TYPE_TOOL_INPUT_DELTA,
+            StreamEvent::TYPE_CONTENT_BLOCK_STOP,
+            StreamEvent::TYPE_MESSAGE_DELTA,
+            StreamEvent::TYPE_STOP,
+        ];
+
+        $inconnus = [];
+
         foreach ($events as $event) {
-            $this->assertContains($event->type, [
-                StreamEvent::TYPE_ERROR,
-                StreamEvent::TYPE_START,
-                StreamEvent::TYPE_TEXT_BLOCK_START,
-                StreamEvent::TYPE_TEXT_DELTA,
-                StreamEvent::TYPE_TOOL_USE_START,
-                StreamEvent::TYPE_TOOL_INPUT_DELTA,
-                StreamEvent::TYPE_CONTENT_BLOCK_STOP,
-                StreamEvent::TYPE_MESSAGE_DELTA,
-                StreamEvent::TYPE_STOP,
-            ]);
+            if (! in_array($event->type, $connus, true)) {
+                $inconnus[] = (string) $event->type;
+            }
         }
+
+        $this->assertSame([], array_values(array_unique($inconnus)), 'Ces types d evenement ne figurent pas au contrat du flux.');
 
         $this->assertIsArray($events);
     }
