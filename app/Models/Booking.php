@@ -45,16 +45,30 @@ use Illuminate\Support\Facades\Schema;
  * @property ?string $backup_contact_phone
  * @property ?Carbon $checkin_ping_sent_at
  * @property ?string $checkin_ping_answer
+ *                                        ── QUATRE ALIAS DE REQUÊTE, ET DEUX FANTÔMES QUI ONT ÉTÉ RETIRÉS ──────────────────────────
+ *
+ * Les quatre ci-dessous ne sont PAS des colonnes : ce sont des alias posés par des `select`
+ * d'agrégation, sur des lignes hydratées en `Booking`. Ils sont annotés pour que l'analyse
+ * statique les accepte là où ils existent vraiment — même idiome que `AccountingEntry::$c`.
+ *
+ *   $total       COUNT(*) / SUM(...)  AdminAnalyticsService, ClientCompanyDashboard,
+ *                                     AssistantReadActions
+ *   $trade_name  trades.name AS ...   ClientCompanyDashboard, AssistantReadActions
+ *   $month       MONTH(...) AS month  AdminAnalyticsService
+ *   $total_cents SUM(...) AS ...      ProviderEarningsDashboard
+ *
+ * `user_id` et `adresse_complete` figuraient dans la même liste SANS être ni colonne ni
+ * alias. Elles n'ont rien documenté : elles ont APPRIS à l'analyse statique que ces lectures
+ * étaient valides, et trois défauts réels s'y sont logés — la contrepartie du grand livre, le
+ * montant des événements d'analyse, l'étiquette des favoris. Ne pas les réintroduire.
+ * @property-read int|string $total
+ * @property-read ?string $trade_name
+ * @property-read int|string $month
+ * @property-read int|string $total_cents
  * @property ?Carbon $checkin_ping_answered_at
  * @property-read string $service_display_name
- * @property string $total
- * @property ?string $trade_name
  * @property ?int $trade_id
  * @property ?int $postal_code_id
- * @property ?int $user_id
- * @property-read int $total_cents
- * @property-read ?string $adresse_complete
- * @property-read int|string $month
  * @property ?Carbon $feedback_demande_envoye_at
  * @property ?Carbon $scheduled_date
  * @property ?Carbon $scheduled_time
@@ -80,8 +94,12 @@ use Illuminate\Support\Facades\Schema;
  * @property bool $materiel_fournit
  * @property bool $is_recurrent
  * @property bool $is_favorite_slot
- * @property string $estimated_price
- * @property string $devis_estime
+ *                                  Prix : `decimal:2` rend une CHAÎNE en lecture et accepte un nombre en écriture — la
+ *                                  seule annotation honnête est donc `float|string|null`. Les trois colonnes sont
+ *                                  nullables en base ; deux étaient pourtant annotées non-nullables.
+ * @property float|string|null $estimated_price
+ * @property float|string|null $final_price
+ * @property float|string|null $devis_estime
  * @property string $destination_lat
  * @property string $destination_lng
  * @property ?string $dropoff_address

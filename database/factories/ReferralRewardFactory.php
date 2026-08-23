@@ -15,13 +15,17 @@ class ReferralRewardFactory extends Factory
     {
         return [
             'referral_id' => fn () => Referral::factory()->create()->id,
-            'user_id' => fn () => User::factory()->create()->id,
+            // La table nomme le bénéficiaire `beneficiary_user_id`, le montant `amount` (unité
+            // monétaire, pas centimes) et la date `granted_at`. `loyalty_points` n'existe pas :
+            // un gain en points passe par `reward_type` et `amount`.
+            'beneficiary_user_id' => fn () => User::factory()->create()->id,
+            'role' => 'referrer',
             'reward_type' => fake()->randomElement(['promo_code', 'credit', 'loyalty_points']),
-            'amount_cents' => fake()->numberBetween(500, 5000),
+            'amount' => fake()->randomFloat(2, 5, 50),
+            'currency' => 'EUR',
             'promo_code_id' => null,
-            'loyalty_points' => null,
             'status' => 'pending',
-            'issued_at' => null,
+            'granted_at' => null,
             'metadata' => null,
         ];
     }

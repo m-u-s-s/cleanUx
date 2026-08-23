@@ -14,8 +14,6 @@ class SubscriptionPlan extends Model
     protected $fillable = [
         'name',
         'slug',
-        'frequency_per_month',
-        'discount_rate',
         'is_active',
     ];
 }

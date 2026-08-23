@@ -215,7 +215,7 @@ class BookingObserver
                 'provider_id' => $booking->intervenantId(),
                 'service_zone_id' => $booking->service_zone_id ?? null,
                 'service_catalog_id' => $booking->service_catalog_id ?? null,
-                'amount_cents' => $booking->total_amount_cents ?? null,
+                'amount_cents' => $this->montantEnCentimes($booking),
                 'currency' => $booking->currency ?? null,
                 'occurred_at' => now()->toIso8601String(),
             ],
@@ -238,6 +238,30 @@ class BookingObserver
         }
     }
 
+    /**
+     * LE MONTANT DE LA RÉSERVATION, EN CENTIMES.
+     *
+     * Ces trois émissions lisaient `total_amount_cents`, qui N'EXISTE PAS sur `bookings`. Le
+     * modèle l'annonçait pourtant en `@property`, si bien que l'analyse statique ne voyait rien :
+     * chaque événement d'analyse et chaque webhook partaient avec `amount_cents: null`, et
+     * `booking.completed` annonçait un revenu nul. Depuis toujours.
+     *
+     * La colonne vivante est `payment_amount_cents` — écrite par `OrderPaymentPlanner`,
+     * `MissionPaymentService` et `MissionQuoteRevisionService`. Les deux replis sont en EUROS
+     * (`decimal(10,2)`) et se convertissent ici : une réservation confirmée sans paiement encore
+     * planifié a un devis, et un revenu approché vaut mieux qu'un zéro silencieux.
+     */
+    protected function montantEnCentimes(Booking $booking): ?int
+    {
+        if ($booking->payment_amount_cents !== null) {
+            return (int) $booking->payment_amount_cents;
+        }
+
+        $euros = $booking->final_price ?? $booking->devis_estime ?? $booking->estimated_price;
+
+        return $euros === null ? null : (int) round(((float) $euros) * 100);
+    }
+
     protected function trackAnalytics(Booking $booking, string $eventName): void
     {
         try {
@@ -247,12 +271,12 @@ class BookingObserver
                     'booking_id' => $booking->id,
                     'service_zone_id' => $booking->service_zone_id ?? null,
                     'service_catalog_id' => $booking->service_catalog_id ?? null,
-                    'amount_cents' => $booking->total_amount_cents ?? null,
+                    'amount_cents' => $this->montantEnCentimes($booking),
                 ],
                 [
                     'idempotency_key' => $eventName.':'.$booking->id,
                     'category' => AnalyticsEvent::CATEGORY_LIFECYCLE,
-                    'revenue_cents' => $eventName === 'booking.completed' ? ($booking->total_amount_cents ?? null) : null,
+                    'revenue_cents' => $eventName === 'booking.completed' ? ($this->montantEnCentimes($booking)) : null,
                     'currency' => $booking->currency ?? null,
                 ],
             );

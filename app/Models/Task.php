@@ -10,7 +10,6 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property ?Carbon $due_date
- * @property ?Carbon $due_at
  * @property ?Carbon $completed_at
  * @property array $metadata
  */

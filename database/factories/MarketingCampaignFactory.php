@@ -16,8 +16,13 @@ class MarketingCampaignFactory extends Factory
             'name' => fake()->words(3, true).' Campaign',
             'description' => fake()->sentence(),
             'status' => fake()->randomElement(['draft', 'active', 'paused', 'completed']),
-            'type' => fake()->randomElement(['promo_blast', 'drip', 'one_shot']),
-            'audience_segment_id' => null,
+            // `type` et `audience_segment_id` n'existent pas sur `promo_campaigns` : la table
+            // porte `slug`, `target_audience`, `budget_cap` et les deux compteurs de suivi.
+            'slug' => fake()->unique()->slug(3),
+            'target_audience' => null,
+            'budget_cap' => null,
+            'total_discounted' => 0,
+            'total_redemptions' => 0,
             'created_by_user_id' => User::factory(),
             'starts_at' => now(),
             'ends_at' => now()->addWeeks(2),

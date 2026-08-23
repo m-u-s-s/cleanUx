@@ -34,8 +34,6 @@ use Laravel\Sanctum\HasApiTokens;
  * @property bool $is_active
  * @property array $metadata
  * @property array $permissions
- * @property ?string $current_lat
- * @property ?string $current_lng
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $unreadNotifications
  *
  * `profile_photo_url` vient du trait `HasProfilePhoto` de Jetstream, sous forme d'accesseur :

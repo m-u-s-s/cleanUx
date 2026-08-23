@@ -2,6 +2,7 @@
 
 namespace App\Models\SubscriptionsV2;
 
+use Database\Factories\SubscriptionPlanV2Factory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,6 +10,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SubscriptionPlanV2 extends Model
 {
+    /**
+     * LA FABRIQUE VIT DANS `Database\Factories`, PAS DANS UN SOUS-ESPACE.
+     *
+     * Ce modèle étant dans `App\Models\SubscriptionsV2`, Laravel cherche par défaut
+     * `Database\Factories\SubscriptionsV2\SubscriptionPlanV2Factory` — qui n'existe pas. Tout appel à
+     * `::factory()` échouait donc sur « Class not found », et rien ne le signalait tant qu'aucun
+     * test ne l'employait.
+     */
+    protected static function newFactory(): SubscriptionPlanV2Factory
+    {
+        return SubscriptionPlanV2Factory::new();
+    }
+
     use HasFactory;
 
     protected $table = 'subscription_plans_v2';

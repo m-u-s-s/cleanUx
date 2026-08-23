@@ -12,6 +12,13 @@ use Illuminate\Support\Facades\Schema;
 
 class SmartDispatchService
 {
+    /**
+     * Positions déjà résolues, par identifiant d'utilisateur — voir `positionDe()`.
+     *
+     * @var array<int, array{0: float, 1: float}|null>
+     */
+    protected array $positions = [];
+
     public function __construct(
         protected EmployeeAvailabilityService $availabilityService,
         protected GeoDistanceService $geoDistanceService,
@@ -41,9 +48,62 @@ class SmartDispatchService
         return $score;
     }
 
+    /**
+     * LA POSITION DU PRESTATAIRE — QUI N'EST PAS SUR `users`.
+     *
+     * Ces deux méthodes lisaient `$employee->current_lat` / `current_lng`. Ces colonnes
+     * N'EXISTENT PAS sur `users` : elles vivent dans `provider_presence` (la position vivante,
+     * poussée par le battement de cœur du mobile) et, en repli, dans `provider_profiles`.
+     *
+     * `User` les annonçait pourtant en `@property`, si bien que l'analyse statique validait. La
+     * garde `if (! $employee->current_lat)` sortait donc TOUJOURS par le haut : le score de
+     * distance valait invariablement 0, et l'écart entre « à deux kilomètres » (+500) et « à plus
+     * de vingt » (−200) — sept cents points, le poids le plus lourd de tout le barème — n'a jamais
+     * pesé sur un seul choix. Trois surfaces d'administration s'en servent, dont « assigner le
+     * meilleur employé » et l'écran qui EXPLIQUE les scores.
+     *
+     * L'ordre présence puis profil est celui de `CandidateFinder`, le moteur moderne : la présence
+     * fait foi, le profil rattrape un prestataire dont l'application n'a pas encore battu.
+     *
+     * Mémorisé par passe : `explainScores()` parcourt tous les candidats, et sans cela chacun
+     * coûterait une requête.
+     *
+     * @return array{0: float, 1: float}|null
+     */
+    protected function positionDe(User $employe): ?array
+    {
+        if (array_key_exists($employe->id, $this->positions)) {
+            return $this->positions[$employe->id];
+        }
+
+        $lat = null;
+        $lng = null;
+
+        if (Schema::hasTable('provider_presence')) {
+            $presence = DB::table('provider_presence')
+                ->where('provider_user_id', $employe->id)
+                ->first(['current_lat', 'current_lng']);
+
+            $lat = $presence->current_lat ?? null;
+            $lng = $presence->current_lng ?? null;
+        }
+
+        if ($lat === null || $lng === null) {
+            $profil = $employe->providerProfile;
+            $lat = $profil?->getAttribute('current_lat');
+            $lng = $profil?->getAttribute('current_lng');
+        }
+
+        return $this->positions[$employe->id] = ($lat === null || $lng === null)
+            ? null
+            : [(float) $lat, (float) $lng];
+    }
+
     protected function distanceScore(User $employee, Booking $rdv): int
     {
-        if (! $employee->current_lat || ! $employee->current_lng) {
+        $position = $this->positionDe($employee);
+
+        if ($position === null) {
             return 0;
         }
 
@@ -52,8 +112,8 @@ class SmartDispatchService
         }
 
         $distanceKm = $this->geoDistanceService->haversineKm(
-            (float) $employee->current_lat,
-            (float) $employee->current_lng,
+            $position[0],
+            $position[1],
             (float) $rdv->destination_lat,
             (float) $rdv->destination_lng,
         );
@@ -270,10 +330,11 @@ class SmartDispatchService
                         (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90),
                         $rdv->id
                     ),
-                    'distance_km' => $employee->current_lat && $employee->current_lng && $rdv->destination_lat && $rdv->destination_lng
+                    // Même source que `distanceScore()` : la présence, puis le profil.
+                    'distance_km' => ($p = $this->positionDe($employee)) !== null && $rdv->destination_lat && $rdv->destination_lng
                         ? $this->geoDistanceService->haversineKm(
-                            (float) $employee->current_lat,
-                            (float) $employee->current_lng,
+                            $p[0],
+                            $p[1],
                             (float) $rdv->destination_lat,
                             (float) $rdv->destination_lng,
                         )

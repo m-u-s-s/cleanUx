@@ -45,7 +45,7 @@ class BookingPostingService
                 'debit_cents' => $ttcCents,
                 'label' => 'Facturation booking #'.$booking->id,
                 'counterparty_type' => 'client',
-                'counterparty_id' => $booking->user_id,
+                'counterparty_id' => $this->clientDeLaReservation($booking),
             ],
             [
                 'account_code' => $this->chart->salesAccount('booking'),
@@ -89,7 +89,7 @@ class BookingPostingService
                 'credit_cents' => $ttcCents,
                 'label' => 'Lettrage booking #'.$booking->id,
                 'counterparty_type' => 'client',
-                'counterparty_id' => $booking->user_id,
+                'counterparty_id' => $this->clientDeLaReservation($booking),
             ],
         ];
         if ($stripeFeeCents > 0) {
@@ -426,6 +426,26 @@ class BookingPostingService
      * preference de compte. Le repli sur la devise de base ne sert qu'aux objets sans reservation
      * rattachee, ou a une relation non chargee.
      */
+    /**
+     * LE CLIENT DE LA RÉSERVATION — CONTREPARTIE DE L'ÉCRITURE COMPTABLE.
+     *
+     * Ces deux lignes lisaient `$booking->user_id`, qui N'EXISTE PAS sur `bookings`. Le modèle
+     * l'annonçait pourtant en `@property ?int $user_id` : l'analyse statique validait, et
+     * `counterparty_id` partait à NULL sur chaque facturation et chaque lettrage. Le grand livre
+     * ne savait donc désigner AUCUN client, alors que c'est précisément ce qu'une balance âgée et
+     * un lettrage exigent.
+     *
+     * Les colonnes réelles sont la paire `customer_user_id` / `client_id`, tenue d'accord par
+     * `HasLegacyBookingAliases`. On lit les deux : une ligne écrite avant ce trait peut ne porter
+     * que l'une, et une contrepartie manquante en comptabilité ne se rattrape pas après coup.
+     */
+    private function clientDeLaReservation(Booking $booking): ?int
+    {
+        $id = $booking->customer_user_id ?? $booking->client_id;
+
+        return $id === null ? null : (int) $id;
+    }
+
     private function deviseDe(?Booking $booking): string
     {
         $devise = $booking === null ? '' : trim((string) $booking->currency);

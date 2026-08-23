@@ -60,7 +60,10 @@ class TaskAssigned implements ShouldBroadcast
             'title' => $this->task->title ?? '',
             'priority' => $this->task->priority ?? 'normal',
             'status' => $this->task->status ?? 'pending',
-            'due_at' => $this->task->due_at?->toIso8601String(),
+            // La colonne s'appelle `due_date` : `due_at` n'existe pas sur `tasks`, et cette
+            // diffusion annonçait donc toujours une échéance nulle. La CLÉ garde son nom, elle
+            // appartient au contrat de l'événement que les clients écoutent.
+            'due_at' => $this->task->due_date?->toIso8601String(),
             'assigned_to' => [
                 'id' => $this->assignedTo->id,
                 'name' => $this->assignedTo->name,

@@ -80,8 +80,16 @@ class BookingFavoriteService
     protected function buildDefaultLabel(Booking $booking): string
     {
         $parts = [];
-        if ($booking->getAttribute('adresse_complete')) {
-            $parts[] = mb_substr((string) $booking->adresse_complete, 0, 40);
+
+        /*
+         * `adresse_complete` N'EXISTE PAS sur `bookings` — le modèle l'annonçait en `@property`,
+         * l'analyse statique ne voyait donc rien, et la garde `getAttribute()` renvoyait toujours
+         * null. Résultat : l'étiquette d'un favori retombait TOUJOURS sur « Favori #12 », jamais
+         * sur l'adresse. Les colonnes réelles sont `adresse` et sa jumelle anglaise `address`.
+         */
+        $adresse = $booking->adresse ?: $booking->address;
+        if ($adresse) {
+            $parts[] = mb_substr((string) $adresse, 0, 40);
         }
         if ($booking->getAttribute('duree_estimee')) {
             $parts[] = $booking->duree_estimee.'min';
