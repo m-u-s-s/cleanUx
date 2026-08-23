@@ -220,10 +220,57 @@ class DataErasureService
         $anonName = (string) config('gdpr.anonymized_name', 'Utilisateur supprimé');
         $uid = $user->id;
 
-        // Bookings — the client's home address + free-text notes. Only scrub rows where this
-        // user is the CLIENT (the address belongs to the client, not the assigned provider).
+        /*
+         * BOOKINGS — L'ADRESSE DU CLIENT, SES CONTACTS ET SES CONSIGNES.
+         *
+         * Ne nettoyer que les lignes où cet utilisateur est le CLIENT : l'adresse lui appartient,
+         * pas au prestataire affecté.
+         *
+         * ── POURQUOI CETTE LISTE EST SI LONGUE ───────────────────────────────────────────────
+         *
+         * Elle valait `['adresse', 'ville', 'code_postal', 'notes']`, et l'effacement laissait
+         * l'essentiel en place :
+         *
+         *   1. `notes` n'est écrite par AUCUN code — la nettoyer ne faisait rien. La consigne
+         *      réelle du client vit dans `commentaire_client` / `customer_comment`, qui n'était
+         *      pas touchée : « code portail 1234 » survivait à l'effacement.
+         *   2. LES JUMELLES ANGLAISES N'Y ÉTAIENT PAS. `bookings` porte quinze paires FR/EN, et
+         *      cette écriture passe par le CONSTRUCTEUR DE REQUÊTES : `HasLegacyBookingAliases`
+         *      ne s'exécute donc jamais. Vider `adresse` laissait `address` intacte — l'adresse
+         *      postale complète restait en base après un droit à l'effacement.
+         *   3. Ni les téléphones, ni les courriels, ni le bénéficiaire, ni les coordonnées GPS du
+         *      domicile n'étaient nettoyés.
+         *
+         * Chaque paire doit donc être citée DES DEUX CÔTÉS, explicitement. Une paire ajoutée à
+         * `$legacyAliasPairs` demain devra être ajoutée ici aussi.
+         *
+         * ── CE QUI RESTE, ET POURQUOI ────────────────────────────────────────────────────────
+         *
+         * Les montants, les statuts, les dates et les clés étrangères sont conservés pour
+         * l'obligation légale de conservation comptable. `postal_code_id` en fait partie : c'est
+         * une clé étrangère vers un référentiel de codes postaux, conservée comme les autres —
+         * elle garde une maille géographique grossière que le texte, lui, ne garde plus.
+         */
         if (Schema::hasTable('bookings')) {
-            $bookingCols = collect(['adresse', 'ville', 'code_postal', 'notes'])
+            $bookingCols = collect([
+                // Adresse d'intervention — les deux côtés de chaque paire.
+                'adresse', 'address',
+                'ville', 'city',
+                'code_postal', 'postal_code',
+                'address_components',
+                // Coordonnées : elles désignent le domicile au mètre près.
+                'destination_lat', 'destination_lng',
+                // Point de dépose d'une course.
+                'dropoff_address', 'dropoff_postal_code', 'dropoff_lat', 'dropoff_lng',
+                // Texte libre laissé par le client — c'est là que vivent les codes d'accès.
+                'commentaire_client', 'customer_comment',
+                'client_absent_instructions', 'live_access_note',
+                // Contacts.
+                'telephone_client', 'contact_phone', 'contact_email', 'contact_name',
+                'backup_contact_name', 'backup_contact_phone',
+                // Le bénéficiaire est un TIERS : ses données personnelles partent avec.
+                'beneficiary_name', 'beneficiary_phone', 'beneficiary_note',
+            ])
                 ->filter(fn ($c) => Schema::hasColumn('bookings', $c))
                 ->mapWithKeys(fn ($c) => [$c => null])
                 ->all();

@@ -334,9 +334,21 @@ class TripTrackingController extends Controller
     {
         $user = $request->user();
         abort_unless($user, 401);
-        // Celui qui pousse sa position est celui qui SE DÉPLACE — voir `Booking::intervenantId()`.
+        /*
+         * Celui qui pousse sa position est celui qui SE DÉPLACE — voir `Booking::intervenantId()`.
+         *
+         * `provider_user_id` figurait ici en troisième branche et N'EXISTE PAS sur `bookings` :
+         * elle appartient au portefeuille, aux conversations et à la finance. Sur un modèle
+         * Eloquent elle rendait `null` sans bruit, donc la branche était morte ; recopiée un jour
+         * dans un `where`, elle aurait fait tomber la requête en MySQL et serait restée MUETTE
+         * sous SQLite, qui prend un identifiant inconnu pour une chaîne littérale. `intervenantId()`
+         * porte déjà le même avertissement, et l'avait déjà écartée de sa propre chaîne.
+         *
+         * `assigned_employee_id` reste, bien qu'`intervenantId()` la couvre : elle ne peut
+         * qu'ACCORDER l'accès, jamais le refuser, et la retirer changerait le comportement pour
+         * une ligne dont les colonnes d'intervenant se contrediraient.
+         */
         $isProvider = (int) ($booking->intervenantId() ?? 0) === (int) $user->id
-                   || (int) ($booking->provider_user_id ?? 0) === (int) $user->id
                    || (int) ($booking->assigned_employee_id ?? 0) === (int) $user->id;
         abort_unless($isProvider, 403, 'Not assigned to this booking.');
     }

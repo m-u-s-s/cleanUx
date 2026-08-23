@@ -137,7 +137,14 @@ class DataErasureServiceTest extends TestCase
             'adresse' => '12 rue Secrète',
             'ville' => 'Bruxelles',
             'code_postal' => '1000',
-            'notes' => 'Code portail 1234',
+            // `notes` n'est écrite par aucun code : la consigne du client vit ici.
+            'commentaire_client' => 'Code portail 1234',
+            'telephone_client' => '+32470112233',
+            'contact_email' => 'bob@example.com',
+            'beneficiary_name' => 'Maman de Bob',
+            'beneficiary_phone' => '+32470445566',
+            'destination_lat' => 50.8467,
+            'destination_lng' => 4.3525,
         ]);
 
         $feedback = Feedback::factory()->create([
@@ -190,12 +197,29 @@ class DataErasureServiceTest extends TestCase
 
         app(DataErasureService::class)->anonymizeUser($user);
 
-        // Booking PII scrubbed, accounting row preserved.
+        /*
+         * LES DEUX CÔTÉS DE CHAQUE PAIRE, PAS SEULEMENT LE FRANÇAIS.
+         *
+         * Ce test n'affirmait que `adresse`, `ville`, `code_postal` et `notes`. Or `bookings`
+         * porte quinze paires FR/EN et l'effacement passe par le constructeur de requêtes, qui ne
+         * déclenche PAS `HasLegacyBookingAliases` : `adresse` était vidée pendant que `address`
+         * gardait « 12 rue Secrète ». Le test était vert et l'adresse restait en base.
+         */
         $freshBooking = $booking->fresh();
-        $this->assertNull($freshBooking->adresse);
-        $this->assertNull($freshBooking->ville);
-        $this->assertNull($freshBooking->code_postal);
-        $this->assertNull($freshBooking->notes);
+        foreach ([
+            'adresse', 'address',
+            'ville', 'city',
+            'code_postal', 'postal_code',
+            'commentaire_client', 'customer_comment',
+            'telephone_client', 'contact_phone',
+            'contact_email',
+            'beneficiary_name', 'beneficiary_phone',
+            'destination_lat', 'destination_lng',
+        ] as $colonne) {
+            $this->assertNull($freshBooking->{$colonne}, "La colonne `{$colonne}` a survécu à l'effacement.");
+        }
+
+        // La ligne comptable, elle, survit : c'est l'obligation légale de conservation.
         $this->assertSame('termine', $freshBooking->status);
         $this->assertEquals(80, (float) $freshBooking->devis_estime);
 
