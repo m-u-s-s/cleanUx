@@ -1,184 +1,122 @@
-# Brio Architecture — C4 Diagrams
+# Architecture
 
-## Level 1 — System Context
+Cette page décrit les couches, ce qui décide quoi, et les choix structurants que vous devez
+connaître avant de modifier le code.
 
-```
-+------------------+         books service          +-------------------+
-|                  |  --------------------------->  |                   |
-|   Client         |                                |                   |
-|   (Personal /    |  <---------------------------  |                   |
-|    Company)      |    confirmation / live track   |                   |
-+------------------+                                |                   |
-                                                    |    C l e a n U x  |
-+------------------+         accepts mission        |                   |
-|                  |  --------------------------->  |    (SaaS OS for   |
-|   Provider       |                                |  multi-trade      |
-|   (Independent / |  <---------------------------  |  services)        |
-|    Company)      |    dispatch / QR / payout      |                   |
-+------------------+                                |                   |
-                                                    |                   |
-+------------------+         manages platform       |                   |
-|                  |  --------------------------->  |                   |
-|   Admin /        |                                |                   |
-|   Zone Mgr       |  <---------------------------  |                   |
-+------------------+    analytics / alerts          +-------------------+
-                                                          |   |   |   |
-              +-------------------------------------------+   |   |   |
-              |           +-------------------------------+   |   |   |
-              v           v                               |   v   |   |
-     +---------+   +-----------+                  +------+   |   v   |
-     | Stripe  |   |  Twilio   |                  |  FCM /   | ECB/  |
-     | Payments|   |  SMS      |                  |  APNs    | Open  |
-     +---------+   +-----------+                  +------+   | Exch  |
-                                                             +-------+
-              +--------+    +----------+    +----------+
-              | Google |    |  Onfido/ |    |  Hiscox/ |
-              | Maps / |    |  Veriff  |    |  Wakam   |
-              | Mapbox |    |  (KYC)   |    | (Insur.) |
-              +--------+    +----------+    +----------+
-```
-
-**External systems:**
-
-| System | Purpose |
-|--------|---------|
-| Stripe | Payment intents, refunds, Connect transfers, subscriptions |
-| Twilio | SMS OTP + notifications |
-| Google Maps / Mapbox | Geocoding, autocomplete, distance matrix |
-| FCM / APNs | Mobile push notifications |
-| Onfido / Veriff / SumSub | KYC identity verification |
-| Hiscox / Wakam | Intervention insurance |
-| ECB / OpenExchangeRates | FX rate feeds |
-
----
-
-## Level 2 — Container Diagram
+## Les couches
 
 ```
-+----------------------------------------------------------+
-|                     Brio System                       |
-|                                                          |
-|  +------------------+      +-------------------------+  |
-|  |  Web Application |      |  REST / JSON API        |  |
-|  |  Laravel 11 +    |      |  Laravel (same app,     |  |
-|  |  Livewire 3      |      |  routes/api.php)        |  |
-|  |  Blade / Vite    |      |  Sanctum auth           |  |
-|  |                  |<---->|                         |  |
-|  | Admin, B2B,      |      | Mobile clients,         |  |
-|  | Provider,        |      | B2B integrations,       |  |
-|  | Client portals   |      | Webhooks inbound        |  |
-|  +------------------+      +-------------------------+  |
-|           |                          |                   |
-|           +----------+  +-----------+                   |
-|                      v  v                               |
-|               +---------------+                         |
-|               |   MySQL 8     |  Primary datastore       |
-|               |  (production) |  All domain tables       |
-|               +---------------+                         |
-|                      |                                  |
-|               +---------------+                         |
-|               |  Redis 7      |  Cache, queues,         |
-|               |               |  rate limiting,         |
-|               |               |  session                |
-|               +---------------+                         |
-|                      |                                  |
-|               +---------------+                         |
-|               |  Queue Worker |  Laravel Horizon /      |
-|               |  (Redis)      |  php artisan queue:work |
-|               +---------------+                         |
-|                      |                                  |
-|               +---------------+                         |
-|               | WebSocket     |  Laravel Reverb         |
-|               | Server        |  (Pusher protocol)      |
-|               | (Reverb)      |  Presence, live ETA,    |
-|               +---------------+  chat, broadcasts       |
-|                                                          |
-|  +-----------------------+  +------------------------+  |
-|  | Mobile Client App     |  | Mobile Provider App    |  |
-|  | React Native / Expo   |  | React Native / Expo    |  |
-|  | (iOS + Android)       |  | (iOS + Android)        |  |
-|  | Phase 1 — B2C clients |  | Phase 2 — Providers    |  |
-|  +-----------------------+  +------------------------+  |
-+----------------------------------------------------------+
+   Navigateur                    Applications mobiles
+        │                                │
+   Livewire 3                        API Sanctum
+   (239 composants)                  (546 routes)
+        │                                │
+        └───────────┬────────────────────┘
+                    │
+              Services (496)
+        le métier vit ici, pas ailleurs
+                    │
+              Modèles Eloquent (297)
+                    │
+              MySQL · 184 migrations
 ```
 
----
+**Le métier vit dans `app/Services`.** Un composant Livewire et un contrôleur d'API font la même
+chose : ils valident une entrée, appellent un service, rendent un résultat. Quand la même règle
+existe aux deux endroits, elle finit par diverger — c'est arrivé plusieurs fois sur ce dépôt, et
+chaque fois c'est le chemin le moins emprunté qui portait le défaut.
 
-## Level 3 — Component: Booking Flow
+## Ce qui décide quoi
 
-```
-Client submits booking form
-        |
-        v
-[BookingController::store()]
-  - Validate trade form answers
-  - Run TradePricingEngine::estimate()     <-- ServiceCatalog > ZonePricing > TradeDefault
-  - Create Booking (status: pending)
-        |
-        v
-[MatchingV2Engine::dispatch()]
-  - Score providers (availability, rating, zone, skills)
-  - Create mission_dispatch_attempts rows
-  - Broadcast dispatch events via Reverb
-        |
-        v
-[Provider receives dispatch]
-  - Accepts or rejects within SLA
-        |
-      accept
-        |
-        v
-[Booking status: confirmed]
-  - Stripe pre-auth PaymentIntent created
-  - SMS/Push notification to client
-  - Calendar entry created
-        |
-        v
-[Provider en-route]
-  - TripTrackingService::startSession()
-  - Live ETA broadcast every ping
-  - Client sees map via ClientLiveTrackingMap
-        |
-        v
-[Provider arrives — QR scan start]
-  - Booking status: in_progress
-  - Quality checklist unlocked
-        |
-        v
-[Mission execution]
-  - Quality inspection (checklist items, photos)
-  - Chat v2 available (client <-> provider)
-        |
-        v
-[Provider QR scan end]
-  - Booking status: completed
-  - PaymentIntent captured
-  - TipService::suggestionsForBooking()
-  - LoyaltyEngine::creditBooking()
-  - RatingRequest dispatched (48h reveal)
-  - ProviderBadgeEngine::evaluate()
-  - ProviderWallet credited (net of commission)
-        |
-        v
-[Post-booking]
-  - NPS survey after 2h
-  - Rating revealed after 48h (blind Uber style)
-  - Invoice generated (AccountingV2)
-  - Webhooks outbound to B2B subscribers
-```
+| Question | Qui répond | Où |
+|---|---|---|
+| Ce métier est-il vendu dans cette zone ? | `trade_zone_pricing` | une ligne absente = fermé |
+| Combien coûte cette commande ? | `PricingEngine` | `app/Services/OrderEngine` |
+| Quelle devise ? | `CountryMarketResolver` | déduite de la position, jamais codée en dur |
+| Qui peut prendre cette mission ? | `CandidateFinder` | `app/Services/Dispatch` |
+| Ce prestataire est-il en ligne ? | `provider_presence` | Presence v2 fait foi |
+| Qui intervient sur cette réservation ? | `Booking::intervenantId()` | trois colonnes de repli, dans cet ordre |
+| Cet utilisateur a-t-il ce droit ? | `PermissionService` | jamais un `where('role', …)` écrit à la main |
 
----
+Quand vous cherchez « où est décidé X », commencez par ce tableau.
 
-## Key Architectural Decisions
+## Les cinq choix structurants
 
-See `docs/decisions/` for full ADRs. Summary:
+### 1. Le catalogue ne connaît aucun métier en dur
 
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| Framework | Laravel 11 + Livewire 3 | Full-stack SSR with reactive components, no SPA overhead for admin/B2B |
-| Mobile | React Native + Expo (monorepo /mobile) | Native performance for B2C terrain flows; ADR 2026-05-24 |
-| Realtime | Laravel Reverb (Pusher protocol) | Self-hosted, no external dependency for websockets |
-| Auth | Laravel Sanctum | SPA + mobile token auth, simple and well-tested |
-| Queue | Redis + Laravel Horizon | Reliable async for payments, notifications, webhooks |
-| Payments | Stripe | PaymentIntents pre-auth model, Connect for provider payouts |
-| Search | MySQL LIKE + Haversine | Sufficient for current scale; Typesense/Meilisearch if >500k records |
+`SECTEUR → MÉTIER → QUESTIONS` est entièrement en base. Ajouter un métier ne demande aucune ligne
+de PHP : vous créez le métier, ses questions, ses lignes de tarif, et il apparaît.
+
+Conséquence : un métier sans `sector_id` est **invisible**, un métier sans ligne dans
+`trade_zone_pricing` est **fermé**. Ces deux cas sont silencieux et ne lèvent aucune erreur. Deux
+tests les gardent.
+
+### 2. Le prix avant l'identité
+
+Un visiteur obtient son prix sans compte. L'identité n'est demandée qu'à la confirmation. Le
+panier vit dans `order_drafts`, rattaché à un jeton de session, et devient une réservation à la
+dernière étape.
+
+Le devis est **figé** au moment du clic : recalculer plus tard exposerait le client à un montant
+différent de celui qu'il a accepté.
+
+### 3. Deux moteurs de mission
+
+Une réservation devient une ou plusieurs missions. Le mode décide du moteur :
+
+- **Immédiat (`asap`)** — chaîne d'offres, TTL 20 secondes, vagues successives, diffusion
+  temps réel. Le premier prestataire qui accepte emporte la mission.
+- **Planifié (`scheduled`)** — attribution différée, le prestataire reçoit une proposition.
+
+Une seule porte d'entrée : `DispatchEngine::dispatchBooking()`. Il y en a eu deux pendant un
+temps, et une même course sortait par les deux — deux prestataires se déplaçaient.
+
+### 4. L'argent va directement au prestataire
+
+Stripe Connect en **charge à destination** : le client paie, Stripe crédite le compte du
+prestataire et prélève la commission de la plateforme au passage.
+
+Il n'y a donc **pas de virement à exécuter**. Un `Stripe\Payout` déclenché par la plateforme
+paierait une seconde fois. Le registre de règlement atteste ce qui s'est passé ; il ne pilote
+rien.
+
+### 5. La géographie décide de la devise et de la langue
+
+`DeviseParPays` connaît 61 devises. La devise d'une commande vient de la zone de service, pas
+d'un défaut de colonne. Sept langues sont configurées, six actives ; le catalogue est traduit
+dans les cinq langues actives autres que le français.
+
+## Les surfaces
+
+| Surface | Technologie | Entrée |
+|---|---|---|
+| Web client | Livewire + Blade | `routes/web.php` |
+| Web administration | Livewire | `routes/admin.php` |
+| API client | Sanctum | `routes/api/client.php` |
+| API prestataire | Sanctum | `routes/api/provider.php` |
+| API administration | Sanctum + portée de rôle | `routes/api/admin.php` |
+| Temps réel | Reverb (WebSocket) | `routes/channels.php` |
+
+Les deux applications mobiles (`mobile/client`, `mobile/provider`) consomment l'API. Elles ne
+partagent aucun code PHP avec le serveur : le contrat est le JSON.
+
+## Les gardes
+
+Ces règles sont vérifiées par des tests qui balaient **tout** le dépôt, pas une liste tenue à la
+main :
+
+| Garde | Ce qu'il empêche |
+|---|---|
+| `tests/Feature/Schema/LesModelesConcordentAvecLeSchema` | Un `$fillable` ou un `$casts` qui désigne une colonne inexistante |
+| `tests/Feature/Catalogue/ChaqueMetierAppartientAUnSecteur` | Un métier tarifé mais invisible |
+| `tests/Feature/Catalogue/LeCatalogueEstTraduit…` | Un catalogue qui redevient monolingue |
+| `tests/Feature/Ops/ConfigParityCheck` | Un déploiement qui migre avant d'avoir validé |
+| `tests/Feature/Devops/AucunPortailNestPassif` | Un job de CI dont le verdict ne compte plus |
+
+Quand vous ajoutez une règle structurante, ajoutez le garde qui la tient.
+
+## Ensuite
+
+- [Domaine](domaine.md) — le vocabulaire précis
+- [Parcours](parcours.md) — la chaîne complète, du clic au paiement
+- [Données](donnees.md) — comment le schéma est organisé

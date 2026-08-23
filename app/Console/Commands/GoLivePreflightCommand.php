@@ -55,7 +55,7 @@ class GoLivePreflightCommand extends Command
         $this->line('  • D2 — Money spine (PaymentIntent → capture → transfer → réconciliation)');
         $this->line('  • D3 — Webhooks (idempotence + retry)');
         $this->line('  • D4 — Refund / Cancel / Tip (vérifier la génération d\'avoir)');
-        $this->line('  Renseigner les tableaux de résultats dans docs/runbooks/GO-LIVE-RUNBOOK.md.');
+        $this->line('  Renseigner les tableaux de résultats dans docs/exploitation.md.');
 
         $this->newLine();
         if ($gateFailures !== []) {

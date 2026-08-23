@@ -177,14 +177,14 @@ class DeploiementFilesEtOrdonnanceurTest extends TestCase
 
             $this->assertTrue(
                 $connexion === null || $connexion === $attendue,
-                sprintf('QUEUE_CRON_SCHEDULER.md ligne %d documente la connexion « %s » au lieu de « %s ».', $numero + 1, (string) $connexion, $attendue)
+                sprintf('docs/exploitation.md ligne %d documente la connexion « %s » au lieu de « %s ».', $numero + 1, (string) $connexion, $attendue)
             );
 
             $this->assertStringContainsString(
                 '--queue=',
                 $ligne,
                 sprintf(
-                    'QUEUE_CRON_SCHEDULER.md ligne %d documente un worker SANS --queue : il ne draine alors que '.
+                    'docs/exploitation.md ligne %d documente un worker SANS --queue : il ne draine alors que '.
                     '« default » et abandonne les webhooks Stripe/KYC/SMS/assurance et l\'antivirus.',
                     $numero + 1
                 )
@@ -216,7 +216,7 @@ class DeploiementFilesEtOrdonnanceurTest extends TestCase
             }
 
             if (! str_contains($doc, $commande)) {
-                $ecarts[] = "{$commande} : absente de l inventaire QUEUE_CRON_SCHEDULER.md";
+                $ecarts[] = "{$commande} : absente de l inventaire docs/exploitation.md";
             }
         }
 
@@ -382,6 +382,6 @@ class DeploiementFilesEtOrdonnanceurTest extends TestCase
 
     protected function documentation(): string
     {
-        return File::get(base_path('docs/production/QUEUE_CRON_SCHEDULER.md'));
+        return File::get(base_path('docs/exploitation.md'));
     }
 }

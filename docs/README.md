@@ -1,175 +1,53 @@
-# Brio
+# Documentation Brio
 
-Plateforme Laravel/Livewire de gestion opérationnelle pour services terrain : réservation, couverture par zones, multi-rôles, multi-sites entreprise, finance, rappels, qualité et pilotage admin.
+Neuf pages. Chacune couvre un sujet en entier — vous n'avez pas à en ouvrir trois pour
+comprendre une chose.
 
-Le projet n'est plus un simple site de prise de rendez-vous. Il s'agit désormais d'un noyau de plateforme structuré pour :
-- gérer une couverture par zones en Belgique,
-- affecter des employés selon la zone et la disponibilité,
-- proposer des parcours distincts admin / client / employé,
-- gérer des comptes entreprise multi-sites,
-- produire des devis / factures / exports,
-- synchroniser Google Calendar,
-- contrôler l'intégrité métier via audit et seed profiles.
+## Par où commencer
 
-## Stack technique
+**Vous découvrez le dépôt** → [Démarrer](demarrer.md), puis [Architecture](architecture.md).
 
-- **Backend** : Laravel, Eloquent, Policies, Notifications, Scheduler, Jobs
-- **UI** : Livewire, Blade, Tailwind, Alpine.js
-- **Auth** : Jetstream / Fortify / Sanctum
-- **Build front** : Vite
-- **Exports PDF** : barryvdh/laravel-dompdf
-- **Paiement premium** : Laravel Cashier / Stripe
-- **Calendrier** : Google Calendar sync + FullCalendar côté UI
+**Vous devez corriger un défaut** → [Domaine](domaine.md) pour le vocabulaire, puis
+[Parcours](parcours.md) pour situer le code dans la chaîne.
 
-## Ce que couvre la plateforme
+**Vous intégrez l'API** → [API](api.md).
 
-### 1. Réservation zone-aware
-- résolution de zone selon code postal / ville / site entreprise,
-- vérification de la couverture,
-- validation des règles de zone et de service,
-- affectation employé compatible,
-- snapshots de zone et pricing sur le rendez-vous,
-- gestion des occurrences récurrentes.
+**Vous mettez en production** → [Exploitation](exploitation.md).
 
-### 2. Portails par rôle
-- **Admin** : dashboard, zones, entreprises, finance, analytics, modules, qualité, audit logs
-- **Client** : nouveau rendez-vous, historique, profil, finance, litiges, favoris employés
-- **Employé** : planning, missions, disponibilités, Google Agenda, incidents, historique
+## Les neuf pages
 
-### 3. Gestion entreprise
-- comptes organisation,
-- sites multiples,
-- utilisateurs rattachés,
-- priorités de zones,
-- règles contractuelles,
-- workflow avancé de réservation enterprise.
+| Page | Répond à |
+|---|---|
+| [Démarrer](demarrer.md) | Comment j'installe et je lance ? Que dois-je voir ? |
+| [Architecture](architecture.md) | Qui décide quoi ? Pourquoi c'est fait ainsi ? |
+| [Domaine](domaine.md) | Que veut dire « métier », « zone », « mission » ici ? |
+| [Parcours](parcours.md) | Que se passe-t-il entre le clic et le paiement ? |
+| [API](api.md) | Comment j'authentifie et j'appelle ? |
+| [Données](donnees.md) | Où vit quoi ? Comment je migre sans casser ? |
+| [Tests](tests.md) | Comment je lance ? Comment j'écris un test utile ? |
+| [Exploitation](exploitation.md) | Comment je déploie et je surveille ? |
+| [Conventions](conventions.md) | Comment j'écris du code accepté ici ? |
 
-### 4. Pilotage et exploitation
-- commandes d'audit,
-- seed profiles (`demo`, `reference`, `production`),
-- health checks production,
-- heartbeat supervision,
-- rappels automatiques,
-- sync finance,
-- sync Google Calendar.
+## Ce que cette documentation n'est pas
 
-## Structure du projet
+Elle ne raconte pas l'histoire du projet. Les décisions passées, les défauts corrigés et leur
+raison vivent dans **l'historique Git** : chaque message de commit explique ce qui n'allait pas,
+comment on l'a mesuré et pourquoi la correction prend cette forme.
 
-### Dossiers importants
-- `app/Models` : entités métier (`User`, `RendezVous`, `ServiceZone`, `OrganizationAccount`, etc.)
-- `app/Services` : logique métier (booking, finance, calendrier, notifications, enterprise)
-- `app/Livewire` : écrans interactifs par rôle
-- `app/Console/Commands` : audit, seed, ops, maintenance
-- `database/migrations` : structure de la plateforme
-- `database/seeders` : référentiel, bootstrap démo, production
-- `resources/views` : Blade, exports, PDF, composants visuels
-- `routes/web.php` : portail public + admin/client/employé
-- `docs/` : documentation technique et exploitation
-
-## Installation locale
-
-### Prérequis
-- PHP 8.5 obligatoire
-- Composer
-- Node.js 20+
-- MySQL 8+ ou MariaDB compatible
-
-### Installation
 ```bash
-composer install
-npm install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate:fresh --seed
-npm run dev
-php artisan serve
+git log --oneline                       # la chronologie
+git log --grep="dispatch" -p            # tout ce qui a touché la répartition
+git blame app/Services/…/Fichier.php    # qui a écrit cette ligne, et dans quel commit
 ```
 
-### Démarrage recommandé en environnement de travail
-```bash
-php artisan optimize:clear
-php artisan app:seed-platform demo --fresh
-php artisan app:prepare-fresh-seed --strict
-php artisan app:audit-platform-integrity --fail-on-issues
-php artisan test
-```
+Cherchez le pourquoi dans Git. Cherchez le quoi ici.
 
-## Profils de seed
+## Tenir cette documentation à jour
 
-Le projet gère trois profils :
-- `demo` : référentiel + données démo cohérentes
-- `reference` : référentiel seulement
-- `production` : bootstrap minimal sans comptes démo
+Ces pages décrivent un état **mesuré**, pas un état souhaité. Quand vous changez la plateforme :
 
-Exemples :
-```bash
-php artisan app:seed-platform demo --fresh
-php artisan app:seed-platform reference --fresh
-php artisan app:seed-platform production --fresh --force
-```
+1. Vérifiez si une page devient fausse — un chiffre, un nom de table, un chemin.
+2. Corrigez-la dans le même commit que le code.
+3. Ne créez pas de dixième page. Complétez celle qui traite déjà le sujet.
 
-Le profil actif est piloté par `config/brio.php` et les variables :
-- `BRIO_SEED_PROFILE`
-- `BRIO_SEED_DEFAULT_PROFILE`
-
-## Commandes utiles
-
-### Intégrité / audit
-```bash
-php artisan app:prepare-fresh-seed --strict
-php artisan app:audit-platform-integrity --fail-on-issues
-php artisan app:production-health-check --strict
-php artisan app:ops-heartbeat --json
-```
-
-### Booking / exploitation
-```bash
-php artisan app:send-rendezvous-reminders
-php artisan google-calendar:sync --future-days=30
-php artisan finance:sync-documents
-php artisan finance:sync-documents --reminders
-```
-
-### Nettoyage / maintenance
-```bash
-php artisan livewire:verify
-php artisan livewire:missing-views
-php artisan livewire:unused
-php artisan livewire:unused-includes
-php artisan app:cleanup-report
-```
-
-## Qualité projet
-
-État actuellement visé :
-- `migrate:fresh --seed` doit passer,
-- la suite de tests doit rester verte,
-- l'audit d'intégrité ne doit pas remonter d'anomalie bloquante,
-- les snapshots de réservation/finance doivent rester cohérents,
-- les zones et règles doivent être liées à des références structurées.
-
-## Docs à lire ensuite
-
-- `docs/ARCHITECTURE_OVERVIEW.md`
-- `docs/LOCAL_SETUP.md`
-- `docs/SEED_AND_AUDIT_GUIDE.md`
-- `docs/BOOKING_ZONE_AWARE.md`
-- `docs/ROLE_PORTALS_AND_PERMISSIONS.md`
-- `docs/DEPLOYMENT_CHECKLIST.md`
-- `docs/PRODUCTION_RUNBOOK.md`
-
-## Règles de livraison recommandées
-
-Ne pas livrer un zip source avec :
-- `.env`
-- `vendor/`
-- `node_modules/`
-
-Préférer :
-- `.env.example`
-- `.env.production.example`
-- le code source,
-- les migrations,
-- les seeders,
-- les tests,
-- la documentation.
+Une page qui vieillit ment. Mieux vaut neuf pages justes que cinquante approximatives.
