@@ -290,9 +290,14 @@ class TradePricingEngineTest extends TestCase
 
         $result = $this->engine->estimate($service, []);
 
-        foreach (['billing_unit', 'unit_price', 'quantity', 'surge_multiplier', 'subtotal', 'currency', 'zone_pricing_applied'] as $key) {
-            $this->assertArrayHasKey($key, $result, "Missing key: {$key}");
-        }
+        // Les sept cles verifiees ensemble : un devis ampute l'est rarement d'une seule ligne, et
+        // chaque manque est un montant que l'ecran ne saura pas afficher.
+        $manquantes = array_values(array_filter(
+            ['billing_unit', 'unit_price', 'quantity', 'surge_multiplier', 'subtotal', 'currency', 'zone_pricing_applied'],
+            fn (string $k) => ! array_key_exists($k, $result),
+        ));
+
+        $this->assertSame([], $manquantes, 'Ces cles manquent au devis rendu par le moteur de prix.');
 
         $this->assertSame('EUR', $result['currency']);
         $this->assertFalse($result['zone_pricing_applied']);

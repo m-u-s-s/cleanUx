@@ -333,12 +333,14 @@ class ParcoursSousRolesTest extends TestCase
             'Un demandeur qui ne peut pas commander n’a plus de rôle.',
         );
 
-        foreach (['bookings.approve', 'missions.assign', 'finance.view'] as $interdite) {
-            $this->assertFalse(
-                $permissions->can($demandeur, $interdite, $this->societe),
-                "Le demandeur dispose de « {$interdite} », qui dépasse son rôle.",
-            );
-        }
+        // Les trois capacites relevees ensemble : un role trop large les accorde TOUTES, et la
+        // liste dit s'il s'agit d'un depassement ponctuel ou d'un role mal borne.
+        $accordees = array_values(array_filter(
+            ['bookings.approve', 'missions.assign', 'finance.view'],
+            fn (string $c) => $permissions->can($demandeur, $c, $this->societe),
+        ));
+
+        $this->assertSame([], $accordees, 'Le demandeur dispose de ces capacites, qui depassent son role.');
     }
 
     /**

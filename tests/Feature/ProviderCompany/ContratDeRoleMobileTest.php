@@ -256,6 +256,11 @@ class ContratDeRoleMobileTest extends TestCase
             ->assertOk()
             ->json('user');
 
+        // Les cinq champs releves ensemble : un contrat qui derive entre connexion et reprise
+        // derive sur PLUSIEURS champs, et l'application mobile se retrouve alors avec un role
+        // partiellement faux — c'est la liste qui dit lequel.
+        $divergences = [];
+
         foreach ([
             'organization_account_id',
             'organization_type',
@@ -263,12 +268,20 @@ class ContratDeRoleMobileTest extends TestCase
             'organization_permissions',
             'can_manage_company',
         ] as $champ) {
-            $this->assertSame(
-                $aLaReprise[$champ],
-                $aLaConnexion[$champ] ?? null,
-                "Le champ {$champ} diffère entre la connexion et la reprise de session.",
-            );
+            $reprise = $aLaReprise[$champ];
+            $connexion = $aLaConnexion[$champ] ?? null;
+
+            if ($reprise !== $connexion) {
+                $divergences[] = sprintf(
+                    '%s : connexion %s, reprise %s',
+                    $champ,
+                    json_encode($connexion, JSON_UNESCAPED_UNICODE),
+                    json_encode($reprise, JSON_UNESCAPED_UNICODE),
+                );
+            }
         }
+
+        $this->assertSame([], $divergences, 'Le contrat de role differe entre la connexion et la reprise de session.');
     }
 
     public function test_la_connexion_annonce_desormais_l_espace_a_ouvrir(): void

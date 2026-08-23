@@ -51,6 +51,11 @@ class NavigationAccessibilityP1Test extends TestCase
      */
     public function test_core_admin_pages_remain_in_nav(): void
     {
+        // Les cinq routes relevees ensemble : un catalogue en retard l'est sur plusieurs entrees
+        // a la fois, et chacune est un ecran qu'aucun menu n'atteint.
+        $cases = collect(config('modules.catalogue'))->where('context', 'admin')->pluck('route')->all();
+        $ecarts = [];
+
         foreach ([
             'admin.utilisateurs.manage',
             'admin.modules',
@@ -58,7 +63,13 @@ class NavigationAccessibilityP1Test extends TestCase
             'admin.automation',
             'admin.b2b.operations',
         ] as $nomDeRoute) {
-            $this->assertDansLeCatalogue($nomDeRoute, 'admin');
+            if (! Route::has($nomDeRoute)) {
+                $ecarts[] = "{$nomDeRoute} : route non enregistree";
+            } elseif (! in_array($nomDeRoute, $cases, true)) {
+                $ecarts[] = "{$nomDeRoute} : aucune case dans le contexte « admin »";
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Ces ecrans ne sont atteignables par aucun menu.');
     }
 }

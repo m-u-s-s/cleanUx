@@ -414,25 +414,33 @@ class UploadImageSvgXssTest extends TestCase
             'app/Livewire/Provider/Onboarding/ProviderOnboardingWizard.php',
         ];
 
+        /*
+         * TOUS LES POINTS DE TELEVERSEMENT FAUTIFS D'UN COUP.
+         *
+         * Les trois photos de profil visent le MEME disque public : des que l'une d'elles porte sa
+         * propre liste, c'est la plus permissive des trois qui definit la surface d'attaque. Savoir
+         * qu'une seule a decroche ne dit donc rien de la surface reelle — c'est la liste entiere
+         * qu'il faut lire.
+         *
+         * On accumule des LIBELLES et non le fichier entier : `assertStringContainsString` aurait
+         * deverse tout le source dans le rapport, noyant le message qui dit quoi faire.
+         */
+        $fautifs = [];
+
         foreach ($fichiers as $fichier) {
             $source = (string) file_get_contents(base_path($fichier));
 
-            // `assertTrue` et non `assertStringContainsString` : ce dernier déverse tout le fichier
-            // dans le rapport d'échec, ce qui noie le message qui dit quoi faire.
-            $this->assertTrue(
-                str_contains($source, 'ImagesTeleversees::regles('),
-                "{$fichier} n'appelle plus la liste partagée. Les trois photos de profil visent le ".
-                'même disque public : dès que l\'une d\'elles porte sa propre liste, c\'est la plus '.
-                'permissive des trois qui définit la surface d\'attaque.',
-            );
+            if (! str_contains($source, 'ImagesTeleversees::regles(')) {
+                $fautifs[] = "{$fichier} : n appelle plus la liste partagee";
+            }
 
-            $this->assertFalse(
-                str_contains($source, "'image'"),
-                "{$fichier} est revenu à la règle `image` de Laravel. Elle vaut la nôtre aujourd'hui, ".
-                "d'où l'absence d'échec fonctionnel — mais sa définition vit dans `vendor/` et rien ".
-                "chez nous ne l'empêche d'accueillir le svg à la prochaine montée de version.",
-            );
+            if (str_contains($source, "'image'")) {
+                $fautifs[] = "{$fichier} : revenu a la regle `image` de Laravel, dont la definition "
+                    .'vit dans vendor/ et peut accueillir le svg a la prochaine montee de version';
+            }
         }
+
+        $this->assertSame([], $fautifs, 'Ces points de televersement echappent a la liste partagee.');
     }
 
     /**

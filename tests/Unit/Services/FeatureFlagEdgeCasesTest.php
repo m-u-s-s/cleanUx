@@ -60,10 +60,15 @@ class FeatureFlagEdgeCasesTest extends TestCase
         $user = User::factory()->create();
         $first = $this->service->isEnabled('stable_rollout', $user);
 
+        // Dix tirages releves puis compares d'un coup : si le resultat oscille, on veut savoir
+        // COMBIEN de fois et a quels rangs — un tirage instable se reconnait a son motif.
+        $tirages = [];
+
         for ($i = 0; $i < 10; $i++) {
-            $this->assertSame($first, $this->service->isEnabled('stable_rollout', $user),
-                "Rollout must be deterministic on call $i");
+            $tirages[] = $this->service->isEnabled('stable_rollout', $user);
         }
+
+        $this->assertSame(array_fill(0, 10, $first), $tirages, 'Le deploiement progressif doit etre deterministe pour un meme compte.');
     }
 
     public function test_different_flags_can_produce_different_outcomes_for_same_user(): void

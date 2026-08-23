@@ -142,7 +142,9 @@ class MessagesLisiblesTest extends TestCase
     {
         app()->setLocale($locale);
 
-        foreach ([
+        // Les huit cles relevees ensemble : un fichier de langue absent les laisse TOUTES
+        // intraduites, et une assertion par tour n'en nommerait qu'une.
+        $intraduites = array_values(array_filter([
             'auth.failed',
             'auth.password',
             'auth.throttle',
@@ -151,9 +153,9 @@ class MessagesLisiblesTest extends TestCase
             'passwords.throttled',
             'passwords.token',
             'passwords.user',
-        ] as $cle) {
-            $this->assertNotSame($cle, Lang::get($cle), "La clé {$cle} n'est pas traduite en « {$locale} ».");
-        }
+        ], fn (string $cle) => Lang::get($cle) === $cle));
+
+        $this->assertSame([], $intraduites, "Ces cles ne sont pas traduites en « {$locale} » : l utilisateur verra la cle brute.");
     }
 
     /**

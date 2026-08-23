@@ -199,37 +199,54 @@ class LaDeviseSuitLaPositionTest extends TestCase
             'app/Http/Controllers/Api/Client/BookingEstimateController.php',
         ];
 
+        /*
+         * TOUS LES ÉCRIVAINS FAUTIFS D'UN COUP.
+         *
+         * C'est ici que ça compte le plus : une devise qui redevient codée en dur le redevient
+         * généralement sur PLUSIEURS chemins de création à la fois — quelqu'un ajoute `'EUR'` là
+         * où il en a besoin, puis ailleurs. Savoir qu'un fichier a décroché ne dit rien de la
+         * divergence réelle, qui est précisément ce que ce test existe pour empêcher.
+         */
+        $fautifs = [];
+
         foreach ($ecrivains as $chemin) {
             $source = (string) file_get_contents(base_path($chemin));
 
-            $this->assertNotSame('', $source, "{$chemin} est introuvable : le test ne mesure plus rien.");
+            if ($source === '') {
+                $fautifs[] = "{$chemin} : introuvable, le test ne mesure plus rien";
+
+                continue;
+            }
 
             /*
              * On cherche `'currency' => '…'` : une AFFECTATION littérale. Les mentions d'une devise
              * ailleurs — un repli documenté, un libellé — ne sont pas le sujet ; ce qui compte est
              * qu'aucun de ces fichiers ne DÉCIDE de la devise sans passer par le résolveur.
              */
-            $this->assertSame(
-                0,
-                preg_match("/'currency'\s*=>\s*'[A-Za-z]{3}'/", $source),
-                "{$chemin} fixe une devise en dur. Elle doit venir de "
-                .'`CountryMarketResolver::deviseAttendue()`, qui la déduit de la position.',
-            );
+            if (preg_match("/'currency'\s*=>\s*'[A-Za-z]{3}'/", $source) === 1) {
+                $fautifs[] = "{$chemin} : fixe une devise en dur";
+            }
 
             /*
-             * DEUX PORTES D'ENTREE SUR LA MEME AUTORITE, et les deux sont acceptables.
+             * DEUX PORTES D'ENTRÉE SUR LA MÊME AUTORITÉ, et les deux sont acceptables.
              *
              * `deviseAttendue()` sert aux appelants qui n'ont qu'une adresse ; `effectiveCurrency()`
-             * a ceux qui ont deja construit le contexte marche-pays -- c'est le cas de
+             * à ceux qui ont déjà construit le contexte marché-pays — c'est le cas de
              * `CreateBookingAction`, qui l'emploie aussi pour le taux de taxe et le multiplicateur.
-             * Exiger la premiere l'aurait fait passer par un detour sans rien gagner. Ce qui compte
-             * est qu'aucun fichier ne decide seul.
+             * Exiger la première l'aurait fait passer par un détour sans rien gagner. Ce qui compte
+             * est qu'aucun fichier ne décide seul.
              */
-            $this->assertTrue(
-                str_contains($source, 'deviseAttendue') || str_contains($source, 'effectiveCurrency'),
-                "{$chemin} n’appelle plus l’autorité commune : la divergence recommence.",
-            );
+            if (! str_contains($source, 'deviseAttendue') && ! str_contains($source, 'effectiveCurrency')) {
+                $fautifs[] = "{$chemin} : n'appelle plus l'autorité commune";
+            }
         }
+
+        $this->assertSame(
+            [],
+            $fautifs,
+            'La devise doit venir de `CountryMarketResolver`, qui la déduit de la position. '
+            .'Un fichier qui en décide seul rouvre la divergence que ce test ferme.',
+        );
     }
 
     /**

@@ -440,8 +440,14 @@ class AgencesEtReferentsTest extends TestCase
 
         $this->assertSame($premier->id, $choix['chosen_user_id']);
 
+        $fuites = [];
+
         foreach ($choix['candidates'] as $candidat) {
-            $this->assertArrayNotHasKey('agence', $candidat['detail']);
+            if (array_key_exists('agence', $candidat['detail'])) {
+                $fuites[] = $candidat['user_id'] ?? $candidat['id'] ?? '?';
+            }
         }
+
+        $this->assertSame([], $fuites, 'Ces candidats exposent leur agence alors que le detail ne doit pas la porter.');
     }
 }

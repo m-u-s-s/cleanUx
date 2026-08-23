@@ -98,8 +98,11 @@ class HumanReferenceTest extends TestCase
 
         // Le préfixe « CLX- » contient un L et un X, tous deux légitimes ; on ne teste donc que
         // les caractères interdits, qui n'y figurent pas.
-        foreach (['I', 'O', '0', '1'] as $interdit) {
-            $this->assertStringNotContainsString($interdit, $tirage);
-        }
+        $trouves = array_values(array_filter(
+            ['I', 'O', '0', '1'],
+            fn (string $interdit) => str_contains($tirage, $interdit),
+        ));
+
+        $this->assertSame([], $trouves, 'Ces caracteres se confondent a la lecture et ne doivent pas etre tires.');
     }
 }

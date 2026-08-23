@@ -137,14 +137,24 @@ class MultiTradeIntegrationTest extends TestCase
         $this->seed(TradeSeeder::class);
         $this->seed(MultiTradeDemoServicesSeeder::class);
 
+        // Les quatre métiers relevés ensemble : un semeur incomplet en laisse plusieurs sans
+        // service, et chacun est un métier qu'aucun client ne peut commander.
+        $sansService = [];
+
         foreach (['peinture', 'batiment', 'levage', 'jardinage'] as $slug) {
             $trade = Trade::where('slug', $slug)->firstOrFail();
-            $count = ServiceCatalog::where('trade_id', $trade->id)->count();
-            $this->assertGreaterThan(0, $count,
-                "Le trade '{$slug}' doit avoir au moins 1 service de démo. "
-                .'Vérifier database/seeders/MultiTradeDemoServicesSeeder.php.'
-            );
+
+            if (ServiceCatalog::where('trade_id', $trade->id)->count() === 0) {
+                $sansService[] = $slug;
+            }
         }
+
+        $this->assertSame(
+            [],
+            $sansService,
+            'Ces métiers n’ont aucun service de démonstration. '
+            .'Vérifier database/seeders/MultiTradeDemoServicesSeeder.php.',
+        );
     }
 
     public function test_demo_services_seeder_is_idempotent(): void

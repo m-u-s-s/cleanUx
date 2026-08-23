@@ -154,16 +154,32 @@ class TwilioSmsProviderCoverageBatch11Test extends TestCase
 
     public function test_map_webhook_event_maps_known_statuses(): void
     {
+        // Les quatre statuts releves ensemble : une correspondance de webhook mal branchee
+        // l'est sur plusieurs statuts, et chacun est un accuse de reception perdu.
+        $ecarts = [];
+
         foreach (['delivered', 'failed', 'undelivered', 'sent'] as $status) {
             $update = $this->provider()->mapWebhookEvent([
                 'MessageSid' => 'SM_'.$status,
                 'MessageStatus' => $status,
             ]);
 
-            $this->assertInstanceOf(SmsStatusUpdate::class, $update);
-            $this->assertSame('SM_'.$status, $update->externalId);
-            $this->assertSame($status, $update->status);
+            if (! $update instanceof SmsStatusUpdate) {
+                $ecarts[] = "{$status} : rend ".get_debug_type($update);
+
+                continue;
+            }
+
+            if ($update->externalId !== 'SM_'.$status) {
+                $ecarts[] = "{$status} : identifiant « {$update->externalId} »";
+            }
+
+            if ($update->status !== $status) {
+                $ecarts[] = "{$status} : statut rendu « {$update->status} »";
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Ces statuts de webhook ne sont pas correctement traduits.');
     }
 
     public function test_map_webhook_event_passes_through_unknown_status_and_errors(): void

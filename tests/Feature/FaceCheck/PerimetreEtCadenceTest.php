@@ -163,15 +163,25 @@ class PerimetreEtCadenceTest extends TestCase
         $prestataire = $this->prestataireEnrole();
         $profil = app(FaceCheckService::class)->profileFor($prestataire);
 
+        // Vingt-cinq tirages releves ensemble. Sur une cadence TIREE AU SORT, savoir qu'un
+        // tirage sort des bornes ne dit rien : c'est la DISTRIBUTION qui compte, et un generateur
+        // decale produit plusieurs valeurs fautives dont la liste revele le motif.
+        $horsBornes = [];
+
         for ($i = 0; $i < 25; $i++) {
             app(FaceCheckScheduler::class)->scheduleNext($profil);
             $profil->refresh();
 
             $heures = now()->diffInHours($profil->next_check_due_at, false);
 
-            $this->assertGreaterThanOrEqual(23, $heures, 'Jamais plus d\'un contrôle par 24 h.');
-            $this->assertLessThanOrEqual(72, $heures, 'Jamais plus de 3 jours sans contrôle.');
+            if ($heures < 23) {
+                $horsBornes[] = "tirage #{$i} : {$heures} h — plus d un controle par 24 h";
+            } elseif ($heures > 72) {
+                $horsBornes[] = "tirage #{$i} : {$heures} h — plus de 3 jours sans controle";
+            }
         }
+
+        $this->assertSame([], $horsBornes, 'La cadence tiree au sort sort de ses bornes.');
     }
 
     /**

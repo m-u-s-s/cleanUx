@@ -79,9 +79,12 @@ class ReferralServiceTest extends TestCase
         $user = User::factory()->create(['referral_code' => null]);
         $data = $this->service->getShareData($user, 'fr');
 
-        foreach (['referral_code', 'invite_url', 'share_message', 'rewards', 'stats'] as $key) {
-            $this->assertArrayHasKey($key, $data, "Missing key: $key");
-        }
+        $manquantes = array_values(array_filter(
+            ['referral_code', 'invite_url', 'share_message', 'rewards', 'stats'],
+            fn (string $k) => ! array_key_exists($k, $data),
+        ));
+
+        $this->assertSame([], $manquantes, 'Ces cles manquent au tableau de parrainage.');
     }
 
     public function test_get_share_data_falls_back_to_fr_template_for_unknown_locale(): void

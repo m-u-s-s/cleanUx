@@ -93,17 +93,18 @@ class MotDePasseCommunDesComptesSemesTest extends TestCase
     {
         $defaut = (string) config('brio.seed.password');
 
-        foreach (['e2e/helpers/auth.ts', 'tools/visual-qa/modules.mjs', 'scripts/embed_sweep.php'] as $relatif) {
-            $source = (string) file_get_contents(base_path($relatif));
+        // Les trois harnais releves ensemble. Chacun se connecte a des comptes semes : une valeur
+        // codee de leur cote echouerait a la connexion en accusant l'application, et non la
+        // divergence. Quand le mot de passe change, ce sont les TROIS qui decrochent.
+        $decroches = [];
 
-            // Le harnais se connecte à des comptes semés : une valeur codée de son côté échouerait
-            // à la connexion en accusant l'application, et non la divergence.
-            $this->assertStringContainsString(
-                $defaut,
-                $source,
-                "{$relatif} ne porte plus le mot de passe commun des comptes semés.",
-            );
+        foreach (['e2e/helpers/auth.ts', 'tools/visual-qa/modules.mjs', 'scripts/embed_sweep.php'] as $relatif) {
+            if (! str_contains((string) file_get_contents(base_path($relatif)), $defaut)) {
+                $decroches[] = $relatif;
+            }
         }
+
+        $this->assertSame([], $decroches, 'Ces harnais ne portent plus le mot de passe commun des comptes semes.');
     }
 
     #[Test]
