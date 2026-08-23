@@ -55,20 +55,21 @@ class LibellesTraduitsTest extends TestCase
             resource_path('views/livewire/shared/modules-directory.blade.php'),
         ];
 
+        // Toutes les vues fautives d'un coup : un libelle non traduit se recopie d'une vue a
+        // l'autre, et corriger la premiere ne dit rien des suivantes.
+        $brutes = [];
+
         foreach ($vues as $vue) {
             $contenu = (string) file_get_contents($vue);
 
-            $this->assertStringNotContainsString(
-                '{{ $link[\'label\'] }}',
-                $contenu,
-                basename($vue).' : le libellé doit passer par __()'
-            );
-            $this->assertStringNotContainsString(
-                '{{ $module[\'label\'] }}',
-                $contenu,
-                basename($vue).' : le libellé doit passer par __()'
-            );
+            foreach (['{{ $link[\'label\'] }}', '{{ $module[\'label\'] }}'] as $motif) {
+                if (str_contains($contenu, $motif)) {
+                    $brutes[] = basename($vue).' : '.$motif;
+                }
+            }
         }
+
+        $this->assertSame([], $brutes, 'Ces libelles ne passent pas par __() : ils resteront en francais.');
     }
 
     /** Un utilisateur anglophone voit la navigation en anglais, pas un mélange. */

@@ -70,9 +70,20 @@ class PermissionServiceTest extends TestCase
 
         $this->assertIsArray($result);
         $this->assertNotEmpty($result);
+        // Toutes les entrees mal typees d'un coup : une table de droits qui derape derape sur
+        // plusieurs entrees, et chacune se lit ensuite comme un droit accorde ou refuse a tort.
+        $malTypees = [];
+
         foreach ($result as $perm => $value) {
-            $this->assertIsString($perm);
-            $this->assertIsBool($value);
+            if (! is_string($perm)) {
+                $malTypees[] = 'cle '.var_export($perm, true).' n est pas une chaine';
+            }
+
+            if (! is_bool($value)) {
+                $malTypees[] = $perm.' : valeur '.var_export($value, true).' n est pas un booleen';
+            }
         }
+
+        $this->assertSame([], $malTypees, 'Cette table de droits n est pas exploitable telle quelle.');
     }
 }

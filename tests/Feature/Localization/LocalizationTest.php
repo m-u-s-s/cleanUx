@@ -187,11 +187,19 @@ class LocalizationTest extends TestCase
 
     public function test_translations_are_loaded_for_all_locales(): void
     {
+        // Les trois langues relevees ensemble : un catalogue mal charge l'est souvent pour
+        // plusieurs, et savoir que le neerlandais manque ne dit rien de l'anglais.
+        $absentes = [];
+
         foreach (['fr', 'nl', 'en'] as $locale) {
             App::setLocale($locale);
-            $translation = trans('app.account');
-            $this->assertNotSame('app.account', $translation, "Translation for 'app.account' not loaded in {$locale}");
+
+            if (trans('app.account') === 'app.account') {
+                $absentes[] = $locale;
+            }
         }
+
+        $this->assertSame([], $absentes, 'La cle « app.account » n est pas traduite dans ces langues.');
     }
 
     public function test_status_translations_in_french(): void

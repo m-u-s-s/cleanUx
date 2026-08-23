@@ -15,11 +15,24 @@ class JsonLocaleCatalogConsistencyTest extends TestCase
         $expectedKeys = array_keys($fr);
         sort($expectedKeys);
 
+        // Les deux catalogues compares ensemble, et l'ecart NOMME : `assertSame` sur deux longues
+        // listes triees produit un diff illisible, alors que la difference symetrique dit
+        // exactement quelles cles manquent et lesquelles sont en trop.
+        $ecarts = [];
+
         foreach (['nl' => $nl, 'en' => $en] as $locale => $catalog) {
             $keys = array_keys($catalog);
             sort($keys);
 
-            $this->assertSame($expectedKeys, $keys, sprintf('Locale %s does not match FR JSON keys.', $locale));
+            foreach (array_diff($expectedKeys, $keys) as $manquante) {
+                $ecarts[] = "{$locale} : « {$manquante} » manque";
+            }
+
+            foreach (array_diff($keys, $expectedKeys) as $enTrop) {
+                $ecarts[] = "{$locale} : « {$enTrop} » en trop";
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Ces catalogues ne correspondent pas aux cles du francais.');
     }
 }

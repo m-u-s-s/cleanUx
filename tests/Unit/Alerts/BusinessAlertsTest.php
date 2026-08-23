@@ -140,12 +140,16 @@ class BusinessAlertsTest extends TestCase
         // Every dispatched event must carry level=critical — not just any one of them.
         $dispatched = Event::dispatched(BusinessAlertRaised::class);
         $this->assertCount(5, $dispatched, 'Expected exactly 5 dispatched BusinessAlertRaised events');
+        // Toutes les alertes mal classees d'un coup : un niveau mal pose l'est generalement sur
+        // toute une famille d'alertes, et une alerte non critique ne reveille personne.
+        $malClassees = [];
+
         foreach ($dispatched as [$event]) {
-            $this->assertSame(
-                'critical',
-                $event->level,
-                "Alert [{$event->key}] must have level=critical but got [{$event->level}]",
-            );
+            if ($event->level !== 'critical') {
+                $malClassees[] = "{$event->key} : « {$event->level} »";
+            }
         }
+
+        $this->assertSame([], $malClassees, 'Ces alertes devraient etre critiques.');
     }
 }

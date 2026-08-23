@@ -218,13 +218,25 @@ class KycWebhookProviderSelectionAttackTest extends TestCase
 
         app(KycVerificationService::class)->start($victime);
 
-        foreach ([['payload' => ['object' => ['id' => '   ']]], ['check_id' => ''], ['object' => ['id' => null]]] as $charge) {
+        // Les trois formes d'identifiant vide relevees ensemble : une garde qui laisse passer
+        // l'une laisse souvent passer les autres, et chacune est une verification approuvee a tort.
+        $acceptees = [];
+
+        foreach ([
+            'espaces' => ['payload' => ['object' => ['id' => '   ']]],
+            'chaine vide' => ['check_id' => ''],
+            'null' => ['object' => ['id' => null]],
+        ] as $forme => $charge) {
             $resultat = app(KycVerificationService::class)->applyWebhookPayload(
                 $charge + ['decision' => 'approved', 'status' => 'clear', 'score' => 0.99]
             );
 
-            $this->assertNull($resultat, 'un identifiant vide ne désigne aucune vérification');
+            if ($resultat !== null) {
+                $acceptees[] = $forme;
+            }
         }
+
+        $this->assertSame([], $acceptees, 'Ces identifiants vides ne designent aucune verification et sont pourtant acceptes.');
 
         $this->assertSame(
             'pending',

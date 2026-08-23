@@ -249,12 +249,23 @@ class OnfidoProviderUnitTest extends TestCase
                 ->push(['status' => 'something_else'], 200),
         ]);
 
+        // Toutes les correspondances fautives d'un coup : une table de statuts decalee l'est
+        // souvent sur plusieurs lignes.
+        $ecarts = [];
+
         foreach ($cases as $case) {
             $result = $this->provider->fetchStatus(new KycVerification(['external_check_id' => 'c']));
 
-            $this->assertSame($case['expected'], $result->status, "status={$case['status']}");
-            $this->assertSame(KycVerification::DECISION_PENDING, $result->decision);
+            if ($result->status !== $case['expected']) {
+                $ecarts[] = sprintf('%s : attendu « %s », obtenu « %s »', $case['status'], $case['expected'], $result->status);
+            }
+
+            if ($result->decision !== KycVerification::DECISION_PENDING) {
+                $ecarts[] = sprintf('%s : decision « %s » au lieu de « pending »', $case['status'], $result->decision);
+            }
         }
+
+        $this->assertSame([], $ecarts, 'La table de correspondance des statuts est decalee.');
     }
 
     public function test_verify_webhook_returns_decoded_payload_with_valid_signature(): void

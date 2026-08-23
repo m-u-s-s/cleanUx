@@ -89,10 +89,22 @@ class InsurancePricingEngineTest extends TestCase
 
         $plans = app(InsurancePricingEngine::class)->getAvailablePlansForBooking($booking->id);
 
+        // Une prime nulle ou non entiere rend le plan invendable : les nommer toutes evite de
+        // corriger la grille ligne par ligne.
+        $fautifs = [];
+
         foreach ($plans as $item) {
-            $this->assertIsInt($item['premium_cents']);
-            $this->assertGreaterThan(0, $item['premium_cents']);
+            $prime = $item['premium_cents'] ?? null;
+            $nom = $item['key'] ?? $item['code'] ?? '?';
+
+            if (! is_int($prime)) {
+                $fautifs[] = "{$nom} : prime ".var_export($prime, true).' au lieu d un entier';
+            } elseif ($prime <= 0) {
+                $fautifs[] = "{$nom} : prime {$prime}";
+            }
         }
+
+        $this->assertSame([], $fautifs, 'Ces plans d assurance sont invendables.');
     }
 
     public function test_inactive_plan_excluded(): void

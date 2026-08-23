@@ -66,10 +66,19 @@ class LocaleFormatterCoverageBatch16Test extends TestCase
 
     public function test_date_fallback_formats_for_each_locale_family(): void
     {
+        // Cinq langues relevees ensemble : un formateur casse l'est generalement pour toutes
+        // celles qui partagent son chemin de repli.
+        $sansAnnee = [];
+
         foreach (['nl', 'it', 'es', 'pt', 'de'] as $locale) {
-            $out = $this->formatter->date('2026-03-15', $locale);
-            $this->assertStringContainsString('2026', $out, "locale {$locale} should contain the year");
+            $rendu = $this->formatter->date('2026-03-15', $locale);
+
+            if (! str_contains($rendu, '2026')) {
+                $sansAnnee[] = "{$locale} rend [{$rendu}]";
+            }
         }
+
+        $this->assertSame([], $sansAnnee, 'Ces langues perdent l annee en formatant une date.');
     }
 
     public function test_currency_default_currency_resolved_from_config(): void

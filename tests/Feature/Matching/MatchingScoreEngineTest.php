@@ -67,12 +67,25 @@ class MatchingScoreEngineTest extends TestCase
             'trade_specialty', 'recency_balance',
         ];
 
+        // Toutes les dimensions manquantes ou incompletes d'un coup : un bareme ampute perd
+        // rarement une seule dimension, et chacune coute un point de score.
+        $ecarts = [];
+
         foreach ($expectedKeys as $key) {
-            $this->assertArrayHasKey($key, $breakdown->components, "Missing dimension: {$key}");
-            $this->assertArrayHasKey('raw', $breakdown->components[$key]);
-            $this->assertArrayHasKey('weighted', $breakdown->components[$key]);
-            $this->assertArrayHasKey('weight', $breakdown->components[$key]);
+            if (! array_key_exists($key, $breakdown->components)) {
+                $ecarts[] = "{$key} : dimension absente";
+
+                continue;
+            }
+
+            foreach (['raw', 'weighted', 'weight'] as $champ) {
+                if (! array_key_exists($champ, $breakdown->components[$key])) {
+                    $ecarts[] = "{$key}.{$champ} : absent";
+                }
+            }
         }
+
+        $this->assertSame([], $ecarts, 'Ce bareme de correspondance est incomplet.');
     }
 
     public function test_higher_rating_yields_higher_score(): void
