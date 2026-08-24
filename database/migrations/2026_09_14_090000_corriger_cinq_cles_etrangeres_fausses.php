@@ -5,43 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * CINQ CLÉS ÉTRANGÈRES QUI POINTAIENT VERS LA MAUVAISE TABLE.
- *
- * ── CE QUI S'EST PASSÉ ───────────────────────────────────────────────────────────────────────
- *
- * La migration `2026_09_12` a déduit la table parente du NOM de la colonne. Elle traitait tout
- * préfixe d'action (`assigned_`, `created_by_`, `approved_by_`…) comme désignant une personne, donc
- * `users`. La règle est juste pour `assigned_by_user_id` ; elle est FAUSSE dès que ce qu'on assigne
- * n'est pas une personne :
- *
- *   `assigned_provider_organization_id` — une organisation, pas un utilisateur
- *   `assigned_field_team_id`            — une équipe
- *   `assigned_service_partner_id`       — un partenaire
- *   `lead_assignment_id`                — une affectation, et le préfixe `lead_` a fait le reste
- *   `invoice_id` (cycles d'abonnement)  — la facture d'ABONNEMENT, pas la facture générale
- *
- * ── COMMENT ON L'A SU ────────────────────────────────────────────────────────────────────────
- *
- * La suite complète : 49 tests en échec, tous sur « FOREIGN KEY constraint failed ». La fabrique
- * de réservation renseigne `assigned_provider_organization_id` avec un identifiant
- * d'organisation — que la contrainte cherchait dans `users`. Tout ce qui crée une réservation
- * tombait en cascade, dont les vingt-quatre inspections qualité.
- *
- * ── CE QUI A TRANCHÉ ─────────────────────────────────────────────────────────────────────────
- *
- * Les `belongsTo()` déclarés dans les modèles, lus par `scripts/relations_declarees.php`. Sur les
- * 197 contraintes déduites du nom, 136 étaient vérifiables par un modèle ; CINQ le contredisaient.
- * Les cinq sont ici, avec le parent que le modèle désigne.
- *
- * ── LA LEÇON, ÉCRITE POUR LA PROCHAINE FOIS ──────────────────────────────────────────────────
- *
- * Le nom d'une colonne est une intention, pas un contrat. Un modèle qui déclare `belongsTo` dit ce
- * que le code fait vraiment. L'ordre correct est donc : interroger les modèles D'ABORD, et ne
- * déduire du nom que ce qu'aucun modèle ne déclare — l'inverse exact de ce qui a été fait ici.
- * C'est la même leçon que `getTable()`, qui avait déjà fait passer une centaine de tables pour
- * mortes dans ce même chantier.
- */
+/** CINQ CLÉS ÉTRANGÈRES QUI POINTAIENT VERS LA MAUVAISE TABLE. */
 return new class extends Migration
 {
     /**
@@ -96,15 +60,7 @@ return new class extends Migration
         }
     }
 
-    /**
-     * Retire la contrainte portée par cette colonne, quel que soit son nom.
-     *
-     * On ne peut pas se contenter du nom attendu : la contrainte fausse a été posée par une autre
-     * migration, sous un nom qu'elle a choisi. On demande donc au schéma lequel il porte.
-     *
-     * SQLite ne sait pas retirer une contrainte ; il reconstruit la table à chaque migration, si
-     * bien qu'il n'y a rien à défaire — la suite repart d'un schéma neuf.
-     */
+    /** Retire la contrainte portée par cette colonne, quel que soit son nom. */
     private function retirerLaContrainte(string $table, string $colonne, ?string $nomAttendu = null): void
     {
         if (DB::getDriverName() !== 'mysql') {

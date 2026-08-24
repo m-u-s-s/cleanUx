@@ -4,23 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * LA FLOTTE APPARTIENT À QUELQU'UN (E27).
- *
- * Fleet v2 est complet — véhicules, équipements, certifications, maintenance, blocage d'une mission
- * si une certification a expiré — et entièrement PLATEFORME : `fleet_vehicles` n'a pas de colonne
- * d'organisation, si bien qu'un administrateur voit tous les camions de toutes les sociétés et
- * qu'aucune société ne voit les siens. Le module existait, son propriétaire n'était écrit nulle part.
- *
- * LA COLONNE EST NULLABLE, ET C'EST TOUT L'ENJEU DE LA MIGRATION. `null` signifie « à la
- * plateforme » — l'état actuel de chaque ligne. La rendre obligatoire aurait forcé à inventer un
- * propriétaire pour l'existant, c'est-à-dire à attribuer des véhicules au hasard puis à découvrir la
- * conséquence en production. Ici, rien ne change pour ce qui existe : la société ne voit que ce
- * qu'elle a déclaré.
- *
- * PAS DE CLÉ ÉTRANGÈRE EN CASCADE : la suppression d'une organisation ne doit pas emporter des
- * véhicules dont la maintenance et les certifications se relisent des années plus tard.
- */
+/** LA FLOTTE APPARTIENT À QUELQU'UN (E27). */
 return new class extends Migration
 {
     public function up(): void

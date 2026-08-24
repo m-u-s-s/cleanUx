@@ -5,76 +5,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * POSER LES CLÉS ÉTRANGÈRES MANQUANTES — SANS JAMAIS REFUSER DE DONNÉES EXISTANTES.
- *
- * ── CE QU'ON A MESURÉ ────────────────────────────────────────────────────────────────────────
- *
- * 347 colonnes de jointure n'ont aucune contrainte. Toutes ne peuvent pas en recevoir une :
- *
- *   68 sont des identifiants EXTERNES (`stripe_transfer_id`, `external_event_id`,
- *      `google_user_id`…). Il n'existe aucune table parente locale : une clé étrangère n'a
- *      simplement pas de sens.
- *   ~82 sont POLYMORPHES (`source_id`, `actor_id`, `subject_id`…). Leur parent change d'une ligne
- *      à l'autre ; c'est la colonne `*_type` qui le désigne. Aucune contrainte ne peut exprimer
- *      cela.
- *   197 ont un parent identifiable et sont traitées ici.
- *
- * ── LE CONTRÔLE D'ORPHELINS, ET POURQUOI IL EXISTE ───────────────────────────────────────────
- *
- * Ajouter une contrainte à une colonne qui contient déjà des valeurs sans parent fait ÉCHOUER la
- * migration. La base de développement est vide : rien ici ne prouve qu'il n'en existe pas en
- * production. Une migration qui casse le déploiement n'est pas une amélioration.
- *
- * Chaque contrainte est donc précédée d'un comptage. S'il reste ne serait-ce qu'une ligne
- * orpheline, la contrainte est SAUTÉE et signalée — la migration continue, et le défaut de données
- * devient visible au lieu de bloquer la mise en ligne. On repassera dessus une fois les données
- * nettoyées.
- *
- * ── LE COMPORTEMENT À LA SUPPRESSION ─────────────────────────────────────────────────────────
- *
- * Colonne NULLABLE  → `nullOnDelete()`. Supprimer un utilisateur ne doit pas effacer l'historique
- *                     qu'il a produit : `closed_by_user_id` retombe à NULL, la mission reste.
- * Colonne NOT NULL  → comportement par défaut (`restrict`). La ligne fille n'a pas de sens sans
- *                     son parent ; refuser la suppression est la bonne réponse, et la seule que le
- *                     schéma puisse tenir sans inventer une valeur.
- *
- * ── CE QUE CELA APPORTE À L'ÉCHELLE VISÉE ────────────────────────────────────────────────────
- *
- * Sous InnoDB, une clé étrangère garantit qu'aucune ligne ne pointe dans le vide. À l'échelle d'un
- * seul pays cela se rattrape à la main ; sur plusieurs pays et tous les métiers, une poignée de
- * lignes orphelines fausse silencieusement chaque agrégat — facturation, statistiques, répartition.
- * La contrainte est le seul endroit où cette garantie ne peut pas être oubliée.
- */
+/** POSER LES CLÉS ÉTRANGÈRES MANQUANTES — SANS JAMAIS REFUSER DE DONNÉES EXISTANTES. */
 return new class extends Migration
 {
     /**
      * Table => [[colonne, table parente, nullable, nom de contrainte], …].
      *
-     * Noms écrits à la main : MySQL refuse un identifiant de plus de 64 caractères, et le plus long
-     * de ce schéma en fait déjà exactement 64. SQLite ne dirait rien du dépassement.
-     *
      * @var array<string, list<array{0:string,1:string,2:bool,3:string}>>
      */
-    /*
-     * CINQ PARENTS CORRIGÉS À LA SOURCE.
-     *
-     * Ces cinq colonnes ont d'abord reçu un parent DÉDUIT DE LEUR NOM, et le nom mentait :
-     * `assigned_provider_organization_id` désigne une organisation et non un utilisateur,
-     * `assigned_field_team_id` une équipe, `assigned_service_partner_id` un partenaire,
-     * `lead_assignment_id` une affectation, et l'`invoice_id` d'un cycle d'abonnement une facture
-     * D'ABONNEMENT. Le préfixe d'action (`assigned_`, `lead_`) avait été pris pour la marque d'une
-     * personne.
-     *
-     * Ce sont les `belongsTo()` déclarés dans les modèles qui ont tranché — 136 des 197 mappages
-     * étaient vérifiables ainsi, et CINQ étaient faux. La leçon est écrite dans
-     * `2026_09_14` : interroger les modèles d'abord, ne déduire du nom que ce qu'aucun modèle ne
-     * déclare.
-     *
-     * La correction est faite ICI, et pas seulement dans la migration suivante, parce que SQLite —
-     * sur lequel tourne la suite — ne sait pas retirer une contrainte : il rejoue les migrations
-     * sur un schéma neuf, et n'aurait donc jamais vu passer la réparation.
-     */
+    // CINQ PARENTS CORRIGÉS À LA SOURCE.
     private array $contraintes = [
         'academy_courses' => [
             ['trade_id', 'trades', true, 'fk_academy_courses_trade'],
@@ -489,12 +428,7 @@ return new class extends Migration
         }
     }
 
-    /**
-     * Combien de lignes pointent vers un parent qui n'existe pas ?
-     *
-     * NULL n'est pas orphelin : une colonne nullable vide est un « pas de lien », que la contrainte
-     * accepte. Seule une valeur renseignée sans parent correspondant bloquerait la migration.
-     */
+    /** Combien de lignes pointent vers un parent qui n'existe pas ? */
     private function orphelins(string $table, string $colonne, string $parent): int
     {
         return (int) DB::table($table)

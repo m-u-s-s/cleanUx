@@ -21,25 +21,14 @@ return new class extends Migration
     /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
     private function corpsInitial(): void
     {
-        /*
-        |--------------------------------------------------------------------------
-        | Compat subscriptions.user_id
-        |--------------------------------------------------------------------------
-        | Ton code/dashboard cherche subscriptions.user_id, mais Cashier utilise
-        | billable_type + billable_id. On ajoute donc user_id pour compatibilité.
-        */
+        // |-------------------------------------------------------------------------- | Compat subscriptions.user_id |-------------------------------------------------------------------------- | Ton code/dashboard cherche subscriptions.user_id, mais Cashier utilise | billable_type + billable_id.
         if (Schema::hasTable('subscriptions') && ! Schema::hasColumn('subscriptions', 'user_id')) {
             Schema::table('subscriptions', function (Blueprint $table) {
                 $table->unsignedBigInteger('user_id')->nullable()->index();
             });
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Ancienne table limites_journalieres
-        |--------------------------------------------------------------------------
-        | Certains composants emploient encore limites_journalieres.
-        */
+        // |-------------------------------------------------------------------------- | Ancienne table limites_journalieres |-------------------------------------------------------------------------- | Certains composants emploient encore limites_journalieres.
         if (! Schema::hasTable('limites_journalieres')) {
             Schema::create('limites_journalieres', function (Blueprint $table) {
                 $table->id();
@@ -63,11 +52,7 @@ return new class extends Migration
             });
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Copier les limites modernes vers l’ancienne table si possible
-        |--------------------------------------------------------------------------
-        */
+        // |-------------------------------------------------------------------------- | Copier les limites modernes vers l’ancienne table si possible |--------------------------------------------------------------------------
         if (
             Schema::hasTable('provider_daily_limits')
             && Schema::hasTable('limites_journalieres')

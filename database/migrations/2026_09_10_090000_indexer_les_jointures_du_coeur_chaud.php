@@ -5,50 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * INDEXER LES COLONNES DE JOINTURE DU CŒUR CHAUD.
- *
- * ── CE QU'ON A MESURÉ ────────────────────────────────────────────────────────────────────────
- *
- * 822 colonnes `*_id` existent dans ce schéma. 170 d'entre elles ne sont EN TÊTE d'aucun index —
- * et elles se concentrent précisément sur les tables les plus reliées du dépôt : `missions` (7),
- * `bookings` (6), `users` (6), `organization_accounts` (5), `service_zones` (4). Ce sont les
- * mêmes que le graphe d'appels désigne comme nœuds centraux (User 1279 liens, Booking 873,
- * Mission 538).
- *
- * Sans index de tête, chaque jointure et chaque filtre sur ces colonnes est un BALAYAGE COMPLET.
- * Tant que la base tient dans quelques milliers de lignes, personne ne le voit. À l'échelle visée
- * — plusieurs pays, tous les métiers, un grand nombre de missions simultanées — c'est la première
- * chose qui s'effondre, et elle s'effondre sur les tables que TOUT le reste interroge.
- *
- * ── POURQUOI `SEQ_IN_INDEX = 1` ──────────────────────────────────────────────────────────────
- *
- * Une colonne placée en SECONDE position d'un index composite n'est pas utilisable seule : MySQL
- * ne peut attaquer un index que par son préfixe gauche. Compter ces colonnes comme « indexées »
- * serait se mentir, et c'est pourquoi l'audit ne retient que la tête.
- *
- * ── LES DEUX NATURES DE COLONNES ─────────────────────────────────────────────────────────────
- *
- * `bigint`  : de vraies clés étrangères, empruntées par les jointures.
- * `varchar` : des identifiants EXTERNES (Stripe, KYC). Ils comptent au moins autant : à chaque
- *             webhook reçu, l'application cherche `users.stripe_id = 'cus_…'`. Sans index, chaque
- *             événement Stripe balaie la table des comptes. Vérifié dans le code avant d'indexer —
- *             `stripe_id` est interrogé à neuf endroits, `stripe_connect_account_id` à quatre.
- *
- * ── CE QUE CETTE MIGRATION NE FAIT PAS ───────────────────────────────────────────────────────
- *
- * Elle n'ajoute AUCUNE contrainte, aucune unicité, ne renomme ni ne supprime rien. Un index est
- * additif : il ne peut pas changer le résultat d'une requête, seulement le temps qu'elle met. Les
- * clés étrangères manquantes (347) et l'unicité de `stripe_id` sont des décisions séparées, qui
- * peuvent refuser des données existantes — elles ne se glissent pas dans une migration d'index.
- *
- * ── NOMS D'INDEX ─────────────────────────────────────────────────────────────────────────────
- *
- * Nommés à la main et courts. MySQL refuse un identifiant de plus de 64 caractères, et le plus
- * long de ce schéma en fait déjà EXACTEMENT 64 : les noms engendrés automatiquement
- * (`table_colonne_index`) sont à un cheveu de casser la migration — et SQLite, sur lequel tourne
- * la suite, ne dirait rien.
- */
+/** INDEXER LES COLONNES DE JOINTURE DU CŒUR CHAUD. */
 return new class extends Migration
 {
     /**
@@ -137,16 +94,7 @@ return new class extends Migration
         }
     }
 
-    /**
-     * La colonne est-elle DÉJÀ en tête d'un index ?
-     *
-     * On interroge le schéma plutôt que de supposer : une colonne peut avoir gagné son index par
-     * une autre migration, ou porter déjà une clé étrangère — qui, sous MySQL, crée son index.
-     * Poser un doublon ne casserait rien à la lecture mais coûterait à chaque écriture.
-     *
-     * SQLite (la suite de tests) n'a pas `information_schema` : on y retombe sur un contrôle qui
-     * laisse simplement passer, la création d'index y étant de toute façon sans risque.
-     */
+    /** La colonne est-elle DÉJÀ en tête d'un index ? */
     private function dejaEnTeteDUnIndex(string $table, string $colonne): bool
     {
         if (DB::getDriverName() !== 'mysql') {

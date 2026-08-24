@@ -4,13 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Schema-drift repair: create the `client_subscriptions` table.
- *
- * App\Models\ClientSubscription is used by
- * App\Services\Subscription\SubscriptionScheduler but no migration ever created
- * its backing table. Columns are derived from the model's $fillable.
- */
+/** Schema-drift repair: create the `client_subscriptions` table. */
 return new class extends Migration
 {
     public function up(): void

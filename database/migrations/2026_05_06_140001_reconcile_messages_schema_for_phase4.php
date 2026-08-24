@@ -5,26 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 4 — Réconciliation du schéma `messages`.
- *
- * BUG CRITIQUE détecté à l'audit : le model App\Models\Message utilise
- *   user_id, content, parent_id
- * mais la migration v2 a créé :
- *   sender_id, body, (pas de parent_id)
- *
- * Conséquence : en production, le chat équipe lance des erreurs
- *   SQLSTATE: Column 'user_id' not found  /  Column 'content' not found
- *
- * Cette migration aligne la structure DB sur le code (et sur les
- * conventions Laravel), TOUT en migrant les données existantes :
- *   - sender_id  → user_id  (renommé)
- *   - body       → content  (renommé)
- *   - + parent_id (NEW pour les threads)
- *   - + soft_deletes (NEW)
- *
- * Idempotente : utilise hasColumn pour ne rien casser si déjà appliquée.
- */
+/** Phase 4 — Réconciliation du schéma `messages`. */
 return new class extends Migration
 {
     public function up(): void

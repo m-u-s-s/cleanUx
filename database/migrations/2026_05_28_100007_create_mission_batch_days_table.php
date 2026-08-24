@@ -4,15 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Schema-drift repair: create the `mission_batch_days` table.
- *
- * App\Models\MissionBatchDay is created by
- * App\Services\Missions\MissionBatchPlannerService and
- * EnterpriseWorkOrderMissionGeneratorService, and is the parent of
- * MissionTaskSegment / MissionReinforcementRequest via mission_batch_day_id,
- * but no migration ever created its table. Columns derived from $fillable / $casts.
- */
+/** Schema-drift repair: create the `mission_batch_days` table. */
 return new class extends Migration
 {
     public function up(): void

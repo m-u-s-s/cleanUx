@@ -4,35 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * L'ARBITRAGE — savoir qui triche, sans jamais punir sur une seule mission.
- *
- * ── POURQUOI DEUX TABLES ET PAS UNE ──────────────────────────────────────────────────────────
- *
- * `mission_dispute_signals` enregistre des FAITS : à telle date, sur telle mission, tel prestataire
- * a révisé et tel client a refusé. Un fait ne se corrige pas, il s'accumule.
- *
- * `mission_feature_suspensions` porte des DÉCISIONS : à partir d'aujourd'hui, cette personne ne
- * peut plus se servir de telle option. Une décision se lève, s'expire, se prend par un
- * administrateur. Les fondre donnerait une table qu'on modifie pour changer un état, effaçant au
- * passage la trace qui l'a justifiée.
- *
- * ── CE QUI REND LE VERDICT POSSIBLE ──────────────────────────────────────────────────────────
- *
- * Les DEUX identifiants sont sur chaque ligne : le prestataire ET le client. Le signal décisif
- * n'est ni « celui-ci révise souvent » ni « celui-là refuse souvent » — c'est la CONCORDANCE DES
- * TIERS : un client révisé par plusieurs prestataires qui ne se connaissent pas, ou un prestataire
- * qui révise chez plusieurs clients que personne d'autre n'a jamais révisés. Aucun des deux ne peut
- * fabriquer cela seul.
- *
- * C'est aussi ce qui garantit qu'un menteur ne fera jamais sanctionner un honnête : il lui faudrait
- * recruter plusieurs contreparties indépendantes mentant toutes dans le même sens.
- *
- * ── `ends_at` NULLABLE VEUT DIRE DÉFINITIF ───────────────────────────────────────────────────
- *
- * Et `lifted_at` reste la porte de l'administrateur — la sanction définitive n'est pas irréversible,
- * elle est seulement hors de portée de l'automate.
- */
+/** L'ARBITRAGE — savoir qui triche, sans jamais punir sur une seule mission. */
 return new class extends Migration
 {
     public function up(): void

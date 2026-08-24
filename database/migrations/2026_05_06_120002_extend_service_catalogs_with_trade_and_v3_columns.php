@@ -4,22 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 1 — Étend service_catalogs.
- *
- * Ajoute trade_id (FK vers trades) + colonnes nécessaires pour rendre la
- * marketplace réellement multi-métier :
- *   - billing_unit (hour | sqm | flat | quote)
- *   - vat_rate, min_lead_time_hours, requires_site_visit
- *   - icon, color, cover_image_path (UI)
- *   - tags, skills_required (matching prestataire)
- *
- * trade_id est NULLABLE ici. Le backfill (seed ServiceCatalogTradeBackfillSeeder)
- * remplit trade_id pour tous les services existants vers le Trade "Nettoyage".
- * Une seconde migration (à venir si tu veux l'enforcer) pourra le passer NOT NULL.
- *
- * Toutes les opérations utilisent Schema::hasColumn pour rester ré-exécutables sans casser.
- */
+/** Phase 1 — Étend service_catalogs. */
 return new class extends Migration
 {
     public function up(): void

@@ -4,20 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Qui a été prévenu, quand, et ce qu'il en a fait.
- *
- * Le compteur seul ne suffisait pas. Sans registre nominatif :
- *
- * — élargir le rayon renotifie tous ceux qu'on venait de prévenir. Trois élargissements, et le
- *   prestataire le plus proche reçoit quatre fois la même course. C'est ainsi qu'on se fait couper
- *   les notifications, et une fois coupées elles ne reviennent pas.
- * — un prestataire ne peut pas voir la liste de ce qui lui est proposé : il n'y a rien à lire.
- * — un refus ne veut rien dire, puisque rien ne retient qu'il a refusé.
- *
- * L'unicité (demande, prestataire) est la garantie centrale : elle rend l'envoi idempotent au
- * niveau de la base, pas seulement dans le code qui la précède.
- */
+/** Qui a été prévenu, quand, et ce qu'il en a fait. Le compteur seul ne suffisait pas. */
 return new class extends Migration
 {
     public function up(): void
@@ -45,11 +32,7 @@ return new class extends Migration
             $table->timestamp('declined_at')->nullable();
             $table->string('decline_reason')->nullable();
 
-            /*
-             * L'envoi a échoué (jeton mort, service indisponible). On le GARDE plutôt que de ne
-             * rien écrire : une recherche où personne ne répond alors que tous les envois ont
-             * échoué est un incident, pas un manque de prestataires.
-             */
+            // L'envoi a échoué (jeton mort, service indisponible).
             $table->string('delivery_error')->nullable();
 
             $table->timestamps();

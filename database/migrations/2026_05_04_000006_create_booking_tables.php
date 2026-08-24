@@ -200,12 +200,7 @@ return new class extends Migration
             $table->json('pricing_snapshot')->nullable();
             $table->json('metadata')->nullable();
 
-            /*
-             * Le point d ARRIVEE et la route, fusionnes depuis
-             * 2026_08_28_090000_porter_le_point_d_arrivee_sur_la_commande. Les memes huit colonnes
-             * y etaient posees sur `order_drafts` et `bookings` par une boucle : elles vivent
-             * desormais dans chacun des deux `create`.
-             */
+            // Le point d ARRIVEE et la route, fusionnes depuis 2026_08_28_090000_porter_le_point_d_arrivee_sur_la_commande.
             $table->string('dropoff_address')->nullable();
             // Meme precision que `destination_lat` : sept decimales situent a un centimetre.
             $table->decimal('dropoff_lat', 10, 7)->nullable();

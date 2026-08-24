@@ -4,25 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * La commande en cours de construction, avant qu'elle n'existe comme réservation.
- *
- * DÉCISION DE NOMMAGE, prise faute de pouvoir suivre la spécification à la lettre. Celle-ci
- * demande `missions`, `mission_items`, `mission_answers` et `mission_media` : les QUATRE noms sont
- * déjà pris sur ce projet, par un tout autre concept. Ici, `missions` est le dossier d'EXÉCUTION
- * d'une intervention — statut terrain, codes de démarrage et de clôture, position vérifiée,
- * encaissement — rattaché à une réservation existante. Ce n'est pas une commande.
- *
- * Mais le conflit de noms n'est pas la vraie raison de ces tables. La loi 1 l'est : le client voit
- * un prix AVANT qu'on lui demande un compte. Il n'y a donc, à ce moment-là, ni client_id, ni
- * réservation, ni mission — rien à quoi rattacher ses réponses. Un panier anonyme est structurellement
- * obligatoire, et aucune table existante ne peut jouer ce rôle : `bookings` exige un client,
- * `multi_trade_bundles` aussi.
- *
- * Le brouillon se matérialise à la confirmation : une réservation pour un métier seul, un
- * `multi_trade_bundle` pour plusieurs. Les brouillons ne sont pas purgés — ils portent les réponses
- * horodatées qui rendent un devis explicable ligne par ligne, et opposable.
- */
+/** La commande en cours de construction, avant qu'elle n'existe comme réservation. */
 return new class extends Migration
 {
     public function up(): void
@@ -50,11 +32,7 @@ return new class extends Migration
                 // Référence lisible, communicable au téléphone : CLX-8F3K2.
                 $table->string('reference', 20)->unique();
 
-                /*
-                 * Nullable : c'est tout l'objet de la loi 1. Le jeton de session est ce qui permet
-                 * de retrouver son panier trois heures plus tard, dans un autre onglet, sans avoir
-                 * jamais créé de compte.
-                 */
+                // Nullable : c'est tout l'objet de la loi 1.
                 $table->foreignId('client_id')->nullable()->constrained('users')->nullOnDelete();
                 $table->string('session_token', 64)->nullable()->index();
 
@@ -64,28 +42,13 @@ return new class extends Migration
                 // draft | submitted | converted | abandoned
                 $table->string('status', 20)->default('draft');
 
-                /*
-                 * Adresse au niveau de la COMMANDE, jamais de la ligne : en multi-services, elle
-                 * n'est demandée qu'une fois. Les contraintes d'accès suivent la même règle.
-                 */
+                // Adresse au niveau de la COMMANDE, jamais de la ligne : en multi-services, elle n'est demandée qu'une fois.
                 $table->string('address')->nullable();
                 $table->string('address_details')->nullable();
                 $table->decimal('lat', 10, 7)->nullable();
                 $table->decimal('lng', 10, 7)->nullable();
 
-                /*
-                 * LA GÉOGRAPHIE, RÉSOLUE PENDANT LE PARCOURS — pas après.
-                 *
-                 * Le panier portait une adresse et des coordonnées, mais ni code postal ni zone.
-                 * Le prix par zone existait en base et n'atteignait donc jamais le calcul
-                 * (`PricingEngine` recevait un `zone_multiplier` que personne ne fournissait, et
-                 * il valait 1,0 partout), et le dispatch héritait d'une réservation sans zone :
-                 * il fallait la redeviner au moment d'envoyer quelqu'un.
-                 *
-                 * Résolus ICI, ils sont connus AVANT la confirmation — ce qui permet de refuser
-                 * une commande hors couverture au lieu de la confirmer puis de ne trouver
-                 * personne.
-                 */
+                // LA GÉOGRAPHIE, RÉSOLUE PENDANT LE PARCOURS — pas après.
                 $table->string('postal_code', 12)->nullable();
                 $table->foreignId('service_zone_id')->nullable()
                     ->constrained('service_zones')->nullOnDelete();
@@ -93,11 +56,7 @@ return new class extends Migration
                 $table->timestamp('scheduled_at')->nullable();
                 $table->timestamp('asap_requested_at')->nullable();
 
-                /*
-                 * Toujours une FOURCHETTE, jamais un prix ferme, tant qu'un professionnel n'a pas
-                 * confirmé. Chaque « je ne sais pas » l'élargit — c'est ce qui rend la porte de
-                 * sortie de la loi 6 tenable sans mentir sur le prix.
-                 */
+                // Toujours une FOURCHETTE, jamais un prix ferme, tant qu'un professionnel n'a pas confirmé.
                 $table->unsignedInteger('estimate_min_cents')->nullable();
                 $table->unsignedInteger('estimate_max_cents')->nullable();
                 $table->unsignedInteger('total_cents')->nullable();
@@ -114,12 +73,7 @@ return new class extends Migration
 
                 $table->json('metadata')->nullable();
 
-                /*
-                 * Le point d ARRIVEE et la route, fusionnes depuis
-                 * 2026_08_28_090000_porter_le_point_d_arrivee_sur_la_commande. Les memes huit colonnes
-                 * y etaient posees sur `order_drafts` et `bookings` par une boucle : elles vivent
-                 * desormais dans chacun des deux `create`.
-                 */
+                // Le point d ARRIVEE et la route, fusionnes depuis 2026_08_28_090000_porter_le_point_d_arrivee_sur_la_commande.
                 $table->string('dropoff_address')->nullable();
                 // Meme precision que `destination_lat` : sept decimales situent a un centimetre.
                 $table->decimal('dropoff_lat', 10, 7)->nullable();
@@ -178,18 +132,7 @@ return new class extends Migration
                 $table->id();
                 $table->foreignId('order_draft_item_id')->constrained('order_draft_items')->cascadeOnDelete();
 
-                /*
-                 * La question peut disparaître ; la réponse, non.
-                 *
-                 * `question_id` est nullable et se détache si la question est archivée. Ce sont les
-                 * trois colonnes suivantes qui portent la vérité : le CODE stable, et un INSTANTANÉ
-                 * du libellé de la question comme de la réponse, tels qu'ils étaient affichés au
-                 * client au moment où il a répondu.
-                 *
-                 * Sans cet instantané, renommer une question six mois plus tard réécrirait
-                 * rétroactivement des devis et des factures déjà émis — et rendrait indéfendable
-                 * tout litige portant dessus.
-                 */
+                // La question peut disparaître ; la réponse, non.
                 $table->foreignId('question_id')->nullable()->constrained('questions')->nullOnDelete();
                 $table->string('question_code', 80);
                 $table->string('question_label_snapshot');
@@ -202,10 +145,7 @@ return new class extends Migration
                 $table->integer('price_impact_cents')->default(0);
                 $table->integer('duration_impact_min')->default(0);
 
-                /*
-                 * La porte de sortie a été empruntée. On la distingue d'une absence de réponse :
-                 * « je ne sais pas » est une réponse, qui élargit la fourchette au lieu de bloquer.
-                 */
+                // La porte de sortie a été empruntée.
                 $table->boolean('is_unknown')->default(false);
 
                 $table->timestamps();

@@ -5,14 +5,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * L7 — encrypt existing kyc_verifications.metadata / result_summary at rest.
- *
- * Providers push identity PII (first/last name, check details) into these JSON columns. The
- * model now casts them with EncryptedArrayFallback; this backfill encrypts any pre-existing
- * plaintext rows so they too are encrypted at rest. Idempotent: rows that already decrypt are
- * skipped. Runs over the raw column values (DB::table) to bypass the model cast.
- */
+/** L7 — encrypt existing kyc_verifications.metadata / result_summary at rest. */
 return new class extends Migration
 {
     public function up(): void

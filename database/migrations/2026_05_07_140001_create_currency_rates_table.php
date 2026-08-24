@@ -4,23 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 9 — Table de stockage des taux de change.
- *
- * Une ligne = un taux à une date donnée :
- *   base_currency  → quote_currency  rate  effective_at
- *   EUR            → USD             1.087 2026-05-07 12:00
- *
- * Lookup : SELECT rate FROM currency_rates
- *          WHERE base_currency = 'EUR' AND quote_currency = 'USD'
- *          ORDER BY effective_at DESC LIMIT 1
- *
- * Mise à jour via job artisan `currencies:refresh` (à brancher sur ECB ou
- * un fournisseur tiers de ton choix : ExchangeRate-API, Fixer, Open Exchange Rates).
- *
- * Index unique sur (base, quote, effective_at) pour permettre l'historique
- * tout en empêchant les doublons exacts.
- */
+/** Phase 9 — Table de stockage des taux de change. */
 return new class extends Migration
 {
     public function up(): void

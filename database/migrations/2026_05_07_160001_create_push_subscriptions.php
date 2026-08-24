@@ -4,18 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 8 — Stockage des subscriptions Web Push.
- *
- * 1 (user, navigateur, device) = 1 subscription.
- * Un user peut avoir N subscriptions (laptop + smartphone + tablette).
- *
- * Les champs endpoint/p256dh/auth viennent de pushManager.subscribe() côté browser.
- * Pour envoyer une notif → minishlink/web-push (côté PHP) avec ces 3 valeurs
- * + les clés VAPID configurées dans .env.
- *
- * Approche défensive : if (! Schema::hasTable()) pour idempotence.
- */
+/** Phase 8 — Stockage des subscriptions Web Push. 1 (user, navigateur, device) = 1 subscription. */
 return new class extends Migration
 {
     public function up(): void

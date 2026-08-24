@@ -4,17 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Pivot Trade ↔ User — quels métiers un employé/prestataire peut exécuter.
- *
- * Convention : table nommée selon l'ordre alphabétique des modèles
- * (trade_user) pour suivre la convention Laravel BelongsToMany.
- *
- * Absence de ligne = l'employé n'a aucun métier rattaché → en phase de
- * transition, le dispatch fallback sur la liste complète pour ne pas
- * casser les déploiements existants où aucun employé n'a encore été
- * tagué (voir AiDispatchService::rankEmployees, filtre trade-aware).
- */
+/** Pivot Trade ↔ User — quels métiers un employé/prestataire peut exécuter. */
 return new class extends Migration
 {
     public function up(): void

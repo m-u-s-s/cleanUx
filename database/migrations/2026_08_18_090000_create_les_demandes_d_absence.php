@@ -4,21 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * LES CONGÉS ET ABSENCES (E21).
- *
- * Un salarié pose ses congés, un responsable approuve, et la répartition en tient compte. Ce
- * dernier point est tout l'intérêt : une demande approuvée qui n'empêche pas l'assignation ne sert
- * qu'à faire un tableau. Le prestataire reçoit sa course le premier jour de ses vacances, refuse, et
- * le moteur cherche quelqu'un d'autre — après avoir perdu vingt secondes et une occasion.
- *
- * TROIS ÉTATS, ET C'EST ASSEZ. `pending` attend, `approved` bloque le planning, `rejected` se
- * conserve — un refus qu'on efface, c'est une conversation qui recommence deux mois plus tard.
- *
- * LES DATES SONT DES JOURS, PAS DES HORODATAGES. Un congé se pose à la journée : le stocker à la
- * seconde ferait dépendre le blocage de l'heure exacte de saisie, et un congé posé à 14 h laisserait
- * la matinée assignable.
- */
+/** LES CONGÉS ET ABSENCES (E21). */
 return new class extends Migration
 {
     public function up(): void

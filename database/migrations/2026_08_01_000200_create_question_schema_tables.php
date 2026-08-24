@@ -4,18 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Niveau 3 du catalogue — le QUESTIONNAIRE — entièrement en données.
- *
- * Aucun secteur, aucun métier, aucune question n'est écrite en dur : un administrateur crée
- * « Espaces verts », y ajoute « Élagage », lui écrit six questions avec leur impact tarifaire, et
- * le parcours est en ligne. Sans déploiement, sans développeur.
- *
- * `trades.booking_form_schema` existe déjà et porte un schéma JSON. Il n'est pas touché : un blob
- * JSON ne se réordonne pas au glisser-déposer, ne se conditionne pas, ne s'audite pas et ne dit
- * pas quelle question fait abandonner 40 % des clients. Ces tables lui succèdent ; la bascule se
- * fera métier par métier, quand chacun aura ses questions relationnelles.
- */
+/** Niveau 3 du catalogue — le QUESTIONNAIRE — entièrement en données. */
 return new class extends Migration
 {
     public function up(): void
@@ -38,19 +27,11 @@ return new class extends Migration
             Schema::create('questions', function (Blueprint $table) {
                 $table->id();
 
-                /*
-                 * `trade_id` nullable = question GLOBALE, réutilisable entre métiers (étage, accès,
-                 * fourniture du matériel). C'est ce qui évite de réécrire quinze fois « Y a-t-il un
-                 * ascenseur ? » et, surtout, de le réécrire quinze fois différemment.
-                 */
+                // `trade_id` nullable = question GLOBALE, réutilisable entre métiers (étage, accès, fourniture du matériel).
                 $table->foreignId('trade_id')->nullable()->constrained('trades')->cascadeOnDelete();
                 $table->foreignId('step_id')->nullable()->constrained('question_steps')->nullOnDelete();
 
-                /*
-                 * `code` est la clé stable, et c'est LUI qui vit dans les réponses — jamais l'id.
-                 * Un identifiant numérique ne survit pas à un export/import entre environnements,
-                 * ni à la duplication d'un jeu de questions d'un métier vers un autre.
-                 */
+                // `code` est la clé stable, et c'est LUI qui vit dans les réponses — jamais l'id.
                 $table->string('code', 80);
 
                 $table->string('label');
@@ -76,27 +57,17 @@ return new class extends Migration
                 // présente autrement selon qu'elle a 2 ou 12 options.
                 $table->json('display')->nullable();
 
-                /*
-                 * La porte de sortie. Une question sans échappatoire est un mur : « je ne sais pas »
-                 * élargit la fourchette de prix au lieu de bloquer la progression.
-                 */
+                // La porte de sortie.
                 $table->boolean('allows_unknown')->default(true);
 
-                /*
-                 * Question ESSENTIELLE : seules celles-ci sont posées en mode immédiat. La vitesse
-                 * prime alors sur la précision, et la fourchette annoncée est simplement plus large.
-                 */
+                // Question ESSENTIELLE : seules celles-ci sont posées en mode immédiat.
                 $table->boolean('is_essential')->default(false);
 
                 $table->boolean('is_active')->default(true);
                 $table->timestamps();
                 $table->softDeletes();
 
-                /*
-                 * Un code unique par métier. MySQL tolérant plusieurs NULL dans un index unique, les
-                 * questions globales échappent à cette contrainte — elles sont peu nombreuses et
-                 * gérées à part.
-                 */
+                // Un code unique par métier.
                 $table->unique(['trade_id', 'code'], 'questions_trade_code_unique');
                 $table->index(['trade_id', 'is_active', 'sort_order']);
             });
@@ -156,13 +127,7 @@ return new class extends Migration
             });
         }
 
-        /*
-         * Versionnement du questionnaire d'un métier.
-         *
-         * Chaque publication fige le schéma complet. La commande retient la révision employée, ce
-         * qui permet de rejouer un devis vieux de six mois exactement tel qu'il a été calculé —
-         * même si le questionnaire a changé trois fois depuis.
-         */
+        // Versionnement du questionnaire d'un métier. Chaque publication fige le schéma complet.
         if (! Schema::hasTable('trade_form_revisions')) {
             Schema::create('trade_form_revisions', function (Blueprint $table) {
                 $table->id();

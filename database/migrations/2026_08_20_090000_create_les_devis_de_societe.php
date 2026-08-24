@@ -4,25 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * LE DEVIS BÂTI PAR LA SOCIÉTÉ (E24).
- *
- * CE QUI EXISTE NE COUVRE PAS CE CAS. `MultiTradeBundle` part du CLIENT : il décrit un chantier,
- * les prestataires répondent. `FinanceQuote` part d'une réservation DÉJÀ prise : c'est un document
- * comptable, pas une proposition commerciale. Entre les deux, il manquait le geste le plus ordinaire
- * d'une société de services — « je passe voir, je chiffre, je vous envoie ça » — qui n'existait que
- * dans l'écran d'administration de la plateforme, saisi à la main par un opérateur.
- *
- * LES LIGNES PORTENT UN MÉTIER, PAS UN LIBELLÉ LIBRE. Un devis « nettoyage + peinture » qui ne dit
- * pas quel métier fait quoi ne peut produire aucune mission à l'acceptation : c'est le métier qui
- * décide qui peut l'exécuter. Le libellé reste libre par-dessus, parce qu'un client lit « remise en
- * état des communs », pas « trade #4 ».
- *
- * LE PRIX EST FIGÉ À L'ENVOI, jamais recalculé. Un devis qu'on rouvre trois semaines plus tard après
- * un changement de tarif afficherait un autre montant que celui que le client a reçu — et personne
- * ne saurait expliquer l'écart. Le moteur de prix SUGGÈRE au moment de la saisie ; ce qui est envoyé
- * est ce qui a été écrit.
- */
+/** LE DEVIS BÂTI PAR LA SOCIÉTÉ (E24). CE QUI EXISTE NE COUVRE PAS CE CAS. */
 return new class extends Migration
 {
     public function up(): void
@@ -73,10 +55,7 @@ return new class extends Migration
                 $table->id();
 
                 $table->unsignedBigInteger('provider_quote_id');
-                /*
-                 * LE MÉTIER EST OBLIGATOIRE. C'est lui qui décide qui peut exécuter la ligne : sans
-                 * lui, l'acceptation ne peut produire aucune mission et le devis reste un PDF.
-                 */
+                // LE MÉTIER EST OBLIGATOIRE.
                 $table->unsignedBigInteger('trade_id');
                 $table->unsignedBigInteger('service_catalog_id')->nullable();
 

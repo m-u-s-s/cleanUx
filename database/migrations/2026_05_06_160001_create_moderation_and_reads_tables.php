@@ -4,23 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 4.1 — Tables et colonnes pour la modération des canaux et messages.
- *
- *   - messages.deleted_by         : qui a supprimé (auteur, mod, admin)
- *   - messages.deleted_reason     : motif modération
- *   - messages.is_pinned          : épinglé en tête de canal
- *   - messages.pinned_at / by     : audit pin
- *
- *   - channels.is_archived        : archivé (lecture seule)
- *   - channels.is_locked          : verrouillé (modos+ peuvent encore poster)
- *   - channels.archived_at / by   : audit
- *
- *   - message_reads               : lectures par utilisateur (read receipts)
- *   - moderation_actions          : journal d'actions modération
- *
- * Tout est additif et idempotent (Schema::hasColumn / hasTable).
- */
+/** Phase 4.1 — Tables et colonnes pour la modération des canaux et messages. */
 return new class extends Migration
 {
     public function up(): void

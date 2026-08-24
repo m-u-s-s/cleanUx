@@ -4,25 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * RATTRAPE LES FONDATEURS INSCRITS DEPUIS LE MOBILE.
- *
- * `/api/auth/register` posait `provider_type = 'company'` au fondateur d'une société prestataire,
- * là où l'inscription web pose `'company_worker'`. Or aucune lecture ne reconnaît `'company'` :
- * `isProviderCompanyWorker()` ne teste que `'company_worker'`, et `isEmploye()` en dépend.
- *
- * Ces comptes ne résolvaient donc NI en société NI en prestataire et retombaient sur le repli
- * `client_individuelle` — un patron de société de nettoyage traité en particulier, atterrissant
- * dans l'espace client, sans ses missions ni sa société, alors que son organisation existe et
- * qu'il y porte le rôle `owner`.
- *
- * LE CRITÈRE EST L'ORGANISATION, PAS LE SEUL TYPE. On ne convertit que les profils rattachés à une
- * organisation de type `provider_company` : un profil `'company'` sans organisation serait une
- * donnée d'une autre nature, et la deviner serait pire que la laisser.
- *
- * IRRÉVERSIBLE PAR CHOIX. `down()` ne remet pas `'company'` : cette valeur n'a jamais été lue par
- * personne, la restaurer ne rendrait aucun service et recréerait le défaut.
- */
+/** RATTRAPE LES FONDATEURS INSCRITS DEPUIS LE MOBILE. */
 return new class extends Migration
 {
     public function up(): void

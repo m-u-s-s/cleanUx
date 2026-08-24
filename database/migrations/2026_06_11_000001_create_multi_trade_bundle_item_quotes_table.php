@@ -4,13 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Bundle Marketplace P1 — devis concurrents par item de chantier groupé.
- *
- * Le modèle d'origine ne portait qu'UN devis par item (assigned_provider_user_id +
- * quoted_price_cents). Pour une vraie marketplace (plusieurs prestataires quotent,
- * le client compare et choisit), chaque item peut recevoir N devis ici.
- */
+/** Bundle Marketplace P1 — devis concurrents par item de chantier groupé. */
 return new class extends Migration
 {
     public function up(): void

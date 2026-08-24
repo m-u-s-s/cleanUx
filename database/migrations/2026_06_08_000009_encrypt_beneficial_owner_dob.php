@@ -6,14 +6,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * L7 (part 2) — encrypt business_beneficial_owners.date_of_birth at rest.
- *
- * The column was a DATE, which cannot hold ciphertext, so first widen it to a string, then
- * encrypt any existing plaintext values in place (idempotent: rows that already decrypt are
- * skipped). The model casts it with EncryptedStringFallback, which reads legacy plaintext
- * gracefully until this backfill runs.
- */
+/** L7 (part 2) — encrypt business_beneficial_owners.date_of_birth at rest. */
 return new class extends Migration
 {
     public function up(): void

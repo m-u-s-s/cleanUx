@@ -4,15 +4,7 @@ use App\Models\ProviderWalletTransaction;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * M4 — correct historical wallet balances after removing the erroneous platform-fee debit.
- *
- * recordEarning() used to credit the NET earning AND debit the platform fee, leaving the wallet
- * at net − fee (= total − 2×commission). The debit is no longer written. For every existing
- * platform_fee debit we add a reversing adjustment_credit of the same amount (the ledger is
- * immutable — we reverse rather than delete), so balances self-correct to the real net payout.
- * Idempotent: skips debits that already have a reversal.
- */
+/** M4 — correct historical wallet balances after removing the erroneous platform-fee debit. */
 return new class extends Migration
 {
     public function up(): void

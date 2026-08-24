@@ -4,14 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Index additionnels pour les filtres de recherche client.
- *
- * - provider_profiles : composite (status, verification_status, rating_avg) pour
- *   les listes filtrées par rating
- * - service_catalogs : (is_active, is_featured, sort_order) pour grilles
- * - postal_codes : (city_name) pour autocomplétion (préfixe LIKE)
- */
+/** Index additionnels pour les filtres de recherche client. */
 return new class extends Migration
 {
     public function up(): void

@@ -4,18 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * LE FIL DE DISCUSSION D'UNE RÉCLAMATION CLIENT.
- *
- * L'écran des litiges du client affiche un échange — « Vous », « Support Brio », « Système » —
- * et propose d'y répondre. Rien ne le stockait : `customer_claims` porte la réclamation, pas
- * la conversation qui suit.
- *
- * TABLE DÉDIÉE À `customer_claims`, ET SEULEMENT À ELLE. Le dépôt porte un second modèle de
- * litige, `ComplaintCase`, avec ses propres `complaint_events` : on n'y touche pas. Deux
- * modèles coexistent pour des raisons qui leur appartiennent, et les mêler ici créerait
- * précisément la confusion qu'on cherche à éviter.
- */
+/** LE FIL DE DISCUSSION D'UNE RÉCLAMATION CLIENT. */
 return new class extends Migration
 {
     public function up(): void

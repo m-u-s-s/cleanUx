@@ -4,22 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 6.1 — Templates pré-définis pour création de récurrences en 1 clic.
- *
- * Différence avec recurring_booking_series (Phase 6) :
- *   - recurring_booking_series : INSTANCES actives (1 série = X bookings générés)
- *   - recurring_templates       : MODÈLES réutilisables ("Hebdo bureaux 5j",
- *                                 "Bi-mensuel commerces", etc.)
- *
- * Workflow :
- *   1. User choisit un template ("Hebdo bureaux 5j") dans la galerie
- *   2. Pré-remplit le flow PrendreRendezVous avec la config du template
- *   3. User valide (peut-être ajuster) → crée une RecurringBookingSeries
- *
- * Templates système : is_system=true, créés par seeder (catalogue commun).
- * Templates user : is_system=false, owner_user_id ou owner_organization_id.
- */
+/** Phase 6.1 — Templates pré-définis pour création de récurrences en 1 clic. */
 return new class extends Migration
 {
     public function up(): void

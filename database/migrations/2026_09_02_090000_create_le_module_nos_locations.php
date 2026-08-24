@@ -4,48 +4,12 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * NOS LOCATIONS — LA PLATEFORME LOUE SES PROPRES VÉHICULES À SES CLIENTS.
- *
- * ── CE MODULE N'EST PAS FLEET, ET LA DISTINCTION EST LA PREMIÈRE RÈGLE ───────────────────────
- *
- * `fleet_vehicles` est un registre d'EMPLOYEUR : ce qu'une société possède et confie à ses propres
- * exécutants pour aller travailler. Le prêt y est interne, gratuit, tracé pour savoir qui répond du
- * retour. Rien n'y est vendu.
- *
- * Ici, le véhicule est un PRODUIT vendu à un client final, avec un prix par jour, une caution, une
- * garantie optionnelle, un permis à vérifier et une agence où venir le chercher. Les deux notions
- * partagent le mot « véhicule » et absolument rien d'autre — les mélanger aurait fait porter à une
- * même table deux cycles de vie qui ne se rencontrent jamais, et c'est le défaut le plus fréquent
- * de ce dépôt. Fleet n'est pas modifié d'une ligne.
- *
- * ── CE QUE CHAQUE TABLE PORTE ────────────────────────────────────────────────────────────────
- *
- * `rental_pickup_points` — les agences. Le client vient chercher la voiture quelque part, et cette
- * adresse s'affiche sur sa confirmation ; elle est administrée, pas écrite en dur.
- *
- * `rental_vehicles` — le catalogue. Prix, caution, garantie, contraintes de permis, et l'état
- * `is_active` qui décide seul de la présence au catalogue.
- *
- * `rental_vehicle_media` — les images. Une galerie, une séquence de rotation à 360°, ou un modèle
- * 3D : le type discrimine, et l'administrateur choisit VÉHICULE PAR VÉHICULE.
- *
- * `rental_bookings` — les locations. Elles portent le prix FIGÉ au moment de la réservation :
- * relire le tarif du véhicule des mois plus tard donnerait un autre chiffre que celui accepté par
- * le client.
- */
+/** NOS LOCATIONS — LA PLATEFORME LOUE SES PROPRES VÉHICULES À SES CLIENTS. */
 return new class extends Migration
 {
     public function up(): void
     {
-        /*
-         * LES AGENCES DE RETRAIT.
-         *
-         * Une table plutôt qu'une adresse recopiée sur chaque véhicule : dix voitures au même
-         * comptoir doivent donner UNE adresse à corriger, pas dix. Et le jour où l'agence déménage,
-         * les locations déjà confirmées gardent l'adresse qu'on avait promise — d'où la copie
-         * figée sur `rental_bookings`, plus bas.
-         */
+        // LES AGENCES DE RETRAIT.
         if (! Schema::hasTable('rental_pickup_points')) {
             Schema::create('rental_pickup_points', function (Blueprint $table) {
                 $table->id();
@@ -100,13 +64,7 @@ return new class extends Migration
                 // Equipements coches par l'administrateur (climatisation, GPS, siege enfant...).
                 $table->json('features')->nullable();
 
-                /*
-                 * L'ARGENT EST EN CENTIMES, ENTIER, comme partout ailleurs dans ce depot.
-                 *
-                 * Un `decimal` sur des prix journaliers multiplies par un nombre de jours ramene
-                 * des arrondis que personne ne verifie. La devise accompagne le montant : elle
-                 * suit le pays de l'agence, jamais une constante.
-                 */
+                // L'ARGENT EST EN CENTIMES, ENTIER, comme partout ailleurs dans ce depot.
                 $table->unsignedInteger('daily_price_cents');
                 $table->string('currency', 3)->default('EUR');
 
@@ -130,13 +88,7 @@ return new class extends Migration
                 $table->foreignId('pickup_point_id')->nullable()
                     ->constrained('rental_pickup_points')->nullOnDelete();
 
-                /*
-                 * `is_active` DECIDE SEUL DE LA PRESENCE AU CATALOGUE.
-                 *
-                 * C'est l'interrupteur que l'administrateur cherche : une voiture vendue, en
-                 * reparation longue ou retiree du parc se retire d'un clic, sans supprimer son
-                 * historique de locations.
-                 */
+                // `is_active` DECIDE SEUL DE LA PRESENCE AU CATALOGUE.
                 $table->boolean('is_active')->default(false);
                 $table->unsignedInteger('sort_order')->default(0);
 
@@ -157,17 +109,7 @@ return new class extends Migration
 
                 $table->foreignId('rental_vehicle_id')->constrained()->cascadeOnDelete();
 
-                /*
-                 * TROIS NATURES D'IMAGE, ET C'EST LE TYPE QUI LES SEPARE.
-                 *
-                 *   `gallery`  photos classiques, celle de position 0 sert de vignette au catalogue
-                 *   `spin`     une sequence prise tout autour du vehicule ; l'ordre EST le sens de
-                 *              rotation, d'ou `position` qui ne peut pas etre nul
-                 *   `model3d`  un fichier glTF/GLB unique
-                 *
-                 * L'administrateur choisit VEHICULE PAR VEHICULE : une voiture peut avoir sa
-                 * rotation photo, une autre son modele 3D, une troisieme aucun des deux.
-                 */
+                // TROIS NATURES D'IMAGE, ET C'EST LE TYPE QUI LES SEPARE.
                 $table->string('type', 16);
                 $table->string('path');
                 $table->unsignedSmallInteger('position')->default(0);
@@ -211,14 +153,7 @@ return new class extends Migration
                 // la confirmation lui montre les deux totaux pour qu'il compare.
                 $table->string('protection', 16)->default('none');
 
-                /*
-                 * LE PRIX EST FIGE ICI, ET CE N'EST PAS UNE DUPLICATION.
-                 *
-                 * Relire le tarif du vehicule des mois plus tard donnerait un autre chiffre que
-                 * celui accepte par le client -- les tarifs bougent, c'est meme le travail de
-                 * l'administrateur. Une reservation doit pouvoir se relire telle qu'elle a ete
-                 * conclue, y compris devant un litige.
-                 */
+                // LE PRIX EST FIGE ICI, ET CE N'EST PAS UNE DUPLICATION.
                 $table->unsignedInteger('daily_price_cents');
                 $table->unsignedInteger('subtotal_cents');
                 $table->unsignedInteger('waiver_total_cents')->default(0);
@@ -248,13 +183,7 @@ return new class extends Migration
 
                 $table->timestamps();
 
-                /*
-                 * L'INDEX QUI PORTE LA DISPONIBILITE.
-                 *
-                 * « Ce vehicule est-il libre du 3 au 7 ? » se pose a chaque affichage du catalogue
-                 * et a chaque formulaire. Sans lui, la recherche de chevauchement balaie toute la
-                 * table des la premiere centaine de locations.
-                 */
+                // L'INDEX QUI PORTE LA DISPONIBILITE. « Ce vehicule est-il libre du 3 au 7 ?
                 $table->index(['rental_vehicle_id', 'status', 'starts_at', 'ends_at'], 'rental_bookings_dispo_index');
                 $table->index(['status', 'starts_at'], 'rental_bookings_statut_debut_index');
             });

@@ -4,23 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * LE RÉFÉRENT D'UNE SOCIÉTÉ PRESTATAIRE SUR UN SITE CLIENT.
- *
- * Une société de nettoyage qui dessert vingt immeubles y place des habitués : celui qui connaît le
- * code de la porte, l'ascenseur en panne et l'étage à ne pas déranger avant 10 h. Cette
- * connaissance n'existait nulle part — chaque mission repartait d'une page blanche, et le
- * répartiteur choisissait de mémoire.
- *
- * POURQUOI UNE TABLE ET PAS LE PIVOT EXISTANT. `organization_member_site_access` relie un site aux
- * membres de l'organisation QUI POSSÈDE ce site — un facility manager et ses locaux. Ici, la
- * relation va dans l'autre sens : une organisation PRESTATAIRE désigne l'un des siens sur le site
- * d'un CLIENT. Les deux ne partagent ni les colonnes, ni les gardes, ni le sens ; les confondre
- * aurait donné à un employé du prestataire un droit sur les locaux du client.
- *
- * `role` distingue le titulaire du remplaçant : `lead` est celui qu'on suggère, `backup` celui
- * qu'on suggère quand le premier est déjà pris.
- */
+/** LE RÉFÉRENT D'UNE SOCIÉTÉ PRESTATAIRE SUR UN SITE CLIENT. */
 return new class extends Migration
 {
     public function up(): void
@@ -50,13 +34,7 @@ return new class extends Migration
 
             $table->timestamps();
 
-            /*
-             * Noms d'index EXPLICITES et courts : MySQL plafonne les identifiants à 64 caractères,
-             * limite que SQLite ignore — la migration passerait la suite de tests et casserait en
-             * production. Le nom auto-généré ici
-             * (`provider_site_assignments_provider_organization_id_organization_site_id_user_id_unique`)
-             * ferait 86 caractères.
-             */
+            // Noms d'index EXPLICITES et courts : MySQL plafonne les identifiants à 64 caractères, limite que SQLite ignore — la migration passerait la suite de tests et casserait en production.
             $table->unique(
                 ['provider_organization_id', 'organization_site_id', 'user_id'],
                 'psa_org_site_user_unique'

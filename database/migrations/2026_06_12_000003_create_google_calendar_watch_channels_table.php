@@ -4,10 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * GCal bidirectionnel — canaux de notification push (Google watch). Permet de
- * router une notification entrante vers la bonne connexion/prestataire.
- */
+/** GCal bidirectionnel — canaux de notification push (Google watch). */
 return new class extends Migration
 {
     public function up(): void

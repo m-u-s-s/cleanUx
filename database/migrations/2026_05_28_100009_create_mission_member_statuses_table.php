@@ -4,14 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Schema-drift repair: create the `mission_member_statuses` table.
- *
- * App\Models\MissionMemberStatus is created/updated by
- * App\Services\Missions\TeamLeadOperationsService and is the target of the
- * MissionTaskSegmentAssignment hasMany relation, but no migration ever created
- * its table. Columns derived from $fillable / $casts.
- */
+/** Schema-drift repair: create the `mission_member_statuses` table. */
 return new class extends Migration
 {
     public function up(): void

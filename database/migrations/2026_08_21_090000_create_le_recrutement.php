@@ -4,26 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * LE RECRUTEMENT D'UNE SOCIÉTÉ PRESTATAIRE (E25).
- *
- * LA DERNIÈRE ÉTAPE EXISTE DÉJÀ, ET C'EST TOUT L'INTÉRÊT. L'invitation à jeton conclut le
- * recrutement depuis longtemps : elle crée le compte, l'adhésion, le rôle. Ce qui manquait est
- * AVANT — l'offre, les candidatures, le tri. Une société qui recrute passait donc par une annonce
- * ailleurs, un échange de courriels, puis revenait ici pour envoyer une invitation à quelqu'un dont
- * la plateforme n'avait jamais entendu parler. La moitié du recrutement se faisait hors de l'outil,
- * et le lien entre les deux n'existait dans aucune donnée.
- *
- * QUATRE ÉTAPES, ET C'EST ASSEZ. `received` → `shortlisted` → `hired` | `rejected`. Un pipeline plus
- * fin — entretien téléphonique, entretien technique, période d'essai — décrit le processus d'une
- * grande entreprise, pas celui d'une société de dix personnes qui embauche trois fois par an. Les
- * étapes qu'on n'utilise pas ne se remplissent pas, et un pipeline à moitié rempli ment.
- *
- * LES CANDIDATS NE SONT PAS DES UTILISATEURS. Quelqu'un qui postule n'a pas de compte, et exiger
- * qu'il en crée un avant de postuler diviserait les candidatures par cinq. Le nom, le courriel et le
- * téléphone vivent donc sur la candidature — et `user_id` reste nullable, rempli seulement si la
- * personne se trouve déjà être quelqu'un de la plateforme.
- */
+/** LE RECRUTEMENT D'UNE SOCIÉTÉ PRESTATAIRE (E25). */
 return new class extends Migration
 {
     public function up(): void
@@ -71,11 +52,7 @@ return new class extends Migration
 
                 $table->unsignedBigInteger('job_posting_id');
 
-                /*
-                 * LE CANDIDAT N'EST PAS UN UTILISATEUR. Exiger un compte avant de postuler
-                 * diviserait les candidatures par cinq ; `user_id` n'est rempli que si la personne
-                 * se trouve déjà être quelqu'un de la plateforme.
-                 */
+                // LE CANDIDAT N'EST PAS UN UTILISATEUR.
                 $table->unsignedBigInteger('user_id')->nullable();
                 $table->string('full_name', 160);
                 $table->string('email', 190);

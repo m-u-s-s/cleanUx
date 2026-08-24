@@ -4,26 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 1 — Service Options.
- *
- * Variables qu'un client paramètre quand il commande un service.
- * Ex pour "Nettoyage bureaux":
- *   - "Surface (m²)"     type=number, unit=m²
- *   - "Fréquence"        type=select, values=[unique,hebdo,mensuel]
- *   - "Vitres extérieures"   type=boolean
- *
- * Le price_modifier permet de calculer le prix final à partir du base_price
- * du ServiceCatalog parent :
- *   - 'percent' : +X% du base_price
- *   - 'fixed'   : +X€ ajoutés
- *   - 'per_unit': X€ par unité saisie (ex: 1.5€/m²)
- *   - 'none'    : ne touche pas au prix (info seulement)
- *
- * NB: ServiceCatalog a déjà une colonne `options` (json). Cette table est
- * un upgrade STRUCTURÉ : on peut continuer à utiliser la json `options`
- * pour les services legacy, et migrer progressivement vers cette table.
- */
+/** Phase 1 — Service Options. Variables qu'un client paramètre quand il commande un service. */
 return new class extends Migration
 {
     public function up(): void

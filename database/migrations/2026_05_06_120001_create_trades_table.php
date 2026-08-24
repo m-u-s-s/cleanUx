@@ -4,15 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 1 — Multi-métiers.
- *
- * Crée la couche "Trade" (corps de métier) qui regroupe les ServiceCatalog existants
- * et permet d'en ajouter de nouveaux : Bâtiment, Peinture, Levage, etc.
- *
- * Cette table est créée vide ; le seed crée le Trade "Nettoyage" et y rattache
- * tous les ServiceCatalog existants (cf. ServiceCatalogTradeBackfillSeeder).
- */
+/** Phase 1 — Multi-métiers. */
 return new class extends Migration
 {
     public function up(): void

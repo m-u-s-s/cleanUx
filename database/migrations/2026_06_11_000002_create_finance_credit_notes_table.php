@@ -4,11 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Audit HIGH — avoirs (credit notes). Conformité comptable BE/FR : tout
- * remboursement client doit donner lieu à un avoir numéroté, daté, référençant
- * la prestation/facture d'origine.
- */
+/** Audit HIGH — avoirs (credit notes). */
 return new class extends Migration
 {
     public function up(): void

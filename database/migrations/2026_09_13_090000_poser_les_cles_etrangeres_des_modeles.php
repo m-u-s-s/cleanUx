@@ -5,33 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * LES CONTRAINTES QUE SEULS LES MODÈLES POUVAIENT DÉSIGNER.
- *
- * La migration précédente a posé les 197 clés étrangères dont le nom de colonne suffisait à
- * déduire la table parente (`commune_id` → `communes`). Il restait 61 colonnes dont le nom ne dit
- * rien de vrai :
- *
- *   `rendez_vous_id`         — la table `rendez_vous` N'EXISTE PLUS. Depuis la fusion, la colonne
- *                              pointe vers `bookings`, et dix tables la portent encore sous
- *                              l'ancien nom. Aucune déduction sur le nom ne pouvait le trouver.
- *   `sender_id`, `chosen_user_id`, `actor_user_id`, `preferred_provider_id` — tous `users`.
- *   `recurring_series_id`    — AUTO-RÉFÉRENCE : la réservation mère d'une série est une
- *                              réservation.
- *   `parent_zone_id`         — auto-référence aussi : la hiérarchie des zones.
- *
- * Ces 36 couples ne viennent pas d'une devinette mais des `belongsTo()` déclarés dans les modèles,
- * lus par `scripts/relations_declarees.php` (542 relations trouvées). C'est la même règle que pour
- * `getTable()` : la vérité est dans le code, jamais dans le nom.
- *
- * Les 25 colonnes qui restent après celle-ci n'ont AUCUNE relation déclarée nulle part. Elles ne
- * sont pas traitées ici : poser une contrainte vers une table devinée serait pire que ne rien
- * poser. Elles sont à examiner une par une.
- *
- * Même prudence que la migration précédente : chaque contrainte est précédée d'un comptage
- * d'orphelins, et sautée plutôt qu'imposée s'il en reste. Une migration qui casse un déploiement
- * n'est pas une amélioration.
- */
+/** LES CONTRAINTES QUE SEULS LES MODÈLES POUVAIENT DÉSIGNER. */
 return new class extends Migration
 {
     /**
@@ -40,20 +14,7 @@ return new class extends Migration
      * @var array<string, list<array{0:string,1:string,2:bool,3:string}>>
      */
     private array $contraintes = [
-        /*
-         * `bookings.recurring_series_id` A ÉTÉ RETIRÉE DE CETTE TABLE.
-         *
-         * Le modèle la déclare `belongsTo(Booking::class)`, ce qui l'avait fait entrer ici. La suite
-         * complète l'a rejetée, et la cause est plus grave qu'un mauvais parent : cette colonne
-         * reçoit TROIS choses différentes selon qui l'écrit — un UUID
-         * (`CreateRecurringSeriesAction`), l'identifiant d'une `recurring_booking_series`
-         * (`ProcessRecurringBookings`), et un identifiant de réservation selon le modèle. La colonne
-         * est un `bigint unsigned` : le UUID n'y entre même pas.
-         *
-         * Aucune clé étrangère ne peut être juste tant que ces trois usages coexistent. Voir
-         * `2026_09_15_090000_retirer_la_contrainte_sur_recurring_series_id`, qui la défait sur les
-         * bases où elle a déjà été posée.
-         */
+        // `bookings.recurring_series_id` A ÉTÉ RETIRÉE DE CETTE TABLE.
         'cancellation_question_options' => [
             ['exempt_reason_id', 'cancellation_exempt_reasons', true, 'fk_cancel_q_options_exempt_reason'],
         ],
@@ -207,12 +168,7 @@ return new class extends Migration
         }
     }
 
-    /**
-     * Combien de lignes pointent vers un parent qui n'existe pas ?
-     *
-     * NULL n'est pas orphelin : une colonne nullable vide est un « pas de lien », que la contrainte
-     * accepte. Seule une valeur renseignée sans parent correspondant bloquerait la migration.
-     */
+    /** Combien de lignes pointent vers un parent qui n'existe pas ? */
     private function orphelins(string $table, string $colonne, string $parent): int
     {
         return (int) DB::table($table)

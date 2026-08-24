@@ -4,28 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * L'INVENTAIRE DES CONSOMMABLES (E23), ET CE QUI SE CONSOMME SUR PLACE (F7).
- *
- * Une société de nettoyage achète des produits, des sacs, des recharges, et les distribue à ses
- * équipes. Aujourd'hui ce suivi se fait sur un tableur, quand il se fait : personne ne sait ce qui
- * reste dans quelle agence, et on découvre la rupture le matin où une équipe part sans produit.
- *
- * DEUX TABLES, ET LA SECONDE EST LA PLUS IMPORTANTE.
- *
- * `inventory_items` porte l'article et son STOCK COURANT. `inventory_movements` porte chaque
- * mouvement — réception, consommation sur mission, ajustement d'inventaire — avec sa cause. Le
- * stock courant seul répondrait « il reste douze » sans jamais pouvoir répondre « pourquoi ». Or la
- * question qui se pose vraiment quand un stock fond, c'est la seconde.
- *
- * LE STOCK EST PAR AGENCE, jamais global. Une société qui opère à Bruxelles et à Liège ne partage
- * pas ses cartons : un total consolidé annoncerait du stock disponible à quarante kilomètres de
- * l'équipe qui en a besoin.
- *
- * LE SEUIL D'ALERTE VIT SUR L'ARTICLE, parce qu'il dépend de l'article et pas du magasin : deux
- * sacs de rechange ne s'alertent pas au même niveau que deux bidons de dégraissant, dont le délai
- * de réappro est de trois semaines.
- */
+/** L'INVENTAIRE DES CONSOMMABLES (E23), ET CE QUI SE CONSOMME SUR PLACE (F7). */
 return new class extends Migration
 {
     public function up(): void

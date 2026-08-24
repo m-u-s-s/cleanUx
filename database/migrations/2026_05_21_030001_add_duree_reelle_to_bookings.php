@@ -5,17 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Schema drift fix : `duree_reelle` (minutes) référencée dans 7+ fichiers code
- * (AdminDashboardInsights, MesRendezVous, AnalyticsCenter, etc.) mais perdue
- * lors de la refonte de migrations.
- *
- * Cette migration :
- *   1. Ajoute `bookings.duree_reelle` (int nullable) si absent
- *   2. Backfill depuis `mission_finished_at - mission_started_at` quand
- *      les deux sont set (minutes)
- *   3. Schema-defensive : skip si bookings n'existe pas
- */
+/** Schema drift fix : `duree_reelle` (minutes) référencée dans 7+ fichiers code (AdminDashboardInsights, MesRendezVous, AnalyticsCenter, etc.) mais perdue lors de la refonte de migrations. */
 return new class extends Migration
 {
     public function up(): void

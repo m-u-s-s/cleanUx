@@ -4,29 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * LE CARNET DE LIEUX D'UN CLIENT (E2), ET LE BÉNÉFICIAIRE D'UNE COMMANDE (E1).
- *
- * E2 — UN CLIENT A PLUSIEURS LIEUX, et la plateforme n'en connaissait qu'un : `customer_profiles`
- * porte UNE adresse par défaut. Quelqu'un qui fait nettoyer son appartement et la maison de sa mère
- * retape l'adresse, l'étage et le code à chaque commande — et se trompe une fois sur cinq, ce qui
- * envoie un prestataire à la mauvaise porte.
- *
- * CE QUI COMPTE N'EST PAS L'ADRESSE, ce sont les CONSIGNES qui l'accompagnent. L'étage, le digicode,
- * la clé chez la voisine, le chien qui aboie, l'allergie aux produits chlorés : ces informations se
- * redonnent oralement à chaque nouveau prestataire, ou se perdent. Elles vivent donc ici, et la
- * fiche d'accès sur place (F5) les lit — c'est ce lien qui fait la différence entre un carnet
- * d'adresses et un vrai carnet de lieux.
- *
- * LES CONSIGNES D'ACCÈS SONT DES CLÉS DE DOMICILE. Elles ne se révèlent au prestataire qu'à
- * l'arrivée confirmée sur place, exactement comme celles d'un site d'entreprise : c'est
- * `MissionAccessSheetService` qui garde cette porte, et rien ici ne l'affaiblit.
- *
- * E1 — RÉSERVER POUR UN PROCHE. Le client paye, quelqu'un d'autre reçoit. Aujourd'hui ce cas se
- * bricole dans le commentaire libre : le prestataire arrive en demandant M. Dupont et trouve sa
- * mère, qui n'attendait personne. Trois colonnes ADDITIVES sur le panier et sur la réservation
- * suffisent — et le suivi partagé (E3) s'adresse alors à la bonne personne.
- */
+/** LE CARNET DE LIEUX D'UN CLIENT (E2), ET LE BÉNÉFICIAIRE D'UNE COMMANDE (E1). */
 return new class extends Migration
 {
     public function up(): void
@@ -59,11 +37,7 @@ return new class extends Migration
                 $table->string('access_start_time', 5)->nullable();
                 $table->string('access_end_time', 5)->nullable();
 
-                /*
-                 * PRODUITS, ALLERGIES, ANIMAUX. En JSON parce que la liste s'allonge avec les
-                 * métiers : une colonne par préférence obligerait à migrer la table chaque fois
-                 * qu'un métier arrive.
-                 */
+                // PRODUITS, ALLERGIES, ANIMAUX.
                 $table->json('preferences')->nullable();
 
                 $table->boolean('is_default')->default(false);
@@ -80,13 +54,7 @@ return new class extends Migration
             });
         }
 
-        /*
-         * LE BÉNÉFICIAIRE — trois colonnes ADDITIVES, sur les deux tables du parcours.
-         *
-         * Sur le panier ET sur la réservation : le panier parce que l'information se saisit là, la
-         * réservation parce qu'elle doit survivre à la conversion — un bénéficiaire qui ne
-         * franchirait pas la confirmation ne servirait à personne.
-         */
+        // LE BÉNÉFICIAIRE — trois colonnes ADDITIVES, sur les deux tables du parcours.
         foreach (['order_drafts', 'bookings'] as $table) {
             if (! Schema::hasTable($table) || Schema::hasColumn($table, 'beneficiary_name')) {
                 continue;

@@ -6,14 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * L4 — add referential-integrity constraints to type-FK columns that the "fix/roundN" migrations
- * added as bare unsignedBigInteger (no ->constrained()).
- *
- * SQLite cannot ALTER TABLE ADD a foreign key on an existing table, so this migration is a no-op
- * on SQLite (incl. the test suite) and only runs on MySQL/Postgres. Each constraint is added
- * independently (orphan values are nullified first, then a guarded try/catch) so one
- * already-present/incompatible FK can't fail the whole migration. Only columns with an
- * unambiguous target table are constrained here.
+ * L4 — add referential-integrity constraints to type-FK columns that the "fix/roundN" migrations added as bare unsignedBigInteger (no ->constrained()).
  *
  * @see docs/AUDIT-QUARANTINE-BATCH.md (remaining ambiguous columns: channel_id, finance_*).
  */

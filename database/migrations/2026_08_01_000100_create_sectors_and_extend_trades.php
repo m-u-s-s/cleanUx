@@ -4,21 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Niveau 1 du catalogue — le SECTEUR — et raccordement des métiers existants.
- *
- * `trades` existe déjà et porte 12 lignes vivantes, avec ses tarifs, ses multiplicateurs et ses
- * certifications. Créer une seconde table de métiers pour le moteur de commande aurait produit
- * exactement le doublon mort qui a déjà coûté la suppression de `tenancy_v2` sur ce projet : deux
- * vérités pour la même chose, et personne pour savoir laquelle fait foi.
- *
- * On ÉTEND donc. Toutes les colonnes ajoutées sont facultatives ou pourvues d'un défaut : les 12
- * métiers existants restent valides sans reprise de données, et deviennent pilotables depuis le
- * nouveau constructeur de parcours au fur et à mesure qu'un administrateur les renseigne.
- *
- * `sector_id` est nullable à dessein — un métier sans secteur reste utilisable par le reste de la
- * plateforme, il n'apparaît simplement pas encore dans le carrousel du parcours de commande.
- */
+/** Niveau 1 du catalogue — le SECTEUR — et raccordement des métiers existants. */
 return new class extends Migration
 {
     public function up(): void
@@ -36,21 +22,13 @@ return new class extends Migration
                 $table->string('icon', 80)->nullable();
                 $table->string('cover_image_path')->nullable();
 
-                /*
-                 * Couleur d'accent du secteur. C'est le SEUL endroit où la couleur est saturée
-                 * (direction artistique) : la carte active s'en teinte, tout le reste vit en
-                 * neutres. Stockée en hexadécimal pour rester lisible en base.
-                 */
+                // Couleur d'accent du secteur.
                 $table->string('accent_color', 9)->nullable();
 
                 $table->unsignedInteger('sort_order')->default(0);
                 $table->boolean('is_active')->default(true);
 
-                /*
-                 * Brouillon / publié. `is_active` dit « visible » ; `published_at` dit « a déjà été
-                 * mis en ligne au moins une fois ». Les deux sont nécessaires : un administrateur
-                 * doit pouvoir préparer un secteur entier sans qu'il fuite en production.
-                 */
+                // Brouillon / publié.
                 $table->timestamp('published_at')->nullable();
 
                 $table->timestamps();
@@ -85,11 +63,7 @@ return new class extends Migration
                 $table->unsignedInteger('min_duration_min')->nullable()->after('estimated_duration_min');
             }
 
-            /*
-             * Tous les métiers ne se prêtent pas aux trois modes : un ravalement de façade n'est pas
-             * un service immédiat. Le défaut est donc DÉLIBÉRÉMENT asymétrique — planifié ouvert,
-             * immédiat fermé. Ouvrir l'ASAP est une décision d'administrateur, jamais un oubli.
-             */
+            // Tous les métiers ne se prêtent pas aux trois modes : un ravalement de façade n'est pas un service immédiat.
             if (! Schema::hasColumn('trades', 'allows_scheduled')) {
                 $table->boolean('allows_scheduled')->default(true)->after('min_duration_min');
             }
@@ -105,10 +79,7 @@ return new class extends Migration
             }
         });
 
-        /*
-         * « Souvent commandé avec » du mode multi-services : les associations sont des DONNÉES,
-         * configurables par l'administrateur sur chaque métier, jamais une liste écrite en dur.
-         */
+        // « Souvent commandé avec » du mode multi-services : les associations sont des DONNÉES, configurables par l'administrateur sur chaque métier, jamais une liste écrite en dur.
         if (! Schema::hasTable('trade_bundle_suggestions')) {
             Schema::create('trade_bundle_suggestions', function (Blueprint $table) {
                 $table->id();

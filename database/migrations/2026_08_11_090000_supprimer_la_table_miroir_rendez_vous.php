@@ -4,31 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * SUPPRIMER `rendez_vous`, LA COPIE DE `bookings`.
- *
- * DEUX TABLES DÉCRIVAIENT LA MÊME RÉSERVATION. `bookings` en portait 143 colonnes ; `rendez_vous`
- * en recopiait 34, réécrites à chaque enregistrement par un crochet de modèle dont l'écriture était
- * enveloppée dans un `catch` muet. Un échec de recopie ne laissait donc AUCUNE trace : la copie
- * divergeait en silence, et la plateforme continuait de décider dessus. `SmartDispatchService` y
- * comptait les missions du jour d'un prestataire pour choisir à qui confier la suivante, et
- * `GestionUtilisateurs` y filtrait les comptes par zone. Une donnée dont on ignore si elle est à
- * jour est pire qu'une donnée absente : l'absence se voit.
- *
- * CE QUI A ÉTÉ VÉRIFIÉ AVANT DE SUPPRIMER, et qui rend le geste sûr :
- *
- *  - AUCUNE clé étrangère du schéma ne désigne `rendez_vous`. Rien ne s'y accroche.
- *  - Ses 34 colonnes sont un sous-ensemble strict de `bookings` : la copie n'a jamais rien porté
- *    que l'original n'ait déjà.
- *  - Chaque ligne du miroir existe dans `bookings` sous le même identifiant. Rien à sauver.
- *  - Plus aucun code ne la lit ni ne l'écrit : le crochet du modèle, celui du seeder, le modèle
- *    `RendezVous` lui-même et les deux dernières lectures (marge du tableau de bord, état de
- *    service) ont été rebranchés sur `bookings` ou retirés.
- *
- * LE RETOUR ARRIÈRE RECRÉE LA FORME, PAS L'HISTOIRE. Il rebâtit la table vide : comme le miroir
- * n'a jamais rien contenu d'unique, une recopie depuis `bookings` la reconstituerait à l'identique
- * si le besoin renaissait. Les index sont posés sur les colonnes qui les portaient.
- */
+/** SUPPRIMER `rendez_vous`, LA COPIE DE `bookings`. DEUX TABLES DÉCRIVAIENT LA MÊME RÉSERVATION. */
 return new class extends Migration
 {
     public function up(): void

@@ -4,28 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * LES PLANNINGS D'ÉQUIPE (E19) ET LES FEUILLES D'HEURES (E20).
- *
- * E19 — « QUI TRAVAILLE QUAND » N'ÉTAIT ÉCRIT NULLE PART. `WorkerAvailabilityService` répond
- * aujourd'hui à « cette personne est-elle déjà prise à cette heure-là » en regardant ses missions —
- * et c'est tout ce qu'il peut faire, faute de planning. Conséquence : l'auto-assignation considère
- * comme disponible quelqu'un qui ne travaille pas ce jour-là, et lui envoie une course à
- * vingt-trois heures un dimanche.
- *
- * Les créneaux de disponibilité existants sont un concept d'INDÉPENDANT — celui qui publie ses
- * horaires sur la place de marché. Un salarié ne s'en déclare pas : c'est son employeur qui le
- * planifie. `shifts` est cette planification-là, et rien d'autre.
- *
- * E20 — LE POINTAGE EST LE PENDANT DU PLANNING. Le shift dit ce qui était prévu, `time_entries` dit
- * ce qui s'est réellement passé. Les confondre reviendrait à payer le prévu — ce qui arrange
- * l'employeur les jours de retard et le salarié les jours de dépassement, et fâche tout le monde le
- * reste du temps.
- *
- * L'ENTRÉE PORTE SA SOURCE : `auto` quand elle vient de la géo-barrière du suivi, `manual` quand
- * elle est saisie. Et une saisie manuelle demande une APPROBATION — sans quoi le pointage
- * deviendrait déclaratif, ce que ni la paie ni le client ne peuvent accepter.
- */
+/** LES PLANNINGS D'ÉQUIPE (E19) ET LES FEUILLES D'HEURES (E20). */
 return new class extends Migration
 {
     public function up(): void
@@ -77,13 +56,7 @@ return new class extends Migration
                 $table->timestamp('started_at');
                 $table->timestamp('ended_at')->nullable();
 
-                /*
-                 * LES MINUTES SONT STOCKÉES, PAS RECALCULÉES À CHAQUE LECTURE.
-                 *
-                 * Une feuille d'heures se relit des mois plus tard, après que le fuseau, la
-                 * mission ou les pauses ont changé. Recalculer donnerait une valeur différente de
-                 * celle qui a été payée.
-                 */
+                // LES MINUTES SONT STOCKÉES, PAS RECALCULÉES À CHAQUE LECTURE.
                 $table->unsignedInteger('worked_minutes')->default(0);
                 $table->unsignedInteger('paused_minutes')->default(0);
 

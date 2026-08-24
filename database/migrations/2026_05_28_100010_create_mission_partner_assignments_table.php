@@ -4,13 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Schema-drift repair: create the `mission_partner_assignments` table.
- *
- * App\Models\MissionPartnerAssignment is the target of the ServicePartner
- * hasMany relation (and carries Mission/ServicePartner belongsTo relations),
- * but no migration ever created its table. Columns derived from $fillable / $casts.
- */
+/** Schema-drift repair: create the `mission_partner_assignments` table. */
 return new class extends Migration
 {
     public function up(): void

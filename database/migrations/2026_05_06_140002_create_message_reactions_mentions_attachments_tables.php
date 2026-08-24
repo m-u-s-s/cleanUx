@@ -4,15 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 4 — Tables auxiliaires pour la communication avancée :
- *   - message_reactions : emoji reactions
- *   - message_attachments : pièces jointes (avec scan AV optionnel)
- *   - message_mentions : @user mentions extraites pour notifs ciblées
- *
- * Le model MessageReaction existait dans le code (référencé par Message::reactions)
- * mais SA TABLE N'EXISTAIT PAS — autre bug critique fixé ici.
- */
+/** Phase 4 — Tables auxiliaires pour la communication avancée : - message_reactions : emoji reactions - message_attachments : pièces jointes (avec scan AV optionnel) - message_mentions : @user mentions extraites pour notifs ciblées Le model MessageReaction existait dans le code (référencé par Message::reactions) mais SA TABLE N'EXISTAIT PAS — autre bug critique fixé ici. */
 return new class extends Migration
 {
     public function up(): void

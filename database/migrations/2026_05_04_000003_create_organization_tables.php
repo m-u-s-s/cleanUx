@@ -108,13 +108,7 @@ return new class extends Migration
                 ->constrained('users')
                 ->cascadeOnDelete();
 
-            /*
-             * Client company roles:
-             * owner, manager, site_manager, finance, requester, viewer
-             *
-             * Provider company roles:
-             * owner, operations_manager, dispatcher, team_lead, worker, quality_manager, finance, viewer
-             */
+            // Client company roles: owner, manager, site_manager, finance, requester, viewer Provider company roles: owner, operations_manager, dispatcher, team_lead, worker, quality_manager, finance, viewer
             $table->string('role');
 
             $table->json('permissions')->nullable();

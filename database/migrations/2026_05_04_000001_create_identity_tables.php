@@ -87,12 +87,7 @@ return new class extends Migration
 
             $table->string('profile_photo_path', 2048)->nullable();
 
-            /*
-             * Les jalons du raccordement Stripe, fusionnes depuis
-             * 2026_07_29_000002_add_stripe_connect_timestamps_to_users. Le `->after()` d'origine
-             * visait `stripe_connect_status`, ajoutee par un correctif POSTERIEUR : dans un
-             * `create` l'ordre physique des colonnes n'a pas de sens, il est donc retire.
-             */
+            // Les jalons du raccordement Stripe, fusionnes depuis 2026_07_29_000002_add_stripe_connect_timestamps_to_users.
             $table->timestamp('stripe_connect_onboarded_at')->nullable();
             $table->timestamp('stripe_connect_charges_enabled_at')->nullable();
             $table->timestamp('stripe_connect_payouts_enabled_at')->nullable();

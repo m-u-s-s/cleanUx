@@ -24,11 +24,7 @@ return new class extends Migration
     /** Le corps d origine, extrait pour que son `return` ne quitte que lui. */
     private function corpsInitial(): void
     {
-        /*
-        |--------------------------------------------------------------------------
-        | Pivot zones <-> codes postaux
-        |--------------------------------------------------------------------------
-        */
+        // |-------------------------------------------------------------------------- | Pivot zones <-> codes postaux |--------------------------------------------------------------------------
         if (! Schema::hasTable('service_zone_postal_code')) {
             Schema::create('service_zone_postal_code', function (Blueprint $table) {
                 $table->id();
@@ -52,11 +48,7 @@ return new class extends Migration
             });
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Règles zone/service
-        |--------------------------------------------------------------------------
-        */
+        // |-------------------------------------------------------------------------- | Règles zone/service |--------------------------------------------------------------------------
         if (Schema::hasTable('zone_service_rules')) {
             Schema::table('zone_service_rules', function (Blueprint $table) {
                 if (! Schema::hasColumn('zone_service_rules', 'base_price_override')) {
@@ -81,11 +73,7 @@ return new class extends Migration
             });
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Bookings : colonnes legacy/compatibilité utilisées par les factories/tests
-        |--------------------------------------------------------------------------
-        */
+        // |-------------------------------------------------------------------------- | Bookings : colonnes legacy/compatibilité utilisées par les factories/tests |--------------------------------------------------------------------------
         if (Schema::hasTable('bookings')) {
             Schema::table('bookings', function (Blueprint $table) {
                 if (! Schema::hasColumn('bookings', 'organization_account_id')) {
@@ -102,11 +90,7 @@ return new class extends Migration
             });
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Segments opérationnels mission
-        |--------------------------------------------------------------------------
-        */
+        // |-------------------------------------------------------------------------- | Segments opérationnels mission |--------------------------------------------------------------------------
         if (! Schema::hasTable('mission_task_segments')) {
             Schema::create('mission_task_segments', function (Blueprint $table) {
                 $table->id();
@@ -124,11 +108,7 @@ return new class extends Migration
             });
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Demandes de renfort mission
-        |--------------------------------------------------------------------------
-        */
+        // |-------------------------------------------------------------------------- | Demandes de renfort mission |--------------------------------------------------------------------------
         if (! Schema::hasTable('mission_reinforcement_requests')) {
             Schema::create('mission_reinforcement_requests', function (Blueprint $table) {
                 $table->id();
@@ -155,11 +135,7 @@ return new class extends Migration
             });
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Mission batches : sécurité si le centre team lead les lit
-        |--------------------------------------------------------------------------
-        */
+        // |-------------------------------------------------------------------------- | Mission batches : sécurité si le centre team lead les lit |--------------------------------------------------------------------------
         if (! Schema::hasTable('mission_batches')) {
             Schema::create('mission_batches', function (Blueprint $table) {
                 $table->id();

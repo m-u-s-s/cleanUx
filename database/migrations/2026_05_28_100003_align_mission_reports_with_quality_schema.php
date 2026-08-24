@@ -4,16 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Aligns the mission_reports table with the MissionReport model and
- * MissionQualityService::generateOrRefreshReport().
- *
- * mission_reports was originally created (2026_05_04) with a PDF-oriented
- * schema (type/disk/path/metadata) that nothing writes — the PDF lives in
- * storage with its path on missions.report_path. The model + quality service
- * instead persist a quality report (scores, counts, payload), so completeMission()
- * 500s with "no such column". Columns added defensively to match the model.
- */
+/** Aligns the mission_reports table with the MissionReport model and MissionQualityService::generateOrRefreshReport(). */
 return new class extends Migration
 {
     public function up(): void

@@ -4,16 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * A2 — Generalize organization_sites from cleaning-specific to multi-trade.
- *
- * - Rename cleaning_frequency → service_frequency (only if column exists)
- * - Drop nombre_heures_nettoyage (only if column exists)
- * - Add trade_preferences JSON nullable
- *
- * All operations are guarded with Schema::hasColumn so the migration
- * is safe to run against any state of the schema.
- */
+/** A2 — Generalize organization_sites from cleaning-specific to multi-trade. */
 return new class extends Migration
 {
     public function up(): void

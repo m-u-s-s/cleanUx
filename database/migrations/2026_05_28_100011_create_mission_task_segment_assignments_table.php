@@ -4,14 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Schema-drift repair: create the `mission_task_segment_assignments` table.
- *
- * App\Models\MissionTaskSegmentAssignment is created/updated by
- * App\Services\Missions\TeamLeadOperationsService and queried by
- * App\Livewire\Employe\TeamLeadOperationsCenter, but no migration ever created
- * its table. Columns derived from $fillable / $casts.
- */
+/** Schema-drift repair: create the `mission_task_segment_assignments` table. */
 return new class extends Migration
 {
     public function up(): void

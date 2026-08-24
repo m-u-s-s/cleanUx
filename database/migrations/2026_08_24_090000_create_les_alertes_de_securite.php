@@ -4,26 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * LE MODE SÉCURITÉ / SOS (E33).
- *
- * CE QUI EXISTE ET CE QUI MANQUE. Le centre de sécurité de l'administration traite les
- * SIGNALEMENTS — quelqu'un rapporte un comportement, un administrateur arbitre, des jours plus tard.
- * C'est un outil de modération. Il n'existe rien pour l'URGENCE : quelqu'un seul chez un inconnu,
- * qui a besoin qu'on sache où il est MAINTENANT.
- *
- * JAMAIS DERRIÈRE UN DRAPEAU. Un bouton d'urgence qu'on peut désactiver par configuration est un
- * bouton dont personne ne peut garantir qu'il répondra. C'est la seule fonctionnalité de ce
- * programme dont l'indisponibilité se compte en intégrité physique, et non en chiffre d'affaires.
- *
- * LA POSITION EST HORODATÉE ET CONSERVÉE, pas seulement la dernière connue. Une alerte se relit
- * après coup — par le support, par la personne elle-même, parfois par une autorité. Ne garder que
- * la position courante effacerait le trajet au moment où il compte le plus.
- *
- * DEUX NIVEAUX, ET C'EST ASSEZ. `check_in` — « je ne me sens pas à l'aise, gardez un œil » — et
- * `emergency` — « venez ». Les distinguer permet de ne pas noyer la seconde dans la première ; en
- * inventer six ferait hésiter au moment de choisir, c'est-à-dire au pire moment.
- */
+/** LE MODE SÉCURITÉ / SOS (E33). CE QUI EXISTE ET CE QUI MANQUE. */
 return new class extends Migration
 {
     public function up(): void
@@ -72,13 +53,7 @@ return new class extends Migration
             });
         }
 
-        /*
-         * LES POSITIONS SUIVIES PENDANT L'ALERTE.
-         *
-         * Une table séparée parce qu'elles sont NOMBREUSES et que l'alerte, elle, est unique : les
-         * empiler dans un JSON sur la ligne d'alerte ferait grossir sans fin une ligne qu'on relit
-         * en urgence, et rendrait impossible de retrouver « où était-il à 14 h 12 ».
-         */
+        // LES POSITIONS SUIVIES PENDANT L'ALERTE.
         if (! Schema::hasTable('safety_alert_pings')) {
             Schema::create('safety_alert_pings', function (Blueprint $table) {
                 $table->id();
@@ -95,12 +70,7 @@ return new class extends Migration
             });
         }
 
-        /*
-         * LE CONTACT D'URGENCE, sur le profil du prestataire.
-         *
-         * Il vit sur `provider_profiles` et non sur l'alerte : on le renseigne une fois, à froid.
-         * Le demander au moment du déclenchement reviendrait à ne l'avoir jamais.
-         */
+        // LE CONTACT D'URGENCE, sur le profil du prestataire.
         if (Schema::hasTable('provider_profiles') && ! Schema::hasColumn('provider_profiles', 'emergency_contact_name')) {
             Schema::table('provider_profiles', function (Blueprint $table) {
                 $table->string('emergency_contact_name', 120)->nullable();

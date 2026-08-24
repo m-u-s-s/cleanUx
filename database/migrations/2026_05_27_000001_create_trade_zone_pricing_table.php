@@ -35,17 +35,7 @@ return new class extends Migration
             $table->unsignedInteger('max_price_cents')->nullable();
             $table->boolean('is_active')->default(true);
 
-            /*
-             * L'INTERVENTION IMMÉDIATE SE DÉCIDE PAR ZONE, comme le prix — et sur la MÊME LIGNE.
-             *
-             * Un plombier de garde à Bruxelles n'implique pas un plombier de garde à Bastogne : la
-             * question « ce métier fait-il de l'immédiat » n'a de réponse qu'ici, dans le couple
-             * (métier, zone). Une colonne globale sur `trades` promettrait un dépannage dans une
-             * zone où personne n'est jamais en ligne — et le client attendrait devant sa porte.
-             *
-             * DÉFAUT FAUX. Ouvrir l'immédiat engage la plateforme à dépêcher quelqu'un dans
-             * l'heure : c'est une décision d'administrateur, jamais un oubli de configuration.
-             */
+            // L'INTERVENTION IMMÉDIATE SE DÉCIDE PAR ZONE, comme le prix — et sur la MÊME LIGNE.
             $table->boolean('asap_enabled')->default(false);
             $table->json('metadata')->nullable();
             $table->timestamps();
@@ -95,15 +85,7 @@ return new class extends Migration
     {
         if (Schema::hasTable('trade_zone_pricing') && ! Schema::hasColumn('trade_zone_pricing', 'price_per_hour_cents')) {
             Schema::table('trade_zone_pricing', function (Blueprint $table) {
-                /*
-                 * NULLABLE, ET LA NUANCE EST LE PROPOS.
-                 *
-                 * `null` = « cette zone ne surcharge rien », on retombe sur le tarif du métier.
-                 * `0` = « une heure est gratuite ici », ce qui est une décision, absurde mais
-                 * explicite. `price_per_km_cents` a exactement la même nuance, pour la même raison :
-                 * un défaut à 0 aurait rendu la surcharge indistinguable de l'absence de surcharge,
-                 * et toutes les zones auraient silencieusement facturé zéro.
-                 */
+                // NULLABLE, ET LA NUANCE EST LE PROPOS.
                 $table->unsignedInteger('price_per_hour_cents')
                     ->nullable();
             });

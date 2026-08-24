@@ -4,12 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * L7 fix — kyc_verifications.metadata / result_summary were JSON columns, but L7 now stores
- * ENCRYPTED ciphertext in them (EncryptedArrayFallback cast). MySQL rejects non-JSON text in a
- * JSON column (SQLSTATE 3140), while SQLite (JSON = TEXT, no validation) silently accepted it —
- * so the bug only surfaced on the MySQL+FK CI job. Widen both to longtext so ciphertext fits.
- */
+/** L7 fix — kyc_verifications.metadata / result_summary were JSON columns, but L7 now stores ENCRYPTED ciphertext in them (EncryptedArrayFallback cast). */
 return new class extends Migration
 {
     public function up(): void

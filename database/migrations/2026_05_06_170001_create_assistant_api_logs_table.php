@@ -4,15 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 5.1 — Logging des appels API LLM.
- *
- * Permet :
- *   - tracking des coûts (input + output tokens)
- *   - mesure de latence
- *   - debug en cas d'erreur (provider, prompt, tools call)
- *   - stats d'usage par utilisateur / par période
- */
+/** Phase 5.1 — Logging des appels API LLM. */
 return new class extends Migration
 {
     public function up(): void

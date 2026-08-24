@@ -4,28 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * RATTRAPE LA SOCIÉTÉ EXÉCUTANTE SUR LES MISSIONS ET LES RENDEZ-VOUS DÉJÀ EN BASE.
- *
- * `MissionFromRendezVousSyncService` n'écrivait jamais `missions.provider_organization_id` — zéro
- * occurrence de la colonne dans le service. `DispatchCenter` filtrant dessus, tous les écrans de
- * l'espace société restaient vides sur le parcours nominal, alors que les missions existaient.
- *
- * Le service est corrigé pour les missions À VENIR ; celles déjà écrites ont besoin de ce
- * rattrapage.
- *
- * TROIS RÈGLES QUI TIENNENT CETTE MIGRATION :
- *
- * 1. ELLE NE TOUCHE QUE DES NULL. Aucune valeur existante n'est écrasée : une société déjà posée
- *    est une décision, pas une donnée à recalculer.
- * 2. ELLE EST IDEMPOTENTE. La rejouer ne change rien de plus — c'est la condition pour qu'un
- *    déploiement interrompu puisse être repris.
- * 3. ELLE PARCOURT EN `chunkById`. La table `missions` d'une plateforme en exploitation ne tient
- *    pas en mémoire, et un `UPDATE ... JOIN` serait du SQL propre à MySQL, que la suite (SQLite)
- *    ne saurait pas exécuter.
- *
- * `down()` est un no-op : remettre `null` détruirait aussi les valeurs posées légitimement depuis.
- */
+/** RATTRAPE LA SOCIÉTÉ EXÉCUTANTE SUR LES MISSIONS ET LES RENDEZ-VOUS DÉJÀ EN BASE. */
 return new class extends Migration
 {
     public function up(): void
@@ -67,12 +46,7 @@ return new class extends Migration
             }, 'missions.id', 'id');
     }
 
-    /**
-     * À défaut : la société du chef de mission, lue sur son PROFIL PRESTATAIRE.
-     *
-     * Surtout pas `users.organization_account_id`, qui porte l'organisation CLIENTE d'un compte —
-     * la même confusion que celle dont souffre `presence-org.{orgId}` dans `routes/channels.php`.
-     */
+    /** À défaut : la société du chef de mission, lue sur son PROFIL PRESTATAIRE. */
     private function depuisLeProfilDuChefDeMission(): void
     {
         $colonneChef = Schema::hasColumn('missions', 'lead_provider_user_id')
@@ -116,11 +90,7 @@ return new class extends Migration
             ->orderBy('bookings.id')
             ->chunkById(500, function ($lignes) {
                 foreach ($lignes as $ligne) {
-                    /*
-                     * Query builder et NON `Booking::save()` : l'observateur `RendezVousObserver`
-                     * écoute `Booking::saved` et relancerait la synchronisation de mission pour
-                     * chaque ligne — au mieux un backfill interminable, au pire une boucle.
-                     */
+                    // Query builder et NON `Booking::save()` : l'observateur `RendezVousObserver` écoute `Booking::saved` et relancerait la synchronisation de mission pour chaque ligne — au mieux un backfill interminable, au pire une boucle.
                     DB::table('bookings')
                         ->where('id', $ligne->id)
                         ->whereNull('assigned_provider_organization_id')

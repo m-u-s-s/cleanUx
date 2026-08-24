@@ -631,24 +631,7 @@ return new class extends Migration
             return;
         }
 
-        /*
-         * TROIS ETAPES, ET CHAQUE MOTEUR A EXIGE LA SIENNE.
-         *
-         * `mission_assignments_user_id_status_index` porte `(user_id, status)`, et les deux bases
-         * s'y opposent pour des raisons OPPOSEES :
-         *
-         *   — SQLite refuse qu'on retire `status` en laissant l'index pendre : toute operation
-         *     ulterieure sur la table echoue avec « error in index … after drop column ». La suite
-         *     de tests entiere tombait, alors que MySQL, lui, reecrit l'index tout seul.
-         *   — MySQL refuse qu'on retire l'index : il SOUTIENT la cle etrangere de `user_id`
-         *     (erreur 1553, « needed in a foreign key constraint »). SQLite, lui, s'en moque.
-         *
-         * D'ou l'ordre ci-dessous, qui satisfait les deux sans brancher sur le pilote : on donne
-         * d'abord a la cle etrangere un index a elle, puis on retire le composite, puis la colonne.
-         *
-         * Le piege habituel de ce depot est RETOURNE : d'ordinaire SQLite cache ce que MySQL
-         * refuse. Ici chacun a cache la moitie du probleme, et il a fallu exercer les DEUX.
-         */
+        // TROIS ETAPES, ET CHAQUE MOTEUR A EXIGE LA SIENNE.
         Schema::table('mission_assignments', function (Blueprint $table) {
             $table->index('user_id', 'mission_assignments_user_id_index');
         });
@@ -687,13 +670,7 @@ return new class extends Migration
             }
         });
 
-        /*
-         * « LES TÂCHES DU CLIENT SUR CETTE LISTE » — la seule requête nouvelle, et elle sera posée
-         * à chaque ouverture de l'écran des deux côtés.
-         *
-         * Le nom est tenu court À DESSEIN : au-delà de 64 caractères, MySQL refuse la migration, et
-         * SQLite l'accepte sans rien dire — la classe de défaut invisible à la suite de tests.
-         */
+        // « LES TÂCHES DU CLIENT SUR CETTE LISTE » — la seule requête nouvelle, et elle sera posée à chaque ouverture de l'écran des deux côtés.
         if (! $this->fusion20260903090000PorterLaTodoDuClientAideIndexExiste('mci_liste_source_index')) {
             Schema::table('mission_checklist_items', function (Blueprint $table) {
                 $table->index(['mission_checklist_id', 'source'], 'mci_liste_source_index');

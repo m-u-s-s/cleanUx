@@ -4,48 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * DIX-HUIT INDEX QUI NE SERVAIENT AUCUNE LECTURE.
- *
- * ── LA RÈGLE, ET POURQUOI ELLE EST SÛRE ──────────────────────────────────────────────────────
- *
- * Un index B-tree s'attaque par son PRÉFIXE GAUCHE : MySQL sert `WHERE a = ?` aussi bien avec un
- * index `(a)` qu'avec un index `(a, b, c)`. Un index dont les colonnes sont un préfixe strict d'un
- * autre n'apporte donc RIEN à la lecture — et coûte à chaque écriture, puisqu'il faut le tenir à
- * jour. Ces dix-huit sont dans ce cas.
- *
- * Ce n'est pas un pari sur le plan d'exécution : c'est une propriété de la structure. Le seul cas
- * où un index redondant sert encore est celui d'un balayage d'index plus étroit donc moins coûteux
- * en pages, ce qui ne se joue qu'à des volumes où l'on mesure avant de décider.
- *
- * ── CE QU'ON NE TOUCHE PAS ───────────────────────────────────────────────────────────────────
- *
- * Aucune contrainte d'UNICITÉ n'est retirée, même quand elle est préfixe d'une autre : elle ne sert
- * pas à lire, elle GARANTIT. Le détecteur les écarte explicitement.
- *
- * Les index COUVRANTS, eux, peuvent être uniques — un `unique(a, b)` couvre parfaitement les
- * lectures d'un `index(a)`, et c'est le cas le plus fréquent ci-dessous.
- *
- * ── DEUX VÉRIFICATIONS FAITES AVANT D'ÉCRIRE CE FICHIER ──────────────────────────────────────
- *
- * `subscriptions` et `notifications` appartiennent d'ordinaire à Cashier et au framework. Vérifié :
- * la migration de Cashier n'a JAMAIS tourné ici (`migrations` ne la contient pas, et ses migrations
- * ne sont pas enregistrées) — c'est `2026_05_04_000011_create_brio_v2_feature_extensions` du dépôt
- * qui crée `subscriptions`, index couvrant compris. `notifications` vient de
- * `2026_05_04_000001_create_identity_tables`, du dépôt également. Les dix-huit sont donc à nous.
- *
- * MySQL refuse-t-il de retirer un index qui soutient une clé étrangère ? Essayé sur
- * `conversations.rendez_vous_id`, qui en porte une : le retrait est ACCEPTÉ, l'index couvrant
- * satisfaisant la contrainte par son préfixe gauche. C'est vrai de tous les cas ci-dessous, la
- * règle de redondance garantissant que la première colonne est commune.
- *
- * ── LES TROIS GARDES ─────────────────────────────────────────────────────────────────────────
- *
- * On ne retire un index que si (1) il existe encore, (2) son couvrant existe, et (3) le couvrant le
- * préfixe RÉELLEMENT. La deuxième est la plus importante : sans elle, un environnement où le
- * couvrant aurait disparu se retrouverait avec une colonne sans aucun index — l'inverse exact du
- * but recherché.
- */
+/** DIX-HUIT INDEX QUI NE SERVAIENT AUCUNE LECTURE. */
 return new class extends Migration
 {
     /**

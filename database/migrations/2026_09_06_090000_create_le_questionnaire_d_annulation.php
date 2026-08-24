@@ -4,37 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * LE QUESTIONNAIRE D'ANNULATION — la pièce qui manquait en amont d'un moteur déjà complet.
- *
- * ── CE QUI EXISTAIT, ET CE QUI NE MARCHAIT PAS ───────────────────────────────────────────────
- *
- * `CancellationEngine::quote()` interroge déjà `cancellation_exempt_reasons` avec un `reason_code`,
- * met les frais à zéro et pose `exempt_applied`. Toute la machinerie d'exemption fonctionne. Mais
- * l'API n'accepte qu'`'reason' => ['nullable','string']` : un CHAMP LIBRE. Or un champ libre ne se
- * compte pas, ne se compare pas, ne déclenche aucun palier — et ne peut donc jamais valoir
- * exemption. Le moteur attendait un code que personne ne lui a jamais donné.
- *
- * ── DEUX TABLES, PARCE QUE CE SONT DEUX NOTIONS ──────────────────────────────────────────────
- *
- * La QUESTION porte le contexte : à qui on la pose, sur quel moteur, à quel moment de la mission.
- * L'OPTION porte la réponse : son code stable, ce qu'on vérifie avant de la proposer, et ce qu'elle
- * déclenche. Les fondre obligerait à répéter le contexte sur chaque ligne, et la première
- * divergence entre deux copies rendrait le questionnaire incohérent.
- *
- * ── POURQUOI RIEN NE SE SUPPRIME VRAIMENT ────────────────────────────────────────────────────
- *
- * Une annulation passée a été décidée avec les questions d'alors — c'est déjà la raison pour
- * laquelle `cancellation_policies` est versionnée. L'administrateur « supprime » : la ligne quitte
- * les écrans et reste lisible pour les dossiers anciens. Et `code` ne se réutilise jamais : c'est
- * lui qui vit dans `booking_cancellations_v2.reason_code`.
- *
- * ── `verification` EST CE QUI SÉPARE UN QUESTIONNAIRE D'UN MENU D'ÉVITEMENT ──────────────────
- *
- * « Le prestataire est en retard » ne se déclare pas : le serveur connaît `planned_start_at` et le
- * statut réel. Une option dont la vérification échoue n'est pas PROPOSÉE — la refuser après coup
- * ferait cocher puis rejeter, ce qui se lit comme une panne.
- */
+/** LE QUESTIONNAIRE D'ANNULATION — la pièce qui manquait en amont d'un moteur déjà complet. */
 return new class extends Migration
 {
     public function up(): void
@@ -88,11 +58,7 @@ return new class extends Migration
 
                 $table->unsignedBigInteger('exempt_reason_id')->nullable();
 
-                /*
-                 * LE PIÈGE À ENTENTE. « L'autre m'a demandé d'annuler » ne coûte rien à poser et
-                 * donne à la plateforme le seul renseignement qu'elle ne peut pas obtenir
-                 * autrement : ce qui se dit sur le palier.
-                 */
+                // LE PIÈGE À ENTENTE.
                 $table->boolean('collusion_signal')->default(false);
 
                 $table->boolean('requires_text')->default(false);

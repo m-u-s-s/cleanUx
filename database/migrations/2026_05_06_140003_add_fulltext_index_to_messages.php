@@ -3,17 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Phase 4 — Index de recherche full-text sur messages.content.
- *
- * Stratégie compatible MySQL 5.7+/8 ET PostgreSQL 11+.
- * Sur SQLite (tests), on skip silencieusement.
- *
- * Pour MySQL on utilise un FULLTEXT INDEX (InnoDB).
- * Pour PostgreSQL on crée un index GIN sur to_tsvector('simple', content).
- *
- * Le scope `whereSearch($term)` du model Message dispatchera selon le driver.
- */
+/** Phase 4 — Index de recherche full-text sur messages.content. */
 return new class extends Migration
 {
     public function up(): void

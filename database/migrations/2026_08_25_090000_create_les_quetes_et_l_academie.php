@@ -4,25 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * LES OBJECTIFS (E13) ET L'ACADÉMIE (E16).
- *
- * E13 — CE QUI MANQUE N'EST PAS LA GAMIFICATION, C'EST LA VISIBILITÉ DU PROGRÈS. Un indépendant
- * enchaîne les courses sans jamais savoir où il en est d'un palier, d'un bonus, d'une saison. Les
- * badges existent mais se découvrent une fois obtenus : on n'a jamais dit à quelqu'un qu'il lui
- * manquait deux missions. Une quête sans compteur visible n'est pas une quête, c'est une surprise.
- *
- * LA RÉCOMPENSE PASSE PAR LES MODULES EXISTANTS — Loyalty, bonus de portefeuille. En inventer un
- * troisième créerait une monnaie de plus, avec sa comptabilité et ses litiges.
- *
- * E16 — RÉUSSIR UNE FORMATION DOIT CHANGER QUELQUE CHOSE, sinon personne ne la suit. Ici, une
- * complétion débloque un badge existant ET pèse dans le scoring de matching : c'est ce lien qui
- * transforme un contenu pédagogique en avantage concret. Un catalogue de cours sans effet est un
- * catalogue que personne n'ouvre deux fois.
- *
- * LES DEUX TABLES DE PROGRESSION SONT UNIQUES PAR (personne, objet) : un compteur qui se dédouble
- * donne deux vérités, et c'est toujours la plus flatteuse qu'on affiche.
- */
+/** LES OBJECTIFS (E13) ET L'ACADÉMIE (E16). */
 return new class extends Migration
 {
     public function up(): void
@@ -44,11 +26,7 @@ return new class extends Migration
                 $table->date('starts_on')->nullable();
                 $table->date('ends_on')->nullable();
 
-                /*
-                 * LA RÉCOMPENSE PASSE PAR LES MODULES EXISTANTS. `loyalty_points` ou `bonus_cents` :
-                 * en inventer un troisième créerait une monnaie de plus, avec sa comptabilité et
-                 * ses litiges.
-                 */
+                // LA RÉCOMPENSE PASSE PAR LES MODULES EXISTANTS.
                 $table->string('reward_type', 30)->default('loyalty_points');
                 $table->unsignedInteger('reward_value')->default(0);
 
@@ -100,10 +78,7 @@ return new class extends Migration
 
                 $table->unsignedSmallInteger('duration_minutes')->default(15);
 
-                /*
-                 * CE QUE LA RÉUSSITE DÉBLOQUE. Sans effet, personne ne suit une formation deux fois :
-                 * le badge se voit, et le bonus de spécialité pèse dans le scoring de matching.
-                 */
+                // CE QUE LA RÉUSSITE DÉBLOQUE.
                 $table->string('badge_code', 60)->nullable();
                 $table->unsignedTinyInteger('specialty_bonus')->default(0);
 

@@ -4,17 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 6.1 — Historique des reprogrammations de bookings.
- *
- * Trace toutes les fois où un user a déplacé un booking via drag-and-drop
- * dans le calendrier (ou via toute autre méthode).
- *
- * Permet :
- *   - audit (qui a bougé quoi quand)
- *   - rollback potentiel d'un déplacement accidentel
- *   - statistiques (taux de reschedule par client / par mois)
- */
+/** Phase 6.1 — Historique des reprogrammations de bookings. */
 return new class extends Migration
 {
     public function up(): void

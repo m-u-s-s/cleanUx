@@ -5,13 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * M6 — consolidate customer_credits on the canonical "credit-per-booking" model
- * (client_id / amount / remaining_amount / status — the shape the CustomerCredit model and all
- * consumers actually use). Remove the leftover "wallet" money columns (balance, currency) and the
- * orphan customer_credit_transactions ledger table (zero code references). A defensive backfill
- * recovers amount/remaining_amount from any row that still only carried balance before dropping it.
- */
+/** M6 — consolidate customer_credits on the canonical "credit-per-booking" model (client_id / amount / remaining_amount / status — the shape the CustomerCredit model and all consumers actually use). */
 return new class extends Migration
 {
     public function up(): void

@@ -4,15 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 14 — État surge par zone (mis à jour périodiquement par job).
- *
- * Pattern Uber : la pression temporaire d'une zone est résumée par un
- * `multiplier` (1.0 = neutre, 1.5 = +50%, 2.0 = ×2). Recalculé toutes les
- * 30s/1min par RecomputeSurgeJob qui regarde demand/supply en temps réel.
- *
- * Cap réglementaire (BE/FR) : 3.0 max — sinon risque "prix abusif".
- */
+/** Phase 14 — État surge par zone (mis à jour périodiquement par job). */
 return new class extends Migration
 {
     public function up(): void

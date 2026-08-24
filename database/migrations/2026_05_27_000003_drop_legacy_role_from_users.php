@@ -5,23 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * A3 — Migre les données vers les champs typés. NE SUPPRIME PAS la colonne, malgré son nom.
- *
- * L'étape 4 ci-dessous, celle qui la supprimerait, est en commentaire depuis l'origine — et
- * elle a raison de l'être : au 2026-08-22, la colonne est encore lue en repli par quatre
- * prédicats de `HasUserTypeChecks` et par les quatre portées qui les reflètent, et 115 fichiers
- * de test l'écrivent. Le nom de ce fichier a fait croire trois fois qu'elle n'existait plus.
- *
- * Data migration before drop:
- *   - role='employe'    → ensure provider_profiles row has provider_type='independent'
- *   - role='client'     → ensure customer_profiles row has customer_type='personal'
- *   - role='entreprise' → ensure customer_profiles row has customer_type='company'
- *   - role='admin'      → set platform_role='admin' on users (it already lives on users table)
- *
- * Note: customer_type lives in customer_profiles, provider_type in provider_profiles.
- * The users table itself only carries platform_role.
- */
+/** A3 — Migre les données vers les champs typés. NE SUPPRIME PAS la colonne, malgré son nom. */
 return new class extends Migration
 {
     public function up(): void

@@ -4,15 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Phase 14 — Documents uploadés par le prestataire pour vérification KYC.
- *
- * Workflow type :
- *   1. Provider upload une carte d'identité → ProviderOnboardingDocument
- *      type='identity_card', status='pending_review'
- *   2. Admin valide → status='approved'
- *   3. Si tous les documents requis sont approved → ProviderProfile.verification_status='verified'
- */
+/** Phase 14 — Documents uploadés par le prestataire pour vérification KYC. Workflow type : 1. */
 return new class extends Migration
 {
     public function up(): void

@@ -4,15 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Schema-drift repair: create the `mission_client_actions` table.
- *
- * App\Models\MissionClientAction is created by
- * App\Livewire\Client\MissionClientActions and
- * App\Services\Missions\MissionQualityService, and is the target of the
- * Mission hasMany relation, but no migration ever created its table.
- * Columns derived from $fillable / $casts.
- */
+/** Schema-drift repair: create the `mission_client_actions` table. */
 return new class extends Migration
 {
     public function up(): void

@@ -5,50 +5,11 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * INDEXER LE RESTE DES COLONNES DE JOINTURE.
- *
- * Suite de `2026_09_10_090000_indexer_les_jointures_du_coeur_chaud`, qui a traité les six tables
- * les plus reliées. Celle-ci finit le travail : 118 colonnes sur 74 tables.
- *
- * ── DEUX FAMILLES, ET POURQUOI LES DEUX COMPTENT ─────────────────────────────────────────────
- *
- * 88 colonnes `bigint` : de vraies clés étrangères. Chaque jointure ou filtre sur l'une d'elles
- * balaie aujourd'hui la table entière.
- *
- * 30 colonnes `varchar` : presque toutes des CLÉS DE CORRÉLATION DE WEBHOOK —
- * `kyc_webhook_events.external_event_id`, `provider_wallet_transactions.stripe_transfer_id`,
- * `insurance_claims.external_claim_id`… À chaque événement reçu d'un fournisseur externe,
- * l'application cherche la ligne correspondante par cette colonne. Sans index, le coût de
- * traitement d'un webhook croît avec l'historique complet — c'est-à-dire indéfiniment.
- *
- * ── CE QU'ELLE NE FAIT PAS, DÉLIBÉRÉMENT ─────────────────────────────────────────────────────
- *
- * Elle ne pose aucun index UNIQUE. Plusieurs de ces colonnes le mériteraient : un
- * `external_event_id` unique rendrait l'idempotence des webhooks structurelle plutôt que
- * applicative. Mais l'unicité REFUSE des données, et la base de développement est vide — rien ici
- * ne permet de prouver qu'aucun doublon n'existe en production. Un index simple ne peut, lui,
- * jamais rien refuser. L'unicité est une décision distincte, à prendre sur des données réelles.
- *
- * Elle n'ajoute pas non plus les clés étrangères manquantes : même raison, une contrainte peut
- * refuser des lignes orphelines existantes.
- *
- * ── LES COLONNES POLYMORPHES N'Y SONT PAS ────────────────────────────────────────────────────
- *
- * Les 21 colonnes polymorphes du schéma (`subject_id`, `notifiable_id`, `source_id`…) portent
- * déjà l'index composite `(type, id)` qui leur convient — l'identifiant y est en SECONDE position,
- * ce qui est correct puisqu'une relation polymorphe se filtre toujours sur le couple. Une première
- * version de l'audit les réclamait toutes : 21 index simples redondants, sans effet sur la lecture
- * et coûteux à chaque écriture. `scripts/audit_schema.php` connaît désormais l'exception.
- */
+/** INDEXER LE RESTE DES COLONNES DE JOINTURE. */
 return new class extends Migration
 {
     /**
      * Table => [colonne => nom d'index].
-     *
-     * Noms écrits à la main plutôt que laissés à Laravel : `table_colonne_index` dépasse vite les
-     * 64 caractères que MySQL accepte, et le plus long de ce schéma en fait DÉJÀ exactement 64.
-     * SQLite, sur lequel tourne la suite, ne dirait rien du dépassement.
      *
      * @var array<string, array<string, string>>
      */

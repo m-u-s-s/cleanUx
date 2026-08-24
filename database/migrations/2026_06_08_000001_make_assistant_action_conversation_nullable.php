@@ -4,13 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * H1 — AssistantActionExecutor::executeWrite() supports standalone actions not tied to a
- * conversation (its signature is `?AssistantConversation $conversation = null`), but
- * assistant_actions.assistant_conversation_id was NOT NULL, so any write action triggered
- * outside a chat conversation failed with an integrity-constraint violation. Widen the FK to
- * nullable so the code's documented behaviour works. Non-destructive (NOT NULL -> nullable).
- */
+/** H1 — AssistantActionExecutor::executeWrite() supports standalone actions not tied to a conversation (its signature is `?AssistantConversation $conversation = null`), but assistant_actions.assistant_conversation_id was NOT NULL, so any write action triggered outside a chat conversation failed with an integrity-constraint violation. */
 return new class extends Migration
 {
     public function up(): void

@@ -5,16 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Aligne le schéma `customer_credits` avec les attentes du model + Livewire admin.
- *
- * Bug latent : la table avait été créée avec un schéma "wallet balance" simple
- * (customer_user_id, balance, currency) mais le model `CustomerCredit` et
- * `CustomerCreditsManager` s'attendent à un schéma "credit per booking" plus
- * complexe (client_id, rendez_vous_id, amount, remaining_amount, status, ...).
- * Cette migration ajoute les colonnes manquantes en mode additif (compatible
- * backwards — l'ancien usage balance/currency reste fonctionnel).
- */
+/** Aligne le schéma `customer_credits` avec les attentes du model + Livewire admin. */
 return new class extends Migration
 {
     public function up(): void

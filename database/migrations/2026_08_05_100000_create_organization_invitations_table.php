@@ -4,17 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * INVITER UN EMPLOYÉ SANS COMPTE N'AVAIT NULLE PART OÙ S'ÉCRIRE.
- *
- * `TeamManagement::invite()` s'arrêtait sur un TODO pour cette branche : ni jeton, ni trace, ni
- * email. Cette table lui donne un support durable.
- *
- * POURQUOI PAS `team_invitations`. Cette table existe déjà — c'est un vestige de Jetstream : la
- * fonctionnalité `teams` est commentée dans `config/jetstream.php`, aucune ligne du dépôt ne la
- * référence, et elle porte un `team_id` sans rapport avec `organization_accounts`. La détourner
- * aurait lié nos invitations à un concept mort. On la laisse donc intacte.
- */
+/** INVITER UN EMPLOYÉ SANS COMPTE N'AVAIT NULLE PART OÙ S'ÉCRIRE. */
 return new class extends Migration
 {
     public function up(): void

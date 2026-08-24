@@ -5,16 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * A1 — Make trade_id NOT NULL on service_catalogs.
- *
- * Step 1: backfill all rows where trade_id IS NULL to the "Nettoyage" trade
- *         (resolved by slug 'nettoyage' or 'cleaning').
- * Step 2: change the column to NOT NULL.
- *
- * Safe to re-run: uses Schema::hasColumn checks.
- * Runs after trade_zone_pricing (000001) and extends_trades (000000) are done.
- */
+/** A1 — Make trade_id NOT NULL on service_catalogs. */
 return new class extends Migration
 {
     public function up(): void

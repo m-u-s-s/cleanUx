@@ -4,15 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Widen provider_wallet_transactions.idempotency_key from VARCHAR(64) to VARCHAR(128).
- *
- * The longest key produced by ProviderWalletService::recordEarning is:
- *   earning:booking:{booking_id}:pi:{stripe_pi_id}:platform_fee
- *   = 16 + 19 (max bigint digits) + 4 + ~30 (Stripe PI id) + 13 = ~82 chars
- * which exceeds the original 64-char limit.
- * Setting the column to 128 gives a 46-char safety margin for future formats.
- */
+/** Widen provider_wallet_transactions.idempotency_key from VARCHAR(64) to VARCHAR(128). */
 return new class extends Migration
 {
     public function up(): void

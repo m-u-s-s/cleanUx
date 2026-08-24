@@ -6,19 +6,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Bug fix — bookings.surface était défini en UNSIGNED INTEGER depuis la
- * migration initiale, mais le formulaire de réservation y écrit des
- * identifiants de tranche ("50_100", "100_150", "plus_250"…).
- *
- * MySQL en mode strict refuse l'insertion ("Data truncated for column
- * 'surface'"). SQLite (tests) acceptait silencieusement → bug invisible
- * en CI, fatal en prod.
- *
- * Migration : si la colonne existe et n'est pas déjà une string, on la
- * convertit en VARCHAR(255). Les valeurs entières existantes deviennent
- * leurs équivalents textuels (ex: 100 → "100"), sans perte.
- */
+/** Bug fix — bookings.surface était défini en UNSIGNED INTEGER depuis la migration initiale, mais le formulaire de réservation y écrit des identifiants de tranche ("50_100", "100_150", "plus_250"…). */
 return new class extends Migration
 {
     public function up(): void
@@ -59,10 +47,7 @@ return new class extends Migration
         // non numériques. On laisse en string.
     }
 
-    /**
-     * Tente de détecter si une colonne est déjà de type string.
-     * Tolère l'absence de Doctrine DBAL (fallback heuristique sur driver).
-     */
+    /** Tente de détecter si une colonne est déjà de type string. */
     protected function columnIsString(string $table, string $column): bool
     {
         try {

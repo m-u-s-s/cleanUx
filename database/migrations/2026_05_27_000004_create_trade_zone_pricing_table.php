@@ -2,10 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 
-/**
- * No-op: trade_zone_pricing was already created in 2026_05_27_000001.
- * This file is kept to avoid breaking the migration history.
- */
+/** No-op: trade_zone_pricing was already created in 2026_05_27_000001. */
 return new class extends Migration
 {
     public function up(): void

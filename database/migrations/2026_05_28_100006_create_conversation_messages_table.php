@@ -4,14 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Schema-drift repair: create the `conversation_messages` table.
- *
- * App\Models\ConversationMessage is used by
- * App\Notifications\NewConversationMessageNotification and the
- * Conversation hasMany relation, but no migration ever created its table.
- * Columns are derived from the model's $fillable / $casts.
- */
+/** Schema-drift repair: create the `conversation_messages` table. */
 return new class extends Migration
 {
     public function up(): void
