@@ -78,6 +78,24 @@ Pour basculer depuis l'interface, appelez `window.brioTheme.basculer()`, ou pose
 `<x-theme-toggle />`. Le choix est écrit dans `localStorage` **et** envoyé à `/api/user/theme`,
 donc il suit le compte d'un appareil à l'autre.
 
+### Un montant s'affiche pareil sur toute machine
+
+`Money::format()` est la **seule** source du rendu monétaire. `LocaleFormatter::currency()` lui
+délègue. N'employez ni `NumberFormatter` ni `extension_loaded('intl')` pour un montant : la sortie
+d'ICU change avec la version installée.
+
+| Cas | Rendu |
+|---|---|
+| `fr` EUR | `1 234,50 €` — espace normale, jamais insécable |
+| `de` EUR | `1.234,50 €` — l'allemand groupe par le point |
+| `en` EUR | `€1,234.50` — l'anglais préfixe le symbole |
+| `fr` JPY | `1 000 ¥` — zéro décimale, norme ISO 4217 |
+| `fr` KWD | `12,346 KWD` — trois décimales |
+| devise inconnue | son code et deux décimales, **jamais** le symbole de l'euro |
+
+Les dates et les nombres passent encore par ICU dans `LocaleFormatter` : c'est un autre sujet, et
+il n'y a pas d'engagement commercial derrière un nombre brut.
+
 ### Aucune couleur ne s'écrit en dur
 
 Une couleur écrite en dur ne suit ni le thème ni le mode sombre. Employez un jeton :

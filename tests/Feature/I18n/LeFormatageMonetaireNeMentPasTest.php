@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\I18n;
 
+use App\Services\I18n\LocaleFormatter;
 use App\Services\Localization\Money;
 use App\Support\International\DeviseParPays;
 use Tests\TestCase;
@@ -86,5 +87,89 @@ class LeFormatageMonetaireNeMentPasTest extends TestCase
         // Contrôle positif : les symboles sans ambiguïté sont bien servis.
         $this->assertSame('€', $this->money()->symbol('EUR'));
         $this->assertSame('£', $this->money()->symbol('GBP'));
+    }
+
+    /**
+     * LE RENDU NE DÉPEND D'AUCUNE BIBLIOTHÈQUE SYSTÈME.
+     *
+     * `intl` absente en local, présente sur la CI : le même montant s'affichait
+     * `1 234,56 €` d'un côté et `1 234,56 €` de l'autre — une espace insécable étroite au lieu
+     * d'une espace normale — et le yen passait de `¥` à `JPY`. Deux tests rouges, la CI bloquée
+     * dix jours, et aucun déploiement possible derrière.
+     */
+    public function test_le_rendu_monetaire_ne_passe_par_aucun_formateur_du_systeme(): void
+    {
+        $sources = [
+            'app/Services/Localization/Money.php',
+            'app/Services/I18n/LocaleFormatter.php',
+        ];
+
+        $fautifs = [];
+
+        foreach ($sources as $chemin) {
+            $code = (string) file_get_contents(base_path($chemin));
+
+            // On lit la méthode qui rend la monnaie, pas le fichier entier : `LocaleFormatter`
+            // emploie encore ICU pour les DATES, ce qui est un autre sujet.
+            $debut = strpos($code, 'function currency(') ?: strpos($code, 'function format(');
+
+            if ($debut === false) {
+                $fautifs[] = "{$chemin} : la méthode de rendu monétaire est introuvable";
+
+                continue;
+            }
+
+            // Jusqu'à la méthode SUIVANTE : une fenêtre à taille fixe débordait sur `number()`,
+            // qui emploie ICU pour les nombres — un autre sujet, légitime.
+            $suite = strpos($code, '    public function', $debut + 10);
+            $portee = $suite === false ? substr($code, $debut) : substr($code, $debut, $suite - $debut);
+
+            foreach (['NumberFormatter', "extension_loaded('intl')"] as $motif) {
+                if (str_contains($portee, $motif)) {
+                    $fautifs[] = "{$chemin} : le rendu monétaire emploie `{$motif}`";
+                }
+            }
+        }
+
+        $this->assertSame(
+            [],
+            $fautifs,
+            'Un montant doit s’afficher pareil sur toute machine : ICU varie avec sa version.',
+        );
+    }
+
+    /**
+     * Les deux services rendent le MÊME montant — `LocaleFormatter` forçait deux décimales,
+     * et affichait le yen `1 000,00 JPY` là où `Money` rendait `1 000 ¥`.
+     */
+    public function test_les_deux_services_rendent_le_meme_montant(): void
+    {
+        $formatter = app(LocaleFormatter::class);
+        $ecarts = [];
+
+        foreach ([
+            ['fr', 'EUR', 1234.5],
+            ['en', 'EUR', 1234.5],
+            ['de', 'EUR', 1234.5],
+            ['nl', 'EUR', 1234.5],
+            ['fr', 'JPY', 1000.0],
+            ['fr', 'KWD', 12.3456],
+            ['fr', 'MAD', 100.0],
+        ] as [$locale, $devise, $montant]) {
+            $parMoney = $this->money()->format($montant, $devise, $locale);
+            $parFormatter = $formatter->currency($montant, $devise, $locale);
+
+            if ($parMoney !== $parFormatter) {
+                $ecarts[] = "{$locale}/{$devise} : Money rend [{$parMoney}], LocaleFormatter [{$parFormatter}]";
+            }
+        }
+
+        $this->assertSame([], $ecarts, 'Deux rendus monétaires ont divergé.');
+    }
+
+    /** L'allemand groupe les milliers par le POINT, pas par l'espace. */
+    public function test_l_allemand_groupe_les_milliers_par_le_point(): void
+    {
+        $this->assertSame('1.234,50 €', $this->money()->format(1234.5, 'EUR', 'de'));
     }
 }

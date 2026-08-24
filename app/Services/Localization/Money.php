@@ -3,7 +3,6 @@
 namespace App\Services\Localization;
 
 use App\Support\International\DeviseParPays;
-use NumberFormatter;
 
 /** Phase 9 — Service de gestion des devises et formatage monétaire. */
 class Money
@@ -83,16 +82,8 @@ class Money
         $currency = strtoupper($currency);
 
         // UNE DEVISE INCONNUE GARDE SON CODE — elle n'est plus réécrite en euros.
-
-        if (class_exists(NumberFormatter::class) && extension_loaded('intl')) {
-            $formatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
-            $formatted = $formatter->formatCurrency($amount, $currency);
-
-            // intl peut retourner des espaces insécables (\xc2\xa0) — on normalise
-            return str_replace("\xc2\xa0", ' ', $formatted);
-        }
-
-        return $this->fallbackFormat($amount, $currency, $locale);
+        // Le rendu ne passe JAMAIS par ICU : sa sortie change avec la version installée.
+        return $this->formatDeterministe($amount, $currency, $locale);
     }
 
     /** Convertit un montant d'une devise vers une autre. */
@@ -196,25 +187,32 @@ class Money
         }
     }
 
-    private function fallbackFormat(float $amount, string $currency, string $locale): string
+    /**
+     * LE SEUL rendu monétaire de la plateforme : un montant s'affiche pareil sur toute machine.
+     * Une devise inconnue garde son code et deux décimales, jamais le symbole de l'euro.
+     */
+    private function formatDeterministe(float $amount, string $currency, string $locale): string
     {
-        // Même règle qu'au-dessus : une devise inconnue garde son code et ses deux décimales,
-        // elle n'emprunte pas le symbole de l'euro.
         $info = self::devisesSupportees()[$currency] ?? ['symbol' => $currency, 'decimals' => 2];
         $symbol = $info['symbol'];
         $decimals = $info['decimals'];
 
-        // Locales européennes (fr_BE, nl_BE, fr) : virgule décimale + espace milliers
-        $isEuropean = str_starts_with($locale, 'fr')
+        $estEuropeen = str_starts_with($locale, 'fr')
             || str_starts_with($locale, 'nl')
             || str_starts_with($locale, 'de');
 
-        $decimalSep = $isEuropean ? ',' : '.';
-        $thousandsSep = $isEuropean ? ' ' : ',';
+        $separateurDecimal = $estEuropeen ? ',' : '.';
 
-        $formatted = number_format($amount, $decimals, $decimalSep, $thousandsSep);
+        // L'allemand groupe par le POINT là où le français emploie l'espace.
+        $separateurMilliers = match (true) {
+            str_starts_with($locale, 'de') => '.',
+            $estEuropeen => ' ',
+            default => ',',
+        };
 
-        // Position du symbole selon la locale
+        $formatted = number_format($amount, $decimals, $separateurDecimal, $separateurMilliers);
+
+        // L'anglais préfixe le symbole, les autres le suffixent.
         return match ($locale) {
             'en', 'en_US', 'en_GB' => $symbol.$formatted,
             default => $formatted.' '.$symbol,

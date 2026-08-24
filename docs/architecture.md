@@ -115,6 +115,7 @@ main :
 | `tests/Feature/DesignSystem/LeThemeEstLeMemeSurLesTroisSurfaces` | Une couleur qui diverge entre le web et le natif |
 | `tests/Feature/DesignSystem/LeThemeSAppliqueAvantLaPremierePeinture` | Un éclair de thème, ou un réglage injoignable en vue mobile |
 | `tests/Feature/DesignSystem/AucuneCouleurEnDurDansLesVues` | Une couleur qui échappe au système de design |
+| `tests/Feature/I18n/LeFormatageMonetaireNeMentPas` | Un montant dont l'affichage dépend de la machine |
 | `mobile/provider/__tests__/theme/mouvementReduit` | Une animation native qui ignore « réduire les animations » |
 | `mobile/provider/__tests__/theme/conservationDuTheme` | Un choix de thème perdu au redémarrage, ou qui ne suit pas le compte |
 

@@ -2,6 +2,7 @@
 
 namespace App\Services\I18n;
 
+use App\Services\Localization\Money;
 use Carbon\CarbonInterface;
 use DateTimeInterface;
 use IntlDateFormatter;
@@ -69,18 +70,11 @@ class LocaleFormatter
         }
 
         $locale = $locale ?? app()->getLocale();
-        $bcp47 = $this->resolver->bcp47($locale);
         $currency = $currency ?? config("i18n.locales.{$locale}.currency", 'EUR');
 
-        if (extension_loaded('intl')) {
-            $formatter = new NumberFormatter($bcp47, NumberFormatter::CURRENCY);
-            $formatted = $formatter->formatCurrency((float) $amount, $currency);
-            if ($formatted !== false) {
-                return (string) $formatted;
-            }
-        }
-
-        return $this->fallbackCurrency((float) $amount, $currency, $locale);
+        // UNE SEULE source pour le rendu monetaire. Le chemin d'ici forcait deux decimales :
+        // le yen s'affichait `1 000,00 JPY`, le dinar koweitien perdait sa troisieme.
+        return app(Money::class)->format((float) $amount, $currency, $locale);
     }
 
     public function number(float|int|string|null $value, ?string $locale = null, int $decimals = 2): string
@@ -138,16 +132,6 @@ class LocaleFormatter
         };
 
         return $dt->format($format);
-    }
-
-    protected function fallbackCurrency(float $amount, string $currency, string $locale): string
-    {
-        $formatted = $this->fallbackNumber($amount, $locale, 2);
-
-        return match ($locale) {
-            'en' => ($currency === 'EUR' ? '€' : $currency).$formatted,
-            default => $formatted.' '.($currency === 'EUR' ? '€' : $currency),
-        };
     }
 
     protected function fallbackNumber(float $value, string $locale, int $decimals): string
