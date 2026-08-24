@@ -170,7 +170,7 @@ class ProviderQuoteService
                         'assigned_provider_organization_id' => $devis->organization_account_id,
                         'devis_estime' => $ligne->total_cents / 100,
                         'status' => 'en_attente',
-                        'commentaire_client' => $ligne->description ?? $ligne->label,
+                        'customer_comment' => $ligne->description ?? $ligne->label,
                         'matching_snapshot' => [
                             'source' => 'provider_quote',
                             'provider_quote_id' => $devis->id,

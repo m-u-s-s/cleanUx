@@ -23,7 +23,7 @@ class PreferredCompanyResolver
         }
 
         $type = $rdv->provider_type_preference ?: 'company';
-        $duration = (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90);
+        $duration = (int) ($rdv->estimated_duration_minutes ?: $rdv->duree ?: 90);
         $zone = $rdv->serviceZone instanceof ServiceZone ? $rdv->serviceZone : null;
         $date = $rdv->date->format('Y-m-d');
         $heure = substr((string) $rdv->heure, 0, 5);

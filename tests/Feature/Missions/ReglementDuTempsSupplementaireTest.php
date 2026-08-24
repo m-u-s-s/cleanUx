@@ -229,7 +229,7 @@ class ReglementDuTempsSupplementaireTest extends TestCase
 
         $scenario->booking->forceFill([
             'purchased_minutes' => $achetees,
-            'duree_estimee' => $achetees,
+            'estimated_duration_minutes' => $achetees,
             'devis_estime' => 175.50,
             'payment_amount_cents' => 17550,
             'currency' => 'EUR',

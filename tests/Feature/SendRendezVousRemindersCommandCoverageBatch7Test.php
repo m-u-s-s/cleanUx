@@ -123,7 +123,7 @@ class SendRendezVousRemindersCommandCoverageBatch7Test extends TestCase
                 'status' => 'termine',
                 'service_catalog_id' => $catalog->id,
                 'mission_finished_at' => now()->subDay(),
-                'duree_estimee' => 60,
+                'estimated_duration_minutes' => 60,
             ]);
             $booking->duree_reelle = 120;
             $booking->save();

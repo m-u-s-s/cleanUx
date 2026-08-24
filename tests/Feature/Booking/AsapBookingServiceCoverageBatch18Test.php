@@ -122,7 +122,7 @@ class AsapBookingServiceCoverageBatch18Test extends TestCase
             'date' => $today,
             'heure' => '10:00:00',
             'duree' => 780,
-            'duree_estimee' => 780,
+            'estimated_duration_minutes' => 780,
             'booking_mode' => 'scheduled',
             'status' => 'confirme',
         ]);

@@ -74,7 +74,7 @@ class AiDispatchServiceScoringCoverageBatch8Test extends TestCase
             'trade_id' => $this->trade()->id,
             'date' => now()->addDay()->toDateString(),
             'heure' => '10:00',
-            'duree_estimee' => 90,
+            'estimated_duration_minutes' => 90,
             'status' => 'en_attente',
         ], $overrides));
     }

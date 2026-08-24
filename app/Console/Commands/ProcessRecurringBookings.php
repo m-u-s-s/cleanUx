@@ -107,7 +107,7 @@ class ProcessRecurringBookings extends Command
         $duree = (int) ($payload['duration_minutes'] ?? 0);
 
         if ($duree > 0) {
-            $payload['duree_estimee'] = $duree;
+            $payload['estimated_duration_minutes'] = $duree;
         }
 
         $payload = Arr::only($payload, (new Booking)->getFillable());

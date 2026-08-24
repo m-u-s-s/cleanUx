@@ -153,7 +153,7 @@
                         </div>
                         <div class="flex gap-2">
                             <dt class="text-slate-500 shrink-0 dark:text-slate-400">{{ __('Fréquence') }} :</dt>
-                            <dd class="font-medium text-slate-800 dark:text-slate-200">{{ ucfirst(str_replace('_', ' ', $dernierRendezVous->frequence ?? '—')) }}</dd>
+                            <dd class="font-medium text-slate-800 dark:text-slate-200">{{ ucfirst(str_replace('_', ' ', $dernierRendezVous->frequency ?? '—')) }}</dd>
                         </div>
                     </dl>
 

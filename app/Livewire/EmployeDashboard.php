@@ -60,7 +60,7 @@ class EmployeDashboard extends Component
 
         $total = $missions->count();
         $terminees = $missions->where('status', BookingStatus::TERMINE)->count();
-        $minutesPrevues = $missions->sum(fn ($rdv) => (int) ($rdv->duree_estimee ?? $rdv->duree ?? 90));
+        $minutesPrevues = $missions->sum(fn ($rdv) => (int) ($rdv->estimated_duration_minutes ?? $rdv->duree ?? 90));
 
         return [
             'total' => $total,

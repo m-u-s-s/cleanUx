@@ -737,7 +737,7 @@ class TradeSeeder extends Seeder
                     'max' => 100,
                 ],
                 [
-                    'key' => 'duree_estimee_heures',
+                    'key' => 'estimated_duration_minutes_heures',
                     'label' => 'Duree estimee',
                     'type' => 'number',
                     'unit' => 'heures',

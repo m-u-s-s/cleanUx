@@ -54,8 +54,8 @@
                     </a>
                 @endif
 
-                @if($rdv?->telephone_client)
-                    <a href="tel:{{ $rdv->telephone_client }}" class="rounded-2xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/15">
+                @if($rdv?->contact_phone)
+                    <a href="tel:{{ $rdv->contact_phone }}" class="rounded-2xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/15">
                         📞 Appeler client
                     </a>
                 @endif

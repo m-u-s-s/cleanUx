@@ -54,7 +54,7 @@ class MissionAccessSheetService
             'floor' => $site?->floor ?: $lieu?->floor,
             'access_instructions' => $site?->access_instructions
                 ?: ($lieu?->access_instructions
-                    ?: ($booking?->commentaire_client ?: $booking?->customer_comment)),
+                    ?: ($booking?->customer_comment ?: $booking?->customer_comment)),
             // LA CONSIGNE DE DERNIÈRE MINUTE, À PART ET AU-DESSUS.
             'live_note' => $booking?->live_access_note,
             'live_note_at' => $booking?->live_access_note_at?->toIso8601String(),

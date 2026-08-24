@@ -30,7 +30,7 @@ class UpdateRecurringSeriesAction
         $dayShift = $newDate ? $anchorDate->diffInDays($newDate, false) : 0;
         $newHour = $data['heure'] ?? null;
         $newEmployeeId = array_key_exists('employe_id', $data) ? $data['employe_id'] : null;
-        $estimatedDuration = max(30, (int) ($anchor->duree_estimee ?: $anchor->duree ?: 90));
+        $estimatedDuration = max(30, (int) ($anchor->estimated_duration_minutes ?: $anchor->duree ?: 90));
 
         foreach ($targets as $target) {
             $targetDate = optional($target->date)?->copy() ?? Carbon::parse($target->date);
@@ -159,7 +159,7 @@ class UpdateRecurringSeriesAction
             ->get()
             ->contains(function ($existing) use ($slotStart, $slotEnd, $bufferMinutes, $timezone) {
                 $existingStart = Carbon::createFromFormat('Y-m-d H:i', $existing->date->format('Y-m-d').' '.substr((string) $existing->heure, 0, 5), $timezone);
-                $existingDuration = max(30, (int) ($existing->duree_estimee ?: $existing->duree ?: 90));
+                $existingDuration = max(30, (int) ($existing->estimated_duration_minutes ?: $existing->duree ?: 90));
                 $existingEnd = $existingStart->copy()->addMinutes($existingDuration);
 
                 return $slotStart->lt($existingEnd->copy()->addMinutes($bufferMinutes))

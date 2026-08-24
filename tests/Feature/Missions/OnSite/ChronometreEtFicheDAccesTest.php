@@ -31,7 +31,7 @@ class ChronometreEtFicheDAccesTest extends TestCase
             'customer_user_id' => $client->id,
             'employe_id' => $prestataire->id,
             'organization_site_id' => $site?->id,
-            'commentaire_client' => 'Sonner deux fois, le chien aboie.',
+            'customer_comment' => 'Sonner deux fois, le chien aboie.',
         ]);
 
         $mission = Mission::query()->where('booking_id', $booking->id)->first()

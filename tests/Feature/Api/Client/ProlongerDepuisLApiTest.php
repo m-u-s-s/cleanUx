@@ -117,7 +117,7 @@ class ProlongerDepuisLApiTest extends TestCase
 
         $scenario->booking->forceFill([
             'purchased_minutes' => 180,
-            'duree_estimee' => 180,
+            'estimated_duration_minutes' => 180,
             'devis_estime' => 175.50,
             'payment_amount_cents' => 17550,
         ])->save();

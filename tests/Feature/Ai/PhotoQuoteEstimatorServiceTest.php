@@ -42,7 +42,7 @@ class PhotoQuoteEstimatorServiceTest extends TestCase
         $payload = [
             'surface_estimee_m2' => 24.5,
             'etat_observe' => 'bon état',
-            'duree_estimee_min' => 180,
+            'estimated_duration_minutes_min' => 180,
             'prix_min_cents' => 9000,
             'prix_max_cents' => 12000,
             'confiance' => 82,
@@ -68,7 +68,7 @@ class PhotoQuoteEstimatorServiceTest extends TestCase
         $this->assertSame('CLEAN', $result['trade_code']);
         $this->assertSame('Nettoyage', $result['trade_name']);
         $this->assertSame(24.5, $result['surface_estimee_m2']);
-        $this->assertSame(180, $result['duree_estimee_min']);
+        $this->assertSame(180, $result['estimated_duration_minutes_min']);
         $this->assertSame(9000, $result['prix_min_cents']);
         $this->assertSame(12000, $result['prix_max_cents']);
         $this->assertSame(90.0, $result['prix_min_eur']);

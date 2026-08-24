@@ -156,7 +156,7 @@ class GoogleCalendarBidirectionalService
 
         $day = $date->format('Y-m-d');
         $start = CarbonImmutable::parse($day.' '.$heure);
-        $end = $start->addMinutes((int) ($booking->duree_estimee ?: 60));
+        $end = $start->addMinutes((int) ($booking->estimated_duration_minutes ?: 60));
 
         $exceptions = AvailabilityException::query()
             ->where('provider_user_id', $provider->id)

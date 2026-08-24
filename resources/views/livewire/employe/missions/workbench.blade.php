@@ -81,8 +81,8 @@
                     </div>
 
                     <div class="mt-5 flex flex-wrap gap-2">
-                        @if($selectedRendezVous->telephone_client)
-                        <a href="tel:{{ $selectedRendezVous->telephone_client }}"
+                        @if($selectedRendezVous->contact_phone)
+                        <a href="tel:{{ $selectedRendezVous->contact_phone }}"
                             class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-700">
                             📞 Appeler
                         </a>

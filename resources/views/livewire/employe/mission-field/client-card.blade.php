@@ -33,9 +33,9 @@
 
         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Téléphone</p>
-            <p class="mt-1 font-black text-slate-900">{{ $rdv?->telephone_client ?? '—' }}</p>
-            @if($rdv?->telephone_client)
-                <a href="tel:{{ $rdv->telephone_client }}" class="mt-2 inline-flex text-sm font-bold text-blue-700 hover:text-blue-900">Appeler maintenant</a>
+            <p class="mt-1 font-black text-slate-900">{{ $rdv?->contact_phone ?? '—' }}</p>
+            @if($rdv?->contact_phone)
+                <a href="tel:{{ $rdv->contact_phone }}" class="mt-2 inline-flex text-sm font-bold text-blue-700 hover:text-blue-900">Appeler maintenant</a>
             @endif
         </div>
 
@@ -84,10 +84,10 @@
         {{--
             CE PANNEAU LISAIT `bookings.notes`, QUE RIEN N'ÉCRIT — IL NE S'EST JAMAIS AFFICHÉ.
 
-            Le commentaire du client vit dans `customer_comment` / `commentaire_client` : c'est là
+            Le commentaire du client vit dans `customer_comment` / `customer_comment` : c'est là
             que le parcours de commande le range, là que l'API le reçoit, et là que le tableau de
             bord prestataire et la page d'offre le lisent déjà. La confusion vient du formulaire
-            société, dont le champ s'appelle « notes » et qui écrit `commentaire_client`.
+            société, dont le champ s'appelle « notes » et qui écrit `customer_comment`.
 
             Conséquence : le prestataire sur place ne voyait aucune consigne d'accès — ni « portail
             au fond de la cour », ni « sonner deux fois » — alors que le client les avait données.

@@ -60,9 +60,9 @@ class BulkBookingImporterTest extends TestCase
         $this->assertSame($orderer->id, (int) $booking->client_id);
         $this->assertSame($org->id, (int) $booking->customer_organization_id);
         $this->assertSame('en_attente', $booking->status);
-        $this->assertSame(180, (int) $booking->duree_estimee);
+        $this->assertSame(180, (int) $booking->estimated_duration_minutes);
         $this->assertSame(80.0, (float) $booking->devis_estime);
-        $this->assertSame('Nettoyage hebdo', $booking->commentaire_client);
+        $this->assertSame('Nettoyage hebdo', $booking->customer_comment);
         $this->assertSame('bulk_csv_import', $booking->matching_snapshot['source']);
         $this->assertSame($orderer->id, (int) $booking->matching_snapshot['imported_by_user_id']);
     }

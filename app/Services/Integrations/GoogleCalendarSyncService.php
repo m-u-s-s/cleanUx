@@ -156,7 +156,7 @@ class GoogleCalendarSyncService
 
         $start = Carbon::parse($date.' '.$heure, $timezone);
 
-        $duration = (int) ($rendezVous->duree_estimee
+        $duration = (int) ($rendezVous->estimated_duration_minutes
             ?: $rendezVous->duree
             ?: $rendezVous->serviceCatalog?->default_duration_minutes
             ?: 120);
@@ -176,14 +176,14 @@ class GoogleCalendarSyncService
         $descriptionLines = array_filter([
             'Référence : '.($rendezVous->booking_reference ?: 'RDV-'.$rendezVous->id),
             'Client : '.($rendezVous->client?->name ?: 'N/A'),
-            'Téléphone : '.($rendezVous->telephone_client ?: $rendezVous->client?->phone ?: 'N/A'),
+            'Téléphone : '.($rendezVous->contact_phone ?: $rendezVous->client?->phone ?: 'N/A'),
             'Zone : '.$zoneName,
             $siteName ? 'Site : '.$siteName : null,
             'Adresse : '.$location,
             'Service : '.$serviceName,
             'Identifiant service : '.$rendezVous->service_identifier_display,
             'Motif : '.($rendezVous->motif ?: '—'),
-            'Commentaire : '.($rendezVous->commentaire_client ?: '—'),
+            'Commentaire : '.($rendezVous->customer_comment ?: '—'),
             'Statut : '.$rendezVous->status,
         ]);
 

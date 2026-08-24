@@ -145,7 +145,7 @@ class BulkBookingImporter
             'service_zone_id' => $site?->service_zone_id ?? null,
             'date' => $scheduled->toDateString(),
             'heure' => $scheduled->format('H:i:s'),
-            'duree_estimee' => $duration,
+            'estimated_duration_minutes' => $duration,
             'devis_estime' => $budgetEur,
             // LE LIEN AU SITE VIT DANS UNE COLONNE, PAS DANS UN BLOB (corrigé le 2026-08-05).
             'organization_site_id' => $site?->id,
@@ -157,7 +157,7 @@ class BulkBookingImporter
                 'address_line_1' => $site->address_line_1,
             ] : null,
             'status' => 'en_attente',
-            'commentaire_client' => $data['notes'] ?? null,
+            'customer_comment' => $data['notes'] ?? null,
             'booking_channel' => 'b2b_bulk_import',
             'matching_snapshot' => [
                 'source' => 'bulk_csv_import',

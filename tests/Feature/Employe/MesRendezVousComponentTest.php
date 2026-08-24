@@ -163,7 +163,7 @@ class MesRendezVousComponentTest extends TestCase
         $admin = $this->actingAdmin();
         $booking = $this->bookingWithMission($admin, [
             'status' => 'sur_place',
-            'duree_estimee' => 90,
+            'estimated_duration_minutes' => 90,
         ]);
 
         Livewire::test(MesRendezVous::class)

@@ -79,7 +79,7 @@ class AgendaHebdomadaire extends Component
             // fusion des deux tables. L'annotation était restée, et désignait une classe absente.
             /** @var Collection<int, Booking> $rdvsJour */
             $rdvsJour = $rdvsGrouped->get($jour->toDateString(), collect());
-            $totalMinutes = $rdvsJour->sum(fn (Booking $rdv) => ($rdv->duree ?? $rdv->duree_estimee ?? 90) + 30);
+            $totalMinutes = $rdvsJour->sum(fn (Booking $rdv) => ($rdv->duree ?? $rdv->estimated_duration_minutes ?? 90) + 30);
 
             $jours->push([
                 'label' => $jour->translatedFormat('l d/m'),

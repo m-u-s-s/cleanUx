@@ -31,7 +31,7 @@ class HandlesAdminDashboardPlanningTest extends TestCase
             'date' => now()->addDays(3)->toDateString(),
             'heure' => '10:00:00',
             'duree' => 90,
-            'duree_estimee' => 90,
+            'estimated_duration_minutes' => 90,
         ]);
 
         // A free employee so the suggestion list is non-empty (no zone restriction).
@@ -65,7 +65,7 @@ class HandlesAdminDashboardPlanningTest extends TestCase
             'date' => now()->addDays(4)->toDateString(),
             'heure' => '09:30:00',
             'duree' => 90,
-            'duree_estimee' => 90,
+            'estimated_duration_minutes' => 90,
         ]);
 
         $suggested = User::factory()->employe()->create([
@@ -105,7 +105,7 @@ class HandlesAdminDashboardPlanningTest extends TestCase
             'date' => now()->addDays(6)->toDateString(),
             'heure' => '10:00:00',
             'duree' => 90,
-            'duree_estimee' => 90,
+            'estimated_duration_minutes' => 90,
         ]);
 
         $newEmploye = User::factory()->employe()->create([

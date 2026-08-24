@@ -154,7 +154,7 @@ class SendRendezVousReminders extends Command
         $missions = Booking::query()
             ->with('serviceCatalog:id,name')
             ->where('status', 'termine')
-            ->whereNotNull('duree_estimee')
+            ->whereNotNull('estimated_duration_minutes')
             ->whereNotNull('duree_reelle')
             ->where('mission_finished_at', '>=', now()->subDays(7))
             ->get();
@@ -164,7 +164,7 @@ class SendRendezVousReminders extends Command
             ->map(function ($items) {
                 return [
                     'count' => $items->count(),
-                    'avg_gap' => round($items->avg(fn ($rdv) => $rdv->duree_reelle - $rdv->duree_estimee)),
+                    'avg_gap' => round($items->avg(fn ($rdv) => $rdv->duree_reelle - $rdv->estimated_duration_minutes)),
                 ];
             })
             ->filter(fn ($row) => $row['count'] >= 3 && $row['avg_gap'] >= 20);
@@ -239,7 +239,7 @@ class SendRendezVousReminders extends Command
                 ->get();
 
             $minutes = $rdvs->sum(function ($rdv) {
-                $duration = $rdv->duree_estimee ?? $rdv->duree ?? 90;
+                $duration = $rdv->estimated_duration_minutes ?? $rdv->duree ?? 90;
 
                 return (int) $duration + 30;
             });
@@ -269,7 +269,7 @@ class SendRendezVousReminders extends Command
             $mission = $row['rdvs']
                 ->whereIn('status', ['en_attente', 'confirme'])
                 ->sortByDesc(fn ($rdv) => $rdv->priorite === 'urgente' ? 1 : 0)
-                ->sortByDesc('duree_estimee')
+                ->sortByDesc('estimated_duration_minutes')
                 ->first();
 
             if (! $mission) {

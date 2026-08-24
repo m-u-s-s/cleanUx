@@ -47,7 +47,7 @@ class RenvoiDuCodeTest extends TestCase
             'employe_id' => $prestataire->id,
             'status' => 'confirme',
             // DEUX SOURCES POUR LE NUMÉRO, et le contrôleur les essaie dans l'ordre : le compte du client, puis celui saisi sur la réservation.
-            'telephone_client' => $telephone,
+            'contact_phone' => $telephone,
         ]);
 
         $mission = Mission::factory()->create([

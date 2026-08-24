@@ -59,7 +59,7 @@ class BookingFactory extends Factory
             'date' => $date->format('Y-m-d'),
             'heure' => $heure,
             'duree' => $duree,
-            'duree_estimee' => $duree,
+            'estimated_duration_minutes' => $duree,
             'devis_estime' => $devisEstime,
             'motif' => fake()->sentence(),
             'status' => 'en_attente',
@@ -68,10 +68,10 @@ class BookingFactory extends Factory
             'code_postal' => fake()->numerify('####'),
             'place_type' => fake()->randomElement(['appartement', 'maison', 'bureaux']),
             'surface' => fake()->randomElement(['moins_50', '50_100', '100_150', '150_250']),
-            'frequence' => fake()->randomElement(['ponctuel', 'hebdomadaire', 'mensuel']),
-            'telephone_client' => '+32'.fake()->numerify('4########'),
+            'frequency' => fake()->randomElement(['ponctuel', 'hebdomadaire', 'mensuel']),
+            'contact_phone' => '+32'.fake()->numerify('4########'),
             'priorite' => fake()->randomElement(['normale', 'haute']),
-            'commentaire_client' => fake()->sentence(),
+            'customer_comment' => fake()->sentence(),
             'options_prestation' => ['vitres'],
             'zones_specifiques' => ['salon'],
             'materiel_specifique' => [],
@@ -231,7 +231,7 @@ class BookingFactory extends Factory
                 'code_postal' => $postalCode->code,
                 'devis_estime' => 199,
                 'duree' => 120,
-                'duree_estimee' => 120,
+                'estimated_duration_minutes' => 120,
             ];
         });
     }
@@ -245,7 +245,7 @@ class BookingFactory extends Factory
             'ville' => $postalCode->city_name,
             'code_postal' => $postalCode->code,
             'duree' => $catalog->default_duration_minutes,
-            'duree_estimee' => $catalog->default_duration_minutes,
+            'estimated_duration_minutes' => $catalog->default_duration_minutes,
             'devis_estime' => $catalog->base_price,
         ]);
     }
@@ -268,7 +268,7 @@ class BookingFactory extends Factory
 
         if ($serviceCatalog) {
             $rendezVous->duree ??= $serviceCatalog->default_duration_minutes;
-            $rendezVous->duree_estimee ??= $serviceCatalog->default_duration_minutes;
+            $rendezVous->estimated_duration_minutes ??= $serviceCatalog->default_duration_minutes;
             $rendezVous->devis_estime ??= $serviceCatalog->base_price;
         }
 
@@ -347,7 +347,7 @@ class BookingFactory extends Factory
                 'rule' => null,
                 'pricing' => [
                     'estimated_price' => $rendezVous->devis_estime !== null ? (float) $rendezVous->devis_estime : null,
-                    'estimated_duration_minutes' => $rendezVous->duree_estimee !== null ? (int) $rendezVous->duree_estimee : null,
+                    'estimated_duration_minutes' => $rendezVous->estimated_duration_minutes !== null ? (int) $rendezVous->estimated_duration_minutes : null,
                     'travel_surcharge' => (float) ($serviceZone->travel_surcharge ?? 0),
                     'applied_base_price' => (float) ($serviceCatalog->base_price ?? 0),
                     'applied_multiplier' => 1.0,
@@ -369,7 +369,7 @@ class BookingFactory extends Factory
                 'base_price' => (float) ($serviceCatalog->base_price ?? 0),
                 'travel_surcharge' => (float) ($serviceZone->travel_surcharge ?? 0),
                 'devis_estime' => $rendezVous->devis_estime !== null ? (float) $rendezVous->devis_estime : null,
-                'duree_estimee' => $rendezVous->duree_estimee !== null ? (int) $rendezVous->duree_estimee : null,
+                'estimated_duration_minutes' => $rendezVous->estimated_duration_minutes !== null ? (int) $rendezVous->estimated_duration_minutes : null,
             ];
         }
 

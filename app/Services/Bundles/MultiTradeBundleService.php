@@ -392,9 +392,9 @@ class MultiTradeBundleService
                         'employe_id' => $item->assigned_provider_user_id,
                         'trade_id' => $item->trade_id,
                         'devis_estime' => $item->quoted_price_cents / 100,
-                        'duree_estimee' => $item->duration_minutes,
+                        'estimated_duration_minutes' => $item->duration_minutes,
                         'status' => 'en_attente',
-                        'commentaire_client' => $item->description ?? $item->label,
+                        'customer_comment' => $item->description ?? $item->label,
                         'matching_snapshot' => [
                             'source' => 'multi_trade_bundle',
                             'bundle_code' => $bundle->code,

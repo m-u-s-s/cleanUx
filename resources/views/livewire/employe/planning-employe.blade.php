@@ -80,8 +80,8 @@
                                 @endif
                             </div>
                             <div class="flex flex-wrap gap-2">
-                                @if($rdv->telephone_client)
-                                    <a href="tel:{{ $rdv->telephone_client }}" class="px-3 py-2 rounded-lg bg-green-100 text-green-700 text-sm">Appeler</a>
+                                @if($rdv->contact_phone)
+                                    <a href="tel:{{ $rdv->contact_phone }}" class="px-3 py-2 rounded-lg bg-green-100 text-green-700 text-sm">Appeler</a>
                                 @endif
                                 @if($rdv->adresse || $rdv->ville)
                                     <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode(($rdv->adresse ?? '') . ' ' . ($rdv->ville ?? '')) }}" target="_blank" class="px-3 py-2 rounded-lg bg-blue-100 text-blue-700 text-sm">Itinéraire</a>

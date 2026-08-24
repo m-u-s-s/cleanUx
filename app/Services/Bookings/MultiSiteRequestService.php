@@ -15,7 +15,7 @@ class MultiSiteRequestService
 {
     /**
      * @param  list<int>  $siteIds  identifiants reçus du navigateur, donc non fiables
-     * @param  array<string, mixed>  $options  duree_estimee, devis_estime, commentaire_client…
+     * @param  array<string, mixed>  $options  estimated_duration_minutes, devis_estime, customer_comment…
      * @return Booking|null la demande mère, ou `null` si aucun site recevable
      */
     public function creer(
@@ -70,10 +70,10 @@ class MultiSiteRequestService
             'destination_lng' => $site?->longitude,
             'date' => $quand->toDateString(),
             'heure' => $quand->format('H:i:s'),
-            'duree_estimee' => (int) ($options['duree_estimee'] ?? 60),
+            'estimated_duration_minutes' => (int) ($options['estimated_duration_minutes'] ?? 60),
             'devis_estime' => (float) ($options['devis_estime'] ?? 0),
             'status' => 'en_attente',
-            'commentaire_client' => $options['commentaire_client'] ?? null,
+            'customer_comment' => $options['customer_comment'] ?? null,
             'booking_channel' => 'b2b_multi_site',
             'address_components' => $site ? [
                 'site_id' => $site->id,

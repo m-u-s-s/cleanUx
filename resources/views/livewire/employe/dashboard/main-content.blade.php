@@ -35,11 +35,11 @@
                         <dl class="mt-3 grid grid-cols-1 gap-x-4 gap-y-1 text-xs text-slate-700 md:grid-cols-2 dark:text-slate-300">
                             <div class="flex gap-2">
                                 <dt class="text-slate-500 dark:text-slate-400">Téléphone :</dt>
-                                <dd class="font-medium">{{ $rdv->telephone_client ?? '—' }}</dd>
+                                <dd class="font-medium">{{ $rdv->contact_phone ?? '—' }}</dd>
                             </div>
                             <div class="flex gap-2">
                                 <dt class="text-slate-500 dark:text-slate-400">Durée estimée :</dt>
-                                <dd class="font-medium">{{ $rdv->duree_estimee ? $rdv->duree_estimee . ' min' : '—' }}</dd>
+                                <dd class="font-medium">{{ $rdv->estimated_duration_minutes ? $rdv->estimated_duration_minutes . ' min' : '—' }}</dd>
                             </div>
                             <div class="flex gap-2">
                                 <dt class="text-slate-500 dark:text-slate-400">Type de lieu :</dt>
@@ -59,16 +59,16 @@
                             </div>
                         </dl>
 
-                        @if($rdv->commentaire_client)
+                        @if($rdv->customer_comment)
                             <div class="mt-3 rounded-lg border border-amber-200/70 bg-amber-50/50 p-2.5 text-xs text-amber-900">
                                 <span class="font-semibold">Remarque client :</span>
-                                {{ $rdv->commentaire_client }}
+                                {{ $rdv->customer_comment }}
                             </div>
                         @endif
 
                         <div class="mt-3 flex flex-wrap gap-2">
-                            @if($rdv->telephone_client)
-                                <a href="tel:{{ $rdv->telephone_client }}" class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition">
+                            @if($rdv->contact_phone)
+                                <a href="tel:{{ $rdv->contact_phone }}" class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition">
                                     <x-ui.icon name="phone" class="w-3.5 h-3.5" />
                                     Appeler
                                 </a>

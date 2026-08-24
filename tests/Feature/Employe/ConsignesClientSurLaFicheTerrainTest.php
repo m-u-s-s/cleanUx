@@ -63,7 +63,7 @@ class ConsignesClientSurLaFicheTerrainTest extends TestCase
     public function test_la_fiche_terrain_montre_la_consigne_laissee_par_le_client(): void
     {
         [$prestataire, $mission] = $this->intervention([
-            'commentaire_client' => 'Portail au fond de la cour, sonner deux fois.',
+            'customer_comment' => 'Portail au fond de la cour, sonner deux fois.',
         ]);
 
         $this->actingAs($prestataire);

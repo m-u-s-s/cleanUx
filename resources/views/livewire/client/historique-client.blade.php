@@ -68,7 +68,7 @@
                 <div>
                     <p><span class="font-medium">Adresse :</span> {{ $rdv->adresse ?? '—' }}, {{ $rdv->ville ?? '—' }}</p>
                     <p><span class="font-medium">Type de lieu :</span> {{ ucfirst($rdv->place_type ?? '—') }}</p>
-                    <p><span class="font-medium">Durée estimée :</span> {{ $rdv->duree_estimee ? $rdv->duree_estimee . ' min' : '—' }}</p>
+                    <p><span class="font-medium">Durée estimée :</span> {{ $rdv->estimated_duration_minutes ? $rdv->estimated_duration_minutes . ' min' : '—' }}</p>
                     <p><span class="font-medium">Durée réelle :</span> {{ $rdv->duree_reelle ? $rdv->duree_reelle . ' min' : '—' }}</p>
                 </div>
 
@@ -76,7 +76,7 @@
                     <div class="rounded-xl bg-white border p-4 dark:bg-slate-900 dark:border-slate-700">
                         <p class="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Durée prévue</p>
                         <p class="mt-1 text-lg font-black text-slate-900 dark:text-slate-100">
-                            {{ $rdv->duree_estimee ? $rdv->duree_estimee.' min' : '—' }}
+                            {{ $rdv->estimated_duration_minutes ? $rdv->estimated_duration_minutes.' min' : '—' }}
                         </p>
                     </div>
 
@@ -102,7 +102,7 @@
                 </div>
 
                 <div>
-                    <p><span class="font-medium">Fréquence :</span> {{ ucfirst(str_replace('_', ' ', $rdv->frequence ?? '—')) }}</p>
+                    <p><span class="font-medium">Fréquence :</span> {{ ucfirst(str_replace('_', ' ', $rdv->frequency ?? '—')) }}</p>
                     <p><span class="font-medium">Surface :</span> {{ $rdv->surface ?? '—' }}</p>
                 </div>
             </div>

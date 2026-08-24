@@ -56,6 +56,12 @@ trait ComputesAdminDashboardScopes
         return $this->scopeZoneIds()->isNotEmpty();
     }
 
+    /**
+     * La requête porte des `Booking`. Sans ce type, tout accès de colonne dans une closure
+     * d'agrégat devient invisible à l'analyse — et une propriété inexistante y passe inaperçue.
+     *
+     * @return Builder<Booking>
+     */
     protected function scopedRendezVousQuery(bool $withEmployeeFilter = true): Builder
     {
         $query = Booking::query();

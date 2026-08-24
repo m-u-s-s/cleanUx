@@ -54,7 +54,7 @@ class SynchronisationNeRetrogradePasTest extends TestCase
         $scenario->mission->forceFill(['status' => MissionStatus::STARTED])->save();
 
         // Une note interne. Rien de plus anodin, et c'est tout ce qu'il fallait.
-        $scenario->booking->forceFill(['commentaire_client' => 'Le portail est ouvert.'])->save();
+        $scenario->booking->forceFill(['customer_comment' => 'Le portail est ouvert.'])->save();
 
         $this->assertSame(MissionStatus::STARTED, $scenario->mission->refresh()->status);
     }

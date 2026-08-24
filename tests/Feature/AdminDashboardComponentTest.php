@@ -38,7 +38,7 @@ class AdminDashboardComponentTest extends TestCase
         Booking::factory()->confirme()->create(['service_zone_id' => $zone->id]);
         Booking::factory()->termine()->create([
             'service_zone_id' => $zone->id,
-            'duree_estimee' => 90,
+            'estimated_duration_minutes' => 90,
             'duree_reelle' => 120,
         ]);
         Booking::factory()->create([

@@ -63,7 +63,7 @@ class SmartDispatchServiceCoverageBatch18Test extends TestCase
             'date' => $date,
             'heure' => '10:00:00',
             'duree' => 90,
-            'duree_estimee' => 90,
+            'estimated_duration_minutes' => 90,
             'booking_mode' => $mode,
             'status' => 'en_attente',
         ], $overrides))->fresh();

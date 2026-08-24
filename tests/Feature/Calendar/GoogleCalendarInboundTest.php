@@ -87,10 +87,10 @@ class GoogleCalendarInboundTest extends TestCase
         ]);
 
         $overlap = Booking::factory()->create([
-            'employe_id' => $provider->id, 'date' => '2026-06-20', 'heure' => '15:00:00', 'duree_estimee' => 60,
+            'employe_id' => $provider->id, 'date' => '2026-06-20', 'heure' => '15:00:00', 'estimated_duration_minutes' => 60,
         ]);
         $clear = Booking::factory()->create([
-            'employe_id' => $provider->id, 'date' => '2026-06-20', 'heure' => '17:00:00', 'duree_estimee' => 60,
+            'employe_id' => $provider->id, 'date' => '2026-06-20', 'heure' => '17:00:00', 'estimated_duration_minutes' => 60,
         ]);
 
         $this->assertTrue($this->service()->hasConflict($provider, $overlap));

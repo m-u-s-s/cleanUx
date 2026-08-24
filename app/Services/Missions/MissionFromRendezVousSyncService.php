@@ -94,7 +94,7 @@ class MissionFromRendezVousSyncService
                     ),
                     'requires_start_code' => true,
                     'requires_end_code' => true,
-                    'notes' => $rendezVous->commentaire_client,
+                    'notes' => $rendezVous->customer_comment,
                 ]
             );
 
@@ -160,7 +160,7 @@ class MissionFromRendezVousSyncService
                     'planned_end_at' => $plannedEndAt,
                     'destination_lat' => $destination['lat'] ?? null,
                     'destination_lng' => $destination['lng'] ?? null,
-                    'notes' => $rendezVous->commentaire_client,
+                    'notes' => $rendezVous->customer_comment,
                 ]
             );
 
@@ -212,7 +212,7 @@ class MissionFromRendezVousSyncService
     protected function dureeEstimee(Booking $rendezVous): int
     {
         $candidats = [
-            (int) ($rendezVous->duree_estimee ?? 0),
+            (int) ($rendezVous->estimated_duration_minutes ?? 0),
             (int) ($rendezVous->estimated_duration_minutes ?? 0),
             (int) ($rendezVous->duree ?? 0),
             (int) ($rendezVous->trade_id ? ($rendezVous->trade->estimated_duration_min ?? 0) : 0),

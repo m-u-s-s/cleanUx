@@ -97,7 +97,7 @@
                 <p class="text-xs text-slate-500 mt-3 inline-flex items-center gap-3">
                     <span class="inline-flex items-center gap-1">
                         <x-ui.icon name="clock" class="w-3.5 h-3.5" />
-                        <strong>{{ round(($result['duree_estimee_min'] ?? 0) / 60, 1) }}h</strong>
+                        <strong>{{ round(($result['estimated_duration_minutes_min'] ?? 0) / 60, 1) }}h</strong>
                     </span>
                     @if (!empty($result['surface_estimee_m2']))
                         <span class="text-slate-300">·</span>

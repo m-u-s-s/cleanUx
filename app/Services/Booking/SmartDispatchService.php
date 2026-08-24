@@ -140,7 +140,7 @@ class SmartDispatchService
             }
         }
 
-        $duration = (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90);
+        $duration = (int) ($rdv->estimated_duration_minutes ?: $rdv->duree ?: 90);
 
         $providerType = $rdv->provider_type_preference ?: 'any';
 
@@ -310,7 +310,7 @@ class SmartDispatchService
                         $rdv->date->format('Y-m-d'),
                         substr((string) $rdv->heure, 0, 5),
                         $rdv->serviceZone,
-                        (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90),
+                        (int) ($rdv->estimated_duration_minutes ?: $rdv->duree ?: 90),
                         $rdv->id
                     ),
                     // Même source que `distanceScore()` : la présence, puis le profil.

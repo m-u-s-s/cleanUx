@@ -41,7 +41,7 @@ trait ComputesAdminDashboardInsights
                     ->get();
 
                 $totalMinutes = $rdvsJour->sum(function ($rdv) {
-                    $duration = $rdv->duree ?? $rdv->duree_estimee ?? 90;
+                    $duration = $rdv->duree ?? $rdv->estimated_duration_minutes ?? 90;
 
                     return $duration + 30;
                 });
@@ -77,7 +77,7 @@ trait ComputesAdminDashboardInsights
             ->limit(12)
             ->get()
             ->map(function ($rdv) {
-                $estimated = $rdv->duree_estimee ?? $rdv->duree ?? null;
+                $estimated = $rdv->estimated_duration_minutes ?? $rdv->duree ?? null;
                 $real = $rdv->duree_reelle;
 
                 $difference = null;
@@ -87,7 +87,7 @@ trait ComputesAdminDashboardInsights
 
                 return [
                     'rdv' => $rdv,
-                    'has_report' => filled($rdv->commentaire_fin_mission),
+                    'has_report' => filled($rdv->duree_reelle),
                     'has_after_photos' => ! empty($rdv->photos_apres),
                     'estimated' => $estimated,
                     'real' => $real,
@@ -105,7 +105,7 @@ trait ComputesAdminDashboardInsights
             ->get();
 
         return [
-            'sans_rapport' => $missions->filter(fn ($rdv) => blank($rdv->commentaire_fin_mission))->count(),
+            'sans_rapport' => $missions->filter(fn (Booking $rdv) => blank($rdv->duree_reelle))->count(),
             'sans_photos_apres' => $missions->filter(fn ($rdv) => empty($rdv->photos_apres))->count(),
             'avec_duree_reelle' => $missions->filter(fn ($rdv) => ! is_null($rdv->duree_reelle))->count(),
         ];
@@ -154,7 +154,7 @@ trait ComputesAdminDashboardInsights
         return Cache::remember($this->cacheKey('dureeStats'), now()->addMinutes(10), function () {
             $missions = $this->scopedRendezVousQuery(false)
                 ->where('status', 'termine')
-                ->whereNotNull('duree_estimee')
+                ->whereNotNull('estimated_duration_minutes')
                 ->whereNotNull('duree_reelle')
                 ->get();
 
@@ -167,9 +167,9 @@ trait ComputesAdminDashboardInsights
             }
 
             return [
-                'avg_estimated' => round($missions->avg('duree_estimee')),
+                'avg_estimated' => round($missions->avg('estimated_duration_minutes')),
                 'avg_real' => round($missions->avg('duree_reelle')),
-                'avg_gap' => round($missions->avg(fn ($rdv) => $rdv->duree_reelle - $rdv->duree_estimee)),
+                'avg_gap' => round($missions->avg(fn (Booking $rdv) => $rdv->duree_reelle - $rdv->estimated_duration_minutes)),
             ];
         });
     }
@@ -190,14 +190,14 @@ trait ComputesAdminDashboardInsights
 
                     $avgGap = null;
                     $withDurations = $missions->filter(
-                        fn ($rdv) => ! is_null($rdv->duree_estimee) && ! is_null($rdv->duree_reelle)
+                        fn ($rdv) => ! is_null($rdv->estimated_duration_minutes) && ! is_null($rdv->duree_reelle)
                     );
 
                     if ($withDurations->isNotEmpty()) {
-                        $avgGap = round($withDurations->avg(fn ($rdv) => $rdv->duree_reelle - $rdv->duree_estimee));
+                        $avgGap = round($withDurations->avg(fn (Booking $rdv) => $rdv->duree_reelle - $rdv->estimated_duration_minutes));
                     }
 
-                    $feedbacks = $missions->filter(fn ($rdv) => $rdv->feedback)->pluck('feedback');
+                    $feedbacks = $missions->filter(fn (Booking $rdv) => $rdv->feedback !== null)->pluck('feedback');
                     $avgNote = $feedbacks->isNotEmpty() ? round($feedbacks->avg('note'), 1) : null;
 
                     return [
@@ -254,13 +254,13 @@ trait ComputesAdminDashboardInsights
             return $this->scopedRendezVousQuery(false)
                 ->with('serviceCatalog:id,name')
                 ->where('status', 'termine')
-                ->whereNotNull('duree_estimee')
+                ->whereNotNull('estimated_duration_minutes')
                 ->whereNotNull('duree_reelle')
-                ->get(['id', 'service_catalog_id', 'duree_estimee', 'duree_reelle'])
+                ->get(['id', 'service_catalog_id', 'estimated_duration_minutes', 'duree_reelle'])
                 ->groupBy(fn (Booking $rdv) => $rdv->service_display_name)
                 ->map(function ($items) {
                     return [
-                        'avg_gap' => round($items->avg(fn ($rdv) => $rdv->duree_reelle - $rdv->duree_estimee)),
+                        'avg_gap' => round($items->avg(fn (Booking $rdv) => $rdv->duree_reelle - $rdv->estimated_duration_minutes)),
                         'count' => $items->count(),
                     ];
                 })

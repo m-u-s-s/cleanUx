@@ -25,6 +25,10 @@ class LesPairesEffondreesNeReviennentPasTest extends TestCase
      */
     private const EFFONDREES = [
         'type_lieu' => 'place_type',
+        'frequence' => 'frequency',
+        'commentaire_client' => 'customer_comment',
+        'telephone_client' => 'contact_phone',
+        'duree_estimee' => 'estimated_duration_minutes',
     ];
 
     /**

@@ -106,7 +106,7 @@ trait HandlesAdminDashboardPlanning
         $ancienStatus = $rdv->status;
 
         $newStart = Carbon::parse($this->planningDate.' '.$this->planningHeure);
-        $newDuration = $rdv->duree ?? $rdv->duree_estimee ?? 90;
+        $newDuration = $rdv->duree ?? $rdv->estimated_duration_minutes ?? 90;
         $bufferMinutes = 30;
         $newEnd = $newStart->copy()->addMinutes($newDuration + $bufferMinutes);
 
@@ -118,7 +118,7 @@ trait HandlesAdminDashboardPlanning
             ->get()
             ->contains(function ($other) use ($newStart, $newEnd, $bufferMinutes) {
                 $otherStart = Carbon::parse($other->date.' '.$other->heure);
-                $otherDuration = $other->duree ?? $other->duree_estimee ?? 90;
+                $otherDuration = $other->duree ?? $other->estimated_duration_minutes ?? 90;
                 $otherEnd = $otherStart->copy()->addMinutes($otherDuration + $bufferMinutes);
 
                 return $newStart < $otherEnd && $newEnd > $otherStart;
@@ -230,7 +230,7 @@ trait HandlesAdminDashboardPlanning
     protected function computeEmployeScore(int $employeId, string $date, string $heure, Booking $rdv): array
     {
         $bufferMinutes = 30;
-        $duration = $rdv->duree ?? $rdv->duree_estimee ?? 90;
+        $duration = $rdv->duree ?? $rdv->estimated_duration_minutes ?? 90;
         $start = Carbon::parse($date.' '.$heure);
         $end = $start->copy()->addMinutes($duration + $bufferMinutes);
 
@@ -242,14 +242,14 @@ trait HandlesAdminDashboardPlanning
 
         $hasConflict = $rdvsJour->contains(function ($other) use ($start, $end, $bufferMinutes) {
             $otherStart = Carbon::parse($other->date.' '.$other->heure);
-            $otherDuration = $other->duree ?? $other->duree_estimee ?? 90;
+            $otherDuration = $other->duree ?? $other->estimated_duration_minutes ?? 90;
             $otherEnd = $otherStart->copy()->addMinutes($otherDuration + $bufferMinutes);
 
             return $start < $otherEnd && $end > $otherStart;
         });
 
         $loadMinutes = $rdvsJour->sum(function ($item) {
-            return ($item->duree ?? $item->duree_estimee ?? 90) + 30;
+            return ($item->duree ?? $item->estimated_duration_minutes ?? 90) + 30;
         });
 
         $limit = LimiteJournaliere::where('user_id', $employeId)

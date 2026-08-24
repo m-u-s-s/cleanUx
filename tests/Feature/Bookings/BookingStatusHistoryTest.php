@@ -60,7 +60,7 @@ class BookingStatusHistoryTest extends TestCase
         $reservation = Booking::factory()->create(['status' => 'en_attente']);
         $avant = BookingStatusHistory::query()->where('booking_id', $reservation->id)->count();
 
-        $reservation->update(['commentaire_client' => 'Portail au fond de la cour.']);
+        $reservation->update(['customer_comment' => 'Portail au fond de la cour.']);
 
         $this->assertSame(
             $avant,

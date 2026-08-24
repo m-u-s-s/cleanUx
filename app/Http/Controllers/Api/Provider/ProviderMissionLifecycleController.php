@@ -276,7 +276,7 @@ class ProviderMissionLifecycleController extends Controller
 
         // DEUX SOURCES, DANS CET ORDRE : le compte du client, puis le numéro saisi sur la réservation.
         $rendezVous = $mission->booking;
-        $telephone = $rendezVous?->client?->phone ?: $rendezVous?->telephone_client;
+        $telephone = $rendezVous?->client?->phone ?: $rendezVous?->contact_phone;
 
         if (! $telephone) {
             return response()->json([

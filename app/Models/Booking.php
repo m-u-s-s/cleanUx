@@ -88,7 +88,6 @@ use Illuminate\Support\Facades\Schema;
  * @property ?int $route_duration_s
  * @property ?string $route_source
  * @property ?int $estimated_duration_minutes
- * @property ?int $duree_estimee
  * @property ?int $surface_m2
  * @property ?array $options
  * @property ?array $options_prestation
@@ -288,12 +287,12 @@ class Booking extends Model
         'place_type',
         'surface',        // M8 — virtual alias bridged to surface_range (see surface() attribute)
         'surface_range',
-        'frequence',
+        'frequency',
         'priorite',
-        'telephone_client',
-        'commentaire_client',
+        'contact_phone',
+        'customer_comment',
         'devis_estime',
-        'duree_estimee',
+        'estimated_duration_minutes',
         // LE TEMPS ACHETE, distinct du temps ESTIME juste au-dessus.
         'purchased_minutes',
 
@@ -394,7 +393,6 @@ class Booking extends Model
 
         // Entiers
         'estimated_duration_minutes' => 'integer',
-        'duree_estimee' => 'integer',
         'purchased_minutes' => 'integer',
         'route_distance_m' => 'integer',
         'route_duration_s' => 'integer',
@@ -795,7 +793,7 @@ class Booking extends Model
                 ->orWhere('address', 'like', $like)
                 ->orWhere('ville', 'like', $like)
                 ->orWhere('city', 'like', $like)
-                ->orWhere('telephone_client', 'like', $like)
+                ->orWhere('contact_phone', 'like', $like)
                 ->orWhere('contact_phone', 'like', $like)
                 ->orWhere('motif', 'like', $like)
                 ->orWhere('code_postal', 'like', $like)

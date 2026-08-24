@@ -10,8 +10,8 @@
         </div>
 
         <div class="flex shrink-0 gap-2">
-            @if($rdv?->telephone_client)
-                <a href="tel:{{ $rdv->telephone_client }}" class="rounded-2xl bg-emerald-600 px-3 py-2 text-sm font-black text-white">📞</a>
+            @if($rdv?->contact_phone)
+                <a href="tel:{{ $rdv->contact_phone }}" class="rounded-2xl bg-emerald-600 px-3 py-2 text-sm font-black text-white">📞</a>
             @endif
 
             @if($rdv?->adresse || $rdv?->ville)

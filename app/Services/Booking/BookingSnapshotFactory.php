@@ -77,7 +77,7 @@ class BookingSnapshotFactory
     ): array {
         $manualValidationRequired = $resolution->requiresManualValidation();
         $estimatedPrice = Arr::get($data, 'devis_estime');
-        $estimatedDuration = Arr::get($data, 'duree_estimee');
+        $estimatedDuration = Arr::get($data, 'estimated_duration_minutes');
         $corporateContext = Arr::get($data, 'corporate_context', []);
         $serviceIdentifier = (string) (
             Arr::get($data, 'service_identifier')
@@ -138,7 +138,7 @@ class BookingSnapshotFactory
             'price_multiplier' => $rule->price_multiplier !== null ? (float) $rule->price_multiplier : null,
             'travel_surcharge' => (float) ($zone->travel_surcharge ?? 0),
             'devis_estime' => $estimatedPrice !== null ? (float) $estimatedPrice : null,
-            'duree_estimee' => $estimatedDuration !== null ? (int) $estimatedDuration : null,
+            'estimated_duration_minutes' => $estimatedDuration !== null ? (int) $estimatedDuration : null,
         ];
     }
 }

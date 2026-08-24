@@ -49,10 +49,10 @@ trait CreatesMissionPortalFixtures
                 'adresse' => 'Rue de Test 1',
                 'ville' => $context['postalCode']->city_name,
                 'code_postal' => $context['postalCode']->code,
-                'telephone_client' => '0470000000',
+                'contact_phone' => '0470000000',
                 'place_type' => 'appartement',
                 'surface' => 'moins_50',
-                'frequence' => 'ponctuel',
+                'frequency' => 'ponctuel',
             ], $rendezVousOverrides));
 
         // Important: un RendezVous confirmé déclenche déjà la synchronisation de mission
@@ -135,7 +135,7 @@ trait CreatesMissionPortalFixtures
                 'adresse' => 'Rue Série 1',
                 'ville' => $context['postalCode']->city_name,
                 'code_postal' => $context['postalCode']->code,
-                'telephone_client' => '0470000000',
+                'contact_phone' => '0470000000',
             ]);
 
         return compact('context', 'client', 'employee', 'rendezVous');

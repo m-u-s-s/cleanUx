@@ -53,7 +53,7 @@ class CreateRecurringSeriesAction
 
         $seriesId = (string) Str::uuid();
         $seriesReference = Arr::get($data, 'booking_reference', 'CUXR-'.now()->format('Ymd').'-'.strtoupper(Str::random(6)));
-        $estimatedDuration = max(30, (int) (Arr::get($data, 'duree_estimee') ?: 90));
+        $estimatedDuration = max(30, (int) (Arr::get($data, 'estimated_duration_minutes') ?: 90));
         $manualEmployeeId = Arr::get($data, 'employe_id');
         $plannedEmployees = [];
         $zoneLoads = [];

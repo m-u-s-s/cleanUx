@@ -44,7 +44,7 @@ class HourlyRateResolver
             return null;
         }
 
-        $minutes = (int) ($booking->duree_estimee ?? $booking->estimated_duration_minutes ?? 0);
+        $minutes = (int) ($booking->estimated_duration_minutes ?? $booking->estimated_duration_minutes ?? 0);
 
         if ($minutes <= 0) {
             return null;

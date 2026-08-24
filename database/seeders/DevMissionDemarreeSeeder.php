@@ -196,7 +196,6 @@ class DevMissionDemarreeSeeder extends Seeder
             'date' => $prevu->toDateString(),
             'heure' => $prevu->format('H:i:s'),
 
-            'duree_estimee' => $duree,
             'estimated_duration_minutes' => $duree,
             'estimated_price' => $prix > 0 ? $prix : null,
             'devis_estime' => $prix > 0 ? $prix : null,
@@ -204,8 +203,6 @@ class DevMissionDemarreeSeeder extends Seeder
 
             'contact_name' => $client->name,
             'contact_phone' => $client->phone,
-            'telephone_client' => $client->phone,
-            'commentaire_client' => 'Fixture de développement : mission déjà démarrée.',
             'customer_comment' => 'Fixture de développement : mission déjà démarrée.',
         ]);
     }

@@ -140,7 +140,7 @@ class HorlogeDeMissionTest extends TestCase
 
         $scenario->booking->forceFill([
             'purchased_minutes' => $minutesAchetees,
-            'duree_estimee' => $minutesAchetees,
+            'estimated_duration_minutes' => $minutesAchetees,
             'devis_estime' => $prixCents / 100,
             'payment_amount_cents' => $prixCents,
         ])->save();

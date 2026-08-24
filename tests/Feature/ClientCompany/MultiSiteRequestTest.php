@@ -55,7 +55,7 @@ class MultiSiteRequestTest extends TestCase
             $trade,
             collect($sites)->pluck('id')->all(),
             now()->addWeek(),
-            ['duree_estimee' => 120],
+            ['estimated_duration_minutes' => 120],
         );
 
         $this->assertNotNull($demande, 'Aucune demande mère créée.');

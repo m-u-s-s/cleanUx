@@ -111,9 +111,9 @@
                     </a>
                     @endif
 
-                    @if($rdv->telephone_client)
+                    @if($rdv->contact_phone)
                     <a
-                        href="tel:{{ $rdv->telephone_client }}"
+                        href="tel:{{ $rdv->contact_phone }}"
                         class="inline-flex items-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
                         📞 Appeler
                     </a>

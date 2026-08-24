@@ -19,7 +19,7 @@ class BookingFavoriteControllerCoverageBatch16Test extends TestCase
         return BookingFavorite::query()->create(array_merge([
             'client_user_id' => $client->id,
             'label' => 'Favori test',
-            'snapshot' => ['duree_estimee' => 60],
+            'snapshot' => ['estimated_duration_minutes' => 60],
             'use_count' => 0,
         ], $overrides));
     }
@@ -82,7 +82,7 @@ class BookingFavoriteControllerCoverageBatch16Test extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'employe_id' => $provider->id,
-            'duree_estimee' => 90,
+            'estimated_duration_minutes' => 90,
         ]);
 
         Sanctum::actingAs($client);

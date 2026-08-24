@@ -124,7 +124,7 @@ class MesRendezVousClient extends Component
                     $this->editDate,
                     $heure,
                     $rdv->serviceZone,
-                    (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90),
+                    (int) ($rdv->estimated_duration_minutes ?: $rdv->duree ?: 90),
                     $rdv->id
                 )
                 : false;
@@ -135,7 +135,7 @@ class MesRendezVousClient extends Component
                     $this->editDate,
                     $heure,
                     $rdv->serviceZone,
-                    (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90),
+                    (int) ($rdv->estimated_duration_minutes ?: $rdv->duree ?: 90),
                     $rdv->id
                 );
 
@@ -193,7 +193,7 @@ class MesRendezVousClient extends Component
             $this->editDate,
             $this->editHeure,
             $rdv->serviceZone,
-            (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90),
+            (int) ($rdv->estimated_duration_minutes ?: $rdv->duree ?: 90),
             $rdv->id
         )) {
             $employee = $rdv->employe;
@@ -202,7 +202,7 @@ class MesRendezVousClient extends Component
                 $this->editDate,
                 $this->editHeure,
                 $rdv->serviceZone,
-                (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90),
+                (int) ($rdv->estimated_duration_minutes ?: $rdv->duree ?: 90),
                 $rdv->id
             );
         }

@@ -49,7 +49,7 @@
                 <div class="mt-5 brio-meta-grid text-sm text-slate-700">
                     <div class="space-y-2">
                         <p><span class="font-medium text-slate-900">{{ __('Adresse :') }}</span> {{ $rdv->location_display ?: (($rdv->adresse ?? '—') . ', ' . ($rdv->ville ?? '—')) }}</p>
-                        <p><span class="font-medium text-slate-900">{{ __('Durée estimée :') }}</span> {{ $rdv->duree_estimee ? $rdv->duree_estimee . ' min' : '—' }}</p>
+                        <p><span class="font-medium text-slate-900">{{ __('Durée estimée :') }}</span> {{ $rdv->estimated_duration_minutes ? $rdv->estimated_duration_minutes . ' min' : '—' }}</p>
                         <p><span class="font-medium text-slate-900">{{ __('Durée réelle :') }}</span> {{ $rdv->duree_reelle ? $rdv->duree_reelle . ' min' : '—' }}</p>
                     </div>
                     <div class="space-y-2">

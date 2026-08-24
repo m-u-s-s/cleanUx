@@ -300,7 +300,7 @@ class OrderConfirmationService
             'scheduled_time' => $scheduledAt?->format('H:i:s'),
             'date' => $scheduledAt?->toDateString(),
             'heure' => $scheduledAt?->format('H:i:s'),
-            'commentaire_client' => $draft->client_notes,
+            'customer_comment' => $draft->client_notes,
             // LE BÉNÉFICIAIRE ET LE LIEU SUIVENT LA RÉSERVATION (E1, E2).
             'beneficiary_name' => $draft->beneficiary_name,
             'beneficiary_phone' => $draft->beneficiary_phone,
@@ -312,7 +312,6 @@ class OrderConfirmationService
             'estimated_price' => $quote->quoteOnly ? null : $quote->minCents / 100,
             'devis_estime' => $quote->quoteOnly ? null : $quote->minCents / 100,
             // LA DURÉE ESTIMÉE VOYAGE AVEC LE PRIX — elle ne le faisait pas.
-            'duree_estimee' => $quote->durationMin > 0 ? $quote->durationMin : null,
             'estimated_duration_minutes' => $quote->durationMin > 0 ? $quote->durationMin : null,
             // LE TEMPS ACHETE SUIT LA RESERVATION, et c'est lui qui engage.
             'purchased_minutes' => $item->purchased_minutes,

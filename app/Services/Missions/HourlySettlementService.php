@@ -59,7 +59,7 @@ class HourlySettlementService
 
         $tarif = (int) ($etat['effective_hourly_rate_cents'] ?? 0);
         $autoriseCents = $this->rates->montantFactureCents($booking);
-        $autoriseMinutes = (int) ($booking->duree_estimee ?? 0);
+        $autoriseMinutes = (int) ($booking->estimated_duration_minutes ?? 0);
         $acheteesMinutes = (int) ($etat['purchased_minutes'] ?? 0);
         $depassement = (int) ($etat['billable_overtime_minutes'] ?? 0);
 

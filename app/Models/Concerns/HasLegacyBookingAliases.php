@@ -16,12 +16,8 @@ trait HasLegacyBookingAliases
         ['adresse',                 'address'],
         ['ville',                   'city'],
         ['code_postal',             'postal_code'],
-        ['frequence',               'frequency'],
         ['priorite',                'priority'],
-        ['commentaire_client',      'customer_comment'],
-        ['telephone_client',        'contact_phone'],
         ['devis_estime',            'estimated_price'],
-        ['duree_estimee',           'estimated_duration_minutes'],
     ];
 
     /** Format attendu par les colonnes date/heure qui n'ont PAS de cast de modèle. */

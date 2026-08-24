@@ -28,8 +28,8 @@
             </div>
 
             <div class="flex flex-wrap gap-2 shrink-0">
-                @if($prochaineMission->telephone_client)
-                    <a href="tel:{{ $prochaineMission->telephone_client }}" class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition">
+                @if($prochaineMission->contact_phone)
+                    <a href="tel:{{ $prochaineMission->contact_phone }}" class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition">
                         <x-ui.icon name="phone" class="w-4 h-4" />
                         Appeler
                     </a>

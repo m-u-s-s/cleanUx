@@ -39,7 +39,7 @@ class ProlongationDesHeuresTest extends TestCase
 
         app(HourlyExtensionService::class)->prolonger($booking, 120);
 
-        $this->assertSame(180, (int) $booking->refresh()->duree_estimee, 'La base du tarif ne se prolonge pas.');
+        $this->assertSame(180, (int) $booking->refresh()->estimated_duration_minutes, 'La base du tarif ne se prolonge pas.');
         $this->assertSame(5850, app(HourlyRateResolver::class)->tarifEffectifDeLaReservation($booking->refresh()));
     }
 
@@ -159,7 +159,7 @@ class ProlongationDesHeuresTest extends TestCase
 
         $scenario->booking->forceFill([
             'purchased_minutes' => $minutesAchetees,
-            'duree_estimee' => $minutesAchetees,
+            'estimated_duration_minutes' => $minutesAchetees,
             'devis_estime' => $prixCents / 100,
             'payment_amount_cents' => $prixCents,
         ])->save();

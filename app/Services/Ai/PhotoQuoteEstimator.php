@@ -103,7 +103,7 @@ Format de réponse STRICTEMENT en JSON valide (pas de texte autour), structure :
 {
   "surface_estimee_m2": <float ou null>,
   "etat_observe": "<string court>",
-  "duree_estimee_min": <int>,
+  "estimated_duration_minutes_min": <int>,
   "prix_min_cents": <int>,
   "prix_max_cents": <int>,
   "confiance": <0-100 int>,
@@ -165,7 +165,7 @@ PROMPT;
             'trade_name' => $trade->translate('name'),
             'surface_estimee_m2' => $decoded['surface_estimee_m2'] ?? null,
             'etat_observe' => $decoded['etat_observe'] ?? '',
-            'duree_estimee_min' => (int) ($decoded['duree_estimee_min'] ?? 0),
+            'estimated_duration_minutes_min' => (int) ($decoded['estimated_duration_minutes_min'] ?? 0),
             'prix_min_cents' => (int) ($decoded['prix_min_cents'] ?? 0),
             'prix_max_cents' => (int) ($decoded['prix_max_cents'] ?? 0),
             'prix_min_eur' => round(((int) ($decoded['prix_min_cents'] ?? 0)) / 100, 2),

@@ -51,7 +51,7 @@ class CalendarDataService
 
         return $query->orderBy('date')->get()->map(function (Booking $b): array {
             $start = $this->startOf($b);
-            $durationMin = (int) ($b->duree_estimee ?? $b->estimated_duration_minutes ?? 60);
+            $durationMin = (int) ($b->estimated_duration_minutes ?? $b->estimated_duration_minutes ?? 60);
 
             return [
                 'id' => $b->id,

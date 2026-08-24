@@ -34,9 +34,9 @@ class BookingFavoriteService
                 ?? data_get($booking, 'address_components.formatted'),
             'destination_lat' => $booking->getAttribute('destination_lat'),
             'destination_lng' => $booking->getAttribute('destination_lng'),
-            'duree_estimee' => $booking->getAttribute('duree_estimee'),
+            'estimated_duration_minutes' => $booking->getAttribute('estimated_duration_minutes'),
             'devis_estime' => $booking->getAttribute('devis_estime'),
-            'commentaire_client' => $booking->getAttribute('commentaire_client'),
+            'customer_comment' => $booking->getAttribute('customer_comment'),
             'zones_specifiques' => $booking->getAttribute('zones_specifiques'),
             'options_prestation' => $booking->getAttribute('options_prestation'),
             'materiel_fournit' => $booking->getAttribute('materiel_fournit'),
@@ -79,8 +79,8 @@ class BookingFavoriteService
         if ($adresse) {
             $parts[] = mb_substr((string) $adresse, 0, 40);
         }
-        if ($booking->getAttribute('duree_estimee')) {
-            $parts[] = $booking->duree_estimee.'min';
+        if ($booking->getAttribute('estimated_duration_minutes')) {
+            $parts[] = $booking->estimated_duration_minutes.'min';
         }
 
         return $parts ? implode(' · ', $parts) : 'Favori #'.$booking->id;

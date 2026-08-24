@@ -94,11 +94,11 @@ class MissionProfitabilityServiceCoverageBatch18Test extends TestCase
         $booking->devis_estime = null;
         $booking->estimated_price = null;
         $booking->pricing_snapshot = null;
-        $booking->duree_estimee = 75;
+        $booking->estimated_duration_minutes = 75;
         $booking->save();
 
         // No actual times -> real_minutes null -> work falls back to planned minutes,
-        // and with planned times nulled it falls back to duree_estimee (75).
+        // and with planned times nulled it falls back to estimated_duration_minutes (75).
         $mission = Mission::factory()->create([
             'booking_id' => $booking->id,
             'planned_start_at' => null,
@@ -144,10 +144,10 @@ class MissionProfitabilityServiceCoverageBatch18Test extends TestCase
     }
 
     #[Test]
-    public function it_uses_duree_when_duree_estimee_is_missing(): void
+    public function it_uses_duree_when_estimated_duration_minutes_is_missing(): void
     {
         $booking = Booking::factory()->create();
-        $booking->duree_estimee = null;
+        $booking->estimated_duration_minutes = null;
         $booking->estimated_duration_minutes = null;
         $booking->duree = 50;
         $booking->save();
@@ -169,7 +169,7 @@ class MissionProfitabilityServiceCoverageBatch18Test extends TestCase
     public function it_defaults_planned_minutes_to_ninety_without_any_duration(): void
     {
         $booking = Booking::factory()->create();
-        $booking->duree_estimee = null;
+        $booking->estimated_duration_minutes = null;
         $booking->estimated_duration_minutes = null;
         $booking->duree = null;
         $booking->save();

@@ -39,7 +39,7 @@ class ProviderMissionLifecycleControllerCoverageBatch13Test extends TestCase
             'booking_reference' => 'CUX-'.strtoupper(Str::random(6)),
             'customer_user_id' => $client->id,
             'client_id' => $client->id,
-            'telephone_client' => '+32470111222',
+            'contact_phone' => '+32470111222',
             'address' => 'Rue de la Loi 1',
             'city' => 'Bruxelles',
             'postal_code' => '1000',

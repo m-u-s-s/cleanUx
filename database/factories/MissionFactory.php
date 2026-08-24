@@ -72,7 +72,7 @@ class MissionFactory extends Factory
                     return now()->addDay()->setTime(11, 0);
                 }
 
-                $minutes = (int) ($rdv->duree_estimee ?? $rdv->duree ?? 120);
+                $minutes = (int) ($rdv->estimated_duration_minutes ?? $rdv->duree ?? 120);
 
                 return date('Y-m-d H:i:s', strtotime('+'.$minutes.' minutes', strtotime($debut)));
             },

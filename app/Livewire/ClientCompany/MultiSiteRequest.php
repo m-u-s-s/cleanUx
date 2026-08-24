@@ -83,8 +83,8 @@ class MultiSiteRequest extends Component
             $retenus,
             Carbon::parse($this->date.' '.$this->heure),
             [
-                'duree_estimee' => $this->dureeEstimee,
-                'commentaire_client' => $this->commentaire,
+                'estimated_duration_minutes' => $this->dureeEstimee,
+                'customer_comment' => $this->commentaire,
             ],
         );
 

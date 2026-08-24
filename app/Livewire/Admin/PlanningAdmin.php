@@ -148,7 +148,7 @@ class PlanningAdmin extends Component
         $rows = $query->get();
 
         $assignedCount = $rows->filter(fn (Booking $rdv) => filled($rdv->intervenantId()))->count();
-        $totalMinutes = $rows->sum(fn (Booking $rdv) => ($rdv->duree ?? $rdv->duree_estimee ?? 90) + 30);
+        $totalMinutes = $rows->sum(fn (Booking $rdv) => ($rdv->duree ?? $rdv->estimated_duration_minutes ?? 90) + 30);
         $activeCount = $rows->whereIn('status', BookingStatus::active())->count();
 
         return [
@@ -219,7 +219,7 @@ class PlanningAdmin extends Component
 
         return $this->employes->map(function (User $employe) use ($rows) {
             $rdvs = $rows->get($employe->id, collect());
-            $minutes = $rdvs->sum(fn (Booking $rdv) => ($rdv->duree ?? $rdv->duree_estimee ?? 90) + 30);
+            $minutes = $rdvs->sum(fn (Booking $rdv) => ($rdv->duree ?? $rdv->estimated_duration_minutes ?? 90) + 30);
 
             return [
                 'employe' => $employe,

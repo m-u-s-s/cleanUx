@@ -18,7 +18,9 @@ class MissionProfitabilityService
 
         $plannedMinutes = $mission->planned_start_at && $mission->planned_end_at
             ? max(0, $mission->planned_start_at->diffInMinutes($mission->planned_end_at))
-            : (int) ($mission->booking?->duree_estimee ?? $mission->booking?->duree ?? 90);
+            : (int) ($mission->booking !== null
+                ? ($mission->booking->estimated_duration_minutes ?? $mission->booking->duree ?? 90)
+                : 90);
 
         $realMinutes = $mission->actual_start_at && $mission->actual_end_at
             ? max(0, $mission->actual_start_at->diffInMinutes($mission->actual_end_at))

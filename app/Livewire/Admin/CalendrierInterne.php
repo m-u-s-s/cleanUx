@@ -122,7 +122,7 @@ class CalendrierInterne extends Component
             ->get()
             ->map(function (Booking $rdv) {
                 $start = Carbon::parse($rdv->date->format('Y-m-d').' '.($rdv->heure ?: '09:00:00'));
-                $end = (clone $start)->addMinutes((int) ($rdv->duree ?: $rdv->duree_estimee ?: 60));
+                $end = (clone $start)->addMinutes((int) ($rdv->duree ?: $rdv->estimated_duration_minutes ?: 60));
                 $client = $rdv->client?->name ?: 'Client';
                 $service = $rdv->service_display_name ?: 'Service';
                 $employe = $rdv->employe?->name ?: 'Non assigné';

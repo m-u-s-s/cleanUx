@@ -198,10 +198,10 @@ class DataErasureService
                 // Point de dépose d'une course.
                 'dropoff_address', 'dropoff_postal_code', 'dropoff_lat', 'dropoff_lng',
                 // Texte libre laissé par le client — c'est là que vivent les codes d'accès.
-                'commentaire_client', 'customer_comment',
+                'customer_comment', 'customer_comment',
                 'client_absent_instructions', 'live_access_note',
                 // Contacts.
-                'telephone_client', 'contact_phone', 'contact_email', 'contact_name',
+                'contact_phone', 'contact_phone', 'contact_email', 'contact_name',
                 'backup_contact_name', 'backup_contact_phone',
                 // Le bénéficiaire est un TIERS : ses données personnelles partent avec.
                 'beneficiary_name', 'beneficiary_phone', 'beneficiary_note',

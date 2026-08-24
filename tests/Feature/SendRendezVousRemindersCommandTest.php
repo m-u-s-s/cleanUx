@@ -49,7 +49,7 @@ class SendRendezVousRemindersCommandTest extends TestCase
             'date' => today()->toDateString(),
             'heure' => '09:00:00',
             'status' => 'en_attente',
-            'duree_estimee' => 480,
+            'estimated_duration_minutes' => 480,
         ]);
 
         Artisan::call('app:send-rendezvous-reminders');

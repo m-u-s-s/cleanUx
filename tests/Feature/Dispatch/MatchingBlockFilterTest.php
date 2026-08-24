@@ -64,7 +64,7 @@ class MatchingBlockFilterTest extends TestCase
             'service_zone_id' => $this->zone->id,
             'date' => now()->addDay()->toDateString(),
             'heure' => '10:00',
-            'duree_estimee' => 90,
+            'estimated_duration_minutes' => 90,
             'status' => 'en_attente',
             'trade_id' => $this->trade->id,
         ])->fresh(['client', 'serviceZone']);

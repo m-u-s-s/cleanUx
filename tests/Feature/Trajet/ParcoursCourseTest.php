@@ -39,7 +39,7 @@ class ParcoursCourseTest extends TestCase
             'booking_reference' => 'CUX-'.strtoupper(Str::random(6)),
             'customer_user_id' => $client->id,
             'client_id' => $client->id,
-            'telephone_client' => '+32470111222',
+            'contact_phone' => '+32470111222',
             'scheduled_date' => now()->addDay()->toDateString(),
             'scheduled_time' => '10:00:00',
             'status' => BookingStatus::CONFIRME,

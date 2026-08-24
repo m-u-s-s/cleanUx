@@ -21,7 +21,7 @@ class BookingFavoriteServiceTest extends TestCase
         $booking = Booking::factory()->create([
             'client_id' => $client->id,
             'employe_id' => $provider->id,
-            'duree_estimee' => 120,
+            'estimated_duration_minutes' => 120,
             'devis_estime' => 80.00,
         ]);
 
@@ -31,7 +31,7 @@ class BookingFavoriteServiceTest extends TestCase
         $this->assertSame('Mon nettoyage hebdo', $favorite->label);
         $this->assertSame($provider->id, (int) $favorite->preferred_provider_user_id);
         $this->assertNotEmpty($favorite->snapshot);
-        $this->assertSame(120, (int) ($favorite->snapshot['duree_estimee'] ?? 0));
+        $this->assertSame(120, (int) ($favorite->snapshot['estimated_duration_minutes'] ?? 0));
     }
 
     public function test_create_rejects_other_users_booking(): void

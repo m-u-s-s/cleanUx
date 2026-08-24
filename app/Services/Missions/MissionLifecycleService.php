@@ -92,7 +92,7 @@ class MissionLifecycleService
         }
 
         app(SmsService::class)->send(
-            $mission->booking?->client?->phone ?? $mission->booking?->telephone_client,
+            $mission->booking?->client?->phone ?? $mission->booking?->contact_phone,
             'Brio : votre employé est en route. Vous pouvez suivre sa position depuis votre espace client.'
         );
 
@@ -132,7 +132,7 @@ class MissionLifecycleService
         $generated = null;
         // Le destinataire est résolu UNE fois : les deux branches écrivent au même client, et deux
         // expressions parallèles finiraient par diverger sur un repli.
-        $destinataire = $mission->booking?->client?->phone ?? $mission->booking?->telephone_client;
+        $destinataire = $mission->booking?->client?->phone ?? $mission->booking?->contact_phone;
 
         if (! $estUneCourse) {
             $generated = $this->verificationCodeService->createVerificationCode($mission, 'start');
@@ -249,7 +249,7 @@ class MissionLifecycleService
 
         try {
             app(SmsService::class)->send(
-                $mission->booking?->client?->phone ?? $mission->booking?->telephone_client,
+                $mission->booking?->client?->phone ?? $mission->booking?->contact_phone,
                 'Brio : code de fin de mission : '.$generated['code'].'. Communiquez-le au prestataire en fin de service.'
             );
         } catch (\Throwable $e) {
@@ -573,7 +573,7 @@ class MissionLifecycleService
             $mission->booking->client->notify(new MissionCompletedNotification($mission));
         }
         app(SmsService::class)->send(
-            $mission->booking?->client?->phone ?? $mission->booking?->telephone_client,
+            $mission->booking?->client?->phone ?? $mission->booking?->contact_phone,
             'Brio : merci d’avoir fait confiance à Brio. Votre mission est terminée — laissez votre avis depuis votre espace client.'
         );
 

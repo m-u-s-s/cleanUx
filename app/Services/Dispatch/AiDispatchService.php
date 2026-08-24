@@ -97,7 +97,7 @@ class AiDispatchService
             return collect();
         }
 
-        $duration = (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90);
+        $duration = (int) ($rdv->estimated_duration_minutes ?: $rdv->duree ?: 90);
 
         // SP2 — honore la préférence de type prestataire choisie par le client
         // (parité web/SmartDispatch). Défaut 'any' → comportement inchangé.

@@ -316,7 +316,7 @@ class MesRendezVous extends Component
         $this->selectedMissionId = $this->missionForRdv($rdv)?->id;
         $this->rapportRdvId = $rdv->id;
         $this->commentaire_fin_mission = $rdv->commentaire_fin_mission ?? '';
-        $this->duree_reelle = $rdv->duree_reelle ?? $rdv->duree_estimee;
+        $this->duree_reelle = $rdv->duree_reelle ?? $rdv->estimated_duration_minutes;
         $this->photos_apres = [];
         $this->incident_terrain = $rdv->incident_terrain ?? '';
         $this->client_presence_confirmee = (bool) $rdv->client_presence_confirmed_at;
@@ -405,7 +405,7 @@ class MesRendezVous extends Component
         $rdv->save();
 
         ActivityLogger::log('mission_terminee_avec_rapport', $rdv, [
-            'duree_estimee' => $rdv->duree_estimee,
+            'estimated_duration_minutes' => $rdv->estimated_duration_minutes,
             'duree_reelle' => $rdv->duree_reelle,
             'has_commentaire_fin' => filled($rdv->commentaire_fin_mission),
             'has_photos_avant' => ! empty($rdv->photos_avant),

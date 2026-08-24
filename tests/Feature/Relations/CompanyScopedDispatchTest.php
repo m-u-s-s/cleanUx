@@ -78,7 +78,7 @@ class CompanyScopedDispatchTest extends TestCase
             'date' => $date,
             'heure' => '10:00:00',
             'duree' => 90,
-            'duree_estimee' => 90,
+            'estimated_duration_minutes' => 90,
             'booking_mode' => 'scheduled',
             'status' => 'en_attente',
             'provider_type_preference' => 'company',

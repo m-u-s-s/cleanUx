@@ -120,7 +120,7 @@ class TracabiliteSocieteSurMissionTest extends TestCase
         $salarie = $this->salarie($org);
 
         $booking = Booking::factory()->create(['employe_id' => $salarie->id, 'status' => BookingStatus::CONFIRME]);
-        $booking->update(['commentaire_client' => 'Modifié après coup']);
+        $booking->update(['customer_comment' => 'Modifié après coup']);
 
         $this->assertSame(1, Mission::where('booking_id', $booking->id)->count());
     }

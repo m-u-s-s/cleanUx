@@ -24,7 +24,7 @@
         <div class="space-y-1">
             <p><span class="font-medium">Date :</span> {{ $rdv->date }} à {{ $rdv->heure }}</p>
             <p><span class="font-medium">Type de lieu :</span> {{ ucfirst($rdv->place_type ?? '—') }}</p>
-            <p><span class="font-medium">Fréquence :</span> {{ ucfirst(str_replace('_', ' ', $rdv->frequence ?? '—')) }}</p>
+            <p><span class="font-medium">Fréquence :</span> {{ ucfirst(str_replace('_', ' ', $rdv->frequency ?? '—')) }}</p>
             <p><span class="font-medium">Surface :</span> {{ $rdv->surface ?? '—' }}</p>
         </div>
 
@@ -32,18 +32,18 @@
             <p><span class="font-medium">Adresse :</span> {{ $rdv->adresse ?? '—' }}</p>
             <p><span class="font-medium">Ville :</span> {{ $rdv->ville ?? '—' }}</p>
             <p><span class="font-medium">Code postal :</span> {{ $rdv->postal_code_display }}</p>
-            <p><span class="font-medium">Téléphone :</span> {{ $rdv->telephone_client ?? '—' }}</p>
+            <p><span class="font-medium">Téléphone :</span> {{ $rdv->contact_phone ?? '—' }}</p>
             <p><span class="font-medium">Animaux :</span> {{ $rdv->presence_animaux ? 'Oui' : 'Non' }}</p>
             <p><span class="font-medium">Parking :</span> {{ $rdv->acces_parking ? 'Oui' : 'Non' }}</p>
             <p><span class="font-medium">Matériel fourni :</span> {{ $rdv->materiel_fournit ? 'Oui' : 'Non' }}</p>
-            <p><span class="font-medium">Durée estimée :</span> {{ $rdv->duree_estimee ? $rdv->duree_estimee . ' min' : '—' }}</p>
+            <p><span class="font-medium">Durée estimée :</span> {{ $rdv->estimated_duration_minutes ? $rdv->estimated_duration_minutes . ' min' : '—' }}</p>
         </div>
     </div>
 
-    @if($rdv->commentaire_client)
+    @if($rdv->customer_comment)
     <div class="text-sm text-gray-700 bg-white border rounded-lg p-3">
         <span class="font-medium">Remarque client :</span>
-        {{ $rdv->commentaire_client }}
+        {{ $rdv->customer_comment }}
     </div>
     @endif
 

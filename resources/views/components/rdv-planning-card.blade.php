@@ -1,11 +1,11 @@
 @props(['rdv'])
 
 @php
-    $minutes = ($rdv->duree ?? $rdv->duree_estimee ?? 90) + 30;
+    $minutes = ($rdv->duree ?? $rdv->estimated_duration_minutes ?? 90) + 30;
     $isUrgent = $rdv->priorite === 'urgente';
     $isUnassigned = blank($rdv->employe_id);
-    $clientBrief = filled($rdv->commentaire_client)
-        ? \Illuminate\Support\Str::limit($rdv->commentaire_client, 120)
+    $clientBrief = filled($rdv->customer_comment)
+        ? \Illuminate\Support\Str::limit($rdv->customer_comment, 120)
         : null;
 
     $statusTone = match ($rdv->status) {

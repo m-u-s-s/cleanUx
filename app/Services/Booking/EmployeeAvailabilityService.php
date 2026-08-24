@@ -151,7 +151,7 @@ class EmployeeAvailabilityService
             ->get()
             ->contains(function ($existing) use ($slotStart, $slotEnd, $bufferMinutes, $timezone) {
                 $existingStart = Carbon::createFromFormat('Y-m-d H:i', $existing->date->format('Y-m-d').' '.substr((string) $existing->heure, 0, 5), $timezone);
-                $existingDuration = max(30, (int) ($existing->duree_estimee ?: $existing->duree ?: 90));
+                $existingDuration = max(30, (int) ($existing->estimated_duration_minutes ?: $existing->duree ?: 90));
                 $existingEnd = $existingStart->copy()->addMinutes($existingDuration);
 
                 return $slotStart->lt($existingEnd->copy()->addMinutes($bufferMinutes))

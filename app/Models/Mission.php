@@ -28,6 +28,7 @@ use Illuminate\Support\Carbon;
  * @property ?array $quality_summary
  * @property ?Carbon $sla_response_due_at
  * @property ?Carbon $sla_resolution_due_at
+ * @property-read Booking|null $booking
  */
 class Mission extends Model
 {

@@ -25,7 +25,7 @@ class PreferredProviderResolver
             return $none;
         }
 
-        $duration = (int) ($rdv->duree_estimee ?: $rdv->duree ?: 90);
+        $duration = (int) ($rdv->estimated_duration_minutes ?: $rdv->duree ?: 90);
         $zone = $rdv->serviceZone instanceof ServiceZone ? $rdv->serviceZone : null;
         $available = $this->availability->employeeIsAvailableForSlot(
             $provider->id,
