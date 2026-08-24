@@ -20,7 +20,7 @@
                         <div class="mt-3 grid grid-cols-1 gap-2 text-xs text-slate-600 md:grid-cols-4">
                             <div>Équipe: <span class="font-semibold text-slate-900">{{ $workOrder->assignedFieldTeam?->name ?? '—' }}</span></div>
                             <div>Partenaire: <span class="font-semibold text-slate-900">{{ $workOrder->assignedServicePartner?->name ?? '—' }}</span></div>
-                            <div>Budget: <span class="font-semibold text-slate-900">{{ $workOrder->budget_amount ? number_format((float) $workOrder->budget_amount, 2, ',', ' ') . ' €' : '—' }}</span></div>
+                            <div>Budget: <span class="font-semibold text-slate-900">{{ $workOrder->budget_amount ? locale_currency((float) $workOrder->budget_amount) : '—' }}</span></div>
                             <div>PO: <span class="font-semibold text-slate-900">{{ $workOrder->purchase_order_number ?: '—' }}</span></div>
                         </div>
                     </div>

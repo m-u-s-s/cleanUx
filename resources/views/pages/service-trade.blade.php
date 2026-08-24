@@ -91,7 +91,7 @@
 
                 @if($trade->default_hourly_rate)
                 <p class="mt-5 text-sm" style="color:var(--cx-muted)">
-                    A partir de <strong style="color:var(--cx-amber)">{{ number_format((float) $trade->default_hourly_rate, 0) }}€/heure</strong>
+                    A partir de <strong style="color:var(--cx-amber)"><x-money :amount="(float) ((float) $trade->default_hourly_rate)" :decimals="0" />/heure</strong>
                     · Paiement apres prestation
                 </p>
                 @endif
@@ -224,7 +224,7 @@
                             </summary>
                             <p class="mt-3 text-sm leading-relaxed" style="color:var(--cx-muted)">
                                 @if($trade->default_hourly_rate)
-                                    Les tarifs commencent a partir de {{ number_format((float) $trade->default_hourly_rate, 0) }}€/heure.
+                                    Les tarifs commencent a partir de <x-money :amount="(float) ((float) $trade->default_hourly_rate)" :decimals="0" />/heure.
                                     Le montant exact depend de la complexite de la mission, de la duree et de la localisation.
                                 @else
                                     Les tarifs sont determines sur devis selon la complexite de votre mission.
@@ -328,7 +328,7 @@
                         </h3>
                         @if($trade->default_hourly_rate)
                         <p class="mt-1 text-2xl font-extrabold" style="color:var(--cx-amber)">
-                            {{ number_format((float) $trade->default_hourly_rate, 0) }}€<span class="text-base font-normal" style="color:var(--cx-muted)">/heure</span>
+                            <x-money :amount="(float) ((float) $trade->default_hourly_rate)" :decimals="0" /><span class="text-base font-normal" style="color:var(--cx-muted)">/heure</span>
                         </p>
                         @endif
                         <ul class="mt-5 space-y-2 text-sm" style="color:var(--cx-muted)">

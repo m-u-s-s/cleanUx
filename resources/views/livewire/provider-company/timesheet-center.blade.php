@@ -158,10 +158,10 @@
                             @endif
                         </td>
                         <td class="px-5 py-3 text-right tabular-nums text-slate-600">{{ $ligne['missions_count'] }}</td>
-                        <td class="px-5 py-3 text-right tabular-nums text-slate-600">{{ number_format($ligne['revenue_cents'] / 100, 2, ',', ' ') }} €</td>
-                        <td class="px-5 py-3 text-right tabular-nums text-slate-600">{{ number_format($ligne['total_cost_cents'] / 100, 2, ',', ' ') }} €</td>
+                        <td class="px-5 py-3 text-right tabular-nums text-slate-600"><x-money :amount="(float) ($ligne['revenue_cents'] / 100)" /></td>
+                        <td class="px-5 py-3 text-right tabular-nums text-slate-600"><x-money :amount="(float) ($ligne['total_cost_cents'] / 100)" /></td>
                         <td class="px-5 py-3 text-right tabular-nums font-semibold {{ $ligne['margin_cents'] >= 0 ? 'text-emerald-700' : 'text-rose-700' }}">
-                            {{ number_format($ligne['margin_cents'] / 100, 2, ',', ' ') }} €
+                            <x-money :amount="(float) ($ligne['margin_cents'] / 100)" />
                         </td>
                     </tr>
                     @empty
@@ -177,7 +177,7 @@
 
         <p class="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
             Le coût de main-d'œuvre s'appuie sur le taux horaire déclaré par votre société, à défaut
-            {{ number_format($tauxParDefautCents / 100, 2, ',', ' ') }} € — une hypothèse prudente,
+            <x-money :amount="(float) ($tauxParDefautCents / 100)" /> — une hypothèse prudente,
             pas un salaire connu de la plateforme.
         </p>
     </div>

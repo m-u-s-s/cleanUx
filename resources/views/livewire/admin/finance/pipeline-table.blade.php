@@ -36,9 +36,9 @@
                             <div class="mt-1 text-xs text-slate-400">Échéance {{ $row->financeInvoice->due_at->format('d/m/Y') }}</div>
                         @endif
                     </td>
-                    <td class="py-3 pr-4 text-right font-semibold text-slate-800">€ {{ number_format($this->amountHtva($row), 2, ',', ' ') }}</td>
-                    <td class="py-3 pr-4 text-right text-slate-600">€ {{ number_format((float) ($row->financeInvoice?->balance_due ?? 0), 2, ',', ' ') }}</td>
-                    <td class="py-3 pr-4 text-right text-slate-600">€ {{ number_format($this->marginEstimate($row), 2, ',', ' ') }}</td>
+                    <td class="py-3 pr-4 text-right font-semibold text-slate-800"><x-money :amount="(float) ($this->amountHtva($row))" /></td>
+                    <td class="py-3 pr-4 text-right text-slate-600"><x-money :amount="(float) ((float) ($row->financeInvoice?->balance_due ?? 0))" /></td>
+                    <td class="py-3 pr-4 text-right text-slate-600"><x-money :amount="(float) ($this->marginEstimate($row))" /></td>
                     <td class="py-3 pr-4 text-right">
                         <button wire:click="selectRendezVous({{ $row->id }})" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700">Ouvrir</button>
                     </td>

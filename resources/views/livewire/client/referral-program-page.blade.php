@@ -6,9 +6,9 @@
                 <p class="text-sm font-bold uppercase text-indigo-600">Programme de parrainage</p>
                 <h1 class="text-3xl font-black text-slate-900">Parrainez, gagnez des crédits</h1>
                 <p class="text-sm text-slate-500 mt-2">
-                    Vous gagnez {{ number_format(\App\Services\Promotion\ReferralService::DEFAULT_REFERRER_REWARD, 2, ',', ' ') }} €
+                    Vous gagnez <x-money :amount="(float) (\App\Services\Promotion\ReferralService::DEFAULT_REFERRER_REWARD)" />
                     de crédit par filleul qui complète sa première mission.
-                    Le filleul reçoit {{ number_format(\App\Services\Promotion\ReferralService::DEFAULT_REFEREE_REWARD, 2, ',', ' ') }} €
+                    Le filleul reçoit <x-money :amount="(float) (\App\Services\Promotion\ReferralService::DEFAULT_REFEREE_REWARD)" />
                     de bienvenue.
                 </p>
             </div>
@@ -89,7 +89,7 @@
                             </p>
                         </div>
                         <p class="text-sm font-bold text-emerald-600">
-                            +{{ number_format((float)$rw->amount, 2, ',', ' ') }} €
+                            +<x-money :amount="(float) ((float)$rw->amount)" />
                         </p>
                     </div>
                 @empty
@@ -132,7 +132,7 @@
                                 </td>
                                 <td class="px-3 py-2 text-right">
                                     @if($r->isPaidOut())
-                                        +{{ number_format((float)$r->referrer_reward_amount, 2, ',', ' ') }} €
+                                        +<x-money :amount="(float) ((float)$r->referrer_reward_amount)" />
                                     @else
                                         <span class="text-xs text-slate-400">en attente</span>
                                     @endif

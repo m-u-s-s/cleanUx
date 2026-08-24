@@ -29,7 +29,7 @@
 
         @if ($tarif !== null)
             <p class="mt-1 text-sm text-slate-500">
-                {{ number_format($tarif / 100, 2, ',', ' ') }} € de l’heure.
+                <x-money :amount="(float) ($tarif / 100)" /> de l’heure.
             </p>
         @endif
 

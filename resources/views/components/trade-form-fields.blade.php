@@ -75,7 +75,7 @@
                                     <option value="{{ $opt['value'] }}">
                                         {{ $opt['label'] }}
                                         @if($showPricing && ($opt['price_delta'] ?? 0) != 0)
-                                            ({{ $opt['price_delta'] > 0 ? '+' : '' }}{{ number_format($opt['price_delta'], 2, ',', ' ') }} €)
+                                            ({{ $opt['price_delta'] > 0 ? '+' : '' }}<x-money :amount="(float) ($opt['price_delta'])" />)
                                         @endif
                                     </option>
                                 @endforeach
@@ -97,7 +97,7 @@
                                             {{ $opt['label'] }}
                                             @if($showPricing && ($opt['price_delta'] ?? 0) != 0)
                                                 <span class="text-xs text-slate-500">
-                                                    ({{ $opt['price_delta'] > 0 ? '+' : '' }}{{ number_format($opt['price_delta'], 2, ',', ' ') }} €)
+                                                    ({{ $opt['price_delta'] > 0 ? '+' : '' }}<x-money :amount="(float) ($opt['price_delta'])" />)
                                                 </span>
                                             @endif
                                         </span>

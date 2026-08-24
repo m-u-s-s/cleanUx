@@ -22,7 +22,7 @@
                 <div class="min-w-0">
                     <p class="text-xs uppercase font-semibold tracking-wide text-slate-500">Revenu total</p>
                     <p class="mt-1.5 text-2xl font-bold text-slate-900">
-                        {{ number_format($current['gross_cents'] / 100, 2, ',', ' ') }} €
+                        <x-money :amount="(float) ($current['gross_cents'] / 100)" />
                     </p>
                 </div>
                 <div class="grid h-9 w-9 place-items-center rounded-xl bg-brand-50 text-brand-700 shrink-0">
@@ -60,7 +60,7 @@
                 <div class="min-w-0">
                     <p class="text-xs uppercase font-semibold tracking-wide text-slate-500">Pourboires</p>
                     <p class="mt-1.5 text-2xl font-bold text-amber-600">
-                        {{ number_format($current['tips_cents'] / 100, 2, ',', ' ') }} €
+                        <x-money :amount="(float) ($current['tips_cents'] / 100)" />
                     </p>
                 </div>
                 <div class="grid h-9 w-9 place-items-center rounded-xl bg-amber-50 text-amber-700 shrink-0">
@@ -74,7 +74,7 @@
                 <div class="min-w-0">
                     <p class="text-xs uppercase font-semibold tracking-wide text-slate-500">Versé wallet</p>
                     <p class="mt-1.5 text-2xl font-bold text-emerald-600">
-                        {{ number_format($current['wallet_paid_out_cents'] / 100, 2, ',', ' ') }} €
+                        <x-money :amount="(float) ($current['wallet_paid_out_cents'] / 100)" />
                     </p>
                 </div>
                 <div class="grid h-9 w-9 place-items-center rounded-xl bg-emerald-50 text-emerald-700 shrink-0">
@@ -111,7 +111,7 @@
                     @endphp
                     <div class="flex-1 flex flex-col items-center gap-1 group">
                         <div class="text-[10px] font-semibold text-slate-700 opacity-0 group-hover:opacity-100 transition">
-                            {{ number_format($point['amount_eur'], 0, ',', ' ') }}€
+                            <x-money :amount="(float) ($point['amount_eur'])" :decimals="0" />
                         </div>
                         <div class="w-full bg-gradient-to-t from-brand-600 to-brand-400 rounded-t-md transition hover:from-brand-700 hover:to-brand-500" style="height: {{ $height }}px"></div>
                         <p class="text-[10px] text-slate-500">{{ $point['label'] }}</p>
@@ -143,7 +143,7 @@
                                     <p class="text-xs text-slate-500">{{ $t['missions'] }} mission(s)</p>
                                 </div>
                             </div>
-                            <p class="text-sm font-bold text-brand-700 shrink-0">{{ number_format($t['total_eur'], 0, ',', ' ') }} €</p>
+                            <p class="text-sm font-bold text-brand-700 shrink-0"><x-money :amount="(float) ($t['total_eur'])" :decimals="0" /></p>
                         </div>
                     @endforeach
                 </div>
@@ -158,28 +158,28 @@
             <div class="space-y-2 text-sm">
                 <div class="flex justify-between items-center py-1.5">
                     <span class="text-slate-600">Missions</span>
-                    <span class="font-semibold text-slate-900">{{ number_format($current['mission_cents'] / 100, 2, ',', ' ') }} €</span>
+                    <span class="font-semibold text-slate-900"><x-money :amount="(float) ($current['mission_cents'] / 100)" /></span>
                 </div>
                 <div class="flex justify-between items-center py-1.5">
                     <span class="text-slate-600 inline-flex items-center gap-1.5">
                         <x-ui.icon name="gift" class="w-3.5 h-3.5 text-amber-500" />
                         Pourboires
                     </span>
-                    <span class="font-semibold text-amber-600">+{{ number_format($current['tips_cents'] / 100, 2, ',', ' ') }} €</span>
+                    <span class="font-semibold text-amber-600">+<x-money :amount="(float) ($current['tips_cents'] / 100)" /></span>
                 </div>
                 <div class="border-t border-slate-200 pt-2.5 mt-2 flex justify-between items-center">
                     <span class="font-bold text-slate-900">Total brut</span>
-                    <span class="text-base font-bold text-brand-700">{{ number_format($current['gross_cents'] / 100, 2, ',', ' ') }} €</span>
+                    <span class="text-base font-bold text-brand-700"><x-money :amount="(float) ($current['gross_cents'] / 100)" /></span>
                 </div>
 
                 <div class="mt-4 space-y-1 rounded-lg bg-slate-50/50 border border-slate-200/70 p-3">
                     <div class="flex justify-between text-xs text-slate-600">
                         <span>Wallet crédité</span>
-                        <span class="font-medium">{{ number_format($current['wallet_credited_cents'] / 100, 2, ',', ' ') }} €</span>
+                        <span class="font-medium"><x-money :amount="(float) ($current['wallet_credited_cents'] / 100)" /></span>
                     </div>
                     <div class="flex justify-between text-xs text-slate-600">
                         <span>Wallet payé (Stripe)</span>
-                        <span class="font-medium">{{ number_format($current['wallet_paid_out_cents'] / 100, 2, ',', ' ') }} €</span>
+                        <span class="font-medium"><x-money :amount="(float) ($current['wallet_paid_out_cents'] / 100)" /></span>
                     </div>
                 </div>
             </div>
@@ -275,10 +275,10 @@
         @if ($devisExpress['amount_cents'] > 0)
         <p class="mt-3 text-sm {{ $devisExpress['eligible'] ? 'text-slate-700' : 'text-slate-500' }}">
             @if ($devisExpress['eligible'])
-            Frais : {{ number_format($devisExpress['fee_cents'] / 100, 2, ',', ' ') }} € —
-            vous recevrez <strong>{{ number_format($devisExpress['net_cents'] / 100, 2, ',', ' ') }} €</strong>.
+            Frais : <x-money :amount="(float) ($devisExpress['fee_cents'] / 100)" /> —
+            vous recevrez <strong><x-money :amount="(float) ($devisExpress['net_cents'] / 100)" /></strong>.
             @else
-            Minimum {{ number_format($devisExpress['minimum_cents'] / 100, 2, ',', ' ') }} € :
+            Minimum <x-money :amount="(float) ($devisExpress['minimum_cents'] / 100)" /> :
             en dessous, les frais représenteraient une part trop importante.
             @endif
         </p>
@@ -305,19 +305,19 @@
             <div>
                 <p class="text-xs text-slate-400">Encaissé</p>
                 <p class="text-xl font-bold tabular-nums text-slate-900">
-                    {{ number_format($fiscal['gross_cents'] / 100, 2, ',', ' ') }} €
+                    <x-money :amount="(float) ($fiscal['gross_cents'] / 100)" />
                 </p>
             </div>
             <div>
                 <p class="text-xs text-slate-400">Net de reprises</p>
                 <p class="text-xl font-bold tabular-nums text-slate-900">
-                    {{ number_format($fiscal['net_cents'] / 100, 2, ',', ' ') }} €
+                    <x-money :amount="(float) ($fiscal['net_cents'] / 100)" />
                 </p>
             </div>
             <div>
                 <p class="text-xs text-slate-400">Charges estimées</p>
                 <p class="text-xl font-bold tabular-nums text-slate-900">
-                    {{ number_format($fiscal['estimated_charges_cents'] / 100, 2, ',', ' ') }} €
+                    <x-money :amount="(float) ($fiscal['estimated_charges_cents'] / 100)" />
                 </p>
             </div>
         </div>

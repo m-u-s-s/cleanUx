@@ -119,7 +119,7 @@
                                     <td class="px-3 py-2 text-slate-600">
                                         @if($c->budget_cap)
                                             {{ number_format((float)$c->total_discounted, 2, ',', ' ') }}
-                                            / {{ number_format((float)$c->budget_cap, 2, ',', ' ') }} €
+                                            / <x-money :amount="(float) ((float)$c->budget_cap)" />
                                         @else
                                             illimité
                                         @endif

@@ -17,7 +17,7 @@
         <div class="rounded-2xl border border-slate-200 bg-white p-5">
             <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Total</p>
             <p class="mt-1 text-2xl font-bold tabular-nums text-slate-900">
-                {{ number_format($budget['total_cents'] / 100, 2, ',', ' ') }} €
+                <x-money :amount="(float) ($budget['total_cents'] / 100)" />
             </p>
             <p class="text-xs text-slate-500">{{ $budget['bookings_count'] }} intervention(s)</p>
         </div>
@@ -25,7 +25,7 @@
         <div class="rounded-2xl border border-slate-200 bg-white p-5">
             <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Par mois</p>
             <p class="mt-1 text-2xl font-bold tabular-nums text-slate-900">
-                {{ number_format($budget['monthly_average_cents'] / 100, 2, ',', ' ') }} €
+                <x-money :amount="(float) ($budget['monthly_average_cents'] / 100)" />
             </p>
             {{-- Calculée sur les mois où il s'est passé quelque chose : diviser par douze un
                  client arrivé en octobre lui montrerait une moyenne qu'il ne reconnaît pas. --}}
@@ -56,22 +56,22 @@
             <div class="rounded-xl bg-slate-50 p-4">
                 <p class="text-sm font-semibold text-slate-900">Interventions récurrentes</p>
                 <p class="mt-1 text-xl font-bold tabular-nums text-slate-900">
-                    {{ number_format($comparatif['subscription']['total_cents'] / 100, 2, ',', ' ') }} €
+                    <x-money :amount="(float) ($comparatif['subscription']['total_cents'] / 100)" />
                 </p>
                 <p class="text-xs text-slate-500">
                     {{ $comparatif['subscription']['bookings_count'] }} intervention(s) —
-                    {{ number_format($comparatif['subscription']['average_cents'] / 100, 2, ',', ' ') }} € en moyenne
+                    <x-money :amount="(float) ($comparatif['subscription']['average_cents'] / 100)" /> en moyenne
                 </p>
             </div>
 
             <div class="rounded-xl bg-slate-50 p-4">
                 <p class="text-sm font-semibold text-slate-900">Interventions ponctuelles</p>
                 <p class="mt-1 text-xl font-bold tabular-nums text-slate-900">
-                    {{ number_format($comparatif['on_demand']['total_cents'] / 100, 2, ',', ' ') }} €
+                    <x-money :amount="(float) ($comparatif['on_demand']['total_cents'] / 100)" />
                 </p>
                 <p class="text-xs text-slate-500">
                     {{ $comparatif['on_demand']['bookings_count'] }} intervention(s) —
-                    {{ number_format($comparatif['on_demand']['average_cents'] / 100, 2, ',', ' ') }} € en moyenne
+                    <x-money :amount="(float) ($comparatif['on_demand']['average_cents'] / 100)" /> en moyenne
                 </p>
             </div>
         </div>
@@ -83,7 +83,7 @@
         <p class="mt-4 text-sm {{ $ecart > 0 ? 'text-emerald-700' : 'text-slate-600' }}">
             @if ($ecart > 0)
             Vos interventions récurrentes vous coûtent
-            {{ number_format($ecart / 100, 2, ',', ' ') }} € de moins en moyenne.
+            <x-money :amount="(float) ($ecart / 100)" /> de moins en moyenne.
             @else
             Vos interventions ponctuelles reviennent au même, voire moins cher.
             @endif
@@ -106,7 +106,7 @@
                     {{ \Illuminate\Support\Carbon::createFromFormat('Y-m', $ligne['month'])->translatedFormat('F Y') }}
                 </span>
                 <span class="font-semibold tabular-nums text-slate-900">
-                    {{ number_format($ligne['total_cents'] / 100, 2, ',', ' ') }} €
+                    <x-money :amount="(float) ($ligne['total_cents'] / 100)" />
                 </span>
             </div>
             {{-- Une barre plutôt qu'un graphique : la tendance se lit, et rien à charger. --}}
@@ -135,7 +135,7 @@
                 <p class="text-xs text-slate-500">{{ $ligne['bookings_count'] }} intervention(s)</p>
             </div>
             <span class="text-sm font-semibold tabular-nums text-slate-900">
-                {{ number_format($ligne['total_cents'] / 100, 2, ',', ' ') }} €
+                <x-money :amount="(float) ($ligne['total_cents'] / 100)" />
             </span>
         </div>
         @empty

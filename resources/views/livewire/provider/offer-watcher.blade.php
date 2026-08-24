@@ -122,7 +122,7 @@
                         <dt class="text-slate-500 dark:text-slate-400">Rémunération</dt>
                         <dd class="font-semibold text-slate-900 dark:text-white">
                             {{ $offre['payout_cents'] !== null
-                                ? number_format($offre['payout_cents'] / 100, 2, ',', ' ').' €'
+                                ? locale_currency($offre['payout_cents'] / 100)
                                 : 'À confirmer' }}
                         </dd>
                     </div>

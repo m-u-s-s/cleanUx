@@ -379,7 +379,7 @@
                                 <li class="flex items-baseline justify-between gap-3">
                                     <span class="min-w-0 truncate text-slate-600">{{ $line['label'] }}</span>
                                     <span class="shrink-0 tabular-nums text-slate-900">
-                                        {{ number_format($line['min_cents'] / 100, 0, ',', ' ') }} €
+                                        <x-money :amount="(float) ($line['min_cents'] / 100)" :decimals="0" />
                                     </span>
                                 </li>
                             @endforeach

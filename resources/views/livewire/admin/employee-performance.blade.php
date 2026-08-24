@@ -31,7 +31,7 @@
                             </span>
                         </td>
                         <td class="font-bold">
-                            €{{ number_format($emp['margin'], 2) }}
+                            <x-money :amount="(float) ($emp['margin'])" />
                         </td>
                     </tr>
                 @endforeach

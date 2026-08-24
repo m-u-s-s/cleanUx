@@ -49,7 +49,7 @@
                                     <div class="text-xs text-slate-600">
                                         {{ $site['site'] ?? '—' }} :
                                         {{ $site['count'] ?? 0 }} RDV —
-                                        {{ number_format((float) ($site['subtotal'] ?? 0), 2, ',', ' ') }} €
+                                        <x-money :amount="(float) ((float) ($site['subtotal'] ?? 0))" />
                                     </div>
                                 @endforeach
                             </td>

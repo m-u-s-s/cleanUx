@@ -139,11 +139,11 @@
                                         </td>
 
                                         <td class="px-4 py-3 font-semibold">
-                                            {{ number_format($credit->amount, 2, ',', ' ') }} €
+                                            <x-money :amount="(float) ($credit->amount)" />
                                         </td>
 
                                         <td class="px-4 py-3 font-semibold text-indigo-700">
-                                            {{ number_format($credit->remaining_amount, 2, ',', ' ') }} €
+                                            <x-money :amount="(float) ($credit->remaining_amount)" />
                                         </td>
 
                                         <td class="px-4 py-3">

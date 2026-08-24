@@ -36,7 +36,7 @@
                     </p>
                 </div>
                 <span class="shrink-0 text-sm font-semibold tabular-nums text-slate-900">
-                    {{ number_format($ligne->total_cents / 100, 2, ',', ' ') }} €
+                    <x-money :amount="(float) ($ligne->total_cents / 100)" />
                 </span>
             </div>
             @endforeach
@@ -45,7 +45,7 @@
         <div class="mb-4 flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
             <span class="text-sm font-semibold text-slate-700">Total</span>
             <span class="text-lg font-bold tabular-nums text-slate-900">
-                {{ number_format($devisOuvert->total_cents / 100, 2, ',', ' ') }} €
+                <x-money :amount="(float) ($devisOuvert->total_cents / 100)" />
             </span>
         </div>
 
@@ -91,7 +91,7 @@
 
             <div class="flex shrink-0 items-center gap-3">
                 <span class="text-sm font-semibold tabular-nums text-slate-900">
-                    {{ number_format($document->total_cents / 100, 2, ',', ' ') }} €
+                    <x-money :amount="(float) ($document->total_cents / 100)" />
                 </span>
 
                 @if ($document->estOuvert())

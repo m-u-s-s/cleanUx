@@ -25,11 +25,11 @@
             </div>
             <div class="rounded-2xl border bg-white p-4 shadow-sm">
                 <p class="text-xs uppercase font-bold text-slate-500">Débit {{ $kpis['period_label'] }}</p>
-                <p class="text-2xl font-black text-blue-600">{{ number_format($kpis['period_debit'] / 100, 2, ',', ' ') }} €</p>
+                <p class="text-2xl font-black text-blue-600"><x-money :amount="(float) ($kpis['period_debit'] / 100)" /></p>
             </div>
             <div class="rounded-2xl border bg-white p-4 shadow-sm">
                 <p class="text-xs uppercase font-bold text-slate-500">Crédit {{ $kpis['period_label'] }}</p>
-                <p class="text-2xl font-black text-amber-600">{{ number_format($kpis['period_credit'] / 100, 2, ',', ' ') }} €</p>
+                <p class="text-2xl font-black text-amber-600"><x-money :amount="(float) ($kpis['period_credit'] / 100)" /></p>
             </div>
         </div>
 

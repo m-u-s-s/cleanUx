@@ -369,7 +369,7 @@
                 <div class="rounded-lg border border-emerald-200/70 bg-emerald-50/50 p-3 dark:border-emerald-900/50 dark:bg-emerald-950/30">
                     <p class="text-xs text-emerald-600 dark:text-emerald-400">{{ __('À payer') }}</p>
                     <p class="mt-0.5 text-base font-bold text-emerald-700 dark:text-emerald-400">
-                        {{ number_format((float) ($financeSnapshot['outstanding_total'] ?? 0), 2, ',', ' ') }} €
+                        <x-money :amount="(float) ((float) ($financeSnapshot['outstanding_total'] ?? 0))" />
                     </p>
                 </div>
             </div>
@@ -395,7 +395,7 @@
                         <div class="text-right shrink-0">
                             @if(! is_null($service['base_price']))
                                 <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                                    {{ number_format((float) $service['base_price'], 2, ',', ' ') }} €
+                                    <x-money :amount="(float) ((float) $service['base_price'])" />
                                 </p>
                             @endif
 

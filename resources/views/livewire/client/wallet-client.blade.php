@@ -6,7 +6,7 @@
         <div class="md:col-span-1 rounded-2xl bg-blue-600 text-white p-6 shadow">
             <p class="text-sm opacity-80">Solde disponible</p>
             <p class="mt-2 text-4xl font-bold">
-                {{ number_format($balance, 2, ',', ' ') }} €
+                <x-money :amount="(float) ($balance)" />
             </p>
             <p class="mt-3 text-sm opacity-90">
                 Ce montant peut être utilisé pour une prochaine réservation.
@@ -24,14 +24,14 @@
             <div class="rounded-2xl border bg-white p-4 shadow-sm">
                 <p class="text-xs font-bold uppercase text-slate-500">Total reçu</p>
                 <p class="mt-2 text-2xl font-black text-blue-700">
-                    {{ number_format($stats['total_received'] ?? 0, 2, ',', ' ') }} €
+                    <x-money :amount="(float) ($stats['total_received'] ?? 0)" />
                 </p>
             </div>
 
             <div class="rounded-2xl border bg-white p-4 shadow-sm">
                 <p class="text-xs font-bold uppercase text-slate-500">Déjà utilisé</p>
                 <p class="mt-2 text-2xl font-black text-indigo-700">
-                    {{ number_format($stats['total_used'] ?? 0, 2, ',', ' ') }} €
+                    <x-money :amount="(float) ($stats['total_used'] ?? 0)" />
                 </p>
             </div>
 
@@ -100,11 +100,11 @@
                         </td>
 
                         <td class="px-4 py-3 font-medium">
-                            {{ number_format($credit->amount, 2, ',', ' ') }} €
+                            <x-money :amount="(float) ($credit->amount)" />
                         </td>
 
                         <td class="px-4 py-3 font-medium text-blue-700">
-                            {{ number_format($credit->remaining_amount, 2, ',', ' ') }} €
+                            <x-money :amount="(float) ($credit->remaining_amount)" />
                         </td>
 
                         <td class="px-4 py-3">

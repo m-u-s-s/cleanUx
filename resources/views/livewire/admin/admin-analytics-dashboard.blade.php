@@ -24,12 +24,12 @@
     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div class="bg-white rounded-2xl p-5 border">
             <p class="text-sm text-slate-500">CA total</p>
-            <p class="text-2xl font-bold">€{{ number_format($stats['total_revenue'], 2) }}</p>
+            <p class="text-2xl font-bold"><x-money :amount="(float) ($stats['total_revenue'])" /></p>
         </div>
 
         <div class="bg-white rounded-2xl p-5 border">
             <p class="text-sm text-slate-500">Marge totale</p>
-            <p class="text-2xl font-bold">€{{ number_format($stats['total_margin'], 2) }}</p>
+            <p class="text-2xl font-bold"><x-money :amount="(float) ($stats['total_margin'])" /></p>
         </div>
 
         <div class="bg-white rounded-2xl p-5 border">

@@ -99,7 +99,7 @@
                             {{ $ligne['punctuality_rate'] !== null ? $ligne['punctuality_rate'].' %' : '—' }}
                         </td>
                         <td class="px-5 py-3 text-right tabular-nums font-semibold text-slate-900">
-                            {{ number_format($ligne['committed_cents'] / 100, 2, ',', ' ') }} €
+                            <x-money :amount="(float) ($ligne['committed_cents'] / 100)" />
                         </td>
                     </tr>
                     @endforeach
@@ -195,8 +195,8 @@
 
             <div class="mt-2 flex items-center justify-between text-sm">
                 <span class="text-slate-600">
-                    {{ number_format($budget['committed_cents'] / 100, 2, ',', ' ') }} €
-                    sur {{ number_format($budget['limit_cents'] / 100, 2, ',', ' ') }} €
+                    <x-money :amount="(float) ($budget['committed_cents'] / 100)" />
+                    sur <x-money :amount="(float) ($budget['limit_cents'] / 100)" />
                 </span>
                 <span class="font-semibold tabular-nums text-slate-900">{{ $budget['usage_percent'] }} %</span>
             </div>

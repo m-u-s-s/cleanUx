@@ -33,7 +33,7 @@
             </div>
             <div class="rounded-2xl border bg-white p-4 shadow-sm">
                 <p class="text-xs uppercase font-bold text-slate-500">Moyenne</p>
-                <p class="text-2xl font-black text-slate-900">{{ number_format(($stats['avg_tip_cents'] ?? 0) / 100, 2, ',', ' ') }} €</p>
+                <p class="text-2xl font-black text-slate-900"><x-money :amount="(float) (($stats['avg_tip_cents'] ?? 0) / 100)" /></p>
             </div>
         </div>
 

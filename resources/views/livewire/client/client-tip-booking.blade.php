@@ -21,7 +21,7 @@
             <div class="text-center mb-6">
                 <p class="text-3xl mb-2">⭐</p>
                 <h1 class="text-2xl font-black text-slate-900">Pourboire au prestataire</h1>
-                <p class="text-sm text-slate-500 mt-1">Mission #{{ $booking->id }} — {{ number_format(((float) $booking->devis_estime), 2, ',', ' ') }} €</p>
+                <p class="text-sm text-slate-500 mt-1">Mission #{{ $booking->id }} — <x-money :amount="(float) (((float) $booking->devis_estime))" /></p>
                 @if ($booking->employe)
                     <p class="text-sm font-semibold text-slate-700 mt-2">{{ $booking->employe->name }}</p>
                 @endif
@@ -53,7 +53,7 @@
                     <div class="rounded-lg bg-indigo-50 p-4 mt-3">
                         <div class="flex justify-between text-sm">
                             <span class="text-slate-700">Pourboire</span>
-                            <span class="font-bold text-indigo-700">{{ number_format($selectedAmountCents / 100, 2, ',', ' ') }} €</span>
+                            <span class="font-bold text-indigo-700"><x-money :amount="(float) ($selectedAmountCents / 100)" /></span>
                         </div>
                         @php $bonus = (int) floor($selectedAmountCents / 100); @endphp
                         @if ($bonus > 0)

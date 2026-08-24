@@ -108,7 +108,7 @@
                     <div class="flex justify-between gap-2">
                         <dt class="text-slate-500">Rémunération</dt>
                         <dd class="text-right font-bold text-emerald-700">
-                            {{ number_format((float) $mission->client_price, 2, ',', ' ') }} €
+                            <x-money :amount="(float) ((float) $mission->client_price)" />
                         </dd>
                     </div>
                 @endif

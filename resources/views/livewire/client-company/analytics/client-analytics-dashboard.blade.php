@@ -133,7 +133,7 @@
         <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
             <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">Chiffre d'affaires</p>
             <p class="mt-1 text-xl font-bold text-slate-900">
-                {{ number_format($mainKpis['revenue']['value'], 0, ',', ' ') }} €
+                <x-money :amount="(float) ($mainKpis['revenue']['value'])" :decimals="0" />
             </p>
             @if ($mainKpis['revenue']['trend'] !== null)
                 <p class="mt-1 inline-flex items-center text-[11px] font-medium {{ $mainKpis['revenue']['trend'] >= 0 ? 'text-emerald-600' : 'text-red-500' }}">
@@ -235,7 +235,7 @@
                         <div>
                             <div class="flex justify-between text-xs">
                                 <span class="text-slate-700 truncate">{{ $service['service_name'] }}</span>
-                                <span class="text-slate-500 font-medium">{{ $service['count'] }} • {{ number_format($service['revenue'], 0, ',', ' ') }} €</span>
+                                <span class="text-slate-500 font-medium">{{ $service['count'] }} • <x-money :amount="(float) ($service['revenue'])" :decimals="0" /></span>
                             </div>
                             <div class="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
                                 <div class="h-full rounded-full bg-blue-500" style="width: {{ ($service['count'] / $maxCount) * 100 }}%"></div>
@@ -259,7 +259,7 @@
                             <div>
                                 <div class="flex justify-between text-xs">
                                     <span class="text-slate-700 truncate">{{ $site['site_name'] }}</span>
-                                    <span class="text-slate-500 font-medium">{{ $site['count'] }} • {{ number_format($site['revenue'], 0, ',', ' ') }} €</span>
+                                    <span class="text-slate-500 font-medium">{{ $site['count'] }} • <x-money :amount="(float) ($site['revenue'])" :decimals="0" /></span>
                                 </div>
                                 <div class="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
                                     <div class="h-full rounded-full bg-emerald-500" style="width: {{ ($site['count'] / $maxCount) * 100 }}%"></div>

@@ -147,7 +147,7 @@
             {{ $horloge['purchased_minutes'] }} min achetées ·
             échéance {{ \Illuminate\Support\Carbon::parse($horloge['deadline_at'])->format('H:i') }}
             @if(($horloge['billable_overtime_minutes'] ?? 0) > 0)
-                · {{ number_format(($horloge['overtime_amount_cents'] ?? 0) / 100, 2, ',', ' ') }} € de dépassement facturable
+                · <x-money :amount="(float) (($horloge['overtime_amount_cents'] ?? 0) / 100)" /> de dépassement facturable
             @endif
         </p>
 

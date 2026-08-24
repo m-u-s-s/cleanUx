@@ -219,7 +219,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 align-middle tabular-nums text-gray-800 dark:text-gray-200">
-                                {{ number_format($zp->base_rate_cents / 100, 2) }} €
+                                <x-money :amount="(float) ($zp->base_rate_cents / 100)" />
                             </td>
                             <td class="px-4 py-3 align-middle tabular-nums text-gray-800 dark:text-gray-200">
                                 {{ $zp->surge_multiplier }}
@@ -248,7 +248,7 @@
                                      portait une. --}}
                                 @if ($factureALHeure && $zp->price_per_hour_cents !== null)
                                     <span class="mt-1 block text-[11px] text-indigo-700 dark:text-indigo-400">
-                                        {{ number_format($zp->price_per_hour_cents / 100, 2) }} €/h
+                                        <x-money :amount="(float) ($zp->price_per_hour_cents / 100)" />/h
                                     </span>
                                 @endif
 
@@ -256,12 +256,12 @@
                                      c'est lui qui décide du montant final sur une course. --}}
                                 @if ($zp->distance_pricing_enabled)
                                     <span class="mt-1 block text-[11px] text-emerald-700 dark:text-emerald-400">
-                                        {{ number_format($zp->pickup_fee_cents / 100, 2) }} €
+                                        <x-money :amount="(float) ($zp->pickup_fee_cents / 100)" />
                                         @if ($zp->price_per_km_cents !== null)
-                                            + {{ number_format($zp->price_per_km_cents / 100, 2) }} €/km
+                                            + <x-money :amount="(float) ($zp->price_per_km_cents / 100)" />/km
                                         @endif
                                         @if ($zp->price_per_minute_cents !== null)
-                                            + {{ number_format($zp->price_per_minute_cents / 100, 2) }} €/min
+                                            + <x-money :amount="(float) ($zp->price_per_minute_cents / 100)" />/min
                                         @endif
                                         @if ($zp->included_km > 0)
                                             ({{ $zp->included_km }} km inclus)

@@ -90,9 +90,9 @@
             <div class="rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50 to-white p-6 text-center mb-5">
                 <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Fourchette de prix</p>
                 <p class="mt-2 text-3xl font-bold text-brand-700">
-                    {{ number_format($result['prix_min_eur'] ?? 0, 0, ',', ' ') }}€
+                    <x-money :amount="(float) ($result['prix_min_eur'] ?? 0)" :decimals="0" />
                     <span class="text-slate-400">–</span>
-                    {{ number_format($result['prix_max_eur'] ?? 0, 0, ',', ' ') }}€
+                    <x-money :amount="(float) ($result['prix_max_eur'] ?? 0)" :decimals="0" />
                 </p>
                 <p class="text-xs text-slate-500 mt-3 inline-flex items-center gap-3">
                     <span class="inline-flex items-center gap-1">

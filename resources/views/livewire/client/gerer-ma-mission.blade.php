@@ -82,7 +82,7 @@
                 {{-- LA REMISE EST NOMMÉE : le client cherche d'abord ce qu'est devenu son code. --}}
                 <p class="text-xs text-indigo-700 dark:text-indigo-300">
                     Votre code {{ data_get($promo, 'code') }} reste appliqué —
-                    {{ number_format(((int) data_get($promo, 'discount_cents', 0)) / 100, 2, ',', ' ') }} € de remise.
+                    <x-money :amount="(float) (((int) data_get($promo, 'discount_cents', 0)) / 100)" /> de remise.
                 </p>
             @endif
 

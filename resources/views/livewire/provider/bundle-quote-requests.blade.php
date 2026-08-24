@@ -20,7 +20,7 @@
                                 <span class="font-bold text-slate-900">{{ $quote->item?->label }}</span>
                                 <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{{ $quote->item?->trade?->name }}</span>
                                 @if ($quote->status === 'submitted')
-                                    <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">Devis envoyé · {{ number_format(($quote->price_cents ?? 0) / 100, 2) }} €</span>
+                                    <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">Devis envoyé · <x-money :amount="(float) (($quote->price_cents ?? 0) / 100)" /></span>
                                 @endif
                             </div>
                             <p class="mt-1 text-sm text-slate-600">{{ $quote->item?->description }}</p>

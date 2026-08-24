@@ -9,7 +9,7 @@
     >
         <x-slot:actions>
             <span class="brio-inline-stat">{{ $kpis['count'] }} mission(s)</span>
-            <span class="brio-inline-stat">€ {{ number_format($kpis['turnover'], 2, ',', ' ') }} HTVA</span>
+            <span class="brio-inline-stat"><x-money :amount="(float) ($kpis['turnover'])" /> HTVA</span>
             <button wire:click="exportAnalyticsCsv" class="brio-btn-primary">Exporter CSV</button>
         </x-slot:actions>
     </x-page-shell>
@@ -64,11 +64,11 @@
     <div wire:loading.remove class="space-y-6">
         <div class="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
             <x-kpi-card title="Missions" :value="$kpis['count']" tone="slate" icon="📅" />
-            <x-kpi-card title="CA HTVA" :value="'€ '.number_format($kpis['turnover'], 2, ',', ' ')" tone="blue" icon="💶" />
-            <x-kpi-card title="Marge estimée" :value="'€ '.number_format($kpis['margin_estimate'], 2, ',', ' ')" tone="green" icon="📈" />
+            <x-kpi-card title="CA HTVA" :value="locale_currency($kpis['turnover'])" tone="blue" icon="💶" />
+            <x-kpi-card title="Marge estimée" :value="locale_currency($kpis['margin_estimate'])" tone="green" icon="📈" />
             <x-kpi-card title="Part entreprise" :value="number_format($kpis['entreprise_share'], 1, ',', ' ').'%'" tone="amber" icon="🏢" />
             <x-kpi-card title="Couverture feedback" :value="number_format($kpis['feedback_coverage'], 1, ',', ' ').'%'" tone="orange" icon="⭐" />
-            <x-kpi-card title="Retards finance" :value="$kpis['overdue_count']" :hint="'€ '.number_format($kpis['outstanding_balance'], 2, ',', ' ')" tone="red" icon="⏰" />
+            <x-kpi-card title="Retards finance" :value="$kpis['overdue_count']" :hint="locale_currency($kpis['outstanding_balance'])" tone="red" icon="⏰" />
         </div>
 
         <div class="grid gap-4 xl:grid-cols-2">
@@ -88,8 +88,8 @@
                             <tr>
                                 <td class="font-medium text-slate-800">{{ $row['name'] }}</td>
                                 <td>{{ $row['count'] }}</td>
-                                <td>€ {{ number_format($row['margin'], 2, ',', ' ') }}</td>
-                                <td>€ {{ number_format($row['margin'], 2, ',', ' ') }}</td>
+                                <td><x-money :amount="(float) ($row['margin'])" /></td>
+                                <td><x-money :amount="(float) ($row['margin'])" /></td>
                                 <td>{{ number_format($row['cancellation_rate'], 1, ',', ' ') }}%</td>
                             </tr>
                         @empty
@@ -114,11 +114,11 @@
                             <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
                                 <div class="rounded-xl bg-slate-50 p-3">
                                     <div class="text-xs uppercase tracking-wide text-slate-400">CA</div>
-                                    <div class="mt-1 font-semibold text-slate-800">€ {{ number_format($row['turnover'], 2, ',', ' ') }}</div>
+                                    <div class="mt-1 font-semibold text-slate-800"><x-money :amount="(float) ($row['turnover'])" /></div>
                                 </div>
                                 <div class="rounded-xl bg-slate-50 p-3">
                                     <div class="text-xs uppercase tracking-wide text-slate-400">Marge</div>
-                                    <div class="mt-1 font-semibold text-slate-800">€ {{ number_format($row['margin'], 2, ',', ' ') }}</div>
+                                    <div class="mt-1 font-semibold text-slate-800"><x-money :amount="(float) ($row['margin'])" /></div>
                                 </div>
                             </div>
                         </div>
@@ -136,8 +136,8 @@
                         <div class="brio-list-item">
                             <div class="font-medium text-slate-800">{{ $row['name'] }}</div>
                             <div class="mt-1 text-slate-500">{{ $row['count'] }} missions · {{ $row['completed'] }} terminées</div>
-                            <div class="mt-2 flex items-center justify-between"><span class="text-slate-500">CA</span><span class="font-semibold text-slate-800">€ {{ number_format($row['turnover'], 2, ',', ' ') }}</span></div>
-                            <div class="mt-1 flex items-center justify-between"><span class="text-slate-500">Marge</span><span class="font-semibold text-slate-800">€ {{ number_format($row['margin'], 2, ',', ' ') }}</span></div>
+                            <div class="mt-2 flex items-center justify-between"><span class="text-slate-500">CA</span><span class="font-semibold text-slate-800"><x-money :amount="(float) ($row['turnover'])" /></span></div>
+                            <div class="mt-1 flex items-center justify-between"><span class="text-slate-500">Marge</span><span class="font-semibold text-slate-800"><x-money :amount="(float) ($row['margin'])" /></span></div>
                         </div>
                     @empty
                         <x-empty-state title="Aucun service" message="Aucune donnée service disponible." icon="🧽" />
@@ -151,7 +151,7 @@
                         <div class="brio-list-item">
                             <div class="font-medium text-slate-800">{{ $row['name'] }}</div>
                             <div class="mt-1 text-slate-500">{{ $row['count'] }} missions · {{ $row['completed'] }} terminées</div>
-                            <div class="mt-2 flex items-center justify-between"><span class="text-slate-500">Marge</span><span class="font-semibold text-slate-800">€ {{ number_format($row['margin'], 2, ',', ' ') }}</span></div>
+                            <div class="mt-2 flex items-center justify-between"><span class="text-slate-500">Marge</span><span class="font-semibold text-slate-800"><x-money :amount="(float) ($row['margin'])" /></span></div>
                             <div class="mt-1 flex items-center justify-between"><span class="text-slate-500">Note moyenne</span><span class="font-semibold text-slate-800">{{ $row['avg_satisfaction'] !== null ? number_format($row['avg_satisfaction'], 1, ',', ' ') : '—' }}/5</span></div>
                             <div class="mt-1 flex items-center justify-between"><span class="text-slate-500">Signaux retard</span><span class="font-semibold text-slate-800">{{ $row['delay_signals'] }}</span></div>
                         </div>
@@ -167,8 +167,8 @@
                         <div class="brio-list-item">
                             <div class="font-medium text-slate-800">{{ $row['name'] }}</div>
                             <div class="mt-1 text-slate-500">{{ $row['count'] }} missions</div>
-                            <div class="mt-2 flex items-center justify-between"><span class="text-slate-500">CA</span><span class="font-semibold text-slate-800">€ {{ number_format($row['turnover'], 2, ',', ' ') }}</span></div>
-                            <div class="mt-1 flex items-center justify-between"><span class="text-slate-500">Panier moyen</span><span class="font-semibold text-slate-800">€ {{ number_format($row['avg_ticket'], 2, ',', ' ') }}</span></div>
+                            <div class="mt-2 flex items-center justify-between"><span class="text-slate-500">CA</span><span class="font-semibold text-slate-800"><x-money :amount="(float) ($row['turnover'])" /></span></div>
+                            <div class="mt-1 flex items-center justify-between"><span class="text-slate-500">Panier moyen</span><span class="font-semibold text-slate-800"><x-money :amount="(float) ($row['avg_ticket'])" /></span></div>
                             <div class="mt-1 flex items-center justify-between"><span class="text-slate-500">Satisfaction</span><span class="font-semibold text-slate-800">{{ $row['avg_satisfaction'] !== null ? number_format($row['avg_satisfaction'], 1, ',', ' ') : '—' }}/5</span></div>
                             <div class="mt-1 flex items-center justify-between"><span class="text-slate-500">Marché</span><span class="font-semibold text-slate-800">{{ $row['market'] }}</span></div>
                         </div>
@@ -204,8 +204,8 @@
                             <td>{{ $row->serviceZone?->name ?: '—' }}</td>
                             <td>{{ $row->service_display_name ?: '—' }}</td>
                             <td>{{ $row->status }}</td>
-                            <td class="text-right font-semibold text-slate-800">€ {{ number_format((float) (data_get($row->pricing_snapshot, 'devis_estime') ?? $row->devis_estime ?? $row->serviceCatalog?->base_price ?? 0), 2, ',', ' ') }}</td>
-                            <td class="text-right font-semibold text-slate-800">€ {{ number_format((float) app(\App\Services\Finance\FinanceDocumentService::class)->amountBreakdownFor($row)['estimated_margin_amount'], 2, ',', ' ') }}</td>
+                            <td class="text-right font-semibold text-slate-800"><x-money :amount="(float) ((float) (data_get($row->pricing_snapshot, 'devis_estime') ?? $row->devis_estime ?? $row->serviceCatalog?->base_price ?? 0))" /></td>
+                            <td class="text-right font-semibold text-slate-800"><x-money :amount="(float) ((float) app(\App\Services\Finance\FinanceDocumentService::class)->amountBreakdownFor($row)['estimated_margin_amount'])" /></td>
                         </tr>
                     @empty
                         <tr>

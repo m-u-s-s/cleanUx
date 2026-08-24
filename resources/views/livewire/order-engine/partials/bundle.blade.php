@@ -131,7 +131,7 @@
                             @if ($line['quote']->quoteOnly)
                                 Sur devis
                             @else
-                                {{ number_format($line['quote']->minCents / 100, 0, ',', ' ') }} €
+                                <x-money :amount="(float) ($line['quote']->minCents / 100)" :decimals="0" />
                             @endif
                         </span>
                     </summary>
@@ -141,7 +141,7 @@
                             <li class="flex items-baseline justify-between gap-3">
                                 <span class="min-w-0 text-slate-600">{{ $detail['label'] }}</span>
                                 <span class="shrink-0 tabular-nums text-slate-700">
-                                    {{ number_format($detail['min_cents'] / 100, 0, ',', ' ') }} €
+                                    <x-money :amount="(float) ($detail['min_cents'] / 100)" :decimals="0" />
                                 </span>
                             </li>
                         @endforeach
@@ -155,7 +155,7 @@
                 @if (($orderLine['min_cents'] ?? 0) < 0)
                     <div class="flex items-baseline justify-between gap-3 px-3 text-sm text-emerald-700">
                         <span>{{ $orderLine['label'] }}</span>
-                        <span class="tabular-nums">{{ number_format($orderLine['min_cents'] / 100, 0, ',', ' ') }} €</span>
+                        <span class="tabular-nums"><x-money :amount="(float) ($orderLine['min_cents'] / 100)" :decimals="0" /></span>
                     </div>
                 @endif
             @endforeach
@@ -166,9 +166,9 @@
                     @if ($this->bundleQuote['order']->quoteOnly)
                         Sur devis
                     @elseif ($this->bundleQuote['order']->isExact())
-                        {{ number_format($this->bundleQuote['order']->minCents / 100, 0, ',', ' ') }} €
+                        <x-money :amount="(float) ($this->bundleQuote['order']->minCents / 100)" :decimals="0" />
                     @else
-                        {{ number_format($this->bundleQuote['order']->minCents / 100, 0, ',', ' ') }}–{{ number_format($this->bundleQuote['order']->maxCents / 100, 0, ',', ' ') }} €
+                        {{ number_format($this->bundleQuote['order']->minCents / 100, 0, ',', ' ') }}–<x-money :amount="(float) ($this->bundleQuote['order']->maxCents / 100)" :decimals="0" />
                     @endif
                 </span>
             </div>

@@ -13,7 +13,7 @@
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <x-business-kpi-card
             title="CA ce mois"
-            value="{{ number_format($metrics['revenue_current_month'], 2, ',', ' ') }} €"
+            value="{{ locale_currency($metrics['revenue_current_month']) }}"
             subtitle="Chiffre d’affaires estimé" />
 
         <x-business-kpi-card
@@ -74,7 +74,7 @@
                         <div class="flex justify-between text-sm mb-1">
                             <span class="font-medium text-slate-700">{{ $week['label'] }}</span>
                             <span class="text-slate-500">
-                                {{ number_format($week['revenue'], 2, ',', ' ') }} €
+                                <x-money :amount="(float) ($week['revenue'])" />
                                 — {{ $week['bookings'] }} RDV
                             </span>
                         </div>
@@ -96,7 +96,7 @@
             <div class="rounded-xl bg-blue-50 border border-blue-100 p-4 text-sm text-blue-800">
                 Panier moyen :
                 <span class="font-bold">
-                    {{ number_format($metrics['avg_booking_value'], 2, ',', ' ') }} €
+                    <x-money :amount="(float) ($metrics['avg_booking_value'])" />
                 </span>
             </div>
 

@@ -13,7 +13,7 @@
             <h2 class="text-sm font-bold uppercase tracking-wide text-slate-500">Assurance</h2>
             @if ($protection['insurance']['active_count'] > 0)
             <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                {{ number_format($protection['insurance']['total_coverage_cents'] / 100, 0, ',', ' ') }} € couverts
+                <x-money :amount="(float) ($protection['insurance']['total_coverage_cents'] / 100)" :decimals="0" /> couverts
             </span>
             @endif
         </div>
@@ -30,7 +30,7 @@
                 </p>
             </div>
             <span class="shrink-0 text-sm font-semibold tabular-nums text-slate-900">
-                {{ number_format($police['coverage_amount_cents'] / 100, 0, ',', ' ') }} €
+                <x-money :amount="(float) ($police['coverage_amount_cents'] / 100)" :decimals="0" />
             </span>
         </div>
         @empty
@@ -75,7 +75,7 @@
                 @endphp
                 <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold {{ $frais ? 'bg-amber-50 text-amber-800' : 'bg-emerald-50 text-emerald-700' }}">
                     @if ($frais)
-                    {{ number_format(((float) $frais) / 100, 2, ',', ' ') }} € de frais
+                    <x-money :amount="(float) (((float) $frais) / 100)" /> de frais
                     @else
                     Sans frais
                     @endif

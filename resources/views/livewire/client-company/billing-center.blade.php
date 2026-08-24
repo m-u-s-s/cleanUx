@@ -81,7 +81,7 @@
                             {{ $invoice->issued_at?->format('d/m/Y') ?? $invoice->created_at?->format('d/m/Y') }}
                         </td>
                         <td class="px-5 py-4 text-right text-sm font-semibold text-slate-900">
-                            {{ number_format($invoice->total_amount ?? 0, 2) }} €
+                            <x-money :amount="(float) ($invoice->total_amount ?? 0)" />
                         </td>
                         <td class="px-5 py-4 text-center hidden sm:table-cell">
                             <span class="rounded-full px-2.5 py-1 text-[10px] font-bold

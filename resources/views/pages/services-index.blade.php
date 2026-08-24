@@ -93,7 +93,7 @@
                         <div class="mt-5 flex items-center justify-between">
                             @if($trade->default_hourly_rate)
                                 <span class="text-sm font-semibold" style="color:var(--cx-amber)">
-                                    A partir de {{ number_format((float) $trade->default_hourly_rate, 0) }}€/h
+                                    A partir de <x-money :amount="(float) ((float) $trade->default_hourly_rate)" :decimals="0" />/h
                                 </span>
                             @else
                                 <span class="text-sm" style="color:var(--cx-muted)">Devis sur demande</span>

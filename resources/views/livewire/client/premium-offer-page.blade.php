@@ -68,7 +68,7 @@
 
                 <p class="relative text-xs font-semibold uppercase tracking-wide text-amber-50">Tarif mensuel</p>
                 <div class="relative mt-3 flex items-baseline gap-1">
-                    <span class="text-5xl font-bold">{{ number_format($premiumPrice, 0, ',', ' ') }}€</span>
+                    <span class="text-5xl font-bold"><x-money :amount="(float) ($premiumPrice)" :decimals="0" /></span>
                     <span class="text-amber-100 text-lg font-semibold">/ mois</span>
                 </div>
 
@@ -161,7 +161,7 @@
                         <p class="text-xs text-amber-700 mt-0.5">Pour les clients réguliers</p>
                     </div>
                     <span class="text-base font-bold text-amber-700">
-                        {{ number_format($premiumPrice, 0, ',', ' ') }}€<span class="text-xs font-medium text-amber-600">/mois</span>
+                        <x-money :amount="(float) ($premiumPrice)" :decimals="0" /><span class="text-xs font-medium text-amber-600">/mois</span>
                     </span>
                 </div>
 

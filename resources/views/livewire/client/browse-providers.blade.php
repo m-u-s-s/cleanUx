@@ -174,7 +174,7 @@
                                 </div>
                                 @if($hourlyRate !== null)
                                     <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700">
-                                        {{ number_format((float) $hourlyRate, 0, ',', ' ') }} €/h
+                                        <x-money :amount="(float) ((float) $hourlyRate)" :decimals="0" />/h
                                     </span>
                                 @endif
 

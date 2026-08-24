@@ -54,7 +54,7 @@
                             <div class="text-right">
                                 <p class="text-sm font-bold text-slate-900">{{ $r->qualified_count }}</p>
                                 <p class="text-xs text-emerald-600">
-                                    +{{ number_format((float)$r->total_earned, 2, ',', ' ') }} €
+                                    +<x-money :amount="(float) ((float)$r->total_earned)" />
                                 </p>
                             </div>
                         </div>

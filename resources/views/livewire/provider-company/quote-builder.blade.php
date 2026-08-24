@@ -62,7 +62,7 @@
                 </p>
             </div>
             <span class="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
-                {{ number_format($devisOuvert->total_cents / 100, 2, ',', ' ') }} €
+                <x-money :amount="(float) ($devisOuvert->total_cents / 100)" />
             </span>
         </div>
 
@@ -78,7 +78,7 @@
                         @if ($ligne->suggested_price_cents && $ligne->suggested_price_cents !== $ligne->unit_price_cents)
                         {{-- L'écart avec la suggestion rend la remise lisible. --}}
                         <span class="ml-1 text-amber-700">
-                            (tarif suggéré {{ number_format($ligne->suggested_price_cents / 100, 2, ',', ' ') }} €)
+                            (tarif suggéré <x-money :amount="(float) ($ligne->suggested_price_cents / 100)" />)
                         </span>
                         @endif
                     </p>
@@ -86,7 +86,7 @@
 
                 <div class="flex shrink-0 items-center gap-3">
                     <span class="text-sm font-semibold tabular-nums text-slate-900">
-                        {{ number_format($ligne->total_cents / 100, 2, ',', ' ') }} €
+                        <x-money :amount="(float) ($ligne->total_cents / 100)" />
                     </span>
                     @if ($peutGerer && $devisOuvert->status === \App\Models\ProviderQuote::STATUS_DRAFT)
                     <button type="button" wire:click="retirerUneLigne({{ $ligne->id }})"
@@ -178,7 +178,7 @@
 
             <div class="flex shrink-0 items-center gap-3">
                 <span class="text-sm font-semibold tabular-nums text-slate-900">
-                    {{ number_format($document->total_cents / 100, 2, ',', ' ') }} €
+                    <x-money :amount="(float) ($document->total_cents / 100)" />
                 </span>
 
                 @php

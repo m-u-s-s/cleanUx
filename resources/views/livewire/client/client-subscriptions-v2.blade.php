@@ -54,7 +54,7 @@
                                     </div>
                                     <div>
                                         <dt class="font-semibold text-slate-500 uppercase">Total facturé</dt>
-                                        <dd class="font-mono">{{ number_format($sub->total_billed_cents / 100, 2, ',', ' ') }} €</dd>
+                                        <dd class="font-mono"><x-money :amount="(float) ($sub->total_billed_cents / 100)" /></dd>
                                     </div>
                                 </dl>
                                 @if($sub->trial_ends_at && $sub->trial_ends_at->isFuture())
@@ -105,7 +105,7 @@
                                                 <tr>
                                                     <td class="px-3 py-2 font-mono">{{ $c->cycle_number }}</td>
                                                     <td class="px-3 py-2 text-slate-500">{{ optional($c->period_start)->format('d/m') }} → {{ optional($c->period_end)->format('d/m') }}</td>
-                                                    <td class="px-3 py-2 font-mono">{{ number_format($c->planned_amount_cents / 100, 2, ',', ' ') }} €</td>
+                                                    <td class="px-3 py-2 font-mono"><x-money :amount="(float) ($c->planned_amount_cents / 100)" /></td>
                                                     <td class="px-3 py-2">
                                                         <span @class([
                                                             'rounded-full px-2 py-0.5 text-xs font-semibold',

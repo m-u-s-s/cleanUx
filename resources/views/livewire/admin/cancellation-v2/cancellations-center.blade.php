@@ -17,7 +17,7 @@
             </div>
             <div class="rounded-2xl border bg-white p-4 shadow-sm">
                 <p class="text-xs uppercase font-bold text-slate-500">Fees collectés 7j</p>
-                <p class="text-2xl font-black text-amber-600">{{ number_format($kpis['fees_collected_7d_cents'] / 100, 2) }} €</p>
+                <p class="text-2xl font-black text-amber-600"><x-money :amount="(float) ($kpis['fees_collected_7d_cents'] / 100)" /></p>
             </div>
             <div class="rounded-2xl border bg-white p-4 shadow-sm">
                 <p class="text-xs uppercase font-bold text-slate-500">Overrides 7j</p>

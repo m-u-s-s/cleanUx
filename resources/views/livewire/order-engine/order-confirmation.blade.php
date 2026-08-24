@@ -112,9 +112,9 @@
                                         @if ($line['quote']->quoteOnly)
                                             Sur devis
                                         @elseif ($line['quote']->isExact())
-                                            {{ number_format($line['quote']->minCents / 100, 0, ',', ' ') }} €
+                                            <x-money :amount="(float) ($line['quote']->minCents / 100)" :decimals="0" />
                                         @else
-                                            {{ number_format($line['quote']->minCents / 100, 0, ',', ' ') }}–{{ number_format($line['quote']->maxCents / 100, 0, ',', ' ') }} €
+                                            {{ number_format($line['quote']->minCents / 100, 0, ',', ' ') }}–<x-money :amount="(float) ($line['quote']->maxCents / 100)" :decimals="0" />
                                         @endif
                                     </span>
                                 </summary>
@@ -125,7 +125,7 @@
                                         <li class="flex items-baseline justify-between gap-3">
                                             <span class="min-w-0 text-slate-600">{{ $detail['label'] }}</span>
                                             <span class="shrink-0 tabular-nums text-slate-700">
-                                                {{ number_format($detail['min_cents'] / 100, 0, ',', ' ') }} €
+                                                <x-money :amount="(float) ($detail['min_cents'] / 100)" :decimals="0" />
                                             </span>
                                         </li>
                                     @endforeach
@@ -140,10 +140,10 @@
                             @if ($this->quote['order']->quoteOnly)
                                 Sur devis
                             @elseif ($this->quote['order']->isExact())
-                                {{ number_format($this->quote['order']->minCents / 100, 0, ',', ' ') }} €
+                                <x-money :amount="(float) ($this->quote['order']->minCents / 100)" :decimals="0" />
                             @else
                                 {{ number_format($this->quote['order']->minCents / 100, 0, ',', ' ') }}
-                                – {{ number_format($this->quote['order']->maxCents / 100, 0, ',', ' ') }} €
+                                – <x-money :amount="(float) ($this->quote['order']->maxCents / 100)" :decimals="0" />
                             @endif
                         </span>
                     </div>
@@ -211,9 +211,9 @@
                                                     <p class="mt-0.5 text-sm text-slate-600">{{ $option['detail'] }}</p>
                                                     <p class="mt-1 text-xs text-slate-500">
                                                         Aujourd’hui :
-                                                        <span class="tabular-nums">{{ number_format($option['due_now_cents'] / 100, 2, ',', ' ') }} €</span>
+                                                        <span class="tabular-nums"><x-money :amount="(float) ($option['due_now_cents'] / 100)" /></span>
                                                         · bloqué :
-                                                        <span class="tabular-nums">{{ number_format($option['held_cents'] / 100, 2, ',', ' ') }} €</span>
+                                                        <span class="tabular-nums"><x-money :amount="(float) ($option['held_cents'] / 100)" /></span>
                                                     </p>
                                                 </li>
                                             @endforeach

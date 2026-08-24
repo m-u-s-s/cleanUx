@@ -76,14 +76,18 @@ class Money
     }
 
     /** Formate un montant avec sa devise selon la locale. */
-    public function format(float $amount, string $currency = self::DEFAULT_CURRENCY, ?string $locale = null): string
-    {
+    public function format(
+        float $amount,
+        string $currency = self::DEFAULT_CURRENCY,
+        ?string $locale = null,
+        ?int $decimales = null,
+    ): string {
         $locale = $this->normalizeLocale($locale ?? app()->getLocale());
         $currency = strtoupper($currency);
 
         // UNE DEVISE INCONNUE GARDE SON CODE — elle n'est plus réécrite en euros.
         // Le rendu ne passe JAMAIS par ICU : sa sortie change avec la version installée.
-        return $this->formatDeterministe($amount, $currency, $locale);
+        return $this->formatDeterministe($amount, $currency, $locale, $decimales);
     }
 
     /** Convertit un montant d'une devise vers une autre. */
@@ -191,11 +195,18 @@ class Money
      * LE SEUL rendu monétaire de la plateforme : un montant s'affiche pareil sur toute machine.
      * Une devise inconnue garde son code et deux décimales, jamais le symbole de l'euro.
      */
-    private function formatDeterministe(float $amount, string $currency, string $locale): string
-    {
+    private function formatDeterministe(
+        float $amount,
+        string $currency,
+        string $locale,
+        ?int $decimales = null,
+    ): string {
         $info = self::devisesSupportees()[$currency] ?? ['symbol' => $currency, 'decimals' => 2];
         $symbol = $info['symbol'];
-        $decimals = $info['decimals'];
+
+        // Un appelant peut imposer l'arrondi — un tableau de bord affiche des milliers, pas des
+        // centimes. La devise garde son symbole et sa ponctuation.
+        $decimals = $decimales ?? $info['decimals'];
 
         $estEuropeen = str_starts_with($locale, 'fr')
             || str_starts_with($locale, 'nl')

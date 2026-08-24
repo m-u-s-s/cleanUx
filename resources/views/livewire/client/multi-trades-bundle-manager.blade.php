@@ -47,11 +47,11 @@
                         </div>
                         <div class="rounded-lg border border-slate-200/70 bg-slate-50/50 p-2.5">
                             <p class="text-xs text-slate-500">Estimé</p>
-                            <p class="mt-0.5 text-base font-bold text-slate-900">{{ number_format($b->total_estimated_cents / 100, 0, ',', ' ') }} €</p>
+                            <p class="mt-0.5 text-base font-bold text-slate-900"><x-money :amount="(float) ($b->total_estimated_cents / 100)" :decimals="0" /></p>
                         </div>
                         <div class="rounded-lg border border-brand-200 bg-brand-50/40 p-2.5">
                             <p class="text-xs text-brand-700">Quoté</p>
-                            <p class="mt-0.5 text-base font-bold text-brand-700">{{ number_format($b->total_quoted_cents / 100, 0, ',', ' ') }} €</p>
+                            <p class="mt-0.5 text-base font-bold text-brand-700"><x-money :amount="(float) ($b->total_quoted_cents / 100)" :decimals="0" /></p>
                         </div>
                     </div>
 
@@ -71,7 +71,7 @@
                                     @endif
                                 </span>
                                 <span class="font-semibold shrink-0 {{ $item->quoted_price_cents > 0 ? 'text-brand-700' : 'text-slate-400' }}">
-                                    {{ number_format(($item->quoted_price_cents ?: $item->estimated_price_cents) / 100, 0, ',', ' ') }} €
+                                    <x-money :amount="(float) (($item->quoted_price_cents ?: $item->estimated_price_cents) / 100)" :decimals="0" />
                                 </span>
                             </div>
 
@@ -83,7 +83,7 @@
                                         <div class="flex items-center justify-between gap-2 rounded-lg bg-slate-50 border border-slate-100 px-2.5 py-1.5 text-xs">
                                             <span class="text-slate-600 truncate">
                                                 {{ $quote->provider?->name }} —
-                                                <strong class="text-slate-900">{{ number_format(($quote->price_cents ?? 0) / 100, 2, ',', ' ') }} €</strong>
+                                                <strong class="text-slate-900"><x-money :amount="(float) (($quote->price_cents ?? 0) / 100)" /></strong>
                                             </span>
                                             <button wire:click="selectQuote({{ $quote->id }})"
                                                 class="shrink-0 rounded-md bg-emerald-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-emerald-700">

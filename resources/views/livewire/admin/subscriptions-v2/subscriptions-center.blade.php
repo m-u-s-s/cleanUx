@@ -29,7 +29,7 @@
             </div>
             <div class="rounded-2xl border bg-white p-4 shadow-sm">
                 <p class="text-xs uppercase font-bold text-slate-500">Total facturé</p>
-                <p class="text-2xl font-black text-indigo-600">{{ number_format($kpis['total_billed_cents'] / 100, 2, ',', ' ') }} €</p>
+                <p class="text-2xl font-black text-indigo-600"><x-money :amount="(float) ($kpis['total_billed_cents'] / 100)" /></p>
             </div>
         </div>
 
@@ -131,7 +131,7 @@
                                     ])>{{ $s->status }}</span>
                                 </td>
                                 <td class="px-4 py-2 text-xs">{{ $s->billing_cycle_count }}</td>
-                                <td class="px-4 py-2 text-xs">{{ number_format($s->total_billed_cents / 100, 2, ',', ' ') }} €</td>
+                                <td class="px-4 py-2 text-xs"><x-money :amount="(float) ($s->total_billed_cents / 100)" /></td>
                                 <td class="px-4 py-2 text-right text-xs">
                                     @if(! in_array($s->status, ['cancelled', 'expired']))
                                         <button wire:click="forceCancel({{ $s->id }})" class="text-red-600 hover:underline"
@@ -165,7 +165,7 @@
                                 <td class="px-4 py-2 text-xs font-mono">{{ $c->subscription?->code }}</td>
                                 <td class="px-4 py-2 text-xs">{{ $c->cycle_number }}</td>
                                 <td class="px-4 py-2 text-xs text-slate-500">{{ optional($c->period_start)->format('d/m') }} → {{ optional($c->period_end)->format('d/m') }}</td>
-                                <td class="px-4 py-2 text-xs">{{ number_format($c->planned_amount_cents / 100, 2, ',', ' ') }} €</td>
+                                <td class="px-4 py-2 text-xs"><x-money :amount="(float) ($c->planned_amount_cents / 100)" /></td>
                                 <td class="px-4 py-2 text-xs">
                                     <span @class([
                                         'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold',

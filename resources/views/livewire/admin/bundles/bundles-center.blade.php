@@ -31,7 +31,7 @@
             </div>
             <div class="rounded-2xl border bg-white p-4 shadow-sm">
                 <p class="text-xs uppercase font-bold text-slate-500">CA accepté</p>
-                <p class="text-2xl font-black text-emerald-700">{{ number_format($stats['total_value_cents'] / 100, 0, ',', ' ') }}€</p>
+                <p class="text-2xl font-black text-emerald-700"><x-money :amount="(float) ($stats['total_value_cents'] / 100)" :decimals="0" /></p>
             </div>
         </div>
 
@@ -72,7 +72,7 @@
                             <td class="px-3 py-2 text-xs">{{ $b->client?->name }}<br><span class="text-slate-400">{{ $b->client?->email }}</span></td>
                             <td class="px-3 py-2 text-center font-bold">{{ $b->items->count() }}</td>
                             <td class="px-3 py-2"><span class="inline-block rounded-full bg-{{ $color }}-100 text-{{ $color }}-700 px-2 py-0.5 text-xs font-semibold">{{ $b->status }}</span></td>
-                            <td class="px-3 py-2 font-bold">{{ number_format(($b->total_quoted_cents ?: $b->total_estimated_cents) / 100, 0, ',', ' ') }}€</td>
+                            <td class="px-3 py-2 font-bold"><x-money :amount="(float) (($b->total_quoted_cents ?: $b->total_estimated_cents) / 100)" :decimals="0" /></td>
                             <td class="px-3 py-2 text-xs text-slate-500">{{ $b->created_at?->diffForHumans() }}</td>
                             <td class="px-3 py-2 text-right">
                                 <button wire:click="openBundle({{ $b->id }})" class="text-indigo-600 hover:underline text-xs font-semibold">Détail</button>
@@ -120,9 +120,9 @@
                                         </div>
                                     </div>
                                     <div class="text-right">
-                                        <p class="text-xs text-slate-500">Estimé : {{ number_format($item->estimated_price_cents / 100, 0) }}€</p>
+                                        <p class="text-xs text-slate-500">Estimé : <x-money :amount="(float) ($item->estimated_price_cents / 100)" :decimals="0" /></p>
                                         @if ($item->quoted_price_cents > 0)
-                                            <p class="text-lg font-bold text-indigo-700">{{ number_format($item->quoted_price_cents / 100, 0) }}€</p>
+                                            <p class="text-lg font-bold text-indigo-700"><x-money :amount="(float) ($item->quoted_price_cents / 100)" :decimals="0" /></p>
                                         @endif
                                         @if ($item->status === 'draft' || $item->status === 'quoted')
                                             <button wire:click="openAssign({{ $item->id }})" class="text-xs text-indigo-600 hover:underline font-semibold mt-1">
@@ -153,9 +153,9 @@
                     <div class="p-6 border-t flex justify-between items-center bg-slate-50 rounded-b-2xl">
                         <div>
                             <p class="text-xs uppercase font-bold text-slate-500">Total bundle</p>
-                            <p class="text-2xl font-black text-indigo-700">{{ number_format(($selectedBundle->total_quoted_cents ?: $selectedBundle->total_estimated_cents) / 100, 2, ',', ' ') }}€</p>
+                            <p class="text-2xl font-black text-indigo-700"><x-money :amount="(float) (($selectedBundle->total_quoted_cents ?: $selectedBundle->total_estimated_cents) / 100)" /></p>
                             @if ($selectedBundle->bundle_discount_cents > 0)
-                                <p class="text-xs text-emerald-600">Discount groupage : -{{ number_format($selectedBundle->bundle_discount_cents / 100, 2, ',', ' ') }}€</p>
+                                <p class="text-xs text-emerald-600">Discount groupage : -<x-money :amount="(float) ($selectedBundle->bundle_discount_cents / 100)" /></p>
                             @endif
                         </div>
                         @if (!in_array($selectedBundle->status, ['completed', 'cancelled']))

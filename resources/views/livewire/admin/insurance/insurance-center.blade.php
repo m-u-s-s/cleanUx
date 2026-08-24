@@ -61,7 +61,7 @@
                                 <td class="px-4 py-2 text-xs text-slate-500">{{ $c->filed_at?->format('d/m H:i') }}</td>
                                 <td class="px-4 py-2 text-xs">{{ $c->claimant?->email }}</td>
                                 <td class="px-4 py-2 text-xs">{{ $c->incident_type }}</td>
-                                <td class="px-4 py-2 text-right text-xs">{{ number_format($c->amount_claimed_cents / 100, 2) }} €</td>
+                                <td class="px-4 py-2 text-right text-xs"><x-money :amount="(float) ($c->amount_claimed_cents / 100)" /></td>
                                 <td class="px-4 py-2"><span class="text-xs font-semibold">{{ $c->status }}</span></td>
                                 <td class="px-4 py-2 text-right text-xs">
                                     @if($c->isOpen())
@@ -96,8 +96,8 @@
                                 <td class="px-4 py-2 text-xs text-slate-500">{{ $p->purchased_at?->format('d/m H:i') }}</td>
                                 <td class="px-4 py-2 text-xs">{{ $p->user?->email ?? '—' }}</td>
                                 <td class="px-4 py-2 text-xs">{{ $p->plan?->name }}</td>
-                                <td class="px-4 py-2 text-right text-xs">{{ number_format($p->premium_cents / 100, 2) }} €</td>
-                                <td class="px-4 py-2 text-right text-xs">{{ number_format($p->coverage_amount_cents / 100, 0) }} €</td>
+                                <td class="px-4 py-2 text-right text-xs"><x-money :amount="(float) ($p->premium_cents / 100)" /></td>
+                                <td class="px-4 py-2 text-right text-xs"><x-money :amount="(float) ($p->coverage_amount_cents / 100)" :decimals="0" /></td>
                                 <td class="px-4 py-2"><span class="text-xs font-semibold">{{ $p->status }}</span></td>
                                 <td class="px-4 py-2 text-xs font-mono">{{ $p->external_provider }}</td>
                             </tr>
@@ -123,8 +123,8 @@
                             <tr>
                                 <td class="px-4 py-2 text-xs font-mono">{{ $pl->code }}</td>
                                 <td class="px-4 py-2 text-xs font-semibold">{{ $pl->name }}</td>
-                                <td class="px-4 py-2 text-right text-xs">{{ number_format($pl->coverage_amount_cents / 100, 0) }} €</td>
-                                <td class="px-4 py-2 text-right text-xs">{{ number_format($pl->premium_base_cents / 100, 2) }} €</td>
+                                <td class="px-4 py-2 text-right text-xs"><x-money :amount="(float) ($pl->coverage_amount_cents / 100)" :decimals="0" /></td>
+                                <td class="px-4 py-2 text-right text-xs"><x-money :amount="(float) ($pl->premium_base_cents / 100)" /></td>
                                 <td class="px-4 py-2 text-right text-xs">{{ number_format($pl->premium_percent, 2) }} %</td>
                                 <td class="px-4 py-2 text-xs">{{ $pl->is_active ? '✓' : '—' }}</td>
                             </tr>

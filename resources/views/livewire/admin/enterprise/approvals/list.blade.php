@@ -43,7 +43,7 @@
                     <div class="rounded-xl border bg-slate-50 p-3">
                         <p class="text-slate-500">Devis</p>
                         <p class="font-medium text-slate-900">
-                            {{ number_format((float) ($approval->rendezVous?->devis_estime ?? 0), 2, ',', ' ') }} €
+                            <x-money :amount="(float) ((float) ($approval->rendezVous?->devis_estime ?? 0))" />
                         </p>
                     </div>
 

@@ -199,7 +199,7 @@
                                                     <div class="text-xs text-slate-500">{{ $service->code }}</div>
                                                 </td>
                                                 <td>{{ $service->service_type }}</td>
-                                                <td>€ {{ number_format((float) $service->base_price, 2, ',', ' ') }}</td>
+                                                <td><x-money :amount="(float) ((float) $service->base_price)" /></td>
                                                 <td>{{ $service->default_duration_minutes }} min</td>
                                                 <td>
                                                     @if($service->is_active)
@@ -256,7 +256,7 @@
                                         @endif
                                     </td>
                                     <td>{{ $service->service_type }}</td>
-                                    <td>€ {{ number_format((float) $service->base_price, 2, ',', ' ') }}</td>
+                                    <td><x-money :amount="(float) ((float) $service->base_price)" /></td>
                                     <td>{{ $service->default_duration_minutes }} min</td>
                                     <td>
                                         @if($service->is_entreprise)
@@ -372,7 +372,7 @@
                                                     <span class="brio-chip !ml-1 !border-amber-200 !bg-amber-50 !text-amber-700">Manuel</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $rule->base_price_override ? '€ '.number_format((float) $rule->base_price_override, 2, ',', ' ') : '—' }}</td>
+                                            <td>{{ $rule->base_price_override ? locale_currency((float) $rule->base_price_override) : '—' }}</td>
                                             <td>{{ number_format((float) $rule->price_multiplier, 2, ',', ' ') }}</td>
                                             <td>{{ $rule->minimum_notice_hours ?? '—' }}</td>
                                             <td>{{ $rule->maximum_daily_capacity ?? '—' }}</td>

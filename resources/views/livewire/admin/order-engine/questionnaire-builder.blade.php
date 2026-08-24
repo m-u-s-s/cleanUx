@@ -484,9 +484,9 @@
                                     @endif
                                 </span>
                                 <span class="shrink-0 tabular-nums text-slate-900">
-                                    {{ number_format($line['min_cents'] / 100, 2, ',', ' ') }} €
+                                    <x-money :amount="(float) ($line['min_cents'] / 100)" />
                                     @if ($line['max_cents'] !== $line['min_cents'])
-                                        – {{ number_format($line['max_cents'] / 100, 2, ',', ' ') }} €
+                                        – <x-money :amount="(float) ($line['max_cents'] / 100)" />
                                     @endif
                                 </span>
                             </li>
@@ -497,10 +497,10 @@
                         <span class="text-sm font-medium text-slate-700">Estimation</span>
                         <span class="text-xl font-semibold tabular-nums text-slate-900">
                             @if ($this->quote()->isExact())
-                                {{ number_format($this->quote()->minCents / 100, 2, ',', ' ') }} €
+                                <x-money :amount="(float) ($this->quote()->minCents / 100)" />
                             @else
                                 {{ number_format($this->quote()->minCents / 100, 0, ',', ' ') }}
-                                – {{ number_format($this->quote()->maxCents / 100, 0, ',', ' ') }} €
+                                – <x-money :amount="(float) ($this->quote()->maxCents / 100)" :decimals="0" />
                             @endif
                         </span>
                     </div>

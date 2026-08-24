@@ -207,7 +207,7 @@
                                 <td class="px-4 py-2 text-xs text-slate-500">{{ optional($m->performed_at)->format('d/m/Y') }}</td>
                                 <td class="px-4 py-2 text-xs">{{ $m->vehicle?->plate ?? $m->equipment?->name ?? '—' }}</td>
                                 <td class="px-4 py-2 text-xs">{{ $m->maintenance_type }}</td>
-                                <td class="px-4 py-2 text-xs">{{ $m->cost_cents ? number_format($m->cost_cents / 100, 2, ',', ' ') . ' €' : '—' }}</td>
+                                <td class="px-4 py-2 text-xs">{{ $m->cost_cents ? locale_currency($m->cost_cents / 100) : '—' }}</td>
                                 <td class="px-4 py-2 text-xs text-slate-500">{{ optional($m->next_due_at)->format('d/m/Y') ?? '—' }}</td>
                                 <td class="px-4 py-2 text-xs">{{ \Illuminate\Support\Str::limit($m->notes ?? '—', 50) }}</td>
                             </tr>

@@ -192,7 +192,7 @@
                                         @if($p->discount_type === 'percent')
                                             -{{ rtrim(rtrim(number_format((float)$p->discount_value, 2, ',', ' '), '0'), ',') }} %
                                         @elseif($p->discount_type === 'fixed_amount')
-                                            -{{ number_format((float)$p->discount_value, 2, ',', ' ') }} €
+                                            -<x-money :amount="(float) ((float)$p->discount_value)" />
                                         @else
                                             Gratuit (1ère)
                                         @endif
