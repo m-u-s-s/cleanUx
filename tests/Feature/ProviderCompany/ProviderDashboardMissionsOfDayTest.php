@@ -62,4 +62,56 @@ class ProviderDashboardMissionsOfDayTest extends TestCase
             ->assertOk()
             ->assertSee($ouvrier->name);
     }
+
+    /**
+     * L'HEURE AFFICHEE EST CELLE DE LA MISSION, PAS CELLE DE L'HORLOGE.
+     *
+     * La vue lisait `$mission->scheduled_at` — une colonne de `bookings`, absente de `missions`.
+     * `Carbon::parse(null)` rend l'instant present : chaque ligne affichait l'heure courante, une
+     * heure plausible et fausse. Le test ci-dessus posait `planned_start_at => now()` et ne
+     * pouvait donc PAS faire la difference.
+     */
+    #[Test]
+    public function l_heure_affichee_est_celle_de_la_mission(): void
+    {
+        $org = OrganizationAccount::factory()->providerCompany()->create();
+
+        $patron = User::factory()->create([
+            'current_organization_id' => $org->id,
+            'organization_account_id' => $org->id,
+        ]);
+
+        OrganizationMember::create([
+            'organization_account_id' => $org->id,
+            'user_id' => $patron->id,
+            'role' => OrganizationRole::OWNER->value,
+            'status' => 'active',
+            'invited_at' => now(),
+            'joined_at' => now(),
+        ]);
+
+        ProviderProfile::factory()->create([
+            'user_id' => $patron->id,
+            'organization_account_id' => $org->id,
+            'provider_type' => ProviderType::COMPANY_WORKER->value,
+        ]);
+
+        // Une heure du jour volontairement ELOIGNEE de l'horloge : sans cet ecart, un gabarit qui
+        // afficherait `now()` passerait pour correct.
+        $planifiee = today()->setTime(now()->hour === 6 ? 18 : 6, 45);
+
+        Mission::create([
+            'booking_id' => Booking::factory()->create()->id,
+            'status' => 'planned',
+            'provider_organization_id' => $org->id,
+            'lead_provider_user_id' => User::factory()->create()->id,
+            'planned_start_at' => $planifiee,
+        ]);
+
+        Livewire::actingAs($patron)
+            ->test(ProviderDashboard::class)
+            ->assertOk()
+            ->assertSee($planifiee->format('H:i'))
+            ->assertDontSee(now()->format('H:i'));
+    }
 }

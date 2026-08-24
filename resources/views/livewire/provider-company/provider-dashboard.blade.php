@@ -120,7 +120,7 @@
                     <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3">
                         <div class="text-center min-w-[44px]">
                             <p class="text-sm font-black text-slate-900">
-                                {{ \Carbon\Carbon::parse($mission->scheduled_at)->format('H:i') }}
+                                {{ $mission->planned_start_at?->format('H:i') ?? '—' }}
                             </p>
                         </div>
                         <div class="min-w-0 flex-1">
