@@ -15,6 +15,14 @@ php artisan test --filter=devise                  # par nom
 **Employez le parallèle par défaut.** Le séquentiel n'a qu'un usage : lire une sortie ordonnée
 quand vous traquez un échec précis.
 
+`composer.json` pose `"process-timeout": 0`. Sans lui, Composer tuait la suite à 300 secondes —
+elle en prend 600, et le raccourci ne pouvait donc jamais aboutir. Si vous voyez encore
+« exceeded the timeout of 300 seconds », lancez PHPUnit directement :
+
+```bash
+php -d memory_limit=1536M artisan test --parallel --no-coverage
+```
+
 Le parallèle passe `--no-coverage` parce que le bloc `<coverage>` de `phpunit.xml` fait échouer
 ParaTest **au démarrage** sur tout poste sans Xdebug ni PCOV.
 
