@@ -16,7 +16,6 @@ trait HasLegacyBookingAliases
         ['adresse',                 'address'],
         ['ville',                   'city'],
         ['code_postal',             'postal_code'],
-        ['type_lieu',               'place_type'],
         ['frequence',               'frequency'],
         ['priorite',                'priority'],
         ['commentaire_client',      'customer_comment'],

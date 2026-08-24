@@ -285,7 +285,7 @@ class Booking extends Model
         'adresse',
         'ville',
         'code_postal',
-        'type_lieu',
+        'place_type',
         'surface',        // M8 — virtual alias bridged to surface_range (see surface() attribute)
         'surface_range',
         'frequence',

@@ -43,7 +43,7 @@
                             </div>
                             <div class="flex gap-2">
                                 <dt class="text-slate-500 dark:text-slate-400">Type de lieu :</dt>
-                                <dd class="font-medium">{{ ucfirst($rdv->type_lieu ?? '—') }}</dd>
+                                <dd class="font-medium">{{ ucfirst($rdv->place_type ?? '—') }}</dd>
                             </div>
                             <div class="flex gap-2">
                                 <dt class="text-slate-500 dark:text-slate-400">Surface :</dt>

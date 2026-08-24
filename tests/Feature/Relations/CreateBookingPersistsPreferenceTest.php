@@ -41,7 +41,7 @@ class CreateBookingPersistsPreferenceTest extends TestCase
                 'service_zone_id' => $context['zone']->id,
                 'postal_code_id' => $context['postalCode']->id,
                 'service_identifier' => $context['service']->code ?: $context['service']->slug,
-                'type_lieu' => 'maison',
+                'place_type' => 'maison',
                 'frequence' => 'ponctuel',
                 'surface' => '50_100',
                 'adresse' => '1 rue Test',

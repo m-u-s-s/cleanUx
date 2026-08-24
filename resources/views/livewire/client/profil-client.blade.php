@@ -75,7 +75,7 @@
             @if($dernierePreference)
             <div class="space-y-2 text-sm text-gray-700">
                 <p><span class="font-medium">{{ __('Service :') }}</span> {{ $dernierePreference->service_display_name }}</p>
-                <p><span class="font-medium">{{ __('Type de lieu :') }}</span> {{ ucfirst($dernierePreference->type_lieu ?? '—') }}</p>
+                <p><span class="font-medium">{{ __('Type de lieu :') }}</span> {{ ucfirst($dernierePreference->place_type ?? '—') }}</p>
                 <p><span class="font-medium">{{ __('Fréquence :') }}</span> {{ ucfirst(str_replace('_', ' ', $dernierePreference->frequence ?? '—')) }}</p>
                 <p><span class="font-medium">{{ __('Priorité :') }}</span> {{ ucfirst($dernierePreference->priorite ?? '—') }}</p>
                 <p><span class="font-medium">{{ __('Créneau favori :') }}</span> {{ $dernierePreference->is_favorite_slot ? __('Oui') : __('Non') }}</p>

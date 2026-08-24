@@ -115,7 +115,7 @@ class RecurringSeriesManagementTest extends TestCase
                 'adresse' => 'Rue Test 1',
                 'ville' => $context['postalCode']->city_name,
                 'code_postal' => $context['postalCode']->code,
-                'type_lieu' => 'appartement',
+                'place_type' => 'appartement',
                 'surface' => 'moins_50',
                 'frequence' => 'hebdomadaire',
                 'is_recurrent' => true,

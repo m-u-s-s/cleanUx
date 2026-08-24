@@ -183,7 +183,9 @@ class CreateBookingAction
             'date' => Arr::get($data, 'date'),
             'heure' => Arr::get($data, 'heure'),
             'motif' => Arr::get($data, 'motif', $catalog->name),
-            'type_lieu' => Arr::get($data, 'type_lieu'),
+            // La clé française est encore acceptée EN ENTRÉE : la colonne a disparu, pas le
+            // contrat. Un appelant qui envoie `type_lieu` ne se casse pas en silence.
+            'place_type' => Arr::get($data, 'place_type', Arr::get($data, 'type_lieu')),
             'frequence' => Arr::get($data, 'frequence'),
             'surface' => Arr::get($data, 'surface'),
             'adresse' => Arr::get($data, 'adresse'),

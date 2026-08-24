@@ -50,7 +50,7 @@ trait CreatesMissionPortalFixtures
                 'ville' => $context['postalCode']->city_name,
                 'code_postal' => $context['postalCode']->code,
                 'telephone_client' => '0470000000',
-                'type_lieu' => 'appartement',
+                'place_type' => 'appartement',
                 'surface' => 'moins_50',
                 'frequence' => 'ponctuel',
             ], $rendezVousOverrides));

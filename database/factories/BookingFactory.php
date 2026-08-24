@@ -66,7 +66,7 @@ class BookingFactory extends Factory
             'adresse' => fake()->streetAddress(),
             'ville' => fake()->city(),
             'code_postal' => fake()->numerify('####'),
-            'type_lieu' => fake()->randomElement(['appartement', 'maison', 'bureaux']),
+            'place_type' => fake()->randomElement(['appartement', 'maison', 'bureaux']),
             'surface' => fake()->randomElement(['moins_50', '50_100', '100_150', '150_250']),
             'frequence' => fake()->randomElement(['ponctuel', 'hebdomadaire', 'mensuel']),
             'telephone_client' => '+32'.fake()->numerify('4########'),
@@ -225,7 +225,7 @@ class BookingFactory extends Factory
                 'service_zone_id' => $zone->id,
                 'postal_code_id' => $postalCode->id,
                 'booking_channel' => 'entreprise_portal',
-                'type_lieu' => 'bureaux',
+                'place_type' => 'bureaux',
                 'surface' => '100_150',
                 'ville' => $postalCode->city_name,
                 'code_postal' => $postalCode->code,
@@ -283,7 +283,7 @@ class BookingFactory extends Factory
 
         if ($organizationAccount || $organizationSite) {
             $rendezVous->booking_channel = $rendezVous->booking_channel ?: 'entreprise_portal';
-            $rendezVous->type_lieu = $rendezVous->type_lieu ?: 'bureaux';
+            $rendezVous->place_type = $rendezVous->place_type ?: 'bureaux';
         }
 
         if ($serviceZone && $postalCode && empty($rendezVous->zone_snapshot)) {

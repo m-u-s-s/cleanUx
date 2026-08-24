@@ -23,7 +23,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
         <div class="space-y-1">
             <p><span class="font-medium">Date :</span> {{ $rdv->date }} à {{ $rdv->heure }}</p>
-            <p><span class="font-medium">Type de lieu :</span> {{ ucfirst($rdv->type_lieu ?? '—') }}</p>
+            <p><span class="font-medium">Type de lieu :</span> {{ ucfirst($rdv->place_type ?? '—') }}</p>
             <p><span class="font-medium">Fréquence :</span> {{ ucfirst(str_replace('_', ' ', $rdv->frequence ?? '—')) }}</p>
             <p><span class="font-medium">Surface :</span> {{ $rdv->surface ?? '—' }}</p>
         </div>

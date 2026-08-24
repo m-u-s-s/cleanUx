@@ -67,7 +67,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                     <p><span class="font-medium">Adresse :</span> {{ $rdv->adresse ?? '—' }}, {{ $rdv->ville ?? '—' }}</p>
-                    <p><span class="font-medium">Type de lieu :</span> {{ ucfirst($rdv->type_lieu ?? '—') }}</p>
+                    <p><span class="font-medium">Type de lieu :</span> {{ ucfirst($rdv->place_type ?? '—') }}</p>
                     <p><span class="font-medium">Durée estimée :</span> {{ $rdv->duree_estimee ? $rdv->duree_estimee . ' min' : '—' }}</p>
                     <p><span class="font-medium">Durée réelle :</span> {{ $rdv->duree_reelle ? $rdv->duree_reelle . ' min' : '—' }}</p>
                 </div>

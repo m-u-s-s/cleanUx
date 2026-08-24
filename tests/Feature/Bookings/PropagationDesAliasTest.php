@@ -85,8 +85,6 @@ class PropagationDesAliasTest extends TestCase
     public function test_la_regle_vaut_pour_les_autres_paires(): void
     {
         $reservation = Booking::factory()->create([
-            'type_lieu' => 'appartement',
-            'place_type' => null,
             'frequence' => 'hebdomadaire',
             'frequency' => null,
             'telephone_client' => '+32470112233',
@@ -95,7 +93,7 @@ class PropagationDesAliasTest extends TestCase
 
         $frais = $reservation->fresh();
 
-        $this->assertSame('appartement', $frais->place_type);
+        // `type_lieu` a quitté la liste : la paire est effondrée, seul `place_type` subsiste.
         $this->assertSame('hebdomadaire', $frais->frequency);
         $this->assertSame('+32470112233', $frais->contact_phone);
     }
