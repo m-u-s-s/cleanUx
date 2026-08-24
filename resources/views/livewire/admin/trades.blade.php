@@ -93,7 +93,7 @@
                             <div class="flex items-center gap-3">
                                 <span
                                     class="inline-flex h-9 w-9 items-center justify-center rounded-md text-white text-sm font-semibold"
-                                    style="background:{{ $trade->color ?: '#6B7280' }}"
+                                    style="background:{{ $trade->color ?: 'var(--brio-muted)' }}"
                                 >
                                     {{ strtoupper(mb_substr($trade->name, 0, 2)) }}
                                 </span>

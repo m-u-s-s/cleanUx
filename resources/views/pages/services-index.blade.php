@@ -73,7 +73,7 @@
                             colonne est vide.
                         --}}
                         <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl"
-                             style="background:rgba(255,182,72,0.1)">
+                             style="background:color-mix(in srgb, var(--cx-amber) 10%, transparent)">
                             <x-ui.icon :name="$trade->icon ?: 'briefcase'" class="h-6 w-6" style="color:var(--cx-amber)" />
                         </div>
 

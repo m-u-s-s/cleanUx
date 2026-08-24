@@ -33,7 +33,7 @@
 @endphp
 
 @if(count($items))
-    <nav {{ $attributes->merge(['class' => 'sm:hidden fixed bottom-0 inset-x-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur shadow-[0_-10px_30px_rgba(15,23,42,0.08)]']) }} aria-label="Navigation mobile">
+    <nav {{ $attributes->merge(['class' => 'sm:hidden fixed bottom-0 inset-x-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur shadow-[0_-10px_30px_rgb(var(--brio-ink-rgb)/0.08)]']) }} aria-label="Navigation mobile">
         <div class="grid h-16" style="grid-template-columns: repeat({{ $count }}, minmax(0, 1fr));">
             @foreach($items as $item)
                 @php($active = request()->routeIs($item['active']))

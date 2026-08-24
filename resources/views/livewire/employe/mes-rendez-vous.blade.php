@@ -395,7 +395,7 @@
                     this.ctx.scale(ratio, ratio);
                     this.ctx.lineWidth = 2;
                     this.ctx.lineCap = 'round';
-                    this.ctx.strokeStyle = '#0f172a';
+                    this.ctx.strokeStyle = window.brioJeton('--brio-ink', '#0f172a');
 
                     const start = (x, y) => {
                         this.drawing = true;

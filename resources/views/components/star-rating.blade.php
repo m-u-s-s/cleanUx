@@ -16,20 +16,10 @@
             x-on:mouseleave="if (!isReadonly) hover = null"
             x-on:keydown.enter.prevent="if (!isReadonly) rating = {{ $i }}"
             class="text-2xl transition-transform transform focus:outline-none"
-            :class="(hover ?? rating) >= {{ $i }} ? 'text-yellow-400 scale-110' : 'text-gray-300'"
+            :class="(hover ?? rating) >= {{ $i }} ? 'text-accent-amber scale-110' : 'text-gray-300'"
             :disabled="isReadonly"
             :tabindex="isReadonly ? -1 : 0"
             aria-label="Note {{ $i }}"
         >★</button>
     @endfor
 </div>
-<style>
-    .star {
-        color: #003366;
-        transition: transform 0.2s ease;
-    }
-    .star:hover {
-        color: #E03A2F;
-        transform: scale(1.1);
-    }
-</style>

@@ -42,12 +42,6 @@
     .toast.success { background-color: #2f9e44; }
     .toast.error   { background-color: #e03a2f; }
 
-    .star-rating .star {
-        color: #003366; font-size: 1.25rem;
-        transition: transform .2s, color .2s; cursor: pointer;
-    }
-    .star-rating .star:hover { color: #e03a2f; transform: scale(1.1); }
-
     /* UI-* Design system (Stripe/Linear-light) */
     .ui-card {
         @apply relative rounded-2xl border border-slate-200/80 bg-white shadow-soft-sm transition-shadow duration-200;

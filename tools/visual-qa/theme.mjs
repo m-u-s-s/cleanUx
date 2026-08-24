@@ -49,6 +49,109 @@ async function eclairDeTheme(ctx) {
   }
 }
 
+/**
+ * Le texte se lit-il sur son fond ? WCAG AA demande 4,5:1, ou 3:1 au-delà de 24 px
+ * (ou 18,66 px en gras). Un thème peut se poser correctement et rester illisible.
+ */
+async function contraste(ctx, mode) {
+  console.log(`
+— Contraste du texte (mode ${mode})`);
+  let total = 0;
+
+  for (const chemin of PAGES) {
+    const page = await ctx.newPage();
+    await page.goto(BASE + chemin, { waitUntil: 'load' });
+    await page.waitForTimeout(300);
+
+    const faibles = await page.evaluate(() => {
+      const composantes = (c) => {
+        const m = c.match(/[\d.]+/g);
+
+        return m ? m.slice(0, 4).map(Number) : null;
+      };
+
+      // Luminance relative, définition WCAG.
+      const lum = ([r, v, b]) => {
+        const f = (x) => {
+          const s = x / 255;
+
+          return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+        };
+
+        return 0.2126 * f(r) + 0.7152 * f(v) + 0.0722 * f(b);
+      };
+
+      /*
+       * Le fond effectif : on remonte les ancetres jusqu'au premier opaque.
+       *
+       * On REND `null` des qu'un degrade ou une image est rencontre en chemin. Sans cela, un
+       * bouton ambre a fond `linear-gradient` etait mesure contre le fond nuit de la page, et
+       * son texte quasi-noir ressortait a 1,06:1 — un defaut qui n'existe pas.
+       */
+      const fondDe = (el) => {
+        for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
+          const s = getComputedStyle(n);
+          if (s.backgroundImage && s.backgroundImage !== 'none') return null;
+
+          const c = composantes(s.backgroundColor);
+          if (c && (c[3] === undefined || c[3] > 0.85)) return c;
+        }
+
+        const s = getComputedStyle(document.body);
+        if (s.backgroundImage && s.backgroundImage !== 'none') return null;
+
+        return composantes(s.backgroundColor) ?? [255, 255, 255];
+      };
+
+      const sortie = [];
+      const vus = new Set();
+
+      for (const el of document.querySelectorAll('p, span, a, h1, h2, h3, h4, li, td, th, label, button')) {
+        const texte = (el.textContent ?? '').trim();
+        if (!texte || el.children.length > 0) continue;
+
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) continue;
+
+        const s = getComputedStyle(el);
+        if (s.visibility === 'hidden' || Number(s.opacity) < 0.5) continue;
+
+        const avant = composantes(s.color);
+        if (!avant || (avant[3] !== undefined && avant[3] < 0.5)) continue;
+
+        const fond = fondDe(el);
+        if (fond === null) continue;
+
+        const clair = Math.max(lum(avant), lum(fond)) + 0.05;
+        const sombre = Math.min(lum(avant), lum(fond)) + 0.05;
+        const rapport = clair / sombre;
+
+        const px = parseFloat(s.fontSize);
+        const gras = Number(s.fontWeight) >= 700;
+        const exige = px >= 24 || (gras && px >= 18.66) ? 3 : 4.5;
+
+        if (rapport < exige) {
+          const cle = `${texte.slice(0, 24)}|${Math.round(rapport * 10)}`;
+          if (vus.has(cle)) continue;
+          vus.add(cle);
+          sortie.push(`${rapport.toFixed(2)}:1 (exigé ${exige}) « ${texte.slice(0, 34)} »`);
+        }
+      }
+
+      return sortie;
+    });
+
+    if (faibles.length) {
+      total += faibles.length;
+      ecarts.push(`${chemin} [${mode}] : ${faibles.length} texte(s) sous le seuil — ${faibles[0]}`);
+      console.log(`  ${String(faibles.length).padStart(2)}  ${chemin.padEnd(26)} ${faibles[0]}`);
+    }
+    await page.close();
+  }
+
+  if (!total) console.log('  aucun');
+}
+
 /** Un bouton sans nom accessible est muet pour un lecteur d'écran. */
 async function boutonsMuets(ctx) {
   console.log('\n— Boutons sans nom accessible');
@@ -143,7 +246,12 @@ const nav = await chromium.launch();
 const sombre = await nav.newContext({ viewport: MOBILE, colorScheme: 'dark' });
 await eclairDeTheme(sombre);
 await boutonsMuets(sombre);
+await contraste(sombre, 'sombre');
 await sombre.close();
+
+const clair = await nav.newContext({ viewport: MOBILE, colorScheme: 'light' });
+await contraste(clair, 'clair');
+await clair.close();
 await reglageEnVueMobile(nav);
 await nav.close();
 

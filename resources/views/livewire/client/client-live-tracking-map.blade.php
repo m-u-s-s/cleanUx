@@ -61,7 +61,7 @@
                  trackingUrl: '/api/client/bookings/{{ $booking->id }}/tracking',
                  trailUrl: '/api/client/bookings/{{ $booking->id }}/tracking/trail'
              })" x-init="boot()">
-            <div id="tracking-map" style="height: 60vh; width: 100%; background: #e5e7eb;"></div>
+            <div id="tracking-map" style="height: 60vh; width: 100%; background: var(--brio-border);"></div>
 
             <div class="p-5 grid grid-cols-2 md:grid-cols-4 gap-3 border-t">
                 <div>
@@ -174,7 +174,7 @@
                 if (!this.routeLine && data.route?.points?.length >= 2) {
                     this.routeLine = L.polyline(
                         data.route.points.map(p => [p.lat, p.lng]),
-                        { color: '#0f172a', weight: 5, opacity: 0.55, dashArray: data.route.source === 'straight_line' ? '8 8' : null },
+                        { color: window.brioJeton('--brio-ink', '#0f172a'), weight: 5, opacity: 0.55, dashArray: data.route.source === 'straight_line' ? '8 8' : null },
                     ).addTo(this.map);
                 }
 

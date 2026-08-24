@@ -37,9 +37,27 @@ class LeThemeEstLeMemeSurLesTroisSurfacesTest extends TestCase
     {
         $css = (string) file_get_contents(resource_path('css/tokens.css'));
 
-        return preg_match('/'.preg_quote($nom, '/').'\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/', $css, $m) === 1
-            ? strtolower($m[1])
-            : null;
+        if (preg_match('/'.preg_quote($nom, '/').'\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/', $css, $m) === 1) {
+            return strtolower($m[1]);
+        }
+
+        // Un jeton peut se dériver d'un autre : `--brio-ink: rgb(var(--brio-ink-rgb))`.
+        // Sans suivre la dérivation, le garde croirait le jeton disparu.
+        if (preg_match('/'.preg_quote($nom, '/').'\s*:\s*rgba?\(\s*var\((--[\w-]+)\)/', $css, $m) === 1) {
+            return $this->composantesEnHexa($m[1], $css);
+        }
+
+        return null;
+    }
+
+    /** Rend `15 23 42` sous la forme `#0f172a`, pour comparer ce qui est comparable. */
+    private function composantesEnHexa(string $nom, string $css): ?string
+    {
+        if (preg_match('/'.preg_quote($nom, '/').'\s*:\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)\s*;/', $css, $c) !== 1) {
+            return null;
+        }
+
+        return sprintf('#%02x%02x%02x', (int) $c[1], (int) $c[2], (int) $c[3]);
     }
 
     /**
@@ -126,6 +144,61 @@ class LeThemeEstLeMemeSurLesTroisSurfacesTest extends TestCase
         }
 
         $this->assertSame([], $ecarts, 'Le web et le natif ne portent plus la même palette.');
+    }
+
+    /**
+     * Jeton CSS du web => clé dans `theme.extend.colors.accent` de `tailwind.config.js`.
+     * Troisième copie des mêmes accents : les classes `text-accent-amber` la lisent, pas `tokens.css`.
+     *
+     * @var array<string, string>
+     */
+    private const ACCENTS_TAILWIND = [
+        '--cx-amber' => 'amber',
+        '--cx-amber-deep' => "'amber-deep'",
+        '--cx-cyan' => 'cyan',
+        '--cx-violet' => 'violet',
+    ];
+
+    private function accentTailwind(string $cle): ?string
+    {
+        $js = (string) file_get_contents(base_path('tailwind.config.js'));
+        $debut = strpos($js, 'accent: {');
+
+        if ($debut === false) {
+            return null;
+        }
+
+        $bloc = substr($js, $debut, 400);
+
+        return preg_match('/'.preg_quote($cle, '/').'\s*:\s*[\x22\x27](#[0-9a-fA-F]{3,8})[\x22\x27]/', $bloc, $m) === 1
+            ? strtolower($m[1])
+            : null;
+    }
+
+    /**
+     * Les classes `text-accent-amber` lisent Tailwind, pas `tokens.css`. Une couleur corrigée
+     * dans l'un et pas dans l'autre donne deux ambres à l'écran, côte à côte.
+     */
+    public function test_les_accents_de_tailwind_valent_les_memes_que_les_jetons_css(): void
+    {
+        $ecarts = [];
+
+        foreach (self::ACCENTS_TAILWIND as $css => $cle) {
+            $w = $this->jetonWeb($css);
+            $tw = $this->accentTailwind($cle);
+
+            if ($w === null || $tw === null) {
+                $ecarts[] = "{$css} / accent.{$cle} : absent d’un des deux côtés";
+
+                continue;
+            }
+
+            if ($w !== $tw) {
+                $ecarts[] = "{$css} vaut {$w} dans tokens.css, {$tw} dans tailwind.config.js (accent.{$cle})";
+            }
+        }
+
+        $this->assertSame([], $ecarts, 'Tailwind et les jetons CSS ne portent plus les mêmes accents.');
     }
 
     /**

@@ -11,7 +11,8 @@
 
         {{-- Tier card --}}
         <div class="rounded-3xl p-8 shadow-xl text-white"
-             style="background: linear-gradient(135deg, {{ $currentTier?->color ?? '#6366F1' }} 0%, #1e1b4b 100%);">
+             @php($teinteDuNiveau = $currentTier?->color ?: 'var(--cx-violet)')
+             style="background: linear-gradient(135deg, {{ $teinteDuNiveau }} 0%, color-mix(in srgb, {{ $teinteDuNiveau }} 30%, var(--brio-ink)) 100%);">
             <div class="flex items-start justify-between gap-4">
                 <div>
                     <p class="text-sm uppercase font-bold opacity-80">Votre niveau actuel</p>
@@ -80,7 +81,7 @@
                         'bg-indigo-50 border-indigo-300' => $currentTier && $currentTier->id === $tier->id,
                     ])>
                         <div class="flex-1">
-                            <p class="text-xl font-black" style="color: {{ $tier->color }};">
+                            <p class="text-xl font-black" style="color: {{ $tier->color ?: 'var(--brio-ink)' }};">
                                 {{ $tier->icon }} {{ $tier->name }}
                             </p>
                             <p class="text-xs text-slate-500 mt-1">

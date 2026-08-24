@@ -146,17 +146,23 @@
                         this.stripe = Stripe(this.publishableKey);
                         this.elements = this.stripe.elements({
                             clientSecret: this.clientSecret,
-                            appearance: {
-                                theme: 'stripe',
-                                variables: {
-                                    colorPrimary: '#4f46e5',
-                                    colorBackground: '#ffffff',
-                                    colorText: '#0f172a',
-                                    colorDanger: '#e11d48',
-                                    fontFamily: 'Inter, system-ui, sans-serif',
-                                    borderRadius: '10px',
-                                }
-                            }
+                            // Le formulaire de carte suit le theme de la page : sans cela, il
+                            // restait blanc sur fond sombre.
+                            appearance: (() => {
+                                const sombre = document.documentElement.classList.contains('dark');
+
+                                return {
+                                    theme: sombre ? 'night' : 'stripe',
+                                    variables: {
+                                        colorPrimary: '#4f46e5',
+                                        colorBackground: sombre ? window.brioJeton('--cx-panel', '#111a2e') : '#ffffff',
+                                        colorText: sombre ? window.brioJeton('--cx-text', '#e8eefc') : window.brioJeton('--brio-ink', '#0f172a'),
+                                        colorDanger: '#e11d48',
+                                        fontFamily: 'Inter, system-ui, sans-serif',
+                                        borderRadius: window.brioJeton('--cx-radius-sm', '10px'),
+                                    }
+                                };
+                            })()
                         });
                         const paymentElement = this.elements.create('payment');
                         paymentElement.mount('#payment-element');

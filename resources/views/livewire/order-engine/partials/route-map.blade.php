@@ -161,7 +161,7 @@
 
                     const icone = L.divIcon({
                         className: '',
-                        html: `<span style="display:grid;place-items:center;width:28px;height:28px;border-radius:9999px;background:#0f172a;color:#fff;font:600 12px/1 ui-sans-serif,system-ui;box-shadow:0 2px 8px rgba(15,23,42,.35)">${lettre}</span>`,
+                        html: `<span style="display:grid;place-items:center;width:28px;height:28px;border-radius:9999px;background:var(--brio-ink);color:#fff;font:600 12px/1 ui-sans-serif,system-ui;box-shadow:0 2px 8px rgb(var(--brio-ink-rgb) / .35)">${lettre}</span>`,
                         iconSize: [28, 28],
                         iconAnchor: [14, 14],
                     });
@@ -185,7 +185,7 @@
                     }
 
                     this.trace = L.polyline(points.map((p) => [p.lat, p.lng]), {
-                        color: '#0f172a',
+                        color: window.brioJeton('--brio-ink', '#0f172a'),
                         weight: 3,
                         opacity: 0.8,
                         // Le pointillé DIT que c'est une ligne droite faute d'itinéraire : un trait

@@ -5,6 +5,15 @@ import './assistant-streaming';
 import './push-notifications';
 import './pwa';
 
+// Lit un jeton du systeme de design depuis le CSS.
+// Un graphique, une carte ou un canevas ne peuvent pas ecrire `var(--x)` : ils lisent ici.
+window.brioJeton = (nom, repli = '') => {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(nom).trim();
+
+    return v || repli;
+};
+
+
 // FullCalendar (resources/js/fullcalendar.js → window.brioFC) and ApexCharts
 // (resources/js/apexcharts.js → window.ApexCharts) are NO LONGER bundled globally.
 // They were ~heavy and loaded on every page. They are now dedicated Vite entries

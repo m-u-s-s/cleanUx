@@ -141,7 +141,7 @@
                     this.canvas.width = rect.width;
                     this.canvas.height = rect.height;
                     this.ctx = this.canvas.getContext('2d');
-                    this.ctx.strokeStyle = '#1e293b';
+                    this.ctx.strokeStyle = window.brioJeton('--brio-ink', '#1e293b');
                     this.ctx.lineWidth = 2;
                     this.ctx.lineCap = 'round';
                     const start = (e) => {

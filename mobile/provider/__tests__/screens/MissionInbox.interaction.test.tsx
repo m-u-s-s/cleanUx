@@ -47,6 +47,9 @@ jest.mock('@/realtime', () => ({
 jest.mock('@/ui', () => {
   const { View, Text, TouchableOpacity } = require('react-native');
   return {
+    // Crochet d'accessibilite, pas un composant : l'ecran ne s'anime pas sous test.
+    useEntree: () => undefined,
+    useDuree: () => 0,
     Screen: ({ children }: any) => <View>{children}</View>,
     Button: ({ label, onPress, variant, size }: any) => (
       <TouchableOpacity onPress={onPress} accessibilityLabel={label} testID={`btn-${label}`}>

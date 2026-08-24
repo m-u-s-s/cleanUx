@@ -78,6 +78,27 @@ Pour basculer depuis l'interface, appelez `window.brioTheme.basculer()`, ou pose
 `<x-theme-toggle />`. Le choix est écrit dans `localStorage` **et** envoyé à `/api/user/theme`,
 donc il suit le compte d'un appareil à l'autre.
 
+### Aucune couleur ne s'écrit en dur
+
+Une couleur écrite en dur ne suit ni le thème ni le mode sombre. Employez un jeton :
+
+| Contexte | Écrivez |
+|---|---|
+| CSS, attribut `style` | `var(--brio-ink)` |
+| Opacité partielle | `color-mix(in srgb, var(--cx-amber) 10%, transparent)` |
+| Ombre | `rgb(var(--brio-ink-rgb) / 0.18)` |
+| Graphique, carte, canevas | `window.brioJeton('--brio-ink', '#0f172a')` |
+
+Une bibliothèque JS — ApexCharts, Leaflet, Stripe Elements, un `<canvas>` — reçoit une couleur,
+pas une déclaration : `var()` n'y fonctionne pas. `window.brioJeton()` lit le jeton dans le CSS et
+accepte un repli, employé tant que la feuille n'est pas chargée.
+
+`AucuneCouleurEnDurDansLesVues` balaie toutes les vues. Les courriels, les PDF, la documentation
+générée et la vitrine du système de design en sont exclus — ils ne peuvent pas charger de feuille.
+Le reste tient dans une liste de tolérances nommées, **chacune avec son motif et son compte** :
+nettoyer une vue oblige à abaisser son compte, sinon la tolérance laisserait rentrer une couleur
+neuve sans rien dire.
+
 ### La vue mobile emploie le point de rupture de Tailwind
 
 Un seul : `767.98px` / `768px`. Écrire `max-width: 768px` fait s'appliquer votre règle **et** le
@@ -88,6 +109,21 @@ Un contenu large — tableau, bloc de code, image — défile dans son propre ca
 
 Tout réglage doit rester atteignable sous 640 px. Un conteneur `hidden sm:flex` le fait disparaître
 du téléphone sans qu'aucun test ne le remarque — le bouton de thème y a passé toute sa vie.
+
+### Une animation consulte le réglage du système
+
+Le web respecte `prefers-reduced-motion` dans ses feuilles de style. Le natif a le même devoir et
+doit le demander explicitement :
+
+```tsx
+const entree = useEntree(FadeIn.duration(280));   // rend `undefined` si le mouvement est réduit
+const duree  = useDuree(animation.duration.fast); // rend 0
+```
+
+Appelez-les **avant tout branchement** : ce sont des crochets, et un `if (isError) return …` placé
+avant change l'ordre des crochets d'un rendu à l'autre.
+
+`mouvementReduit.test.ts` refuse tout fichier qui anime sans consulter le réglage.
 
 ### Mesurez avant de corriger
 

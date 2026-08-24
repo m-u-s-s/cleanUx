@@ -62,6 +62,9 @@ jest.mock('@/theme', () => ({
 jest.mock('@/ui', () => {
   const { View, Text } = require('react-native');
   return {
+    // Crochet d'accessibilite, pas un composant : l'ecran ne s'anime pas sous test.
+    useEntree: () => undefined,
+    useDuree: () => 0,
     Screen: ({ children }: any) => <View>{children}</View>,
     Button: ({ label, onPress }: any) => <Text onPress={onPress}>{label}</Text>,
     Badge: ({ label }: any) => <Text>{label}</Text>,

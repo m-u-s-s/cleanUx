@@ -21,6 +21,22 @@ export function useScreenReader(): boolean {
   return active;
 }
 
+/**
+ * Rend l'animation d'entree demandee, ou rien si l'utilisateur a reduit les mouvements.
+ * `entering={useEntree(FadeIn.duration(280))}` : l'ecran apparait alors sans transition.
+ */
+export function useEntree<T>(animation: T): T | undefined {
+  return useReducedMotion() ? undefined : animation;
+}
+
+/**
+ * Rend la duree demandee, ou zero si l'utilisateur a reduit les mouvements.
+ * Une duree nulle laisse l'animation se jouer d'un coup, sans la supprimer du code appelant.
+ */
+export function useDuree(millisecondes: number): number {
+  return useReducedMotion() ? 0 : millisecondes;
+}
+
 export const a11y = {
   minTouchSize: 44,
   announce: (message: string) => AccessibilityInfo.announceForAccessibility(message),

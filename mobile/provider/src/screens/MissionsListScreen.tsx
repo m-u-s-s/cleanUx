@@ -4,7 +4,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
-import { Screen, Badge, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
+import { Screen, Badge, Skeleton, EmptyState, AnimatedListItem, useEntree } from '@/ui';
 import { apiClient } from '@/api';
 import { missionStatusLabel } from '@/missions';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
@@ -43,6 +43,9 @@ function statusBadgeVariant(status: string): 'success' | 'warning' | 'brand' | '
 
 export function MissionsListScreen() {
   const styles = stylesFor(useThemeColors());
+
+  // Pas de transition quand l’utilisateur a réduit les mouvements.
+  const entree = useEntree(FadeIn.duration(280));
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { data: missions, isLoading, refetch, isRefetching } = useActiveMissions();
@@ -85,7 +88,7 @@ export function MissionsListScreen() {
           <Skeleton width="100%" height={100} />
         </>
       ) : (
-        <Animated.View entering={FadeIn.duration(280)} style={styles.listContainer}>
+        <Animated.View entering={entree} style={styles.listContainer}>
           <FlatList
             data={missions ?? []}
             keyExtractor={(i) => String(i.id)}

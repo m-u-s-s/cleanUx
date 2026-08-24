@@ -3,7 +3,7 @@ import { FlatList, View, Text, StyleSheet, RefreshControl, TouchableOpacity } fr
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Screen, Badge, Button, Skeleton, EmptyState, AnimatedListItem, a11y } from '@/ui';
+import { Screen, Badge, Button, Skeleton, EmptyState, AnimatedListItem, a11y, useEntree } from '@/ui';
 import { useNotifications, useMarkAllRead, severityVariant, severityAccent, formatNotificationDate } from '@/notifications';
 import type { AppNotification } from '@/notifications';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
@@ -15,6 +15,9 @@ export function NotificationsScreen() {
   const t = useThemeColors();
   const styles = stylesFor(t);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  // Pas de transition quand l’utilisateur a réduit les mouvements.
+  const entree = useEntree(FadeIn.duration(280));
 
   const { data: notifs, isLoading, refetch, isRefetching } = useNotifications();
   const markAll = useMarkAllRead();
@@ -82,7 +85,7 @@ export function NotificationsScreen() {
           {[1, 2, 3, 4].map(i => <Skeleton key={i} width="100%" height={72} />)}
         </View>
       ) : (
-        <Animated.View entering={FadeIn.duration(280)} style={{ flex: 1 }}>
+        <Animated.View entering={entree} style={{ flex: 1 }}>
           <FlatList
             data={notifs ?? []}
             contentContainerStyle={styles.liste}

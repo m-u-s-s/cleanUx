@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { FlatList, View, Text, Alert, StyleSheet, RefreshControl } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useIsFocused } from '@react-navigation/native';
-import { Screen, Button, Badge, Skeleton, EmptyState, AnimatedListItem, a11y } from '@/ui';
+import { Screen, Button, Badge, Skeleton, EmptyState, AnimatedListItem, a11y, useEntree } from '@/ui';
 import { useMissionInbox, useAcceptMission, useDeclineMission } from '@/missions';
 import type { MissionAssignment } from '@/missions';
 import { useCurrentPosition, distanceKmTo } from '@/tracking';
@@ -14,6 +14,9 @@ const MISSION_CARD_HEIGHT = 120;
 
 export function MissionInboxScreen() {
   const styles = stylesFor(useThemeColors());
+
+  // Pas de transition quand l’utilisateur a réduit les mouvements.
+  const entree = useEntree(FadeIn.duration(280));
 
   const { data: assignments, isLoading, refetch, isRefetching } = useMissionInbox();
   const accept = useAcceptMission();
@@ -92,7 +95,7 @@ export function MissionInboxScreen() {
       {isLoading ? (
         <Skeleton width="100%" height={120} />
       ) : (
-        <Animated.View entering={FadeIn.duration(280)} style={{ flex: 1 }}>
+        <Animated.View entering={entree} style={{ flex: 1 }}>
           <FlatList
             data={assignments ?? []}
             keyExtractor={i => String(i.id)}

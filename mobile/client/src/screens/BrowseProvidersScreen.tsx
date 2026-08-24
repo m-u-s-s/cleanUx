@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, FlatList, Text, StyleSheet, RefreshControl } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { Screen, TextInput, Badge, Avatar, Skeleton, EmptyState, AnimatedListItem } from '@/ui';
+import { Screen, TextInput, Badge, Avatar, Skeleton, EmptyState, AnimatedListItem, useEntree } from '@/ui';
 import { useBrowseProviders } from '@/booking';
 import type { Provider } from '@/booking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
@@ -16,6 +16,9 @@ export function BrowseProvidersScreen() {
     trade: trade || undefined,
     postalCode: postalCode || undefined,
   });
+
+  // Pas de transition quand l’utilisateur a réduit les mouvements.
+  const entree = useEntree(FadeIn.duration(280));
 
   /*
    * N'AVOIR RIEN CHERCHÉ N'EST PAS N'AVOIR RIEN TROUVÉ.
@@ -68,7 +71,7 @@ export function BrowseProvidersScreen() {
           {[1, 2, 3].map(i => <Skeleton key={i} width="100%" height={80} />)}
         </View>
       ) : (
-        <Animated.View entering={FadeIn.duration(280)} style={{ flex: 1 }}>
+        <Animated.View entering={entree} style={{ flex: 1 }}>
           <FlatList
             data={data?.data ?? []}
             keyExtractor={item => String(item.id)}

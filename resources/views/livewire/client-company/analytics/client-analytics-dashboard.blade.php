@@ -340,7 +340,7 @@
                             tooltip: {
                                 y: { formatter: (v) => new Intl.NumberFormat('fr', { style: 'currency', currency: 'EUR' }).format(v) },
                             },
-                            grid: { borderColor: '#f1f5f9' },
+                            grid: { borderColor: window.brioJeton('--brio-border', '#f1f5f9') },
                         });
                         this.monthlyChart.render();
                     },
@@ -396,7 +396,7 @@
                                 labels: { style: { fontSize: '10px' } },
                             },
                             yaxis: { min: 0, max: 5, tickAmount: 5, labels: { style: { fontSize: '10px' } } },
-                            grid: { borderColor: '#f1f5f9' },
+                            grid: { borderColor: window.brioJeton('--brio-border', '#f1f5f9') },
                         });
                         this.satisfactionChart.render();
                     },

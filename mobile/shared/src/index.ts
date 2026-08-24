@@ -100,7 +100,7 @@ export {
   SuccessOverlay,
 } from './ui';
 export { fadeUpConfig, fadeInConfig, shimmerConfig } from './ui/animations';
-export { useReducedMotion, useScreenReader, a11y } from './ui/a11y';
+export { useReducedMotion, useScreenReader, useEntree, useDuree, a11y } from './ui/a11y';
 
 // Hooks
 export { maybeRequestReview, incrementCompletedBookings } from './hooks/useAppRating';

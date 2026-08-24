@@ -14,6 +14,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { colors, radius, spacing, typography, animation } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
+import { useDuree } from './a11y';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 
 interface TextInputProps extends Omit<RNInputProps, 'style'> {
@@ -33,26 +34,31 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     const shakeX = useSharedValue(0);
     const borderWidth = useSharedValue(1);
 
-    useEffect(() => {
-      labelY.value = withTiming(isFloating ? -10 : 12, { duration: animation.duration.fast });
-      labelScale.value = withTiming(isFloating ? 0.8 : 1, { duration: animation.duration.fast });
-    }, [isFloating]);
+    // Zero quand l'utilisateur a reduit les mouvements : l'etiquette et la bordure
+    // se placent d'un coup, et le champ en erreur ne se secoue plus du tout.
+    const bref = useDuree(animation.duration.fast);
+    const secousse = useDuree(50);
 
     useEffect(() => {
-      borderWidth.value = withTiming(focused ? 2 : 1, { duration: animation.duration.fast });
-    }, [focused]);
+      labelY.value = withTiming(isFloating ? -10 : 12, { duration: bref });
+      labelScale.value = withTiming(isFloating ? 0.8 : 1, { duration: bref });
+    }, [isFloating, bref]);
 
     useEffect(() => {
-      if (error) {
+      borderWidth.value = withTiming(focused ? 2 : 1, { duration: bref });
+    }, [focused, bref]);
+
+    useEffect(() => {
+      if (error && secousse > 0) {
         shakeX.value = withSequence(
-          withTiming(5, { duration: 50 }),
-          withTiming(-5, { duration: 50 }),
-          withTiming(5, { duration: 50 }),
-          withTiming(-5, { duration: 50 }),
-          withTiming(0, { duration: 50 }),
+          withTiming(5, { duration: secousse }),
+          withTiming(-5, { duration: secousse }),
+          withTiming(5, { duration: secousse }),
+          withTiming(-5, { duration: secousse }),
+          withTiming(0, { duration: secousse }),
         );
       }
-    }, [error]);
+    }, [error, secousse]);
 
     const labelStyle = useAnimatedStyle(() => ({
       transform: [{ translateY: labelY.value }, { scale: labelScale.value }],

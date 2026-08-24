@@ -73,7 +73,7 @@
                     <div class="flex min-w-0 items-start gap-3">
                         {{-- La pastille de couleur : le seul endroit saturé, et il faut le voir ici. --}}
                         <span class="mt-1 h-4 w-4 shrink-0 rounded-full ring-1 ring-slate-200"
-                            style="background-color: {{ $sector->accent_color ?? '#e2e8f0' }}"
+                            style="background-color: {{ $sector->accent_color ?? 'var(--brio-border)' }}"
                             aria-hidden="true"></span>
 
                         <div class="min-w-0">

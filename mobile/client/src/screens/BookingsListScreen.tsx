@@ -3,7 +3,7 @@ import { FlatList, View, Text, StyleSheet, TouchableOpacity, RefreshControl } fr
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Screen, Badge, Skeleton, EmptyState, ErrorState, AnimatedListItem, a11y } from '@/ui';
+import { Screen, Badge, Skeleton, EmptyState, ErrorState, AnimatedListItem, a11y, useEntree } from '@/ui';
 import { useBookings } from '@/booking';
 import type { Booking } from '@/booking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
@@ -16,6 +16,9 @@ export function BookingsListScreen() {
   const { data: bookings, isLoading, isError, refetch, isRefetching } = useBookings();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const themeColors = useThemeColors();
+
+  // Pas de transition quand l’utilisateur a réduit les mouvements.
+  const entree = useEntree(FadeIn.duration(280));
 
   const handleRefresh = useCallback(() => {
     refetch().then(() => {
@@ -50,7 +53,7 @@ export function BookingsListScreen() {
           {[1, 2, 3].map(i => <Skeleton key={i} width="100%" height={90} />)}
         </View>
       ) : (
-        <Animated.View entering={FadeIn.duration(280)} style={{ flex: 1 }}>
+        <Animated.View entering={entree} style={{ flex: 1 }}>
           <FlatList
             data={bookings ?? []}
             keyExtractor={item => String(item.id)}

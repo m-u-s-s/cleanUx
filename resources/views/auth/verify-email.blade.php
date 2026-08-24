@@ -20,7 +20,7 @@
 
                 @if (session('status') == 'verification-link-sent')
                     <div class="mt-6 rounded-2xl border p-4 text-sm"
-                         style="border-color:rgba(79,227,214,.35);background:rgba(79,227,214,.08);color:var(--cx-cyan)">
+                         style="border-color:color-mix(in srgb, var(--cx-cyan) 35%, transparent);background:color-mix(in srgb, var(--cx-cyan) 8%, transparent);color:var(--cx-cyan)">
                         ✓ {{ __('A new verification link has been sent to the email address you provided in your profile settings.') }}
                     </div>
                 @endif

@@ -39,6 +39,9 @@ jest.mock('@/ui', () => {
   const { View, Text, TextInput: RNTextInput } = require('react-native');
 
   return {
+    // Crochet d'accessibilite, pas un composant : l'ecran ne s'anime pas sous test.
+    useEntree: () => undefined,
+    useDuree: () => 0,
     Screen: ({ children }: any) => <View>{children}</View>,
     TextInput: ({ label, value, onChangeText, placeholder }: any) => (
       <RNTextInput

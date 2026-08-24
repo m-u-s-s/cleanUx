@@ -64,7 +64,7 @@
                          carte. Les battements qui ne changent rien la laissent intacte, et
                          l'écran ne clignote pas toutes les cinq secondes. --}}
                     wire:key="carte-{{ $request->id }}-{{ $request->radius_m }}">
-                    <div id="asap-map" style="height: 38vh; min-height: 220px; background: #e5e7eb;"
+                    <div id="asap-map" style="height: 38vh; min-height: 220px; background: var(--brio-border);"
                         role="img"
                         aria-label="Zone de recherche autour de votre adresse, rayon {{ (int) round($request->radius_m / 1000) }} kilomètres"></div>
                 </div>
@@ -253,9 +253,9 @@
 
             const circle = L.circle([cfg.lat, cfg.lng], {
                 radius: cfg.radius,
-                color: '#0f172a',
+                color: window.brioJeton('--brio-ink', '#0f172a'),
                 weight: 1,
-                fillColor: '#0f172a',
+                fillColor: window.brioJeton('--brio-ink', '#0f172a'),
                 fillOpacity: 0.06,
             }).addTo(this.map);
 

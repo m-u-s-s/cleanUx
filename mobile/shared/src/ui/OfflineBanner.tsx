@@ -1,4 +1,5 @@
 import React from 'react';
+import { useDuree } from './a11y';
 import { View, Text, StyleSheet } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import Animated, {
@@ -22,6 +23,7 @@ interface OfflineBannerProps {
 export function OfflineBanner({ forceOffline }: OfflineBannerProps) {
   const styles = stylesFor(useThemeColors());
 
+  const duree = useDuree(300);
   const [isOffline, setIsOffline] = React.useState(false);
   const translateY = useSharedValue(-60);
 
@@ -36,8 +38,8 @@ export function OfflineBanner({ forceOffline }: OfflineBannerProps) {
   }, []);
 
   React.useEffect(() => {
-    translateY.value = withTiming(visible ? 0 : -60, { duration: 300 });
-  }, [visible, translateY]);
+    translateY.value = withTiming(visible ? 0 : -60, { duration: duree });
+  }, [visible, translateY, duree]);
 
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],

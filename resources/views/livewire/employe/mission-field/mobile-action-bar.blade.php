@@ -2,7 +2,7 @@
     $rdv = $mission->booking;
 @endphp
 
-<div class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-12px_30px_rgba(15,23,42,0.12)] backdrop-blur lg:hidden">
+<div class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-12px_30px_rgb(var(--brio-ink-rgb)/0.12)] backdrop-blur lg:hidden">
     <div class="mx-auto flex max-w-3xl items-center justify-between gap-3">
         <div class="min-w-0">
             <p class="truncate text-xs font-bold uppercase tracking-wide text-slate-500">Mission #{{ $mission->id }}</p>

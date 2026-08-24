@@ -150,7 +150,7 @@
                 : (destination ? [prestataire, destination] : null);
 
             if (points) {
-                const ligne = L.polyline(points, { color: '#0f172a', weight: 4, opacity: 0.6 }).addTo(carte);
+                const ligne = L.polyline(points, { color: window.brioJeton('--brio-ink', '#0f172a'), weight: 4, opacity: 0.6 }).addTo(carte);
                 carte.fitBounds(ligne.getBounds(), { padding: [30, 30] });
             }
         });

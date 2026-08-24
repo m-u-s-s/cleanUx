@@ -20,7 +20,7 @@ export { ErrorScreen } from './ErrorScreen';
 export { ProgressBar } from './ProgressBar';
 export { AnimatedListItem } from './AnimatedListItem';
 export { SuccessOverlay } from './SuccessOverlay';
-export { useReducedMotion, useScreenReader, a11y } from './a11y';
+export { useReducedMotion, useScreenReader, useEntree, useDuree, a11y } from './a11y';
 export { OfflineBanner } from './OfflineBanner';
 export { CarteDeMission } from './CarteDeMission';
 export type { TonDeMission } from './CarteDeMission';

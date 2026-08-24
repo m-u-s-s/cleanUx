@@ -116,7 +116,7 @@
                     ])
                     @if ($sectorId === $sector->id)
                         {{-- Le SEUL endroit du produit où la couleur est saturée. --}}
-                        style="background-color: {{ $sector->accent_color ?? '#0f172a' }}"
+                        style="background-color: {{ $sector->accent_color ?? 'var(--brio-ink)' }}"
                     @endif
                     aria-current="{{ $sectorId === $sector->id ? 'true' : 'false' }}"
                 >

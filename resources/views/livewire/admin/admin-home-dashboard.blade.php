@@ -146,7 +146,7 @@
             fill: { type: 'gradient', gradient: { opacityFrom: 0.35, opacityTo: 0.02 } },
             stroke: { curve: 'smooth', width: 2 },
             dataLabels: { enabled: false },
-            grid: { borderColor: 'rgba(100,116,139,0.1)', strokeDashArray: 3 },
+            grid: { borderColor: window.brioJeton('--brio-border', 'rgba(100,116,139,0.1)'), strokeDashArray: 3 },
             tooltip: { theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light' },
         }).render();
     }
