@@ -320,7 +320,7 @@
 
                         this.monthlyChart = new ApexCharts(el, {
                             chart: { type: 'area', height: 280, toolbar: { show: false }, fontFamily: 'inherit' },
-                            colors: ['#3b82f6'],
+                            colors: [window.brioJeton('--brio-info', '#2563eb')],
                             stroke: { curve: 'smooth', width: 2 },
                             fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.1 } },
                             series: [{
@@ -384,7 +384,7 @@
 
                         this.satisfactionChart = new ApexCharts(el, {
                             chart: { type: 'line', height: 220, toolbar: { show: false }, fontFamily: 'inherit' },
-                            colors: ['#f59e0b'],
+                            colors: [window.brioJeton('--brio-warning', '#f59e0b')],
                             stroke: { curve: 'smooth', width: 3 },
                             markers: { size: 4 },
                             series: [{

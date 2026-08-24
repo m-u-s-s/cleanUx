@@ -152,6 +152,12 @@ class LeThemeEstLeMemeSurLesTroisSurfacesTest extends TestCase
      *
      * @var array<string, string>
      */
+    private const STATUTS_TAILWIND = [
+        '--brio-success' => ['success', '600'],
+        '--brio-warning' => ['warning', '500'],
+        '--brio-danger' => ['danger', '600'],
+    ];
+
     private const ACCENTS_TAILWIND = [
         '--cx-amber' => 'amber',
         '--cx-amber-deep' => "'amber-deep'",
@@ -199,6 +205,42 @@ class LeThemeEstLeMemeSurLesTroisSurfacesTest extends TestCase
         }
 
         $this->assertSame([], $ecarts, 'Tailwind et les jetons CSS ne portent plus les mêmes accents.');
+    }
+
+    /**
+     * Les couleurs de STATUT viennent des memes echelles que le reste. Un graphique les lit par
+     * `window.brioJeton()` : si le jeton derive, le vert du graphique cesse d'etre le vert du produit.
+     */
+    public function test_les_jetons_de_statut_valent_ceux_de_tailwind(): void
+    {
+        $js = (string) file_get_contents(base_path('tailwind.config.js'));
+        $ecarts = [];
+
+        foreach (self::STATUTS_TAILWIND as $css => [$echelle, $niveau]) {
+            $jeton = $this->jetonWeb($css);
+
+            $debut = strpos($js, $echelle.': {');
+
+            if ($debut === false) {
+                $ecarts[] = "{$echelle} : echelle absente de tailwind.config.js";
+
+                continue;
+            }
+
+            $bloc = substr($js, $debut, 260);
+
+            if (preg_match('/'.$niveau.'\s*:\s*[\x22\x27](#[0-9a-fA-F]{6})[\x22\x27]/', $bloc, $m) !== 1) {
+                $ecarts[] = "{$echelle}.{$niveau} : introuvable";
+
+                continue;
+            }
+
+            if ($jeton !== strtolower($m[1])) {
+                $ecarts[] = "{$css} vaut {$jeton}, {$echelle}.{$niveau} vaut ".strtolower($m[1]);
+            }
+        }
+
+        $this->assertSame([], $ecarts, 'Un jeton de statut ne suit plus son echelle.');
     }
 
     /**

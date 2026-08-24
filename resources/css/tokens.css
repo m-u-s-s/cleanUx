@@ -36,6 +36,13 @@
     --brio-shadow-soft:  0 8px 24px rgb(var(--brio-ink-rgb) / 0.05);
     --brio-ring:         0 0 0 4px rgba(59, 130, 246, 0.12);
 
+    /* Couleurs de STATUT. Un graphique, une carte ou un canevas les lisent par
+       `window.brioJeton()` : ils recoivent une couleur, pas une declaration CSS. */
+    --brio-success:      #059669;
+    --brio-warning:      #f59e0b;
+    --brio-danger:       #dc2626;
+    --brio-info:         #2563eb;
+
     --cx-night:        #070b14;
     --cx-night-soft:   #0c1322;
     --cx-panel:        #111a2e;

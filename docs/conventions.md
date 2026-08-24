@@ -106,6 +106,12 @@ Une couleur écrite en dur ne suit ni le thème ni le mode sombre. Employez un j
 | Opacité partielle | `color-mix(in srgb, var(--cx-amber) 10%, transparent)` |
 | Ombre | `rgb(var(--brio-ink-rgb) / 0.18)` |
 | Graphique, carte, canevas | `window.brioJeton('--brio-ink', '#0f172a')` |
+| Couleur de statut | `--brio-success`, `--brio-warning`, `--brio-danger`, `--brio-info` |
+
+Les quatre jetons de statut suivent les échelles `success`/`warning`/`danger` de Tailwind — un
+test compare les valeurs. Sans eux, le vert d'un graphique cessait d'être le vert du produit :
+`#16a34a` et `#eab308` étaient écrits à la main, à côté de `#dc2626` et `#f59e0b` qui étaient
+**déjà exactement** les jetons, recopiés.
 
 Une bibliothèque JS — ApexCharts, Leaflet, Stripe Elements, un `<canvas>` — reçoit une couleur,
 pas une déclaration : `var()` n'y fonctionne pas. `window.brioJeton()` lit le jeton dans le CSS et

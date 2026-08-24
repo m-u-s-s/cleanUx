@@ -47,7 +47,7 @@
             stroke: {
                 width: 2
             },
-            colors: ['#16a34a', '#eab308', '#dc2626', '#2563eb', '#4f46e5', '#047857'],
+            colors: [window.brioJeton('--brio-success', '#059669'), window.brioJeton('--brio-warning', window.brioJeton('--brio-warning', '#f59e0b')), window.brioJeton('--brio-danger', '#dc2626'), window.brioJeton('--brio-info', '#2563eb'), '#4f46e5', window.brioJeton('--brio-success', '#059669')],
             noData: {
                 text: 'Aucune donnée'
             }
@@ -80,7 +80,7 @@
             dataLabels: {
                 enabled: false
             },
-            colors: ['#2563eb'],
+            colors: [window.brioJeton('--brio-info', '#2563eb')],
             noData: {
                 text: 'Aucune donnée'
             }

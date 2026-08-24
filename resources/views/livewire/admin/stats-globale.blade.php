@@ -50,7 +50,7 @@
                 xaxis: {
                     categories: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc']
                 },
-                colors: ['#2563eb']
+                colors: [window.brioJeton('--brio-info', '#2563eb')]
             });
             chart.render();
         });

@@ -33,11 +33,9 @@ class AucuneCouleurEnDurDansLesVuesTest extends TestCase
      * @var array<string, array{int, string}>
      */
     private const TOLEREES = [
-        'livewire/admin/dashboard/scripts.blade.php' => [7, 'palette semantique d’un graphique : vert = reussi, rouge = echoue'],
+        'livewire/admin/dashboard/scripts.blade.php' => [1, 'la teinte indigo d’une serie, sans equivalent dans les jetons de statut'],
         'livewire/client/booking-checkout.blade.php' => [3, 'teintes Stripe laissees exprès — le chemin de paiement n’est pas verifiable ici'],
-        'livewire/client-company/analytics/client-analytics-dashboard.blade.php' => [2, 'couleurs de series, pas de chrome'],
         'livewire/admin/admin-home-dashboard.blade.php' => [1, 'couleur de serie'],
-        'livewire/admin/stats-globale.blade.php' => [1, 'couleur de serie'],
         'livewire/client/client-live-tracking-map.blade.php' => [1, 'teinte du sillage parcouru, distincte du trace'],
         'livewire/admin/order-engine/catalog-center.blade.php' => [1, 'exemple affiche dans un champ, pas une couleur appliquee'],
         'livewire/provider/face-check-page.blade.php' => [1, 'halo blanc du viseur de capture, sans rapport avec la marque'],
