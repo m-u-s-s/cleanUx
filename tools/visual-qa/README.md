@@ -38,6 +38,24 @@ VQA_BASE=http://127.0.0.1:8000 VQA_ONLY=admin-order-engine npm run qa
 `qa:theme` a besoin d'un compte client valide. Les comptes de `modules.mjs` viennent d'un seeder
 Faker : après un `migrate:fresh --seed`, passez `VQA_CLIENT=<email>` ou relancez `QaAccountsSeeder`.
 
+#### Le contraste est INDICATIF, il ne fait pas échouer
+
+`qa:theme` calcule le rapport WCAG de chaque texte, dans les deux modes. Cette mesure a trouvé
+deux vrais défauts — les prix invisibles de `/pricing`, les titres blancs sur blanc de `/login` —
+mais elle garde des angles morts, et son décompte ne vaut pas un verdict :
+
+| Ce qu'elle sait faire | Ce qu'elle ne sait pas |
+|---|---|
+| Composer les couches translucides (`.brio-glass` sur la nuit) | Échantillonner un dégradé : elle **écarte** l'élément |
+| Ignorer ce qui fait moins de 4 px ou sort de l'écran | Suivre un texte peint par `background-clip: text` |
+| Appliquer le seuil 3:1 au grand texte et au gras | Voir une image de fond derrière le texte |
+
+Deux faux positifs déjà payés : un bouton à `linear-gradient` mesuré contre le fond de la page
+(1,06:1 annoncé, aucun défaut réel), et un lien d'évitement à `left: -9999px` compté comme visible.
+
+Bloquez le service worker (`serviceWorkers: 'block'`) dans tout script Playwright de ce dossier :
+sans cela il recharge le document en pleine mesure et détruit le contexte d'exécution.
+
 ### ⚠ Les pages ADMIN exigent de lever la 2FA
 
 `Enforce2FA` détourne tout administrateur sans `two_factor_confirmed_at` vers son profil. Le

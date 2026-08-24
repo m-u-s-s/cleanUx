@@ -3,7 +3,7 @@
     <h1 class="text-3xl font-black text-slate-900 mb-2">Conditions Générales d'Utilisation</h1>
     <p class="text-sm text-slate-500 mb-8">Version 1.0 — Dernière mise à jour : 20/05/2026</p>
 
-    <div class="prose prose-slate max-w-none space-y-6">
+    <div class="prose dark:prose-invert prose-slate max-w-none space-y-6">
         <section>
             <h2 class="text-xl font-bold">1. Objet</h2>
             <p>Brio est une marketplace multi-métiers (nettoyage, peinture, babysitting, toiturier, etc.) mettant en relation des clients particuliers ou professionnels avec des prestataires indépendants ou en société, opérée par <strong>{{ config('app.name') }}</strong>.</p>

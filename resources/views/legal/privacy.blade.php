@@ -3,7 +3,7 @@
     <h1 class="text-3xl font-black text-slate-900 mb-2">Politique de confidentialité</h1>
     <p class="text-sm text-slate-500 mb-8">Conforme RGPD — Version 1.0 — 20/05/2026</p>
 
-    <div class="prose prose-slate max-w-none space-y-6">
+    <div class="prose dark:prose-invert prose-slate max-w-none space-y-6">
         <section>
             <h2 class="text-xl font-bold">1. Responsable du traitement</h2>
             <p><strong>{{ config('app.name') }}</strong> est responsable du traitement des données personnelles collectées sur la plateforme.</p>

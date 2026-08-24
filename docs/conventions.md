@@ -110,6 +110,16 @@ Un contenu large — tableau, bloc de code, image — défile dans son propre ca
 Tout réglage doit rester atteignable sous 640 px. Un conteneur `hidden sm:flex` le fait disparaître
 du téléphone sans qu'aucun test ne le remarque — le bouton de thème y a passé toute sa vie.
 
+### Une surface claire dans une coquille sombre garde son encre
+
+La vitrine (`body.cx-shell`) et le mode sombre repeignent le texte en clair. Ces deux règles
+s'arrêtent devant `.brio-glass`, `.bg-white` et `.bg-slate-50` — des surfaces qui restent
+**claires** à l'intérieur. Sans cette réserve, le titre de `/login` était blanc sur blanc.
+
+Quand vous posez une surface claire dans une page sombre, employez l'une de ces trois classes :
+la réserve les reconnaît. Pour un bloc `prose`, `dark:prose-invert` ne convient que si le fond
+suit le mode ; sur un `bg-white` en dur, laissez `prose` seul.
+
 ### Une animation consulte le réglage du système
 
 Le web respecte `prefers-reduced-motion` dans ses feuilles de style. Le natif a le même devoir et

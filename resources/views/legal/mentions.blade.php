@@ -2,7 +2,7 @@
 <div class="max-w-4xl mx-auto py-12 px-6">
     <h1 class="text-3xl font-black text-slate-900 mb-8">Mentions légales</h1>
 
-    <div class="prose prose-slate max-w-none space-y-6">
+    <div class="prose dark:prose-invert prose-slate max-w-none space-y-6">
         <section>
             <h2 class="text-xl font-bold">Éditeur</h2>
             <p><strong>{{ config('app.name') }}</strong></p>

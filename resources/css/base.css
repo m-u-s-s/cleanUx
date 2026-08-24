@@ -22,14 +22,20 @@
     }
 
     h1, h2, h3, h4 { color: var(--brio-ink); }
-    body.cx-shell h1, body.cx-shell h2, body.cx-shell h3, body.cx-shell h4 { color: var(--cx-text); }
+    /* Un titre de la coquille nuit est clair — SAUF dans une surface restee claire.
+       `.brio-glass` vaut rgba(255,255,255,.7) : les titres de /login y etaient blancs sur blanc. */
+    body.cx-shell :is(h1, h2, h3, h4):not(.brio-glass *):not(.bg-white *):not(.bg-slate-50 *) {
+        color: var(--cx-text);
+    }
 
     /* Dark mode (Tailwind class strategy) */
     .dark body:not(.cx-shell) {
         background: #0f172a;
         color: #e2e8f0;
     }
-    .dark h1, .dark h2, .dark h3, .dark h4 { color: #f1f5f9; }
+    /* Meme reserve qu'au-dessus : un titre pose sur une surface CLAIRE garde sa couleur,
+       sinon le mode sombre le peint en blanc sur du blanc. */
+    .dark :is(h1, h2, h3, h4):not(.brio-glass *):not(.bg-white *):not(.bg-slate-50 *) { color: #f1f5f9; }
     .dark input[type="text"], .dark input[type="email"], .dark input[type="password"],
     .dark input[type="date"], .dark input[type="number"], .dark input[type="time"],
     .dark select, .dark textarea {

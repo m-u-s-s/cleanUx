@@ -156,4 +156,46 @@ class ThemeUnifieDesEspacesTest extends TestCase
 
         $this->assertSame([], $isolees, 'Ces vues n’emploient pas l’en-tête de page commun.');
     }
+
+    /**
+     * Les règles qui repeignent le texte en clair épargnent les surfaces restées CLAIRES.
+     * Sans cette réserve, le titre de /login était blanc sur une carte blanche.
+     */
+    public function test_les_regles_de_repeinture_epargnent_les_surfaces_claires(): void
+    {
+        $reserves = ['.brio-glass *', '.bg-white *', '.bg-slate-50 *'];
+        $manques = [];
+
+        foreach ([
+            'css/base.css' => ['body.cx-shell :is(h1, h2, h3, h4)', '.dark :is(h1, h2, h3, h4)'],
+            'css/vitrine-mode.css' => ['body.cx-shell :is(.text-slate-900, .text-slate-800)'],
+        ] as $feuille => $regles) {
+            $css = (string) file_get_contents(resource_path($feuille));
+
+            foreach ($regles as $regle) {
+                $debut = strpos($css, $regle);
+
+                if ($debut === false) {
+                    $manques[] = "{$feuille} : la règle `{$regle}` a disparu";
+
+                    continue;
+                }
+
+                // Le sélecteur va jusqu'à l'accolade ouvrante : les `:not()` sont dedans.
+                $selecteur = substr($css, $debut, (int) strpos($css, '{', $debut) - $debut);
+
+                foreach ($reserves as $reserve) {
+                    if (! str_contains($selecteur, ":not({$reserve})")) {
+                        $manques[] = "{$feuille} `{$regle}` : il manque :not({$reserve})";
+                    }
+                }
+            }
+        }
+
+        $this->assertSame(
+            [],
+            $manques,
+            'Une règle de repeinture sans réserve peint du texte clair sur une surface claire.',
+        );
+    }
 }

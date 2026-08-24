@@ -89,18 +89,39 @@ async function contraste(ctx, mode) {
        * son texte quasi-noir ressortait a 1,06:1 — un defaut qui n'existe pas.
        */
       const fondDe = (el) => {
+        /*
+         * Les couches translucides se COMPOSENT, elles ne s'ignorent pas. `.brio-glass` vaut
+         * rgba(255,255,255,.7) : une surface claire. La sauter faisait remonter jusqu'au fond
+         * nuit, et le texte y paraissait lisible alors qu'il ne l'etait pas.
+         */
+        const couches = [];
+
         for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
           const s = getComputedStyle(n);
           if (s.backgroundImage && s.backgroundImage !== 'none') return null;
 
           const c = composantes(s.backgroundColor);
-          if (c && (c[3] === undefined || c[3] > 0.85)) return c;
+          if (!c) continue;
+
+          const a = c[3] === undefined ? 1 : c[3];
+          if (a <= 0.01) continue;
+
+          couches.push([c[0], c[1], c[2], a]);
+          if (a >= 0.99) break;
         }
 
         const s = getComputedStyle(document.body);
         if (s.backgroundImage && s.backgroundImage !== 'none') return null;
 
-        return composantes(s.backgroundColor) ?? [255, 255, 255];
+        const socle = composantes(s.backgroundColor) ?? [255, 255, 255];
+        let fond = [socle[0], socle[1], socle[2]];
+
+        // Du plus profond vers le plus proche : chaque couche s'applique sur le resultat.
+        for (const [r, v, b, a] of couches.reverse()) {
+          fond = [r * a + fond[0] * (1 - a), v * a + fond[1] * (1 - a), b * a + fond[2] * (1 - a)];
+        }
+
+        return fond;
       };
 
       const sortie = [];
@@ -111,7 +132,14 @@ async function contraste(ctx, mode) {
         if (!texte || el.children.length > 0) continue;
 
         const r = el.getBoundingClientRect();
-        if (r.width === 0 || r.height === 0) continue;
+
+        /*
+         * Un element trop petit ou pousse hors de l'ecran n'est pas lu. Le lien « Aller au
+         * contenu » vit a `left: -9999px` en 1x1 px, et le selecteur de langue du bureau est
+         * a 0x0 sous 640 px : les compter en faisait des defauts qui n'existent pas.
+         */
+        if (r.width < 4 || r.height < 4) continue;
+        if (r.right < 0 || r.bottom < 0 || r.left > window.innerWidth) continue;
 
         const s = getComputedStyle(el);
         if (s.visibility === 'hidden' || Number(s.opacity) < 0.5) continue;
@@ -143,13 +171,13 @@ async function contraste(ctx, mode) {
 
     if (faibles.length) {
       total += faibles.length;
-      ecarts.push(`${chemin} [${mode}] : ${faibles.length} texte(s) sous le seuil — ${faibles[0]}`);
       console.log(`  ${String(faibles.length).padStart(2)}  ${chemin.padEnd(26)} ${faibles[0]}`);
     }
     await page.close();
   }
 
   if (!total) console.log('  aucun');
+  else console.log(`  ${total} au total — INDICATIF : cette mesure ne compose pas les degrades`);
 }
 
 /** Un bouton sans nom accessible est muet pour un lecteur d'écran. */
@@ -188,7 +216,7 @@ async function boutonsMuets(ctx) {
 /** Le thème est-il réglable sous 640 px ? Il ne vivait que dans un conteneur `hidden sm:flex`. */
 async function reglageEnVueMobile(nav) {
   console.log('\n— Réglage du thème en vue mobile');
-  const ctx = await nav.newContext({ viewport: MOBILE, colorScheme: 'light' });
+  const ctx = await nav.newContext({ serviceWorkers: 'block', viewport: MOBILE, colorScheme: 'light' });
 
   const co = await ctx.newPage();
   await co.goto(BASE + '/login', { waitUntil: 'domcontentloaded' });
@@ -243,13 +271,13 @@ async function reglageEnVueMobile(nav) {
 }
 
 const nav = await chromium.launch();
-const sombre = await nav.newContext({ viewport: MOBILE, colorScheme: 'dark' });
+const sombre = await nav.newContext({ serviceWorkers: 'block', viewport: MOBILE, colorScheme: 'dark' });
 await eclairDeTheme(sombre);
 await boutonsMuets(sombre);
 await contraste(sombre, 'sombre');
 await sombre.close();
 
-const clair = await nav.newContext({ viewport: MOBILE, colorScheme: 'light' });
+const clair = await nav.newContext({ serviceWorkers: 'block', viewport: MOBILE, colorScheme: 'light' });
 await contraste(clair, 'clair');
 await clair.close();
 await reglageEnVueMobile(nav);

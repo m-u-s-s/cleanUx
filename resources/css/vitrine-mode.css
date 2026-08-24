@@ -166,3 +166,26 @@
     .cx-footer a { color: var(--cx-muted); transition: color var(--cx-dur-fast); }
     .cx-footer a:hover { color: var(--cx-amber); }
 }
+
+/* ============================================================================
+   LA RAMPE SLATE SOMBRE EST ILLISIBLE SUR LA COQUILLE NUIT.
+
+   Quatre vues de la vitrine ont ete ecrites pour un fond BLANC — `text-slate-900`
+   sur `--cx-night`, c'est 1,10:1. Sur /pricing, les prix eux-memes etaient
+   invisibles. On remappe la rampe vers les jetons de la vitrine.
+
+   L'EXCLUSION N'EST PAS UNE PRECAUTION : ces memes pages posent des sections
+   `bg-white` DANS la coquille sombre, et `.brio-glass` vaut rgba(255,255,255,.7) —
+   une surface CLAIRE elle aussi. Y remapper vers un texte clair inverserait simplement
+   le defaut. Une zone restee claire garde donc sa rampe.
+   ========================================================================= */
+@layer components {
+    body.cx-shell :is(.text-slate-900, .text-slate-800):not(.bg-white *):not(.bg-slate-50 *):not(.brio-glass *):not(.bg-white):not(.bg-slate-50):not(.brio-glass) {
+        color: var(--cx-text);
+    }
+
+    body.cx-shell
+        :is(.text-slate-700, .text-slate-600, .text-slate-500, .text-slate-400):not(.bg-white *):not(.bg-slate-50 *):not(.brio-glass *):not(.bg-white):not(.bg-slate-50):not(.brio-glass) {
+        color: var(--cx-muted);
+    }
+}

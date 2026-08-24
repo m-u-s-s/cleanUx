@@ -3,7 +3,7 @@
     <h1 class="text-3xl font-black text-slate-900 mb-2">Politique de cookies</h1>
     <p class="text-sm text-slate-500 mb-8">Version 1.0 — 20/05/2026</p>
 
-    <div class="prose prose-slate max-w-none space-y-6">
+    <div class="prose dark:prose-invert prose-slate max-w-none space-y-6">
         <section>
             <h2 class="text-xl font-bold">Qu'est-ce qu'un cookie ?</h2>
             <p>Un cookie est un petit fichier déposé sur votre appareil par un site web. Il sert à mémoriser des informations (langue, session, préférences).</p>
