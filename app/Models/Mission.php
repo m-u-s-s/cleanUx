@@ -277,7 +277,7 @@ class Mission extends Model
         return $this->hasMany(MissionTrackingSession::class);
     }
 
-    /** @return HasOne<MissionClientAction, $this> */
+    /** @return HasOne<MissionTrackingSession, $this> */
     public function activeTrackingSession(): HasOne
     {
         return $this->hasOne(MissionTrackingSession::class)
@@ -297,31 +297,31 @@ class Mission extends Model
         return $this->hasMany(MissionChecklist::class);
     }
 
-    /** @return HasMany<MissionTaskSegment, $this> */
+    /** @return HasMany<MissionMedia, $this> */
     public function media(): HasMany
     {
         return $this->hasMany(MissionMedia::class);
     }
 
-    /** @return HasMany<MissionTaskSegment, $this> */
+    /** @return HasMany<MissionIncident, $this> */
     public function incidents(): HasMany
     {
         return $this->hasMany(MissionIncident::class);
     }
 
-    /** @return HasMany<MissionTaskSegment, $this> */
+    /** @return HasMany<MissionQualityReview, $this> */
     public function qualityReviews(): HasMany
     {
         return $this->hasMany(MissionQualityReview::class);
     }
 
-    /** @return HasOne<MissionTaskSegment, $this> */
+    /** @return HasOne<MissionReport, $this> */
     public function report(): HasOne
     {
         return $this->hasOne(MissionReport::class);
     }
 
-    /** @return HasMany<MissionTaskSegment, $this> */
+    /** @return HasMany<MissionEvent, $this> */
     public function events(): HasMany
     {
         return $this->hasMany(MissionEvent::class)->orderBy('happened_at');
@@ -346,5 +346,24 @@ class Mission extends Model
     public function taskSegments(): HasMany
     {
         return $this->hasMany(MissionTaskSegment::class, 'mission_id');
+    }
+
+    /**
+     * Le trace de la signature du client, tel qu'il ira dans le rapport PDF.
+     *
+     * Le PDF lisait `client_signature_path`, une colonne qui n'existe sur aucune table : son bloc
+     * signature etait donc toujours vide. La signature vit dans le document contractuel signe.
+     */
+    public function traceDeLaSignatureClient(): ?string
+    {
+        $signature = ContractSignature::query()
+            ->whereHas('document', fn ($q) => $q->where('code', 'mission-report-'.$this->id))
+            ->where('is_invalidated', false)
+            ->latest('signed_at')
+            ->first();
+
+        $trace = $signature?->signature_data;
+
+        return is_string($trace) && str_starts_with($trace, 'data:image/') ? $trace : null;
     }
 }

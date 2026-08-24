@@ -198,4 +198,36 @@ class MesRendezVousComponentTest extends TestCase
             ->assertSet('showRapportModal', false)
             ->assertSet('rapportRdvId', null);
     }
+
+    /**
+     * TEMOIN POSITIF du refus ci-dessus.
+     *
+     * `test_rapport_fin_mission_requires_valid_duree` etait le SEUL appel a la sauvegarde, et sa
+     * duree invalide arretait la validation avant le `save()`. Le chemin nominal n'etait donc
+     * exerce nulle part — il levait `no such column: commentaire_fin_mission` depuis le 2026-05-05.
+     */
+    public function test_le_rapport_de_fin_de_mission_est_reellement_enregistre(): void
+    {
+        $admin = $this->actingAdmin();
+        $booking = $this->bookingWithMission($admin, [
+            'status' => 'sur_place',
+            'estimated_duration_minutes' => 90,
+        ]);
+
+        Livewire::test(MesRendezVous::class)
+            ->call('ouvrirRapportFinMission', $booking->id)
+            ->set('duree_reelle', 105)
+            ->set('commentaire_fin_mission', 'Sols laves, vitres faites.')
+            ->set('incident_terrain', 'Robinet de la cuisine qui goutte.')
+            ->call('sauverRapportFinMission')
+            ->assertHasNoErrors();
+
+        $frais = $booking->fresh();
+
+        $this->assertSame('termine', $frais->status);
+        $this->assertSame(105, $frais->duree_reelle);
+        $this->assertNotNull($frais->mission_finished_at);
+        $this->assertSame('Sols laves, vitres faites.', $frais->commentaire_fin_mission);
+        $this->assertSame('Robinet de la cuisine qui goutte.', $frais->incident_terrain);
+    }
 }

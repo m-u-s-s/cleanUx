@@ -96,6 +96,9 @@ use Illuminate\Support\Facades\Schema;
  * @property ?array $photos_reference
  * @property ?array $photos_avant
  * @property ?array $photos_apres
+ * @property ?string $commentaire_fin_mission
+ * @property ?string $incident_terrain
+ * @property ?string $client_signature_path
  * @property ?array $trade_form_answers
  * @property ?array $terrain_checklist
  * @property ?array $pricing_snapshot
@@ -270,6 +273,9 @@ class Booking extends Model
         'alerte_urgence_envoyee_at',
         'feedback_demande_envoye_at',
         'remarque_terrain',
+        'commentaire_fin_mission',
+        'incident_terrain',
+        'client_signature_path',
 
         // Drapeaux terrain
         'presence_animaux',

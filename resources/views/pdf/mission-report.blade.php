@@ -135,10 +135,11 @@
         @endif
     </div>
 
-    @if($mission->client_signature_path)
+    @php($traceSignature = $mission->traceDeLaSignatureClient())
+    @if($traceSignature)
     <div class="section box">
         <h3>Signature client</h3>
-        <img src="{{ public_path('storage/'.$mission->client_signature_path) }}" style="width:200px;">
+        <img src="{{ $traceSignature }}" style="width:200px;">
     </div>
     @endif
 
