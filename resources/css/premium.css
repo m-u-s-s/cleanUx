@@ -106,3 +106,25 @@ body::before {
     pointer-events: none;
     z-index: 1;
 }
+
+/* ============================================================================
+   LE VERRE CLAIR EST UN FOND A ~181, PAS DU BLANC.
+
+   `.brio-glass` vaut rgba(255,255,255,.7) sur la coquille nuit : le fond compose
+   tombe vers 181, et la rampe des gris passe sous le seuil — `text-slate-500` y
+   donne 2,34:1. On la fonce, en la derivant de l'encre plutot qu'en ajoutant un
+   jeton pour un seul usage.
+   ========================================================================= */
+.brio-glass :is(.text-slate-400, .text-slate-500) {
+    color: color-mix(in srgb, var(--brio-ink) 75%, transparent);
+}
+
+.brio-glass :is(.text-slate-600) {
+    color: color-mix(in srgb, var(--brio-ink) 85%, transparent);
+}
+
+/* L'ambre de marque se lit sur la nuit, pas sur une carte claire : 1,74:1.
+   Sur une surface claire, il se fonce vers l'ambre profond. */
+:is(.brio-glass, .brio-card, .brio-empty, .bg-white) .cx-subhead {
+    color: color-mix(in srgb, var(--cx-amber-deep) 78%, var(--brio-ink));
+}

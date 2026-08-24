@@ -182,7 +182,7 @@
 
     .brio-list-item   { @apply rounded-2xl border border-slate-200 bg-slate-50/90 p-4 transition hover:border-slate-300 hover:bg-white; }
     .brio-empty       { @apply rounded-[24px] border border-dashed border-slate-300 bg-slate-50/90 p-8 text-center shadow-inner; }
-    .brio-empty-icon  { @apply mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm ring-1 ring-slate-200; }
+    .brio-empty-icon  { @apply mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl text-slate-700 shadow-sm ring-1 ring-slate-200; }
 
     .brio-skeleton {
         @apply animate-pulse rounded-xl bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 bg-[length:200%_100%];

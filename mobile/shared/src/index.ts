@@ -75,7 +75,7 @@ export { radius } from './theme/radius';
 export { typography } from './theme/typography';
 export { shadows } from './theme/shadows';
 export { animation } from './theme/animation';
-export { useColorScheme } from './theme/useColorScheme';
+export { useColorScheme, chargerLeModeEnregistre } from './theme/useColorScheme';
 export { useThemeColors } from './theme/useThemeColors';
 
 // UI

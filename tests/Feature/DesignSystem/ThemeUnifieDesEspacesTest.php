@@ -158,21 +158,26 @@ class ThemeUnifieDesEspacesTest extends TestCase
     }
 
     /**
-     * Les règles qui repeignent le texte en clair épargnent les surfaces restées CLAIRES.
-     * Sans cette réserve, le titre de /login était blanc sur une carte blanche.
+     * Les règles qui repeignent le texte en clair épargnent les surfaces restées CLAIRES,
+     * et les deux feuilles portent EXACTEMENT la même réserve — deux listes divergeraient.
      */
-    public function test_les_regles_de_repeinture_epargnent_les_surfaces_claires(): void
+    public function test_les_regles_de_repeinture_portent_toutes_la_meme_reserve(): void
     {
-        $reserves = ['.brio-glass *', '.bg-white *', '.bg-slate-50 *'];
-        $manques = [];
-
-        foreach ([
+        $regles = [
             'css/base.css' => ['body.cx-shell :is(h1, h2, h3, h4)', '.dark :is(h1, h2, h3, h4)'],
-            'css/vitrine-mode.css' => ['body.cx-shell :is(.text-slate-900, .text-slate-800)'],
-        ] as $feuille => $regles) {
+            'css/vitrine-mode.css' => [
+                'body.cx-shell :is(.text-slate-900, .text-slate-800)',
+                ':is(.text-slate-700, .text-slate-600, .text-slate-500, .text-slate-400)',
+            ],
+        ];
+
+        $manques = [];
+        $reserves = [];
+
+        foreach ($regles as $feuille => $selecteurs) {
             $css = (string) file_get_contents(resource_path($feuille));
 
-            foreach ($regles as $regle) {
+            foreach ($selecteurs as $regle) {
                 $debut = strpos($css, $regle);
 
                 if ($debut === false) {
@@ -182,13 +187,31 @@ class ThemeUnifieDesEspacesTest extends TestCase
                 }
 
                 // Le sélecteur va jusqu'à l'accolade ouvrante : les `:not()` sont dedans.
-                $selecteur = substr($css, $debut, (int) strpos($css, '{', $debut) - $debut);
+                $portee = substr($css, $debut, (int) strpos($css, '{', $debut) - $debut);
+                $coupe = strpos($portee, ':not(');
 
-                foreach ($reserves as $reserve) {
-                    if (! str_contains($selecteur, ":not({$reserve})")) {
-                        $manques[] = "{$feuille} `{$regle}` : il manque :not({$reserve})";
-                    }
+                if ($coupe === false) {
+                    $manques[] = "{$feuille} `{$regle}` : aucune réserve — repeint aussi les surfaces claires";
+
+                    continue;
                 }
+
+                $reserves[trim(substr($portee, $coupe))][] = "{$feuille} `{$regle}`";
+            }
+        }
+
+        // Une teinte Tailwind en -50 ou -100 sert de fond clair, quelle que soit sa couleur.
+        foreach (array_keys($reserves) as $reserve) {
+            foreach (['bg-white', '-50', '-100', '.brio-glass'] as $motif) {
+                if (! str_contains($reserve, $motif)) {
+                    $manques[] = "une réserve ne couvre pas `{$motif}`";
+                }
+            }
+        }
+
+        if (count($reserves) > 1) {
+            foreach ($reserves as $reserve => $ou) {
+                $manques[] = 'réserve divergente sur '.implode(', ', $ou).' : '.substr($reserve, 0, 70).'…';
             }
         }
 

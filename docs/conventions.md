@@ -110,15 +110,42 @@ Un contenu large — tableau, bloc de code, image — défile dans son propre ca
 Tout réglage doit rester atteignable sous 640 px. Un conteneur `hidden sm:flex` le fait disparaître
 du téléphone sans qu'aucun test ne le remarque — le bouton de thème y a passé toute sa vie.
 
+### Le choix de thème suit le compte, pas l'appareil
+
+Web et natif écrivent la même préférence, au même endroit :
+
+| Surface | Localement | Sur le compte |
+|---|---|---|
+| Web | `localStorage['theme']` | `POST /api/user/theme` |
+| Natif | `AsyncStorage['brio_theme_mode']` | le même appel |
+
+Côté natif, `useColorScheme()` déclenche lui-même la relecture au montage — pas depuis
+`App.tsx`. Un appel oublié dans l'une des deux applications rendrait la conservation inerte sans
+que rien ne le dise.
+
 ### Une surface claire dans une coquille sombre garde son encre
 
-La vitrine (`body.cx-shell`) et le mode sombre repeignent le texte en clair. Ces deux règles
-s'arrêtent devant `.brio-glass`, `.bg-white` et `.bg-slate-50` — des surfaces qui restent
-**claires** à l'intérieur. Sans cette réserve, le titre de `/login` était blanc sur blanc.
+La vitrine (`body.cx-shell`) et le mode sombre repeignent le texte en clair. Ces règles
+**s'arrêtent** devant les surfaces qui restent claires à l'intérieur. Sans cette réserve, le titre
+de `/login` était blanc sur blanc.
 
-Quand vous posez une surface claire dans une page sombre, employez l'une de ces trois classes :
-la réserve les reconnaît. Pour un bloc `prose`, `dark:prose-invert` ne convient que si le fond
-suit le mode ; sur un `bg-white` en dur, laissez `prose` seul.
+La réserve reconnaît :
+
+| Motif | Couvre |
+|---|---|
+| `[class*="bg-white"]` | `bg-white`, `bg-white/90`… |
+| `[class*="-50"]`, `[class*="-100"]` | **toute** teinte claire de Tailwind — `bg-slate-50`, `bg-indigo-50`, `bg-brand-100` |
+| Les surfaces nommées | `.brio-glass`, `.brio-card`, `.brio-empty`, `.ui-card`… |
+
+Les deux premiers motifs sont volontairement larges : énumérer les couleurs n'a pas de fin, et
+**en cas de doute il vaut mieux ne pas remapper**. Trop réserver laisse le comportement d'origine ;
+trop peu peint du texte clair sur du clair. J'ai fait l'erreur deux fois — `.brio-glass` d'abord,
+puis `bg-indigo-50` sur l'accueil.
+
+Les deux feuilles portent la même réserve, **à la lettre** : un test compare les chaînes.
+
+Pour un bloc `prose`, `dark:prose-invert` ne convient que si le fond suit le mode ; sur un
+`bg-white` en dur, laissez `prose` seul.
 
 ### Une animation consulte le réglage du système
 

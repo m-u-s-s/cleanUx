@@ -134,7 +134,7 @@
                 {{-- PRO (highlighted) --}}
                 <div class="relative brio-glass rounded-2xl p-8 flex flex-col ring-2 ring-accent-amber" data-cx-reveal data-cx-delay="100">
                     <div class="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span class="inline-flex items-center gap-1 rounded-full bg-accent-amber px-3 py-1 text-xs font-bold text-white shadow-md">
+                        <span class="inline-flex items-center gap-1 rounded-full bg-accent-amber px-3 py-1 text-xs font-bold text-slate-900 shadow-md">
                             <x-ui.icon name="star" class="w-3 h-3" />
                             Populaire
                         </span>
@@ -184,7 +184,7 @@
 
                     <div class="mt-8">
                         <a href="{{ route('register') }}"
-                           class="block w-full rounded-xl bg-accent-amber px-4 py-3 text-center text-sm font-bold text-white shadow-md hover:opacity-90 transition brio-glow-amber cursor-pointer">
+                           class="block w-full rounded-xl bg-accent-amber px-4 py-3 text-center text-sm font-bold text-slate-900 shadow-md hover:opacity-90 transition brio-glow-amber cursor-pointer">
                             Essai gratuit 14 jours
                         </a>
                     </div>

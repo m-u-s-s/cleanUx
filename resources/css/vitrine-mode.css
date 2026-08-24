@@ -175,17 +175,18 @@
    invisibles. On remappe la rampe vers les jetons de la vitrine.
 
    L'EXCLUSION N'EST PAS UNE PRECAUTION : ces memes pages posent des sections
-   `bg-white` DANS la coquille sombre, et `.brio-glass` vaut rgba(255,255,255,.7) —
-   une surface CLAIRE elle aussi. Y remapper vers un texte clair inverserait simplement
-   le defaut. Une zone restee claire garde donc sa rampe.
+   des surfaces CLAIRES dans la coquille sombre — `bg-white`, mais aussi les surfaces
+   nommees du systeme : `.brio-glass` vaut rgba(255,255,255,.7), `.brio-empty` vaut
+   bg-slate-50/90. Y remapper vers un texte clair inverserait simplement le defaut.
+   La liste est celle des surfaces de CONTENU ; les boutons et puces fixent deja leur encre.
    ========================================================================= */
 @layer components {
-    body.cx-shell :is(.text-slate-900, .text-slate-800):not(.bg-white *):not(.bg-slate-50 *):not(.brio-glass *):not(.bg-white):not(.bg-slate-50):not(.brio-glass) {
+    body.cx-shell :is(.text-slate-900, .text-slate-800):not([class*="bg-white"] *):not([class*="-50"] *):not([class*="-100"] *):not(:is(.brio-glass, .brio-card, .brio-card-muted, .brio-empty, .brio-hero, .brio-list-item, .brio-page-header, .brio-surface-glass, .brio-admin-tile, .ui-card, .ui-empty, .ui-stat, .ui-toast) *) {
         color: var(--cx-text);
     }
 
     body.cx-shell
-        :is(.text-slate-700, .text-slate-600, .text-slate-500, .text-slate-400):not(.bg-white *):not(.bg-slate-50 *):not(.brio-glass *):not(.bg-white):not(.bg-slate-50):not(.brio-glass) {
+        :is(.text-slate-700, .text-slate-600, .text-slate-500, .text-slate-400):not([class*="bg-white"] *):not([class*="-50"] *):not([class*="-100"] *):not(:is(.brio-glass, .brio-card, .brio-card-muted, .brio-empty, .brio-hero, .brio-list-item, .brio-page-header, .brio-surface-glass, .brio-admin-tile, .ui-card, .ui-empty, .ui-stat, .ui-toast) *) {
         color: var(--cx-muted);
     }
 }

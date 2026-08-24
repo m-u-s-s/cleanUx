@@ -116,6 +116,7 @@ main :
 | `tests/Feature/DesignSystem/LeThemeSAppliqueAvantLaPremierePeinture` | Un éclair de thème, ou un réglage injoignable en vue mobile |
 | `tests/Feature/DesignSystem/AucuneCouleurEnDurDansLesVues` | Une couleur qui échappe au système de design |
 | `mobile/provider/__tests__/theme/mouvementReduit` | Une animation native qui ignore « réduire les animations » |
+| `mobile/provider/__tests__/theme/conservationDuTheme` | Un choix de thème perdu au redémarrage, ou qui ne suit pas le compte |
 
 Quand vous ajoutez une règle structurante, ajoutez le garde qui la tient.
 
