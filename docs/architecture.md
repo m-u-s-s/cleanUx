@@ -112,6 +112,8 @@ main :
 | `tests/Feature/Catalogue/LeCatalogueEstTraduit…` | Un catalogue qui redevient monolingue |
 | `tests/Feature/Ops/ConfigParityCheck` | Un déploiement qui migre avant d'avoir validé |
 | `tests/Feature/Devops/AucunPortailNestPassif` | Un job de CI dont le verdict ne compte plus |
+| `tests/Feature/DesignSystem/LeThemeEstLeMemeSurLesTroisSurfaces` | Une couleur qui diverge entre le web et le natif |
+| `tests/Feature/DesignSystem/LeThemeSAppliqueAvantLaPremierePeinture` | Un éclair de thème, ou un réglage injoignable en vue mobile |
 
 Quand vous ajoutez une règle structurante, ajoutez le garde qui la tient.
 

@@ -1,35 +1,12 @@
 <!DOCTYPE html>
 {{--
-    L'ESPACE PRESTATAIRE SUIT L'IDIOME DE LA CONSOLE D'ADMINISTRATION.
-
-    Il portait un thème SOMBRE à lui seul — `<html class="dark">` forcé, `bg-slate-900`, accent
-    ambre — quand toutes les autres surfaces d'outil de ce produit sont claires. Une même marque
-    n'a pas deux apparences selon le rôle de qui regarde : un gérant qui passe de son espace au
-    tableau de bord admin avait l'impression de changer d'application.
-
-    `class="dark"` EST RETIRÉ DU `<html>`, ET C'EST LE POINT CENTRAL. Il était écrit en dur, donc
-    insensible à la préférence du compte : cet espace ignorait le sélecteur de thème que
-    `layouts/app.blade.php` pilote pour tout le reste. Le thème suit désormais le même mécanisme
-    qu'ailleurs — `localStorage` puis `theme_preference`, défaut système.
-
-    `data-chrome="primary-nav"` et le `@unless($embedded ?? false)` sont CONSERVÉS : le mode
-    embarqué (WebView mobile) masque la barre par ce marqueur, et trois tests le figent.
+    Espace prestataire. Suit l'idiome de la console d'administration : thème clair par défaut,
+    `data-chrome="primary-nav"` pour que le mode embarqué masque la barre.
 --}}
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-    x-data="{
-        theme: localStorage.getItem('theme') ?? '{{ auth()->user()?->theme_preference ?? 'system' }}',
-    }"
-    x-init="
-        const appliquer = () => {
-            const sombre = theme === 'dark'
-                || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            document.documentElement.classList.toggle('dark', sombre);
-        };
-        appliquer();
-        $watch('theme', () => { localStorage.setItem('theme', theme); appliquer(); });
-    ">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
+    <x-theme-amorce />
     {{-- Phase 8 — PWA --}}
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="apple-mobile-web-app-capable" content="yes">

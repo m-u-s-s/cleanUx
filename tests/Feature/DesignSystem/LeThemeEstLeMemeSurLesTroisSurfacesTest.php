@@ -129,6 +129,117 @@ class LeThemeEstLeMemeSurLesTroisSurfacesTest extends TestCase
     }
 
     /**
+     * Rayon CSS du web => clé dans `mobile/shared/src/theme/radius.ts`.
+     * Les cinq valeurs coïncidaient, alignées à la main.
+     *
+     * @var array<string, string>
+     */
+    private const RAYONS = [
+        '--cx-radius-sm' => 'sm',
+        '--cx-radius-md' => 'md',
+        '--cx-radius-lg' => 'lg',
+        '--cx-radius-xl' => 'xl',
+        '--cx-radius-pill' => 'pill',
+    ];
+
+    /**
+     * Durée CSS du web => clé dans `animation.ts`.
+     *
+     * @var array<string, string>
+     */
+    private const DUREES = [
+        '--cx-dur-fast' => 'fast',
+        '--cx-dur' => 'base',
+        '--cx-dur-slow' => 'slow',
+    ];
+
+    /** Lit un nombre suivi d'une unité — `22px`, `280ms`. */
+    private function nombreWeb(string $nom): ?int
+    {
+        $css = (string) file_get_contents(resource_path('css/tokens.css'));
+
+        return preg_match('/'.preg_quote($nom, '/').'\s*:\s*(\d+)(?:px|ms)\s*;/', $css, $m) === 1
+            ? (int) $m[1]
+            : null;
+    }
+
+    private function nombreNatif(string $fichier, string $cle): ?int
+    {
+        $ts = (string) file_get_contents(base_path("mobile/shared/src/theme/{$fichier}"));
+
+        // Les clés numériques comme `2xs` sont citées : les deux formes doivent passer.
+        return preg_match('/[\x22\x27]?'.preg_quote($cle, '/').'[\x22\x27]?\s*:\s*(\d+)/', $ts, $m) === 1
+            ? (int) $m[1]
+            : null;
+    }
+
+    public function test_chaque_rayon_partage_vaut_le_meme_des_deux_cotes(): void
+    {
+        $ecarts = [];
+
+        foreach (self::RAYONS as $css => $cle) {
+            $w = $this->nombreWeb($css);
+            $n = $this->nombreNatif('radius.ts', $cle);
+
+            if ($w === null || $n === null) {
+                $ecarts[] = "{$css} / radius.{$cle} : absent d’un des deux côtés";
+
+                continue;
+            }
+
+            if ($w !== $n) {
+                $ecarts[] = "{$css} vaut {$w}px sur le web, {$n} en natif (radius.{$cle})";
+            }
+        }
+
+        $this->assertSame([], $ecarts, 'Le web et le natif n’arrondissent plus pareil.');
+    }
+
+    /**
+     * Durées et courbe d'assouplissement. Une transition plus lente d'un côté se voit
+     * immédiatement quand on passe de l'application au navigateur.
+     */
+    public function test_le_mouvement_a_les_memes_durees_des_deux_cotes(): void
+    {
+        $ecarts = [];
+
+        foreach (self::DUREES as $css => $cle) {
+            $w = $this->nombreWeb($css);
+            $n = $this->nombreNatif('animation.ts', $cle);
+
+            if ($w === null || $n === null) {
+                $ecarts[] = "{$css} / animation.duration.{$cle} : absent d’un des deux côtés";
+
+                continue;
+            }
+
+            if ($w !== $n) {
+                $ecarts[] = "{$css} vaut {$w}ms sur le web, {$n} en natif (duration.{$cle})";
+            }
+        }
+
+        $tokens = (string) file_get_contents(resource_path('css/tokens.css'));
+        $anim = (string) file_get_contents(base_path('mobile/shared/src/theme/animation.ts'));
+
+        // La même courbe, écrite dans les deux syntaxes : `cubic-bezier(...)` et un tableau.
+        preg_match('/--cx-ease:\s*cubic-bezier\(([^)]+)\)/', $tokens, $mw);
+        preg_match('/default:\s*\[([^\]]+)\]/', $anim, $mn);
+
+        $normaliser = static fn (string $v): string => implode(',', array_map(
+            static fn (string $x): string => rtrim(rtrim(number_format((float) trim($x), 4, '.', ''), '0'), '.'),
+            explode(',', $v),
+        ));
+
+        if (($mw[1] ?? null) === null || ($mn[1] ?? null) === null) {
+            $ecarts[] = 'la courbe d’assouplissement est absente d’un des deux côtés';
+        } elseif ($normaliser($mw[1]) !== $normaliser($mn[1])) {
+            $ecarts[] = "la courbe vaut ({$mw[1]}) sur le web, [{$mn[1]}] en natif";
+        }
+
+        $this->assertSame([], $ecarts, 'Le mouvement ne se ressemble plus d’une surface à l’autre.');
+    }
+
+    /**
      * La vue mobile du navigateur emploie UN SEUL point de rupture : celui de Tailwind.
      * `max-width: 768px` chevauche `min-width: 768px` — à 768 px exactement, les deux s'appliquent.
      */

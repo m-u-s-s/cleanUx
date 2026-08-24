@@ -7,7 +7,8 @@
   "scripts": {
     "qa": "node run.mjs",
     "modules": "node modules.mjs",
-    "qa:publiques": "node publiques.mjs"
+    "qa:publiques": "node publiques.mjs",
+    "qa:theme": "node theme.mjs"
   },
   "devDependencies": {
     "playwright": "^1.48.0"

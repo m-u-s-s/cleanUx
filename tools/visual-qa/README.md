@@ -26,6 +26,18 @@ Ne vérifier qu'une page (ou quelques-unes) :
 VQA_BASE=http://127.0.0.1:8000 VQA_ONLY=admin-order-engine npm run qa
 ```
 
+### Les deux autres balayages
+
+`npm run qa` couvre les 121 pages **authentifiées**. Deux surfaces lui échappent :
+
+| Commande | Ce qu'elle mesure |
+|---|---|
+| `npm run qa:publiques` | Les 12 pages qu'un visiteur voit **sans compte** — `run.mjs` n'en couvrait qu'une |
+| `npm run qa:theme` | L'éclair de thème au chargement, les boutons sans nom accessible, le réglage du thème sous 640 px |
+
+`qa:theme` a besoin d'un compte client valide. Les comptes de `modules.mjs` viennent d'un seeder
+Faker : après un `migrate:fresh --seed`, passez `VQA_CLIENT=<email>` ou relancez `QaAccountsSeeder`.
+
 ### ⚠ Les pages ADMIN exigent de lever la 2FA
 
 `Enforce2FA` détourne tout administrateur sans `two_factor_confirmed_at` vers son profil. Le

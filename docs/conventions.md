@@ -65,6 +65,30 @@ contredire. Avant d'ajouter une source, cherchez celle qui existe.
 Les colonnes de montant sont hors `$fillable`, délibérément : une charge utile de requête ne doit
 pas pouvoir fixer un prix. Employez `forceFill([...])->save()`, avec une intention explicite.
 
+### Le thème se pose avant la première peinture
+
+`<x-theme-amorce />` est la **seule** source du thème. Elle vit en tête du `<head>` de chaque
+layout, avant les feuilles de style, et pose `dark` sur `<html>` par un script synchrone.
+
+N'écrivez jamais `classList.add('dark')` ni `localStorage.getItem('theme')` ailleurs. Placée après
+`@vite`, ou rejouée dans un `x-init`, l'amorce repeint la page après coup : le visiteur voit un
+éclair de la mauvaise couleur.
+
+Pour basculer depuis l'interface, appelez `window.brioTheme.basculer()`, ou posez
+`<x-theme-toggle />`. Le choix est écrit dans `localStorage` **et** envoyé à `/api/user/theme`,
+donc il suit le compte d'un appareil à l'autre.
+
+### La vue mobile emploie le point de rupture de Tailwind
+
+Un seul : `767.98px` / `768px`. Écrire `max-width: 768px` fait s'appliquer votre règle **et** le
+`md:` de Tailwind à 768 px exactement.
+
+Un contenu large — tableau, bloc de code, image — défile dans son propre cadre, jamais la page.
+`resources/css/responsive.css` pose la règle pour tout le dépôt : ne la recopiez pas par élément.
+
+Tout réglage doit rester atteignable sous 640 px. Un conteneur `hidden sm:flex` le fait disparaître
+du téléphone sans qu'aucun test ne le remarque — le bouton de thème y a passé toute sa vie.
+
 ### Mesurez avant de corriger
 
 Ne vous fiez ni à la documentation, ni aux commentaires, ni à votre souvenir. Ils vieillissent.
