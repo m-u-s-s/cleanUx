@@ -2,6 +2,9 @@
 
 namespace Tests\Feature\Orphans;
 
+use App\Livewire\Admin\GestionEntreprises;
+use App\Livewire\Admin\GestionZones;
+use App\Livewire\Client\EditRecurringBooking;
 use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,12 +26,16 @@ class OrphanPageRoutingTest extends TestCase
 
     public function test_admin_zones_page_renders(): void
     {
-        $this->actingAs($this->admin())->get(route('admin.zones'))->assertOk();
+        $this->actingAs($this->admin())->get(route('admin.zones'))
+            ->assertOk()
+            ->assertSeeLivewire(GestionZones::class);
     }
 
     public function test_admin_entreprises_page_renders(): void
     {
-        $this->actingAs($this->admin())->get(route('admin.entreprises'))->assertOk();
+        $this->actingAs($this->admin())->get(route('admin.entreprises'))
+            ->assertOk()
+            ->assertSeeLivewire(GestionEntreprises::class);
     }
 
     public function test_non_admin_cannot_open_zones(): void
@@ -43,13 +50,17 @@ class OrphanPageRoutingTest extends TestCase
         $client = User::factory()->client()->create(['email_verified_at' => now(), 'is_active' => true]);
         $booking = Booking::factory()->recurringSeries()->create(['client_id' => $client->id]);
 
-        $this->actingAs($client)->get(route('client.rendezvous.series', $booking))->assertOk();
+        $this->actingAs($client)->get(route('client.rendezvous.series', $booking))
+            ->assertOk()
+            ->assertSeeLivewire(EditRecurringBooking::class);
     }
 
     public function test_admin_recurring_series_page_renders(): void
     {
         $booking = Booking::factory()->recurringSeries()->create();
 
-        $this->actingAs($this->admin())->get(route('admin.recurrence.edit', $booking))->assertOk();
+        $this->actingAs($this->admin())->get(route('admin.recurrence.edit', $booking))
+            ->assertOk()
+            ->assertSeeLivewire(\App\Livewire\Admin\EditRecurringBooking::class);
     }
 }

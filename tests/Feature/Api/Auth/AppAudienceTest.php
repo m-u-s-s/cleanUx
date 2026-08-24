@@ -69,7 +69,11 @@ class AppAudienceTest extends TestCase
 
         $this->withHeader(self::APP_HEADER, 'provider')
             ->postJson('/api/auth/login', ['email' => $user->email, 'password' => 'password'])
-            ->assertOk();
+            ->assertOk()
+            ->assertJsonPath('ok', true)
+            ->assertJsonStructure(['token', 'user' => ['id', 'email']]);
+
+        $this->assertSame(1, $user->tokens()->count(), 'Aucun jeton n’a été émis malgré l’accès autorisé.');
     }
 
     /** Une double casquette entre PARTOUT. */
@@ -81,8 +85,12 @@ class AppAudienceTest extends TestCase
         foreach (['client', 'provider'] as $app) {
             $this->withHeader(self::APP_HEADER, $app)
                 ->postJson('/api/auth/login', ['email' => $user->email, 'password' => 'password'])
-                ->assertOk();
+                ->assertOk()
+                ->assertJsonPath('ok', true);
         }
+
+        // Une session par application : `assertOk` seul ne disait pas qu'elles s'ouvraient.
+        $this->assertSame(2, $user->tokens()->count(), 'Les deux applications n’ont pas ouvert de session.');
     }
 
     /** L'administrateur entre partout. */
@@ -103,7 +111,11 @@ class AppAudienceTest extends TestCase
         $user = $this->providerAccount();
 
         $this->postJson('/api/auth/login', ['email' => $user->email, 'password' => 'password'])
-            ->assertOk();
+            ->assertOk()
+            ->assertJsonPath('ok', true)
+            ->assertJsonStructure(['token']);
+
+        $this->assertSame(1, $user->tokens()->count(), 'Aucun jeton pour une application anonyme.');
     }
 
     // ─── Session déjà ouverte ────────────────────────────────────────────────────────────────
@@ -130,11 +142,14 @@ class AppAudienceTest extends TestCase
 
     public function test_a_stored_session_still_works_in_the_right_app(): void
     {
-        Sanctum::actingAs($this->providerAccount());
+        $prestataire = $this->providerAccount();
+        Sanctum::actingAs($prestataire);
 
+        // C'est le BON compte qui repond, pas seulement « une » reponse 200.
         $this->withHeader(self::APP_HEADER, 'provider')
             ->getJson('/api/auth/me')
-            ->assertOk();
+            ->assertOk()
+            ->assertJsonPath('user.email', $prestataire->email);
     }
 
     // ─── Fabriques ───────────────────────────────────────────────────────────────────────────
