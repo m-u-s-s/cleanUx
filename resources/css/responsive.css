@@ -1,0 +1,85 @@
+/* ============================================================================
+   Brio — Vue mobile dans le navigateur
+
+   Les règles qui tiennent la mise en page sous 768 px, mesurées par le harnais
+   `tools/visual-qa` à 390×844 sur cinq critères : pas de défilement horizontal du
+   document, cibles tactiles d'au moins 44 px, texte d'au moins 12 px, aucun élément
+   plus large que la fenêtre, et pas de barre de navigation dans une vue incrustée.
+
+   POINT DE RUPTURE : 767.98px / 768px, celui de Tailwind (`md`). Deux règles
+   employaient `max-width: 768px`, qui SE CHEVAUCHE avec `min-width: 768px` — à
+   exactement 768 px, les deux s'appliquaient.
+   ========================================================================= */
+
+@layer base {
+    /* ------------------------------------------------------------------
+       UN CONTENU LARGE DÉFILE DANS SON PROPRE CADRE, JAMAIS LA PAGE.
+
+       Un tableau de cinq colonnes fait 524 px de large : sur un écran de 390 px,
+       il poussait le document entier et toute la page défilait de travers. Le
+       défaut a été mesuré sur `/legal/cookies`, mais 78 tableaux du dépôt étaient
+       dans le même cas — les corriger un par un aurait laissé passer le suivant.
+       ------------------------------------------------------------------ */
+    @media (max-width: 767.98px) {
+        table {
+            display: block;
+            max-width: 100%;
+            overflow-x: auto;
+            /* Défilement au doigt, sans à-coups, sur iOS comme sur Android. */
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* `display: block` sur le tableau détache ses parties : on les remet en
+           ligne pour que les colonnes restent alignées. */
+        table > thead,
+        table > tbody,
+        table > tfoot {
+            display: table;
+            width: 100%;
+            /* Sans cette largeur minimale, les colonnes s'écrasent au lieu de
+               défiler — le tableau devient illisible plutôt que scrollable. */
+            min-width: max-content;
+        }
+
+        /* Un en-tête de colonne qui passe à la ligne double la hauteur du tableau
+           sans rien gagner : la place vient du défilement, pas du retour à la ligne. */
+        table th {
+            white-space: nowrap;
+        }
+    }
+
+    /* ------------------------------------------------------------------
+       CE QUI DÉBORDE MALGRÉ TOUT reste dans son cadre.
+
+       Un bloc de code, un diagramme ou une image trop large ont la même règle que
+       les tableaux : ils défilent chez eux.
+       ------------------------------------------------------------------ */
+    @media (max-width: 767.98px) {
+        pre {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        img,
+        svg,
+        video,
+        canvas,
+        iframe {
+            max-width: 100%;
+        }
+    }
+
+    /* ------------------------------------------------------------------
+       LE DOCUMENT NE DÉFILE JAMAIS DE CÔTÉ.
+
+       Filet de sécurité : si un élément échappe malgré tout aux règles ci-dessus,
+       la page reste lisible au lieu de glisser. On ne pose PAS `overflow: hidden`,
+       qui couperait un menu ou une infobulle légitimement débordants.
+       ------------------------------------------------------------------ */
+    @media (max-width: 767.98px) {
+        html,
+        body {
+            overflow-x: clip;
+        }
+    }
+}

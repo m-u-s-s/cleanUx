@@ -12,6 +12,7 @@
 /* CSS spec: @import must precede all other statements (avoids PostCSS warning). */
 @import './tokens.css';
 @import './base.css';
+@import './responsive.css';
 @import './tool-mode.css';
 @import './vitrine-mode.css';
 @import './motion.css';

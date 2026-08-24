@@ -1,0 +1,185 @@
+<?php
+
+namespace Tests\Feature\DesignSystem;
+
+use Tests\TestCase;
+
+/**
+ * Le web et le natif portent la MÊME palette, et rien ne le garantissait.
+ * Une couleur changée d'un côté laissait l'autre en arrière, sans qu'aucun outil ne le dise.
+ */
+class LeThemeEstLeMemeSurLesTroisSurfacesTest extends TestCase
+{
+    /**
+     * Jeton CSS du web => chemin dans `mobile/shared/src/theme/colors.ts`.
+     *
+     * Ne figurent ici que les couleurs RÉELLEMENT partagées. Les échelles `brand`, `surface`,
+     * `success`, `warning` et `danger` n'y sont pas : le web les tient de Tailwind, le natif doit
+     * les déclarer lui-même, et exiger qu'elles coïncident n'aurait aucun sens.
+     *
+     * @var array<string, string>
+     */
+    private const PARTAGEES = [
+        '--cx-amber' => 'accent.amber',
+        '--cx-amber-deep' => 'accent.amberDeep',
+        '--cx-cyan' => 'accent.cyan',
+        '--cx-violet' => 'accent.violet',
+        '--brio-ink' => 'mode.tool.ink',
+        '--brio-muted' => 'mode.tool.muted',
+        '--cx-night' => 'mode.showcase.night',
+        '--cx-night-soft' => 'mode.showcase.nightSoft',
+        '--cx-panel' => 'mode.showcase.panel',
+        '--cx-text' => 'mode.showcase.text',
+        '--cx-muted' => 'mode.showcase.muted',
+    ];
+
+    private function jetonWeb(string $nom): ?string
+    {
+        $css = (string) file_get_contents(resource_path('css/tokens.css'));
+
+        return preg_match('/'.preg_quote($nom, '/').'\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/', $css, $m) === 1
+            ? strtolower($m[1])
+            : null;
+    }
+
+    /**
+     * Résout un chemin complet — `mode.showcase.muted`, pas seulement `muted`.
+     * `muted` existe dans DEUX sous-objets : chercher la dernière clé seule rend la mauvaise.
+     */
+    private function jetonNatif(string $chemin): ?string
+    {
+        $portee = (string) file_get_contents(base_path('mobile/shared/src/theme/colors.ts'));
+        $segments = explode('.', $chemin);
+        $feuille = array_pop($segments);
+
+        /*
+         * On descend d'un sous-objet à l'autre en COMPTANT les accolades. Couper au premier
+         * `},` refermerait le premier enfant — `mode` contient `tool` puis `showcase`, et la
+         * coupe naïve perdait tout `showcase`.
+         */
+        foreach ($segments as $parent) {
+            $debut = strpos($portee, $parent.': {');
+
+            if ($debut === false) {
+                return null;
+            }
+
+            $i = $debut + strlen($parent) + 2;
+            $profondeur = 0;
+            $fin = $i;
+
+            for ($j = $i; $j < strlen($portee); $j++) {
+                if ($portee[$j] === '{') {
+                    $profondeur++;
+                } elseif ($portee[$j] === '}') {
+                    $profondeur--;
+
+                    if ($profondeur === 0) {
+                        $fin = $j;
+                        break;
+                    }
+                }
+            }
+
+            $portee = substr($portee, $i, $fin - $i);
+        }
+
+        return preg_match('/\b'.preg_quote($feuille, '/').'\s*:\s*\'(#[0-9a-fA-F]{3,8})\'/', $portee, $m) === 1
+            ? strtolower($m[1])
+            : null;
+    }
+
+    /**
+     * TÉMOIN — les deux fichiers existent et rendent bien des couleurs.
+     * Sans lui, deux `null` compareraient égaux et le test passerait sur du vide.
+     */
+    public function test_temoin_les_deux_sources_rendent_des_couleurs(): void
+    {
+        $this->assertSame('#ffb648', $this->jetonWeb('--cx-amber'));
+        $this->assertSame('#ffb648', $this->jetonNatif('accent.amber'));
+        $this->assertNull($this->jetonWeb('--cx-jeton-qui-n-existe-pas'));
+    }
+
+    public function test_chaque_couleur_partagee_vaut_la_meme_des_deux_cotes(): void
+    {
+        $ecarts = [];
+
+        foreach (self::PARTAGEES as $css => $natif) {
+            $w = $this->jetonWeb($css);
+            $n = $this->jetonNatif($natif);
+
+            if ($w === null) {
+                $ecarts[] = "{$css} : absent de resources/css/tokens.css";
+
+                continue;
+            }
+
+            if ($n === null) {
+                $ecarts[] = "{$natif} : absent de mobile/shared/src/theme/colors.ts";
+
+                continue;
+            }
+
+            if ($w !== $n) {
+                $ecarts[] = "{$css} vaut {$w} sur le web, {$n} en natif ({$natif})";
+            }
+        }
+
+        $this->assertSame([], $ecarts, 'Le web et le natif ne portent plus la même palette.');
+    }
+
+    /**
+     * La vue mobile du navigateur emploie UN SEUL point de rupture : celui de Tailwind.
+     * `max-width: 768px` chevauche `min-width: 768px` — à 768 px exactement, les deux s'appliquent.
+     */
+    public function test_aucune_media_query_ne_chevauche_le_point_de_rupture_de_tailwind(): void
+    {
+        $chevauchements = [];
+
+        foreach (glob(resource_path('css/*.css')) as $chemin) {
+            $css = (string) file_get_contents($chemin);
+
+            if (preg_match_all('/@media[^{]*max-width:\s*768px/', $css, $m)) {
+                $chevauchements[] = basename($chemin).' : '.count($m[0]).' × `max-width: 768px`';
+            }
+        }
+
+        $this->assertSame(
+            [],
+            $chevauchements,
+            'Employer `max-width: 767.98px` : à 768 px exactement, `max-width: 768px` et le `md:` de '
+            .'Tailwind s’appliquent tous les deux.',
+        );
+    }
+
+    /**
+     * Un contenu large défile dans son cadre, jamais la page.
+     * Un tableau de cinq colonnes fait 524 px : sur 390 px, il emportait le document entier.
+     */
+    public function test_la_regle_de_debordement_mobile_est_posee(): void
+    {
+        $css = (string) file_get_contents(resource_path('css/responsive.css'));
+
+        $manques = [];
+
+        foreach ([
+            'max-width: 767.98px' => 'le point de rupture mobile',
+            'overflow-x: auto' => 'le défilement dans le cadre',
+            'min-width: max-content' => 'la largeur qui empêche les colonnes de s’écraser',
+            'overflow-x: clip' => 'le filet de sécurité sur le document',
+        ] as $motif => $role) {
+            if (! str_contains($css, $motif)) {
+                $manques[] = "{$motif} — {$role}";
+            }
+        }
+
+        $this->assertSame([], $manques, 'La feuille de vue mobile a perdu une de ses règles.');
+
+        // Et elle doit être CHARGÉE : une feuille orpheline ne s'applique nulle part.
+        $this->assertStringContainsString(
+            "@import './responsive.css';",
+            (string) file_get_contents(resource_path('css/app.css')),
+            'responsive.css n’est plus importée par app.css.',
+        );
+    }
+}
