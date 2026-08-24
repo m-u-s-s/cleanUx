@@ -33,7 +33,7 @@ jest.mock('@/tracking', () => ({ readScanPosition: jest.fn() }));
 jest.mock('@/screens/onboarding/documentPicker', () => ({ pickImage: jest.fn() }));
 jest.mock('@/realtime', () => ({ useChannel: () => undefined }));
 
-import { offlineQueue } from '@brio/shared';
+import { offlineQueue, apiClient } from '@brio/shared';
 import { useToggleMissionChecklistItem } from '@/missions/onsite';
 import { useMissionLifecycle } from '@/missions/hooks';
 
@@ -80,19 +80,32 @@ describe('Le terrain sans réseau', () => {
     expect(await offlineQueue.getAll()).toHaveLength(0);
   });
 
-  /** LE TÉMOIN POSITIF : avec du réseau, la clôture n'est pas retenue par ce garde. */
+  /**
+   * LE TÉMOIN POSITIF : avec du réseau, la clôture n'est pas retenue par ce garde.
+   *
+   * L'appel est BOUCHONNÉ. Sans cela le test attendait un vrai aller-retour HTTP qui ne
+   * répond jamais : seul il finissait par expirer a temps, mais lancé après les deux autres
+   * il restait `isPending` et tombait. Un témoin ne doit pas dépendre du réseau.
+   */
   it('laisse passer la clôture dès qu’il y a du réseau', async () => {
     reseau.isConnected = true;
 
-    const { result } = renderHook(() => useMissionLifecycle(42), { wrapper: enveloppe });
+    const appel = jest.spyOn(apiClient, 'post').mockResolvedValue({ data: { ok: true } } as never);
 
-    await act(async () => {
-      result.current.mutate({ action: 'complete', code: '123456' });
-    });
+    try {
+      const { result } = renderHook(() => useMissionLifecycle(42), { wrapper: enveloppe });
 
-    await waitFor(() => expect(result.current.isPending).toBe(false));
+      await act(async () => {
+        result.current.mutate({ action: 'complete', code: '123456' });
+      });
 
-    // L'appel a bien été tenté : l'échec vient du réseau de test, pas du garde hors-ligne.
-    expect(result.current.error?.message ?? '').not.toContain('connexion');
+      await waitFor(() => expect(result.current.isPending).toBe(false));
+
+      // Le garde n'a pas leve, et l'appel est parti.
+      expect(result.current.error).toBeNull();
+      expect(appel).toHaveBeenCalledWith('/provider/missions/42/complete', expect.anything());
+    } finally {
+      appel.mockRestore();
+    }
   });
 });

@@ -87,9 +87,20 @@ apiClient.interceptors.response.use(
     const message: string = responseData?.message ?? error.message ?? 'An error occurred.';
     const errors = responseData?.errors;
 
+    /*
+     * Un 401 sur une route d'AUTHENTIFICATION ne dit pas « jeton expire » : il dit
+     * « identifiants incorrects ». Le rafraichir n'a aucun sens — il n'y a pas encore de
+     * session — et le flux effacait le jeton puis annoncait une session perdue, la ou l'ecran
+     * devait simplement dire que le mot de passe etait faux.
+     */
+    const routeDAuthentification = /\/auth\/(login|register|refresh|phone\/)/.test(
+      String(originalConfig?.url ?? ''),
+    );
+
     // 401 refresh flow (only if not already retried and not a grace-expired token)
     if (
       status === 401 &&
+      ! routeDAuthentification &&
       !originalConfig._retry &&
       errorCode !== 'token_grace_expired'
     ) {
