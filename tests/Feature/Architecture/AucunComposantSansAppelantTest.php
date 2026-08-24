@@ -14,26 +14,17 @@ use Tests\TestCase;
 class AucunComposantSansAppelantTest extends TestCase
 {
     /**
-     * CONSERVE EXPRES — le composant que les pages tierces attrapent quand elles cherchent « le
-     * logo ». Son propre commentaire dit pourquoi : le laisser au SVG de Jetstream garantissait
-     * qu'une page l'afficherait un jour sans que personne ne s'en apercoive.
+     * CONSERVES EXPRES — les deux composants que les pages tierces attrapent quand elles cherchent
+     * « le logo ». Leurs propres commentaires disent pourquoi : les laisser au SVG et au lettrage
+     * de Jetstream garantissait qu'une page les afficherait un jour sans que personne ne le voie.
      */
     private const VOULUS = [
+        'application-logo',
         'application-mark',
     ];
 
-    /**
-     * DETTE MESUREE LE 2026-08-24, ni cachee ni corrigee : hors du lot en cours.
-     *
-     * Les trois `ui/` sont des primitives que la page `design-system` ne monte pas — elle ne
-     * presente que badge, button, card, icon et stat. `welcome` est un reliquat d'installation.
-     */
-    private const DETTE = [
-        'ui/page-header',
-        'ui/skeleton',
-        'ui/toast',
-        'welcome',
-    ];
+    /** La dette est soldee : plus aucun composant n'attend un appelant. */
+    private const DETTE = [];
 
     /** @return array<string, string> nom du composant => chemin de sa vue */
     private function composants(): array
