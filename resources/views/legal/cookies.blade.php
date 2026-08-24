@@ -12,7 +12,7 @@
         <section>
             <h2 class="text-xl font-bold">Cookies que nous utilisons</h2>
             <table class="w-full text-sm border">
-                <thead class="bg-slate-100">
+                <thead class="bg-slate-100 dark:bg-slate-800">
                     <tr><th class="p-2 text-left">Type</th><th class="p-2 text-left">Nom</th><th class="p-2 text-left">Durée</th><th class="p-2 text-left">Finalité</th><th class="p-2 text-left">Consentement</th></tr>
                 </thead>
                 <tbody>

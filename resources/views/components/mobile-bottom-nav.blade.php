@@ -53,7 +53,7 @@
 
                     @if ($isPrimary)
                         <span class="absolute -top-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 shadow-lg shadow-blue-200">
-                            <span class="text-2xl leading-none">{{ $item['icon'] }}</span>
+                            <span class="text-2xl leading-none text-white">{{ $item['icon'] }}</span>
                         </span>
                         <span class="mt-9 text-[10px] font-medium text-slate-600">{{ $item['label'] }}</span>
                     @else

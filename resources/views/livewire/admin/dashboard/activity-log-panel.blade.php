@@ -78,8 +78,10 @@
                                         {{ ucfirst(str_replace('_', ' ', $key)) }} :
                                     </span>
 
-                                    <span class="text-slate-600">
-                                        {{ is_array($value) ? json_encode($value) : $value }}
+                                    {{-- Un tableau rendu en JSON tient sur une seule ligne de 1285 px :
+                                         il emportait la mise en page mobile. Il se coupe et defile. --}}
+                                    <span class="block max-w-full overflow-x-auto whitespace-pre-wrap break-all text-slate-600">
+                                        {{ is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) : $value }}
                                     </span>
                                 </div>
                             @endforeach

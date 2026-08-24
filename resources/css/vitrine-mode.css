@@ -181,12 +181,31 @@
    La liste est celle des surfaces de CONTENU ; les boutons et puces fixent deja leur encre.
    ========================================================================= */
 @layer components {
-    body.cx-shell :is(.text-slate-900, .text-slate-800):not([class*="bg-white"] *):not([class*="-50"] *):not([class*="-100"] *):not(:is(.brio-glass, .brio-card, .brio-card-muted, .brio-empty, .brio-hero, .brio-list-item, .brio-page-header, .brio-surface-glass, .brio-admin-tile, .ui-card, .ui-empty, .ui-stat, .ui-toast) *) {
+    body.cx-shell :is(.text-slate-900, .text-slate-800):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass) *) {
         color: var(--cx-text);
     }
 
     body.cx-shell
-        :is(.text-slate-700, .text-slate-600, .text-slate-500, .text-slate-400):not([class*="bg-white"] *):not([class*="-50"] *):not([class*="-100"] *):not(:is(.brio-glass, .brio-card, .brio-card-muted, .brio-empty, .brio-hero, .brio-list-item, .brio-page-header, .brio-surface-glass, .brio-admin-tile, .ui-card, .ui-empty, .ui-stat, .ui-toast) *) {
+        :is(.text-slate-700, .text-slate-600, .text-slate-500, .text-slate-400):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass) *) {
         color: var(--cx-muted);
+    }
+}
+
+@layer components {
+    /* ------------------------------------------------------------------
+       L'INDIGO DE MARQUE EST FAIT POUR UN FOND CLAIR.
+
+       `brand-600` vaut #4f46e5 : sur la coquille nuit il tombe a 1,17:1. Plusieurs
+       sections posent un fond clair a FAIBLE opacite — `bg-slate-50/40` — qui laisse
+       passer la nuit et reste sombre. Le texte, lui, ne suivait pas.
+
+       La rampe s'eclaircit donc, sauf sur une surface restee vraiment claire.
+       ------------------------------------------------------------------ */
+    body.cx-shell :is(.text-brand-600, .text-brand-700):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass) *) {
+        color: theme('colors.brand.300');
+    }
+
+    body.cx-shell :is(.text-brand-500):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass) *) {
+        color: theme('colors.brand.400');
     }
 }

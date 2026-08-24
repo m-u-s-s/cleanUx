@@ -141,6 +141,13 @@ async function contraste(ctx, mode) {
         if (r.width < 4 || r.height < 4) continue;
         if (r.right < 0 || r.bottom < 0 || r.left > window.innerWidth) continue;
 
+        /*
+         * Un emoji porte SES PROPRES couleurs : la propriete `color` ne s'y applique pas,
+         * sauf si la police de secours le rend en monochrome. Le mesurer contre son fond
+         * annonce des defauts qui n'existent pas — `⚡` sur un bouton clair a « 1,23:1 ».
+         */
+        if (/\p{Extended_Pictographic}/u.test(texte)) continue;
+
         const s = getComputedStyle(el);
         if (s.visibility === 'hidden' || Number(s.opacity) < 0.5) continue;
 

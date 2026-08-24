@@ -124,7 +124,9 @@ body::before {
 }
 
 /* L'ambre de marque se lit sur la nuit, pas sur une carte claire : 1,74:1.
-   Sur une surface claire, il se fonce vers l'ambre profond. */
-:is(.brio-glass, .brio-card, .brio-empty, .bg-white) .cx-subhead {
+   Sur une surface claire, il se fonce vers l'ambre profond. `.brio-card` et `.brio-empty`
+   en sont SORTIS : ils ont une variante sombre, et y foncer le texte l'y rendrait illisible. */
+:is(.brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass, .bg-white)
+    :is(.cx-subhead, .text-accent-amber) {
     color: color-mix(in srgb, var(--cx-amber-deep) 78%, var(--brio-ink));
 }

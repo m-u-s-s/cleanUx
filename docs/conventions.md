@@ -147,18 +147,19 @@ La vitrine (`body.cx-shell`) et le mode sombre repeignent le texte en clair. Ces
 **s'arrêtent** devant les surfaces qui restent claires à l'intérieur. Sans cette réserve, le titre
 de `/login` était blanc sur blanc.
 
-La réserve reconnaît :
+La réserve énumère les surfaces **claires en toutes circonstances** : `bg-white`, `bg-slate-50`,
+`bg-*-50`, `.brio-glass`, `.brio-card-muted`, `.brio-hero`, `.brio-surface-glass`.
 
-| Motif | Couvre |
+Deux critères d'exclusion, appris à mes dépens :
+
+| Ne PAS réserver | Pourquoi |
 |---|---|
-| `[class*="bg-white"]` | `bg-white`, `bg-white/90`… |
-| `[class*="-50"]`, `[class*="-100"]` | **toute** teinte claire de Tailwind — `bg-slate-50`, `bg-indigo-50`, `bg-brand-100` |
-| Les surfaces nommées | `.brio-glass`, `.brio-card`, `.brio-empty`, `.ui-card`… |
+| `bg-white/10`, `bg-slate-50/40` | À faible opacité, le fond nuit passe au travers : la surface est **sombre** |
+| `.brio-card`, `.brio-empty`, `.ui-card`… | Elles ont une variante `.dark` qui les rend sombres |
 
-Les deux premiers motifs sont volontairement larges : énumérer les couleurs n'a pas de fin, et
-**en cas de doute il vaut mieux ne pas remapper**. Trop réserver laisse le comportement d'origine ;
-trop peu peint du texte clair sur du clair. J'ai fait l'erreur deux fois — `.brio-glass` d'abord,
-puis `bg-indigo-50` sur l'accueil.
+Un motif large (`[class*="-50"]`) est tentant et **faux** : il attrape `selection:bg-brand-100`,
+une couleur de sélection de texte, et le `<body>` entier — ce qui désactive le remappage sur toute
+la page. Le titre de `/aide` s'est retrouvé à 1,00:1, exactement de la couleur de son fond.
 
 Les deux feuilles portent la même réserve, **à la lettre** : un test compare les chaînes.
 

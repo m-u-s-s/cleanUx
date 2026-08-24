@@ -49,6 +49,7 @@ mais elle garde des angles morts, et son décompte ne vaut pas un verdict :
 | Composer les couches translucides (`.brio-glass` sur la nuit) | Échantillonner un dégradé : elle **écarte** l'élément |
 | Ignorer ce qui fait moins de 4 px ou sort de l'écran | Suivre un texte peint par `background-clip: text` |
 | Appliquer le seuil 3:1 au grand texte et au gras | Voir une image de fond derrière le texte |
+| Écarter les emoji | — ils portent leurs propres couleurs, `color` ne s'y applique pas |
 
 Deux faux positifs déjà payés : un bouton à `linear-gradient` mesuré contre le fond de la page
 (1,06:1 annoncé, aucun défaut réel), et un lien d'évitement à `left: -9999px` compté comme visible.

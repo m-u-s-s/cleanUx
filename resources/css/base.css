@@ -24,7 +24,7 @@
     h1, h2, h3, h4 { color: var(--brio-ink); }
     /* Un titre de la coquille nuit est clair — SAUF dans une surface restee claire.
        `.brio-glass` vaut rgba(255,255,255,.7) : les titres de /login y etaient blancs sur blanc. */
-    body.cx-shell :is(h1, h2, h3, h4):not([class*="bg-white"] *):not([class*="-50"] *):not([class*="-100"] *):not(:is(.brio-glass, .brio-card, .brio-card-muted, .brio-empty, .brio-hero, .brio-list-item, .brio-page-header, .brio-surface-glass, .brio-admin-tile, .ui-card, .ui-empty, .ui-stat, .ui-toast) *) {
+    body.cx-shell :is(h1, h2, h3, h4):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass) *) {
         color: var(--cx-text);
     }
 
@@ -35,7 +35,7 @@
     }
     /* Meme reserve qu'au-dessus : un titre pose sur une surface CLAIRE garde sa couleur,
        sinon le mode sombre le peint en blanc sur du blanc. */
-    .dark :is(h1, h2, h3, h4):not([class*="bg-white"] *):not([class*="-50"] *):not([class*="-100"] *):not(:is(.brio-glass, .brio-card, .brio-card-muted, .brio-empty, .brio-hero, .brio-list-item, .brio-page-header, .brio-surface-glass, .brio-admin-tile, .ui-card, .ui-empty, .ui-stat, .ui-toast) *) { color: #f1f5f9; }
+    .dark :is(h1, h2, h3, h4):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass) *) { color: #f1f5f9; }
     .dark input[type="text"], .dark input[type="email"], .dark input[type="password"],
     .dark input[type="date"], .dark input[type="number"], .dark input[type="time"],
     .dark select, .dark textarea {
