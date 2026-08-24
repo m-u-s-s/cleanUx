@@ -56,7 +56,7 @@ class PostalCode extends Model
         return $this->belongsTo(Commune::class);
     }
 
-    /** @return BelongsToMany<User, $this> */
+    /** @return BelongsToMany<ServiceZone, $this> */
     public function serviceZones(): BelongsToMany
     {
         return $this->belongsToMany(ServiceZone::class, 'service_zone_postal_code')

@@ -83,7 +83,7 @@ class ServiceZone extends Model
         return $this->hasMany(self::class, 'parent_zone_id');
     }
 
-    /** @return BelongsToMany<ZoneServiceRule, $this> */
+    /** @return BelongsToMany<PostalCode, $this> */
     public function postalCodes(): BelongsToMany
     {
         return $this->belongsToMany(PostalCode::class, 'service_zone_postal_code')
@@ -97,7 +97,7 @@ class ServiceZone extends Model
         return $this->hasMany(ZoneServiceRule::class);
     }
 
-    /** @return BelongsToMany<EmployeeZoneAssignment, $this> */
+    /** @return BelongsToMany<ServiceCatalog, $this> */
     public function serviceCatalogs(): BelongsToMany
     {
         return $this->belongsToMany(ServiceCatalog::class, 'zone_service_rules')
@@ -119,7 +119,7 @@ class ServiceZone extends Model
         return $this->hasMany(EmployeeZoneAssignment::class);
     }
 
-    /** @return BelongsToMany<OrganizationSite, $this> */
+    /** @return BelongsToMany<User, $this> */
     public function employees(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'employee_zone_assignments')
@@ -145,7 +145,7 @@ class ServiceZone extends Model
         return $this->hasMany(PartnerZoneCoverage::class);
     }
 
-    /** @return BelongsToMany<Booking, $this> */
+    /** @return BelongsToMany<ServicePartner, $this> */
     public function servicePartners(): BelongsToMany
     {
         return $this->belongsToMany(ServicePartner::class, 'partner_zone_coverages')

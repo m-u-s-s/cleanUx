@@ -50,19 +50,19 @@ class MissionQualityInspection extends Model
         return $this->belongsTo(QualityChecklist::class, 'checklist_id');
     }
 
-    /** @return HasMany<User, $this> */
+    /** @return HasMany<InspectionItem, $this> */
     public function items(): HasMany
     {
         return $this->hasMany(InspectionItem::class, 'inspection_id');
     }
 
-    /** @return HasMany<User, $this> */
+    /** @return HasMany<InspectionPhoto, $this> */
     public function photos(): HasMany
     {
         return $this->hasMany(InspectionPhoto::class, 'inspection_id');
     }
 
-    /** @return HasMany<User, $this> */
+    /** @return HasMany<ClientSignature, $this> */
     public function signatures(): HasMany
     {
         return $this->hasMany(ClientSignature::class, 'inspection_id');

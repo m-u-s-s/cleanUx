@@ -49,7 +49,7 @@ class PromoCampaign extends Model
         'metadata' => 'array',
     ];
 
-    /** @return HasMany<User, $this> */
+    /** @return HasMany<PromoCode, $this> */
     public function promoCodes(): HasMany
     {
         return $this->hasMany(PromoCode::class);

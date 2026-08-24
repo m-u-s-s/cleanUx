@@ -92,7 +92,7 @@ class OrganizationSite extends Model
         return $this->belongsTo(User::class, 'preferred_provider_id');
     }
 
-    /** @return HasMany<ServiceZone, $this> */
+    /** @return HasMany<Booking, $this> */
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class, 'organization_site_id');

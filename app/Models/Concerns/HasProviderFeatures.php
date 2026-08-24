@@ -73,13 +73,13 @@ trait HasProviderFeatures
         ])->withTimestamps();
     }
 
-    /** @return HasMany<ServiceZone, $this> */
+    /** @return HasMany<EmployeeZoneAssignment, $this> */
     public function zoneAssignments(): HasMany
     {
         return $this->hasMany(EmployeeZoneAssignment::class, 'user_id');
     }
 
-    /** @return BelongsToMany<ServiceZone, $this> */
+    /** @return BelongsToMany<FieldTeam, $this> */
     public function fieldTeams(): BelongsToMany
     {
         return $this->belongsToMany(FieldTeam::class, 'field_team_members')

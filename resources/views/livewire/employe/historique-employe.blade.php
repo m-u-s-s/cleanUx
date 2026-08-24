@@ -54,7 +54,7 @@
                     </div>
                     <div class="space-y-2">
                         <p><span class="font-medium text-slate-900">{{ __('Type de lieu :') }}</span> {{ ucfirst($rdv->place_type ?? '—') }}</p>
-                        <p><span class="font-medium text-slate-900">{{ __('Surface :') }}</span> {{ $rdv->surface ?? '—' }}</p>
+                        <p><span class="font-medium text-slate-900">{{ __('Surface :') }}</span> {{ $rdv->surface_m2 ? $rdv->surface_m2 . ' m²' : '—' }}</p>
                     </div>
                 </div>
 

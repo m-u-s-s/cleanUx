@@ -118,7 +118,7 @@ class ServiceCatalog extends Model
         return $this->hasMany(ZoneServiceRule::class);
     }
 
-    /** @return BelongsToMany<Booking, $this> */
+    /** @return BelongsToMany<ServiceZone, $this> */
     public function serviceZones(): BelongsToMany
     {
         return $this->belongsToMany(ServiceZone::class, 'zone_service_rules')
@@ -134,13 +134,13 @@ class ServiceCatalog extends Model
             ->withTimestamps();
     }
 
-    /** @return HasMany<Trade, $this> */
+    /** @return HasMany<Booking, $this> */
     public function rendezVous(): HasMany
     {
         return $this->hasMany(Booking::class);
     }
 
-    /** @return HasMany<Trade, $this> */
+    /** @return HasMany<CountryServiceCatalogRule, $this> */
     public function countryServiceCatalogRules(): HasMany
     {
         return $this->hasMany(CountryServiceCatalogRule::class);

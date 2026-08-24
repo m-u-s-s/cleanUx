@@ -65,19 +65,19 @@ class Country extends Model
         return $this->hasMany(ServiceZone::class);
     }
 
-    /** @return HasOne<CountryServiceCatalogRule, $this> */
+    /** @return HasOne<CountryOperationalSetting, $this> */
     public function operationalSetting(): HasOne
     {
         return $this->hasOne(CountryOperationalSetting::class);
     }
 
-    /** @return HasOne<CountryServiceCatalogRule, $this> */
+    /** @return HasOne<CountryBillingProfile, $this> */
     public function billingProfile(): HasOne
     {
         return $this->hasOne(CountryBillingProfile::class);
     }
 
-    /** @return HasOne<CountryServiceCatalogRule, $this> */
+    /** @return HasOne<MarketLaunchReadiness, $this> */
     public function launchReadiness(): HasOne
     {
         return $this->hasOne(MarketLaunchReadiness::class);

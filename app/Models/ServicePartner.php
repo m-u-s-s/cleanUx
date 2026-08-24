@@ -47,7 +47,7 @@ class ServicePartner extends Model
         return $this->hasMany(PartnerZoneCoverage::class);
     }
 
-    /** @return BelongsToMany<FieldTeam, $this> */
+    /** @return BelongsToMany<ServiceZone, $this> */
     public function serviceZones(): BelongsToMany
     {
         return $this->belongsToMany(ServiceZone::class, 'partner_zone_coverages')

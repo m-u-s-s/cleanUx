@@ -52,7 +52,7 @@ class ContractTemplate extends Model
         'metadata' => 'array',
     ];
 
-    /** @return HasMany<self, $this> */
+    /** @return HasMany<ContractDocument, $this> */
     public function documents(): HasMany
     {
         return $this->hasMany(ContractDocument::class, 'template_id');

@@ -47,7 +47,7 @@
                             </div>
                             <div class="flex gap-2">
                                 <dt class="text-slate-500 dark:text-slate-400">Surface :</dt>
-                                <dd class="font-medium">{{ $rdv->surface ?? '—' }}</dd>
+                                <dd class="font-medium">{{ $rdv->surface_m2 ? $rdv->surface_m2 . ' m²' : '—' }}</dd>
                             </div>
                             <div class="flex gap-2">
                                 <dt class="text-slate-500 dark:text-slate-400">Parking :</dt>
@@ -57,7 +57,26 @@
                                 <dt class="text-slate-500 dark:text-slate-400">Animaux :</dt>
                                 <dd class="font-medium">{{ $rdv->presence_animaux ? 'Oui' : 'Non' }}</dd>
                             </div>
+                            <div class="flex gap-2">
+                                <dt class="text-slate-500 dark:text-slate-400">Matériel fourni :</dt>
+                                <dd class="font-medium">{{ $rdv->materiel_fournit ? 'Oui' : 'Non' }}</dd>
+                            </div>
                         </dl>
+
+                        @if(! empty($rdv->photos_reference))
+                            <div class="mt-3">
+                                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Photos de référence</p>
+                                <div class="mt-2 grid grid-cols-3 gap-2">
+                                    @foreach($rdv->photos_reference as $photo)
+                                        <a href="{{ \App\Support\Media\PrivateMedia::url($photo) }}" target="_blank" rel="noopener">
+                                            <img src="{{ \App\Support\Media\PrivateMedia::url($photo) }}"
+                                                alt="Photo de référence"
+                                                class="h-20 w-full rounded-lg border border-slate-200 object-cover transition hover:opacity-90 dark:border-slate-700">
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
 
                         @if($rdv->customer_comment)
                             <div class="mt-3 rounded-lg border border-amber-200/70 bg-amber-50/50 p-2.5 text-xs text-amber-900">

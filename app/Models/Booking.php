@@ -707,7 +707,7 @@ class Booking extends Model
         return $this->hasMany(ComplaintCase::class, 'booking_id');
     }
 
-    /** @return HasOne<Feedback, $this> */
+    /** @return HasOne<Mission, $this> */
     public function mission(): HasOne
     {
         return $this->hasOne(Mission::class, 'booking_id');
@@ -734,7 +734,7 @@ class Booking extends Model
         return $this->hasMany(Feedback::class);
     }
 
-    /** @return HasOne<BookingApproval, $this> */
+    /** @return HasOne<Feedback, $this> */
     public function latestFeedback(): HasOne
     {
         return $this->hasOne(Feedback::class)->latestOfMany();

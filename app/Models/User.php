@@ -134,7 +134,7 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     // Core relations
     // ──────────────────────────────────────────────────────
 
-    /** @return HasOne<Booking, $this> */
+    /** @return HasOne<CustomerProfile, $this> */
     public function customerProfile(): HasOne
     {
         return $this->hasOne(CustomerProfile::class);
@@ -180,7 +180,7 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         return $this->hasMany(Booking::class, 'employe_id');
     }
 
-    /** @return HasMany<self, $this> */
+    /** @return HasMany<Disponibilite, $this> */
     public function disponibilites(): HasMany
     {
         return $this->hasMany(Disponibilite::class);

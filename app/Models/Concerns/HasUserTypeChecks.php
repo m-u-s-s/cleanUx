@@ -116,10 +116,9 @@ trait HasUserTypeChecks
     {
         $customerType = $this->customerProfile?->customer_type;
 
+        // `customer_type` est caste en CustomerType : la lecture ne rend jamais la chaine brute.
         if ($customerType !== null) {
-            return $customerType instanceof CustomerType
-                ? $customerType === CustomerType::PERSONAL
-                : $customerType === CustomerType::PERSONAL->value;
+            return $customerType === CustomerType::PERSONAL;
         }
 
         /**
@@ -134,11 +133,7 @@ trait HasUserTypeChecks
     {
         $customerType = $this->customerProfile?->customer_type;
 
-        if ($customerType instanceof CustomerType) {
-            if ($customerType === CustomerType::COMPANY) {
-                return true;
-            }
-        } elseif ($customerType === CustomerType::COMPANY->value) {
+        if ($customerType === CustomerType::COMPANY) {
             return true;
         }
 
