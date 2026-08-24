@@ -47,7 +47,7 @@
                             </div>
                             <div class="flex gap-2">
                                 <dt class="text-slate-500 dark:text-slate-400">Surface :</dt>
-                                <dd class="font-medium">{{ $rdv->surface_m2 ? $rdv->surface_m2 . ' m²' : '—' }}</dd>
+                                <dd class="font-medium">{{ $rdv->surface ?? ($rdv->surface_m2 ? $rdv->surface_m2 . ' m²' : '—') }}</dd>
                             </div>
                             <div class="flex gap-2">
                                 <dt class="text-slate-500 dark:text-slate-400">Parking :</dt>

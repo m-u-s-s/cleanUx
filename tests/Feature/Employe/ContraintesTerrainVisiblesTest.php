@@ -45,17 +45,34 @@ class ContraintesTerrainVisiblesTest extends TestCase
         Livewire::test(EmployeDashboard::class)->assertSee('Matériel fourni');
     }
 
-    public function test_la_surface_reelle_est_affichee(): void
+    /**
+     * DEUX NOTIONS DISTINCTES, PAS UN DOUBLON.
+     *
+     * Le web fait choisir une TRANCHE (`moins_50`, `50_100`...) : `CreateBookingAction` l'ecrit et
+     * `BookingEstimatorService` en tire le prix ET la duree. L'API, elle, recoit une MESURE exacte
+     * en `surface_m2`. La tranche prime — c'est elle qui a servi a facturer.
+     */
+    public function test_la_tranche_choisie_sur_le_web_prime(): void
     {
-        $this->employeAvecRendezVous(['surface_m2' => 85]);
+        $this->employeAvecRendezVous(['surface' => '50_100', 'surface_m2' => 85]);
+
+        Livewire::test(EmployeDashboard::class)
+            ->assertSee('50_100')
+            ->assertDontSee('85 m²');
+    }
+
+    /** Une reservation venue de l'API n'a pas de tranche : sa mesure vaut mieux qu'un tiret. */
+    public function test_sans_tranche_la_mesure_de_l_api_s_affiche(): void
+    {
+        $this->employeAvecRendezVous(['surface' => null, 'surface_m2' => 85]);
 
         Livewire::test(EmployeDashboard::class)->assertSee('85 m²');
     }
 
     /** TEMOIN — sans lui, un gabarit qui ecrirait « m² » en dur passerait pour correct. */
-    public function test_sans_surface_renseignee_aucune_mesure_n_est_inventee(): void
+    public function test_sans_tranche_ni_mesure_rien_n_est_invente(): void
     {
-        $this->employeAvecRendezVous(['surface_m2' => null]);
+        $this->employeAvecRendezVous(['surface' => null, 'surface_m2' => null]);
 
         Livewire::test(EmployeDashboard::class)->assertDontSee('m²');
     }

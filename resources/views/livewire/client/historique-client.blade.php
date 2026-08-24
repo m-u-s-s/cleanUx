@@ -103,7 +103,7 @@
 
                 <div>
                     <p><span class="font-medium">Fréquence :</span> {{ ucfirst(str_replace('_', ' ', $rdv->frequency ?? '—')) }}</p>
-                    <p><span class="font-medium">Surface :</span> {{ $rdv->surface_m2 ? $rdv->surface_m2 . ' m²' : '—' }}</p>
+                    <p><span class="font-medium">Surface :</span> {{ $rdv->surface ?? ($rdv->surface_m2 ? $rdv->surface_m2 . ' m²' : '—') }}</p>
                 </div>
             </div>
 

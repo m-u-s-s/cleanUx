@@ -34,7 +34,7 @@
         <div class="space-y-1">
             <p><span class="font-medium">Type de lieu :</span> {{ ucfirst($rdv->place_type ?? '—') }}</p>
             <p><span class="font-medium">Fréquence :</span> {{ ucfirst(str_replace('_', ' ', $rdv->frequency ?? '—')) }}</p>
-            <p><span class="font-medium">Surface :</span> {{ $rdv->surface_m2 ? $rdv->surface_m2 . ' m²' : '—' }}</p>
+            <p><span class="font-medium">Surface :</span> {{ $rdv->surface ?? ($rdv->surface_m2 ? $rdv->surface_m2 . ' m²' : '—') }}</p>
             <p><span class="font-medium">Durée estimée :</span> {{ $rdv->estimated_duration_minutes ? $rdv->estimated_duration_minutes . ' min' : '—' }}</p>
         </div>
 
