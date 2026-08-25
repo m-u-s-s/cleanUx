@@ -37,28 +37,6 @@
         color: var(--brio-ink);
     }
 
-    /* Les champs sont du verre, eux aussi : un formulaire opaque au milieu d'une
-       page translucide se voit immédiatement. */
-    input[type="text"], input[type="email"], input[type="password"], input[type="search"],
-    input[type="tel"], input[type="url"], input[type="date"], input[type="datetime-local"],
-    input[type="number"], input[type="time"], select, textarea {
-        background-color: var(--glass-bg-faint);
-        border-color: var(--glass-border);
-        border-radius: var(--cx-radius-sm);
-        color: var(--brio-ink);
-        transition: border-color var(--cx-dur-fast) var(--cx-ease),
-                    box-shadow var(--cx-dur-fast) var(--cx-ease),
-                    background-color var(--cx-dur-fast) var(--cx-ease);
-    }
-
-    input:focus, select:focus, textarea:focus {
-        background-color: var(--glass-bg);
-        border-color: rgb(var(--brio-accent-rgb) / 0.6);
-        box-shadow: var(--brio-ring);
-        outline: none;
-    }
-
-    ::placeholder { color: var(--brio-faint); opacity: 1; }
 
     /* La barre de défilement suit la matière : une barre grise sur du verre trahit. */
     * { scrollbar-color: var(--glass-border) transparent; scrollbar-width: thin; }

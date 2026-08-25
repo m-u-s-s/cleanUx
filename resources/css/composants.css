@@ -784,3 +784,200 @@
 @media (prefers-reduced-motion: reduce) {
     .brio-carte:hover { transform: none; }
 }
+
+/* ========================================================== LES TABLEAUX
+   93 vues portent un `<table>`, et UNE SEULE emploie la classe dediee : les
+   autres sont en Tailwind brut. On reprend donc l'element lui-meme, comme pour
+   les surfaces — 93 tableaux changent sans qu'aucune vue ne bouge.
+
+   La reserve `.brio-opaque` reste la soupape pour un tableau qui doit garder
+   son rendu d'origine (un apercu de courriel, un export). */
+body:not(.cx-shell) table:not(.brio-opaque) {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border-radius: var(--cx-radius-lg);
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    box-shadow: var(--glass-highlight), var(--glass-shadow);
+    color: var(--brio-ink);
+}
+
+body:not(.cx-shell) table:not(.brio-opaque) thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 0.7rem 0.9rem;
+    text-align: start;
+    font-family: var(--brio-sans);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--brio-muted);
+    background-color: var(--glass-bg-strong);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    border-bottom: 1px solid var(--glass-border);
+    white-space: nowrap;
+}
+
+body:not(.cx-shell) table:not(.brio-opaque) tbody td {
+    padding: 0.75rem 0.9rem;
+    font-size: 0.875rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--glass-border);
+    color: color-mix(in srgb, var(--brio-ink) 88%, transparent);
+}
+
+body:not(.cx-shell) table:not(.brio-opaque) tbody tr:last-child td { border-bottom: 0; }
+
+/* Le survol eclaire la ligne entiere : sur un tableau dense, c'est ce qui permet
+   de suivre une ligne du regard jusqu'au bout. */
+body:not(.cx-shell) table:not(.brio-opaque) tbody tr {
+    transition: background-color var(--cx-dur-fast) var(--cx-ease);
+}
+
+body:not(.cx-shell) table:not(.brio-opaque) tbody tr:hover {
+    background-color: rgb(var(--brio-accent-rgb) / 0.06);
+}
+
+/* Un tableau large DEFILE DANS SON CADRE. Sans ce conteneur, il pousse la page
+   entiere en largeur et le corps se met a defiler horizontalement. */
+.brio-table-cadre {
+    overflow-x: auto;
+    border-radius: var(--cx-radius-lg);
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Sous 640px, une colonne d'action collee a droite reste atteignable. */
+@media (max-width: 640px) {
+    body:not(.cx-shell) table:not(.brio-opaque) thead th,
+    body:not(.cx-shell) table:not(.brio-opaque) tbody td {
+        padding: 0.6rem 0.7rem;
+        font-size: 0.8125rem;
+    }
+}
+
+/* ========================================================== LES GRAPHIQUES
+   ApexCharts dessine dans un SVG : le verre l'entoure, il ne le traverse pas. */
+.brio-graphique {
+    position: relative;
+    padding: 1.15rem 1.25rem 0.5rem;
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--cx-radius-lg);
+    box-shadow: var(--glass-highlight), var(--glass-shadow);
+}
+
+.brio-graphique-tete {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.brio-graphique-titre { font-family: var(--brio-sans); font-size: 0.9375rem; font-weight: 700; color: var(--brio-ink); }
+.brio-graphique-note  { font-size: 0.75rem; color: var(--brio-muted); }
+
+/* La grille et les libelles d'ApexCharts sont peints en JS depuis les jetons ;
+   ce qui reste ici, c'est ce que le SVG ne sait pas thematiser. */
+body:not(.cx-shell) .apexcharts-tooltip {
+    background-color: var(--glass-bg-strong) !important;
+    backdrop-filter: blur(var(--glass-blur-deep)) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(var(--glass-blur-deep)) saturate(var(--glass-sat));
+    border: 1px solid var(--glass-border) !important;
+    border-radius: var(--cx-radius-md) !important;
+    box-shadow: var(--glass-shadow-lift) !important;
+    color: var(--brio-ink) !important;
+}
+
+body:not(.cx-shell) .apexcharts-tooltip-title {
+    background-color: transparent !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    font-family: var(--brio-sans) !important;
+    font-weight: 700 !important;
+}
+
+/* La JAUGE CIRCULAIRE — celle des modeles etudies : un anneau fin, pas un camembert. */
+.brio-jauge {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--brio-jauge-taille, 5.5rem);
+    height: var(--brio-jauge-taille, 5.5rem);
+    border-radius: 50%;
+    background: conic-gradient(
+        var(--brio-accent) calc(var(--brio-jauge-part, 0) * 1%),
+        var(--glass-border) 0
+    );
+}
+
+.brio-jauge::before {
+    content: "";
+    position: absolute;
+    inset: 9%;
+    border-radius: 50%;
+    background: var(--brio-bg);
+}
+
+.brio-jauge-valeur {
+    position: relative;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--brio-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.brio-jauge-libelle { position: relative; font-size: 0.625rem; font-weight: 600; color: var(--brio-muted); }
+
+/* ========================================================== LES CHAMPS
+   POURQUOI CES REGLES NE SONT PAS DANS `base.css`.
+
+   `@tailwindcss/forms` pose `background-color: #fff` sur tout champ, et il est injecte
+   par `@tailwind base` — donc APRES les `@import`. A specificite egale il gagnait, et les
+   champs restaient BLANCS OPAQUES sur la nuit : quatre filtres illisibles sur l'ecran
+   comptable, texte gris pale sur blanc. Le prefixe `body:not(.cx-shell)` suffit a passer
+   devant sans recourir a `!important`. */
+body:not(.cx-shell) :is(
+    input[type="text"], input[type="email"], input[type="password"], input[type="search"],
+    input[type="tel"], input[type="url"], input[type="date"], input[type="datetime-local"],
+    input[type="month"], input[type="week"], input[type="number"], input[type="time"],
+    select, textarea
+):not(.brio-opaque) {
+    background-color: var(--glass-bg-faint);
+    border-color: var(--glass-border);
+    border-radius: var(--cx-radius-sm);
+    color: var(--brio-ink);
+    transition: border-color var(--cx-dur-fast) var(--cx-ease),
+                box-shadow var(--cx-dur-fast) var(--cx-ease),
+                background-color var(--cx-dur-fast) var(--cx-ease);
+}
+
+body:not(.cx-shell) :is(input, select, textarea):not(.brio-opaque):focus {
+    background-color: var(--glass-bg);
+    border-color: rgb(var(--brio-accent-rgb) / 0.6);
+    box-shadow: var(--brio-ring);
+    outline: none;
+}
+
+body:not(.cx-shell) ::placeholder { color: var(--brio-faint); opacity: 1; }
+
+/* Une liste deroulante NATIVE reste peinte par le systeme : ses options ne suivent pas
+   le CSS de la page. On force au moins la couleur de fond des options, faute de quoi
+   un menu blanc s'ouvre au milieu de la nuit. */
+:root.dark body:not(.cx-shell) select option {
+    background-color: #131a2b;
+    color: var(--brio-ink);
+}
+
+/* La case a cocher et le bouton radio prennent l'accent de la marque. */
+body:not(.cx-shell) :is(input[type="checkbox"], input[type="radio"]) {
+    accent-color: var(--brio-accent-deep);
+}
