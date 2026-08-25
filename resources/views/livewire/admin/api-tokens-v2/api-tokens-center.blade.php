@@ -87,8 +87,13 @@
                                     @else
                                         <button wire:click="suspend({{ $t->id }})" class="text-amber-600 hover:underline">Suspendre</button>
                                     @endif
-                                    <button wire:click="revoke({{ $t->id }})" class="text-red-600 hover:underline"
-                                        onclick="return confirm('Révoquer définitivement ce token ?')">Révoquer</button>
+                                    <button class="text-red-600 hover:underline"
+                                        x-data
+                                        x-on:click="$dispatch('brio-confirmer', {
+                                            message: @js(__('Révoquer définitivement ce jeton ? Les intégrations qui l’utilisent cesseront de fonctionner.')),
+                                            ton: 'danger',
+                                            appel: 'revoke({{ $t->id }})',
+                                        })">Révoquer</button>
                                 </td>
                             </tr>
                         @empty

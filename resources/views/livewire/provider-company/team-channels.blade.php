@@ -473,7 +473,7 @@
                                 setTimeout(() => { if (this.enregistre) this.recorder?.stop(); }, 30000);
                             } catch (e) {
                                 this.enregistre = false;
-                                alert('Le micro n’est pas accessible depuis ce navigateur.');
+                                window.brioToast({ message: 'Le micro n’est pas accessible depuis ce navigateur.', type: 'error' });
                             }
                         },
                     }"

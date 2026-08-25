@@ -127,6 +127,42 @@
         </div>
     </div>
 
+    {{--
+        LE DÉTAIL D'UN ÉVÉNEMENT — une fiche, pas la boîte du navigateur.
+
+        `alert()` empilait six lignes « Clé : valeur » dans une fenêtre système : sans
+        hiérarchie, sans thème, illisible sur un téléphone, et bloquant le fil tant qu'on ne
+        l'avait pas fermée. Un détail se PARCOURT ; une alerte s'interrompt.
+
+        Les six champs sont posés en cases plutôt qu'en lignes, comme les écrans terrain :
+        l'œil les balaye au lieu de les lire.
+    --}}
+    <div x-data="{ ouvert: false, champs: [] }"
+         x-on:brio-evenement.window="champs = $event.detail.champs; ouvert = true"
+         x-on:keydown.escape.window="ouvert = false">
+        <template x-if="ouvert">
+            <div class="brio-modal-fond grid place-items-center p-4" x-on:click.self="ouvert = false">
+                <div class="brio-modal" role="dialog" aria-modal="true" aria-labelledby="titre-evenement">
+                    <h2 id="titre-evenement" class="brio-modal-titre">{{ __('Détail de l’intervention') }}</h2>
+
+                    <dl class="brio-terrain mt-3">
+                        <template x-for="champ in champs" :key="champ.libelle">
+                            <div class="brio-terrain-case">
+                                <dt class="brio-terrain-tete" x-text="champ.libelle"></dt>
+                                <dd class="brio-terrain-valeur" x-text="champ.valeur"></dd>
+                            </div>
+                        </template>
+                    </dl>
+
+                    <div class="brio-modal-actions">
+                        <button type="button" x-init="$el.focus()" class="brio-btn brio-btn-nu"
+                                x-on:click="ouvert = false">{{ __('Fermer') }}</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
         <script>
@@ -159,15 +195,19 @@
                     eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
                     eventClick: function(info) {
                         const p = info.event.extendedProps || {};
-                        const message = [
-                            `Client : ${p.client || '-'}`,
-                            `Employé : ${p.employe || '-'}`,
-                            `Zone : ${p.zone || '-'}`,
-                            `Statut : ${p.status || '-'}`,
-                            `Adresse : ${p.adresse || '-'}`,
-                            `Référence : ${p.reference || '-'}`,
-                        ].join("\n");
-                        alert(message);
+
+                        window.dispatchEvent(new CustomEvent('brio-evenement', {
+                            detail: {
+                                champs: [
+                                    { libelle: 'Client', valeur: p.client || '—' },
+                                    { libelle: 'Employé', valeur: p.employe || '—' },
+                                    { libelle: 'Zone', valeur: p.zone || '—' },
+                                    { libelle: 'Statut', valeur: p.status || '—' },
+                                    { libelle: 'Adresse', valeur: p.adresse || '—' },
+                                    { libelle: 'Référence', valeur: p.reference || '—' },
+                                ],
+                            },
+                        }));
                     }
                 });
 

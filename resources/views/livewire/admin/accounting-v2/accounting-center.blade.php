@@ -146,8 +146,13 @@
                                 </td>
                                 <td class="px-4 py-2 text-right text-xs">
                                     @if(! $p->is_closed)
-                                        <button wire:click="closePeriod({{ $p->period_year }}, {{ $p->period_month }})" class="text-indigo-600 hover:underline"
-                                            onclick="return confirm('Clôturer {{ $p->label() }} ? Action figée.')">Clôturer</button>
+                                        <button class="text-indigo-600 hover:underline"
+                                            x-data
+                                            x-on:click="$dispatch('brio-confirmer', {
+                                                message: @js(__('Clôturer :periode ? Cette écriture est ensuite figée.', ['periode' => $p->label()])),
+                                                ton: 'danger',
+                                                appel: 'closePeriod({{ $p->period_year }}, {{ $p->period_month }})',
+                                            })">Clôturer</button>
                                     @else
                                         {{-- LE MOTIF EST DEMANDÉ AVANT L'APPEL, jamais après : rouvrir un exercice
                                              clos se justifie devant un contrôle, et le service le refuse sans raison

@@ -69,6 +69,7 @@
     </div>
 
     <x-toast />
+    <x-ui.confirmation />
 
     <audio id="success-sound" src="{{ asset('sounds/success.mp3') }}" preload="auto"></audio>
     <audio id="error-sound" src="{{ asset('sounds/error.mp3') }}" preload="auto"></audio>

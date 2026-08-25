@@ -134,8 +134,13 @@
                                 <td class="px-4 py-2 text-xs"><x-money :amount="(float) ($s->total_billed_cents / 100)" /></td>
                                 <td class="px-4 py-2 text-right text-xs">
                                     @if(! in_array($s->status, ['cancelled', 'expired']))
-                                        <button wire:click="forceCancel({{ $s->id }})" class="text-red-600 hover:underline"
-                                            onclick="return confirm('Cancel immédiatement ?')">Force cancel</button>
+                                        <button class="text-red-600 hover:underline"
+                                            x-data
+                                            x-on:click="$dispatch('brio-confirmer', {
+                                                message: @js(__('Arrêter cet abonnement immédiatement, sans attendre la fin de la période ?')),
+                                                ton: 'danger',
+                                                appel: 'forceCancel({{ $s->id }})',
+                                            })">Force cancel</button>
                                     @endif
                                 </td>
                             </tr>

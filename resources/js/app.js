@@ -5,6 +5,40 @@ import './assistant-streaming';
 import './push-notifications';
 import './pwa';
 
+/**
+ * LE POINT D'ENTREE DES NOTIFICATIONS, DEPUIS DU JAVASCRIPT ORDINAIRE.
+ *
+ * `<x-toast />` n'ecoutait que `Livewire.on('toast')`. Un script de vue — celui qui suit une
+ * position, celui qui valide un code de fin — n'a aucun composant Livewire sous la main : neuf
+ * d'entre eux appelaient donc `alert()`, la boite du navigateur, qui ignore le theme, BLOQUE
+ * le fil et se signale hors de la fenetre sur mobile.
+ *
+ * `echo-listeners.js` APPELAIT DEJA CETTE FONCTION sans que personne ne la definisse : la
+ * condition etait toujours fausse, et les notifications temps reel retombaient sur l'API
+ * `Notification` du systeme — donc sur une permission que presque personne n'accorde.
+ *
+ * Les trois formes deja employees dans le depot sont acceptees :
+ *
+ *     window.brioToast('Mission demarree.')
+ *     window.brioToast({ message: 'Code invalide.', type: 'error' })
+ *     window.brioToast({ title: 'Tache assignee', body: '...', type: 'info' })
+ */
+window.brioToast = (charge = {}, typeParDefaut = 'success') => {
+    const texte =
+        typeof charge === 'string'
+            ? charge
+            : [charge.title, charge.body].filter(Boolean).join(' — ')
+              || charge.message
+              || charge.msg
+              || '';
+
+    if (!texte) return;
+
+    const type = typeof charge === 'string' ? typeParDefaut : charge.type || typeParDefaut;
+
+    window.dispatchEvent(new CustomEvent('brio-toast', { detail: { message: texte, type } }));
+};
+
 // Lit un jeton du systeme de design depuis le CSS.
 // Un graphique, une carte ou un canevas ne peuvent pas ecrire `var(--x)` : ils lisent ici.
 window.brioJeton = (nom, repli = '') => {

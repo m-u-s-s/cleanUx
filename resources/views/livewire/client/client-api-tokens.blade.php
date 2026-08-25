@@ -135,12 +135,20 @@
                                 @endif
                             </td>
                             <td class="px-4 py-2 text-right text-xs space-x-2">
-                                <button wire:click="rotate({{ $t->id }})"
-                                        class="text-indigo-600 hover:underline"
-                                        onclick="return confirm('Rotation : nouveau token + ancien valide pendant la grace period 24h.')">Rotate</button>
-                                <button wire:click="revoke({{ $t->id }})"
-                                        class="text-red-600 hover:underline"
-                                        onclick="return confirm('Révoquer définitivement ce token ?')">Révoquer</button>
+                                <button class="text-indigo-600 hover:underline"
+                                        x-data
+                                        x-on:click="$dispatch('brio-confirmer', {
+                                            message: @js(__('Renouveler ce jeton ? L’ancien reste valable 24 heures, le temps de basculer vos intégrations.')),
+                                            ton: 'neutre',
+                                            appel: 'rotate({{ $t->id }})',
+                                        })">Rotate</button>
+                                <button class="text-red-600 hover:underline"
+                                        x-data
+                                        x-on:click="$dispatch('brio-confirmer', {
+                                            message: @js(__('Révoquer définitivement ce jeton ? Les intégrations qui l’utilisent cesseront de fonctionner.')),
+                                            ton: 'danger',
+                                            appel: 'revoke({{ $t->id }})',
+                                        })">Révoquer</button>
                             </td>
                         </tr>
                     @empty

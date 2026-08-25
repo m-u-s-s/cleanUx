@@ -147,7 +147,7 @@
 <script>
     async function startMissionTracking(missionId) {
         if (!navigator.geolocation) {
-            alert('La géolocalisation n’est pas disponible sur cet appareil.');
+            window.brioToast({ message: 'La géolocalisation n’est pas disponible sur cet appareil.', type: 'error' });
             return;
         }
 
@@ -171,7 +171,7 @@
                 const result = await response.json();
 
                 if (!result.ok) {
-                    alert('Impossible de démarrer le tracking.');
+                    window.brioToast({ message: 'Impossible de démarrer le suivi.', type: 'error' });
                     return;
                 }
 
@@ -179,10 +179,10 @@
 
                 startSendingPosition(result.tracking_session_id);
 
-                alert('Trajet démarré. Le client peut maintenant suivre votre position.');
+                window.brioToast('Trajet démarré. Le client peut maintenant suivre votre position.');
             },
             function() {
-                alert('Vous devez autoriser la géolocalisation pour démarrer le trajet.');
+                window.brioToast({ message: 'Vous devez autoriser la géolocalisation pour démarrer le trajet.', type: 'warning' });
             }, {
                 enableHighAccuracy: true,
                 timeout: 10000,

@@ -386,11 +386,14 @@
         const result = await response.json();
 
         if (!result.ok) {
-            alert('Code invalide ou impossible de démarrer la mission.');
+            window.brioToast({ message: 'Code invalide ou impossible de démarrer la mission.', type: 'error' });
             return;
         }
 
-        alert('Mission démarrée avec succès.');
-        window.location.reload();
+        window.brioToast('Mission démarrée avec succès.');
+
+        // `alert()` BLOQUAIT le fil : le rechargement n'arrivait qu'apres le clic sur OK.
+        // Une notification ne bloque pas — sans ce delai, elle partirait avec la page.
+        setTimeout(() => window.location.reload(), 1400);
     }
 </script>

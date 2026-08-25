@@ -52,6 +52,9 @@
         },
     }"
     x-init="Livewire.on('toast', (...args) => open(args[0] || {}, args[1] || 'success'))"
+    {{-- Le second canal : `window.brioToast(...)`, pour les scripts de vue qui n'ont aucun
+         composant Livewire sous la main. Ils appelaient `alert()` faute de mieux. --}}
+    x-on:brio-toast.window="open($event.detail || {}, 'success')"
     class="brio-toasts"
     role="status"
     aria-live="polite"

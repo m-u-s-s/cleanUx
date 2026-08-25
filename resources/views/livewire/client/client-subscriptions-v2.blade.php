@@ -73,14 +73,24 @@
                                     <button wire:click="resume({{ $sub->id }})" class="rounded-xl border border-emerald-300 text-emerald-700 px-3 py-1.5 text-xs font-semibold hover:bg-emerald-50">Reprendre</button>
                                 @endif
                                 @if(! in_array($sub->status, ['cancelled', 'expired']) && ! $sub->cancel_at_period_end)
-                                    <button wire:click="cancelAtPeriodEnd({{ $sub->id }})"
+                                    <button
                                             class="rounded-xl border border-slate-300 text-slate-700 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50"
-                                            onclick="return confirm('Annuler à la fin de la période en cours ?')">
+                                            x-data
+                                            x-on:click="$dispatch('brio-confirmer', {
+                                                message: @js(__('Arrêter cet abonnement à la fin de la période en cours ? Vous en gardez le bénéfice jusque-là.')),
+                                                ton: 'neutre',
+                                                appel: 'cancelAtPeriodEnd({{ $sub->id }})',
+                                            })">
                                         Annuler en fin de période
                                     </button>
-                                    <button wire:click="cancelImmediately({{ $sub->id }})"
+                                    <button
                                             class="rounded-xl border border-red-300 text-red-700 px-3 py-1.5 text-xs font-semibold hover:bg-red-50"
-                                            onclick="return confirm('Annuler IMMÉDIATEMENT (sans remboursement de la période en cours) ?')">
+                                            x-data
+                                            x-on:click="$dispatch('brio-confirmer', {
+                                                message: @js(__('Arrêter cet abonnement immédiatement ? La période en cours n’est pas remboursée.')),
+                                                ton: 'danger',
+                                                appel: 'cancelImmediately({{ $sub->id }})',
+                                            })">
                                         Annuler maintenant
                                     </button>
                                 @endif

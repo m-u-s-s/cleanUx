@@ -104,6 +104,12 @@
         </div>
     </main>
 
+    {{-- Trois `dispatch('toast', …)` de cet espace n'atteignaient RIEN : cette mise en page
+         n'a jamais monte le composant. Une facture introuvable, un litige ouvert et un
+         changement d'acces se faisaient en silence. --}}
+    <x-toast />
+    <x-ui.confirmation />
+
     @livewireScripts
 </body>
 

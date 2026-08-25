@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use App\Models\Booking;
 use App\Services\Booking\EmployeeAvailabilityService;
 use App\Services\CancellationV2\CancellationEngine;
+use App\Services\CancellationV2\CancellationQuote;
 use App\Services\Missions\MissionFromRendezVousSyncService;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -263,6 +265,48 @@ class MesRendezVousClient extends Component
 
         $this->cancelRdvId = $id;
         $this->cancelReason = '';
+    }
+
+    /**
+     * CE QUE L'ANNULATION VA COUTER, AVANT DE LA CONFIRMER.
+     *
+     * La modale demandait « confirmer ? » et le moteur prelevait des frais. Le client
+     * apprenait le montant sur son releve. Quinze lignes de JavaScript avaient ete COLLEES
+     * dans la vue pour interroger `/cancellation-quote` — hors de toute balise `<script>`,
+     * donc affichees telles quelles au client, jeton d'API compris.
+     *
+     * Ici, pas de requete : nous SOMMES le serveur. Et l'auteur est transmis, comme sur la
+     * route d'API — sans lui le plafond d'exemptions ne serait consulte qu'a l'execution, et
+     * l'ecran annoncerait « 0 » avant un debit reel.
+     *
+     * `null` quand le devis ne peut pas etre etabli : la modale montre alors ce qu'elle sait,
+     * sans inventer un montant. Taire l'ecran entier pour un devis manquant serait pire.
+     */
+    #[Computed]
+    public function devisAnnulation(): ?CancellationQuote
+    {
+        if ($this->cancelRdvId === null) {
+            return null;
+        }
+
+        if (! class_exists(CancellationEngine::class) || ! Schema::hasTable('booking_cancellations_v2')) {
+            return null;
+        }
+
+        try {
+            return app(CancellationEngine::class)->quote(
+                bookingId: $this->cancelRdvId,
+                actorRole: 'client',
+                actorUserId: Auth::id(),
+            );
+        } catch (\Throwable $e) {
+            Log::warning('[cancellation_v2] devis indisponible', [
+                'booking_id' => $this->cancelRdvId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     public function fermerAnnulation(): void

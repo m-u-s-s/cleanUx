@@ -87,15 +87,19 @@
             // Le serveur refuse pour des raisons qui n'appellent pas le même geste : code expiré,
             // code déjà utilisé, ou trop loin du lieu de l'intervention. Les résumer toutes en
             // « code invalide » enverrait redemander un code qui n'a aucun problème.
-            alert(
-                result.errors?.position?.[0]
-                ?? result.message
-                ?? 'Code invalide ou clôture impossible.'
-            );
+            window.brioToast({
+                message: result.errors?.position?.[0]
+                    ?? result.message
+                    ?? 'Code invalide ou clôture impossible.',
+                type: 'error',
+            });
             return;
         }
 
-        alert('Mission terminée avec succès.');
-        window.location.reload();
+        window.brioToast('Mission terminée avec succès.');
+
+        // `alert()` BLOQUAIT le fil : le rechargement n'arrivait qu'apres le clic sur OK.
+        // Une notification ne bloque pas — sans ce delai, elle partirait avec la page.
+        setTimeout(() => window.location.reload(), 1400);
     }
 </script>

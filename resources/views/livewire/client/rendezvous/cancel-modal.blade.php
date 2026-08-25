@@ -1,37 +1,88 @@
+{{--
+    LA MODALE D'ANNULATION — dire ce que ça coûte AVANT de le prélever.
+
+    Ce fichier contenait quinze lignes de JavaScript COLLÉES en clair, hors de toute balise
+    `<script>` : elles s'affichaient telles quelles au client, en-tête `Authorization: Bearer`
+    compris. Elles étaient la tentative abandonnée d'interroger `/cancellation-quote` avant de
+    confirmer — si bien que le moteur prélevait des frais dont personne n'avait parlé, et que
+    le client les découvrait sur son relevé.
+
+    Le devis est désormais calculé côté serveur, où nous sommes déjà, et affiché ici. Sa devise
+    vient du devis lui-même : un rendez-vous marocain ne s'annule pas en euros.
+--}}
 @if($cancelRdvId)
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4">
-    <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl space-y-4">
-        <div>
-            <h3 class="text-lg font-semibold text-slate-900">Confirmer l’annulation</h3>
-            <p class="mt-1 text-sm text-slate-500">Ajoute une raison si tu veux garder une trace côté support.</p>
-        </div>
+    @php($devis = $this->devisAnnulation)
 
-        <textarea
-            wire:model.defer="cancelReason"
-            rows="4"
-            placeholder="Raison d’annulation (facultatif)..."
-            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:border-slate-500 focus:outline-none"></textarea>
+    <div class="brio-modal-fond grid place-items-center p-4" x-data x-on:keydown.escape.window="$wire.fermerAnnulation()">
+        <div class="brio-modal {{ $devis && $devis->feeAmountCents > 0 ? 'brio-modal-danger' : '' }}"
+             role="alertdialog"
+             aria-modal="true"
+             aria-labelledby="titre-annulation">
+            <h2 id="titre-annulation" class="brio-modal-titre">{{ __('Confirmer l’annulation') }}</h2>
 
-        // Avant de confirmer cancel, fetch le quote
-        const quote = await fetch(`/api/client/bookings/${bookingId}/cancellation-quote`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-        }).then(r => r.json());
+            @if($devis && $devis->feeAmountCents > 0)
+                {{--
+                    LE MONTANT D'ABORD, la raison ensuite. C'est la seule information qui peut
+                    faire changer d'avis, et elle arrivait après le bouton.
+                --}}
+                <p class="brio-modal-texte">
+                    {{ __('Cette annulation entraîne des frais de') }}
+                    <strong><x-money :amount="$devis->feeAmountCents / 100" :currency="$devis->currency" /></strong>@if($devis->tierLabel), {{ $devis->tierLabel }}@endif.
+                </p>
 
-        if (quote.quote.fee_amount > 0) {
-        // Afficher modale "Tu seras facturé X€"
-        confirm(`L'annulation entraînera des frais de ${quote.quote.fee_amount}€. Continuer ?`);
-        }
+                @if($devis->refundAmountCents > 0)
+                    <p class="brio-modal-texte">
+                        {{ __('Vous serez remboursé de') }}
+                        <strong><x-money :amount="$devis->refundAmountCents / 100" :currency="$devis->currency" /></strong>.
+                    </p>
+                @endif
+            @elseif($devis)
+                <p class="brio-modal-texte">
+                    {{ __('Cette annulation est sans frais.') }}
+                    @if($devis->hoursBefore !== null)
+                        {{ __('Il reste :heures h avant le rendez-vous.', ['heures' => $devis->hoursBefore]) }}
+                    @endif
+                </p>
+            @else
+                {{-- Le devis n'a pas pu être établi : on ne fabrique pas un montant rassurant. --}}
+                <p class="brio-modal-texte">
+                    {{ __('Des frais d’annulation peuvent s’appliquer selon le délai.') }}
+                </p>
+            @endif
 
-        // Si confirmé
-        await fetch(`/api/client/bookings/${bookingId}/cancel-with-fee`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: 'changement de plans', accept_fee: true }),
-        });
-        <div class="flex flex-wrap justify-end gap-3">
-            <button type="button" wire:click="fermerAnnulation" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700">Retour</button>
-            <button type="button" wire:click="confirmerAnnulation" class="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white">Confirmer l’annulation</button>
+            @foreach(($devis?->warnings ?? []) as $avertissement)
+                <p class="brio-modal-texte">{{ $avertissement }}</p>
+            @endforeach
+
+            <label class="mt-4 block">
+                <span class="sr-only">{{ __('Raison d’annulation') }}</span>
+                <textarea
+                    wire:model.defer="cancelReason"
+                    rows="3"
+                    placeholder="{{ __('Raison d’annulation (facultatif)…') }}"
+                    class="w-full rounded-xl px-4 py-3 text-sm"></textarea>
+            </label>
+
+            <div class="brio-modal-actions">
+                {{-- LE RETOUR PORTE LE FOCUS : une modale qui s'ouvre sur son bouton
+                     destructeur transforme une touche Entrée en annulation payante. --}}
+                <button type="button"
+                        x-init="$el.focus()"
+                        wire:click="fermerAnnulation"
+                        class="brio-btn brio-btn-nu">{{ __('Retour') }}</button>
+
+                <button type="button"
+                        wire:click="confirmerAnnulation"
+                        wire:loading.attr="disabled"
+                        class="brio-btn brio-btn-accent">
+                    @if($devis && $devis->feeAmountCents > 0)
+                        {{ __('Annuler et payer') }}
+                        <x-money :amount="$devis->feeAmountCents / 100" :currency="$devis->currency" />
+                    @else
+                        {{ __('Confirmer l’annulation') }}
+                    @endif
+                </button>
+            </div>
         </div>
     </div>
-</div>
 @endif
