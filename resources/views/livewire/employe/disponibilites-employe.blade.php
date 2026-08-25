@@ -88,10 +88,15 @@
                                     {{ substr($slot->start_time, 0, 5) }} → {{ substr($slot->end_time, 0, 5) }}
                                 </p>
                                 <div class="flex gap-2">
-                                    <button wire:click="edit({{ $slot->id }})" class="text-xs text-blue-600 dark:text-blue-400">{{ __('Modifier') }}</button>
+                                    {{-- Ces deux actions mesuraient 51 x 16 et 42 x 16 pixels : un texte nu,
+                                         sans zone de clic autour du mot, au-dessous du minimum tactile. Un
+                                         prestataire retire un créneau depuis son téléphone, entre deux
+                                         interventions. --}}
+                                    <button wire:click="edit({{ $slot->id }})"
+                                            class="brio-btn-ligne brio-btn-ligne-accent">{{ __('Modifier') }}</button>
                                     <button wire:click="delete({{ $slot->id }})"
                                             wire:confirm="{{ __('Retirer ce créneau de toutes les semaines ?') }}"
-                                            class="text-xs text-red-600 dark:text-red-400">{{ __('Retirer') }}</button>
+                                            class="brio-btn-ligne brio-btn-ligne-danger">{{ __('Retirer') }}</button>
                                 </div>
                             </div>
                         @endforeach

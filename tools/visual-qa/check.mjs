@@ -15,7 +15,17 @@ export async function loginAs(context, base, credKey) {
   await Promise.all([
     // 'load' (pas 'networkidle') : le dashboard de destination charge Livewire/Alpine
     // et garde des connexions ouvertes — 'networkidle' ne se résoudrait jamais.
-    page.waitForURL((u) => !u.pathname.endsWith('/login'), { timeout: 20000 }).catch(() => {}),
+    /*
+     * QUARANTE-CINQ SECONDES, et c'est la SEULE attente.
+     *
+     * Vingt ne suffisaient pas : `click()` ajoutait silencieusement sa propre attente de
+     * trente secondes, et c'est elle qui portait les connexions lentes. La retirer sans
+     * allonger celle-ci a fait passer le delai effectif de trente a vingt — et le balayage
+     * complet de 22/121. Sur 121 pages, `artisan serve` met plusieurs secondes par requete :
+     * une connexion suivie du rendu d'un tableau de bord Livewire depasse regulierement
+     * vingt secondes, sans que rien ne soit casse dans le produit.
+     */
+    page.waitForURL((u) => !u.pathname.endsWith('/login'), { timeout: 45000 }).catch(() => {}),
 
     /*
      * `noWaitAfter` : SANS LUI, DEUX ATTENTES SE COURENT APRÈS.

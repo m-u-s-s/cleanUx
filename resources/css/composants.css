@@ -328,6 +328,35 @@
 .brio-btn-nu:hover { color: var(--brio-ink); background-color: var(--glass-bg-faint); }
 .brio-btn-nu::after { display: none; }
 
+/* L'ACTION DE LIGNE — compacte, mais atteignable au doigt.
+
+   Les actions de ligne s'ecrivaient `text-xs text-blue-600` : un texte nu, mesure
+   a 51 x 16 pixels sur l'ecran des disponibilites. Au-dessous du minimum tactile,
+   et sans zone de clic autour du mot. Cette classe garde l'allure discrete d'un
+   lien tout en donnant la hauteur : le `min-height` est la cible, le `padding`
+   negatif horizontal evite que deux actions cote a cote se collent. */
+.brio-btn-ligne {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0 0.6rem;
+    border-radius: var(--cx-radius-md);
+    font-family: var(--brio-sans);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    background: transparent;
+    transition: background-color var(--cx-dur-fast) var(--cx-ease);
+}
+
+.brio-btn-ligne:hover { background-color: var(--glass-bg-faint); }
+.brio-btn-ligne:focus-visible { outline: none; box-shadow: var(--brio-ring); }
+
+.brio-btn-ligne-accent { color: var(--brio-accent-deep); }
+.brio-btn-ligne-danger { color: var(--brio-danger); }
+
 .brio-btn-danger {
     background: linear-gradient(135deg, var(--brio-danger) 0%, color-mix(in srgb, var(--brio-danger) 70%, #000) 100%);
     color: #fff;
