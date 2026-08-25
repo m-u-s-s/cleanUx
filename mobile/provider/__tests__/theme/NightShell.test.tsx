@@ -93,7 +93,15 @@ describe('Screen', () => {
     );
   });
 
-  it('garde son fond plein en clair', () => {
+  /*
+   * CE TEST EXIGEAIT UN FOND PLEIN EN CLAIR, ET CE N'EST PLUS VRAI.
+   *
+   * Tant que la toile ne rendait rien en clair, un aplat par écran ne masquait rien. Depuis
+   * qu'elle porte des auras, cet aplat effacerait exactement ce que le verre est censé
+   * filtrer — et la régression serait invisible sur une capture, la couleur étant presque la
+   * même.
+   */
+  it('ne repeint pas son fond en clair non plus', () => {
     mockScheme.colorScheme = 'light';
 
     render(
@@ -102,9 +110,8 @@ describe('Screen', () => {
       </Screen>,
     );
 
-    // Le mode clair n'est pas touché : la valeur historique, telle quelle.
     expect(aplat(screen.getByTestId('screen-safe').props.style).backgroundColor).toBe(
-      '#fafafa',
+      'transparent',
     );
   });
 });
