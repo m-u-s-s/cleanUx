@@ -1025,3 +1025,54 @@ body:not(.cx-shell) :is(input[type="checkbox"], input[type="radio"]) {
     border-color: var(--brio-accent);
     font-weight: 650;
 }
+
+/* Le panneau terrain vit DANS le heros sombre : ses cases prennent donc un verre
+   clair sur fond dense, et non le verre du theme — le heros ne suit pas le mode. */
+.brio-terrain-panneau {
+    padding: 1.15rem;
+    border-radius: var(--cx-radius-xl);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.brio-terrain-titre {
+    margin-bottom: 0.85rem;
+    font-family: var(--brio-sans);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.62);
+}
+
+.brio-terrain-panneau .brio-terrain-case {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    color: #fff;
+}
+
+.brio-terrain-panneau .brio-terrain-tete   { color: rgba(255, 255, 255, 0.60); }
+.brio-terrain-panneau .brio-terrain-valeur { color: #fff; }
+.brio-terrain-panneau .brio-terrain-note   { color: rgba(255, 255, 255, 0.52); }
+
+.brio-terrain-panneau .brio-terrain-bon       .brio-terrain-valeur { color: #6ee7b7; }
+.brio-terrain-panneau .brio-terrain-attention .brio-terrain-valeur { color: #fcd34d; }
+.brio-terrain-panneau .brio-terrain-alerte    .brio-terrain-valeur { color: #fca5a5; }
+
+/* Une valeur TEXTUELLE — un nom de zone, un nom de personne — ne se lit pas a la
+   taille d'un chiffre : elle deborderait ou serait tronquee des le premier nom long. */
+.brio-terrain-texte {
+    font-size: 0.875rem;
+    font-weight: 650;
+    line-height: 1.3;
+}
+
+.brio-terrain-unite {
+    font-size: 0.62em;
+    font-weight: 600;
+    margin-inline-start: 0.15em;
+    opacity: 0.72;
+}
