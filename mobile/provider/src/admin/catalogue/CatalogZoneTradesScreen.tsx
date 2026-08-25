@@ -5,6 +5,8 @@ import { Button, EmptyState, ErrorState, Icon, Screen, Skeleton, TextInput } fro
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main. */
+import { formatCentimes } from '@/format/money';
 import { messageDErreur } from './erreur';
 import { useResourceAction } from '../console/hooks';
 import { useToggleTradeInZone, useUpdateDistancePricing, useZoneTrades } from './hooks';
@@ -119,6 +121,7 @@ export function CatalogZoneTradesScreen() {
         renderItem={({ item }) => (
           <TradeRow
             metier={item}
+            devise={data?.zone?.currency}
             onToggle={() => bascule.mutate(item.id)}
             onEdit={() =>
               navigation.navigate('AdminResourceForm', {
@@ -289,6 +292,7 @@ function FormulaireTarifDistance({
 
 function TradeRow({
   metier,
+  devise,
   onToggle,
   onEdit,
   onParcours,
@@ -297,6 +301,8 @@ function TradeRow({
   onDescendre,
 }: {
   metier: ZoneTrade;
+  /* La devise de la zone, pas celle du lecteur. */
+  devise?: string | null;
   onToggle: () => void;
   onEdit: () => void;
   onParcours: () => void;
@@ -311,7 +317,7 @@ function TradeRow({
       <View style={styles.rowTexte}>
         <Text style={styles.rowTitre}>{metier.name}</Text>
         <Text style={styles.rowMeta}>
-          {(metier.base_rate_cents / 100).toFixed(2).replace('.', ',')} €
+          {formatCentimes(metier.base_rate_cents, devise)}
           {/*
             D'où vient ce tarif : de la zone, ou du métier faute de mieux. Sans cette distinction,
             un prix hérité passerait pour une décision prise pour cette zone.
@@ -331,9 +337,9 @@ function TradeRow({
             testID={`tarif-distance-${metier.id}`}
           >
             {metier.distance_pricing_enabled
-              ? `Trajet · ${((metier.pickup_fee_cents ?? 0) / 100).toFixed(2).replace('.', ',')} €`
+              ? `Trajet · ${formatCentimes(metier.pickup_fee_cents ?? 0, devise)}`
                 + (metier.price_per_km_cents != null
-                  ? ` + ${(metier.price_per_km_cents / 100).toFixed(2).replace('.', ',')} €/km`
+                  ? ` + ${formatCentimes(metier.price_per_km_cents, devise)}/km`
                   : '')
                 + ((metier.included_km ?? 0) > 0 ? ` (${metier.included_km} km inclus)` : '')
               : 'Trajet · aucun prix au kilomètre — facturé au forfait'}

@@ -1,4 +1,6 @@
 import React from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main. */
+import { formatCentimes } from '@/format/money';
 import { View, ScrollView, Text, StyleSheet, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen, Button, Badge } from '@/ui';
@@ -36,7 +38,7 @@ interface Sla {
   };
 }
 
-const euros = (cents: number) => `${(cents / 100).toFixed(2)} €`;
+const euros = (cents: number) => formatCentimes(cents);
 
 /**
  * LE PILOTAGE D'UNE ENTREPRISE CLIENTE — budgets (E7), approbations (E8), niveau de service (E9).

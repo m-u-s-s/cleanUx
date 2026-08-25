@@ -1,4 +1,7 @@
 import React from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main,
+   et un export neuf y manque sans que `tsc` bronche. */
+import { formatMontant } from '@/format/money';
 import { View, Text, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type {
@@ -170,8 +173,8 @@ export function BookingDetailScreen({ route }: Props) {
             valeur: booking.scheduled_time ? booking.scheduled_time.slice(0, 5) : '—',
             ton: 'accent',
           },
-          ...(booking.total_price != null
-            ? [{ libelle: 'Prix', valeur: `${booking.total_price} €`, ton: 'bon' as const }]
+          ...(booking.estimated_price != null
+            ? [{ libelle: 'Prix', valeur: formatMontant(booking.estimated_price, booking.currency), ton: 'bon' as const }]
             : []),
         ]}
       />
@@ -245,9 +248,9 @@ export function BookingDetailScreen({ route }: Props) {
       )}
 
       <View style={styles.actions}>
-        {['pending', 'confirmed'].includes(etat) && booking.total_price != null && (
+        {['pending', 'confirmed'].includes(etat) && booking.estimated_price != null && (
           <Button
-            label={`Payer ${booking.total_price} €`}
+            label={`Payer ${formatMontant(booking.estimated_price, booking.currency)}`}
             onPress={() => navigation.navigate('PaymentCheckout', { bookingId })}
             fullWidth
           />

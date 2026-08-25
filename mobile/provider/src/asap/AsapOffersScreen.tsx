@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main. */
+import { formatCentimes } from '@/format/money';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Screen, Button, Badge, EmptyState, Skeleton } from '@/ui';
@@ -131,14 +133,19 @@ function formatRange(offer: AsapOffer): string {
     return 'Montant à confirmer';
   }
   if (min != null && max != null && min !== max) {
-    return `${euros(min)} – ${euros(max)} €`;
+    return `${euros(min)} – ${euros(max)}`;
   }
 
-  return `${euros((min ?? max)!)} €`;
+  return `${euros((min ?? max)!)}`;
 }
 
+/*
+ * L'ARRONDI RESTE, LE SYMBOLE PART. Une fourchette d'offre se lit d'un coup d'oeil : les
+ * centimes y sont du bruit. Mais le symbole vivait a l'exterieur, une seule fois pour
+ * deux montants — donc jamais dans la devise de l'offre.
+ */
 function euros(cents: number): string {
-  return String(Math.round(cents / 100));
+  return formatCentimes(cents, undefined, 0);
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({

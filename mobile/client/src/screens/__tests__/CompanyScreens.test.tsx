@@ -228,11 +228,18 @@ describe('CompanyBillingScreen', () => {
       },
     });
 
-    const { getByText } = afficher(<CompanyBillingScreen />);
+    const { getByText, getAllByText } = afficher(<CompanyBillingScreen />);
 
     await waitFor(() => expect(getByText('F-2026-0042')).toBeTruthy());
     expect(mockGet).toHaveBeenCalledWith('/client/company/billing');
-    expect(getByText('250.00 €')).toBeTruthy();
+    /*
+     * « 250.00 » employait le point decimal anglais. Le formateur partage rend « 250,00 € »,
+     * avec une espace insecable avant le symbole : la regex evite d'en dependre.
+     *
+     * DEUX noeuds le portent maintenant — le total impaye en tete, et la ligne de facture — la
+     * ou le symbole vivait avant a l'exterieur de l'expression, dans un noeud separe.
+     */
+    expect(getAllByText(/250,00\s*€/).length).toBeGreaterThanOrEqual(2);
   });
 
   it('renvoie vers l’écran de facture EXISTANT plutôt que d’en dupliquer un', async () => {

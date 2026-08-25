@@ -50,12 +50,31 @@ function makeWrapper() {
   };
 }
 
-const SHARE_DATA = { code: 'BRIO-TEST42', message: 'Rejoingnez Brio avec mon code BRIO-TEST42 !' };
+/*
+ * LA FORME REELLE DE LA CHARGE UTILE, pas celle que l'ecran croyait lire.
+ *
+ * Ces deux objets employaient six cles qui n'existent nulle part cote serveur — `code`,
+ * `message`, `total_referrals`, `total_earned` a plat, `min_referrals`. Ecrites a la main,
+ * elles tenaient la suite au vert pendant que l'ecran restait muet en vrai. Les noms
+ * ci-dessous sont pinces cote serveur par `ContratDuParrainageNatifTest`.
+ */
+const SHARE_DATA = {
+  referral_code: 'BRIO-TEST42',
+  share_message: 'Rejoingnez Brio avec mon code BRIO-TEST42 !',
+};
 const STATS_DATA = {
-  total_referrals: 3,
-  total_earned: 30,
-  current_tier: { name: 'Argent', min_referrals: 2 },
-  next_tier: { name: 'Or', min_referrals: 5 },
+  referral_code: 'BRIO-TEST42',
+  invite_url: 'https://example.test/register?ref=BRIO-TEST42',
+  rewards: { referrer_amount: 10, referee_amount: 15, currency: 'EUR' },
+  stats: {
+    total_invited: 3,
+    total_signed_up: 3,
+    total_qualified: 3,
+    total_rewarded: 2,
+    total_earned: 30,
+  },
+  current_tier: { name: 'Argent', threshold: 2 },
+  next_tier: { name: 'Or', threshold: 5 },
 };
 
 beforeEach(() => {
@@ -110,8 +129,14 @@ describe('ReferralScreen', () => {
     fireEvent.press(screen.getByText('Partager'));
 
     await waitFor(() => {
+      /*
+       * CE TEST MESURAIT LA PANNE. `SHARE_DATA.message` n'existait pas, et l'ecran lisait la
+       * meme cle absente : les deux cotes valaient `undefined`, et l'egalite passait au vert
+       * pendant que la feuille de partage s'ouvrait vide. La chaine litterale ne peut pas,
+       * elle, valoir `undefined` par accident.
+       */
       expect(shareSpy).toHaveBeenCalledWith({
-        message: SHARE_DATA.message,
+        message: 'Rejoingnez Brio avec mon code BRIO-TEST42 !',
       });
     });
   });
@@ -153,7 +178,12 @@ describe('ReferralScreen', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Gains')).toBeTruthy();
-      expect(screen.getByText('€30')).toBeTruthy();
+      /*
+       * « €30 » etait un format ANGLAIS : symbole devant, sans decimales. L'ecran passe
+       * desormais par le formateur partage, qui rend « 30,00 € » — et la devise n'y est
+       * plus figee. L'espace avant le symbole est insecable : la regex evite d'en dependre.
+       */
+      expect(screen.getByText(/30,00\s*€/)).toBeTruthy();
     });
   });
 

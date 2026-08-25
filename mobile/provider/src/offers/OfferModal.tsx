@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main. */
+import { formatCentimes } from '@/format/money';
 import { Alert, Modal, StyleSheet, Text, Vibration, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -187,7 +189,7 @@ export function OfferModal({ offer, onDismiss }: Props) {
               <Text style={styles.label}>Rémunération</Text>
               <Text style={styles.value} testID="offer-payout">
                 {offer.payout_cents != null
-                  ? `${(offer.payout_cents / 100).toFixed(2).replace('.', ',')} €`
+                  ? formatCentimes(offer.payout_cents)
                   : 'À confirmer'}
               </Text>
             </View>

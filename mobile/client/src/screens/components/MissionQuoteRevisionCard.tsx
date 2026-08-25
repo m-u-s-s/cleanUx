@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main. */
+import { formatCentimes, formatMontant } from '@/format/money';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { Button, CarteDeMission } from '@/ui';
 import { useRevisionDeDevis, useRepondreALaRevision } from '@/booking/onsite';
@@ -62,7 +64,7 @@ export function MissionQuoteRevisionCard({ bookingId }: { bookingId: number }) {
         </View>
       </View>
 
-      <RemiseAppliquee breakdown={revision.breakdown} styles={styles} />
+      <RemiseAppliquee breakdown={revision.breakdown} devise={revision.currency} styles={styles} />
 
       <Text style={styles.motif}>{revision.reason_text}</Text>
 
@@ -117,9 +119,12 @@ export function MissionQuoteRevisionCard({ bookingId }: { bookingId: number }) {
  */
 function RemiseAppliquee({
   breakdown,
+  devise,
   styles,
 }: {
   breakdown: QuoteRevision['breakdown'];
+  /* La carte connaissait la devise ; la remise, elle, comptait toujours en euros. */
+  devise: string;
   styles: ReturnType<typeof stylesFor>;
 }) {
   const promo = (breakdown as { promo?: { code?: string; discount_cents?: number } } | null)?.promo;
@@ -131,14 +136,14 @@ function RemiseAppliquee({
   return (
     <Text style={styles.remise} testID="revision-remise">
       Votre code {promo.code} reste appliqué
-      {typeof promo.discount_cents === 'number' ? ` — ${(promo.discount_cents / 100).toFixed(2)} € de remise` : ''}.
+      {typeof promo.discount_cents === 'number' ? ` — ${formatCentimes(promo.discount_cents, devise)} de remise` : ''}.
     </Text>
   );
 }
 
 /** Un montant EN PROVENANCE DU SERVEUR, mis en forme. Rien n'est calculé ici. */
 function montant(valeur: number, devise: string): string {
-  return new Intl.NumberFormat('fr-BE', { style: 'currency', currency: devise || 'EUR' }).format(valeur);
+  return formatMontant(valeur, devise);
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({

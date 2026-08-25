@@ -36,7 +36,7 @@ const MOCK_BOOKING: Booking = {
   address: '12 rue de la Paix',
   city: 'Paris',
   postal_code: '75001',
-  total_price: 120,
+  estimated_price: 120,
   created_at: '2025-01-01T00:00:00Z',
 };
 

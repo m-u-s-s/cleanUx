@@ -1,4 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main,
+   et un export neuf y manque sans que `tsc` bronche. */
+import { formatMontant } from '@/format/money';
 import {
   FlatList,
   View,
@@ -463,16 +466,11 @@ const InvoiceRow = React.memo(function InvoiceRow({ invoice, onPress }: InvoiceR
   const styles = stylesFor(useThemeColors());
   const variant = STATUS_VARIANT[invoice.effective_status] ?? 'neutral';
 
-  const formattedAmount =
-    invoice.currency === 'EUR'
-      ? `€${invoice.amount}`
-      : `${invoice.amount} ${invoice.currency}`;
+  const formattedAmount = formatMontant(invoice.amount, invoice.currency);
 
   const balanceDue =
     invoice.balance_due != null && invoice.balance_due > 0
-      ? invoice.currency === 'EUR'
-        ? `Solde dû : €${invoice.balance_due}`
-        : `Solde dû : ${invoice.balance_due} ${invoice.currency}`
+      ? `Solde dû : ${formatMontant(invoice.balance_due, invoice.currency)}`
       : null;
 
   const isOverdue = invoice.effective_status === 'overdue';

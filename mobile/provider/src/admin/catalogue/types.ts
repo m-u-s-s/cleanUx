@@ -30,6 +30,7 @@ export interface ZoneTrade {
 }
 
 export interface ZoneCatalog {
-  zone: { id: number; name: string; country_id: number };
+  /* La devise VOYAGE avec la zone : un bareme marocain ne s'ecrit pas en euros. */
+  zone: { id: number; name: string; country_id: number; currency?: string | null };
   trades: ZoneTrade[];
 }

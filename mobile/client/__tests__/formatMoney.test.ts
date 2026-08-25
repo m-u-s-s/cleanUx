@@ -63,3 +63,28 @@ describe('formatCentimes', () => {
     expect(formatCentimes(Number.NaN)).toBe('—');
   });
 });
+
+describe('les decimales', () => {
+  /**
+   * DEUX APPELANTS ARRONDISSAIENT DEJA A L'UNITE — une fourchette d'offre immediate et un
+   * plafond d'assurance. Sans cette option, les brancher sur le formateur partage leur
+   * aurait ajoute des centimes : un progres de coherence paye par une regression d'affichage.
+   */
+  it('rend un montant sans centimes quand on le demande', () => {
+    const rendu = formatCentimes(4500, 'EUR', 0);
+
+    expect(rendu).toContain('45');
+    expect(rendu).not.toContain('00');
+    expect(rendu).not.toMatch(/[,.]\d/);
+  });
+
+  /** TEMOIN — sans l'option, les centimes restent. */
+  it('garde les centimes quand on ne demande rien', () => {
+    expect(formatCentimes(4550, 'EUR')).toMatch(/[,.]\d\d/);
+  });
+
+  /** TEMOIN — l'option n'ecrase pas la devise. */
+  it('respecte la devise avec l option', () => {
+    expect(formatCentimes(4500, 'MAD', 0)).not.toMatch(/€/);
+  });
+});

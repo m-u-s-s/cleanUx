@@ -67,10 +67,10 @@
             <thead class="bg-gray-50 dark:bg-gray-800">
                 <tr>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Zone</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Tarif base (€)</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Tarif base (c)</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Surge x</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Prix min (€)</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Prix max (€)</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Prix min (c)</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Prix max (c)</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Actif</th>
                     <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Actions</th>
                 </tr>
@@ -95,7 +95,7 @@
                                     class="w-28 rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                                     placeholder="ex: 4500"
                                 />
-                                <div class="text-xs text-gray-500 mt-0.5">{{ $form_base_rate_cents > 0 ? number_format((int)$form_base_rate_cents / 100, 2) . ' €' : '' }}</div>
+                                <div class="text-xs text-gray-500 mt-0.5">@if ($form_base_rate_cents > 0)<x-money :amount="(int) $form_base_rate_cents / 100" :currency="$zp->serviceZone?->deviseDeLaZone()" />@endif</div>
                                 @error('form_base_rate_cents') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                             </td>
                             <td class="px-4 py-3 align-middle">
@@ -146,7 +146,7 @@
                                         réponses distinctes, que le résolveur distingue déjà.
                                     --}}
                                     <label class="mt-2 block">
-                                        <span class="block text-[10px] uppercase tracking-wide text-gray-500">{{ app(\App\Services\Localization\Money::class)->symbol(\App\View\Components\Money::deviseDuContexte()) }}/heure de cette zone (c)</span>
+                                        <span class="block text-[10px] uppercase tracking-wide text-gray-500">{{ app(\App\Services\Localization\Money::class)->symbol($zp->serviceZone?->deviseDeLaZone() ?? \App\View\Components\Money::deviseDuContexte()) }}/heure de cette zone (c)</span>
                                         <input type="number" min="0" max="9999900" wire:model="form_price_per_hour_cents" placeholder="Tarif du métier"
                                             class="w-full rounded border-gray-300 py-1 text-xs dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                                     </label>
@@ -219,16 +219,16 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 align-middle tabular-nums text-gray-800 dark:text-gray-200">
-                                <x-money :amount="(float) ($zp->base_rate_cents / 100)" />
+                                <x-money :amount="(float) ($zp->base_rate_cents / 100)" :currency="$zp->serviceZone?->deviseDeLaZone()" />
                             </td>
                             <td class="px-4 py-3 align-middle tabular-nums text-gray-800 dark:text-gray-200">
                                 {{ $zp->surge_multiplier }}
                             </td>
                             <td class="px-4 py-3 align-middle tabular-nums text-gray-600 dark:text-gray-400">
-                                @if ($zp->min_price_cents !== null)<x-money :amount="$zp->min_price_cents / 100" />@else—@endif
+                                @if ($zp->min_price_cents !== null)<x-money :amount="$zp->min_price_cents / 100" :currency="$zp->serviceZone?->deviseDeLaZone()" />@else—@endif
                             </td>
                             <td class="px-4 py-3 align-middle tabular-nums text-gray-600 dark:text-gray-400">
-                                @if ($zp->max_price_cents !== null)<x-money :amount="$zp->max_price_cents / 100" />@else—@endif
+                                @if ($zp->max_price_cents !== null)<x-money :amount="$zp->max_price_cents / 100" :currency="$zp->serviceZone?->deviseDeLaZone()" />@else—@endif
                             </td>
                             <td class="px-4 py-3 align-middle">
                                 <button

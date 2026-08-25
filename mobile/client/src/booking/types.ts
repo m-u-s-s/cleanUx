@@ -52,7 +52,16 @@ export interface Booking {
   address: string;
   city: string;
   postal_code: string;
-  total_price?: number;
+  /**
+   * LE PRIX, SOUS LA CLE QUE LE SERVEUR EMPLOIE VRAIMENT.
+   *
+   * Ce champ s'appelait `total_price` ici. La charge utile n'a jamais porte ce nom : elle
+   * envoie `estimated_price`. Il valait donc TOUJOURS `undefined`, et les trois endroits qui
+   * le testaient avant d'afficher ne s'affichaient jamais — dont le bouton « Payer ».
+   */
+  estimated_price?: number | null;
+  /** La devise de la reservation. Le serveur l'envoie ; personne ne la lisait. */
+  currency?: string | null;
   provider_name?: string;
   contract_covered?: boolean;
   contract_label?: string | null;

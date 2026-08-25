@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main. */
+import { formatCentimes } from '../format/money';
 import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { Button } from './Button';
 import { TextInput } from './TextInput';
@@ -168,9 +170,8 @@ function messageDAiguillage(issue: string): string {
 
 /** Un montant EN PROVENANCE DU SERVEUR, mis en forme. Rien n'est calculé ici. */
 function montant(centimes: number, devise: string): string {
-  return new Intl.NumberFormat('fr-BE', { style: 'currency', currency: devise || 'EUR' }).format(
-    centimes / 100,
-  );
+  // La locale ET la division vivaient ici. Les deux sont dans le formateur partage.
+  return formatCentimes(centimes, devise);
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({

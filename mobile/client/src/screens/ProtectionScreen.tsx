@@ -1,4 +1,6 @@
 import React from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main. */
+import { formatCentimes } from '@/format/money';
 import { View, ScrollView, Text, StyleSheet } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Screen, Badge } from '@/ui';
@@ -87,7 +89,7 @@ export function ProtectionScreen() {
                   {police.effective_until ? ` · jusqu'au ${police.effective_until}` : ''}
                 </Text>
               </View>
-              <Badge label={`${(police.coverage_amount_cents / 100).toFixed(0)} €`} variant="success" />
+              <Badge label={formatCentimes(police.coverage_amount_cents, undefined, 0)} variant="success" />
             </View>
           ))}
 
@@ -113,7 +115,7 @@ export function ProtectionScreen() {
                 <Text style={styles.detail}>dans {devis.hours_before} h</Text>
               </View>
               <Badge
-                label={frais(devis) ? `${((frais(devis) ?? 0) / 100).toFixed(2)} €` : 'Sans frais'}
+                label={frais(devis) ? formatCentimes(frais(devis) ?? 0) : 'Sans frais'}
                 variant={frais(devis) ? 'warning' : 'success'}
               />
             </View>

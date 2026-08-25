@@ -1,4 +1,7 @@
 import React from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main,
+   et un export neuf y manque sans que `tsc` bronche. */
+import { formatCentimes } from '@/format/money';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Screen, Badge, EmptyState } from '@/ui';
@@ -34,7 +37,12 @@ interface Budget {
   subscription_vs_on_demand: { subscription: Serie; on_demand: Serie };
 }
 
-const euros = (cents: number) => `${(cents / 100).toFixed(2)} €`;
+/*
+ * La division par cent ET le symbole vivaient ici. Les deux sont desormais dans le
+ * formateur partage : une division recopiee finit par etre oubliee quelque part, et
+ * un montant affiche cent fois trop grand se remarque avant nous.
+ */
+const euros = (cents: number) => formatCentimes(cents);
 
 /**
  * LE BUDGET MAISON (E4).

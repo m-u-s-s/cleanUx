@@ -64,7 +64,14 @@ class ZoneCatalogController extends Controller
 
         return response()->json([
             'ok' => true,
-            'zone' => ['id' => $zone->id, 'name' => $zone->name, 'country_id' => $zone->country_id],
+            // La devise VOYAGE avec la zone : sans elle l'ecran retombe sur l'euro, et un
+            // bareme marocain s'affiche dans une monnaie que personne ne paiera.
+            'zone' => [
+                'id' => $zone->id,
+                'name' => $zone->name,
+                'country_id' => $zone->country_id,
+                'currency' => $zone->deviseDeLaZone(),
+            ],
             'data' => $metiers->values()->all(),
         ]);
     }

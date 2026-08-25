@@ -1,4 +1,6 @@
 import React from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main. */
+import { formatCentimes } from '@/format/money';
 import { View, FlatList, Text, StyleSheet, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen, Button, Badge, EmptyState } from '@/ui';
@@ -180,14 +182,14 @@ export function CompanyTimesheetsScreen() {
                 </Text>
               </View>
               <Badge
-                label={`${(ligne.margin_cents / 100).toFixed(2)} €`}
+                label={formatCentimes(ligne.margin_cents)}
                 variant={ligne.margin_cents >= 0 ? 'success' : 'danger'}
               />
             </View>
           ))}
           <Text style={styles.note}>
             Le coût de main-d'œuvre s'appuie sur le taux horaire déclaré par votre société, à défaut{' '}
-            {((rentabilite?.meta?.default_hourly_rate_cents ?? 0) / 100).toFixed(2)} € — une
+            {formatCentimes(rentabilite?.meta?.default_hourly_rate_cents ?? 0)} — une
             hypothèse prudente, pas un salaire connu de la plateforme.
           </Text>
         </View>

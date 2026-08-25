@@ -1,4 +1,6 @@
 import React from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main. */
+import { formatMontant } from '@/format/money';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
@@ -90,7 +92,7 @@ export function CompanyBookingsScreen() {
               </Text>
               <Text style={styles.detail} numberOfLines={1}>
                 {item.provider ?? 'Prestataire à confirmer'}
-                {item.estimated_price !== null ? ` · ${item.estimated_price.toFixed(2)} €` : ''}
+                {item.estimated_price !== null ? ` · ${formatMontant(item.estimated_price)}` : ''}
               </Text>
             </View>
 

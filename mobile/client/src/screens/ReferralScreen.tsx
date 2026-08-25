@@ -1,4 +1,6 @@
 import React from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main. */
+import { formatMontant } from '@/format/money';
 import { View, Text, Share, Clipboard, StyleSheet, Alert } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Screen, Button, KPICard, Skeleton } from '@/ui';
@@ -9,21 +11,41 @@ import { useThemeColors } from '@/theme/useThemeColors';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
+/*
+ * LE CONTRAT DE CET ECRAN N'A JAMAIS CORRESPONDU A LA CHARGE UTILE.
+ *
+ * Six cles etaient inventees : `total_referrals`, `min_referrals`, un `stats` a plat, un
+ * `code` et un `message`. Aucune n'existe. Les deux compteurs restaient a zero, le palier
+ * ne s'affichait pas, la ligne de progression etait morte, le partage n'ouvrait rien et le
+ * code ne se copiait pas — c'est-a-dire tout l'ecran sauf son titre.
+ *
+ * Les noms ci-dessous sont ceux de `ReferralService::getShareData()`.
+ */
 interface ReferralTier {
   name: string;
-  min_referrals: number;
+  /** Le nombre de filleuls QUALIFIES a partir duquel le palier est atteint. */
+  threshold: number;
 }
 
 interface ReferralStats {
-  total_referrals: number;
-  total_earned: number;
+  referral_code: string;
+  invite_url: string;
+  /** Les montants promis viennent du serveur : ils etaient ecrits en dur dans le texte. */
+  rewards: { referrer_amount: number; referee_amount: number; currency: string } | null;
+  stats: {
+    total_invited: number;
+    total_signed_up: number;
+    total_qualified: number;
+    total_rewarded: number;
+    total_earned: number;
+  } | null;
   current_tier: ReferralTier | null;
   next_tier: ReferralTier | null;
 }
 
 interface ReferralShareData {
-  code: string;
-  message: string;
+  referral_code: string;
+  share_message: string;
 }
 
 // ── API hooks ─────────────────────────────────────────────────────────────────
@@ -72,23 +94,27 @@ export function ReferralScreen() {
   const { data: shareData, isLoading: loadingShare } = useReferralShareData();
 
   const handleShare = async () => {
-    if (!shareData?.message) return;
+    if (!shareData?.share_message) return;
     try {
-      await Share.share({ message: shareData.message });
+      await Share.share({ message: shareData.share_message });
     } catch {
       // user dismissed — no-op
     }
   };
 
   const handleCopy = () => {
-    if (!shareData?.code) return;
-    Clipboard.setString(shareData.code);
+    if (!shareData?.referral_code) return;
+    Clipboard.setString(shareData.referral_code);
     Alert.alert('Copié', 'Le code a été copié dans le presse-papier.');
   };
 
+  /*
+   * Le palier se decide sur les filleuls QUALIFIES — c'est le compte que le serveur compare
+   * au seuil. Le prendre sur les invitations aurait promis un palier qu'on n'atteindrait pas.
+   */
   const remainingForNext =
-    stats?.next_tier != null && stats?.total_referrals != null
-      ? stats.next_tier.min_referrals - stats.total_referrals
+    stats?.next_tier != null && stats?.stats != null
+      ? stats.next_tier.threshold - stats.stats.total_qualified
       : null;
 
   return (
@@ -106,7 +132,7 @@ export function ReferralScreen() {
           <Skeleton width={160} height={32} />
         ) : (
           <Text style={styles.code} testID="referral-code">
-            {shareData?.code ?? '—'}
+            {shareData?.referral_code ?? '—'}
           </Text>
         )}
         <View style={styles.codeActions}>
@@ -115,7 +141,7 @@ export function ReferralScreen() {
               variant="amber"
               label="Partager"
               onPress={handleShare}
-              disabled={loadingShare || !shareData?.code}
+              disabled={loadingShare || !shareData?.referral_code}
             />
           </View>
           <View style={styles.codeActionBtn}>
@@ -123,7 +149,7 @@ export function ReferralScreen() {
               variant="outline"
               label="Copier"
               onPress={handleCopy}
-              disabled={loadingShare || !shareData?.code}
+              disabled={loadingShare || !shareData?.referral_code}
             />
           </View>
         </View>
@@ -133,12 +159,12 @@ export function ReferralScreen() {
       <View style={styles.statsGrid}>
         <KPICard
           title="Parrainages"
-          value={stats?.total_referrals ?? 0}
+          value={stats?.stats?.total_invited ?? 0}
           loading={loadingStats}
         />
         <KPICard
           title="Gains"
-          value={`€${stats?.total_earned ?? 0}`}
+          value={formatMontant(stats?.stats?.total_earned ?? 0, stats?.rewards?.currency)}
           loading={loadingStats}
           tone="success"
         />
@@ -160,11 +186,34 @@ export function ReferralScreen() {
       <View style={styles.howItWorks}>
         <Text style={styles.sectionTitle}>Comment ça marche</Text>
         <Step number={1} text="Partagez votre code avec vos amis" />
-        <Step number={2} text="Ils obtiennent €15 de réduction sur leur 1er service" />
-        <Step number={3} text="Vous recevez €10 de crédit quand ils réservent" />
+        {/*
+          LES MONTANTS PROMIS VIENNENT DU SERVEUR.
+
+          Ils etaient ecrits ici : « €15 », « €10 » — symbole devant, a l'anglaise, et surtout
+          figes. Un administrateur qui change la recompense laissait l'application promettre
+          l'ancienne. `rewards` porte les deux montants ET leur devise depuis toujours.
+        */}
+        <Step
+          number={2}
+          text={`Ils obtiennent ${recompense(stats?.rewards?.referee_amount, stats?.rewards?.currency)} de réduction sur leur 1er service`}
+        />
+        <Step
+          number={3}
+          text={`Vous recevez ${recompense(stats?.rewards?.referrer_amount, stats?.rewards?.currency)} de crédit quand ils réservent`}
+        />
       </View>
     </Screen>
   );
+}
+
+/**
+ * Un montant de recompense, ou une formule qui n'engage a rien.
+ *
+ * Tant que le serveur n'a pas repondu, promettre un chiffre reviendrait a reecrire en dur
+ * ce qu'on vient d'en sortir.
+ */
+function recompense(montant?: number | null, devise?: string | null): string {
+  return typeof montant === 'number' ? formatMontant(montant, devise) : 'une remise';
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────

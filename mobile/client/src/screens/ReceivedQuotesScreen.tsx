@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main. */
+import { formatCentimes } from '@/format/money';
 import { View, FlatList, Text, StyleSheet, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen, Button, Badge, EmptyState } from '@/ui';
@@ -107,7 +109,7 @@ export function ReceivedQuotesScreen() {
                   {item.title}
                 </Text>
                 <Text style={styles.detail} numberOfLines={1}>
-                  {item.provider_name ?? 'Prestataire'} · {(item.total_cents / 100).toFixed(2)} €
+                  {item.provider_name ?? 'Prestataire'} · {formatCentimes(item.total_cents)}
                   {item.valid_until ? ` · jusqu'au ${item.valid_until}` : ''}
                 </Text>
               </View>
@@ -156,7 +158,7 @@ export function ReceivedQuotesScreen() {
                   <Text style={styles.detail} numberOfLines={1}>
                     {ligne.label} — {ligne.trade_name ?? 'métier'} · {ligne.quantity} {ligne.unit}
                   </Text>
-                  <Text style={styles.montant}>{(ligne.total_cents / 100).toFixed(2)} €</Text>
+                  <Text style={styles.montant}>{formatCentimes(ligne.total_cents)}</Text>
                 </View>
               ))}
           </View>

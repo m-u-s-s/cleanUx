@@ -39,7 +39,11 @@ export const DEVISE_PAR_DEFAUT = 'EUR';
  * Une devise absente ou vide retombe sur le défaut plutôt que de lever : un écran qui
  * n'affiche rien parce qu'une devise manque est pire qu'un écran qui affiche l'euro.
  */
-export function formatMontant(montant: number, devise?: string | null): string {
+export function formatMontant(
+  montant: number,
+  devise?: string | null,
+  decimales?: number,
+): string {
   if (!Number.isFinite(montant)) {
     return '—';
   }
@@ -47,6 +51,11 @@ export function formatMontant(montant: number, devise?: string | null): string {
   return new Intl.NumberFormat(LOCALE_AFFICHAGE, {
     style: 'currency',
     currency: devise || DEVISE_PAR_DEFAUT,
+    // Deux appelants arrondissaient déjà à l'unité : une fourchette d'offre et un plafond
+    // d'assurance. Leur retirer cet arrondi serait une régression d'affichage, pas un progrès.
+    ...(decimales === undefined
+      ? {}
+      : { minimumFractionDigits: decimales, maximumFractionDigits: decimales }),
   }).format(montant);
 }
 
@@ -56,10 +65,14 @@ export function formatMontant(montant: number, devise?: string | null): string {
  * Elle existe séparément pour que la division par cent ne soit plus recopiée : elle l'était
  * dans chaque appelant, et une division oubliée affiche cent fois le prix réel.
  */
-export function formatCentimes(centimes: number, devise?: string | null): string {
+export function formatCentimes(
+  centimes: number,
+  devise?: string | null,
+  decimales?: number,
+): string {
   if (!Number.isFinite(centimes)) {
     return '—';
   }
 
-  return formatMontant(centimes / 100, devise);
+  return formatMontant(centimes / 100, devise, decimales);
 }

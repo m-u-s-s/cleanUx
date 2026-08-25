@@ -1,4 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main,
+   et un export neuf y manque sans que `tsc` bronche. */
+import { formatMontant } from '@/format/money';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Screen, Badge, Skeleton, ErrorState } from '@/ui';
 import { fetchInvoice, invoicePdfUrl, type Invoice } from '@/finance/useInvoices';
@@ -109,13 +112,10 @@ export function InvoiceDetailScreen({ route, navigation }: Props) {
   if (!invoice) return null;
 
   const variant = statusVariant[invoice.effective_status] ?? 'neutral';
-  const formattedAmount =
-    invoice.currency === 'EUR' ? `€${invoice.amount}` : `${invoice.amount} ${invoice.currency}`;
+  const formattedAmount = formatMontant(invoice.amount, invoice.currency);
   const formattedBalance =
     invoice.balance_due != null && invoice.balance_due > 0
-      ? invoice.currency === 'EUR'
-        ? `€${invoice.balance_due}`
-        : `${invoice.balance_due} ${invoice.currency}`
+      ? formatMontant(invoice.balance_due, invoice.currency)
       : null;
 
   return (
@@ -161,7 +161,7 @@ export function InvoiceDetailScreen({ route, navigation }: Props) {
               <View key={p.id} style={styles.listItem}>
                 <Text style={styles.listItemLabel}>
                   {p.status ?? 'paiement'} —{' '}
-                  {invoice.currency === 'EUR' ? `€${p.amount}` : `${p.amount} ${invoice.currency}`}
+                  {formatMontant(p.amount, invoice.currency)}
                 </Text>
                 {p.paid_at && (
                   <Text style={styles.listItemMeta}>{p.paid_at.slice(0, 10)}</Text>

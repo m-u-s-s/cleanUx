@@ -58,7 +58,7 @@ jest.mock('@/booking', () => ({
         address: '1 rue Test',
         city: 'Bruxelles',
         postal_code: '1000',
-        total_price: 60,
+        estimated_price: 60,
         created_at: '',
       },
     ],

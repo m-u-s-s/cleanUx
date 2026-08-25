@@ -37,7 +37,7 @@ const baseBooking = {
   address: '12 rue de la Paix',
   city: 'Paris',
   provider_name: 'Alice',
-  total_price: 120,
+  estimated_price: 120,
   contract_covered: true,
 };
 
@@ -91,7 +91,7 @@ describe('BookingDetailScreen polish', () => {
 
   /** TÉMOIN — sans prix, aucune case vide n'est rendue. */
   it('n affiche pas de case prix quand il n y en a pas', () => {
-    mockDetail({ data: { ...baseBooking, total_price: null } });
+    mockDetail({ data: { ...baseBooking, estimated_price: null } });
 
     const { queryByText, getByText } = render(
       <BookingDetailScreen route={route} navigation={navigation} />,

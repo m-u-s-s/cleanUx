@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main. */
+import { formatMontant } from '@/format/money';
 import { View, Text, Alert, StyleSheet } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
 import { Screen, Button, KPICard } from '@/ui';
@@ -71,8 +73,8 @@ export function PaymentCheckoutScreen({ route, navigation }: Props) {
       {booking && (
         <View style={styles.summary}>
           <KPICard title="Service" value={booking.service_name} />
-          {booking.total_price != null && (
-            <KPICard title="Montant" value={`${booking.total_price} €`} tone="success" />
+          {booking.estimated_price != null && (
+            <KPICard title="Montant" value={formatMontant(booking.estimated_price, booking.currency)} tone="success" />
           )}
         </View>
       )}

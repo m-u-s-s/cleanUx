@@ -53,6 +53,28 @@ class ServiceZone extends Model
         return $this->belongsTo(Country::class);
     }
 
+    /**
+     * LA DEVISE D'UN TARIF DE ZONE SUIT LA ZONE, PAS CELUI QUI LA REGARDE.
+     *
+     * `Money::deviseDuContexte()` rend la devise du LECTEUR : juste pour une facture qu'on
+     * lui adresse, faux pour un bareme qu'il configure ailleurs. Un administrateur belge
+     * tarifant Casablanca lisait des euros la ou le client paiera des dirhams.
+     */
+    public function deviseDeLaZone(): string
+    {
+        $pays = $this->relationLoaded('country') ? $this->country : $this->country()->first();
+
+        $posee = $pays?->currency_code;
+
+        if (is_string($posee) && trim($posee) !== '') {
+            return strtoupper(trim($posee));
+        }
+
+        // `countries.currency_code` est NOT NULL : le seul chemin qui arrive ici est une zone
+        // SANS pays — `country_id` l'autorise. Aucun repli par position, il serait mort.
+        return strtoupper((string) config('fx.base_currency', 'EUR'));
+    }
+
     /** @return BelongsTo<Region, $this> */
     public function region(): BelongsTo
     {

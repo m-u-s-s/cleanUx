@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main. */
+import { formatMontant } from '@/format/money';
 import { View, Text, Alert, StyleSheet, TouchableOpacity } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
@@ -155,7 +157,7 @@ export function MissionDetailScreen({ route }: Props) {
             ton: 'accent',
           },
           ...(mission.total_price != null
-            ? [{ libelle: 'Prix', valeur: `${mission.total_price} €`, ton: 'bon' as const }]
+            ? [{ libelle: 'Prix', valeur: formatMontant(mission.total_price), ton: 'bon' as const }]
             : []),
         ]}
         style={styles.grille}
@@ -362,9 +364,10 @@ function messageDeCloture(payout?: MissionPayoutAnnouncement | null): string {
     return `${felicitations} Le montant vous sera transféré selon votre calendrier de versement habituel.`;
   }
 
-  const montant = payout.montant_prestataire.toFixed(2).replace('.', ',');
+  // Le serveur envoie `devise` depuis toujours ; l'ecran la jetait et comptait en euros.
+  const montant = formatMontant(payout.montant_prestataire, payout.devise);
 
-  return `${felicitations} ${montant} € seront transférés sur votre compte le ${dateFr(payout.date_transfert)}.`;
+  return `${felicitations} ${montant} seront transférés sur votre compte le ${dateFr(payout.date_transfert)}.`;
 }
 
 /** « 2026-08-19 » → « 19/08/2026 ». Formatage manuel : Intl est incomplet sous Hermes/Android. */

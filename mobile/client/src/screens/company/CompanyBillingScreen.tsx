@@ -1,4 +1,7 @@
 import React from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main,
+   et un export neuf y manque sans que `tsc` bronche. */
+import { formatMontant } from '@/format/money';
 import { View, FlatList, Text, StyleSheet } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
@@ -60,7 +63,7 @@ export function CompanyBillingScreen() {
         <View style={styles.kpi}>
           <KPICard
             title="Reste à payer"
-            value={resume ? `${resume.unpaid.toFixed(2)} €` : '—'}
+            value={resume ? formatMontant(resume.unpaid) : '—'}
             tone={resume && resume.unpaid > 0 ? 'warning' : 'neutral'}
             loading={!resume}
           />
@@ -68,7 +71,7 @@ export function CompanyBillingScreen() {
         <View style={styles.kpi}>
           <KPICard
             title="Émis ce mois"
-            value={resume ? `${resume.total_month.toFixed(2)} €` : '—'}
+            value={resume ? formatMontant(resume.total_month) : '—'}
             loading={!resume}
           />
         </View>
@@ -89,8 +92,8 @@ export function CompanyBillingScreen() {
                 {item.invoice_number ?? `Facture ${item.id}`}
               </Text>
               <Text style={styles.detail} numberOfLines={1}>
-                {item.issued_at ?? 'Non émise'} · {item.total_amount.toFixed(2)} €
-                {item.balance_due > 0 ? ` · ${item.balance_due.toFixed(2)} € dus` : ''}
+                {item.issued_at ?? 'Non émise'} · {formatMontant(item.total_amount, item.currency)}
+                {item.balance_due > 0 ? ` · ${formatMontant(item.balance_due, item.currency)} dus` : ''}
               </Text>
             </View>
 
