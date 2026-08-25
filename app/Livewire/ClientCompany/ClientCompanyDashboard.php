@@ -3,10 +3,14 @@
 namespace App\Livewire\ClientCompany;
 
 use App\Models\Booking;
+use App\Models\FinanceInvoice;
 use App\Models\OrganizationMember;
 use App\Models\OrganizationSite;
 use App\Services\Enterprise\MemberSiteAccessService;
+use App\Support\Finance\ClientFinanceDocumentScope;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
+use App\View\Components\Money;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +23,7 @@ use Livewire\Component;
  * @property-read Collection<int, OrganizationSite> $sitesOverview
  * @property-read Collection<int, Booking> $pendingApprovals
  * @property-read array<int, array<string, mixed>> $bookingsByTrade
+ * @property-read string $devise
  */
 class ClientCompanyDashboard extends Component
 {
@@ -46,7 +51,7 @@ class ClientCompanyDashboard extends Component
             'bookings_period' => $bookingBase()->whereBetween('created_at', [$from, $to])->count(),
             'pending_approval' => $bookingBase()->where('status', 'pending_approval')->count(),
             'members_count' => OrganizationMember::where('organization_account_id', $orgId)->where('status', 'active')->count(),
-            'spend_period' => 0, // À connecter à Invoice
+            'spend_period' => $this->depenseDeLaPeriode($from, $to),
         ];
     }
 
@@ -141,6 +146,33 @@ class ClientCompanyDashboard extends Component
         return app(MemberSiteAccessService::class)->sitesAutorises(Auth::user());
     }
 
+    /**
+     * CE QUE LA SOCIETE A REELLEMENT DEPENSE SUR LA PERIODE.
+     *
+     * Ce chiffre valait `0`, avec un commentaire promettant de le brancher. Le tableau de bord
+     * annoncait donc « 0 » de depenses a une societe qui facture — un zero qu'on lit comme une
+     * information, pas comme un trou.
+     *
+     * La portee est celle du centre de facturation, a l'identique : un membre restreint a
+     * certains locaux ne doit pas totaliser les factures des autres. La refaire a la main ici
+     * ouvrirait une deuxieme regle d'acces, qui divergerait au premier changement.
+     *
+     * `issued_at` DATE LA FACTURE, pas `created_at` : une facture de janvier saisie en fevrier
+     * appartient a janvier — meme regle que `BillingCenter`.
+     */
+    private function depenseDeLaPeriode(CarbonInterface $du, CarbonInterface $au): float
+    {
+        return round((float) ClientFinanceDocumentScope::apply(FinanceInvoice::query(), Auth::user())
+            ->whereBetween('issued_at', [$du, $au])
+            ->sum('total_amount'), 2);
+    }
+
+    /** La devise dans laquelle cette societe lit ses montants. */
+    public function getDeviseProperty(): string
+    {
+        return Money::deviseDuContexte();
+    }
+
     private function periodDates(): array
     {
         return match ($this->period) {
@@ -158,6 +190,7 @@ class ClientCompanyDashboard extends Component
             'sitesOverview' => $this->sitesOverview,
             'pendingApprovals' => $this->pendingApprovals,
             'bookingsByTrade' => $this->bookingsByTrade,
+            'devise' => $this->devise,
         ])->layout('layouts.client-company');
     }
 }

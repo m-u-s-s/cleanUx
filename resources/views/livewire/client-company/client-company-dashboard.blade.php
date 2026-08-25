@@ -62,7 +62,7 @@
                 ['value' => $kpis['bookings_period'],   'label' => 'Réservations mois', 'icon' => '📋', 'route' => 'client-company.bookings.index', 'color' => 'indigo'],
                 ['value' => $kpis['pending_approval'],  'label' => 'À approuver',       'icon' => '⏳', 'route' => 'client-company.bookings.index', 'color' => 'amber'],
                 ['value' => $kpis['members_count'],     'label' => 'Membres',           'icon' => '👥', 'route' => 'client-company.members',   'color' => 'teal'],
-                ['value' => $kpis['spend_period'] . '€', 'label' => 'Dépenses mois',   'icon' => '💶', 'route' => 'client-company.billing',   'color' => 'green'],
+                ['value' => app(\App\Services\Localization\Money::class)->format($kpis['spend_period'], $devise), 'label' => 'Dépenses mois',   'icon' => '💶', 'route' => 'client-company.billing',   'color' => 'green'],
             ];
         @endphp
 
@@ -189,31 +189,58 @@
                 @endif
             </div>
 
-            {{-- Reservations par metier --}}
+            {{--
+                RESERVATIONS PAR METIER — un anneau, pas des barres CSS.
+
+                La serie etait calculee puis rendue en largeurs de `div` : comparer deux metiers
+                demandait de mesurer deux traits a l'oeil. L'anneau donne la part de chacun d'un
+                seul regard, et garde le detail au survol.
+
+                Les donnees passent par des attributs `data-*`. Une expression imbriquee dans une
+                directive Blade casse la compilation de la vue ENTIERE, et l'erreur se signale
+                ailleurs — appris a mes depens sur le tableau de bord de la societe prestataire.
+            --}}
             @if (! empty($bookingsByTrade))
-                <div>
-                    <div class="mb-3 flex items-center justify-between">
-                        <h2 class="text-sm font-bold uppercase tracking-wide text-slate-500">Reservations par metier</h2>
+                <section class="brio-graphique" aria-labelledby="titre-metiers">
+                    <div class="brio-graphique-tete">
+                        <h2 id="titre-metiers" class="brio-graphique-titre">{{ __('Reservations par metier') }}</h2>
+                        <p class="brio-graphique-note">{{ $kpis['bookings_period'] }} {{ __('sur la periode') }}</p>
                     </div>
-                    <div class="space-y-2">
-                        @php $maxCount = max(array_column($bookingsByTrade, 'count')); @endphp
-                        @foreach ($bookingsByTrade as $row)
-                            <div class="rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
-                                <div class="mb-1 flex items-center justify-between">
-                                    <span class="truncate text-xs font-semibold text-slate-800">{{ $row['trade'] }}</span>
-                                    <span class="ml-2 flex-shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700">
-                                        {{ $row['count'] }}
-                                    </span>
-                                </div>
-                                <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-                                    <div class="h-full rounded-full bg-sky-500"
-                                         style="width: {{ $maxCount > 0 ? round($row['count'] / $maxCount * 100) : 0 }}%">
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
+
+                    <div class="brio-graphique-corps" wire:ignore x-data x-init="dessinerRepartition($el)">
+                        <div data-graphique
+                             data-valeurs="{{ json_encode(array_column($bookingsByTrade, 'count')) }}"
+                             data-libelles="{{ json_encode(array_column($bookingsByTrade, 'trade')) }}"></div>
                     </div>
-                </div>
+
+                    {{--
+                        LE TABLEAU RESTE, SOUS L'ANNEAU.
+
+                        Un graphique ne se lit pas au lecteur d'ecran, et un chiffre exact ne se
+                        releve pas sur un angle. Les deux repondent a des questions differentes.
+                    --}}
+                    {{-- Le style du tableau tient sur l'element `table` lui-meme ; ce cadre
+                         lui donne son defilement propre pour que la page ne parte pas en largeur. --}}
+                    <div class="brio-table-cadre mt-4">
+                    <table class="w-full">
+                        <caption class="sr-only">{{ __('Reservations par metier, en chiffres') }}</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">{{ __('Metier') }}</th>
+                                <th scope="col" class="text-right">{{ __('Reservations') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($bookingsByTrade as $row)
+                                <tr>
+                                    <td>{{ $row['trade'] }}</td>
+                                    <td class="text-right tabular-nums">{{ $row['count'] }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    </div>
+                </section>
             @endif
 
             {{-- Navigation rapide --}}

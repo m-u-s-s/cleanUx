@@ -48,15 +48,36 @@
                     <x-ui.icon name="calendar" class="w-3.5 h-3.5" />
                     Aujourd'hui
                 </p>
-                <p class="mt-2 text-2xl font-bold text-slate-900">
-                    {{ $statsJour['total'] }} mission{{ $statsJour['total'] > 1 ? 's' : '' }}
-                </p>
-                <p class="mt-0.5 text-sm text-slate-600">
-                    {{ $statsJour['heures_prevues'] }}h prévues · {{ $statsJour['progression'] }}% terminé
-                </p>
+                {{--
+                    L'AVANCEMENT DU JOUR, EN ANNEAU.
 
-                <div class="mt-4 h-2 overflow-hidden rounded-full bg-brand-100">
-                    <div class="h-full rounded-full bg-emerald-500 transition-all" style="width: {{ min(100, max(0, $statsJour['progression'])) }}%"></div>
+                    Il tenait dans un trait horizontal de deux pixels, sous deux lignes de texte :
+                    la seule chose que l'employe cherche en ouvrant cet ecran demandait de lire
+                    avant de voir. L'anneau se lit a distance, telephone dans une main.
+
+                    La part passe par une propriete personnalisee plutot que par une classe : une
+                    valeur continue ne se decrit pas avec un jeu de classes fixes.
+                --}}
+                <div class="mt-3 flex items-center gap-4">
+                    <div class="brio-jauge shrink-0"
+                         style="--brio-jauge-part: {{ min(100, max(0, (int) $statsJour['progression'])) }}"
+                         role="img"
+                         aria-label="{{ $statsJour['progression'] }}% des missions du jour terminées">
+                        <span class="brio-jauge-valeur" aria-hidden="true">{{ $statsJour['progression'] }}%</span>
+                    </div>
+
+                    <div class="min-w-0">
+                        <p class="text-2xl font-bold text-slate-900">
+                            {{ $statsJour['total'] }} mission{{ $statsJour['total'] > 1 ? 's' : '' }}
+                        </p>
+                        <p class="mt-0.5 text-sm text-slate-600">
+                            {{ $statsJour['heures_prevues'] }}h prévues
+                        </p>
+                        <p class="mt-0.5 text-sm text-slate-600">
+                            {{ $statsJour['terminees'] }} terminée{{ $statsJour['terminees'] > 1 ? 's' : '' }}
+                            · {{ $statsJour['a_faire'] }} à faire
+                        </p>
+                    </div>
                 </div>
             </div>
 

@@ -139,12 +139,31 @@ window.dessinerActivite = (racine) => {
 
     cible.innerHTML = '';
 
+    /*
+     * UNE SERIE D'ARGENT NE SE LIT PAS COMME UN COMPTE.
+     *
+     * L'axe arrondissait en entiers nus : juste pour « douze missions », muet pour « 12 400 »
+     * qui peut etre des euros comme des dirhams. `data-devise` reste FACULTATIF — sans lui, le
+     * comportement d'origine est inchange, et aucun appelant existant ne bouge.
+     */
+    const devise = cible.dataset.devise || '';
+    const langue = document.documentElement.lang || 'fr-BE';
+    const enArgent = (v) =>
+      new Intl.NumberFormat(langue, {
+        style: 'currency',
+        currency: devise,
+        maximumFractionDigits: 0,
+      }).format(v);
+
+    const formateur = devise ? enArgent : (v) => Math.round(v);
+
     new ApexCharts(cible, {
       chart: { type: 'bar', height: 240 },
       plotOptions: { bar: { borderRadius: 6, columnWidth: '55%' } },
       series: [{ name: cible.dataset.nom || '', data: totaux }],
       xaxis: { categories: libelles },
-      yaxis: { min: 0, tickAmount: 4, labels: { formatter: (v) => Math.round(v) } },
+      yaxis: { min: 0, tickAmount: 4, labels: { formatter: formateur } },
+      tooltip: { y: { formatter: formateur } },
       fill: { type: 'solid', opacity: 0.9 },
     }).render();
   };

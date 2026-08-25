@@ -55,39 +55,61 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div class="lg:col-span-2 rounded-2xl border bg-white p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-5">
-                <div>
-                    <h3 class="font-semibold text-slate-900">📈 Évolution CA / réservations</h3>
-                    <p class="text-sm text-slate-500">6 dernières semaines</p>
+        <div class="lg:col-span-2">
+            {{--
+                L'EVOLUTION DU CHIFFRE, EN GRAPHIQUE.
+
+                La serie etait calculee depuis toujours puis rendue en largeurs de `div` : six
+                traits empiles, un maximum RECALCULE a chaque tour de boucle, et aucune facon de
+                voir une tendance autrement qu'en comparant des longueurs a l'oeil.
+
+                Les donnees passent par des attributs `data-*`. Une expression imbriquee dans une
+                directive Blade casse la compilation de la vue ENTIERE, et l'erreur se signale
+                ailleurs.
+            --}}
+            <section class="brio-graphique" aria-labelledby="titre-evolution">
+                <div class="brio-graphique-tete">
+                    <h2 id="titre-evolution" class="brio-graphique-titre">{{ __('Évolution du chiffre d\'affaires') }}</h2>
+                    <p class="brio-graphique-note">{{ __('6 dernières semaines') }}</p>
                 </div>
-            </div>
 
-            <div class="space-y-4">
-                @foreach($metrics['weekly_revenue'] as $week)
-                    @php
-                        $max = max(1, collect($metrics['weekly_revenue'])->max('revenue'));
-                        $width = ($week['revenue'] / $max) * 100;
-                    @endphp
+                <div class="brio-graphique-corps" wire:ignore x-data x-init="dessinerActivite($el)">
+                    <div data-graphique
+                         data-devise="{{ \App\View\Components\Money::deviseDuContexte() }}"
+                         data-nom="{{ __('Chiffre d\'affaires') }}"
+                         data-totaux="{{ json_encode(array_column($metrics['weekly_revenue'], 'revenue')) }}"
+                         data-libelles="{{ json_encode(array_column($metrics['weekly_revenue'], 'label')) }}"></div>
+                </div>
 
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="font-medium text-slate-700">{{ $week['label'] }}</span>
-                            <span class="text-slate-500">
-                                <x-money :amount="(float) ($week['revenue'])" />
-                                — {{ $week['bookings'] }} RDV
-                            </span>
-                        </div>
+                {{--
+                    LE TABLEAU RESTE, SOUS LE GRAPHIQUE.
 
-                        <div class="h-3 rounded-full bg-slate-100 overflow-hidden">
-                            <div
-                                class="h-full rounded-full bg-blue-600"
-                                style="width: {{ $width }}%">
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
+                    Un graphique ne se lit pas au lecteur d'ecran, et le nombre de rendez-vous
+                    n'apparait pas sur la courbe du chiffre. Les deux repondent a des questions
+                    differentes.
+                --}}
+                <div class="brio-table-cadre mt-4">
+                    <table class="w-full">
+                        <caption class="sr-only">{{ __('Chiffre d\'affaires et réservations, par semaine') }}</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">{{ __('Semaine') }}</th>
+                                <th scope="col" class="text-right">{{ __('Chiffre d\'affaires') }}</th>
+                                <th scope="col" class="text-right">{{ __('Réservations') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($metrics['weekly_revenue'] as $week)
+                                <tr>
+                                    <td>{{ $week['label'] }}</td>
+                                    <td class="text-right tabular-nums"><x-money :amount="(float) ($week['revenue'])" /></td>
+                                    <td class="text-right tabular-nums">{{ $week['bookings'] }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
 
         <div class="rounded-2xl border bg-white p-6 shadow-sm space-y-4">

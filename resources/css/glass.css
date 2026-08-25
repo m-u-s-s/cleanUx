@@ -298,7 +298,10 @@ body:not(.cx-shell) :is(.brio-kpi-value, .brio-stat-value, .tabular, td) {
         --glass-bg-strong: rgba(255, 255, 255, 0.97);
     }
 
-    :root[data-theme="dark"] {
+    /* La porte du sombre est la CLASSE `dark`, posee par l'amorce avant la premiere
+       peinture. Ce bloc portait `[data-theme="dark"]` : un selecteur que rien ne pose,
+       donc un repli reste CLAIR sur un appareil sombre sans flou. */
+    :root.dark {
         --glass-bg:        rgba(22, 28, 44, 0.94);
         --glass-bg-strong: rgba(28, 35, 54, 0.97);
     }
