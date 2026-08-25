@@ -45,3 +45,5 @@ export { apparenceDeBarre, fondDeFeuille } from './glassBars';
 export type { OsmMarker } from './OsmMap';
 export type { MapModule } from './mapModule';
 export { creerBarreOnglets } from './BarreOnglets';
+export { GrilleDeCases } from './GrilleDeCases';
+export type { Case, TonDeCase } from './GrilleDeCases';

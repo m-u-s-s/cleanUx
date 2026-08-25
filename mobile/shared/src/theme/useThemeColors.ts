@@ -100,6 +100,20 @@ export function useThemeColors() {
     accentDeep: '#ff8a3d',
     textOnAccent: '#241603',
 
+    /*
+     * LES STATUTS EN COULEUR PLEINE.
+     *
+     * `tint.*` existait deja, mais ce sont des VOILES a poser en fond : les employer pour
+     * du texte donne un vert a 20 % d'opacite, illisible. Ces trois-la sont les memes que
+     * `--brio-success/warning/danger` du web, et un test compare les deux fichiers.
+     *
+     * La nuance monte d'un cran en sombre : `success.600` sur un fond de nuit passe sous
+     * le seuil de contraste, `success.500` le tient.
+     */
+    success: isDark ? colors.success[500] : colors.success[600],
+    warning: isDark ? colors.warning[500] : colors.warning[600],
+    danger: isDark ? colors.danger[500] : colors.danger[600],
+
     /** La lueur de marque du fond nuit. Absente en clair : elle n'y aurait aucun sens. */
     glow: isDark ? 'rgba(99, 102, 241, 0.30)' : 'transparent',
 
