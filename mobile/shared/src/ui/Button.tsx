@@ -62,18 +62,19 @@ const variantStyles: Record<Exclude<Variant, 'glass'>, Habillage> = {
 /**
  * Résout l'habillage d'une variante pour le thème courant.
  *
- * `glass` en mode CLAIR retombe sur `secondary`. Plutôt qu'inventer un rendu clair pour une
- * variante qui n'a de sens que sur fond nuit, elle emprunte celui qui existe déjà : une surface de
- * moins à maintenir, et aucun risque de faire dériver le mode clair.
+ * `glass` EXISTE DÉSORMAIS DANS LES DEUX MODES.
  *
- * `ghost` en mode SOMBRE prend le texte secondaire du thème : `colors.surface[600]` est un gris
- * moyen conçu pour le blanc, illisible sur le nuit.
+ * Elle retombait sur `secondary` en clair, et la raison était bonne : sans rien derrière à
+ * filtrer, un voile translucide sur un aplat uni est indiscernable d'une surface opaque —
+ * autant emprunter la variante qui existait déjà.
+ *
+ * Depuis que la toile claire porte ses auras, il y a quelque chose à filtrer. Le voile clair
+ * est plus DENSE que le sombre (0,86 contre 0,10) : c'est le voile, pas le flou, qui garantit
+ * le contraste du libellé — un flou mélange les pixels, il ne les fonce pas.
  */
 function habillageDe(variant: Variant, theme: ThemeTokens): Habillage {
   if (variant === 'glass') {
-    return theme.isDark
-      ? { bg: theme.glassStrong, text: theme.textOnGlass, border: theme.glassBorder }
-      : variantStyles.secondary;
+    return { bg: theme.glassStrong, text: theme.textOnGlass, border: theme.glassBorder };
   }
 
   if (variant === 'ghost' && theme.isDark) {

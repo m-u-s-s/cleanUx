@@ -74,20 +74,53 @@ describe('Button variante glass', () => {
     expect(luminosite(aplat(screen.getByText('Continuer').props.style).color)).toBeGreaterThan(0.7);
   });
 
-  it('se comporte comme `secondary` en mode clair', () => {
+  /*
+   * CE TEST EXIGEAIT QUE `glass` RETOMBE SUR `secondary` EN CLAIR, ET C'EST LEVÉ.
+   *
+   * La raison d'origine tenait : sans rien derrière à filtrer, un voile translucide sur un
+   * aplat uni ne se distingue pas d'une surface opaque. Depuis que la toile claire porte des
+   * auras, il y a quelque chose à filtrer.
+   */
+  it('pose un voile translucide en mode clair aussi', () => {
     mockScheme.colorScheme = 'light';
 
     render(<Button label="Continuer" onPress={jest.fn()} variant="glass" />);
-    const verre = aplat(screen.getByRole('button').props.style);
+
+    const fond = aplat(screen.getByRole('button').props.style).backgroundColor;
+
+    expect(fond).toMatch(/^rgba\(/);
+    expect(alpha(fond)).toBeGreaterThan(0);
+    expect(alpha(fond)).toBeLessThan(1);
+  });
+
+  /**
+   * TÉMOIN — le voile CLAIR est plus dense que le sombre, et ce n'est pas un détail.
+   *
+   * C'est le voile qui porte le contraste du libellé, pas le flou : un flou mélange les
+   * pixels, il ne les fonce pas. Un voile clair aussi ténu que le sombre laisserait le
+   * libellé illisible dès qu'une aura passe dessous.
+   */
+  it('le voile clair est plus dense que le voile sombre', () => {
+    mockScheme.colorScheme = 'light';
+    render(<Button label="Continuer" onPress={jest.fn()} variant="glass" />);
+    const clair = alpha(aplat(screen.getByRole('button').props.style).backgroundColor);
 
     screen.unmount();
-    render(<Button label="Continuer" onPress={jest.fn()} variant="secondary" />);
-    const secondaire = aplat(screen.getByRole('button').props.style);
 
-    // Pas de verre en clair. Plutôt que d'inventer un rendu clair pour cette variante, elle
-    // retombe sur celle qui existe déjà — une surface de moins à maintenir.
-    expect(verre.backgroundColor).toBe(secondaire.backgroundColor);
-    expect(verre.borderColor).toBe(secondaire.borderColor);
+    mockScheme.colorScheme = 'dark';
+    render(<Button label="Continuer" onPress={jest.fn()} variant="glass" />);
+    const sombre = alpha(aplat(screen.getByRole('button').props.style).backgroundColor);
+
+    expect(clair).toBeGreaterThan(sombre);
+  });
+
+  /** Et son libellé reste SOMBRE : la faute inverse de celle du mode nuit. */
+  it('ecrit son libelle en sombre sur le voile clair', () => {
+    mockScheme.colorScheme = 'light';
+
+    render(<Button label="Continuer" onPress={jest.fn()} variant="glass" />);
+
+    expect(luminosite(aplat(screen.getByText('Continuer').props.style).color)).toBeLessThan(0.4);
   });
 
   it('respecte disabled et loading comme les autres variantes', () => {
