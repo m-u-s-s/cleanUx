@@ -31,7 +31,14 @@ import {
   Figtree_600SemiBold,
   Figtree_700Bold,
 } from '@expo-google-fonts/figtree';
-import { SpaceGrotesk_700Bold } from '@expo-google-fonts/space-grotesk';
+import { Allura_400Regular } from '@expo-google-fonts/allura';
+import {
+  Sora_400Regular,
+  Sora_500Medium,
+  Sora_600SemiBold,
+  Sora_700Bold,
+  Sora_800ExtraBold,
+} from '@expo-google-fonts/sora';
 import { AuthProvider } from '@/auth';
 import { RealtimeProvider } from '@/realtime';
 import { RootNavigator, linking } from '@/navigation';
@@ -131,12 +138,23 @@ function AppInner() {
 }
 
 export default function App() {
+  /*
+   * ALLURA PORTE LES TITRES, SORA L'INTERFACE — les memes que le web.
+   *
+   * Figtree reste chargee : des ecrans la nomment encore directement, et la retirer
+   * les ferait tomber sur la police systeme sans que rien ne le signale.
+   */
   const [fontsLoaded] = useFonts({
+    Allura_400Regular,
+    Sora_400Regular,
+    Sora_500Medium,
+    Sora_600SemiBold,
+    Sora_700Bold,
+    Sora_800ExtraBold,
     Figtree_400Regular,
     Figtree_500Medium,
     Figtree_600SemiBold,
     Figtree_700Bold,
-    SpaceGrotesk_700Bold,
   });
 
   if (!fontsLoaded) {
