@@ -8,32 +8,47 @@
     'trend' => null,
 ])
 
+{{--
+    LA CASE DE STATISTIQUE — les tons passent par les jetons, plus par la palette.
+
+    Ce composant portait huit variantes écrites en couleurs Tailwind fixes : `bg-amber-50`,
+    `text-red-700`, `border-brand-100`. Douze appels en héritaient, et aucun ne suivait le
+    thème : sur la nuit, un fond `-50` reste un fond clair, et le texte `-700` posé dessus
+    devient illisible dès que la surface, elle, s'assombrit.
+
+    `.brio-stat*` disait exactement la même chose en jetons — et n'avait AUCUN appelant. Les
+    deux systèmes ont vécu côte à côte : celui qui tenait la page ignorait le thème, celui qui
+    le respectait n'était nulle part.
+
+    Les noms de tons d'origine sont conservés (`amber`, `red`, `blue`…) : les renommer aurait
+    obligé à toucher les douze appels pour un gain nul, et un ton inconnu tombe sur le neutre
+    plutôt que de disparaître.
+--}}
 @php
-    $toneClasses = match($tone) {
-        'amber' => 'ui-stat-icon text-amber-700 bg-amber-50 border-amber-100',
-        'red' => 'ui-stat-icon text-red-700 bg-red-50 border-red-100',
-        'orange' => 'ui-stat-icon text-orange-700 bg-orange-50 border-orange-100',
-        'rose' => 'ui-stat-icon text-rose-700 bg-rose-50 border-rose-100',
-        'blue' => 'ui-stat-icon text-brand-700 bg-brand-50 border-brand-100',
-        'emerald' => 'ui-stat-icon text-emerald-700 bg-emerald-50 border-emerald-100',
-        'green' => 'ui-stat-icon text-emerald-700 bg-emerald-50 border-emerald-100',
-        default => 'ui-stat-icon text-slate-700 bg-slate-50 border-slate-100',
+    $tonBrio = match ($tone) {
+        'amber', 'orange' => 'brio-stat-warn',
+        'red', 'rose' => 'brio-stat-bad',
+        'emerald', 'green' => 'brio-stat-good',
+        'blue', 'brand' => 'brio-stat-accent',
+        default => '',
     };
 @endphp
 
-<div {{ $attributes->merge(['class' => 'ui-stat']) }}>
+<div {{ $attributes->merge(['class' => trim('brio-stat text-left '.$tonBrio)]) }}>
     <div class="flex items-start justify-between gap-3">
-        <div>
-            <p class="ui-stat-label">{{ $title }}</p>
-            <p class="ui-stat-value">{{ $value }}</p>
+        <div class="min-w-0">
+            <p class="brio-stat-label !mt-0">{{ $title }}</p>
+            <p class="brio-stat-value">{{ $value }}</p>
         </div>
 
+        {{-- L'icône prend la couleur du ton par héritage : elle en portait une seconde,
+             qui pouvait contredire celle de la valeur. --}}
         @if($heroicon)
-            <div class="{{ $toneClasses }}">
+            <div class="brio-stat-icone" aria-hidden="true">
                 <x-ui.icon :name="$heroicon" class="w-5 h-5" />
             </div>
         @elseif($icon)
-            <div class="{{ $toneClasses }}">
+            <div class="brio-stat-icone" aria-hidden="true">
                 {{ $icon }}
             </div>
         @endif
@@ -42,10 +57,10 @@
     @if($hint || $trend)
         <div class="mt-3 flex flex-wrap items-center gap-2">
             @if($hint)
-                <p class="ui-stat-hint">{{ $hint }}</p>
+                <p class="brio-stat-label !mt-0">{{ $hint }}</p>
             @endif
             @if($trend)
-                <span class="ui-badge ui-badge-neutral">{{ $trend }}</span>
+                <span class="brio-chip">{{ $trend }}</span>
             @endif
         </div>
     @endif

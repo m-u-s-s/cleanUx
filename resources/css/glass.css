@@ -202,6 +202,27 @@ body:not(.cx-shell) :is(.brio-kpi-value, .brio-stat-value, .tabular, td) {
     color: var(--brio-muted);
 }
 
+/* L'ICONE PREND LA COULEUR DU TON, par heritage. Le composant lui en donnait une
+   SECONDE, tiree de la palette : une case « alerte » pouvait porter une valeur rouge
+   et une icone ambre, deux verdicts pour une meme mesure. */
+.brio-stat-icone {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.35rem;
+    height: 2.35rem;
+    flex: none;
+    border-radius: var(--cx-radius-md);
+    background-color: var(--glass-bg-faint);
+    border: 1px solid var(--glass-border);
+    color: currentColor;
+}
+
+.brio-stat-accent { color: var(--brio-accent-deep); }
+.brio-stat-good   { color: var(--brio-success); }
+.brio-stat-warn   { color: var(--brio-warning); }
+.brio-stat-bad    { color: var(--brio-danger); }
+
 .brio-stat-accent .brio-stat-value { color: var(--brio-accent-deep); }
 .brio-stat-good   .brio-stat-value { color: var(--brio-success); }
 .brio-stat-warn   .brio-stat-value { color: var(--brio-warning); }
