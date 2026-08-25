@@ -64,10 +64,24 @@ async function contraste(ctx, mode) {
     await page.waitForTimeout(300);
 
     const faibles = await page.evaluate(() => {
+      /*
+       * LA NOTATION MODERNE N'EST PAS DU RGB.
+       *
+       * `color-mix()` rend `color(srgb 0.917 0.941 0.984 / 0.88)` : des composantes de 0 a 1,
+       * la ou `rgb()` en donne de 0 a 255. Le parseur les prenait telles quelles puis les
+       * divisait encore par 255 — un texte blanc casse etait compte comme NOIR, et
+       * dix-neuf cellules parfaitement lisibles remontaient a 1,22:1.
+       */
       const composantes = (c) => {
-        const m = c.match(/[\d.]+/g);
+        const m = c.match(/[0-9.]+/g);
 
-        return m ? m.slice(0, 4).map(Number) : null;
+        if (!m) return null;
+
+        const n = m.slice(0, 4).map(Number);
+        const estUnitaire = /^color\(/i.test(c.trim());
+        const rvb = estUnitaire ? n.slice(0, 3).map((x) => x * 255) : n.slice(0, 3);
+
+        return [rvb[0], rvb[1], rvb[2], n[3] === undefined ? 1 : n[3]];
       };
 
       // Luminance relative, définition WCAG.

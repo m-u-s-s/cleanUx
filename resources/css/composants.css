@@ -377,7 +377,7 @@
     color: var(--brio-muted);
 }
 
-.brio-cookies-detail a { color: var(--brio-accent-deep); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.brio-cookies-detail a { color: var(--brio-accent-texte); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 
 .brio-cookies-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 
@@ -480,7 +480,7 @@
     flex: none;
     font-size: 0.75rem;
     font-weight: 700;
-    color: var(--brio-accent-deep);
+    color: var(--brio-accent-texte);
 }
 
 /* Le fil de progression : une barre pleine dit « ou j'en suis », pas « combien
@@ -753,7 +753,7 @@
     border-radius: var(--cx-radius-lg);
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
-    color: var(--brio-accent-deep);
+    color: var(--brio-accent-texte);
 }
 
 .brio-vide-icone svg { width: 1.6rem; height: 1.6rem; }
@@ -980,4 +980,48 @@ body:not(.cx-shell) ::placeholder { color: var(--brio-faint); opacity: 1; }
 /* La case a cocher et le bouton radio prennent l'accent de la marque. */
 body:not(.cx-shell) :is(input[type="checkbox"], input[type="radio"]) {
     accent-color: var(--brio-accent-deep);
+}
+
+/* ========================================================== LE BANDEAU DE NAVIGATION
+   Il est COLLANT et traverse toute la page : c'est la surface de verre la plus vue du
+   produit. Un `bg-white/95` y redevient un aplat des qu'on defile — le flou profond et
+   le lisere sont ce qui le fait tenir. */
+.brio-barre {
+    background-color: var(--glass-bg-strong);
+    backdrop-filter: blur(var(--glass-blur-deep)) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(var(--glass-blur-deep)) saturate(var(--glass-sat));
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: var(--glass-highlight), 0 4px 18px rgb(var(--brio-ink-rgb) / 0.05);
+}
+
+/* La marque : Allura sur le nom, un liseré d'ambre dessous. Le bleu qui vivait ici
+   n'appartenait a aucune palette du produit. */
+.brio-marque {
+    font-family: var(--brio-display);
+    font-size: 1.75rem;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--brio-ink);
+    letter-spacing: 0.01em;
+    transition: color var(--cx-dur-fast) var(--cx-ease);
+}
+
+.brio-marque:hover { color: var(--brio-accent-deep); }
+
+/* Les liens du bandeau suivent l'accent, et le soulignement d'etat le porte aussi. */
+.brio-barre :is(a, button) { transition: color var(--cx-dur-fast) var(--cx-ease); }
+
+/* Les liens du bandeau. L'etat actif porte l'accent de la marque : l'indigo qui vivait
+   ici n'appartenait a aucune palette du produit. */
+.brio-lien-nav {
+    border-color: transparent;
+    color: var(--brio-muted);
+}
+
+.brio-lien-nav:hover { color: var(--brio-ink); border-color: var(--glass-border); }
+
+.brio-lien-nav-actif {
+    color: var(--brio-ink);
+    border-color: var(--brio-accent);
+    font-weight: 650;
 }

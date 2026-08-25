@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="sticky top-0 z-40 border-b border-slate-100 bg-white/95 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+<nav x-data="{ open: false }" class="brio-barre sticky top-0 z-40">
     @php
     $user = auth()->user();
 
@@ -76,7 +76,7 @@
         <div class="flex h-16 justify-between">
             <div class="flex min-w-0">
                 <div class="flex shrink-0 items-center">
-                    <a href="{{ $homeHref }}" class="flex items-center gap-2 text-xl font-black tracking-tight text-blue-700 dark:text-blue-400">
+                    <a href="{{ $homeHref }}" class="brio-marque flex items-center gap-2">
                         {{-- La marque de l'espace où l'on se trouve : « Client » pour un client,
                              « Provider » pour un prestataire. La pastille « Br » qui vivait ici ne
                              distinguait rien et n'était la marque de personne. --}}
@@ -85,11 +85,11 @@
                     </a>
                 </div>
 
-                <div class="hidden sm:-my-px sm:ms-8 sm:flex sm:items-center sm:gap-6">
+                <div class="hidden lg:-my-px lg:ms-8 lg:flex lg:items-center lg:gap-5 xl:gap-6">
                     @auth
                     @foreach($primaryLinks as $link)
-                    <x-nav-link :href="route($link['route'])" :active="request()->routeIs($link['route']) || request()->routeIs($link['route'].'.*')">
-                        <span class="me-1 inline-flex items-center">{!! $renderIcon($link['icon']) !!}</span>
+                    <x-nav-link :href="route($link['route'])" :active="request()->routeIs($link['route']) || request()->routeIs($link['route'].'.*')" :title="__($link['label'])" :aria-label="__($link['label'])">
+                        <span class="inline-flex items-center 2xl:me-1" aria-hidden="true">{!! $renderIcon($link['icon']) !!}</span>
                         {{--
                             `__()` ET NON LE LIBELLÉ BRUT.
 
@@ -102,7 +102,7 @@
                             voit donc aucune différence, et les langues servies cessent
                             d'être à moitié appliquées.
                         --}}
-                        {{ __($link['label']) }}
+                        <span class="hidden 2xl:inline">{{ __($link['label']) }}</span>
                     </x-nav-link>
                     @endforeach
 
@@ -130,7 +130,7 @@
                 </div>
             </div>
 
-            <div class="hidden sm:flex sm:items-center sm:gap-3">
+            <div class="hidden lg:flex lg:items-center lg:gap-3">
                 <x-theme-toggle />
                 <x-language-switcher />
 
@@ -323,7 +323,7 @@
                 @endauth
             </div>
 
-            <div class="-me-2 flex items-center sm:hidden">
+            <div class="-me-2 flex items-center lg:hidden">
                 <button @click="open = ! open"
                     type="button"
                     aria-controls="menu-mobile"
@@ -350,7 +350,7 @@
         </div>
     </div>
 
-    <div id="menu-mobile" :class="{ 'block': open, 'hidden': !open }" class="hidden border-t border-slate-100 bg-white sm:hidden dark:border-slate-700 dark:bg-slate-900">
+    <div id="menu-mobile" :class="{ 'block': open, 'hidden': !open }" class="hidden border-t border-slate-100 bg-white lg:hidden dark:border-slate-700 dark:bg-slate-900">
         <div class="space-y-1 pb-3 pt-2">
             @auth
             @foreach($primaryLinks as $link)

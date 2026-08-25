@@ -209,3 +209,37 @@
         color: theme('colors.brand.400');
     }
 }
+
+/* ============================================================================
+   LA RESERVE S'APPLIQUE AUX CHAMPS AUSSI
+
+   `/login` et `/register` posent leur formulaire dans une `.brio-glass` — une
+   surface qui reste CLAIRE au milieu de la coquille nuit, exactement comme les
+   titres que la reserve epargne deja.
+
+   Les champs, eux, n'etaient pas reserves : ils prenaient le fond de nuit et
+   deux rectangles bleu nuit se posaient sur une carte gris clair. Le defaut est
+   ancien — l'ancien `base.css` peignait `.dark input` sans exclure la vitrine —
+   et il se voit des que la preference systeme est sombre.
+   ========================================================================= */
+body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(input, select, textarea) {
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(15, 23, 42, 0.10);
+    color: #1a2436;
+    border-radius: var(--cx-radius-sm);
+}
+
+body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(input, textarea)::placeholder {
+    color: rgba(26, 36, 54, 0.45);
+}
+
+body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(input, select, textarea):focus {
+    background: #ffffff;
+    border-color: var(--cx-amber);
+    box-shadow: 0 0 0 4px rgba(255, 182, 72, 0.20);
+}
+
+/* Le texte d'accompagnement d'une carte claire suit son encre, pas celle de la nuit. */
+body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(p, label, span):not([class*="text-"]) {
+    color: rgba(26, 36, 54, 0.72);
+}

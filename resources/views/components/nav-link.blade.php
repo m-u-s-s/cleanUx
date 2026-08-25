@@ -1,9 +1,17 @@
 @props(['active'])
 
+{{--
+    LE LIBELLE NE REVIENT PLUS A LA LIGNE.
+
+    Sans `whitespace-nowrap`, « Trouver un prestataire » se cassait en deux lignes, la barre
+    gagnait en hauteur et les liens suivants debordaient sur le bloc de droite : « Modules »
+    chevauchait le selecteur de langue a 1440 px.
+
+    L'etat actif porte l'accent de la marque, pas un indigo qui n'appartient a rien.
+--}}
 @php
-$classes = ($active ?? false)
-            ? 'inline-flex items-center px-1 pt-1 border-b-2 border-indigo-400 text-sm font-medium leading-5 text-gray-900 focus:outline-none focus:border-indigo-700 transition duration-150 ease-in-out'
-            : 'inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:text-gray-700 focus:border-gray-300 transition duration-150 ease-in-out';
+$base = 'brio-lien-nav inline-flex items-center whitespace-nowrap px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition';
+$classes = ($active ?? false) ? $base.' brio-lien-nav-actif' : $base;
 @endphp
 
 <a {{ $attributes->merge(['class' => $classes]) }}>

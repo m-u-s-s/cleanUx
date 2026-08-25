@@ -6,7 +6,7 @@ const BASE = 'http://127.0.0.1:8000';
 const SORTIE = process.env.SORTIE ?? '.';
 
 const cibles = [
-  { cle: 'admin', cred: 'admin', chemin: '/admin/audit' },
+  { cle: 'admin', cred: 'admin', chemin: '/admin/accounting-v2' },
   { cle: 'prestataire', cred: 'provider', chemin: '/dashboard/employe' },
   { cle: 'client', cred: 'client', chemin: '/dashboard/client' },
 ];

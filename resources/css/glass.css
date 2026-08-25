@@ -57,7 +57,9 @@ body:not(.cx-shell) :is(h1, h2, .brio-title, .brio-section-title) {
 }
 
 body:not(.cx-shell) h1, body:not(.cx-shell) .brio-title { font-size: clamp(2.6rem, 5vw, 4rem); }
-body:not(.cx-shell) h2, body:not(.cx-shell) .brio-section-title { font-size: clamp(2rem, 3.4vw, 2.9rem); }
+/* Un h2 est un titre de SECTION, pas d'ecran : en Allura a 2,9rem il ecrasait le
+   contenu qu'il annonce. La correction d'oeil reste, l'echelle redescend. */
+body:not(.cx-shell) h2, body:not(.cx-shell) .brio-section-title { font-size: clamp(1.6rem, 2.4vw, 2.1rem); }
 
 /* Les titres d'INTERFACE gardent la sans : une cursive au-dessus d'un tableau
    de chiffres ne se lit pas, et l'illisible n'est jamais gracieux. */
@@ -72,7 +74,7 @@ body:not(.cx-shell) :is(.brio-eyebrow, .ui-eyebrow) {
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--brio-accent-deep);
+    color: var(--brio-accent-texte);
 }
 
 /* Les chiffres : chasse fixe pour qu'une colonne ne danse pas a chaque rafraichissement. */

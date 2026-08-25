@@ -39,6 +39,12 @@
     --brio-accent-deep:  var(--cx-amber-deep);
     --brio-accent-rgb:   255 182 72;
 
+    /* L'ACCENT EN TEXTE — et il n'est PAS l'accent de marque.
+       `#ff8a3d` pose sur du verre clair donne 2,27:1 : parfait en aplat de bouton, illisible
+       en libelle. Cette version brulee tient 4,8:1 sur le fond clair, et cede la place a une
+       version pale en mode sombre. */
+    --brio-accent-texte: #a8530a;
+
     /* --------------------------------------------------------------- COURBURES
        Le verre epais demande des rayons genereux : un angle vif trahit la
        matiere. 24px est la valeur de reference des cinq modeles etudies. */
@@ -136,7 +142,7 @@
 
     --brio-ink-rgb:      234 240 251;
     --brio-ink:          rgb(var(--brio-ink-rgb));
-    --brio-muted:        #8fa0bf;
+    --brio-muted:        #a1b2cf;
     --brio-faint:        #64748b;
 
     --glass-bg:          rgba(255, 255, 255, 0.055);
@@ -166,4 +172,6 @@
     --brio-aura-1:       rgba(79, 227, 214, 0.16);
     --brio-aura-2:       rgba(255, 138, 61, 0.14);
     --brio-aura-3:       rgba(139, 123, 255, 0.18);
+
+    --brio-accent-texte: #ffc978;
 }
