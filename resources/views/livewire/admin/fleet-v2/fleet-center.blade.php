@@ -136,7 +136,7 @@
                                 <td class="px-4 py-2 text-xs">{{ $e->name }}</td>
                                 <td class="px-4 py-2 text-xs">{{ $e->equipment_type }}</td>
                                 <td class="px-4 py-2 text-xs">{{ $e->category ?? '—' }}</td>
-                                <td class="px-4 py-2 text-xs">{{ $e->value_cents ? number_format($e->value_cents / 100, 0, ',', ' ') . ' €' : '—' }}</td>
+                                <td class="px-4 py-2 text-xs">@if ($e->value_cents)<x-money :amount="$e->value_cents / 100" :decimals="0" />@else—@endif</td>
                                 <td class="px-4 py-2 text-xs">
                                     <span @class([
                                         'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold',

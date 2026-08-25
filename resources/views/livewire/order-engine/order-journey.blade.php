@@ -7,6 +7,10 @@
     Mobile d'abord. Le récapitulatif est une barre BASSE, dans la zone du pouce, et l'action
     principale y vit. Rien de critique dans le tiers supérieur de l'écran.
 --}}
+{{-- LE SYMBOLE SUIT LA POSITION DU CLIENT. Il est pose ici, une fois : le nombre,
+     lui, est anime par un script et ne peut pas passer par `<x-money>`. --}}
+@php($symboleDevise = app(\App\Services\Localization\Money::class)->symbol(\App\View\Components\Money::deviseDuContexte()))
+
 <div class="pb-28 lg:pb-8">
     <div class="mx-auto max-w-6xl space-y-6 px-4 py-6 lg:grid lg:max-w-7xl lg:grid-cols-[1fr_340px] lg:gap-8 lg:space-y-0">
 
@@ -386,10 +390,10 @@
                         --}}
                         <p class="mt-2 text-3xl font-semibold tabular-nums text-slate-900">
                             @if ($this->quote->isExact())
-                                <span data-cx-price="{{ $this->quote->minCents }}">{{ number_format($this->quote->minCents / 100, 0, ',', ' ') }}</span> €
+                                <span data-cx-price="{{ $this->quote->minCents }}">{{ number_format($this->quote->minCents / 100, 0, ',', ' ') }}</span> {{ $symboleDevise }}
                             @else
                                 <span data-cx-price="{{ $this->quote->minCents }}">{{ number_format($this->quote->minCents / 100, 0, ',', ' ') }}</span>
-                                – <span data-cx-price="{{ $this->quote->maxCents }}">{{ number_format($this->quote->maxCents / 100, 0, ',', ' ') }}</span> €
+                                – <span data-cx-price="{{ $this->quote->maxCents }}">{{ number_format($this->quote->maxCents / 100, 0, ',', ' ') }}</span> {{ $symboleDevise }}
                             @endif
                         </p>
 
@@ -439,9 +443,9 @@
                             @if ($this->quote->quoteOnly)
                                 Sur devis
                             @elseif ($this->quote->isExact())
-                                <span data-cx-price="{{ $this->quote->minCents }}">{{ number_format($this->quote->minCents / 100, 0, ',', ' ') }}</span> €
+                                <span data-cx-price="{{ $this->quote->minCents }}">{{ number_format($this->quote->minCents / 100, 0, ',', ' ') }}</span> {{ $symboleDevise }}
                             @else
-                                <span data-cx-price="{{ $this->quote->minCents }}">{{ number_format($this->quote->minCents / 100, 0, ',', ' ') }}</span>–<span data-cx-price="{{ $this->quote->maxCents }}">{{ number_format($this->quote->maxCents / 100, 0, ',', ' ') }}</span> €
+                                <span data-cx-price="{{ $this->quote->minCents }}">{{ number_format($this->quote->minCents / 100, 0, ',', ' ') }}</span>–<span data-cx-price="{{ $this->quote->maxCents }}">{{ number_format($this->quote->maxCents / 100, 0, ',', ' ') }}</span> {{ $symboleDevise }}
                             @endif
                         </p>
                     </div>
@@ -522,7 +526,15 @@
         const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)');
         const DUREE = 420;
 
-        const format = (cents) => new Intl.NumberFormat('fr-BE', {
+        /*
+         * LA LOCALE VIENT DU DOCUMENT, PAS D'UNE CONSTANTE.
+         *
+         * `fr-BE` etait ecrit en dur : un client neerlandophone ou marocain voyait ses
+         * milliers separes a la belge francophone, au milieu d'une page dans sa langue.
+         */
+        const LOCALE = document.documentElement.lang || 'fr-BE';
+
+        const format = (cents) => new Intl.NumberFormat(LOCALE, {
             maximumFractionDigits: 0,
         }).format(Math.round(cents / 100));
 

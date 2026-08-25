@@ -146,7 +146,7 @@
                                         réponses distinctes, que le résolveur distingue déjà.
                                     --}}
                                     <label class="mt-2 block">
-                                        <span class="block text-[10px] uppercase tracking-wide text-gray-500">€/heure de cette zone (c)</span>
+                                        <span class="block text-[10px] uppercase tracking-wide text-gray-500">{{ app(\App\Services\Localization\Money::class)->symbol(\App\View\Components\Money::deviseDuContexte()) }}/heure de cette zone (c)</span>
                                         <input type="number" min="0" max="9999900" wire:model="form_price_per_hour_cents" placeholder="Tarif du métier"
                                             class="w-full rounded border-gray-300 py-1 text-xs dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                                     </label>
@@ -225,10 +225,10 @@
                                 {{ $zp->surge_multiplier }}
                             </td>
                             <td class="px-4 py-3 align-middle tabular-nums text-gray-600 dark:text-gray-400">
-                                {{ $zp->min_price_cents !== null ? number_format($zp->min_price_cents / 100, 2) . ' €' : '—' }}
+                                @if ($zp->min_price_cents !== null)<x-money :amount="$zp->min_price_cents / 100" />@else—@endif
                             </td>
                             <td class="px-4 py-3 align-middle tabular-nums text-gray-600 dark:text-gray-400">
-                                {{ $zp->max_price_cents !== null ? number_format($zp->max_price_cents / 100, 2) . ' €' : '—' }}
+                                @if ($zp->max_price_cents !== null)<x-money :amount="$zp->max_price_cents / 100" />@else—@endif
                             </td>
                             <td class="px-4 py-3 align-middle">
                                 <button

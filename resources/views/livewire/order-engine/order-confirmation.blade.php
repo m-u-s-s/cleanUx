@@ -192,7 +192,7 @@
                                 <div class="flex items-baseline justify-between gap-3">
                                     <span class="text-sm font-medium text-slate-900">{{ $booking->booking_reference }}</span>
                                     <span class="shrink-0 text-sm tabular-nums text-slate-700">
-                                        {{ $booking->estimated_price ? number_format((float) $booking->estimated_price, 0, ',', ' ').' €' : 'Sur devis' }}
+                                        @if ($booking->estimated_price)<x-money :amount="(float) $booking->estimated_price" :currency="$booking->currency" :decimals="0" />@else{{ __('Sur devis') }}@endif
                                     </span>
                                 </div>
 

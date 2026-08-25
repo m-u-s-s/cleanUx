@@ -61,7 +61,7 @@
                 <p class="text-sm text-slate-300">Reste à payer</p>
                 <p class="mt-1 text-3xl font-black text-white">
                     {{ number_format((float) $financeSummary['outstanding_total'], 2, ',', ' ') }}
-                    {{ $financeSummary['currency_symbol'] ?? '€' }}
+                    {{ $financeSummary['currency_symbol'] ?? app(\App\Services\Localization\Money::class)->symbol(\App\View\Components\Money::deviseDuContexte()) }}
                 </p>
 
                 @if($financeSummary['next_due_at'])

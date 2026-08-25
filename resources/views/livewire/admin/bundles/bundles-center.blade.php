@@ -140,7 +140,7 @@
                                                 <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->email }})</option>
                                             @endforeach
                                         </select>
-                                        <input wire:model="assignQuotedEur" type="number" step="10" placeholder="Prix quoté €" class="rounded-lg border-slate-300 text-sm">
+                                        <input wire:model="assignQuotedEur" type="number" step="10" placeholder="{{ __('Prix quoté') }} {{ app(\App\Services\Localization\Money::class)->symbol(\App\View\Components\Money::deviseDuContexte()) }}" class="rounded-lg border-slate-300 text-sm">
                                         <button wire:click="assignProvider" class="col-span-2 rounded-lg bg-indigo-600 text-white py-2 text-xs font-bold hover:bg-indigo-500">
                                             Valider l'assignation + quote
                                         </button>

@@ -209,7 +209,7 @@
                         <button type="button" wire:click="cancel"
                             wire:confirm="{{ $this->cancellation['free']
                                 ? 'Annuler cette demande ?'
-                                : 'Annuler maintenant coûte '.number_format($this->cancellation['fee_cents'] / 100, 2, ',', ' ').' €. Confirmer ?' }}"
+                                : 'Annuler maintenant coûte '.number_format($this->cancellation['fee_cents'] / 100, 2, ',', ' ').' '.app(\App\Services\Localization\Money::class)->symbol(\App\View\Components\Money::deviseDuContexte()).'. Confirmer ?' }}"
                             class="min-h-[48px] w-full rounded-xl border border-slate-300 bg-white text-sm font-medium text-slate-900">
                             Annuler la demande
                         </button>

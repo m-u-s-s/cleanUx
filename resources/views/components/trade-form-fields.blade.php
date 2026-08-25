@@ -136,9 +136,22 @@
                 @if($showPricing && $hasPricing && !empty($field['pricing']))
                     @php
                         $p = $field['pricing'];
+
+                        /*
+                         * LE SUPPLEMENT SUIT LA DEVISE DU CLIENT.
+                         *
+                         * Le symbole etait ecrit en dur : un client marocain lisait
+                         * « + 15,00 EUR » sur une prestation facturee en dirhams. Un prix
+                         * faux n'est pas un defaut de format, c'est un engagement
+                         * commercial qu'on ne tiendra pas. Et c'est l'ecran que le CLIENT
+                         * remplit, pas une page d'administration.
+                         */
+                        $devise = app(\App\Services\Localization\Money::class)
+                            ->symbol(\App\View\Components\Money::deviseDuContexte());
+
                         $hint = match($p['modifier']) {
-                            'per_unit' => '+ '.number_format($p['value'], 2, ',', ' ').' € / '.($field['unit'] ?: 'unité'),
-                            'fixed'    => '+ '.number_format($p['value'], 2, ',', ' ').' € si coché',
+                            'per_unit' => '+ '.number_format($p['value'], 2, ',', ' ').' '.$devise.' / '.($field['unit'] ?: 'unité'),
+                            'fixed'    => '+ '.number_format($p['value'], 2, ',', ' ').' '.$devise.' si coché',
                             'percent'  => '+ '.number_format($p['value'], 0).'% du prix de base',
                             default    => '',
                         };

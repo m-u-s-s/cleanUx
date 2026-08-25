@@ -11,12 +11,15 @@
         </button>
     </div>
 
+    {{-- Une SOCIETE marocaine facture en dirhams : le symbole suit sa position. --}}
+    @php($deviseSociete = app(\App\Services\Localization\Money::class)->symbol(\App\View\Components\Money::deviseDuContexte()))
+
     {{-- Résumé financier --}}
     <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         @foreach ([
-            ['label' => 'Ce mois',        'value' => number_format($summary['total_month'], 2) . ' €', 'color' => 'text-slate-900'],
-            ['label' => 'Cette année',    'value' => number_format($summary['total_year'], 2) . ' €',  'color' => 'text-blue-700'],
-            ['label' => 'Impayées',       'value' => number_format($summary['unpaid'], 2) . ' €',       'color' => 'text-red-600'],
+            ['label' => 'Ce mois',        'value' => number_format($summary['total_month'], 2) . ' ' . $deviseSociete, 'color' => 'text-slate-900'],
+            ['label' => 'Cette année',    'value' => number_format($summary['total_year'], 2) . ' ' . $deviseSociete,  'color' => 'text-blue-700'],
+            ['label' => 'Impayées',       'value' => number_format($summary['unpaid'], 2) . ' ' . $deviseSociete,       'color' => 'text-red-600'],
             ['label' => 'Factures/mois',  'value' => $summary['count_month'],                           'color' => 'text-slate-700'],
         ] as $s)
             <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">

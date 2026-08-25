@@ -16,7 +16,7 @@
                     <div class="text-right">
                         <p class="font-black text-slate-900">
                             {{ number_format((float) $payment->amount, 2, ',', ' ') }}
-                            {{ $financeSummary['currency_symbol'] ?? '€' }}
+                            {{ $financeSummary['currency_symbol'] ?? app(\App\Services\Localization\Money::class)->symbol(\App\View\Components\Money::deviseDuContexte()) }}
                         </p>
 
                         <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
