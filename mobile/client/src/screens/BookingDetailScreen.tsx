@@ -6,6 +6,9 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 import { Screen, Button, Badge, Divider, DetailRow, EmptyState, ErrorState } from '@/ui';
+/* Chemin direct : trente-six suites mockent `@/ui` a la main, et un export neuf y manque
+   sans que `tsc` bronche — le composant arrive alors `undefined` au rendu. */
+import { GrilleDeCases } from '@/ui/GrilleDeCases';
 import { useBookingDetail } from '@/booking';
 import { useCompletionCode } from '@/tracking';
 import type { CompletionCode } from '@/tracking';
@@ -147,6 +150,32 @@ export function BookingDetailScreen({ route }: Props) {
         </View>
       ) : null}
 
+      {/*
+        LES REPERES EN CASES, LES TEXTES LONGS EN LIGNES.
+
+        Quatre lignes separees par des filets : il fallait parcourir la carte de haut en bas
+        pour retrouver l'heure. L'heure et le prix — les deux qu'on cherche en premier —
+        passent en cases, que l'oeil attrape d'un coup.
+
+        LA DATE COMPLETE RESTE EN LIGNE, et ce n'est pas un demi-choix : « 10 juin 2026 a
+        09h00 » comprime dans une case de 45 % de large se tronque au deuxieme mot. Une case
+        porte une valeur COURTE ; une phrase y perd sa fin.
+      */}
+      <GrilleDeCases
+        colonnes={2}
+        style={styles.grille}
+        cases={[
+          {
+            libelle: 'Heure',
+            valeur: booking.scheduled_time ? booking.scheduled_time.slice(0, 5) : '—',
+            ton: 'accent',
+          },
+          ...(booking.total_price != null
+            ? [{ libelle: 'Prix', valeur: `${booking.total_price} €`, ton: 'bon' as const }]
+            : []),
+        ]}
+      />
+
       <View style={styles.card}>
         <DetailRow
           label="Date"
@@ -161,12 +190,6 @@ export function BookingDetailScreen({ route }: Props) {
           <>
             <Divider />
             <DetailRow label="Prestataire" value={booking.provider_name} />
-          </>
-        ) : null}
-        {booking.total_price != null ? (
-          <>
-            <Divider />
-            <DetailRow label="Prix" value={`${booking.total_price} €`} />
           </>
         ) : null}
       </View>
@@ -301,6 +324,9 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   badgeRow: {
     flexDirection: 'row',
     marginTop: -spacing.sm,
+    marginBottom: spacing.md,
+  },
+  grille: {
     marginBottom: spacing.md,
   },
   card: {

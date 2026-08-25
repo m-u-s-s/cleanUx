@@ -66,6 +66,41 @@ describe('BookingDetailScreen polish', () => {
     expect(getByText('10 juin 2026 à 09h00')).toBeTruthy();
   });
 
+  /**
+   * LES REPÈRES SONT EN CASES, LA DATE COMPLÈTE RESTE EN LIGNE.
+   *
+   * Quatre lignes séparées par des filets obligeaient à parcourir la carte de haut en bas
+   * pour retrouver l'heure. Elle passe en case, avec le prix.
+   *
+   * Mais « 10 juin 2026 à 09h00 » comprimé dans une case de 45 % de large se tronque au
+   * deuxième mot : une case porte une valeur COURTE, une phrase y perd sa fin. Le test
+   * ci-dessus la vérifie encore, et c'est exactement pour ça qu'elle est restée en ligne.
+   */
+  it('montre l heure et le prix en cases, sans perdre la date complete', () => {
+    mockDetail({ data: baseBooking });
+
+    const { getByText } = render(
+      <BookingDetailScreen route={route} navigation={navigation} />,
+    );
+
+    expect(getByText('Heure')).toBeTruthy();
+    expect(getByText('09:00')).toBeTruthy();
+    expect(getByText('Prix')).toBeTruthy();
+    expect(getByText('10 juin 2026 à 09h00')).toBeTruthy();
+  });
+
+  /** TÉMOIN — sans prix, aucune case vide n'est rendue. */
+  it('n affiche pas de case prix quand il n y en a pas', () => {
+    mockDetail({ data: { ...baseBooking, total_price: null } });
+
+    const { queryByText, getByText } = render(
+      <BookingDetailScreen route={route} navigation={navigation} />,
+    );
+
+    expect(getByText('Heure')).toBeTruthy();
+    expect(queryByText('Prix')).toBeNull();
+  });
+
   it('shows the error state when the query errors', () => {
     mockDetail({ isError: true });
     const { getByText } = render(
