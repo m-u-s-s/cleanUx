@@ -7,10 +7,10 @@
             <p class="text-sm text-slate-400">Gérez et assignez les tâches de votre organisation</p>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             {{-- Filtre membre --}}
             <select wire:model.live="filterMember"
-                class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm">
+                class="min-w-0 flex-1 basis-40 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm">
                 <option value="">Tous les membres</option>
                 @foreach ($members as $m)
                     <option value="{{ $m->user_id }}">{{ $m->user->name }}</option>
@@ -19,7 +19,7 @@
 
             {{-- Filtre priorité --}}
             <select wire:model.live="filterPrio"
-                class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm">
+                class="min-w-0 flex-1 basis-40 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm">
                 <option value="">Toutes priorités</option>
                 <option value="urgent">🔴 Urgent</option>
                 <option value="high">🟠 Haute</option>
