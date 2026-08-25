@@ -5,7 +5,7 @@
 <div class="py-8 max-w-6xl mx-auto px-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
-            <p class="ui-page-eyebrow !mt-0">Mes revenus</p>
+            <p class="ui-page-eyebrow !mt-0">{{ __('Espace prestataire') }}</p>
             <h1 class="ui-page-title">{{ __('Mes revenus') }}</h1>
             <p class="ui-page-subtitle">Suivi de vos gains, missions et pourboires.</p>
         </div>

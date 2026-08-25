@@ -315,6 +315,69 @@ class ClientDashboard extends Component
         ];
     }
 
+    /**
+     * LES DÉPENSES DES SIX DERNIERS MOIS, en UNE requête.
+     *
+     * Le client n'avait aucune série : quatre compteurs, et rien qui montre une évolution.
+     * Un compteur dit « vous avez 12 interventions » ; une courbe dit « vos dépenses ont
+     * doublé en mars » — c'est la seconde qui sert à décider.
+     *
+     * `final_price` D'ABORD, `devis_estime` EN REPLI. Le prix final n'existe qu'une fois la
+     * mission close ; s'en tenir à lui ferait disparaître du graphique toute intervention à
+     * venir, et la courbe s'arrêterait au mois dernier sans que rien ne l'explique.
+     *
+     * LES MOIS SANS DÉPENSE SONT REMPLIS À ZÉRO. Une série qui saute les mois vides dessine
+     * une pente continue entre janvier et avril : elle ment sur ce qui s'est passé entre les
+     * deux.
+     *
+     * @return array<int, array{mois: string, libelle: string, montant: float}>
+     */
+    public function getDepensesParMoisProperty(): array
+    {
+        $clientId = Auth::id();
+
+        if (! $clientId) {
+            return [];
+        }
+
+        $debut = now()->copy()->subMonths(5)->startOfMonth();
+
+        /*
+         * DEUX DIALECTES, UNE SEULE EXPRESSION CHOISIE AVANT.
+         *
+         * La suite tourne sur SQLite, l'application sur MySQL : `DATE_FORMAT` n'existe pas
+         * d'un cote, `strftime` de l'autre. Empiler deux `selectRaw` les CUMULERAIT — la
+         * requete partirait avec deux colonnes `mois` et un GROUP BY ambigu.
+         */
+        $pilote = DB::connection()->getDriverName();
+        $moisSql = $pilote === 'sqlite'
+            ? "strftime('%Y-%m', date)"
+            : "DATE_FORMAT(date, '%Y-%m')";
+
+        $brut = Booking::query()
+            ->where('client_id', $clientId)
+            ->where('status', '!=', BookingStatus::ANNULE)
+            ->where('date', '>=', $debut->toDateString())
+            ->selectRaw("{$moisSql} as mois, SUM(COALESCE(final_price, devis_estime, 0)) as total")
+            ->groupBy('mois')
+            ->pluck('total', 'mois');
+
+        $serie = [];
+
+        for ($i = 0; $i < 6; $i++) {
+            $mois = $debut->copy()->addMonths($i);
+            $cle = $mois->format('Y-m');
+
+            $serie[] = [
+                'mois' => $cle,
+                'libelle' => $mois->translatedFormat('M'),
+                'montant' => round((float) ($brut[$cle] ?? 0), 2),
+            ];
+        }
+
+        return $serie;
+    }
+
     public function getStatsClientProperty()
     {
         $clientId = Auth::id();

@@ -23,7 +23,8 @@ class ProviderEarningsDashboardTest extends TestCase
             ->test(ProviderEarningsDashboard::class)
             ->assertOk()
             ->assertSet('period', 'week')
-            ->assertSee('Earnings dashboard');
+            // Le titre etait en dur et en ANGLAIS sur une page entierement francaise.
+            ->assertSee('Mes revenus');
     }
 
     public function test_dashboard_aggregates_completed_missions_and_tips_for_the_provider(): void
