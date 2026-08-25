@@ -38,14 +38,44 @@ describe('LuxeBackground', () => {
     mockMouvementReduit = false;
   });
 
-  it('ne rend rien en mode clair', () => {
+  /*
+   * CE TEST DISAIT « ne rend rien en mode clair », ET LA DÉCISION A CHANGÉ.
+   *
+   * La raison d'origine reste vraie : un prestataire au soleil a besoin de contraste, pas de
+   * translucidité. Le fond clair ne la contredit pas — trois auras très diffuses, AUCUNE
+   * goutte, aucun mouvement, opacité plafonnée à 0,10.
+   *
+   * Ce qui l'a rendu nécessaire : sans quelque chose à filtrer, une surface de verre posée sur
+   * un aplat uni est indiscernable d'une surface opaque. Tout le traitement disparaissait en
+   * mode clair.
+   */
+  it('rend un fond sobre en mode clair', () => {
     mockScheme.colorScheme = 'light';
 
-    const { toJSON } = render(<LuxeBackground />);
+    render(<LuxeBackground />);
 
-    // Le luxe est un traitement du SOMBRE. En clair, un prestataire au soleil a besoin de
-    // contraste, pas de translucidité.
-    expect(toJSON()).toBeNull();
+    expect(screen.getByTestId('luxe-background-clair', MASQUE)).toBeTruthy();
+  });
+
+  /** TÉMOIN — le fond clair n'est PAS le fond nuit : aucune goutte ne s'y invite. */
+  it('le fond clair ne porte aucune goutte', () => {
+    mockScheme.colorScheme = 'light';
+
+    render(<LuxeBackground />);
+
+    expect(screen.queryByTestId('luxe-background')).toBeNull();
+  });
+
+  /** Il reste décoratif : un lecteur d'écran ne doit pas l'annoncer avant chaque écran. */
+  it('le fond clair reste invisible aux lecteurs d ecran', () => {
+    mockScheme.colorScheme = 'light';
+
+    render(<LuxeBackground />);
+
+    const fond = screen.getByTestId('luxe-background-clair', MASQUE);
+
+    expect(fond.props.accessibilityElementsHidden).toBe(true);
+    expect(fond.props.importantForAccessibility).toBe('no-hide-descendants');
   });
 
   it('rend le fond en mode sombre', () => {

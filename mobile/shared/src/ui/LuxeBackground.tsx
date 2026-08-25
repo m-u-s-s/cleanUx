@@ -29,8 +29,15 @@ const LUEUR = 0.3;
  * superficielle ; les faire toutes descendre donne « des cercles qui tombent », pas de l'eau.
  * C'est le détail qui sépare l'effet de sa caricature.
  *
- * IL NE REND RIEN EN MODE CLAIR. Le luxe est un traitement du sombre ; un prestataire en plein
- * soleil a besoin de contraste, pas de translucidité.
+ * EN MODE CLAIR, IL REND UN FOND SOBRE — et c'est un ajout mesuré, pas un revirement.
+ *
+ * La règle d'origine disait « rien en clair : un prestataire en plein soleil a besoin de
+ * contraste, pas de translucidité ». Elle reste vraie, et ce fond ne la contredit pas : trois
+ * auras très diffuses, AUCUNE goutte, aucun mouvement. Leur opacité maximale est de 0,10 —
+ * un texte posé dessus perd moins d'un dixième de point de contraste.
+ *
+ * Sans elles, le verre clair n'a rien à filtrer : une surface translucide posée sur un aplat
+ * uni est indiscernable d'une surface opaque, et tout le traitement disparaît.
  *
  * CE QU'IL FAUT SAVOIR AVANT DE LE REGARDER : Skia s'installe par des liaisons natives. Il ne
  * tourne donc pas dans Expo Go — il faut un development build (`npx expo run:android` ou
@@ -51,7 +58,58 @@ export function LuxeBackground() {
   const gouttes = useMemo(() => semer(width, height), [width, height]);
 
   if (!isDark) {
-    return null;
+    return (
+      <View
+        testID="luxe-background-clair"
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+        accessibilityElementsHidden
+        importantForAccessibility="no-hide-descendants"
+      >
+        <Canvas style={StyleSheet.absoluteFill}>
+          {/* Le voile bleuté : le fond n'est jamais blanc pur, sans quoi le verre posé
+              dessus ne se voit pas. Les mêmes valeurs que `--brio-bg` du web. */}
+          <Rect x={0} y={0} width={width} height={height}>
+            <LinearGradient
+              start={vec(0, 0)}
+              end={vec(width * 0.4, height)}
+              colors={['#f3f5fb', '#eef1f8', '#e6ebf5']}
+              positions={[0, 0.5, 1]}
+            />
+          </Rect>
+
+          {/* Trois auras, aux mêmes places que `body::before` du web : deux en haut, une
+              en bas. Leur opacité plafonne à 0,10 — assez pour donner de la matière au
+              verre, trop peu pour peser sur la lisibilité. */}
+          <Rect x={0} y={0} width={width} height={height}>
+            <RadialGradient
+              c={vec(width * 0.12, height * 0.08)}
+              r={height * 0.55}
+              colors={['rgba(120, 160, 255, 0.10)', 'rgba(120, 160, 255, 0.03)', 'rgba(120, 160, 255, 0)']}
+              positions={[0, 0.5, 1]}
+            />
+          </Rect>
+
+          <Rect x={0} y={0} width={width} height={height}>
+            <RadialGradient
+              c={vec(width * 0.9, height * 0.14)}
+              r={height * 0.5}
+              colors={['rgba(255, 182, 72, 0.09)', 'rgba(255, 182, 72, 0.03)', 'rgba(255, 182, 72, 0)']}
+              positions={[0, 0.5, 1]}
+            />
+          </Rect>
+
+          <Rect x={0} y={0} width={width} height={height}>
+            <RadialGradient
+              c={vec(width * 0.6, height * 0.94)}
+              r={height * 0.6}
+              colors={['rgba(139, 123, 255, 0.08)', 'rgba(139, 123, 255, 0.02)', 'rgba(139, 123, 255, 0)']}
+              positions={[0, 0.5, 1]}
+            />
+          </Rect>
+        </Canvas>
+      </View>
+    );
   }
 
   return (
