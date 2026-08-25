@@ -1,6 +1,16 @@
 import React from 'react';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
-import { radius, spacing, typography, useThemeColors } from '@/theme';
+/*
+ * CHEMINS DIRECTS, PAS LE BARIL `@/theme`.
+ *
+ * Des suites mockent `@/theme` a la main pour n'en fournir que ce dont elles ont besoin.
+ * Un composant qui lit `typography` a travers le baril recoit alors `undefined` — et
+ * echoue au RENDU, la ou `tsc` reste vert. Meme famille que les mocks de `@/ui`.
+ */
+import { radius } from '@/theme/radius';
+import { spacing } from '@/theme/spacing';
+import { typography } from '@/theme/typography';
+import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 
 /**

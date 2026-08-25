@@ -3,6 +3,14 @@ import { View, Text, Alert, StyleSheet, TouchableOpacity } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { Screen, Button, Badge, Divider, TextInput } from '@/ui';
+/*
+ * IMPORT PAR CHEMIN DIRECT, ET C'EST DELIBERE.
+ *
+ * Trente-six suites portent un `jest.mock('@/ui', ...)` ecrit a la main : tout export
+ * neuf y manque, `tsc` reste vert, et le composant arrive `undefined` au rendu — « Element
+ * type is invalid ». Le depot contourne deja ce piege ainsi pour `glassBars` et `OsmMap`.
+ */
+import { GrilleDeCases } from '@/ui/GrilleDeCases';
 import { useMissionDetail, useMissionLifecycle, useResendMissionCode, missionStatusLabel } from '@/missions';
 import { BandeauRetard } from '@/screens/components/BandeauRetard';
 import type { MissionLifecyclePayload, MissionPayoutAnnouncement } from '@/missions';
@@ -127,21 +135,36 @@ export function MissionDetailScreen({ route }: Props) {
         <Text style={styles.title}>{mission.service_name}</Text>
         <Badge label={missionStatusLabel(mission.status)} variant={badgeVariant} />
       </View>
+      {/*
+        LES REPERES EN CASES, LE RESTE EN LIGNES.
+
+        Ces quatre informations etaient quatre lignes separees par des filets : sur un
+        telephone, il fallait parcourir la carte de haut en bas pour retrouver l'heure.
+        La date et le prix — les deux qu'on cherche en premier — passent en cases, que
+        l'oeil attrape d'un coup.
+
+        Le client et l'adresse RESTENT en lignes : ce sont des textes longs, et une
+        adresse comprimee dans une case de 45 % de large se tronque au deuxieme mot.
+      */}
+      <GrilleDeCases
+        colonnes={2}
+        cases={[
+          {
+            libelle: 'Date',
+            valeur: formatDateHeure(mission.scheduled_date, mission.scheduled_time),
+            ton: 'accent',
+          },
+          ...(mission.total_price != null
+            ? [{ libelle: 'Prix', valeur: `${mission.total_price} €`, ton: 'bon' as const }]
+            : []),
+        ]}
+        style={styles.grille}
+      />
+
       <View style={[styles.card, { backgroundColor: themeColors.card }]}>
         <DetailRow label="Client" value={mission.client_name} />
         <Divider />
         <DetailRow label="Adresse" value={formatAdresse(mission.address, mission.city)} />
-        <Divider />
-        <DetailRow
-          label="Date"
-          value={formatDateHeure(mission.scheduled_date, mission.scheduled_time)}
-        />
-        {mission.total_price != null && (
-          <>
-            <Divider />
-            <DetailRow label="Prix" value={`${mission.total_price} €`} />
-          </>
-        )}
       </View>
       {/*
         LE RETARD PASSE AVANT LES ACTIONS.
@@ -386,6 +409,9 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
     color: t.text,
+  },
+  grille: {
+    marginBottom: spacing.md,
   },
   card: {
     borderRadius: radius.md,
