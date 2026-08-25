@@ -93,6 +93,21 @@ class CleanupReport extends Command
         $aliases = [];
 
         foreach (File::allFiles(resource_path('views')) as $view) {
+            /*
+             * ENTRE LE LISTAGE ET LA LECTURE, UN FICHIER PEUT DISPARAITRE.
+             *
+             * `allFiles()` prend un instantane du dossier, puis on relit chaque entree : sur
+             * une suite parallele, une vue temporaire creee et supprimee par un autre test
+             * s'evanouit dans cet intervalle et `File::get()` leve. La commande echouait alors
+             * dans un test qui n'avait rien a voir avec elle, une execution sur quatre environ.
+             *
+             * Un balayage doit tolerer que ce qu'il a liste ne soit plus la : c'est vrai en
+             * test parallele, et tout autant sur un serveur ou un deploiement passe.
+             */
+            if (! File::exists($view->getPathname())) {
+                continue;
+            }
+
             $content = File::get($view->getPathname());
 
             preg_match_all('/@livewire\(\s*["\']([a-zA-Z0-9_\.\-\/]+)["\']/', $content, $classic);

@@ -1,3 +1,7 @@
+@push('scripts')
+    @vite(['resources/js/apexcharts.js'])
+@endpush
+
 {{--
     Le cockpit du super administrateur.
 
@@ -44,6 +48,36 @@
                 </div>
             </div>
         </div>
+
+        {{--
+            LA REPARTITION EN ANNEAU.
+
+            Le super-administrateur etait le SEUL role sans aucun graphique, alors que sa
+            page porte precisement la question qu'un graphique repond mieux qu'une liste :
+            « comment se repartit la population ? ». Six chiffres alignes se comparent mal ;
+            un anneau se lit d'un coup.
+
+            Il complete la liste, il ne la remplace pas : une part de 2 % reste illisible sur
+            un anneau, et le chiffre exact compte pour qui pilote.
+
+            Les donnees passent par des attributs `data-*`. Une expression imbriquee dans une
+            directive Blade casse la compilation de la vue entiere — appris a mes depens sur
+            le tableau de bord de la societe prestataire.
+        --}}
+        @if ($total > 0)
+            <section class="brio-graphique" aria-labelledby="titre-repartition">
+                <div class="brio-graphique-tete">
+                    <h2 id="titre-repartition" class="brio-graphique-titre">{{ __('Répartition de la population') }}</h2>
+                    <p class="brio-graphique-note">{{ $total }} {{ __('comptes au total') }}</p>
+                </div>
+
+                <div class="brio-graphique-corps" wire:ignore x-data x-init="dessinerRepartition($el)">
+                    <div data-graphique
+                         data-valeurs="{{ json_encode(array_values($comptes)) }}"
+                         data-libelles="{{ json_encode(array_map(fn ($cle) => __(ucfirst(str_replace('_', ' ', $cle))), array_keys($comptes))) }}"></div>
+                </div>
+            </section>
+        @endif
 
         {{-- La population, par rôle. C'est ce que le super administrateur vient voir en premier. --}}
         <section>

@@ -152,3 +152,68 @@ window.dessinerActivite = (racine) => {
   dessiner();
   document.addEventListener('brio:theme', dessiner);
 };
+
+/**
+ * DESSINE UN ANNEAU DE RÉPARTITION à partir des attributs `data-*` de sa cible.
+ *
+ * Un anneau et non un camembert : le trou central rend les proportions comparables par
+ * l'angle seul, là où un disque plein invite à comparer des aires — ce que l'œil fait mal.
+ *
+ * LES PARTS NULLES SONT RETIRÉES. ApexCharts leur réserve une place dans la légende et une
+ * étiquette au survol : sur une plateforme où quatre rôles sur six sont vides au démarrage,
+ * la légende devient plus longue que le graphique et n'apprend rien.
+ */
+window.dessinerRepartition = (racine) => {
+  const dessiner = () => {
+    const cible = racine.querySelector('[data-graphique]');
+
+    if (!cible || typeof ApexCharts === 'undefined') return;
+
+    let valeurs = [];
+    let libelles = [];
+
+    try {
+      valeurs = JSON.parse(cible.dataset.valeurs || '[]');
+      libelles = JSON.parse(cible.dataset.libelles || '[]');
+    } catch (e) {
+      return;
+    }
+
+    const garde = valeurs
+      .map((v, i) => ({ v, l: libelles[i] ?? '' }))
+      .filter((p) => p.v > 0);
+
+    if (!garde.length) return;
+
+    cible.innerHTML = '';
+
+    new ApexCharts(cible, {
+      chart: { type: 'donut', height: 280 },
+      series: garde.map((p) => p.v),
+      labels: garde.map((p) => p.l),
+      legend: { position: 'bottom' },
+      stroke: { width: 0 },
+      // Le dégradé du thème global écraserait les parts : un anneau se lit en aplats.
+      fill: { type: 'solid' },
+      plotOptions: {
+        pie: {
+          donut: {
+            size: '68%',
+            labels: {
+              show: true,
+              total: {
+                show: true,
+                label: 'Total',
+                formatter: (w) => w.globals.seriesTotals.reduce((a, b) => a + b, 0),
+              },
+            },
+          },
+        },
+      },
+      responsive: [{ breakpoint: 480, options: { chart: { height: 240 }, legend: { fontSize: '11px' } } }],
+    }).render();
+  };
+
+  dessiner();
+  document.addEventListener('brio:theme', dessiner);
+};
