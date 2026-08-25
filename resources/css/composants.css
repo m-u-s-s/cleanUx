@@ -905,6 +905,42 @@ body:not(.cx-shell) .apexcharts-tooltip-title {
     font-weight: 700 !important;
 }
 
+/* ========================================================== LE REPLI
+   L'EN-TETE D'UN `<details>` EST UNE CIBLE TACTILE, pas une ligne de texte.
+
+   Le recapitulatif d'acces portait un bouton de 58 x 20 pixels : au-dessous du
+   minimum atteignable au doigt, et le seul defaut d'accessibilite restant sur les
+   121 pages du harnais. Une hauteur minimale ici couvre tout `<summary>` a venir. */
+.brio-recap-tete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    padding: 0.25rem 0;
+    cursor: pointer;
+    list-style: none;
+}
+
+/* Le marqueur natif du navigateur est retire des DEUX facons : la propriete
+   standard, et le pseudo-element de WebKit qu'elle ne couvre pas. */
+.brio-recap-tete::-webkit-details-marker { display: none; }
+
+.brio-recap-tete:focus-visible { outline: none; box-shadow: var(--brio-ring); border-radius: var(--cx-radius-md); }
+
+/* Le chevron tourne a l'ouverture : le seul indice d'etat, une fois le marqueur retire. */
+.brio-recap-tete .brio-chip::after {
+    content: "be";
+    display: inline-block;
+    transition: transform var(--cx-dur-fast) var(--cx-ease);
+}
+
+details[open] > .brio-recap-tete .brio-chip::after { transform: rotate(180deg); }
+
+@media (prefers-reduced-motion: reduce) {
+    .brio-recap-tete .brio-chip::after { transition: none; }
+}
+
 /* La JAUGE CIRCULAIRE — celle des modeles etudies : un anneau fin, pas un camembert. */
 .brio-jauge {
     position: relative;
