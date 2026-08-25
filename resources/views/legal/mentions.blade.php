@@ -28,7 +28,7 @@
 
         <section>
             <h2 class="text-xl font-bold">Médiation</h2>
-            <p>Pour les consommateurs : <a href="https://www.economie.gouv.fr/mediation-conso" class="text-indigo-600 underline">Médiateur de la consommation</a> (FR) ou <a href="https://mediationconsommateur.be" class="text-indigo-600 underline">Service de médiation pour le consommateur</a> (BE).</p>
+            <p>Pour les consommateurs : <a href="https://www.economie.gouv.fr/mediation-conso" class="brio-lien">Médiateur de la consommation</a> (FR) ou <a href="https://mediationconsommateur.be" class="brio-lien">Service de médiation pour le consommateur</a> (BE).</p>
         </section>
     </div>
 </div>

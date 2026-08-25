@@ -52,7 +52,7 @@
 
         <section>
             <h2 class="text-xl font-bold">9. Données personnelles</h2>
-            <p>Voir notre <a href="{{ route('policy.show') }}" class="text-indigo-600 underline">Politique de confidentialité</a>.</p>
+            <p>Voir notre <a href="{{ route('policy.show') }}" class="brio-lien">Politique de confidentialité</a>.</p>
         </section>
 
         <section>

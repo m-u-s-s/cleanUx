@@ -52,7 +52,7 @@
                 <li><strong>Portabilité</strong> : export structuré (JSON/ZIP) téléchargeable</li>
                 <li><strong>Opposition</strong> : marketing — opt-out immédiat</li>
                 <li><strong>Limitation</strong> : geler le traitement pendant un litige</li>
-                <li><strong>Plainte CNIL/APD</strong> : <a href="https://www.autoriteprotectiondonnees.be" class="text-indigo-600 underline">APD Belgique</a> ou <a href="https://www.cnil.fr" class="text-indigo-600 underline">CNIL France</a></li>
+                <li><strong>Plainte CNIL/APD</strong> : <a href="https://www.autoriteprotectiondonnees.be" class="brio-lien">APD Belgique</a> ou <a href="https://www.cnil.fr" class="brio-lien">CNIL France</a></li>
             </ul>
         </section>
 
@@ -69,7 +69,7 @@
 
         <section>
             <h2 class="text-xl font-bold">7. Cookies</h2>
-            <p>Voir <a href="{{ route('legal.cookies') }}" class="text-indigo-600 underline">notre politique cookies</a>.</p>
+            <p>Voir <a href="{{ route('legal.cookies') }}" class="brio-lien">notre politique cookies</a>.</p>
         </section>
 
         <section>

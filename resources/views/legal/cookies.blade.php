@@ -29,7 +29,9 @@
             <h2 class="text-xl font-bold">Gérer vos préférences</h2>
             <p>Vous pouvez à tout moment modifier vos choix en cliquant sur le bouton ci-dessous, ou via les paramètres de votre navigateur.</p>
             <button x-data="" x-on:click="window.dispatchEvent(new CustomEvent('open-cookie-banner'))"
-                    class="rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-500 mt-3">
+                    {{-- L'indigo n'appartient a aucun theme du produit : il ne bougeait ni avec le
+                           mode sombre, ni avec la marque. Le bouton du systeme, lui, suit les deux. --}}
+                      class="brio-btn brio-btn-accent mt-3">
                 Modifier mes préférences cookies
             </button>
         </section>

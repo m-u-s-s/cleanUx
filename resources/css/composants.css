@@ -825,7 +825,21 @@ body:not(.cx-shell) table:not(.brio-opaque) {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    overflow: hidden;
+    /*
+     * `overflow-x: auto`, ET NON `overflow: hidden`.
+     *
+     * La propriete RACCOURCIE etait posee ici pour rogner les coins arrondis. Elle
+     * ecrasait `overflow-x: auto` de `responsive.css` — une regle plus ancienne, et plus
+     * specifique en intention : sous 768px, un tableau large doit DEFILER dans son cadre.
+     *
+     * Mesure sur `/legal/cookies` a 390px : `scrollWidth` 673 contre `clientWidth` 316.
+     * Plus de la moitie du tableau etait coupee, sans aucun moyen de l'atteindre. Le
+     * document, lui, ne debordait pas — la page paraissait donc saine.
+     *
+     * `auto` rogne les coins exactement comme `hidden` : toute valeur autre que `visible`
+     * cree un contexte de rognage. Le defilement n'apparait que s'il sert.
+     */
+    overflow-x: auto;
     border-radius: var(--cx-radius-lg);
     background-color: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
@@ -1167,6 +1181,34 @@ body:not(.cx-shell) :is(input[type="checkbox"], input[type="radio"]) {
 }
 
 .brio-marque:hover { color: var(--brio-accent-deep); }
+
+/* ========================================================== LE LIEN DANS LE TEXTE
+   Quatre liens des pages LEGALES portaient `text-indigo-600` : une couleur de
+   palette, qui n'appartient a aucun theme du produit et ne bouge pas avec lui. Sur
+   la nuit, l'indigo tombait a 3,06:1 la ou 4,5 sont exiges — sur des pages que tout
+   le monde peut lire, et dont le contenu engage juridiquement.
+
+   `--brio-accent-texte` EXISTE POUR CELA : c'est l'accent de marque ramene a une
+   valeur lisible en TEXTE (#ff8a3d donne 2,27:1), et il a ses deux versions.
+
+   Le soulignement reste : la couleur ne doit jamais porter seule l'information
+   « ceci est un lien ». */
+.brio-lien {
+    color: var(--brio-accent-texte);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+    font-weight: 600;
+    transition: color var(--cx-dur-fast) var(--cx-ease);
+}
+
+.brio-lien:hover { text-decoration-thickness: 2px; }
+
+.brio-lien:focus-visible {
+    outline: none;
+    border-radius: var(--cx-radius-sm);
+    box-shadow: var(--brio-ring);
+}
 
 /* Les liens du bandeau suivent l'accent, et le soulignement d'etat le porte aussi. */
 .brio-barre :is(a, button) { transition: color var(--cx-dur-fast) var(--cx-ease); }
