@@ -223,6 +223,46 @@ describe('CompanyMissionDetailScreen — choisir en sachant qui est libre', () =
     expect(screen.queryByText('libre')).toBeNull();
     expect(screen.queryByText('+ renfort')).toBeNull();
   });
+
+  /**
+   * L'ETAT DE LA MISSION NE S'AFFICHAIT NULLE PART.
+   *
+   * `mission.status` etait recu par cet ecran depuis toujours et jamais rendu : rien ne
+   * distinguait une mission planifiee d'une mission deja terminee. La grille de cases le
+   * porte desormais, traduit en francais.
+   */
+  it('affiche l’etat de la mission, traduit', async () => {
+    mockAuth.user = { organization_permissions: ['missions.view_all'] };
+
+    monter(<CompanyMissionDetailScreen />);
+
+    expect(await screen.findByText('Planifiée')).toBeTruthy();
+    // Le code technique ne doit pas fuir a l'ecran : c'est ce que la table de libelles evite.
+    expect(screen.queryByText('planned')).toBeNull();
+  });
+
+  /**
+   * TEMOIN — un statut absent de la table reste LISIBLE plutot que de disparaitre.
+   *
+   * Sans ce controle, un `missionStatusLabel` qui rendrait la chaine vide passerait le test
+   * precedent des que le serveur emettrait un etat neuf : l'ecran afficherait une case vide.
+   */
+  it('temoin — un statut inconnu s’affiche tel quel', async () => {
+    mockAuth.user = { organization_permissions: ['missions.view_all'] };
+    /*
+     * L'ecran lit la LISTE des missions puis y cherche la sienne : rendre un objet ici
+     * ferait tomber le rendu sur `.find`, et l'echec parlerait d'autre chose que du statut.
+     */
+    mockGet.mockImplementation((url: string) =>
+      url === '/provider/company/missions'
+        ? Promise.resolve({ data: { data: [{ ...MISSION, status: 'etat_inedit' }] } })
+        : Promise.resolve({ data: { data: [] } }),
+    );
+
+    monter(<CompanyMissionDetailScreen />);
+
+    expect(await screen.findByText('etat_inedit')).toBeTruthy();
+  });
 });
 
 describe('CompanyMissionDetailScreen — déplacer l’intervention', () => {

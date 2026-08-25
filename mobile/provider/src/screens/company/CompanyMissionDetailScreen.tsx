@@ -6,7 +6,19 @@ import type { RouteProp } from '@react-navigation/native';
 import { Screen, Button, Badge, Divider, EmptyState } from '@/ui';
 import { apiClient } from '@/api';
 import { useAuth, can } from '@/auth';
+/*
+ * Chemin direct plutot que le baril `@/ui` : trente-six suites le mockent a la main,
+ * tout export neuf y manque, et le composant arrive `undefined` AU RENDU — la ou `tsc`
+ * reste vert.
+ */
+import { GrilleDeCases } from '@/ui/GrilleDeCases';
 import { useLiveMissionUpdates } from '@/missions';
+/*
+ * `missionStatusLabel` par son CHEMIN DIRECT, pour la meme raison que la grille : la
+ * suite de cet ecran mocke `@/missions` a la main pour n'en fournir que le crochet
+ * temps reel. Passe par le baril, le libelle arrive `undefined` et le rendu tombe.
+ */
+import { missionStatusLabel } from '@/missions/labels';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
@@ -16,6 +28,22 @@ interface Disponibilite {
   user_id: number;
   name: string | null;
   is_free: boolean;
+}
+
+/**
+ * L'ETAT D'UNE MISSION, TRADUIT EN COULEUR.
+ *
+ * Une mission annulee et une mission terminee ne se lisent pas pareil : l'une demande une
+ * reaction, l'autre non. Le repli neutre est volontaire — un statut que le serveur
+ * ajouterait resterait lisible plutot que de prendre une couleur qui ment.
+ */
+function tonDuStatut(statut: string): 'neutre' | 'accent' | 'bon' | 'attention' | 'alerte' {
+  if (statut === 'cancelled') return 'alerte';
+  if (statut === 'completed') return 'bon';
+  if (statut === 'paused') return 'attention';
+  if (statut === 'started' || statut === 'en_route' || statut === 'arrived') return 'accent';
+
+  return 'neutre';
 }
 
 interface MissionSociete {
@@ -151,25 +179,56 @@ export function CompanyMissionDetailScreen() {
     <Screen>
       <ScrollView>
         <Text style={styles.title}>{mission.site ?? `Mission #${mission.id}`}</Text>
-        <Text style={styles.sousTitre}>
-          {mission.city ? `${mission.city} · ` : ''}
-          {mission.planned_start_at
-            ? new Date(mission.planned_start_at).toLocaleString('fr-FR', {
-                weekday: 'long',
-                day: '2-digit',
-                month: 'long',
-                hour: '2-digit',
-                minute: '2-digit',
-              })
-            : 'Non planifiée'}
-        </Text>
+        {/*
+          TOUT CE QUI DECIDE, VISIBLE D'UN COUP.
 
-        <View style={styles.badge}>
-          <Badge
-            label={mission.lead ?? 'Non assignée'}
-            variant={mission.lead ? 'brand' : 'neutral'}
-          />
-        </View>
+          Ces quatre informations tenaient dans une phrase deroulante et un badge : la ville et
+          l'horaire colles par un point median, le responsable a cote. Le repartiteur les lisait
+          en les cherchant. L'ETAT, lui, ne s'affichait NULLE PART — `mission.status` etait recu
+          et jamais rendu : rien ne distinguait une mission planifiee d'une mission deja finie.
+
+          Le compte des personnes libres est la cinquieme : c'est ce qui dit s'il y a une
+          decision a prendre ici, avant meme de derouler la liste.
+        */}
+        <GrilleDeCases
+          colonnes={2}
+          cases={[
+            {
+              libelle: 'Etat',
+              valeur: missionStatusLabel(mission.status),
+              ton: tonDuStatut(mission.status),
+            },
+            {
+              libelle: 'Creneau',
+              valeur: mission.planned_start_at
+                ? new Date(mission.planned_start_at).toLocaleString('fr-FR', {
+                    weekday: 'short',
+                    day: '2-digit',
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                : 'Non planifiee',
+              ton: mission.planned_start_at ? 'accent' : 'attention',
+            },
+            { libelle: 'Lieu', valeur: mission.city ?? '—' },
+            {
+              libelle: 'Responsable',
+              valeur: mission.lead ?? 'Non assignee',
+              ton: mission.lead ? 'bon' : 'attention',
+            },
+            ...(peutRepartir
+              ? [
+                  {
+                    libelle: 'Libres',
+                    valeur: (dispos ?? []).filter((x) => x.is_free).length,
+                    note: `sur ${(dispos ?? []).length} propose(s)`,
+                    ton: (dispos ?? []).some((x) => x.is_free) ? ('bon' as const) : ('alerte' as const),
+                  },
+                ]
+              : []),
+          ]}
+        />
 
         {!peutRepartir && (
           <Text style={styles.info}>
