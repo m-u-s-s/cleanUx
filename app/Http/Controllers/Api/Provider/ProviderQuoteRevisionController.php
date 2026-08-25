@@ -35,7 +35,17 @@ class ProviderQuoteRevisionController extends Controller
 
         return response()->json([
             'ok' => true,
-            'window' => $this->fenetre->etat($mission),
+            /*
+             * LA DEVISE VOYAGE AVEC LA FENETRE, pas seulement avec la revision.
+             *
+             * Le formulaire s'affiche quand il n'y a PAS encore de revision : sa devise ne
+             * pouvait donc pas venir d'elle, et l'ecran ecrivait « (EUR) » en dur sur son
+             * champ de saisie. Un prestataire marocain annoncait un prix dans une monnaie
+             * que son client ne paiera pas.
+             */
+            'window' => $this->fenetre->etat($mission) + [
+                'currency' => strtoupper((string) ($mission->booking?->currency ?: 'EUR')),
+            ],
             'revision' => $vivante === null ? null : $this->presenter($vivante),
         ]);
     }

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+/* Chemin direct plutot que le baril : des suites mockent les barils a la main. */
+import { formatMontant } from '@/format/money';
 import { View, Text, FlatList, StyleSheet, Alert, TextInput as RNTextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -52,12 +54,12 @@ export function WalletScreen() {
       return;
     }
     if (balance && amount > balance.available) {
-      Alert.alert('Solde insuffisant', `Vous ne pouvez retirer que ${balance.available.toFixed(2)} ${balance.currency}.`);
+      Alert.alert('Solde insuffisant', `Vous ne pouvez retirer que ${formatMontant(balance.available, balance.currency)}.`);
       return;
     }
     Alert.alert(
       'Confirmer le versement',
-      `Virer ${amount.toFixed(2)} ${balance?.currency ?? 'EUR'} vers votre compte bancaire ?`,
+      `Virer ${formatMontant(amount, balance?.currency)} vers votre compte bancaire ?`,
       [
         { text: 'Annuler', style: 'cancel' },
         {

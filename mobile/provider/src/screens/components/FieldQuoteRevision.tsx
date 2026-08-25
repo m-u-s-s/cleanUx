@@ -171,7 +171,10 @@ export function FieldQuoteRevision({
       onSuccess: (quote) =>
         Alert.alert(
           'Ce que le client verra',
-          `${euros(quote.total_cents, 'EUR')} — remises du client réappliquées.`,
+          // `'EUR'` était écrit en dur ici : la simulation annonçait au prestataire un montant
+          // dans une monnaie que son client ne paiera pas — juste avant qu'il l'énonce à voix
+          // haute. Le balayage sur le symbole « € » ne pouvait pas voir un code ISO.
+          `${euros(quote.total_cents, fenetre?.currency ?? '')} — remises du client réappliquées.`,
         ),
       onError: (e: { message?: string }) =>
         Alert.alert('Impossible', e.message ?? 'La simulation a échoué.'),
@@ -187,7 +190,9 @@ export function FieldQuoteRevision({
       </Text>
 
       <TextInput
-        label="Ce que vaut la prestation (€)"
+        /* Le symbole etait ecrit en dur : un prestataire marocain annoncait un prix
+           dans une monnaie que son client ne paiera pas. */
+        label={`Ce que vaut la prestation (${symboleDeLaDevise(fenetre?.currency)})`}
         value={prix}
         onChangeText={setPrix}
         placeholder="300"
@@ -243,6 +248,21 @@ export function FieldQuoteRevision({
       />
     </View>
   );
+}
+
+/**
+ * LE SYMBOLE D'UNE DEVISE, tiré d'`Intl` plutôt que d'une table recopiée.
+ *
+ * Formater zéro puis retirer chiffres et séparateurs laisse le symbole. Une table maison
+ * aurait vieilli dès la première devise ajoutée au catalogue.
+ *
+ * L'espace insécable est écrit par son code : recopiée telle quelle, elle serait invisible
+ * dans le fichier et le prochain lecteur la prendrait pour une espace ordinaire.
+ */
+function symboleDeLaDevise(devise?: string | null): string {
+  const symbole = formatCentimes(0, devise).replace(/[\d\s\u00a0.,]/g, '');
+
+  return symbole !== '' ? symbole : (devise ?? '').toUpperCase();
 }
 
 /** Un montant EN PROVENANCE DU SERVEUR, mis en forme. Rien n'est calculé ici. */

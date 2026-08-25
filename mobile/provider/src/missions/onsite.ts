@@ -475,6 +475,9 @@ export interface QuoteRevisionWindow {
   open: boolean;
   closes_at: string | null;
   reason: string | null;
+  /* La devise de la mission. Le formulaire s'affiche AVANT qu'une revision existe :
+     sa devise ne peut donc pas venir d'elle. */
+  currency?: string | null;
 }
 
 export interface ProviderQuoteRevision {

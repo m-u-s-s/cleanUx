@@ -482,6 +482,43 @@ class NouveauDevisTest extends TestCase
 
     // ── LES API ───────────────────────────────────────────────────────────────
 
+    /**
+     * LA DEVISE VOYAGE AVEC LA FENETRE, pas seulement avec la revision.
+     *
+     * Le formulaire s'affiche quand il n'y a PAS encore de revision : sa devise ne pouvait
+     * donc pas venir d'elle, et l'ecran natif ecrivait « (EUR) » en dur sur son champ de
+     * saisie — et annoncait la simulation dans la meme monnaie figee. Un prestataire
+     * marocain enoncait a voix haute un prix que son client ne paiera pas.
+     */
+    public function test_la_fenetre_porte_la_devise_de_la_mission(): void
+    {
+        $mission = $this->mission();
+        $mission->booking->forceFill(['currency' => 'MAD'])->save();
+
+        Sanctum::actingAs($this->prestataire);
+
+        $this->getJson('/api/provider/missions/'.$mission->id.'/quote-revision')
+            ->assertOk()
+            ->assertJsonPath('window.currency', 'MAD');
+    }
+
+    /**
+     * TEMOIN POSITIF — une mission belge rend bien « EUR ».
+     *
+     * Sans lui, un champ qui repondrait toujours « MAD » passerait le test precedent en
+     * mesurant une constante.
+     */
+    public function test_temoin_une_mission_belge_rend_l_euro(): void
+    {
+        $mission = $this->mission();
+
+        Sanctum::actingAs($this->prestataire);
+
+        $this->getJson('/api/provider/missions/'.$mission->id.'/quote-revision')
+            ->assertOk()
+            ->assertJsonPath('window.currency', 'EUR');
+    }
+
     public function test_le_prestataire_lit_sa_fenetre_et_simule_un_prix(): void
     {
         $mission = $this->mission();
