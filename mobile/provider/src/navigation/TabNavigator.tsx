@@ -5,7 +5,7 @@ import { MissionsScreen } from '@/screens/MissionsScreen';
 import { WalletScreen } from '@/screens/WalletScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
 import { Icon } from '@/ui';
-import { apparenceDeBarre } from '@/ui/glassBars';
+import { creerBarreOnglets } from '@/ui/BarreOnglets';
 import { usePresenceHeartbeat } from '@/presence';
 import { OfferHost } from '@/offers';
 import { TripTrackingHost } from '@/tracking';
@@ -14,6 +14,11 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { TabParamList } from './types';
 
 const Tab = createBottomTabNavigator<TabParamList>();
+
+/* La barre est construite UNE fois : passee en ligne a `tabBar`, React Navigation
+   la verrait comme un composant neuf a chaque rendu et la demonterait. `Dashboard` prend
+   la place centrale — c'est l'accueil. */
+const barreOnglets = creerBarreOnglets({ routeCentrale: 'Dashboard' });
 
 export function TabNavigator() {
   const theme = useThemeColors();
@@ -26,11 +31,11 @@ export function TabNavigator() {
   return (
     <>
     <Tab.Navigator
+      tabBar={barreOnglets}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.brand[500],
         tabBarInactiveTintColor: theme.textMuted,
-        ...apparenceDeBarre(theme),
       }}
     >
       {/*

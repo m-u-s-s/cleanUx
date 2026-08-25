@@ -14,7 +14,7 @@ export const colors = {
   danger:  { 50: '#fef2f2', 500: '#ef4444', 600: '#dc2626', 700: '#b91c1c' },
   accent: { amber: '#ffb648', amberDeep: '#ff8a3d', cyan: '#4fe3d6', violet: '#8b7bff' },
   mode: {
-    tool: { ink: '#0f172a', muted: '#64748b', card: 'rgba(255,255,255,0.9)', cardStrong: 'rgba(255,255,255,0.96)' },
+    tool: { ink: '#1a2436', muted: '#5b6b85', card: 'rgba(255,255,255,0.9)', cardStrong: 'rgba(255,255,255,0.96)' },
     showcase: { night: '#070b14', nightSoft: '#0c1322', panel: '#111a2e', text: '#e8eefc', muted: '#93a4c6' },
   },
 } as const;

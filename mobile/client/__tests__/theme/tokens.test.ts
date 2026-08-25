@@ -31,10 +31,13 @@ describe('Design tokens', () => {
   });
   describe('radius', () => {
     it('matches CSS --cx-radius-* tokens', () => {
-      expect(radius.sm).toBe(10);
-      expect(radius.md).toBe(14);
-      expect(radius.lg).toBe(22);
-      expect(radius.xl).toBe(28);
+      // Les rayons ont grandi avec le passage au verre : un angle vif trahit une
+      // matiere epaisse. Les memes valeurs vivent dans `resources/css/tokens.css`,
+      // et `LeThemeEstLeMemeSurLesTroisSurfacesTest` compare les deux fichiers.
+      expect(radius.sm).toBe(12);
+      expect(radius.md).toBe(18);
+      expect(radius.lg).toBe(24);
+      expect(radius.xl).toBe(32);
       expect(radius.pill).toBe(999);
     });
   });

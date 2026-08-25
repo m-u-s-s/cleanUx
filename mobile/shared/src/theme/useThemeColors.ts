@@ -86,6 +86,20 @@ export function useThemeColors() {
      */
     textOnBrand: '#ffffff',
 
+    /*
+     * L'ACCENT DE MARQUE — l'ambre, la meme valeur que `--cx-amber` du web.
+     *
+     * Le natif employait `colors.brand[500]`, un indigo, la ou le web porte l'ambre depuis
+     * toujours : les deux plateformes n'avaient pas la meme couleur de marque. Ce jeton les
+     * reunit sans toucher a `colors.brand`, que d'autres ecrans lisent encore.
+     *
+     * `textOnAccent` est SOMBRE, et ce n'est pas un oubli : du blanc sur de l'ambre tombe
+     * sous 2:1. Le meme calcul vaut sur le web, ou le bouton d'accent porte `#241603`.
+     */
+    accent: '#ffb648',
+    accentDeep: '#ff8a3d',
+    textOnAccent: '#241603',
+
     /** La lueur de marque du fond nuit. Absente en clair : elle n'y aurait aucun sens. */
     glow: isDark ? 'rgba(99, 102, 241, 0.30)' : 'transparent',
 

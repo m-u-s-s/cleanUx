@@ -1,59 +1,129 @@
-<div class="py-8 max-w-2xl mx-auto px-4">
-    <div class="flex justify-between items-center mb-6">
+{{--
+    LES CARTES, EN VRAIES CARTES.
+
+    Un moyen de paiement s'affichait en emoji suivi d'une ligne de texte. Il devient
+    l'objet qu'il represente : bandeau de marque, puce, numero masque, echeance. Le
+    client reconnait SA carte d'un coup d'oeil, sans lire.
+
+    La suppression passait par `wire:confirm`, qui ouvre la boite grise du navigateur.
+    Elle passe par une modale de verre — meme garde-fou, sans la rupture visuelle.
+--}}
+<div class="brio-page mx-auto max-w-3xl px-4 py-8" x-data="{ aSupprimer: null, marque: '', quatre: '' }">
+    <div class="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
-            <p class="text-sm font-bold uppercase text-indigo-600">Paiement</p>
-            <h1 class="text-2xl font-black text-slate-900">Mes cartes bancaires</h1>
+            <p class="brio-eyebrow">Paiement</p>
+            <h1>Mes cartes bancaires</h1>
         </div>
-        <button wire:click="startAdd" class="rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-500">
-            + Ajouter une carte
+
+        <button type="button" wire:click="startAdd" class="brio-btn brio-btn-accent">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" class="h-4 w-4" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Ajouter une carte
         </button>
     </div>
 
     @if ($error)
-        <div class="rounded-lg bg-rose-50 border border-rose-200 p-3 text-sm text-rose-700 mb-4">{{ $error }}</div>
+        <p class="brio-alerte brio-alerte-danger" role="alert">{{ $error }}</p>
     @endif
 
     @if ($newCardSetupIntent)
-        <div class="rounded-2xl bg-white border shadow-sm p-6 mb-4"
+        <div class="brio-card mb-6 p-6"
              x-data="addCardWidget({ secret: '{{ $newCardSetupIntent }}', publishable: '{{ $stripeKey }}' })"
              x-init="boot()">
-            <h2 class="text-sm font-bold text-slate-900 mb-3">Nouvelle carte</h2>
-            <form id="add-card-form" class="space-y-3">
-                <div id="payment-element" class="rounded-lg border p-3"></div>
-                <div id="add-card-message" class="text-sm text-rose-600 hidden"></div>
-                <button type="submit" class="w-full rounded-lg bg-indigo-600 text-white py-3 text-sm font-bold hover:bg-indigo-500">
-                    Enregistrer la carte
-                </button>
+            <h2 class="brio-ui-title text-sm font-bold">Nouvelle carte</h2>
+
+            <form id="add-card-form" class="mt-4 space-y-4">
+                <div id="payment-element" class="rounded-xl border border-[color:var(--glass-border)] bg-[color:var(--glass-bg-faint)] p-3"></div>
+                <div id="add-card-message" class="hidden text-sm" style="color: var(--brio-danger)"></div>
+
+                <button type="submit" class="brio-btn brio-btn-accent w-full">Enregistrer la carte</button>
             </form>
         </div>
     @endif
 
-    <div class="space-y-2">
+    <div class="brio-cartes brio-stagger">
         @forelse ($methods as $m)
-            <div class="rounded-xl bg-white border shadow-sm p-4 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <span class="text-3xl">💳</span>
-                    <div>
-                        <p class="font-semibold">{{ strtoupper($m['brand']) }} •••• {{ $m['last4'] }}</p>
-                        <p class="text-xs text-slate-500">Expire {{ str_pad($m['exp_month'], 2, '0', STR_PAD_LEFT) }}/{{ $m['exp_year'] }}</p>
-                    </div>
+            @php($marque = strtolower($m['brand'] ?? ''))
+
+            <article class="brio-carte brio-carte-{{ in_array($marque, ['visa', 'mastercard', 'amex'], true) ? $marque : 'neutre' }}">
+                <span class="brio-carte-lustre" aria-hidden="true"></span>
+
+                <header class="brio-carte-tete">
+                    <span class="brio-carte-puce" aria-hidden="true"></span>
+
                     @if ($m['id'] === $defaultId)
-                        <span class="ml-3 rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-xs font-semibold">Par défaut</span>
+                        <span class="brio-carte-defaut">Par défaut</span>
                     @endif
-                </div>
-                <div class="flex gap-2">
+                </header>
+
+                <p class="brio-carte-numero">
+                    <span aria-hidden="true">•••• •••• ••••</span>
+                    <strong>{{ $m['last4'] }}</strong>
+                    <span class="sr-only">Carte se terminant par {{ $m['last4'] }}</span>
+                </p>
+
+                <footer class="brio-carte-pied">
+                    <span class="brio-carte-echeance">
+                        <em>Expire</em>
+                        {{ str_pad((string) $m['exp_month'], 2, '0', STR_PAD_LEFT) }}/{{ substr((string) $m['exp_year'], -2) }}
+                    </span>
+
+                    <span class="brio-carte-marque">{{ strtoupper($m['brand']) }}</span>
+                </footer>
+
+                <div class="brio-carte-actions">
                     @if ($m['id'] !== $defaultId)
-                        <button wire:click="setDefault('{{ $m['id'] }}')" class="text-indigo-600 hover:underline text-xs font-semibold">Définir par défaut</button>
+                        <button type="button" wire:click="setDefault('{{ $m['id'] }}')" class="brio-btn brio-btn-verre">
+                            Définir par défaut
+                        </button>
                     @endif
-                    <button wire:click="remove('{{ $m['id'] }}')" wire:confirm="Supprimer cette carte ?" class="text-rose-600 hover:underline text-xs font-semibold">Supprimer</button>
+
+                    <button
+                        type="button"
+                        class="brio-btn brio-btn-nu"
+                        @click="aSupprimer = '{{ $m['id'] }}'; marque = '{{ strtoupper($m['brand']) }}'; quatre = '{{ $m['last4'] }}'"
+                    >
+                        Supprimer
+                    </button>
                 </div>
-            </div>
+            </article>
         @empty
-            <div class="text-center py-12 text-slate-400">
-                <p class="text-5xl mb-2">💳</p>
-                <p>Aucune carte enregistrée pour le moment.</p>
+            <div class="brio-vide">
+                <span class="brio-vide-icone" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="5" width="20" height="14" rx="3" /><line x1="2" y1="10" x2="22" y2="10" />
+                    </svg>
+                </span>
+                <p class="brio-vide-titre">Aucune carte enregistrée</p>
+                <p class="brio-vide-texte">Ajoutez une carte pour régler vos interventions en un geste.</p>
             </div>
         @endforelse
+    </div>
+
+    {{-- La confirmation de suppression : une modale de verre, la ou `wire:confirm`
+         ouvrait la boite grise du navigateur. --}}
+    <div x-show="aSupprimer" x-cloak class="brio-modal-fond grid place-items-center p-4"
+         @keydown.escape.window="aSupprimer = null"
+         @click.self="aSupprimer = null"
+         role="dialog" aria-modal="true" aria-labelledby="titre-suppression">
+        <div class="brio-modal brio-modal-danger">
+            <h2 id="titre-suppression" class="brio-modal-titre">Retirer cette carte ?</h2>
+
+            <p class="brio-modal-texte">
+                <span x-text="marque"></span> se terminant par <span x-text="quatre"></span>.
+                Vos interventions en cours ne sont pas annulées, mais un règlement automatique
+                pourrait échouer si aucune autre carte n'est enregistrée.
+            </p>
+
+            <div class="brio-modal-actions">
+                <button type="button" class="brio-btn brio-btn-nu" @click="aSupprimer = null">Annuler</button>
+                <button type="button" class="brio-btn brio-btn-danger"
+                        @click="$wire.remove(aSupprimer); aSupprimer = null">
+                    Retirer la carte
+                </button>
+            </div>
+        </div>
     </div>
 
     @if ($newCardSetupIntent && $stripeKey)

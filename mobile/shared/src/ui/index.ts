@@ -44,3 +44,4 @@ export { NightShell, themeDeNavigation, useThemeDeNavigation } from './NightShel
 export { apparenceDeBarre, fondDeFeuille } from './glassBars';
 export type { OsmMarker } from './OsmMap';
 export type { MapModule } from './mapModule';
+export { creerBarreOnglets } from './BarreOnglets';

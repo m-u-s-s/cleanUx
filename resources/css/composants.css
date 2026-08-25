@@ -1,0 +1,786 @@
+/* ============================================================================
+   Brio — LES COMPOSANTS DE VERRE
+   ----------------------------------------------------------------------------
+   Les pieces dessinees expres, par opposition a `glass.css` qui transmute
+   l'existant. Chacune vit dans les DEUX modes par les jetons, et se replie
+   proprement sous 640px.
+   ========================================================================= */
+
+/* ========================================================== LA NOTIFICATION
+   Haut-centre en mobile (le pouce ne la masque pas), haut-droite en bureau. */
+.brio-toasts {
+    position: fixed;
+    z-index: 9999;
+    top: max(1rem, env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: min(24rem, calc(100vw - 2rem));
+    pointer-events: none;
+}
+
+@media (min-width: 640px) {
+    .brio-toasts {
+        left: auto;
+        right: 1.5rem;
+        transform: none;
+    }
+}
+
+.brio-toast {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 0.95rem 0.95rem;
+    overflow: hidden;
+    pointer-events: auto;
+
+    background-color: var(--glass-bg-strong);
+    backdrop-filter: blur(var(--glass-blur-deep)) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(var(--glass-blur-deep)) saturate(var(--glass-sat));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--cx-radius-lg);
+    box-shadow: var(--glass-highlight), var(--glass-shadow-lift);
+    color: var(--brio-ink);
+
+    animation: brio-toast-entre 520ms var(--cx-spring) both;
+}
+
+/* L'entree : elle vient DE derriere le bord, pas d'un cote. Le voile qui balaye
+   la surface est ce qui rend l'apparition remarquable sans rien agiter. */
+@keyframes brio-toast-entre {
+    0%   { opacity: 0; transform: translate3d(0, -14px, 0) scale(0.94); }
+    60%  { opacity: 1; }
+    100% { opacity: 1; transform: none; }
+}
+
+@keyframes brio-toast-part {
+    to { opacity: 0; transform: translate3d(0, -8px, 0) scale(0.96); }
+}
+
+.brio-toast-sortie { animation: brio-toast-part 240ms var(--cx-ease) forwards; }
+
+/* Le halo colore : c'est LUI qui dit le type, pas un fond pastel. Un fond pastel
+   sur du verre sombre redevient un rectangle opaque et casse la matiere. */
+.brio-toast-aura {
+    position: absolute;
+    inset: -60% -30% auto -30%;
+    height: 160%;
+    pointer-events: none;
+    background: radial-gradient(60% 60% at 12% 0%, var(--brio-toast-teinte, transparent) 0%, transparent 70%);
+    opacity: 0.9;
+}
+
+.brio-toast::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--brio-toast-teinte, transparent), transparent);
+}
+
+.brio-toast-success { --brio-toast-teinte: color-mix(in srgb, var(--brio-success) 55%, transparent); }
+.brio-toast-error,
+.brio-toast-danger  { --brio-toast-teinte: color-mix(in srgb, var(--brio-danger) 55%, transparent); }
+.brio-toast-warning { --brio-toast-teinte: color-mix(in srgb, var(--brio-warning) 55%, transparent); }
+.brio-toast-info    { --brio-toast-teinte: color-mix(in srgb, var(--brio-info) 55%, transparent); }
+
+.brio-toast-icone {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: var(--cx-radius-md);
+    background: var(--glass-bg-faint);
+    border: 1px solid var(--glass-border);
+    color: var(--brio-ink);
+}
+
+.brio-toast-icone svg { width: 1.05rem; height: 1.05rem; }
+.brio-toast-success .brio-toast-icone { color: var(--brio-success); }
+.brio-toast-error   .brio-toast-icone,
+.brio-toast-danger  .brio-toast-icone { color: var(--brio-danger); }
+.brio-toast-warning .brio-toast-icone { color: var(--brio-warning); }
+.brio-toast-info    .brio-toast-icone { color: var(--brio-info); }
+
+.brio-toast-texte {
+    position: relative;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.45;
+    color: var(--brio-ink);
+    overflow-wrap: anywhere;
+}
+
+.brio-toast-fermer {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--cx-radius-pill);
+    color: var(--brio-muted);
+    transition: color var(--cx-dur-fast) var(--cx-ease), background-color var(--cx-dur-fast) var(--cx-ease);
+}
+
+.brio-toast-fermer svg { width: 0.85rem; height: 0.85rem; }
+.brio-toast-fermer:hover { color: var(--brio-ink); background: var(--glass-bg-faint); }
+
+.brio-toast-jauge {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 100%;
+    transform-origin: left;
+    background: var(--brio-toast-teinte, var(--brio-accent));
+    animation: brio-jauge-vide 4200ms linear both;
+}
+
+@keyframes brio-jauge-vide {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+}
+
+/* ========================================================== LA MODALE
+   « Des modales futuristes avec un effet d'affichage exceptionnel ».
+
+   L'effet tient a TROIS choses simultanees : le fond qui se floute, le panneau
+   qui monte en s'agrandissant, et un liseré d'accent qui se dessine au bord.
+   Prises une a une elles sont banales ; ensemble elles font l'entree. */
+.brio-modal-fond {
+    position: fixed;
+    inset: 0;
+    z-index: 9990;
+    background: rgb(var(--brio-ink-rgb) / 0.35);
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    animation: brio-fond-parait 320ms var(--cx-ease) both;
+}
+
+:root.dark .brio-modal-fond { background: rgba(0, 0, 0, 0.55); }
+
+@keyframes brio-fond-parait {
+    from { opacity: 0; backdrop-filter: blur(0); -webkit-backdrop-filter: blur(0); }
+    to   { opacity: 1; }
+}
+
+.brio-modal {
+    position: relative;
+    width: min(34rem, calc(100vw - 2rem));
+    max-height: min(80vh, 46rem);
+    overflow: hidden auto;
+    padding: 1.6rem;
+
+    background-color: var(--glass-bg-strong);
+    backdrop-filter: blur(var(--glass-blur-deep)) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(var(--glass-blur-deep)) saturate(var(--glass-sat));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--cx-radius-xl);
+    box-shadow: var(--glass-highlight), var(--glass-shadow-lift);
+    color: var(--brio-ink);
+
+    animation: brio-modal-monte 460ms var(--cx-spring) both;
+}
+
+@keyframes brio-modal-monte {
+    0%   { opacity: 0; transform: translate3d(0, 22px, 0) scale(0.94); }
+    100% { opacity: 1; transform: none; }
+}
+
+/* Le liseré qui se dessine : il part du haut et fait le tour. C'est la touche
+   qui distingue une modale soignee d'une boite blanche. */
+.brio-modal::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg,
+        rgb(var(--brio-accent-rgb) / 0.65) 0%,
+        transparent 38%,
+        transparent 62%,
+        rgb(var(--brio-accent-rgb) / 0.35) 100%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+    animation: brio-lisere 900ms var(--cx-ease) both;
+}
+
+@keyframes brio-lisere {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.brio-modal-titre {
+    font-family: var(--brio-display);
+    font-size: clamp(1.9rem, 4vw, 2.5rem);
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--brio-ink);
+}
+
+.brio-modal-texte {
+    margin-top: 0.6rem;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--brio-muted);
+}
+
+.brio-modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    margin-top: 1.4rem;
+}
+
+/* Une modale de DANGER porte son avertissement dans la matiere, pas dans un
+   bandeau rouge : la teinte du liseré suffit, et elle reste elegante. */
+.brio-modal-danger::before {
+    background: linear-gradient(135deg,
+        color-mix(in srgb, var(--brio-danger) 70%, transparent) 0%,
+        transparent 38%,
+        transparent 62%,
+        color-mix(in srgb, var(--brio-danger) 40%, transparent) 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .brio-toast,
+    .brio-toast-sortie,
+    .brio-modal,
+    .brio-modal-fond,
+    .brio-modal::before { animation: none; }
+
+    .brio-toast-jauge { animation: none; transform: scaleX(0); }
+}
+
+/* ========================================================== LES BOUTONS
+   Trois seulement. Un produit qui en a dix n'en a aucun : l'oeil ne sait plus
+   lequel porte l'action principale. */
+.brio-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.15rem;
+    border-radius: var(--cx-radius-pill);
+    font-family: var(--brio-sans);
+    font-size: 0.875rem;
+    font-weight: 650;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform var(--cx-dur-fast) var(--cx-ease),
+                box-shadow var(--cx-dur-fast) var(--cx-ease),
+                background-color var(--cx-dur-fast) var(--cx-ease);
+}
+
+.brio-btn:active { transform: translateY(1px) scale(0.99); }
+.brio-btn:focus-visible { outline: none; box-shadow: var(--brio-ring); }
+
+/* Le lustre qui balaye au survol — la touche des interfaces primees. Discret :
+   il passe une fois, il ne clignote pas. */
+.brio-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-120%) skewX(-18deg);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+    transition: transform var(--cx-dur-slow) var(--cx-ease);
+    pointer-events: none;
+}
+
+.brio-btn:hover::after { transform: translateX(120%) skewX(-18deg); }
+
+.brio-btn-accent {
+    background: linear-gradient(135deg, var(--brio-accent) 0%, var(--brio-accent-deep) 100%);
+    color: #241603;
+    box-shadow: 0 8px 24px rgb(var(--brio-accent-rgb) / 0.34);
+}
+
+.brio-btn-accent:hover { box-shadow: 0 14px 34px rgb(var(--brio-accent-rgb) / 0.44); transform: translateY(-1px); }
+
+.brio-btn-verre {
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-highlight);
+    color: var(--brio-ink);
+}
+
+.brio-btn-verre:hover { background-color: var(--glass-bg-strong); transform: translateY(-1px); }
+
+.brio-btn-nu {
+    background: transparent;
+    color: var(--brio-muted);
+}
+
+.brio-btn-nu:hover { color: var(--brio-ink); background-color: var(--glass-bg-faint); }
+.brio-btn-nu::after { display: none; }
+
+.brio-btn-danger {
+    background: linear-gradient(135deg, var(--brio-danger) 0%, color-mix(in srgb, var(--brio-danger) 70%, #000) 100%);
+    color: #fff;
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--brio-danger) 34%, transparent);
+}
+
+/* ========================================================== LE CONSENTEMENT */
+.brio-cookies {
+    position: fixed;
+    z-index: 60;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    width: min(46rem, calc(100vw - 1.5rem));
+    padding: 1.1rem 1.2rem;
+
+    background-color: var(--glass-bg-strong);
+    backdrop-filter: blur(var(--glass-blur-deep)) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(var(--glass-blur-deep)) saturate(var(--glass-sat));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--cx-radius-xl);
+    box-shadow: var(--glass-highlight), var(--glass-shadow-lift);
+    color: var(--brio-ink);
+}
+
+.brio-cookies-corps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.brio-cookies-texte { flex: 1 1 18rem; min-width: 0; }
+
+.brio-cookies-titre {
+    font-family: var(--brio-sans);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--brio-ink);
+}
+
+.brio-cookies-detail {
+    margin-top: 0.2rem;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--brio-muted);
+}
+
+.brio-cookies-detail a { color: var(--brio-accent-deep); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+
+.brio-cookies-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+.brio-cookies-reglages {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--glass-border);
+    display: grid;
+    gap: 0.6rem;
+}
+
+.brio-cookies-ligne {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.brio-cookies-ligne input { margin-top: 0.15rem; accent-color: var(--brio-accent-deep); }
+.brio-cookies-ligne span { display: flex; flex-direction: column; }
+.brio-cookies-ligne strong { font-weight: 650; color: var(--brio-ink); }
+.brio-cookies-ligne em { font-style: normal; font-size: 0.75rem; color: var(--brio-muted); }
+.brio-cookies-valider { justify-self: start; margin-top: 0.3rem; }
+
+/* En petit ecran les actions passent en colonne : trois boutons cote a cote
+   sous 400px, chacun fait deux lignes et le panneau double de hauteur. */
+@media (max-width: 560px) {
+    .brio-cookies-actions { width: 100%; }
+    .brio-cookies-actions .brio-btn { flex: 1 1 100%; }
+}
+
+/* ========================================================== LE PARCOURS EN ETAPES
+   « Le formulaire du catalogue est trop long — privilegier un wizard. »
+
+   Le parcours revelait deja les etapes une a une, mais les gardait DEPLIEES : la
+   page gagnait un ecran a chaque reponse. Une etape franchie se replie desormais
+   en une ligne qui garde la valeur choisie et se rouvre d'un clic. */
+.brio-etape-repliee { display: none; }
+
+.brio-etape-faite {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    width: 100%;
+    padding: 0.8rem 1rem;
+    text-align: start;
+    cursor: pointer;
+
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--cx-radius-lg);
+    box-shadow: var(--glass-highlight);
+    color: var(--brio-ink);
+    transition: transform var(--cx-dur-fast) var(--cx-ease),
+                box-shadow var(--cx-dur-fast) var(--cx-ease);
+    animation: brio-monte var(--cx-dur) var(--cx-ease) both;
+}
+
+.brio-etape-faite:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--glass-highlight), var(--glass-shadow);
+}
+
+.brio-etape-puce {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: var(--cx-radius-pill);
+    background: linear-gradient(135deg, var(--brio-success) 0%, color-mix(in srgb, var(--brio-success) 65%, #000) 100%);
+    color: #fff;
+}
+
+.brio-etape-puce svg { width: 0.8rem; height: 0.8rem; }
+
+.brio-etape-corps { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+
+.brio-etape-libelle {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--brio-muted);
+}
+
+.brio-etape-valeur {
+    font-size: 0.9375rem;
+    font-weight: 650;
+    color: var(--brio-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.brio-etape-changer {
+    flex: none;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--brio-accent-deep);
+}
+
+/* Le fil de progression : une barre pleine dit « ou j'en suis », pas « combien
+   il reste ». Les jalons, si. */
+.brio-fil {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 1.1rem;
+}
+
+.brio-fil-jalon {
+    flex: 1;
+    height: 4px;
+    border-radius: var(--cx-radius-pill);
+    background: var(--glass-border);
+    overflow: hidden;
+    position: relative;
+}
+
+.brio-fil-jalon.est-fait::after,
+.brio-fil-jalon.est-courant::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, var(--brio-accent) 0%, var(--brio-accent-deep) 100%);
+    transform-origin: left;
+    animation: brio-fil-remplit var(--cx-dur-slow) var(--cx-ease) both;
+}
+
+.brio-fil-jalon.est-courant::after { opacity: 0.55; }
+
+@keyframes brio-fil-remplit {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+}
+
+/* ========================================================== LES CASES DE TERRAIN
+   « Mission terrain : rendre tout visible directement, dans des cases. »
+
+   Reference : les grilles 3 et 4 colonnes des modeles mobiles etudies. Une case
+   porte UNE information ; l'oeil balaye la grille au lieu de derouler une liste. */
+.brio-terrain {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(clamp(104px, 26vw, 168px), 1fr));
+    gap: 0.7rem;
+}
+
+.brio-terrain-case {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.9rem 0.85rem;
+    min-width: 0;
+    overflow: hidden;
+
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--cx-radius-md);
+    box-shadow: var(--glass-highlight);
+    color: var(--brio-ink);
+    transition: transform var(--cx-dur-fast) var(--cx-ease), box-shadow var(--cx-dur-fast) var(--cx-ease);
+}
+
+.brio-terrain-case:hover { transform: translateY(-2px); box-shadow: var(--glass-highlight), var(--glass-shadow); }
+
+.brio-terrain-tete {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--brio-muted);
+}
+
+.brio-terrain-tete svg { width: 0.85rem; height: 0.85rem; flex: none; }
+
+.brio-terrain-valeur {
+    font-size: clamp(1rem, 3.4vw, 1.35rem);
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--brio-ink);
+    overflow-wrap: anywhere;
+}
+
+.brio-terrain-note { font-size: 0.75rem; color: var(--brio-muted); }
+
+/* Le liseré de statut : il colore la tranche gauche, pas le fond. Un fond teinte
+   sur du verre redevient un aplat et casse la matiere. */
+.brio-terrain-case::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: var(--brio-terrain-teinte, transparent);
+}
+
+.brio-terrain-bon      { --brio-terrain-teinte: var(--brio-success); }
+.brio-terrain-attention{ --brio-terrain-teinte: var(--brio-warning); }
+.brio-terrain-alerte   { --brio-terrain-teinte: var(--brio-danger); }
+.brio-terrain-accent   { --brio-terrain-teinte: var(--brio-accent); }
+
+.brio-terrain-bon       .brio-terrain-valeur { color: var(--brio-success); }
+.brio-terrain-attention .brio-terrain-valeur { color: var(--brio-warning); }
+.brio-terrain-alerte    .brio-terrain-valeur { color: var(--brio-danger); }
+
+/* ========================================================== LA CARTE BANCAIRE
+   « Dans Stripe, afficher la carte de l'utilisateur en visuel. »
+
+   Reference : la Visa en degrade du tableau de bord ambre. La carte porte sa
+   propre matiere — un degrade dense — et NON du verre : une carte bancaire
+   translucide ne ressemble a rien. Le verre l'entoure, il ne la remplace pas. */
+.brio-cartes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    gap: 1.1rem;
+}
+
+.brio-carte {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.35rem 1.4rem 1.2rem;
+    min-height: 12.5rem;
+    overflow: hidden;
+    isolation: isolate;
+
+    border-radius: var(--cx-radius-lg);
+    color: #fff;
+    box-shadow: 0 20px 44px rgb(var(--brio-ink-rgb) / 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    transition: transform var(--cx-dur) var(--cx-ease), box-shadow var(--cx-dur) var(--cx-ease);
+}
+
+.brio-carte:hover {
+    transform: translateY(-4px) rotate(-0.4deg);
+    box-shadow: 0 30px 64px rgb(var(--brio-ink-rgb) / 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+
+/* Chaque reseau a son degrade : c'est ce qui rend la carte reconnaissable AVANT
+   la lecture du numero. */
+.brio-carte-visa       { background: linear-gradient(135deg, #1a1f71 0%, #3b4fc4 55%, #6b7fe8 100%); }
+.brio-carte-mastercard { background: linear-gradient(135deg, #b3400b 0%, #eb6c1c 52%, #f9a825 100%); }
+.brio-carte-amex       { background: linear-gradient(135deg, #0b6a8f 0%, #1595c4 55%, #52c9e8 100%); }
+.brio-carte-neutre     { background: linear-gradient(135deg, #2b2f45 0%, #4a4f6d 55%, var(--brio-accent-deep) 140%); }
+
+/* Le lustre qui traverse : c'est lui qui donne l'impression du plastique verni. */
+.brio-carte-lustre {
+    position: absolute;
+    inset: -50% -10%;
+    z-index: -1;
+    background:
+        radial-gradient(38% 60% at 78% 8%, rgba(255, 255, 255, 0.30) 0%, transparent 64%),
+        radial-gradient(46% 70% at 8% 96%, rgba(255, 255, 255, 0.14) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.brio-carte-tete { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+
+/* La puce : deux traits suffisent a la faire lire comme une puce. */
+.brio-carte-puce {
+    position: relative;
+    width: 2.6rem;
+    height: 2rem;
+    border-radius: 0.4rem;
+    background: linear-gradient(135deg, #e8c66a 0%, #c9a13f 45%, #f2dfa0 100%);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.brio-carte-puce::before,
+.brio-carte-puce::after {
+    content: "";
+    position: absolute;
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.brio-carte-puce::before { inset: 33% 0 auto 0; height: 1px; }
+.brio-carte-puce::after  { inset: 0 auto 0 46%; width: 1px; }
+
+.brio-carte-defaut {
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--cx-radius-pill);
+    background: rgba(255, 255, 255, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.34);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.brio-carte-numero {
+    font-family: var(--brio-mono);
+    font-size: clamp(1.05rem, 3.6vw, 1.3rem);
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+.brio-carte-numero strong { font-weight: 700; letter-spacing: 0.16em; }
+
+.brio-carte-pied { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.75rem; }
+
+.brio-carte-echeance { font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.04em; }
+.brio-carte-echeance em {
+    display: block;
+    font-style: normal;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    opacity: 0.72;
+}
+
+.brio-carte-marque {
+    font-size: 0.9375rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.26);
+}
+
+/* Les actions vivent SOUS la carte, pas dessus : poser un bouton sur le degrade
+   le rend illisible et abime l'objet. */
+.brio-carte-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding-top: 0.9rem;
+    margin-top: 0.2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.brio-carte-actions .brio-btn-verre {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.30);
+    color: #fff;
+}
+
+.brio-carte-actions .brio-btn-verre:hover { background: rgba(255, 255, 255, 0.28); }
+.brio-carte-actions .brio-btn-nu { color: rgba(255, 255, 255, 0.82); }
+.brio-carte-actions .brio-btn-nu:hover { color: #fff; background: rgba(255, 255, 255, 0.14); }
+
+/* ========================================================== L'ETAT VIDE ET L'ALERTE */
+.brio-vide {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 3rem 1.5rem;
+    text-align: center;
+
+    background-color: var(--glass-bg-faint);
+    border: 1px dashed var(--glass-border);
+    border-radius: var(--cx-radius-xl);
+}
+
+.brio-vide-icone {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: var(--cx-radius-lg);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--brio-accent-deep);
+}
+
+.brio-vide-icone svg { width: 1.6rem; height: 1.6rem; }
+.brio-vide-titre { font-size: 1.0625rem; font-weight: 700; color: var(--brio-ink); }
+.brio-vide-texte { font-size: 0.875rem; color: var(--brio-muted); max-width: 26rem; }
+
+.brio-alerte {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    margin-bottom: 1.2rem;
+    padding: 0.85rem 1rem;
+    border-radius: var(--cx-radius-md);
+    font-size: 0.875rem;
+    line-height: 1.5;
+
+    background-color: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-left: 3px solid var(--brio-alerte-teinte, var(--brio-info));
+    box-shadow: var(--glass-highlight);
+    color: var(--brio-ink);
+}
+
+.brio-alerte-danger  { --brio-alerte-teinte: var(--brio-danger); }
+.brio-alerte-warning { --brio-alerte-teinte: var(--brio-warning); }
+.brio-alerte-success { --brio-alerte-teinte: var(--brio-success); }
+
+@media (prefers-reduced-motion: reduce) {
+    .brio-carte:hover { transform: none; }
+}

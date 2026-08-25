@@ -10,10 +10,14 @@
    ========================================================================= */
 
 /* CSS spec: @import must precede all other statements (avoids PostCSS warning). */
+/* Les polices AVANT tout : une @import de police doit preceder les autres. */
+@import url('https://fonts.bunny.net/css?family=allura:400|sora:300,400,500,600,700,800');
 @import './tokens.css';
 @import './base.css';
 @import './responsive.css';
 @import './tool-mode.css';
+@import './glass.css';
+@import './composants.css';
 @import './vitrine-mode.css';
 @import './motion.css';
 @import './a11y.css';

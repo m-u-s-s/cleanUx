@@ -37,6 +37,17 @@ class PilotageEntrepriseTest extends TestCase
     {
         parent::setUp();
 
+        /*
+         * LE TEMPS EST FIGE AU 5 DU MOIS, ET C'EST INDISPENSABLE.
+         *
+         * La fabrique de budget pose `period_start` au PREMIER du mois, et la periode se ferme
+         * le dernier jour. Les tests d'engagement reservent a `now()->addWeek()` : passe le 24,
+         * cette semaine tombe le mois SUIVANT, la reservation sort de la fenetre et le budget
+         * compte zero. Ces tests echouaient donc les six derniers jours de chaque mois — sans
+         * qu'aucun code ait bouge.
+         */
+        Carbon::setTestNow(Carbon::now()->startOfMonth()->addDays(4)->setTime(9, 0));
+
         Notification::fake();
 
         $this->org = OrganizationAccount::factory()->create([

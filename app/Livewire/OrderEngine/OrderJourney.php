@@ -472,6 +472,24 @@ class OrderJourney extends Component
     }
 
     /**
+     * Le secteur choisi — le parcours replie son etape et n'en garde que le nom.
+     *
+     * Servi depuis `sectors()`, deja charge avec ses traductions : un `find()` de plus
+     * coutait UNE requete par rendu et faisait sauter le budget du parcours (45).
+     * Le repli n'existe que pour le cas ou le secteur choisi sort du filtre courant.
+     */
+    #[Computed]
+    public function sector(): ?Sector
+    {
+        if (! $this->sectorId) {
+            return null;
+        }
+
+        return $this->sectors->firstWhere('id', $this->sectorId)
+            ?? Sector::query()->with('translations')->find($this->sectorId);
+    }
+
+    /**
      * Les questions à poser, dans l'ordre.
      *
      * @return Collection<int, Question>
@@ -1231,6 +1249,20 @@ class OrderJourney extends Component
     public function selectSector(int $sectorId): void
     {
         $this->sectorId = $sectorId;
+        $this->tradeId = null;
+        $this->answers = [];
+        $this->refreshDerived();
+    }
+
+    /**
+     * Rouvre l'etape du domaine depuis son resume replie.
+     *
+     * `selectSector(0)` aurait suffi a l'affichage — mais laisserait `sectorId = 0`, et le
+     * parcours irait chercher un secteur d'identifiant zero a chaque rendu.
+     */
+    public function changerDeSecteur(): void
+    {
+        $this->sectorId = null;
         $this->tradeId = null;
         $this->answers = [];
         $this->refreshDerived();

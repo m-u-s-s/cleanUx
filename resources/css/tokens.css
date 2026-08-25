@@ -1,11 +1,32 @@
 /* ============================================================================
-   Brio — Design Tokens
-   Shared across both tool mode (cu-*) and vitrine mode (cx-*).
-   ========================================================================= */
-:root {
-    --cx-display: "Space Grotesk", "Figtree", system-ui, sans-serif;
-    --cx-body:    "Figtree", system-ui, -apple-system, sans-serif;
+   Brio — Jetons de design
+   ----------------------------------------------------------------------------
+   UNE SOURCE POUR TOUT : web, web mobile et natif lisent la meme palette.
+   Le natif la recopie dans `mobile/shared/src/theme/tokens.ts` — les deux
+   fichiers portent les MEMES valeurs, un test les compare.
 
+   LE VERRE EST UNE MATIERE, PAS UN FILTRE. Trois couches le composent, et les
+   trois sont necessaires : le fond translucide, le flou d'arriere-plan, et le
+   LISERE lumineux en haut qui simule la tranche eclairee. Sans le lisere, une
+   surface floutee ne ressemble a rien.
+   ========================================================================= */
+
+:root {
+    /* ---------------------------------------------------------------- POLICES
+       Allura porte les titres et les accroches — c'est la voix de la marque.
+       Sora porte l'interface : tableaux, champs, chiffres. Une cursive dans une
+       colonne de donnees serait illisible, et l'illisible n'est jamais gracieux. */
+    --brio-display:    "Allura", "Segoe Script", cursive;
+    --brio-sans:       "Sora", "Figtree", system-ui, -apple-system, sans-serif;
+    --brio-mono:       "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+    /* Les anciens noms restent : 585 vues les lisent. Ils pointent vers les neufs. */
+    --cx-display:      var(--brio-display);
+    --cx-body:         var(--brio-sans);
+
+    /* ------------------------------------------------------------ COULEURS DE MARQUE
+       L'ambre est l'identite du produit. Le cyan et le violet l'accompagnent
+       dans les degrades et les lueurs — jamais seuls, jamais en aplat. */
     --cx-amber:        #ffb648;
     --cx-amber-deep:   #ff8a3d;
     --cx-glow-amber:   rgba(255, 182, 72, 0.55);
@@ -14,39 +35,135 @@
     --cx-violet:       #8b7bff;
     --cx-glow-cyan:    rgba(79, 227, 214, 0.45);
 
-    --cx-radius-sm:    10px;
-    --cx-radius-md:    14px;
-    --cx-radius-lg:    22px;
-    --cx-radius-xl:    28px;
+    --brio-accent:       var(--cx-amber);
+    --brio-accent-deep:  var(--cx-amber-deep);
+    --brio-accent-rgb:   255 182 72;
+
+    /* --------------------------------------------------------------- COURBURES
+       Le verre epais demande des rayons genereux : un angle vif trahit la
+       matiere. 24px est la valeur de reference des cinq modeles etudies. */
+    --cx-radius-sm:    12px;
+    --cx-radius-md:    18px;
+    --cx-radius-lg:    24px;
+    --cx-radius-xl:    32px;
+    --cx-radius-2xl:   40px;
     --cx-radius-pill:  999px;
 
+    /* --------------------------------------------------------------- MOUVEMENT
+       Une seule courbe, trois durees. Tout ce qui bouge s'y conforme : sans
+       cela, deux animations voisines paraissent decousues. */
     --cx-ease:         cubic-bezier(.16, 1, .3, 1);
+    --cx-ease-out:     cubic-bezier(.22, 1, .36, 1);
+    --cx-spring:       cubic-bezier(.34, 1.56, .64, 1);
     --cx-dur-fast:     180ms;
     --cx-dur:          280ms;
     --cx-dur-slow:     420ms;
+    --cx-dur-reveal:   680ms;
 
-    /* L'encre en composantes : toute ombre s'en derive, il n'y a donc qu'une source. */
-    --brio-ink-rgb:      15 23 42;
+    /* ============================ MODE CLAIR — VERRE LAITEUX ============================
+       Reference : la colonne gauche de « Minimal Glassmorphism ». Le fond n'est
+       jamais blanc pur : il porte un voile bleute, sans quoi le verre pose dessus
+       ne se voit pas. */
+    --brio-bg:           #eef1f8;
+    --brio-bg-deep:      #e4e9f4;
+    --brio-bg-rgb:       238 241 248;
+
+    --brio-ink-rgb:      26 36 54;
     --brio-ink:          rgb(var(--brio-ink-rgb));
-    --brio-muted:        #64748b;
-    --brio-border:       rgba(148, 163, 184, 0.18);
-    --brio-card:         rgba(255, 255, 255, 0.9);
-    --brio-card-strong:  rgba(255, 255, 255, 0.96);
-    --brio-shadow:       0 14px 40px rgb(var(--brio-ink-rgb) / 0.08);
-    --brio-shadow-soft:  0 8px 24px rgb(var(--brio-ink-rgb) / 0.05);
-    --brio-ring:         0 0 0 4px rgba(59, 130, 246, 0.12);
+    --brio-muted:        #5b6b85;
+    --brio-faint:        #8b99b0;
 
-    /* Couleurs de STATUT. Un graphique, une carte ou un canevas les lisent par
-       `window.brioJeton()` : ils recoivent une couleur, pas une declaration CSS. */
+    --glass-bg:          rgba(255, 255, 255, 0.55);
+    --glass-bg-strong:   rgba(255, 255, 255, 0.74);
+    --glass-bg-faint:    rgba(255, 255, 255, 0.34);
+    --glass-border:      rgba(255, 255, 255, 0.72);
+    --glass-blur:        22px;
+    --glass-blur-deep:   40px;
+    --glass-sat:         160%;
+
+    /* Le lisere : blanc franc en haut, ombre interieure en bas. C'est la tranche. */
+    --glass-highlight:   inset 0 1px 0 rgba(255, 255, 255, 0.95),
+                         inset 0 -1px 0 rgb(var(--brio-ink-rgb) / 0.04);
+    --glass-shadow:      0 18px 48px rgb(var(--brio-ink-rgb) / 0.10),
+                         0 2px 8px rgb(var(--brio-ink-rgb) / 0.04);
+    --glass-shadow-lift: 0 32px 72px rgb(var(--brio-ink-rgb) / 0.16),
+                         0 4px 12px rgb(var(--brio-ink-rgb) / 0.06);
+
+    /* Les anciens noms de surface, reconduits sur la nouvelle matiere. */
+    --brio-border:       var(--glass-border);
+    --brio-card:         var(--glass-bg);
+    --brio-card-strong:  var(--glass-bg-strong);
+    --brio-shadow:       var(--glass-shadow);
+    --brio-shadow-soft:  0 8px 24px rgb(var(--brio-ink-rgb) / 0.06);
+    --brio-ring:         0 0 0 4px rgb(var(--brio-accent-rgb) / 0.20);
+
+    /* --------------------------------------------------------------- STATUTS
+       Lues aussi par `window.brioJeton()` : un graphique ou un canevas recoit
+       une couleur, jamais une declaration CSS. */
     --brio-success:      #059669;
     --brio-warning:      #f59e0b;
     --brio-danger:       #dc2626;
     --brio-info:         #2563eb;
 
+    /* Les lueurs d'ambiance du fond — les bulles floues des cinq modeles. */
+    --brio-aura-1:       rgba(120, 160, 255, 0.28);
+    --brio-aura-2:       rgba(255, 182, 72, 0.18);
+    --brio-aura-3:       rgba(139, 123, 255, 0.20);
+
+    /* ---------------------------------------------- COQUILLE VITRINE (nuit permanente)
+       Ces jetons ne suivent PAS le mode : la vitrine est sombre par choix. */
     --cx-night:        #070b14;
     --cx-night-soft:   #0c1322;
     --cx-panel:        #111a2e;
     --cx-line:         rgba(148, 178, 230, 0.14);
     --cx-text:         #e8eefc;
     --cx-muted:        #93a4c6;
+}
+
+/* ============================ MODE SOMBRE — VERRE CHARBON ============================
+   Reference : la colonne droite de « Minimal Glassmorphism » et le tableau de
+   bord ambre. Le verre sombre n'est pas un verre clair assombri : son fond est
+   PRESQUE transparent et c'est le lisere qui le dessine.
+
+   UNE SEULE PORTE : `.dark` sur <html>. C'est ce que `<x-theme-amorce />` pose
+   avant la premiere peinture, et cette classe suit deja la preference systeme.
+   Ajouter une media query ici ferait une SECONDE source de verite, qui divergerait
+   des que l'utilisateur choisit un mode contre son systeme. */
+:root.dark {
+    --brio-bg:           #0a0e1a;
+    --brio-bg-deep:      #060911;
+    --brio-bg-rgb:       10 14 26;
+
+    --brio-ink-rgb:      234 240 251;
+    --brio-ink:          rgb(var(--brio-ink-rgb));
+    --brio-muted:        #8fa0bf;
+    --brio-faint:        #64748b;
+
+    --glass-bg:          rgba(255, 255, 255, 0.055);
+    --glass-bg-strong:   rgba(255, 255, 255, 0.10);
+    --glass-bg-faint:    rgba(255, 255, 255, 0.03);
+    --glass-border:      rgba(255, 255, 255, 0.11);
+
+    --glass-highlight:   inset 0 1px 0 rgba(255, 255, 255, 0.16),
+                         inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+    --glass-shadow:      0 18px 48px rgba(0, 0, 0, 0.55),
+                         0 2px 8px rgba(0, 0, 0, 0.32);
+    --glass-shadow-lift: 0 32px 72px rgba(0, 0, 0, 0.68),
+                         0 4px 12px rgba(0, 0, 0, 0.40);
+
+    --brio-border:       var(--glass-border);
+    --brio-card:         var(--glass-bg);
+    --brio-card-strong:  var(--glass-bg-strong);
+    --brio-shadow:       var(--glass-shadow);
+    --brio-shadow-soft:  0 8px 24px rgba(0, 0, 0, 0.40);
+    --brio-ring:         0 0 0 4px rgb(var(--brio-accent-rgb) / 0.28);
+
+    --brio-success:      #34d399;
+    --brio-warning:      #fbbf24;
+    --brio-danger:       #f87171;
+    --brio-info:         #60a5fa;
+
+    --brio-aura-1:       rgba(79, 227, 214, 0.16);
+    --brio-aura-2:       rgba(255, 138, 61, 0.14);
+    --brio-aura-3:       rgba(139, 123, 255, 0.18);
 }

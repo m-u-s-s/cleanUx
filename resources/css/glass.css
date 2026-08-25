@@ -1,0 +1,303 @@
+/* ============================================================================
+   Brio — LE VERRE
+   ----------------------------------------------------------------------------
+   POURQUOI CETTE FEUILLE EXISTE.
+
+   585 vues sont ecrites en Tailwind brut : `bg-white` vit dans 362 d'entre
+   elles, `text-slate-900` dans 342, mais `dark:bg-slate` dans 31 seulement.
+   Repeindre 585 ecrans un par un aurait pris des semaines et casse des pages.
+
+   On change donc la MATIERE sous les utilitaires, pas les ecrans. Une vue qui
+   ecrit `bg-white rounded-2xl border border-slate-200 shadow-sm` devient une
+   surface de verre — sans qu'une seule ligne de son balisage change, et sans
+   perdre son mode sombre puisque les jetons suivent le theme.
+
+   PORTEE : le mode OUTIL seulement. `body.cx-shell` — la vitrine, dont la page
+   d'accueil — garde sa nuit permanente et n'est pas touchee.
+   ========================================================================= */
+
+/* =========================================================== LE FOND
+   Trois auras floues, immobiles, tres lentes. Elles donnent au verre quelque
+   chose a filtrer : sans elles, une surface translucide sur un aplat uni ne
+   se distingue pas d'une surface opaque. */
+body:not(.cx-shell) {
+    background-color: var(--brio-bg);
+    color: var(--brio-ink);
+    font-family: var(--brio-sans);
+    -webkit-font-smoothing: antialiased;
+}
+
+body:not(.cx-shell)::before {
+    content: "";
+    position: fixed;
+    inset: -20vmax;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(42vmax 42vmax at 12% 8%,  var(--brio-aura-1) 0%, transparent 62%),
+        radial-gradient(38vmax 38vmax at 88% 14%, var(--brio-aura-2) 0%, transparent 60%),
+        radial-gradient(46vmax 46vmax at 62% 92%, var(--brio-aura-3) 0%, transparent 64%);
+    animation: brio-derive 46s var(--cx-ease) infinite alternate;
+}
+
+@keyframes brio-derive {
+    0%   { transform: translate3d(0, 0, 0) scale(1); }
+    100% { transform: translate3d(2.5%, -2%, 0) scale(1.06); }
+}
+
+/* =========================================================== LA VOIX
+   Allura porte les titres. Elle a un oeil tres petit : a taille egale elle
+   parait deux fois plus menue qu'une sans — d'ou les tailles rehaussees et
+   l'interligne resserre. Sans cette correction, un titre en Allura se perd. */
+body:not(.cx-shell) :is(h1, h2, .brio-title, .brio-section-title) {
+    font-family: var(--brio-display);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+}
+
+body:not(.cx-shell) h1, body:not(.cx-shell) .brio-title { font-size: clamp(2.6rem, 5vw, 4rem); }
+body:not(.cx-shell) h2, body:not(.cx-shell) .brio-section-title { font-size: clamp(2rem, 3.4vw, 2.9rem); }
+
+/* Les titres d'INTERFACE gardent la sans : une cursive au-dessus d'un tableau
+   de chiffres ne se lit pas, et l'illisible n'est jamais gracieux. */
+body:not(.cx-shell) :is(h3, h4, h5, h6, th, label, .brio-ui-title) {
+    font-family: var(--brio-sans);
+    letter-spacing: -0.011em;
+}
+
+body:not(.cx-shell) :is(.brio-eyebrow, .ui-eyebrow) {
+    font-family: var(--brio-sans);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brio-accent-deep);
+}
+
+/* Les chiffres : chasse fixe pour qu'une colonne ne danse pas a chaque rafraichissement. */
+body:not(.cx-shell) :is(.brio-kpi-value, .brio-stat-value, .tabular, td) {
+    font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================== LA TRANSMUTATION
+   Le coeur. Ces regles reprennent les utilitaires que les vues emploient deja.
+
+   LA RESERVE : rien ne s'applique dans `.brio-opaque`, ni sur un element qui
+   porte lui-meme un fond explicite via `[data-surface="solid"]`. C'est la
+   soupape des cas ou le verre nuirait — une signature, un apercu de courriel,
+   un canevas. */
+@layer components {
+    body:not(.cx-shell) :is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-white\/80):not(.brio-opaque):not([data-surface="solid"]) {
+        background-color: var(--glass-bg);
+        backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+        -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+        border-color: var(--glass-border);
+        box-shadow: var(--glass-highlight);
+        color: var(--brio-ink);
+    }
+
+    body:not(.cx-shell) :is(.bg-slate-50, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-slate-50\/90):not(.brio-opaque):not([data-surface="solid"]) {
+        background-color: var(--glass-bg-faint);
+        border-color: var(--glass-border);
+        color: var(--brio-ink);
+    }
+
+    /* L'ombre : `shadow-sm` devient la profondeur du verre, pas une ombre plate. */
+    body:not(.cx-shell) :is(.shadow-sm, .shadow, .shadow-md):not(.brio-opaque) {
+        box-shadow: var(--glass-highlight), var(--glass-shadow);
+    }
+
+    body:not(.cx-shell) :is(.shadow-lg, .shadow-xl, .shadow-2xl):not(.brio-opaque) {
+        box-shadow: var(--glass-highlight), var(--glass-shadow-lift);
+    }
+
+    /* Les bordures grises deviennent la tranche du verre. */
+    body:not(.cx-shell) :is(.border-slate-200, .border-slate-100, .border-gray-200, .border-gray-100, .border-slate-200\/70):not(.brio-opaque) {
+        border-color: var(--glass-border);
+    }
+
+    /* L'encre et le texte attenue suivent le theme : c'est ce qui rend le mode
+       sombre reel sur 342 vues qui n'ont jamais ecrit une variante `dark:`. */
+    body:not(.cx-shell) :is(.text-slate-900, .text-slate-800, .text-gray-900, .text-gray-800, .text-black):not(.brio-opaque *) {
+        color: var(--brio-ink);
+    }
+
+    body:not(.cx-shell) :is(.text-slate-500, .text-slate-400, .text-gray-500, .text-gray-400):not(.brio-opaque *) {
+        color: var(--brio-muted);
+    }
+
+    body:not(.cx-shell) :is(.text-slate-700, .text-slate-600, .text-gray-700, .text-gray-600):not(.brio-opaque *) {
+        color: color-mix(in srgb, var(--brio-ink) 82%, transparent);
+    }
+
+    /* Les courbures : le verre epais demande des rayons genereux. */
+    body:not(.cx-shell) .rounded-xl  { border-radius: var(--cx-radius-md); }
+    body:not(.cx-shell) .rounded-2xl { border-radius: var(--cx-radius-lg); }
+    body:not(.cx-shell) .rounded-3xl { border-radius: var(--cx-radius-xl); }
+}
+
+/* =========================================================== LES PRIMITIVES
+   Nommees, pour les ecrans qu'on dessine expres. */
+.brio-glass,
+.brio-card,
+.ui-card {
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--cx-radius-lg);
+    box-shadow: var(--glass-highlight), var(--glass-shadow);
+    color: var(--brio-ink);
+    transition: transform var(--cx-dur) var(--cx-ease),
+                box-shadow var(--cx-dur) var(--cx-ease),
+                background-color var(--cx-dur) var(--cx-ease);
+}
+
+.brio-glass-strong { background-color: var(--glass-bg-strong); }
+.brio-glass-deep   { backdrop-filter: blur(var(--glass-blur-deep)) saturate(var(--glass-sat)); }
+
+/* Le soulevement : court, sans rebond. Le mouvement sert la comprehension. */
+.brio-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--glass-highlight), var(--glass-shadow-lift);
+}
+
+/* --------------------------------------------------------------- LA CASE DE STATISTIQUE
+   « Tout visible directement, dans des cases » — la grille des modeles etudies.
+   Une case porte une valeur, son unite et son libelle, sans jamais deborder. */
+.brio-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(clamp(90px, 22vw, 140px), 1fr));
+    gap: 0.75rem;
+}
+
+.brio-stat {
+    background-color: var(--glass-bg-faint);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--cx-radius-md);
+    box-shadow: var(--glass-highlight);
+    padding: 0.875rem 0.75rem;
+    text-align: center;
+    min-width: 0;
+}
+
+.brio-stat-value {
+    font-family: var(--brio-sans);
+    font-size: clamp(1.05rem, 3.6vw, 1.5rem);
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--brio-ink);
+    overflow-wrap: anywhere;
+}
+
+.brio-stat-unit  { font-size: 0.7em; font-weight: 600; color: var(--brio-muted); margin-inline-start: 0.15em; }
+.brio-stat-label {
+    margin-top: 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--brio-muted);
+}
+
+.brio-stat-accent .brio-stat-value { color: var(--brio-accent-deep); }
+.brio-stat-good   .brio-stat-value { color: var(--brio-success); }
+.brio-stat-warn   .brio-stat-value { color: var(--brio-warning); }
+.brio-stat-bad    .brio-stat-value { color: var(--brio-danger); }
+
+/* --------------------------------------------------------------- L'INDICATEUR
+   Plus grand qu'une case : il porte un libelle, une valeur et une tendance. */
+.brio-kpi {
+    position: relative;
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--cx-radius-lg);
+    box-shadow: var(--glass-highlight), var(--glass-shadow);
+    padding: 1.15rem 1.25rem;
+    overflow: hidden;
+}
+
+/* Le halo d'accent en haut a droite — la touche de lumiere du modele ambre. */
+.brio-kpi::after {
+    content: "";
+    position: absolute;
+    top: -40%;
+    right: -20%;
+    width: 60%;
+    height: 120%;
+    background: radial-gradient(circle, rgb(var(--brio-accent-rgb) / 0.14) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.brio-kpi-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.03em; color: var(--brio-muted); }
+.brio-kpi-value { font-size: clamp(1.6rem, 4vw, 2.25rem); font-weight: 800; line-height: 1.1; color: var(--brio-ink); }
+.brio-kpi-trend { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; font-weight: 700; }
+.brio-kpi-trend-up   { color: var(--brio-success); }
+.brio-kpi-trend-down { color: var(--brio-danger); }
+
+/* =========================================================== LES ENTREES
+   Une seule courbe, des retards courts. Rien qui s'agite. */
+@keyframes brio-monte {
+    from { opacity: 0; transform: translate3d(0, 14px, 0); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes brio-parait {
+    from { opacity: 0; transform: scale(0.97); }
+    to   { opacity: 1; transform: none; }
+}
+
+.brio-enter        { animation: brio-monte var(--cx-dur-reveal) var(--cx-ease) both; }
+.brio-enter-scale  { animation: brio-parait var(--cx-dur-slow) var(--cx-spring) both; }
+
+.brio-stagger > *          { animation: brio-monte var(--cx-dur-reveal) var(--cx-ease) both; }
+.brio-stagger > *:nth-child(1) { animation-delay: 40ms; }
+.brio-stagger > *:nth-child(2) { animation-delay: 90ms; }
+.brio-stagger > *:nth-child(3) { animation-delay: 140ms; }
+.brio-stagger > *:nth-child(4) { animation-delay: 190ms; }
+.brio-stagger > *:nth-child(5) { animation-delay: 240ms; }
+.brio-stagger > *:nth-child(6) { animation-delay: 290ms; }
+.brio-stagger > *:nth-child(n+7) { animation-delay: 330ms; }
+
+/* Le mouvement reduit coupe TOUT, y compris la derive du fond. */
+@media (prefers-reduced-motion: reduce) {
+    body:not(.cx-shell)::before { animation: none; }
+
+    .brio-enter, .brio-enter-scale, .brio-stagger > * {
+        animation: none;
+        opacity: 1;
+        transform: none;
+    }
+
+    .brio-lift:hover { transform: none; }
+}
+
+/* =========================================================== LE VERRE EN PETIT ECRAN
+   Sous 640px, le flou profond coute cher et les auras saturent l'ecran : on
+   allege la matiere sans la retirer. */
+@media (max-width: 640px) {
+    :root {
+        --glass-blur:      16px;
+        --glass-blur-deep: 24px;
+    }
+
+    body:not(.cx-shell)::before { opacity: 0.7; }
+
+    .brio-stat { padding: 0.7rem 0.5rem; }
+}
+
+/* Un appareil qui ne sait pas flouter recoit une surface plus opaque : sans
+   cela, le texte se lirait sur le fond nu. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    :root {
+        --glass-bg:        rgba(255, 255, 255, 0.93);
+        --glass-bg-strong: rgba(255, 255, 255, 0.97);
+    }
+
+    :root[data-theme="dark"] {
+        --glass-bg:        rgba(22, 28, 44, 0.94);
+        --glass-bg-strong: rgba(28, 35, 54, 0.97);
+    }
+}

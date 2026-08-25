@@ -7,11 +7,16 @@ import { ProfileScreen } from '@/screens/ProfileScreen';
 import { Icon } from '@/ui';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
-import { apparenceDeBarre } from '@/ui/glassBars';
+import { creerBarreOnglets } from '@/ui/BarreOnglets';
 import { useNotifications } from '@/notifications';
 import type { TabParamList } from './types';
 
 const Tab = createBottomTabNavigator<TabParamList>();
+
+/* La barre est construite UNE fois : passee en ligne a `tabBar`, React Navigation
+   la verrait comme un composant neuf a chaque rendu et la demonterait. `Home` prend
+   la place centrale — c'est l'accueil. */
+const barreOnglets = creerBarreOnglets({ routeCentrale: 'Home' });
 
 function useUnreadCount(): number | undefined {
   try {
@@ -30,11 +35,11 @@ export function TabNavigator() {
 
   return (
     <Tab.Navigator
+      tabBar={barreOnglets}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.brand[500],
         tabBarInactiveTintColor: theme.textMuted,
-        ...apparenceDeBarre(theme),
       }}
     >
       {/*

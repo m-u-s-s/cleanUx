@@ -130,20 +130,28 @@
     .brio-page { @apply mx-auto w-full max-w-7xl space-y-6; }
 
     .brio-hero {
-        @apply relative overflow-hidden rounded-[28px] border border-white/70 bg-white/85 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] backdrop-blur md:p-6;
+        @apply relative overflow-hidden p-5 md:p-6;
+        background-color: var(--glass-bg-strong);
+        backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+        -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+        border: 1px solid var(--glass-border);
+        border-radius: var(--cx-radius-xl);
+        box-shadow: var(--glass-highlight), var(--glass-shadow);
     }
     .brio-hero::before {
         content: ''; position: absolute; inset: 0;
         background:
-            radial-gradient(circle at top right, rgba(59, 130, 246, 0.14), transparent 24%),
-            radial-gradient(circle at left center, rgba(250, 204, 21, 0.1), transparent 20%);
+            radial-gradient(circle at top right, rgb(var(--brio-accent-rgb) / 0.16), transparent 42%),
+            radial-gradient(circle at left center, var(--brio-aura-1), transparent 38%);
         pointer-events: none;
     }
 
     .brio-card {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        background-color: var(--glass-bg);
+        backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+        -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-highlight), var(--glass-shadow);
         border-radius: var(--cx-radius-lg);
         padding: 1.5rem;
         transition: transform var(--cx-dur) var(--cx-ease), box-shadow var(--cx-dur) var(--cx-ease);

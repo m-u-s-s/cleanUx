@@ -69,7 +69,30 @@
             @endif
 
             {{-- ─── Secteurs ────────────────────────────────────────────────────────────── --}}
-            <section aria-labelledby="secteurs-titre">
+            {{--
+                ETAPE FRANCHIE = ETAPE REPLIEE.
+
+                Le carrousel restait deplie apres le choix : la page s'allongeait d'un ecran a
+                chaque etape, et le client perdait de vue ce qu'il avait deja repondu. Replie, le
+                secteur tient en une ligne qu'on rouvre d'un clic — et le nom choisi reste visible,
+                ce qu'un simple masquage aurait perdu.
+            --}}
+            @if ($sectorId && $this->sector)
+                <button type="button" wire:click="changerDeSecteur" class="brio-etape-faite" data-test="etape-secteur-repliee">
+                    <span class="brio-etape-puce" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </span>
+                    <span class="brio-etape-corps">
+                        <span class="brio-etape-libelle">Domaine</span>
+                        <span class="brio-etape-valeur">{{ $this->sector->translate('name') ?: $this->sector->name }}</span>
+                    </span>
+                    <span class="brio-etape-changer">Changer</span>
+                </button>
+            @endif
+
+            <section aria-labelledby="secteurs-titre" @class(['brio-etape-repliee' => (bool) $sectorId])>
                 <h2 id="secteurs-titre" class="text-lg font-semibold text-slate-900">Quel domaine ?</h2>
 
                 <div class="mt-4">

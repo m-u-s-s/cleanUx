@@ -1,49 +1,65 @@
+{{--
+    LE CONSENTEMENT, EN VERRE.
+
+    L'ancien bandeau barrait toute la largeur en aplat ardoise et mangeait la moitie
+    de l'ecran mobile. Il devient un panneau flottant, compact, qui laisse voir la
+    page derriere lui — un consentement ne doit pas prendre l'ecran en otage.
+
+    Le contrat Alpine ne change pas : `visible`, `open`, `prefs`, `acceptAll()`,
+    `rejectOptional()`, `savePrefs()`, `init()`.
+--}}
 <div x-data="cookieBanner()" x-init="init()" x-show="visible" x-cloak
-     class="fixed bottom-0 left-0 right-0 z-50 bg-slate-900 text-white shadow-2xl"
-     x-transition:enter="transition ease-out duration-300"
-     x-transition:enter-start="translate-y-full"
-     x-transition:enter-end="translate-y-0"
+     class="brio-cookies"
+     x-transition:enter="transition ease-out duration-500"
+     x-transition:enter-start="opacity-0 translate-y-6"
+     x-transition:enter-end="opacity-100 translate-y-0"
+     role="dialog"
+     aria-live="polite"
+     aria-label="Consentement aux cookies"
      style="display:none">
-    <div class="max-w-7xl mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-4 items-center">
-        <div class="lg:col-span-2">
-            <p class="text-sm font-semibold mb-1">🍪 Nous utilisons des cookies</p>
-            <p class="text-xs text-slate-300">
-                Cookies essentiels actifs en permanence pour le fonctionnement du site. Les cookies analytics et marketing nécessitent votre consentement.
-                <a href="{{ route('legal.cookies') }}" class="text-indigo-300 underline">En savoir plus</a>.
+    <div class="brio-cookies-corps">
+        <div class="brio-cookies-texte">
+            <p class="brio-cookies-titre">Nous utilisons des cookies</p>
+            <p class="brio-cookies-detail">
+                Les cookies essentiels restent actifs pour faire fonctionner le site. Les mesures
+                d'audience et la personnalisation attendent votre accord.
+                <a href="{{ route('legal.cookies') }}">En savoir plus</a>
             </p>
         </div>
-        <div class="flex flex-col sm:flex-row gap-2 lg:justify-end">
-            <button x-on:click="acceptAll()" class="rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 text-sm font-bold">
+
+        <div class="brio-cookies-actions">
+            <button type="button" x-on:click="acceptAll()" class="brio-btn brio-btn-accent">
                 Tout accepter
             </button>
-            <button x-on:click="rejectOptional()" class="rounded-lg bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 text-sm font-bold">
-                Refuser optionnels
+            <button type="button" x-on:click="rejectOptional()" class="brio-btn brio-btn-verre">
+                Refuser les optionnels
             </button>
-            <button x-on:click="open = !open" class="rounded-lg border border-slate-600 hover:bg-slate-800 text-white px-4 py-2 text-sm font-semibold">
+            <button type="button" x-on:click="open = !open" class="brio-btn brio-btn-nu"
+                    :aria-expanded="open ? 'true' : 'false'">
                 Personnaliser
             </button>
         </div>
+    </div>
 
-        <div x-show="open" x-cloak class="lg:col-span-3 mt-3 border-t border-slate-700 pt-3 space-y-2">
-            <label class="flex items-center gap-3 text-sm">
-                <input type="checkbox" checked disabled class="rounded">
-                <span class="font-semibold">Essentiels</span>
-                <span class="text-xs text-slate-400">(obligatoires — session, sécurité)</span>
-            </label>
-            <label class="flex items-center gap-3 text-sm">
-                <input type="checkbox" x-model="prefs.analytics" class="rounded">
-                <span class="font-semibold">Analytics</span>
-                <span class="text-xs text-slate-400">(statistiques anonymes)</span>
-            </label>
-            <label class="flex items-center gap-3 text-sm">
-                <input type="checkbox" x-model="prefs.marketing" class="rounded">
-                <span class="font-semibold">Marketing</span>
-                <span class="text-xs text-slate-400">(personnalisation publicité)</span>
-            </label>
-            <button x-on:click="savePrefs()" class="mt-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 text-sm font-bold">
-                Enregistrer mes choix
-            </button>
-        </div>
+    <div x-show="open" x-cloak x-collapse class="brio-cookies-reglages">
+        <label class="brio-cookies-ligne">
+            <input type="checkbox" checked disabled>
+            <span><strong>Essentiels</strong><em>session et securite — toujours actifs</em></span>
+        </label>
+
+        <label class="brio-cookies-ligne">
+            <input type="checkbox" x-model="prefs.analytics">
+            <span><strong>Mesure d'audience</strong><em>statistiques anonymes</em></span>
+        </label>
+
+        <label class="brio-cookies-ligne">
+            <input type="checkbox" x-model="prefs.marketing">
+            <span><strong>Personnalisation</strong><em>publicite adaptee</em></span>
+        </label>
+
+        <button type="button" x-on:click="savePrefs()" class="brio-btn brio-btn-accent brio-cookies-valider">
+            Enregistrer mes choix
+        </button>
     </div>
 </div>
 
