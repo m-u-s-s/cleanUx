@@ -16,7 +16,19 @@ export async function loginAs(context, base, credKey) {
     // 'load' (pas 'networkidle') : le dashboard de destination charge Livewire/Alpine
     // et garde des connexions ouvertes — 'networkidle' ne se résoudrait jamais.
     page.waitForURL((u) => !u.pathname.endsWith('/login'), { timeout: 20000 }).catch(() => {}),
-    page.click('button[type="submit"], input[type="submit"]'),
+
+    /*
+     * `noWaitAfter` : SANS LUI, DEUX ATTENTES SE COURENT APRÈS.
+     *
+     * `click()` attend de lui-même « les navigations programmées », avec son propre délai de
+     * trente secondes — en doublon du `waitForURL` ci-dessus, qui est borné à vingt et dont
+     * l'échec est rattrapé. Sur un balayage de 121 pages, le serveur de développement ralentit
+     * et c'est le clic qui expire le premier : seize pages du groupe prestataire tombaient en
+     * HTTP 0, toutes pour cette raison, et passaient une à une en isolation.
+     *
+     * L'assertion qui compte — « sommes-nous encore sur /login ? » — est inchangée.
+     */
+    page.click('button[type="submit"], input[type="submit"]', { noWaitAfter: true }),
   ]);
   await page.waitForLoadState('load', { timeout: 10000 }).catch(() => {});
   const url = page.url();

@@ -2,6 +2,10 @@
 
     {{-- Schema.org SoftwareApplication / Product markup for each tier --}}
     @push('head')
+    {{-- LA DEVISE DU MARCHE, pas un « EUR » fige. Ce balisage est PUBLIC : il part chez
+         les moteurs de recherche. Un prix annonce dans une monnaie que le marche ne
+         facture pas est un chiffre qu'un visiteur retient et que personne ne lui prendra. --}}
+    @php($deviseDuMarche = strtoupper((string) config('fx.base_currency', 'EUR')))
     <script type="application/ld+json">
     {
         "@@context": "https://schema.org",
@@ -18,7 +22,7 @@
                     "offers": {
                         "@type": "Offer",
                         "price": "0",
-                        "priceCurrency": "EUR",
+                        "priceCurrency": "{{ $deviseDuMarche }}",
                         "availability": "https://schema.org/InStock"
                     }
                 }
@@ -33,7 +37,7 @@
                     "offers": {
                         "@type": "Offer",
                         "price": "9.99",
-                        "priceCurrency": "EUR",
+                        "priceCurrency": "{{ $deviseDuMarche }}",
                         "availability": "https://schema.org/InStock"
                     }
                 }
@@ -48,7 +52,7 @@
                     "offers": {
                         "@type": "Offer",
                         "price": "29.99",
-                        "priceCurrency": "EUR",
+                        "priceCurrency": "{{ $deviseDuMarche }}",
                         "availability": "https://schema.org/InStock"
                     }
                 }

@@ -43,6 +43,10 @@
     <meta name="twitter:image" content="{{ asset('images/og-brio.svg') }}">
 
     {{-- JSON-LD Structured Data --}}
+    {{-- LA DEVISE DU MARCHE, pas un « EUR » fige. Ce balisage est PUBLIC : il part chez
+         les moteurs de recherche. Un prix annonce dans une monnaie que le marche ne
+         facture pas est un chiffre qu'un visiteur retient et que personne ne lui prendra. --}}
+    @php($deviseDuMarche = strtoupper((string) config('fx.base_currency', 'EUR')))
     <script type="application/ld+json">
     {
         "@@context": "https://schema.org",
@@ -54,7 +58,7 @@
         "operatingSystem": "Web, iOS, Android",
         "offers": {
             "@@type": "AggregateOffer",
-            "priceCurrency": "EUR",
+            "priceCurrency": "{{ $deviseDuMarche }}",
             "lowPrice": "25",
             "highPrice": "500"
         },

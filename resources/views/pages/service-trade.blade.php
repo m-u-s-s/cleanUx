@@ -25,7 +25,7 @@
         @if($trade->default_hourly_rate)
         "offers": {
             "@type": "Offer",
-            "priceCurrency": "EUR",
+            "priceCurrency": "{{ $devise }}",
             "price": "{{ $trade->default_hourly_rate }}",
             "availability": "https://schema.org/InStock",
             "priceSpecification": {
@@ -37,7 +37,7 @@
         "offers": {
             "@type": "Offer",
             "availability": "https://schema.org/InStock",
-            "priceCurrency": "EUR"
+            "priceCurrency": "{{ $devise }}"
         }
         @endif
     }
@@ -297,7 +297,7 @@
                                 "name": "Quel est le tarif pour un {{ strtolower($trade->name) }} ?",
                                 "acceptedAnswer": {
                                     "@type": "Answer",
-                                    "text": "{{ $trade->default_hourly_rate ? 'A partir de ' . number_format((float) $trade->default_hourly_rate, 0) . '€/heure.' : 'Tarif sur devis gratuit.' }} Paiement apres prestation."
+                                    "text": "{{ $trade->default_hourly_rate ? 'A partir de ' . number_format((float) $trade->default_hourly_rate, 0) . $symboleDevise . '/heure.' : 'Tarif sur devis gratuit.' }} Paiement apres prestation."
                                 }
                             },
                             {

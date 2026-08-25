@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ServiceZone;
 use App\Models\Trade;
+use App\Services\Localization\Money;
 use Illuminate\Contracts\View\View;
 
 final class ServicePageController extends Controller
@@ -39,6 +40,19 @@ final class ServicePageController extends Controller
             .($cityLabel ? ' a '.$cityLabel : ' en Belgique')
             .'. Paiement securise, suivi en temps reel. Devis gratuit en 2 minutes.';
 
+        /*
+         * LA DEVISE DES DONNEES STRUCTUREES, plutot qu'un « EUR » ecrit deux fois dans la vue.
+         *
+         * Cette page est PUBLIQUE : son `priceCurrency` part chez les moteurs de recherche.
+         * Un metier annonce en euros sur un marche qui facture en dirhams n'est pas une
+         * coquetterie de balisage — c'est un prix affiche que personne ne paiera.
+         *
+         * Le metier n'appartient a aucune zone : la reponse est celle du MARCHE, pas d'un
+         * lecteur qui n'est pas connecte.
+         */
+        $devise = strtoupper((string) config('fx.base_currency', 'EUR'));
+        $symboleDevise = app(Money::class)->symbol($devise);
+
         return view('pages.service-trade', compact(
             'trade',
             'city',
@@ -46,6 +60,8 @@ final class ServicePageController extends Controller
             'zones',
             'seoTitle',
             'seoDescription',
+            'devise',
+            'symboleDevise',
         ));
     }
 }
