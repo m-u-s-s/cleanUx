@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Button, DetailRow, Divider, ErrorState, Screen, Skeleton } from '@/ui';
+/* Chemin direct : trente-six suites mockent `@/ui` a la main, et un export neuf y
+   manque sans que `tsc` bronche — le composant arrive `undefined` au rendu. */
+import { GrilleDeCases } from '@/ui/GrilleDeCases';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
@@ -131,16 +134,56 @@ export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
     );
   };
 
+  /*
+   * Les types COMPACTS tiennent dans une case ; `text` et `datetime` non — le premier peut
+   * porter un paragraphe, le second une date complete avec l'heure.
+   */
+  const TYPES_COMPACTS = ['number', 'money', 'bool', 'date', 'badge'] as const;
+
+  const devise =
+    typeof row?.currency === 'string' && row.currency !== '' ? row.currency : null;
+
+  const casesCompactes = colonnes
+    .filter((c) => (TYPES_COMPACTS as readonly string[]).includes(c.type))
+    .map((c) => ({
+      libelle: c.label,
+      valeur: formatCell(row[c.key], c.type, devise),
+    }));
+
+  const colonnesLongues = colonnes.filter(
+    (c) => !(TYPES_COMPACTS as readonly string[]).includes(c.type),
+  );
+
   return (
     <Screen>
       <ScrollView showsVerticalScrollIndicator={false}>
         <Text style={styles.heading}>{title}</Text>
 
-        {colonnes.map((column) => (
+        {/*
+          LES VALEURS COMPACTES EN CASES, LES TEXTES EN LIGNES.
+
+          Cet ecran est GENERIQUE : il sert quatre-vingt-un modules d'administration, et une
+          colonne y porte aussi bien un nombre qu'un paragraphe. Tout mettre en cases
+          tronquerait les seconds au deuxieme mot.
+
+          Le descripteur donne le type de chaque colonne — c'est lui qui decide. Un nombre,
+          un montant, un booleen ou une date tiennent dans une case et s'y lisent mieux ;
+          un texte ou une date-heure gardent leur ligne.
+
+          LA DEVISE VIENT DE LA LIGNE. `currency: 'EUR'` etait code en dur dans le
+          formateur : la console affichait TOUS les montants en euros, y compris ceux d'une
+          zone facturee en dirhams. Un montant faux sur un ecran de pilotage se propage en
+          decisions fausses.
+        */}
+        {casesCompactes.length > 0 ? (
+          <GrilleDeCases colonnes={2} style={styles.grille} cases={casesCompactes} />
+        ) : null}
+
+        {colonnesLongues.map((column) => (
           <DetailRow
             key={column.key}
             label={column.label}
-            value={formatCell(row[column.key], column.type)}
+            value={formatCell(row[column.key], column.type, devise)}
           />
         ))}
 
@@ -148,7 +191,7 @@ export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
         {Object.keys(row)
           .filter((key) => key !== 'id' && !colonnes.some((c) => c.key === key))
           .map((key) => (
-            <DetailRow key={key} label={key} value={formatCell(row[key], 'text')} />
+            <DetailRow key={key} label={key} value={formatCell(row[key], 'text', devise)} />
           ))}
 
         {erreur ? <Text style={styles.erreur}>{erreur}</Text> : null}
@@ -211,6 +254,9 @@ export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
+  grille: {
+    marginBottom: spacing.md,
+  },
   heading: {
     ...typography.preset.headline,
     color: t.text,

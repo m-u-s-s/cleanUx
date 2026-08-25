@@ -46,6 +46,31 @@ describe('formatCell', () => {
     expect(rendu).toMatch(/€/);
   });
 
+  /**
+   * LA DEVISE VIENT DE LA DONNEE, PAS DU FORMATEUR.
+   *
+   * `currency: 'EUR'` etait code en dur : la console affichait TOUS les montants en euros,
+   * y compris ceux d'une zone facturee en dirhams. Sur un ecran de pilotage, un montant faux
+   * se propage en decisions fausses.
+   */
+  it('rend un montant dans la devise qu on lui donne', () => {
+    const rendu = formatCell(1234.5, 'money', 'MAD');
+
+    expect(rendu).toContain('234');
+    expect(rendu).not.toMatch(/€/);
+  });
+
+  /** TEMOIN — sans devise fournie, l'euro reste le defaut : le comportement d'avant tient. */
+  it('retombe sur l euro quand aucune devise n est donnee', () => {
+    expect(formatCell(1234.5, 'money', null)).toMatch(/€/);
+    expect(formatCell(1234.5, 'money')).toMatch(/€/);
+  });
+
+  /** TEMOIN — une devise VIDE ne doit pas produire un format casse, mais le defaut. */
+  it('traite une devise vide comme une absence', () => {
+    expect(formatCell(1234.5, 'money', '')).toMatch(/€/);
+  });
+
   it('rend un montant illisible tel quel', () => {
     expect(formatCell('beaucoup', 'money')).toBe('beaucoup');
   });
