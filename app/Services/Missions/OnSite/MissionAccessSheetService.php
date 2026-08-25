@@ -62,6 +62,24 @@ class MissionAccessSheetService
             // AVANT d'ouvrir la porte, pas en entendant la sirène.
             'alarm_code_required' => (bool) ($site->alarm_code_required ?? $lieu->alarm_code_required ?? false),
             'access_window' => $this->fenetreDAcces($site ?: $lieu),
+
+            /*
+             * LES TROIS CONTRAINTES DE LA RÉSERVATION, ET NON DU LIEU.
+             *
+             * `preferences.pets` vient du carnet du LIEU — ce qui vaut pour un site d'entreprise
+             * visité chaque semaine. La réservation, elle, porte ce que le client a répondu POUR
+             * CETTE FOIS : apporte-t-on son matériel, y a-t-il un animal, y a-t-il un parking.
+             *
+             * `CreateBookingAction` les enregistre à chaque commande, et elles n'arrivaient nulle
+             * part côté prestataire : il se présentait sans savoir s'il devait charger son
+             * matériel dans la camionnette. Le même défaut existait sur la fiche web, corrigé
+             * plus tôt — celui-ci est plus lourd, parce que ce prestataire-là est déjà sur place.
+             */
+            'constraints' => $booking === null ? null : [
+                'equipment_provided' => (bool) $booking->materiel_fournit,
+                'pets_on_site' => (bool) $booking->presence_animaux,
+                'parking_available' => (bool) $booking->acces_parking,
+            ],
             // LES PRÉFÉRENCES DU LIEU — produits, allergies, animaux.
             'preferences' => $lieu?->preferencesLisibles() ?? [
                 'products' => null,

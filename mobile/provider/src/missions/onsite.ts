@@ -91,6 +91,21 @@ export interface MissionAccessSheet {
   live_note_at?: string | null;
   notes: string | null;
   message?: string | null;
+
+  /**
+   * LES TROIS CONTRAINTES DE LA RÉSERVATION — pas celles du lieu.
+   *
+   * `preferences` porte le carnet du LIEU, ce qui vaut pour un site visité chaque semaine.
+   * Celles-ci sont ce que le client a répondu POUR CETTE FOIS, et elles n'arrivaient nulle
+   * part : le prestataire se présentait sans savoir s'il devait charger son matériel.
+   *
+   * Absentes quand la mission n'a pas de réservation rattachée.
+   */
+  constraints?: {
+    equipment_provided: boolean;
+    pets_on_site: boolean;
+    parking_available: boolean;
+  } | null;
 }
 
 export interface MissionTimelineEntry {

@@ -1,6 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, FlatList, Switch, StyleSheet, Alert, Image, ScrollView, TouchableOpacity, Linking, Platform } from 'react-native';
 import { Screen, Button, Badge, Divider, TextInput, ProgressBar } from '@/ui';
+/* Chemin direct : trente-six suites mockent `@/ui` a la main, et un export neuf y
+   manque sans que `tsc` bronche — le composant arrive `undefined` au rendu. */
+import { GrilleDeCases } from '@/ui/GrilleDeCases';
 import {
   useMissionDetail,
   useMissionLifecycle,
@@ -298,6 +301,41 @@ export function MissionFieldScreen({ route, navigation }: Props) {
             */}
             {ficheDAcces.alarm_code_required ? (
               <Badge label="Alarme à désarmer" variant="warning" />
+              ) : null}
+
+            {/*
+              LES TROIS CONTRAINTES, EN CASES ET NON EN PHRASES.
+
+              Ce que le client a repondu POUR CETTE FOIS : materiel, animal, parking. Elles
+              n'arrivaient nulle part — le prestataire se presentait sans savoir s'il devait
+              charger son materiel dans la camionnette.
+
+              En cases plutot qu'en lignes parce qu'on les lit d'un coup d'oeil, une main sur
+              le volant. Le lisere porte le statut : vert pour ce qui simplifie, ambre pour ce
+              qui demande de prevoir.
+            */}
+            {ficheDAcces.constraints ? (
+              <GrilleDeCases
+                colonnes={3}
+                style={styles.contraintes}
+                cases={[
+                  {
+                    libelle: 'Materiel',
+                    valeur: ficheDAcces.constraints.equipment_provided ? 'Fourni' : 'A apporter',
+                    ton: ficheDAcces.constraints.equipment_provided ? 'bon' : 'attention',
+                  },
+                  {
+                    libelle: 'Animaux',
+                    valeur: ficheDAcces.constraints.pets_on_site ? 'Oui' : 'Non',
+                    ton: ficheDAcces.constraints.pets_on_site ? 'attention' : 'neutre',
+                  },
+                  {
+                    libelle: 'Parking',
+                    valeur: ficheDAcces.constraints.parking_available ? 'Oui' : 'Non',
+                    ton: ficheDAcces.constraints.parking_available ? 'bon' : 'attention',
+                  },
+                ]}
+              />
             ) : null}
           </>
         ) : (
@@ -820,6 +858,9 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
     color: t.text,
     marginBottom: spacing.xs,
+  },
+  contraintes: {
+    marginTop: spacing.sm,
   },
   sectionHint: {
     fontSize: typography.fontSize.xs,
