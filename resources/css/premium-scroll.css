@@ -91,7 +91,7 @@ html.lenis body {
 
 /* Mode natif sur mobile : on laisse dépasser un aperçu du panneau suivant
    pour signaler qu'on peut swiper. */
-@media (max-width: 767px) {
+@media (max-width: 767.98px) {
     [data-scroll-horizontal]:not(.is-pinned-scroll) [data-scroll-panel] {
         flex-basis: 88vw;
     }

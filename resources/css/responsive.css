@@ -9,6 +9,11 @@
    POINT DE RUPTURE : 767.98px / 768px, celui de Tailwind (`md`). Deux règles
    employaient `max-width: 768px`, qui SE CHEVAUCHE avec `min-width: 768px` — à
    exactement 768 px, les deux s'appliquaient.
+
+   ET QUATRE AUTRES EMPLOYAIENT `767px` TOUT COURT, ce qui laisse le trou inverse :
+   entre 767,01 et 767,99 px, ni la règle mobile ni `min-width: 768px` ne s'applique.
+   Une largeur fractionnaire n'a rien d'exotique — un navigateur zoomé ou un écran mis
+   à l'échelle en produit couramment. Les quatre sont alignés sur `767.98px`.
    ========================================================================= */
 
 @layer base {

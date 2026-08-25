@@ -450,7 +450,7 @@
     margin: var(--s-xs) 0 0;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767.98px) {
     .ed-panel { padding-inline: var(--edge); }
     .ed-panel__grid { grid-template-columns: 1fr; gap: var(--s-lg); }
     .ed-panel__art { height: 38vh; }
@@ -614,7 +614,7 @@
 /* ===========================================================================
    13 · RESPONSIVE (effondrement < 768px → 1 colonne, rythme préservé)
    ======================================================================== */
-@media (max-width: 767px) {
+@media (max-width: 767.98px) {
     .ed-nav__links { display: none; }   /* → menu mobile (moteur floating-nav, < 768) */
 }
 @media (max-width: 767.98px) {

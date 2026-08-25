@@ -317,7 +317,7 @@
 
 /* Sur mobile (< sm), l'indicateur de scroll est superflu (contenu défilable
    évident + FAB) et serrait la puce d'avis : on le masque. */
-@media (max-width: 767px) {
+@media (max-width: 767.98px) {
     .cx-lux-scroll { display: none; }
 }
 

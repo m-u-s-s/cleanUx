@@ -941,6 +941,101 @@ details[open] > .brio-recap-tete .brio-chip::after { transform: rotate(180deg); 
     .brio-recap-tete .brio-chip::after { transition: none; }
 }
 
+/* ========================================================== LE RAIL D'ÉTAPES
+   « Le formulaire du catalogue est trop long — privilégier un wizard. »
+
+   Le parcours client répond à cette demande côté public ; le formulaire d'un métier
+   la posait côté administration : vingt-quatre champs à plat, dont sept drapeaux et
+   un schéma JSON. On remplissait en faisant défiler, sans savoir combien il restait.
+
+   LE RAIL DÉFILE PLUTÔT QUE DE SE REPLIER. Quatre étapes tiennent sous 390 px en
+   passant à la ligne ; une cinquième les écraserait. Le défilement horizontal garde
+   chaque libellé lisible plutôt que de le couper à deux lettres. */
+.brio-rail {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    list-style: none;
+    margin: 0;
+}
+
+.brio-rail::-webkit-scrollbar { display: none; }
+
+.brio-rail-etape {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    /* La cible tactile : les onglets d'un assistant se visent au pouce, en marchant. */
+    min-height: 2.5rem;
+    padding: 0.4rem 0.8rem;
+    white-space: nowrap;
+    border-radius: var(--cx-radius-pill);
+    border: 1px solid var(--glass-border);
+    background-color: var(--glass-bg-faint);
+    font-family: var(--brio-sans);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--brio-muted);
+    cursor: pointer;
+    transition: background-color var(--cx-dur-fast) var(--cx-ease),
+                color var(--cx-dur-fast) var(--cx-ease),
+                border-color var(--cx-dur-fast) var(--cx-ease);
+}
+
+.brio-rail-etape:hover { color: var(--brio-ink); background-color: var(--glass-bg); }
+.brio-rail-etape:focus-visible { outline: none; box-shadow: var(--brio-ring); }
+
+.brio-rail-etape-active {
+    color: var(--brio-ink);
+    background-color: var(--glass-bg-strong);
+    border-color: rgb(var(--brio-accent-rgb) / 0.45);
+}
+
+.brio-rail-numero {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    border-radius: 50%;
+    background-color: rgb(var(--brio-accent-rgb) / 0.14);
+    color: var(--brio-accent-deep);
+    font-size: 0.6875rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+/* UNE ÉTAPE EN FAUTE SE VOIT DEPUIS UNE AUTRE ÉTAPE.
+   Sans cela, un refus de validation sur l'identité alors qu'on est rendu aux drapeaux
+   ressemble à un bouton qui ne fait rien. La couleur ne porte PAS seule l'information :
+   le libellé lu par un lecteur d'écran le dit aussi. */
+.brio-rail-etape[data-en-faute] {
+    /* `color-mix` plutot qu'un triplet de repli : le jeton change en mode sombre
+       (#dc2626 devient #f87171), et un repli fige y afficherait la mauvaise alerte. */
+    border-color: color-mix(in srgb, var(--brio-danger) 55%, transparent);
+    color: var(--brio-danger);
+}
+
+.brio-rail-etape[data-en-faute] .brio-rail-numero {
+    background-color: color-mix(in srgb, var(--brio-danger) 16%, transparent);
+    color: var(--brio-danger);
+}
+
+.brio-rail-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-top: 0.9rem;
+}
+
+/* Un seul bouton visible ne doit pas se retrouver au milieu : sans marge automatique,
+   « Suivant » glisse à gauche dès que « Précédent » disparaît. */
+.brio-rail-actions .brio-btn:only-child { margin-inline-start: auto; }
+
 /* La JAUGE CIRCULAIRE — celle des modeles etudies : un anneau fin, pas un camembert. */
 .brio-jauge {
     position: relative;

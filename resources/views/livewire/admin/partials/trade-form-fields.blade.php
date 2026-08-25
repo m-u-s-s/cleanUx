@@ -10,6 +10,57 @@
     Les propriétés visées par `wire:model` viennent du trait `ManagesTradeForm`, que les deux
     composants emploient.
 --}}
+{{--
+    L'ASSISTANT DU MÉTIER — « le formulaire du catalogue est trop long ».
+
+    Vingt-quatre champs à plat, dont sept drapeaux et un schéma JSON : on remplissait en
+    faisant défiler, sans jamais savoir combien il en restait. Les quatre groupes existaient
+    déjà dans le balisage ; ils deviennent quatre étapes.
+
+    AUCUN CHAMP NE QUITTE LE DOM. `x-show` masque, il ne démonte pas : toutes les liaisons
+    `wire:model` restent actives, et l'enregistrement porte la totalité du formulaire quelle
+    que soit l'étape affichée. Un assistant qui monterait ses étapes à la demande perdrait
+    les valeurs saisies au premier retour en arrière.
+
+    LES ERREURS REMONTENT DANS LE RAIL. Sans cela, un refus de validation sur l'identité,
+    alors qu'on est rendu aux drapeaux, ressemblerait à un bouton qui ne fait rien.
+--}}
+@php
+    $etapesDuMetier = [
+        1 => ['titre' => __('Identité'), 'champs' => ['name', 'slug', 'code', 'sort_order', 'icon', 'color', 'short_description', 'description']],
+        2 => ['titre' => __('Tarifs & délais'), 'champs' => ['default_hourly_rate', 'emergency_multiplier', 'night_multiplier', 'weekend_multiplier', 'quote_validity_days', 'sla_response_minutes', 'hourly_billing', 'requires_quote_by_default']],
+        3 => ['titre' => __('Questionnaire'), 'champs' => ['booking_form_schema_json']],
+        4 => ['titre' => __('Règles'), 'champs' => ['is_active', 'requires_certification', 'requires_insurance_proof', 'requires_face_check', 'is_personal_default', 'taxi_rules']],
+    ];
+
+    // L'étape ouverte au premier rendu est celle qui porte une erreur, sinon la première.
+    $etapeInitiale = collect($etapesDuMetier)
+        ->search(fn (array $e) => collect($e['champs'])->contains(fn (string $c) => $errors->has($c))) ?: 1;
+@endphp
+
+<div x-data="{ etape: @js($etapeInitiale) }" class="space-y-4">
+    {{-- LE RAIL : où l'on en est, et où ça coince. --}}
+    <ol class="brio-rail" role="list">
+        @foreach ($etapesDuMetier as $numero => $etape)
+            @php($enFaute = collect($etape['champs'])->contains(fn (string $c) => $errors->has($c)))
+            <li>
+                <button type="button"
+                        class="brio-rail-etape"
+                        :class="etape === {{ $numero }} && 'brio-rail-etape-active'"
+                        x-on:click="etape = {{ $numero }}"
+                        @if($enFaute) data-en-faute="1" @endif>
+                    <span class="brio-rail-numero" aria-hidden="true">{{ $numero }}</span>
+                    <span>{{ $etape['titre'] }}</span>
+                    @if($enFaute)
+                        <span class="sr-only">— {{ __('contient une erreur') }}</span>
+                    @endif
+                </button>
+            </li>
+        @endforeach
+    </ol>
+
+                    <fieldset x-show="etape === 1" x-cloak class="rounded-md border border-gray-200 p-3 dark:border-gray-700">
+                        <legend class="px-2 text-sm font-medium text-gray-700 dark:text-gray-200">{{ __('Identité') }}</legend>
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Nom *</label>
@@ -52,8 +103,8 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Description complète</label>
                         <textarea wire:model="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"></textarea>
                     </div>
-
-                    <fieldset class="rounded-md border border-gray-200 p-3 dark:border-gray-700">
+                    </fieldset>
+                    <fieldset x-show="etape === 2" x-cloak class="rounded-md border border-gray-200 p-3 dark:border-gray-700">
                         <legend class="px-2 text-sm font-medium text-gray-700 dark:text-gray-200">Tarification & SLA</legend>
                         <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
                             <div>
@@ -134,8 +185,7 @@
                             Laissez à 1.00 pour ne pas appliquer de surcoût.
                         </p>
                     </fieldset>
-
-                    <fieldset class="rounded-md border border-gray-200 p-3 dark:border-gray-700">
+                    <fieldset x-show="etape === 3" x-cloak class="rounded-md border border-gray-200 p-3 dark:border-gray-700">
                         <legend class="px-2 text-sm font-medium text-gray-700 dark:text-gray-200">Formulaire dynamique (schema JSON)</legend>
                         <p class="text-xs text-gray-500 mb-2">
                             Décris ici les champs que le client doit remplir pour ce métier (alternative aux champs cleaning hardcodés).
@@ -169,8 +219,7 @@
                             </div>
                         @endif
                     </fieldset>
-
-                    <fieldset class="rounded-md border border-gray-200 p-3 dark:border-gray-700">
+                    <fieldset x-show="etape === 4" x-cloak class="rounded-md border border-gray-200 p-3 dark:border-gray-700">
                         <legend class="px-2 text-sm font-medium text-gray-700 dark:text-gray-200">Drapeaux opérationnels</legend>
                         <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
                             <label class="inline-flex items-center gap-2"><input type="checkbox" wire:model="is_active" class="rounded text-blue-600"/> <span>Actif</span></label>
@@ -202,4 +251,16 @@
                             @error('taxi_rules') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
                     </fieldset>
+
+    <div class="brio-rail-actions">
+        <button type="button" class="brio-btn brio-btn-nu"
+                x-show="etape > 1" x-cloak
+                x-on:click="etape = etape - 1">{{ __('Précédent') }}</button>
+
+        <button type="button" class="brio-btn brio-btn-verre"
+                x-show="etape < 4" x-cloak
+                x-on:click="etape = etape + 1">{{ __('Suivant') }}</button>
+    </div>
+</div>
+
 
