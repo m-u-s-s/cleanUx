@@ -1,4 +1,7 @@
 import React from 'react';
+/* Chemin direct plutot que le baril : des suites mockent `@/ui` et `@/theme` a la
+   main, et un export neuf y manque sans que `tsc` bronche. */
+import { formatCentimes } from '@/format/money';
 import { View, Text, StyleSheet, Image, ScrollView, Alert } from 'react-native';
 import { Screen, Badge, Skeleton, EmptyState, ProgressBar, Divider, Button } from '@/ui';
 import {
@@ -368,8 +371,12 @@ function heure(iso: string): string {
  * Un montant EN PROVENANCE DU SERVEUR, mis en forme. Rien n'est calculé ici — cette fonction ne
  * fait que placer une virgule et un symbole sur des centimes reçus tels quels.
  */
-function euros(centimes: number): string {
-  return new Intl.NumberFormat('fr-BE', { style: 'currency', currency: 'EUR' }).format(centimes / 100);
+function euros(centimes: number, devise?: string | null): string {
+  /*
+   * DEUX VALEURS ETAIENT FIGEES ICI, et la meme ligne vivait dans trois fichiers.
+   * La plateforme sert aussi le Maroc : un montant en dirhams s'affichait en euros.
+   */
+  return formatCentimes(centimes, devise);
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({

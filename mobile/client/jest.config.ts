@@ -63,6 +63,7 @@ const config: Config = {
     '^@/sentry(.*)$': '<rootDir>/../shared/src/sentry$1',
     '^@/storage(.*)$': '<rootDir>/../shared/src/storage$1',
     '^@/theme(.*)$': '<rootDir>/../shared/src/theme$1',
+    '^@/format(.*)$': '<rootDir>/../shared/src/format$1',
     '^@/ui(.*)$': '<rootDir>/../shared/src/ui$1',
     '^@/ErrorBoundary$': '<rootDir>/../shared/src/ErrorBoundary',
     '^@/webview(.*)$': '<rootDir>/../shared/src/webview$1',

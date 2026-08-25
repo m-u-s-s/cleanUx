@@ -23,6 +23,7 @@ module.exports = function (api) {
             '@/parity': '../shared/src/parity',
             '@/webview': '../shared/src/webview',
             '@/finance': '../shared/src/finance',
+            '@/format': '../shared/src/format',
             '@/ErrorBoundary': '../shared/src/ErrorBoundary',
             /*
              * Déclaré dans tsconfig.json, absent d'ici et de jest.config.ts : le typage passait,

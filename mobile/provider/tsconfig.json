@@ -43,6 +43,8 @@
       "@/catalog": ["../shared/src/catalog"],
       "@/finance": ["../shared/src/finance"],
       "@/finance/*": ["../shared/src/finance/*"],
+      "@/format": ["../shared/src/format"],
+      "@/format/*": ["../shared/src/format/*"],
       "@brio/shared": ["../shared/src"],
       "@brio/shared/*": ["../shared/src/*"],
       "@/*": ["src/*"],

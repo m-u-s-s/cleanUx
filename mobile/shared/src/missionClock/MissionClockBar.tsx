@@ -1,4 +1,7 @@
 import React from 'react';
+/* Chemin direct plutot que le baril : des suites mockent `@/ui` et `@/theme` a la
+   main, et un export neuf y manque sans que `tsc` bronche. */
+import { formatCentimes } from '../format/money';
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors, type ThemeTokens } from '@/theme/useThemeColors';
@@ -203,8 +206,12 @@ function discours(clock: LiveMissionClock, audience: ClockAudience): { titre: st
 }
 
 /** Le format belge, comme la console d'administration : « 57,04 € ». */
-function formatEuros(centimes: number): string {
-  return new Intl.NumberFormat('fr-BE', { style: 'currency', currency: 'EUR' }).format(centimes / 100);
+function formatEuros(centimes: number, devise?: string | null): string {
+  /*
+   * DEUX VALEURS ETAIENT FIGEES ICI, et la meme ligne vivait dans trois fichiers.
+   * La plateforme sert aussi le Maroc : un montant en dirhams s'affichait en euros.
+   */
+  return formatCentimes(centimes, devise);
 }
 
 const stylesFor = (t: ThemeTokens) =>
