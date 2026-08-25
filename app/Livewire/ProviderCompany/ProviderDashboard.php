@@ -12,6 +12,7 @@ use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -20,6 +21,8 @@ use Livewire\Component;
  * @property-read array<int, array<string, mixed>> $alerts
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Mission> $missionsOfDay
  * @property-read Collection<int, array<string, mixed>> $teamStatus
+ * @property-read array<int, array{jour: string, libelle: string, total: int}> $activiteParJour
+ * @property-read int $totalActivite
  */
 class ProviderDashboard extends Component
 {
@@ -104,6 +107,72 @@ class ProviderDashboard extends Component
                 ->todo()
                 ->count(),
         ];
+    }
+
+    /**
+     * LES MISSIONS TERMINÉES, JOUR PAR JOUR, SUR QUATORZE JOURS.
+     *
+     * Le tableau de bord n'avait que des compteurs : « 3 aujourd'hui », « 12 actives ». Aucun
+     * ne dit si l'activité monte ou descend, et c'est pourtant la seule question qu'un patron
+     * se pose devant cet écran.
+     *
+     * `missionsVisibles()` PORTE DÉJÀ LA GARDE : elle filtre sur l'organisation et, si le
+     * demandeur n'a pas `missions.view_all`, sur ses seules missions. Reconstruire la requête
+     * ici aurait rouvert le périmètre — c'est exactement ainsi qu'une fuite entre sociétés
+     * s'installe.
+     *
+     * LES JOURS SANS MISSION VALENT ZÉRO : une série qui saute les jours vides trace une
+     * pente continue et ment sur ce qui s'est passé entre deux points.
+     *
+     * @return array<int, array{jour: string, libelle: string, total: int}>
+     */
+    public function getActiviteParJourProperty(): array
+    {
+        $debut = now()->copy()->subDays(13)->startOfDay();
+
+        /*
+         * DEUX DIALECTES, UNE EXPRESSION CHOISIE AVANT. La suite tourne sur SQLite,
+         * l'application sur MySQL : `DATE_FORMAT` n'existe pas d'un côté, `strftime` de
+         * l'autre. Empiler deux `selectRaw` les cumulerait.
+         */
+        $jourSql = DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m-%d', actual_end_at)"
+            : "DATE_FORMAT(actual_end_at, '%Y-%m-%d')";
+
+        $brut = $this->missionsVisibles()
+            ->where('status', 'completed')
+            ->where('actual_end_at', '>=', $debut)
+            ->selectRaw("{$jourSql} as jour, COUNT(*) as total")
+            ->groupBy('jour')
+            ->pluck('total', 'jour');
+
+        $serie = [];
+
+        for ($i = 0; $i < 14; $i++) {
+            $jour = $debut->copy()->addDays($i);
+            $cle = $jour->format('Y-m-d');
+
+            $serie[] = [
+                'jour' => $cle,
+                'libelle' => $jour->translatedFormat('d/m'),
+                'total' => (int) ($brut[$cle] ?? 0),
+            ];
+        }
+
+        return $serie;
+    }
+
+    /**
+     * Le total de la serie — expose a part, et ce n'est pas de la coquetterie.
+     *
+     * Le calculer dans la vue demandait soit un appel imbrique dans une condition Blade,
+     * soit une boucle : les deux cassaient la compilation de la vue entiere, et l'erreur
+     * remontait quarante lignes plus bas sur une boucle qui n'y etait pour rien. Un total
+     * est une donnee, sa place est dans le composant.
+     */
+    public function getTotalActiviteProperty(): int
+    {
+        return array_sum(array_column($this->activiteParJour, 'total'));
     }
 
     public function getAlertsProperty(): array

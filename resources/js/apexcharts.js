@@ -107,3 +107,48 @@ document.addEventListener('brio:theme', () => {
     );
   });
 });
+
+/**
+ * DESSINE UNE COURBE D'ACTIVITÉ À PARTIR DES ATTRIBUTS `data-*` DE SA CIBLE.
+ *
+ * Les données passent par le DOM, pas par une expression Blade dans `x-init`. La raison est
+ * concrète : une expression imbriquée à l'intérieur d'une directive Blade — un `array_sum`
+ * d'un `array_column`, ou une boucle qui totalise — casse la compilation de la vue ENTIÈRE,
+ * et l'erreur remonte des dizaines de lignes plus bas sur une boucle qui n'y est pour rien.
+ *
+ * En passant par `data-*`, la vue ne fait plus qu'écrire du JSON dans un attribut, ce que
+ * Blade sait faire sans jamais se tromper.
+ */
+window.dessinerActivite = (racine) => {
+  const dessiner = () => {
+    const cible = racine.querySelector('[data-graphique]');
+
+    if (!cible || typeof ApexCharts === 'undefined') return;
+
+    let totaux = [];
+    let libelles = [];
+
+    try {
+      totaux = JSON.parse(cible.dataset.totaux || '[]');
+      libelles = JSON.parse(cible.dataset.libelles || '[]');
+    } catch (e) {
+      return;
+    }
+
+    if (!totaux.length) return;
+
+    cible.innerHTML = '';
+
+    new ApexCharts(cible, {
+      chart: { type: 'bar', height: 240 },
+      plotOptions: { bar: { borderRadius: 6, columnWidth: '55%' } },
+      series: [{ name: cible.dataset.nom || '', data: totaux }],
+      xaxis: { categories: libelles },
+      yaxis: { min: 0, tickAmount: 4, labels: { formatter: (v) => Math.round(v) } },
+      fill: { type: 'solid', opacity: 0.9 },
+    }).render();
+  };
+
+  dessiner();
+  document.addEventListener('brio:theme', dessiner);
+};

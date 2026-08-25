@@ -1,3 +1,7 @@
+@push('scripts')
+    @vite(['resources/js/apexcharts.js'])
+@endpush
+
 <div>
 
     {{--
@@ -81,6 +85,22 @@
             </div>
         @endforeach
     </div>
+
+    @if ($this->totalActivite > 0)
+        <section class="brio-graphique" aria-labelledby="titre-activite">
+            <div class="brio-graphique-tete">
+                <h2 id="titre-activite" class="brio-graphique-titre">{{ __('Activité de la société') }}</h2>
+                <p class="brio-graphique-note">{{ __('Missions terminées, 14 derniers jours') }}</p>
+            </div>
+
+            <div class="brio-graphique-corps" wire:ignore x-data x-init="dessinerActivite($el)">
+                <div data-graphique
+                     data-nom="{{ __('Missions terminées') }}"
+                     data-totaux="{{ json_encode(array_column($this->activiteParJour, 'total')) }}"
+                     data-libelles="{{ json_encode(array_column($this->activiteParJour, 'libelle')) }}"></div>
+            </div>
+        </section>
+    @endif
 
     {{-- ── Grille principale ── --}}
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
