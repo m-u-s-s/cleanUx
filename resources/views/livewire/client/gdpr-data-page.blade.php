@@ -62,7 +62,7 @@
                         Vous pouvez annuler avant cette date.
                     </p>
                     <button wire:click="cancelErasure({{ $activeErasure->id }})"
-                            wire:confirm="Annuler la suppression de votre compte ?"
+                            wire:confirm.doux="Annuler la suppression de votre compte ?"
                             class="mt-3 rounded-xl bg-white border px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
                         Annuler la suppression
                     </button>

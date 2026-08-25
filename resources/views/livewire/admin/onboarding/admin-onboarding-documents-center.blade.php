@@ -232,7 +232,7 @@
                                 </button>
                                 @if ($doc->status === 'pending_review')
                                     <button wire:click="approve({{ $doc->id }})"
-                                            wire:confirm="Approuver ce document ?"
+                                            wire:confirm.doux="Approuver ce document ?"
                                             class="rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100">
                                         ✓ Approuver
                                     </button>

@@ -163,7 +163,7 @@
                         <td class="px-4 py-3 text-right">
                             @if ($profile->verification_status !== 'verified' && $profile->onboarding_step >= 5)
                                 <button wire:click="approveOnboarding({{ $profile->user_id }})"
-                                        wire:confirm="Approuver définitivement l'onboarding de {{ $profile->user?->name }} ? Le prestataire pourra recevoir des missions immédiatement."
+                                        wire:confirm.doux="Approuver définitivement l'onboarding de {{ $profile->user?->name }} ? Le prestataire pourra recevoir des missions immédiatement."
                                         class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700">
                                     Approuver
                                 </button>

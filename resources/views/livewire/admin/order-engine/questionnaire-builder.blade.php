@@ -720,7 +720,7 @@
 
                             @unless ($loop->first)
                                 <button type="button" wire:click="restoreRevision({{ $revision->id }})"
-                                    wire:confirm="Remettre la version {{ $revision->version }} en ligne ? Elle repartira sous un nouveau numéro ; les versions intermédiaires restent consultables."
+                                    wire:confirm.doux="Remettre la version {{ $revision->version }} en ligne ? Elle repartira sous un nouveau numéro ; les versions intermédiaires restent consultables."
                                     class="min-h-[44px] rounded-lg px-3 text-sm font-medium text-slate-900 underline-offset-2 hover:underline">
                                     Restaurer
                                 </button>
@@ -771,7 +771,7 @@
                 <div class="mt-3 flex flex-wrap gap-2">
                     @foreach ($this->duplicationTargets() as $target)
                         <button type="button" wire:click="duplicateTo({{ $target->id }})"
-                            wire:confirm="Recopier ce questionnaire vers « {{ $target->name }} » ? Les questions existantes y seront mises à jour, aucune ne sera supprimée."
+                            wire:confirm.doux="Recopier ce questionnaire vers « {{ $target->name }} » ? Les questions existantes y seront mises à jour, aucune ne sera supprimée."
                             wire:key="dup-{{ $target->id }}"
                             class="min-h-[44px] rounded-lg border border-slate-300 px-3 text-sm text-slate-700 hover:bg-slate-50">
                             {{ $target->name }}

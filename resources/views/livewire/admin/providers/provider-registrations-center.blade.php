@@ -155,7 +155,7 @@
                                     <button
                                         type="button"
                                         wire:click="approve({{ $registration->id }})"
-                                        wire:confirm="Approuver cette inscription ? Le prestataire aura accès à l'application."
+                                        wire:confirm.doux="Approuver cette inscription ? Le prestataire aura accès à l'application."
                                         class="rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700"
                                     >
                                         Approuver

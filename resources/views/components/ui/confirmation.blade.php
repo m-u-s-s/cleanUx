@@ -18,8 +18,11 @@
     remonte au `[wire:id]` le plus proche du bouton : sans cela il faudrait nommer le
     composant a chaque appel, et le premier renommage casserait tout en silence.
 
-    POURQUOI PAS `wire:confirm`. Livewire l'implemente avec `window.confirm` — la meme boite
-    du navigateur. Le remplacer par lui n'aurait rien change a ce qu'on voit.
+    ET `wire:confirm` PASSE PAR ICI AUSSI, sans qu'aucune vue ne soit touchee. Livewire pose
+    `el.__livewire_confirm = (action, instead) => …` : une API a RAPPELS, pas a valeur de
+    retour. Elle accepte donc une modale, la ou `window.confirm()` — synchrone — ne le
+    pourrait pas. L'interception vit dans `resources/js/confirmation-livewire.js` ; ce
+    composant recoit les deux fonctions dans `detail.action` et `detail.instead`.
 --}}
 <div
     x-data="{
@@ -28,18 +31,34 @@
         ton: 'neutre',
         appel: '',
         composant: null,
+        /*
+         * LA VOIE PAR RAPPELS, pour `wire:confirm`.
+         *
+         * Livewire pose `el.__livewire_confirm = (action, instead) => …` : une API a
+         * RAPPELS, pas a valeur de retour. Elle accepte donc parfaitement une modale, la
+         * ou `window.confirm()` — synchrone — ne le pourrait pas. `resources/js/
+         * confirmation-livewire.js` l'intercepte et nous transmet ces deux fonctions.
+         */
+        action: null,
+        refus: null,
 
         demander(detail, source) {
             this.message = detail.message || '';
             this.ton = detail.ton || 'neutre';
             this.appel = detail.appel || '';
+            this.action = typeof detail.action === 'function' ? detail.action : null;
+            this.refus = typeof detail.instead === 'function' ? detail.instead : null;
 
             /*
              * Le composant Livewire est celui qui CONTIENT le bouton. Le chercher ici plutot
              * que de le faire nommer par l'appelant evite qu'un renommage casse sept sites
              * d'appel sans que rien ne le signale.
+             *
+             * `typeof … === 'function'` et non `source?.closest` : un evenement emis depuis
+             * `window` a pour cible `window`, qui n'a pas de `closest`. L'appel levait alors
+             * AVANT `this.ouvert = true`, et la modale ne s'ouvrait jamais — en silence.
              */
-            const hote = source?.closest('[wire\\:id]');
+            const hote = typeof source?.closest === 'function' ? source.closest('[wire\\:id]') : null;
             this.composant = hote ? hote.getAttribute('wire:id') : null;
 
             this.ouvert = true;
@@ -50,8 +69,16 @@
         accepter() {
             const appel = this.appel;
             const id = this.composant;
+            const rappel = this.action;
 
             this.fermer();
+
+            // La voie par rappels est prioritaire : elle vient de Livewire lui-meme.
+            if (rappel) {
+                rappel();
+
+                return;
+            }
 
             if (! appel || ! id) return;
 
@@ -80,17 +107,35 @@
             cible.call(decoupe[1], ...arguments_);
         },
 
+        /*
+         * REFUSER, C'EST AUSSI REPONDRE. Livewire attend `instead()` sur le chemin du refus ;
+         * ne rien appeler laisserait son binding croire que la question est encore ouverte.
+         */
+        refuser() {
+            const rappel = this.refus;
+
+            this.fermer();
+
+            if (rappel) rappel();
+        },
+
         fermer() {
             this.ouvert = false;
             this.appel = '';
             this.composant = null;
+            this.action = null;
+            this.refus = null;
         },
     }"
-    x-on:brio-confirmer.window="demander($event.detail, $event.target)"
-    x-on:keydown.escape.window="fermer()"
+    {{-- `preventDefault()` DIT « je suis la ». L'interception de `wire:confirm` rend la
+         main a Livewire si l'evenement lui revient non annule : sans ce signal, un
+         bouton place sur une mise en page qui ne monte pas ce composant ne ferait
+         plus rien du tout, en silence. --}}
+    x-on:brio-confirmer.window="$event.preventDefault(); demander($event.detail, $event.target)"
+    x-on:keydown.escape.window="refuser()"
 >
     <template x-if="ouvert">
-        <div class="brio-modal-fond grid place-items-center p-4" x-on:click.self="fermer()">
+        <div class="brio-modal-fond grid place-items-center p-4" x-on:click.self="refuser()">
             <div
                 class="brio-modal"
                 :class="ton === 'danger' && 'brio-modal-danger'"
@@ -105,7 +150,7 @@
                 <div class="brio-modal-actions">
                     {{-- LE REFUS PORTE LE FOCUS. Une modale qui s'ouvre sur son bouton
                          destructeur transforme une touche Entree en action definitive. --}}
-                    <button type="button" x-ref="refuser" class="brio-btn brio-btn-nu" x-on:click="fermer()">
+                    <button type="button" x-ref="refuser" class="brio-btn brio-btn-nu" x-on:click="refuser()">
                         {{ __('Annuler') }}
                     </button>
 

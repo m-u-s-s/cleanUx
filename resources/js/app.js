@@ -4,6 +4,7 @@ import './brio-mission-tracking';
 import './assistant-streaming';
 import './push-notifications';
 import './pwa';
+import './confirmation-livewire';
 
 /**
  * LE POINT D'ENTREE DES NOTIFICATIONS, DEPUIS DU JAVASCRIPT ORDINAIRE.

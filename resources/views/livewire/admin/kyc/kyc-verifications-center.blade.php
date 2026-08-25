@@ -171,7 +171,7 @@
                                 <input type="text" wire:model="manualNote"
                                        class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                                 <button wire:click="approve"
-                                        wire:confirm="Approuver manuellement cette vérification ?"
+                                        wire:confirm.doux="Approuver manuellement cette vérification ?"
                                         class="mt-2 w-full rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
                                     Approuver manuellement
                                 </button>

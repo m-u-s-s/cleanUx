@@ -107,7 +107,7 @@
                                       class="w-full rounded-xl border-gray-300 text-sm"></textarea>
                             @error('adjustReason') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
                             <button wire:click="adjust"
-                                    wire:confirm="Appliquer cet ajustement ?"
+                                    wire:confirm.doux="Appliquer cet ajustement ?"
                                     class="rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700">
                                 Appliquer
                             </button>

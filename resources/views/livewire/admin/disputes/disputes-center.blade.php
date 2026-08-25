@@ -244,7 +244,7 @@
                             @error('resolutionExplanation') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
 
                             <button wire:click="applyResolution"
-                                    wire:confirm="Appliquer cette résolution ?"
+                                    wire:confirm.doux="Appliquer cette résolution ?"
                                     class="w-full rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white">
                                 Appliquer & clôturer
                             </button>

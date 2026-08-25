@@ -105,7 +105,7 @@
                         @endif
                         @if ($b->status === 'quoted')
                             <button wire:click="acceptBundle({{ $b->id }})"
-                                    wire:confirm="Accepter ce bundle ? {{ $b->items->count() }} missions vont être créées."
+                                    wire:confirm.doux="Accepter ce bundle ? {{ $b->items->count() }} missions vont être créées."
                                     class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 text-white px-3 py-1.5 text-xs font-semibold hover:bg-emerald-700 transition">
                                 <x-ui.icon name="check" class="w-3.5 h-3.5" />
                                 Accepter
