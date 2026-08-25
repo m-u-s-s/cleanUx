@@ -1076,3 +1076,12 @@ body:not(.cx-shell) :is(input[type="checkbox"], input[type="radio"]) {
     margin-inline-start: 0.15em;
     opacity: 0.72;
 }
+
+/* Le corps d'un graphique : il porte sa hauteur, pas le conteneur. Un graphique dont
+   la hauteur vient du parent se replie a zero quand celui-ci est en `flex`. */
+.brio-graphique-corps {
+    min-height: 260px;
+    margin-inline: -0.35rem;
+}
+
+.brio-graphique-corps .apexcharts-canvas { margin-inline: auto; }

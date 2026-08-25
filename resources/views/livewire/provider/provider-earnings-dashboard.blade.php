@@ -1,8 +1,12 @@
+@push('scripts')
+    @vite(['resources/js/apexcharts.js'])
+@endpush
+
 <div class="py-8 max-w-6xl mx-auto px-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
             <p class="ui-page-eyebrow !mt-0">Mes revenus</p>
-            <h1 class="ui-page-title">Earnings dashboard</h1>
+            <h1 class="ui-page-title">{{ __('Mes revenus') }}</h1>
             <p class="ui-page-subtitle">Suivi de vos gains, missions et pourboires.</p>
         </div>
         <div class="flex gap-1 bg-slate-100 p-1 rounded-xl shrink-0">
@@ -101,22 +105,44 @@
                 <p class="text-sm text-slate-500">Aucune donnée sur cette période.</p>
             </div>
         @else
-            @php
-                $maxAmount = max(array_column($series, 'amount_eur')) ?: 1;
-            @endphp
-            <div class="flex items-end gap-2 h-48">
-                @foreach ($series as $point)
-                    @php
-                        $height = max(2, ($point['amount_eur'] / $maxAmount) * 180);
-                    @endphp
-                    <div class="flex-1 flex flex-col items-center gap-1 group">
-                        <div class="text-[10px] font-semibold text-slate-700 opacity-0 group-hover:opacity-100 transition">
-                            <x-money :amount="(float) ($point['amount_eur'])" :decimals="0" />
-                        </div>
-                        <div class="w-full bg-gradient-to-t from-brand-600 to-brand-400 rounded-t-md transition hover:from-brand-700 hover:to-brand-500" style="height: {{ $height }}px"></div>
-                        <p class="text-[10px] text-slate-500">{{ $point['label'] }}</p>
-                    </div>
-                @endforeach
+            {{--
+                UN VRAI GRAPHIQUE, PAS DES BARRES EN CSS.
+
+                La serie etait deja calculee — le composant la nomme « Timeseries pour graph » —
+                mais la vue la rendait en `<div>` dont la hauteur etait un nombre de pixels. Pas
+                d'infobulle, pas de courbe, et une hauteur en dur qui ne suivait aucun ecran.
+
+                ApexCharts est deja charge et THEME globalement : la vue n'a donc a declarer que
+                ses donnees. Les couleurs, la police, la grille et l'infobulle de verre viennent
+                de `resources/js/apexcharts.js`, et suivent la bascule de mode.
+            --}}
+            <div
+                class="brio-graphique-corps"
+                wire:ignore
+                x-data
+                x-init="
+                    const dessiner = () => {
+                        const cible = $el.querySelector('[data-graphique]');
+                        if (! cible || typeof ApexCharts === 'undefined') return;
+
+                        cible.innerHTML = '';
+
+                        new ApexCharts(cible, {
+                            chart: { type: 'area', height: 260, sparkline: { enabled: false } },
+                            series: [{
+                                name: @js(__('Revenus')),
+                                data: @js(array_map(fn ($p) => round((float) $p['amount_eur'], 2), $series)),
+                            }],
+                            xaxis: { categories: @js(array_column($series, 'label')) },
+                            yaxis: { labels: { formatter: (v) => new Intl.NumberFormat(document.documentElement.lang || 'fr').format(Math.round(v)) } },
+                        }).render();
+                    };
+
+                    dessiner();
+                    document.addEventListener('brio:theme', dessiner);
+                "
+            >
+                <div data-graphique></div>
             </div>
         @endif
     </div>
