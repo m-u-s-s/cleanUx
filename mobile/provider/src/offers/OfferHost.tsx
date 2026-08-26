@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useCurrentOffer } from './hooks';
 import { OfferModal } from './OfferModal';
+import { libererCarillon } from './sound';
 
 /**
  * LE POINT DE MONTAGE UNIQUE DE LA MODALE D'OFFRE.
@@ -19,6 +20,18 @@ import { OfferModal } from './OfferModal';
  */
 export function OfferHost() {
   const { offer, dismiss } = useCurrentOffer();
+
+  /*
+   * LA RESSOURCE AUDIVE SE LIBERE ICI, ET NULLE PART AILLEURS.
+   *
+   * `jouerCarillonDOffre` garde son lecteur natif entre deux offres — a dessein, recreer la
+   * ressource a chaque fois ajouterait une latence la ou on en a le moins. `libererCarillon`
+   * existait pour le rendre, son propre commentaire disait « appele quand l'hote d'offres est
+   * demonte », et PERSONNE ne l'appelait : le lecteur survivait a la session terrain.
+   *
+   * Pas dans la modale : elle va et vient a chaque offre, c'est precisement ce qu'on evite.
+   */
+  useEffect(() => libererCarillon, []);
 
   if (!offer) {
     return null;

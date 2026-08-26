@@ -50,6 +50,7 @@ import { LanguageScreen } from '@/screens/LanguageScreen';
 import { AppearanceScreen } from '@/screens/AppearanceScreen';
 import { ProviderOnboardingScreen } from '@/screens/onboarding/ProviderOnboardingScreen';
 import FaceCheckScreen from '@/screens/faceCheck/FaceCheckScreen';
+import { FaceConsentScreen } from '@/screens/faceCheck/FaceConsentScreen';
 // Espace d'administration — l'application prestataire sert deux publics depuis le lot A.
 import { SpaceSwitcherScreen } from '@/screens/SpaceSwitcherScreen';
 // Espace société — le troisième public : celui qui pilote une société prestataire.
@@ -604,6 +605,18 @@ export function RootNavigator() {
               name="KYC"
               component={KYCScreen}
               options={{ headerShown: true, title: 'Vérification identité' }}
+            />
+            {/*
+              LE RETRAIT DU CONSENTEMENT AU CONTRÔLE FACIAL.
+
+              Le hook et la route serveur existaient depuis le début ; l'écran, non. Un droit
+              qu'on ne peut exercer nulle part n'est pas un droit — et il s'agit ici d'une donnée
+              biométrique, catégorie particulière au sens de l'article 9 du RGPD.
+            */}
+            <Stack.Screen
+              name="FaceConsent"
+              component={FaceConsentScreen}
+              options={{ headerShown: true, title: 'Contrôle facial' }}
             />
             <Stack.Screen
               name="ProviderDisputes"

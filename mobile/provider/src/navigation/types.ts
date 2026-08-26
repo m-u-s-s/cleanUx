@@ -169,6 +169,7 @@ export type RootStackParamList = {
   NotificationPreferences: undefined;
   Language: undefined;
   Appearance: undefined;
+  FaceConsent: undefined;
 };
 
 export type TabParamList = {

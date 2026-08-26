@@ -93,6 +93,7 @@ export function ProfileScreen() {
     { label: 'Métiers et zones', screen: 'TradesZones' },
     { label: 'Badges', screen: 'Badges' },
     { label: 'Vérification KYC', screen: 'KYC' },
+    { label: 'Contrôle facial', screen: 'FaceConsent' },
     { label: 'Litiges', screen: 'ProviderDisputes' },
     { label: 'Avis reçus', screen: 'ProviderRatings' },
     { label: 'Messagerie', screen: 'ProviderChatList' },

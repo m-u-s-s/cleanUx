@@ -44,6 +44,7 @@ import { ErrorBoundary } from '@/ErrorBoundary';
 import { WalkthroughScreen, hasCompletedWalkthrough } from '@/screens/WalkthroughScreen';
 import '@/sentry/init';
 import { useOfflineSync, bindAppStateToQueryFocus } from '@/api';
+import { useAppUpdates } from '@/hooks/useAppUpdates';
 
 // Relie React Query au cycle de vie de l'application : sans ce pont, aucune requête n'est
 // rejouée au retour au premier plan et l'écran reste figé sur des données périmées.
@@ -66,6 +67,16 @@ function NavigationEffects(): null {
 }
 
 function AppInner() {
+  /*
+   * SANS CET APPEL, AUCUNE MISE A JOUR N'EST JAMAIS CHERCHEE.
+   *
+   * Le crochet etait ecrit dans les DEUX applications, correct — production seulement, import
+   * dynamique pour ne pas plomber Expo Go, echec silencieux — et n'avait AUCUN appelant. Les
+   * appareils restaient sur le paquet installe, indefiniment : une correction publiee
+   * n'atteignait personne tant que l'utilisateur ne reinstallait pas depuis la boutique.
+   */
+  useAppUpdates();
+
   /*
    * SANS CET APPEL, AUCUNE OFFRE NE FAIT VIBRER LE TÉLÉPHONE.
    *

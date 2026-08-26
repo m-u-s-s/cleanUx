@@ -8,23 +8,19 @@ use Tests\TestCase;
 class ClassesBrioDefiniesTest extends TestCase
 {
     /**
-     * Classes employées dans les vues qui ne stylent RIEN, et le faisaient déjà avant le renommage.
+     * Classes employées dans les vues qui ne stylent RIEN.
+     *
+     * LA LISTE EST VIDE, ET C'EST NEUF. Elle en portait ONZE — un registre de defauts acceptes,
+     * pas un registre d'exceptions. Neuf ont recu leur regle : `brio-form-grid` demandait des
+     * colonnes a une grille qui n'en etait pas une, `brio-field-label` etait SEULE sur son
+     * element donc du texte brut. `brio-inline-action` doublonnait `.brio-lien`, la vue emploie
+     * celle-la. `brio-scale-in` n'etait plus ecrite nulle part.
+     *
+     * Y rajouter une entree, c'est accepter qu'un element ne peigne rien. Il faut une raison.
      *
      * @var list<string>
      */
-    private const SANS_STYLE_CONNUES = [
-        'brio-choice-card',
-        'brio-fade-up',
-        'brio-feedback-response',
-        'brio-feedback-shell',
-        'brio-field-label',
-        'brio-filter-panel',
-        'brio-form-grid',
-        'brio-inline-action',
-        'brio-loading-panel',
-        'brio-meta-grid',
-        'brio-scale-in',
-    ];
+    private const SANS_STYLE_CONNUES = [];
 
     /** @return list<string> */
     private function classesUtilisees(): array
