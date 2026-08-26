@@ -201,13 +201,27 @@ return [
     |
     */
 
+    /*
+     * SEVEN NAMES WERE MISSING HERE, AND `lang/fr` HAD THEM ALL.
+     *
+     * Without an entry, Laravel drops the KEY straight into the sentence: an English-speaking
+     * user read « The postal_code field is required. » Nothing reported it — the sentence is
+     * grammatically complete, it just names a database column instead of a field.
+     */
     'attributes' => [
         'accept_terms' => 'terms and conditions',
+        'address' => 'address',
+        'city' => 'city',
+        'code' => 'code',
         'company_name' => 'company name',
         'current_password' => 'current password',
+        'device_name' => 'device',
         'email' => 'email address',
+        'name' => 'name',
+        'password' => 'password',
         'password_confirmation' => 'password confirmation',
         'phone' => 'phone number',
+        'postal_code' => 'postal code',
         'provider_company_name' => 'service company name',
         'terms' => 'terms and conditions',
         'tva_number' => 'VAT number',

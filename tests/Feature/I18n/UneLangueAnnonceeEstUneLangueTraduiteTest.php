@@ -29,13 +29,17 @@ class UneLangueAnnonceeEstUneLangueTraduiteTest extends TestCase
     /**
      * Les fichiers qu'une langue active doit porter.
      *
-     * `auth`, `passwords` et `validation` n'y sont PAS : ce sont les messages du cadre Laravel,
-     * dont les traductions vivent dans `lang/vendor/` ou tombent sur le repli sans consequence
-     * pour le sens. Ceux listes ici sont ecrits par le produit.
+     * `auth`, `passwords` et `validation` EN FONT PARTIE, et le motif que j'avais donne pour les
+     * exclure etait faux : « ils tombent sur le repli sans consequence pour le sens ». Le repli
+     * de ce projet est le FRANCAIS. Un utilisateur allemand lisait donc ses erreurs de
+     * validation en francais, dans un formulaire par ailleurs allemand — et ce sont les phrases
+     * qu'on lit le plus souvent sans vouloir les lire.
+     *
+     * `lang/vendor/` ne contenait rien pour eux non plus : il ne sert qu'au paquet de sauvegarde.
      *
      * @var list<string>
      */
-    private const FICHIERS = ['app', 'ui', 'pricing', 'face_check'];
+    private const FICHIERS = ['app', 'ui', 'pricing', 'face_check', 'auth', 'passwords', 'validation'];
 
     /** @return list<string> */
     private function languesActives(): array

@@ -141,21 +141,46 @@ class MessagesLisiblesTest extends TestCase
         $this->assertSame([], $intraduites, "Ces cles ne sont pas traduites en « {$locale} » : l utilisateur verra la cle brute.");
     }
 
-    /** Les langues NON traduites doivent retomber sur le français, jamais sur une clé nue. */
-    public function test_une_langue_non_traduite_retombe_sur_le_francais(): void
+    /**
+     * UNE LANGUE SANS FICHIERS RETOMBE SUR LE REPLI, JAMAIS SUR UNE CLE NUE.
+     *
+     * Ce test visait `nl`, qui n'avait alors aucun de ces fichiers. Il en a desormais, comme
+     * l'allemand, l'espagnol et l'italien : l'exemple etait perime, l'invariant ne l'est pas.
+     *
+     * `pt` le porte maintenant. Il est declare dans `config/i18n.php` mais ETEINT, et n'a aucun
+     * repertoire de langue — exactement le cas que cet invariant protege.
+     */
+    public function test_une_langue_sans_fichiers_retombe_sur_le_repli(): void
     {
-        app()->setLocale('nl');
+        app()->setLocale('pt');
 
         $this->assertSame('Le champ nom est obligatoire.', Lang::get('validation.required', ['attribute' => 'nom']));
         $this->assertNotSame('auth.failed', Lang::get('auth.failed'));
+
+        // TEMOIN : une langue qui a ses fichiers rend SA phrase, pas celle du repli.
+        app()->setLocale('nl');
+
+        $this->assertSame('Het naam veld is verplicht.', Lang::get('validation.required', ['attribute' => 'naam']));
     }
 
-    /** @return array<string, array{0: string}> */
+    /**
+     * LES SIX LANGUES ACTIVES, PAS DEUX.
+     *
+     * Ce fournisseur n'en portait que deux, si bien que les deux tests ci-dessus ne disaient rien
+     * du néerlandais, de l'allemand, de l'espagnol ni de l'italien — les quatre langues qui
+     * n'avaient justement aucun de ces fichiers.
+     *
+     * @return array<string, array{0: string}>
+     */
     public static function languesServies(): array
     {
         return [
             'français' => ['fr'],
             'anglais' => ['en'],
+            'néerlandais' => ['nl'],
+            'allemand' => ['de'],
+            'espagnol' => ['es'],
+            'italien' => ['it'],
         ];
     }
 }
