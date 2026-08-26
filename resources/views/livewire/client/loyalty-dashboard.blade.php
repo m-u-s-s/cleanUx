@@ -1,3 +1,23 @@
+{{--
+    ApexCharts N'EST PAS DANS LE PAQUET GLOBAL : c'est une entree Vite dediee, chargee
+    seulement par les pages qui dessinent. Sans cette pile, `dessinerActivite` n'existe pas
+    et les deux graphiques restent VIDES — sans erreur, sans rien qui le dise.
+
+    ET LA PILE EST CONDITIONNELLE, comme les graphiques qu'elle sert. Le module pese 565 Ko :
+    un client qui n'a pas encore un seul point le telechargerait pour deux cadres qui ne
+    s'affichent pas. C'est precisement le cas le plus frequent au lancement.
+
+    `@once` : ce composant peut etre rendu deux fois sur une meme page sans dupliquer la
+    balise.
+--}}
+@if($totalGagne > 0)
+    @once
+        @push('scripts')
+            @vite(['resources/js/apexcharts.js'])
+        @endpush
+    @endonce
+@endif
+
 <div class="py-8">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
@@ -103,6 +123,73 @@
             </div>
         </div>
 
+        {{--
+            CE QUE LE SOLDE NE DIT PAS.
+
+            L'écran montrait un total, un palier et une liste paginée. Aucun des trois ne
+            répond aux deux questions qui décident si le client continue : « est-ce que je
+            gagne plus qu'avant ? » et « qu'est-ce qui me rapporte ? ». La série existait
+            pourtant — quinze lignes à la fois, à compter à la main.
+
+            Les données passent par des attributs `data-*`. Une expression imbriquée dans une
+            directive Blade casse la compilation de la vue ENTIÈRE, et l'erreur se signale
+            ailleurs.
+        --}}
+        @if($totalGagne > 0)
+            <div class="grid gap-4 lg:grid-cols-2">
+                <section class="brio-graphique" aria-labelledby="titre-points-mois">
+                    <div class="brio-graphique-tete">
+                        <h2 id="titre-points-mois" class="brio-graphique-titre">{{ __('Points gagnés par mois') }}</h2>
+                        <p class="brio-graphique-note">{{ __('Les douze mois qui décident de votre niveau') }}</p>
+                    </div>
+
+                    <div class="brio-graphique-corps" wire:ignore x-data x-init="dessinerActivite($el)">
+                        <div data-graphique
+                             data-nom="{{ __('Points') }}"
+                             data-totaux="{{ json_encode(array_column($pointsParMois, 'points')) }}"
+                             data-libelles="{{ json_encode(array_column($pointsParMois, 'libelle')) }}"></div>
+                    </div>
+                </section>
+
+                <section class="brio-graphique" aria-labelledby="titre-origine">
+                    <div class="brio-graphique-tete">
+                        <h2 id="titre-origine" class="brio-graphique-titre">{{ __('D’où viennent vos points') }}</h2>
+                        <p class="brio-graphique-note">{{ number_format($totalGagne, 0, ',', ' ') }} {{ __('points gagnés au total') }}</p>
+                    </div>
+
+                    <div class="brio-graphique-corps" wire:ignore x-data x-init="dessinerRepartition($el)">
+                        <div data-graphique
+                             data-valeurs="{{ json_encode(array_column($origineDesPoints, 'points')) }}"
+                             data-libelles="{{ json_encode(array_column($origineDesPoints, 'libelle')) }}"></div>
+                    </div>
+
+                    {{--
+                        LE TABLEAU RESTE, SOUS L'ANNEAU. Un graphique ne se lit pas au lecteur
+                        d'écran, et un chiffre exact ne se relève pas sur un angle.
+                    --}}
+                    <div class="brio-table-cadre mt-4">
+                        <table class="w-full">
+                            <caption class="sr-only">{{ __('Points gagnés par origine') }}</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">{{ __('Origine') }}</th>
+                                    <th scope="col" class="text-right">{{ __('Points') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($origineDesPoints as $origine)
+                                    <tr>
+                                        <td>{{ $origine['libelle'] }}</td>
+                                        <td class="text-right tabular-nums">{{ number_format($origine['points'], 0, ',', ' ') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        @endif
+
         {{-- Historique --}}
         <div class="rounded-2xl border bg-white shadow-sm">
             <div class="p-4 border-b">
@@ -122,7 +209,9 @@
                         @forelse($transactions as $tx)
                             <tr>
                                 <td class="px-4 py-2 text-xs text-slate-500">{{ $tx->occurred_at?->format('d/m/Y') }}</td>
-                                <td class="px-4 py-2"><span class="font-mono text-xs">{{ $tx->type }}</span></td>
+                                {{-- `earn_booking`, `redeem` : des identifiants de base, montrés
+                                     tels quels à qui vient voir ses points. --}}
+                                <td class="px-4 py-2">{{ \App\Livewire\Client\LoyaltyDashboard::libelleDuType($tx->type) }}</td>
                                 <td class="px-4 py-2">{{ $tx->reason ?? '—' }}</td>
                                 <td class="px-4 py-2 text-right font-bold {{ $tx->direction === 'credit' ? 'text-emerald-600' : 'text-red-600' }}">
                                     {{ $tx->direction === 'credit' ? '+' : '-' }}{{ number_format($tx->points, 0, ',', ' ') }}
