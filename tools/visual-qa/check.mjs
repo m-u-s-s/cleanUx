@@ -153,6 +153,57 @@ const EVAL = (tol) => {
   return out;
 };
 
+/**
+ * C6 — LE FOND DE LA PAGE SUIT LE THÈME.
+ *
+ * Les cinq premiers critères mesurent le débordement, les cibles tactiles et la lisibilité
+ * du texte. AUCUN ne regarde la couleur du fond. C'est ce trou qui a laissé passer
+ * `/admin/outils` : son aperçu d'email injectait un document complet dans la page, le
+ * navigateur fusionnait le `<body>` de l'email avec celui de la page, et son
+ * `style="background:#f8fafc"` EN LIGNE se posait sur le vrai `<body>`. Une page
+ * d'administration entière en clair sur la nuit, du texte clair dessus — et 121 pages
+ * au vert.
+ *
+ * ON FORCE LE SOMBRE SUR LA PAGE DÉJÀ CHARGÉE. Le thème est posé par une CLASSE sur
+ * `<html>`, avant la première peinture : l'ajouter ici reproduit ce que fait l'amorce, sans
+ * nouvelle navigation ni nouvelle connexion. `emulateMedia` ne suffirait pas — l'amorce ne
+ * relit pas la préférence après le chargement.
+ *
+ * LE SEUIL EST LARGE À DESSEIN. On ne juge pas une nuance : on demande que le fond soit
+ * SOMBRE. Un `#f8fafc` rend 0,97 ; le fond du thème rend 0,006. Entre les deux, il n'y a
+ * pas de cas limite à arbitrer.
+ */
+const fondSuitLeTheme = async (page) => {
+  const etat = await page.evaluate(() => {
+    const html = document.documentElement;
+    const avait = html.classList.contains('dark');
+
+    html.classList.add('dark');
+
+    const brut = getComputedStyle(document.body).backgroundColor;
+    const c = (brut.match(/[\d.]+/g) || []).map(Number);
+
+    if (!avait) html.classList.remove('dark');
+
+    if (c.length < 3) return null;
+
+    /*
+     * L'ALPHA COMPTE. `rgba(255,255,255,.055)` est du verre SOMBRE pose sur la nuit du
+     * document, pas du blanc : le lire sur ses trois premières composantes le déclarerait
+     * clair à 100 %. Le multiplier par son alpha compose grossièrement sur un fond noir —
+     * suffisant pour un seuil qui ne cherche qu'à séparer le clair du sombre.
+     */
+    const a = c.length > 3 ? c[3] : 1;
+    const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+
+    return { lum: (0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2])) * a, brut };
+  });
+
+  if (!etat) return { ok: true, detail: null };
+
+  return { ok: etat.lum < 0.25, detail: etat.brut };
+};
+
 export async function checkModule(context, base, mod) {
   const page = await context.newPage();
   await page.setViewportSize(VIEWPORT);
@@ -167,6 +218,13 @@ export async function checkModule(context, base, mod) {
     await page.waitForLoadState('load', { timeout: 10000 }).catch(() => {});
     await page.waitForTimeout(900);
     const result = await page.evaluate(EVAL, TOL);
+
+    // C6 se mesure APRÈS les cinq autres : il bascule la classe de `<html>`, et cette
+    // bascule ne doit pas influencer ce qu'ils ont vu.
+    const fond = await fondSuitLeTheme(page);
+    result.criteria.c6_fond_suit_le_theme = fond.ok;
+    if (!fond.ok) result.offenders.c6 = [{ fond: fond.detail }];
+
     await page.close();
     const pass = Object.values(result.criteria).every(Boolean);
     return { key: mod.key, path: mod.path, role: mod.credKey ?? 'public', http: httpStatus, pass, ...result };
