@@ -252,7 +252,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
     color: t.text,
   },
-  missionService: { fontSize: typography.fontSize.sm, color: colors.brand[600], marginTop: 2 },
+  missionService: { fontSize: typography.fontSize.sm, color: t.brandText, marginTop: 2 },
   /*
    * `overflow: hidden` avec un rayon : sans lui, les tuiles de la carte débordent des coins
    * arrondis sur Android, et le cadre paraît cassé alors qu'il ne l'est pas.

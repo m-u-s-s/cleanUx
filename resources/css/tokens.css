@@ -75,6 +75,19 @@
     --brio-bg-rgb:       238 241 248;
 
     --brio-ink-rgb:      26 36 54;
+
+    /*
+     * LES BORNES D'UNE TEINTE VENUE DES DONNEES.
+     *
+     * Une couleur choisie par un administrateur — le niveau de fidelite, le metier — atterrit
+     * en style EN LIGNE, qui bat toutes les regles CSS : la reserve du theme ne peut rien pour
+     * elle. Sur la palette canonique des niveaux, le platine rendait 1,27 et l'or 1,40.
+     *
+     * On ne contraint que la CLARTE : la teinte et la saturation passent intactes, un or reste
+     * un or. En clair on plafonne, en sombre on releve — d'ou deux bornes qui basculent.
+     */
+    --brio-teinte-min:   0;
+    --brio-teinte-max:   0.55;
     --brio-ink:          rgb(var(--brio-ink-rgb));
     --brio-muted:        #5b6b85;
     --brio-faint:        #8b99b0;
@@ -141,6 +154,10 @@
     --brio-bg-rgb:       10 14 26;
 
     --brio-ink-rgb:      234 240 251;
+
+    /* La nuit inverse la contrainte : c'est le TROP SOMBRE qu'il faut relever. */
+    --brio-teinte-min:   0.62;
+    --brio-teinte-max:   1;
     --brio-ink:          rgb(var(--brio-ink-rgb));
     --brio-muted:        #a1b2cf;
     --brio-faint:        #64748b;

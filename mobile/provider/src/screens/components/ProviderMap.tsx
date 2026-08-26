@@ -284,7 +284,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   callout: { minWidth: 160, padding: spacing.xs },
   calloutService: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold, color: t.text },
   calloutClient: { fontSize: typography.fontSize.xs, color: t.textSecondary, marginTop: 2 },
-  calloutDistance: { fontSize: typography.fontSize.xs, color: colors.brand[600], marginTop: 2 },
+  calloutDistance: { fontSize: typography.fontSize.xs, color: t.brandText, marginTop: 2 },
   fallback: {
     flex: 1,
     backgroundColor: t.inputBg,

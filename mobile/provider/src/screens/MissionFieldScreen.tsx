@@ -968,12 +968,12 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   blocageAvis: {
     fontSize: typography.fontSize.sm,
-    color: colors.danger[600],
+    color: t.danger,
     marginBottom: spacing.sm,
   },
   blocageLeve: {
     fontSize: typography.fontSize.sm,
-    color: colors.success[600],
+    color: t.success,
     marginBottom: spacing.sm,
   },
   gpsRow: {

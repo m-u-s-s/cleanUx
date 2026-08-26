@@ -87,6 +87,6 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   error: {
     marginTop: spacing.sm,
     fontSize: typography.fontSize.xs,
-    color: colors.danger[600],
+    color: t.danger,
   },
 });

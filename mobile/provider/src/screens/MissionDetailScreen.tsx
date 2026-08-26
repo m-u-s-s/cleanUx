@@ -393,7 +393,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   resendText: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.brand[600],
+    color: t.brandText,
     textDecorationLine: 'underline',
   },
   loading: {

@@ -89,8 +89,9 @@ function passwordStrength(value: string): { score: 0 | 1 | 2 | 3; label: string;
 }
 
 export function RegisterWizard() {
-  const kit = kitStylesFor(useThemeColors());
-  const styles = stylesFor(useThemeColors());
+  const jetons = useThemeColors();
+  const kit = kitStylesFor(jetons);
+  const styles = stylesFor(jetons);
 
   const [draft, setDraft] = useState<RegisterDraft>(emptyDraft);
   const [restored, setRestored] = useState(false);
@@ -723,10 +724,10 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   questionHint: { fontSize: typography.fontSize.sm, color: colors.mode.tool.muted },
   questionFields: { gap: spacing.md, marginTop: spacing.md },
-  fieldError: { fontSize: typography.fontSize.sm, color: colors.danger[600] },
+  fieldError: { fontSize: typography.fontSize.sm, color: t.danger },
   link: {
     fontSize: typography.fontSize.sm,
-    color: colors.brand[600],
+    color: t.brandText,
     fontWeight: typography.fontWeight.medium,
     paddingVertical: spacing.xs,
   },
@@ -754,7 +755,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   suggestionAddress: { fontSize: typography.fontSize.sm, color: t.text },
   // success[700] sur success[50] : 5,26:1, au-dessus du seuil AA pour ce corps de texte.
-  suggestionSource: { fontSize: typography.fontSize.xs, color: colors.success[700] },
+  suggestionSource: { fontSize: typography.fontSize.xs, color: t.success },
   lookupMiss: { fontSize: typography.fontSize.sm, color: colors.mode.tool.muted },
   strengthLabel: { fontSize: typography.fontSize.xs, fontWeight: typography.fontWeight.medium },
 });

@@ -34,6 +34,6 @@ export function ErrorState({
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: spacing.xl, paddingVertical: spacing['3xl'] },
   compactContainer: { flex: 0, paddingHorizontal: spacing.md, paddingVertical: spacing.lg },
-  title: { fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, color: colors.danger[500], marginBottom: spacing.xs },
+  title: { fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, color: t.danger, marginBottom: spacing.xs },
   message: { fontSize: typography.fontSize.sm, color: t.textSecondary, textAlign: 'center', marginBottom: spacing.md },
 });

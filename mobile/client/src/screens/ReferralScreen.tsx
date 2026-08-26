@@ -245,7 +245,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   codeLabel: {
     ...typography.preset.subhead,
-    color: colors.brand[600],
+    color: t.brandText,
     fontFamily: typography.fontFamily.bodyMedium,
     marginBottom: spacing.sm,
   },
@@ -253,7 +253,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     fontSize: typography.fontSize['2xl'],
     fontWeight: typography.fontWeight.bold,
     fontFamily: typography.fontFamily.mono,
-    color: colors.brand[700],
+    color: t.brandText,
     letterSpacing: 3,
     marginBottom: spacing.md,
   },

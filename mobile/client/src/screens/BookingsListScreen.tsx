@@ -7,6 +7,7 @@ import { Screen, Badge, Skeleton, EmptyState, ErrorState, AnimatedListItem, a11y
 import { useBookings } from '@/booking';
 import type { Booking } from '@/booking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import { formatAdresse, formatDateHeure, libelleStatut } from '@/lib/format';
 import type { RootStackParamList } from '@/navigation/types';
 
@@ -16,6 +17,7 @@ export function BookingsListScreen() {
   const { data: bookings, isLoading, isError, refetch, isRefetching } = useBookings();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const themeColors = useThemeColors();
+  const styles = stylesFor(themeColors);
 
   // Pas de transition quand l’utilisateur a réduit les mouvements.
   const entree = useEntree(FadeIn.duration(280));
@@ -43,7 +45,7 @@ export function BookingsListScreen() {
   return (
     <Screen>
       <Text
-        style={[styles.title, { color: themeColors.text }]}
+        style={styles.title}
         accessibilityRole="header"
       >
         Mes réservations
@@ -97,6 +99,7 @@ const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'neutral'
 const BookingCard = React.memo(function BookingCard({ booking }: { booking: Booking }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const themeColors = useThemeColors();
+  const styles = stylesFor(themeColors);
 
   return (
     <TouchableOpacity
@@ -104,13 +107,13 @@ const BookingCard = React.memo(function BookingCard({ booking }: { booking: Book
       onPress={() => navigation.navigate('BookingDetail', { bookingId: booking.id })}
       activeOpacity={0.7}
     >
-      <View style={[styles.card, { backgroundColor: themeColors.card }]}>
+      <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <Text style={[styles.serviceName, { color: themeColors.text }]}>{booking.service_name}</Text>
+          <Text style={styles.serviceName}>{booking.service_name}</Text>
           <Badge label={libelleStatut(etatDe(booking))} variant={statusVariant[etatDe(booking)] ?? 'neutral'} />
         </View>
-        <Text style={[styles.cardDate, { color: themeColors.textSecondary }]}>{formatDateHeure(booking.scheduled_date, booking.scheduled_time)}</Text>
-        <Text style={[styles.cardAddress, { color: themeColors.textMuted }]}>{formatAdresse(booking.address, booking.city)}</Text>
+        <Text style={styles.cardDate}>{formatDateHeure(booking.scheduled_date, booking.scheduled_time)}</Text>
+        <Text style={styles.cardAddress}>{formatAdresse(booking.address, booking.city)}</Text>
         {booking.provider_name && (
           <Text style={styles.cardProvider}>Prestataire: {booking.provider_name}</Text>
         )}
@@ -120,15 +123,20 @@ const BookingCard = React.memo(function BookingCard({ booking }: { booking: Book
   );
 });
 
-const styles = StyleSheet.create({
-  title: {
+/*
+ * LES COULEURS VIVENT DANS LES STYLES, PLUS A COTE. L'ecran figeait ses styles puis les
+ * rattrapait a chaque balise — cinq fois — et `cardProvider`/`trackHint` n'avaient meme
+ * pas de rattrapage : leur indigo fige rendait 4,47 sur le blanc et 3,88 sur la nuit.
+ */
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
+  title: { color: t.text,
     fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
     marginBottom: spacing.md,
   },
   skeletons: { gap: spacing.sm },
   list: { gap: spacing.sm, paddingBottom: spacing.xl },
-  card: {
+  card: { backgroundColor: t.card,
     borderRadius: radius.md,
     padding: spacing.md,
     ...shadows.xs,
@@ -138,26 +146,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  serviceName: {
+  serviceName: { color: t.text,
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
   },
-  cardDate: {
+  cardDate: { color: t.textSecondary,
     fontSize: typography.fontSize.sm,
     marginTop: spacing.xs,
   },
-  cardAddress: {
+  cardAddress: { color: t.textMuted,
     fontSize: typography.fontSize.xs,
     marginTop: 2,
   },
   cardProvider: {
     fontSize: typography.fontSize.xs,
-    color: colors.brand[600],
+    color: t.brandText,
     marginTop: spacing.xs,
   },
   trackHint: {
     fontSize: typography.fontSize.xs,
-    color: colors.brand[500],
+    color: t.brandText,
     marginTop: spacing.xs,
     fontWeight: typography.fontWeight.semibold,
   },

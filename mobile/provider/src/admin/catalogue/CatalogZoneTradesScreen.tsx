@@ -434,10 +434,10 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   rowTexte: { flex: 1 },
   rowTitre: { ...typography.preset.bodyReadable, color: t.text },
   rowMeta: { fontSize: typography.fontSize.xs, color: t.textMuted, marginTop: 2 },
-  rowMetaOk: { color: colors.success[600] },
+  rowMetaOk: { color: t.success },
   // Un métier de trajet vendu au forfait n'est pas une panne : c'est une décision qui n'a pas été
   // prise. La couleur d'alerte le signale sans crier au défaut.
-  rowMetaAlerte: { color: colors.warning[700] },
+  rowMetaAlerte: { color: t.warning },
 
   modalFond: {
     flex: 1,

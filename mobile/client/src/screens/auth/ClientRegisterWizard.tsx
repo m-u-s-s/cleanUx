@@ -56,7 +56,8 @@ function passwordStrength(value: string): { score: 0 | 1 | 2 | 3; label: string;
 }
 
 export function ClientRegisterWizard() {
-  const styles = stylesFor(useThemeColors());
+  const jetons = useThemeColors();
+  const styles = stylesFor(jetons);
 
   const [stepIndex, setStepIndex] = useState(0);
   const [clientKind, setClientKind] = useState<'individual' | 'company' | null>(null);
@@ -428,7 +429,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   questionHint: { fontSize: typography.fontSize.sm, color: colors.mode.tool.muted },
   questionFields: { gap: spacing.md, marginTop: spacing.md },
-  fieldError: { fontSize: typography.fontSize.sm, color: colors.danger[600] },
+  fieldError: { fontSize: typography.fontSize.sm, color: t.danger },
   strengthRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   strengthTrack: {
     flex: 1,

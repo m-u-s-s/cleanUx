@@ -211,7 +211,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   actionLabel: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.medium,
-    color: colors.brand[600],
+    color: t.brandText,
     textAlign: 'center',
   },
 });

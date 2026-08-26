@@ -61,9 +61,8 @@ type CardState = 'todo' | 'locked' | 'in_review' | 'needs_fix' | 'done';
 
 /**
  * Chaque teinte est choisie sur son contraste mesuré contre son propre lavis, ce libellé étant
- * du texte courant : surface[600] 6,99:1, warning[700] 4,92:1, danger[600] 4,59:1,
- * success[700] 5,26:1. Les nuances immédiatement plus claires — surface[500] à 4,27:1 et
- * success[600] à 3,61:1 — échouent au seuil de 4,5:1 et ne sont donc pas employées ici.
+ * du texte courant : surface[600] 6,99:1, warning[700] 4,92:1, danger[700] 5,91:1,
+ * success[700] 5,26:1. Les nuances immédiatement plus claires — surface[500] à 4,27:1, success[600] à 3,61:1 et danger[600] à 4,41:1 — échouent au seuil de 4,5:1 et ne sont donc pas employées ici.
  */
 const statePresentation = (t: ThemeTokens): Record<CardState, { label: string; color: string; background: string }> => ({
   // Les fonds neutres passent aux jetons ; les couleurs de TEXTE restent sémantiques, leurs
@@ -71,7 +70,7 @@ const statePresentation = (t: ThemeTokens): Record<CardState, { label: string; c
   todo: { label: 'À faire', color: t.textSecondary, background: t.inputBg },
   locked: { label: 'Verrouillé', color: t.textSecondary, background: t.inputBg },
   in_review: { label: 'En cours de vérification', color: colors.warning[700], background: colors.warning[50] },
-  needs_fix: { label: 'À corriger', color: colors.danger[600], background: colors.danger[50] },
+  needs_fix: { label: 'À corriger', color: colors.danger[700], background: colors.danger[50] },
   done: { label: 'Vérifié', color: colors.success[700], background: colors.success[50] },
 });
 

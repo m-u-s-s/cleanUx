@@ -265,7 +265,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   actions: { gap: spacing.sm, paddingVertical: spacing.md },
   erreur: {
-    color: colors.danger[500],
+    color: t.danger,
     fontSize: typography.fontSize.sm,
     paddingVertical: spacing.sm,
   },

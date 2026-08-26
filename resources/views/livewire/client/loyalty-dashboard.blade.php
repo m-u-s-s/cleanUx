@@ -101,7 +101,7 @@
                         'bg-indigo-50 border-indigo-300' => $currentTier && $currentTier->id === $tier->id,
                     ])>
                         <div class="flex-1">
-                            <p class="text-xl font-black" style="color: {{ $tier->color ?: 'var(--brio-ink)' }};">
+                            <p class="text-xl font-black brio-teinte" style="--teinte: {{ $tier->color ?: 'var(--brio-ink)' }};">
                                 {{ $tier->icon }} {{ $tier->name }}
                             </p>
                             <p class="text-xs text-slate-500 mt-1">

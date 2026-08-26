@@ -829,7 +829,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.brand[500],
   },
-  noticeText: { fontSize: typography.fontSize.sm, color: colors.brand[600], lineHeight: 20 },
+  noticeText: { fontSize: typography.fontSize.sm, color: t.brandText, lineHeight: 20 },
   error: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -840,7 +840,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderColor: colors.danger[500],
     backgroundColor: t.tint.danger,
   },
-  errorText: { flex: 1, fontSize: typography.fontSize.sm, color: colors.danger[700] },
+  errorText: { flex: 1, fontSize: typography.fontSize.sm, color: t.danger },
   pickRow: { gap: spacing.sm },
   documentRow: {
     gap: spacing.xs,
@@ -858,7 +858,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   documentHelp: { fontSize: typography.fontSize.xs, color: t.textSecondary },
   documentStatus: { fontSize: typography.fontSize.xs, color: t.textSecondary },
   // danger[700] sur fond blanc : le motif de refus est ce qu'il faut lire en premier.
-  documentRejected: { fontSize: typography.fontSize.sm, color: colors.danger[700] },
+  documentRejected: { fontSize: typography.fontSize.sm, color: t.danger },
   filePicked: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -870,7 +870,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     backgroundColor: t.card,
   },
   fileName: { flex: 1, fontSize: typography.fontSize.sm, color: t.text },
-  fileRemove: { fontSize: typography.fontSize.sm, color: colors.danger[600], fontWeight: typography.fontWeight.semibold },
+  fileRemove: { fontSize: typography.fontSize.sm, color: t.danger, fontWeight: typography.fontWeight.semibold },
   tradeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   tradeChip: {
     paddingVertical: spacing.xs + 2,
@@ -882,5 +882,5 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   tradeChipSelected: { borderColor: colors.brand[600], backgroundColor: t.tint.brand },
   tradeChipText: { fontSize: typography.fontSize.sm, color: t.textSecondary },
-  tradeChipTextSelected: { color: colors.brand[600], fontWeight: typography.fontWeight.semibold },
+  tradeChipTextSelected: { color: t.brandText, fontWeight: typography.fontWeight.semibold },
 });

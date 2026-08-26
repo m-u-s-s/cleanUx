@@ -53,7 +53,7 @@ const stylesFor = (theme: ThemeTokens) => StyleSheet.create({
     justifyContent: 'center',
   },
   initials: {
-    color: colors.brand[700],
+    color: theme.brandText,
     fontWeight: typography.fontWeight.semibold,
   },
 });

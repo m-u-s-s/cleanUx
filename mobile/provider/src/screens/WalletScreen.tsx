@@ -253,7 +253,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   stripeBannerText: {
     fontSize: typography.fontSize.sm,
-    color: colors.warning[700],
+    color: t.warning,
     flex: 1,
     marginRight: spacing.sm,
   },
@@ -303,6 +303,6 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
     fontVariant: ['tabular-nums'],
   },
-  positive: { color: colors.success[600] },
-  negative: { color: colors.danger[600] },
+  positive: { color: t.success },
+  negative: { color: t.danger },
 });

@@ -115,7 +115,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   title: { ...typography.preset.headline, color: t.text, marginBottom: spacing.sm },
   confirm: {
     fontSize: typography.fontSize.sm,
-    color: colors.danger[500],
+    color: t.danger,
     marginBottom: spacing.md,
     lineHeight: 20,
   },

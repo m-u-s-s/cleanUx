@@ -149,5 +149,5 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   kpiRow: { flexDirection: 'row', gap: spacing.sm, marginVertical: spacing.md },
   quickActions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
   quickCard: { width: '48%', backgroundColor: t.card, borderRadius: radius.md, padding: spacing.md, ...shadows.xs, alignItems: 'center' },
-  quickLabel: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.medium, color: colors.brand[600] },
+  quickLabel: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.medium, color: t.brandText },
 });

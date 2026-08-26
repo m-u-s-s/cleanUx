@@ -634,7 +634,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     color: t.textSecondary,
   },
   sortLabelActive: {
-    color: colors.brand[700],
+    color: t.brandText,
     fontWeight: typography.fontWeight.semibold,
   },
 
@@ -664,7 +664,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     color: t.textSecondary,
   },
   filterLabelActive: {
-    color: colors.brand[700],
+    color: t.brandText,
     fontWeight: typography.fontWeight.semibold,
   },
 
@@ -735,7 +735,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   balanceDue: {
     fontSize: typography.fontSize.xs,
-    color: colors.danger[600],
+    color: t.danger,
   },
   dueAt: {
     fontSize: typography.fontSize.xs,
@@ -752,7 +752,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   overdueWarningText: {
     fontSize: typography.fontSize.xs,
-    color: colors.danger[700],
+    color: t.danger,
     fontWeight: typography.fontWeight.medium,
   },
 });

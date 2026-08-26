@@ -72,6 +72,6 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     gap: spacing.sm,
   },
   statusText: { fontSize: typography.fontSize.sm, color: t.textSecondary },
-  requirementsText: { fontSize: typography.fontSize.xs, color: colors.warning[600] },
+  requirementsText: { fontSize: typography.fontSize.xs, color: t.warning },
   info: { fontSize: typography.fontSize.sm, color: t.textSecondary, marginBottom: spacing.lg },
 });

@@ -247,7 +247,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     color: t.text,
   },
   balanceDue: {
-    color: colors.danger[600],
+    color: t.danger,
   },
   section: {
     gap: spacing.xs,

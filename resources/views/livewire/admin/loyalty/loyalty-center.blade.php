@@ -34,7 +34,7 @@
                             class="rounded-xl border p-4 text-left hover:bg-slate-50 {{ $filterTierId === $row['tier']->id ? 'bg-indigo-50 border-indigo-300' : '' }}">
                         <p class="text-2xl">{{ $row['tier']->icon }}</p>
                         <p class="font-bold mt-1">{{ $row['tier']->name }}</p>
-                        <p class="text-3xl font-black mt-2" style="color: {{ $row['tier']->color }};">{{ number_format($row['count']) }}</p>
+                        <p class="text-3xl font-black mt-2 brio-teinte" style="--teinte: {{ $row['tier']->color }};">{{ number_format($row['count']) }}</p>
                         <p class="text-xs text-slate-500">membres</p>
                     </button>
                 @endforeach
@@ -64,7 +64,7 @@
                                     <p class="text-xs text-slate-500">{{ $m->user?->email }}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="font-bold text-sm" style="color: {{ $m->currentTier?->color ?? 'var(--brio-muted)' }};">
+                                    <p class="font-bold text-sm brio-teinte" style="--teinte: {{ $m->currentTier?->color ?? 'var(--brio-muted)' }};">
                                         {{ $m->currentTier?->icon }} {{ $m->currentTier?->name ?? '—' }}
                                     </p>
                                     <p class="text-xs text-slate-500">
@@ -86,7 +86,7 @@
                         <div>
                             <h2 class="text-lg font-black">{{ $selected->user?->name }}</h2>
                             <p class="text-xs text-slate-500">{{ $selected->user?->email }}</p>
-                            <p class="text-sm mt-2" style="color: {{ $selected->currentTier?->color ?: 'var(--brio-ink)' }};">
+                            <p class="text-sm mt-2 brio-teinte" style="--teinte: {{ $selected->currentTier?->color ?: 'var(--brio-ink)' }};">
                                 <span class="font-bold">{{ $selected->currentTier?->icon }} {{ $selected->currentTier?->name }}</span>
                                 · {{ number_format($selected->lifetime_points) }} pts cumulés
                                 · {{ number_format($selected->period_points) }} pts période

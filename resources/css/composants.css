@@ -1259,3 +1259,27 @@ body:not(.cx-shell) :is(input[type="checkbox"], input[type="radio"]) {
 }
 
 .brio-graphique-corps .apexcharts-canvas { margin-inline: auto; }
+
+/*
+ * UNE TEINTE VENUE DES DONNEES, RENDUE LISIBLE — quelle que soit la valeur en base.
+ *
+ * La couleur d'un niveau de fidelite n'est contrainte par rien : la fabrique de tests la tire
+ * au hasard, et la colonne accepte n'importe quel hexadecimal. Posee telle quelle sur du texte,
+ * la moitie de l'espace des couleurs est illisible dans l'un des deux themes.
+ *
+ * MESURE, sur la palette canonique des niveaux, en mode clair :
+ *   platine #e5e4e2  1,27      or     #ffd700  1,40
+ *   argent  #c0c0c0  1,82      bronze #cd7f32  3,14
+ *
+ * LA CLARTE SEULE EST CONTRAINTE. `oklch(from ...)` laisse passer `c` et `h` — saturation et
+ * teinte intactes — et ne borne que `l`. Un or vif reste un or vif, il cesse seulement d'etre
+ * trop pale pour le fond du moment. Mixer vers l'encre aurait aussi marche, mais en delavant
+ * tout : mesure a 4,20 dans le pire cas contre 4,77, et la couleur y perdait son identite.
+ *
+ * LA PREMIERE DECLARATION EST UN REPLI. Un moteur sans syntaxe de couleur relative ignore la
+ * seconde et garde le melange — imparfait, mais tres au-dessus du brut.
+ */
+.brio-teinte {
+    color: color-mix(in srgb, var(--teinte, currentColor) 40%, var(--brio-ink));
+    color: oklch(from var(--teinte, currentColor) clamp(var(--brio-teinte-min), l, var(--brio-teinte-max)) c h);
+}

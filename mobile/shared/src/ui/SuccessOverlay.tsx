@@ -133,7 +133,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   check: {
     fontSize: 56,
-    color: colors.success[500],
+    color: t.success,
     marginBottom: spacing.md,
   },
   title: {

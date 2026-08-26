@@ -4,13 +4,16 @@ import type { TextInput as RNTextInput } from 'react-native';
 import { Screen, Button, TextInput, Avatar } from '@/ui';
 import { useAuth } from '@/auth';
 import { apiClient } from '@/api';
-import { colors, spacing, typography } from '@/theme';
+import { spacing, typography, useThemeColors } from '@/theme';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ProfileEdit'>;
 
 export function ProfileEditScreen({ navigation }: Props) {
+  const styles = stylesFor(useThemeColors());
+
   const { user, setUser } = useAuth();
   const [name, setName] = useState(user?.name ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
@@ -80,8 +83,13 @@ export function ProfileEditScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+/*
+ * L'ECRAN N'AVAIT AUCUNE CONSCIENCE DU THEME. « Changer la photo » portait `brand.500`,
+ * un indigo fige : 4,47 sur le blanc et 3,88 sur le panneau de nuit — sous le seuil des
+ * DEUX cotes, la signature d'une couleur figee sur un fond qui bouge.
+ */
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   avatarWrapper: { alignItems: 'center', marginBottom: spacing.lg, marginTop: spacing.md },
-  changePhotoText: { color: colors.brand[500], fontSize: typography.fontSize.sm, marginTop: spacing.xs },
+  changePhotoText: { color: t.brandText, fontSize: typography.fontSize.sm, marginTop: spacing.xs },
   form: { gap: spacing.md },
 });

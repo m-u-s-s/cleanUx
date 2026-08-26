@@ -149,7 +149,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   address: { fontSize: typography.fontSize.xs, color: t.textSecondary, marginTop: 2 },
   schedule: {
     fontSize: typography.fontSize.xs,
-    color: colors.brand[600],
+    color: t.brandText,
     marginTop: spacing.xs,
   },
 });

@@ -87,7 +87,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   date: {
     fontSize: 10,
-    color: colors.success[600],
+    color: t.success,
     marginTop: spacing.xs,
   },
   empty: {

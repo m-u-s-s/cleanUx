@@ -99,7 +99,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   resultTitle: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.success[700],
+    color: t.success,
     marginBottom: spacing.xs,
   },
   resultText: { fontSize: typography.fontSize.base, color: t.text },

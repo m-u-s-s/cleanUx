@@ -381,18 +381,18 @@ export const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   footer: { gap: spacing.xs, marginTop: spacing.lg },
   switchText: {
     textAlign: 'center',
-    color: colors.brand[600],
+    color: t.brandText,
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.medium,
     paddingVertical: spacing.md,
   },
-  forgotText: { color: colors.brand[600], fontSize: typography.fontSize.sm, textAlign: 'right' },
+  forgotText: { color: t.brandText, fontSize: typography.fontSize.sm, textAlign: 'right' },
   termsRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
   checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: t.textMuted, marginTop: 2, flexShrink: 0 },
   checkboxChecked: { backgroundColor: colors.brand[500], borderColor: colors.brand[500] },
   termsText: { flex: 1, fontSize: typography.fontSize.sm, color: t.text },
-  termsLink: { color: colors.brand[600], textDecorationLine: 'underline' },
-  errorText: { fontSize: typography.fontSize.xs, color: colors.danger[600] },
+  termsLink: { color: t.brandText, textDecorationLine: 'underline' },
+  errorText: { fontSize: typography.fontSize.xs, color: t.danger },
   kindRow: { flexDirection: 'row', gap: spacing.sm },
   kindCard: {
     flex: 1,
@@ -433,14 +433,14 @@ export const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   tradeChipSelected: { borderColor: colors.brand[600], backgroundColor: t.tint.brand },
   tradeChipText: { fontSize: typography.fontSize.sm, color: t.textSecondary },
-  tradeChipTextSelected: { color: colors.brand[600], fontWeight: typography.fontWeight.semibold },
+  tradeChipTextSelected: { color: t.brandText, fontWeight: typography.fontWeight.semibold },
   fieldHelp: { fontSize: typography.fontSize.xs, color: colors.mode.tool.muted, marginTop: 2 },
-  fieldError: { fontSize: typography.fontSize.xs, color: colors.danger[600] },
+  fieldError: { fontSize: typography.fontSize.xs, color: t.danger },
   // Une liste vide n'est pas une erreur : elle se dit dans le ton d'une information, pas d'une alerte.
   fieldHint: { fontSize: typography.fontSize.xs, color: colors.mode.tool.muted, lineHeight: 18 },
   retryLink: {
     fontSize: typography.fontSize.sm,
-    color: colors.brand[600],
+    color: t.brandText,
     fontWeight: '600',
     // 44 points de haut : une cible tactile plus petite se rate, et c'est le seul geste utile
     // de l'ecran quand le reseau a lache.
@@ -459,11 +459,11 @@ export const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   formErrorBody: { flex: 1, gap: spacing.xs },
   // danger[700] sur danger[50] : contraste largement au-dessus du seuil AA.
-  formErrorText: { fontSize: typography.fontSize.sm, color: colors.danger[700] },
+  formErrorText: { fontSize: typography.fontSize.sm, color: t.danger },
   formErrorRetry: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
-    color: colors.brand[600],
+    color: t.brandText,
   },
   passwordWrapper: { position: 'relative' },
   eyeButton: { position: 'absolute', right: 12, top: 32, zIndex: 1 },

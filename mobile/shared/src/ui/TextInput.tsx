@@ -134,8 +134,8 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     color: t.textSecondary,
     backgroundColor: 'transparent',
   },
-  labelFocused: { color: colors.brand[500] },
-  labelError: { color: colors.danger[500] },
+  labelFocused: { color: t.brandText },
+  labelError: { color: t.danger },
   input: {
     fontSize: typography.fontSize.base,
     color: t.text,
@@ -146,7 +146,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   errorBorder: { borderColor: colors.danger[500] },
   error: {
     fontSize: typography.fontSize.xs,
-    color: colors.danger[500],
+    color: t.danger,
     marginLeft: spacing.xs,
   },
 });

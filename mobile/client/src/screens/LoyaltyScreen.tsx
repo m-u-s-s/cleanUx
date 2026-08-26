@@ -118,5 +118,5 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     fontWeight: typography.fontWeight.medium,
     color: t.text,
   },
-  rewardCost: { fontSize: typography.fontSize.xs, color: colors.brand[600] },
+  rewardCost: { fontSize: typography.fontSize.xs, color: t.brandText },
 });

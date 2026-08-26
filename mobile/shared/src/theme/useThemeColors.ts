@@ -107,12 +107,36 @@ export function useThemeColors() {
      * du texte donne un vert a 20 % d'opacite, illisible. Ces trois-la sont les memes que
      * `--brio-success/warning/danger` du web, et un test compare les deux fichiers.
      *
-     * La nuance monte d'un cran en sombre : `success.600` sur un fond de nuit passe sous
-     * le seuil de contraste, `success.500` le tient.
+     * LE RAISONNEMENT A LONGTEMPS MANQUE DE SA MOITIE CLAIRE. Il ne portait que sur la
+     * nuit — « `success.600` sur un fond de nuit passe sous le seuil, `success.500` le
+     * tient » — et personne n'avait fait le calcul dans l'autre sens. Sur le blanc des
+     * cartes, `success.600` rend 3,77 et `warning.600` rend 3,18 : sous le seuil, du
+     * mauvais cote. Le cran descend donc AUSSI en clair.
+     *
+     *   sur #ffffff        avant          apres
+     *   success            3,77  (600)    5,48  (700)
+     *   warning            3,18  (600)    5,02  (700)
+     *   danger             4,83  (600)    inchange, il passait deja
+     *
+     *   sur #111a2e (panneau de nuit) : 6,84 / 8,07 / 4,61 — les trois passent.
      */
-    success: isDark ? colors.success[500] : colors.success[600],
-    warning: isDark ? colors.warning[500] : colors.warning[600],
+    success: isDark ? colors.success[500] : colors.success[700],
+    warning: isDark ? colors.warning[500] : colors.warning[700],
     danger: isDark ? colors.danger[500] : colors.danger[600],
+
+    /*
+     * LA MARQUE, QUAND ELLE PORTE DU TEXTE.
+     *
+     * `brand` est volontairement identique dans les deux themes — un bouton plein garde son
+     * indigo. Mais AUCUN indigo unique ne tient sur les deux fonds quand il devient du
+     * texte : `brand.500` rend 4,47 sur le blanc et 3,88 sur le panneau de nuit. Il echoue
+     * des DEUX cotes, ce qui est la signature d'une valeur figee sur un fond qui bouge.
+     *
+     *   sur #ffffff   brand.600 = 6,29        sur #111a2e   brand.400 = 5,81
+     *
+     * Ce jeton ne remplace pas `brand` : il le double pour le seul cas du texte.
+     */
+    brandText: isDark ? colors.brand[400] : colors.brand[600],
 
     /** La lueur de marque du fond nuit. Absente en clair : elle n'y aurait aucun sens. */
     glow: isDark ? 'rgba(99, 102, 241, 0.30)' : 'transparent',

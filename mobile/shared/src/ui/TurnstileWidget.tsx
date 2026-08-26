@@ -1,7 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { env } from '@/config/env';
-import { colors, radius, spacing, typography } from '@/theme';
+import { colors, radius, spacing, typography, useThemeColors } from '@/theme';
+import type { ThemeTokens } from '@/theme/useThemeColors';
 
 /**
  * Charge react-native-webview sans jamais laisser échapper d'exception.
@@ -48,6 +49,8 @@ interface TurnstileWidgetProps {
 const WIDGET_HEIGHT = 74;
 
 export function TurnstileWidget({ onToken, onSkipped, testID }: TurnstileWidgetProps) {
+  const styles = stylesFor(useThemeColors());
+
   const siteKey = env.turnstileSiteKey;
   const [failed, setFailed] = useState(false);
 
@@ -150,12 +153,17 @@ export function TurnstileWidget({ onToken, onSkipped, testID }: TurnstileWidgetP
   );
 }
 
-const styles = StyleSheet.create({
+/*
+ * LE WIDGET N'A PAS DE FOND A LUI : `webview` est transparent, donc ce message se pose
+ * sur la surface de l'ecran hote — qui, elle, suit le theme. `danger.600` fige rendait
+ * 4,08 sur la nuit.
+ */
+const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   container: { minHeight: WIDGET_HEIGHT, borderRadius: radius.md, overflow: 'hidden' },
   webview: { height: WIDGET_HEIGHT, backgroundColor: 'transparent' },
   error: {
     fontSize: typography.fontSize.xs,
-    color: colors.danger[600],
+    color: t.danger,
     marginTop: spacing.xs,
   },
 });

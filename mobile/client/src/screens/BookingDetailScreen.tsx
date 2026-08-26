@@ -362,7 +362,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   codeRefus: {
     fontSize: typography.fontSize.sm,
-    color: colors.danger[600],
+    color: t.danger,
     marginTop: spacing.sm,
   },
 });

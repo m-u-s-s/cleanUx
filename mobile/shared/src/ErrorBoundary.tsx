@@ -61,5 +61,5 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   message: { fontSize: typography.fontSize.base, color: t.textSecondary, marginBottom: spacing.lg, textAlign: 'center' },
   // La couleur d'erreur est SÉMANTIQUE : son sens ne dépend pas du fond, et la thématiser la
   // viderait de ce sens.
-  debug: { fontSize: typography.fontSize.xs, color: colors.danger[500], marginBottom: spacing.md, fontFamily: 'monospace' },
+  debug: { fontSize: typography.fontSize.xs, color: t.danger, marginBottom: spacing.md, fontFamily: 'monospace' },
 });

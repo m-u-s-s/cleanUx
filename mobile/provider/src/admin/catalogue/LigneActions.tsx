@@ -108,5 +108,5 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   entree: { minHeight: 44, justifyContent: 'center', paddingHorizontal: spacing.sm },
   entreePressee: { backgroundColor: t.inputBg },
   libelle: { fontSize: typography.fontSize.sm, color: t.text },
-  libelleDestructif: { color: colors.danger[600] },
+  libelleDestructif: { color: t.danger },
 });
