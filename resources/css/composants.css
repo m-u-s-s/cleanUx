@@ -1283,3 +1283,105 @@ body:not(.cx-shell) :is(input[type="checkbox"], input[type="radio"]) {
     color: color-mix(in srgb, var(--teinte, currentColor) 40%, var(--brio-ink));
     color: oklch(from var(--teinte, currentColor) clamp(var(--brio-teinte-min), l, var(--brio-teinte-max)) c h);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DOUZE CLASSES QUE DES VUES VIVANTES ECRIVAIENT SANS QU'AUCUNE REGLE N'EXISTE.
+
+   Une classe absente ne casse rien : elle ne peint pas. Rien ne pouvait le dire —
+   ni le compilateur Blade, ni Tailwind, ni la suite. Le formulaire du catalogue
+   portait `brio-form-grid xl:grid-cols-1` : des colonnes demandees a une grille
+   qui n'en etait pas une, et `<label class="brio-field-label">` seule sur son
+   element, donc du texte brut.
+
+   Les champs, eux, N'ETAIENT PAS nus : `composants.css` les habille par selecteur
+   d'element. C'est le LABEL que rien ne touchait — aucune regle du depot ne vise
+   un `<label>`.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Le libelle d'un champ. `.ui-label` faisait deja cela sous l'ancien prefixe. */
+.brio-field-label {
+    display: block;
+    margin-bottom: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--brio-muted);
+}
+
+/* La grille d'un formulaire. Une seule colonne par defaut ; les vues ajoutent les leurs. */
+.brio-form-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+/* Le bandeau de filtres, au-dessus d'un tableau. */
+.brio-filter-panel {
+    border-radius: var(--cx-radius-lg, 24px);
+    border: 1px solid var(--brio-border);
+    background: var(--brio-card);
+    padding: 1rem;
+}
+
+/* Le pave d'attente, montre par `wire:loading` a la place du contenu. */
+.brio-loading-panel {
+    border-radius: var(--cx-radius-lg, 24px);
+    border: 1px solid var(--brio-border);
+    padding: 1rem;
+}
+
+/* Deux colonnes de renseignements, sous un titre. */
+.brio-meta-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .brio-meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Une carte qu'on choisit. `display: flex` est ce que `!items-center` attendait. */
+.brio-choice-card {
+    display: flex;
+    gap: 0.75rem;
+    border-radius: var(--cx-radius-md, 18px);
+    border: 1px solid var(--brio-border);
+    padding: 0.875rem 1rem;
+    cursor: pointer;
+    transition: border-color var(--cx-dur, 220ms) var(--cx-ease-out, ease),
+                background var(--cx-dur, 220ms) var(--cx-ease-out, ease);
+}
+
+.brio-choice-card:hover { border-color: var(--brio-muted); }
+
+/* La carte d'un avis client, et le bloc de reponse qu'un administrateur y ajoute. */
+.brio-feedback-shell {
+    border-radius: var(--cx-radius-lg, 24px);
+    border: 1px solid var(--brio-border);
+    background: var(--brio-card);
+    padding: 1.25rem;
+}
+
+.brio-feedback-response {
+    margin-top: 1rem;
+    border-radius: var(--cx-radius-md, 18px);
+    border-left: 3px solid var(--brio-info);
+    background: color-mix(in srgb, var(--brio-info) 8%, transparent);
+    padding: 0.875rem 1rem;
+}
+
+
+/* L'entree d'un element. `slideUp` existait deja dans motion.css. */
+.brio-fade-up {
+    animation: slideUp var(--cx-dur-slow, 420ms) var(--cx-ease-out, ease) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .brio-fade-up { animation: none; }
+}
+
+/* Une question du moteur de commande, cote vitrine. */
+.cx-question {
+    scroll-margin-top: 5rem;
+}
+

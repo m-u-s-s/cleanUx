@@ -107,14 +107,14 @@
          ═══════════════════════════════════════════════════════ --}}
     <x-ui.card title="Badges" subtitle="x-ui.badge — 5 tones">
         <div class="mt-4 flex flex-wrap items-center gap-3">
-            <x-ui.badge tone="neutral" label="Neutral" />
-            <x-ui.badge tone="blue" label="Blue" />
-            <x-ui.badge tone="green" label="Green" />
-            <x-ui.badge tone="amber" label="Amber" />
-            <x-ui.badge tone="red" label="Red" />
+            <x-ui.badge tone="neutral" label="Neutre" />
+            <x-ui.badge tone="info" label="Info" />
+            <x-ui.badge tone="success" label="Succès" />
+            <x-ui.badge tone="warning" label="Avertissement" />
+            <x-ui.badge tone="danger" label="Danger" />
         </div>
         <div class="brio-note mt-4">
-            <code class="text-xs">&lt;x-ui.badge tone="green" label="Active" /&gt;</code>
+            <code class="text-xs">&lt;x-ui.badge tone="success" label="Active" /&gt;</code>
         </div>
     </x-ui.card>
 

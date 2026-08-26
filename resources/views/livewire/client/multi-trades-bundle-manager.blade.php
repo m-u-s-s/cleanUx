@@ -160,7 +160,7 @@
                     <div>
                         <label class="ui-label">Code postal du chantier (optionnel)</label>
                         <input wire:model="postalCode" type="text" inputmode="numeric" placeholder="ex: 1000" class="ui-input">
-                        <p class="ui-help-msg">Permet de ne solliciter que les prestataires couvrant votre zone.</p>
+                        <p class="ui-help">Permet de ne solliciter que les prestataires couvrant votre zone.</p>
                         @error('postalCode') <p class="ui-error-msg">{{ $message }}</p> @enderror
                     </div>
                     <div>

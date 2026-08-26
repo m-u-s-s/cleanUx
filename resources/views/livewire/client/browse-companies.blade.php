@@ -87,7 +87,7 @@
 
                             @if(($org->providers_count ?? null) !== null)
                                 <div class="mt-3 flex flex-wrap gap-1">
-                                    <x-ui.badge tone="blue" icon="👥">
+                                    <x-ui.badge tone="info" icon="👥">
                                         {{ (int) $org->providers_count }} prestataire(s)
                                     </x-ui.badge>
                                 </div>

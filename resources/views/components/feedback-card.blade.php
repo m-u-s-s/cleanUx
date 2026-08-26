@@ -48,7 +48,7 @@
 
     @if(Route::has('admin.rendezvous.show') && $rdv)
         <div class="mt-4 flex justify-end">
-            <a href="{{ route('admin.rendezvous.show', $rdv->id) }}" class="brio-inline-action">
+            <a href="{{ route('admin.rendezvous.show', $rdv->id) }}" class="brio-lien inline-flex items-center gap-1.5">
                 🔎 Voir le rendez-vous lié
             </a>
         </div>
