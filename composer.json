@@ -77,7 +77,8 @@
         ],
         "test:parallele": [
             "@php artisan test --parallel --no-coverage"
-        ]
+        ],
+        "serve": "@php tools/serveur-dev.php"
     },
     "extra": {
         "laravel": {
