@@ -40,6 +40,11 @@ Route::post('/auth/forgot-password', ForgotPasswordController::class)->middlewar
 // Authenticated — Token management + identity
 // ─────────────────────────────────────────────
 
+/*
+ * PAS de `verified` sur ce groupe, et c'est deliberé : il ne contient QUE ce qui doit rester
+ * joignable sans adresse confirmee. Lire son etat, s'en faire renvoyer la preuve, ouvrir la page
+ * de confirmation, ou partir. L'exiger ici enfermerait dehors sans laisser de porte.
+ */
 Route::middleware('auth:sanctum')->group(function () {
 
     // Token refresh + grace period + identity

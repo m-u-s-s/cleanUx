@@ -43,7 +43,7 @@ use Illuminate\Support\Facades\Route;
 // Authenticated — Client endpoints
 // ─────────────────────────────────────────────
 
-Route::middleware('auth:sanctum')->prefix('client')->group(function () {
+Route::middleware(['auth:sanctum', 'verified'])->prefix('client')->group(function () {
 
     // SP3 — Annuaire des sociétés prestataires éligibles (browse mobile + web)
     Route::get('/companies', CompanyDirectoryController::class);
@@ -319,7 +319,7 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
 | fermerait à un comptable l'accès à la facturation de sa propre société. La garde utile n'est pas
 | le rôle plateforme mais l'organisation active, puis la permission — voir `Client\CompanyController`.
 */
-Route::middleware('auth:sanctum')->prefix('client/company')->group(function () {
+Route::middleware(['auth:sanctum', 'verified'])->prefix('client/company')->group(function () {
     Route::get('/overview', [ClientCompanyController::class, 'overview']);
 
     Route::get('/sites', [ClientCompanyController::class, 'sites']);
@@ -359,7 +359,7 @@ Route::middleware('auth:sanctum')->prefix('client/company')->group(function () {
 | filtre de rôle fermerait la porte à un contact d'entreprise qui n'est pas « client
 | particulier », alors que c'est lui qui décide.
 */
-Route::middleware('auth:sanctum')->prefix('client/quotes')->group(function () {
+Route::middleware(['auth:sanctum', 'verified'])->prefix('client/quotes')->group(function () {
     Route::get('/', [ReceivedQuoteController::class, 'index']);
     Route::get('/{quote}', [ReceivedQuoteController::class, 'show']);
     // Accepter CRÉE le travail : chaque ligne porte un métier et devient une réservation.
@@ -379,7 +379,7 @@ Route::middleware('auth:sanctum')->prefix('client/quotes')->group(function () {
 | Aucun middleware de rôle : le carnet est gardé par son PROPRIÉTAIRE. Un filtre de rôle
 | fermerait la porte à un contact d'entreprise, qui commande aussi pour lui-même.
 */
-Route::middleware('auth:sanctum')->prefix('client/places')->group(function () {
+Route::middleware(['auth:sanctum', 'verified'])->prefix('client/places')->group(function () {
     Route::get('/', [PlaceController::class, 'index']);
     Route::post('/', [PlaceController::class, 'store']);
     Route::patch('/{place}', [PlaceController::class, 'update']);
@@ -398,7 +398,7 @@ Route::middleware('auth:sanctum')->prefix('client/places')->group(function () {
 | et qu'on n'est pas devant un ordinateur. L'assistant est fait pour ceux qui ne veulent pas
 | naviguer dans un catalogue à deux niveaux — la situation par excellence d'un petit écran.
 */
-Route::middleware('auth:sanctum')->prefix('client')->group(function () {
+Route::middleware(['auth:sanctum', 'verified'])->prefix('client')->group(function () {
     Route::get('/budget', [HomeInsightsController::class, 'budget']);
     Route::get('/protection', [HomeInsightsController::class, 'protection']);
     // Sous drapeau : coupé, ce point répond 404 plutôt qu'une interprétation vide que
@@ -410,4 +410,4 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
 // Parity map — shared across all authenticated roles
 // GET /api/parity-map  (no /client prefix — intentional)
 // ─────────────────────────────────────────────
-Route::middleware('auth:sanctum')->get('/parity-map', ParityMapController::class)->name('api.parity-map');
+Route::middleware(['auth:sanctum', 'verified'])->get('/parity-map', ParityMapController::class)->name('api.parity-map');

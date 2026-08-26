@@ -160,7 +160,10 @@ Route::middleware('throttle:public-api')->group(function () {
     Route::post('/v2/pricing/quote', [PricingV2Controller::class, 'quote']);
 });
 
-// Phase GDPR v2 — Download d'export via URL signée
+/*
+ * PAS de `verified` ici : le droit d'acces de l'article 15 ne depend pas de l'etat du compte.
+ * L'URL signee borne deja cet acces-la.
+ */
 Route::middleware(['signed', 'auth:sanctum'])
     ->get('/client/gdpr/requests/{gdprRequest}/download',
         [GdprController::class, 'downloadExport'])

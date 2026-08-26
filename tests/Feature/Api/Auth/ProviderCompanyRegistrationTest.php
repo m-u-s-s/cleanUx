@@ -65,7 +65,7 @@ class ProviderCompanyRegistrationTest extends TestCase
             ->assertJsonPath('user.organization_type', 'provider_company')
             ->assertJsonPath('user.can_manage_company', true);
 
-        $this->actingAs($user, 'sanctum')
+        $this->actingAs($this->adresseConfirmee($user), 'sanctum')
             ->getJson('/api/provider/company/overview')
             ->assertOk();
     }
@@ -132,8 +132,8 @@ class ProviderCompanyRegistrationTest extends TestCase
 
         $user = User::where('email', 'nouveau@prestataire.test')->firstOrFail();
 
-        $this->actingAs($user, 'sanctum')->getJson('/api/provider/wallet/balance')->assertForbidden();
-        $this->actingAs($user, 'sanctum')->getJson('/api/provider/onboarding/progress')->assertOk();
+        $this->actingAs($this->adresseConfirmee($user), 'sanctum')->getJson('/api/provider/wallet/balance')->assertForbidden();
+        $this->actingAs($this->adresseConfirmee($user), 'sanctum')->getJson('/api/provider/onboarding/progress')->assertOk();
     }
 
     /**
@@ -150,5 +150,16 @@ class ProviderCompanyRegistrationTest extends TestCase
             'accept_terms' => true,
             'account_type' => 'provider',
         ], $overrides);
+    }
+
+    /**
+     * L'inscription laisse l'adresse non confirmée, et `verified` garde désormais l'API. Sans
+     * cela ces tests mesureraient CE refus-là, pas la frontière `provider.approved` qu'ils visent.
+     */
+    private function adresseConfirmee(User $user): User
+    {
+        $user->markEmailAsVerified();
+
+        return $user;
     }
 }

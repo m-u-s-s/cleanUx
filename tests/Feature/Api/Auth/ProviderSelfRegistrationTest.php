@@ -76,7 +76,7 @@ class ProviderSelfRegistrationTest extends TestCase
         $this->postJson('/api/auth/register', $this->payload(['account_type' => 'provider']))->assertCreated();
         $user = User::where('email', 'nouveau@prestataire.test')->firstOrFail();
 
-        $this->actingAs($user, 'sanctum')->getJson(self::OPEN_ROUTE)->assertOk();
+        $this->actingAs($this->adresseConfirmee($user), 'sanctum')->getJson(self::OPEN_ROUTE)->assertOk();
     }
 
     public function test_a_self_registered_provider_cannot_reach_the_rest_of_the_provider_surface(): void
@@ -84,7 +84,7 @@ class ProviderSelfRegistrationTest extends TestCase
         $this->postJson('/api/auth/register', $this->payload(['account_type' => 'provider']))->assertCreated();
         $user = User::where('email', 'nouveau@prestataire.test')->firstOrFail();
 
-        $this->actingAs($user, 'sanctum')->getJson(self::GATED_ROUTE)->assertForbidden();
+        $this->actingAs($this->adresseConfirmee($user), 'sanctum')->getJson(self::GATED_ROUTE)->assertForbidden();
     }
 
     public function test_approving_a_self_registered_provider_opens_the_full_surface(): void
@@ -94,7 +94,7 @@ class ProviderSelfRegistrationTest extends TestCase
 
         ProviderProfile::where('user_id', $user->id)->update(['status' => 'active']);
 
-        $this->actingAs($user, 'sanctum')->getJson(self::GATED_ROUTE)->assertOk();
+        $this->actingAs($this->adresseConfirmee($user), 'sanctum')->getJson(self::GATED_ROUTE)->assertOk();
     }
 
     /** Anti-régression la plus importante de ce lot. */
@@ -135,5 +135,16 @@ class ProviderSelfRegistrationTest extends TestCase
             'password_confirmation' => 'motdepasse123',
             'accept_terms' => true,
         ], $overrides);
+    }
+
+    /**
+     * L'inscription laisse l'adresse non confirmée, et `verified` garde désormais l'API. Sans
+     * cela ces tests mesureraient CE refus-là, pas la frontière `provider.approved` qu'ils visent.
+     */
+    private function adresseConfirmee(User $user): User
+    {
+        $user->markEmailAsVerified();
+
+        return $user;
     }
 }
