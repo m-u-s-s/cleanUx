@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Auth\RegistrationPhoneController;
 use App\Http\Controllers\Api\Auth\WebViewAuthController;
 use App\Http\Controllers\Api\AuthMeController;
 use App\Http\Controllers\Api\AuthRefreshController;
+use App\Http\Controllers\Api\EmailVerificationController;
 use Illuminate\Support\Facades\Route;
 
 // ─────────────────────────────────────────────
@@ -57,4 +58,9 @@ Route::middleware(['auth:sanctum', 'active.account'])->group(function () {
 
     Route::post('/auth/webview-ticket', [WebViewAuthController::class, 'ticket'])
         ->name('api.auth.webview-ticket');
+
+    // Le meme plafond que la route web equivalente de Fortify.
+    Route::post('/auth/email/verification-notification', EmailVerificationController::class)
+        ->middleware('throttle:6,1')
+        ->name('api.auth.email.resend');
 });
