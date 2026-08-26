@@ -173,30 +173,64 @@ const EVAL = (tol) => {
  * SOMBRE. Un `#f8fafc` rend 0,97 ; le fond du thème rend 0,006. Entre les deux, il n'y a
  * pas de cas limite à arbitrer.
  */
-const fondSuitLeTheme = async (page) => {
+export const fondSuitLeTheme = async (page) => {
   const etat = await page.evaluate(() => {
     const html = document.documentElement;
     const avait = html.classList.contains('dark');
 
     html.classList.add('dark');
 
-    const brut = getComputedStyle(document.body).backgroundColor;
-    const c = (brut.match(/[\d.]+/g) || []).map(Number);
+    const fondBody = getComputedStyle(document.body).backgroundColor;
+    const fondHtml = getComputedStyle(html).backgroundColor;
 
     if (!avait) html.classList.remove('dark');
 
-    if (c.length < 3) return null;
-
     /*
-     * L'ALPHA COMPTE. `rgba(255,255,255,.055)` est du verre SOMBRE pose sur la nuit du
-     * document, pas du blanc : le lire sur ses trois premières composantes le déclarerait
-     * clair à 100 %. Le multiplier par son alpha compose grossièrement sur un fond noir —
-     * suffisant pour un seuil qui ne cherche qu'à séparer le clair du sombre.
+     * LA CONVERSION EST CELLE DU NAVIGATEUR, PAS LA MIENNE.
+     *
+     * Une expression régulière sur la chaîne calculée lit `rgb(10, 14, 26)` et rien
+     * d'autre. Le navigateur rend `color(srgb 0.92 0.92 0.92)` pour un `color-mix` et
+     * `oklch(0.98 0.01 250)` pour un oklch — des composantes en 0–1, prises pour du
+     * 0–255 : un fond PRESQUE BLANC se lisait 0,0003 et passait le seuil. Le garde-fou
+     * était aveugle à la classe de fond qu'il existe pour attraper, et le système emploie
+     * `color-mix` à 29 endroits.
+     *
+     * La toile connaît tous les espaces. Elle rend aussi l'alpha honnête : peindre sur une
+     * sous-couche compose au lieu de multiplier — `rgba(255,255,255,.055)` vaut 0,0044 sur
+     * la nuit, pas 0,055.
+     *
+     * L'ORDRE DES SOUS-COUCHES SUIT CE QUE L'ŒIL VOIT : le noir d'abord (dernier recours si
+     * tout est transparent), puis `<html>`, puis `<body>` par-dessus.
      */
-    const a = c.length > 3 ? c[3] : 1;
-    const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    const cv = document.createElement('canvas');
+    cv.width = 1;
+    cv.height = 1;
 
-    return { lum: (0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2])) * a, brut };
+    const ctx = cv.getContext('2d');
+
+    if (!ctx) return null;
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, 1, 1);
+
+    for (const couche of [fondHtml, fondBody]) {
+      /*
+       * Une valeur que la toile refuse laisse `fillStyle` INCHANGÉ. Sans cette reprise,
+       * la couche refusée repeindrait la précédente avec la couleur de repli au lieu
+       * d'être sautée.
+       */
+      ctx.fillStyle = '#000';
+      ctx.fillStyle = couche;
+
+      if (ctx.fillStyle === '#000000') continue;
+
+      ctx.fillRect(0, 0, 1, 1);
+    }
+
+    const [r, v, b] = ctx.getImageData(0, 0, 1, 1).data;
+    const f = (x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); };
+
+    return { lum: 0.2126 * f(r) + 0.7152 * f(v) + 0.0722 * f(b), brut: fondBody };
   });
 
   if (!etat) return { ok: true, detail: null };
