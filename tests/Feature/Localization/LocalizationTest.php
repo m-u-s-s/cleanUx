@@ -75,7 +75,19 @@ class LocalizationTest extends TestCase
             ->post('/locale', ['locale' => 'en']);
 
         $response->assertRedirect('/');
-        $this->assertSame('en', $user->fresh()->locale);
+
+        /*
+         * `en_US`, PAS `en` — et le titre de cette section disait deja `LocaleController`.
+         *
+         * Le test a ete ecrit pour le controleur ; c'est une FERMETURE qui avait pris la route,
+         * et l'assertion passait par coincidence : la fermeture ne posait une region que si
+         * l'ancienne valeur en portait une, et `'fr'` n'en porte pas.
+         *
+         * Le controleur enregistre la forme canonique de `userPersistedFormat()`, la meme pour
+         * les sept langues. `preferredLocale()` normalise dans les deux sens, donc rien ne se
+         * casse — mais une seule forme vaut mieux que deux selon d'ou l'on vient.
+         */
+        $this->assertSame('en_US', $user->fresh()->locale);
     }
 
     public function test_invalid_locale_is_rejected(): void

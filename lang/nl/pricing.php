@@ -8,8 +8,11 @@
  * een configuratiewijziging — en zo toont een platform uiteindelijk een regel die het niet meer
  * toepast.
  *
- * Dit bestand dekt dezelfde talen als `face_check.php` — fr, nl, en — en geen andere: een vierde
- * taal toevoegen zonder de bijbehorende schermen zou een dekking suggereren die nergens bestaat.
+ * Dit bestand dekt dezelfde talen als `face_check.php`, en die verzameling is nu die welke in
+ * `config/i18n.php` als ingeschakeld staat. De regel uit de vorige notitie blijft gelden — kondig
+ * nooit een taal aan zonder de teksten erachter — maar wordt nu door een test afgedwongen in
+ * plaats van door een opmerking: `UneLangueAnnonceeEstUneLangueTraduiteTest` weigert een
+ * ingeschakelde taal waarvan de bestanden ontbreken, onvolledig zijn of een letterlijke kopie.
  */
 return [
 

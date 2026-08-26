@@ -8,8 +8,11 @@
  * configuration change — which is precisely how a platform ends up displaying a rule it no longer
  * applies.
  *
- * This file covers the same languages as `face_check.php` — fr, nl, en — and no others: adding a
- * fourth language without the screens that go with it would suggest a coverage that exists nowhere.
+ * This file covers the same languages as `face_check.php`, and that set is now the one declared
+ * enabled in `config/i18n.php`. The rule the earlier note stated still holds — never announce a
+ * language without the strings behind it — but it is now enforced by a test rather than by a
+ * comment: `UneLangueAnnonceeEstUneLangueTraduiteTest` refuses an enabled locale whose files are
+ * missing, incomplete, or a byte-for-byte copy of another language.
  */
 return [
 

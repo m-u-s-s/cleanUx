@@ -8,6 +8,8 @@ use App\Services\Assistant\Actions\ActionDetector;
 use App\Services\Assistant\Actions\AssistantActionExecutor;
 use App\Services\Assistant\KnowledgeBase;
 use App\Services\Assistant\Stats\AssistantStats;
+use App\Services\I18n\LocaleResolver;
+use Illuminate\Support\Facades\Config;
 
 /** Construit le contexte dynamique pour le chatbot Brio. */
 class AssistantContextBuilder
@@ -285,10 +287,27 @@ Ne jamais exécuter d'actions destructives sans confirmation explicite.",
     // Prompt de base commun
     // ──────────────────────────────────────────────────────
 
+    /**
+     * LA LANGUE DE REPONSE SUIT CELLE DE L'UTILISATEUR, PLUS UN TEST BINAIRE.
+     *
+     * La ligne ecrite ici comparait `locale` a `'nl_BE'` et repondait « francais » a tout le
+     * reste : un utilisateur espagnol, italien ou allemand recevait des reponses en francais,
+     * dans une application dont l'interface, elle, etait dans sa langue.
+     *
+     * Le nom vient de `config/i18n.php`, deja ecrit en francais ('Espagnol', 'Allemand') —
+     * c'est la langue de cette consigne. Le repli est le francais, langue par defaut.
+     */
+    private function langueDeReponse(User $user): string
+    {
+        $code = app(LocaleResolver::class)->normalize($user->locale) ?? 'fr';
+
+        return mb_strtolower((string) Config::get("i18n.locales.{$code}.name", 'Français'));
+    }
+
     private function basePrompt(User $user): string
     {
         return "Tu es l'assistant Brio, une plateforme professionnelle de services de nettoyage en Belgique.
-Tu réponds toujours en ".($user->locale === 'nl_BE' ? 'néerlandais' : 'français').".
+Tu réponds toujours en ".$this->langueDeReponse($user).".
 Tu es utile, concis et professionnel. Tu n'inventes jamais de données — si tu ne sais pas, tu le dis.
 Date actuelle : ".now()->format('d/m/Y H:i').'.
 

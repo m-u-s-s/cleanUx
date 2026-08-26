@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\HealthCheckController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PremiumCheckoutController;
 use App\Http\Controllers\PricingPageController;
 use App\Http\Controllers\PublicSeoController;
@@ -41,31 +42,23 @@ if (! app()->isProduction()) {
 
 Route::get('/pricing', PricingPageController::class)->name('pricing');
 
-Route::post('/locale', function (Request $request) {
-    $locale = $request->validate([
-        'locale' => ['required', 'in:fr,nl,en'],
-    ])['locale'];
-
-    session(['locale' => $locale]);
-    app()->setLocale($locale);
-
-    if ($request->user()) {
-        $current = (string) ($request->user()->locale ?? '');
-        $userLocale = $locale;
-        if (str_contains($current, '_')) {
-            $region = explode('_', $current, 2)[1] ?? '';
-            if ($region !== '') {
-                $userLocale = $locale.'_'.$region;
-            }
-        }
-
-        $request->user()->forceFill([
-            'locale' => $userLocale,
-        ])->save();
-    }
-
-    return redirect()->to(route('home'));
-})->name('locale.switch');
+/*
+ * LA BASCULE DE LANGUE PASSE PAR SON CONTROLEUR, PAS PAR UNE FERMETURE.
+ *
+ * La fermeture qui vivait ici codait `in:fr,nl,en` EN DUR, pendant que `config/i18n.php` en
+ * declarait six actives : trois langues annoncees et impossibles a choisir. `LocaleController`
+ * existait deja, sans route, et faisait strictement plus —
+ *
+ *   il lit la configuration au lieu d'une liste figee ;
+ *   il pose un cookie d'un an, la ou la session seule oubliait au navigateur suivant ;
+ *   il renvoie ou l'on etait (`back()`), au lieu de ramener a l'accueil ;
+ *   il signale une langue non prise en charge au lieu de lever une erreur de validation.
+ *
+ * La region que la fermeture s'efforcait de conserver n'est lue NULLE PART : aucun `explode`,
+ * aucun `substr` sur `users.locale` dans tout `app/`. `userPersistedFormat()` du resolveur
+ * connait les sept langues et suffit.
+ */
+Route::post('/locale', [LocaleController::class, 'update'])->name('locale.switch');
 
 Route::post('/country', function (Request $request) {
     $country = Country::query()

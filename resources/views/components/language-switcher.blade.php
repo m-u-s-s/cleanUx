@@ -1,11 +1,25 @@
 @php
-    $locales = [
-        'fr' => ['flag' => '🇫🇷', 'label' => 'Français',  'short' => 'FR'],
-        'nl' => ['flag' => '🇳🇱', 'label' => 'Nederlands', 'short' => 'NL'],
-        'en' => ['flag' => '🇬🇧', 'label' => 'English',    'short' => 'EN'],
-    ];
+    /*
+        LA LISTE VIENT DE LA CONFIGURATION, PLUS D'ICI.
+
+        Trois langues etaient codees en dur pendant que `config/i18n.php` en declarait SIX
+        actives : l'espagnol, l'italien et l'allemand etaient annonces et impossibles a choisir.
+        `LocaleResolver::availableForSwitcher()` existait exactement pour cela — l'API et la
+        console d'administration l'appellent deja, ce selecteur-ci l'ignorait.
+
+        Le code court s'obtient du code de langue : le maintenir a la main dans une troisieme
+        liste, c'est se donner une troisieme occasion de diverger.
+    */
+    $locales = collect(app(\App\Services\I18n\LocaleResolver::class)->availableForSwitcher())
+        ->mapWithKeys(fn (array $l): array => [$l['code'] => [
+            'flag' => $l['flag'],
+            'label' => $l['native_name'],
+            'short' => strtoupper($l['code']),
+        ]])
+        ->all();
+
     $current = app()->getLocale();
-    $currentInfo = $locales[$current] ?? $locales['fr'];
+    $currentInfo = $locales[$current] ?? reset($locales);
 @endphp
 
 <div x-data="{ open: false }" @click.away="open = false" class="relative inline-block">
