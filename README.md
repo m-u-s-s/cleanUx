@@ -15,7 +15,7 @@ npm install
 cp .env.example .env && php artisan key:generate
 php artisan migrate:fresh --seed
 npm run build
-php artisan serve
+composer serve
 ```
 
 Vous obtenez une base peuplée : 6 secteurs, 16 métiers, 6 zones, des comptes de démonstration.

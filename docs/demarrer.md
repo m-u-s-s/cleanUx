@@ -62,10 +62,15 @@ harnais d'essai emploient la même valeur.
 
 ```bash
 npm run build          # ou `npm run dev` pour recompiler à chaque modification
-php artisan serve
+composer serve
 ```
 
 La plateforme répond sur `http://127.0.0.1:8000`.
+
+`composer serve` — et non `php artisan serve` — parce que le serveur doit démarrer sans
+opcache : sous le SAPI `cli-server`, PHP 8.5.5 compile mal et l’application meurt sur un
+« A facade root has not been set » qui n’accuse pas la bonne pièce. Le lanceur
+`tools/serveur-dev.php` pose le `PHP_INI_SCAN_DIR` qui atteint le processus enfant.
 
 Pour le temps réel (chat, présence des prestataires, suivi de course), lancez aussi :
 
