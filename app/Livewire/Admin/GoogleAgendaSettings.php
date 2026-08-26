@@ -162,7 +162,7 @@ class GoogleAgendaSettings extends Component
         $this->activeConnectionsCount = GoogleCalendarConnection::query()->where('sync_enabled', true)->count();
         $this->employeeConnectionsCount = GoogleCalendarConnection::query()
             ->where('sync_enabled', true)
-            ->whereHas('user', fn ($q) => $q->where('role', 'employe'))
+            ->whereHas('user', fn ($q) => $q->providers())
             ->count();
 
         $summary = app(GoogleCalendarSyncService::class)->healthSummary(24);

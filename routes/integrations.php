@@ -19,7 +19,11 @@ Route::match(['POST', 'DELETE'], '/google/calendar/disconnect', [GoogleCalendarA
 // pendant que la navigation cachait leur tuile : une porte invisible mais deverrouillee, c'est-a-dire
 // l'inverse exact du defaut qu'on corrige. L'intermediaire est sans effet sur une route qui ne
 // declare aucune capacite.
-Route::middleware(['role:admin', 'module_gate'])->group(function () {
+// `enforce_2fa` MANQUAIT : sur 110 routes d'administration web, celle-ci etait la SEULE sans.
+// Elle ouvre le reglage d'une integration de calendrier — la creation d'un jeton OAuth au nom
+// de la plateforme. Un administrateur non enrole etait renvoye vers l'activation partout
+// ailleurs, et passait ici.
+Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])->group(function () {
     $googleAgendaSettings = class_exists(GoogleAgendaSettings::class)
         ? GoogleAgendaSettings::class
         : function () {

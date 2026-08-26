@@ -218,8 +218,13 @@ class QuoteRevisionArbiter
      */
     private function administrateurs()
     {
+        /*
+         * LA PORTEE DU MODELE, PAS LA COLONNE. `where('role', 'admin')` ne voit ni un admin
+         * marque par `platform_role` seul, ni un `super_admin` : l'arbitrage partait alors a
+         * PERSONNE, en silence. `scopeAdmins()` couvre les deux signaux.
+         */
         return User::query()
-            ->where('role', 'admin')
+            ->admins()
             ->where('is_active', true)
             ->get();
     }

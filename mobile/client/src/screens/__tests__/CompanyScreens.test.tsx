@@ -90,11 +90,17 @@ describe('CompanyOverviewScreen', () => {
     const { getByText } = afficher(<CompanyOverviewScreen />);
     await waitFor(() => expect(getByText('Facility Corp')).toBeTruthy());
 
+    /*
+     * CE TEST ENCODAIT LE DEFAUT. Il attendait `CompanySites` et `CompanyBilling` — deux noms
+     * que la pile de l'espace societe ne monte NULLE PART. La barre les declare sous
+     * `CompanySitesTab` et `CompanyBillingTab`. Le bouton envoyait donc vers le vide, et le
+     * test le certifiait, vert, en ne mesurant que l'emission.
+     */
     fireEvent.press(getByText('Mes locaux'));
-    expect(mockNavigate).toHaveBeenCalledWith('CompanySites');
+    expect(mockNavigate).toHaveBeenCalledWith('CompanySitesTab');
 
     fireEvent.press(getByText('Facturation'));
-    expect(mockNavigate).toHaveBeenCalledWith('CompanyBilling');
+    expect(mockNavigate).toHaveBeenCalledWith('CompanyBillingTab');
   });
 });
 

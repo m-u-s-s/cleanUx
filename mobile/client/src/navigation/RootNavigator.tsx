@@ -132,6 +132,55 @@ export function RootNavigator() {
             component={InvoiceDetailScreen}
             options={{ headerShown: true, title: 'Facture' }}
           />
+
+          {/*
+            CE QUE `BookingDetail` ET `Modules` VISENT DÉJÀ, DEPUIS CETTE PILE.
+
+            Les deux écrans étaient montés ici — le premier exprès, comme écran PARTAGÉ —
+            mais AUCUNE de leurs destinations ne l'était. Le bouton « Payer » s'affichait
+            pour une réservation en attente et ne payait pas ; le répertoire de modules
+            n'ouvrait aucun module. Rien ne plantait : ce fichier le dit lui-même, une route
+            absente ne lève rien, elle ne fait simplement rien.
+
+            Ces routes n'élargissent pas l'espace société. Aucune n'est atteignable depuis la
+            barre : leur seule porte est le détail d'une réservation, déjà monté ici. La
+            règle du haut — ni parrainage ni fidélité dans cet espace — reste entière.
+          */}
+          <Stack.Screen
+            name="EmbeddedModule"
+            component={EmbeddedModuleRoute}
+            options={{ headerShown: true }}
+          />
+          <Stack.Screen
+            name="PaymentCheckout"
+            component={PaymentCheckoutScreen}
+            options={{ headerShown: true, title: 'Paiement' }}
+          />
+          <Stack.Screen
+            name="MissionTracking"
+            component={MissionTrackingScreen}
+            options={{ headerShown: true, title: 'Suivi' }}
+          />
+          <Stack.Screen
+            name="QRScan"
+            component={QRScanScreen}
+            options={{ headerShown: true, title: 'Code de présence' }}
+          />
+          <Stack.Screen
+            name="Rating"
+            component={RatingScreen}
+            options={{ headerShown: true, title: 'Votre avis' }}
+          />
+          <Stack.Screen
+            name="Tips"
+            component={TipsScreen}
+            options={{ headerShown: true, title: 'Pourboire' }}
+          />
+          <Stack.Screen
+            name="CompanyGovernance"
+            component={CompanyGovernanceScreen}
+            options={{ headerShown: true, title: 'Pilotage' }}
+          />
           {/*
             L'ISSUE VERS L'ESPACE PERSONNEL EST UN ONGLET, PAS UNE ROUTE DÉCLARÉE ICI.
 
@@ -342,41 +391,6 @@ export function RootNavigator() {
               La porte d'entrée vit dans le profil, conditionnée à l'appartenance à une société
               cliente : voir `ProfileScreen`.
             */}
-            <Stack.Screen
-              name="CompanyOverview"
-              component={CompanyOverviewScreen}
-              options={{ headerShown: true, title: 'Espace entreprise' }}
-            />
-            <Stack.Screen
-              name="CompanySites"
-              component={CompanySitesScreen}
-              options={{ headerShown: true, title: 'Mes locaux' }}
-            />
-            <Stack.Screen
-              name="CompanyBookings"
-              component={CompanyBookingsScreen}
-              options={{ headerShown: true, title: 'Réservations société' }}
-            />
-            <Stack.Screen
-              name="CompanyMembers"
-              component={CompanyMembersScreen}
-              options={{ headerShown: true, title: 'Membres' }}
-            />
-            <Stack.Screen
-              name="CompanyContracts"
-              component={CompanyContractsScreen}
-              options={{ headerShown: true, title: 'Contrats' }}
-            />
-            <Stack.Screen
-              name="CompanyBilling"
-              component={CompanyBillingScreen}
-              options={{ headerShown: true, title: 'Facturation' }}
-            />
-            <Stack.Screen
-              name="CompanyGovernance"
-              component={CompanyGovernanceScreen}
-              options={{ headerShown: true, title: 'Pilotage' }}
-            />
           </>
         ) : (
           <>
@@ -385,7 +399,18 @@ export function RootNavigator() {
             <Stack.Screen name="Legal" component={LegalScreen} options={({ route }) => ({ title: route.params.type === 'terms' ? "CGU" : 'Confidentialité', headerShown: true })} />
           </>
         )}
-      </Stack.Navigator>
+              {/*
+          LES SEPT ROUTES `Company*` ONT ETE RETIREES D'ICI.
+
+          Elles etaient montees sur la pile PERSONNELLE, ou `resolveClientSpace` ne place
+          jamais un membre de societe : quatre n'etaient visees par personne, et les trois
+          autres ne le sont que depuis `CompanyOverviewScreen`, qui ne s'affiche que dans
+          l'espace societe — ou elles sont desormais montees.
+
+          Une route montee et joignable par personne est le contraire d'un filet : elle fait
+          croire que le chemin existe.
+        */}
+        </Stack.Navigator>
     </View>
   );
 }

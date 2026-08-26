@@ -36,11 +36,22 @@ describe('Joignabilité de l’espace société cliente', () => {
     expect(lire('navigation/types.ts')).toMatch(new RegExp(`${ecran}\\s*:`));
   });
 
-  it.each(ECRANS)('%s est monté dans le navigateur racine', (ecran) => {
-    const source = lire('navigation/RootNavigator.tsx');
+  /*
+   * CE TEST CHERCHAIT UN NOM N'IMPORTE OU DANS LE FICHIER — et c'est precisement l'angle
+   * mort. `RootNavigator` monte une pile PAR ESPACE : une route peut exister dans le fichier
+   * et etre absente de la pile reellement montee. Le test passait donc au vert pour quatre
+   * ecrans montes sur la pile PERSONNELLE, ou aucun membre de societe ne va jamais.
+   *
+   * Trois de ces ecrans sont d'ailleurs des ONGLETS, declares sous un autre nom.
+   *
+   * `UneCibleViseeDoitEtreMontee` decoupe les piles et croise les cibles ; celui-ci se
+   * contente desormais de verifier que le composant est BRANCHE quelque part dans l'espace.
+   */
+  it.each(ECRANS)('%s est branché dans l’espace société', (ecran) => {
+    const surfaces = lire('navigation/RootNavigator.tsx') + lire('company/ClientCompanyNavigator.tsx');
 
-    expect(source).toContain(`${ecran}Screen`);
-    expect(source).toMatch(new RegExp(`name="${ecran}"`));
+    expect(surfaces).toContain(`${ecran}Screen`);
+    expect(surfaces).toMatch(new RegExp(`name="${ecran}(Tab)?"`));
   });
 
   it('est un ESPACE au démarrage, pas un écran poussé sur la pile personnelle', () => {

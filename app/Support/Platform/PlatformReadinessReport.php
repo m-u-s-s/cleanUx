@@ -60,7 +60,7 @@ class PlatformReadinessReport
                 key: 'employees_without_active_zone_assignment',
                 label: 'Employés sans affectation de zone active',
                 count: User::query()
-                    ->where('role', User::ROLE_EMPLOYE)
+                    ->providers()
                     ->whereDoesntHave('zoneAssignments', fn ($query) => $query->where('is_active', true))
                     ->count(),
                 severity: 'error'

@@ -262,7 +262,7 @@ class PlanningAdmin extends Component
     public function getEmployesProperty(): Collection
     {
         return User::query()
-            ->where('role', User::ROLE_EMPLOYE)
+            ->providers()
             ->where('is_active', true)
             ->orderBy('name')
             ->get();

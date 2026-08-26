@@ -45,3 +45,6 @@ storage/app/parity_sweep_results.json
 # pipeline graphify. Ce sont des mesures, pas du code.
 /graphify-out/
 /app/graphify-out/
+
+# Sortie ponctuelle d'un script de migration de theme : elle n'a rien a faire ici.
+.migration-teintes.json

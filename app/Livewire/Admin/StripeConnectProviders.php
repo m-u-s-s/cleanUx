@@ -14,7 +14,7 @@ class StripeConnectProviders extends Component
     {
         return view('livewire.admin.stripe-connect-providers', [
             'employees' => User::query()
-                ->where('role', 'employe')
+                ->providers()
                 ->orderBy('stripe_connect_status')
                 ->orderBy('name')
                 ->get(),

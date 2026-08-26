@@ -459,7 +459,16 @@ Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
  * obligatoire protège en premier. Un administrateur non enrôlé était renvoyé vers l'activation
  * partout ailleurs, et téléchargeait ces documents ici.
  */
-Route::middleware(['auth', 'role:admin', 'enforce_2fa'])->group(function () {
+/*
+ * `auth` SANS GARDE NOMME PREND CELUI PAR DEFAUT — c'est-a-dire `web`, pilote par la SESSION
+ * (`config/auth.php:19`). Or le groupe `api` ne demarre aucune session : un porteur de jeton
+ * Bearer ne pouvait pas s'authentifier ici, et cette route etait la SEULE des 119 de
+ * `api/admin/*` dans ce cas — toutes ses voisines du meme fichier ecrivent `auth:sanctum`.
+ *
+ * Le test qui la couvrait passait pour une mauvaise raison : `actingAs()` pose l'utilisateur
+ * DIRECTEMENT sur le garde, donc il n'exerce jamais le chemin du jeton.
+ */
+Route::middleware(['auth:sanctum', 'role:admin', 'enforce_2fa'])->group(function () {
     Route::get('/admin/onboarding-documents/{document}/file', [ProviderOnboardingController::class, 'downloadDocument'])
         ->name('api.admin.onboarding.document.file');
 });

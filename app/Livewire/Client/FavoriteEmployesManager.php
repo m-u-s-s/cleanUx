@@ -43,7 +43,7 @@ class FavoriteEmployesManager extends Component
     public function getEmployesProperty(): Collection
     {
         return User::query()
-            ->where('role', 'employe')
+            ->providers()
             ->when($this->search !== '', function ($query) {
                 $query->where('name', 'like', '%'.$this->search.'%');
             })

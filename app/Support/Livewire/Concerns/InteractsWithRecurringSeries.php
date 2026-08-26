@@ -70,7 +70,7 @@ trait InteractsWithRecurringSeries
         $zoneId = $this->currentRendezVous->service_zone_id;
 
         return User::query()
-            ->where('role', 'employe')
+            ->providers()
             ->where('is_active', true)
             ->when($zoneId, function ($query) use ($zoneId) {
                 $query->where(function ($employeeQuery) use ($zoneId) {

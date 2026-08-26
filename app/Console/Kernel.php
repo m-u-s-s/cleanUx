@@ -68,6 +68,28 @@ class Kernel extends ConsoleKernel
         // Recurring bookings — create and dispatch daily due occurrences
         $schedule->command('bookings:process-recurring')->dailyAt('06:30')->withoutOverlapping();
 
+        /*
+         * TROIS COMMANDES ECRITES, CORRECTES, ET QUE RIEN NE DECLENCHAIT.
+         *
+         * Mesure : elles n'etaient citees que dans leur propre fichier — ni ici, ni dans un
+         * appel, ni dans la CI, ni dans un script de deploiement. Ce n'etait pas du code mort :
+         * c'etait du code DEBRANCHE, et la difference tient en une ligne.
+         *
+         * Ce que leur absence coutait :
+         *   disputes:process-sla     le delai d'un litige n'etait JAMAIS escalade.
+         *   matching:refresh-metrics `provider_performance_metrics` comptait ZERO ligne, et
+         *                            `MatchingScoreEngine` y lit trois de ses criteres. Le
+         *                            moteur encaisse le `null` proprement, donc les scores ne
+         *                            sont pas faux — mais taux d'acceptation, taux de clôture
+         *                            et delai de reponse ne pesaient rien.
+         *   loyalty:reevaluate-tiers les MONTEES de palier fonctionnent, elles suivent
+         *                            l'activite. C'est la RETROGRADATION par inactivite qui
+         *                            n'avait que cette commande pour declencheur.
+         */
+        $schedule->command('disputes:process-sla')->hourly()->withoutOverlapping();
+        $schedule->command('matching:refresh-metrics')->dailyAt('03:30')->withoutOverlapping();
+        $schedule->command('loyalty:reevaluate-tiers')->dailyAt('04:15')->withoutOverlapping();
+
         // NPS surveys — send post-booking surveys to eligible clients
         $schedule->command('nps:send-surveys')->dailyAt('10:00')->withoutOverlapping();
 

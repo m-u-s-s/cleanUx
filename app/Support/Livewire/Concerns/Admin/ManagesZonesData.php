@@ -196,7 +196,7 @@ trait ManagesZonesData
     public function getAvailableEmployeesProperty(): Collection
     {
         return User::query()
-            ->where('role', User::ROLE_EMPLOYE)
+            ->providers()
             ->where('is_active', true)
             ->orderBy('name')
             ->get();

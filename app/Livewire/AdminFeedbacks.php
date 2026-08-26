@@ -168,7 +168,7 @@ class AdminFeedbacks extends Component
         $scopeId = $this->effectiveScopeId();
 
         return User::query()
-            ->where('role', User::ROLE_EMPLOYE)
+            ->providers()
             ->when($scopeId, function (Builder $query) use ($scopeId) {
                 $query->where(function (Builder $subQuery) use ($scopeId) {
                     $subQuery

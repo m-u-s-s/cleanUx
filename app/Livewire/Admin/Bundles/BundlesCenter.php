@@ -115,7 +115,7 @@ class BundlesCenter extends Component
         $availableProviders = [];
         if ($this->assigningItemId) {
             $availableProviders = User::query()
-                ->where('role', 'employe')
+                ->providers()
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->limit(50)

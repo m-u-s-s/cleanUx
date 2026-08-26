@@ -179,10 +179,12 @@ class DisputesCenter extends Component
                 ->find($this->selectedId)
             : null;
 
+        /*
+         * REECRITURE MANUELLE DE `scopeAdmins()`, et ses `orWhere` n'etaient PAS groupes :
+         * la moindre condition ajoutee au-dessus aurait fuit sur le premier `or`.
+         */
         $admins = User::query()
-            ->where('role', 'admin')
-            ->orWhere('platform_role', 'admin')
-            ->orWhere('platform_role', 'super_admin')
+            ->admins()
             ->select(['id', 'name'])
             ->limit(50)
             ->get();

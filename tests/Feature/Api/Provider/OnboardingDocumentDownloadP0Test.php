@@ -50,6 +50,46 @@ class OnboardingDocumentDownloadP0Test extends TestCase
             ->assertOk();
     }
 
+    /**
+     * LE CHEMIN QUE PREND UN CLIENT MOBILE : un jeton Bearer, pas une session.
+     *
+     * Les deux tests ci-dessus passaient AVANT ET APRES la correction. `actingAs()` pose
+     * l'utilisateur DIRECTEMENT sur le garde, et Sanctum retombe sur le garde web quand
+     * aucun jeton n'est present : le chemin reel n'etait exerce dans aucun sens.
+     *
+     * La route portait `auth` sans garde nomme — donc `web`, pilote par la SESSION — dans un
+     * groupe `api` qui n'en demarre aucune. Ce test ECHOUAIT alors avec 401.
+     */
+    public function test_un_jeton_bearer_ouvre_le_document(): void
+    {
+        $provider = User::factory()->employe()->create();
+        $doc = $this->makeDoc($provider);
+        $admin = User::factory()->admin()->create();
+
+        $jeton = $admin->createToken('test-admin')->plainTextToken;
+
+        $this->withHeader('Authorization', 'Bearer '.$jeton)
+            ->getJson('/api/admin/onboarding-documents/'.$doc->id.'/file')
+            ->assertOk();
+    }
+
+    /**
+     * TEMOIN. Sans lui, le test ci-dessus passerait au vert si la route cessait de garder
+     * quoi que ce soit : il mesurerait l'absence de porte, pas la bonne porte.
+     */
+    public function test_temoin_un_jeton_de_client_reste_refuse(): void
+    {
+        $provider = User::factory()->employe()->create();
+        $doc = $this->makeDoc($provider);
+        $client = User::factory()->client()->create();
+
+        $jeton = $client->createToken('test-client')->plainTextToken;
+
+        $this->withHeader('Authorization', 'Bearer '.$jeton)
+            ->getJson('/api/admin/onboarding-documents/'.$doc->id.'/file')
+            ->assertForbidden();
+    }
+
     public function test_non_admin_is_forbidden(): void
     {
         $provider = User::factory()->employe()->create();

@@ -46,13 +46,25 @@ export function CompanyOverviewScreen() {
 
   const kpis = data?.kpis;
 
-  const RACCOURCIS: Array<{ label: string; screen: keyof RootStackParamList }> = [
-    { label: 'Mes locaux', screen: 'CompanySites' },
-    { label: 'Réservations', screen: 'CompanyBookings' },
+  /*
+   * TROIS DE CES CIBLES SONT DES ONGLETS, ET LES ONGLETS PORTENT UN AUTRE NOM.
+   *
+   * `CompanySites`, `CompanyBookings` et `CompanyBilling` ne sont montés NULLE PART sur la
+   * pile de l'espace société : la barre les déclare sous `CompanySitesTab`,
+   * `CompanyBookingsTab`, `CompanyBillingTab`. Quatre des six boutons ne faisaient donc
+   * rien — et `RootNavigator` le dit lui-même : « une route absente ne lève rien, elle ne
+   * fait simplement rien ». On croit avoir mal appuyé.
+   *
+   * Le typage ne pouvait pas l'attraper : `navigate(screen as never)` fait taire le seul
+   * outil qui aurait vu la faute, et `keyof RootStackParamList` accepte toutes les routes
+   * du fichier — y compris celles qu'une pile donnée ne monte pas.
+   */
+  const RACCOURCIS: Array<{ label: string; screen: string }> = [
+    { label: 'Mes locaux', screen: 'CompanySitesTab' },
+    { label: 'Réservations', screen: 'CompanyBookingsTab' },
     { label: 'Membres', screen: 'CompanyMembers' },
     { label: 'Contrats', screen: 'CompanyContracts' },
-    { label: 'Facturation', screen: 'CompanyBilling' },
-    // Sans cette entrée, l'écran serait orphelin — le mode d'échec documenté de ce dépôt.
+    { label: 'Facturation', screen: 'CompanyBillingTab' },
     { label: 'Pilotage', screen: 'CompanyGovernance' },
   ];
 
