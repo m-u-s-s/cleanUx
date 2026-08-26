@@ -160,7 +160,10 @@ Route::middleware('throttle:public-api')->group(function () {
     Route::post('/v2/pricing/quote', [PricingV2Controller::class, 'quote']);
 });
 
-// Phase GDPR v2 — Download d'export via URL signée
+/*
+ * PAS de `active.account` ici, expres : le droit d'acces de l'article 15 ne depend pas de l'etat
+ * du compte. Un compte suspendu doit pouvoir recuperer ses donnees. L'URL signee borne l'acces.
+ */
 Route::middleware(['signed', 'auth:sanctum'])
     ->get('/client/gdpr/requests/{gdprRequest}/download',
         [GdprController::class, 'downloadExport'])

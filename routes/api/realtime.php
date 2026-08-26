@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 // Option (a): web route /broadcasting/auth remains for Livewire/Echo-web.
 //             Mobile uses /api/broadcasting/auth with Sanctum Bearer token.
 
-Route::middleware(['auth:sanctum', 'token.grace'])->group(function () {
+Route::middleware(['auth:sanctum', 'active.account', 'token.grace'])->group(function () {
     Route::get('/realtime/socket-config',
         SocketConfigController::class);
 
