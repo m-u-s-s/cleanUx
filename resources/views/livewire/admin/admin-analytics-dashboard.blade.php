@@ -9,7 +9,7 @@
 <div class="space-y-6">
     <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <p class="text-xs font-black uppercase tracking-[0.18em] text-blue-600">Analytics</p>
-        <h2 class="mt-2 text-2xl font-black text-slate-900">Centre analytics</h2>
+        <h1 class="mt-2 text-2xl font-black text-slate-900">Centre analytics</h1>
         <div class="mt-4 grid gap-3 md:grid-cols-2">
             <div class="rounded-2xl bg-slate-50 p-4">
                 <h3 class="font-bold text-slate-900">Mix marché</h3>

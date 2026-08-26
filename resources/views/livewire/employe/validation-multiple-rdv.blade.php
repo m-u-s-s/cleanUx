@@ -1,6 +1,6 @@
 <div class="space-y-4">
 
-    <h3 class="text-lg font-semibold text-blue-900">✅ Valider plusieurs RDV en attente</h3>
+    <h1 class="text-lg font-semibold text-blue-900">✅ Valider plusieurs RDV en attente</h1>
 
     @if (session('success'))
         <div role="alert" class="brio-alerte brio-alerte-success">{{ session('success') }}</div>

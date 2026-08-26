@@ -1,7 +1,7 @@
 <div class="p-4 md:p-6 space-y-6">
     <div class="flex items-center justify-between gap-3">
         <div>
-            <h2 class="text-2xl font-bold text-slate-900">Mon Google Agenda</h2>
+            <h1 class="text-2xl font-bold text-slate-900">Mon Google Agenda</h1>
             <p class="text-sm text-slate-500">Connecte ton agenda pour recevoir automatiquement tes missions Brio.</p>
         </div>
     </div>

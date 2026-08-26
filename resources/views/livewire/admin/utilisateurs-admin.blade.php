@@ -1,6 +1,6 @@
 <div class="p-4 md:p-6 space-y-6">
     <div>
-        <h2 class="text-2xl font-bold text-blue-900">👥 Utilisateurs admin</h2>
+        <h1 class="text-2xl font-bold text-blue-900">👥 Utilisateurs admin</h1>
         <p class="text-sm text-gray-500">
             Consultez les clients, employés et administrateurs de la plateforme.
         </p>

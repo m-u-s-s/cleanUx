@@ -1,4 +1,10 @@
-<x-app-card padding="p-5 md:p-6" :title="__('💬 Feedbacks reçus de vos clients')" :subtitle="__('Retrouvez vos derniers retours clients, notes et commentaires.')">
+{{-- LA PAGE COMMENÇAIT PAR UNE CARTE. Le titre d une carte est un h3 : c est juste pour une
+     carte, et insuffisant pour une page, qui doit annoncer ce qu elle est. --}}
+<div class="space-y-5">
+    <x-page-shell eyebrow="Qualite" title="Vos retours clients"
+                  subtitle="Les notes et commentaires laisses apres vos interventions." />
+
+    <x-app-card padding="p-5 md:p-6" :title="__('💬 Feedbacks reçus de vos clients')" :subtitle="__('Retrouvez vos derniers retours clients, notes et commentaires.')">
     <div class="space-y-3">
         @forelse($feedbacks as $feedback)
             <div class="brio-list-item !bg-white">
@@ -11,3 +17,4 @@
 
     <div class="mt-4">{{ $feedbacks->links() }}</div>
 </x-app-card>
+</div>

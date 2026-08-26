@@ -9,7 +9,7 @@
     <div class="brio-page-header">
         <div>
             <p class="brio-eyebrow">Tableau de bord</p>
-            <h2 class="brio-section-title mt-2">Vue d'ensemble</h2>
+            <h1 class="brio-section-title mt-2">Vue d'ensemble</h1>
             <p class="brio-section-subtitle">Actualisation automatique toutes les 30 secondes.</p>
         </div>
     </div>

@@ -1,7 +1,7 @@
 <div class="p-4 md:p-6 space-y-6">
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
         <div>
-            <h2 class="text-2xl font-bold text-blue-900">{{ __('👤 Mon profil') }}</h2>
+            <h1 class="text-2xl font-bold text-blue-900">{{ __('👤 Mon profil') }}</h1>
             <p class="text-sm text-gray-500">
                 {{ __('Retrouvez vos informations, vos habitudes de réservation et vos raccourcis utiles.') }}
             </p>

@@ -1,5 +1,5 @@
 <div class="rounded-3xl border bg-white p-6">
-    <h2 class="text-xl font-bold text-slate-900">Stripe Connect prestataires</h2>
+    <h1 class="text-xl font-bold text-slate-900">Stripe Connect prestataires</h1>
 
     <div class="mt-4 overflow-x-auto">
         <table class="w-full text-sm">

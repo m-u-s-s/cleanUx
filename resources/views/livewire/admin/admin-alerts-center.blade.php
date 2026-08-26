@@ -1,7 +1,7 @@
 <div class="rounded-3xl border bg-white p-6 space-y-6" wire:poll.30s="refreshAlerts">
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-xl font-bold text-slate-900">Centre d’alertes</h2>
+            <h1 class="text-xl font-bold text-slate-900">Centre d’alertes</h1>
             <p class="text-sm text-slate-500">Surveillance opérationnelle en temps réel</p>
         </div>
 
