@@ -44,7 +44,7 @@ const run = async () => {
   await browser.close();
 
   const summary = writeReport(results);
-  console.log(`\n${summary.passed}/${summary.total} PASS, ${summary.failed} FAIL → out/report.md`);
+  console.log(`\n${summary.passed}/${summary.total} PASS, ${summary.failed} FAIL → tools/visual-qa/out/report.md`);
   process.exit(summary.failed > 0 ? 1 : 0);
 };
 

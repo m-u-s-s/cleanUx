@@ -6,9 +6,12 @@
 
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { checkModule } from './check.mjs';
 
 const BASE = process.env.VQA_BASE ?? 'http://127.0.0.1:8000';
+const SORTIE = resolve(dirname(fileURLToPath(import.meta.url)), 'out');
 
 /** Ce qu'un visiteur atteint sans compte, dans l'ordre où il le rencontre. */
 export const PAGES_PUBLIQUES = [
@@ -39,7 +42,7 @@ async function balayer() {
 
   await navigateur.close();
 
-  mkdirSync('out', { recursive: true });
+  mkdirSync(SORTIE, { recursive: true });
   const reussies = lignes.filter((l) => l.pass).length;
 
   let md = '# Pages publiques — vue mobile 390×844\n\n';
@@ -66,8 +69,8 @@ async function balayer() {
     }
   }
 
-  writeFileSync('out/publiques.md', md);
-  console.log(`\n${reussies}/${lignes.length} PASS → out/publiques.md`);
+  writeFileSync(resolve(SORTIE, 'publiques.md'), md);
+  console.log(`\n${reussies}/${lignes.length} PASS → tools/visual-qa/out/publiques.md`);
   process.exitCode = reussies === lignes.length ? 0 : 1;
 }
 

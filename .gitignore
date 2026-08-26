@@ -65,5 +65,3 @@ mobile/package-lock.json.bak
 /storage/app/imports
 /storage/app/ops
 
-# Sorties du harnais visuel — jamais versionnees
-/out/

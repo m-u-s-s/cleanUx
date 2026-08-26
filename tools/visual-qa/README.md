@@ -81,7 +81,7 @@ vert sur une liste périmée ne dit rien de la page qu'on vient d'ajouter :
 ```
 php artisan parity:webview-manifest
 ```
-Writes `out/report.json` + `out/report.md`.
+Writes `tools/visual-qa/out/report.json` + `tools/visual-qa/out/report.md`.
 
 ## Criteria (per page, 390px viewport)
 1. **C1** No horizontal document scroll · 2. **C2** Tap targets not thumb-hostile (primary controls) ·
