@@ -20,16 +20,16 @@
     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Recherche</label>
-                <input type="text"
+                <label class="block text-sm font-semibold text-slate-700 mb-2" for="search">Recherche</label>
+                <input id="search" type="text"
                        wire:model.live.debounce.300ms="search"
                        placeholder="Nom ou email..."
                        class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500">
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Plan</label>
-                <select wire:model.live="filterPlan"
+                <label class="block text-sm font-semibold text-slate-700 mb-2" for="filterPlan">Plan</label>
+                <select id="filterPlan" wire:model.live="filterPlan"
                         class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500">
                     <option value="all">Tous</option>
                     <option value="standard">Standard</option>
@@ -38,8 +38,8 @@
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Statut</label>
-                <select wire:model.live="filterStatus"
+                <label class="block text-sm font-semibold text-slate-700 mb-2" for="filterStatus">Statut</label>
+                <select id="filterStatus" wire:model.live="filterStatus"
                         class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500">
                     <option value="all">Tous</option>
                     <option value="active">Actif</option>

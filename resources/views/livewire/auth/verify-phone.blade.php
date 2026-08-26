@@ -7,8 +7,8 @@
     @if (! $codeSent)
         <form wire:submit="sendCode" class="mt-6 space-y-4">
             <div>
-                <label class="ui-label">Numéro de mobile</label>
-                <input wire:model="phone" type="tel" inputmode="tel" placeholder="+32470000000" class="ui-input" autofocus>
+                <label class="ui-label" for="phone">Numéro de mobile</label>
+                <input id="phone" wire:model="phone" type="tel" inputmode="tel" placeholder="+32470000000" class="ui-input" autofocus>
                 @error('phone') <p class="ui-error-msg">{{ $message }}</p> @enderror
             </div>
             <button type="submit" class="ui-btn-primary w-full" wire:loading.attr="disabled">
@@ -19,8 +19,8 @@
     @else
         <form wire:submit="verifyCode" class="mt-6 space-y-4">
             <div>
-                <label class="ui-label">Code reçu par SMS</label>
-                <input wire:model="code" type="text" inputmode="numeric" autocomplete="one-time-code"
+                <label class="ui-label" for="code">Code reçu par SMS</label>
+                <input id="code" wire:model="code" type="text" inputmode="numeric" autocomplete="one-time-code"
                        maxlength="8" placeholder="123456" class="ui-input tracking-widest text-center text-lg" autofocus>
                 @error('code') <p class="ui-error-msg">{{ $message }}</p> @enderror
             </div>

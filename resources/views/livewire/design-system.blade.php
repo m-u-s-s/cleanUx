@@ -184,25 +184,25 @@
     <x-ui.card title="Form Inputs" subtitle="Styled via CSS tool-mode layer">
         <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="ui-label">Email</label>
-                <input type="email" placeholder="votre@email.com" class="ui-input">
+                <label for="demo-email" class="ui-label">Email</label>
+                <input id="demo-email" type="email" placeholder="votre@email.com" class="ui-input">
                 <p class="ui-help">Votre adresse email professionnelle</p>
             </div>
             <div>
-                <label class="ui-label">Mot de passe</label>
-                <input type="password" placeholder="••••••••" class="ui-input">
+                <label for="demo-mot-de-passe" class="ui-label">Mot de passe</label>
+                <input id="demo-mot-de-passe" type="password" placeholder="••••••••" class="ui-input">
             </div>
             <div>
-                <label class="ui-label">Sélection</label>
-                <select class="ui-input">
+                <label for="demo-selection" class="ui-label">Sélection</label>
+                <select id="demo-selection" class="ui-input">
                     <option>Nettoyage</option>
                     <option>Peinture</option>
                     <option>Jardinage</option>
                 </select>
             </div>
             <div>
-                <label class="ui-label">Avec erreur</label>
-                <input type="text" value="invalide" class="ui-input ui-input-error">
+                <label for="demo-avec-erreur" class="ui-label">Avec erreur</label>
+                <input id="demo-avec-erreur" type="text" value="invalide" class="ui-input ui-input-error">
                 <p class="ui-error-msg">Ce champ est invalide</p>
             </div>
         </div>

@@ -82,7 +82,7 @@
 
             <a href="{{ route('profile.show') }}"
                 class="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-100 transition">
-                <img src="{{ Auth::user()->profile_photo_url }}"
+                <img alt="" src="{{ Auth::user()->profile_photo_url }}"
                     class="h-7 w-7 rounded-full object-cover border border-slate-200">
                 <div class="hidden sm:block text-right">
                     <p class="text-xs font-semibold text-slate-800">{{ str(Auth::user()->name)->before(' ') }}</p>

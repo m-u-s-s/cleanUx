@@ -2,11 +2,11 @@
     <x-app-card padding="p-6" :title="__('Pilotage des documents')" :subtitle="__('Filtrez rapidement vos devis et factures.')">
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <div class="lg:col-span-2">
-                <label class="mb-1 block text-sm font-medium text-slate-700">
+                <label class="mb-1 block text-sm font-medium text-slate-700" for="search">
                     Recherche
                 </label>
 
-                <input
+                <input id="search"
                     type="text"
                     wire:model.live.debounce.350ms="search"
                     placeholder="Numéro, service, ville, adresse, référence…"
@@ -15,11 +15,11 @@
             </div>
 
             <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700">
+                <label class="mb-1 block text-sm font-medium text-slate-700" for="sort">
                     Tri
                 </label>
 
-                <select
+                <select id="sort"
                     wire:model.live="sort"
                     class="w-full rounded-2xl border-slate-300 text-sm shadow-sm focus:border-sky-500 focus:ring-sky-500">
                     @foreach($sortOptions as $value => $label)

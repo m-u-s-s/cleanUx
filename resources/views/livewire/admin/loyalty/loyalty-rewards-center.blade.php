@@ -170,22 +170,22 @@
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="text-xs font-bold text-slate-600">Code interne</label>
-                            <input wire:model="form_code" class="w-full rounded-lg border-slate-300 text-sm" type="text">
+                            <label class="text-xs font-bold text-slate-600" for="form_code">Code interne</label>
+                            <input id="form_code" wire:model="form_code" class="w-full rounded-lg border-slate-300 text-sm" type="text">
                             @error('form_code') <p class="text-rose-500 text-xs">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-600">Nom affiché</label>
-                            <input wire:model="form_name" class="w-full rounded-lg border-slate-300 text-sm" type="text">
+                            <label class="text-xs font-bold text-slate-600" for="form_name">Nom affiché</label>
+                            <input id="form_name" wire:model="form_name" class="w-full rounded-lg border-slate-300 text-sm" type="text">
                             @error('form_name') <p class="text-rose-500 text-xs">{{ $message }}</p> @enderror
                         </div>
                         <div class="col-span-2">
-                            <label class="text-xs font-bold text-slate-600">Description</label>
-                            <textarea wire:model="form_description" class="w-full rounded-lg border-slate-300 text-sm" rows="2"></textarea>
+                            <label class="text-xs font-bold text-slate-600" for="form_description">Description</label>
+                            <textarea id="form_description" wire:model="form_description" class="w-full rounded-lg border-slate-300 text-sm" rows="2"></textarea>
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-600">Type</label>
-                            <select wire:model="form_reward_type" class="w-full rounded-lg border-slate-300 text-sm">
+                            <label class="text-xs font-bold text-slate-600" for="form_reward_type">Type</label>
+                            <select id="form_reward_type" wire:model="form_reward_type" class="w-full rounded-lg border-slate-300 text-sm">
                                 <option value="discount_code">Code réduction</option>
                                 <option value="service_credit">Crédit service</option>
                                 <option value="physical_item">Objet physique</option>
@@ -194,29 +194,29 @@
                             </select>
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-600">Catégorie (optionnel)</label>
-                            <input wire:model="form_category" class="w-full rounded-lg border-slate-300 text-sm" type="text">
+                            <label class="text-xs font-bold text-slate-600" for="form_category">Catégorie (optionnel)</label>
+                            <input id="form_category" wire:model="form_category" class="w-full rounded-lg border-slate-300 text-sm" type="text">
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-600">Coût (points)</label>
-                            <input wire:model="form_points_cost" class="w-full rounded-lg border-slate-300 text-sm" type="number" min="1">
+                            <label class="text-xs font-bold text-slate-600" for="form_points_cost">Coût (points)</label>
+                            <input id="form_points_cost" wire:model="form_points_cost" class="w-full rounded-lg border-slate-300 text-sm" type="number" min="1">
                             @error('form_points_cost') <p class="text-rose-500 text-xs">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-600">Valeur (centimes)</label>
-                            <input wire:model="form_value_cents" class="w-full rounded-lg border-slate-300 text-sm" type="number" min="0">
+                            <label class="text-xs font-bold text-slate-600" for="form_value_cents">Valeur (centimes)</label>
+                            <input id="form_value_cents" wire:model="form_value_cents" class="w-full rounded-lg border-slate-300 text-sm" type="number" min="0">
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-600">Devise</label>
-                            <select wire:model="form_currency" class="w-full rounded-lg border-slate-300 text-sm">
+                            <label class="text-xs font-bold text-slate-600" for="form_currency">Devise</label>
+                            <select id="form_currency" wire:model="form_currency" class="w-full rounded-lg border-slate-300 text-sm">
                                 <option value="EUR">EUR</option>
                                 <option value="USD">USD</option>
                                 <option value="GBP">GBP</option>
                             </select>
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-600">Tier minimum</label>
-                            <select wire:model="form_min_tier_level" class="w-full rounded-lg border-slate-300 text-sm">
+                            <label class="text-xs font-bold text-slate-600" for="form_min_tier_level">Tier minimum</label>
+                            <select id="form_min_tier_level" wire:model="form_min_tier_level" class="w-full rounded-lg border-slate-300 text-sm">
                                 <option value="0">Bronze (tous)</option>
                                 <option value="1">Silver</option>
                                 <option value="2">Gold</option>
@@ -224,12 +224,12 @@
                             </select>
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-600">Stock initial (vide = illimité)</label>
-                            <input wire:model="form_stock_initial" class="w-full rounded-lg border-slate-300 text-sm" type="number" min="0">
+                            <label class="text-xs font-bold text-slate-600" for="form_stock_initial">Stock initial (vide = illimité)</label>
+                            <input id="form_stock_initial" wire:model="form_stock_initial" class="w-full rounded-lg border-slate-300 text-sm" type="number" min="0">
                         </div>
                         <div class="col-span-2 flex items-center gap-2">
-                            <input wire:model="form_is_active" type="checkbox" class="rounded border-slate-300">
-                            <label class="text-sm text-slate-700">Active</label>
+                            <input id="form_is_active" wire:model="form_is_active" type="checkbox" class="rounded border-slate-300">
+                            <label for="form_is_active" class="text-sm text-slate-700">Active</label>
                         </div>
                     </div>
 

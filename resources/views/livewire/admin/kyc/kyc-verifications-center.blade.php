@@ -167,8 +167,8 @@
 
                         @if($selected->decision !== 'approved')
                             <div class="border-t pt-3">
-                                <label class="text-xs font-bold uppercase text-slate-500">Note (optionnel)</label>
-                                <input type="text" wire:model="manualNote"
+                                <label class="text-xs font-bold uppercase text-slate-500" for="manualNote">Note (optionnel)</label>
+                                <input id="manualNote" type="text" wire:model="manualNote"
                                        class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                                 <button wire:click="approve"
                                         wire:confirm.doux="Approuver manuellement cette vérification ?"
@@ -180,8 +180,8 @@
 
                         @if($selected->decision !== 'rejected')
                             <div class="border-t pt-3">
-                                <label class="text-xs font-bold uppercase text-slate-500">Raison du rejet</label>
-                                <textarea wire:model="manualReason" rows="2"
+                                <label class="text-xs font-bold uppercase text-slate-500" for="manualReason">Raison du rejet</label>
+                                <textarea id="manualReason" wire:model="manualReason" rows="2"
                                           class="mt-1 w-full rounded-xl border-gray-300 text-sm"
                                           placeholder="Raison visible par le provider..."></textarea>
                                 @error('manualReason') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror

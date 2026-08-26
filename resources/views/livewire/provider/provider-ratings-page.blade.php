@@ -107,8 +107,8 @@
                     {{-- Reply form --}}
                     @if($replyingTo === $r->id)
                         <div class="mt-4 rounded-2xl bg-indigo-50 border border-indigo-200 p-4 space-y-2">
-                            <label class="text-sm font-semibold text-indigo-900">Votre réponse</label>
-                            <textarea wire:model="responseText" rows="3" maxlength="1000"
+                            <label class="text-sm font-semibold text-indigo-900" for="responseText">Votre réponse</label>
+                            <textarea id="responseText" wire:model="responseText" rows="3" maxlength="1000"
                                       class="w-full rounded-xl border-indigo-300 text-sm"></textarea>
                             @error('responseText') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
                             <div class="flex justify-end gap-2">
@@ -127,8 +127,8 @@
                     {{-- Report form --}}
                     @if($reportingId === $r->id)
                         <div class="mt-4 rounded-2xl bg-red-50 border border-red-200 p-4 space-y-3">
-                            <label class="text-sm font-semibold text-red-900">Signaler cet avis</label>
-                            <select wire:model="reportReason" class="w-full rounded-xl border-red-300 text-sm">
+                            <label class="text-sm font-semibold text-red-900" for="reportReason">Signaler cet avis</label>
+                            <select id="reportReason" wire:model="reportReason" class="w-full rounded-xl border-red-300 text-sm">
                                 <option value="spam">Spam</option>
                                 <option value="offensive">Contenu offensant</option>
                                 <option value="fake">Faux avis</option>

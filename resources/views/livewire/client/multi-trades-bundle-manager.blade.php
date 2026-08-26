@@ -148,24 +148,24 @@
 
             <div class="space-y-4 mb-6">
                 <div>
-                    <label class="ui-label">Nom du chantier *</label>
-                    <input wire:model="bundleName" type="text" placeholder="ex: Rénovation salle de bain principale" class="ui-input">
+                    <label class="ui-label" for="bundleName">Nom du chantier *</label>
+                    <input id="bundleName" wire:model="bundleName" type="text" placeholder="ex: Rénovation salle de bain principale" class="ui-input">
                     @error('bundleName') <p class="ui-error-msg">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="ui-label">Description (optionnel)</label>
-                    <textarea wire:model="bundleDescription" rows="2" placeholder="Détails du projet, contraintes…" class="ui-input"></textarea>
+                    <label class="ui-label" for="bundleDescription">Description (optionnel)</label>
+                    <textarea id="bundleDescription" wire:model="bundleDescription" rows="2" placeholder="Détails du projet, contraintes…" class="ui-input"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="ui-label">Code postal du chantier (optionnel)</label>
-                        <input wire:model="postalCode" type="text" inputmode="numeric" placeholder="ex: 1000" class="ui-input">
+                        <label class="ui-label" for="postalCode">Code postal du chantier (optionnel)</label>
+                        <input id="postalCode" wire:model="postalCode" type="text" inputmode="numeric" placeholder="ex: 1000" class="ui-input">
                         <p class="ui-help">Permet de ne solliciter que les prestataires couvrant votre zone.</p>
                         @error('postalCode') <p class="ui-error-msg">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="ui-label">Ville (optionnel)</label>
-                        <input wire:model="city" type="text" placeholder="ex: Bruxelles" class="ui-input">
+                        <label class="ui-label" for="city">Ville (optionnel)</label>
+                        <input id="city" wire:model="city" type="text" placeholder="ex: Bruxelles" class="ui-input">
                         @error('city') <p class="ui-error-msg">{{ $message }}</p> @enderror
                     </div>
                 </div>
@@ -197,8 +197,8 @@
 
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="ui-label !text-[11px]">Métier *</label>
-                                <select wire:model="items.{{ $idx }}.trade_id" class="ui-input">
+                                <label class="ui-label !text-[11px]" for="items-{{ $idx }}-trade_id">Métier *</label>
+                                <select id="items-{{ $idx }}-trade_id" wire:model="items.{{ $idx }}.trade_id" class="ui-input">
                                     <option value="">— Choisir —</option>
                                     @foreach ($trades as $t)
                                         <option value="{{ $t->id }}">{{ $t->name }}</option>
@@ -206,24 +206,24 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="ui-label !text-[11px]">Libellé *</label>
-                                <input wire:model="items.{{ $idx }}.label" type="text" placeholder="ex: Pose carrelage sol" class="ui-input">
+                                <label class="ui-label !text-[11px]" for="items-{{ $idx }}-label">Libellé *</label>
+                                <input id="items-{{ $idx }}-label" wire:model="items.{{ $idx }}.label" type="text" placeholder="ex: Pose carrelage sol" class="ui-input">
                             </div>
                         </div>
 
                         <div>
-                            <label class="ui-label !text-[11px]">Description</label>
-                            <textarea wire:model="items.{{ $idx }}.description" rows="2" placeholder="Détails de la prestation…" class="ui-input"></textarea>
+                            <label class="ui-label !text-[11px]" for="items-{{ $idx }}-description">Description</label>
+                            <textarea id="items-{{ $idx }}-description" wire:model="items.{{ $idx }}.description" rows="2" placeholder="Détails de la prestation…" class="ui-input"></textarea>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="ui-label !text-[11px]">Durée (min)</label>
-                                <input wire:model="items.{{ $idx }}.duration_minutes" type="number" min="15" step="15" class="ui-input">
+                                <label class="ui-label !text-[11px]" for="items-{{ $idx }}-duration_minutes">Durée (min)</label>
+                                <input id="items-{{ $idx }}-duration_minutes" wire:model="items.{{ $idx }}.duration_minutes" type="number" min="15" step="15" class="ui-input">
                             </div>
                             <div>
-                                <label class="ui-label !text-[11px]">Budget estimé (€) *</label>
-                                <input wire:model="items.{{ $idx }}.estimated_price_eur" type="number" step="10" min="0" class="ui-input">
+                                <label class="ui-label !text-[11px]" for="items-{{ $idx }}-estimated_price_eur">Budget estimé (€) *</label>
+                                <input id="items-{{ $idx }}-estimated_price_eur" wire:model="items.{{ $idx }}.estimated_price_eur" type="number" step="10" min="0" class="ui-input">
                             </div>
                         </div>
                     </div>

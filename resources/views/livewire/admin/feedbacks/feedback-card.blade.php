@@ -73,11 +73,11 @@
     </div>
 
     <div class="mt-5">
-        <label class="mb-1 block text-sm font-bold text-slate-700">
+        <label class="mb-1 block text-sm font-bold text-slate-700" for="reponse-{{ $feedback->id }}">
             Réponse admin
         </label>
 
-        <textarea
+        <textarea id="reponse-{{ $feedback->id }}"
             wire:model.live.debounce.700ms="reponse.{{ $feedback->id }}"
             rows="3"
             placeholder="Écrivez une réponse courte, professionnelle et utile au client…"

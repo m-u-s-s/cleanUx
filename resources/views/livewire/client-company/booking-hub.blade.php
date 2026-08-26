@@ -139,7 +139,7 @@
                         </div>
                         @if ($booking->providerUser)
                             <div class="flex items-center gap-1.5">
-                                <img src="{{ $booking->providerUser->profile_photo_url }}"
+                                <img alt="{{ $booking->providerUser->name }}" src="{{ $booking->providerUser->profile_photo_url }}"
                                      class="h-6 w-6 rounded-full object-cover"
                                      title="{{ $booking->providerUser->name }}">
                                 <span class="hidden text-xs text-slate-500 sm:block">{{ $booking->providerUser->name }}</span>
@@ -275,22 +275,22 @@
                 @if ($step === 3)
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-1">Date *</label>
-                            <input wire:model.live="scheduledDate" type="date"
+                            <label class="block text-sm font-bold text-slate-700 mb-1" for="scheduledDate">Date *</label>
+                            <input id="scheduledDate" wire:model.live="scheduledDate" type="date"
                                 min="{{ now()->format('Y-m-d') }}"
                                 class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                             @error('scheduledDate') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-1">Heure *</label>
-                            <input wire:model.live="scheduledTime" type="time"
+                            <label class="block text-sm font-bold text-slate-700 mb-1" for="scheduledTime">Heure *</label>
+                            <input id="scheduledTime" wire:model.live="scheduledTime" type="time"
                                 class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-1">Duree estimee</label>
-                            <select wire:model="estimatedHours"
+                            <label class="block text-sm font-bold text-slate-700 mb-1" for="estimatedHours">Duree estimee</label>
+                            <select id="estimatedHours" wire:model="estimatedHours"
                                 class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500">
                                 <option value="">Non precisee</option>
                                 <option value="1">1 heure</option>
@@ -302,8 +302,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 mb-1">N° bon de commande</label>
-                            <input wire:model="purchaseOrderRef" type="text" placeholder="PO-2026-001"
+                            <label class="block text-xs font-bold text-slate-600 mb-1" for="purchaseOrderRef">N° bon de commande</label>
+                            <input id="purchaseOrderRef" wire:model="purchaseOrderRef" type="text" placeholder="PO-2026-001"
                                 class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500">
                         </div>
                     </div>
@@ -318,8 +318,8 @@
 
                     {{-- Notes --}}
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Notes / Instructions</label>
-                        <textarea wire:model="notes" rows="3"
+                        <label class="block text-sm font-bold text-slate-700 mb-1" for="notes">Notes / Instructions</label>
+                        <textarea id="notes" wire:model="notes" rows="3"
                             placeholder="Instructions d'acces, code d'entree, contact sur place..."
                             class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100"></textarea>
                     </div>
@@ -327,8 +327,8 @@
                     {{-- Prestataire preferé --}}
                     @if ($providers->isNotEmpty() && ! $selectedSite?->preferred_provider_id)
                         <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-1">Prestataire prefere (optionnel)</label>
-                            <select wire:model="selectedProviderId"
+                            <label class="block text-sm font-bold text-slate-700 mb-1" for="selectedProviderId">Prestataire prefere (optionnel)</label>
+                            <select id="selectedProviderId" wire:model="selectedProviderId"
                                 class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500">
                                 <option value="">Attribution automatique</option>
                                 @foreach ($providers as $provider)

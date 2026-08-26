@@ -164,21 +164,21 @@
                     </p>
 
                     <div>
-                        <label class="text-sm font-semibold text-slate-700">Scope</label>
-                        <select wire:model="reconcileScope" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                        <label class="text-sm font-semibold text-slate-700" for="reconcileScope">Scope</label>
+                        <select id="reconcileScope" wire:model="reconcileScope" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                             <option value="all">Tout</option>
                             <option value="payment_intents">Payment intents</option>
                             <option value="payouts">Payouts</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-sm font-semibold text-slate-700">Du</label>
-                        <input type="date" wire:model="reconcileFromDate" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
+                        <label class="text-sm font-semibold text-slate-700" for="reconcileFromDate">Du</label>
+                        <input id="reconcileFromDate" type="date" wire:model="reconcileFromDate" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                         @error('reconcileFromDate') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="text-sm font-semibold text-slate-700">Au</label>
-                        <input type="date" wire:model="reconcileToDate" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
+                        <label class="text-sm font-semibold text-slate-700" for="reconcileToDate">Au</label>
+                        <input id="reconcileToDate" type="date" wire:model="reconcileToDate" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                         @error('reconcileToDate') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
 

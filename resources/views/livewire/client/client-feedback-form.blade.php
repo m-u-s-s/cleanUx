@@ -31,10 +31,10 @@
 
                 {{-- Note globale (étoiles cliquables) --}}
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-3">
+                    <span id="note-globale" class="block text-sm font-semibold text-slate-700 mb-3">
                         Note globale
-                    </label>
-                    <div class="flex items-center gap-1">
+                    </span>
+                    <div class="flex items-center gap-1" role="group" aria-labelledby="note-globale">
                         @for($i = 1; $i <= 5; $i++)
                             <button type="button"
                                     wire:click="setRating({{ $i }})"
@@ -75,10 +75,10 @@
 
                 {{-- Commentaire --}}
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" for="comment">
                         Commentaire (optionnel)
                     </label>
-                    <textarea wire:model="comment" rows="4"
+                    <textarea id="comment" wire:model="comment" rows="4"
                               maxlength="2000"
                               class="w-full rounded-2xl border-slate-300 text-sm"
                               placeholder="Partagez votre expérience…"></textarea>

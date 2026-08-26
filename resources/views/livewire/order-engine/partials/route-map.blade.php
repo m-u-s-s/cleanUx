@@ -58,6 +58,7 @@
             <div class="flex gap-2" role="radiogroup" aria-label="Point à ajuster sur la carte">
                 <template x-for="role in ['pickup', 'dropoff']" :key="role">
                     <button type="button"
+                            :aria-label="role === 'pickup' ? 'Point de départ' : 'Point d’arrivée'"
                         role="radio"
                         :aria-checked="cible === role ? 'true' : 'false'"
                         x-on:click="cible = role"

@@ -17,8 +17,8 @@
                 </h2>
 
                 <div>
-                    <label class="ui-label">Booking lié <span class="text-slate-400 normal-case">(optionnel)</span></label>
-                    <select wire:model="booking_id" class="ui-input">
+                    <label class="ui-label" for="booking_id">Booking lié <span class="text-slate-400 normal-case">(optionnel)</span></label>
+                    <select id="booking_id" wire:model="booking_id" class="ui-input">
                         <option value="">— Aucun</option>
                         @foreach($rendezVous as $b)
                             <option value="{{ $b->id }}">#{{ $b->booking_reference }} — {{ $b->date?->format('d/m/Y') }}</option>
@@ -27,8 +27,8 @@
                 </div>
 
                 <div>
-                    <label class="ui-label">Catégorie</label>
-                    <select wire:model="category" class="ui-input">
+                    <label class="ui-label" for="category">Catégorie</label>
+                    <select id="category" wire:model="category" class="ui-input">
                         <option value="quality">Qualité de service</option>
                         <option value="no_show">Provider absent</option>
                         <option value="payment">Paiement / facturation</option>
@@ -41,8 +41,8 @@
 
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="ui-label">Priorité</label>
-                        <select wire:model="priority" class="ui-input">
+                        <label class="ui-label" for="priority">Priorité</label>
+                        <select id="priority" wire:model="priority" class="ui-input">
                             <option value="low">Basse</option>
                             <option value="normal">Normale</option>
                             <option value="high">Haute</option>
@@ -50,8 +50,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="ui-label">Gravité</label>
-                        <select wire:model="severity" class="ui-input">
+                        <label class="ui-label" for="severity">Gravité</label>
+                        <select id="severity" wire:model="severity" class="ui-input">
                             <option value="low">Faible</option>
                             <option value="medium">Modérée</option>
                             <option value="high">Élevée</option>
@@ -61,23 +61,23 @@
                 </div>
 
                 <div>
-                    <label class="ui-label">Sujet</label>
-                    <input type="text" wire:model="subject" class="ui-input" />
+                    <label class="ui-label" for="subject">Sujet</label>
+                    <input id="subject" type="text" wire:model="subject" class="ui-input" />
                     @error('subject') <p class="ui-error-msg">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="ui-label">Description</label>
-                    <textarea wire:model="description" rows="4" maxlength="2000" class="ui-input"></textarea>
+                    <label class="ui-label" for="description">Description</label>
+                    <textarea id="description" wire:model="description" rows="4" maxlength="2000" class="ui-input"></textarea>
                     @error('description') <p class="ui-error-msg">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="ui-label inline-flex items-center gap-1">
+                    <label class="ui-label inline-flex items-center gap-1" for="photos">
                         <x-ui.icon name="photo" class="w-3.5 h-3.5 text-slate-400" />
                         Photos <span class="text-slate-400 normal-case">(optionnel)</span>
                     </label>
-                    <input type="file" wire:model="photos" multiple accept="image/*"
+                    <input id="photos" type="file" wire:model="photos" multiple accept="image/*"
                            class="w-full text-xs mt-1.5 file:rounded-lg file:border-0 file:bg-brand-50 file:text-brand-700 file:px-3 file:py-1.5 file:font-semibold file:hover:bg-brand-100 file:transition file:mr-2" />
                 </div>
 

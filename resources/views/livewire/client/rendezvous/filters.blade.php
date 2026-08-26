@@ -1,8 +1,8 @@
 <div class="bg-white rounded-2xl shadow-sm border p-5">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="md:col-span-2">
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Recherche</label>
-            <input
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1" for="search">Recherche</label>
+            <input id="search"
                 type="text"
                 wire:model.live.debounce.350ms="search"
                 placeholder="Service, ville, adresse, prestataire..."
@@ -10,8 +10,8 @@
         </div>
 
         <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Statut</label>
-            <select wire:model.live="filtreStatus" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1" for="filtreStatus">Statut</label>
+            <select id="filtreStatus" wire:model.live="filtreStatus" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
                 <option value="">Tous</option>
                 <option value="en_attente">En attente</option>
                 <option value="confirme">Confirmé</option>
@@ -24,8 +24,8 @@
         </div>
 
         <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tri</label>
-            <select wire:model.live="tri" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1" for="tri">Tri</label>
+            <select id="tri" wire:model.live="tri" class="w-full rounded-xl border-gray-300 shadow-sm text-sm">
                 <option value="asc">Plus proche d’abord</option>
                 <option value="desc">Plus récent d’abord</option>
             </select>

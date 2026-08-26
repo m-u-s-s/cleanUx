@@ -15,11 +15,11 @@
         </div>
 
         <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur">
-            <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-blue-100">
+            <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-blue-100" for="selectedDate">
                 Date de calcul
             </label>
 
-            <input
+            <input id="selectedDate"
                 type="date"
                 wire:model.live="selectedDate"
                 class="mt-2 w-full rounded-2xl border-white/20 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm" />

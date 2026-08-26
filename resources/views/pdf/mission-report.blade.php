@@ -106,7 +106,7 @@
         <h3>Photos</h3>
 
         @foreach($mission->media->where('media_type','after_photo') as $photo)
-        <img src="{{ public_path('storage/'.$photo->path) }}" style="width:100px;margin:5px;">
+        <img alt="Photo de l’intervention" src="{{ public_path('storage/'.$photo->path) }}" style="width:100px;margin:5px;">
         @endforeach
     </div>
 
@@ -139,7 +139,7 @@
     @if($traceSignature)
     <div class="section box">
         <h3>Signature client</h3>
-        <img src="{{ $traceSignature }}" style="width:200px;">
+        <img alt="Signature du client" src="{{ $traceSignature }}" style="width:200px;">
     </div>
     @endif
 

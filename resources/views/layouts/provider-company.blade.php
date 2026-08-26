@@ -74,7 +74,7 @@
             </div>
             <a href="{{ route('profile.show') }}"
                 class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition hover:bg-slate-100 dark:hover:bg-slate-800">
-                <img src="{{ Auth::user()->profile_photo_url }}"
+                <img alt="" src="{{ Auth::user()->profile_photo_url }}"
                     class="h-7 w-7 rounded-full border border-slate-200 object-cover dark:border-slate-600">
                 <span class="hidden sm:block text-sm text-slate-600 dark:text-slate-300">{{ str(Auth::user()->name)->before(' ') }}</span>
             </a>

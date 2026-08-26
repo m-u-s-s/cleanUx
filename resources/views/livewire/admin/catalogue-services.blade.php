@@ -27,34 +27,34 @@
         <x-app-card class="xl:col-span-1" padding="p-5 md:p-6" title="Créer / modifier" subtitle="Définissez les paramètres clés du service sélectionné.">
             <div class="brio-form-grid xl:grid-cols-1">
                 <div>
-                    <label class="brio-field-label">Code</label>
-                    <input wire:model.defer="code" type="text">
+                    <label class="brio-field-label" for="code">Code</label>
+                    <input id="code" wire:model.defer="code" type="text">
                     @error('code') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="brio-field-label">Nom</label>
-                    <input wire:model.live="name" type="text">
+                    <label class="brio-field-label" for="name">Nom</label>
+                    <input id="name" wire:model.live="name" type="text">
                     @error('name') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="brio-field-label">Slug</label>
-                    <input wire:model.defer="slug" type="text">
+                    <label class="brio-field-label" for="slug">Slug</label>
+                    <input id="slug" wire:model.defer="slug" type="text">
                     @error('slug') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="brio-field-label">Type</label>
-                    <input wire:model.defer="service_type" type="text" placeholder="standard, premium...">
+                    <label class="brio-field-label" for="service_type">Type</label>
+                    <input id="service_type" wire:model.defer="service_type" type="text" placeholder="standard, premium...">
                     @error('service_type') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 {{-- Phase 1 — Métier (Trade). Optionnel pendant la transition,
                      destiné à devenir requis quand toute la base sera backfillée. --}}
                 <div>
-                    <label class="brio-field-label">Métier</label>
-                    <select wire:model.defer="trade_id" class="w-full">
+                    <label class="brio-field-label" for="trade_id">Métier</label>
+                    <select id="trade_id" wire:model.defer="trade_id" class="w-full">
                         <option value="">— Aucun (à rattacher) —</option>
                         @foreach($trades as $trade)
                             <option value="{{ $trade->id }}">{{ $trade->name }}</option>
@@ -68,25 +68,25 @@
                 </div>
 
                 <div>
-                    <label class="brio-field-label">Durée par défaut (min)</label>
-                    <input wire:model.defer="default_duration_minutes" type="number" min="15">
+                    <label class="brio-field-label" for="default_duration_minutes">Durée par défaut (min)</label>
+                    <input id="default_duration_minutes" wire:model.defer="default_duration_minutes" type="number" min="15">
                     @error('default_duration_minutes') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="brio-field-label">Prix de base</label>
-                    <input wire:model.defer="base_price" type="number" step="0.01" min="0">
+                    <label class="brio-field-label" for="base_price">Prix de base</label>
+                    <input id="base_price" wire:model.defer="base_price" type="number" step="0.01" min="0">
                     @error('base_price') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="brio-field-label">Ordre</label>
-                    <input wire:model.defer="sort_order" type="number" min="0">
+                    <label class="brio-field-label" for="sort_order">Ordre</label>
+                    <input id="sort_order" wire:model.defer="sort_order" type="number" min="0">
                 </div>
 
                 <div class="md:col-span-2 xl:col-span-1">
-                    <label class="brio-field-label">Description</label>
-                    <textarea wire:model.defer="description" rows="4"></textarea>
+                    <label class="brio-field-label" for="description">Description</label>
+                    <textarea id="description" wire:model.defer="description" rows="4"></textarea>
                 </div>
             </div>
 
@@ -300,8 +300,8 @@
                 <x-app-card padding="p-5 md:p-6" title="Règles par zone · {{ $selectedService->name }}" subtitle="Ajustez l'activation, la tarification et la validation zone par zone.">
                     <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
                         <div>
-                            <label class="brio-field-label">Zone</label>
-                            <select wire:model.live="selectedZoneId">
+                            <label class="brio-field-label" for="selectedZoneId">Zone</label>
+                            <select id="selectedZoneId" wire:model.live="selectedZoneId">
                                 <option value="">Choisir une zone</option>
                                 @foreach($zones as $zone)
                                     <option value="{{ $zone->id }}">{{ $zone->name }} @if($zone->province) · {{ $zone->province->name }} @endif</option>
@@ -317,20 +317,20 @@
 
                     <div class="mt-5 brio-form-grid xl:grid-cols-3">
                         <div>
-                            <label class="brio-field-label">Prix spécifique</label>
-                            <input wire:model.defer="rule_base_price_override" type="number" step="0.01" min="0">
+                            <label class="brio-field-label" for="rule_base_price_override">Prix spécifique</label>
+                            <input id="rule_base_price_override" wire:model.defer="rule_base_price_override" type="number" step="0.01" min="0">
                         </div>
                         <div>
-                            <label class="brio-field-label">Multiplicateur</label>
-                            <input wire:model.defer="rule_price_multiplier" type="number" step="0.01" min="0.1">
+                            <label class="brio-field-label" for="rule_price_multiplier">Multiplicateur</label>
+                            <input id="rule_price_multiplier" wire:model.defer="rule_price_multiplier" type="number" step="0.01" min="0.1">
                         </div>
                         <div>
-                            <label class="brio-field-label">Délai minimum (h)</label>
-                            <input wire:model.defer="rule_minimum_notice_hours" type="number" min="0">
+                            <label class="brio-field-label" for="rule_minimum_notice_hours">Délai minimum (h)</label>
+                            <input id="rule_minimum_notice_hours" wire:model.defer="rule_minimum_notice_hours" type="number" min="0">
                         </div>
                         <div>
-                            <label class="brio-field-label">Capacité max / jour</label>
-                            <input wire:model.defer="rule_maximum_daily_capacity" type="number" min="1">
+                            <label class="brio-field-label" for="rule_maximum_daily_capacity">Capacité max / jour</label>
+                            <input id="rule_maximum_daily_capacity" wire:model.defer="rule_maximum_daily_capacity" type="number" min="1">
                         </div>
                     </div>
 
@@ -399,18 +399,18 @@
                         <h4 class="text-sm font-semibold text-slate-900">Ajouter une option</h4>
                         <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
                             <div>
-                                <label class="brio-field-label">Libellé</label>
-                                <input wire:model.defer="newOption.label" type="text" placeholder="Ex: Surface (m²)">
+                                <label class="brio-field-label" for="newOption-label">Libellé</label>
+                                <input id="newOption-label" wire:model.defer="newOption.label" type="text" placeholder="Ex: Surface (m²)">
                                 @error('newOption.label') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                             </div>
                             <div>
-                                <label class="brio-field-label">Slug (technique)</label>
-                                <input wire:model.defer="newOption.slug" type="text" placeholder="ex: surface_m2">
+                                <label class="brio-field-label" for="newOption-slug">Slug (technique)</label>
+                                <input id="newOption-slug" wire:model.defer="newOption.slug" type="text" placeholder="ex: surface_m2">
                                 @error('newOption.slug') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                             </div>
                             <div>
-                                <label class="brio-field-label">Type</label>
-                                <select wire:model.live="newOption.type">
+                                <label class="brio-field-label" for="newOption-type">Type</label>
+                                <select id="newOption-type" wire:model.live="newOption.type">
                                     <option value="number">Nombre</option>
                                     <option value="boolean">Oui / Non</option>
                                     <option value="select">Choix unique</option>
@@ -419,12 +419,12 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="brio-field-label">Unité</label>
-                                <input wire:model.defer="newOption.unit" type="text" placeholder="m², h, étage…">
+                                <label class="brio-field-label" for="newOption-unit">Unité</label>
+                                <input id="newOption-unit" wire:model.defer="newOption.unit" type="text" placeholder="m², h, étage…">
                             </div>
                             <div>
-                                <label class="brio-field-label">Impact prix</label>
-                                <select wire:model.live="newOption.price_modifier">
+                                <label class="brio-field-label" for="newOption-price_modifier">Impact prix</label>
+                                <select id="newOption-price_modifier" wire:model.live="newOption.price_modifier">
                                     <option value="none">Aucun</option>
                                     <option value="fixed">Fixe (€)</option>
                                     <option value="percent">Pourcentage (%)</option>
@@ -432,36 +432,36 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="brio-field-label">Valeur impact</label>
-                                <input wire:model.defer="newOption.price_modifier_value" type="number" step="0.01">
+                                <label class="brio-field-label" for="newOption-price_modifier_value">Valeur impact</label>
+                                <input id="newOption-price_modifier_value" wire:model.defer="newOption.price_modifier_value" type="number" step="0.01">
                             </div>
                             @if(in_array($newOption['type'] ?? 'number', ['select', 'multiselect'], true))
                                 <div class="md:col-span-3">
-                                    <label class="brio-field-label">Valeurs possibles (une par ligne)</label>
-                                    <textarea wire:model.defer="newOption.values_text" rows="3" placeholder="hebdo&#10;bimensuel&#10;mensuel"></textarea>
+                                    <label class="brio-field-label" for="newOption-values_text">Valeurs possibles (une par ligne)</label>
+                                    <textarea id="newOption-values_text" wire:model.defer="newOption.values_text" rows="3" placeholder="hebdo&#10;bimensuel&#10;mensuel"></textarea>
                                 </div>
                             @endif
                             @if(($newOption['type'] ?? 'number') === 'number')
                                 <div>
-                                    <label class="brio-field-label">Min</label>
-                                    <input wire:model.defer="newOption.min_value" type="number" step="0.01">
+                                    <label class="brio-field-label" for="newOption-min_value">Min</label>
+                                    <input id="newOption-min_value" wire:model.defer="newOption.min_value" type="number" step="0.01">
                                 </div>
                                 <div>
-                                    <label class="brio-field-label">Max</label>
-                                    <input wire:model.defer="newOption.max_value" type="number" step="0.01">
+                                    <label class="brio-field-label" for="newOption-max_value">Max</label>
+                                    <input id="newOption-max_value" wire:model.defer="newOption.max_value" type="number" step="0.01">
                                 </div>
                                 <div>
-                                    <label class="brio-field-label">Pas (step)</label>
-                                    <input wire:model.defer="newOption.step" type="number" step="0.01">
+                                    <label class="brio-field-label" for="newOption-step">Pas (step)</label>
+                                    <input id="newOption-step" wire:model.defer="newOption.step" type="number" step="0.01">
                                 </div>
                             @endif
                             <div>
-                                <label class="brio-field-label">Ordre</label>
-                                <input wire:model.defer="newOption.sort_order" type="number" min="0">
+                                <label class="brio-field-label" for="newOption-sort_order">Ordre</label>
+                                <input id="newOption-sort_order" wire:model.defer="newOption.sort_order" type="number" min="0">
                             </div>
                             <div class="md:col-span-3">
-                                <label class="brio-field-label">Aide / description (optionnel)</label>
-                                <textarea wire:model.defer="newOption.help_text" rows="2"></textarea>
+                                <label class="brio-field-label" for="newOption-help_text">Aide / description (optionnel)</label>
+                                <textarea id="newOption-help_text" wire:model.defer="newOption.help_text" rows="2"></textarea>
                             </div>
                             <div class="md:col-span-3 flex flex-wrap items-center gap-4 text-sm">
                                 <label class="inline-flex items-center gap-2 text-slate-700">
@@ -542,18 +542,18 @@
                                                 <td colspan="7">
                                                     <div class="grid grid-cols-1 gap-3 md:grid-cols-3 p-3">
                                                         <div>
-                                                            <label class="brio-field-label">Libellé</label>
-                                                            <input wire:model.defer="serviceOptions.{{ $optionId }}.label" type="text">
+                                                            <label class="brio-field-label" for="serviceOptions-{{ $optionId }}-label">Libellé</label>
+                                                            <input id="serviceOptions-{{ $optionId }}-label" wire:model.defer="serviceOptions.{{ $optionId }}.label" type="text">
                                                             @error("serviceOptions.$optionId.label") <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                                                         </div>
                                                         <div>
-                                                            <label class="brio-field-label">Slug</label>
-                                                            <input wire:model.defer="serviceOptions.{{ $optionId }}.slug" type="text">
+                                                            <label class="brio-field-label" for="serviceOptions-{{ $optionId }}-slug">Slug</label>
+                                                            <input id="serviceOptions-{{ $optionId }}-slug" wire:model.defer="serviceOptions.{{ $optionId }}.slug" type="text">
                                                             @error("serviceOptions.$optionId.slug") <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                                                         </div>
                                                         <div>
-                                                            <label class="brio-field-label">Type</label>
-                                                            <select wire:model.live="serviceOptions.{{ $optionId }}.type">
+                                                            <label class="brio-field-label" for="serviceOptions-{{ $optionId }}-type">Type</label>
+                                                            <select id="serviceOptions-{{ $optionId }}-type" wire:model.live="serviceOptions.{{ $optionId }}.type">
                                                                 <option value="number">Nombre</option>
                                                                 <option value="boolean">Oui / Non</option>
                                                                 <option value="select">Choix unique</option>
@@ -562,12 +562,12 @@
                                                             </select>
                                                         </div>
                                                         <div>
-                                                            <label class="brio-field-label">Unité</label>
-                                                            <input wire:model.defer="serviceOptions.{{ $optionId }}.unit" type="text">
+                                                            <label class="brio-field-label" for="serviceOptions-{{ $optionId }}-unit">Unité</label>
+                                                            <input id="serviceOptions-{{ $optionId }}-unit" wire:model.defer="serviceOptions.{{ $optionId }}.unit" type="text">
                                                         </div>
                                                         <div>
-                                                            <label class="brio-field-label">Impact prix</label>
-                                                            <select wire:model.live="serviceOptions.{{ $optionId }}.price_modifier">
+                                                            <label class="brio-field-label" for="serviceOptions-{{ $optionId }}-price_modifier">Impact prix</label>
+                                                            <select id="serviceOptions-{{ $optionId }}-price_modifier" wire:model.live="serviceOptions.{{ $optionId }}.price_modifier">
                                                                 <option value="none">Aucun</option>
                                                                 <option value="fixed">Fixe (€)</option>
                                                                 <option value="percent">Pourcentage (%)</option>
@@ -575,24 +575,24 @@
                                                             </select>
                                                         </div>
                                                         <div>
-                                                            <label class="brio-field-label">Valeur impact</label>
-                                                            <input wire:model.defer="serviceOptions.{{ $optionId }}.price_modifier_value" type="number" step="0.01">
+                                                            <label class="brio-field-label" for="serviceOptions-{{ $optionId }}-price_modifier_value">Valeur impact</label>
+                                                            <input id="serviceOptions-{{ $optionId }}-price_modifier_value" wire:model.defer="serviceOptions.{{ $optionId }}.price_modifier_value" type="number" step="0.01">
                                                         </div>
                                                         @if(in_array($opt['type'], ['select', 'multiselect'], true))
                                                             <div class="md:col-span-3">
-                                                                <label class="brio-field-label">Valeurs (une par ligne)</label>
-                                                                <textarea wire:model.defer="serviceOptions.{{ $optionId }}.values_text" rows="3"></textarea>
+                                                                <label class="brio-field-label" for="serviceOptions-{{ $optionId }}-values_text">Valeurs (une par ligne)</label>
+                                                                <textarea id="serviceOptions-{{ $optionId }}-values_text" wire:model.defer="serviceOptions.{{ $optionId }}.values_text" rows="3"></textarea>
                                                             </div>
                                                         @endif
                                                         @if($opt['type'] === 'number')
-                                                            <div><label class="brio-field-label">Min</label><input wire:model.defer="serviceOptions.{{ $optionId }}.min_value" type="number" step="0.01"></div>
-                                                            <div><label class="brio-field-label">Max</label><input wire:model.defer="serviceOptions.{{ $optionId }}.max_value" type="number" step="0.01"></div>
-                                                            <div><label class="brio-field-label">Pas (step)</label><input wire:model.defer="serviceOptions.{{ $optionId }}.step" type="number" step="0.01"></div>
+                                                            <div><label class="brio-field-label" for="serviceOptions-{{ $optionId }}-min_value">Min</label><input id="serviceOptions-{{ $optionId }}-min_value" wire:model.defer="serviceOptions.{{ $optionId }}.min_value" type="number" step="0.01"></div>
+                                                            <div><label class="brio-field-label" for="serviceOptions-{{ $optionId }}-max_value">Max</label><input id="serviceOptions-{{ $optionId }}-max_value" wire:model.defer="serviceOptions.{{ $optionId }}.max_value" type="number" step="0.01"></div>
+                                                            <div><label class="brio-field-label" for="serviceOptions-{{ $optionId }}-step">Pas (step)</label><input id="serviceOptions-{{ $optionId }}-step" wire:model.defer="serviceOptions.{{ $optionId }}.step" type="number" step="0.01"></div>
                                                         @endif
-                                                        <div><label class="brio-field-label">Ordre</label><input wire:model.defer="serviceOptions.{{ $optionId }}.sort_order" type="number" min="0"></div>
+                                                        <div><label class="brio-field-label" for="serviceOptions-{{ $optionId }}-sort_order">Ordre</label><input id="serviceOptions-{{ $optionId }}-sort_order" wire:model.defer="serviceOptions.{{ $optionId }}.sort_order" type="number" min="0"></div>
                                                         <div class="md:col-span-3">
-                                                            <label class="brio-field-label">Aide</label>
-                                                            <textarea wire:model.defer="serviceOptions.{{ $optionId }}.help_text" rows="2"></textarea>
+                                                            <label class="brio-field-label" for="serviceOptions-{{ $optionId }}-help_text">Aide</label>
+                                                            <textarea id="serviceOptions-{{ $optionId }}-help_text" wire:model.defer="serviceOptions.{{ $optionId }}.help_text" rows="2"></textarea>
                                                         </div>
                                                         <div class="md:col-span-3 flex flex-wrap items-center gap-4 text-sm">
                                                             <label class="inline-flex items-center gap-2 text-slate-700">

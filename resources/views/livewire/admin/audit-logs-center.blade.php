@@ -26,12 +26,12 @@
     <x-filter-panel title="Filtres d’audit" subtitle="Isole rapidement un acteur, une action ou une sévérité.">
         <div class="brio-filter-grid">
             <div>
-                <label class="mb-2 block text-sm font-semibold text-slate-700">Recherche</label>
-                <input wire:model.live.debounce.400ms="search" type="text" placeholder="Action, route, requête, cible…">
+                <label class="mb-2 block text-sm font-semibold text-slate-700" for="search">Recherche</label>
+                <input id="search" wire:model.live.debounce.400ms="search" type="text" placeholder="Action, route, requête, cible…">
             </div>
             <div>
-                <label class="mb-2 block text-sm font-semibold text-slate-700">Sévérité</label>
-                <select wire:model.live="severityFilter">
+                <label class="mb-2 block text-sm font-semibold text-slate-700" for="severityFilter">Sévérité</label>
+                <select id="severityFilter" wire:model.live="severityFilter">
                     <option value="">Toutes</option>
                     @foreach($severities as $severity)
                         <option value="{{ $severity }}">{{ ucfirst($severity) }}</option>
@@ -39,8 +39,8 @@
                 </select>
             </div>
             <div>
-                <label class="mb-2 block text-sm font-semibold text-slate-700">Action</label>
-                <select wire:model.live="actionFilter">
+                <label class="mb-2 block text-sm font-semibold text-slate-700" for="actionFilter">Action</label>
+                <select id="actionFilter" wire:model.live="actionFilter">
                     <option value="">Toutes</option>
                     @foreach($availableActions as $action)
                         <option value="{{ $action }}">{{ $action }}</option>
@@ -48,16 +48,16 @@
                 </select>
             </div>
             <div>
-                <label class="mb-2 block text-sm font-semibold text-slate-700">Acteur</label>
-                <select wire:model.live="actorFilter">
+                <label class="mb-2 block text-sm font-semibold text-slate-700" for="actorFilter">Acteur</label>
+                <select id="actorFilter" wire:model.live="actorFilter">
                     <option value="">Tous</option>
                     <option value="human">Utilisateur</option>
                     <option value="system">Système</option>
                 </select>
             </div>
             <div>
-                <label class="mb-2 block text-sm font-semibold text-slate-700">Zone</label>
-                <select wire:model.live="zoneFilter" @disabled(auth()->user()?->isZoneScopedAdmin())>
+                <label class="mb-2 block text-sm font-semibold text-slate-700" for="zoneFilter">Zone</label>
+                <select id="zoneFilter" wire:model.live="zoneFilter" @disabled(auth()->user()?->isZoneScopedAdmin())>
                     <option value="">Toutes</option>
                     @foreach($zones as $zone)
                         <option value="{{ $zone->id }}">{{ $zone->name }}</option>
@@ -65,8 +65,8 @@
                 </select>
             </div>
             <div>
-                <label class="mb-2 block text-sm font-semibold text-slate-700">Résultats</label>
-                <select wire:model.live="perPage">
+                <label class="mb-2 block text-sm font-semibold text-slate-700" for="perPage">Résultats</label>
+                <select id="perPage" wire:model.live="perPage">
                     <option value="15">15</option>
                     <option value="30">30</option>
                     <option value="50">50</option>

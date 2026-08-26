@@ -27,22 +27,22 @@
 
     <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
         <div class="xl:col-span-2">
-            <label class="mb-1 block text-sm font-medium text-slate-700">
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="search">
                 Recherche
             </label>
 
-            <input type="text"
+            <input id="search" type="text"
                    wire:model.live.debounce.350ms="search"
                    placeholder="Client, employé, service, ville, commentaire…"
                    class="w-full rounded-2xl border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
         </div>
 
         <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="employe_id">
                 Employé
             </label>
 
-            <select wire:model.live="employe_id"
+            <select id="employe_id" wire:model.live="employe_id"
                     class="w-full rounded-2xl border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 <option value="">Tous les employés</option>
                 @foreach($employes as $employe)
@@ -52,11 +52,11 @@
         </div>
 
         <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="client_id">
                 Client
             </label>
 
-            <select wire:model.live="client_id"
+            <select id="client_id" wire:model.live="client_id"
                     class="w-full rounded-2xl border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 <option value="">Tous les clients</option>
                 @foreach($clients as $client)
@@ -66,11 +66,11 @@
         </div>
 
         <div>
-            <label class="mb-1 block text-sm font-medium text-slate-700">
+            <label class="mb-1 block text-sm font-medium text-slate-700" for="perPage">
                 Par page
             </label>
 
-            <select wire:model.live="perPage"
+            <select id="perPage" wire:model.live="perPage"
                     class="w-full rounded-2xl border-slate-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 <option value="5">5</option>
                 <option value="8">8</option>

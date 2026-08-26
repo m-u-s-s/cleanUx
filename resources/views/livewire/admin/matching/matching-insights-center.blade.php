@@ -172,8 +172,8 @@
                     </p>
 
                     <div>
-                        <label class="text-sm font-semibold text-slate-700">ID du booking</label>
-                        <input type="number" wire:model="simulateBookingId"
+                        <label class="text-sm font-semibold text-slate-700" for="simulateBookingId">ID du booking</label>
+                        <input id="simulateBookingId" type="number" wire:model="simulateBookingId"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                         @error('simulateBookingId') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>

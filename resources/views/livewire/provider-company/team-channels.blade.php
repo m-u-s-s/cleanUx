@@ -489,6 +489,7 @@
                 </div>
 
                 <button
+                        aria-label="Envoyer le message"
                     wire:click="sendMessage"
                     class="flex-shrink-0 rounded-lg bg-blue-600 p-1.5 text-white transition hover:bg-blue-700 disabled:opacity-40"
                     :disabled="!$wire.messageInput.trim()">
@@ -519,8 +520,8 @@
 
         <div class="space-y-4">
             <div>
-                <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Nom du canal</label>
-                <input
+                <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1" for="newChannelName">Nom du canal</label>
+                <input id="newChannelName"
                     wire:model="newChannelName"
                     type="text"
                     placeholder="général, missions-bruxelles…"
@@ -528,8 +529,8 @@
             </div>
 
             <div>
-                <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Type</label>
-                <div class="grid grid-cols-2 gap-2">
+                <span id="groupe-type-27883" class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Type</span>
+                <div class="grid grid-cols-2 gap-2" role="group" aria-labelledby="groupe-type-27883">
                     @foreach (['team' => '👥 Équipe', 'mission' => '🗺️ Mission', 'support' => '🛟 Support', 'announcement' => '📢 Annonces'] as $val => $label)
                     <label
                         class="cursor-pointer rounded-lg border px-3 py-2 text-sm transition

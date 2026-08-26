@@ -28,9 +28,9 @@
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Code</label>
+                    <label class="text-sm font-semibold text-slate-700" for="code">Code</label>
                     <div class="flex gap-2 mt-1">
-                        <input type="text" wire:model="code"
+                        <input id="code" type="text" wire:model="code"
                                class="flex-1 rounded-xl border-gray-300 text-sm uppercase"
                                placeholder="SUMMER25" />
                         <button type="button" wire:click="generateRandomCode"
@@ -42,22 +42,22 @@
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Nom interne (optionnel)</label>
-                    <input type="text" wire:model="name" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
+                    <label class="text-sm font-semibold text-slate-700" for="name">Nom interne (optionnel)</label>
+                    <input id="name" type="text" wire:model="name" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-sm font-semibold text-slate-700">Type</label>
-                        <select wire:model.live="discount_type" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                        <label class="text-sm font-semibold text-slate-700" for="discount_type">Type</label>
+                        <select id="discount_type" wire:model.live="discount_type" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                             <option value="percent">Pourcentage (%)</option>
                             <option value="fixed_amount">Montant fixe</option>
                             <option value="free_first_booking">1ère réservation gratuite</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-sm font-semibold text-slate-700">Valeur</label>
-                        <input type="number" step="0.01" wire:model="discount_value"
+                        <label class="text-sm font-semibold text-slate-700" for="discount_value">Valeur</label>
+                        <input id="discount_value" type="number" step="0.01" wire:model="discount_value"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                         @error('discount_value') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
@@ -65,46 +65,46 @@
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-sm font-semibold text-slate-700">Plafond remise</label>
-                        <input type="number" step="0.01" wire:model="max_discount_amount"
+                        <label class="text-sm font-semibold text-slate-700" for="max_discount_amount">Plafond remise</label>
+                        <input id="max_discount_amount" type="number" step="0.01" wire:model="max_discount_amount"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm" placeholder="—" />
                     </div>
                     <div>
-                        <label class="text-sm font-semibold text-slate-700">Min. réservation</label>
-                        <input type="number" step="0.01" wire:model="min_booking_amount"
+                        <label class="text-sm font-semibold text-slate-700" for="min_booking_amount">Min. réservation</label>
+                        <input id="min_booking_amount" type="number" step="0.01" wire:model="min_booking_amount"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm" placeholder="—" />
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-sm font-semibold text-slate-700">Max usages total</label>
-                        <input type="number" wire:model="max_total_uses"
+                        <label class="text-sm font-semibold text-slate-700" for="max_total_uses">Max usages total</label>
+                        <input id="max_total_uses" type="number" wire:model="max_total_uses"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm" placeholder="∞" />
                     </div>
                     <div>
-                        <label class="text-sm font-semibold text-slate-700">Max par utilisateur</label>
-                        <input type="number" wire:model="max_uses_per_user"
+                        <label class="text-sm font-semibold text-slate-700" for="max_uses_per_user">Max par utilisateur</label>
+                        <input id="max_uses_per_user" type="number" wire:model="max_uses_per_user"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-sm font-semibold text-slate-700">Valide du</label>
-                        <input type="datetime-local" wire:model="valid_from"
+                        <label class="text-sm font-semibold text-slate-700" for="valid_from">Valide du</label>
+                        <input id="valid_from" type="datetime-local" wire:model="valid_from"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                     </div>
                     <div>
-                        <label class="text-sm font-semibold text-slate-700">Valide jusqu'au</label>
-                        <input type="datetime-local" wire:model="valid_until"
+                        <label class="text-sm font-semibold text-slate-700" for="valid_until">Valide jusqu'au</label>
+                        <input id="valid_until" type="datetime-local" wire:model="valid_until"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                     </div>
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Audience</label>
-                    <select wire:model="audience_scope" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                    <label class="text-sm font-semibold text-slate-700" for="audience_scope">Audience</label>
+                    <select id="audience_scope" wire:model="audience_scope" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                         <option value="all">Tous</option>
                         <option value="new_customers">Nouveaux clients</option>
                         <option value="returning_customers">Clients existants</option>
@@ -114,8 +114,8 @@
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Campagne</label>
-                    <select wire:model="promo_campaign_id" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                    <label class="text-sm font-semibold text-slate-700" for="promo_campaign_id">Campagne</label>
+                    <select id="promo_campaign_id" wire:model="promo_campaign_id" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                         <option value="">— Aucune —</option>
                         @foreach($campaigns as $c)
                             <option value="{{ $c->id }}">{{ $c->name }}</option>
@@ -135,8 +135,8 @@
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Statut</label>
-                    <select wire:model="status" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                    <label class="text-sm font-semibold text-slate-700" for="status">Statut</label>
+                    <select id="status" wire:model="status" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                         <option value="draft">Brouillon</option>
                         <option value="active">Actif</option>
                         <option value="paused">En pause</option>

@@ -7,8 +7,8 @@
 
         <div class="grid gap-3 md:grid-cols-4">
             <div>
-                <label class="text-sm font-medium text-slate-700">Zone</label>
-                <select wire:model.defer="coverageForm.service_zone_id" class="mt-1 w-full rounded-xl border-slate-300">
+                <label class="text-sm font-medium text-slate-700" for="coverageForm-service_zone_id">Zone</label>
+                <select id="coverageForm-service_zone_id" wire:model.defer="coverageForm.service_zone_id" class="mt-1 w-full rounded-xl border-slate-300">
                     <option value="">—</option>
                     @foreach($zones as $zone)
                         <option value="{{ $zone->id }}">{{ $zone->name }}</option>
@@ -16,22 +16,22 @@
                 </select>
             </div>
             <div>
-                <label class="text-sm font-medium text-slate-700">Service</label>
-                <select wire:model.defer="coverageForm.service_catalog_id" class="mt-1 w-full rounded-xl border-slate-300">
+                <label class="text-sm font-medium text-slate-700" for="coverageForm-service_catalog_id">Service</label>
+                <select id="coverageForm-service_catalog_id" wire:model.defer="coverageForm.service_catalog_id" class="mt-1 w-full rounded-xl border-slate-300">
                     <option value="">Tous</option>
                     @foreach($services as $service)
                         <option value="{{ $service->id }}">{{ $service->name }}</option>
                     @endforeach
                 </select>
             </div>
-            <div><label class="text-sm font-medium text-slate-700">Capacité / jour</label><input wire:model.defer="coverageForm.max_daily_capacity" type="number" min="1" class="mt-1 w-full rounded-xl border-slate-300" /></div>
-            <div><label class="text-sm font-medium text-slate-700">SLA réponse (h)</label><input wire:model.defer="coverageForm.sla_response_hours" type="number" min="1" class="mt-1 w-full rounded-xl border-slate-300" /></div>
+            <div><label class="text-sm font-medium text-slate-700" for="coverageForm-max_daily_capacity">Capacité / jour</label><input id="coverageForm-max_daily_capacity" wire:model.defer="coverageForm.max_daily_capacity" type="number" min="1" class="mt-1 w-full rounded-xl border-slate-300" /></div>
+            <div><label class="text-sm font-medium text-slate-700" for="coverageForm-sla_response_hours">SLA réponse (h)</label><input id="coverageForm-sla_response_hours" wire:model.defer="coverageForm.sla_response_hours" type="number" min="1" class="mt-1 w-full rounded-xl border-slate-300" /></div>
         </div>
 
         <div class="flex items-center justify-between">
             <div class="w-32">
-                <label class="text-sm font-medium text-slate-700">Priorité</label>
-                <input wire:model.defer="coverageForm.priority" type="number" min="1" max="100" class="mt-1 w-full rounded-xl border-slate-300" />
+                <label class="text-sm font-medium text-slate-700" for="coverageForm-priority">Priorité</label>
+                <input id="coverageForm-priority" wire:model.defer="coverageForm.priority" type="number" min="1" max="100" class="mt-1 w-full rounded-xl border-slate-300" />
             </div>
             <button wire:click="addCoverage" class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
                 Ajouter la couverture

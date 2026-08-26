@@ -1,8 +1,8 @@
 <div class="space-y-4">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Recherche</label>
-            <input
+            <label class="block text-sm font-semibold text-slate-700 mb-2" for="search">Recherche</label>
+            <input id="search"
                 type="text"
                 wire:model.live.debounce.300ms="search"
                 placeholder="Action, utilisateur, cible..."
@@ -11,8 +11,8 @@
         </div>
 
         <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Action</label>
-            <select
+            <label class="block text-sm font-semibold text-slate-700 mb-2" for="actionFilter">Action</label>
+            <select id="actionFilter"
                 wire:model.live="actionFilter"
                 class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500"
             >
@@ -24,8 +24,8 @@
         </div>
 
         <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-2">Résultats par page</label>
-            <select
+            <label class="block text-sm font-semibold text-slate-700 mb-2" for="perPage">Résultats par page</label>
+            <select id="perPage"
                 wire:model.live="perPage"
                 class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500"
             >

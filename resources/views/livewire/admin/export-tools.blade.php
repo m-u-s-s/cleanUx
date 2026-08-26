@@ -6,8 +6,8 @@
     <x-filter-panel title="Export global" subtitle="Prépare un export rapide des données de la plateforme.">
         <div class="grid gap-4 md:grid-cols-3 md:items-end">
             <div>
-                <label class="text-sm font-semibold text-slate-700">Type de données</label>
-                <select wire:model="type" class="mt-1">
+                <label class="text-sm font-semibold text-slate-700" for="type">Type de données</label>
+                <select id="type" wire:model="type" class="mt-1">
                     <option value="rendez_vous">📅 Rendez-vous</option>
                     <option value="utilisateurs">👥 Utilisateurs</option>
                     <option value="feedbacks">💬 Feedbacks</option>
@@ -15,8 +15,8 @@
             </div>
 
             <div>
-                <label class="text-sm font-semibold text-slate-700">Format</label>
-                <select wire:model="format" class="mt-1">
+                <label class="text-sm font-semibold text-slate-700" for="format">Format</label>
+                <select id="format" wire:model="format" class="mt-1">
                     <option value="csv">📥 CSV</option>
                     <option value="pdf">📄 PDF</option>
                 </select>

@@ -4,8 +4,8 @@
 
     <div class="flex flex-wrap gap-4 items-end">
         <div>
-            <label class="text-sm text-gray-600">{{ __('ui.admin_users.role') }}</label>
-            <select wire:model="roleFilter" class="border rounded px-2 py-1 text-sm">
+            <label class="text-sm text-gray-600" for="roleFilter">{{ __('ui.admin_users.role') }}</label>
+            <select id="roleFilter" wire:model="roleFilter" class="border rounded px-2 py-1 text-sm">
                 <option value="">{{ __('ui.admin_users.all') }}</option>
                 <option value="client">{{ __('ui.admin_users.client') }}</option>
                 <option value="employe">{{ __('ui.admin_users.employee') }}</option>
@@ -14,8 +14,8 @@
         </div>
 
         <div>
-            <label class="text-sm text-gray-600">{{ __('ui.admin_users.search') }}</label>
-            <input type="text" wire:model.debounce.300ms="search"
+            <label class="text-sm text-gray-600" for="search">{{ __('ui.admin_users.search') }}</label>
+            <input id="search" type="text" wire:model.debounce.300ms="search"
                    placeholder="{{ __('ui.admin_users.search_placeholder') }}"
                    class="border rounded px-2 py-1 text-sm" />
         </div>
@@ -123,8 +123,8 @@
                             @if($entry['selected'] ?? false)
                                 <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
                                     <div>
-                                        <label class="block text-xs text-gray-600">Niveau</label>
-                                        <select wire:model="employeeTradesSelection.{{ $trade->id }}.proficiency"
+                                        <label class="block text-xs text-gray-600" for="employeeTradesSelection-{{ $trade->id }}-proficiency">Niveau</label>
+                                        <select id="employeeTradesSelection-{{ $trade->id }}-proficiency" wire:model="employeeTradesSelection.{{ $trade->id }}.proficiency"
                                                 class="block w-full rounded border-gray-300 text-sm">
                                             <option value="">— Non précisé —</option>
                                             <option value="basic">Débutant</option>
@@ -133,8 +133,8 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-gray-600">Notes internes</label>
-                                        <input type="text"
+                                        <label class="block text-xs text-gray-600" for="employeeTradesSelection-{{ $trade->id }}-notes">Notes internes</label>
+                                        <input id="employeeTradesSelection-{{ $trade->id }}-notes" type="text"
                                             wire:model="employeeTradesSelection.{{ $trade->id }}.notes"
                                             placeholder="Ex: certification CACES R489"
                                             class="block w-full rounded border-gray-300 text-sm" />

@@ -57,8 +57,8 @@
     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="md:col-span-2">
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Recherche</label>
-                <input type="text"
+                <label class="block text-sm font-semibold text-slate-700 mb-2" for="search">Recherche</label>
+                <input id="search" type="text"
                        wire:model.live.debounce.300ms="search"
                        placeholder="Nom ou email..."
                        class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500">

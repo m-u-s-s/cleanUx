@@ -62,19 +62,19 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nom</label>
-                            <input type="text" wire:model="name" class="w-full border-gray-300 rounded-lg shadow-sm">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="name">Nom</label>
+                            <input id="name" type="text" wire:model="name" class="w-full border-gray-300 rounded-lg shadow-sm">
                             @error('name') <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Code</label>
-                            <input type="text" value="{{ $code }}" disabled class="w-full border-gray-200 bg-slate-50 rounded-lg shadow-sm text-slate-500">
+                            <label for="zone-code" class="block text-sm font-medium text-gray-700 mb-1">Code</label>
+                            <input id="zone-code" type="text" value="{{ $code }}" disabled class="w-full border-gray-200 bg-slate-50 rounded-lg shadow-sm text-slate-500">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
-                            <select wire:model="status" class="w-full border-gray-300 rounded-lg shadow-sm">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="status">Statut</label>
+                            <select id="status" wire:model="status" class="w-full border-gray-300 rounded-lg shadow-sm">
                                 <option value="draft">Draft</option>
                                 <option value="active">Active</option>
                                 <option value="paused">Paused</option>
@@ -83,8 +83,8 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Type de couverture</label>
-                            <select wire:model="coverage_type" class="w-full border-gray-300 rounded-lg shadow-sm">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="coverage_type">Type de couverture</label>
+                            <select id="coverage_type" wire:model="coverage_type" class="w-full border-gray-300 rounded-lg shadow-sm">
                                 <option value="national">National</option>
                                 <option value="region">Région</option>
                                 <option value="province">Province</option>
@@ -95,28 +95,28 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Priorité</label>
-                            <input type="number" min="1" wire:model="priority" class="w-full border-gray-300 rounded-lg shadow-sm">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="priority">Priorité</label>
+                            <input id="priority" type="number" min="1" wire:model="priority" class="w-full border-gray-300 rounded-lg shadow-sm">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Délai minimum (h)</label>
-                            <input type="number" min="0" wire:model="minimum_notice_hours" class="w-full border-gray-300 rounded-lg shadow-sm">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="minimum_notice_hours">Délai minimum (h)</label>
+                            <input id="minimum_notice_hours" type="number" min="0" wire:model="minimum_notice_hours" class="w-full border-gray-300 rounded-lg shadow-sm">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Capacité max / jour</label>
-                            <input type="number" min="1" wire:model="maximum_daily_jobs" class="w-full border-gray-300 rounded-lg shadow-sm">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="maximum_daily_jobs">Capacité max / jour</label>
+                            <input id="maximum_daily_jobs" type="number" min="1" wire:model="maximum_daily_jobs" class="w-full border-gray-300 rounded-lg shadow-sm">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Buffer (minutes)</label>
-                            <input type="number" min="0" wire:model="time_buffer_minutes" class="w-full border-gray-300 rounded-lg shadow-sm">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="time_buffer_minutes">Buffer (minutes)</label>
+                            <input id="time_buffer_minutes" type="number" min="0" wire:model="time_buffer_minutes" class="w-full border-gray-300 rounded-lg shadow-sm">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Surcharge déplacement (€)</label>
-                            <input type="number" min="0" step="0.01" wire:model="travel_surcharge" class="w-full border-gray-300 rounded-lg shadow-sm">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="travel_surcharge">Surcharge déplacement (€)</label>
+                            <input id="travel_surcharge" type="number" min="0" step="0.01" wire:model="travel_surcharge" class="w-full border-gray-300 rounded-lg shadow-sm">
                         </div>
 
                         <div class="md:col-span-2 flex flex-wrap gap-6 pt-2">
@@ -131,8 +131,8 @@
                         </div>
 
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Notes internes</label>
-                            <textarea rows="3" wire:model="notes" class="w-full border-gray-300 rounded-lg shadow-sm"></textarea>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="notes">Notes internes</label>
+                            <textarea id="notes" rows="3" wire:model="notes" class="w-full border-gray-300 rounded-lg shadow-sm"></textarea>
                         </div>
                     </div>
 
@@ -211,8 +211,8 @@
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                     <div>
-                                        <label class="block text-xs font-medium text-gray-600 mb-1">Multiplicateur prix</label>
-                                        <input type="number" step="0.01" min="0.1" max="10" wire:model="tradeSettings.{{ $tradeId }}.price_multiplier"
+                                        <label class="block text-xs font-medium text-gray-600 mb-1" for="tradeSettings-{{ $tradeId }}-price_multiplier">Multiplicateur prix</label>
+                                        <input id="tradeSettings-{{ $tradeId }}-price_multiplier" type="number" step="0.01" min="0.1" max="10" wire:model="tradeSettings.{{ $tradeId }}.price_multiplier"
                                             class="w-full border-gray-300 rounded-lg shadow-sm">
                                         @error("tradeSettings.$tradeId.price_multiplier") <p class="text-xs text-rose-600 mt-1">{{ $message }}</p> @enderror
                                     </div>
@@ -223,8 +223,8 @@
                                         </label>
                                     </div>
                                     <div class="md:col-span-2">
-                                        <label class="block text-xs font-medium text-gray-600 mb-1">Notes internes</label>
-                                        <input type="text" wire:model="tradeSettings.{{ $tradeId }}.notes" placeholder="Ex: tarif majoré dimanche"
+                                        <label class="block text-xs font-medium text-gray-600 mb-1" for="tradeSettings-{{ $tradeId }}-notes">Notes internes</label>
+                                        <input id="tradeSettings-{{ $tradeId }}-notes" type="text" wire:model="tradeSettings.{{ $tradeId }}.notes" placeholder="Ex: tarif majoré dimanche"
                                             class="w-full border-gray-300 rounded-lg shadow-sm">
                                     </div>
                                 </div>
@@ -290,23 +290,23 @@
 
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Prix spécifique (€)</label>
-                                            <input type="number" step="0.01" min="0" wire:model="serviceRules.{{ $serviceId }}.base_price_override" class="w-full border-gray-300 rounded-lg shadow-sm">
+                                            <label class="block text-xs font-medium text-gray-600 mb-1" for="serviceRules-{{ $serviceId }}-base_price_override">Prix spécifique (€)</label>
+                                            <input id="serviceRules-{{ $serviceId }}-base_price_override" type="number" step="0.01" min="0" wire:model="serviceRules.{{ $serviceId }}.base_price_override" class="w-full border-gray-300 rounded-lg shadow-sm">
                                         </div>
 
                                         <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Multiplicateur prix</label>
-                                            <input type="number" step="0.01" min="0.1" wire:model="serviceRules.{{ $serviceId }}.price_multiplier" class="w-full border-gray-300 rounded-lg shadow-sm">
+                                            <label class="block text-xs font-medium text-gray-600 mb-1" for="serviceRules-{{ $serviceId }}-price_multiplier">Multiplicateur prix</label>
+                                            <input id="serviceRules-{{ $serviceId }}-price_multiplier" type="number" step="0.01" min="0.1" wire:model="serviceRules.{{ $serviceId }}.price_multiplier" class="w-full border-gray-300 rounded-lg shadow-sm">
                                         </div>
 
                                         <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Délai minimum (h)</label>
-                                            <input type="number" min="0" wire:model="serviceRules.{{ $serviceId }}.minimum_notice_hours" class="w-full border-gray-300 rounded-lg shadow-sm">
+                                            <label class="block text-xs font-medium text-gray-600 mb-1" for="serviceRules-{{ $serviceId }}-minimum_notice_hours">Délai minimum (h)</label>
+                                            <input id="serviceRules-{{ $serviceId }}-minimum_notice_hours" type="number" min="0" wire:model="serviceRules.{{ $serviceId }}.minimum_notice_hours" class="w-full border-gray-300 rounded-lg shadow-sm">
                                         </div>
 
                                         <div>
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Capacité / jour</label>
-                                            <input type="number" min="1" wire:model="serviceRules.{{ $serviceId }}.maximum_daily_capacity" class="w-full border-gray-300 rounded-lg shadow-sm">
+                                            <label class="block text-xs font-medium text-gray-600 mb-1" for="serviceRules-{{ $serviceId }}-maximum_daily_capacity">Capacité / jour</label>
+                                            <input id="serviceRules-{{ $serviceId }}-maximum_daily_capacity" type="number" min="1" wire:model="serviceRules.{{ $serviceId }}.maximum_daily_capacity" class="w-full border-gray-300 rounded-lg shadow-sm">
                                         </div>
 
                                         <div class="md:col-span-2">

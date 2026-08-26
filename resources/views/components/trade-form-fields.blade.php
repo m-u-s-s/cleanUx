@@ -25,7 +25,7 @@
             @endphp
 
             <div class="rounded-lg border border-slate-200 bg-white p-4">
-                <label class="block text-sm font-semibold text-slate-900">
+                <label class="block text-sm font-semibold text-slate-900" for="{{ $modelPath }}">
                     {{ $field['label'] }}
                     @if($required)<span class="text-rose-600">*</span>@endif
                     @if(!empty($field['unit']))
@@ -41,7 +41,7 @@
                     @switch($field['type'])
 
                         @case('number')
-                            <input
+                            <input id="{{ $modelPath }}"
                                 type="number"
                                 wire:model.live.debounce.300ms="{{ $modelPath }}"
                                 @if(isset($field['min'])) min="{{ $field['min'] }}" @endif

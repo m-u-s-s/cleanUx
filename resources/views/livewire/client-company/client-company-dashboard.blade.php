@@ -122,7 +122,7 @@
                         </div>
                         @if ($booking->providerUser)
                             <div class="flex items-center gap-1.5">
-                                <img src="{{ $booking->providerUser->profile_photo_url }}"
+                                <img alt="{{ $booking->providerUser->name }}" src="{{ $booking->providerUser->profile_photo_url }}"
                                      class="h-6 w-6 rounded-full object-cover"
                                      title="{{ $booking->providerUser->name }}">
                                 <span class="text-xs text-slate-500 hidden sm:block">{{ $booking->providerUser->name }}</span>

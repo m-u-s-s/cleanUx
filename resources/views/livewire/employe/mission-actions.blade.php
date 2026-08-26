@@ -156,10 +156,10 @@
         enctype="multipart/form-data"
         class="space-y-3">
         <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">
+            <label class="block text-sm font-semibold text-slate-700 mb-1" for="code">
                 Code donné par le client
             </label>
-            <input
+            <input id="code"
                 type="text"
                 name="code"
                 class="w-full rounded-xl border-slate-300"
@@ -168,10 +168,10 @@
         </div>
 
         <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">
+            <label class="block text-sm font-semibold text-slate-700 mb-1" for="photos_avant">
                 Photos avant mission
             </label>
-            <input
+            <input id="photos_avant"
                 type="file"
                 name="photos_avant[]"
                 accept="image/*"

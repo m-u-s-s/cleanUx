@@ -3,50 +3,50 @@
                 <x-app-card title="Paramètres du pays" subtitle="Locale, devise, indicatif et activation du marché.">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Code ISO 2</label>
-                            <input type="text" wire:model.defer="iso_code" maxlength="2" class="w-full border-gray-300 rounded-lg shadow-sm uppercase">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="iso_code">Code ISO 2</label>
+                            <input id="iso_code" type="text" wire:model.defer="iso_code" maxlength="2" class="w-full border-gray-300 rounded-lg shadow-sm uppercase">
                             @error('iso_code') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Code ISO 3</label>
-                            <input type="text" wire:model.defer="iso3_code" maxlength="3" class="w-full border-gray-300 rounded-lg shadow-sm uppercase">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="iso3_code">Code ISO 3</label>
+                            <input id="iso3_code" type="text" wire:model.defer="iso3_code" maxlength="3" class="w-full border-gray-300 rounded-lg shadow-sm uppercase">
                             @error('iso3_code') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nom public</label>
-                            <input type="text" wire:model.defer="name" class="w-full border-gray-300 rounded-lg shadow-sm">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="name">Nom public</label>
+                            <input id="name" type="text" wire:model.defer="name" class="w-full border-gray-300 rounded-lg shadow-sm">
                             @error('name') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nom officiel</label>
-                            <input type="text" wire:model.defer="official_name" class="w-full border-gray-300 rounded-lg shadow-sm">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="official_name">Nom officiel</label>
+                            <input id="official_name" type="text" wire:model.defer="official_name" class="w-full border-gray-300 rounded-lg shadow-sm">
                             @error('official_name') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Locale par défaut</label>
-                            <input type="text" wire:model.defer="default_locale" class="w-full border-gray-300 rounded-lg shadow-sm">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="default_locale">Locale par défaut</label>
+                            <input id="default_locale" type="text" wire:model.defer="default_locale" class="w-full border-gray-300 rounded-lg shadow-sm">
                             @error('default_locale') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Devise</label>
-                            <input type="text" wire:model.defer="currency_code" maxlength="3" class="w-full border-gray-300 rounded-lg shadow-sm uppercase">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="currency_code">Devise</label>
+                            <input id="currency_code" type="text" wire:model.defer="currency_code" maxlength="3" class="w-full border-gray-300 rounded-lg shadow-sm uppercase">
                             @error('currency_code') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Indicatif</label>
-                            <input type="text" wire:model.defer="phone_code" class="w-full border-gray-300 rounded-lg shadow-sm">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="phone_code">Indicatif</label>
+                            <input id="phone_code" type="text" wire:model.defer="phone_code" class="w-full border-gray-300 rounded-lg shadow-sm">
                             @error('phone_code') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Fuseau horaire</label>
-                            <input type="text" wire:model.defer="timezone" class="w-full border-gray-300 rounded-lg shadow-sm">
+                            <label class="block text-sm font-medium text-gray-700 mb-1" for="timezone">Fuseau horaire</label>
+                            <input id="timezone" type="text" wire:model.defer="timezone" class="w-full border-gray-300 rounded-lg shadow-sm">
                             @error('timezone') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                         </div>
 

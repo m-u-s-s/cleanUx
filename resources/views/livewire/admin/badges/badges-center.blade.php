@@ -126,26 +126,26 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="text-xs font-bold text-slate-600">Code unique</label>
-                            <input wire:model="form_code" type="text" class="w-full rounded-lg border-slate-300 text-sm">
+                            <label class="text-xs font-bold text-slate-600" for="form_code">Code unique</label>
+                            <input id="form_code" wire:model="form_code" type="text" class="w-full rounded-lg border-slate-300 text-sm">
                             @error('form_code') <p class="text-rose-500 text-xs">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-600">Icon (emoji)</label>
-                            <input wire:model="form_icon" type="text" maxlength="4" class="w-full rounded-lg border-slate-300 text-sm">
+                            <label class="text-xs font-bold text-slate-600" for="form_icon">Icon (emoji)</label>
+                            <input id="form_icon" wire:model="form_icon" type="text" maxlength="4" class="w-full rounded-lg border-slate-300 text-sm">
                         </div>
                         <div class="col-span-2">
-                            <label class="text-xs font-bold text-slate-600">Nom</label>
-                            <input wire:model="form_name" type="text" class="w-full rounded-lg border-slate-300 text-sm">
+                            <label class="text-xs font-bold text-slate-600" for="form_name">Nom</label>
+                            <input id="form_name" wire:model="form_name" type="text" class="w-full rounded-lg border-slate-300 text-sm">
                             @error('form_name') <p class="text-rose-500 text-xs">{{ $message }}</p> @enderror
                         </div>
                         <div class="col-span-2">
-                            <label class="text-xs font-bold text-slate-600">Description</label>
-                            <textarea wire:model="form_description" rows="2" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
+                            <label class="text-xs font-bold text-slate-600" for="form_description">Description</label>
+                            <textarea id="form_description" wire:model="form_description" rows="2" class="w-full rounded-lg border-slate-300 text-sm"></textarea>
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-600">Tier</label>
-                            <select wire:model="form_tier" class="w-full rounded-lg border-slate-300 text-sm">
+                            <label class="text-xs font-bold text-slate-600" for="form_tier">Tier</label>
+                            <select id="form_tier" wire:model="form_tier" class="w-full rounded-lg border-slate-300 text-sm">
                                 <option value="bronze">Bronze</option>
                                 <option value="silver">Silver</option>
                                 <option value="gold">Gold</option>
@@ -153,8 +153,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-600">Critère</label>
-                            <select wire:model="form_criterion_type" class="w-full rounded-lg border-slate-300 text-sm">
+                            <label class="text-xs font-bold text-slate-600" for="form_criterion_type">Critère</label>
+                            <select id="form_criterion_type" wire:model="form_criterion_type" class="w-full rounded-lg border-slate-300 text-sm">
                                 <option value="missions_count">missions_count</option>
                                 <option value="rating_avg">rating_avg (×100, ex: 450 = 4.5★)</option>
                                 <option value="tips_received">tips_received</option>
@@ -164,8 +164,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-600">Seuil</label>
-                            <input wire:model="form_threshold" type="number" min="1" class="w-full rounded-lg border-slate-300 text-sm">
+                            <label class="text-xs font-bold text-slate-600" for="form_threshold">Seuil</label>
+                            <input id="form_threshold" wire:model="form_threshold" type="number" min="1" class="w-full rounded-lg border-slate-300 text-sm">
                         </div>
                         <div class="flex items-end gap-2">
                             <input wire:model="form_is_active" type="checkbox" id="isActive" class="rounded border-slate-300">

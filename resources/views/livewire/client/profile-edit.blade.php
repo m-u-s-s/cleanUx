@@ -15,18 +15,18 @@
 
         <div class="space-y-4">
             <div>
-                <label class="ui-label">Nom complet</label>
-                <input wire:model="name" type="text" class="ui-input" autocomplete="name">
+                <label class="ui-label" for="name">Nom complet</label>
+                <input id="name" wire:model="name" type="text" class="ui-input" autocomplete="name">
                 @error('name') <p class="ui-error-msg">{{ $message }}</p> @enderror
             </div>
             <div>
-                <label class="ui-label">Email</label>
-                <input wire:model="email" type="email" class="ui-input" autocomplete="email">
+                <label class="ui-label" for="email">Email</label>
+                <input id="email" wire:model="email" type="email" class="ui-input" autocomplete="email">
                 @error('email') <p class="ui-error-msg">{{ $message }}</p> @enderror
             </div>
             <div>
-                <label class="ui-label">Téléphone</label>
-                <input wire:model="phone" type="tel" class="ui-input" autocomplete="tel">
+                <label class="ui-label" for="phone">Téléphone</label>
+                <input id="phone" wire:model="phone" type="tel" class="ui-input" autocomplete="tel">
                 @error('phone') <p class="ui-error-msg">{{ $message }}</p> @enderror
             </div>
 
@@ -46,19 +46,19 @@
 
         <div class="space-y-4">
             <div>
-                <label class="ui-label">Mot de passe actuel</label>
-                <input wire:model="current_password" type="password" class="ui-input" autocomplete="current-password">
+                <label class="ui-label" for="current_password">Mot de passe actuel</label>
+                <input id="current_password" wire:model="current_password" type="password" class="ui-input" autocomplete="current-password">
                 @error('current_password') <p class="ui-error-msg">{{ $message }}</p> @enderror
             </div>
             <div>
-                <label class="ui-label">Nouveau mot de passe</label>
-                <input wire:model="password" type="password" class="ui-input" autocomplete="new-password">
+                <label class="ui-label" for="password">Nouveau mot de passe</label>
+                <input id="password" wire:model="password" type="password" class="ui-input" autocomplete="new-password">
                 <p class="text-xs text-slate-500 mt-1">Minimum 8 caractères</p>
                 @error('password') <p class="ui-error-msg">{{ $message }}</p> @enderror
             </div>
             <div>
-                <label class="ui-label">Confirmer le nouveau mot de passe</label>
-                <input wire:model="password_confirmation" type="password" class="ui-input" autocomplete="new-password">
+                <label class="ui-label" for="password_confirmation">Confirmer le nouveau mot de passe</label>
+                <input id="password_confirmation" wire:model="password_confirmation" type="password" class="ui-input" autocomplete="new-password">
             </div>
 
             <button wire:click="updatePassword" class="brio-btn-primary inline-flex items-center gap-2">

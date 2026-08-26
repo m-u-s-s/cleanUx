@@ -7,8 +7,8 @@
                 @csrf
 
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700">Note</label>
-                    <select name="note" class="mt-1 w-full rounded-xl border-slate-300">
+                    <label for="note" class="block text-sm font-semibold text-slate-700">Note</label>
+                    <select id="note" name="note" class="mt-1 w-full rounded-xl border-slate-300">
                         <option value="5">5 - Excellent</option>
                         <option value="4">4 - Très bien</option>
                         <option value="3">3 - Correct</option>
@@ -18,8 +18,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700">Commentaire</label>
-                    <textarea name="commentaire" rows="4" class="mt-1 w-full rounded-xl border-slate-300"></textarea>
+                    <label for="commentaire" class="block text-sm font-semibold text-slate-700">Commentaire</label>
+                    <textarea id="commentaire" name="commentaire" rows="4" class="mt-1 w-full rounded-xl border-slate-300"></textarea>
                 </div>
 
                 <button class="rounded-xl bg-blue-600 px-5 py-2 text-sm font-bold text-white">

@@ -26,14 +26,14 @@ LYON-PART-DIEU,jardinage,2026-06-02 10:00,240,150,Tonte + désherbage,REF-003</p
         <div class="rounded-2xl bg-white border shadow-sm p-6">
             <div class="space-y-4">
                 <div>
-                    <label class="text-xs font-bold text-slate-600">Fichier CSV *</label>
-                    <input wire:model="csvFile" type="file" accept=".csv,.txt" class="w-full text-sm mt-1 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:px-3 file:py-2 file:font-semibold">
+                    <label class="text-xs font-bold text-slate-600" for="csvFile">Fichier CSV *</label>
+                    <input id="csvFile" wire:model="csvFile" type="file" accept=".csv,.txt" class="w-full text-sm mt-1 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:px-3 file:py-2 file:font-semibold">
                     @error('csvFile') <p class="text-rose-500 text-xs">{{ $message }}</p> @enderror
                     <p class="text-xs text-slate-500 mt-1">Max 2 MB · header obligatoire sur la 1ère ligne</p>
                 </div>
                 <div>
-                    <label class="text-xs font-bold text-slate-600">Séparateur</label>
-                    <select wire:model="separator" class="w-full rounded-lg border-slate-300 text-sm mt-1">
+                    <label class="text-xs font-bold text-slate-600" for="separator">Séparateur</label>
+                    <select id="separator" wire:model="separator" class="w-full rounded-lg border-slate-300 text-sm mt-1">
                         <option value=",">Virgule (,)</option>
                         <option value=";">Point-virgule (;)</option>
                     </select>

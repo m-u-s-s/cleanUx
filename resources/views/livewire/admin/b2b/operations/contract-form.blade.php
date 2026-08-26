@@ -7,19 +7,19 @@
             </div>
 
             <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-                <x-ui.field
+                <x-ui.field for="contractForm-contract_reference"
                     label="Référence contrat"
                     :error="$errors->first('contractForm.contract_reference')">
-                    <input
+                    <input id="contractForm-contract_reference"
                         wire:model.defer="contractForm.contract_reference"
                         type="text"
                         @class(['ui-input', 'ui-input-error' => $errors->has('contractForm.contract_reference')])>
                 </x-ui.field>
 
-                <x-ui.field
+                <x-ui.field for="contractForm-status"
                     label="Statut"
                     :error="$errors->first('contractForm.status')">
-                    <select
+                    <select id="contractForm-status"
                         wire:model.defer="contractForm.status"
                         @class(['ui-input', 'ui-input-error' => $errors->has('contractForm.status')])>
                         <option value="draft">Draft</option>
@@ -30,10 +30,10 @@
                     </select>
                 </x-ui.field>
 
-                <x-ui.field
+                <x-ui.field for="contractForm-provider_organization_id"
                     label="Prestataire partenaire (société)"
                     :error="$errors->first('contractForm.provider_organization_id')">
-                    <select
+                    <select id="contractForm-provider_organization_id"
                         wire:model.defer="contractForm.provider_organization_id"
                         @class(['ui-input', 'ui-input-error' => $errors->has('contractForm.provider_organization_id')])>
                         <option value="">Aucun</option>
@@ -43,10 +43,10 @@
                     </select>
                 </x-ui.field>
 
-                <x-ui.field
+                <x-ui.field for="contractForm-service_zone_id"
                     label="Zone de service"
                     :error="$errors->first('contractForm.service_zone_id')">
-                    <select
+                    <select id="contractForm-service_zone_id"
                         wire:model.defer="contractForm.service_zone_id"
                         @class(['ui-input', 'ui-input-error' => $errors->has('contractForm.service_zone_id')])>
                         <option value="">Aucune</option>
@@ -56,10 +56,10 @@
                     </select>
                 </x-ui.field>
 
-                <x-ui.field
+                <x-ui.field for="contractForm-approval_mode"
                     label="Mode approbation"
                     :error="$errors->first('contractForm.approval_mode')">
-                    <select
+                    <select id="contractForm-approval_mode"
                         wire:model.defer="contractForm.approval_mode"
                         @class(['ui-input', 'ui-input-error' => $errors->has('contractForm.approval_mode')])>
                         <option value="auto">Auto</option>
@@ -69,10 +69,10 @@
                     </select>
                 </x-ui.field>
 
-                <x-ui.field
+                <x-ui.field for="contractForm-default_field_team_id"
                     label="Équipe par défaut"
                     :error="$errors->first('contractForm.default_field_team_id')">
-                    <select
+                    <select id="contractForm-default_field_team_id"
                         wire:model.defer="contractForm.default_field_team_id"
                         @class(['ui-input', 'ui-input-error' => $errors->has('contractForm.default_field_team_id')])>
                         <option value="">Aucune</option>
@@ -82,10 +82,10 @@
                     </select>
                 </x-ui.field>
 
-                <x-ui.field
+                <x-ui.field for="contractForm-default_service_partner_id"
                     label="Partenaire par défaut"
                     :error="$errors->first('contractForm.default_service_partner_id')">
-                    <select
+                    <select id="contractForm-default_service_partner_id"
                         wire:model.defer="contractForm.default_service_partner_id"
                         @class(['ui-input', 'ui-input-error' => $errors->has('contractForm.default_service_partner_id')])>
                         <option value="">Aucun</option>
@@ -95,19 +95,19 @@
                     </select>
                 </x-ui.field>
 
-                <x-ui.field
+                <x-ui.field for="contractForm-default_cost_center"
                     label="Coût center par défaut"
                     :error="$errors->first('contractForm.default_cost_center')">
-                    <input
+                    <input id="contractForm-default_cost_center"
                         wire:model.defer="contractForm.default_cost_center"
                         type="text"
                         @class(['ui-input', 'ui-input-error' => $errors->has('contractForm.default_cost_center')])>
                 </x-ui.field>
 
-                <x-ui.field
+                <x-ui.field for="contractForm-negotiated_discount_percent"
                     label="Remise négociée (%)"
                     :error="$errors->first('contractForm.negotiated_discount_percent')">
-                    <input
+                    <input id="contractForm-negotiated_discount_percent"
                         wire:model.defer="contractForm.negotiated_discount_percent"
                         type="number"
                         step="0.01"
@@ -125,11 +125,11 @@
                     </label>
                 </div>
 
-                <x-ui.field
+                <x-ui.field for="contractForm-notes"
                     class="md:col-span-2"
                     label="Notes"
                     :error="$errors->first('contractForm.notes')">
-                    <textarea
+                    <textarea id="contractForm-notes"
                         wire:model.defer="contractForm.notes"
                         rows="3"
                         @class(['ui-input', 'ui-input-error' => $errors->has('contractForm.notes')])></textarea>
@@ -177,8 +177,8 @@
 
                                 <tr class="bg-slate-50/60 align-top">
                                     <td class="px-4 py-3">
-                                        <x-ui.field label="Service">
-                                            <select wire:model.defer="rateCardForm.service_catalog_id" class="ui-input">
+                                        <x-ui.field for="rateCardForm-service_catalog_id" label="Service">
+                                            <select id="rateCardForm-service_catalog_id" wire:model.defer="rateCardForm.service_catalog_id" class="ui-input">
                                                 <option value="">Sélectionner…</option>
                                                 @foreach($services as $service)
                                                     <option value="{{ $service->id }}">{{ $service->name }}</option>
@@ -188,8 +188,8 @@
                                     </td>
                                     <td class="px-4 py-3">
                                         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-end">
-                                            <x-ui.field label="Prix négocié (centimes)" class="w-full sm:w-44">
-                                                <input
+                                            <x-ui.field for="rateCardForm-unit_price_cents" label="Prix négocié (centimes)" class="w-full sm:w-44">
+                                                <input id="rateCardForm-unit_price_cents"
                                                     wire:model.defer="rateCardForm.unit_price_cents"
                                                     type="number"
                                                     min="0"

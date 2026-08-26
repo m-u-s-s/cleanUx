@@ -1,12 +1,12 @@
 <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
     <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div class="mt-5">
-            <label class="mb-1 block text-xs font-bold uppercase text-slate-500">
+            <label class="mb-1 block text-xs font-bold uppercase text-slate-500" for="dashboardSearch">
                 Recherche globale
             </label>
 
             <div class="relative">
-                <input type="text"
+                <input id="dashboardSearch" type="text"
                     wire:model.live.debounce.400ms="dashboardSearch"
                     placeholder="Rechercher client, ville, adresse, téléphone, service..."
                     class="w-full rounded-2xl border-slate-300 py-3 pl-11 pr-4 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -50,11 +50,11 @@
 
     <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <div>
-            <label class="mb-1 block text-xs font-bold uppercase text-slate-500">
+            <label class="mb-1 block text-xs font-bold uppercase text-slate-500" for="filtreEmploye">
                 Employé
             </label>
 
-            <select wire:model.live="filtreEmploye"
+            <select id="filtreEmploye" wire:model.live="filtreEmploye"
                 class="w-full rounded-xl border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 <option value="">Tous les employés</option>
 
@@ -65,11 +65,11 @@
         </div>
 
         <div>
-            <label class="mb-1 block text-xs font-bold uppercase text-slate-500">
+            <label class="mb-1 block text-xs font-bold uppercase text-slate-500" for="filtreZone">
                 Zone
             </label>
 
-            <select wire:model.live="filtreZone"
+            <select id="filtreZone" wire:model.live="filtreZone"
                 @disabled($zoneScopeLocked)
                 class="w-full rounded-xl border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-slate-100 disabled:text-slate-400">
                 <option value="">Toutes les zones</option>
@@ -81,11 +81,11 @@
         </div>
 
         <div>
-            <label class="mb-1 block text-xs font-bold uppercase text-slate-500">
+            <label class="mb-1 block text-xs font-bold uppercase text-slate-500" for="filtreStatus">
                 Statut
             </label>
 
-            <select wire:model.live="filtreStatus"
+            <select id="filtreStatus" wire:model.live="filtreStatus"
                 class="w-full rounded-xl border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 <option value="">Tous les statuts</option>
                 <option value="en_attente">En attente</option>
@@ -98,11 +98,11 @@
         </div>
 
         <div>
-            <label class="mb-1 block text-xs font-bold uppercase text-slate-500">
+            <label class="mb-1 block text-xs font-bold uppercase text-slate-500" for="filtrePeriode">
                 Période
             </label>
 
-            <select wire:model.live="filtrePeriode"
+            <select id="filtrePeriode" wire:model.live="filtrePeriode"
                 class="w-full rounded-xl border-slate-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 <option value="all">Toutes les périodes</option>
                 <option value="today">Aujourd’hui</option>

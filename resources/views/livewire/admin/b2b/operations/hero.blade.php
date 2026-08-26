@@ -6,8 +6,8 @@
                 <p class="mt-2 max-w-3xl text-sm text-slate-600">Contrats explicites, ordres de service, validations et affectations d’équipes/partenaires pour les comptes complexes.</p>
             </div>
             <div class="min-w-[260px]">
-                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">Compte entreprise</label>
-                <select wire:model.live="selectedAccountId" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm focus:border-sky-500 focus:ring-sky-500">
+                <label class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500" for="selectedAccountId">Compte entreprise</label>
+                <select id="selectedAccountId" wire:model.live="selectedAccountId" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm focus:border-sky-500 focus:ring-sky-500">
                     <option value="">Sélectionner</option>
                     @foreach($accounts as $account)
                         <option value="{{ $account->id }}">{{ $account->name }} ({{ $account->organization_contracts_count }} contrats / {{ $account->enterprise_work_orders_count }} OS)</option>

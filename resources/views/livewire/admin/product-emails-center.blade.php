@@ -13,20 +13,20 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-                <label class="text-sm text-slate-600">Template</label>
-                <select wire:model.live="templateKey" class="mt-1 w-full rounded-lg border px-3 py-2 text-sm">
+                <label class="text-sm text-slate-600" for="templateKey">Template</label>
+                <select id="templateKey" wire:model.live="templateKey" class="mt-1 w-full rounded-lg border px-3 py-2 text-sm">
                     @foreach($templates as $key => $label)
                         <option value="{{ $key }}">{{ $label }}</option>
                     @endforeach
                 </select>
             </div>
             <div>
-                <label class="text-sm text-slate-600">Nom destinataire</label>
-                <input type="text" wire:model.live="recipientName" class="mt-1 w-full rounded-lg border px-3 py-2 text-sm">
+                <label class="text-sm text-slate-600" for="recipientName">Nom destinataire</label>
+                <input id="recipientName" type="text" wire:model.live="recipientName" class="mt-1 w-full rounded-lg border px-3 py-2 text-sm">
             </div>
             <div>
-                <label class="text-sm text-slate-600">Email destinataire</label>
-                <input type="email" wire:model.live="recipientEmail" class="mt-1 w-full rounded-lg border px-3 py-2 text-sm">
+                <label class="text-sm text-slate-600" for="recipientEmail">Email destinataire</label>
+                <input id="recipientEmail" type="email" wire:model.live="recipientEmail" class="mt-1 w-full rounded-lg border px-3 py-2 text-sm">
             </div>
         </div>
 

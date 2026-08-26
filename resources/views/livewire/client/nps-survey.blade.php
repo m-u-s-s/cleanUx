@@ -49,8 +49,8 @@
                 </div>
 
                 <div class="mb-6">
-                    <label class="text-xs font-bold text-slate-600">Commentaire (optionnel)</label>
-                    <textarea wire:model="comment" maxlength="2000" rows="4"
+                    <label class="text-xs font-bold text-slate-600" for="comment">Commentaire (optionnel)</label>
+                    <textarea id="comment" wire:model="comment" maxlength="2000" rows="4"
                               class="w-full rounded-lg border-slate-300 text-sm mt-1"
                               placeholder="Dites-nous ce qui vous a plu ou ce qu'on peut améliorer..."></textarea>
                 </div>

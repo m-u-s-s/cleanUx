@@ -76,7 +76,7 @@
                             {{ $this->selectedBooking->booking_reference }}
                         </p>
                     </div>
-                    <button wire:click="clearSelection" class="text-slate-400 hover:text-slate-600">
+                    <button aria-label="Fermer le détail du rendez-vous" wire:click="clearSelection" class="text-slate-400 hover:text-slate-600">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>

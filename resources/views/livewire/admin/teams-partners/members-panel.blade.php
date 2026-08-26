@@ -7,8 +7,8 @@
 
         <div class="grid gap-3 md:grid-cols-3">
             <div>
-                <label class="text-sm font-medium text-slate-700">Employé</label>
-                <select wire:model.defer="memberForm.user_id" class="mt-1 w-full rounded-xl border-slate-300">
+                <label class="text-sm font-medium text-slate-700" for="memberForm-user_id">Employé</label>
+                <select id="memberForm-user_id" wire:model.defer="memberForm.user_id" class="mt-1 w-full rounded-xl border-slate-300">
                     <option value="">—</option>
                     @foreach($employees as $employee)
                         <option value="{{ $employee->id }}">{{ $employee->name }}</option>
@@ -16,8 +16,8 @@
                 </select>
             </div>
             <div>
-                <label class="text-sm font-medium text-slate-700">Rôle</label>
-                <select wire:model.defer="memberForm.role_on_team" class="mt-1 w-full rounded-xl border-slate-300">
+                <label class="text-sm font-medium text-slate-700" for="memberForm-role_on_team">Rôle</label>
+                <select id="memberForm-role_on_team" wire:model.defer="memberForm.role_on_team" class="mt-1 w-full rounded-xl border-slate-300">
                     <option value="team_lead">Chef d’équipe</option>
                     <option value="senior_agent">Senior agent</option>
                     <option value="agent">Agent</option>

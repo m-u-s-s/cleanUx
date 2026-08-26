@@ -32,9 +32,10 @@
                 <h2 class="text-lg font-semibold text-gray-900">Edit flag: <code class="text-indigo-600">{{ $editingKey }}</code></h2>
 
                 <div class="flex items-center gap-3">
-                    <label class="text-sm font-medium text-gray-700">Enabled</label>
+                    <span id="drapeau-actif" class="text-sm font-medium text-gray-700">Enabled</span>
                     <button
                         wire:click="$toggle('editingValue')"
+                                    aria-labelledby="drapeau-actif"
                         class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none {{ $editingValue ? 'bg-indigo-600' : 'bg-gray-300' }}"
                         role="switch"
                         aria-checked="{{ $editingValue ? 'true' : 'false' }}"
@@ -47,8 +48,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Reason (optional)</label>
-                    <input
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="editReason">Reason (optional)</label>
+                    <input id="editReason"
                         type="text"
                         wire:model="editReason"
                         placeholder="Why are you changing this flag?"

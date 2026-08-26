@@ -28,8 +28,8 @@
     <div class="bg-white rounded-2xl shadow border p-4 dark:bg-slate-900 dark:border-slate-700" aria-live="polite">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Recherche</label>
-                <input
+                <label class="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300" for="search">Recherche</label>
+                <input id="search"
                     type="text"
                     wire:model.live="search"
                     placeholder="Service, ville, adresse..."
@@ -196,7 +196,7 @@
                         <div class="grid grid-cols-2 gap-3">
                             @foreach($rdv->photos_avant as $photo)
                             <a href="{{ \App\Support\Media\PrivateMedia::url($photo) }}" target="_blank">
-                                <img src="{{ \App\Support\Media\PrivateMedia::url($photo) }}"
+                                <img alt="Photo de l’intervention" src="{{ \App\Support\Media\PrivateMedia::url($photo) }}"
                                     class="h-28 w-full rounded-xl object-cover border hover:opacity-90">
                             </a>
                             @endforeach
@@ -213,7 +213,7 @@
                         <div class="grid grid-cols-2 gap-3">
                             @foreach($rdv->photos_apres as $photo)
                             <a href="{{ \App\Support\Media\PrivateMedia::url($photo) }}" target="_blank">
-                                <img src="{{ \App\Support\Media\PrivateMedia::url($photo) }}"
+                                <img alt="Photo de l’intervention" src="{{ \App\Support\Media\PrivateMedia::url($photo) }}"
                                     class="h-28 w-full rounded-xl object-cover border hover:opacity-90">
                             </a>
                             @endforeach

@@ -38,7 +38,7 @@
 
                     {{-- Étape 1 : choix profil --}}
                     <div>
-                        <label class="ui-label">Je suis…</label>
+                            <span id="je-suis" class="ui-label">Je suis…</span>
                         <input type="hidden" name="account_type" :value="type">
 
                         @php
@@ -50,11 +50,12 @@
                         ];
                         @endphp
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" role="radiogroup" aria-labelledby="je-suis">
                             @foreach ($profils as $p)
-                                <label class="relative cursor-pointer rounded-xl border-2 p-4 transition"
+                                    <button type="button" role="radio" class="relative w-full cursor-pointer rounded-xl border-2 p-4 text-left transition"
                                        :class="type === '{{ $p['key'] }}' ? 'border-brand-500 bg-brand-50/50' : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'"
-                                       @click="type = '{{ $p['key'] }}'">
+                                           :aria-checked="type === '{{ $p['key'] }}' ? 'true' : 'false'"
+                                           @click="type = '{{ $p['key'] }}'">
                                     <div class="flex items-center gap-3">
                                         <div class="grid h-10 w-10 place-items-center rounded-lg bg-white ring-1 ring-slate-200">
                                             <x-ui.icon :name="$p['icon']" class="w-5 h-5 text-slate-600" />
@@ -69,7 +70,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </label>
+                                    </button>
                             @endforeach
                         </div>
                     </div>
@@ -170,8 +171,8 @@
                                 },
                              }">
                             <div class="rounded-xl border border-slate-200 bg-slate-50/50 p-4 space-y-4">
-                                <div>
-                                    <label class="ui-label">Vos métiers</label>
+                                <div role="group" aria-labelledby="vos-metiers">
+                                    <span id="vos-metiers" class="ui-label">Vos métiers</span>
                                     <p class="text-xs text-slate-500">
                                         Vous ne recevrez que des missions de ces métiers. Vous pourrez
                                         les modifier à tout moment depuis votre profil.
@@ -206,8 +207,8 @@
                                     </template>
                                 </div>
 
-                                <div x-show="zones.length > 0">
-                                    <label class="ui-label">Vos zones d’intervention</label>
+                                <div x-show="zones.length > 0" role="group" aria-labelledby="vos-zones">
+                                    <span id="vos-zones" class="ui-label">Vos zones d’intervention</span>
                                     <p class="text-xs text-slate-500">
                                         Vous ne recevrez que des missions situées dans ces zones.
                                     </p>

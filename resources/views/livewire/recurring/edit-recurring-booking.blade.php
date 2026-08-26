@@ -24,16 +24,16 @@
 
             <div class="grid gap-4 md:grid-cols-2">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ __('Portée') }}</label>
-                    <select wire:model="scope" class="w-full rounded-xl border-slate-300">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="scope">{{ __('Portée') }}</label>
+                    <select id="scope" wire:model="scope" class="w-full rounded-xl border-slate-300">
                         <option value="occurrence">{{ __('Cette occurrence uniquement') }}</option>
                         <option value="future">{{ __('Cette occurrence et les suivantes') }}</option>
                         <option value="series">{{ __('Toute la série') }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ __('Employé') }}</label>
-                    <select wire:model="editEmployeId" class="w-full rounded-xl border-slate-300">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="editEmployeId">{{ __('Employé') }}</label>
+                    <select id="editEmployeId" wire:model="editEmployeId" class="w-full rounded-xl border-slate-300">
                         <option value="">{{ __('Conserver l’employé actuel') }}</option>
                         @foreach($this->assignableEmployees as $employee)
                             <option value="{{ $employee->id }}">{{ $employee->name }}</option>
@@ -41,13 +41,13 @@
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ __('Nouvelle date') }}</label>
-                    <input type="date" wire:model="editDate" class="w-full rounded-xl border-slate-300">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="editDate">{{ __('Nouvelle date') }}</label>
+                    <input id="editDate" type="date" wire:model="editDate" class="w-full rounded-xl border-slate-300">
                     @error('editDate') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ __('Nouvelle heure') }}</label>
-                    <input type="time" wire:model="editHeure" class="w-full rounded-xl border-slate-300">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="editHeure">{{ __('Nouvelle heure') }}</label>
+                    <input id="editHeure" type="time" wire:model="editHeure" class="w-full rounded-xl border-slate-300">
                     @error('editHeure') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
             </div>

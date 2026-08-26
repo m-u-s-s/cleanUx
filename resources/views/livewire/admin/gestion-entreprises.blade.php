@@ -93,27 +93,27 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Nom commercial</label>
-                        <input wire:model.defer="name" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="name">Nom commercial</label>
+                        <input id="name" wire:model.defer="name" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         @error('name') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Raison sociale</label>
-                        <input wire:model.defer="legal_name" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="legal_name">Raison sociale</label>
+                        <input id="legal_name" wire:model.defer="legal_name" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Slug</label>
-                        <input wire:model.defer="slug" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="slug">Slug</label>
+                        <input id="slug" wire:model.defer="slug" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         @error('slug') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">TVA</label>
-                        <input wire:model.defer="tva_number" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="tva_number">TVA</label>
+                        <input id="tva_number" wire:model.defer="tva_number" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         @error('tva_number') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Type</label>
-                        <select wire:model.defer="account_type" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="account_type">Type</label>
+                        <select id="account_type" wire:model.defer="account_type" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                             <option value="entreprise">Entreprise</option>
                             <option value="business">Business</option>
                             <option value="partner">Partner</option>
@@ -121,8 +121,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Statut</label>
-                        <select wire:model.defer="account_status" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="account_status">Statut</label>
+                        <select id="account_status" wire:model.defer="account_status" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                             <option value="active">Actif</option>
                             <option value="inactive">Inactif</option>
                             <option value="prospect">Prospect</option>
@@ -130,32 +130,32 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                        <input wire:model.defer="email" type="email" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="email">Email</label>
+                        <input id="email" wire:model.defer="email" type="email" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Téléphone</label>
-                        <input wire:model.defer="phone" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="phone">Téléphone</label>
+                        <input id="phone" wire:model.defer="phone" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Email facturation</label>
-                        <input wire:model.defer="billing_email" type="email" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="billing_email">Email facturation</label>
+                        <input id="billing_email" wire:model.defer="billing_email" type="email" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Code postal</label>
-                        <input wire:model.defer="postal_code" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="postal_code">Code postal</label>
+                        <input id="postal_code" wire:model.defer="postal_code" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Adresse</label>
-                        <input wire:model.defer="address_line_1" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="address_line_1">Adresse</label>
+                        <input id="address_line_1" wire:model.defer="address_line_1" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Complément</label>
-                        <input wire:model.defer="address_line_2" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="address_line_2">Complément</label>
+                        <input id="address_line_2" wire:model.defer="address_line_2" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Ville</label>
-                        <input wire:model.defer="city" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="city">Ville</label>
+                        <input id="city" wire:model.defer="city" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                     </div>
                 </div>
 
@@ -163,20 +163,20 @@
                     <h3 class="font-semibold text-slate-900 mb-3">Règles contractuelles</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Référence contrat</label>
-                            <input wire:model.defer="contract_reference" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="contract_reference">Référence contrat</label>
+                            <input id="contract_reference" wire:model.defer="contract_reference" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Profil tarifaire</label>
-                            <input wire:model.defer="pricing_profile" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="standard, négocié, key-account...">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="pricing_profile">Profil tarifaire</label>
+                            <input id="pricing_profile" wire:model.defer="pricing_profile" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500" placeholder="standard, négocié, key-account...">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">SLA (heures)</label>
-                            <input wire:model.defer="sla_hours" type="number" min="0" step="0.5" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="sla_hours">SLA (heures)</label>
+                            <input id="sla_hours" wire:model.defer="sla_hours" type="number" min="0" step="0.5" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Zone prioritaire</label>
-                            <select wire:model.defer="priority_zone_id" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="priority_zone_id">Zone prioritaire</label>
+                            <select id="priority_zone_id" wire:model.defer="priority_zone_id" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                                 <option value="">Aucune</option>
                                 @foreach($zones as $zone)
                                     <option value="{{ $zone->id }}">{{ $zone->name }}</option>
@@ -184,19 +184,19 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Mode d’approbation</label>
-                            <select wire:model.defer="approval_mode" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="approval_mode">Mode d’approbation</label>
+                            <select id="approval_mode" wire:model.defer="approval_mode" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                                 <option value="auto">Automatique</option>
                                 <option value="manual">Approbation corporate</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Centre de coût par défaut</label>
-                            <input wire:model.defer="default_cost_center" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="default_cost_center">Centre de coût par défaut</label>
+                            <input id="default_cost_center" wire:model.defer="default_cost_center" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Remise négociée (%)</label>
-                            <input wire:model.defer="negotiated_discount_percent" type="number" min="0" max="100" step="0.01" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="negotiated_discount_percent">Remise négociée (%)</label>
+                            <input id="negotiated_discount_percent" wire:model.defer="negotiated_discount_percent" type="number" min="0" max="100" step="0.01" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         </div>
                     </div>
                 </div>
@@ -208,8 +208,8 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Notes</label>
-                    <textarea wire:model.defer="notes" rows="4" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    <label class="block text-sm font-medium text-slate-700 mb-1" for="notes">Notes</label>
+                    <textarea id="notes" wire:model.defer="notes" rows="4" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500"></textarea>
                 </div>
 
                 <button wire:click="saveAccount" class="w-full inline-flex justify-center items-center px-4 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
@@ -240,15 +240,15 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Scope sites</label>
-                            <select wire:model="user_site_scope_mode" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="user_site_scope_mode">Scope sites</label>
+                            <select id="user_site_scope_mode" wire:model="user_site_scope_mode" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                                 <option value="all_sites">Tous les sites</option>
                                 <option value="selected_sites">Sites sélectionnés</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Sites autorisés</label>
-                            <select wire:model="user_allowed_site_ids" multiple class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500 min-h-[110px]">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="user_allowed_site_ids">Sites autorisés</label>
+                            <select id="user_allowed_site_ids" wire:model="user_allowed_site_ids" multiple class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500 min-h-[110px]">
                                 @foreach(($selectedAccount?->sites ?? collect()) as $site)
                                     <option value="{{ $site->id }}">{{ $site->name }}</option>
                                 @endforeach
@@ -293,46 +293,46 @@
                 @if($selectedAccount)
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Nom du site</label>
-                            <input wire:model.defer="site_name" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="site_name">Nom du site</label>
+                            <input id="site_name" wire:model.defer="site_name" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                             @error('site_name') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Code site</label>
-                            <input wire:model.defer="site_code" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="site_code">Code site</label>
+                            <input id="site_code" wire:model.defer="site_code" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                             @error('site_code') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Contact site</label>
-                            <input wire:model.defer="site_contact_name" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="site_contact_name">Contact site</label>
+                            <input id="site_contact_name" wire:model.defer="site_contact_name" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Email site</label>
-                            <input wire:model.defer="site_email" type="email" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="site_email">Email site</label>
+                            <input id="site_email" wire:model.defer="site_email" type="email" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Téléphone site</label>
-                            <input wire:model.defer="site_phone" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="site_phone">Téléphone site</label>
+                            <input id="site_phone" wire:model.defer="site_phone" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Code postal</label>
-                            <input wire:model.defer="site_postal_code" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="site_postal_code">Code postal</label>
+                            <input id="site_postal_code" wire:model.defer="site_postal_code" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Adresse</label>
-                            <input wire:model.defer="site_address_line_1" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="site_address_line_1">Adresse</label>
+                            <input id="site_address_line_1" wire:model.defer="site_address_line_1" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Complément</label>
-                            <input wire:model.defer="site_address_line_2" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="site_address_line_2">Complément</label>
+                            <input id="site_address_line_2" wire:model.defer="site_address_line_2" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Ville</label>
-                            <input wire:model.defer="site_city" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="site_city">Ville</label>
+                            <input id="site_city" wire:model.defer="site_city" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Zone</label>
-                            <select wire:model.defer="site_zone_id" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="site_zone_id">Zone</label>
+                            <select id="site_zone_id" wire:model.defer="site_zone_id" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                                 <option value="">Auto depuis code postal</option>
                                 @foreach($zones as $zone)
                                     <option value="{{ $zone->id }}">{{ $zone->name }}</option>
@@ -340,22 +340,22 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Approbation site</label>
-                            <select wire:model.defer="site_approval_mode" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="site_approval_mode">Approbation site</label>
+                            <select id="site_approval_mode" wire:model.defer="site_approval_mode" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                                 <option value="inherit">Hériter du compte</option>
                                 <option value="auto">Auto</option>
                                 <option value="manual">Approbation corporate</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Centre de coût site</label>
-                            <input wire:model.defer="site_default_cost_center" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-slate-700 mb-1" for="site_default_cost_center">Centre de coût site</label>
+                            <input id="site_default_cost_center" wire:model.defer="site_default_cost_center" type="text" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Consignes d’accès</label>
-                        <textarea wire:model.defer="site_access_instructions" rows="3" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500"></textarea>
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="site_access_instructions">Consignes d’accès</label>
+                        <textarea id="site_access_instructions" wire:model.defer="site_access_instructions" rows="3" class="w-full rounded-xl border-slate-300 focus:border-blue-500 focus:ring-blue-500"></textarea>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">

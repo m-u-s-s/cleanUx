@@ -63,83 +63,83 @@
                         <legend class="px-2 text-sm font-medium text-gray-700 dark:text-gray-200">{{ __('Identité') }}</legend>
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Nom *</label>
-                            <input type="text" wire:model.live.debounce.500ms="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200" for="name">Nom *</label>
+                            <input id="name" type="text" wire:model.live.debounce.500ms="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                             @error('name') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Slug *</label>
-                            <input type="text" wire:model="slug" class="mt-1 block w-full rounded-md border-gray-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200" for="slug">Slug *</label>
+                            <input id="slug" type="text" wire:model="slug" class="mt-1 block w-full rounded-md border-gray-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                             @error('slug') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Code *</label>
-                            <input type="text" wire:model="code" class="mt-1 block w-full rounded-md border-gray-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200" for="code">Code *</label>
+                            <input id="code" type="text" wire:model="code" class="mt-1 block w-full rounded-md border-gray-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                             @error('code') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Ordre d'affichage</label>
-                            <input type="number" wire:model="sort_order" min="0" max="9999" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200" for="sort_order">Ordre d'affichage</label>
+                            <input id="sort_order" type="number" wire:model="sort_order" min="0" max="9999" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Icône (nom Heroicon ou clé interne)</label>
-                            <input type="text" wire:model="icon" placeholder="ex: broom, hammer, paint-brush" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200" for="icon">Icône (nom Heroicon ou clé interne)</label>
+                            <input id="icon" type="text" wire:model="icon" placeholder="ex: broom, hammer, paint-brush" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Couleur (HEX)</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200" for="color">Couleur (HEX)</label>
                             <div class="mt-1 flex items-center gap-2">
-                                <input type="color" wire:model="color" class="h-9 w-14 rounded border border-gray-300"/>
+                                <input id="color" type="color" wire:model="color" class="h-9 w-14 rounded border border-gray-300"/>
                                 <input type="text" wire:model="color" class="block flex-1 rounded-md border-gray-300 font-mono shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Description courte</label>
-                        <input type="text" wire:model="short_description" maxlength="500" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200" for="short_description">Description courte</label>
+                        <input id="short_description" type="text" wire:model="short_description" maxlength="500" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Description complète</label>
-                        <textarea wire:model="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"></textarea>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200" for="description">Description complète</label>
+                        <textarea id="description" wire:model="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"></textarea>
                     </div>
                     </fieldset>
                     <fieldset x-show="etape === 2" x-cloak class="rounded-md border border-gray-200 p-3 dark:border-gray-700">
                         <legend class="px-2 text-sm font-medium text-gray-700 dark:text-gray-200">Tarification & SLA</legend>
                         <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">Tarif horaire par défaut (€)</label>
-                                <input type="number" step="0.01" min="0" wire:model="default_hourly_rate" placeholder="Ex: 45.00"
+                                <label class="block text-xs font-medium text-gray-600 dark:text-gray-300" for="default_hourly_rate">Tarif horaire par défaut (€)</label>
+                                <input id="default_hourly_rate" type="number" step="0.01" min="0" wire:model="default_hourly_rate" placeholder="Ex: 45.00"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                                 @error('default_hourly_rate') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">Multiplicateur urgence (ASAP)</label>
-                                <input type="number" step="0.01" min="1" max="10" wire:model="emergency_multiplier"
+                                <label class="block text-xs font-medium text-gray-600 dark:text-gray-300" for="emergency_multiplier">Multiplicateur urgence (ASAP)</label>
+                                <input id="emergency_multiplier" type="number" step="0.01" min="1" max="10" wire:model="emergency_multiplier"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                                 @error('emergency_multiplier') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">Multiplicateur nuit (22h-6h)</label>
-                                <input type="number" step="0.01" min="1" max="10" wire:model="night_multiplier"
+                                <label class="block text-xs font-medium text-gray-600 dark:text-gray-300" for="night_multiplier">Multiplicateur nuit (22h-6h)</label>
+                                <input id="night_multiplier" type="number" step="0.01" min="1" max="10" wire:model="night_multiplier"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                                 @error('night_multiplier') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">Multiplicateur weekend</label>
-                                <input type="number" step="0.01" min="1" max="10" wire:model="weekend_multiplier"
+                                <label class="block text-xs font-medium text-gray-600 dark:text-gray-300" for="weekend_multiplier">Multiplicateur weekend</label>
+                                <input id="weekend_multiplier" type="number" step="0.01" min="1" max="10" wire:model="weekend_multiplier"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                                 @error('weekend_multiplier') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">Validité devis (jours)</label>
-                                <input type="number" min="1" max="365" wire:model="quote_validity_days" placeholder="Ex: 30"
+                                <label class="block text-xs font-medium text-gray-600 dark:text-gray-300" for="quote_validity_days">Validité devis (jours)</label>
+                                <input id="quote_validity_days" type="number" min="1" max="365" wire:model="quote_validity_days" placeholder="Ex: 30"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                                 @error('quote_validity_days') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 dark:text-gray-300">Délai de réponse SLA (min)</label>
-                                <input type="number" min="1" max="43200" wire:model="sla_response_minutes" placeholder="Ex: 60"
+                                <label class="block text-xs font-medium text-gray-600 dark:text-gray-300" for="sla_response_minutes">Délai de réponse SLA (min)</label>
+                                <input id="sla_response_minutes" type="number" min="1" max="43200" wire:model="sla_response_minutes" placeholder="Ex: 60"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"/>
                                 @error('sla_response_minutes') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                             </div>

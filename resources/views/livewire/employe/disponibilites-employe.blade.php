@@ -33,8 +33,8 @@
             </p>
 
             <div>
-                <label class="mb-1 block text-sm text-gray-600 dark:text-slate-300">{{ __('Jour') }}</label>
-                <select wire:model="weekday" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100">
+                <label class="mb-1 block text-sm text-gray-600 dark:text-slate-300" for="weekday">{{ __('Jour') }}</label>
+                <select id="weekday" wire:model="weekday" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100">
                     @foreach ([1, 2, 3, 4, 5, 6, 0] as $jour)
                         <option value="{{ $jour }}">{{ $nomsDeJour[$jour] }}</option>
                     @endforeach
@@ -44,13 +44,13 @@
 
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="mb-1 block text-sm text-gray-600 dark:text-slate-300">{{ __('Début') }}</label>
-                    <input type="time" wire:model="heure_debut" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100">
+                    <label class="mb-1 block text-sm text-gray-600 dark:text-slate-300" for="heure_debut">{{ __('Début') }}</label>
+                    <input id="heure_debut" type="time" wire:model="heure_debut" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100">
                     @error('heure_debut') <p class="mt-1 text-sm text-red-500">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm text-gray-600 dark:text-slate-300">{{ __('Fin') }}</label>
-                    <input type="time" wire:model="heure_fin" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100">
+                    <label class="mb-1 block text-sm text-gray-600 dark:text-slate-300" for="heure_fin">{{ __('Fin') }}</label>
+                    <input id="heure_fin" type="time" wire:model="heure_fin" class="w-full rounded-lg border px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100">
                     @error('heure_fin') <p class="mt-1 text-sm text-red-500">{{ $message }}</p> @enderror
                 </div>
             </div>

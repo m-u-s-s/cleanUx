@@ -24,8 +24,8 @@
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Client</label>
-                    <select wire:model.live="client_id" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                    <label class="text-sm font-semibold text-slate-700" for="client_id">Client</label>
+                    <select id="client_id" wire:model.live="client_id" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                         <option value="">Choisir un client</option>
                         @foreach($clients as $client)
                             <option value="{{ $client->id }}">
@@ -37,8 +37,8 @@
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Rendez-vous lié</label>
-                    <select wire:model="rendez_vous_id" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                    <label class="text-sm font-semibold text-slate-700" for="rendez_vous_id">Rendez-vous lié</label>
+                    <select id="rendez_vous_id" wire:model="rendez_vous_id" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                         <option value="">Aucun</option>
                         @foreach($rendezVous as $rdv)
                             <option value="{{ $rdv->id }}">
@@ -49,8 +49,8 @@
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Type</label>
-                    <select wire:model="type" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                    <label class="text-sm font-semibold text-slate-700" for="type">Type</label>
+                    <select id="type" wire:model="type" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                         <option value="commercial_gesture">Geste commercial</option>
                         <option value="claim_compensation">Compensation litige</option>
                         <option value="refund_credit">Avoir remboursement</option>
@@ -59,30 +59,30 @@
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Montant</label>
-                    <input type="number" step="0.01" min="1" wire:model="amount"
+                    <label class="text-sm font-semibold text-slate-700" for="amount">Montant</label>
+                    <input id="amount" type="number" step="0.01" min="1" wire:model="amount"
                            class="mt-1 w-full rounded-xl border-gray-300 text-sm"
                            placeholder="Ex : 15">
                     @error('amount') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Raison</label>
-                    <input type="text" wire:model="reason"
+                    <label class="text-sm font-semibold text-slate-700" for="reason">Raison</label>
+                    <input id="reason" type="text" wire:model="reason"
                            class="mt-1 w-full rounded-xl border-gray-300 text-sm"
                            placeholder="Ex : Retard intervention">
                     @error('reason') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Expiration</label>
-                    <input type="date" wire:model="expires_at"
+                    <label class="text-sm font-semibold text-slate-700" for="expires_at">Expiration</label>
+                    <input id="expires_at" type="date" wire:model="expires_at"
                            class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Note interne</label>
-                    <textarea wire:model="notes" rows="3"
+                    <label class="text-sm font-semibold text-slate-700" for="notes">Note interne</label>
+                    <textarea id="notes" wire:model="notes" rows="3"
                               class="mt-1 w-full rounded-xl border-gray-300 text-sm"
                               placeholder="Note visible côté admin uniquement..."></textarea>
                 </div>
@@ -97,8 +97,8 @@
 
             <div class="lg:col-span-2 space-y-4">
                 <div class="rounded-2xl border bg-white p-4 shadow-sm">
-                    <label class="text-sm font-semibold text-slate-700">Recherche</label>
-                    <input type="text" wire:model.live.debounce.350ms="search"
+                    <label class="text-sm font-semibold text-slate-700" for="search">Recherche</label>
+                    <input id="search" type="text" wire:model.live.debounce.350ms="search"
                            class="mt-1 w-full rounded-xl border-gray-300 text-sm"
                            placeholder="Nom ou email client...">
                 </div>

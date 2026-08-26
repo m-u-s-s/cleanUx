@@ -49,15 +49,15 @@
     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="md:col-span-2">
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Recherche prestataire</label>
-                <input type="text"
+                <label class="block text-sm font-semibold text-slate-700 mb-2" for="search">Recherche prestataire</label>
+                <input id="search" type="text"
                        wire:model.live.debounce.300ms="search"
                        placeholder="Nom ou email..."
                        class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500">
             </div>
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Type de document</label>
-                <select wire:model.live="filterType" class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500">
+                <label class="block text-sm font-semibold text-slate-700 mb-2" for="filterType">Type de document</label>
+                <select id="filterType" wire:model.live="filterType" class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500">
                     <option value="all">— Tous —</option>
                     <option value="identity_card">Carte d'identité</option>
                     <option value="passport">Passeport</option>
@@ -272,8 +272,8 @@
                 </p>
 
                 <div class="mt-4">
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Motif du rejet</label>
-                    <textarea wire:model="rejectionReason"
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" for="rejectionReason">Motif du rejet</label>
+                    <textarea id="rejectionReason" wire:model="rejectionReason"
                               rows="4"
                               class="w-full rounded-xl border-slate-300 focus:border-red-500 focus:ring-red-500"
                               placeholder="Ex : Le document est flou, illisible. Re-scanne avec une meilleure résolution.">{{-- --}}</textarea>
@@ -308,7 +308,7 @@
                             {{ $this->previewDocument->user?->name }} — {{ $this->previewDocument->user?->email }}
                         </p>
                     </div>
-                    <button wire:click="closePreview" class="text-slate-400 hover:text-slate-600">
+                    <button aria-label="Fermer l’aperçu du document" wire:click="closePreview" class="text-slate-400 hover:text-slate-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>

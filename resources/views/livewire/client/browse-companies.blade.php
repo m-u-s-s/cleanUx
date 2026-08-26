@@ -22,15 +22,15 @@
                     <h2 class="text-sm font-bold uppercase text-slate-500">Filtres</h2>
 
                     <div>
-                        <label class="text-xs font-semibold text-slate-700">Recherche</label>
-                        <input type="text" wire:model.live.debounce.400ms="query"
+                        <label class="text-xs font-semibold text-slate-700" for="query">Recherche</label>
+                        <input id="query" type="text" wire:model.live.debounce.400ms="query"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm"
                                placeholder="Nom de la société..." />
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-slate-700">Note minimale</label>
-                        <div class="mt-1 flex flex-wrap gap-1">
+                        <span id="groupe-note-minimale" class="text-xs font-semibold text-slate-700">Note minimale</span>
+                        <div class="mt-1 flex flex-wrap gap-1" role="group" aria-labelledby="groupe-note-minimale">
                             @foreach([null, 3, 4, 4.5] as $val)
                                 <button type="button"
                                         wire:click="$set('minRating', @js($val))"
@@ -42,8 +42,8 @@
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-slate-700">Trier par</label>
-                        <select wire:model.live="sort" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                        <label class="text-xs font-semibold text-slate-700" for="sort">Trier par</label>
+                        <select id="sort" wire:model.live="sort" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                             <option value="rating">Meilleure note</option>
                             <option value="providers">Plus de prestataires</option>
                             <option value="name">Nom (A→Z)</option>

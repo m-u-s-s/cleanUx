@@ -10,8 +10,8 @@
     <div class="space-y-4">
         <div class="grid gap-4 md:grid-cols-2">
             <div>
-                <label class="text-sm font-bold text-slate-700">Mission liée</label>
-                <select wire:model="rendezVousId" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                <label class="text-sm font-bold text-slate-700" for="rendezVousId">Mission liée</label>
+                <select id="rendezVousId" wire:model="rendezVousId" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                     <option value="">Mission liée (optionnel)</option>
                     @foreach($this->rendezVousOptions as $rdv)
                         <option value="{{ $rdv->id }}">
@@ -22,8 +22,8 @@
             </div>
 
             <div>
-                <label class="text-sm font-bold text-slate-700">Type</label>
-                <select wire:model="type" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                <label class="text-sm font-bold text-slate-700" for="type">Type</label>
+                <select id="type" wire:model="type" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                     <option value="incident">Incident</option>
                     <option value="materiel">Matériel</option>
                     <option value="securite">Sécurité</option>
@@ -32,8 +32,8 @@
             </div>
 
             <div>
-                <label class="text-sm font-bold text-slate-700">Priorité</label>
-                <select wire:model="priority" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                <label class="text-sm font-bold text-slate-700" for="priority">Priorité</label>
+                <select id="priority" wire:model="priority" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                     <option value="faible">Faible</option>
                     <option value="normale">Normale</option>
                     <option value="haute">Haute</option>
@@ -42,8 +42,8 @@
             </div>
 
             <div>
-                <label class="text-sm font-bold text-slate-700">Localisation</label>
-                <input
+                <label class="text-sm font-bold text-slate-700" for="locationNotes">Localisation</label>
+                <input id="locationNotes"
                     wire:model="locationNotes"
                     type="text"
                     class="mt-1 w-full rounded-xl border-gray-300 text-sm"
@@ -52,8 +52,8 @@
         </div>
 
         <div>
-            <label class="text-sm font-bold text-slate-700">Titre</label>
-            <input
+            <label class="text-sm font-bold text-slate-700" for="title">Titre</label>
+            <input id="title"
                 wire:model="title"
                 type="text"
                 class="mt-1 w-full rounded-xl border-gray-300 text-sm"
@@ -62,8 +62,8 @@
         </div>
 
         <div>
-            <label class="text-sm font-bold text-slate-700">Description</label>
-            <textarea
+            <label class="text-sm font-bold text-slate-700" for="description">Description</label>
+            <textarea id="description"
                 wire:model="description"
                 rows="5"
                 class="mt-1 w-full rounded-xl border-gray-300 text-sm"
@@ -72,8 +72,8 @@
         </div>
 
         <div>
-            <label class="text-sm font-bold text-slate-700">Preuves / liens / chemins</label>
-            <textarea
+            <label class="text-sm font-bold text-slate-700" for="attachmentInput">Preuves / liens / chemins</label>
+            <textarea id="attachmentInput"
                 wire:model="attachmentInput"
                 rows="3"
                 class="mt-1 w-full rounded-xl border-gray-300 text-sm"

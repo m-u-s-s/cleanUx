@@ -34,11 +34,11 @@
 
             <div class="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
                 <div class="xl:col-span-2">
-                    <label class="mb-1 block text-sm font-semibold text-slate-700">
+                    <label class="mb-1 block text-sm font-semibold text-slate-700" for="recherche">
                         Recherche globale
                     </label>
 
-                    <input
+                    <input id="recherche"
                         type="text"
                         wire:model.live.debounce.350ms="recherche"
                         placeholder="Client, employé, ville, service, référence…"
@@ -46,11 +46,11 @@
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-sm font-semibold text-slate-700">
+                    <label class="mb-1 block text-sm font-semibold text-slate-700" for="filtreEmploye">
                         Employé
                     </label>
 
-                    <select
+                    <select id="filtreEmploye"
                         wire:model.live="filtreEmploye"
                         class="w-full rounded-2xl border-slate-300 text-sm shadow-sm focus:border-sky-500 focus:ring-sky-500">
                         <option value="">Tous les employés</option>
@@ -62,22 +62,22 @@
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-sm font-semibold text-slate-700">
+                    <label class="mb-1 block text-sm font-semibold text-slate-700" for="filtreDate">
                         Date focus
                     </label>
 
-                    <input
+                    <input id="filtreDate"
                         type="date"
                         wire:model.live="filtreDate"
                         class="w-full rounded-2xl border-slate-300 text-sm shadow-sm focus:border-sky-500 focus:ring-sky-500">
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-sm font-semibold text-slate-700">
+                    <label class="mb-1 block text-sm font-semibold text-slate-700" for="filtreStatus">
                         Statut
                     </label>
 
-                    <select
+                    <select id="filtreStatus"
                         wire:model.live="filtreStatus"
                         class="w-full rounded-2xl border-slate-300 text-sm shadow-sm focus:border-sky-500 focus:ring-sky-500">
                         <option value="">Tous les statuts</option>
@@ -89,11 +89,11 @@
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-sm font-semibold text-slate-700">
+                    <label class="mb-1 block text-sm font-semibold text-slate-700" for="filtrePriorite">
                         Priorité
                     </label>
 
-                    <select
+                    <select id="filtrePriorite"
                         wire:model.live="filtrePriorite"
                         class="w-full rounded-2xl border-slate-300 text-sm shadow-sm focus:border-sky-500 focus:ring-sky-500">
                         <option value="">Toutes les priorités</option>

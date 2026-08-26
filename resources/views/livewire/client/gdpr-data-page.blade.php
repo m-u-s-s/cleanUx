@@ -69,8 +69,8 @@
                 </div>
             @else
                 <div class="rounded-xl bg-red-50 border border-red-200 p-4 space-y-3">
-                    <label class="block text-xs font-semibold uppercase text-red-700">Raison (optionnel)</label>
-                    <textarea wire:model="erasureReason" rows="2" maxlength="2000"
+                    <label class="block text-xs font-semibold uppercase text-red-700" for="erasureReason">Raison (optionnel)</label>
+                    <textarea id="erasureReason" wire:model="erasureReason" rows="2" maxlength="2000"
                               class="w-full rounded-xl border-red-300 text-sm bg-white"
                               placeholder="Pourquoi souhaitez-vous supprimer votre compte ?"></textarea>
 

@@ -14,8 +14,8 @@
         <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-4">
             <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div>
-                    <label class="block text-xs font-medium text-slate-600">Réservation concernée</label>
-                    <select wire:model="bookingId" class="mt-1 w-full rounded-xl border-slate-200 text-sm">
+                    <label class="block text-xs font-medium text-slate-600" for="bookingId">Réservation concernée</label>
+                    <select id="bookingId" wire:model="bookingId" class="mt-1 w-full rounded-xl border-slate-200 text-sm">
                         <option value="">— Choisir —</option>
                         @foreach ($orgBookings as $b)
                             <option value="{{ $b->id }}">{{ $b->booking_reference ?? ('#'.$b->id) }}</option>
@@ -24,8 +24,8 @@
                     @error('bookingId') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-600">Catégorie</label>
-                    <select wire:model="category" class="mt-1 w-full rounded-xl border-slate-200 text-sm">
+                    <label class="block text-xs font-medium text-slate-600" for="category">Catégorie</label>
+                    <select id="category" wire:model="category" class="mt-1 w-full rounded-xl border-slate-200 text-sm">
                         <option value="quality">Qualité</option>
                         <option value="no_show">Absence prestataire</option>
                         <option value="damage">Dégâts</option>
@@ -35,13 +35,13 @@
                 </div>
             </div>
             <div class="mt-3">
-                <label class="block text-xs font-medium text-slate-600">Sujet</label>
-                <input type="text" wire:model="subject" class="mt-1 w-full rounded-xl border-slate-200 text-sm" placeholder="Résumé du problème">
+                <label class="block text-xs font-medium text-slate-600" for="subject">Sujet</label>
+                <input id="subject" type="text" wire:model="subject" class="mt-1 w-full rounded-xl border-slate-200 text-sm" placeholder="Résumé du problème">
                 @error('subject') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
             </div>
             <div class="mt-3">
-                <label class="block text-xs font-medium text-slate-600">Description</label>
-                <textarea wire:model="description" rows="3" class="mt-1 w-full rounded-xl border-slate-200 text-sm" placeholder="Détaillez le problème…"></textarea>
+                <label class="block text-xs font-medium text-slate-600" for="description">Description</label>
+                <textarea id="description" wire:model="description" rows="3" class="mt-1 w-full rounded-xl border-slate-200 text-sm" placeholder="Détaillez le problème…"></textarea>
                 @error('description') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
             </div>
             <div class="mt-3 flex justify-end">

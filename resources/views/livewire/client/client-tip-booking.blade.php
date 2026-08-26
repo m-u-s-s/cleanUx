@@ -45,8 +45,8 @@
                 </div>
 
                 <div class="pt-3">
-                    <label class="text-xs uppercase font-bold text-slate-500">Message (optionnel)</label>
-                    <textarea wire:model="message" class="w-full rounded-lg border-slate-300 text-sm mt-1" rows="2" maxlength="280" placeholder="Un mot pour le prestataire ?"></textarea>
+                    <label class="text-xs uppercase font-bold text-slate-500" for="message">Message (optionnel)</label>
+                    <textarea id="message" wire:model="message" class="w-full rounded-lg border-slate-300 text-sm mt-1" rows="2" maxlength="280" placeholder="Un mot pour le prestataire ?"></textarea>
                 </div>
 
                 @if ($selectedAmountCents)

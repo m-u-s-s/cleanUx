@@ -28,7 +28,7 @@
                     <tr class="hover:bg-slate-50 transition">
                         <td class="px-5 py-4">
                             <div class="flex items-center gap-3">
-                                <img src="{{ $member->user?->profile_photo_url }}"
+                                <img alt="" src="{{ $member->user?->profile_photo_url }}"
                                      class="h-9 w-9 rounded-full object-cover border border-slate-200">
                                 <div class="min-w-0">
                                     <p class="text-sm font-semibold text-slate-900 truncate">{{ $member->user?->name }}</p>
@@ -103,14 +103,14 @@
             <h3 class="mb-5 text-lg font-black text-slate-900">Inviter un membre</h3>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">Email *</label>
-                    <input wire:model="inviteEmail" type="email" placeholder="jean@entreprise.com"
+                    <label class="block text-sm font-bold text-slate-700 mb-1" for="inviteEmail">Email *</label>
+                    <input id="inviteEmail" wire:model="inviteEmail" type="email" placeholder="jean@entreprise.com"
                         class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                     @error('inviteEmail') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2">Rôle *</label>
-                    <div class="grid grid-cols-2 gap-2">
+                    <span id="groupe-role-6849" class="block text-sm font-bold text-slate-700 mb-2">Rôle *</span>
+                    <div class="grid grid-cols-2 gap-2" role="group" aria-labelledby="groupe-role-6849">
                         @foreach ($availableRoles as $role)
                             <label class="cursor-pointer rounded-xl border px-3 py-2 text-sm transition
                                 {{ $inviteRole === $role->value

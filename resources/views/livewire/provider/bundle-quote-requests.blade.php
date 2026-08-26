@@ -46,14 +46,14 @@
                         <div class="mt-4 border-t border-slate-200 pt-4">
                             <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-600">Votre prix (€)</label>
-                                    <input type="number" step="0.01" min="0" wire:model="price"
+                                    <label class="block text-xs font-medium text-slate-600" for="price">Votre prix (€)</label>
+                                    <input id="price" type="number" step="0.01" min="0" wire:model="price"
                                         class="mt-1 w-full rounded-xl border-slate-200 text-sm" placeholder="0.00">
                                     @error('price') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
                                 </div>
                                 <div class="md:col-span-2">
-                                    <label class="block text-xs font-medium text-slate-600">Message (optionnel)</label>
-                                    <input type="text" wire:model="message"
+                                    <label class="block text-xs font-medium text-slate-600" for="message">Message (optionnel)</label>
+                                    <input id="message" type="text" wire:model="message"
                                         class="mt-1 w-full rounded-xl border-slate-200 text-sm" placeholder="Disponibilité, précisions…">
                                 </div>
                             </div>

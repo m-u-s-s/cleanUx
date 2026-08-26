@@ -56,8 +56,8 @@
                 </div>
 
                 <div>
-                    <label class="text-xs uppercase font-bold text-slate-500">Commentaire (optionnel)</label>
-                    <textarea wire:model="comment" class="w-full rounded-lg border-slate-300 text-sm mt-1" rows="3" maxlength="1000"
+                    <label class="text-xs uppercase font-bold text-slate-500" for="comment">Commentaire (optionnel)</label>
+                    <textarea id="comment" wire:model="comment" class="w-full rounded-lg border-slate-300 text-sm mt-1" rows="3" maxlength="1000"
                               placeholder="Un mot sur ce client ?"></textarea>
                 </div>
 

@@ -233,8 +233,8 @@
                         </div>
                     @else
                         <div class="mb-4">
-                            <label class="text-xs uppercase font-bold text-slate-500">Notes de résolution</label>
-                            <textarea wire:model="resolutionNotes" rows="3" class="w-full rounded-lg border-slate-300 text-sm mt-1" placeholder="Décrire la décision et l'action prise..."></textarea>
+                            <label class="text-xs uppercase font-bold text-slate-500" for="resolutionNotes">Notes de résolution</label>
+                            <textarea id="resolutionNotes" wire:model="resolutionNotes" rows="3" class="w-full rounded-lg border-slate-300 text-sm mt-1" placeholder="Décrire la décision et l'action prise..."></textarea>
                         </div>
                         <div class="flex gap-2 justify-end">
                             <button wire:click="resolve('dismissed')" class="rounded-lg border px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">

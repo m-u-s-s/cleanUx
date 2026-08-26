@@ -1,7 +1,7 @@
 <div class="bg-white rounded-2xl border shadow-sm p-4 space-y-4">
     <div>
-        <label class="text-sm font-semibold text-slate-700">Lot / chantier</label>
-        <select wire:model.live="selectedBatchId" class="mt-1 w-full rounded-xl border-slate-300">
+        <label class="text-sm font-semibold text-slate-700" for="selectedBatchId">Lot / chantier</label>
+        <select id="selectedBatchId" wire:model.live="selectedBatchId" class="mt-1 w-full rounded-xl border-slate-300">
             <option value="">Choisir un lot</option>
             @foreach($batches as $batch)
                 <option value="{{ $batch->id }}">#{{ $batch->id }} — {{ $batch->name ?? $batch->batch_type }}</option>
@@ -10,8 +10,8 @@
     </div>
 
     <div>
-        <label class="text-sm font-semibold text-slate-700">Segment</label>
-        <select wire:model.live="selectedSegmentId" class="mt-1 w-full rounded-xl border-slate-300">
+        <label class="text-sm font-semibold text-slate-700" for="selectedSegmentId">Segment</label>
+        <select id="selectedSegmentId" wire:model.live="selectedSegmentId" class="mt-1 w-full rounded-xl border-slate-300">
             <option value="">Choisir un segment</option>
             @foreach($segments as $segment)
                 <option value="{{ $segment->id }}">{{ $segment->segment_label ?? ('Segment #'.$segment->id) }}</option>

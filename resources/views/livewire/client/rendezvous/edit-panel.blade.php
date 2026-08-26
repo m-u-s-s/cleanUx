@@ -9,16 +9,16 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-            <label class="text-sm font-medium text-gray-700">Nouvelle date</label>
-            <input
+            <label class="text-sm font-medium text-gray-700" for="editDate">Nouvelle date</label>
+            <input id="editDate"
                 type="date"
                 wire:model.live="editDate"
                 class="w-full text-sm border-gray-300 rounded-lg px-3 py-2">
         </div>
 
         <div>
-            <label class="text-sm font-medium text-gray-700">Heure sélectionnée</label>
-            <input
+            <label class="text-sm font-medium text-gray-700" for="editHeure">Heure sélectionnée</label>
+            <input id="editHeure"
                 type="time"
                 wire:model="editHeure"
                 class="w-full text-sm border-gray-300 rounded-lg px-3 py-2">

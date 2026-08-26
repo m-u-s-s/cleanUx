@@ -100,16 +100,16 @@
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Nom complet *</label>
-                <input type="text"
+                <label class="block text-sm font-semibold text-slate-700 mb-2" for="name">Nom complet *</label>
+                <input id="name" type="text"
                        wire:model="name"
                        class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500">
                 @error('name') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Téléphone</label>
-                <input type="text"
+                <label class="block text-sm font-semibold text-slate-700 mb-2" for="phone">Téléphone</label>
+                <input id="phone" type="text"
                        wire:model="phone"
                        placeholder="+32 4XX XX XX XX"
                        class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500">
@@ -117,8 +117,8 @@
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Bio courte</label>
-                <textarea wire:model="bio"
+                <label class="block text-sm font-semibold text-slate-700 mb-2" for="bio">Bio courte</label>
+                <textarea id="bio" wire:model="bio"
                           rows="3"
                           placeholder="Ex : Plombier indépendant depuis 10 ans, spécialisé en réparations urgentes."
                           class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500"></textarea>
@@ -126,8 +126,8 @@
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Photo de profil</label>
-                <input type="file"
+                <label class="block text-sm font-semibold text-slate-700 mb-2" for="photo">Photo de profil</label>
+                <input id="photo" type="file"
                        wire:model="photo"
                        accept="image/*"
                        class="block w-full text-sm text-slate-500
@@ -161,8 +161,8 @@
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Type de document *</label>
-                <select wire:model="identityType"
+                <label class="block text-sm font-semibold text-slate-700 mb-2" for="identityType">Type de document *</label>
+                <select id="identityType" wire:model="identityType"
                         class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500">
                     <option value="identity_card">Carte d'identité</option>
                     <option value="passport">Passeport</option>
@@ -171,8 +171,8 @@
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Fichier (PDF, JPG, PNG, max 10 Mo) *</label>
-                <input type="file"
+                <label class="block text-sm font-semibold text-slate-700 mb-2" for="identityFile">Fichier (PDF, JPG, PNG, max 10 Mo) *</label>
+                <input id="identityFile" type="file"
                        wire:model="identityFile"
                        accept="application/pdf,image/*"
                        class="block w-full text-sm text-slate-500
@@ -241,8 +241,8 @@
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Numéro *</label>
-                <input type="text"
+                <label class="block text-sm font-semibold text-slate-700 mb-2" for="taxId">Numéro *</label>
+                <input id="taxId" type="text"
                        wire:model="taxId"
                        placeholder="BE0123456789"
                        class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500">
@@ -275,8 +275,8 @@
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-2">Fichier (PDF, JPG, PNG, max 10 Mo) *</label>
-                <input type="file"
+                <label class="block text-sm font-semibold text-slate-700 mb-2" for="insuranceFile">Fichier (PDF, JPG, PNG, max 10 Mo) *</label>
+                <input id="insuranceFile" type="file"
                        wire:model="insuranceFile"
                        accept="application/pdf,image/*"
                        class="block w-full text-sm text-slate-500
@@ -328,8 +328,8 @@
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-3">Tes compétences *</label>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <span id="groupe-tes-competences-16801" class="block text-sm font-semibold text-slate-700 mb-3">Tes compétences *</span>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" role="group" aria-labelledby="groupe-tes-competences-16801">
                     @foreach ($availableSkills as $key => $label)
                         <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
                             <input type="checkbox"
@@ -345,8 +345,8 @@
 
             @if ($zones->count() > 0)
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-3">Zones d'intervention</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto p-1">
+                    <span id="groupe-zones-d-intervention-17809" class="block text-sm font-semibold text-slate-700 mb-3">Zones d'intervention</span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto p-1" role="group" aria-labelledby="groupe-zones-d-intervention-17809">
                         @foreach ($zones as $zone)
                             <label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
                                 <input type="checkbox"

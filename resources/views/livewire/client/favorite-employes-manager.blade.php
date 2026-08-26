@@ -57,8 +57,8 @@
     {{-- Search --}}
     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
         <div class="max-w-md">
-            <label class="block text-sm font-semibold text-slate-700 mb-2">{{ __('Rechercher un employé') }}</label>
-            <input type="text"
+            <label class="block text-sm font-semibold text-slate-700 mb-2" for="search">{{ __('Rechercher un employé') }}</label>
+            <input id="search" type="text"
                 wire:model.live.debounce.300ms="search"
                 placeholder="{{ __('Nom de l’employé...') }}"
                 class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500">

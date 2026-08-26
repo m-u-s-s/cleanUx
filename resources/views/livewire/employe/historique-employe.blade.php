@@ -19,8 +19,8 @@
     <x-app-card padding="p-5 md:p-6" :title="__('Filtres & recherche')" :subtitle="__('Retrouvez rapidement une mission terminée par client, service ou lieu.')">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
             <div>
-                <label class="brio-field-label">{{ __('Recherche') }}</label>
-                <input type="text" wire:model.live="search" placeholder="{{ __('Client, service, ville...') }}">
+                <label class="brio-field-label" for="search">{{ __('Recherche') }}</label>
+                <input id="search" type="text" wire:model.live="search" placeholder="{{ __('Client, service, ville...') }}">
             </div>
             <div class="flex items-end">
                 <button wire:click="$set('tri', '{{ $tri === 'asc' ? 'desc' : 'asc' }}')" class="brio-btn-secondary">

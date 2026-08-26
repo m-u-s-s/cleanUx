@@ -40,12 +40,12 @@
             <div class="space-y-4">
                 <div class="brio-filter-grid">
                     <div>
-                        <label class="text-sm text-slate-600">Rechercher</label>
-                        <input type="text" wire:model.live.debounce.300ms="search" class="mt-1" placeholder="Nom, clé, description...">
+                        <label class="text-sm text-slate-600" for="search">Rechercher</label>
+                        <input id="search" type="text" wire:model.live.debounce.300ms="search" class="mt-1" placeholder="Nom, clé, description...">
                     </div>
                     <div>
-                        <label class="text-sm text-slate-600">Catégorie</label>
-                        <select wire:model.live="category" class="mt-1">
+                        <label class="text-sm text-slate-600" for="category">Catégorie</label>
+                        <select id="category" wire:model.live="category" class="mt-1">
                             <option value="">— Toutes —</option>
                             @foreach ($categories as $cat)
                                 <option value="{{ $cat }}">{{ ucfirst($cat) }}</option>
@@ -53,8 +53,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="text-sm text-slate-600">Stratégie</label>
-                        <select wire:model.live="strategy" class="mt-1">
+                        <label class="text-sm text-slate-600" for="strategy">Stratégie</label>
+                        <select id="strategy" wire:model.live="strategy" class="mt-1">
                             <option value="">— Toutes —</option>
                             @foreach ($strategyOptions as $option)
                                 <option value="{{ $option }}">{{ ucfirst($option) }}</option>
@@ -62,8 +62,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="text-sm text-slate-600">Statut</label>
-                        <select wire:model.live="status" class="mt-1">
+                        <label class="text-sm text-slate-600" for="status">Statut</label>
+                        <select id="status" wire:model.live="status" class="mt-1">
                             <option value="">— Tous —</option>
                             <option value="enabled">Actifs</option>
                             <option value="disabled">Désactivés</option>
@@ -110,24 +110,24 @@
 
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
-                            <label class="text-sm text-slate-600">Nom</label>
-                            <input type="text" wire:model="name" class="mt-1">
+                            <label class="text-sm text-slate-600" for="name">Nom</label>
+                            <input id="name" type="text" wire:model="name" class="mt-1">
                             @error('name') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                         </div>
                         <div>
-                            <label class="text-sm text-slate-600">Catégorie</label>
-                            <input type="text" wire:model="category_value" class="mt-1">
+                            <label class="text-sm text-slate-600" for="category_value">Catégorie</label>
+                            <input id="category_value" type="text" wire:model="category_value" class="mt-1">
                         </div>
                         <div class="md:col-span-2">
-                            <label class="text-sm text-slate-600">Description</label>
-                            <textarea wire:model="description" rows="3" class="mt-1"></textarea>
+                            <label class="text-sm text-slate-600" for="description">Description</label>
+                            <textarea id="description" wire:model="description" rows="3" class="mt-1"></textarea>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div>
-                            <label class="text-sm text-slate-600">Stratégie de rollout</label>
-                            <select wire:model="rollout_strategy" class="mt-1">
+                            <label class="text-sm text-slate-600" for="rollout_strategy">Stratégie de rollout</label>
+                            <select id="rollout_strategy" wire:model="rollout_strategy" class="mt-1">
                                 @foreach ($strategyOptions as $option)
                                     <option value="{{ $option }}">{{ ucfirst($option) }}</option>
                                 @endforeach
@@ -147,8 +147,8 @@
                         <x-app-card muted title="Audience autorisée" subtitle="Définis les rôles, plans, zones et organisations ouvertes.">
                             <div class="space-y-4">
                                 <div>
-                                    <label class="text-sm font-semibold text-slate-700">Rôles autorisés</label>
-                                    <div class="mt-2 grid grid-cols-2 gap-2">
+                                    <span id="groupe-roles-autorises-9089" class="text-sm font-semibold text-slate-700">Rôles autorisés</span>
+                                    <div class="mt-2 grid grid-cols-2 gap-2" role="group" aria-labelledby="groupe-roles-autorises-9089">
                                         @foreach ($roleOptions as $role)
                                             <label class="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
                                                 <input type="checkbox" wire:model="allowed_roles" value="{{ $role }}" class="rounded border-slate-300">
@@ -158,8 +158,8 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="text-sm font-semibold text-slate-700">Plans autorisés</label>
-                                    <div class="mt-2 grid grid-cols-2 gap-2">
+                                    <span id="groupe-plans-autorises-9931" class="text-sm font-semibold text-slate-700">Plans autorisés</span>
+                                    <div class="mt-2 grid grid-cols-2 gap-2" role="group" aria-labelledby="groupe-plans-autorises-9931">
                                         @foreach ($planOptions as $plan)
                                             <label class="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
                                                 <input type="checkbox" wire:model="allowed_plans" value="{{ $plan }}" class="rounded border-slate-300">
@@ -169,8 +169,8 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="text-sm font-semibold text-slate-700">Zones autorisées</label>
-                                    <div class="mt-2 grid gap-2 max-h-48 overflow-y-auto">
+                                    <span id="groupe-zones-autorisees-10773" class="text-sm font-semibold text-slate-700">Zones autorisées</span>
+                                    <div class="mt-2 grid gap-2 max-h-48 overflow-y-auto" role="group" aria-labelledby="groupe-zones-autorisees-10773">
                                         @foreach ($zones as $zone)
                                             <label class="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
                                                 <input type="checkbox" wire:model="allowed_zone_ids" value="{{ $zone->id }}" class="rounded border-slate-300">
@@ -185,8 +185,8 @@
                         <x-app-card muted title="Restrictions et organisations" subtitle="Définis les exclusions et le ciblage organisationnel.">
                             <div class="space-y-4">
                                 <div>
-                                    <label class="text-sm font-semibold text-slate-700">Rôles refusés</label>
-                                    <div class="mt-2 grid grid-cols-2 gap-2">
+                                    <span id="groupe-roles-refuses-11899" class="text-sm font-semibold text-slate-700">Rôles refusés</span>
+                                    <div class="mt-2 grid grid-cols-2 gap-2" role="group" aria-labelledby="groupe-roles-refuses-11899">
                                         @foreach ($roleOptions as $role)
                                             <label class="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
                                                 <input type="checkbox" wire:model="denied_roles" value="{{ $role }}" class="rounded border-slate-300">
@@ -196,8 +196,8 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="text-sm font-semibold text-slate-700">Plans refusés</label>
-                                    <div class="mt-2 grid grid-cols-2 gap-2">
+                                    <span id="groupe-plans-refuses-12738" class="text-sm font-semibold text-slate-700">Plans refusés</span>
+                                    <div class="mt-2 grid grid-cols-2 gap-2" role="group" aria-labelledby="groupe-plans-refuses-12738">
                                         @foreach ($planOptions as $plan)
                                             <label class="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
                                                 <input type="checkbox" wire:model="denied_plans" value="{{ $plan }}" class="rounded border-slate-300">
@@ -211,8 +211,8 @@
                                     <span>Autoriser toutes les organisations</span>
                                 </label>
                                 <div>
-                                    <label class="text-sm font-semibold text-slate-700">Organisations autorisées</label>
-                                    <div class="mt-2 grid gap-2 max-h-48 overflow-y-auto">
+                                    <span id="groupe-organisations-autorisees-13957" class="text-sm font-semibold text-slate-700">Organisations autorisées</span>
+                                    <div class="mt-2 grid gap-2 max-h-48 overflow-y-auto" role="group" aria-labelledby="groupe-organisations-autorisees-13957">
                                         @foreach ($organizations as $organization)
                                             <label class="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm">
                                                 <input type="checkbox" wire:model="allowed_organization_ids" value="{{ $organization->id }}" class="rounded border-slate-300">

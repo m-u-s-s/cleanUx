@@ -105,7 +105,7 @@
                         @if (($mission->assignments ?? collect())->isNotEmpty())
                             <div class="flex -space-x-2">
                                 @foreach (($mission->assignments ?? collect())->take(4) as $a)
-                                    <img src="{{ $a->provider?->profile_photo_url }}"
+                                    <img alt="{{ $a->provider?->name }}" src="{{ $a->provider?->profile_photo_url }}"
                                          title="{{ $a->provider?->name }}"
                                          class="h-8 w-8 rounded-full border-2 border-white object-cover">
                                 @endforeach
@@ -143,7 +143,7 @@
                                         ? 'border-sky-500 bg-sky-50'
                                         : 'border-slate-300 hover:border-slate-400' }}">
                                     <input type="radio" wire:model="assigneeId" value="{{ $worker->user_id }}" class="sr-only">
-                                    <img src="{{ $worker->user?->profile_photo_url }}"
+                                    <img alt="" src="{{ $worker->user?->profile_photo_url }}"
                                          class="h-8 w-8 flex-shrink-0 rounded-full object-cover border border-slate-300">
                                     <div class="min-w-0">
                                         <p class="truncate text-xs font-semibold text-slate-900">{{ $worker->user?->name }}</p>
@@ -303,18 +303,18 @@
                 Le client et le collaborateur assigné sont prévenus immédiatement.
             </p>
 
-            <label class="mb-1 block text-xs font-semibold text-slate-600">Nouvelle date</label>
-            <input type="date" wire:model="nouvelleDate"
+            <label class="mb-1 block text-xs font-semibold text-slate-600" for="nouvelleDate">Nouvelle date</label>
+            <input id="nouvelleDate" type="date" wire:model="nouvelleDate"
                 class="mb-3 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900">
 
-            <label class="mb-1 block text-xs font-semibold text-slate-600">Nouvelle heure</label>
-            <input type="time" wire:model="nouvelleHeure"
+            <label class="mb-1 block text-xs font-semibold text-slate-600" for="nouvelleHeure">Nouvelle heure</label>
+            <input id="nouvelleHeure" type="time" wire:model="nouvelleHeure"
                 class="mb-3 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900">
 
-            <label class="mb-1 block text-xs font-semibold text-slate-600">
+            <label class="mb-1 block text-xs font-semibold text-slate-600" for="motifReprogrammation">
                 Motif <span class="font-normal text-slate-400">(obligatoire à moins de 24 h)</span>
             </label>
-            <input type="text" wire:model="motifReprogrammation" maxlength="500"
+            <input id="motifReprogrammation" type="text" wire:model="motifReprogrammation" maxlength="500"
                 class="mb-3 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900">
 
             @error('nouvelleDate')

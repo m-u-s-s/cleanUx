@@ -237,14 +237,14 @@
             </div>
             <div class="p-6 space-y-4">
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1">Email *</label>
-                    <input wire:model="inviteEmail" type="email" placeholder="jean@example.com"
+                    <label class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1" for="inviteEmail">Email *</label>
+                    <input id="inviteEmail" wire:model="inviteEmail" type="email" placeholder="jean@example.com"
                         class="w-full rounded-xl border border-slate-300 bg-slate-100 px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500">
                     @error('inviteEmail') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">Rôle *</label>
-                    <div class="grid grid-cols-2 gap-2">
+                    <span id="groupe-role-14052" class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-2">Rôle *</span>
+                    <div class="grid grid-cols-2 gap-2" role="group" aria-labelledby="groupe-role-14052">
                         @foreach ($availableRoles as $role)
                             @if ($role->value !== 'owner')
                                 <label class="cursor-pointer rounded-xl border px-3 py-2 text-sm transition
@@ -260,8 +260,8 @@
                     @error('inviteRole') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1">Note (optionnel)</label>
-                    <textarea wire:model="inviteNote" rows="2" placeholder="Message d'accueil…"
+                    <label class="block text-xs font-bold uppercase tracking-wide text-slate-500 mb-1" for="inviteNote">Note (optionnel)</label>
+                    <textarea id="inviteNote" wire:model="inviteNote" rows="2" placeholder="Message d'accueil…"
                         class="w-full resize-none rounded-xl border border-slate-300 bg-slate-100 px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500"></textarea>
                 </div>
             </div>
@@ -285,7 +285,7 @@
         <div class="mx-auto my-8 w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-2xl">
             <div class="border-b border-slate-200 px-6 py-4 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <img src="{{ $editingMember->user->profile_photo_url }}"
+                    <img alt="" src="{{ $editingMember->user->profile_photo_url }}"
                          class="h-8 w-8 rounded-full object-cover">
                     <div>
                         <p class="text-sm font-bold text-slate-900">{{ $editingMember->user->name }}</p>
@@ -322,6 +322,7 @@
                                             @endif
                                         </span>
                                         <button
+                                                aria-label="Activer ou désactiver cette permission"
                                             wire:click="togglePermission('{{ $perm }}', {{ $currentVal ? 'false' : 'true' }})"
                                             class="relative h-5 w-9 rounded-full transition-colors
                                                 {{ $currentVal ? 'bg-blue-600' : 'bg-slate-600' }}"

@@ -98,7 +98,7 @@
                         </div>
                         <p class="mt-1 text-xs text-slate-500">{{ $applyingTemplate->human_description }}</p>
                     </div>
-                    <button wire:click="closeApplyModal" class="text-slate-400 hover:text-slate-600">
+                    <button aria-label="Fermer" wire:click="closeApplyModal" class="text-slate-400 hover:text-slate-600">
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -109,8 +109,8 @@
                     {{-- Site (uniquement pour entreprise) --}}
                     @if ($isCompany && $sites->isNotEmpty())
                         <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1">Site</label>
-                            <select wire:model="selectedSiteId"
+                            <label class="block text-xs font-medium text-slate-700 mb-1" for="selectedSiteId">Site</label>
+                            <select id="selectedSiteId" wire:model="selectedSiteId"
                                     class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
                                 <option value="">— Choisir un site —</option>
                                 @foreach ($sites as $site)
@@ -124,35 +124,35 @@
 
                     {{-- Date démarrage --}}
                     <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Date de démarrage</label>
-                        <input type="date" wire:model="applyStartsAt"
+                        <label class="block text-xs font-medium text-slate-700 mb-1" for="applyStartsAt">Date de démarrage</label>
+                        <input id="applyStartsAt" type="date" wire:model="applyStartsAt"
                                min="{{ now()->addDay()->toDateString() }}"
                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
                     </div>
 
                     {{-- Heure --}}
                     <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Heure</label>
-                        <input type="time" wire:model="applyCustomTime"
+                        <label class="block text-xs font-medium text-slate-700 mb-1" for="applyCustomTime">Heure</label>
+                        <input id="applyCustomTime" type="time" wire:model="applyCustomTime"
                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
                     </div>
 
                     {{-- Date fin (optionnel) --}}
                     <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">
+                        <label class="block text-xs font-medium text-slate-700 mb-1" for="applyEndsAt">
                             Date de fin <span class="text-slate-400 font-normal">(optionnel)</span>
                         </label>
-                        <input type="date" wire:model="applyEndsAt"
+                        <input id="applyEndsAt" type="date" wire:model="applyEndsAt"
                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
                         <p class="mt-1 text-[10px] text-slate-500">Laisser vide pour une récurrence sans fin.</p>
                     </div>
 
                     {{-- Nombre d'occurrences (optionnel) --}}
                     <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">
+                        <label class="block text-xs font-medium text-slate-700 mb-1" for="applyOccurrenceCount">
                             Limite d'occurrences <span class="text-slate-400 font-normal">(optionnel)</span>
                         </label>
-                        <input type="number" wire:model="applyOccurrenceCount" min="1" max="500"
+                        <input id="applyOccurrenceCount" type="number" wire:model="applyOccurrenceCount" min="1" max="500"
                                placeholder="ex: 12 (3 mois en hebdo)"
                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm">
                     </div>

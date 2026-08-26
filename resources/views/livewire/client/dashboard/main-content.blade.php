@@ -97,13 +97,13 @@
 
                         <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <div>
-                                <label class="ui-label">{{ __('Nouvelle date') }}</label>
-                                <input type="date" wire:model.defer="editDate" class="ui-input">
+                                <label class="ui-label" for="editDate">{{ __('Nouvelle date') }}</label>
+                                <input id="editDate" type="date" wire:model.defer="editDate" class="ui-input">
                             </div>
 
                             <div>
-                                <label class="ui-label">{{ __('Nouvelle heure') }}</label>
-                                <input type="time" wire:model.defer="editHeure" class="ui-input">
+                                <label class="ui-label" for="editHeure">{{ __('Nouvelle heure') }}</label>
+                                <input id="editHeure" type="time" wire:model.defer="editHeure" class="ui-input">
                             </div>
                         </div>
 

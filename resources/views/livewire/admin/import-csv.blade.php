@@ -6,16 +6,16 @@
 
     <div class="flex flex-wrap items-end gap-4">
         <div>
-            <label class="text-sm">Type d'import :</label>
-            <select wire:model="type" class="border px-2 py-1 text-sm rounded">
+            <label class="text-sm" for="type">Type d'import :</label>
+            <select id="type" wire:model="type" class="border px-2 py-1 text-sm rounded">
                 <option value="clients">👥 Clients</option>
                 <option value="rendez_vous">📅 Rendez-vous</option>
             </select>
         </div>
 
         <div>
-            <label class="text-sm">Fichier CSV :</label>
-            <input type="file" wire:model="csv" class="text-sm" />
+            <label class="text-sm" for="csv">Fichier CSV :</label>
+            <input id="csv" type="file" wire:model="csv" class="text-sm" />
         </div>
 
         <button wire:click="import"

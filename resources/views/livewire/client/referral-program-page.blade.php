@@ -58,14 +58,14 @@
             <div class="rounded-2xl border bg-white p-6 shadow-sm space-y-4">
                 <h2 class="text-lg font-bold text-slate-900">Inviter par email</h2>
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Email du filleul</label>
-                    <input type="email" wire:model="inviteEmail"
+                    <label class="text-sm font-semibold text-slate-700" for="inviteEmail">Email du filleul</label>
+                    <input id="inviteEmail" type="email" wire:model="inviteEmail"
                            class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                     @error('inviteEmail') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Message (optionnel)</label>
-                    <textarea wire:model="inviteMessage" rows="3"
+                    <label class="text-sm font-semibold text-slate-700" for="inviteMessage">Message (optionnel)</label>
+                    <textarea id="inviteMessage" wire:model="inviteMessage" rows="3"
                               class="mt-1 w-full rounded-xl border-gray-300 text-sm"
                               placeholder="J'ai testé Brio, je te recommande !"></textarea>
                 </div>

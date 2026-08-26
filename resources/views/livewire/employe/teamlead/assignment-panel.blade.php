@@ -2,8 +2,8 @@
     <h3 class="text-lg font-bold text-slate-900">Affectation fine des segments</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-            <label class="text-sm font-semibold text-slate-700">Membre</label>
-            <select wire:model="selectedAssigneeId" class="mt-1 w-full rounded-xl border-slate-300">
+            <label class="text-sm font-semibold text-slate-700" for="selectedAssigneeId">Membre</label>
+            <select id="selectedAssigneeId" wire:model="selectedAssigneeId" class="mt-1 w-full rounded-xl border-slate-300">
                 <option value="">Choisir un membre</option>
                 @foreach(($selectedSegment->fieldTeam->members ?? collect()) as $member)
                     <option value="{{ $member->user_id }}">{{ $member->user->name ?? ('User #'.$member->user_id) }}</option>

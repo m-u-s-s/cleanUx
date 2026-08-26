@@ -40,7 +40,7 @@
                     </button>
                 </div>
             </div>
-            <button @click="dismiss()" class="text-slate-400 hover:text-slate-600">
+            <button aria-label="Ignorer la proposition d’installation" @click="dismiss()" class="text-slate-400 hover:text-slate-600">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
@@ -67,7 +67,7 @@
                     Compris
                 </button>
             </div>
-            <button @click="dismiss()" class="text-slate-400 hover:text-slate-600">
+            <button aria-label="Ignorer la proposition d’installation" @click="dismiss()" class="text-slate-400 hover:text-slate-600">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>

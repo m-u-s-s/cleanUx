@@ -23,8 +23,8 @@
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-                <label class="text-xs text-gray-500">Statut</label>
-                <select wire:model.live="status" class="w-full border rounded-lg px-3 py-2 text-sm mt-1">
+                <label class="text-xs text-gray-500" for="status">Statut</label>
+                <select id="status" wire:model.live="status" class="w-full border rounded-lg px-3 py-2 text-sm mt-1">
                     <option value="">Tous</option>
                     <option value="en_attente">En attente</option>
                     <option value="confirme">Confirmé</option>
@@ -35,8 +35,8 @@
                 </select>
             </div>
             <div>
-                <label class="text-xs text-gray-500">Zone</label>
-                <select wire:model.live="zoneId" class="w-full border rounded-lg px-3 py-2 text-sm mt-1">
+                <label class="text-xs text-gray-500" for="zoneId">Zone</label>
+                <select id="zoneId" wire:model.live="zoneId" class="w-full border rounded-lg px-3 py-2 text-sm mt-1">
                     <option value="">Toutes</option>
                     @foreach($zones as $zone)
                         <option value="{{ $zone->id }}">{{ $zone->name }}</option>
@@ -44,8 +44,8 @@
                 </select>
             </div>
             <div class="md:col-span-2">
-                <label class="text-xs text-gray-500">Service</label>
-                <input wire:model.live.debounce.300ms="service" type="text" class="w-full border rounded-lg px-3 py-2 text-sm mt-1" placeholder="Nettoyage, vitres, intervention...">
+                <label class="text-xs text-gray-500" for="service">Service</label>
+                <input id="service" wire:model.live.debounce.300ms="service" type="text" class="w-full border rounded-lg px-3 py-2 text-sm mt-1" placeholder="Nettoyage, vitres, intervention...">
             </div>
         </div>
     </div>

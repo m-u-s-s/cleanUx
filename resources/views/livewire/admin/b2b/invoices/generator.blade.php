@@ -3,8 +3,8 @@
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="md:col-span-2">
-                <label class="text-sm font-medium text-slate-700">Entreprise</label>
-                <select wire:model="organization_account_id" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                <label class="text-sm font-medium text-slate-700" for="organization_account_id">Entreprise</label>
+                <select id="organization_account_id" wire:model="organization_account_id" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                     <option value="">— Choisir —</option>
                     @foreach($organizations as $organization)
                         <option value="{{ $organization->id }}">
@@ -16,14 +16,14 @@
             </div>
 
             <div>
-                <label class="text-sm font-medium text-slate-700">Début période</label>
-                <input type="date" wire:model="period_start" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                <label class="text-sm font-medium text-slate-700" for="period_start">Début période</label>
+                <input id="period_start" type="date" wire:model="period_start" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                 @error('period_start') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
-                <label class="text-sm font-medium text-slate-700">Fin période</label>
-                <input type="date" wire:model="period_end" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                <label class="text-sm font-medium text-slate-700" for="period_end">Fin période</label>
+                <input id="period_end" type="date" wire:model="period_end" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                 @error('period_end') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
         </div>

@@ -108,7 +108,7 @@
                     {{-- Prestataire favori --}}
                     @if ($site->preferredProvider)
                         <div class="mt-3 flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2">
-                            <img src="{{ $site->preferredProvider->profile_photo_url }}"
+                            <img alt="" src="{{ $site->preferredProvider->profile_photo_url }}"
                                  class="h-6 w-6 rounded-full object-cover">
                             <span class="text-xs text-blue-700">
                                 ⭐ {{ $site->preferredProvider->name }}
@@ -161,40 +161,40 @@
                 {{-- Infos principales --}}
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div class="sm:col-span-2">
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Nom du local *</label>
-                        <input wire:model="name" type="text" placeholder="Siège social, Entrepôt Nord…"
+                        <label class="block text-sm font-bold text-slate-700 mb-1" for="name">Nom du local *</label>
+                        <input id="name" wire:model="name" type="text" placeholder="Siège social, Entrepôt Nord…"
                             class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                         @error('name') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="sm:col-span-2">
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Adresse *</label>
-                        <input wire:model="address" type="text" placeholder="Rue de la Loi 16"
+                        <label class="block text-sm font-bold text-slate-700 mb-1" for="address">Adresse *</label>
+                        <input id="address" wire:model="address" type="text" placeholder="Rue de la Loi 16"
                             class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                         @error('address') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Code postal *</label>
-                        <input wire:model="postalCode" type="text" placeholder="1000"
+                        <label class="block text-sm font-bold text-slate-700 mb-1" for="postalCode">Code postal *</label>
+                        <input id="postalCode" wire:model="postalCode" type="text" placeholder="1000"
                             class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Ville *</label>
-                        <input wire:model="city" type="text" placeholder="Bruxelles"
+                        <label class="block text-sm font-bold text-slate-700 mb-1" for="city">Ville *</label>
+                        <input id="city" wire:model="city" type="text" placeholder="Bruxelles"
                             class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Surface (m²)</label>
-                        <input wire:model="surfaceM2" type="number" placeholder="250"
+                        <label class="block text-sm font-bold text-slate-700 mb-1" for="surfaceM2">Surface (m²)</label>
+                        <input id="surfaceM2" wire:model="surfaceM2" type="number" placeholder="250"
                             class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Nombre d'étages</label>
-                        <input wire:model="floorCount" type="number" placeholder="2"
+                        <label class="block text-sm font-bold text-slate-700 mb-1" for="floorCount">Nombre d'étages</label>
+                        <input id="floorCount" wire:model="floorCount" type="number" placeholder="2"
                             class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                     </div>
                 </div>
@@ -202,8 +202,8 @@
                 {{-- Fréquence et créneau --}}
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Fréquence de service</label>
-                        <select wire:model="cleaningFrequency"
+                        <label class="block text-sm font-bold text-slate-700 mb-1" for="cleaningFrequency">Fréquence de service</label>
+                        <select id="cleaningFrequency" wire:model="cleaningFrequency"
                             class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500">
                             <option value="one_time">Ponctuel</option>
                             <option value="weekly">Hebdomadaire</option>
@@ -212,8 +212,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Créneau préféré</label>
-                        <input wire:model="preferredTimeSlot" type="text" placeholder="Lun-Ven 8h-10h"
+                        <label class="block text-sm font-bold text-slate-700 mb-1" for="preferredTimeSlot">Créneau préféré</label>
+                        <input id="preferredTimeSlot" wire:model="preferredTimeSlot" type="text" placeholder="Lun-Ven 8h-10h"
                             class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100">
                     </div>
                 </div>
@@ -234,8 +234,8 @@
                 {{-- Prestataire favori --}}
                 @if ($providers->isNotEmpty())
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">⭐ Prestataire favori</label>
-                        <div class="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto">
+                        <span id="groupe-prestataire-favori-13755" class="block text-sm font-bold text-slate-700 mb-2">⭐ Prestataire favori</span>
+                        <div class="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto" role="group" aria-labelledby="groupe-prestataire-favori-13755">
                             <label class="flex items-center gap-2 rounded-xl border border-slate-200 p-2 cursor-pointer hover:bg-slate-50
                                 {{ is_null($preferredProviderId) ? 'border-slate-400 bg-slate-50' : '' }}">
                                 <input type="radio" wire:model="preferredProviderId" value="" class="rounded-full">
@@ -246,7 +246,7 @@
                                     {{ $preferredProviderId == $provider->user_id ? 'border-blue-500 bg-blue-50' : '' }}">
                                     <input type="radio" wire:model="preferredProviderId"
                                         value="{{ $provider->user_id }}" class="rounded-full">
-                                    <img src="{{ $provider->user->profile_photo_url }}"
+                                    <img alt="" src="{{ $provider->user->profile_photo_url }}"
                                          class="h-6 w-6 rounded-full object-cover">
                                     <span class="text-xs text-slate-700 truncate">{{ $provider->user->name }}</span>
                                 </label>
@@ -257,16 +257,16 @@
 
                 {{-- Instructions d'accès --}}
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">🔑 Instructions d'accès</label>
-                    <textarea wire:model="accessInstructions" rows="2"
+                    <label class="block text-sm font-bold text-slate-700 mb-1" for="accessInstructions">🔑 Instructions d'accès</label>
+                    <textarea id="accessInstructions" wire:model="accessInstructions" rows="2"
                         placeholder="Code d'entrée, parking disponible, sonnette…"
                         class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100"></textarea>
                 </div>
 
                 {{-- Notes --}}
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">📝 Notes internes</label>
-                    <textarea wire:model="notes" rows="2"
+                    <label class="block text-sm font-bold text-slate-700 mb-1" for="notes">📝 Notes internes</label>
+                    <textarea id="notes" wire:model="notes" rows="2"
                         placeholder="Informations visibles uniquement par votre équipe"
                         class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-100"></textarea>
                 </div>

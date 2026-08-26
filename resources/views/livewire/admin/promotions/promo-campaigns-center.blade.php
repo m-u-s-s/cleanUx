@@ -32,53 +32,53 @@
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Nom</label>
-                    <input type="text" wire:model.live.debounce.500ms="name"
+                    <label class="text-sm font-semibold text-slate-700" for="name">Nom</label>
+                    <input id="name" type="text" wire:model.live.debounce.500ms="name"
                            class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                     @error('name') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Slug</label>
-                    <input type="text" wire:model="slug"
+                    <label class="text-sm font-semibold text-slate-700" for="slug">Slug</label>
+                    <input id="slug" type="text" wire:model="slug"
                            class="mt-1 w-full rounded-xl border-gray-300 text-sm font-mono" />
                     @error('slug') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Description</label>
-                    <textarea wire:model="description" rows="2"
+                    <label class="text-sm font-semibold text-slate-700" for="description">Description</label>
+                    <textarea id="description" wire:model="description" rows="2"
                               class="mt-1 w-full rounded-xl border-gray-300 text-sm"></textarea>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-sm font-semibold text-slate-700">Début</label>
-                        <input type="datetime-local" wire:model="starts_at"
+                        <label class="text-sm font-semibold text-slate-700" for="starts_at">Début</label>
+                        <input id="starts_at" type="datetime-local" wire:model="starts_at"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                     </div>
                     <div>
-                        <label class="text-sm font-semibold text-slate-700">Fin</label>
-                        <input type="datetime-local" wire:model="ends_at"
+                        <label class="text-sm font-semibold text-slate-700" for="ends_at">Fin</label>
+                        <input id="ends_at" type="datetime-local" wire:model="ends_at"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                     </div>
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Budget plafond</label>
-                    <input type="number" step="0.01" wire:model="budget_cap"
+                    <label class="text-sm font-semibold text-slate-700" for="budget_cap">Budget plafond</label>
+                    <input id="budget_cap" type="number" step="0.01" wire:model="budget_cap"
                            class="mt-1 w-full rounded-xl border-gray-300 text-sm" placeholder="∞" />
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Audience cible (libre)</label>
-                    <input type="text" wire:model="target_audience"
+                    <label class="text-sm font-semibold text-slate-700" for="target_audience">Audience cible (libre)</label>
+                    <input id="target_audience" type="text" wire:model="target_audience"
                            class="mt-1 w-full rounded-xl border-gray-300 text-sm" placeholder="Ex: étudiants Bruxelles" />
                 </div>
 
                 <div>
-                    <label class="text-sm font-semibold text-slate-700">Statut</label>
-                    <select wire:model="status" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                    <label class="text-sm font-semibold text-slate-700" for="status">Statut</label>
+                    <select id="status" wire:model="status" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                         <option value="draft">Brouillon</option>
                         <option value="scheduled">Planifiée</option>
                         <option value="active">Active</option>

@@ -2,8 +2,8 @@
     <div class="bg-white border rounded-2xl shadow-sm p-4">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div>
-                <label class="text-xs font-semibold text-slate-500 uppercase">Priorité</label>
-                <select wire:model.live="priorite" class="mt-1 w-full rounded-xl border-slate-200 text-sm">
+                <label class="text-xs font-semibold text-slate-500 uppercase" for="priorite">Priorité</label>
+                <select id="priorite" wire:model.live="priorite" class="mt-1 w-full rounded-xl border-slate-200 text-sm">
                     <option value="">Toutes</option>
                     <option value="normale">Normale</option>
                     <option value="haute">Haute</option>
@@ -12,8 +12,8 @@
             </div>
 
             <div>
-                <label class="text-xs font-semibold text-slate-500 uppercase">Statut</label>
-                <select wire:model.live="filtreStatus" class="mt-1 w-full rounded-xl border-slate-200 text-sm">
+                <label class="text-xs font-semibold text-slate-500 uppercase" for="filtreStatus">Statut</label>
+                <select id="filtreStatus" wire:model.live="filtreStatus" class="mt-1 w-full rounded-xl border-slate-200 text-sm">
                     <option value="">Tous</option>
                     <option value="en_attente">En attente</option>
                     <option value="confirme">Confirmé</option>
@@ -25,16 +25,16 @@
             </div>
 
             <div>
-                <label class="text-xs font-semibold text-slate-500 uppercase">Tri</label>
-                <select wire:model.live="tri" class="mt-1 w-full rounded-xl border-slate-200 text-sm">
+                <label class="text-xs font-semibold text-slate-500 uppercase" for="tri">Tri</label>
+                <select id="tri" wire:model.live="tri" class="mt-1 w-full rounded-xl border-slate-200 text-sm">
                     <option value="asc">Plus proche d’abord</option>
                     <option value="desc">Plus récent d’abord</option>
                 </select>
             </div>
 
             <div>
-                <label class="text-xs font-semibold text-slate-500 uppercase">Recherche</label>
-                <input
+                <label class="text-xs font-semibold text-slate-500 uppercase" for="search">Recherche</label>
+                <input id="search"
                     type="text"
                     wire:model.live.debounce.350ms="search"
                     class="mt-1 w-full rounded-xl border-slate-200 text-sm"
@@ -278,14 +278,14 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Remarque terrain</label>
-                <textarea wire:model="remarque_terrain" rows="3" class="w-full border rounded px-3 py-2 text-sm" placeholder="Code d’accès, difficulté d’accès, état des lieux..."></textarea>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="remarque_terrain">Remarque terrain</label>
+                <textarea id="remarque_terrain" wire:model="remarque_terrain" rows="3" class="w-full border rounded px-3 py-2 text-sm" placeholder="Code d’accès, difficulté d’accès, état des lieux..."></textarea>
                 @error('remarque_terrain') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Photos avant intervention</label>
-                <input type="file" wire:model="photos_avant" multiple accept="image/*" class="w-full text-sm border rounded px-3 py-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="photos_avant">Photos avant intervention</label>
+                <input id="photos_avant" type="file" wire:model="photos_avant" multiple accept="image/*" class="w-full text-sm border rounded px-3 py-2">
                 @error('photos_avant.*') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
 
@@ -319,8 +319,8 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Durée réelle (minutes)</label>
-                    <input type="number" min="15" wire:model="duree_reelle" class="w-full border rounded px-3 py-2 text-sm">
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="duree_reelle">Durée réelle (minutes)</label>
+                    <input id="duree_reelle" type="number" min="15" wire:model="duree_reelle" class="w-full border rounded px-3 py-2 text-sm">
                     @error('duree_reelle') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                 </div>
 
@@ -331,20 +331,20 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Commentaire de fin de mission</label>
-                <textarea wire:model="commentaire_fin_mission" rows="4" class="w-full border rounded px-3 py-2 text-sm" placeholder="Résumé du travail effectué, état final, recommandations..."></textarea>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="commentaire_fin_mission">Commentaire de fin de mission</label>
+                <textarea id="commentaire_fin_mission" wire:model="commentaire_fin_mission" rows="4" class="w-full border rounded px-3 py-2 text-sm" placeholder="Résumé du travail effectué, état final, recommandations..."></textarea>
                 @error('commentaire_fin_mission') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Incident ou anomalie terrain</label>
-                <textarea wire:model="incident_terrain" rows="3" class="w-full border rounded px-3 py-2 text-sm" placeholder="Détaillez ici un incident, un litige ou une anomalie constatée."></textarea>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="incident_terrain">Incident ou anomalie terrain</label>
+                <textarea id="incident_terrain" wire:model="incident_terrain" rows="3" class="w-full border rounded px-3 py-2 text-sm" placeholder="Détaillez ici un incident, un litige ou une anomalie constatée."></textarea>
                 @error('incident_terrain') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Photos après intervention</label>
-                <input type="file" wire:model="photos_apres" multiple accept="image/*" class="w-full text-sm border rounded px-3 py-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="photos_apres">Photos après intervention</label>
+                <input id="photos_apres" type="file" wire:model="photos_apres" multiple accept="image/*" class="w-full text-sm border rounded px-3 py-2">
                 @error('photos_apres.*') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
 
@@ -358,10 +358,10 @@
 
             <div x-data="brioSignaturePad($wire)" class="space-y-2">
                 <div class="flex items-center justify-between">
-                    <label class="block text-sm font-medium text-gray-700">Signature client (optionnelle)</label>
+                    <span id="signature-client" class="block text-sm font-medium text-gray-700">Signature client (optionnelle)</span>
                     <button type="button" @click="clear()" class="text-sm text-slate-500 hover:text-slate-700">Effacer</button>
                 </div>
-                <canvas x-ref="canvas" x-init="init()" class="w-full h-44 rounded-xl border bg-slate-50"></canvas>
+                <canvas x-ref="canvas" x-init="init()" aria-labelledby="signature-client" class="w-full h-44 rounded-xl border bg-slate-50"></canvas>
                 <p class="text-xs text-slate-500">Le client peut signer au doigt ou à la souris directement sur cet espace.</p>
             </div>
 

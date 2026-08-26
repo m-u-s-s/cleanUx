@@ -163,22 +163,22 @@
 
             <div class="space-y-4 p-6">
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">Titre *</label>
-                    <input wire:model="title" type="text" placeholder="Description de la tâche…"
+                    <label class="block text-sm font-bold text-slate-700 mb-1" for="title">Titre *</label>
+                    <input id="title" wire:model="title" type="text" placeholder="Description de la tâche…"
                         class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
                     @error('title') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">Description</label>
-                    <textarea wire:model="description" rows="3" placeholder="Détails optionnels…"
+                    <label class="block text-sm font-bold text-slate-700 mb-1" for="description">Description</label>
+                    <textarea id="description" wire:model="description" rows="3" placeholder="Détails optionnels…"
                         class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"></textarea>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Priorité</label>
-                        <select wire:model="priority"
+                        <label class="block text-sm font-bold text-slate-700 mb-1" for="priority">Priorité</label>
+                        <select id="priority" wire:model="priority"
                             class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-500">
                             <option value="low">⚪ Basse</option>
                             <option value="medium">🔵 Moyenne</option>
@@ -187,20 +187,20 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Échéance</label>
-                        <input wire:model="dueDate" type="date"
+                        <label class="block text-sm font-bold text-slate-700 mb-1" for="dueDate">Échéance</label>
+                        <input id="dueDate" wire:model="dueDate" type="date"
                             class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-500">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2">Assigner à</label>
-                    <div class="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                    <span id="groupe-assigner-a-11371" class="block text-sm font-bold text-slate-700 mb-2">Assigner à</span>
+                    <div class="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto" role="group" aria-labelledby="groupe-assigner-a-11371">
                         @foreach ($members as $m)
                             <label class="flex items-center gap-2 rounded-xl border border-slate-200 p-2 cursor-pointer hover:bg-slate-50
                                 {{ in_array($m->user_id, $assigneeIds) ? 'border-blue-500 bg-blue-50' : '' }}">
                                 <input type="checkbox" wire:model="assigneeIds" value="{{ $m->user_id }}" class="rounded">
-                                <img src="{{ $m->user->profile_photo_url }}"
+                                <img alt="" src="{{ $m->user->profile_photo_url }}"
                                      class="h-6 w-6 rounded-full object-cover">
                                 <span class="text-xs font-medium text-slate-700 truncate">{{ $m->user->name }}</span>
                             </label>

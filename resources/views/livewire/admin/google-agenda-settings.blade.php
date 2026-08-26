@@ -80,45 +80,45 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Google Client ID</label>
-                <input type="text" wire:model="googleCalendarClientId" class="w-full rounded-lg border-gray-300 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="googleCalendarClientId">Google Client ID</label>
+                <input id="googleCalendarClientId" type="text" wire:model="googleCalendarClientId" class="w-full rounded-lg border-gray-300 shadow-sm">
                 @error('googleCalendarClientId') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Google Client Secret</label>
-                <input type="text" wire:model="googleCalendarClientSecret" class="w-full rounded-lg border-gray-300 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="googleCalendarClientSecret">Google Client Secret</label>
+                <input id="googleCalendarClientSecret" type="text" wire:model="googleCalendarClientSecret" class="w-full rounded-lg border-gray-300 shadow-sm">
                 @error('googleCalendarClientSecret') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Redirect URI</label>
-                <input type="url" wire:model="googleCalendarRedirectUri" class="w-full rounded-lg border-gray-300 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="googleCalendarRedirectUri">Redirect URI</label>
+                <input id="googleCalendarRedirectUri" type="url" wire:model="googleCalendarRedirectUri" class="w-full rounded-lg border-gray-300 shadow-sm">
                 @error('googleCalendarRedirectUri') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Calendar ID par défaut</label>
-                <input type="text" wire:model="defaultCalendarId" class="w-full rounded-lg border-gray-300 shadow-sm" placeholder="primary">
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="defaultCalendarId">Calendar ID par défaut</label>
+                <input id="defaultCalendarId" type="text" wire:model="defaultCalendarId" class="w-full rounded-lg border-gray-300 shadow-sm" placeholder="primary">
                 @error('defaultCalendarId') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Scopes</label>
-                <input type="text" wire:model="googleCalendarScopes" class="w-full rounded-lg border-gray-300 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="googleCalendarScopes">Scopes</label>
+                <input id="googleCalendarScopes" type="text" wire:model="googleCalendarScopes" class="w-full rounded-lg border-gray-300 shadow-sm">
                 @error('googleCalendarScopes') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Fenêtre passée (jours)</label>
-                    <input type="number" wire:model="syncWindowPastDays" class="w-full rounded-lg border-gray-300 shadow-sm">
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="syncWindowPastDays">Fenêtre passée (jours)</label>
+                    <input id="syncWindowPastDays" type="number" wire:model="syncWindowPastDays" class="w-full rounded-lg border-gray-300 shadow-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Fenêtre future (jours)</label>
-                    <input type="number" wire:model="syncWindowFutureDays" class="w-full rounded-lg border-gray-300 shadow-sm">
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="syncWindowFutureDays">Fenêtre future (jours)</label>
+                    <input id="syncWindowFutureDays" type="number" wire:model="syncWindowFutureDays" class="w-full rounded-lg border-gray-300 shadow-sm">
                 </div>
             </div>
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Notes techniques</label>
-            <textarea wire:model="notes" rows="4" class="w-full rounded-lg border-gray-300 shadow-sm"></textarea>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="notes">Notes techniques</label>
+            <textarea id="notes" wire:model="notes" rows="4" class="w-full rounded-lg border-gray-300 shadow-sm"></textarea>
         </div>
 
         <div class="flex flex-wrap gap-3 justify-end">

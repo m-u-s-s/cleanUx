@@ -20,15 +20,15 @@
                     <h2 class="text-sm font-bold uppercase text-slate-500">Filtres</h2>
 
                     <div>
-                        <label class="text-xs font-semibold text-slate-700">Recherche</label>
-                        <input type="text" wire:model.live.debounce.400ms="query"
+                        <label class="text-xs font-semibold text-slate-700" for="query">Recherche</label>
+                        <input id="query" type="text" wire:model.live.debounce.400ms="query"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm"
                                placeholder="Nom, bio..." />
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-slate-700">Métier</label>
-                        <select wire:model.live="tradeId" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                        <label class="text-xs font-semibold text-slate-700" for="tradeId">Métier</label>
+                        <select id="tradeId" wire:model.live="tradeId" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                             <option value="">Tous métiers</option>
                             @foreach($trades as $trade)
                                 <option value="{{ $trade->id }}">{{ $trade->name }}</option>
@@ -37,8 +37,8 @@
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-slate-700">Code postal / ville</label>
-                        <input type="text" wire:model.live.debounce.400ms="postalSearch"
+                        <label class="text-xs font-semibold text-slate-700" for="postalSearch">Code postal / ville</label>
+                        <input id="postalSearch" type="text" wire:model.live.debounce.400ms="postalSearch"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm"
                                placeholder="Ex: 1000 ou Bruxelles" />
                         @if(! empty($postalSuggestions))
@@ -62,8 +62,8 @@
                     </div>
 
                     <div>
-                        <label class="text-xs font-semibold text-slate-700">Note minimale</label>
-                        <div class="flex gap-1 mt-1">
+                        <span id="groupe-note-minimale" class="text-xs font-semibold text-slate-700">Note minimale</span>
+                        <div class="flex gap-1 mt-1" role="group" aria-labelledby="groupe-note-minimale">
                             @foreach([null, 3, 4, 4.5] as $val)
                                 <button type="button"
                                         wire:click="$set('minRating', @js($val))"
@@ -76,13 +76,13 @@
 
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="text-xs font-semibold text-slate-700">Prix min €</label>
-                            <input type="number" wire:model.live.debounce.400ms="minPrice" min="0" step="5"
+                            <label class="text-xs font-semibold text-slate-700" for="minPrice">Prix min €</label>
+                            <input id="minPrice" type="number" wire:model.live.debounce.400ms="minPrice" min="0" step="5"
                                    class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                         </div>
                         <div>
-                            <label class="text-xs font-semibold text-slate-700">Prix max €</label>
-                            <input type="number" wire:model.live.debounce.400ms="maxPrice" min="0" step="5"
+                            <label class="text-xs font-semibold text-slate-700" for="maxPrice">Prix max €</label>
+                            <input id="maxPrice" type="number" wire:model.live.debounce.400ms="maxPrice" min="0" step="5"
                                    class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                         </div>
                     </div>

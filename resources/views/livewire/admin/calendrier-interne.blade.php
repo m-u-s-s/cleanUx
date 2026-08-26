@@ -29,16 +29,16 @@
     <div class="bg-white rounded-2xl shadow border p-4">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Du</label>
-                <input type="date" wire:model.live="dateFrom" class="w-full rounded-lg border-gray-300 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="dateFrom">Du</label>
+                <input id="dateFrom" type="date" wire:model.live="dateFrom" class="w-full rounded-lg border-gray-300 shadow-sm">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Au</label>
-                <input type="date" wire:model.live="dateTo" class="w-full rounded-lg border-gray-300 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="dateTo">Au</label>
+                <input id="dateTo" type="date" wire:model.live="dateTo" class="w-full rounded-lg border-gray-300 shadow-sm">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
-                <select wire:model.live="status" class="w-full rounded-lg border-gray-300 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="status">Statut</label>
+                <select id="status" wire:model.live="status" class="w-full rounded-lg border-gray-300 shadow-sm">
                     <option value="">— Tous —</option>
                     <option value="en_attente">En attente</option>
                     <option value="confirme">Confirmé</option>
@@ -49,8 +49,8 @@
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Zone</label>
-                <select wire:model.live="zoneId" class="w-full rounded-lg border-gray-300 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="zoneId">Zone</label>
+                <select id="zoneId" wire:model.live="zoneId" class="w-full rounded-lg border-gray-300 shadow-sm">
                     <option value="">— Toutes —</option>
                     @foreach($zones as $zone)
                         <option value="{{ $zone->id }}">{{ $zone->name }}</option>
@@ -58,8 +58,8 @@
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Service</label>
-                <select wire:model.live="serviceId" class="w-full rounded-lg border-gray-300 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="serviceId">Service</label>
+                <select id="serviceId" wire:model.live="serviceId" class="w-full rounded-lg border-gray-300 shadow-sm">
                     <option value="">— Tous —</option>
                     @foreach($services as $service)
                         <option value="{{ $service->id }}">{{ $service->name }}</option>
@@ -67,8 +67,8 @@
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Employé</label>
-                <select wire:model.live="employeId" class="w-full rounded-lg border-gray-300 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="employeId">Employé</label>
+                <select id="employeId" wire:model.live="employeId" class="w-full rounded-lg border-gray-300 shadow-sm">
                     <option value="">— Tous —</option>
                     @foreach($employes as $employe)
                         <option value="{{ $employe->id }}">{{ $employe->name }}</option>
@@ -76,8 +76,8 @@
                 </select>
             </div>
             <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Recherche</label>
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Référence, adresse, client, employé..." class="w-full rounded-lg border-gray-300 shadow-sm">
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="search">Recherche</label>
+                <input id="search" type="text" wire:model.live.debounce.300ms="search" placeholder="Référence, adresse, client, employé..." class="w-full rounded-lg border-gray-300 shadow-sm">
             </div>
         </div>
     </div>

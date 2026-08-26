@@ -43,6 +43,7 @@
                     </svg>
                 </button>
                 <button
+                        aria-label="Réduire l’assistant"
                     wire:click="toggle"
                     class="rounded-lg p-1 text-blue-200 transition hover:bg-white/20 hover:text-white"
                 >
@@ -176,6 +177,7 @@
                     {{ ($pendingActionId || $isLoading) ? 'disabled' : '' }}
                 ></textarea>
                 <button
+                    aria-label="Envoyer le message"
                     type="submit"
                     :disabled="{{ ($isLoading || $pendingActionId) ? 'true' : 'false' }}"
                     class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white transition hover:bg-blue-700 disabled:opacity-50"

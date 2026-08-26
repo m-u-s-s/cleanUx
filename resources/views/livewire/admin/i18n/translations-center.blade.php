@@ -34,24 +34,24 @@
         {{-- Locale + group selectors --}}
         <div class="rounded-2xl border bg-white p-4 shadow-sm flex flex-wrap items-end gap-3">
             <div>
-                <label class="text-xs font-bold uppercase text-slate-500">Langue</label>
-                <select wire:model.live="locale" class="mt-1 rounded-xl border-gray-300 text-sm">
+                <label class="text-xs font-bold uppercase text-slate-500" for="locale">Langue</label>
+                <select id="locale" wire:model.live="locale" class="mt-1 rounded-xl border-gray-300 text-sm">
                     @foreach($kpis['available_locales'] as $l)
                         <option value="{{ $l['code'] }}">{{ $l['flag'] }} {{ $l['native_name'] }}</option>
                     @endforeach
                 </select>
             </div>
             <div>
-                <label class="text-xs font-bold uppercase text-slate-500">Groupe</label>
-                <select wire:model.live="group" class="mt-1 rounded-xl border-gray-300 text-sm">
+                <label class="text-xs font-bold uppercase text-slate-500" for="group">Groupe</label>
+                <select id="group" wire:model.live="group" class="mt-1 rounded-xl border-gray-300 text-sm">
                     @foreach($groups as $g)
                         <option value="{{ $g }}">{{ $g }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="flex-1 min-w-[200px]">
-                <label class="text-xs font-bold uppercase text-slate-500">Recherche</label>
-                <input type="text" wire:model.live.debounce.300ms="search"
+                <label class="text-xs font-bold uppercase text-slate-500" for="search">Recherche</label>
+                <input id="search" type="text" wire:model.live.debounce.300ms="search"
                        placeholder="Clé ou valeur..."
                        class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
             </div>

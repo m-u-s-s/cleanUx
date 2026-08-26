@@ -6,16 +6,16 @@
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div class="md:col-span-2">
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Titre</label>
-                    <input wire:model.defer="workOrderForm.title" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="workOrderForm-title">Titre</label>
+                    <input id="workOrderForm-title" wire:model.defer="workOrderForm.title" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Référence</label>
-                    <input wire:model.defer="workOrderForm.reference" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="workOrderForm-reference">Référence</label>
+                    <input id="workOrderForm-reference" wire:model.defer="workOrderForm.reference" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Type</label>
-                    <select wire:model.defer="workOrderForm.work_type" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="workOrderForm-work_type">Type</label>
+                    <select id="workOrderForm-work_type" wire:model.defer="workOrderForm.work_type" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
                         <option value="site_intervention">Site intervention</option>
                         <option value="chantier">Chantier</option>
                         <option value="office_program">Programme bureaux</option>
@@ -23,8 +23,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Service</label>
-                    <select wire:model.defer="workOrderForm.service_catalog_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="workOrderForm-service_catalog_id">Service</label>
+                    <select id="workOrderForm-service_catalog_id" wire:model.defer="workOrderForm.service_catalog_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
                         <option value="">Aucun</option>
                         @foreach($services as $service)
                             <option value="{{ $service->id }}">{{ $service->name }}</option>
@@ -32,8 +32,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Zone</label>
-                    <select wire:model.defer="workOrderForm.service_zone_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="workOrderForm-service_zone_id">Zone</label>
+                    <select id="workOrderForm-service_zone_id" wire:model.defer="workOrderForm.service_zone_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
                         <option value="">Aucune</option>
                         @foreach($zones as $zone)
                             <option value="{{ $zone->id }}">{{ $zone->name }}</option>
@@ -41,8 +41,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Équipe assignée</label>
-                    <select wire:model.defer="workOrderForm.assigned_field_team_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="workOrderForm-assigned_field_team_id">Équipe assignée</label>
+                    <select id="workOrderForm-assigned_field_team_id" wire:model.defer="workOrderForm.assigned_field_team_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
                         <option value="">Aucune</option>
                         @foreach($teams as $team)
                             <option value="{{ $team->id }}">{{ $team->name }}</option>
@@ -50,8 +50,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Partenaire assigné</label>
-                    <select wire:model.defer="workOrderForm.assigned_service_partner_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="workOrderForm-assigned_service_partner_id">Partenaire assigné</label>
+                    <select id="workOrderForm-assigned_service_partner_id" wire:model.defer="workOrderForm.assigned_service_partner_id" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
                         <option value="">Aucun</option>
                         @foreach($partners as $partner)
                             <option value="{{ $partner->id }}">{{ $partner->name }}</option>
@@ -59,36 +59,36 @@
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Statut approbation</label>
-                    <select wire:model.defer="workOrderForm.approval_status" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="workOrderForm-approval_status">Statut approbation</label>
+                    <select id="workOrderForm-approval_status" wire:model.defer="workOrderForm.approval_status" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
                         <option value="pending">Pending</option>
                         <option value="approved">Approved</option>
                         <option value="rejected">Rejected</option>
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Priorité</label>
-                    <select wire:model.defer="workOrderForm.priority" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="workOrderForm-priority">Priorité</label>
+                    <select id="workOrderForm-priority" wire:model.defer="workOrderForm.priority" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
                         <option value="normale">Normale</option>
                         <option value="haute">Haute</option>
                         <option value="urgente">Urgente</option>
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">PO</label>
-                    <input wire:model.defer="workOrderForm.purchase_order_number" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="workOrderForm-purchase_order_number">PO</label>
+                    <input id="workOrderForm-purchase_order_number" wire:model.defer="workOrderForm.purchase_order_number" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Cost center</label>
-                    <input wire:model.defer="workOrderForm.cost_center" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="workOrderForm-cost_center">Cost center</label>
+                    <input id="workOrderForm-cost_center" wire:model.defer="workOrderForm.cost_center" type="text" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Budget</label>
-                    <input wire:model.defer="workOrderForm.budget_amount" type="number" step="0.01" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="workOrderForm-budget_amount">Budget</label>
+                    <input id="workOrderForm-budget_amount" wire:model.defer="workOrderForm.budget_amount" type="number" step="0.01" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm">
                 </div>
                 <div class="md:col-span-2">
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Instructions</label>
-                    <textarea wire:model.defer="workOrderForm.instructions" rows="3" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm"></textarea>
+                    <label class="mb-1 block text-sm font-medium text-slate-700" for="workOrderForm-instructions">Instructions</label>
+                    <textarea id="workOrderForm-instructions" wire:model.defer="workOrderForm.instructions" rows="3" class="w-full rounded-2xl border-slate-300 text-sm shadow-sm"></textarea>
                 </div>
             </div>
 

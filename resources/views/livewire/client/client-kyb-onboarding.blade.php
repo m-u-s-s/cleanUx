@@ -25,17 +25,17 @@
                 <h2 class="text-lg font-bold text-slate-900">Identité légale de votre entreprise</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">Raison sociale *</label>
-                        <input type="text" wire:model="legalName" maxlength="255" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
+                        <label class="text-xs font-bold uppercase text-slate-500" for="legalName">Raison sociale *</label>
+                        <input id="legalName" type="text" wire:model="legalName" maxlength="255" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                         @error('legalName') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">Nom commercial</label>
-                        <input type="text" wire:model="tradeName" maxlength="255" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
+                        <label class="text-xs font-bold uppercase text-slate-500" for="tradeName">Nom commercial</label>
+                        <input id="tradeName" type="text" wire:model="tradeName" maxlength="255" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                     </div>
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">Pays *</label>
-                        <select wire:model="countryCode" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                        <label class="text-xs font-bold uppercase text-slate-500" for="countryCode">Pays *</label>
+                        <select id="countryCode" wire:model="countryCode" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                             <option value="BE">Belgique</option>
                             <option value="FR">France</option>
                             <option value="NL">Pays-Bas</option>
@@ -47,8 +47,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">Type d'identifiant *</label>
-                        <select wire:model="identifierType" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                        <label class="text-xs font-bold uppercase text-slate-500" for="identifierType">Type d'identifiant *</label>
+                        <select id="identifierType" wire:model="identifierType" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                             <option value="kbo">KBO/BCE (BE)</option>
                             <option value="siret">SIRET (FR)</option>
                             <option value="siren">SIREN (FR)</option>
@@ -58,17 +58,17 @@
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">Numéro d'identifiant *</label>
-                        <input type="text" wire:model="identifierValue" maxlength="64" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
+                        <label class="text-xs font-bold uppercase text-slate-500" for="identifierValue">Numéro d'identifiant *</label>
+                        <input id="identifierValue" type="text" wire:model="identifierValue" maxlength="64" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                         @error('identifierValue') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">N° TVA intracom</label>
-                        <input type="text" wire:model="vatId" maxlength="32" placeholder="ex: BE0123456789" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
+                        <label class="text-xs font-bold uppercase text-slate-500" for="vatId">N° TVA intracom</label>
+                        <input id="vatId" type="text" wire:model="vatId" maxlength="32" placeholder="ex: BE0123456789" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                     </div>
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">Forme juridique</label>
-                        <input type="text" wire:model="legalForm" maxlength="64" placeholder="ex: SARL, BVBA, SA" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
+                        <label class="text-xs font-bold uppercase text-slate-500" for="legalForm">Forme juridique</label>
+                        <input id="legalForm" type="text" wire:model="legalForm" maxlength="64" placeholder="ex: SARL, BVBA, SA" class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                     </div>
                 </div>
 
@@ -93,8 +93,8 @@
                 <form wire:submit.prevent="uploadDocument" class="space-y-3 rounded-xl border bg-slate-50 p-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                            <label class="text-xs font-bold uppercase text-slate-500">Type de document</label>
-                            <select wire:model="documentType" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
+                            <label class="text-xs font-bold uppercase text-slate-500" for="documentType">Type de document</label>
+                            <select id="documentType" wire:model="documentType" class="mt-1 w-full rounded-xl border-gray-300 text-sm">
                                 <option value="kbis">Kbis / Extrait registre</option>
                                 <option value="certificate_incorp">Certificat d'incorporation</option>
                                 <option value="articles">Statuts</option>
@@ -106,8 +106,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="text-xs font-bold uppercase text-slate-500">Fichier (PDF/JPG/PNG, max 10MB)</label>
-                            <input type="file" wire:model="documentFile" accept="application/pdf,image/jpeg,image/png" class="mt-1 w-full text-sm" />
+                            <label class="text-xs font-bold uppercase text-slate-500" for="documentFile">Fichier (PDF/JPG/PNG, max 10MB)</label>
+                            <input id="documentFile" type="file" wire:model="documentFile" accept="application/pdf,image/jpeg,image/png" class="mt-1 w-full text-sm" />
                             @error('documentFile') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                         </div>
                     </div>

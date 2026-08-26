@@ -44,21 +44,21 @@
             <form wire:submit.prevent="createToken" class="space-y-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">Nom *</label>
-                        <input type="text" wire:model="newName" placeholder="ex: Acme prod" maxlength="191"
+                        <label class="text-xs font-bold uppercase text-slate-500" for="newName">Nom *</label>
+                        <input id="newName" type="text" wire:model="newName" placeholder="ex: Acme prod" maxlength="191"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                         @error('newName') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">Description</label>
-                        <input type="text" wire:model="newDescription" placeholder="ex: Intégration ERP"
+                        <label class="text-xs font-bold uppercase text-slate-500" for="newDescription">Description</label>
+                        <input id="newDescription" type="text" wire:model="newDescription" placeholder="ex: Intégration ERP"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                     </div>
                 </div>
 
                 <div>
-                    <label class="text-xs font-bold uppercase text-slate-500 mb-2 block">Scopes (permissions) *</label>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <span id="groupe-scopes-permissions-4016" class="text-xs font-bold uppercase text-slate-500 mb-2 block">Scopes (permissions) *</span>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2" role="group" aria-labelledby="groupe-scopes-permissions-4016">
                         @foreach($this->availableScopes as $scope)
                             <label class="flex items-start gap-2 rounded-lg border bg-white p-2 hover:bg-slate-50">
                                 <input type="checkbox" wire:model="newScopes" value="{{ $scope->code }}"
@@ -78,13 +78,13 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">Expiration (jours)</label>
-                        <input type="number" wire:model="newExpiryDays" min="1" max="3650"
+                        <label class="text-xs font-bold uppercase text-slate-500" for="newExpiryDays">Expiration (jours)</label>
+                        <input id="newExpiryDays" type="number" wire:model="newExpiryDays" min="1" max="3650"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                     </div>
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">Rate limit (req/min)</label>
-                        <input type="number" wire:model="newRateLimit" min="1" max="10000" placeholder="défaut (120)"
+                        <label class="text-xs font-bold uppercase text-slate-500" for="newRateLimit">Rate limit (req/min)</label>
+                        <input id="newRateLimit" type="number" wire:model="newRateLimit" min="1" max="10000" placeholder="défaut (120)"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                     </div>
                 </div>

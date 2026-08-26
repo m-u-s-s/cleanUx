@@ -9,8 +9,8 @@
     {{-- 🎛️ Filtres --}}
     <div class="flex flex-wrap items-end gap-4">
         <div>
-            <label class="text-sm">Année :</label>
-            <select wire:model="year" class="border px-2 py-1 text-sm rounded">
+            <label class="text-sm" for="year">Année :</label>
+            <select id="year" wire:model="year" class="border px-2 py-1 text-sm rounded">
                 @for($y = now()->year; $y >= now()->year - 3; $y--)
                     <option value="{{ $y }}">{{ $y }}</option>
                 @endfor
@@ -18,8 +18,8 @@
         </div>
 
         <div>
-            <label class="text-sm">Employé (facultatif)</label>
-            <select wire:model="employe_id" class="border px-2 py-1 text-sm rounded">
+            <label class="text-sm" for="employe_id">Employé (facultatif)</label>
+            <select id="employe_id" wire:model="employe_id" class="border px-2 py-1 text-sm rounded">
                 <option value="">— Tous —</option>
                 @foreach($employes as $e)
                     <option value="{{ $e->id }}">{{ $e->name }}</option>

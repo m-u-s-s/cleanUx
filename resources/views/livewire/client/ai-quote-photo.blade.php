@@ -13,8 +13,8 @@
             <div class="space-y-5">
                 {{-- Métier --}}
                 <div>
-                    <label class="ui-label">Métier *</label>
-                    <select wire:model="tradeId" class="ui-input">
+                    <label class="ui-label" for="tradeId">Métier *</label>
+                    <select id="tradeId" wire:model="tradeId" class="ui-input">
                         <option value="">— Choisir un métier —</option>
                         @foreach ($trades as $t)
                             <option value="{{ $t->id }}">{{ $t->name }}</option>
@@ -25,11 +25,11 @@
 
                 {{-- Photo --}}
                 <div>
-                    <label class="ui-label inline-flex items-center gap-2">
+                    <label class="ui-label inline-flex items-center gap-2" for="photo">
                         <x-ui.icon name="camera" class="w-4 h-4 text-slate-500" />
                         Photo de la prestation *
                     </label>
-                    <input wire:model="photo" type="file" accept="image/*"
+                    <input id="photo" wire:model="photo" type="file" accept="image/*"
                            class="w-full text-sm mt-1.5 file:rounded-lg file:border-0 file:bg-brand-50 file:text-brand-700 file:px-3 file:py-2 file:font-semibold file:hover:bg-brand-100 file:transition file:mr-3">
                     @error('photo') <p class="ui-error-msg">{{ $message }}</p> @enderror
                     <p class="text-xs text-slate-500 mt-1.5 inline-flex items-start gap-1">
@@ -46,8 +46,8 @@
 
                 {{-- Note --}}
                 <div>
-                    <label class="ui-label">Note (optionnel)</label>
-                    <textarea wire:model="note" rows="3" maxlength="1000"
+                    <label class="ui-label" for="note">Note (optionnel)</label>
+                    <textarea id="note" wire:model="note" rows="3" maxlength="1000"
                               placeholder="Précisions, surface, état actuel, contraintes…"
                               class="ui-input"></textarea>
                 </div>

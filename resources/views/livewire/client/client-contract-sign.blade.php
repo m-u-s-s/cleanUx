@@ -84,22 +84,22 @@
                 {{-- Signature pad --}}
                 <div class="mt-6 space-y-3">
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">Votre nom (signataire) *</label>
-                        <input type="text" wire:model="signerName" maxlength="191"
+                        <label class="text-xs font-bold uppercase text-slate-500" for="signerName">Votre nom (signataire) *</label>
+                        <input id="signerName" type="text" wire:model="signerName" maxlength="191"
                                class="mt-1 w-full rounded-xl border-gray-300 text-sm" />
                         @error('signerName') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">Pays (ISO 2 lettres)</label>
-                        <input type="text" wire:model="countryCode" maxlength="2" placeholder="BE"
+                        <label class="text-xs font-bold uppercase text-slate-500" for="countryCode">Pays (ISO 2 lettres)</label>
+                        <input id="countryCode" type="text" wire:model="countryCode" maxlength="2" placeholder="BE"
                                class="mt-1 w-24 rounded-xl border-gray-300 text-sm" />
                     </div>
 
                     <div>
-                        <label class="text-xs font-bold uppercase text-slate-500">Signature * (signez dans le cadre)</label>
+                        <span id="pave-signature" class="text-xs font-bold uppercase text-slate-500">Signature * (signez dans le cadre)</span>
                         <div class="mt-1 rounded-xl border-2 border-slate-300 bg-white">
-                            <canvas x-ref="pad" class="w-full h-40 touch-none cursor-crosshair"></canvas>
+                            <canvas x-ref="pad" aria-labelledby="pave-signature" class="w-full h-40 touch-none cursor-crosshair"></canvas>
                         </div>
                         <div class="flex items-center justify-between mt-1">
                             <button type="button" @click="clearPad()" class="text-xs text-slate-500 hover:text-slate-900">↻ Effacer</button>
