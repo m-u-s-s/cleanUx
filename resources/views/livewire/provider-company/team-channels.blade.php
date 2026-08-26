@@ -107,7 +107,7 @@
             <div class="flex items-center gap-3">
                 <span class="text-lg text-slate-500">#</span>
                 <div>
-                    <p class="font-bold text-slate-900">{{ $activeChannel->name }}</p>
+                    <h1 class="font-bold text-slate-900">{{ $activeChannel->name }}</h1>
                     <p class="text-xs text-slate-500">
                         {{ $activeChannel->members_count ?? $activeChannel->members->count() }} membres
                         • {{ $activeChannel->type }}
@@ -503,6 +503,7 @@
 
         @else
         <div class="flex flex-1 items-center justify-center">
+            <h1 class="sr-only">Canaux</h1>
             <div class="text-center text-slate-400">
                 <p class="text-4xl mb-3">💬</p>
                 <p class="text-sm">Sélectionnez un canal pour commencer</p>

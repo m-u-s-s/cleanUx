@@ -64,4 +64,3 @@ mobile/package-lock.json.bak
 # Residus d'execution : noms generes par `Storage::put()`, aucun code ne les nomme.
 /storage/app/imports
 /storage/app/ops
-
