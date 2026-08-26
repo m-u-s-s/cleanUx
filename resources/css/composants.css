@@ -514,38 +514,10 @@
 
 /* Le fil de progression : une barre pleine dit « ou j'en suis », pas « combien
    il reste ». Les jalons, si. */
-.brio-fil {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-bottom: 1.1rem;
-}
 
-.brio-fil-jalon {
-    flex: 1;
-    height: 4px;
-    border-radius: var(--cx-radius-pill);
-    background: var(--glass-border);
-    overflow: hidden;
-    position: relative;
-}
 
-.brio-fil-jalon.est-fait::after,
-.brio-fil-jalon.est-courant::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, var(--brio-accent) 0%, var(--brio-accent-deep) 100%);
-    transform-origin: left;
-    animation: brio-fil-remplit var(--cx-dur-slow) var(--cx-ease) both;
-}
 
-.brio-fil-jalon.est-courant::after { opacity: 0.55; }
 
-@keyframes brio-fil-remplit {
-    from { transform: scaleX(0); }
-    to   { transform: scaleX(1); }
-}
 
 /* ========================================================== LES CASES DE TERRAIN
    « Mission terrain : rendre tout visible directement, dans des cases. »

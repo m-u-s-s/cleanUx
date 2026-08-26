@@ -1,7 +1,7 @@
 <div class="space-y-4">
 
     @if (session('success'))
-        <div class="text-green-700 text-sm font-medium">{{ session('success') }}</div>
+        <div role="alert" class="brio-alerte brio-alerte-success">{{ session('success') }}</div>
     @endif
 
     <div class="flex flex-wrap items-end gap-4">

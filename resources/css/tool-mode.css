@@ -180,8 +180,6 @@
     .brio-table tbody tr:hover { @apply bg-slate-50/70; }
 
     .brio-toolbar     { @apply flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between; }
-    .brio-divider     { @apply border-t border-slate-200/80; }
-    .brio-soft-ring   { box-shadow: var(--brio-ring); }
 
     .brio-filter-grid       { @apply grid gap-3 md:grid-cols-2 xl:grid-cols-4; }
     .brio-filter-grid-wide  { @apply grid gap-3 md:grid-cols-2 xl:grid-cols-6; }
@@ -189,8 +187,6 @@
     .brio-code-block        { @apply block overflow-x-auto rounded-2xl bg-slate-950 px-4 py-3 text-sm text-slate-100 shadow-inner; }
     .brio-note              { @apply rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800; }
     .brio-inline-stat       { @apply inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm; }
-    .brio-split-grid        { @apply grid grid-cols-1 gap-6 xl:grid-cols-3; }
-    .brio-side-stack        { @apply space-y-6; }
 
     .brio-page-header {
         @apply relative overflow-hidden rounded-[28px] border border-white/70 p-5 md:p-6;
@@ -204,15 +200,6 @@
     }
     .brio-page-header > * { position: relative; }
 
-    .brio-dashboard-grid    { @apply grid grid-cols-1 gap-6 xl:grid-cols-3; }
-    .brio-dashboard-main    { @apply space-y-6 xl:col-span-2; }
-    .brio-dashboard-side    { @apply space-y-6; }
-
-    .brio-action-card       { @apply flex items-start gap-3 rounded-2xl border p-4 transition hover:-translate-y-0.5 hover:shadow-md; }
-    .brio-action-card-icon  { @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-xl shadow-sm ring-1 ring-slate-200/80; }
-
-    .brio-mobile-safe-bottom    { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
-
     .brio-status-dot            { @apply inline-flex h-2.5 w-2.5 rounded-full bg-slate-400; }
     .brio-status-dot-success    { @apply bg-emerald-500; }
     .brio-status-dot-warning    { @apply bg-amber-500; }
@@ -224,7 +211,6 @@
         background: var(--glass-bg-strong);
         backdrop-filter: blur(14px);
     }
-    .brio-text-balance { text-wrap: balance; }
 }
 
 /* ============================================================================

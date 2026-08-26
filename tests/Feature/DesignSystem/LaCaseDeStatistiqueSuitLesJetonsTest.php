@@ -80,6 +80,48 @@ class LaCaseDeStatistiqueSuitLesJetonsTest extends TestCase
         $this->assertStringNotContainsString('brio-stat-good', $rendu);
     }
 
+    /**
+     * SOUS 480 px, L'ICONE CEDE LA PLACE AU LIBELLE.
+     *
+     * REGRESSION QUE J'AI INTRODUITE en adoptant `.brio-stat-grid` : sa grille adaptative
+     * donne des colonnes de 103 px la ou l'ancienne en donnait deux plus larges. L'icone en
+     * prenait 38 plus la gouttiere, il restait 36 px au libelle — et « Progression » en
+     * demande 73. Un seul mot, qui ne peut pas se couper : trois libelles sur six etaient
+     * tronques.
+     *
+     * L'icone est DECORATIVE : elle repete un ton que la couleur de la valeur porte deja.
+     * Quand la place manque, c'est la decoration qui part.
+     */
+    public function test_l_icone_cede_la_place_sous_480px(): void
+    {
+        $css = (string) file_get_contents(resource_path('css/glass.css'));
+
+        $this->assertMatchesRegularExpression(
+            '/@media \(max-width: 479\.98px\) \{\s*\.brio-stat-icone \{ display: none; \}/s',
+            $css,
+        );
+    }
+
+    /**
+     * TEMOIN — l'icone existe TOUJOURS au-dessus du seuil.
+     *
+     * La masquer partout serait plus simple et plus pauvre : sur un ecran large, elle donne
+     * a la grille son rythme. Sans ce controle, une regle non conditionnee passerait le test
+     * precedent en supprimant l'icone pour tout le monde.
+     */
+    public function test_temoin_l_icone_reste_definie_hors_du_seuil(): void
+    {
+        $css = (string) file_get_contents(resource_path('css/glass.css'));
+
+        $this->assertMatchesRegularExpression(
+            '/\.brio-stat-icone \{\s*display: inline-flex/s',
+            $css,
+            'La definition de base doit subsister : seul le masquage est conditionnel.',
+        );
+
+        $this->assertStringContainsString('brio-stat-icone', $this->rendre('slate'));
+    }
+
     /** L'ancien systeme ne doit plus etre reference par ce composant. */
     public function test_les_classes_de_l_ancien_systeme_ont_disparu(): void
     {

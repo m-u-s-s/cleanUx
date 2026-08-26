@@ -27,12 +27,12 @@
 
     {{-- Flash messages --}}
     @if (session('success'))
-        <div class="rounded-md border-l-4 border-green-400 bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-300">
+        <div role="alert" class="brio-alerte brio-alerte-success">
             {{ session('success') }}
         </div>
     @endif
     @if (session('error'))
-        <div class="rounded-md border-l-4 border-red-400 bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-300">
+        <div role="alert" class="brio-alerte brio-alerte-danger">
             {{ session('error') }}
         </div>
     @endif

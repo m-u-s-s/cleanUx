@@ -156,8 +156,6 @@ body:not(.cx-shell) :is(.brio-kpi-value, .brio-stat-value, .tabular, td) {
                 background-color var(--cx-dur) var(--cx-ease);
 }
 
-.brio-glass-strong { background-color: var(--glass-bg-strong); }
-.brio-glass-deep   { backdrop-filter: blur(var(--glass-blur-deep)) saturate(var(--glass-sat)); }
 
 /* Le soulevement : court, sans rebond. Le mouvement sert la comprehension. */
 .brio-lift:hover {
@@ -216,6 +214,21 @@ body:not(.cx-shell) :is(.brio-kpi-value, .brio-stat-value, .tabular, td) {
     background-color: var(--glass-bg-faint);
     border: 1px solid var(--glass-border);
     color: currentColor;
+}
+
+/*
+ * SOUS 480 px, L'ICONE CEDE LA PLACE AU LIBELLE.
+ *
+ * Mesure sur l'ecran de l'employe a 390 px : la case fait 103 px, l'icone en prend 38 plus
+ * la gouttiere, et il reste 36 px au libelle. « Progression » en demande 73 — un seul mot,
+ * qui ne peut pas se couper. Trois libelles sur six etaient tronques.
+ *
+ * L'icone est DECORATIVE : elle repete un ton que la couleur de la valeur porte deja. Le
+ * libelle, lui, est la seule chose qui dit de quoi il s'agit. Quand la place manque, c'est
+ * la decoration qui part.
+ */
+@media (max-width: 479.98px) {
+    .brio-stat-icone { display: none; }
 }
 
 .brio-stat-accent { color: var(--brio-accent-deep); }

@@ -19,7 +19,7 @@
     --}}
     @if (session('warning'))
     <div role="alert"
-        class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        class="brio-alerte brio-alerte-warning">
         <span aria-hidden="true">⚠️</span> {{ session('warning') }}
     </div>
     @endif

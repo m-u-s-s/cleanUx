@@ -72,9 +72,6 @@ button:active,
 .brio-table tbody tr { transition: background-color var(--cx-dur-fast); }
 .brio-table tbody tr:hover { background-color: rgba(99, 102, 241, 0.03); }
 
-/* Badge pulse for "new" items */
-.brio-badge-new { animation: softPulse 1.8s ease-in-out infinite; }
-@keyframes softPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.65; } }
 
 /* Stat pop animation */
 [data-cx-reveal] .cx-tabular {

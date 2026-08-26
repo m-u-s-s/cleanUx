@@ -6,6 +6,14 @@
     'heroicon' => null,
     'tone' => 'slate',
     'trend' => null,
+    /*
+     * L'UNITE SE POSE A COTE DE LA VALEUR, PAS DEDANS.
+     *
+     * L'ecran de l'employe passait `$progression . '%'` : le pourcentage prenait alors la
+     * taille et le poids du chiffre, et « 100% » debordait sur un ecran de 390px la ou
+     * « 100 » tenait. La classe existait pour cela, sans appelant.
+     */
+    'unit' => null,
 ])
 
 {{--
@@ -38,7 +46,7 @@
     <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
             <p class="brio-stat-label !mt-0">{{ $title }}</p>
-            <p class="brio-stat-value">{{ $value }}</p>
+            <p class="brio-stat-value">{{ $value }}@if($unit)<span class="brio-stat-unit">{{ $unit }}</span>@endif</p>
         </div>
 
         {{-- L'icône prend la couleur du ton par héritage : elle en portait une seconde,
@@ -60,7 +68,16 @@
                 <p class="brio-stat-label !mt-0">{{ $hint }}</p>
             @endif
             @if($trend)
-                <span class="brio-chip">{{ $trend }}</span>
+                {{--
+                    LE SIGNE DONNE LA DIRECTION. Une pastille neutre disait « +23% » et
+                    « -8% » de la meme facon : la seule chose qu'on regarde sur une
+                    tendance — monte-t-elle ? — demandait de lire le caractere.
+
+                    Ce qui ne commence ni par + ni par - reste neutre : « stable » n'est
+                    ni une hausse ni une baisse.
+                --}}
+                @php($sens = str_starts_with(trim((string) $trend), '+') ? 'up' : (str_starts_with(trim((string) $trend), '-') ? 'down' : null))
+                <span @class(['brio-kpi-trend', 'brio-kpi-trend-'.$sens => $sens, 'brio-chip' => ! $sens])>{{ $trend }}</span>
             @endif
         </div>
     @endif

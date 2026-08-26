@@ -63,7 +63,10 @@
                          style="--brio-jauge-part: {{ min(100, max(0, (int) $statsJour['progression'])) }}"
                          role="img"
                          aria-label="{{ $statsJour['progression'] }}% des missions du jour terminées">
+                        {{-- La valeur SEULE ne dit pas de quoi. Le libelle repond sans qu'il
+                             faille survoler, et sans dependre du texte alternatif. --}}
                         <span class="brio-jauge-valeur" aria-hidden="true">{{ $statsJour['progression'] }}%</span>
+                        <span class="brio-jauge-libelle" aria-hidden="true">{{ __('fait') }}</span>
                     </div>
 
                     <div class="min-w-0">

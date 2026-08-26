@@ -3,7 +3,7 @@
     <h3 class="text-lg font-semibold text-blue-900">✅ Valider plusieurs RDV en attente</h3>
 
     @if (session('success'))
-        <div class="text-green-700 text-sm font-medium">{{ session('success') }}</div>
+        <div role="alert" class="brio-alerte brio-alerte-success">{{ session('success') }}</div>
     @endif
 
     <div class="flex gap-4">

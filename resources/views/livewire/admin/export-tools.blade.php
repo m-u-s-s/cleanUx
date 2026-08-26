@@ -1,6 +1,6 @@
 <div class="space-y-4">
     @if (session('error'))
-        <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ session('error') }}</div>
+        <div role="alert" class="brio-alerte brio-alerte-danger">{{ session('error') }}</div>
     @endif
 
     <x-filter-panel title="Export global" subtitle="Prépare un export rapide des données de la plateforme.">

@@ -26,9 +26,6 @@ details summary { cursor: pointer; }
 }
 
 /* Gradient utilities */
-.brio-gradient-brand {
-    background: linear-gradient(135deg, var(--cx-amber) 0%, #ff8a3d 50%, #6366f1 100%);
-}
 .brio-gradient-subtle {
     background: linear-gradient(180deg, rgba(99, 102, 241, 0.03) 0%, rgba(255, 182, 72, 0.05) 100%);
 }

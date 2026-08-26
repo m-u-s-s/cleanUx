@@ -36,7 +36,7 @@
     </header>
 
     @if (session('success'))
-        <p class="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900">{{ session('success') }}</p>
+        <p role="alert" class="brio-alerte brio-alerte-success">{{ session('success') }}</p>
     @endif
 
     @if ($blocage)

@@ -22,7 +22,7 @@
     </div>
 
     @if (session('success'))
-        <div class="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+        <div role="alert" class="brio-alerte brio-alerte-success">
             {{ session('success') }}
         </div>
     @endif
