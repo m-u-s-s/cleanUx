@@ -119,17 +119,34 @@ body:not(.cx-shell) :is(.brio-kpi-value, .brio-stat-value, .tabular, td) {
         border-color: var(--glass-border);
     }
 
+    /*
+       LA RESERVE DES SURFACES CLAIRES — ce qui manquait a ces trois regles.
+
+       La transmutation du verre couvre les gris (`bg-white`, `bg-slate-50`, `bg-gray-50`) :
+       ils deviennent du verre sombre, et l'encre claire s'y lit. Elle ne couvre PAS les
+       teintes d'accent — `bg-indigo-50`, `bg-blue-50`, `bg-emerald-50`… — qui restent
+       CLAIRES. Leur texte, lui, devenait clair quand meme.
+
+       Mesure en pixels reels, mode sombre, 390 px :
+         /commander  texte rgb(234,240,251) sur rgb(239,246,255)  ->  1,05:1
+         /aide       meme cas sur `bg-indigo-50`
+       Du texte quasi invisible, sur 227 vues qui portent une de ces teintes.
+
+       Le chemin vitrine (`body.cx-shell`) avait deja cette reserve depuis le debut ; le
+       chemin application ne l'a jamais eue. C'est la meme lecon, appliquee a une seule des
+       deux surfaces.
+    */
     /* L'encre et le texte attenue suivent le theme : c'est ce qui rend le mode
        sombre reel sur 342 vues qui n'ont jamais ecrit une variante `dark:`. */
-    body:not(.cx-shell) :is(.text-slate-900, .text-slate-800, .text-gray-900, .text-gray-800, .text-black):not(.brio-opaque *) {
+    body:not(.cx-shell) :is(.text-slate-900, .text-slate-800, .text-gray-900, .text-gray-800, .text-black):not(.brio-opaque *):not(:is(.bg-indigo-50, .bg-blue-50, .bg-sky-50, .bg-violet-50, .bg-emerald-50, .bg-green-50, .bg-amber-50, .bg-yellow-50, .bg-orange-50, .bg-rose-50, .bg-red-50, .bg-teal-50, .bg-cyan-50, .bg-brand-50, .bg-purple-50, .bg-pink-50) *):not(:is(.bg-indigo-50, .bg-blue-50, .bg-sky-50, .bg-violet-50, .bg-emerald-50, .bg-green-50, .bg-amber-50, .bg-yellow-50, .bg-orange-50, .bg-rose-50, .bg-red-50, .bg-teal-50, .bg-cyan-50, .bg-brand-50, .bg-purple-50, .bg-pink-50)) {
         color: var(--brio-ink);
     }
 
-    body:not(.cx-shell) :is(.text-slate-500, .text-slate-400, .text-gray-500, .text-gray-400):not(.brio-opaque *) {
+    body:not(.cx-shell) :is(.text-slate-500, .text-slate-400, .text-gray-500, .text-gray-400):not(.brio-opaque *):not(:is(.bg-indigo-50, .bg-blue-50, .bg-sky-50, .bg-violet-50, .bg-emerald-50, .bg-green-50, .bg-amber-50, .bg-yellow-50, .bg-orange-50, .bg-rose-50, .bg-red-50, .bg-teal-50, .bg-cyan-50, .bg-brand-50, .bg-purple-50, .bg-pink-50) *):not(:is(.bg-indigo-50, .bg-blue-50, .bg-sky-50, .bg-violet-50, .bg-emerald-50, .bg-green-50, .bg-amber-50, .bg-yellow-50, .bg-orange-50, .bg-rose-50, .bg-red-50, .bg-teal-50, .bg-cyan-50, .bg-brand-50, .bg-purple-50, .bg-pink-50)) {
         color: var(--brio-muted);
     }
 
-    body:not(.cx-shell) :is(.text-slate-700, .text-slate-600, .text-gray-700, .text-gray-600):not(.brio-opaque *) {
+    body:not(.cx-shell) :is(.text-slate-700, .text-slate-600, .text-gray-700, .text-gray-600):not(.brio-opaque *):not(:is(.bg-indigo-50, .bg-blue-50, .bg-sky-50, .bg-violet-50, .bg-emerald-50, .bg-green-50, .bg-amber-50, .bg-yellow-50, .bg-orange-50, .bg-rose-50, .bg-red-50, .bg-teal-50, .bg-cyan-50, .bg-brand-50, .bg-purple-50, .bg-pink-50) *):not(:is(.bg-indigo-50, .bg-blue-50, .bg-sky-50, .bg-violet-50, .bg-emerald-50, .bg-green-50, .bg-amber-50, .bg-yellow-50, .bg-orange-50, .bg-rose-50, .bg-red-50, .bg-teal-50, .bg-cyan-50, .bg-brand-50, .bg-purple-50, .bg-pink-50)) {
         color: color-mix(in srgb, var(--brio-ink) 82%, transparent);
     }
 
