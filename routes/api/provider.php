@@ -67,7 +67,7 @@ use Illuminate\Support\Facades\Route;
 | Les écritures qui engagent de l'argent (le virement express) restent gardées par la
 | vérification Stripe Connect, dans le service.
 */
-Route::middleware(['auth:sanctum', 'active.account', 'role:employe'])->prefix('provider/growth')->group(function () {
+Route::middleware(['auth:sanctum', 'role:employe'])->prefix('provider/growth')->group(function () {
     Route::get('/heatmap', [GrowthController::class, 'heatmap']);
     Route::get('/quests', [GrowthController::class, 'quests']);
     Route::get('/offer-stats', [GrowthController::class, 'offerStats']);
@@ -81,7 +81,7 @@ Route::middleware(['auth:sanctum', 'active.account', 'role:employe'])->prefix('p
     Route::post('/express-payout', [GrowthController::class, 'expressPayout']);
 });
 
-Route::middleware(['auth:sanctum', 'active.account'])->prefix('provider/safety')->group(function () {
+Route::middleware('auth:sanctum')->prefix('provider/safety')->group(function () {
     Route::get('/current', [SafetyController::class, 'current']);
     Route::post('/alerts', [SafetyController::class, 'trigger']);
     Route::post('/alerts/{alert}/ping', [SafetyController::class, 'ping']);
@@ -101,7 +101,7 @@ Route::middleware(['auth:sanctum', 'active.account'])->prefix('provider/safety')
 // ne les a pas approuvés. Les routes nécessaires à ce dossier s'en excluent explicitement
 // (withoutMiddleware ci-dessous), sans quoi le compte serait enfermé hors de tout — c'est
 // exactement le défaut que ce lot corrige.
-Route::middleware(['auth:sanctum', 'active.account', 'role:employe', 'provider.approved', 'face.verified'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:employe', 'provider.approved', 'face.verified'])->group(function () {
 
     // Phase 0 — Mission tracking (existant)
     Route::post('/missions/{mission}/tracking/start', [EmployeeMissionTrackingController::class, 'start']);
@@ -412,7 +412,7 @@ Route::middleware(['auth:sanctum', 'active.account', 'role:employe', 'provider.a
 });
 
 // Payouts — token.grace middleware
-Route::middleware(['auth:sanctum', 'active.account', 'token.grace'])->prefix('provider')->group(function () {
+Route::middleware(['auth:sanctum', 'token.grace'])->prefix('provider')->group(function () {
     Route::get('/payouts', [ProviderPayoutsController::class, 'index']);
     Route::get('/payouts/summary', [ProviderPayoutsController::class, 'summary']);
 });
@@ -431,7 +431,7 @@ Route::middleware(['auth:sanctum', 'active.account', 'token.grace'])->prefix('pr
 | DES ALIAS, PAS UNE COPIE : même contrôleur, mêmes gardes, zéro logique dupliquée. Les routes
 | `client` restent en place — les applications installées les utilisent.
 */
-Route::middleware(['auth:sanctum', 'active.account'])->prefix('provider')->group(function () {
+Route::middleware(['auth:sanctum'])->prefix('provider')->group(function () {
     Route::get('/devices', [DeviceTokenController::class, 'index']);
     Route::post('/devices/register', [DeviceTokenController::class, 'register']);
     Route::post('/devices/unregister', [DeviceTokenController::class, 'unregister']);
@@ -468,7 +468,7 @@ Route::middleware(['auth:sanctum', 'active.account'])->prefix('provider')->group
  * Le test qui la couvrait passait pour une mauvaise raison : `actingAs()` pose l'utilisateur
  * DIRECTEMENT sur le garde, donc il n'exerce jamais le chemin du jeton.
  */
-Route::middleware(['auth:sanctum', 'active.account', 'role:admin', 'enforce_2fa'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin', 'enforce_2fa'])->group(function () {
     Route::get('/admin/onboarding-documents/{document}/file', [ProviderOnboardingController::class, 'downloadDocument'])
         ->name('api.admin.onboarding.document.file');
 });
@@ -492,7 +492,7 @@ Route::middleware(['auth:sanctum', 'active.account', 'role:admin', 'enforce_2fa'
 | Sans lui, la frontière entre société cliente et société prestataire n'était tenue
 | que par le navigateur.
 */
-Route::middleware(['auth:sanctum', 'active.account', 'org.type:provider'])->prefix('provider/company')->group(function () {
+Route::middleware(['auth:sanctum', 'org.type:provider'])->prefix('provider/company')->group(function () {
     /*
      * LES LECTURES SONT GARDÉES PAR MIDDLEWARE, LES ÉCRITURES DANS LE CONTRÔLEUR.
      *

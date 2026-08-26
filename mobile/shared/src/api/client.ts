@@ -127,15 +127,6 @@ apiClient.interceptors.response.use(
       }
     }
 
-    /*
-     * Un compte desactive garde un jeton valide : sans cela, chaque ecran collectionnerait un
-     * refus sans jamais rendre la main. L'ecran de connexion redira pourquoi.
-     */
-    if (status === 403 && errorCode === 'compte_inactif') {
-      await secureStore.clearToken();
-      emitSessionExpired();
-    }
-
     throw new ApiError(status, errorCode, message, errors, responseData as Record<string, unknown> | undefined);
   },
 );

@@ -14,7 +14,6 @@ jest.mock('expo-secure-store', () => ({
 
 import * as ExpoSecureStore from 'expo-secure-store';
 import { apiClient, ApiError } from '../index';
-import { onSessionExpired } from '../client';
 
 const mock = new MockAdapter(apiClient);
 
@@ -124,47 +123,5 @@ describe('response interceptor — 401 handling', () => {
     await expect(apiClient.post('/form', {})).rejects.toMatchObject({
       errors: { email: ['The email field is required.'] },
     });
-  });
-});
-
-describe('response interceptor — compte desactive', () => {
-  it('clears the token and ends the session on a 403 compte_inactif', async () => {
-    const rendue = jest.fn();
-    const detacher = onSessionExpired(rendue);
-
-    mock.onGet('/profile').replyOnce(403, {
-      ok: false,
-      error_code: 'compte_inactif',
-      message: 'Compte inactif ou suspendu.',
-    });
-
-    await expect(apiClient.get('/profile')).rejects.toMatchObject({
-      status: 403,
-      errorCode: 'compte_inactif',
-    });
-
-    expect(deleteItemAsync).toHaveBeenCalled();
-    expect(rendue).toHaveBeenCalledTimes(1);
-
-    detacher();
-  });
-
-  // Le temoin : sans lui, le cas ci-dessus passerait au vert si TOUT 403 rendait la session.
-  it('leaves the session alone on any other 403', async () => {
-    const rendue = jest.fn();
-    const detacher = onSessionExpired(rendue);
-
-    mock.onGet('/interdit').replyOnce(403, {
-      ok: false,
-      error_code: 'forbidden',
-      message: 'Interdit.',
-    });
-
-    await expect(apiClient.get('/interdit')).rejects.toMatchObject({ errorCode: 'forbidden' });
-
-    expect(deleteItemAsync).not.toHaveBeenCalled();
-    expect(rendue).not.toHaveBeenCalled();
-
-    detacher();
   });
 });

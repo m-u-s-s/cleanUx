@@ -28,7 +28,7 @@ require __DIR__.'/api/realtime.php';
 // Shared authenticated routes
 // ─────────────────────────────────────────────
 
-Route::middleware(['auth:sanctum', 'active.account'])->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
     /*
      * Le catalogue des modules du rôle. Le contexte se déduit du jeton, il n'est pas un paramètre :

@@ -66,12 +66,39 @@ class LApplicationPeutRedemanderLEmailDeConfirmationTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    /**
+     * `Sanctum::actingAs` FABRIQUE l'authentification et saute le crochet de Sanctum qui refuse
+     * les jetons des comptes suspendus. Ce cas-la exige donc un vrai jeton porteur, sans quoi il
+     * mesurerait une garde qui n'existe pas sur le chemin reel.
+     */
     public function test_un_compte_desactive_ne_peut_pas_s_en_servir(): void
     {
-        Sanctum::actingAs(User::factory()->client()->unverified()->create(['is_active' => false]));
+        Notification::fake();
 
-        $this->postJson('/api/auth/email/verification-notification')
-            ->assertStatus(403)
-            ->assertJsonPath('error_code', 'compte_inactif');
+        $user = User::factory()->client()->unverified()->create();
+        $jeton = $user->createToken('telephone')->plainTextToken;
+
+        $user->forceFill(['is_active' => false])->save();
+
+        $this->withHeader('Authorization', 'Bearer '.$jeton)
+            ->postJson('/api/auth/email/verification-notification')
+            ->assertUnauthorized();
+
+        Notification::assertNothingSent();
+    }
+
+    /** LE TEMOIN du cas ci-dessus : le meme jeton reel, sur un compte actif, passe. */
+    public function test_temoin_le_meme_jeton_reel_passe_si_le_compte_est_actif(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->client()->unverified()->create();
+        $jeton = $user->createToken('telephone')->plainTextToken;
+
+        $this->withHeader('Authorization', 'Bearer '.$jeton)
+            ->postJson('/api/auth/email/verification-notification')
+            ->assertOk();
+
+        Notification::assertSentTo($user, VerifyEmail::class);
     }
 }

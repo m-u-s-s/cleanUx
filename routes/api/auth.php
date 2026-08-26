@@ -40,7 +40,7 @@ Route::post('/auth/forgot-password', ForgotPasswordController::class)->middlewar
 // Authenticated — Token management + identity
 // ─────────────────────────────────────────────
 
-Route::middleware(['auth:sanctum', 'active.account'])->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
     // Token refresh + grace period + identity
     Route::middleware('token.grace')->group(function () {
@@ -49,12 +49,8 @@ Route::middleware(['auth:sanctum', 'active.account'])->group(function () {
         Route::get('/auth/me', AuthMeController::class)->name('api.auth.me');
     });
 
-    // Se deconnecter reste permis a un compte suspendu : le refuser laisserait l'application
-    // avec un jeton mort qu'elle ne peut pas rendre.
-    Route::post('/auth/logout', [ApiAuthController::class, 'logout'])
-        ->withoutMiddleware('active.account');
-    Route::post('/auth/logout-all', [ApiAuthController::class, 'logoutAll'])
-        ->withoutMiddleware('active.account');
+    Route::post('/auth/logout', [ApiAuthController::class, 'logout']);
+    Route::post('/auth/logout-all', [ApiAuthController::class, 'logoutAll']);
 
     Route::post('/auth/webview-ticket', [WebViewAuthController::class, 'ticket'])
         ->name('api.auth.webview-ticket');

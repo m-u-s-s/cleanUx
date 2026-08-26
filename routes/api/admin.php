@@ -60,7 +60,7 @@ use Illuminate\Support\Facades\Route;
 | `/admin/accounting-v2` et 200 sur `/api/admin/accounting-v2/entries`. La restriction n'était
 | qu'une gêne d'affichage, contournable avec le jeton de l'application mobile.
 */
-Route::middleware(['auth:sanctum', 'active.account', 'api_admin', 'enforce_2fa', 'module_gate'])->group(function () {
+Route::middleware(['auth:sanctum', 'api_admin', 'enforce_2fa', 'module_gate'])->group(function () {
 
     // Phase Matching v2 — Simulation admin
     Route::prefix('admin/matching')->middleware('api_scope:admin:read,admin:everything')->group(function () {

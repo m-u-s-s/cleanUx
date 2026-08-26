@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 // Authenticated — v2 shared routes (not admin/client/provider-specific)
 // ─────────────────────────────────────────────
 
-Route::middleware(['auth:sanctum', 'active.account'])->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
     // Phase Onboarding v2 — Journeys orchestration (client/provider/enterprise)
     Route::prefix('v2/onboarding')->group(function () {
