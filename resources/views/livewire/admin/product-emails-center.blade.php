@@ -41,8 +41,30 @@
             <div class="px-4 py-3 border-b bg-slate-50">
                 <h4 class="font-semibold text-slate-900">Aperçu email</h4>
             </div>
-            <div class="p-4 bg-slate-100 overflow-auto">
-                {!! $previewHtml !!}
+            {{--
+                L'APERCU VIT DANS UN CADRE, PAS DANS LA PAGE.
+
+                `{!! $previewHtml !!}` injectait un DOCUMENT COMPLET — `<html>`, `<head>`,
+                `<body>` — dans le corps de la page d'administration. Le navigateur ne cree pas
+                un second document : il fusionne les attributs du `<body>` de l'e-mail avec
+                celui de la page. Le gabarit portant `style="background:#f8fafc"`, un style EN
+                LIGNE se posait sur le `<body>` reel — et un style en ligne bat toutes les
+                regles CSS.
+
+                Consequence mesuree en mode sombre : `/admin/outils` rendait un fond
+                `rgb(248,250,252)` la ou les autres pages d'administration rendent
+                `rgb(10,14,26)`. Une page entiere en clair, avec du texte clair dessus.
+
+                `srcdoc` donne a l'e-mail son propre document. `sandbox` sans `allow-scripts` :
+                un gabarit ne doit rien pouvoir executer dans la console.
+            --}}
+            <div class="p-4 bg-slate-100">
+                <iframe
+                    title="{{ __('Aperçu de l’email') }}"
+                    sandbox
+                    srcdoc="{{ $previewHtml }}"
+                    class="h-[32rem] w-full rounded-lg border-0 bg-white"
+                    loading="lazy"></iframe>
             </div>
         </div>
 
