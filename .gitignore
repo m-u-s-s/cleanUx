@@ -48,3 +48,19 @@ storage/app/parity_sweep_results.json
 
 # Sortie ponctuelle d'un script de migration de theme : elle n'a rien a faire ici.
 .migration-teintes.json
+
+# ── Artefacts que rien ne lit, et qui ont pourtant ete versionnes ──────────────
+# `brio` : une VRAIE base SQLite de 5,1 Mo, 282 tables, creee par accident — le nom
+# `DB_DATABASE=brio` designe une base MySQL, pas un fichier. L'application n'y touche
+# jamais (`phpunit.xml` force `:memory:`). Elle portait sept comptes de jeu d'essai.
+/brio
+mobile/package-lock.json.bak
+
+# Le lien symbolique `public/storage` pointe vers `storage/app/public` : versionner les
+# deux cotes double le poids ET casse `storage:link` sur un clone non-Windows, ou git
+# recree un vrai repertoire a la place du lien.
+/public/storage
+
+# Residus d'execution : noms generes par `Storage::put()`, aucun code ne les nomme.
+/storage/app/imports
+/storage/app/ops
