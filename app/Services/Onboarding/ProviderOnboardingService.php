@@ -7,13 +7,13 @@ use App\Models\OnboardingProgress;
 use App\Models\OnboardingStepCompletion;
 use App\Models\ProviderOnboardingDocument;
 use App\Models\ProviderProfile;
-use App\Models\ServiceZone;
+use App\Models\Trade;
 use App\Models\User;
+use App\Services\Catalog\ProviderCoverageWriter;
 use App\Services\OnboardingV2\OnboardingEngine;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 /** Phase 14 — Service de gestion de l'onboarding prestataire. */
@@ -189,6 +189,58 @@ class ProviderOnboardingService
     }
 
     /** Étape 4 — Métiers et zones d'intervention déclarés. */
+    /**
+     * Ce que le prestataire declare faire — porte jusqu'a la table que la repartition lit.
+     *
+     * ON PASSE PAR `ProviderCoverageWriter`, qui se declare « ecrit une seule fois » : il valide
+     * les metiers actifs, tient `trade_user.is_primary`, desactive les zones retirees plutot que
+     * de les supprimer, et pose `primary_service_zone_id` — que cette etape ne posait PAS, ce qui
+     * laissait le prestataire invisible aux rendez-vous apres avoir declare sa couverture.
+     *
+     * @param  list<string>  $skills
+     * @param  list<int>  $zoneIds
+     */
+    private function couvrirLesMetiersDeclares(User $user, array $skills, array $zoneIds): void
+    {
+        $declares = $this->metiersDepuisIdentifiants($skills);
+
+        // L'UNION, jamais le remplacement : voir le commentaire de l'appelant.
+        $deja = $user->trades()->pluck('trades.id')->map(fn ($id) => (int) $id)->all();
+
+        app(ProviderCoverageWriter::class)->sync(
+            $user,
+            array_values(array_unique([...$deja, ...$declares])),
+            $zoneIds,
+        );
+    }
+
+    /**
+     * Les trois ecritures acceptees : identifiant, code catalogue, ou slug.
+     *
+     * Le natif envoie des slugs, l'administration des identifiants. Ce qui ne se resout pas est
+     * ignore ICI mais reste dans `skills` : on ne perd pas ce que le prestataire a declare.
+     *
+     * @param  list<string>  $skills
+     * @return list<int>
+     */
+    private function metiersDepuisIdentifiants(array $skills): array
+    {
+        $valeurs = array_values(array_filter(array_map('strval', $skills), fn ($v) => $v !== ''));
+
+        if ($valeurs === []) {
+            return [];
+        }
+
+        return Trade::query()
+            ->whereIn('id', array_values(array_filter($valeurs, 'is_numeric')))
+            ->orWhereIn('code', $valeurs)
+            ->orWhereIn('slug', $valeurs)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+    }
+
     public function setSkills(User $user, array $skills, array $serviceZoneIds = []): ProviderProfile
     {
         $profile = $this->ensureProfile($user);
@@ -203,18 +255,19 @@ class ProviderOnboardingService
             'metadata' => $metadata,
         ]);
 
-        if (Schema::hasTable('employee_zone_assignments')) {
-            // Seules les zones qui existent réellement sont rattachées : l'API valide déjà les
-            // identifiants, mais le wizard web ne le fait pas, et une zone supprimée entre-temps
-            // ne doit pas faire échouer l'enregistrement des métiers sur une contrainte de clé
-            // étrangère. Les métadonnées conservent la demande telle quelle.
-            $existingZoneIds = ServiceZone::query()->whereKey($zoneIds)->pluck('id')->all();
-
-            $user->serviceZones()->sync(array_fill_keys($existingZoneIds, [
-                'is_active' => true,
-                'assignment_type' => 'primary',
-            ]));
-        }
+        /*
+         * ET LA COUVERTURE QUI COMPTE VRAIMENT.
+         *
+         * `provider_profiles.skills` n'est lu QUE par cet assistant et par le compteur
+         * d'avancement : la repartition, elle, joint `trade_user` (CandidateFinder). Declarer ses
+         * metiers ici ne changeait donc rien a ce qu'on pouvait recevoir.
+         *
+         * ON AJOUTE, ON NE REMPLACE PAS : aucun des deux ecrans ne pre-coche la couverture reelle
+         * — celui du natif dit lui-meme servir « a confirmer, et a en ajouter ». Un `sync`
+         * detachant effacerait les metiers declares a l'inscription. Le retrait reste ou il est
+         * deja : l'inscription, l'admin, le profil.
+         */
+        $this->couvrirLesMetiersDeclares($user, $skills, $zoneIds);
 
         if (! empty($skills)) {
             $this->advanceStepIfNeeded($profile, self::STEP_SKILLS);

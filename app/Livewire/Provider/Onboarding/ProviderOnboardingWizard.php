@@ -4,11 +4,13 @@ namespace App\Livewire\Provider\Onboarding;
 
 use App\Models\ProviderOnboardingDocument;
 use App\Models\ServiceZone;
+use App\Models\Trade;
 use App\Services\Onboarding\ProviderDocumentRequirements;
 use App\Services\Onboarding\ProviderOnboardingService;
 use App\Services\Payments\StripeConnectService;
 use App\Support\Validation\ImagesTeleversees;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -46,17 +48,6 @@ class ProviderOnboardingWizard extends Component
 
     public array $selectedZones = [];
 
-    public array $availableSkills = [
-        'cleaning_residential' => 'Nettoyage résidentiel',
-        'cleaning_office' => 'Nettoyage bureau',
-        'plumbing' => 'Plomberie',
-        'electrical' => 'Électricité',
-        'gardening' => 'Jardinage',
-        'moving' => 'Déménagement',
-        'handyman' => 'Bricolage / petits travaux',
-        'painting' => 'Peinture',
-    ];
-
     public ?string $message = null;
 
     public ?string $messageType = null;
@@ -77,7 +68,14 @@ class ProviderOnboardingWizard extends Component
         $this->currentStep = (int) $profile->onboarding_step;
         $this->bio = $profile->bio ?? '';
         $this->taxId = $profile->metadata['tax_id'] ?? '';
-        $this->selectedSkills = is_array($profile->skills) ? $profile->skills : [];
+        /*
+         * On pre-coche la COUVERTURE REELLE — `trade_user`, ce que la repartition lit — et non
+         * `skills`, qui n'est qu'un champ d'affichage. Sans cela l'ecran montrait autre chose que
+         * ce qui decide des missions recues.
+         */
+        $couverture = $user->trades()->pluck('trades.slug')->all();
+
+        $this->selectedSkills = $couverture ?: (is_array($profile->skills) ? $profile->skills : []);
         $this->selectedZones = $profile->metadata['service_zone_ids'] ?? [];
     }
 
@@ -125,6 +123,20 @@ class ProviderOnboardingWizard extends Component
             ->orderByDesc('created_at')
             ->get()
             ->groupBy('document_type');
+    }
+
+    /**
+     * LE VRAI CATALOGUE, comme l'ecran natif le lit deja.
+     *
+     * Cette liste etait ecrite en dur : huit codes — `cleaning_residential`, `plumbing`… — dont
+     * AUCUN n'existe dans `trades`, qui en compte seize (`CLN`, `PNT`, `PLB`…). Un prestataire
+     * inscrit par le web declarait donc des metiers qui ne correspondaient a rien.
+     *
+     * @return EloquentCollection<int, Trade>
+     */
+    public function getMetiersProperty(): EloquentCollection
+    {
+        return Trade::query()->where('is_active', true)->orderBy('name')->get();
     }
 
     public function getZonesProperty()
@@ -340,6 +352,7 @@ class ProviderOnboardingWizard extends Component
         return view('livewire.provider.onboarding.provider-onboarding-wizard', [
             'progress' => $this->progress,
             'documents' => $this->documents,
+            'metiers' => $this->getMetiersProperty(),
             'zones' => $this->zones,
         ]);
     }

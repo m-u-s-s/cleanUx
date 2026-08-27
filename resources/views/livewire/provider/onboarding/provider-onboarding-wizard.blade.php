@@ -330,13 +330,14 @@
             <div>
                 <span id="groupe-tes-competences-16801" class="block text-sm font-semibold text-slate-700 mb-3">Tes compétences *</span>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" role="group" aria-labelledby="groupe-tes-competences-16801">
-                    @foreach ($availableSkills as $key => $label)
+                    {{-- Le catalogue reel : `trades`, celui que l'ecran natif lit deja. --}}
+                    @foreach ($metiers as $metier)
                         <label class="flex items-center gap-2 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
                             <input type="checkbox"
                                    wire:model="selectedSkills"
-                                   value="{{ $key }}"
+                                   value="{{ $metier->slug }}"
                                    class="rounded border-slate-300 text-sky-600 focus:ring-sky-500">
-                            <span class="text-sm text-slate-700">{{ $label }}</span>
+                            <span class="text-sm text-slate-700">{{ $metier->name }}</span>
                         </label>
                     @endforeach
                 </div>
