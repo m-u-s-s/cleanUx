@@ -162,6 +162,14 @@
                             <p class="font-mono text-xs text-slate-500">{{ $selected->reference }}</p>
                             <h2 class="mt-1 text-lg font-bold tracking-tight text-slate-900">{{ $selected->subject }}</h2>
                             <p class="mt-2 text-sm text-slate-600">{{ $selected->description }}</p>
+
+                            {{--
+                              LES PREUVES QUE LE CLIENT A JOINTES. `createClaim()` les stocke sur le
+                              disque PRIVE depuis toujours ; aucun ecran ne les rendait.
+                            --}}
+                            <div class="mt-4">
+                                @include('livewire.client.litiges.claim-attachments', ['claim' => $selected])
+                            </div>
                         </div>
 
                         <div class="p-4 space-y-2.5 max-h-96 overflow-y-auto border-b border-slate-100">
