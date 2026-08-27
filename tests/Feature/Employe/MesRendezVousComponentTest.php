@@ -118,17 +118,30 @@ class MesRendezVousComponentTest extends TestCase
             ->assertStatus(403);
     }
 
-    public function test_refuser_rdv_listener_marks_booking_refused(): void
+    /**
+     * Le refus passait par `refuserRdv`, appele par un ecouteur `refuser-rdv` que RIEN n'emettait
+     * et par ce test seul. Le bouton de la vue, lui, a toujours appele `mettreAJourStatut`
+     * directement : c'est ce chemin-la, le vrai, qui se mesure ici.
+     */
+    public function test_refuser_un_rendez_vous_le_marque_refuse(): void
     {
         Notification::fake();
         $admin = $this->actingAdmin();
         $booking = $this->bookingWithMission($admin, ['status' => 'confirme']);
 
         Livewire::test(MesRendezVous::class)
-            ->call('refuserRdv', ['id' => $booking->id])
+            ->call('mettreAJourStatut', $booking->id, 'refuse')
             ->assertDispatched('toast');
 
         $this->assertSame('refuse', $booking->fresh()->status);
+    }
+
+    /** Et la porte qui y mene : sans bouton, la capacite redeviendrait injoignable. */
+    public function test_un_bouton_de_la_vue_mene_bien_au_refus(): void
+    {
+        $source = file_get_contents(resource_path('views/livewire/employe/mes-rendez-vous.blade.php'));
+
+        $this->assertStringContainsString("mettreAJourStatut({{ \$rdv->id }}, 'refuse')", $source);
     }
 
     public function test_check_in_modal_opens_and_prefills_default_checklist(): void

@@ -58,10 +58,6 @@ class MesRendezVous extends Component
 
     public $selectedMissionId = null;
 
-    protected $listeners = [
-        'refuser-rdv' => 'refuserRdv',
-    ];
-
     protected function defaultChecklist(): array
     {
         return [
@@ -420,11 +416,6 @@ class MesRendezVous extends Component
         $this->selectedMissionId = $this->missionForRdv($rdv)?->id;
         $this->fermerRapportFinMission();
         $this->dispatch('toast', 'Rapport de fin de mission enregistré.', 'success');
-    }
-
-    public function refuserRdv($payload)
-    {
-        $this->mettreAJourStatut($payload['id'], 'refuse');
     }
 
     public function updatingSearch()
