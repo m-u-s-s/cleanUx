@@ -21,6 +21,9 @@ class ToutePageEstAtteignableTest extends TestCase
         'premium.cancel',                        // retour de paiement Stripe
         'assistant.stream',                      // flux SSE, ouvert par le client JS et signé
         'messaging.attachments.download',        // téléchargement d'une pièce jointe par son id
+        // La même chose pour un APPAREIL : le lien nomme son lecteur, la signature l'atteste,
+        // et l'appartenance au canal reste vérifiée. Aucun menu n'y mène, par nature.
+        'messaging.attachments.device',
         'employe.missions.qr.validate',          // cible d'un scan de QR code, pas d'un clic
         'scribe',                                // documentation d'API, hors application
         'scribe.openapi',                        // spécification OpenAPI servie à côté de la doc

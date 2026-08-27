@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Messaging;
 
 use App\Http\Controllers\Controller;
 use App\Models\MessageAttachment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -16,7 +17,21 @@ class AttachmentDownloadController extends Controller
     {
         // Validation de la signature URL est faite par le middleware 'signed' sur la route
 
+        /*
+         * DEUX FACONS DE NOMMER LE LECTEUR, UNE SEULE AUTORISATION.
+         *
+         * La session quand elle existe ; sinon l'identifiant que porte l'URL. Le lire dans la
+         * requete n'est sur QUE parce que le middleware `signed` a deja valide la chaine
+         * entiere : substituer un lecteur invaliderait la signature.
+         *
+         * La verification d'appartenance au canal, elle, ne change pas.
+         */
         $user = Auth::user();
+
+        if (! $user && $request->integer('viewer') > 0) {
+            $user = User::find($request->integer('viewer'));
+        }
+
         abort_if(! $user, 401);
 
         // Le user doit être membre du channel du message

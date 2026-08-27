@@ -1263,27 +1263,26 @@ class CompanyController extends Controller
                 'type' => $m->type,
                 'duration' => data_get($m->metadata, 'duration'),
                 'audio_url' => $m->type === Message::TYPE_VOICE
-                    ? $this->adresseDeLecture($m)
+                    ? $this->adresseDeLecture($m, (int) $request->user()->id)
                     : null,
             ]);
 
         return response()->json(['data' => $messages]);
     }
 
-    /** L'adresse signée où écouter la note vocale de ce message, ou `null` s'il n'y en a pas. */
-    protected function adresseDeLecture(Message $message): ?string
+    /**
+     * L'adresse signée où écouter la note vocale de ce message, ou `null` s'il n'y en a pas.
+     *
+     * ELLE S'OUVRE DEPUIS UN APPAREIL. Le lien web exige une session en plus de la signature :
+     * une balise `audio` d'un telephone n'en a pas, et n'obtenait qu'une redirection vers la
+     * connexion. Celui-ci nomme son lecteur dans l'URL — la signature l'atteste — et le
+     * controleur verifie l'appartenance au canal exactement comme avant.
+     */
+    protected function adresseDeLecture(Message $message, int $lecteurId): ?string
     {
         $piece = $message->attachments()->latest('id')->first();
 
-        if (! $piece) {
-            return null;
-        }
-
-        return URL::temporarySignedRoute(
-            'messaging.attachments.download',
-            now()->addMinutes(15),
-            ['attachment' => $piece->id],
-        );
+        return $piece?->urlPourAppareil($lecteurId);
     }
 
     public function postChannelMessage(Request $request, int $channelId): JsonResponse

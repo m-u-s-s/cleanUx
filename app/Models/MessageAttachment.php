@@ -93,6 +93,29 @@ class MessageAttachment extends Model
             || (config('messaging.av.required', false) === false && $this->av_status === self::AV_STATUS_PENDING);
     }
 
+    /**
+     * LE MEME FICHIER, POUR UN CLIENT SANS SESSION.
+     *
+     * Le lien web ne dit pas QUI regarde : le controleur le lit dans la session, puis verifie
+     * l'appartenance au canal. Un appareil n'a pas de session — on nomme donc le lecteur DANS
+     * l'URL, et la signature l'atteste. L'autorisation ne change pas d'un iota : c'est la meme
+     * verification, sur un lecteur que personne ne peut substituer.
+     *
+     * Il ne se sert qu'au travers d'une reponse d'API deja authentifiee, a ce lecteur-la.
+     */
+    public function urlPourAppareil(int $lecteurId, int $minutes = 15): ?string
+    {
+        if ($this->isInfected()) {
+            return null;
+        }
+
+        return URL::temporarySignedRoute(
+            'messaging.attachments.device',
+            now()->addMinutes($minutes),
+            ['attachment' => $this->id, 'viewer' => $lecteurId],
+        );
+    }
+
     /** URL signée temporaire pour téléchargement. */
     public function getSignedUrlAttribute(): ?string
     {

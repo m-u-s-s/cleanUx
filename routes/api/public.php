@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Public\FxController;
 use App\Http\Controllers\Api\Public\ProviderProfileController;
 use App\Http\Controllers\Api\Public\SearchController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\Messaging\AttachmentDownloadController;
 use App\Models\Trade;
 use App\Services\Country\CountryConfigService;
 use Illuminate\Support\Facades\Cache;
@@ -27,6 +28,16 @@ use Illuminate\Support\Facades\Route;
 | Celle-ci vaut pour qui la detient, quinze minutes, sur le seul chemin qu'elle nomme — le modele
 | d'une URL pre-signee. La route WEB n'est pas touchee : elle garde son verrou de session.
 */
+/*
+ * Piece jointe de discussion, servie a un APPAREIL.
+ *
+ * Meme porte que le web, meme autorisation — l'appartenance au canal est verifiee dans les deux
+ * cas. Seule differe la facon de nommer le lecteur : la session la-bas, un parametre SIGNE ici.
+ */
+Route::get('/messaging/attachments/{attachment}', [AttachmentDownloadController::class, 'download'])
+    ->middleware(['signed', 'throttle:60,1'])
+    ->name('messaging.attachments.device');
+
 Route::get('/media/appareil', [MediaController::class, 'show'])
     ->middleware(['signed', 'throttle:60,1'])
     ->name('media.private.device');

@@ -98,6 +98,14 @@ class NoteVocaleTest extends TestCase
             ])
             ->assertCreated();
 
+        /*
+         * L'ANALYSE ANTIVIRUS TOURNE SUR UN FAUX FICHIER et le declare infecte : c'est un artefact
+         * de l'environnement de test, pas l'etat d'une vraie note vocale. Depuis que l'adresse de
+         * lecture respecte ce statut — comme `signed_url` le faisait deja cote web —, il faut le
+         * dire, sinon ce test mesurerait le refus au lieu du fil.
+         */
+        MessageAttachment::query()->update(['av_status' => MessageAttachment::AV_STATUS_CLEAN]);
+
         $reponse = $this->actingAs($user, 'sanctum')
             ->getJson("/api/provider/company/channels/{$canal->id}/messages")
             ->assertOk();
