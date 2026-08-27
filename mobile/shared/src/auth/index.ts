@@ -13,3 +13,9 @@ export { isValidBusinessNumber, normaliseBusinessNumber } from './businessNumber
 export { useMe } from './useMe';
 export { authenticateWithBiometrics } from './useBiometricAuth';
 export { can, canAny, organizationRole } from './permissions';
+export {
+  adresseAConfirmer,
+  useRenvoyerLEmailDeConfirmation,
+  useRelireLeCompte,
+} from './emailVerification';
+export type { EtatDeConfirmation } from './emailVerification';

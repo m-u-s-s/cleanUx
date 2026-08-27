@@ -15,9 +15,12 @@
  * gardes de rôle du serveur, qui refusent un jeton prestataire sur une route d'administration
  * quel que soit l'écran affiché.
  */
+
+import { adresseAConfirmer } from '@/auth/emailVerification';
 export type Space =
   | 'loading'
   | 'login'
+  | 'emailNonConfirme'
   | 'superAdmin'
   | 'admin'
   | 'provider'
@@ -54,6 +57,9 @@ export interface SpaceInput {
      * enverrait un employé dans un espace de pilotage sans missions, sans revenus, sans présence.
      */
     can_manage_company?: boolean;
+    /** Servis par `/auth/me` et par la connexion. Absents des jetons du parc deja installe. */
+    email_verified?: boolean;
+    email_verified_at?: string | null;
   } | null;
   /**
    * `true` dossier complet, `false` incomplet, `undefined` inconnu (chargement ou erreur).
@@ -81,6 +87,20 @@ export function resolveSpace(input: SpaceInput): Space {
 
   if (!isAuthenticated || !user) {
     return 'login';
+  }
+
+  /*
+   * L'ADRESSE NON CONFIRMEE BARRE TOUT, ET ELLE SE TESTE AVANT LES CASQUETTES.
+   *
+   * Contrairement au dossier d'inscription et au controle facial, qui ne concernent que le
+   * prestataire de TERRAIN, celle-ci vaut pour tous les roles : le serveur exige une adresse
+   * confirmee sur 530 de ses 537 routes authentifiees. Placee plus bas, elle enverrait un
+   * administrateur dans une console dont chaque requete repond 403.
+   *
+   * L'INCONNU LAISSE PASSER, comme pour les deux autres portes.
+   */
+  if (adresseAConfirmer(user)) {
+    return 'emailNonConfirme';
   }
 
   const isAdmin = user.is_admin === true;

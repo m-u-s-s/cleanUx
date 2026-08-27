@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '@/auth';
+import { EcranConfirmationEmail } from '@/auth/EcranConfirmationEmail';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { TabNavigator } from './TabNavigator';
 import { MissionTrackingScreen } from '@/screens/MissionTrackingScreen';
@@ -79,6 +80,20 @@ export function RootNavigator() {
     return (
       <View testID="root-navigator" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.page }}>
         <ActivityIndicator size="large" color={colors.brand[500]} />
+      </View>
+    );
+  }
+
+  /*
+   * LE MUR DE CONFIRMATION, AVANT TOUT LE RESTE.
+   *
+   * Le sélecteur d'espace n'a rien à proposer à qui ne peut ouvrir aucun écran : le serveur
+   * refuse 530 de ses 537 routes authentifiées tant que l'adresse n'est pas confirmée.
+   */
+  if (space === 'emailNonConfirme') {
+    return (
+      <View testID="root-navigator" style={{ flex: 1 }}>
+        <EcranConfirmationEmail />
       </View>
     );
   }

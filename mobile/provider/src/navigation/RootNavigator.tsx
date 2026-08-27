@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '@/auth';
+import { EcranConfirmationEmail } from '@/auth/EcranConfirmationEmail';
 import { useOnboardingProgress, isJourneyComplete } from '@/onboarding';
 import { WalkthroughScreen, hasCompletedWalkthrough } from '@/screens/WalkthroughScreen';
 import { useFaceCheckStatus, faceCheckBloqueLeTerrain } from '@/faceCheck';
@@ -154,6 +155,20 @@ export function RootNavigator() {
         style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.page }}
       >
         <ActivityIndicator size="large" color={colors.brand[500]} />
+      </View>
+    );
+  }
+
+  /*
+   * LE MUR DE CONFIRMATION, AVANT MÊME LE SÉLECTEUR D'ESPACE.
+   *
+   * Choisir entre trois espaces n'a aucun sens quand aucun n'ouvre : le serveur refuse 530 de ses
+   * 537 routes authentifiées tant que l'adresse n'est pas confirmée.
+   */
+  if (space === 'emailNonConfirme') {
+    return (
+      <View testID="root-navigator" style={{ flex: 1 }}>
+        <EcranConfirmationEmail />
       </View>
     );
   }
