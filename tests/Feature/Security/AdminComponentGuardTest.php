@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Security;
 
+use App\Livewire\Admin\GestionUtilisateurs;
 use App\Livewire\AdminDashboard;
 use App\Livewire\AdminFeedbacks;
 use App\Models\User;
@@ -23,6 +24,8 @@ class AdminComponentGuardTest extends TestCase
         return [
             'AdminDashboard' => [AdminDashboard::class],
             'AdminFeedbacks' => [AdminFeedbacks::class],
+            // Route sur /admin/utilisateurs depuis le 2026-08-27 : il change des roles.
+            'GestionUtilisateurs' => [GestionUtilisateurs::class],
         ];
     }
 

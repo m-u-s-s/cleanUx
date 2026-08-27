@@ -35,6 +35,7 @@ use App\Livewire\Admin\Fx\FxCenter;
 use App\Livewire\Admin\Gdpr\GdprCenter;
 use App\Livewire\Admin\GeolocationV2\GeolocationCenter;
 use App\Livewire\Admin\GestionEntreprises;
+use App\Livewire\Admin\GestionUtilisateurs;
 use App\Livewire\Admin\GestionZones;
 use App\Livewire\Admin\I18n\TranslationsCenter;
 use App\Livewire\Admin\Insurance\InsuranceCenter;
@@ -78,7 +79,6 @@ use App\Livewire\Admin\Tips\TipsCenter;
 use App\Livewire\Admin\Trades;
 use App\Livewire\Admin\TradeZonePricingManager;
 use App\Livewire\Admin\TripTracking\TripTrackingCenter;
-use App\Livewire\Admin\UtilisateursAdmin;
 use App\Livewire\Admin\WebhooksV2\WebhooksCenter;
 use App\Livewire\AdminDashboard;
 use App\Livewire\Shared\ModulesDirectory;
@@ -180,13 +180,24 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
             return redirect()->route('admin.dashboard');
         })->name('rendezvous.show');
 
-        $utilisateursAdmin = class_exists(UtilisateursAdmin::class)
-            ? UtilisateursAdmin::class
+        /*
+         * LA ROUTE S'APPELAIT DEJA « manage » ET NE MENAIT NULLE PART OU GERER.
+         *
+         * Elle rendait `UtilisateursAdmin` : une liste en LECTURE SEULE de 48 lignes. Le composant
+         * qui gere vraiment — activer un compte, changer un role, editer permissions et zone —
+         * existait depuis longtemps et n'etait route nulle part. Un administrateur web ne pouvait
+         * donc pas suspendre un compte ; la console NATIVE, elle, le pouvait par `UserResource`.
+         *
+         * Il se garde seul : `EnforcesAdminAccess` refuse 403 a tout non-administrateur des le
+         * boot, et chaque ecriture passe par son propre `Gate::authorize`.
+         */
+        $utilisateurs = class_exists(GestionUtilisateurs::class)
+            ? GestionUtilisateurs::class
             : function () {
                 abort(501, 'La page gestion utilisateurs n’est pas encore disponible.');
             };
 
-        Route::get('/utilisateurs', $utilisateursAdmin)
+        Route::get('/utilisateurs', $utilisateurs)
             ->name('utilisateurs.manage');
 
         /*

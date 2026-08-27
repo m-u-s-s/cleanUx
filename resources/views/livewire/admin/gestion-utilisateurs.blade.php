@@ -1,6 +1,6 @@
 <div class="bg-white p-4 rounded shadow space-y-4">
 
-    <h3 class="text-xl font-semibold text-blue-800">👥 {{ __('ui.admin_users.title') }}</h3>
+    <h1 class="text-xl font-semibold text-blue-800">👥 {{ __('ui.admin_users.title') }}</h1>
 
     <div class="flex flex-wrap gap-4 items-end">
         <div>
