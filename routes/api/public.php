@@ -8,12 +8,28 @@ use App\Http\Controllers\Api\PricingV2Controller;
 use App\Http\Controllers\Api\Public\FxController;
 use App\Http\Controllers\Api\Public\ProviderProfileController;
 use App\Http\Controllers\Api\Public\SearchController;
+use App\Http\Controllers\MediaController;
 use App\Models\Trade;
 use App\Services\Country\CountryConfigService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Media prive servi a un APPAREIL
+|--------------------------------------------------------------------------
+| La route web (`media.private.show`) exige une session EN PLUS de la signature. Une balise
+| `Image` d'un telephone n'envoie ni cookie ni en-tete d'autorisation : mesure faite, elle recoit
+| `302 -> /login` et affiche une page de connexion en guise de photo.
+|
+| Celle-ci vaut pour qui la detient, quinze minutes, sur le seul chemin qu'elle nomme — le modele
+| d'une URL pre-signee. La route WEB n'est pas touchee : elle garde son verrou de session.
+*/
+Route::get('/media/appareil', [MediaController::class, 'show'])
+    ->middleware(['signed', 'throttle:60,1'])
+    ->name('media.private.device');
 
 // ─────────────────────────────────────────────
 // Public — Health check

@@ -17,6 +17,8 @@ const MAX_PREUVES = 5;
 interface PieceJointe {
   path: string;
   original_name?: string;
+  /** Lien signé de quinze minutes, servi par l'API : il porte sa preuve, sans session. */
+  url?: string | null;
 }
 
 interface Evenement {
@@ -211,11 +213,13 @@ export function ProviderDisputeDetailScreen() {
 }
 
 /**
- * Les pièces REÇUES s'annoncent, elles ne s'affichent pas.
+ * Les pièces REÇUES, affichées.
  *
- * La route de média privé est gardée par une session WEB : une balise `Image` d'un téléphone, qui
- * ne porte qu'un jeton, n'obtiendrait qu'un refus. Afficher un carré cassé serait pire que de dire
- * ce qu'il y a.
+ * L'API sert désormais un lien que ce téléphone peut ouvrir : la route web exige une session en
+ * plus de la signature — mesuré, elle rend `302 → /login` — donc `PrivateMedia::urlPourAppareil()`
+ * signe un lien qui porte sa seule preuve, quinze minutes, sur le seul chemin qu'il nomme.
+ *
+ * Une pièce sans lien ne rend rien plutôt qu'un carré cassé.
  */
 function PiecesRecues({
   fichiers,
@@ -224,16 +228,23 @@ function PiecesRecues({
   fichiers?: PieceJointe[] | null;
   styles: ReturnType<typeof stylesFor>;
 }) {
-  const nombre = Array.isArray(fichiers) ? fichiers.length : 0;
+  const affichables = (Array.isArray(fichiers) ? fichiers : []).filter(piece => !!piece.url);
 
-  if (nombre === 0) {
+  if (affichables.length === 0) {
     return null;
   }
 
   return (
-    <Text style={styles.pieces}>
-      📎 {nombre} pièce{nombre > 1 ? 's' : ''} jointe{nombre > 1 ? 's' : ''} — consultable sur le site
-    </Text>
+    <View style={styles.preuves} testID="pieces-recues">
+      {affichables.map(piece => (
+        <Image
+          key={piece.path}
+          source={{ uri: piece.url as string }}
+          style={styles.preuveImage}
+          accessibilityLabel={piece.original_name ?? 'Pièce jointe'}
+        />
+      ))}
+    </View>
   );
 }
 

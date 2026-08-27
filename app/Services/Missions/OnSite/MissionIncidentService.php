@@ -106,9 +106,10 @@ class MissionIncidentService
     }
 
     /**
+     * @param  bool  $pourAppareil  Voir `MissionMediaService::presenter()`.
      * @return array<string, mixed>
      */
-    public function presenter(MissionIncident $incident): array
+    public function presenter(MissionIncident $incident, bool $pourAppareil = false): array
     {
         return [
             'id' => $incident->id,
@@ -119,7 +120,9 @@ class MissionIncidentService
             'description' => $incident->description,
             'reported_at' => $incident->reported_at?->toIso8601String(),
             'notified_at' => $incident->notified_at?->toIso8601String(),
-            'photo' => $incident->media !== null ? $this->mediaService->presenter($incident->media) : null,
+            'photo' => $incident->media !== null
+                ? $this->mediaService->presenter($incident->media, $pourAppareil)
+                : null,
             'complaint_case_id' => $incident->complaint_case_id,
             'dispute_prefill' => $this->prefillLitige($incident),
         ];

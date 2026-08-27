@@ -51,7 +51,7 @@ const DOSSIER = {
   subject: 'Salon resté sale',
   description: 'Le client dit que le salon n’a pas été fait.',
   status: 'open',
-  attachments: [{ path: 'disputes/a.jpg', original_name: 'a.jpg' }],
+  attachments: [{ path: 'disputes/a.jpg', original_name: 'a.jpg', url: 'https://exemple.test/api/media/appareil?path=a&signature=x' }],
   events: [
     {
       id: 1,
@@ -59,7 +59,7 @@ const DOSSIER = {
       body: 'Voici les photos du salon.',
       author_role: 'client',
       created_at: '2026-08-27T10:00:00',
-      attachments: [{ path: 'disputes/b.jpg', original_name: 'b.jpg' }],
+      attachments: [{ path: 'disputes/b.jpg', original_name: 'b.jpg', url: 'https://exemple.test/api/media/appareil?path=b&signature=y' }],
     },
   ],
 };
@@ -80,15 +80,30 @@ describe('le prestataire lit son litige et y répond', () => {
   });
 
   /**
-   * Les pièces REÇUES s'annoncent sans s'afficher : la route de média privé exige une session WEB,
-   * qu'un téléphone n'a pas. Un carré cassé serait pire que de dire ce qu'il y a.
+   * L'API sert un lien que ce téléphone peut ouvrir : la route web exige une session en plus de la
+   * signature, et rendait `302 → /login` à une balise `Image`.
    */
-  it('annonce les pièces reçues plutôt que d’afficher une image impossible', async () => {
+  it('affiche les pièces reçues, par le lien d’appareil', async () => {
     render(<ProviderDisputeDetailScreen />, { wrapper: enveloppe() });
 
     await screen.findByText('Salon resté sale');
 
-    expect(screen.getAllByText(/1 pièce jointe/).length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId('pieces-recues').length).toBe(2);
+    expect(screen.getByLabelText('a.jpg')).toBeTruthy();
+    expect(screen.getByLabelText('b.jpg')).toBeTruthy();
+  });
+
+  /** LE TÉMOIN : une pièce sans lien ne rend rien, plutôt qu'un carré cassé. */
+  it('temoin une pièce sans lien n’affiche rien', async () => {
+    mock.onGet('/provider/disputes/7').reply(200, {
+      data: { ...DOSSIER, attachments: [{ path: 'x.jpg' }], events: [] },
+    });
+
+    render(<ProviderDisputeDetailScreen />, { wrapper: enveloppe() });
+
+    await screen.findByText('Salon resté sale');
+
+    expect(screen.queryAllByTestId('pieces-recues').length).toBe(0);
   });
 
   it('envoie une réponse sans photo, en JSON', async () => {

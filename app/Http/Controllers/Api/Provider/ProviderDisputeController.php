@@ -7,6 +7,7 @@ use App\Models\ComplaintCase;
 use App\Models\DisputeEvent;
 use App\Services\Disputes\DisputeService;
 use App\Support\Disputes\PreuvesDeLitige;
+use App\Support\Media\PrivateMedia;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -46,7 +47,38 @@ class ProviderDisputeController extends Controller
             'events.author:id,name',
         ]);
 
-        return response()->json(['data' => $dispute]);
+        $charge = $dispute->toArray();
+        $charge['attachments'] = $this->avecLiens($dispute->attachments);
+
+        /** @var list<array<string, mixed>> $evenements */
+        $evenements = $charge['events'] ?? [];
+
+        $charge['events'] = array_map(function (array $evenement): array {
+            $evenement['attachments'] = $this->avecLiens($evenement['attachments'] ?? []);
+
+            return $evenement;
+        }, $evenements);
+
+        return response()->json(['data' => $charge]);
+    }
+
+    /**
+     * Chaque piece gagne le lien qu'un APPAREIL peut ouvrir.
+     *
+     * Le lien web exige une session en plus de la signature : mesure faite, une balise `Image`
+     * d'un telephone recoit `302 -> /login`. On sert donc le lien qui porte sa preuve, et on ne
+     * le sert qu'ici — dans une reponse deja authentifiee, a qui a le droit de voir ce dossier.
+     *
+     * @param  mixed  $pieces
+     * @return list<array<string, mixed>>
+     */
+    private function avecLiens($pieces): array
+    {
+        return collect(is_array($pieces) ? $pieces : [])
+            ->filter(fn ($piece) => is_array($piece) && ! empty($piece['path']))
+            ->map(fn (array $piece) => $piece + ['url' => PrivateMedia::urlPourAppareil($piece['path'])])
+            ->values()
+            ->all();
     }
 
     public function respond(Request $request, ComplaintCase $dispute): JsonResponse

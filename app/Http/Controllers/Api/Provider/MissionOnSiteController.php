@@ -98,7 +98,7 @@ class MissionOnSiteController extends Controller
         return response()->json([
             'data' => $this->mediaService
                 ->pourLaMission($mission)
-                ->map(fn (MissionMedia $m) => $this->mediaService->presenter($m))
+                ->map(fn (MissionMedia $m) => $this->mediaService->presenter($m, pourAppareil: true))
                 ->values(),
         ]);
     }
@@ -137,7 +137,7 @@ class MissionOnSiteController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
-        return response()->json(['data' => $this->mediaService->presenter($media)], 201);
+        return response()->json(['data' => $this->mediaService->presenter($media, pourAppareil: true)], 201);
     }
 
     /**
@@ -152,7 +152,7 @@ class MissionOnSiteController extends Controller
         return response()->json([
             'data' => $this->incidentService
                 ->pourLaMission($mission)
-                ->map(fn (MissionIncident $i) => $this->incidentService->presenter($i))
+                ->map(fn (MissionIncident $i) => $this->incidentService->presenter($i, pourAppareil: true))
                 ->values(),
         ]);
     }
@@ -285,7 +285,7 @@ class MissionOnSiteController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
-        return response()->json(['data' => $this->mediaService->presenter($media)], 201);
+        return response()->json(['data' => $this->mediaService->presenter($media, pourAppareil: true)], 201);
     }
 
     /** Quelle preuve de présence s'applique, et ce qu'il faut savoir si le client est absent. */
@@ -448,7 +448,7 @@ class MissionOnSiteController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
-        return response()->json(['data' => $this->incidentService->presenter($incident)], 201);
+        return response()->json(['data' => $this->incidentService->presenter($incident, pourAppareil: true)], 201);
     }
 
     /**

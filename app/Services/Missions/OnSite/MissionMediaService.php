@@ -125,16 +125,20 @@ class MissionMediaService
     /**
      * Forme d'un cliché telle que les deux applications la lisent.
      *
+     * @param  bool  $pourAppareil  Un client SANS session — une balise `Image` d'un téléphone
+     *                              n'envoie ni cookie ni jeton, et le lien web lui rend 302.
      * @return array<string, mixed>
      */
-    public function presenter(MissionMedia $media): array
+    public function presenter(MissionMedia $media, bool $pourAppareil = false): array
     {
         return [
             'id' => $media->id,
             'type' => $media->media_type,
             'label' => $this->libelleType((string) $media->media_type),
             'caption' => $media->caption,
-            'url' => PrivateMedia::url($media->path),
+            'url' => $pourAppareil
+                ? PrivateMedia::urlPourAppareil($media->path)
+                : PrivateMedia::url($media->path),
             'taken_at' => $media->taken_at?->toIso8601String(),
             'received_at' => $media->created_at?->toIso8601String(),
             'lat' => $media->lat !== null ? (float) $media->lat : null,

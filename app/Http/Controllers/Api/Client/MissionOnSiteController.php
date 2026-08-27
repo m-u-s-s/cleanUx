@@ -113,7 +113,7 @@ class MissionOnSiteController extends Controller
         return response()->json([
             'data' => $this->incidentService
                 ->pourLaMission($mission, clientSeulement: true)
-                ->map(fn (MissionIncident $i) => $this->incidentService->presenter($i))
+                ->map(fn (MissionIncident $i) => $this->incidentService->presenter($i, pourAppareil: true))
                 ->values(),
         ]);
     }
@@ -538,7 +538,7 @@ class MissionOnSiteController extends Controller
     {
         return $medias
             ->where('media_type', $type)
-            ->map(fn (MissionMedia $m) => $this->mediaService->presenter($m))
+            ->map(fn (MissionMedia $m) => $this->mediaService->presenter($m, pourAppareil: true))
             ->values()
             ->all();
     }
