@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\Catalog\RegistrationOptionsController;
+use App\Http\Controllers\Api\ChatV2Controller;
 use App\Http\Controllers\Api\Client\GdprController;
 use App\Http\Controllers\Api\LocaleListController;
 use App\Http\Controllers\Api\PricingV2Controller;
@@ -37,6 +38,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/messaging/attachments/{attachment}', [AttachmentDownloadController::class, 'download'])
     ->middleware(['signed', 'throttle:60,1'])
     ->name('messaging.attachments.device');
+
+/*
+ * Piece jointe d'un fil de discussion (chat v2), servie a un appareil : meme controleur et
+ * meme verification d'appartenance que la porte a jeton, seul le lecteur est nomme autrement.
+ */
+Route::get('/v2/chat/messages/{message}/attachment/appareil', [ChatV2Controller::class, 'downloadAttachment'])
+    ->middleware(['signed', 'throttle:60,1'])
+    ->name('chat-v2.attachment.device');
 
 Route::get('/media/appareil', [MediaController::class, 'show'])
     ->middleware(['signed', 'throttle:60,1'])

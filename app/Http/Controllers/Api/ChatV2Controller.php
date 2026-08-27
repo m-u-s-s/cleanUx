@@ -12,7 +12,9 @@ use App\Services\ChatV2\ChatService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -142,11 +144,43 @@ class ChatV2Controller extends Controller
         $rows = ChatMessage::query()
             ->where('thread_id', $thread->id)
             ->notDeleted()
+            ->with('sender:id,name')
             ->orderByDesc('id')
             ->limit((int) $request->integer('limit', (int) config('chat_v2.messages_per_page', 50)))
             ->get();
 
-        return response()->json(['data' => $rows]);
+        return response()->json([
+            'data' => $rows->map(fn (ChatMessage $m) => $m->toArray() + [
+                // Les deux noms que l'application lit : la colonne, elle, se nomme
+                // `sender_user_id`, et le nom de l'expediteur n'est pas sur le message.
+                'sender_id' => $m->sender_user_id,
+                'sender_name' => $m->sender?->name,
+                'attachment' => $this->pieceJointe($m, (int) $request->user()->id),
+            ])->all(),
+        ]);
+    }
+
+    /**
+     * Le descripteur de piece jointe servi a l'application : une adresse signee de quinze
+     * minutes qui nomme son lecteur, ouvrable sans jeton par une balise `Image`.
+     *
+     * @return array{url: string, mime_type: string|null, size_bytes: int|null}|null
+     */
+    private function pieceJointe(ChatMessage $message, int $lecteurId): ?array
+    {
+        if (! $message->attachment_path) {
+            return null;
+        }
+
+        return [
+            'url' => URL::temporarySignedRoute(
+                'chat-v2.attachment.device',
+                now()->addMinutes(15),
+                ['message' => $message->id, 'viewer' => $lecteurId],
+            ),
+            'mime_type' => $message->attachment_mime,
+            'size_bytes' => $message->attachment_size_bytes,
+        ];
     }
 
     public function sendMessage(Request $request, ChatThread $thread): JsonResponse
@@ -212,7 +246,11 @@ class ChatV2Controller extends Controller
 
     public function downloadAttachment(Request $request, ChatMessage $message): Response
     {
-        if (! $message->thread || ! $this->isParticipant($message->thread, $request->user()->id)) {
+        // Le lecteur : le jeton quand il est la, sinon l'identifiant que porte l'URL signee.
+        // L'appartenance au fil est verifiee ensuite, sur ce lecteur-la, dans les deux cas.
+        $lecteurId = (int) (Auth::id() ?? $request->integer('viewer'));
+
+        if (! $lecteurId || ! $message->thread || ! $this->isParticipant($message->thread, $lecteurId)) {
             abort(403);
         }
         if (! $message->attachment_path) {

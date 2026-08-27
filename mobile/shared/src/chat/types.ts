@@ -15,7 +15,15 @@ export interface ChatMessage {
   sender_id: number;
   sender_name: string;
   body: string;
-  attachments?: Array<{ url: string; mime_type: string }>;
+  /**
+   * La piece jointe du message : une adresse signee de quinze minutes qui nomme son lecteur,
+   * ouvrable par une balise `Image`, qui n'envoie ni cookie ni jeton.
+   */
+  attachment?: {
+    url: string;
+    mime_type: string | null;
+    size_bytes: number | null;
+  } | null;
   created_at: string;
 }
 

@@ -24,6 +24,9 @@ class ToutePageEstAtteignableTest extends TestCase
         // La même chose pour un APPAREIL : le lien nomme son lecteur, la signature l'atteste,
         // et l'appartenance au canal reste vérifiée. Aucun menu n'y mène, par nature.
         'messaging.attachments.device',
+        // Piece jointe d'un fil de chat v2, meme nature : ouverte par une balise `Image`,
+        // jamais par un menu.
+        'chat-v2.attachment.device',
         'employe.missions.qr.validate',          // cible d'un scan de QR code, pas d'un clic
         'scribe',                                // documentation d'API, hors application
         'scribe.openapi',                        // spécification OpenAPI servie à côté de la doc

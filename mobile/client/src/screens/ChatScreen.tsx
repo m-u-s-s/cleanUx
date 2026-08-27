@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, FlatList, Text, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { Screen, TextInput, Button, Avatar } from '@/ui';
-import { useChatMessages, useSendMessage, useMarkThreadRead, useLiveChat } from '@/chat';
+import {
+  useChatMessages,
+  useSendMessage,
+  useMarkThreadRead,
+  useLiveChat,
+  PieceJointeDuMessage,
+} from '@/chat';
 import { useAuth } from '@/auth';
 import type { ChatMessage } from '@/chat/types';
 import { colors, spacing, typography, radius } from '@/theme';
@@ -40,7 +46,11 @@ export function ChatScreen({ route }: Props) {
     return (
       <View style={[styles.bubble, isMe ? styles.bubbleMe : styles.bubbleOther]}>
         {!isMe && <Text style={styles.senderName}>{item.sender_name}</Text>}
-        <Text style={[styles.messageText, isMe && styles.messageTextMe]}>{item.body}</Text>
+        {item.body ? (
+          <Text style={[styles.messageText, isMe && styles.messageTextMe]}>{item.body}</Text>
+        ) : null}
+
+        <PieceJointeDuMessage piece={item.attachment} />
         <Text style={styles.time}>
           {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </Text>
