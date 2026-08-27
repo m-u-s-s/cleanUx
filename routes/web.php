@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\OrganizationInvitationController;
 use App\Http\Controllers\Push\PushSubscriptionController;
 use App\Http\Controllers\SharedTrackingController;
@@ -16,6 +17,8 @@ use App\Livewire\Rental\LocationCatalogue;
 use App\Livewire\Rental\LocationConfirmation;
 use App\Livewire\Rental\LocationVehicle;
 use Illuminate\Support\Facades\Route;
+use Laravel\Fortify\Http\Controllers\EmailVerificationNotificationController;
+use Laravel\Fortify\Http\Controllers\EmailVerificationPromptController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +28,29 @@ use Illuminate\Support\Facades\Route;
 */
 
 require __DIR__.'/public.php';
+
+/*
+|--------------------------------------------------------------------------
+| Confirmation d'adresse e-mail
+|--------------------------------------------------------------------------
+| Tenues ici, et non par Fortify, pour UNE difference : Fortify pose `auth:web` sur le lien de
+| confirmation, ce qui renvoyait vers `/login` tout porteur d'un telephone. L'URL signee EST la
+| preuve ; l'authentification n'y ajoutait rien et fermait le seul chemin hors du mur.
+|
+| Les deux autres restent gardees : l'invite et le renvoi supposent qu'on sache DE QUI il s'agit.
+*/
+Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
+    ->middleware('throttle:6,1')
+    ->name('verification.verify');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/email/verify', EmailVerificationPromptController::class)
+        ->name('verification.notice');
+
+    Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
+});
 
 Route::middleware(['auth', 'verified', 'active.account', 'phone.verified'])->group(function () {
 
