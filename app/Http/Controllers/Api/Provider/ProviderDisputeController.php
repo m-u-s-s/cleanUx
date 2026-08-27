@@ -30,6 +30,25 @@ class ProviderDisputeController extends Controller
         return response()->json(['data' => $items]);
     }
 
+    /**
+     * Le dossier et son fil, tels que le PRESTATAIRE a le droit de les voir.
+     *
+     * Sans lui, l'application ne pouvait que lister : repondre demandait d'ecrire a l'aveugle.
+     * `visibleTo(ROLE_PROVIDER)` filtre A LA REQUETE — une note interne du support ne remonte
+     * donc jamais, ni son texte ni ses pieces jointes.
+     */
+    public function show(Request $request, ComplaintCase $dispute): JsonResponse
+    {
+        abort_unless((int) $dispute->provider_user_id === (int) $request->user()->id, 403);
+
+        $dispute->load([
+            'events' => fn ($q) => $q->visibleTo(DisputeEvent::ROLE_PROVIDER)->orderBy('created_at'),
+            'events.author:id,name',
+        ]);
+
+        return response()->json(['data' => $dispute]);
+    }
+
     public function respond(Request $request, ComplaintCase $dispute): JsonResponse
     {
         abort_unless((int) $dispute->provider_user_id === (int) $request->user()->id, 403);

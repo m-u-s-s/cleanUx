@@ -69,6 +69,7 @@ export type RootStackParamList = {
   DailyRoute: undefined;
   Badges: undefined;
   ProviderDisputes: undefined;
+  ProviderDisputeDetail: { disputeId: number };
   ProviderRatings: undefined;
   ProviderChatList: undefined;
   ProviderChat: { threadId: number; title: string };

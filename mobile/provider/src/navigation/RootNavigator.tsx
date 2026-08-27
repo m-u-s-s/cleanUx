@@ -20,6 +20,7 @@ import { SafetyScreen } from '@/screens/SafetyScreen';
 import { DailyRouteScreen } from '@/screens/DailyRouteScreen';
 import { KYCScreen } from '@/screens/KYCScreen';
 import { ProviderDisputesScreen } from '@/screens/ProviderDisputesScreen';
+import { ProviderDisputeDetailScreen } from '@/screens/ProviderDisputeDetailScreen';
 import { ProviderRatingsScreen } from '@/screens/ProviderRatingsScreen';
 import { ProviderChatListScreen } from '@/screens/ProviderChatListScreen';
 import { ProviderChatScreen } from '@/screens/ProviderChatScreen';
@@ -632,6 +633,11 @@ export function RootNavigator() {
               name="FaceConsent"
               component={FaceConsentScreen}
               options={{ headerShown: true, title: 'Contrôle facial' }}
+            />
+            <Stack.Screen
+              name="ProviderDisputeDetail"
+              component={ProviderDisputeDetailScreen}
+              options={{ headerShown: true, title: 'Litige' }}
             />
             <Stack.Screen
               name="ProviderDisputes"

@@ -1,11 +1,14 @@
 import React from 'react';
-import { FlatList, View, Text, StyleSheet } from 'react-native';
+import { FlatList, View, Text, StyleSheet, Pressable } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { Screen, Badge, Skeleton, EmptyState, ErrorState } from '@/ui';
 import { apiClient } from '@/api';
 import {spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import type { RootStackParamList } from '@/navigation/types';
 
 interface Dispute {
   id: number;
@@ -16,6 +19,7 @@ interface Dispute {
 
 export function ProviderDisputesScreen() {
   const styles = stylesFor(useThemeColors());
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { data, isLoading, isError, refetch, isRefetching } = useQuery<Dispute[]>({
     queryKey: ['provider', 'disputes'],
@@ -34,13 +38,18 @@ export function ProviderDisputesScreen() {
           data={data ?? []}
           keyExtractor={item => String(item.id)}
           renderItem={({ item }) => (
-            <View style={styles.card}>
+            <Pressable
+              style={styles.card}
+              accessibilityRole="button"
+              accessibilityLabel={`Ouvrir le litige ${item.id}`}
+              onPress={() => navigation.navigate('ProviderDisputeDetail', { disputeId: item.id })}
+            >
               <Text style={styles.cardTitle}>Litige #{item.id}</Text>
               <Badge
                 label={item.status}
                 variant={item.status === 'resolved' ? 'success' : 'warning'}
               />
-            </View>
+            </Pressable>
           )}
           onRefresh={refetch}
           refreshing={isRefetching}

@@ -216,6 +216,8 @@ Route::middleware(['auth:sanctum', 'verified', 'role:employe', 'provider.approve
 
         // Phase Disputes v2 — Litiges provider
         Route::get('/disputes', [ProviderDisputeController::class, 'index']);
+        // `{dispute}` APRES la liste : sans cela, « disputes » serait pris pour un identifiant.
+        Route::get('/disputes/{dispute}', [ProviderDisputeController::class, 'show']);
         Route::post('/disputes/{dispute}/respond', [ProviderDisputeController::class, 'respond']);
 
         // Constitution du dossier prestataire : accessible à un compte auto-inscrit encore en
