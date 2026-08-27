@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
-import { FlatList, View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import { FlatList, View, Text, StyleSheet, Pressable, Alert, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen, Badge, Skeleton, EmptyState, ErrorState, Button, TextInput } from '@/ui';
 import { apiClient } from '@/api';
 import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+
+/**
+ * Le serveur plafonne a cinq (`PreuvesDeLitige::NOMBRE_MAX`) et n'accepte que des images.
+ * On le dit ici plutot que de laisser partir un envoi voue au 422.
+ */
+const MAX_PREUVES = 5;
 
 const CATEGORIES: { value: string; label: string }[] = [
   { value: 'quality', label: 'Qualité' },
@@ -33,16 +40,63 @@ export function DisputesScreen() {
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<string | null>(null);
+  const [preuves, setPreuves] = useState<string[]>([]);
+
+  const ajouterUnePreuve = async () => {
+    if (preuves.length >= MAX_PREUVES) {
+      Alert.alert('Cinq photos au maximum', 'Retirez-en une pour en ajouter une autre.');
+      return;
+    }
+
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert('Permission requise', 'Autorisez l’acces aux photos pour joindre une preuve.');
+      return;
+    }
+
+    const choix = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
+    const asset = !choix.canceled ? choix.assets[0] : null;
+
+    if (asset) {
+      setPreuves(actuelles => [...actuelles, asset.uri]);
+    }
+  };
+
+  const retirerUnePreuve = (uri: string) =>
+    setPreuves(actuelles => actuelles.filter(autre => autre !== uri));
 
   const create = useMutation({
-    mutationFn: async () =>
-      (await apiClient.post('/client/disputes', { subject, description, category })).data,
+    mutationFn: async () => {
+      // SANS PREUVE, PAS DE MULTIPART : le corps JSON reste la forme normale de cet appel.
+      if (preuves.length === 0) {
+        return (await apiClient.post('/client/disputes', { subject, description, category })).data;
+      }
+
+      const corps = new FormData();
+      corps.append('subject', subject);
+      corps.append('description', description);
+      corps.append('category', category ?? '');
+
+      preuves.forEach((uri, index) => {
+        // La forme { uri, name, type } est celle qu'attend FormData en React Native pour un
+        // fichier local ; un Blob ne fonctionne pas ici.
+        corps.append('attachments[]', { uri, name: `preuve-${index + 1}.jpg`, type: 'image/jpeg' } as never);
+      });
+
+      return (
+        await apiClient.post('/client/disputes', corps, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+      ).data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['disputes'] });
       setShowForm(false);
       setSubject('');
       setDescription('');
       setCategory(null);
+      setPreuves([]);
       Alert.alert('Litige ouvert', 'Notre équipe va le traiter dans les meilleurs délais.');
     },
     onError: () => Alert.alert('Échec', "Le litige n'a pas pu être ouvert. Réessayez."),
@@ -81,6 +135,24 @@ export function DisputesScreen() {
               </Pressable>
             ))}
           </View>
+          <Text style={styles.formLabel}>Photos (facultatif)</Text>
+          <View style={styles.preuves}>
+            {preuves.map(uri => (
+              <Pressable
+                key={uri}
+                onPress={() => retirerUnePreuve(uri)}
+                accessibilityLabel="Retirer cette photo"
+                style={styles.preuve}
+              >
+                <Image source={{ uri }} style={styles.preuveImage} />
+              </Pressable>
+            ))}
+
+            {preuves.length < MAX_PREUVES && (
+              <Button label="Ajouter une photo" size="sm" variant="outline" onPress={ajouterUnePreuve} />
+            )}
+          </View>
+
           <Button label="Envoyer" onPress={() => create.mutate()} disabled={!canSubmit} loading={create.isPending} />
         </View>
       )}
@@ -136,6 +208,9 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
     color: t.text,
   },
+  preuves: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, alignItems: 'center' },
+  preuve: { borderRadius: radius.md, overflow: 'hidden' },
+  preuveImage: { width: 64, height: 64 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
   chip: {
     paddingVertical: spacing.xs,
