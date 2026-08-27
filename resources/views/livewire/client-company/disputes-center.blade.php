@@ -44,6 +44,17 @@
                 <textarea id="description" wire:model="description" rows="3" class="mt-1 w-full rounded-xl border-slate-200 text-sm" placeholder="Détaillez le problème…"></textarea>
                 @error('description') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
             </div>
+
+            {{-- Les preuves partent sur le disque PRIVE et ne se relisent que par une URL signee. --}}
+            <div class="mt-3">
+                <label class="block text-xs font-medium text-slate-600" for="preuves">
+                    Photos (facultatif, {{ \App\Support\Disputes\PreuvesDeLitige::NOMBRE_MAX }} maximum)
+                </label>
+                <input id="preuves" type="file" multiple accept="image/*" wire:model="preuves"
+                       class="mt-1 w-full rounded-xl border-slate-200 text-sm">
+                @error('preuves.*') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
+                <div wire:loading wire:target="preuves" class="mt-1 text-xs text-slate-500">Envoi…</div>
+            </div>
             <div class="mt-3 flex justify-end">
                 <button type="button" wire:click="openDispute"
                     class="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50">

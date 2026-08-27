@@ -7,6 +7,7 @@ use App\Http\Requests\Api\Client\StoreDisputeRequest;
 use App\Models\ComplaintCase;
 use App\Models\DisputeEvent;
 use App\Services\Disputes\DisputeService;
+use App\Support\Disputes\PreuvesDeLitige;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -101,6 +102,7 @@ class DisputeController extends Controller
      * @bodyParam priority string Priority level: low, normal, high, urgent (default normal). Example: high
      * @bodyParam severity string Severity level: low, medium, high, critical (default medium). Example: medium
      * @bodyParam booking_id integer ID of the related booking (optional). Example: 42
+     * @bodyParam attachments file[] Photos justificatives (5 max, 5 Mo chacune, formats image). No-example
      *
      * @response 201 {"id": 1, "reference": "DSP-001", "status": "open", "sla_policy": "standard"}
      * @response 422 {"message": "The category field is required.", "errors": {"category": ["The category field is required."]}}
@@ -108,6 +110,9 @@ class DisputeController extends Controller
     public function store(StoreDisputeRequest $request): JsonResponse
     {
         $data = $request->validated();
+
+        // Les fichiers arrivent valides ; ils partent sur le disque prive sous leur forme stockee.
+        $data['attachments'] = PreuvesDeLitige::stocker($request->file('attachments') ?? []);
 
         $case = $this->service->open($request->user(), $data);
 
@@ -123,6 +128,7 @@ class DisputeController extends Controller
      * Add a client message to an existing dispute.
      *
      * @bodyParam body string required Message text (1-2000 chars). Example: J'attends toujours une réponse.
+     * @bodyParam attachments file[] Photos justificatives (5 max, 5 Mo chacune, formats image). No-example
      *
      * @response 201 {"event_id": 5, "status": "open"}
      * @response 403 {"message": "This action is unauthorized."}
@@ -133,13 +139,15 @@ class DisputeController extends Controller
 
         $data = $request->validate([
             'body' => ['required', 'string', 'min:1', 'max:2000'],
-        ]);
+        ] + PreuvesDeLitige::regles('attachments'));
 
         $event = $this->service->addMessage(
             $dispute,
             $request->user(),
             DisputeEvent::ROLE_CLIENT,
             $data['body'],
+            DisputeEvent::VISIBILITY_ALL,
+            PreuvesDeLitige::stocker($request->file('attachments') ?? []),
         );
 
         return response()->json([

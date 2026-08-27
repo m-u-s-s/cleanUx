@@ -5,17 +5,21 @@ namespace App\Livewire\ClientCompany;
 use App\Models\Booking;
 use App\Models\ComplaintCase;
 use App\Services\Disputes\DisputeService;
+use App\Support\Disputes\PreuvesDeLitige;
 use App\Support\Livewire\Concerns\EnforcesActiveOrgMembership;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 /** Espace société B2B P2 — centre de litiges de l'entreprise cliente. */
 class DisputesCenter extends Component
 {
     use EnforcesActiveOrgMembership;
+    use WithFileUploads;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';
@@ -30,6 +34,13 @@ class DisputesCenter extends Component
 
     public string $category = 'quality';
 
+    /**
+     * Les preuves jointes a l'ouverture du litige
+     *
+     * @var list<UploadedFile>
+     */
+    public array $preuves = [];
+
     public function openDispute(): void
     {
         $this->validate([
@@ -37,7 +48,7 @@ class DisputesCenter extends Component
             'subject' => ['required', 'string', 'max:191'],
             'description' => ['required', 'string', 'min:5', 'max:2000'],
             'category' => ['required', 'string'],
-        ]);
+        ] + PreuvesDeLitige::regles('preuves'));
 
         $orgId = Auth::user()->current_organization_id;
 
@@ -59,8 +70,9 @@ class DisputesCenter extends Component
                 'subject' => $this->subject,
                 'description' => $this->description,
                 'category' => $this->category,
+                'attachments' => PreuvesDeLitige::stocker($this->preuves),
             ]);
-            $this->reset(['bookingId', 'subject', 'description', 'showForm']);
+            $this->reset(['bookingId', 'subject', 'description', 'showForm', 'preuves']);
             $this->category = 'quality';
             $this->dispatch('toast', 'Litige ouvert.', 'success');
         } catch (ValidationException $e) {

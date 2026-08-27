@@ -51,6 +51,8 @@
                             <p class="font-mono text-xs text-slate-500">{{ $selected->reference }}</p>
                             <h2 class="text-xl font-black mt-1">{{ $selected->subject }}</h2>
                             <p class="text-sm text-slate-600 mt-2">{{ $selected->description }}</p>
+
+                            <x-preuves-jointes :fichiers="$selected->attachments ?? []" class="mt-4" />
                         </div>
 
                         <div class="p-4 space-y-3 max-h-96 overflow-y-auto border-b">
@@ -73,6 +75,9 @@
                                         <span class="text-slate-500">{{ $event->created_at->format('d/m H:i') }}</span>
                                     </div>
                                     <p class="text-slate-700 mt-1">{{ $event->body }}</p>
+
+                                    <x-preuves-jointes :fichiers="$event->attachments ?? []"
+                                                       titre="Pièces jointes" class="mt-2" />
                                 </div>
                             @empty
                                 <p class="text-sm text-slate-400 text-center">Aucun message visible.</p>

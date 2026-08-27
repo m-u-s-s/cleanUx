@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ComplaintCase;
 use App\Models\DisputeEvent;
 use App\Services\Disputes\DisputeService;
+use App\Support\Disputes\PreuvesDeLitige;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -35,13 +36,15 @@ class ProviderDisputeController extends Controller
 
         $data = $request->validate([
             'body' => ['required', 'string', 'min:1', 'max:2000'],
-        ]);
+        ] + PreuvesDeLitige::regles('attachments'));
 
         $event = $this->service->addMessage(
             $dispute,
             $request->user(),
             DisputeEvent::ROLE_PROVIDER,
             $data['body'],
+            DisputeEvent::VISIBILITY_ALL,
+            PreuvesDeLitige::stocker($request->file('attachments') ?? []),
         );
 
         return response()->json(['event_id' => $event->id], 201);

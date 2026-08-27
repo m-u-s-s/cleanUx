@@ -183,6 +183,9 @@
                                         {{ $event->body }}
                                     @endif
                                 </p>
+                                <x-preuves-jointes :fichiers="$event->attachments ?? []"
+                                                   titre="Pièces jointes" class="mt-2" />
+
                                 @if($event->visibility !== 'all')
                                     <p class="text-xs text-slate-400 mt-1">Visibilité : {{ $event->visibility }}</p>
                                 @endif
@@ -200,6 +203,11 @@
                                       class="w-full rounded-xl border-gray-300 text-sm"
                                       placeholder="Message admin..."></textarea>
                             @error('messageBody') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+
+                            <input type="file" multiple accept="image/*" wire:model="preuves"
+                                   class="w-full rounded-xl border-gray-300 text-xs"
+                                   aria-label="Pièces jointes du message">
+                            @error('preuves.*') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
                             <div class="flex gap-2 items-center">
                                 <select wire:model="messageVisibility" class="rounded-xl border-gray-300 text-xs">
                                     <option value="all">Visible client + provider</option>

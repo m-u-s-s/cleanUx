@@ -8,16 +8,20 @@ use App\Models\DisputeResolution;
 use App\Models\User;
 use App\Services\Disputes\DisputeResolutionService;
 use App\Services\Disputes\DisputeService;
+use App\Support\Disputes\PreuvesDeLitige;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class DisputesCenter extends Component
 {
     use EnforcesAdminAccess;
+    use WithFileUploads;
     use WithPagination;
 
     protected $paginationTheme = 'tailwind';
@@ -33,6 +37,13 @@ class DisputesCenter extends Component
     public string $search = '';
 
     public ?int $selectedId = null;
+
+    /**
+     * Les pieces jointes du message en cours de redaction
+     *
+     * @var list<UploadedFile>
+     */
+    public array $preuves = [];
 
     public string $messageBody = '';
 
@@ -81,7 +92,7 @@ class DisputesCenter extends Component
         $this->validate([
             'messageBody' => ['required', 'string', 'min:1', 'max:5000'],
             'messageVisibility' => ['required', 'in:all,client,provider,private'],
-        ]);
+        ] + PreuvesDeLitige::regles('preuves'));
 
         $case = ComplaintCase::findOrFail($this->selectedId);
         app(DisputeService::class)->addMessage(
@@ -90,9 +101,10 @@ class DisputesCenter extends Component
             DisputeEvent::ROLE_ADMIN,
             $this->messageBody,
             $this->messageVisibility,
+            PreuvesDeLitige::stocker($this->preuves),
         );
 
-        $this->reset(['messageBody']);
+        $this->reset(['messageBody', 'preuves']);
         $this->dispatch('toast', 'Message ajouté.', 'success');
     }
 
