@@ -1,3 +1,4 @@
+import { traduireMaintenant } from '@/i18n/traduireMaintenant';
 /**
  * CE QUE L'UTILISATEUR LIT — en français, daté comme on date une date, et jamais en jargon.
  *
@@ -14,13 +15,14 @@
  * Elle ne suit PAS les statuts du domaine (`en_attente`, `confirme`, `termine`…), que l'API ne
  * laisse jamais sortir.
  */
+// Ces tables vivent hors de tout composant : elles portent la CLE, la fonction traduit.
 const LIBELLES: Record<string, string> = {
-  pending: 'En attente',
-  confirmed: 'Confirmée',
-  in_progress: 'En cours',
-  completed: 'Terminée',
-  cancelled: 'Annulée',
-  unknown: 'À préciser',
+  pending: 'statut.en_attente',
+  confirmed: 'statut.confirmee',
+  in_progress: 'statut.en_cours',
+  completed: 'statut.terminee',
+  cancelled: 'statut.annulee',
+  unknown: 'statut.a_preciser',
 };
 
 /**
@@ -30,13 +32,15 @@ const LIBELLES: Record<string, string> = {
  * qu'on corrigera — qu'un vide qui laisse croire que la réservation n'a pas d'état.
  */
 export function libelleStatut(statut: string | null | undefined): string {
-  const inconnu = LIBELLES.unknown ?? 'À préciser';
+  const inconnu = traduireMaintenant(LIBELLES.unknown ?? 'statut.a_preciser');
 
   if (!statut) {
     return inconnu;
   }
 
-  return LIBELLES[statut] ?? statut;
+  const cle = LIBELLES[statut];
+
+  return cle ? traduireMaintenant(cle) : statut;
 }
 
 const MOIS = [
@@ -179,15 +183,15 @@ export function messageDErreur(erreur: any, repli = 'Une erreur est survenue. R�
 
   switch (erreur?.status ?? erreur?.response?.status) {
     case 401:
-      return 'Votre session a expiré. Reconnectez-vous.';
+      return traduireMaintenant('erreur.session_expiree');
     case 403:
-      return 'Vous n’avez pas accès à cette action.';
+      return traduireMaintenant('erreur.pas_acces');
     case 404:
-      return 'Cet élément n’existe plus ou n’est pas encore disponible.';
+      return traduireMaintenant('erreur.element_absent');
     case 422:
-      return 'Cette valeur n’a pas été acceptée. Vérifiez et réessayez.';
+      return traduireMaintenant('erreur.valeur_refusee');
     case 429:
-      return 'Trop de demandes coup sur coup. Réessayez dans une minute.';
+      return traduireMaintenant('erreur.trop_de_demandes');
     default:
       return repli;
   }
@@ -307,21 +311,23 @@ export function formatDateIso(iso: string | null | undefined, avecHeure = false)
  * la vérification n'a pas d'état.
  */
 const LIBELLES_KYC: Record<string, string> = {
-  pending: 'En attente',
-  in_review: 'En cours d’examen',
-  awaiting_documents: 'Documents attendus',
-  clear: 'Vérifiée',
-  consider: 'À examiner',
-  unidentified: 'Identité non établie',
-  rejected: 'Refusée',
-  expired: 'Expirée',
-  cancelled: 'Annulée',
+  pending: 'statut.en_attente',
+  in_review: 'kyc.en_cours_dexamen',
+  awaiting_documents: 'kyc.documents_attendus',
+  clear: 'kyc.verifiee',
+  consider: 'kyc.a_examiner',
+  unidentified: 'kyc.identite_non_etablie',
+  rejected: 'kyc.refusee',
+  expired: 'kyc.expiree',
+  cancelled: 'statut.annulee',
 };
 
 export function libelleStatutKyc(statut: string | null | undefined): string {
   if (!statut) {
-    return 'Non vérifié';
+    return traduireMaintenant('kyc.non_verifie');
   }
 
-  return LIBELLES_KYC[statut] ?? statut;
+  const cle = LIBELLES_KYC[statut];
+
+  return cle ? traduireMaintenant(cle) : statut;
 }

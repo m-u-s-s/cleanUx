@@ -13,6 +13,21 @@ import { fr } from '../catalogues/fr';
 const RACINE = path.resolve(__dirname, '../../../../');
 const DOSSIERS = ['client/src', 'provider/src', 'shared/src'];
 
+/**
+ * Les trois façons d'APPELER le traducteur avec une clé écrite en clair.
+ *
+ * On ne cherche pas « tout littéral qui ressemble à une clé » : `'agencies.manage'` est une
+ * permission, pas une traduction, et la confondre inventerait des orphelines.
+ */
+const APPELS = [
+  /\btr\('([^']+)'\)/g,
+  /\btraduireMaintenant\('([^']+)'/g,
+  /(?:libelleCle|descriptionCle)\s*:\s*'([^']+)'/g,
+];
+
+/** Pour la dérive, la question inverse : cette clé apparaît-elle QUELQUE PART dans les sources ? */
+const CLE_EN_LITTERAL = /'([a-z_]+(?:\.[a-z0-9_]+)+)'/g;
+
 function fichiers(dossier: string): string[] {
   const complet = path.join(RACINE, dossier);
 
@@ -27,32 +42,22 @@ function fichiers(dossier: string): string[] {
       return entree.name === '__tests__' || entree.name === 'node_modules' ? [] : fichiers(p);
     }
 
-    return entree.name.endsWith('.tsx') ? [p] : [];
+    return entree.name.endsWith('.tsx') || entree.name.endsWith('.ts') ? [p] : [];
   });
 }
 
-/** @returns les clés employées, avec le fichier qui les emploie */
-function clesEmployees(): Map<string, string> {
+function balayer(motifs: RegExp[]): Map<string, string> {
   const trouvees = new Map<string, string>();
 
   for (const dossier of DOSSIERS) {
     for (const fichier of fichiers(dossier)) {
       const source = fs.readFileSync(path.join(RACINE, fichier), 'utf8');
 
-      /*
-       * DEUX FORMES, PAS UNE. `tr('cle')` est la plus courante, mais une constante de module range
-       * la clé dans un littéral — `libelleCle: 'invoices.tous'` — et l'écran la traduit au rendu.
-       * Ne chercher que la première déclarerait ces clés-là orphelines.
-       */
-      for (const m of source.matchAll(/\btr\('([^']+)'\)/g)) {
-        if (!trouvees.has(m[1])) {
-          trouvees.set(m[1], fichier);
-        }
-      }
-
-      for (const m of source.matchAll(/(?:libelleCle|descriptionCle)\s*:\s*'([^']+)'/g)) {
-        if (!trouvees.has(m[1])) {
-          trouvees.set(m[1], fichier);
+      for (const motif of motifs) {
+        for (const m of source.matchAll(motif)) {
+          if (!trouvees.has(m[1])) {
+            trouvees.set(m[1], fichier);
+          }
         }
       }
     }
@@ -62,10 +67,10 @@ function clesEmployees(): Map<string, string> {
 }
 
 describe('les clés de traduction', () => {
-  const employees = clesEmployees();
+  const appelees = balayer(APPELS);
 
   it('sont toutes présentes dans le catalogue français', () => {
-    const orphelines = [...employees.entries()]
+    const orphelines = [...appelees.entries()]
       .filter(([cle]) => !(cle in fr))
       .map(([cle, fichier]) => `${cle}  (${fichier})`)
       .sort();
@@ -75,12 +80,20 @@ describe('les clés de traduction', () => {
 
   /** LE TÉMOIN : le balayage trouve bien des clés — sinon il ne prouverait rien. */
   it('témoin : le balayage voit les écrans', () => {
-    expect(employees.size).toBeGreaterThan(300);
+    expect(appelees.size).toBeGreaterThan(300);
   });
 
-  /** Une clé du catalogue que plus aucun écran n'emploie est du poids mort — on la compte. */
+  /**
+   * Une clé du catalogue que plus rien n'emploie est du poids mort — on la compte.
+   *
+   * Ici la question est l'inverse de celle du premier test, donc le balayage aussi : une clé peut
+   * être rangée dans une table (`pending: 'statut.en_attente'`) sans jamais apparaître dans un
+   * appel. Un littéral trop large invente des orphelines ; ici il ne peut qu'éviter un faux
+   * « inutilisée », ce qui est le bon sens de l'erreur.
+   */
   it('le catalogue ne dérive pas trop loin de ce que les écrans emploient', () => {
-    const inutilisees = Object.keys(fr).filter(cle => !employees.has(cle));
+    const citees = balayer([CLE_EN_LITTERAL]);
+    const inutilisees = Object.keys(fr).filter(cle => !citees.has(cle));
 
     // Les clés du socle (`langue.*`, `commun.*`) sont employées par `t(`, pas `tr(`.
     expect(inutilisees.length).toBeLessThan(20);

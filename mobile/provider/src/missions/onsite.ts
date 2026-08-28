@@ -127,11 +127,12 @@ export interface MissionTimeline {
   entries: MissionTimelineEntry[];
 }
 
-export const INCIDENT_TYPES: { value: MissionIncidentType; label: string }[] = [
-  { value: 'preexisting_damage', label: 'Dégât préexistant' },
-  { value: 'access_impossible', label: 'Accès impossible' },
-  { value: 'missing_item', label: 'Objet ou fourniture manquant' },
-  { value: 'other', label: 'Autre imprévu' },
+// Hors composant : la constante porte la CLE, l'ecran traduit au rendu.
+export const INCIDENT_TYPES: { value: MissionIncidentType; libelleCle: string }[] = [
+  { value: 'preexisting_damage', libelleCle: 'incident.degat_preexistant' },
+  { value: 'access_impossible', libelleCle: 'incident.acces_impossible' },
+  { value: 'missing_item', libelleCle: 'incident.objet_manquant' },
+  { value: 'other', libelleCle: 'incident.autre_imprevu' },
 ];
 
 export function useMissionMedia(missionId: number | null) {

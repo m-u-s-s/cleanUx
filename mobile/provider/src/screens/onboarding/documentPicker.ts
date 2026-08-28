@@ -1,3 +1,4 @@
+import { traduireMaintenant } from '@/i18n/traduireMaintenant';
 /**
  * Sélection d'un justificatif, par photo ou par fichier.
  *
@@ -129,11 +130,11 @@ export async function pickDocument(): Promise<PickedFile | null> {
  */
 export function rejectionReason(file: PickedFile, size?: number): string | null {
   if (!ACCEPTED_MIME_TYPES.includes(file.mimeType)) {
-    return 'Format non accepté. Envoyez un PDF, un JPG ou un PNG.';
+    return traduireMaintenant('document.format_non_accepte');
   }
 
   if (typeof size === 'number' && size > MAX_FILE_BYTES) {
-    return 'Fichier trop volumineux (10 Mo maximum).';
+    return traduireMaintenant('document.fichier_trop_volumineux');
   }
 
   return null;

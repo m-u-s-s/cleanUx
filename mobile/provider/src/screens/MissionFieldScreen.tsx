@@ -369,12 +369,12 @@ export function MissionFieldScreen({ route, navigation }: Props) {
                 onPress={() => setIncidentType(choisi ? null : categorie.value)}
                 accessibilityRole="button"
                 accessibilityState={{ selected: choisi }}
-                accessibilityLabel={categorie.label}
+                accessibilityLabel={tr(categorie.libelleCle)}
                 testID={`incident-type-${categorie.value}`}
                 style={[styles.chip, choisi && styles.chipSelected]}
               >
                 <Text style={[styles.chipLabel, choisi && styles.chipLabelSelected]}>
-                  {categorie.label}
+                  {tr(categorie.libelleCle)}
                 </Text>
               </TouchableOpacity>
             );
