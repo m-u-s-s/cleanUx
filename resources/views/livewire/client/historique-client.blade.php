@@ -46,7 +46,7 @@
         </div>
     </div>
 
-    <div class="space-y-4">
+    <div class="mt-6 space-y-4">
         @forelse($historique as $rdv)
         <div class="border rounded-2xl p-4 bg-gray-50 text-sm text-gray-700 space-y-4 dark:bg-slate-800/60 dark:border-slate-700 dark:text-slate-300">
             <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
