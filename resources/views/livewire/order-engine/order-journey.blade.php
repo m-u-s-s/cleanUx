@@ -12,7 +12,12 @@
 @php($symboleDevise = app(\App\Services\Localization\Money::class)->symbol(\App\View\Components\Money::deviseDuContexte()))
 
 <div class="pb-28 lg:pb-8">
-    <div class="mx-auto max-w-6xl space-y-6 px-4 py-6 lg:grid lg:max-w-7xl lg:grid-cols-[1fr_340px] lg:gap-8 lg:space-y-0">
+    {{-- La seconde colonne n'existe QUE si le panneau d'estimation la remplit : sans devis,
+         elle reservait 340 px de vide et poussait tout le contenu vers la gauche. --}}
+    <div @class([
+        'mx-auto max-w-6xl space-y-6 px-4 py-6 lg:max-w-7xl',
+        'lg:grid lg:grid-cols-[1fr_340px] lg:gap-8 lg:space-y-0' => (bool) $this->quote,
+    ])>
 
         {{--
             `min-w-0` N'EST PAS DÉCORATIF — sans lui, la colonne d'estimation sort de l'écran.
