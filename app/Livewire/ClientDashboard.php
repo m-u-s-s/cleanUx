@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\AnnuleUnRendezVousClient;
 use App\Models\Booking;
 use App\Models\FinanceInvoice;
 use App\Models\FinanceQuote;
@@ -22,6 +23,7 @@ use Livewire\WithPagination;
 
 class ClientDashboard extends Component
 {
+    use AnnuleUnRendezVousClient;
     use WithPagination;
 
     public string $tri = 'asc';
@@ -470,28 +472,10 @@ class ClientDashboard extends Component
         $this->dispatch('toast', message: 'Rendez-vous mis à jour.', type: 'success');
     }
 
-    public function annuler($id)
+    /** Le bouton de la carte : il OUVRE le devis, il n'annule pas. */
+    public function annuler($id): void
     {
-        $rdv = Booking::findOrFail($id);
-
-        Gate::authorize('cancel', $rdv);
-
-        if (! $rdv->canStillBeEditedByClient()) {
-            $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être annulé.', type: 'error');
-
-            return;
-        }
-
-        ActivityLogger::log('rdv_annule_par_client', $rdv, [
-            'date' => $rdv->date?->format('Y-m-d') ?? (string) $rdv->date,
-            'heure' => $rdv->heure,
-            'service_type' => $rdv->service_type,
-            'service_zone_id' => $rdv->service_zone_id,
-        ]);
-
-        $rdv->markCancelledByClient();
-
-        $this->dispatch('toast', message: 'Rendez-vous annulé.', type: 'success');
+        $this->demanderAnnulation((int) $id);
     }
 
     /**

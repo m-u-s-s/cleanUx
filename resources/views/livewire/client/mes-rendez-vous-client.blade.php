@@ -16,6 +16,6 @@
         @include('livewire.client.rendezvous.edit-panel')
         @include('livewire.client.rendezvous.list')
         @include('livewire.client.rendezvous.pagination')
-        @include('livewire.client.rendezvous.cancel-modal')
+        @include('livewire.client.annulation.modale')
     </div>
 </x-page-shell>

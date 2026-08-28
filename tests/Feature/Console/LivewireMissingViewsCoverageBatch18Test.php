@@ -83,4 +83,51 @@ class LivewireMissingViewsCoverageBatch18Test extends TestCase
             ->expectsOutputToContain('Composants sans blade associé')
             ->assertExitCode(Command::FAILURE);
     }
+
+    /**
+     * Un trait de `app/Livewire/Concerns` n'est pas un composant : il ne rend aucune vue.
+     *
+     * TEMOIN : la classe voisine, elle, est bien signalee. Sans elle, ce test resterait vert
+     * si la commande cessait de signaler quoi que ce soit.
+     */
+    public function test_le_code_partage_n_est_pas_pris_pour_un_composant(): void
+    {
+        $this->tempDir = sys_get_temp_dir().'/cov_batch18_traits_'.uniqid();
+        File::makeDirectory($this->tempDir.'/Concerns', 0777, true, true);
+
+        $trait = $this->tempDir.'/Concerns/PartageQuelqueChose.php';
+        File::put($trait, "<?php
+
+namespace App\Livewire\Concerns;
+
+trait PartageQuelqueChose
+{
+}
+");
+
+        $abstraite = $this->tempDir.'/BaseAbstraite.php';
+        File::put($abstraite, '<?php
+
+abstract class BaseAbstraite
+{
+}
+');
+
+        $composant = $this->tempDir.'/SansVue.php';
+        File::put($composant, '<?php class SansVue {}');
+
+        $mock = File::partialMock();
+        $mock->shouldReceive('isDirectory')->andReturn(true);
+        $mock->shouldReceive('allFiles')->andReturn([
+            new SplFileInfo($trait, 'Concerns', 'Concerns/PartageQuelqueChose.php'),
+            new SplFileInfo($abstraite, '', 'BaseAbstraite.php'),
+            new SplFileInfo($composant, '', 'SansVue.php'),
+        ]);
+
+        $this->artisan('livewire:missing-views')
+            ->expectsOutputToContain('SansVue')
+            ->doesntExpectOutputToContain('PartageQuelqueChose')
+            ->doesntExpectOutputToContain('BaseAbstraite')
+            ->assertExitCode(Command::FAILURE);
+    }
 }

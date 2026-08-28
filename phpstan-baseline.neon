@@ -5539,18 +5539,6 @@ parameters:
 			path: app/Livewire/Client/LoyaltyDashboard.php
 
 		-
-			message: '#^Call to an undefined method App\\Models\\Booking\:\:markCancelledByClient\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: app/Livewire/Client/MesRendezVousClient.php
-
-		-
-			message: '#^Call to an undefined method App\\Services\\CancellationV2\\CancellationEngine\:\:cancel\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Livewire/Client/MesRendezVousClient.php
-
-		-
 			message: '#^Method App\\Livewire\\Client\\MesRendezVousClient\:\:historyFor\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -6447,18 +6435,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\Booking\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Booking\>\:\:\$service_type\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ClientDashboard.php
-
-		-
-			message: '#^Call to an undefined method App\\Models\\Booking\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Booking\>\:\:markCancelledByClient\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Livewire/ClientDashboard.php
-
-		-
-			message: '#^Method App\\Livewire\\ClientDashboard\:\:annuler\(\) has no return type specified\.$#'
-			identifier: missingType.return
 			count: 1
 			path: app/Livewire/ClientDashboard.php
 

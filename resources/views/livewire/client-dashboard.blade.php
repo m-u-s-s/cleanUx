@@ -18,4 +18,7 @@
     <div wire:loading.remove>
         @include('livewire.client.dashboard.security-sessions')
     </div>
+
+    {{-- La meme modale que « Mes rendez-vous » : le devis avant le prelevement. --}}
+    @include('livewire.client.annulation.modale')
 </div>

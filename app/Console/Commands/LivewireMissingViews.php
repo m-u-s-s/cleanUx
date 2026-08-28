@@ -26,6 +26,11 @@ class LivewireMissingViews extends Command
         $missing = [];
 
         foreach (File::allFiles($componentDir) as $file) {
+            // `app/Livewire/Concerns` porte du code partage : un trait ne rend aucune vue.
+            if (! $this->estUnComposant($file->getPathname())) {
+                continue;
+            }
+
             $relative = str_replace('\\', '/', $file->getRelativePathname());
             $segments = explode('/', str_replace('.php', '', $relative));
             $conventionalViewRelative = collect($segments)
@@ -72,6 +77,18 @@ class LivewireMissingViews extends Command
         }
 
         return self::FAILURE;
+    }
+
+    /** Un trait, une interface, un enum ou une classe abstraite n'est pas un composant. */
+    protected function estUnComposant(string $path): bool
+    {
+        $source = File::get($path);
+
+        if (preg_match('/^\s*(trait|interface|enum)\s+\w/m', $source) === 1) {
+            return false;
+        }
+
+        return preg_match('/^\s*abstract\s+class\s+\w/m', $source) !== 1;
     }
 
     /**

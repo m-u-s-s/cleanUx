@@ -2,25 +2,22 @@
 
 namespace App\Livewire\Client;
 
+use App\Livewire\Concerns\AnnuleUnRendezVousClient;
 use App\Models\ActivityLog;
 use App\Models\Booking;
 use App\Services\Booking\EmployeeAvailabilityService;
-use App\Services\CancellationV2\CancellationEngine;
-use App\Services\CancellationV2\CancellationQuote;
 use App\Services\Missions\MissionFromRendezVousSyncService;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
-use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class MesRendezVousClient extends Component
 {
+    use AnnuleUnRendezVousClient;
     use WithPagination;
 
     public string $tri = 'asc';
@@ -38,10 +35,6 @@ class MesRendezVousClient extends Component
     public $editDate = null;
 
     public $editHeure = null;
-
-    public ?int $cancelRdvId = null;
-
-    public string $cancelReason = '';
 
     public array $creneauxDisponibles = [];
 
@@ -250,114 +243,6 @@ class MesRendezVousClient extends Component
         $this->fermerEdition();
 
         $this->dispatch('toast', message: 'Rendez-vous replanifié avec succès.', type: 'success');
-    }
-
-    public function demanderAnnulation(int $id): void
-    {
-        $rdv = Booking::findOrFail($id);
-        Gate::authorize('cancel', $rdv);
-
-        if (! $rdv->canStillBeEditedByClient()) {
-            $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être annulé.', type: 'error');
-
-            return;
-        }
-
-        $this->cancelRdvId = $id;
-        $this->cancelReason = '';
-    }
-
-    /**
-     * CE QUE L'ANNULATION VA COUTER, AVANT DE LA CONFIRMER.
-     *
-     * La modale demandait « confirmer ? » et le moteur prelevait des frais. Le client
-     * apprenait le montant sur son releve. Quinze lignes de JavaScript avaient ete COLLEES
-     * dans la vue pour interroger `/cancellation-quote` — hors de toute balise `<script>`,
-     * donc affichees telles quelles au client, jeton d'API compris.
-     *
-     * Ici, pas de requete : nous SOMMES le serveur. Et l'auteur est transmis, comme sur la
-     * route d'API — sans lui le plafond d'exemptions ne serait consulte qu'a l'execution, et
-     * l'ecran annoncerait « 0 » avant un debit reel.
-     *
-     * `null` quand le devis ne peut pas etre etabli : la modale montre alors ce qu'elle sait,
-     * sans inventer un montant. Taire l'ecran entier pour un devis manquant serait pire.
-     */
-    #[Computed]
-    public function devisAnnulation(): ?CancellationQuote
-    {
-        if ($this->cancelRdvId === null) {
-            return null;
-        }
-
-        if (! class_exists(CancellationEngine::class) || ! Schema::hasTable('booking_cancellations_v2')) {
-            return null;
-        }
-
-        try {
-            return app(CancellationEngine::class)->quote(
-                bookingId: $this->cancelRdvId,
-                actorRole: 'client',
-                actorUserId: Auth::id(),
-            );
-        } catch (\Throwable $e) {
-            Log::warning('[cancellation_v2] devis indisponible', [
-                'booking_id' => $this->cancelRdvId,
-                'error' => $e->getMessage(),
-            ]);
-
-            return null;
-        }
-    }
-
-    public function fermerAnnulation(): void
-    {
-        $this->cancelRdvId = null;
-        $this->cancelReason = '';
-    }
-
-    public function confirmerAnnulation(): void
-    {
-        $rdv = Booking::findOrFail($this->cancelRdvId);
-
-        Gate::authorize('cancel', $rdv);
-
-        if (! $rdv->canStillBeEditedByClient()) {
-            $this->dispatch('toast', message: 'Ce rendez-vous ne peut plus être annulé.', type: 'error');
-
-            return;
-        }
-
-        ActivityLogger::log('rdv_annule_par_client', $rdv, [
-            'date' => $rdv->date?->format('Y-m-d') ?? (string) $rdv->date,
-            'heure' => $rdv->heure,
-            'service' => $rdv->service_display_name,
-            'service_identifier' => $rdv->service_identifier_display,
-            'reason' => $this->cancelReason,
-        ]);
-
-        // CancellationV2 — engine paramétrable (tiers windows + fees + refund stripe)
-        try {
-            if (class_exists(CancellationEngine::class)
-                && Schema::hasTable('booking_cancellations_v2')) {
-                app(CancellationEngine::class)->cancel(
-                    booking: $rdv,
-                    actorRole: 'client',
-                    actor: Auth::user(),
-                    reason: $this->cancelReason,
-                );
-            } else {
-                $rdv->markCancelledByClient($this->cancelReason);
-            }
-        } catch (\Throwable $e) {
-            Log::warning('[cancellation_v2] cancel failed, fallback legacy', [
-                'booking_id' => $rdv->id,
-                'error' => $e->getMessage(),
-            ]);
-            $rdv->markCancelledByClient($this->cancelReason);
-        }
-
-        $this->fermerAnnulation();
-        $this->dispatch('toast', message: 'Rendez-vous annulé.', type: 'success');
     }
 
     public function annuler(int $id): void
