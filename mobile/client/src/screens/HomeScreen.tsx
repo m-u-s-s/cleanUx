@@ -13,6 +13,7 @@ import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { formatAdresse, formatDateHeure, libelleStatut } from '@/lib/format';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -31,6 +32,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
  * ainsi que les accès rapides et les indicateurs.
  */
 export function HomeScreen() {
+  const { t: tr } = useTraduction();
   const { user } = useAuth();
   const { data: bookings, isLoading } = useBookings();
   const navigation = useNavigation<Nav>();
@@ -90,7 +92,7 @@ export function HomeScreen() {
         ) : isFirstTime ? (
           <View style={styles.welcomeCard} testID="home-welcome">
             <Icon name="home-outline" size={48} color={colors.brand[400]} />
-            <Text style={styles.welcomeTitle}>Bienvenue sur brio</Text>
+            <Text style={styles.welcomeTitle}>{tr('home.bienvenue_sur_brio')}</Text>
             <Text style={styles.welcomeText}>
               Réservez votre premier service et découvrez une nouvelle façon de gérer votre maison.
             </Text>
@@ -147,7 +149,7 @@ export function HomeScreen() {
           <View style={styles.welcomeCard} testID="home-no-active">
             <Icon name="calendar-outline" size={40} color={colors.brand[400]} />
             <Text style={styles.welcomeText}>
-              Aucune réservation en cours.
+              {tr('home.aucune_reservation_en_cours')}
             </Text>
           </View>
         )}
@@ -210,7 +212,7 @@ export function HomeScreen() {
       <View style={styles.floating} pointerEvents="box-none">
         {/* Un seul bouton : deux appels côte à côte obligeaient à choisir avant d'avoir vu les
             options. Il ouvre la feuille, qui pose la vraie question — quel type de mission. */}
-        <Button label="Réserver un service" onPress={openSheet} fullWidth size="lg" />
+        <Button label={tr('home.reserver_un_service')} onPress={openSheet} fullWidth size="lg" />
       </View>
 
       <HomeActionsSheet ref={sheetRef} />

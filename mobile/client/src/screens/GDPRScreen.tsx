@@ -6,8 +6,10 @@ import { apiClient } from '@/api';
 import {spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 export function GDPRScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const exportData = useMutation({
@@ -40,12 +42,12 @@ export function GDPRScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Mes données (RGPD)</Text>
+      <Text style={styles.title}>{tr('g_d_p_r.mes_donnees_rgpd')}</Text>
       <Text style={styles.info}>
-        Conformément au RGPD, vous pouvez exporter ou supprimer vos données personnelles.
+        {tr('g_d_p_r.conformement_au_rgpd_vous_pouvez')}
       </Text>
       <Button
-        label="Exporter mes données"
+        label={tr('g_d_p_r.exporter_mes_donnees')}
         onPress={handleExport}
         variant="secondary"
         fullWidth
@@ -53,7 +55,7 @@ export function GDPRScreen() {
       />
       <Divider label="ou" />
       <Button
-        label="Supprimer mon compte"
+        label={tr('g_d_p_r.supprimer_mon_compte')}
         onPress={handleErase}
         variant="danger"
         fullWidth

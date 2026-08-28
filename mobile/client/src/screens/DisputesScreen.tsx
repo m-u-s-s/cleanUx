@@ -7,6 +7,7 @@ import { apiClient } from '@/api';
 import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * Le serveur plafonne a cinq (`PreuvesDeLitige::NOMBRE_MAX`) et n'accepte que des images.
@@ -25,6 +26,7 @@ const CATEGORIES: { value: string; label: string }[] = [
 ];
 
 export function DisputesScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const queryClient = useQueryClient();
@@ -109,7 +111,7 @@ export function DisputesScreen() {
   return (
     <Screen>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>Mes litiges</Text>
+        <Text style={styles.title}>{tr('disputes.mes_litiges')}</Text>
         <Button label={showForm ? 'Fermer' : 'Ouvrir un litige'} size="sm" onPress={() => setShowForm(v => !v)} />
       </View>
 
@@ -118,12 +120,12 @@ export function DisputesScreen() {
           <TextInput label="Sujet" placeholder="Sujet" value={subject} onChangeText={setSubject} />
           <TextInput
             label="Description"
-            placeholder="Décrivez le problème"
+            placeholder={tr('disputes.decrivez_le_probleme')}
             value={description}
             onChangeText={setDescription}
             multiline
           />
-          <Text style={styles.formLabel}>Catégorie</Text>
+          <Text style={styles.formLabel}>{tr('disputes.categorie')}</Text>
           <View style={styles.chips}>
             {CATEGORIES.map(cat => (
               <Pressable
@@ -135,13 +137,13 @@ export function DisputesScreen() {
               </Pressable>
             ))}
           </View>
-          <Text style={styles.formLabel}>Photos (facultatif)</Text>
+          <Text style={styles.formLabel}>{tr('disputes.photos_facultatif')}</Text>
           <View style={styles.preuves}>
             {preuves.map(uri => (
               <Pressable
                 key={uri}
                 onPress={() => retirerUnePreuve(uri)}
-                accessibilityLabel="Retirer cette photo"
+                accessibilityLabel={tr('disputes.retirer_cette_photo')}
                 style={styles.preuve}
               >
                 <Image source={{ uri }} style={styles.preuveImage} />
@@ -149,7 +151,7 @@ export function DisputesScreen() {
             ))}
 
             {preuves.length < MAX_PREUVES && (
-              <Button label="Ajouter une photo" size="sm" variant="outline" onPress={ajouterUnePreuve} />
+              <Button label={tr('disputes.ajouter_une_photo')} size="sm" variant="outline" onPress={ajouterUnePreuve} />
             )}
           </View>
 
@@ -177,7 +179,7 @@ export function DisputesScreen() {
           )}
           onRefresh={refetch}
           refreshing={isRefetching}
-          ListEmptyComponent={<EmptyState title="Aucun litige" message="Vous n'avez aucun litige en cours." icon="shield-outline" />}
+          ListEmptyComponent={<EmptyState title={tr('disputes.aucun_litige')} message="Vous n'avez aucun litige en cours." icon="shield-outline" />}
         />
       )}
     </Screen>

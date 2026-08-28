@@ -7,6 +7,7 @@ import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { MembreSociete } from './types';
+import { useTraduction } from '@/i18n';
 
 /**
  * Les rôles tels que l'organisation les nomme, traduits pour l'écran.
@@ -27,6 +28,7 @@ const LIBELLE_ROLE: Record<string, string> = {
 };
 
 export function CompanyMembersScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: membres, refetch, isRefetching, isError } = useQuery<MembreSociete[]>({
@@ -38,7 +40,7 @@ export function CompanyMembersScreen() {
     return (
       <Screen>
         <EmptyState
-          title="Membres indisponibles"
+          title={tr('company_members.membres_indisponibles')}
           message="Impossible de charger l'équipe de votre société."
           actionLabel="Réessayer"
           onAction={() => void refetch()}
@@ -79,7 +81,7 @@ export function CompanyMembersScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucun membre"
+            title={tr('company_members.aucun_membre')}
             message="Invitez vos collègues depuis l'espace entreprise sur le web."
           />
         }

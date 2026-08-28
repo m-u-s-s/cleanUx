@@ -6,6 +6,7 @@ import { apiClient } from '@/api';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Lieu {
   id: number;
@@ -32,6 +33,7 @@ interface Lieu {
  * ment sur ce qu'il fait se paye au premier client qui croit avoir tout effacé.
  */
 export function PlacesScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const qc = useQueryClient();
 
@@ -80,16 +82,16 @@ export function PlacesScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Mes lieux</Text>
+      <Text style={styles.title}>{tr('places.mes_lieux')}</Text>
       <Text style={styles.intro}>
-        L'adresse, l'étage, le code — enregistrés une fois, transmis au bon moment.
+        {tr('places.l_adresse_l_etage_le')}
       </Text>
 
       <View style={styles.formulaire}>
         <TextInput
           value={libelle}
           onChangeText={setLibelle}
-          placeholder="Nom du lieu (Chez moi, Maison de maman…)"
+          placeholder={tr('places.nom_du_lieu_chez_moi')}
           placeholderTextColor={styles.placeholder.color}
           style={styles.champ}
           testID="champ-libelle-lieu"
@@ -105,7 +107,7 @@ export function PlacesScreen() {
         <TextInput
           value={etage}
           onChangeText={setEtage}
-          placeholder="Étage / porte"
+          placeholder={tr('places.etage_porte')}
           placeholderTextColor={styles.placeholder.color}
           style={styles.champ}
           testID="champ-etage-lieu"
@@ -120,12 +122,12 @@ export function PlacesScreen() {
         />
 
         <View style={styles.bascule}>
-          <Text style={styles.detail}>Il y a une alarme à désactiver</Text>
+          <Text style={styles.detail}>{tr('places.il_y_a_une_alarme')}</Text>
           <Switch value={alarme} onValueChange={setAlarme} testID="bascule-alarme" />
         </View>
 
         <Button
-          label="Ajouter ce lieu"
+          label={tr('places.ajouter_ce_lieu')}
           size="sm"
           fullWidth
           disabled={libelle.trim().length === 0 || adresse.trim().length === 0 || ajouter.isPending}
@@ -162,10 +164,10 @@ export function PlacesScreen() {
             </View>
 
             {item.is_default ? (
-              <Badge label="Par défaut" variant="success" />
+              <Badge label={tr('places.par_defaut')} variant="success" />
             ) : (
               <Button
-                label="Par défaut"
+                label={tr('places.par_defaut')}
                 size="sm"
                 variant="ghost"
                 onPress={() => definirParDefaut.mutate(item.id)}
@@ -185,7 +187,7 @@ export function PlacesScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucun lieu"
+            title={tr('places.aucun_lieu')}
             message="Le premier lieu que vous ajoutez devient votre lieu par défaut."
           />
         }

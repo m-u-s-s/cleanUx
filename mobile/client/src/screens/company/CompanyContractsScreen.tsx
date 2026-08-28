@@ -7,6 +7,7 @@ import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { ContratSociete } from './types';
+import { useTraduction } from '@/i18n';
 
 /**
  * LES CONTRATS-CADRES, EN LECTURE SEULE.
@@ -17,6 +18,7 @@ import type { ContratSociete } from './types';
  * un bouton qui ne peut aboutir.
  */
 export function CompanyContractsScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: contrats, refetch, isRefetching, isError } = useQuery<ContratSociete[]>({
@@ -28,7 +30,7 @@ export function CompanyContractsScreen() {
     return (
       <Screen>
         <EmptyState
-          title="Contrats indisponibles"
+          title={tr('company_contracts.contrats_indisponibles')}
           message="Impossible de charger les contrats de votre société."
           actionLabel="Réessayer"
           onAction={() => void refetch()}
@@ -67,7 +69,7 @@ export function CompanyContractsScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucun contrat"
+            title={tr('company_contracts.aucun_contrat')}
             message="Vos contrats-cadres négociés apparaîtront ici."
           />
         }

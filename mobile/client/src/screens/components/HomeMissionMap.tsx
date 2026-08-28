@@ -5,6 +5,7 @@ import { useTrackingSession, useTrackingTrail, useLiveTracking } from '@/trackin
 import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * Carte de la mission en cours, sur l'accueil client.
@@ -24,6 +25,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
  * un fond OpenStreetMap en WebView — qui n'exige aucune clé.
  */
 export function HomeMissionMap({ bookingId }: { bookingId: number }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: session } = useTrackingSession(bookingId);
@@ -68,7 +70,7 @@ export function HomeMissionMap({ bookingId }: { bookingId: number }) {
         >
           <mapModule.Marker
             coordinate={{ latitude: current.latitude, longitude: current.longitude }}
-            title="Votre prestataire"
+            title={tr('home_mission_map.votre_prestataire')}
           />
         </mapModule.MapView>
       ) : (

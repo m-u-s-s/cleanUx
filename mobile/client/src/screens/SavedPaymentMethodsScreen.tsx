@@ -7,8 +7,10 @@ import type { PaymentMethod } from '@/payment';
 import {spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 export function SavedPaymentMethodsScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: methods, isLoading } = usePaymentMethods();
@@ -53,7 +55,7 @@ export function SavedPaymentMethodsScreen() {
 
   return (
     <Screen scroll>
-      <Text style={styles.title}>Moyens de paiement</Text>
+      <Text style={styles.title}>{tr('saved_payment_methods.moyens_de_paiement')}</Text>
       {isLoading ? (
         <View style={styles.skeletons}>
           {[1, 2].map(i => (
@@ -74,7 +76,7 @@ export function SavedPaymentMethodsScreen() {
                   {item.exp_month}/{item.exp_year}
                 </Text>
               </View>
-              {item.is_default && <Badge label="Par défaut" variant="brand" />}
+              {item.is_default && <Badge label={tr('saved_payment_methods.par_defaut')} variant="brand" />}
               <Button
                 label="Supprimer"
                 onPress={() => handleDelete(item)}
@@ -85,12 +87,12 @@ export function SavedPaymentMethodsScreen() {
           )}
           ItemSeparatorComponent={() => <Divider />}
           ListEmptyComponent={
-            <Text style={styles.empty}>Aucun moyen de paiement enregistré</Text>
+            <Text style={styles.empty}>{tr('saved_payment_methods.aucun_moyen_de_paiement_enregistre')}</Text>
           }
         />
       )}
       <Button
-        label="Ajouter une carte"
+        label={tr('saved_payment_methods.ajouter_une_carte')}
         onPress={handleAddCard}
         fullWidth
         loading={setupIntent.isPending}

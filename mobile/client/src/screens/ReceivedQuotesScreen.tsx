@@ -8,6 +8,7 @@ import { apiClient } from '@/api';
 import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Devis {
   id: number;
@@ -51,6 +52,7 @@ const LIBELLES: Record<string, string> = {
  * cette vérité, et non le seul statut.
  */
 export function ReceivedQuotesScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const qc = useQueryClient();
 
@@ -93,8 +95,8 @@ export function ReceivedQuotesScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Devis reçus</Text>
-      <Text style={styles.intro}>Accepter crée les rendez-vous correspondants.</Text>
+      <Text style={styles.title}>{tr('received_quotes.devis_recus')}</Text>
+      <Text style={styles.intro}>{tr('received_quotes.accepter_cree_les_rendez_vous')}</Text>
 
       <FlatList
         data={devis ?? []}
@@ -163,7 +165,7 @@ export function ReceivedQuotesScreen() {
               ))}
           </View>
         )}
-        ListEmptyComponent={<EmptyState title="Aucun devis" message="Vous n'avez reçu aucun devis." />}
+        ListEmptyComponent={<EmptyState title={tr('received_quotes.aucun_devis')} message="Vous n'avez reçu aucun devis." />}
       />
     </Screen>
   );

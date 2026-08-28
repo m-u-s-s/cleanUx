@@ -9,8 +9,10 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import { useClientSpacePreference } from '@/company/useClientSpacePreference';
+import { useTraduction } from '@/i18n';
 
 export function ProfileScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -45,7 +47,7 @@ export function ProfileScreen() {
      * était l'un des trois : il n'existait aucun moyen de fermer sa session depuis l'application.
      */
     <Screen scroll>
-      <Text style={styles.title}>Mon profil</Text>
+      <Text style={styles.title}>{tr('profile.mon_profil')}</Text>
       <View style={styles.actions}>
         {/*
           ESPACE ENTREPRISE — en tête, parce qu'un responsable multi-sites ouvre son profil POUR
@@ -64,7 +66,7 @@ export function ProfileScreen() {
               la console d'administration, une fois pour l'espace société prestataire.
             */}
             <Button
-              label="Changer d’espace"
+              label={tr('profile.changer_despace')}
               onPress={() => void clear()}
               variant="primary"
               fullWidth
@@ -84,13 +86,13 @@ export function ProfileScreen() {
           fullWidth
         />
         <Button
-          label="Modifier le profil"
+          label={tr('profile.modifier_le_profil')}
           onPress={() => navigation.navigate('ProfileEdit')}
           variant="secondary"
           fullWidth
         />
         <Button
-          label="Mes moyens de paiement"
+          label={tr('profile.mes_moyens_de_paiement')}
           onPress={() => navigation.navigate('SavedPaymentMethods')}
           variant="secondary"
           fullWidth
@@ -117,31 +119,31 @@ export function ProfileScreen() {
           documenté de ce dépôt : `tsc` et Jest ne disent rien de la joignabilité d'un écran.
         */}
         <Button
-          label="Mes lieux"
+          label={tr('profile.mes_lieux')}
           onPress={() => navigation.navigate('Places')}
           variant="secondary"
           fullWidth
         />
         <Button
-          label="Mon budget"
+          label={tr('profile.mon_budget')}
           onPress={() => navigation.navigate('Budget')}
           variant="secondary"
           fullWidth
         />
         <Button
-          label="Ma protection"
+          label={tr('profile.ma_protection')}
           onPress={() => navigation.navigate('Protection')}
           variant="secondary"
           fullWidth
         />
         <Button
-          label="Devis reçus"
+          label={tr('profile.devis_recus')}
           onPress={() => navigation.navigate('ReceivedQuotes')}
           variant="secondary"
           fullWidth
         />
         <Button
-          label="Programme fidélité"
+          label={tr('profile.programme_fidelite')}
           onPress={() => navigation.navigate('Loyalty')}
           variant="secondary"
           fullWidth
@@ -153,31 +155,31 @@ export function ProfileScreen() {
           fullWidth
         />
         <Button
-          label="Devis IA"
+          label={tr('profile.devis_ia')}
           onPress={() => navigation.navigate('AiQuote')}
           variant="secondary"
           fullWidth
         />
         <Button
-          label="Mes litiges"
+          label={tr('profile.mes_litiges')}
           onPress={() => navigation.navigate('Disputes')}
           variant="secondary"
           fullWidth
         />
         <Button
-          label="Mes données (RGPD)"
+          label={tr('profile.mes_donnees_rgpd')}
           onPress={() => navigation.navigate('GDPR')}
           variant="secondary"
           fullWidth
         />
         <Button
-          label="Donner mon avis"
+          label={tr('profile.donner_mon_avis')}
           onPress={() => navigation.navigate('NPS')}
           variant="secondary"
           fullWidth
         />
         <Button
-          label="Préférences notifications"
+          label={tr('profile.preferences_notifications')}
           onPress={() => navigation.navigate('NotificationPreferences')}
           variant="secondary"
           fullWidth
@@ -202,14 +204,14 @@ export function ProfileScreen() {
           fullWidth
         />
         <Button
-          label="Politique de confidentialité"
+          label={tr('profile.politique_de_confidentialite')}
           onPress={() => navigation.navigate('Legal', { type: 'privacy' })}
           variant="ghost"
           fullWidth
         />
         <Divider />
         <Button
-          label="Se déconnecter"
+          label={tr('profile.se_deconnecter')}
           onPress={() =>
             Alert.alert('Déconnexion', 'Voulez-vous vous déconnecter ?', [
               { text: 'Annuler', style: 'cancel' },

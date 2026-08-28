@@ -8,6 +8,7 @@ import { apiClient } from '@/api';
 import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Budget {
   budget_id: number;
@@ -55,6 +56,7 @@ const euros = (cents: number) => formatCentimes(cents);
  * un logiciel de comptabilité n'a rien à faire dans le stockage d'un téléphone.
  */
 export function CompanyGovernanceScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const qc = useQueryClient();
 
@@ -90,11 +92,11 @@ export function CompanyGovernanceScreen() {
       <ScrollView>
         <Text style={styles.title}>Pilotage</Text>
         <Text style={styles.intro}>
-          Budgets, approbations et niveau de service.
+          {tr('company_governance.budgets_approbations_et_niveau_de')}
         </Text>
 
         <View style={styles.bloc} testID="approbations">
-          <Text style={styles.sousTitre}>Demandes à approuver</Text>
+          <Text style={styles.sousTitre}>{tr('company_governance.demandes_a_approuver')}</Text>
 
           {(demandes ?? []).map((demande) => (
             <View key={demande.id} style={styles.ligne} testID={`demande-${demande.id}`}>
@@ -125,25 +127,25 @@ export function CompanyGovernanceScreen() {
           ))}
 
           {(demandes ?? []).length === 0 && (
-            <Text style={styles.detail}>Aucune demande en attente.</Text>
+            <Text style={styles.detail}>{tr('company_governance.aucune_demande_en_attente')}</Text>
           )}
 
           {(demandes ?? []).length > 0 && (
             // Ce qui manquait avant : la demande basculait de statut et personne ne cherchait de
             // professionnel.
             <Text style={styles.note}>
-              Approuver lance immédiatement la recherche d'un professionnel.
+              {tr('company_governance.approuver_lance_immediatement_la_recherche')}
             </Text>
           )}
         </View>
 
         {sla && (
           <View style={styles.bloc} testID="niveau-service">
-            <Text style={styles.sousTitre}>Niveau de service</Text>
+            <Text style={styles.sousTitre}>{tr('company_governance.niveau_de_service')}</Text>
 
             <View style={styles.ligne}>
               <View style={styles.identite}>
-                <Text style={styles.nom}>Réalisation</Text>
+                <Text style={styles.nom}>{tr('company_governance.realisation')}</Text>
                 <Text style={styles.detail}>{sla.meta.bookings_count} intervention(s)</Text>
               </View>
               <Badge label={`${sla.meta.completion_rate} %`} variant="neutral" />
@@ -151,7 +153,7 @@ export function CompanyGovernanceScreen() {
 
             <View style={styles.ligne}>
               <View style={styles.identite}>
-                <Text style={styles.nom}>Ponctualité</Text>
+                <Text style={styles.nom}>{tr('company_governance.ponctualite')}</Text>
                 {/* Annoncées, jamais fondues : les compter comme des retards punirait un GPS
                     coupé ; comme des arrivées à l'heure, l'inverse. */}
                 <Text style={styles.detail}>
@@ -167,7 +169,7 @@ export function CompanyGovernanceScreen() {
         )}
 
         <View style={styles.bloc} testID="budgets">
-          <Text style={styles.sousTitre}>Budgets en cours</Text>
+          <Text style={styles.sousTitre}>{tr('company_governance.budgets_en_cours')}</Text>
 
           {(budgets ?? []).map((budget) => (
             <View key={budget.budget_id} style={styles.ligne} testID={`budget-${budget.budget_id}`}>
@@ -188,13 +190,13 @@ export function CompanyGovernanceScreen() {
 
           {(budgets ?? []).length === 0 && (
             <Text style={styles.detail}>
-              Aucun budget défini. Sans plafond, le dépassement se découvre à la facture.
+              {tr('company_governance.aucun_budget_defini_sans_plafond')}
             </Text>
           )}
         </View>
 
         <Button
-          label="Rafraîchir"
+          label={tr('company_governance.rafraichir')}
           size="sm"
           variant="ghost"
           disabled={isRefetching}

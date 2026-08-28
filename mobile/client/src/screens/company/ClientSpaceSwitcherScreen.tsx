@@ -5,6 +5,7 @@ import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { ChosenClientSpace } from '@/company/space';
+import { useTraduction } from '@/i18n';
 
 /**
  * Le choix d'un compte qui est à la fois particulier et membre d'une société.
@@ -20,12 +21,13 @@ export function ClientSpaceSwitcherScreen({
 }: {
   onChoose: (space: ChosenClientSpace) => void;
 }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   return (
     <Screen>
       <View testID="client-space-switcher" style={styles.container}>
-        <Text style={styles.title}>Que souhaitez-vous gérer ?</Text>
+        <Text style={styles.title}>{tr('client_space_switcher.que_souhaitez_vous_gerer')}</Text>
         <Text style={styles.subtitle}>
           Votre compte donne accès aux deux espaces. Vous pourrez en changer à tout moment depuis
           votre profil.
@@ -33,13 +35,13 @@ export function ClientSpaceSwitcherScreen({
 
         <Choice
           icon="business-outline"
-          label="Mon entreprise"
+          label={tr('client_space_switcher.mon_entreprise')}
           hint="Locaux, réservations, contrats, facturation"
           onPress={() => onChoose('clientCompany')}
         />
         <Choice
           icon="person-outline"
-          label="Mes services perso"
+          label={tr('client_space_switcher.mes_services_perso')}
           hint="Mes réservations à titre personnel"
           onPress={() => onChoose('personal')}
         />

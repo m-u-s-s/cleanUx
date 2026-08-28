@@ -6,6 +6,7 @@ import { apiClient } from '@/api';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * Préférences de notification : la matrice canal × catégorie.
@@ -47,6 +48,7 @@ interface PreferencesPayload {
 }
 
 export function NotificationPreferencesScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const queryClient = useQueryClient();
@@ -112,8 +114,8 @@ export function NotificationPreferencesScreen() {
     return (
       <Screen>
         <View style={styles.centered} testID="preferences-error">
-          <Text style={styles.catDesc}>Impossible de charger vos préférences.</Text>
-          <Button label="Réessayer" onPress={() => refetch()} variant="secondary" />
+          <Text style={styles.catDesc}>{tr('notification_preferences.impossible_de_charger_vos_preferences')}</Text>
+          <Button label={tr('notification_preferences.reessayer')} onPress={() => refetch()} variant="secondary" />
         </View>
       </Screen>
     );
@@ -123,7 +125,7 @@ export function NotificationPreferencesScreen() {
 
   return (
     <Screen scroll>
-      <Text style={styles.title}>Préférences de notifications</Text>
+      <Text style={styles.title}>{tr('notification_preferences.preferences_de_notifications')}</Text>
 
       {data.categories.map(category => {
         const meta = CATEGORY_LABELS[category];

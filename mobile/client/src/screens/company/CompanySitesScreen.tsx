@@ -7,6 +7,7 @@ import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { LocalSociete } from './types';
+import { useTraduction } from '@/i18n';
 
 /**
  * LES LOCAUX DE LA SOCIÉTÉ.
@@ -20,6 +21,7 @@ import type { LocalSociete } from './types';
  * doivent rester une seule, et le serveur est celui qui tranche.
  */
 export function CompanySitesScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const qc = useQueryClient();
 
@@ -52,7 +54,7 @@ export function CompanySitesScreen() {
     return (
       <Screen>
         <EmptyState
-          title="Locaux indisponibles"
+          title={tr('company_sites.locaux_indisponibles')}
           message="Votre rôle ne permet peut-être pas de consulter le parc, ou le service est momentanément injoignable."
           actionLabel="Réessayer"
           onAction={() => void refetch()}
@@ -63,13 +65,13 @@ export function CompanySitesScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Mes locaux</Text>
+      <Text style={styles.title}>{tr('company_sites.mes_locaux')}</Text>
 
       <View style={styles.formulaire}>
         <TextInput
           value={nom}
           onChangeText={setNom}
-          placeholder="Nom du local"
+          placeholder={tr('company_sites.nom_du_local')}
           placeholderTextColor={styles.placeholder.color}
           style={styles.champ}
           testID="champ-nom-local"
@@ -119,7 +121,7 @@ export function CompanySitesScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucun local"
+            title={tr('company_sites.aucun_local')}
             message="Ajoutez vos sites pour rattacher chaque intervention à une adresse."
           />
         }

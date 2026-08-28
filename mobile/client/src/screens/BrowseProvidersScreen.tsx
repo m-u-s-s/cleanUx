@@ -5,10 +5,12 @@ import { Screen, TextInput, Badge, Avatar, Skeleton, EmptyState, AnimatedListIte
 import { useBrowseProviders } from '@/booking';
 import type { Provider } from '@/booking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
+import { useTraduction } from '@/i18n';
 
 const PROVIDER_CARD_HEIGHT = 100;
 
 export function BrowseProvidersScreen() {
+  const { t: tr } = useTraduction();
   const [trade, setTrade] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const themeColors = useThemeColors();
@@ -53,13 +55,13 @@ export function BrowseProvidersScreen() {
       </Text>
       <View style={styles.filters}>
         <TextInput
-          label="Métier"
+          label={tr('browse_providers.metier')}
           value={trade}
           onChangeText={setTrade}
-          placeholder="nettoyage, peinture…"
+          placeholder={tr('browse_providers.nettoyage_peinture')}
         />
         <TextInput
-          label="Code postal"
+          label={tr('browse_providers.code_postal')}
           value={postalCode}
           onChangeText={setPostalCode}
           placeholder="1000"
@@ -78,11 +80,11 @@ export function BrowseProvidersScreen() {
             renderItem={renderProviderCard}
             getItemLayout={getItemLayout}
             contentContainerStyle={styles.list}
-            accessibilityLabel="Liste des prestataires"
+            accessibilityLabel={tr('browse_providers.liste_des_prestataires')}
             ListEmptyComponent={uneRechercheEstLancee ? (
-              <EmptyState title="Aucun prestataire trouvé" message="Essayez avec d'autres critères de recherche." icon="search-outline" />
+              <EmptyState title={tr('browse_providers.aucun_prestataire_trouve')} message="Essayez avec d'autres critères de recherche." icon="search-outline" />
             ) : (
-              <EmptyState title="Trouvez un prestataire" message="Renseignez un métier ou un code postal pour lancer la recherche." icon="search-outline" />
+              <EmptyState title={tr('browse_providers.trouvez_un_prestataire')} message="Renseignez un métier ou un code postal pour lancer la recherche." icon="search-outline" />
             )}
             refreshControl={
               <RefreshControl
@@ -111,7 +113,7 @@ const ProviderCard = React.memo(function ProviderCard({ provider }: { provider: 
             <Text style={[styles.rating, { color: themeColors.textSecondary }]}>⭐ {provider.rating_avg.toFixed(1)} ({provider.review_count})</Text>
           ) : (
             // Pas encore noté : on le dit. « ⭐ 0.0 » se lirait comme une mauvaise note.
-            <Text style={[styles.rating, { color: themeColors.textSecondary }]}>Nouveau prestataire</Text>
+            <Text style={[styles.rating, { color: themeColors.textSecondary }]}>{tr('browse_providers.nouveau_prestataire')}</Text>
           )}
           {provider.distance_km != null && (
             <Text style={[styles.distance, { color: themeColors.textMuted }]}>{provider.distance_km.toFixed(1)} km</Text>

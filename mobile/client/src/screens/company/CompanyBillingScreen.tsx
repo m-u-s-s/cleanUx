@@ -13,6 +13,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import type { FactureSociete, ResumeFacturation } from './types';
+import { useTraduction } from '@/i18n';
 
 interface Facturation {
   summary: ResumeFacturation;
@@ -32,6 +33,7 @@ interface Facturation {
  * réduite.
  */
 export function CompanyBillingScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -44,7 +46,7 @@ export function CompanyBillingScreen() {
     return (
       <Screen>
         <EmptyState
-          title="Facturation indisponible"
+          title={tr('company_billing.facturation_indisponible')}
           message="Votre rôle ne permet peut-être pas de consulter la facturation de la société."
           actionLabel="Réessayer"
           onAction={() => void refetch()}
@@ -62,7 +64,7 @@ export function CompanyBillingScreen() {
       <View style={styles.grilleKpis}>
         <View style={styles.kpi}>
           <KPICard
-            title="Reste à payer"
+            title={tr('company_billing.reste_a_payer')}
             value={resume ? formatMontant(resume.unpaid) : '—'}
             tone={resume && resume.unpaid > 0 ? 'warning' : 'neutral'}
             loading={!resume}
@@ -70,7 +72,7 @@ export function CompanyBillingScreen() {
         </View>
         <View style={styles.kpi}>
           <KPICard
-            title="Émis ce mois"
+            title={tr('company_billing.emis_ce_mois')}
             value={resume ? formatMontant(resume.total_month) : '—'}
             loading={!resume}
           />
@@ -117,7 +119,7 @@ export function CompanyBillingScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucune facture"
+            title={tr('company_billing.aucune_facture')}
             message="Les factures de votre société apparaîtront ici dès la première intervention facturée."
           />
         }

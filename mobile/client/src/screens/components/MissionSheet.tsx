@@ -7,6 +7,7 @@ import { useOnSiteTimeline, useOnSiteExtras, useTodoList, useRevisionDeDevis } f
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * « MA MISSION » — l'aperçu, pas le contenu.
@@ -38,6 +39,7 @@ interface MissionSheetProps {
 
 export const MissionSheet = forwardRef<GorhomBottomSheet, MissionSheetProps>(
   ({ bookingId, onGerer, onMessage, onLitige }, ref) => {
+    const { t: tr } = useTraduction();
     const t = useThemeColors();
     const styles = stylesFor(t);
 
@@ -64,7 +66,7 @@ export const MissionSheet = forwardRef<GorhomBottomSheet, MissionSheetProps>(
     return (
       <BottomSheet ref={ref} snapPoints={['45%']}>
         <View style={styles.body} testID="mission-sheet">
-          <Text style={styles.titre} accessibilityRole="header">Ma mission</Text>
+          <Text style={styles.titre} accessibilityRole="header">{tr('mission.ma_mission')}</Text>
 
           {enAttente > 0 ? (
             <View style={styles.attente} testID="mission-sheet-attente">
@@ -91,12 +93,12 @@ export const MissionSheet = forwardRef<GorhomBottomSheet, MissionSheetProps>(
                   : `${tachesOuvertes} tâches de votre liste restent à faire`}
               </Text>
             ) : (
-              <Text style={styles.resumeTexte}>Votre liste est à jour.</Text>
+              <Text style={styles.resumeTexte}>{tr('mission.votre_liste_est_a_jour')}</Text>
             )}
           </View>
 
           <Button
-            label="Gérer ma mission"
+            label={tr('mission.gerer_ma_mission')}
             onPress={onGerer}
             fullWidth
             size="lg"
@@ -120,7 +122,7 @@ export const MissionSheet = forwardRef<GorhomBottomSheet, MissionSheetProps>(
               style={[styles.raccourci, { backgroundColor: t.card }]}
               onPress={onMessage}
               accessibilityRole="button"
-              accessibilityLabel="Envoyer un message au prestataire"
+              accessibilityLabel={tr('mission.envoyer_un_message_au_prestataire')}
               testID="mission-sheet-message"
             >
               <Icon name="chatbubble-outline" size={20} color={t.text} />
@@ -131,11 +133,11 @@ export const MissionSheet = forwardRef<GorhomBottomSheet, MissionSheetProps>(
               style={[styles.raccourci, { backgroundColor: t.card }]}
               onPress={onLitige}
               accessibilityRole="button"
-              accessibilityLabel="Signaler un litige sur cette mission"
+              accessibilityLabel={tr('mission.signaler_un_litige_sur_cette')}
               testID="mission-sheet-litige"
             >
               <Icon name="flag-outline" size={20} color={t.text} />
-              <Text style={styles.raccourciTexte}>Signaler un litige</Text>
+              <Text style={styles.raccourciTexte}>{tr('mission.signaler_un_litige')}</Text>
             </TouchableOpacity>
           </View>
         </View>

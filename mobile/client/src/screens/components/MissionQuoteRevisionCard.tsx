@@ -8,6 +8,7 @@ import type { QuoteRevision } from '@/booking/onsite';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * LE NOUVEAU DEVIS, VU DU SALON.
@@ -25,6 +26,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
  * deux premières fois — et le dit avant d'être pressé.
  */
 export function MissionQuoteRevisionCard({ bookingId }: { bookingId: number }) {
+  const { t: tr } = useTraduction();
   const t = useThemeColors();
   const styles = stylesFor(t);
 
@@ -53,11 +55,11 @@ export function MissionQuoteRevisionCard({ bookingId }: { bookingId: number }) {
 
       <View style={styles.montants}>
         <View>
-          <Text style={styles.libelle}>Devis d’origine</Text>
+          <Text style={styles.libelle}>{tr('mission_quote_revision.devis_dorigine')}</Text>
           <Text style={styles.ancien}>{montant(revision.original_total, revision.currency)}</Text>
         </View>
         <View>
-          <Text style={styles.libelle}>Nouveau devis</Text>
+          <Text style={styles.libelle}>{tr('mission_quote_revision.nouveau_devis')}</Text>
           <Text style={styles.nouveau} testID="revision-nouveau-total">
             {montant(revision.revised_total, revision.currency)}
           </Text>
@@ -70,20 +72,20 @@ export function MissionQuoteRevisionCard({ bookingId }: { bookingId: number }) {
 
       {choixOuvert ? (
         <View style={styles.choix} testID="revision-choix">
-          <Text style={styles.choixTitre}>Que voulez-vous faire ?</Text>
+          <Text style={styles.choixTitre}>{tr('mission_quote_revision.que_voulez_vous_faire')}</Text>
           <Text style={styles.choixNote}>
             Arrêter met fin à l’intervention. Le prestataire n’a pas commencé : vous ne payez rien.
           </Text>
 
           <Button
-            label="Continuez au prix d’origine"
+            label={tr('mission_quote_revision.continuez_au_prix_dorigine')}
             onPress={() => envoyer(false, 'continue')}
             loading={repondre.isPending}
             fullWidth
             testID="revision-continuer"
           />
           <Button
-            label="Arrêtez l’intervention"
+            label={tr('mission_quote_revision.arretez_lintervention')}
             variant="danger"
             onPress={() => envoyer(false, 'stop')}
             loading={repondre.isPending}

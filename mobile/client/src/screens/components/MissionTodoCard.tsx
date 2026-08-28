@@ -5,6 +5,7 @@ import { useTodoList, useAjouterTache, useRetirerTache, useConsigneDAcces } from
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * MA LISTE DE TÂCHES — ce que je veux qu'on fasse chez moi.
@@ -22,6 +23,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
  * pour écrire après la fermeture.
  */
 export function MissionTodoCard({ bookingId }: { bookingId: number }) {
+  const { t: tr } = useTraduction();
   const t = useThemeColors();
   const styles = stylesFor(t);
 
@@ -93,7 +95,7 @@ export function MissionTodoCard({ bookingId }: { bookingId: number }) {
 
       {liste.items.length === 0 ? (
         <Text style={styles.vide}>
-          Rien pour l’instant. Sans liste, le prestataire termine dès qu’il a fini.
+          {tr('mission_todo.rien_pour_linstant_sans_liste')}
         </Text>
       ) : null}
 
@@ -107,14 +109,14 @@ export function MissionTodoCard({ bookingId }: { bookingId: number }) {
       */}
       <View style={styles.consigne}>
         <TextInput
-          label="Consigne d’accès de dernière minute"
+          label={tr('mission_todo.consigne_dacces_de_derniere_minute')}
           value={consigne}
           onChangeText={setConsigne}
-          placeholder="Le digicode est 4589."
+          placeholder={tr('mission_todo.le_digicode_est_4589')}
           testID="consigne-saisie"
         />
         <Button
-          label="Envoyer au prestataire"
+          label={tr('mission_todo.envoyer_au_prestataire')}
           variant="secondary"
           onPress={() =>
             envoyerLaConsigne.mutate(consigne.trim(), {
@@ -130,10 +132,10 @@ export function MissionTodoCard({ bookingId }: { bookingId: number }) {
       {fenetre.open ? (
         <>
           <TextInput
-            label="Ajouter une tâche"
+            label={tr('mission_todo.ajouter_une_tache')}
             value={saisie}
             onChangeText={setSaisie}
-            placeholder="Nettoyer la hotte"
+            placeholder={tr('mission_todo.nettoyer_la_hotte')}
             testID="todo-saisie"
           />
           <Button
@@ -151,7 +153,7 @@ export function MissionTodoCard({ bookingId }: { bookingId: number }) {
           */}
           {liste.suggestions.length > 0 ? (
             <View style={styles.suggestions}>
-              <Text style={styles.suggestionsTitre}>Souvent demandé</Text>
+              <Text style={styles.suggestionsTitre}>{tr('mission_todo.souvent_demande')}</Text>
               <View style={styles.puces}>
                 {liste.suggestions.map((suggestion) => (
                   <Text

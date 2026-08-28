@@ -20,6 +20,7 @@ import {
 import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -114,6 +115,7 @@ interface InvoicesScreenProps {
 }
 
 export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -224,7 +226,7 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
   const ListHeader = (
     <View>
       <Text style={styles.title} accessibilityRole="header">
-        Mes factures
+        {tr('invoices.mes_factures')}
       </Text>
 
       {/* 1 + 2. Summary KPI header + Payment health widget */}
@@ -239,7 +241,7 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
       <View style={styles.searchRow}>
         <TextInput
           testID="invoices-search"
-          label="Rechercher une facture…"
+          label={tr('invoices.rechercher_une_facture')}
           value={search}
           onChangeText={setSearch}
           onSubmitEditing={e => handleSearchSubmit(e.nativeEvent.text)}
@@ -315,7 +317,7 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
           onPress={handleReset}
           style={styles.resetBtn}
         >
-          <Text style={styles.resetBtnText}>Réinitialiser</Text>
+          <Text style={styles.resetBtnText}>{tr('invoices.reinitialiser')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -344,13 +346,13 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
           />
         )}
         contentContainerStyle={styles.list}
-        accessibilityLabel="Liste des factures"
+        accessibilityLabel={tr('invoices.liste_des_factures')}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={
           loading ? null : (
             <View testID="invoices-empty">
               <EmptyState
-                title="Aucune facture"
+                title={tr('invoices.aucune_facture')}
                 message="Vos factures apparaîtront ici une fois votre première réservation terminée."
                 icon="receipt-outline"
               />
@@ -369,6 +371,7 @@ interface SummaryBlockProps {
 }
 
 function SummaryBlock({ summary: { summary, payment_health } }: SummaryBlockProps) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const tone = HEALTH_TONE_MAP[payment_health.tone] ?? 'neutral';
@@ -390,7 +393,7 @@ function SummaryBlock({ summary: { summary, payment_health } }: SummaryBlockProp
           value={summary.invoices_count}
         />
         <KPICard
-          title="Payées"
+          title={tr('invoices.payees')}
           value={summary.paid_count}
           tone="success"
         />
@@ -400,7 +403,7 @@ function SummaryBlock({ summary: { summary, payment_health } }: SummaryBlockProp
           tone={summary.partial_count > 0 ? 'warning' : 'neutral'}
         />
         <KPICard
-          title="En retard"
+          title={tr('invoices.en_retard')}
           value={summary.overdue_count}
           tone={summary.overdue_count > 0 ? 'danger' : 'neutral'}
         />
@@ -408,7 +411,7 @@ function SummaryBlock({ summary: { summary, payment_health } }: SummaryBlockProp
 
       {/* Outstanding total */}
       <View style={styles.outstandingRow}>
-        <Text style={styles.outstandingLabel}>Total impayé</Text>
+        <Text style={styles.outstandingLabel}>{tr('invoices.total_impaye')}</Text>
         <Text style={styles.outstandingValue}>
           {sym}{outstanding_total}
         </Text>
@@ -435,11 +438,12 @@ interface LatestEventsPanelProps {
 }
 
 function LatestEventsPanel({ events }: LatestEventsPanelProps) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   return (
     <View style={styles.eventsPanel}>
-      <Text style={styles.eventsPanelTitle}>Derniers paiements</Text>
+      <Text style={styles.eventsPanelTitle}>{tr('invoices.derniers_paiements')}</Text>
       {events.map(ev => (
         <View key={ev.id} style={styles.eventRow}>
           <Text style={styles.eventRef}>{ev.reference ?? `#${ev.id}`}</Text>

@@ -9,6 +9,7 @@ import { apiClient } from '@/api';
 import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface LigneMois {
   month: string;
@@ -57,6 +58,7 @@ const euros = (cents: number) => formatCentimes(cents);
  * documente ; celui-ci répond.
  */
 export function BudgetScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: budget, refetch, isRefetching } = useQuery<Budget>({
@@ -68,8 +70,8 @@ export function BudgetScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Mon budget entretien</Text>
-      <Text style={styles.intro}>Ce que vous engagez, par mois et par métier.</Text>
+      <Text style={styles.title}>{tr('budget.mon_budget_entretien')}</Text>
+      <Text style={styles.intro}>{tr('budget.ce_que_vous_engagez_par')}</Text>
 
       <View style={styles.resume} testID="resume-budget">
         <View style={styles.carte}>
@@ -79,21 +81,21 @@ export function BudgetScreen() {
         </View>
 
         <View style={styles.carte}>
-          <Text style={styles.libelle}>Par mois</Text>
+          <Text style={styles.libelle}>{tr('budget.par_mois')}</Text>
           <Text style={styles.montant}>{euros(budget?.monthly_average_cents ?? 0)}</Text>
           {/* Calculée sur les mois actifs : diviser par douze un client arrivé en octobre lui
               montrerait une moyenne qu'il ne reconnaît pas. */}
-          <Text style={styles.detail}>sur vos mois actifs</Text>
+          <Text style={styles.detail}>{tr('budget.sur_vos_mois_actifs')}</Text>
         </View>
       </View>
 
       {comparatif && (
         <View style={styles.bloc} testID="comparatif">
-          <Text style={styles.sousTitre}>Abonnement ou à la demande</Text>
+          <Text style={styles.sousTitre}>{tr('budget.abonnement_ou_a_la_demande')}</Text>
 
           <View style={styles.ligne}>
             <View style={styles.identite}>
-              <Text style={styles.nom}>Récurrentes</Text>
+              <Text style={styles.nom}>{tr('budget.recurrentes')}</Text>
               <Text style={styles.detail}>
                 {comparatif.subscription.bookings_count} · {euros(comparatif.subscription.average_cents)} en moyenne
               </Text>
@@ -114,7 +116,7 @@ export function BudgetScreen() {
           {comparatif.subscription.bookings_count === 0 && (
             // « Vous n'avez aucun abonnement » est une réponse utile ; un bloc absent ne l'est pas.
             <Text style={styles.note}>
-              Vous n'avez aucune intervention récurrente sur cette période.
+              {tr('budget.vous_n_avez_aucune_intervention')}
             </Text>
           )}
         </View>
@@ -126,7 +128,7 @@ export function BudgetScreen() {
         onRefresh={refetch}
         refreshing={isRefetching}
         style={styles.liste}
-        ListHeaderComponent={<Text style={styles.sousTitre}>Par métier</Text>}
+        ListHeaderComponent={<Text style={styles.sousTitre}>{tr('budget.par_metier')}</Text>}
         renderItem={({ item }) => (
           <View style={styles.ligne} testID={`metier-${item.trade}`}>
             <View style={styles.identite}>
@@ -140,7 +142,7 @@ export function BudgetScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Rien à afficher"
+            title={tr('budget.rien_a_afficher')}
             message="Vos interventions apparaîtront ici au fur et à mesure."
           />
         }

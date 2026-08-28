@@ -23,6 +23,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'OnSite'>;
 
@@ -38,6 +39,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'OnSite'>;
  * depuis le suivi et depuis le détail de la réservation.
  */
 export function OnSiteScreen({ route }: Props) {
+  const { t: tr } = useTraduction();
   const t = useThemeColors();
   const styles = stylesFor(t);
 
@@ -107,7 +109,7 @@ export function OnSiteScreen({ route }: Props) {
       <Screen>
         <EmptyState
           icon="time-outline"
-          title="L’intervention n’a pas encore commencé"
+          title={tr('on_site.lintervention_na_pas_encore_commence')}
           message="Vous verrez ici l’avancement, les photos et tout imprévu dès que le prestataire sera sur place."
         />
       </Screen>
@@ -159,7 +161,7 @@ export function OnSiteScreen({ route }: Props) {
 
       {choixOuvert && prolongation?.allowed ? (
         <View style={styles.prolongation} testID="panneau-prolongation">
-          <Text style={styles.prolongationTitre}>Ajouter du temps</Text>
+          <Text style={styles.prolongationTitre}>{tr('on_site.ajouter_du_temps')}</Text>
           <Text style={styles.prolongationNote}>
             Au tarif normal, sans majoration. Le montant s’ajoute à votre facture ; seules les
             heures réellement prestées sont dues.
@@ -218,7 +220,7 @@ export function OnSiteScreen({ route }: Props) {
           ) : null}
           {/* La phrase qui lève l'inquiétude vient AVANT les boutons, pas après. */}
           <Text style={styles.supplementNote}>
-            Votre devis initial ne change pas : c’est une ligne séparée.
+            {tr('on_site.votre_devis_initial_ne_change')}
           </Text>
 
           <View style={styles.supplementActions}>
@@ -247,7 +249,7 @@ export function OnSiteScreen({ route }: Props) {
 
       {(imprevus ?? []).length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitre}>Imprévus signalés</Text>
+          <Text style={styles.sectionTitre}>{tr('on_site.imprevus_signales')}</Text>
           {(imprevus ?? []).map((imprevu) => (
             <View key={imprevu.id} style={styles.imprevu}>
               <Text style={styles.imprevuTitre}>{imprevu.label}</Text>
@@ -262,9 +264,9 @@ export function OnSiteScreen({ route }: Props) {
       <Divider />
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitre}>Déroulé</Text>
+        <Text style={styles.sectionTitre}>{tr('on_site.deroule')}</Text>
         {fil.entries.length === 0 ? (
-          <Text style={styles.vide}>Rien à afficher pour l’instant.</Text>
+          <Text style={styles.vide}>{tr('on_site.rien_a_afficher_pour_linstant')}</Text>
         ) : (
           fil.entries.map((entree) => <LigneDeFil key={entree.key} entree={entree} />)
         )}
@@ -287,7 +289,7 @@ export function OnSiteScreen({ route }: Props) {
           />
         ) : (
           <Button
-            label="Annuler la mission"
+            label={tr('on_site.annuler_la_mission')}
             variant="secondary"
             onPress={() => setAnnulationOuverte(true)}
             fullWidth
@@ -307,6 +309,7 @@ export function OnSiteScreen({ route }: Props) {
  * couples qui ne montrent pas le même endroit.
  */
 function ComparateurAvantApres({ avant, apres }: { avant: OnSiteMedia[]; apres: OnSiteMedia[] }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   if (avant.length === 0 && apres.length === 0) {
@@ -315,7 +318,7 @@ function ComparateurAvantApres({ avant, apres }: { avant: OnSiteMedia[]; apres: 
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitre}>Avant / après</Text>
+      <Text style={styles.sectionTitre}>{tr('on_site.avant_apres')}</Text>
       <BandeDePhotos legende="Avant" photos={avant} />
       <BandeDePhotos legende="Après" photos={apres} />
     </View>

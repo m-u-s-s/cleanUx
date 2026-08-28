@@ -10,8 +10,10 @@ import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 export function NotificationsScreen() {
+  const { t: tr } = useTraduction();
   const t = useThemeColors();
   const styles = stylesFor(t);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -49,7 +51,7 @@ export function NotificationsScreen() {
           onPress={() => navigation.navigate('NotificationDetail', { id: item.id })}
           accessibilityRole="button"
           accessibilityLabel={`${item.label} : ${item.title}. ${item.body}${nonLue ? '. Non lue' : ''}`}
-          accessibilityHint="Ouvre le détail de la notification"
+          accessibilityHint={tr('notifications.ouvre_le_detail_de_la')}
         >
           <View style={styles.badges}>
             <Badge label={item.label} variant={severityVariant(item.severity)} />
@@ -73,7 +75,7 @@ export function NotificationsScreen() {
         <Text style={styles.title} accessibilityRole="header">Notifications</Text>
         {unreadCount > 0 && (
           <Button
-            label="Tout marquer lu"
+            label={tr('notifications.tout_marquer_lu')}
             onPress={() => markAll.mutate()}
             size="sm"
             variant="ghost"
@@ -91,7 +93,7 @@ export function NotificationsScreen() {
             contentContainerStyle={styles.liste}
             keyExtractor={item => item.id}
             renderItem={renderNotifItem}
-            accessibilityLabel="Liste des notifications"
+            accessibilityLabel={tr('notifications.liste_des_notifications')}
             refreshControl={
               <RefreshControl
                 refreshing={isRefetching ?? false}
@@ -100,7 +102,7 @@ export function NotificationsScreen() {
                 colors={[colors.brand[500]]}
               />
             }
-            ListEmptyComponent={<EmptyState title="Aucune notification" message="Vous êtes à jour !" icon="notifications-outline" />}
+            ListEmptyComponent={<EmptyState title={tr('notifications.aucune_notification')} message="Vous êtes à jour !" icon="notifications-outline" />}
           />
         </Animated.View>
       )}

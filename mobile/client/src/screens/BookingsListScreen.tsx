@@ -10,10 +10,12 @@ import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { formatAdresse, formatDateHeure, libelleStatut } from '@/lib/format';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 const BOOKING_CARD_HEIGHT = 120;
 
 export function BookingsListScreen() {
+  const { t: tr } = useTraduction();
   const { data: bookings, isLoading, isError, refetch, isRefetching } = useBookings();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const themeColors = useThemeColors();
@@ -62,8 +64,8 @@ export function BookingsListScreen() {
             renderItem={renderBookingCard}
             getItemLayout={getItemLayout}
             contentContainerStyle={styles.list}
-            accessibilityLabel="Liste des réservations"
-            ListEmptyComponent={<EmptyState title="Pas encore de réservation" message="Réservez votre premier service pour commencer." icon="calendar-outline" actionLabel="Réserver" onAction={() => navigation.navigate('EmbeddedModule', { path: '/commander', title: 'Commander' })} />}
+            accessibilityLabel={tr('bookings_list.liste_des_reservations')}
+            ListEmptyComponent={<EmptyState title={tr('bookings_list.pas_encore_de_reservation')} message="Réservez votre premier service pour commencer." icon="calendar-outline" actionLabel="Réserver" onAction={() => navigation.navigate('EmbeddedModule', { path: '/commander', title: 'Commander' })} />}
             refreshControl={
               <RefreshControl
                 refreshing={isRefetching}
@@ -117,7 +119,7 @@ const BookingCard = React.memo(function BookingCard({ booking }: { booking: Book
         {booking.provider_name && (
           <Text style={styles.cardProvider}>Prestataire: {booking.provider_name}</Text>
         )}
-        <Text style={styles.trackHint}>Appuyer pour voir le détail</Text>
+        <Text style={styles.trackHint}>{tr('bookings_list.appuyer_pour_voir_le_detail')}</Text>
       </View>
     </TouchableOpacity>
   );

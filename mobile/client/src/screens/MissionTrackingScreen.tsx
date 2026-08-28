@@ -13,6 +13,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionTracking'>;
 
@@ -48,6 +49,7 @@ const REPLI_PAYS = {
 };
 
 export function MissionTrackingScreen({ route, navigation }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { bookingId } = route.params;
@@ -296,7 +298,7 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
           réponse. Le bouton est désormais principal, et il ouvre une feuille qui DIT ce qui attend.
         */}
         <Button
-          label="Ma mission"
+          label={tr('mission_tracking.ma_mission')}
           onPress={() => sheetRef.current?.expand()}
           fullWidth
           size="lg"
@@ -308,7 +310,7 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
           c'est un cas frequent, jamais le premier geste de celui qui regarde son suivi.
         */}
         <Button
-          label="Partager le suivi"
+          label={tr('mission_tracking.partager_le_suivi')}
           variant="secondary"
           onPress={envoyerLeLien}
           disabled={partager.isPending}

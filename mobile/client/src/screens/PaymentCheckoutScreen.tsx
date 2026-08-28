@@ -11,10 +11,12 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PaymentCheckout'>;
 
 export function PaymentCheckoutScreen({ route, navigation }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { bookingId } = route.params;
@@ -81,7 +83,7 @@ export function PaymentCheckoutScreen({ route, navigation }: Props) {
       {error ? (
         <View>
           <Text style={styles.error} accessibilityRole="alert">{error}</Text>
-          <Button label="Réessayer" onPress={() => void initialize()} fullWidth size="lg" />
+          <Button label={tr('payment_checkout.reessayer')} onPress={() => void initialize()} fullWidth size="lg" />
         </View>
       ) : (
         <Button

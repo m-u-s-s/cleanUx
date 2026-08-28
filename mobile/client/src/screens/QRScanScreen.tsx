@@ -8,10 +8,12 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'QRScan'>;
 
 export function QRScanScreen({ route, navigation }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { bookingId, action } = route.params;
@@ -58,12 +60,12 @@ export function QRScanScreen({ route, navigation }: Props) {
   if (!permission.granted) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Accès caméra requis</Text>
+        <Text style={styles.title}>{tr('q_r_scan.acces_camera_requis')}</Text>
         <Text style={styles.subtitle}>
           Scannez le QR code du prestataire pour{' '}
           {action === 'start' ? 'démarrer' : 'terminer'} la mission
         </Text>
-        <Button label="Autoriser la caméra" onPress={requestPermission} />
+        <Button label={tr('q_r_scan.autoriser_la_camera')} onPress={requestPermission} />
       </View>
     );
   }
@@ -85,7 +87,7 @@ export function QRScanScreen({ route, navigation }: Props) {
         </Text>
         {scanned && !processing && (
           <Button
-            label="Scanner à nouveau"
+            label={tr('q_r_scan.scanner_a_nouveau')}
             onPress={() => setScanned(false)}
             variant="secondary"
           />

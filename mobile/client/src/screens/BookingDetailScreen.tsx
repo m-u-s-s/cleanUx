@@ -20,6 +20,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { libelleStatut, formatDateHeure } from '@/lib/format';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BookingDetail'>;
 
@@ -50,6 +51,7 @@ function messageDeRefus(erreur: any): string {
 }
 
 export function BookingDetailScreen({ route }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { bookingId } = route.params;
@@ -111,7 +113,7 @@ export function BookingDetailScreen({ route }: Props) {
     return (
       <Screen>
         <EmptyState
-          title="Réservation introuvable"
+          title={tr('booking_detail.reservation_introuvable')}
           message="Cette réservation n'existe plus ou n'est pas accessible."
         />
       </Screen>
@@ -149,7 +151,7 @@ export function BookingDetailScreen({ route }: Props) {
 
       {booking.contract_covered ? (
         <View style={styles.badgeRow} testID="contract-coverage-badge">
-          <Badge label="Couvert par votre contrat" variant="info" />
+          <Badge label={tr('booking_detail.couvert_par_votre_contrat')} variant="info" />
         </View>
       ) : null}
 
@@ -212,16 +214,16 @@ export function BookingDetailScreen({ route }: Props) {
       */}
       {!isCompleted && etat !== 'cancelled' && etat !== 'pending' && (
         <View style={styles.card} testID="carte-code-de-fin">
-          <Text style={styles.codeTitre}>Code de fin</Text>
+          <Text style={styles.codeTitre}>{tr('booking_detail.code_de_fin')}</Text>
 
           {codeDeFin ? (
             <>
               <Text style={styles.codeChiffres}>{codeDeFin.code}</Text>
               <Text style={styles.codeAide}>
-                Donnez ce code au prestataire pour qu’il puisse clôturer la mission.
+                {tr('booking_detail.donnez_ce_code_au_prestataire')}
               </Text>
               <Button
-                label="En générer un nouveau"
+                label={tr('booking_detail.en_generer_un_nouveau')}
                 onPress={demanderLeCode}
                 loading={demandeCode.isPending}
                 variant="secondary"
@@ -235,7 +237,7 @@ export function BookingDetailScreen({ route }: Props) {
                 vous les demande : ils ne restent valables que vingt minutes.
               </Text>
               <Button
-                label="Afficher mon code de fin"
+                label={tr('booking_detail.afficher_mon_code_de_fin')}
                 onPress={demanderLeCode}
                 loading={demandeCode.isPending}
                 fullWidth
@@ -257,7 +259,7 @@ export function BookingDetailScreen({ route }: Props) {
         )}
         {canTrack && (
           <Button
-            label="Suivre en direct"
+            label={tr('booking_detail.suivre_en_direct')}
             onPress={() => navigation.navigate('MissionTracking', { bookingId })}
             variant="secondary"
             fullWidth
@@ -265,7 +267,7 @@ export function BookingDetailScreen({ route }: Props) {
         )}
         {canStart && (
           <Button
-            label="Scanner QR — Démarrer"
+            label={tr('booking_detail.scanner_qr_demarrer')}
             onPress={() =>
               navigation.navigate('QRScan', { bookingId, action: 'start' })
             }
@@ -274,7 +276,7 @@ export function BookingDetailScreen({ route }: Props) {
         )}
         {canEnd && (
           <Button
-            label="Scanner QR — Terminer"
+            label={tr('booking_detail.scanner_qr_terminer')}
             onPress={() =>
               navigation.navigate('QRScan', { bookingId, action: 'end' })
             }
@@ -284,7 +286,7 @@ export function BookingDetailScreen({ route }: Props) {
         )}
         {isCompleted && (
           <Button
-            label="Évaluer la prestation"
+            label={tr('booking_detail.evaluer_la_prestation')}
             onPress={() => navigation.navigate('Rating', { bookingId })}
             variant="secondary"
             fullWidth
@@ -292,7 +294,7 @@ export function BookingDetailScreen({ route }: Props) {
         )}
         {isCompleted && (
           <Button
-            label="Laisser un pourboire"
+            label={tr('booking_detail.laisser_un_pourboire')}
             onPress={() => navigation.navigate('Tips', { bookingId })}
             variant="secondary"
             fullWidth

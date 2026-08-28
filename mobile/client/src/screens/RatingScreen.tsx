@@ -7,6 +7,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Rating'>;
 
@@ -26,6 +27,7 @@ function StarRow({ label, value, onChange }: { label: string; value: number; onC
 }
 
 export function RatingScreen({ route, navigation }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { bookingId } = route.params;
@@ -45,19 +47,19 @@ export function RatingScreen({ route, navigation }: Props) {
 
   return (
     <Screen scroll>
-      <Text style={styles.title}>Évaluer la prestation</Text>
-      <StarRow label="Note globale" value={overall} onChange={setOverall} />
-      <StarRow label="Ponctualité" value={punctuality} onChange={setPunctuality} />
-      <StarRow label="Qualité" value={quality} onChange={setQuality} />
+      <Text style={styles.title}>{tr('rating.evaluer_la_prestation')}</Text>
+      <StarRow label={tr('rating.note_globale')} value={overall} onChange={setOverall} />
+      <StarRow label={tr('rating.ponctualite')} value={punctuality} onChange={setPunctuality} />
+      <StarRow label={tr('rating.qualite')} value={quality} onChange={setQuality} />
       <StarRow label="Communication" value={communication} onChange={setCommunication} />
-      <StarRow label="Rapport qualité/prix" value={value} onChange={setValue} />
+      <StarRow label={tr('rating.rapport_qualite_prix')} value={value} onChange={setValue} />
       <TextInput
-        label="Commentaire (optionnel)"
+        label={tr('rating.commentaire_optionnel')}
         value={comment}
         onChangeText={setComment}
         multiline
         numberOfLines={3}
-        placeholder="Partagez votre expérience…"
+        placeholder={tr('rating.partagez_votre_experience')}
       />
       <Button
         label="Envoyer"

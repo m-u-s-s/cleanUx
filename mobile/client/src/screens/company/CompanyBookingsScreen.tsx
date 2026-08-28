@@ -12,6 +12,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import type { ReservationSociete } from './types';
+import { useTraduction } from '@/i18n';
 
 /** Les statuts proposés au filtre, dans l'ordre où un gestionnaire les consulte. */
 const FILTRES: Array<{ label: string; valeur: string | null }> = [
@@ -38,6 +39,7 @@ const TON_PAR_STATUT: Record<string, 'success' | 'warning' | 'neutral'> = {
  * (`customer_organization_id`), pas une variante d'affichage.
  */
 export function CompanyBookingsScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -54,7 +56,7 @@ export function CompanyBookingsScreen() {
     return (
       <Screen>
         <EmptyState
-          title="Réservations indisponibles"
+          title={tr('company_bookings.reservations_indisponibles')}
           message="Impossible de charger les réservations de votre société."
           actionLabel="Réessayer"
           onAction={() => void refetch()}
@@ -65,7 +67,7 @@ export function CompanyBookingsScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Réservations</Text>
+      <Text style={styles.title}>{tr('company_bookings.reservations')}</Text>
 
       <View style={styles.filtres}>
         {FILTRES.map(({ label, valeur }) => (
@@ -112,7 +114,7 @@ export function CompanyBookingsScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucune réservation"
+            title={tr('company_bookings.aucune_reservation')}
             message="Les interventions demandées par les membres de votre société apparaîtront ici."
           />
         }

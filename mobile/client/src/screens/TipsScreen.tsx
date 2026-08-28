@@ -8,6 +8,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 import { useQuery } from '@tanstack/react-query';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Tips'>;
 
@@ -19,6 +20,7 @@ interface TipSuggestion {
 }
 
 export function TipsScreen({ route, navigation }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { bookingId } = route.params;
@@ -53,11 +55,11 @@ export function TipsScreen({ route, navigation }: Props) {
   return (
     <Screen>
       <Text style={styles.title}>Pourboire</Text>
-      <Text style={styles.subtitle}>Merci de valoriser le travail du prestataire</Text>
+      <Text style={styles.subtitle}>{tr('tips.merci_de_valoriser_le_travail')}</Text>
       {isLoading ? (
         <ActivityIndicator size="large" color={colors.brand[500]} style={{ marginVertical: spacing.xl }} />
       ) : suggestions.length === 0 ? (
-        <Text style={styles.noSuggestions}>Aucune suggestion disponible pour ce service.</Text>
+        <Text style={styles.noSuggestions}>{tr('tips.aucune_suggestion_disponible_pour_ce')}</Text>
       ) : (
         <View style={styles.presets}>
           {suggestions.map(s => (

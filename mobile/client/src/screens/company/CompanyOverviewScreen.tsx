@@ -10,6 +10,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import type { ReservationSociete } from './types';
+import { useTraduction } from '@/i18n';
 
 interface Accueil {
   organization: { id: number; name: string };
@@ -36,6 +37,7 @@ interface Accueil {
  * Un écran de plus sans chemin qui y mène aurait reproduit le défaut qu'on corrige.
  */
 export function CompanyOverviewScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -72,7 +74,7 @@ export function CompanyOverviewScreen() {
     return (
       <Screen>
         <EmptyState
-          title="Espace indisponible"
+          title={tr('company_overview.espace_indisponible')}
           message="Impossible de charger votre espace entreprise. Réessayez dans un instant."
           actionLabel="Réessayer"
           onAction={() => void refetch()}
@@ -96,14 +98,14 @@ export function CompanyOverviewScreen() {
             <KPICard title="Locaux" value={kpis?.sites_count ?? 0} loading={!kpis} />
           </View>
           <View style={styles.kpi}>
-            <KPICard title="En cours" value={kpis?.bookings_active ?? 0} loading={!kpis} />
+            <KPICard title={tr('company_overview.en_cours')} value={kpis?.bookings_active ?? 0} loading={!kpis} />
           </View>
           <View style={styles.kpi}>
-            <KPICard title="Ce mois" value={kpis?.bookings_month ?? 0} loading={!kpis} />
+            <KPICard title={tr('company_overview.ce_mois')} value={kpis?.bookings_month ?? 0} loading={!kpis} />
           </View>
           <View style={styles.kpi}>
             <KPICard
-              title="À approuver"
+              title={tr('company_overview.a_approuver')}
               value={kpis?.pending_approval ?? 0}
               tone={kpis && kpis.pending_approval > 0 ? 'warning' : 'neutral'}
               loading={!kpis}
@@ -114,7 +116,7 @@ export function CompanyOverviewScreen() {
           </View>
         </View>
 
-        <Text style={styles.sousTitre}>Votre espace</Text>
+        <Text style={styles.sousTitre}>{tr('company_overview.votre_espace')}</Text>
         {RACCOURCIS.map(({ label, screen }) => (
           <View key={screen} style={styles.raccourci}>
             <Button
@@ -126,9 +128,9 @@ export function CompanyOverviewScreen() {
           </View>
         ))}
 
-        <Text style={styles.sousTitre}>Dernières réservations</Text>
+        <Text style={styles.sousTitre}>{tr('company_overview.dernieres_reservations')}</Text>
         {(data?.recent_bookings ?? []).length === 0 ? (
-          <Text style={styles.vide}>Aucune réservation pour le moment.</Text>
+          <Text style={styles.vide}>{tr('company_overview.aucune_reservation_pour_le_moment')}</Text>
         ) : (
           (data?.recent_bookings ?? []).map((r) => (
             <View key={r.id} style={styles.ligne} testID={`reservation-${r.id}`}>
@@ -144,7 +146,7 @@ export function CompanyOverviewScreen() {
 
         <View style={styles.rafraichir}>
           <Button
-            label="Rafraîchir"
+            label={tr('company_overview.rafraichir')}
             variant="ghost"
             fullWidth
             disabled={isRefetching}

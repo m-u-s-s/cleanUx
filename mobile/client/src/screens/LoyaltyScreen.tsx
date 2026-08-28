@@ -4,8 +4,10 @@ import { Screen, KPICard, Badge, Button, Skeleton, EmptyState } from '@/ui';
 import { useLoyaltyAccount, useLoyaltyRewards, useRedeemReward } from '@/loyalty';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 export function LoyaltyScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: account, isLoading: loadingAccount } = useLoyaltyAccount();
@@ -35,7 +37,7 @@ export function LoyaltyScreen() {
 
   return (
     <Screen scroll>
-      <Text style={styles.title}>Programme fidélité</Text>
+      <Text style={styles.title}>{tr('loyalty.programme_fidelite')}</Text>
       {loadingAccount ? (
         <Skeleton width="100%" height={120} />
       ) : account ? (
@@ -49,11 +51,11 @@ export function LoyaltyScreen() {
               hint="Échangeables"
               tone="success"
             />
-            <KPICard title="Ce mois" value={account.period_points} />
+            <KPICard title={tr('loyalty.ce_mois')} value={account.period_points} />
           </View>
         </View>
       ) : null}
-      <Text style={styles.sectionTitle}>Récompenses disponibles</Text>
+      <Text style={styles.sectionTitle}>{tr('loyalty.recompenses_disponibles')}</Text>
       {loadingRewards ? (
         <Skeleton width="100%" height={80} />
       ) : (
@@ -63,7 +65,7 @@ export function LoyaltyScreen() {
           keyExtractor={item => String(item.id)}
           onRefresh={refetchRewards}
           refreshing={isRefetchingRewards}
-          ListEmptyComponent={<EmptyState title="Aucune récompense" message="Les récompenses disponibles apparaîtront ici." icon="gift-outline" />}
+          ListEmptyComponent={<EmptyState title={tr('loyalty.aucune_recompense')} message="Les récompenses disponibles apparaîtront ici." icon="gift-outline" />}
           renderItem={({ item }) => (
             <View style={styles.rewardCard}>
               <View style={styles.rewardInfo}>
@@ -71,7 +73,7 @@ export function LoyaltyScreen() {
                 <Text style={styles.rewardCost}>{item.points_cost} pts</Text>
               </View>
               <Button
-                label="Échanger"
+                label={tr('loyalty.echanger')}
                 size="sm"
                 onPress={() => handleRedeem(item.id, item.name)}
                 disabled={(account?.redeemable_points ?? 0) < item.points_cost || redeem.isPending}

@@ -15,7 +15,7 @@ const LANGUAGES: Array<{ code: Langue; label: string; flag: string }> = [
 
 export function LanguageScreen({ navigation }: any) {
   const styles = stylesFor(useThemeColors());
-  const { t, langue } = useTraduction();
+  const { t: tr, langue } = useTraduction();
 
   const { user, setUser } = useAuth();
   const [selected, setSelected] = useState<Langue>(langue);
@@ -28,11 +28,11 @@ export function LanguageScreen({ navigation }: any) {
       // pas une donnée à confirmer. L'écran est déjà traduit quand l'alerte s'affiche.
       await choisirLaLangue(selected, '/provider/profile');
       setUser({ ...(user as any), locale: selected });
-      Alert.alert(t('langue.enregistree'), '', [
-        { text: t('commun.ok'), onPress: () => navigation.goBack() },
+      Alert.alert(tr('langue.enregistree'), '', [
+        { text: tr('commun.ok'), onPress: () => navigation.goBack() },
       ]);
     } catch {
-      Alert.alert(t('commun.erreur'), t('langue.echec'));
+      Alert.alert(tr('commun.erreur'), tr('langue.echec'));
     } finally {
       setSaving(false);
     }
@@ -40,7 +40,7 @@ export function LanguageScreen({ navigation }: any) {
 
   return (
     <Screen>
-      <Text style={styles.title}>{t('langue.titre')}</Text>
+      <Text style={styles.title}>{tr('langue.titre')}</Text>
       {LANGUAGES.map(lang => (
         <TouchableOpacity
           key={lang.code}
@@ -56,7 +56,7 @@ export function LanguageScreen({ navigation }: any) {
         </TouchableOpacity>
       ))}
       <Button
-        label={t('langue.enregistrer')}
+        label={tr('langue.enregistrer')}
         onPress={handleSave}
         fullWidth
         loading={saving}

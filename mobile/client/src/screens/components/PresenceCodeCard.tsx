@@ -6,6 +6,7 @@ import { usePresenceCode, useCompletionCode } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * Preuve de présence du prestataire, à montrer sur place.
@@ -45,6 +46,7 @@ export function PresenceCodeCard({
   bookingId: number;
   purpose?: Purpose;
 }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const presence = usePresenceCode(bookingId);
@@ -86,14 +88,14 @@ export function PresenceCodeCard({
         </View>
       ) : isError || !payload || !data ? (
         <View style={styles.placeholder}>
-          <Text style={styles.errorText}>Code indisponible pour le moment.</Text>
+          <Text style={styles.errorText}>{tr('presence_code.code_indisponible_pour_le_moment')}</Text>
         </View>
       ) : (
         <>
           <View style={styles.qrFrame} testID="presence-code-qr">
             <QRCode value={payload} size={180} backgroundColor="#ffffff" color={colors.surface[900]} />
           </View>
-          <Text style={styles.codeLabel}>ou dictez ce code</Text>
+          <Text style={styles.codeLabel}>{tr('presence_code.ou_dictez_ce_code')}</Text>
           <Text style={styles.code} testID="presence-code-digits">
             {data.code}
           </Text>
@@ -101,7 +103,7 @@ export function PresenceCodeCard({
       )}
 
       <Button
-        label="Générer un nouveau code"
+        label={tr('presence_code.generer_un_nouveau_code')}
         onPress={() => mutate()}
         variant="secondary"
         fullWidth

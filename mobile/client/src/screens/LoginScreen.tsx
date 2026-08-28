@@ -34,6 +34,7 @@ import { ApiError } from '@/api';
 import { colors } from '@/theme';
 import type { RootStackParamList } from '@/navigation/types';
 import { ClientRegisterWizard } from '@/screens/auth/ClientRegisterWizard';
+import { useTraduction } from '@/i18n';
 
 /**
  * Porte d'entrée de l'application cliente.
@@ -110,6 +111,7 @@ export function LoginScreen() {
 }
 
 function LoginForm() {
+  const { t: tr } = useTraduction();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -202,7 +204,7 @@ function LoginForm() {
         <View style={styles.passwordWrapper}>
           <TextInput
             ref={passwordRef}
-            label="Mot de passe"
+            label={tr('login.mot_de_passe')}
             value={password}
             onChangeText={(t) => { setPassword(t); setErrors(prev => ({ ...prev, password: undefined })); }}
             error={errors.password}
@@ -243,14 +245,14 @@ function LoginForm() {
         <TouchableOpacity
           onPress={() => navigation.navigate('ForgotPassword')}
           accessibilityRole="button"
-          accessibilityLabel="Mot de passe oublié ?"
+          accessibilityLabel={tr('login.mot_de_passe_oublie')}
         >
-          <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
+          <Text style={styles.forgotText}>{tr('login.mot_de_passe_oublie')}</Text>
         </TouchableOpacity>
       </Stagger>
       {formError ? <FormError message={formError} onRetry={handleLogin} testID="login-form-error" /> : null}
       <Stagger index={3}>
-        <Button label="Se connecter" onPress={handleLogin} fullWidth size="lg" loading={login.isPending} />
+        <Button label={tr('login.se_connecter')} onPress={handleLogin} fullWidth size="lg" loading={login.isPending} />
       </Stagger>
     </View>
   );

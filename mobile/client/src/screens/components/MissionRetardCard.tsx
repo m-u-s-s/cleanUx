@@ -5,6 +5,7 @@ import { useRetard, useReprogrammer } from '@/booking/onsite';
 import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * « VOTRE PRESTATAIRE A DU RETARD » — dit par la plateforme, pas découvert par le client.
@@ -29,6 +30,7 @@ export function MissionRetardCard({
   bookingId: number;
   onAnnuler?: () => void;
 }) {
+  const { t: tr } = useTraduction();
   const t = useThemeColors();
   const styles = stylesFor(t);
 
@@ -72,14 +74,14 @@ export function MissionRetardCard({
 
       <View style={styles.actions}>
         <Button
-          label="Plus tard aujourd’hui"
+          label={tr('mission_retard.plus_tard_aujourdhui')}
           variant="secondary"
           onPress={() => decaler({ date: jour(dansDeuxHeures), time: heure(dansDeuxHeures) })}
           disabled={reprogrammer.isPending}
           testID="retard-decaler-aujourdhui"
         />
         <Button
-          label="Demain, même heure"
+          label={tr('mission_retard.demain_meme_heure')}
           variant="secondary"
           onPress={() => decaler({ date: jour(demain) })}
           disabled={reprogrammer.isPending}

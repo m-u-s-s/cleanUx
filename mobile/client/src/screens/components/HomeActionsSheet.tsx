@@ -6,6 +6,7 @@ import { BottomSheet, KPICard, Skeleton, Divider, Icon } from '@/ui';
 import { useBookings } from '@/booking';
 import { colors, spacing, typography, radius, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * Actions secondaires de l'accueil client, sur le modèle du tableau de bord prestataire.
@@ -92,6 +93,7 @@ const QUICK_ACTIONS: QuickAction[] = [
 ];
 
 export const HomeActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref) => {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const navigation = useNavigation<any>();
   const themeColors = useThemeColors();
@@ -105,7 +107,7 @@ export const HomeActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref) => {
   return (
     <BottomSheet ref={ref} snapPoints={['55%']}>
       <View style={styles.body} testID="home-actions-sheet">
-        <Text style={styles.sectionTitle} accessibilityRole="header">Quel type de mission ?</Text>
+        <Text style={styles.sectionTitle} accessibilityRole="header">{tr('home_actions.quel_type_de_mission')}</Text>
 
         <View style={styles.modes}>
           {BOOKING_MODES.map(mode => (
@@ -138,8 +140,8 @@ export const HomeActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref) => {
           </View>
         ) : (
           <View style={styles.kpiRow}>
-            <KPICard title="En cours" value={active} tone={active > 0 ? 'success' : 'neutral'} />
-            <KPICard title="Terminées" value={completed} />
+            <KPICard title={tr('home_actions.en_cours')} value={active} tone={active > 0 ? 'success' : 'neutral'} />
+            <KPICard title={tr('home_actions.terminees')} value={completed} />
           </View>
         )}
 

@@ -6,8 +6,10 @@ import { apiClient } from '@/api';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 export function AiQuoteScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -40,19 +42,19 @@ export function AiQuoteScreen() {
 
   return (
     <Screen scroll>
-      <Text style={styles.title}>Devis IA</Text>
+      <Text style={styles.title}>{tr('ai_quote.devis_ia')}</Text>
       <Text style={styles.subtitle}>
-        Prenez une photo de la zone à traiter et notre IA estimera le coût
+        {tr('ai_quote.prenez_une_photo_de_la')}
       </Text>
       {imageUri ? (
         <Image source={{ uri: imageUri }} style={styles.preview} />
       ) : (
         <View style={styles.placeholder}>
-          <Text style={styles.placeholderText}>Aucune photo sélectionnée</Text>
+          <Text style={styles.placeholderText}>{tr('ai_quote.aucune_photo_selectionnee')}</Text>
         </View>
       )}
       <View style={styles.actions}>
-        <Button label="Choisir une photo" onPress={pickImage} variant="secondary" fullWidth />
+        <Button label={tr('ai_quote.choisir_une_photo')} onPress={pickImage} variant="secondary" fullWidth />
         <Button label="Estimer" onPress={handleEstimate} fullWidth disabled={!imageUri} loading={loading} />
       </View>
       {result && (

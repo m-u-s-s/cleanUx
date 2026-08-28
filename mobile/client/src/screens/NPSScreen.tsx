@@ -7,10 +7,12 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'NPS'>;
 
 export function NPSScreen({ navigation }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const [score, setScore] = useState<number | null>(null);
@@ -31,7 +33,7 @@ export function NPSScreen({ navigation }: Props) {
 
   return (
     <Screen>
-      <Text style={styles.title}>Recommanderiez-vous Brio ?</Text>
+      <Text style={styles.title}>{tr('n_p_s.recommanderiez_vous_brio')}</Text>
       <View style={styles.scores}>
         {[...Array(11)].map((_, i) => (
           <Text
@@ -44,7 +46,7 @@ export function NPSScreen({ navigation }: Props) {
         ))}
       </View>
       <View style={styles.labels}>
-        <Text style={styles.labelText}>Pas du tout</Text>
+        <Text style={styles.labelText}>{tr('n_p_s.pas_du_tout')}</Text>
         <Text style={styles.labelText}>Absolument</Text>
       </View>
       <Button

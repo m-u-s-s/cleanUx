@@ -9,6 +9,7 @@ import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useClientSpacePreference } from '@/company/useClientSpacePreference';
+import { useTraduction } from '@/i18n';
 
 /**
  * Le profil du responsable de sites DANS son espace société.
@@ -26,6 +27,7 @@ import { useClientSpacePreference } from '@/company/useClientSpacePreference';
  * Même forme que `AdminProfileScreen` côté prestataire, qui tient ce rôle depuis la console.
  */
 export function CompanyProfileScreen() {
+  const { t: tr } = useTraduction();
   const theme = useThemeColors();
   const styles = stylesFor(theme);
 
@@ -50,7 +52,7 @@ export function CompanyProfileScreen() {
       */}
       <Row
         icon="swap-horizontal-outline"
-        label="Changer d’espace"
+        label={tr('company_profile.changer_despace')}
         hint="Revenir à mon espace personnel"
         onPress={() => void clear()}
       />
@@ -65,7 +67,7 @@ export function CompanyProfileScreen() {
 
       <Row
         icon="log-out-outline"
-        label="Se déconnecter"
+        label={tr('company_profile.se_deconnecter')}
         tone="danger"
         onPress={() => void logout()}
       />

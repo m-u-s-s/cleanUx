@@ -8,6 +8,7 @@ import { apiClient } from '@/api';
 import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Police {
   id: number;
@@ -54,6 +55,7 @@ interface Protection {
  * qu'on ne peut pas énoncer AVANT d'en avoir besoin n'en est pas une.
  */
 export function ProtectionScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: protection } = useQuery<Protection>({
@@ -70,7 +72,7 @@ export function ProtectionScreen() {
   return (
     <Screen>
       <ScrollView>
-        <Text style={styles.title}>Ma protection</Text>
+        <Text style={styles.title}>{tr('protection.ma_protection')}</Text>
         <Text style={styles.intro}>
           Ce qui vous couvre, ce que coûterait une annulation, et où en sont vos réclamations.
         </Text>
@@ -104,7 +106,7 @@ export function ProtectionScreen() {
         </View>
 
         <View style={styles.bloc} testID="annulation">
-          <Text style={styles.sousTitre}>Si vous annuliez maintenant</Text>
+          <Text style={styles.sousTitre}>{tr('protection.si_vous_annuliez_maintenant')}</Text>
 
           {(protection?.cancellation.quotes ?? []).map((devis) => (
             <View key={devis.booking_id} style={styles.ligne} testID={`annulation-${devis.booking_id}`}>
@@ -122,12 +124,12 @@ export function ProtectionScreen() {
           ))}
 
           {(protection?.cancellation.quotes ?? []).length === 0 && (
-            <Text style={styles.detail}>Aucune intervention à venir.</Text>
+            <Text style={styles.detail}>{tr('protection.aucune_intervention_a_venir')}</Text>
           )}
         </View>
 
         <View style={styles.bloc} testID="reclamations">
-          <Text style={styles.sousTitre}>Mes réclamations</Text>
+          <Text style={styles.sousTitre}>{tr('protection.mes_reclamations')}</Text>
 
           {(protection?.disputes.cases ?? []).map((dossier) => (
             <View key={dossier.id} style={styles.ligne} testID={`dossier-${dossier.id}`}>
@@ -143,7 +145,7 @@ export function ProtectionScreen() {
 
           {(protection?.disputes.cases ?? []).length === 0 && (
             <Text style={styles.detail}>
-              Aucune réclamation. Vous pouvez en ouvrir une depuis une intervention terminée.
+              {tr('protection.aucune_reclamation_vous_pouvez_en')}
             </Text>
           )}
         </View>

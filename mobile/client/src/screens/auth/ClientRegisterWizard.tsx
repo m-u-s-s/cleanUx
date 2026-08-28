@@ -16,6 +16,7 @@ import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 /**
  * Inscription cliente : une question par écran, comme côté prestataire.
@@ -56,6 +57,7 @@ function passwordStrength(value: string): { score: 0 | 1 | 2 | 3; label: string;
 }
 
 export function ClientRegisterWizard() {
+  const { t: tr } = useTraduction();
   const jetons = useThemeColors();
   const styles = stylesFor(jetons);
 
@@ -176,7 +178,7 @@ export function ClientRegisterWizard() {
           onPress={goBack}
           style={styles.backButton}
           accessibilityRole="button"
-          accessibilityLabel="Étape précédente"
+          accessibilityLabel={tr('client_register_wizard.etape_precedente')}
           testID="client-register-back"
         >
           <Icon name="arrow-back" size={20} color={colors.mode.tool.ink} />
@@ -235,7 +237,7 @@ export function ClientRegisterWizard() {
       case 'kind':
         return (
           <Question
-            title="Vous réservez pour qui ?"
+            title={tr('client_register_wizard.vous_reservez_pour_qui')}
             hint="Ce choix détermine votre facturation et vos options de gestion."
           >
             <KindChoiceCards
@@ -250,14 +252,14 @@ export function ClientRegisterWizard() {
       case 'company':
         return (
           <Question
-            title="Votre société"
+            title={tr('client_register_wizard.votre_societe')}
             hint="Elle pourra gérer plusieurs sites et recevoir une facturation centralisée."
           >
             <TextInput
-              label="Raison sociale"
+              label={tr('client_register_wizard.raison_sociale')}
               value={companyName}
               onChangeText={t => { setCompanyName(t); setFieldError(null); }}
-              placeholder="Bureau Dupont SPRL"
+              placeholder={tr('client_register_wizard.bureau_dupont_sprl')}
               autoFocus
               testID="client-register-company-name"
             />
@@ -279,16 +281,16 @@ export function ClientRegisterWizard() {
             hint="Ce nom apparaîtra sur vos réservations."
           >
             <TextInput
-              label="Nom complet"
+              label={tr('client_register_wizard.nom_complet')}
               value={name}
               onChangeText={t => { setName(t); setFieldError(null); }}
               autoComplete="name"
-              placeholder="Jean Dupont"
+              placeholder={tr('client_register_wizard.jean_dupont')}
               autoFocus
               testID="client-register-name"
             />
             <TextInput
-              label="Téléphone (optionnel)"
+              label={tr('client_register_wizard.telephone_optionnel')}
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
@@ -300,7 +302,7 @@ export function ClientRegisterWizard() {
 
       case 'email':
         return (
-          <Question title="Votre adresse email" hint="Elle sert à vous connecter et à recevoir vos factures.">
+          <Question title={tr('client_register_wizard.votre_adresse_email')} hint="Elle sert à vous connecter et à recevoir vos factures.">
             <TextInput
               label="Email"
               value={email}
@@ -319,10 +321,10 @@ export function ClientRegisterWizard() {
         const strength = passwordStrength(password);
 
         return (
-          <Question title="Choisissez un mot de passe" hint={`${PASSWORD_MIN} caractères minimum.`}>
+          <Question title={tr('client_register_wizard.choisissez_un_mot_de_passe')} hint={`${PASSWORD_MIN} caractères minimum.`}>
             <View style={kit.passwordWrapper}>
               <TextInput
-                label="Mot de passe"
+                label={tr('client_register_wizard.mot_de_passe')}
                 value={password}
                 onChangeText={t => { setPassword(t); setFieldError(null); }}
                 secureTextEntry={!showPassword}
@@ -362,7 +364,7 @@ export function ClientRegisterWizard() {
 
       case 'terms':
         return (
-          <Question title="Dernière étape" hint="Vous pourrez réserver un service juste après.">
+          <Question title={tr('client_register_wizard.derniere_etape')} hint="Vous pourrez réserver un service juste après.">
             <TouchableOpacity
               style={kit.termsRow}
               onPress={() => { setAcceptTerms(v => !v); setFieldError(null); }}
@@ -375,11 +377,11 @@ export function ClientRegisterWizard() {
               <Text style={kit.termsText}>
                 J'accepte les{' '}
                 <Text style={kit.termsLink} onPress={() => navigation.navigate('Legal', { type: 'terms' })}>
-                  Conditions d'utilisation
+                  {tr('client_register_wizard.conditions_d_utilisation')}
                 </Text>
                 {' '}et la{' '}
                 <Text style={kit.termsLink} onPress={() => navigation.navigate('Legal', { type: 'privacy' })}>
-                  Politique de confidentialité
+                  {tr('client_register_wizard.politique_de_confidentialite')}
                 </Text>
               </Text>
             </TouchableOpacity>

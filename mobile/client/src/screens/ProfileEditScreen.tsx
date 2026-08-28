@@ -8,10 +8,12 @@ import { spacing, typography, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ProfileEdit'>;
 
 export function ProfileEditScreen({ navigation }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { user, setUser } = useAuth();
@@ -72,11 +74,11 @@ export function ProfileEditScreen({ navigation }: Props) {
     <Screen scroll>
       <TouchableOpacity onPress={pickAvatar} style={styles.avatarWrapper}>
         <Avatar name={user?.name ?? '?'} imageUri={avatarUri} size={80} />
-        <Text style={styles.changePhotoText}>Changer la photo</Text>
+        <Text style={styles.changePhotoText}>{tr('profile_edit.changer_la_photo')}</Text>
       </TouchableOpacity>
       <View style={styles.form}>
         <TextInput label="Nom" value={name} onChangeText={setName} autoFocus returnKeyType="next" onSubmitEditing={() => phoneRef.current?.focus()} />
-        <TextInput ref={phoneRef} label="Téléphone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" returnKeyType="done" />
+        <TextInput ref={phoneRef} label={tr('profile_edit.telephone')} value={phone} onChangeText={setPhone} keyboardType="phone-pad" returnKeyType="done" />
         <Button label="Enregistrer" onPress={handleSave} fullWidth loading={saving} />
       </View>
     </Screen>

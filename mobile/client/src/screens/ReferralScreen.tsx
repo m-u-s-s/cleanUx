@@ -8,6 +8,7 @@ import { apiClient } from '@/api';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useThemeColors } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -87,6 +88,7 @@ function Step({ number, text }: StepProps) {
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 export function ReferralScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const themeColors = useThemeColors();
@@ -122,12 +124,12 @@ export function ReferralScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Parrainage</Text>
-        <Text style={styles.subtitle}>Invitez vos amis et gagnez des récompenses</Text>
+        <Text style={styles.subtitle}>{tr('referral.invitez_vos_amis_et_gagnez')}</Text>
       </View>
 
       {/* Referral code card */}
       <View style={[styles.codeCard, { backgroundColor: themeColors.card }]}>
-        <Text style={styles.codeLabel}>Votre code</Text>
+        <Text style={styles.codeLabel}>{tr('referral.votre_code')}</Text>
         {loadingShare ? (
           <Skeleton width={160} height={32} />
         ) : (
@@ -184,7 +186,7 @@ export function ReferralScreen() {
 
       {/* How it works */}
       <View style={styles.howItWorks}>
-        <Text style={styles.sectionTitle}>Comment ça marche</Text>
+        <Text style={styles.sectionTitle}>{tr('referral.comment_ca_marche')}</Text>
         <Step number={1} text="Partagez votre code avec vos amis" />
         {/*
           LES MONTANTS PROMIS VIENNENT DU SERVEUR.

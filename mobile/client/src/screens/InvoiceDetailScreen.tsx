@@ -10,6 +10,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { apiClient } from '@/api';
 import { secureStore } from '@/storage/secureStore';
+import { useTraduction } from '@/i18n';
 
 const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'neutral' | 'brand'> = {
   paid: 'success',
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export function InvoiceDetailScreen({ route, navigation }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const id: number = route.params.id;
@@ -130,24 +132,24 @@ export function InvoiceDetailScreen({ route, navigation }: Props) {
         {/* Amount section */}
         <View style={styles.card}>
           <View style={styles.row}>
-            <Text style={styles.label}>Montant total</Text>
+            <Text style={styles.label}>{tr('invoice_detail.montant_total')}</Text>
             <Text style={styles.amount}>{formattedAmount}</Text>
           </View>
           {formattedBalance && (
             <View style={styles.row}>
-              <Text style={styles.label}>Solde dû</Text>
+              <Text style={styles.label}>{tr('invoice_detail.solde_du')}</Text>
               <Text style={[styles.amount, styles.balanceDue]}>{formattedBalance}</Text>
             </View>
           )}
           {invoice.issued_at && (
             <View style={styles.row}>
-              <Text style={styles.label}>Émise le</Text>
+              <Text style={styles.label}>{tr('invoice_detail.emise_le')}</Text>
               <Text style={styles.value}>{invoice.issued_at.slice(0, 10)}</Text>
             </View>
           )}
           {invoice.due_at && (
             <View style={styles.row}>
-              <Text style={styles.label}>Échéance</Text>
+              <Text style={styles.label}>{tr('invoice_detail.echeance')}</Text>
               <Text style={styles.value}>{invoice.due_at.slice(0, 10)}</Text>
             </View>
           )}
@@ -174,7 +176,7 @@ export function InvoiceDetailScreen({ route, navigation }: Props) {
         {/* Reminders */}
         {invoice.reminders && invoice.reminders.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Rappels envoyés</Text>
+            <Text style={styles.sectionTitle}>{tr('invoice_detail.rappels_envoyes')}</Text>
             {invoice.reminders.map((r) => (
               <View key={r.id} style={styles.listItem}>
                 <Text style={styles.listItemLabel}>{r.type ?? 'rappel'}</Text>
@@ -190,10 +192,10 @@ export function InvoiceDetailScreen({ route, navigation }: Props) {
         <TouchableOpacity
           style={styles.pdfButton}
           onPress={onDownloadPdf}
-          accessibilityLabel="Télécharger le PDF"
+          accessibilityLabel={tr('invoice_detail.telecharger_le_pdf')}
           accessibilityRole="button"
         >
-          <Text style={styles.pdfButtonText}>Télécharger le PDF</Text>
+          <Text style={styles.pdfButtonText}>{tr('invoice_detail.telecharger_le_pdf')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </Screen>
