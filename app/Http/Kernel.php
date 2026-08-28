@@ -86,7 +86,6 @@ class Kernel extends HttpKernel
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,
             SubstituteBindings::class,
-            SetLocale::class,
             CaptureUtm::class,
             EmbedMode::class,
         ],
