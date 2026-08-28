@@ -15,10 +15,12 @@
             <x-app-card title="Liste des pays" subtitle="Sélectionner un marché pour gérer ses paramètres locaux.">
                 <div class="space-y-3">
                     @forelse($countries as $country)
-                        <button type="button" wire:click="selectCountry({{ $country->id }})"
-                            class="w-full text-left bg-white rounded-2xl border shadow-sm p-4 transition {{ $selectedCountry && $selectedCountry->id === $country->id ? 'border-blue-500 ring-2 ring-blue-100' : 'border-slate-200 hover:border-slate-300' }}">
+                        {{-- LA CARTE N'EST PLUS UN BOUTON : elle en contenait un second, et le
+                             navigateur ressortait les deux HORS du conteneur de page. --}}
+                        <div class="rounded-2xl border bg-white p-4 shadow-sm transition {{ $selectedCountry && $selectedCountry->id === $country->id ? 'border-blue-500 ring-2 ring-blue-100' : 'border-slate-200 hover:border-slate-300' }}">
                             <div class="flex items-start justify-between gap-3">
-                                <div>
+                                <button type="button" wire:click="selectCountry({{ $country->id }})"
+                                    class="min-w-0 flex-1 text-left">
                                     <p class="font-semibold text-slate-900">{{ $country->name }}</p>
                                     <p class="text-xs text-slate-500">{{ $country->iso_code }} @if($country->iso3_code)· {{ $country->iso3_code }}@endif · {{ $country->currency_code }}</p>
                                     <p class="text-xs text-slate-500 mt-1">{{ $country->default_locale }} · {{ $country->timezone }}</p>
@@ -27,19 +29,20 @@
                                         <span class="rounded-full bg-slate-100 px-2 py-1">{{ $country->postal_codes_count }} CP</span>
                                         <span class="rounded-full bg-slate-100 px-2 py-1">{{ $country->service_zones_count }} zones</span>
                                     </div>
-                                </div>
-                                <div class="text-right space-y-2">
+                                </button>
+
+                                <div class="shrink-0 text-right space-y-2">
                                     <span class="inline-flex items-center rounded-full px-2 py-1 text-[11px] font-semibold {{ $statusPill((bool) $country->is_active) }}">
                                         {{ $country->is_active ? 'Actif' : 'Inactif' }}
                                     </span>
                                     <div>
-                                        <button type="button" wire:click.stop="toggleCountryStatus({{ $country->id }})" class="brio-btn-secondary text-xs">
+                                        <button type="button" wire:click="toggleCountryStatus({{ $country->id }})" class="brio-btn-secondary text-xs">
                                             {{ $country->is_active ? 'Désactiver' : 'Activer' }}
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                        </button>
+                        </div>
                     @empty
                         <div class="bg-white border rounded-2xl p-6 text-center text-gray-500 italic">
                             Aucun pays trouvé.

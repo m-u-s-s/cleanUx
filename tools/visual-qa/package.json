@@ -8,7 +8,8 @@
     "qa": "node run.mjs",
     "modules": "node modules.mjs",
     "qa:publiques": "node publiques.mjs",
-    "qa:theme": "node theme.mjs"
+    "qa:theme": "node theme.mjs",
+    "qa:espacement": "node espacement.mjs"
   },
   "devDependencies": {
     "playwright": "^1.48.0"

@@ -34,6 +34,7 @@ VQA_BASE=http://127.0.0.1:8000 VQA_ONLY=admin-order-engine npm run qa
 |---|---|
 | `npm run qa:publiques` | Les 12 pages qu'un visiteur voit **sans compte** — `run.mjs` n'en couvrait qu'une |
 | `npm run qa:theme` | L'éclair de thème au chargement, les boutons sans nom accessible, le réglage du thème sous 640 px |
+| `npm run qa:espacement` | Deux blocs de premier niveau qui se **touchent** dans le slot d'une `x-page-shell` — la coquille n'espace pas ses enfants |
 
 `qa:theme` a besoin d'un compte client valide. Les comptes de `modules.mjs` viennent d'un seeder
 Faker : après un `migrate:fresh --seed`, passez `VQA_CLIENT=<email>` ou relancez `QaAccountsSeeder`.
