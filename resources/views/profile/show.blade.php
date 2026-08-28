@@ -68,15 +68,6 @@
                             @endif
                         </div>
 
-                        @if(auth()->user()->role === 'client')
-                        <div class="mt-6 pt-6 border-t">
-                            <a
-                                href="{{ route('client.profile') }}"
-                                class="text-sm text-blue-600 underline">
-                                ← Retour au profil client
-                            </a>
-                        </div>
-                        @endif
                     </div>
                 </div>
 

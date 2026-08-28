@@ -122,8 +122,6 @@ return [
          * portait cette condition en dur — le registre la porte désormais.
          */
         ['key' => 'client:client-company.dashboard', 'label' => 'Espace entreprise', 'icon' => '🏢', 'route' => 'client-company.dashboard', 'context' => 'client', 'category' => 'comptes', 'primary' => false, 'visible_si' => 'belongsToClientCompany'],
-        ['key' => 'client:client.profile', 'label' => 'Profil client', 'icon' => '👤', 'route' => 'client.profile', 'context' => 'client', 'category' => 'comptes', 'primary' => false],
-        ['key' => 'client:client.profile.edit', 'label' => 'Éditer mon profil', 'icon' => '✏️', 'route' => 'client.profile.edit', 'context' => 'client', 'category' => 'comptes', 'primary' => false],
         ['key' => 'client:client.ai.quote.photo', 'label' => 'Devis IA depuis photo', 'icon' => '🤖', 'route' => 'client.ai.quote.photo', 'context' => 'client', 'category' => 'prestataires', 'primary' => false],
         ['key' => 'client:client.bundles.manage', 'label' => 'Chantiers groupés', 'icon' => '🏗️', 'route' => 'client.bundles.manage', 'context' => 'client', 'category' => 'prestataires', 'primary' => false],
         ['key' => 'client:client.providers.browse', 'label' => 'Trouver un prestataire', 'icon' => '🔍', 'route' => 'client.providers.browse', 'context' => 'client', 'category' => 'prestataires', 'primary' => true],

@@ -268,8 +268,8 @@
                                 Compte
                             </div>
 
-                            @if($user?->isClient() && Route::has('client.profile'))
-                            <x-dropdown-link :href="route('client.profile')">
+                            @if($user?->isClient())
+                            <x-dropdown-link :href="route('profile.show')">
                                 👤 Espace client
                             </x-dropdown-link>
                             @endif
@@ -406,8 +406,8 @@
             </div>
 
             <div class="mt-3 space-y-1">
-                @if($user?->isClient() && Route::has('client.profile'))
-                <x-responsive-nav-link :href="route('client.profile')" :active="request()->routeIs('client.profile')">
+                @if($user?->isClient())
+                <x-responsive-nav-link :href="route('profile.show')" :active="request()->routeIs('profile.show')">
                     👤 Espace client
                 </x-responsive-nav-link>
                 @endif

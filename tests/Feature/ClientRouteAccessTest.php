@@ -15,7 +15,6 @@ class ClientRouteAccessTest extends TestCase
         '/dashboard/client/rendez-vous/nouveau',
         '/dashboard/client/rendez-vous',
         '/dashboard/client/historique',
-        '/dashboard/client/profil',
         '/dashboard/client/finance',
     ];
 

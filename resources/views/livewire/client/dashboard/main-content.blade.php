@@ -155,6 +155,21 @@
                             <dt class="text-slate-500 shrink-0 dark:text-slate-400">{{ __('Fréquence') }} :</dt>
                             <dd class="font-medium text-slate-800 dark:text-slate-200">{{ ucfirst(str_replace('_', ' ', $dernierRendezVous->frequency ?? '—')) }}</dd>
                         </div>
+
+                        {{-- LES TROIS LIGNES VENUES DU PROFIL CLIENT SUPPRIME : elles n'existaient
+                             nulle part ailleurs, et decrivent la MEME derniere prestation. --}}
+                        <div class="flex gap-2">
+                            <dt class="text-slate-500 shrink-0 dark:text-slate-400">{{ __('Type de lieu') }} :</dt>
+                            <dd class="font-medium text-slate-800 dark:text-slate-200">{{ ucfirst($dernierRendezVous->place_type ?? '—') }}</dd>
+                        </div>
+                        <div class="flex gap-2">
+                            <dt class="text-slate-500 shrink-0 dark:text-slate-400">{{ __('Priorité') }} :</dt>
+                            <dd class="font-medium text-slate-800 dark:text-slate-200">{{ ucfirst($dernierRendezVous->priorite ?? '—') }}</dd>
+                        </div>
+                        <div class="flex gap-2">
+                            <dt class="text-slate-500 shrink-0 dark:text-slate-400">{{ __('Créneau favori') }} :</dt>
+                            <dd class="font-medium text-slate-800 dark:text-slate-200">{{ $dernierRendezVous->is_favorite_slot ? __('Oui') : __('Non') }}</dd>
+                        </div>
                     </dl>
 
                     @if(Route::has('client.rendezvous.create'))

@@ -56,6 +56,13 @@
             <x-input-error for="name" class="mt-2" />
         </div>
 
+        {{-- LE TELEPHONE, VENU DE L'ECRAN CLIENT SUPPRIME : c'est le seul champ qu'il editait de plus. --}}
+        <div class="col-span-6 sm:col-span-4">
+            <x-label for="phone" value="{{ __('Téléphone') }}" />
+            <x-input id="phone" type="tel" class="mt-1 block w-full" wire:model="state.phone" autocomplete="tel" />
+            <x-input-error for="phone" class="mt-2" />
+        </div>
+
         <div class="col-span-6 sm:col-span-4">
             <x-label for="email" value="Adresse e-mail" />
             <x-input id="email" type="email" class="mt-1 block w-full" wire:model="state.email" required autocomplete="username" />

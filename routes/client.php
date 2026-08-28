@@ -31,8 +31,6 @@ use App\Livewire\Client\MultiTradesBundleManager;
 use App\Livewire\Client\MyProtection;
 use App\Livewire\Client\NpsSurvey;
 use App\Livewire\Client\PlacesBook;
-use App\Livewire\Client\ProfilClient;
-use App\Livewire\Client\ProfileEdit;
 use App\Livewire\Client\ReceivedQuotes;
 use App\Livewire\Client\ReferralProgramPage;
 use App\Livewire\Client\Templates\RecurringTemplatesGallery;
@@ -140,10 +138,6 @@ Route::middleware(['role:client'])
             Route::get('/finance', FinanceDocumentsClient::class)->name('finance');
         }
 
-        if (class_exists(ProfilClient::class)) {
-            Route::get('/profil', ProfilClient::class)->name('profile');
-        }
-
         if (class_exists(HistoriqueClient::class)) {
             Route::get('/historique', HistoriqueClient::class)->name('historique');
         }
@@ -226,11 +220,6 @@ Route::middleware(['role:client'])
         if (class_exists(BookingCheckout::class)) {
             Route::get('/missions/{bookingId}/checkout', BookingCheckout::class)
                 ->name('booking.checkout');
-        }
-
-        if (class_exists(ProfileEdit::class)) {
-            Route::get('/profil/editer', ProfileEdit::class)
-                ->name('profile.edit');
         }
 
         if (class_exists(ClientLiveTrackingMap::class)) {

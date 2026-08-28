@@ -21,6 +21,8 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
+            // LE TELEPHONE, VENU DE L'ECRAN CLIENT SUPPRIME. Absent de la saisie, il n'est pas efface.
+            'phone' => ['sometimes', 'nullable', 'string', 'max:32'],
         ])->validateWithBag('updateProfileInformation');
 
         if (isset($input['photo'])) {
@@ -35,6 +37,10 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'name' => $input['name'],
                 'email' => $input['email'],
             ])->save();
+        }
+
+        if (array_key_exists('phone', $input)) {
+            $user->forceFill(['phone' => $input['phone']])->save();
         }
     }
 
