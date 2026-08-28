@@ -16,6 +16,7 @@ import { Button } from '@/ui';
 import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 const { width } = Dimensions.get('window');
 
@@ -44,6 +45,7 @@ interface Props {
 }
 
 export function WalkthroughScreen({ onComplete }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -110,7 +112,7 @@ export function WalkthroughScreen({ onComplete }: Props) {
           size="lg"
         />
         {currentIndex < SLIDES.length - 1 && (
-          <Button label="Passer" onPress={handleComplete} variant="ghost" fullWidth />
+          <Button label={tr('walkthrough.passer')} onPress={handleComplete} variant="ghost" fullWidth />
         )}
       </View>
     </View>

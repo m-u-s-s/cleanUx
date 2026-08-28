@@ -136,14 +136,14 @@ export function ReceivedQuotesScreen() {
               {item.is_open && (
                 <>
                   <Button
-                    label="Accepter"
+                    label={tr('received_quotes.accepter')}
                     size="sm"
                     disabled={decider.isPending}
                     onPress={() => decider.mutate({ id: item.id, accepte: true })}
                     testID={`accepter-devis-${item.id}`}
                   />
                   <Button
-                    label="Refuser"
+                    label={tr('received_quotes.refuser')}
                     size="sm"
                     variant="ghost"
                     disabled={decider.isPending}

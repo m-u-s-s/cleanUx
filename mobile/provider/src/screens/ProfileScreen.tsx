@@ -10,8 +10,10 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import { useSpacePreference } from '@/admin/useSpacePreference';
+import { useTraduction } from '@/i18n';
 
 export function ProfileScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -159,7 +161,7 @@ export function ProfileScreen() {
   return (
     <SafeAreaView style={styles.container} testID="profile-screen">
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Profil</Text>
+        <Text style={styles.title}>{tr('profile.profil')}</Text>
         <View style={styles.grid}>
           {actions.map(({ label, screen }) => (
             <View key={screen} style={styles.buttonWrapper}>
@@ -202,7 +204,7 @@ export function ProfileScreen() {
             fullWidth
           />
           <Button
-            label="Politique de confidentialité"
+            label={tr('profile.politique_de_confidentialite')}
             onPress={() => navigation.navigate('Legal', { type: 'privacy' })}
             variant="ghost"
             fullWidth
@@ -211,7 +213,7 @@ export function ProfileScreen() {
             <>
               <Divider />
               <Button
-                label="Changer d’espace"
+                label={tr('profile.changer_despace')}
                 onPress={() => void clear()}
                 variant="secondary"
                 fullWidth
@@ -220,7 +222,7 @@ export function ProfileScreen() {
           ) : null}
           <Divider />
           <Button
-            label="Se déconnecter"
+            label={tr('profile.se_deconnecter')}
             onPress={() =>
               Alert.alert('Déconnexion', 'Voulez-vous vous déconnecter ?', [
                 { text: 'Annuler', style: 'cancel' },

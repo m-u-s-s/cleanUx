@@ -76,13 +76,13 @@ export function CompanyTasksScreen() {
         <TextInput
           value={titre}
           onChangeText={setTitre}
-          placeholder="Nouvelle tâche"
+          placeholder={tr('company_tasks.nouvelle_tache')}
           placeholderTextColor={styles.placeholder.color}
           style={styles.champ}
           testID="champ-titre-tache"
         />
         <Button
-          label="Ajouter"
+          label={tr('company_tasks.ajouter')}
           size="sm"
           onPress={() => titre.trim() && creer.mutate(titre.trim())}
           disabled={creer.isPending || titre.trim().length === 0}
@@ -118,7 +118,7 @@ export function CompanyTasksScreen() {
           );
         }}
         ListEmptyComponent={
-          <EmptyState title="Aucune tâche" message="Ajoutez une tâche pour organiser le travail de l'équipe." />
+          <EmptyState title={tr('company_tasks.aucune_tache')} message="Ajoutez une tâche pour organiser le travail de l'équipe." />
         }
       />
     </Screen>

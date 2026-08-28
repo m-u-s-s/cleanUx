@@ -131,7 +131,7 @@ export function EcranConfirmationEmail() {
         <Stagger index={1}>
           <View style={authStyles.footer}>
             <Button
-              label="Se déconnecter"
+              label={tr('ecran_confirmation_email.se_deconnecter')}
               variant="link"
               onPress={() => void logout()}
               fullWidth

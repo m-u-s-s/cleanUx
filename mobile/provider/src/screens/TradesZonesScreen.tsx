@@ -158,7 +158,7 @@ export function TradesZonesScreen() {
 
         <View style={styles.actions}>
           <Button
-            label="Enregistrer"
+            label={tr('trades_zones.enregistrer')}
             onPress={() => enregistrer.mutate()}
             fullWidth
             size="lg"

@@ -9,8 +9,10 @@ import {spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 export function ProviderChatListScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: threads, isLoading, refetch, isRefetching } = useChatThreads();
@@ -18,7 +20,7 @@ export function ProviderChatListScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Messagerie</Text>
+      <Text style={styles.title}>{tr('provider_chat_list.messagerie')}</Text>
       {isLoading ? (
         <View style={styles.skeletons}>
           {[1, 2, 3].map(i => <Skeleton key={i} width="100%" height={60} />)}
@@ -55,7 +57,7 @@ export function ProviderChatListScreen() {
           )}
           onRefresh={refetch}
           refreshing={isRefetching}
-          ListEmptyComponent={<EmptyState title="Aucune conversation" message="Vos échanges avec les clients apparaîtront ici." />}
+          ListEmptyComponent={<EmptyState title={tr('provider_chat_list.aucune_conversation')} message="Vos échanges avec les clients apparaîtront ici." />}
         />
       )}
     </Screen>

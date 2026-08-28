@@ -389,7 +389,7 @@ function SummaryBlock({ summary: { summary, payment_health } }: SummaryBlockProp
       {/* KPI cards row */}
       <View style={styles.kpiRow}>
         <KPICard
-          title="Factures"
+          title={tr('invoices.factures')}
           value={summary.invoices_count}
         />
         <KPICard
@@ -398,7 +398,7 @@ function SummaryBlock({ summary: { summary, payment_health } }: SummaryBlockProp
           tone="success"
         />
         <KPICard
-          title="Partielles"
+          title={tr('invoices.partielles')}
           value={summary.partial_count}
           tone={summary.partial_count > 0 ? 'warning' : 'neutral'}
         />

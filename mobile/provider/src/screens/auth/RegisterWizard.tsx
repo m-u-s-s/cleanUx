@@ -343,7 +343,7 @@ export function RegisterWizard() {
           onPress={goBack}
           style={styles.backButton}
           accessibilityRole="button"
-          accessibilityLabel="Étape précédente"
+          accessibilityLabel={tr('register_wizard.etape_precedente')}
           testID="register-back"
         >
           <Icon name="arrow-back" size={20} color={colors.mode.tool.ink} />
@@ -418,11 +418,11 @@ export function RegisterWizard() {
       case 'phone':
         return (
           <Question
-            title="Votre numéro de téléphone"
+            title={tr('register_wizard.votre_numero_de_telephone')}
             hint="Nous vous envoyons un code par SMS. C'est par ce numéro que vos clients vous joindront."
           >
             <TextInput
-              label="Téléphone"
+              label={tr('register_wizard.telephone')}
               value={draft.phone}
               onChangeText={t => patch({ phone: t })}
               keyboardType="phone-pad"
@@ -437,11 +437,11 @@ export function RegisterWizard() {
       case 'otp':
         return (
           <Question
-            title="Entrez le code reçu"
+            title={tr('register_wizard.entrez_le_code_recu')}
             hint={`Code à ${OTP_LENGTH} chiffres envoyé au ${draft.phone}.`}
           >
             <TextInput
-              label="Code de vérification"
+              label={tr('register_wizard.code_de_verification')}
               value={otp}
               onChangeText={t => { setOtp(t.replace(/\D/g, '').slice(0, OTP_LENGTH)); setFieldError(null); }}
               keyboardType="number-pad"
@@ -462,13 +462,13 @@ export function RegisterWizard() {
 
       case 'identity':
         return (
-          <Question title="Comment vous appelez-vous ?" hint="Ce nom sera visible par vos clients.">
+          <Question title={tr('register_wizard.comment_vous_appelez_vous')} hint="Ce nom sera visible par vos clients.">
             <TextInput
-              label="Prénom"
+              label={tr('register_wizard.prenom')}
               value={draft.firstName}
               onChangeText={t => patch({ firstName: t })}
               autoComplete="given-name"
-              placeholder="Jean"
+              placeholder={tr('register_wizard.jean')}
               autoFocus
               testID="register-first-name"
             />
@@ -477,7 +477,7 @@ export function RegisterWizard() {
               value={draft.lastName}
               onChangeText={t => patch({ lastName: t })}
               autoComplete="family-name"
-              placeholder="Dupont"
+              placeholder={tr('register_wizard.dupont')}
               testID="register-last-name"
             />
           </Question>
@@ -485,9 +485,9 @@ export function RegisterWizard() {
 
       case 'email':
         return (
-          <Question title="Votre adresse email" hint="Elle sert à vous connecter et à recevoir vos documents.">
+          <Question title={tr('register_wizard.votre_adresse_email')} hint="Elle sert à vous connecter et à recevoir vos documents.">
             <TextInput
-              label="Email"
+              label={tr('register_wizard.email')}
               value={draft.email}
               onChangeText={t => patch({ email: t })}
               keyboardType="email-address"
@@ -504,10 +504,10 @@ export function RegisterWizard() {
         const strength = passwordStrength(password);
 
         return (
-          <Question title="Choisissez un mot de passe" hint={`${PASSWORD_MIN} caractères minimum.`}>
+          <Question title={tr('register_wizard.choisissez_un_mot_de_passe')} hint={`${PASSWORD_MIN} caractères minimum.`}>
             <View style={kit.passwordWrapper}>
               <TextInput
-                label="Mot de passe"
+                label={tr('register_wizard.mot_de_passe')}
                 value={password}
                 onChangeText={t => { setPassword(t); setFieldError(null); }}
                 secureTextEntry={!showPassword}
@@ -549,7 +549,7 @@ export function RegisterWizard() {
       case 'kind':
         return (
           <Question
-            title="Vous travaillez seul ou en équipe ?"
+            title={tr('register_wizard.vous_travaillez_seul_ou_en')}
             hint="Ce choix détermine les documents qui vous seront demandés."
           >
             <KindChoice value={draft.providerKind} onChange={kind => patch({ providerKind: kind })} />
@@ -559,7 +559,7 @@ export function RegisterWizard() {
       case 'company':
         return (
           <Question
-            title="Votre société"
+            title={tr('register_wizard.votre_societe')}
             hint="Saisissez votre numéro d'entreprise : nous retrouvons votre raison sociale."
           >
             <TextInput
@@ -576,7 +576,7 @@ export function RegisterWizard() {
                 d'interroger un registre officiel avec un numéro qui ne peut pas exister. */}
             {isValidBusinessNumber(draft.vatNumber) && !lookup.data ? (
               <Button
-                label="Retrouver ma société"
+                label={tr('register_wizard.retrouver_ma_societe')}
                 onPress={() => void runLookup()}
                 variant="secondary"
                 fullWidth
@@ -601,10 +601,10 @@ export function RegisterWizard() {
             ) : null}
 
             <TextInput
-              label="Raison sociale"
+              label={tr('register_wizard.raison_sociale')}
               value={draft.companyName}
               onChangeText={t => patch({ companyName: t })}
-              placeholder="Nettoyage Dupont SPRL"
+              placeholder={tr('register_wizard.nettoyage_dupont_sprl')}
               testID="register-company-name"
             />
           </Question>
@@ -613,7 +613,7 @@ export function RegisterWizard() {
       case 'trade':
         return (
           <Question
-            title="Quel métier exercez-vous ?"
+            title={tr('register_wizard.quel_metier_exercez_vous')}
             hint="Sans métier déclaré, aucune mission ne peut vous être proposée."
           >
             <TradePicker
@@ -631,7 +631,7 @@ export function RegisterWizard() {
       case 'zones':
         return (
           <Question
-            title="Où intervenez-vous ?"
+            title={tr('register_wizard.ou_intervenez_vous')}
             hint="Vous ne recevrez que des missions situées dans les zones cochées."
           >
             <ZonePicker
@@ -644,7 +644,7 @@ export function RegisterWizard() {
 
       case 'tradeQuestions':
         return (
-          <Question title="Quelques précisions sur votre métier" hint="Elles servent à vous proposer les bonnes missions.">
+          <Question title={tr('register_wizard.quelques_precisions_sur_votre_metier')} hint="Elles servent à vous proposer les bonnes missions.">
             <TradeQuestions
               fields={tradeFields ?? []}
               answers={draft.tradeAnswers}
@@ -658,7 +658,7 @@ export function RegisterWizard() {
 
       case 'terms':
         return (
-          <Question title="Dernière étape" hint="Votre dossier de vérification s'ouvrira juste après.">
+          <Question title={tr('register_wizard.derniere_etape')} hint="Votre dossier de vérification s'ouvrira juste après.">
             <TouchableOpacity
               style={kit.termsRow}
               onPress={() => patch({ acceptTerms: !draft.acceptTerms })}

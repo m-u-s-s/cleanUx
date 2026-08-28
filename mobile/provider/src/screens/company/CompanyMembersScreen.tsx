@@ -205,7 +205,7 @@ export function CompanyMembersScreen() {
                 {peutRetirer && (
                   <View style={styles.action}>
                     <Button
-                      label="Retirer de la société"
+                      label={tr('company_members.retirer_de_la_societe')}
                       variant="danger"
                       fullWidth
                       onPress={() => retirer(item)}
@@ -218,7 +218,7 @@ export function CompanyMembersScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucun membre"
+            title={tr('company_members.aucun_membre')}
             message="Invitez vos collaborateurs depuis l'espace société."
           />
         }

@@ -115,13 +115,13 @@ export function CompanyTimesheetsScreen() {
                 </Text>
               </View>
               <Button
-                label="Approuver"
+                label={tr('company_timesheets.approuver')}
                 size="sm"
                 onPress={() => statuer.mutate({ id: correction.id, approve: true })}
                 testID={`approuver-correction-${correction.id}`}
               />
               <Button
-                label="Refuser"
+                label={tr('company_timesheets.refuser')}
                 size="sm"
                 variant="ghost"
                 onPress={() => statuer.mutate({ id: correction.id, approve: false })}
@@ -161,7 +161,7 @@ export function CompanyTimesheetsScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucune heure retenue"
+            title={tr('company_timesheets.aucune_heure_retenue')}
             message="Une correction en attente ne compte pas : payer avant approbation reviendrait à ne jamais approuver."
           />
         }

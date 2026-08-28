@@ -190,7 +190,7 @@ export default function FaceCheckScreen() {
           </Text>
 
           <View style={styles.actions}>
-            <Button label="Signaler un problème" variant="glass" onPress={() => setSignalementOuvert(true)} fullWidth />
+            <Button label={tr('face_check.signaler_un_probleme')} variant="glass" onPress={() => setSignalementOuvert(true)} fullWidth />
           </View>
         </ScrollView>
 
@@ -230,8 +230,8 @@ export default function FaceCheckScreen() {
             avec vos clients.
           </Text>
           <View style={styles.actions}>
-            <Button label="Autoriser la caméra" onPress={demanderPermission} fullWidth />
-            <Button label="Ça ne marche pas" variant="ghost" onPress={() => setSignalementOuvert(true)} fullWidth />
+            <Button label={tr('face_check.autoriser_la_camera')} onPress={demanderPermission} fullWidth />
+            <Button label={tr('face_check.ca_ne_marche_pas')} variant="ghost" onPress={() => setSignalementOuvert(true)} fullWidth />
           </View>
         </ScrollView>
 
@@ -317,14 +317,14 @@ export default function FaceCheckScreen() {
                 fullWidth
               />
               <Button
-                label="Ça ne marche pas"
+                label={tr('face_check.ca_ne_marche_pas')}
                 variant="glass"
                 onPress={() => setSignalementOuvert(true)}
                 fullWidth
               />
               {!enrolement && controle !== null ? (
                 <Button
-                  label="Plus tard"
+                  label={tr('face_check.plus_tard')}
                   variant="ghost"
                   onPress={() => abandonner.mutate(controle.id)}
                   fullWidth
@@ -408,15 +408,15 @@ function FeuilleDeSignalement({
               signalement ne le débloque pas.
             </Text>
             <View style={styles.actions}>
-              <Button label="Fermer" onPress={onFermer} fullWidth />
+              <Button label={tr('face_check.fermer')} onPress={onFermer} fullWidth />
             </View>
           </>
         ) : (
           <>
-            <Text style={styles.eyebrow}>Signaler</Text>
+            <Text style={styles.eyebrow}>{tr('face_check.signaler')}</Text>
             <Text style={styles.titreClair}>{tr('face_check.que_se_passe_t_il')}</Text>
             <TextInput
-              label="Décrivez le problème"
+              label={tr('face_check.decrivez_le_probleme')}
               value={message}
               onChangeText={setMessage}
               multiline
@@ -427,13 +427,13 @@ function FeuilleDeSignalement({
             </Text>
             <View style={styles.actions}>
               <Button
-                label="Envoyer"
+                label={tr('face_check.envoyer')}
                 onPress={envoyer}
                 loading={signaler.isPending}
                 disabled={message.trim().length < 5}
                 fullWidth
               />
-              <Button label="Annuler" variant="ghost" onPress={onFermer} fullWidth />
+              <Button label={tr('face_check.annuler')} variant="ghost" onPress={onFermer} fullWidth />
             </View>
           </>
         )}

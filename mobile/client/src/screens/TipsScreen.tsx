@@ -54,7 +54,7 @@ export function TipsScreen({ route, navigation }: Props) {
 
   return (
     <Screen>
-      <Text style={styles.title}>Pourboire</Text>
+      <Text style={styles.title}>{tr('tips.pourboire')}</Text>
       <Text style={styles.subtitle}>{tr('tips.merci_de_valoriser_le_travail')}</Text>
       {isLoading ? (
         <ActivityIndicator size="large" color={colors.brand[500]} style={{ marginVertical: spacing.xl }} />
@@ -73,7 +73,7 @@ export function TipsScreen({ route, navigation }: Props) {
         </View>
       )}
       <Button
-        label="Envoyer"
+        label={tr('tips.envoyer')}
         onPress={handleSend}
         fullWidth
         size="lg"

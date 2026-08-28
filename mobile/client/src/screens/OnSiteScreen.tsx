@@ -119,7 +119,7 @@ export function OnSiteScreen({ route }: Props) {
   return (
     <Screen scroll>
       <View style={styles.entete}>
-        <Text style={styles.titre}>Avancement</Text>
+        <Text style={styles.titre}>{tr('on_site.avancement')}</Text>
         <Badge
           label={`${fil.progress.done}/${fil.progress.total}`}
           variant={fil.progress.percent === 100 ? 'success' : 'brand'}
@@ -225,12 +225,12 @@ export function OnSiteScreen({ route }: Props) {
 
           <View style={styles.supplementActions}>
             <Button
-              label="Accepter"
+              label={tr('on_site.accepter')}
               onPress={() => repondreAuSupplement(supplement.id, true)}
               loading={repondre.isPending}
             />
             <Button
-              label="Refuser"
+              label={tr('on_site.refuser')}
               variant="secondary"
               onPress={() => repondreAuSupplement(supplement.id, false)}
               loading={repondre.isPending}

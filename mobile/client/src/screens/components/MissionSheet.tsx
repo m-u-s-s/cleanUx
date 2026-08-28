@@ -126,7 +126,7 @@ export const MissionSheet = forwardRef<GorhomBottomSheet, MissionSheetProps>(
               testID="mission-sheet-message"
             >
               <Icon name="chatbubble-outline" size={20} color={t.text} />
-              <Text style={styles.raccourciTexte}>Message</Text>
+              <Text style={styles.raccourciTexte}>{tr('mission.message')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity

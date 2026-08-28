@@ -92,7 +92,7 @@ export const DashboardActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref)
       // geste de fermeture — le chemin que les utilisateurs emprunteront le plus souvent.
       onClose={() => setIsOpen(false)}
     >
-      <Text style={styles.sectionTitle} accessibilityRole="header">Statut</Text>
+      <Text style={styles.sectionTitle} accessibilityRole="header">{tr('dashboard_actions.statut')}</Text>
       <PresenceToggle />
 
       <Divider />
@@ -106,12 +106,12 @@ export const DashboardActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref)
         ) : (
           <>
             <KPICard
-              title="Missions en attente"
+              title={tr('dashboard_actions.missions_en_attente')}
               value={assignments?.length ?? 0}
               tone={(assignments?.length ?? 0) > 0 ? 'warning' : 'neutral'}
             />
             <KPICard
-              title="Solde disponible"
+              title={tr('dashboard_actions.solde_disponible')}
               value={wallet && wallet.available != null ? `${wallet.available.toFixed(0)} ${wallet.currency ?? ''}`.trim() : '—'}
               tone="success"
             />
@@ -129,7 +129,7 @@ export const DashboardActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref)
       </View>
 
       <Button
-        label="Voir toutes les missions"
+        label={tr('dashboard_actions.voir_toutes_les_missions')}
         onPress={() => closeThenNavigate('MainTabs', { screen: 'Missions' })}
         variant="secondary"
         fullWidth

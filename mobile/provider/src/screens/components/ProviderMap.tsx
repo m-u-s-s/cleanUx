@@ -260,7 +260,7 @@ export function ProviderMap() {
         {isError && (
           <View style={styles.errorRow}>
             <Text style={styles.notice}>{tr('provider_map.missions_non_chargees')}</Text>
-            <Button label="Réessayer" onPress={() => void refetch()} size="sm" variant="secondary" />
+            <Button label={tr('provider_map.reessayer')} onPress={() => void refetch()} size="sm" variant="secondary" />
           </View>
         )}
       </View>

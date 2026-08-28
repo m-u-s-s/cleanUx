@@ -99,7 +99,7 @@ export function PlacesScreen() {
         <TextInput
           value={adresse}
           onChangeText={setAdresse}
-          placeholder="Adresse"
+          placeholder={tr('places.adresse')}
           placeholderTextColor={styles.placeholder.color}
           style={styles.champ}
           testID="champ-adresse-lieu"
@@ -177,7 +177,7 @@ export function PlacesScreen() {
 
             {/* Archiver, pas supprimer : les interventions passées portent ce lieu. */}
             <Button
-              label="Archiver"
+              label={tr('places.archiver')}
               size="sm"
               variant="ghost"
               onPress={() => archiver.mutate(item.id)}

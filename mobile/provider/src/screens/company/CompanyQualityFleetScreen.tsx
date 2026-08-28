@@ -123,7 +123,7 @@ export function CompanyQualityFleetScreen() {
           )}
           ListEmptyComponent={
             <EmptyState
-              title="Aucun score"
+              title={tr('company_quality_fleet.aucun_score')}
               message="Trois sources existantes, aucune nouvelle collecte. Ce score ne sort pas de votre société."
             />
           }

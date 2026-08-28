@@ -158,7 +158,7 @@ export function InvoiceDetailScreen({ route, navigation }: Props) {
         {/* Payments */}
         {invoice.payments && invoice.payments.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Paiements</Text>
+            <Text style={styles.sectionTitle}>{tr('invoice_detail.paiements')}</Text>
             {invoice.payments.map((p) => (
               <View key={p.id} style={styles.listItem}>
                 <Text style={styles.listItemLabel}>

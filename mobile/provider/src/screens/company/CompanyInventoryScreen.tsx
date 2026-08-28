@@ -7,6 +7,7 @@ import { useAuth, can } from '@/auth';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Article {
   id: number;
@@ -33,6 +34,7 @@ interface Article {
  * utile : la remplacer par « une erreur est survenue » obligerait à rappeler le bureau.
  */
 export function CompanyInventoryScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -68,7 +70,7 @@ export function CompanyInventoryScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Consommables</Text>
+      <Text style={styles.title}>{tr('company_inventory.consommables')}</Text>
       <Text style={styles.intro}>
         Ce qui reste, et ce que vous prélevez. Le compteur découle des mouvements, jamais l'inverse.
       </Text>
@@ -91,7 +93,7 @@ export function CompanyInventoryScreen() {
                 </Text>
               </View>
 
-              {item.needs_reorder && <Badge label="Stock bas" variant="danger" />}
+              {item.needs_reorder && <Badge label={tr('company_inventory.stock_bas')} variant="danger" />}
             </View>
 
             {peutGerer && (
@@ -106,7 +108,7 @@ export function CompanyInventoryScreen() {
                   testID={`quantite-${item.id}`}
                 />
                 <Button
-                  label="Prélever"
+                  label={tr('company_inventory.prelever')}
                   size="sm"
                   variant="ghost"
                   disabled={quantiteDe(item.id) === 0 || bouger.isPending}
@@ -116,7 +118,7 @@ export function CompanyInventoryScreen() {
                   testID={`prelever-${item.id}`}
                 />
                 <Button
-                  label="Réceptionner"
+                  label={tr('company_inventory.receptionner')}
                   size="sm"
                   disabled={quantiteDe(item.id) === 0 || bouger.isPending}
                   onPress={() =>
@@ -130,7 +132,7 @@ export function CompanyInventoryScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucun consommable"
+            title={tr('company_inventory.aucun_consommable')}
             message="Déclarez vos articles depuis l'espace société pour suivre ce qui reste."
           />
         }

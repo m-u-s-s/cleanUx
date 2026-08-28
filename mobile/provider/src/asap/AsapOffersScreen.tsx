@@ -89,7 +89,7 @@ export function AsapOffersScreen() {
         {!isLoading && offers.length === 0 ? (
           <EmptyState
             icon="flash-outline"
-            title="Aucune course pour l’instant"
+            title={tr('asap_offers.aucune_course_pour_linstant')}
             message="Restez en ligne : les demandes urgentes arrivent ici dès qu’un client en lance une près de vous."
           />
         ) : null}
@@ -112,8 +112,8 @@ export function AsapOffersScreen() {
             <Text style={styles.amount}>{formatRange(offer)}</Text>
 
             <View style={styles.actions}>
-              <Button label="Accepter" onPress={() => handleAccept(offer)} />
-              <Button label="Passer" variant="secondary" onPress={() => handleDecline(offer)} />
+              <Button label={tr('asap_offers.accepter')} onPress={() => handleAccept(offer)} />
+              <Button label={tr('asap_offers.passer')} variant="secondary" onPress={() => handleDecline(offer)} />
             </View>
           </View>
         ))}

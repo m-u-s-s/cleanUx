@@ -98,7 +98,7 @@ export function FaceConsentScreen() {
               métiers qui exigent un contrôle d’identité tant que vous ne l’aurez pas ré-enregistré.
             </Text>
             <View style={styles.action}>
-              <Button label="Retour" onPress={() => navigation.goBack()} variant="secondary" fullWidth />
+              <Button label={tr('face_consent.retour')} onPress={() => navigation.goBack()} variant="secondary" fullWidth />
             </View>
           </View>
         ) : (
@@ -110,7 +110,7 @@ export function FaceConsentScreen() {
 
             <View style={styles.action}>
               <Button
-                label="Retirer mon consentement"
+                label={tr('face_consent.retirer_mon_consentement')}
                 onPress={demanderLeRetrait}
                 variant="danger"
                 fullWidth

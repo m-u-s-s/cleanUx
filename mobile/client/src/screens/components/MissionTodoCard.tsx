@@ -139,7 +139,7 @@ export function MissionTodoCard({ bookingId }: { bookingId: number }) {
             testID="todo-saisie"
           />
           <Button
-            label="Ajouter"
+            label={tr('mission_todo.ajouter')}
             onPress={envoyer}
             loading={ajouter.isPending}
             testID="todo-ajouter"

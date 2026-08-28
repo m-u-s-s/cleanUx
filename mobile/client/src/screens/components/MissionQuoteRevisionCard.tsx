@@ -96,13 +96,13 @@ export function MissionQuoteRevisionCard({ bookingId }: { bookingId: number }) {
       ) : (
         <View style={styles.actions}>
           <Button
-            label="Accepter"
+            label={tr('mission_quote_revision.accepter')}
             onPress={() => envoyer(true)}
             loading={repondre.isPending}
             testID="revision-accepter"
           />
           <Button
-            label="Refuser"
+            label={tr('mission_quote_revision.refuser')}
             variant="secondary"
             onPress={() => setChoixOuvert(true)}
             testID="revision-refuser"

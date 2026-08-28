@@ -156,7 +156,7 @@ export function TrackingScreen({ route }: Props) {
       {/* Destination */}
       {mission && (
         <View style={styles.destinationCard}>
-          <Text style={styles.cardLabel}>Destination</Text>
+          <Text style={styles.cardLabel}>{tr('tracking.destination')}</Text>
           <Text style={styles.destinationAddress}>
             {formatAdresse(mission.address, mission.city)}
           </Text>
@@ -190,7 +190,7 @@ export function TrackingScreen({ route }: Props) {
       {/* Stats row */}
       <View style={styles.statsRow}>
         <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Distance</Text>
+          <Text style={styles.statLabel}>{tr('tracking.distance')}</Text>
           <Text style={styles.statValue}>
             {distanceMeters !== null ? formatDistance(distanceMeters) : '—'}
           </Text>
@@ -202,7 +202,7 @@ export function TrackingScreen({ route }: Props) {
           </Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Vitesse</Text>
+          <Text style={styles.statLabel}>{tr('tracking.vitesse')}</Text>
           <Text style={styles.statValue}>{formatSpeed(currentPos?.speed ?? null)}</Text>
         </View>
       </View>

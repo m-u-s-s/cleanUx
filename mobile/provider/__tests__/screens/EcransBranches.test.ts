@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { fr } from '@/i18n/catalogues/fr';
 import path from 'path';
 
 /**
@@ -39,7 +40,9 @@ describe('Écrans branchés', () => {
     const portefeuille = lire('screens/WalletScreen.tsx');
 
     expect(portefeuille).toContain('useWithdraw');
-    expect(portefeuille).toContain('Demander un versement');
+    // Le libellé vit désormais dans le catalogue : on vérifie la clé ET ce qu'elle rend.
+    expect(portefeuille).toContain("tr('wallet.demander_un_versement')");
+    expect(fr['wallet.demander_un_versement']).toBe('Demander un versement');
   });
 
   it('la présentation est montée au premier lancement', () => {

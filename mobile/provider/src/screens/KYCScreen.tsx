@@ -26,7 +26,7 @@ export function KYCScreen() {
       <Text style={styles.title}>{tr('k_y_c.verification_d_identite')}</Text>
       {status?.verified ? (
         <View style={styles.card}>
-          <Badge label="Vérifié" variant="success" />
+          <Badge label={tr('k_y_c.verifie')} variant="success" />
           <Text style={styles.info}>{tr('k_y_c.votre_identite_est_confirmee')}</Text>
         </View>
       ) : (
@@ -37,7 +37,7 @@ export function KYCScreen() {
             {tr('k_y_c.completez_la_verification_pour_recevoir')}
           </Text>
           <Button
-            label="Lancer la vérification"
+            label={tr('k_y_c.lancer_la_verification')}
             onPress={() => start.mutate()}
             loading={start.isPending}
             fullWidth

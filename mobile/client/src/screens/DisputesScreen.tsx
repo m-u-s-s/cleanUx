@@ -117,9 +117,9 @@ export function DisputesScreen() {
 
       {showForm && (
         <View style={styles.form}>
-          <TextInput label="Sujet" placeholder="Sujet" value={subject} onChangeText={setSubject} />
+          <TextInput label={tr('disputes.sujet')} placeholder={tr('disputes.sujet')} value={subject} onChangeText={setSubject} />
           <TextInput
-            label="Description"
+            label={tr('disputes.description')}
             placeholder={tr('disputes.decrivez_le_probleme')}
             value={description}
             onChangeText={setDescription}
@@ -155,7 +155,7 @@ export function DisputesScreen() {
             )}
           </View>
 
-          <Button label="Envoyer" onPress={() => create.mutate()} disabled={!canSubmit} loading={create.isPending} />
+          <Button label={tr('disputes.envoyer')} onPress={() => create.mutate()} disabled={!canSubmit} loading={create.isPending} />
         </View>
       )}
 

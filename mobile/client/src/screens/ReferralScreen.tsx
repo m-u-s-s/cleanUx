@@ -123,7 +123,7 @@ export function ReferralScreen() {
     <Screen scroll>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Parrainage</Text>
+        <Text style={styles.title}>{tr('referral.parrainage')}</Text>
         <Text style={styles.subtitle}>{tr('referral.invitez_vos_amis_et_gagnez')}</Text>
       </View>
 
@@ -141,7 +141,7 @@ export function ReferralScreen() {
           <View style={styles.codeActionBtn}>
             <Button
               variant="amber"
-              label="Partager"
+              label={tr('referral.partager')}
               onPress={handleShare}
               disabled={loadingShare || !shareData?.referral_code}
             />
@@ -149,7 +149,7 @@ export function ReferralScreen() {
           <View style={styles.codeActionBtn}>
             <Button
               variant="outline"
-              label="Copier"
+              label={tr('referral.copier')}
               onPress={handleCopy}
               disabled={loadingShare || !shareData?.referral_code}
             />
@@ -160,12 +160,12 @@ export function ReferralScreen() {
       {/* Stats */}
       <View style={styles.statsGrid}>
         <KPICard
-          title="Parrainages"
+          title={tr('referral.parrainages')}
           value={stats?.stats?.total_invited ?? 0}
           loading={loadingStats}
         />
         <KPICard
-          title="Gains"
+          title={tr('referral.gains')}
           value={formatMontant(stats?.stats?.total_earned ?? 0, stats?.rewards?.currency)}
           loading={loadingStats}
           tone="success"

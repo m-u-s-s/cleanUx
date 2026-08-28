@@ -9,6 +9,7 @@ import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useSpacePreference } from './useSpacePreference';
+import { useTraduction } from '@/i18n';
 
 /**
  * Le profil de l'administrateur dans sa console.
@@ -18,6 +19,7 @@ import { useSpacePreference } from './useSpacePreference';
  * matin doit pouvoir retourner sur le terrain le lendemain sans se déconnecter.
  */
 export function AdminProfileScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -38,7 +40,7 @@ export function AdminProfileScreen() {
       {doubleCasquette ? (
         <Row
           icon="swap-horizontal-outline"
-          label="Changer d’espace"
+          label={tr('admin_profile.changer_despace')}
           hint="Revenir à l’espace prestataire"
           onPress={() => void clear()}
         />
@@ -50,14 +52,14 @@ export function AdminProfileScreen() {
       */}
       <Row
         icon="grid-outline"
-        label="Modules"
+        label={tr('admin_profile.modules')}
         hint="Tout ce que cet espace sait faire"
         onPress={() => navigation.navigate('Modules')}
       />
 
       <Row
         icon="log-out-outline"
-        label="Se déconnecter"
+        label={tr('admin_profile.se_deconnecter')}
         tone="danger"
         onPress={() => void logout()}
       />

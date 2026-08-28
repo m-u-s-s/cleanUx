@@ -212,7 +212,7 @@ export function ChannelConversationScreen() {
   if (canalId === null) {
     return (
       <Screen>
-        <EmptyState title="Conversation introuvable" message="Ce canal n'existe plus." />
+        <EmptyState title={tr('channel_conversation.conversation_introuvable')} message="Ce canal n'existe plus." />
       </Screen>
     );
   }
@@ -223,7 +223,7 @@ export function ChannelConversationScreen() {
         <View style={styles.banniere} testID="banniere-appel">
           <Text style={styles.texteBanniere}>{tr('channel_conversation.appel_entrant')}</Text>
           <Button
-            label="Répondre"
+            label={tr('channel_conversation.repondre')}
             size="sm"
             onPress={() => {
               const entrant = appelEntrant;
@@ -235,7 +235,7 @@ export function ChannelConversationScreen() {
             }}
           />
           <Button
-            label="Refuser"
+            label={tr('channel_conversation.refuser')}
             size="sm"
             variant="ghost"
             onPress={() => {
@@ -277,7 +277,7 @@ export function ChannelConversationScreen() {
                 {participant.role !== 'member' ? ` · ${participant.role}` : ''}
               </Text>
               <Button
-                label="Retirer"
+                label={tr('channel_conversation.retirer')}
                 size="sm"
                 variant="ghost"
                 onPress={() => gererParticipant.mutate({ userId: participant.user_id, retirer: true })}
@@ -296,7 +296,7 @@ export function ChannelConversationScreen() {
                   {collegue.name ?? '—'}
                 </Text>
                 <Button
-                  label="Ajouter"
+                  label={tr('channel_conversation.ajouter')}
                   size="sm"
                   variant="secondary"
                   onPress={() =>
@@ -339,7 +339,7 @@ export function ChannelConversationScreen() {
           </View>
         )}
         ListEmptyComponent={
-          <EmptyState title="Aucun message" message="Ouvrez la conversation en écrivant un mot." />
+          <EmptyState title={tr('channel_conversation.aucun_message')} message="Ouvrez la conversation en écrivant un mot." />
         }
       />
 
@@ -347,13 +347,13 @@ export function ChannelConversationScreen() {
         <TextInput
           value={saisie}
           onChangeText={setSaisie}
-          placeholder="Votre message"
+          placeholder={tr('channel_conversation.votre_message')}
           placeholderTextColor={styles.placeholder.color}
           style={styles.champ}
           testID="champ-message"
         />
         <Button
-          label="Envoyer"
+          label={tr('channel_conversation.envoyer')}
           size="sm"
           disabled={saisie.trim().length === 0 || envoyer.isPending}
           onPress={() => envoyer.mutate(saisie.trim())}

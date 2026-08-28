@@ -55,11 +55,11 @@ export function AiQuoteScreen() {
       )}
       <View style={styles.actions}>
         <Button label={tr('ai_quote.choisir_une_photo')} onPress={pickImage} variant="secondary" fullWidth />
-        <Button label="Estimer" onPress={handleEstimate} fullWidth disabled={!imageUri} loading={loading} />
+        <Button label={tr('ai_quote.estimer')} onPress={handleEstimate} fullWidth disabled={!imageUri} loading={loading} />
       </View>
       {result && (
         <View style={styles.resultCard}>
-          <Text style={styles.resultTitle}>Estimation</Text>
+          <Text style={styles.resultTitle}>{tr('ai_quote.estimation')}</Text>
           <Text style={styles.resultText}>{result}</Text>
         </View>
       )}

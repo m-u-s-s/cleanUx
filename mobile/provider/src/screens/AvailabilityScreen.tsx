@@ -148,7 +148,7 @@ export function AvailabilityScreen() {
           <View key={jour} style={styles.carteJour} testID={`jour-${jour}`}>
             <View style={styles.enTeteJour}>
               <Text style={styles.nomJour}>{weekdayLabel(jour)}</Text>
-              {creneaux.length === 0 && <Badge label="Fermé" variant="neutral" />}
+              {creneaux.length === 0 && <Badge label={tr('availability.ferme')} variant="neutral" />}
             </View>
 
             {creneaux.map(slot => (
@@ -157,7 +157,7 @@ export function AvailabilityScreen() {
 
                 <View style={styles.actionsCreneau}>
                   <Button
-                    label="Modifier"
+                    label={tr('availability.modifier')}
                     size="sm"
                     variant="ghost"
                     testID={`modifier-${slot.id}`}
@@ -170,7 +170,7 @@ export function AvailabilityScreen() {
                     })}
                   />
                   <Button
-                    label="Retirer"
+                    label={tr('availability.retirer')}
                     size="sm"
                     variant="ghost"
                     testID={`supprimer-${slot.id}`}
@@ -188,7 +188,7 @@ export function AvailabilityScreen() {
             ))}
 
             <Button
-              label="Ajouter un créneau"
+              label={tr('availability.ajouter_un_creneau')}
               size="sm"
               variant="secondary"
               testID={`ajouter-${jour}`}
@@ -213,7 +213,7 @@ export function AvailabilityScreen() {
               {!!exception.reason && <Text style={styles.motif}>{exception.reason}</Text>}
             </View>
             <Button
-              label="Rouvrir"
+              label={tr('availability.rouvrir')}
               size="sm"
               variant="ghost"
               testID={`rouvrir-${exception.id}`}
@@ -224,7 +224,7 @@ export function AvailabilityScreen() {
       )}
 
       <Button
-        label="Fermer une date"
+        label={tr('availability.fermer_une_date')}
         variant="secondary"
         fullWidth
         testID="ouvrir-fermeture"
@@ -257,9 +257,9 @@ export function AvailabilityScreen() {
             />
 
             <View style={styles.actionsModale}>
-              <Button label="Annuler" variant="ghost" onPress={() => setEdition(null)} />
+              <Button label={tr('availability.annuler')} variant="ghost" onPress={() => setEdition(null)} />
               <Button
-                label="Enregistrer"
+                label={tr('availability.enregistrer')}
                 testID="enregistrer-creneau"
                 loading={creer.isPending || modifier.isPending}
                 onPress={enregistrer}
@@ -293,7 +293,7 @@ export function AvailabilityScreen() {
             {fermerJour.isPending && <ActivityIndicator color={colors.brand[500]} />}
 
             <View style={styles.actionsModale}>
-              <Button label="Fermer la fenêtre" variant="ghost" onPress={() => setFermeture(false)} />
+              <Button label={tr('availability.fermer_la_fenetre')} variant="ghost" onPress={() => setFermeture(false)} />
             </View>
           </View>
         </View>

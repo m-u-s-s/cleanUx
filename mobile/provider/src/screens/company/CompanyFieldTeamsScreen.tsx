@@ -131,7 +131,7 @@ export function CompanyFieldTeamsScreen() {
           testID="champ-nom-equipe"
         />
         <Button
-          label="Créer"
+          label={tr('company_field_teams.creer')}
           size="sm"
           onPress={() => nom.trim() && creer.mutate(nom.trim())}
           disabled={creer.isPending || nom.trim().length === 0}
@@ -162,10 +162,10 @@ export function CompanyFieldTeamsScreen() {
               </View>
 
               {item.status === 'archived' ? (
-                <Badge label="Archivée" variant="neutral" />
+                <Badge label={tr('company_field_teams.archivee')} variant="neutral" />
               ) : (
                 <Button
-                  label="Archiver"
+                  label={tr('company_field_teams.archiver')}
                   size="sm"
                   variant="ghost"
                   onPress={() => archiver.mutate(item.id)}
@@ -175,7 +175,7 @@ export function CompanyFieldTeamsScreen() {
 
             {equipeOuverte === item.id && (
               <View style={styles.composition} testID={`composition-${item.id}`}>
-                <Text style={styles.section}>Composition</Text>
+                <Text style={styles.section}>{tr('company_field_teams.composition')}</Text>
 
                 {(composition?.members ?? []).length === 0 && (
                   <Text style={styles.detail}>
@@ -191,7 +191,7 @@ export function CompanyFieldTeamsScreen() {
                     </Text>
                     {peutComposer && (
                       <Button
-                        label="Retirer"
+                        label={tr('company_field_teams.retirer')}
                         size="sm"
                         variant="ghost"
                         onPress={() =>
@@ -216,7 +216,7 @@ export function CompanyFieldTeamsScreen() {
                             {collegue.name ?? '—'}
                           </Text>
                           <Button
-                            label="Ajouter"
+                            label={tr('company_field_teams.ajouter')}
                             size="sm"
                             variant="secondary"
                             onPress={() =>
@@ -237,7 +237,7 @@ export function CompanyFieldTeamsScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucune agence"
+            title={tr('company_field_teams.aucune_agence')}
             message="Créez une équipe terrain pour organiser vos interventions par zone."
           />
         }

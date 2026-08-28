@@ -304,7 +304,7 @@ export function ClientRegisterWizard() {
         return (
           <Question title={tr('client_register_wizard.votre_adresse_email')} hint="Elle sert à vous connecter et à recevoir vos factures.">
             <TextInput
-              label="Email"
+              label={tr('client_register_wizard.email')}
               value={email}
               onChangeText={t => { setEmail(t); setFieldError(null); }}
               keyboardType="email-address"

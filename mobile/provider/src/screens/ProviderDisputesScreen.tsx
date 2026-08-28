@@ -9,6 +9,7 @@ import {spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 interface Dispute {
   id: number;
@@ -18,6 +19,7 @@ interface Dispute {
 }
 
 export function ProviderDisputesScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -30,7 +32,7 @@ export function ProviderDisputesScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Litiges</Text>
+      <Text style={styles.title}>{tr('provider_disputes.litiges')}</Text>
       {isLoading ? (
         <Skeleton width="100%" height={80} />
       ) : (
@@ -53,7 +55,7 @@ export function ProviderDisputesScreen() {
           )}
           onRefresh={refetch}
           refreshing={isRefetching}
-          ListEmptyComponent={<EmptyState title="Aucun litige" message="Vous n'avez aucun litige en cours." />}
+          ListEmptyComponent={<EmptyState title={tr('provider_disputes.aucun_litige')} message="Vous n'avez aucun litige en cours." />}
         />
       )}
     </Screen>

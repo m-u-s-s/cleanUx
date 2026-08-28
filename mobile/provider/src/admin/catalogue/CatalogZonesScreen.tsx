@@ -73,11 +73,11 @@ export function CatalogZonesScreen() {
             })
           }
           accessibilityRole="button"
-          accessibilityLabel="Ajouter une zone"
+          accessibilityLabel={tr('catalog_zones.ajouter_une_zone')}
           style={({ pressed }) => [styles.ajouter, pressed && styles.ajouterPresse]}
         >
           <Icon name="add" size={18} color={colors.surface[50]} />
-          <Text style={styles.ajouterTexte}>Ajouter</Text>
+          <Text style={styles.ajouterTexte}>{tr('catalog_zones.ajouter')}</Text>
         </Pressable>
       </View>
 
@@ -107,7 +107,7 @@ export function CatalogZonesScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucune zone"
+            title={tr('catalog_zones.aucune_zone')}
             message="Ce pays n’a pas encore de zone. Créez-en une depuis l’administration web."
           />
         }

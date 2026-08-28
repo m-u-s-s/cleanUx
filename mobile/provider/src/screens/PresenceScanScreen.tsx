@@ -173,7 +173,7 @@ export function PresenceScanScreen({ route }: Props) {
           <Text style={styles.hint}>
             {tr('presence_scan.la_camera_est_necessaire_pour')}
           </Text>
-          <Button label="Autoriser la caméra" onPress={requestPermission} fullWidth />
+          <Button label={tr('presence_scan.autoriser_la_camera')} onPress={requestPermission} fullWidth />
         </View>
       </Screen>
     );
@@ -213,7 +213,7 @@ export function PresenceScanScreen({ route }: Props) {
             </Text>
           )}
           {scanned && !busy && (
-            <Button label="Scanner à nouveau" onPress={() => setScanned(false)} variant="secondary" />
+            <Button label={tr('presence_scan.scanner_a_nouveau')} onPress={() => setScanned(false)} variant="secondary" />
           )}
         </View>
       </View>
@@ -223,7 +223,7 @@ export function PresenceScanScreen({ route }: Props) {
           chiffres — sans ce champ, cette consigne ne mènerait nulle part. */}
       <View style={styles.manual}>
         <TextInput
-          label="Ou saisissez les six chiffres"
+          label={tr('presence_scan.ou_saisissez_les_six_chiffres')}
           value={manualCode}
           onChangeText={setManualCode}
           keyboardType="number-pad"

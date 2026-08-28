@@ -22,7 +22,7 @@ export function ChatListScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Messagerie</Text>
+      <Text style={styles.title}>{tr('chat_list.messagerie')}</Text>
       {isLoading ? (
         <View style={styles.skeletons}>
           {[1, 2, 3].map(i => <Skeleton key={i} width="100%" height={60} />)}

@@ -91,7 +91,7 @@ export function WalletScreen() {
     return (
       <Screen testID="wallet-screen">
         <Text style={styles.title} accessibilityRole="header">
-          Portefeuille
+          {tr('wallet.portefeuille')}
         </Text>
         <ErrorState
           message={messageDErreurPortefeuille(balanceQuery.error)}
@@ -104,7 +104,7 @@ export function WalletScreen() {
   return (
     <Screen scroll testID="wallet-screen">
       <Text style={styles.title} accessibilityRole="header">
-        Portefeuille
+        {tr('wallet.portefeuille')}
       </Text>
 
       {!stripe?.onboarded && (
@@ -113,7 +113,7 @@ export function WalletScreen() {
             {tr('wallet.configurez_stripe_connect_pour_recevoir')}
           </Text>
           <Button
-            label="Configurer"
+            label={tr('wallet.configurer')}
             onPress={() => navigation.navigate('StripeOnboarding')}
             size="sm"
           />
@@ -135,12 +135,12 @@ export function WalletScreen() {
       ) : balance ? (
         <View style={styles.kpiRow}>
           <KPICard
-            title="Disponible"
+            title={tr('wallet.disponible')}
             value={`${balance.available.toFixed(2)} ${balance.currency}`}
             tone="success"
           />
           <KPICard
-            title="En attente"
+            title={tr('wallet.en_attente')}
             value={`${balance.pending.toFixed(2)} ${balance.currency}`}
             tone="warning"
           />
@@ -152,7 +152,7 @@ export function WalletScreen() {
         <View style={styles.withdrawSection}>
           {!showWithdraw ? (
             <Button
-              label="Demander un versement"
+              label={tr('wallet.demander_un_versement')}
               onPress={() => setShowWithdraw(true)}
               fullWidth
               variant="secondary"
@@ -167,11 +167,11 @@ export function WalletScreen() {
                 keyboardType="decimal-pad"
                 placeholder="0.00"
                 placeholderTextColor={colors.surface[400]}
-                accessibilityLabel="Montant du versement"
+                accessibilityLabel={tr('wallet.montant_du_versement')}
               />
               <View style={styles.withdrawActions}>
                 <Button
-                  label="Annuler"
+                  label={tr('wallet.annuler')}
                   onPress={() => {
                     setShowWithdraw(false);
                     setWithdrawAmount('');
@@ -180,7 +180,7 @@ export function WalletScreen() {
                   size="sm"
                 />
                 <Button
-                  label="Confirmer"
+                  label={tr('wallet.confirmer')}
                   onPress={handleWithdraw}
                   size="sm"
                   loading={withdraw.isPending}
@@ -229,7 +229,7 @@ export function WalletScreen() {
           )}
           ItemSeparatorComponent={() => <Divider />}
           ListEmptyComponent={
-            <EmptyState title="Aucune transaction" message="Vos mouvements financiers apparaîtront ici." />
+            <EmptyState title={tr('wallet.aucune_transaction')} message="Vos mouvements financiers apparaîtront ici." />
           }
         />
       )}

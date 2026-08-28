@@ -253,7 +253,7 @@ export function FormError({ message, onRetry, testID }: { message: string; onRet
       <Icon name="alert-circle-outline" size={18} color={colors.danger[600]} />
       <View style={styles.formErrorBody}>
         <Text style={styles.formErrorText}>{message}</Text>
-        <TouchableOpacity onPress={onRetry} accessibilityLabel="Réessayer" accessibilityRole="button">
+        <TouchableOpacity onPress={onRetry} accessibilityLabel={tr('auth_shell.reessayer')} accessibilityRole="button">
           <Text style={styles.formErrorRetry}>{tr('auth_shell.reessayer')}</Text>
         </TouchableOpacity>
       </View>

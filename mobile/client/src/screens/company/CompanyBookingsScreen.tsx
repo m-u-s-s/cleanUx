@@ -105,7 +105,7 @@ export function CompanyBookingsScreen() {
               société, dupliquerait le suivi, les photos et le litige — et les deux dériveraient.
             */}
             <Button
-              label="Ouvrir"
+              label={tr('company_bookings.ouvrir')}
               size="sm"
               variant="ghost"
               onPress={() => navigation.navigate('BookingDetail', { bookingId: item.id })}

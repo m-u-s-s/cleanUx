@@ -187,7 +187,7 @@ function LoginForm() {
     <View style={styles.form}>
       <Stagger index={0}>
         <TextInput
-          label="Email"
+          label={tr('login.email')}
           value={email}
           onChangeText={(t) => { setEmail(t); setErrors(prev => ({ ...prev, email: undefined })); }}
           error={errors.email}

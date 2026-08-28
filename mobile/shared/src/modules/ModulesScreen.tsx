@@ -70,7 +70,7 @@ export function ModulesScreen({
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => void refetch()} />}
       >
         <View>
-          <Text style={styles.titre}>Modules</Text>
+          <Text style={styles.titre}>{tr('modules.modules')}</Text>
           <Text style={styles.sousTitre}>{tr('modules.tout_ce_que_cet_espace')}</Text>
         </View>
 

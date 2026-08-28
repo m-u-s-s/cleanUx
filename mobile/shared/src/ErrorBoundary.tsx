@@ -26,7 +26,7 @@ function ErrorFallback({ error, onReset }: { error: Error | null; onReset: () =>
       <Text style={styles.title}>{tr('error_boundary.oups')}</Text>
       <Text style={styles.message}>{tr('error_boundary.une_erreur_inattendue_est_survenue')}</Text>
       {__DEV__ && error && <Text style={styles.debug}>{error.message}</Text>}
-      <Button label="Réessayer" onPress={onReset} />
+      <Button label={tr('error_boundary.reessayer')} onPress={onReset} />
     </View>
   );
 }

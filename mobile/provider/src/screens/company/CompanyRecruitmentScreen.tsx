@@ -75,7 +75,7 @@ export function CompanyRecruitmentScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Recrutement</Text>
+      <Text style={styles.title}>{tr('company_recruitment.recrutement')}</Text>
       <Text style={styles.intro}>
         {tr('company_recruitment.vos_offres_et_les_candidatures')}
       </Text>
@@ -102,7 +102,7 @@ export function CompanyRecruitmentScreen() {
             />
 
             <Button
-              label="Voir"
+              label={tr('company_recruitment.voir')}
               size="sm"
               variant="ghost"
               onPress={() => setOffreOuverte(item.id)}
@@ -112,7 +112,7 @@ export function CompanyRecruitmentScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucune offre"
+            title={tr('company_recruitment.aucune_offre')}
             message="Jusqu'ici, tout le recrutement se faisait hors de la plateforme."
           />
         }
@@ -120,7 +120,7 @@ export function CompanyRecruitmentScreen() {
 
       {offreOuverte !== null && (
         <View style={styles.bloc}>
-          <Text style={styles.sousTitre}>Candidatures</Text>
+          <Text style={styles.sousTitre}>{tr('company_recruitment.candidatures')}</Text>
 
           {(candidatures ?? []).map((candidature) => (
             <View key={candidature.id} style={styles.ligne} testID={`candidature-${candidature.id}`}>
@@ -134,20 +134,20 @@ export function CompanyRecruitmentScreen() {
               </View>
 
               {candidature.invited ? (
-                <Badge label="Invitation envoyée" variant="success" />
+                <Badge label={tr('company_recruitment.invitation_envoyee')} variant="success" />
               ) : candidature.status === 'rejected' ? (
-                <Badge label="Écartée" variant="neutral" />
+                <Badge label={tr('company_recruitment.ecartee')} variant="neutral" />
               ) : (
                 peutGerer && (
                   <>
                     <Button
-                      label="Embaucher"
+                      label={tr('company_recruitment.embaucher')}
                       size="sm"
                       onPress={() => statuer.mutate({ id: candidature.id, decision: 'hire' })}
                       testID={`embaucher-${candidature.id}`}
                     />
                     <Button
-                      label="Écarter"
+                      label={tr('company_recruitment.ecarter')}
                       size="sm"
                       variant="ghost"
                       onPress={() => statuer.mutate({ id: candidature.id, decision: 'reject' })}

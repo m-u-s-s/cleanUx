@@ -82,7 +82,7 @@ export function CompanySitesScreen() {
     return (
       <Screen>
         <EmptyState
-          title="Sites indisponibles"
+          title={tr('company_sites.sites_indisponibles')}
           message="Impossible de charger les sites desservis par votre société."
           actionLabel="Réessayer"
           onAction={() => void refetch()}
@@ -124,9 +124,9 @@ export function CompanySitesScreen() {
               </View>
 
               {item.referents.length > 0 ? (
-                <Badge label="Référent" variant="success" />
+                <Badge label={tr('company_sites.referent')} variant="success" />
               ) : (
-                <Badge label="À couvrir" variant="neutral" />
+                <Badge label={tr('company_sites.a_couvrir')} variant="neutral" />
               )}
             </Pressable>
 
@@ -140,7 +140,7 @@ export function CompanySitesScreen() {
                       {referent.name ?? 'Compte supprimé'} · {referent.role}
                     </Text>
                     <Button
-                      label="Retirer"
+                      label={tr('company_sites.retirer')}
                       size="sm"
                       variant="ghost"
                       onPress={() =>
@@ -161,7 +161,7 @@ export function CompanySitesScreen() {
                         {collegue.name ?? '—'}
                       </Text>
                       <Button
-                        label="Désigner"
+                        label={tr('company_sites.designer')}
                         size="sm"
                         variant="secondary"
                         onPress={() =>
@@ -180,7 +180,7 @@ export function CompanySitesScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucun site desservi"
+            title={tr('company_sites.aucun_site_desservi')}
             message="Les sites apparaîtront dès votre première mission ou votre premier contrat-cadre."
           />
         }

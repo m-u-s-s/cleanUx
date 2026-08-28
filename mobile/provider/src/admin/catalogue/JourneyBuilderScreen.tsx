@@ -9,6 +9,7 @@ import { messageDErreur } from './erreur';
 import { LigneActions } from './LigneActions';
 import { useJourney, useJourneyMutation } from './journeyHooks';
 import type { JourneyOption, JourneyQuestion } from './journeyHooks';
+import { useTraduction } from '@/i18n';
 
 /** Les types qu'on sait créer depuis le mobile. Les autres se règlent sur le web. */
 const TYPES = [
@@ -46,6 +47,7 @@ const TYPES = [
  * découvrir le refus après coup ; l'écran web l'affiche en permanence, celui-ci aussi.
  */
 export function JourneyBuilderScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const route = useRoute<{ key: string; name: string; params: { tradeId: number; title?: string } }>();
 
@@ -153,11 +155,11 @@ export function JourneyBuilderScreen() {
 
       <View style={styles.ajout}>
         <TextInput
-          label="Nouvelle question"
+          label={tr('journey_builder.nouvelle_question')}
           value={nouvelleLabel}
           onChangeText={setNouvelleLabel}
-          placeholder="Voulez-vous l’installation ?"
-          accessibilityLabel="Libellé de la nouvelle question"
+          placeholder={tr('journey_builder.voulez_vous_linstallation')}
+          accessibilityLabel={tr('journey_builder.libelle_de_la_nouvelle_question')}
         />
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.types}>
@@ -176,12 +178,12 @@ export function JourneyBuilderScreen() {
           ))}
         </ScrollView>
 
-        <Button label="Ajouter la question" onPress={ajouterQuestion} variant="secondary" />
+        <Button label={tr('journey_builder.ajouter_la_question')} onPress={ajouterQuestion} variant="secondary" />
       </View>
 
       {(data?.data ?? []).length === 0 ? (
         <EmptyState
-          title="Aucune question"
+          title={tr('journey_builder.aucune_question')}
           message="Commencez par la plus déterminante pour le prix — la surface, le type d’intervention."
         />
       ) : null}
@@ -210,7 +212,7 @@ export function JourneyBuilderScreen() {
 
       <View style={styles.publier}>
         <Button
-          label="Publier le parcours"
+          label={tr('journey_builder.publier_le_parcours')}
           onPress={publier}
           disabled={!publiable}
           fullWidth
@@ -243,6 +245,7 @@ function QuestionCard({
   onRenommerReponse: (optionId: number, label: string) => void;
   onRetirerReponse: (optionId: number) => void;
 }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const [nouvelleReponse, setNouvelleReponse] = useState('');
 
@@ -285,7 +288,7 @@ function QuestionCard({
             <RNTextInput
               value={nouvelleReponse}
               onChangeText={setNouvelleReponse}
-              placeholder="Ajouter une réponse…"
+              placeholder={tr('journey_builder.ajouter_une_reponse')}
               placeholderTextColor={colors.surface[400]}
               accessibilityLabel={`Ajouter une réponse à ${question.label}`}
               style={styles.champReponse}
@@ -319,6 +322,7 @@ function ReponseLigne({
   onLibelle: (label: string) => void;
   onRetirer: () => void;
 }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   return (
@@ -326,7 +330,7 @@ function ReponseLigne({
       <RNTextInput
         defaultValue={option.label}
         onEndEditing={(e) => onLibelle(e.nativeEvent.text)}
-        accessibilityLabel="Libellé de la réponse"
+        accessibilityLabel={tr('journey_builder.libelle_de_la_reponse')}
         style={styles.champLibelle}
       />
 
@@ -338,13 +342,13 @@ function ReponseLigne({
         placeholder="0"
         placeholderTextColor={colors.surface[400]}
         keyboardType="numbers-and-punctuation"
-        accessibilityLabel="Supplément en euros"
+        accessibilityLabel={tr('journey_builder.supplement_en_euros')}
         style={styles.champPrix}
       />
 
       <Text style={styles.euro}>€</Text>
 
-      {option.is_default ? <Badge label="défaut" variant="success" /> : null}
+      {option.is_default ? <Badge label={tr('journey_builder.defaut')} variant="success" /> : null}
 
       <LigneActions
         sujet={option.label}

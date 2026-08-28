@@ -120,10 +120,10 @@ export function AdminDirectoryScreen() {
           {counts.covered} / {counts.total} modules disponibles
         </Text>
         <TextInput
-          label="Rechercher un module"
+          label={tr('admin_directory.rechercher_un_module')}
           value={query}
           onChangeText={setQuery}
-          accessibilityLabel="Rechercher un module"
+          accessibilityLabel={tr('admin_directory.rechercher_un_module')}
           autoCorrect={false}
         />
       </View>
@@ -149,6 +149,7 @@ export function AdminDirectoryScreen() {
 }
 
 function ModuleRow({ module, onOpen }: { module: AdminModule; onOpen: () => void }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const disponible = module.coverage !== 'pending';
@@ -170,7 +171,7 @@ function ModuleRow({ module, onOpen }: { module: AdminModule; onOpen: () => void
       {disponible ? (
         <Icon name="chevron-forward" size={18} color={colors.surface[400]} />
       ) : (
-        <Badge label="À venir" variant="neutral" />
+        <Badge label={tr('admin_directory.a_venir')} variant="neutral" />
       )}
     </Pressable>
   );

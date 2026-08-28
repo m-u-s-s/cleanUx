@@ -79,13 +79,13 @@ export function CompanySitesScreen() {
         <TextInput
           value={ville}
           onChangeText={setVille}
-          placeholder="Ville"
+          placeholder={tr('company_sites.ville')}
           placeholderTextColor={styles.placeholder.color}
           style={styles.champVille}
           testID="champ-ville-local"
         />
         <Button
-          label="Ajouter"
+          label={tr('company_sites.ajouter')}
           size="sm"
           onPress={() => nom.trim() && creer.mutate()}
           disabled={creer.isPending || nom.trim().length === 0}
@@ -113,7 +113,7 @@ export function CompanySitesScreen() {
             </View>
 
             {item.status === 'active' ? (
-              <Badge label="Actif" variant="success" />
+              <Badge label={tr('company_sites.actif')} variant="success" />
             ) : (
               <Badge label={item.status} variant="neutral" />
             )}

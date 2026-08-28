@@ -164,7 +164,7 @@ function LoginForm() {
     <View style={styles.form}>
       <Stagger index={0}>
         <TextInput
-          label="Email"
+          label={tr('login.email')}
           value={email}
           onChangeText={(t) => { setEmail(t); setErrors(prev => ({ ...prev, email: undefined })); }}
           error={errors.email}
@@ -181,7 +181,7 @@ function LoginForm() {
         <View style={styles.passwordWrapper}>
           <TextInput
             ref={passwordRef}
-            label="Mot de passe"
+            label={tr('login.mot_de_passe')}
             value={password}
             onChangeText={(t) => { setPassword(t); setErrors(prev => ({ ...prev, password: undefined })); }}
             error={errors.password}
@@ -223,7 +223,7 @@ function LoginForm() {
       </Stagger>
       {formError ? <FormError message={formError} onRetry={handleLogin} testID="login-form-error" /> : null}
       <Stagger index={3}>
-        <Button label="Se connecter" onPress={handleLogin} fullWidth size="lg" loading={login.isPending} />
+        <Button label={tr('login.se_connecter')} onPress={handleLogin} fullWidth size="lg" loading={login.isPending} />
       </Stagger>
     </View>
   );

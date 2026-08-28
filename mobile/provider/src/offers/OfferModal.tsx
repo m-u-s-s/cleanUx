@@ -161,7 +161,7 @@ export function OfferModal({ offer, onDismiss }: Props) {
             {offer.is_ride && offer.ride_distance_km != null ? (
               <>
                 <View style={styles.row}>
-                  <Text style={styles.label}>Course</Text>
+                  <Text style={styles.label}>{tr('offer_modal.course')}</Text>
                   <Text style={styles.value} testID="offer-ride-distance">
                     {`${String(offer.ride_distance_km).replace('.', ',')} km`}
                     {offer.ride_duration_minutes != null ? ` · ${offer.ride_duration_minutes} min` : ''}
@@ -174,7 +174,7 @@ export function OfferModal({ offer, onDismiss }: Props) {
             {offer.scheduled_at ? (
               <>
                 <View style={styles.row}>
-                  <Text style={styles.label}>Quand</Text>
+                  <Text style={styles.label}>{tr('offer_modal.quand')}</Text>
                   <Text style={styles.value} testID="offer-scheduled-at">
                     {formatQuand(offer.scheduled_at)}
                   </Text>
@@ -183,7 +183,7 @@ export function OfferModal({ offer, onDismiss }: Props) {
               </>
             ) : null}
             <View style={styles.row}>
-              <Text style={styles.label}>Secteur</Text>
+              <Text style={styles.label}>{tr('offer_modal.secteur')}</Text>
               <Text style={styles.value}>{offer.approximate_address ?? '—'}</Text>
             </View>
             <Divider />
@@ -209,7 +209,7 @@ export function OfferModal({ offer, onDismiss }: Props) {
           <View style={styles.actions}>
             <View style={styles.actionBtn}>
               <Button
-                label="Accepter"
+                label={tr('offer_modal.accepter')}
                 onPress={handleAccept}
                 fullWidth
                 size="lg"
@@ -218,7 +218,7 @@ export function OfferModal({ offer, onDismiss }: Props) {
             </View>
             <View style={styles.actionBtn}>
               <Button
-                label="Refuser"
+                label={tr('offer_modal.refuser')}
                 onPress={handleDecline}
                 variant="ghost"
                 fullWidth

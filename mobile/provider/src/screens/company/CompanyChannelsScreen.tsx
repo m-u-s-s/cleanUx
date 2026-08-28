@@ -10,6 +10,7 @@ import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 interface Canal {
   id: number;
@@ -30,6 +31,7 @@ interface Canal {
  * abonnements ; les garder ensemble obligeait à recharger l'un pour rafraîchir l'autre.
  */
 export function CompanyChannelsScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -71,20 +73,20 @@ export function CompanyChannelsScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Conversations</Text>
+      <Text style={styles.title}>{tr('company_channels.conversations')}</Text>
 
       {peutCreer && (
         <View style={styles.formulaire}>
           <TextInput
             value={nouveauNom}
             onChangeText={setNouveauNom}
-            placeholder="Nom de la conversation"
+            placeholder={tr('company_channels.nom_de_la_conversation')}
             placeholderTextColor={styles.placeholder.color}
             style={styles.champ}
             testID="champ-nom-canal"
           />
           <Button
-            label="Créer"
+            label={tr('company_channels.creer')}
             size="sm"
             disabled={nouveauNom.trim().length === 0 || creer.isPending}
             onPress={() => creer.mutate()}
@@ -121,7 +123,7 @@ export function CompanyChannelsScreen() {
         }}
         ListEmptyComponent={
           <EmptyState
-            title="Aucune conversation"
+            title={tr('company_channels.aucune_conversation')}
             message="Ouvrez-en une pour coordonner vos interventions sans passer par WhatsApp."
           />
         }

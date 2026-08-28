@@ -162,7 +162,7 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
           {currentPos && (
             <mapModule.Marker
               coordinate={{ latitude: currentPos.latitude, longitude: currentPos.longitude }}
-              title="Prestataire"
+              title={tr('mission_tracking.prestataire')}
               pinColor={colors.brand[500]}
             />
           )}
@@ -193,7 +193,7 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
           {session?.destination && (
             <mapModule.Marker
               coordinate={session.destination}
-              title="Destination"
+              title={tr('mission_tracking.destination')}
               pinColor={colors.brand[700] ?? colors.brand[500]}
             />
           )}
@@ -276,7 +276,7 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
                 </Text>
               </View>
               <View>
-                <Text style={styles.etaLabel}>Distance</Text>
+                <Text style={styles.etaLabel}>{tr('mission_tracking.distance')}</Text>
                 <Text style={styles.etaValue}>
                   {distanceKm != null ? `${distanceKm.toFixed(1)} km` : '—'}
                 </Text>

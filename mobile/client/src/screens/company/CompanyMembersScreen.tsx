@@ -51,7 +51,7 @@ export function CompanyMembersScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Membres</Text>
+      <Text style={styles.title}>{tr('company_members.membres')}</Text>
 
       <FlatList
         data={membres ?? []}

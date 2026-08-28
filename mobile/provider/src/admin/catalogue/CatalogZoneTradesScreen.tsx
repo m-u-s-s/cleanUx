@@ -104,11 +104,11 @@ export function CatalogZoneTradesScreen() {
             navigation.navigate('AdminResourceForm', { resource: 'trades', title: 'Nouveau métier' })
           }
           accessibilityRole="button"
-          accessibilityLabel="Ajouter un métier"
+          accessibilityLabel={tr('catalog_zone_trades.ajouter_un_metier')}
           style={({ pressed }) => [styles.ajouter, pressed && styles.ajouterPresse]}
         >
           <Icon name="add" size={18} color={colors.surface[50]} />
-          <Text style={styles.ajouterTexte}>Ajouter</Text>
+          <Text style={styles.ajouterTexte}>{tr('catalog_zone_trades.ajouter')}</Text>
         </Pressable>
       </View>
 
@@ -147,7 +147,7 @@ export function CatalogZoneTradesScreen() {
           />
         )}
         ListEmptyComponent={
-          <EmptyState title="Aucun métier" message="Le catalogue de la plateforme est vide." />
+          <EmptyState title={tr('catalog_zone_trades.aucun_metier')} message="Le catalogue de la plateforme est vide." />
         }
       />
 
@@ -239,32 +239,32 @@ function FormulaireTarifDistance({
               <Switch
                 value={actif}
                 onValueChange={setActif}
-                accessibilityLabel="Activer le prix au kilomètre"
+                accessibilityLabel={tr('catalog_zone_trades.activer_le_prix_au_kilometre')}
                 trackColor={{ true: colors.brand[500], false: colors.surface[300] }}
               />
             </View>
 
             <TextInput
-              label="Prise en charge (centimes)"
+              label={tr('catalog_zone_trades.prise_en_charge_centimes')}
               value={priseEnCharge}
               onChangeText={setPriseEnCharge}
               keyboardType="number-pad"
             />
             <TextInput
-              label="Kilomètres inclus"
+              label={tr('catalog_zone_trades.kilometres_inclus')}
               value={inclus}
               onChangeText={setInclus}
               keyboardType="number-pad"
             />
             <TextInput
-              label="Centimes par kilomètre"
+              label={tr('catalog_zone_trades.centimes_par_kilometre')}
               value={parKm}
               onChangeText={setParKm}
               keyboardType="number-pad"
               placeholder="—"
             />
             <TextInput
-              label="Centimes par minute"
+              label={tr('catalog_zone_trades.centimes_par_minute')}
               value={parMinute}
               onChangeText={setParMinute}
               keyboardType="number-pad"
@@ -272,7 +272,7 @@ function FormulaireTarifDistance({
             />
 
             <Button
-              label="Enregistrer"
+              label={tr('catalog_zone_trades.enregistrer')}
               loading={enCours}
               fullWidth
               onPress={() =>
@@ -285,7 +285,7 @@ function FormulaireTarifDistance({
                 })
               }
             />
-            <Button label="Annuler" variant="secondary" fullWidth onPress={onFermer} />
+            <Button label={tr('catalog_zone_trades.annuler')} variant="secondary" fullWidth onPress={onFermer} />
           </ScrollView>
         </View>
       </View>

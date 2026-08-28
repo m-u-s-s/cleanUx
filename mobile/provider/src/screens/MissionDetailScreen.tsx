@@ -21,10 +21,12 @@ import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import { formatAdresse, formatDateHeure, messageDErreur } from '@brio/shared/format';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionDetail'>;
 
 export function MissionDetailScreen({ route }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { missionId } = route.params;
@@ -69,7 +71,7 @@ export function MissionDetailScreen({ route }: Props) {
   if (isLoading || !mission) {
     return (
       <Screen>
-        <Text style={styles.loading}>Chargement...</Text>
+        <Text style={styles.loading}>{tr('mission_detail.chargement')}</Text>
       </Screen>
     );
   }
@@ -164,9 +166,9 @@ export function MissionDetailScreen({ route }: Props) {
       />
 
       <View style={[styles.card, { backgroundColor: themeColors.card }]}>
-        <DetailRow label="Client" value={mission.client_name} />
+        <DetailRow label={tr('mission_detail.client')} value={mission.client_name} />
         <Divider />
-        <DetailRow label="Adresse" value={formatAdresse(mission.address, mission.city)} />
+        <DetailRow label={tr('mission_detail.adresse')} value={formatAdresse(mission.address, mission.city)} />
       </View>
       {/*
         LE RETARD PASSE AVANT LES ACTIONS.
@@ -179,7 +181,7 @@ export function MissionDetailScreen({ route }: Props) {
       <View style={styles.actions}>
         {mission.status === 'assigned' && (
           <Button
-            label="En route"
+            label={tr('mission_detail.en_route')}
             onPress={() => handleAction('start', 'En route')}
             fullWidth
           />
@@ -190,7 +192,7 @@ export function MissionDetailScreen({ route }: Props) {
                 session GPS partagée avec le client. */}
             {mission.booking_id != null && (
               <Button
-                label="Suivi GPS"
+                label={tr('mission_detail.suivi_gps')}
                 onPress={() => navigation.navigate('MissionTracking', {
                   missionId,
                   bookingId: mission.booking_id as number,
@@ -203,7 +205,7 @@ export function MissionDetailScreen({ route }: Props) {
                 proximité, pas une présence. Ce geste-ci ouvre la preuve à scanner chez le
                 client. */}
             <Button
-              label="Je suis arrivé"
+              label={tr('mission_detail.je_suis_arrive')}
               onPress={handleArrival}
               loading={arriveOnSite.isPending}
               fullWidth
@@ -215,13 +217,13 @@ export function MissionDetailScreen({ route }: Props) {
             {/* Le scan reste atteignable après l'arrivée : le prestataire qui quitte l'écran
                 doit pouvoir y revenir tant que la présence n'est pas confirmée. */}
             <Button
-              label="Confirmer ma présence"
+              label={tr('mission_detail.confirmer_ma_presence')}
               onPress={handleArrival}
               loading={arriveOnSite.isPending}
               fullWidth
             />
             <TextInput
-              label="Code de début (donné au client par SMS)"
+              label={tr('mission_detail.code_de_debut_donne_au')}
               value={startCode}
               onChangeText={setStartCode}
               keyboardType="number-pad"
@@ -239,7 +241,7 @@ export function MissionDetailScreen({ route }: Props) {
               onPress={() => handleResend('start')}
               disabled={resendCode.isPending}
               accessibilityRole="button"
-              accessibilityLabel="Renvoyer le code de début par SMS au client"
+              accessibilityLabel={tr('mission_detail.renvoyer_le_code_de_debut')}
               testID="resend-start-code"
               style={styles.resendLink}
             >
@@ -250,7 +252,7 @@ export function MissionDetailScreen({ route }: Props) {
             {/* `begin`, PAS `start` : `start` appelle setEnRoute côté serveur, et depuis
                 `arrived` cette transition est invalide — l'ancien bouton recevait un 422. */}
             <Button
-              label="Démarrer mission"
+              label={tr('mission_detail.demarrer_mission')}
               onPress={() =>
                 startCode.length === 6
                   ? lifecycle.mutate(
@@ -289,7 +291,7 @@ export function MissionDetailScreen({ route }: Props) {
         {['started', 'paused'].includes(mission.status) && (
           <>
             <Button
-              label="Mission terrain"
+              label={tr('mission_detail.mission_terrain')}
               onPress={() => navigation.navigate('MissionField', { missionId })}
               fullWidth
             />
@@ -297,14 +299,14 @@ export function MissionDetailScreen({ route }: Props) {
                 déclenche l'encaissement. Le bouton rouge en dessous garde l'ancien chemin par
                 code SMS pour les missions sans écran client sous la main. */}
             <Button
-              label="Clôturer avec le client"
+              label={tr('mission_detail.cloturer_avec_le_client')}
               onPress={() => navigation.navigate('PresenceScan', { purpose: 'completion', missionId })}
               fullWidth
             />
             {/* Le code de fin que le client lit sur son espace — ou reçoit par SMS. Il était
                 réclamé par le serveur sans qu'aucun champ ne permette de le saisir. */}
             <TextInput
-              label="Code de fin (affiché sur l’espace client)"
+              label={tr('mission_detail.code_de_fin_affiche_sur')}
               value={endCode}
               onChangeText={setEndCode}
               keyboardType="number-pad"
@@ -313,7 +315,7 @@ export function MissionDetailScreen({ route }: Props) {
               testID="end-code-input"
             />
             <Button
-              label="Mission terminée"
+              label={tr('mission_detail.mission_terminee')}
               onPress={() =>
                 handleAction(
                   // Sans code saisi, on laisse le serveur trancher : il accepte la clôture
@@ -331,7 +333,7 @@ export function MissionDetailScreen({ route }: Props) {
               onPress={() => handleResend('end')}
               disabled={resendCode.isPending}
               accessibilityRole="button"
-              accessibilityLabel="Renvoyer le code de fin par SMS au client"
+              accessibilityLabel={tr('mission_detail.renvoyer_le_code_de_fin')}
               testID="resend-end-code"
               style={styles.resendLink}
             >

@@ -4,6 +4,7 @@ import { useLigneMasqueeClient, useLigneMasqueePrestataire } from '../cancellati
 import { spacing, typography, radius } from '../theme';
 import { useThemeColors } from '../theme/useThemeColors';
 import type { ThemeTokens } from '../theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * APPELER — par le numéro relais, jamais par celui de l'autre.
@@ -33,6 +34,7 @@ export function BoutonAppelMasque({
   style?: object;
   testID?: string;
 }) {
+  const { t: tr } = useTraduction();
   const t = useThemeColors();
   const styles = stylesFor(t);
 
@@ -61,11 +63,11 @@ export function BoutonAppelMasque({
       accessibilityLabel={
         role === 'client' ? 'Appeler le prestataire' : 'Appeler le client'
       }
-      accessibilityHint="L’appel passe par un numéro relais : votre numéro reste masqué."
+      accessibilityHint={tr('bouton_appel_masque.lappel_passe_par_un_numero')}
       style={[styles.bouton, style]}
       testID={testID}
     >
-      <Text style={styles.texte}>Appeler</Text>
+      <Text style={styles.texte}>{tr('bouton_appel_masque.appeler')}</Text>
     </TouchableOpacity>
   );
 }

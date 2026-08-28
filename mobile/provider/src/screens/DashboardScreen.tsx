@@ -9,8 +9,10 @@ import { DashboardActionsSheet } from '@/screens/components/DashboardActionsShee
 import {spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 export function DashboardScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { user } = useAuth();
@@ -34,7 +36,7 @@ export function DashboardScreen() {
 
       <View style={styles.floating} pointerEvents="box-none">
         <PresencePill onPress={openSheet} />
-        <Button label="Actions" onPress={openSheet} fullWidth size="lg" />
+        <Button label={tr('dashboard.actions')} onPress={openSheet} fullWidth size="lg" />
       </View>
 
       <DashboardActionsSheet ref={sheetRef} />

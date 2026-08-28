@@ -178,7 +178,7 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
       <View style={styles.centered} testID="onboarding-error">
         <Text style={styles.errorTitle}>{tr('provider_onboarding.impossible_de_charger_votre_dossier')}</Text>
         <Text style={styles.errorHint}>{tr('provider_onboarding.verifiez_votre_connexion_puis_reessayez')}</Text>
-        <Button label="Réessayer" onPress={() => refetch()} variant="secondary" />
+        <Button label={tr('provider_onboarding.reessayer')} onPress={() => refetch()} variant="secondary" />
       </View>
     );
   }
@@ -194,7 +194,7 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
           Votre dossier est envoyé. Nous le validons sous peu — vous recevrez une notification dès
           que votre compte sera actif.
         </Text>
-        {onFinished ? <Button label="Continuer" onPress={onFinished} fullWidth size="lg" /> : null}
+        {onFinished ? <Button label={tr('provider_onboarding.continuer')} onPress={onFinished} fullWidth size="lg" /> : null}
       </ScrollView>
     );
   }

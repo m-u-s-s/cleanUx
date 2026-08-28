@@ -52,7 +52,7 @@ export function QRScanScreen({ route, navigation }: Props) {
   if (!permission) {
     return (
       <View style={styles.container}>
-        <Text style={styles.loadingText}>Chargement...</Text>
+        <Text style={styles.loadingText}>{tr('q_r_scan.chargement')}</Text>
       </View>
     );
   }

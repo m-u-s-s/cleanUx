@@ -11,6 +11,7 @@ import { OptionPicker } from './OptionPicker';
 import { readServerErrors, useResourceGlobalAction, useResourceIndex } from './hooks';
 import { formatCell } from './format';
 import type { FilterValues, ResourceAction, ResourceColumn, ResourceRow } from './types';
+import { useTraduction } from '@/i18n';
 
 interface Params {
   resource: string;
@@ -29,6 +30,7 @@ interface Params {
  * la première page rendrait des résultats faux sans le dire.
  */
 export function ResourceListScreen({ route }: { route: { params: Params } }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { resource, title } = route.params;
@@ -222,7 +224,7 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
           <View style={styles.rangeeTri}>
             <View style={styles.triChoix}>
               <OptionPicker
-                label="Trier par"
+                label={tr('resource_list.trier_par')}
                 options={(descripteur?.sorts ?? []).map((cle) => ({
                   value: cle,
                   label: libelleDeTri(cle, descripteur?.columns ?? []),
@@ -234,7 +236,7 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
 
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Inverser le sens du tri"
+              accessibilityLabel={tr('resource_list.inverser_le_sens_du_tri')}
               onPress={() => setSens((courant) => (courant === 'asc' ? 'desc' : 'asc'))}
               style={styles.sens}
             >
@@ -260,7 +262,7 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
 
         {creable ? (
           <Button
-            label="Créer"
+            label={tr('resource_list.creer')}
             variant="secondary"
             size="sm"
             onPress={() => navigation.navigate('AdminResourceForm', { resource, title })}
@@ -292,7 +294,7 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucun résultat"
+            title={tr('resource_list.aucun_resultat')}
             message="Aucune ligne ne correspond à ce que vous cherchez."
             icon="search-outline"
           />

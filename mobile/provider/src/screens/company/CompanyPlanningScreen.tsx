@@ -115,7 +115,7 @@ export function CompanyPlanningScreen() {
 
       {peutGerer && (
         <Button
-          label="Publier la semaine"
+          label={tr('company_planning.publier_la_semaine')}
           size="sm"
           fullWidth
           disabled={publier.isPending}
@@ -150,7 +150,7 @@ export function CompanyPlanningScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucun créneau"
+            title={tr('company_planning.aucun_creneau')}
             message="Tant qu'aucun planning n'est publié, la répartition fonctionne comme avant."
           />
         }
@@ -161,7 +161,7 @@ export function CompanyPlanningScreen() {
         <TextInput
           value={debutConge}
           onChangeText={setDebutConge}
-          placeholder="Du (AAAA-MM-JJ)"
+          placeholder={tr('company_planning.du_aaaa_mm_jj')}
           placeholderTextColor={styles.placeholder.color}
           style={styles.champ}
           testID="champ-debut-conge"
@@ -169,13 +169,13 @@ export function CompanyPlanningScreen() {
         <TextInput
           value={finConge}
           onChangeText={setFinConge}
-          placeholder="Au, inclus (AAAA-MM-JJ)"
+          placeholder={tr('company_planning.au_inclus_aaaa_mm_jj')}
           placeholderTextColor={styles.placeholder.color}
           style={styles.champ}
           testID="champ-fin-conge"
         />
         <Button
-          label="Envoyer la demande"
+          label={tr('company_planning.envoyer_la_demande')}
           size="sm"
           fullWidth
           disabled={debutConge.trim().length === 0 || finConge.trim().length === 0 || poser.isPending}
@@ -198,13 +198,13 @@ export function CompanyPlanningScreen() {
                 </Text>
               </View>
               <Button
-                label="Approuver"
+                label={tr('company_planning.approuver')}
                 size="sm"
                 onPress={() => statuer.mutate({ id: absence.id, approve: true })}
                 testID={`approuver-absence-${absence.id}`}
               />
               <Button
-                label="Refuser"
+                label={tr('company_planning.refuser')}
                 size="sm"
                 variant="ghost"
                 onPress={() => statuer.mutate({ id: absence.id, approve: false })}

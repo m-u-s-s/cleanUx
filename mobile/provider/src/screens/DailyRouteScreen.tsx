@@ -107,7 +107,7 @@ export function DailyRouteScreen() {
                 </Text>
               </View>
 
-              {item.is_tight && <Badge label="Serré" variant="danger" />}
+              {item.is_tight && <Badge label={tr('daily_route.serre')} variant="danger" />}
             </View>
           </View>
         )}

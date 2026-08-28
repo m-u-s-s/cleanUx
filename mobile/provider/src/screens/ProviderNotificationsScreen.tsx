@@ -9,8 +9,10 @@ import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 export function ProviderNotificationsScreen() {
+  const { t: tr } = useTraduction();
   const t = useThemeColors();
   const styles = stylesFor(t);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -47,11 +49,11 @@ export function ProviderNotificationsScreen() {
           onPress={() => navigation.navigate('ProviderNotificationDetail', { id: item.id })}
           accessibilityRole="button"
           accessibilityLabel={`${item.label} : ${item.title}. ${item.body}${nonLue ? '. Non lue' : ''}`}
-          accessibilityHint="Ouvre le détail de la notification"
+          accessibilityHint={tr('provider_notifications.ouvre_le_detail_de_la')}
         >
           <View style={styles.badges}>
             <Badge label={item.label} variant={severityVariant(item.severity)} />
-            {nonLue && <Badge label="Nouveau" variant="brand" />}
+            {nonLue && <Badge label={tr('provider_notifications.nouveau')} variant="brand" />}
           </View>
 
           <Text style={styles.notifTitle}>{item.title}</Text>
@@ -68,10 +70,10 @@ export function ProviderNotificationsScreen() {
   return (
     <Screen>
       <View style={styles.header}>
-        <Text style={styles.title} accessibilityRole="header">Notifications</Text>
+        <Text style={styles.title} accessibilityRole="header">{tr('provider_notifications.notifications')}</Text>
         {unreadCount > 0 && (
           <Button
-            label="Tout marquer lu"
+            label={tr('provider_notifications.tout_marquer_lu')}
             onPress={() => markAll.mutate()}
             size="sm"
             variant="ghost"
@@ -88,7 +90,7 @@ export function ProviderNotificationsScreen() {
           contentContainerStyle={styles.liste}
           keyExtractor={item => item.id}
           renderItem={renderNotifItem}
-          accessibilityLabel="Liste des notifications"
+          accessibilityLabel={tr('provider_notifications.liste_des_notifications')}
           refreshControl={
             <RefreshControl
               refreshing={isRefetching ?? false}
@@ -97,7 +99,7 @@ export function ProviderNotificationsScreen() {
               colors={[colors.brand[500]]}
             />
           }
-          ListEmptyComponent={<EmptyState title="Aucune notification" message="Vous êtes à jour !" />}
+          ListEmptyComponent={<EmptyState title={tr('provider_notifications.aucune_notification')} message="Vous êtes à jour !" />}
         />
       )}
     </Screen>

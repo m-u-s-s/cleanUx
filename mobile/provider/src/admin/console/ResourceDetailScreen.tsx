@@ -12,6 +12,7 @@ import { readServerErrors, useResourceAction, useResourceDelete, useResourceDeta
 import { formatCell } from './format';
 import { ActionInputSheet } from './ActionInputSheet';
 import type { ResourceAction, ResourceColumn } from './types';
+import { useTraduction } from '@/i18n';
 
 interface Params {
   resource: string;
@@ -28,6 +29,7 @@ interface Params {
  * un « Êtes-vous sûr ? » générique qu'on valide sans lire.
  */
 export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { resource, title, id } = route.params;
@@ -201,7 +203,7 @@ export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
         <View style={styles.actions}>
           {modifiable ? (
             <Button
-              label="Modifier"
+              label={tr('resource_detail.modifier')}
               variant="secondary"
               onPress={() => navigation.navigate('AdminResourceForm', { resource, title, id })}
             />
@@ -219,7 +221,7 @@ export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
 
           {modifiable ? (
             <Button
-              label="Supprimer"
+              label={tr('resource_detail.supprimer')}
               variant="danger"
               loading={suppression.isPending}
               onPress={() =>

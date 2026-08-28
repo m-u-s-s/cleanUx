@@ -68,11 +68,11 @@ export function CatalogCountriesScreen() {
             navigation.navigate('AdminResourceForm', { resource: 'countries', title: 'Nouveau pays' })
           }
           accessibilityRole="button"
-          accessibilityLabel="Ajouter un pays"
+          accessibilityLabel={tr('catalog_countries.ajouter_un_pays')}
           style={({ pressed }) => [styles.ajouter, pressed && styles.ajouterPresse]}
         >
           <Icon name="add" size={18} color={colors.surface[50]} />
-          <Text style={styles.ajouterTexte}>Ajouter</Text>
+          <Text style={styles.ajouterTexte}>{tr('catalog_countries.ajouter')}</Text>
         </Pressable>
       </View>
 
@@ -102,7 +102,7 @@ export function CatalogCountriesScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucun pays"
+            title={tr('catalog_countries.aucun_pays')}
             message="Ajoutez un pays depuis l’administration web pour commencer."
           />
         }

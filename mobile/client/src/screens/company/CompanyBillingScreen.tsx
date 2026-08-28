@@ -59,7 +59,7 @@ export function CompanyBillingScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Facturation</Text>
+      <Text style={styles.title}>{tr('company_billing.facturation')}</Text>
 
       <View style={styles.grilleKpis}>
         <View style={styles.kpi}>
@@ -78,7 +78,7 @@ export function CompanyBillingScreen() {
           />
         </View>
         <View style={styles.kpi}>
-          <KPICard title="Factures" value={resume?.count_total ?? 0} loading={!resume} />
+          <KPICard title={tr('company_billing.factures')} value={resume?.count_total ?? 0} loading={!resume} />
         </View>
       </View>
 
@@ -110,7 +110,7 @@ export function CompanyBillingScreen() {
               dupliquerait le PDF et son URL signée.
             */}
             <Button
-              label="Voir"
+              label={tr('company_billing.voir')}
               size="sm"
               variant="ghost"
               onPress={() => navigation.navigate('InvoiceDetail', { id: item.id })}

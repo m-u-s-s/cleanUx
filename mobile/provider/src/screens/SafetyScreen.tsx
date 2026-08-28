@@ -97,7 +97,7 @@ export function SafetyScreen() {
           )}
 
           <Button
-            label="Tout va bien, fermer l’alerte"
+            label={tr('safety.tout_va_bien_fermer_lalerte')}
             size="sm"
             fullWidth
             variant="ghost"
@@ -110,7 +110,7 @@ export function SafetyScreen() {
           <TextInput
             value={message}
             onChangeText={setMessage}
-            placeholder="Que se passe-t-il ? (facultatif)"
+            placeholder={tr('safety.que_se_passe_t_il')}
             placeholderTextColor={styles.placeholder.color}
             style={styles.champ}
             testID="champ-message-sos"
@@ -121,7 +121,7 @@ export function SafetyScreen() {
             moment où les mains tremblent.
           */}
           <Button
-            label="URGENCE — envoyer l’alerte"
+            label={tr('safety.urgence_envoyer_lalerte')}
             variant="danger"
             fullWidth
             disabled={declencher.isPending}
@@ -130,7 +130,7 @@ export function SafetyScreen() {
           />
 
           <Button
-            label="Je ne suis pas à l’aise — gardez un œil"
+            label={tr('safety.je_ne_suis_pas_a')}
             variant="secondary"
             fullWidth
             disabled={declencher.isPending}

@@ -60,7 +60,7 @@ export function CompanyProfileScreen() {
       {/* Le répertoire complet de l'espace société, servi par le serveur. */}
       <Row
         icon="grid-outline"
-        label="Modules"
+        label={tr('company_profile.modules')}
         hint="Tout ce que cet espace sait faire"
         onPress={() => navigation.navigate('Modules')}
       />

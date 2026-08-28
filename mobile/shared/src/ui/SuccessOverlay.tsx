@@ -111,7 +111,7 @@ export function SuccessOverlay({ visible, message, onDismiss }: Props) {
         <Text style={styles.check}>✓</Text>
         <Text style={styles.title}>{tr('success_overlay.confirme')}</Text>
         <Text style={styles.message}>{message}</Text>
-        <Button label="Parfait" onPress={onDismiss} fullWidth />
+        <Button label={tr('success_overlay.parfait')} onPress={onDismiss} fullWidth />
       </Animated.View>
     </Animated.View>
   );

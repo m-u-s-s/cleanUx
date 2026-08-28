@@ -7,6 +7,7 @@ import { useAuth, can } from '@/auth';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Agence {
   id: number;
@@ -29,6 +30,7 @@ interface Agence {
  * rattachement reste vide, et le moteur de répartition n'accorde alors aucun point d'agence.
  */
 export function CompanyAgenciesScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -67,7 +69,7 @@ export function CompanyAgenciesScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Implantations</Text>
+      <Text style={styles.title}>{tr('company_agencies.implantations')}</Text>
       <Text style={styles.intro}>
         Vos propres dépôts et antennes — à distinguer des sites de vos clients, où vous intervenez.
       </Text>
@@ -85,13 +87,13 @@ export function CompanyAgenciesScreen() {
           <TextInput
             value={ville}
             onChangeText={setVille}
-            placeholder="Ville"
+            placeholder={tr('company_agencies.ville')}
             placeholderTextColor={styles.placeholder.color}
             style={styles.champ}
             testID="champ-ville-agence"
           />
           <Button
-            label="Créer"
+            label={tr('company_agencies.creer')}
             size="sm"
             fullWidth
             disabled={nom.trim().length === 0 || creer.isPending}
@@ -117,11 +119,11 @@ export function CompanyAgenciesScreen() {
             </View>
 
             {item.status === 'archived' ? (
-              <Badge label="Archivée" variant="neutral" />
+              <Badge label={tr('company_agencies.archivee')} variant="neutral" />
             ) : (
               peutGerer && (
                 <Button
-                  label="Archiver"
+                  label={tr('company_agencies.archiver')}
                   size="sm"
                   variant="ghost"
                   onPress={() => archiver.mutate(item.id)}
@@ -132,7 +134,7 @@ export function CompanyAgenciesScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucune implantation"
+            title={tr('company_agencies.aucune_implantation')}
             message="Une société mono-site n'en a pas besoin : la répartition fonctionne sans."
           />
         }

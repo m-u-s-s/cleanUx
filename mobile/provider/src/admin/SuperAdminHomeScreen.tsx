@@ -112,7 +112,7 @@ export function SuperAdminHomeScreen() {
         */}
         <Ligne
           icone="speedometer-outline"
-          label="Console d’administration"
+          label={tr('super_admin_home.console_dadministration')}
           indice="Exploitation : missions, zones, litiges"
           onPress={() => void choose('admin')}
         />
@@ -120,7 +120,7 @@ export function SuperAdminHomeScreen() {
         {user?.is_provider === true ? (
           <Ligne
             icone="construct-outline"
-            label="Espace terrain"
+            label={tr('super_admin_home.espace_terrain')}
             indice="Mes missions, ma présence"
             onPress={() => void choose('provider')}
           />
@@ -129,18 +129,18 @@ export function SuperAdminHomeScreen() {
         {/* Le répertoire complet — 90 modules pour ce rôle, servis par le serveur. */}
         <Ligne
           icone="grid-outline"
-          label="Modules"
+          label={tr('super_admin_home.modules')}
           indice="Tout ce que cet espace sait faire"
           onPress={() => navigation.navigate('Modules')}
         />
 
         <Ligne
           icone="settings-outline"
-          label="Réglages"
+          label={tr('super_admin_home.reglages')}
           onPress={() => navigation.navigate('Appearance')}
         />
 
-        <Ligne icone="log-out-outline" label="Se déconnecter" ton="danger" onPress={() => void logout()} />
+        <Ligne icone="log-out-outline" label={tr('super_admin_home.se_deconnecter')} ton="danger" onPress={() => void logout()} />
       </ScrollView>
     </Screen>
   );

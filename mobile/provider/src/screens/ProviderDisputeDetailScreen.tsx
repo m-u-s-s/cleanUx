@@ -179,8 +179,8 @@ export function ProviderDisputeDetailScreen() {
         <Text style={styles.section}>{tr('provider_dispute_detail.votre_reponse')}</Text>
 
         <TextInput
-          label="Message"
-          placeholder="Expliquez ce qui s’est passé"
+          label={tr('provider_dispute_detail.message')}
+          placeholder={tr('provider_dispute_detail.expliquez_ce_qui_sest_passe')}
           value={reponse}
           onChangeText={setReponse}
           multiline
@@ -191,7 +191,7 @@ export function ProviderDisputeDetailScreen() {
             <Pressable
               key={uri}
               onPress={() => retirerUnePreuve(uri)}
-              accessibilityLabel="Retirer cette photo"
+              accessibilityLabel={tr('provider_dispute_detail.retirer_cette_photo')}
               style={styles.preuve}
             >
               <Image source={{ uri }} style={styles.preuveImage} />
@@ -199,12 +199,12 @@ export function ProviderDisputeDetailScreen() {
           ))}
 
           {preuves.length < MAX_PREUVES && (
-            <Button label="Ajouter une photo" size="sm" variant="outline" onPress={ajouterUnePreuve} />
+            <Button label={tr('provider_dispute_detail.ajouter_une_photo')} size="sm" variant="outline" onPress={ajouterUnePreuve} />
           )}
         </View>
 
         <Button
-          label="Envoyer la réponse"
+          label={tr('provider_dispute_detail.envoyer_la_reponse')}
           onPress={() => envoyer.mutate()}
           disabled={!peutEnvoyer}
           loading={envoyer.isPending}

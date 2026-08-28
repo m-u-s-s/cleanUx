@@ -3,6 +3,7 @@ import { View, Text, Image, Pressable, Linking, StyleSheet } from 'react-native'
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ChatMessage } from './types';
+import { useTraduction } from '@/i18n';
 
 export type PieceJointeDuMessageProps = {
   piece?: ChatMessage['attachment'];
@@ -42,6 +43,7 @@ function poids(octets: number | null): string | null {
  * Partagée par les deux applications, qui affichent la même discussion.
  */
 export function PieceJointeDuMessage({ piece }: PieceJointeDuMessageProps) {
+  const { t: tr } = useTraduction();
   const theme = useThemeColors();
 
   if (!piece?.url) {
@@ -57,7 +59,7 @@ export function PieceJointeDuMessage({ piece }: PieceJointeDuMessageProps) {
       <Pressable
         onPress={ouvrir}
         accessibilityRole="imagebutton"
-        accessibilityLabel="Pièce jointe, image"
+        accessibilityLabel={tr('piece_jointe_du_message.piece_jointe_image')}
         testID="piece-jointe-image-ouvrir"
       >
         <Image

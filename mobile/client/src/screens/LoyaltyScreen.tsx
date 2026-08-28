@@ -46,7 +46,7 @@ export function LoyaltyScreen() {
           <Badge label={account.tier?.name ?? 'Aucun palier'} variant="brand" />
           <View style={styles.kpiRow}>
             <KPICard
-              title="Points"
+              title={tr('loyalty.points')}
               value={account.redeemable_points ?? '—'}
               hint="Échangeables"
               tone="success"

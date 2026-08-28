@@ -71,12 +71,12 @@ export function PaymentCheckoutScreen({ route, navigation }: Props) {
 
   return (
     <Screen>
-      <Text style={styles.title}>Paiement</Text>
+      <Text style={styles.title}>{tr('payment_checkout.paiement')}</Text>
       {booking && (
         <View style={styles.summary}>
-          <KPICard title="Service" value={booking.service_name} />
+          <KPICard title={tr('payment_checkout.service')} value={booking.service_name} />
           {booking.estimated_price != null && (
-            <KPICard title="Montant" value={formatMontant(booking.estimated_price, booking.currency)} tone="success" />
+            <KPICard title={tr('payment_checkout.montant')} value={formatMontant(booking.estimated_price, booking.currency)} tone="success" />
           )}
         </View>
       )}

@@ -75,7 +75,7 @@ export function BudgetScreen() {
 
       <View style={styles.resume} testID="resume-budget">
         <View style={styles.carte}>
-          <Text style={styles.libelle}>Total</Text>
+          <Text style={styles.libelle}>{tr('budget.total')}</Text>
           <Text style={styles.montant}>{euros(budget?.total_cents ?? 0)}</Text>
           <Text style={styles.detail}>{budget?.bookings_count ?? 0} intervention(s)</Text>
         </View>
@@ -105,7 +105,7 @@ export function BudgetScreen() {
 
           <View style={styles.ligne}>
             <View style={styles.identite}>
-              <Text style={styles.nom}>Ponctuelles</Text>
+              <Text style={styles.nom}>{tr('budget.ponctuelles')}</Text>
               <Text style={styles.detail}>
                 {comparatif.on_demand.bookings_count} · {euros(comparatif.on_demand.average_cents)} en moyenne
               </Text>

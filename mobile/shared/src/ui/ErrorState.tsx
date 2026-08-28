@@ -28,7 +28,7 @@ export function ErrorState({
     <View style={[styles.container, compact && styles.compactContainer]}>
       <Text style={styles.title}>{tr('error_state.oups')}</Text>
       <Text style={styles.message}>{message}</Text>
-      {onRetry && <Button label="Réessayer" onPress={onRetry} variant="secondary" />}
+      {onRetry && <Button label={tr('error_state.reessayer')} onPress={onRetry} variant="secondary" />}
     </View>
   );
 }

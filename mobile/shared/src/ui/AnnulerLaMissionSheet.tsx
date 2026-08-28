@@ -82,7 +82,7 @@ export function AnnulerLaMissionSheet({
     <View style={styles.corps} testID="annuler-la-mission">
       <View style={styles.entete}>
         <Text style={styles.titre} accessibilityRole="header">{tr('annuler_la_mission.annuler_la_mission')}</Text>
-        <Text onPress={onFermer} style={styles.fermer} accessibilityRole="button">Fermer</Text>
+        <Text onPress={onFermer} style={styles.fermer} accessibilityRole="button">{tr('annuler_la_mission.fermer')}</Text>
       </View>
 
       {(questions ?? []).map((question) => (
@@ -119,7 +119,7 @@ export function AnnulerLaMissionSheet({
         <>
           {choisie.requires_text ? (
             <TextInput
-              label="Précisez"
+              label={tr('annuler_la_mission.precisez')}
               value={precision}
               onChangeText={setPrecision}
               multiline
@@ -143,7 +143,7 @@ export function AnnulerLaMissionSheet({
           ) : null}
 
           <Button
-            label="Confirmer l’annulation"
+            label={tr('annuler_la_mission.confirmer_lannulation')}
             variant="danger"
             onPress={confirmer}
             loading={annuler.isPending}

@@ -47,10 +47,10 @@ export function NPSScreen({ navigation }: Props) {
       </View>
       <View style={styles.labels}>
         <Text style={styles.labelText}>{tr('n_p_s.pas_du_tout')}</Text>
-        <Text style={styles.labelText}>Absolument</Text>
+        <Text style={styles.labelText}>{tr('n_p_s.absolument')}</Text>
       </View>
       <Button
-        label="Envoyer"
+        label={tr('n_p_s.envoyer')}
         onPress={handleSubmit}
         fullWidth
         disabled={score === null}

@@ -51,7 +51,7 @@ export function RatingScreen({ route, navigation }: Props) {
       <StarRow label={tr('rating.note_globale')} value={overall} onChange={setOverall} />
       <StarRow label={tr('rating.ponctualite')} value={punctuality} onChange={setPunctuality} />
       <StarRow label={tr('rating.qualite')} value={quality} onChange={setQuality} />
-      <StarRow label="Communication" value={communication} onChange={setCommunication} />
+      <StarRow label={tr('rating.communication')} value={communication} onChange={setCommunication} />
       <StarRow label={tr('rating.rapport_qualite_prix')} value={value} onChange={setValue} />
       <TextInput
         label={tr('rating.commentaire_optionnel')}
@@ -62,7 +62,7 @@ export function RatingScreen({ route, navigation }: Props) {
         placeholder={tr('rating.partagez_votre_experience')}
       />
       <Button
-        label="Envoyer"
+        label={tr('rating.envoyer')}
         onPress={handleSubmit}
         fullWidth
         size="lg"

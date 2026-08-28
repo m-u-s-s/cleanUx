@@ -211,7 +211,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
     );
   };
 
-  if (!mission) return <Screen><Text style={styles.loading}>Chargement...</Text></Screen>;
+  if (!mission) return <Screen><Text style={styles.loading}>{tr('mission_field.chargement')}</Text></Screen>;
 
   const avant = (media ?? []).filter((m) => m.type === 'before_photo');
   const apres = (media ?? []).filter((m) => m.type === 'after_photo');
@@ -251,13 +251,13 @@ export function MissionFieldScreen({ route, navigation }: Props) {
 
         <View style={styles.captureRow}>
           <Button
-            label="Photo avant"
+            label={tr('mission_field.photo_avant')}
             onPress={() => photographier('before_photo')}
             loading={capture.isPending}
             variant="secondary"
           />
           <Button
-            label="Photo après"
+            label={tr('mission_field.photo_apres')}
             onPress={() => photographier('after_photo')}
             loading={capture.isPending}
             variant="secondary"
@@ -302,7 +302,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
               d'ouvrir la porte, pas en entendant la sirène.
             */}
             {ficheDAcces.alarm_code_required ? (
-              <Badge label="Alarme à désarmer" variant="warning" />
+              <Badge label={tr('mission_field.alarme_a_desarmer')} variant="warning" />
               ) : null}
 
             {/*
@@ -382,22 +382,22 @@ export function MissionFieldScreen({ route, navigation }: Props) {
         </View>
 
         <TextInput
-          label="Ce que vous constatez"
+          label={tr('mission_field.ce_que_vous_constatez')}
           value={incidentDescription}
           onChangeText={setIncidentDescription}
-          placeholder="Trace d’humidité derrière le meuble, présente à mon arrivée."
+          placeholder={tr('mission_field.trace_dhumidite_derriere_le_meuble')}
           multiline
           testID="incident-description"
         />
 
         <View style={styles.captureRow}>
           <Button
-            label="Signaler avec photo"
+            label={tr('mission_field.signaler_avec_photo')}
             onPress={() => envoyerLImprevu(true)}
             loading={reportIncident.isPending}
           />
           <Button
-            label="Sans photo"
+            label={tr('mission_field.sans_photo')}
             onPress={() => envoyerLImprevu(false)}
             loading={reportIncident.isPending}
             variant="secondary"
@@ -449,15 +449,15 @@ export function MissionFieldScreen({ route, navigation }: Props) {
         </Text>
 
         <TextInput
-          label="Ce que vous proposez"
+          label={tr('mission_field.ce_que_vous_proposez')}
           value={extraLabel}
           onChangeText={setExtraLabel}
-          placeholder="Nettoyage des vitres"
+          placeholder={tr('mission_field.nettoyage_des_vitres')}
           testID="extra-label"
         />
 
         <TextInput
-          label="Prix en euros"
+          label={tr('mission_field.prix_en_euros')}
           value={extraPrix}
           onChangeText={setExtraPrix}
           placeholder="25"
@@ -466,7 +466,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
         />
 
         <Button
-          label="Proposer au client"
+          label={tr('mission_field.proposer_au_client')}
           onPress={proposerLExtra}
           loading={proposerUnExtra.isPending}
         />
@@ -589,7 +589,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
         <TouchableOpacity
           onPress={() => navigation.navigate('Safety')}
           accessibilityRole="button"
-          accessibilityLabel="Ouvrir le mode sécurité et l’alerte d’urgence"
+          accessibilityLabel={tr('mission_field.ouvrir_le_mode_securite_et')}
           style={[styles.secoursCase, styles.secoursUrgence]}
           testID="terrain-securite"
         >
@@ -623,7 +623,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
             );
           }}
           accessibilityRole="button"
-          accessibilityLabel="Ouvrir l’itinéraire dans une application de navigation"
+          accessibilityLabel={tr('mission_field.ouvrir_litineraire_dans_une_application')}
           style={styles.secoursCase}
           testID="terrain-itineraire"
         >
@@ -633,21 +633,21 @@ export function MissionFieldScreen({ route, navigation }: Props) {
         <TouchableOpacity
           onPress={() => navigation.navigate('ProviderChatList')}
           accessibilityRole="button"
-          accessibilityLabel="Écrire au client"
+          accessibilityLabel={tr('mission_field.ecrire_au_client')}
           style={styles.secoursCase}
           testID="terrain-message"
         >
-          <Text style={styles.secoursTexte}>Message</Text>
+          <Text style={styles.secoursTexte}>{tr('mission_field.message')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => navigation.navigate('ProviderDisputes')}
           accessibilityRole="button"
-          accessibilityLabel="Signaler un litige sur cette mission"
+          accessibilityLabel={tr('mission_field.signaler_un_litige_sur_cette')}
           style={styles.secoursCase}
           testID="terrain-litige"
         >
-          <Text style={styles.secoursTexte}>Litige</Text>
+          <Text style={styles.secoursTexte}>{tr('mission_field.litige')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -669,7 +669,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
             />
           ) : (
             <Button
-              label="Annuler la mission"
+              label={tr('mission_field.annuler_la_mission')}
               variant="secondary"
               onPress={() => setAnnulationOuverte(true)}
               fullWidth
@@ -699,7 +699,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
         */}
         {estUneCourse && mission?.status === 'arrived' && (
           <Button
-            label="Client à bord"
+            label={tr('mission_field.client_a_bord')}
             onPress={() =>
               lifecycle.mutate('ride/start', {
                 onError: (e: any) =>
@@ -714,7 +714,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
         {estUneCourse && mission?.status === 'arrived' && absenceDeclarable !== null && (
           absenceDeclarable ? (
             <Button
-              label="Client absent"
+              label={tr('mission_field.client_absent')}
               variant="secondary"
               onPress={() =>
                 Alert.alert(
@@ -748,7 +748,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
 
         {estUneCourse && enCours && (
           <Button
-            label="Terminer la course"
+            label={tr('mission_field.terminer_la_course')}
             onPress={() =>
               lifecycle.mutate('ride/complete', {
                 onError: (e: any) =>
@@ -763,7 +763,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
 
         {! estUneCourse && enCours && (
           <Button
-            label="Terminer la mission"
+            label={tr('mission_field.terminer_la_mission')}
             /*
              * LE REFUS DU SERVEUR DOIT S'AFFICHER. Sans `onError`, un 422 — « certaines tâches
              * obligatoires ne sont pas cochées », le cas le plus courant — ne produisait

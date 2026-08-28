@@ -170,7 +170,7 @@ export function CompanyMissionDetailScreen() {
     return (
       <Screen>
         <EmptyState
-          title="Mission introuvable"
+          title={tr('company_mission_detail.mission_introuvable')}
           message="Elle a peut-être été annulée ou confiée à une autre société."
         />
       </Screen>
@@ -256,7 +256,7 @@ export function CompanyMissionDetailScreen() {
                 <TextInput
                   value={nouvelleDate}
                   onChangeText={setNouvelleDate}
-                  placeholder="Nouvelle date (AAAA-MM-JJ)"
+                  placeholder={tr('company_mission_detail.nouvelle_date_aaaa_mm_jj')}
                   placeholderTextColor={styles.placeholder.color}
                   style={styles.champ}
                   testID="champ-date"
@@ -264,7 +264,7 @@ export function CompanyMissionDetailScreen() {
                 <TextInput
                   value={nouvelleHeure}
                   onChangeText={setNouvelleHeure}
-                  placeholder="Nouvelle heure (HH:MM)"
+                  placeholder={tr('company_mission_detail.nouvelle_heure_hh_mm')}
                   placeholderTextColor={styles.placeholder.color}
                   style={styles.champ}
                   testID="champ-heure"
@@ -272,13 +272,13 @@ export function CompanyMissionDetailScreen() {
                 <TextInput
                   value={motif}
                   onChangeText={setMotif}
-                  placeholder="Motif (obligatoire à moins de 24 h)"
+                  placeholder={tr('company_mission_detail.motif_obligatoire_a_moins_de')}
                   placeholderTextColor={styles.placeholder.color}
                   style={styles.champ}
                   testID="champ-motif"
                 />
                 <Button
-                  label="Déplacer"
+                  label={tr('company_mission_detail.deplacer')}
                   size="sm"
                   fullWidth
                   disabled={nouvelleDate.trim() === '' || deplacer.isPending}

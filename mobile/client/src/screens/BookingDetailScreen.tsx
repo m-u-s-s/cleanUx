@@ -93,7 +93,7 @@ export function BookingDetailScreen({ route }: Props) {
   if (isLoading) {
     return (
       <Screen>
-        <Text style={styles.loading}>Chargement...</Text>
+        <Text style={styles.loading}>{tr('booking_detail.chargement')}</Text>
       </Screen>
     );
   }
@@ -183,18 +183,18 @@ export function BookingDetailScreen({ route }: Props) {
 
       <View style={styles.card}>
         <DetailRow
-          label="Date"
+          label={tr('booking_detail.date')}
           value={formatDateHeure(booking.scheduled_date, booking.scheduled_time)}
         />
         <Divider />
         <DetailRow
-          label="Adresse"
+          label={tr('booking_detail.adresse')}
           value={`${booking.address}, ${booking.city}`}
         />
         {booking.provider_name ? (
           <>
             <Divider />
-            <DetailRow label="Prestataire" value={booking.provider_name} />
+            <DetailRow label={tr('booking_detail.prestataire')} value={booking.provider_name} />
           </>
         ) : null}
       </View>

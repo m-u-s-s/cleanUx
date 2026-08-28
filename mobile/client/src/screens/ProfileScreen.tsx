@@ -80,7 +80,7 @@ export function ProfileScreen() {
           du serveur, qui déduit le contexte du jeton : rien à conditionner ici.
         */}
         <Button
-          label="Modules"
+          label={tr('profile.modules')}
           onPress={() => navigation.navigate('Modules')}
           variant="secondary"
           fullWidth
@@ -98,13 +98,13 @@ export function ProfileScreen() {
           fullWidth
         />
         <Button
-          label="Messagerie"
+          label={tr('profile.messagerie')}
           onPress={() => navigation.navigate('ChatList')}
           variant="secondary"
           fullWidth
         />
         <Button
-          label="Notifications"
+          label={tr('profile.notifications')}
           onPress={() => navigation.navigate('Notifications')}
           variant="secondary"
           fullWidth
@@ -149,7 +149,7 @@ export function ProfileScreen() {
           fullWidth
         />
         <Button
-          label="Parrainage"
+          label={tr('profile.parrainage')}
           onPress={() => navigation.navigate('Referral')}
           variant="secondary"
           fullWidth
@@ -185,13 +185,13 @@ export function ProfileScreen() {
           fullWidth
         />
         <Button
-          label="Langue"
+          label={tr('profile.langue')}
           onPress={() => navigation.navigate('Language')}
           variant="secondary"
           fullWidth
         />
         <Button
-          label="Apparence"
+          label={tr('profile.apparence')}
           onPress={() => navigation.navigate('Appearance')}
           variant="secondary"
           fullWidth

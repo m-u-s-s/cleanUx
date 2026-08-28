@@ -9,6 +9,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import { useSpacePreference } from '@/admin/useSpacePreference';
+import { useTraduction } from '@/i18n';
 
 /**
  * Le profil du gérant DANS son espace société.
@@ -30,6 +31,7 @@ import { useSpacePreference } from '@/admin/useSpacePreference';
  * sortie. Il faut donc écrire « terrain », pas effacer.
  */
 export function CompanyProfileScreen() {
+  const { t: tr } = useTraduction();
   const theme = useThemeColors();
   const styles = stylesFor(theme);
 
@@ -58,7 +60,7 @@ export function CompanyProfileScreen() {
       {intervientSurLeTerrain ? (
         <Row
           icon="construct-outline"
-          label="Aller à l’espace terrain"
+          label={tr('company_profile.aller_a_lespace_terrain')}
           hint="Mes missions, ma présence, mes revenus"
           onPress={() => void choose('provider')}
         />
@@ -67,7 +69,7 @@ export function CompanyProfileScreen() {
       {passeParLeSelecteur ? (
         <Row
           icon="swap-horizontal-outline"
-          label="Changer d’espace"
+          label={tr('company_profile.changer_despace')}
           hint="Revenir au choix d’espace"
           onPress={() => void clear()}
         />
@@ -88,24 +90,24 @@ export function CompanyProfileScreen() {
       {/* Le répertoire complet des modules de l'espace société, servi par le serveur. */}
       <Row
         icon="grid-outline"
-        label="Modules"
+        label={tr('company_profile.modules')}
         hint="Tout ce que cet espace sait faire"
         onPress={() => navigation.navigate('Modules')}
       />
 
       <Row
         icon="notifications-outline"
-        label="Préférences notifications"
+        label={tr('company_profile.preferences_notifications')}
         onPress={() => navigation.navigate('NotificationPreferences')}
       />
       <Row
         icon="language-outline"
-        label="Langue"
+        label={tr('company_profile.langue')}
         onPress={() => navigation.navigate('Language')}
       />
       <Row
         icon="color-palette-outline"
-        label="Apparence"
+        label={tr('company_profile.apparence')}
         onPress={() => navigation.navigate('Appearance')}
       />
 
@@ -113,7 +115,7 @@ export function CompanyProfileScreen() {
 
       <Row
         icon="log-out-outline"
-        label="Se déconnecter"
+        label={tr('company_profile.se_deconnecter')}
         tone="danger"
         onPress={() => void logout()}
       />

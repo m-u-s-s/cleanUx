@@ -81,7 +81,7 @@ export function NotificationPreferencesScreen() {
           <Divider />
         </View>
       ))}
-      <Button label="Sauvegarder" onPress={handleSave} fullWidth loading={saving} />
+      <Button label={tr('notification_preferences.sauvegarder')} onPress={handleSave} fullWidth loading={saving} />
     </Screen>
   );
 }

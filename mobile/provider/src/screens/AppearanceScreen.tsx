@@ -5,6 +5,7 @@ import { useColorScheme } from '@/theme/useColorScheme';
 import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 const OPTIONS = [
   { mode: 'system' as const, label: 'Automatique', description: 'Suit le réglage du système' },
@@ -13,13 +14,14 @@ const OPTIONS = [
 ];
 
 export function AppearanceScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { mode, setMode } = useColorScheme();
 
   return (
     <Screen>
-      <Text style={styles.title}>Apparence</Text>
+      <Text style={styles.title}>{tr('appearance.apparence')}</Text>
       {OPTIONS.map(opt => (
         <TouchableOpacity
           key={opt.mode}

@@ -78,7 +78,7 @@ export function SavedPaymentMethodsScreen() {
               </View>
               {item.is_default && <Badge label={tr('saved_payment_methods.par_defaut')} variant="brand" />}
               <Button
-                label="Supprimer"
+                label={tr('saved_payment_methods.supprimer')}
                 onPress={() => handleDelete(item)}
                 variant="ghost"
                 size="sm"

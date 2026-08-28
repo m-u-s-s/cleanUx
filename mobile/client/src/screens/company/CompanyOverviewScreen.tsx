@@ -95,7 +95,7 @@ export function CompanyOverviewScreen() {
 
         <View style={styles.grilleKpis}>
           <View style={styles.kpi}>
-            <KPICard title="Locaux" value={kpis?.sites_count ?? 0} loading={!kpis} />
+            <KPICard title={tr('company_overview.locaux')} value={kpis?.sites_count ?? 0} loading={!kpis} />
           </View>
           <View style={styles.kpi}>
             <KPICard title={tr('company_overview.en_cours')} value={kpis?.bookings_active ?? 0} loading={!kpis} />
@@ -112,7 +112,7 @@ export function CompanyOverviewScreen() {
             />
           </View>
           <View style={styles.kpi}>
-            <KPICard title="Membres" value={kpis?.members_count ?? 0} loading={!kpis} />
+            <KPICard title={tr('company_overview.membres')} value={kpis?.members_count ?? 0} loading={!kpis} />
           </View>
         </View>
 

@@ -74,6 +74,7 @@ function StepError({ error }: { error: string | null }) {
  * l'inscription ne remplit pas.
  */
 export function ProfileStep({ onDone, submitting, error }: StepProps) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const [phone, setPhone] = useState('');
@@ -87,11 +88,11 @@ export function ProfileStep({ onDone, submitting, error }: StepProps) {
 
   return (
     <StepShell
-      title="Vos coordonnées"
+      title={tr('steps.vos_coordonnees')}
       hint="Votre numéro permet aux clients et au support de vous joindre pendant une mission."
     >
       <TextInput
-        label="Téléphone"
+        label={tr('steps.telephone')}
         value={phone}
         onChangeText={(t) => { setPhone(t); setLocalError(null); }}
         keyboardType="phone-pad"
@@ -99,7 +100,7 @@ export function ProfileStep({ onDone, submitting, error }: StepProps) {
       />
       <StepError error={localError ?? error} />
       <Button
-        label="Continuer"
+        label={tr('steps.continuer')}
         onPress={() => (phone.trim() ? save.mutate() : setLocalError('Numéro requis'))}
         fullWidth
         size="lg"
@@ -190,7 +191,7 @@ export function ContractStep({ onDone, submitting, error }: StepProps) {
 
   return (
     <StepShell
-      title="Contrat prestataire"
+      title={tr('steps.contrat_prestataire')}
       hint={document ? 'Lisez le contrat, puis signez.' : `Version ${CONTRACT_VERSION}`}
     >
       <ScrollView style={styles.contractBox} nestedScrollEnabled testID="onboarding-contract-body">
@@ -219,7 +220,7 @@ Je m'engage à ne sous-traiter aucune mission sans accord préalable, et à resp
 
       <StepError error={localError ?? error} />
       <Button
-        label="Signer et continuer"
+        label={tr('steps.signer_et_continuer')}
         onPress={submit}
         fullWidth
         size="lg"
@@ -343,12 +344,12 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
       <StepError error={localError ?? error} />
 
       {verified ? (
-        <Button label="Continuer" onPress={() => onDone()} fullWidth size="lg" loading={submitting} />
+        <Button label={tr('steps.continuer')} onPress={() => onDone()} fullWidth size="lg" loading={submitting} />
       ) : underReview ? (
         // Un examen humain est en cours : relancer créerait une seconde vérification pour rien.
         // Reste l'actualisation, pour ne pas dépendre du seul webhook.
         <Button
-          label="Actualiser"
+          label={tr('steps.actualiser')}
           onPress={() => refreshDecision()}
           variant="secondary"
           fullWidth
@@ -466,7 +467,7 @@ export function DocumentsStep({ onDone, submitting, error }: StepProps) {
 
   if (isLoading) {
     return (
-      <StepShell title="Vos justificatifs">
+      <StepShell title={tr('steps.vos_justificatifs')}>
         <Text style={styles.stepHint}>{tr('steps.chargement_des_pieces_demandees')}</Text>
       </StepShell>
     );
@@ -474,7 +475,7 @@ export function DocumentsStep({ onDone, submitting, error }: StepProps) {
 
   return (
     <StepShell
-      title="Vos justificatifs"
+      title={tr('steps.vos_justificatifs')}
       hint="Les pièces demandées dépendent de vos métiers. PDF, JPG ou PNG, 10 Mo maximum."
     >
       {requirements.map(requirement => {
@@ -529,7 +530,7 @@ export function DocumentsStep({ onDone, submitting, error }: StepProps) {
                 <Icon name="document-text-outline" size={18} color={colors.success[600]} />
                 <Text style={styles.fileName} numberOfLines={1}>{picked.name}</Text>
                 <Button
-                  label="Envoyer"
+                  label={tr('steps.envoyer')}
                   onPress={() => upload.mutate(requirement.type)}
                   variant="secondary"
                   loading={uploadingType === requirement.type}
@@ -538,13 +539,13 @@ export function DocumentsStep({ onDone, submitting, error }: StepProps) {
             ) : !document || rejected ? (
               <View style={styles.pickRow}>
                 <Button
-                  label="Prendre en photo"
+                  label={tr('steps.prendre_en_photo')}
                   onPress={() => choose(requirement.type, () => pickImage('camera'))}
                   variant="secondary"
                   fullWidth
                 />
                 <Button
-                  label="Choisir un fichier"
+                  label={tr('steps.choisir_un_fichier')}
                   onPress={() => choose(requirement.type, pickDocument)}
                   variant="secondary"
                   fullWidth
@@ -626,7 +627,7 @@ export function SkillsStep({ onDone, submitting, error }: StepProps) {
 
   return (
     <StepShell
-      title="Vos métiers"
+      title={tr('steps.vos_metiers')}
       hint="Ils déterminent les missions qui vous seront proposées, et où."
     >
       <View style={styles.tradeGrid}>
@@ -672,7 +673,7 @@ export function SkillsStep({ onDone, submitting, error }: StepProps) {
 
       <StepError error={localError ?? error} />
       <Button
-        label="Confirmer mes métiers"
+        label={tr('steps.confirmer_mes_metiers')}
         onPress={submit}
         fullWidth
         size="lg"
@@ -694,6 +695,7 @@ export function SkillsStep({ onDone, submitting, error }: StepProps) {
  * la voiture a pris la route.
  */
 export function VehicleStep({ onDone, submitting, error }: StepProps) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data, isLoading, refetch } = useVehicleDossier();
@@ -725,8 +727,8 @@ export function VehicleStep({ onDone, submitting, error }: StepProps) {
 
   if (isLoading) {
     return (
-      <StepShell title="Votre véhicule">
-        <Text style={styles.stepHint}>Chargement…</Text>
+      <StepShell title={tr('steps.votre_vehicule')}>
+        <Text style={styles.stepHint}>{tr('steps.chargement')}</Text>
       </StepShell>
     );
   }
@@ -734,10 +736,10 @@ export function VehicleStep({ onDone, submitting, error }: StepProps) {
   if (data && !data.required) {
     return (
       <StepShell
-        title="Votre véhicule"
+        title={tr('steps.votre_vehicule')}
         hint="Aucun de vos métiers n’exige de véhicule déclaré. Vous pouvez passer cette étape."
       >
-        <Button label="Continuer" onPress={() => onDone()} fullWidth size="lg" loading={submitting} />
+        <Button label={tr('steps.continuer')} onPress={() => onDone()} fullWidth size="lg" loading={submitting} />
       </StepShell>
     );
   }
@@ -762,14 +764,14 @@ export function VehicleStep({ onDone, submitting, error }: StepProps) {
 
   return (
     <StepShell
-      title="Votre véhicule"
+      title={tr('steps.votre_vehicule')}
       hint={`Exigé pour : ${(data?.trades ?? []).join(', ') || 'vos métiers de transport'}. Le véhicule doit avoir moins de ${data?.max_age_years ?? 4} ans.`}
     >
-      <TextInput label="Plaque d’immatriculation" value={plate} onChangeText={setPlate} autoCapitalize="characters" />
-      <TextInput label="Marque" value={brand} onChangeText={setBrand} />
-      <TextInput label="Modèle" value={model} onChangeText={setModel} />
+      <TextInput label={tr('steps.plaque_dimmatriculation')} value={plate} onChangeText={setPlate} autoCapitalize="characters" />
+      <TextInput label={tr('steps.marque')} value={brand} onChangeText={setBrand} />
+      <TextInput label={tr('steps.modele')} value={model} onChangeText={setModel} />
       <TextInput
-        label="Première immatriculation (AAAA-MM-JJ)"
+        label={tr('steps.premiere_immatriculation_aaaa_mm_jj')}
         value={registeredAt}
         onChangeText={setRegisteredAt}
         placeholder="2023-04-17"
@@ -789,7 +791,7 @@ export function VehicleStep({ onDone, submitting, error }: StepProps) {
 
       <StepError error={localError ?? error} />
       <Button
-        label="Enregistrer mon véhicule"
+        label={tr('steps.enregistrer_mon_vehicule')}
         onPress={submit}
         fullWidth
         size="lg"

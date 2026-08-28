@@ -12,6 +12,7 @@ import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 /**
  * L'ÉCRAN D'APPEL — audio d'abord, vidéo en bascule.
@@ -25,6 +26,7 @@ import type { RootStackParamList } from '@/navigation/types';
  * la salle sans avoir décroché. Demander le sien EST l'acte de décrocher, côté serveur.
  */
 export function CallScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'Call'>>();
@@ -96,7 +98,7 @@ export function CallScreen() {
   if (callId === null) {
     return (
       <Screen>
-        <EmptyState title="Appel introuvable" message="Cet appel n'existe plus." />
+        <EmptyState title={tr('call.appel_introuvable')} message="Cet appel n'existe plus." />
       </Screen>
     );
   }
@@ -119,7 +121,7 @@ export function CallScreen() {
 
         <View style={styles.actions}>
           <Button
-            label="Raccrocher"
+            label={tr('call.raccrocher')}
             variant="danger"
             fullWidth
             onPress={() => {

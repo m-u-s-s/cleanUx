@@ -7,6 +7,7 @@
  * fichiers qui doivent s'accorder, et aucun compilateur ne le vérifie.
  */
 import fs from 'fs';
+import { fr } from '@/i18n/catalogues/fr';
 import path from 'path';
 
 const RACINE = path.join(__dirname, '..', '..');
@@ -119,7 +120,9 @@ describe('catalogue mobile — ce que les écrans promettent', () => {
      * autrement : les actions vivent derrière un menu plutôt qu'alignées sous le pouce, et toute
      * action destructive passe par une confirmation.
      */
-    expect(ecran).toContain('Ajouter un pays');
+    // Le libellé vit désormais dans le catalogue : on vérifie la clé ET ce qu'elle rend.
+    expect(ecran).toContain("tr('catalog_countries.ajouter_un_pays')");
+    expect(fr['catalog_countries.ajouter_un_pays']).toBe('Ajouter un pays');
     expect(ecran).toContain("libelle: 'Supprimer', destructive: true");
   });
 

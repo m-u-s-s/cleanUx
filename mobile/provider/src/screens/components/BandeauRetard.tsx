@@ -5,6 +5,7 @@ import { useMonRetard, useAnnoncerMonRetard } from '@/missions';
 import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * « VOUS AVEZ 22 MIN DE RETARD — ET LE CLIENT LE SAIT DEPUIS 14 H 12 ».
@@ -22,6 +23,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
  * tronque à 180 caractères, on veut « embouteillage », pas un récit.
  */
 export function BandeauRetard({ missionId }: { missionId: number }) {
+  const { t: tr } = useTraduction();
   const t = useThemeColors();
   const styles = stylesFor(t);
 
@@ -72,10 +74,10 @@ export function BandeauRetard({ missionId }: { missionId: number }) {
       ) : null}
 
       <TextInput
-        label="Motif (facultatif)"
+        label={tr('bandeau_retard.motif_facultatif')}
         value={motif}
         onChangeText={setMotif}
-        placeholder="Embouteillage, chantier précédent…"
+        placeholder={tr('bandeau_retard.embouteillage_chantier_precedent')}
         testID="retard-motif"
       />
 

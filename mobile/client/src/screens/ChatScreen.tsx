@@ -15,10 +15,12 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Chat'>;
 
 export function ChatScreen({ route }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { threadId } = route.params;
@@ -77,11 +79,11 @@ export function ChatScreen({ route }: Props) {
             label=""
             value={text}
             onChangeText={setText}
-            placeholder="Message…"
+            placeholder={tr('chat.message')}
           />
         </View>
         <Button
-          label="Envoyer"
+          label={tr('chat.envoyer')}
           onPress={handleSend}
           size="sm"
           disabled={!text.trim()}

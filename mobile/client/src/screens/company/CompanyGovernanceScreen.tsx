@@ -90,7 +90,7 @@ export function CompanyGovernanceScreen() {
   return (
     <Screen>
       <ScrollView>
-        <Text style={styles.title}>Pilotage</Text>
+        <Text style={styles.title}>{tr('company_governance.pilotage')}</Text>
         <Text style={styles.intro}>
           {tr('company_governance.budgets_approbations_et_niveau_de')}
         </Text>
@@ -111,13 +111,13 @@ export function CompanyGovernanceScreen() {
               </View>
 
               <Button
-                label="Approuver"
+                label={tr('company_governance.approuver')}
                 size="sm"
                 onPress={() => decider.mutate({ id: demande.id, approve: true })}
                 testID={`approuver-${demande.id}`}
               />
               <Button
-                label="Refuser"
+                label={tr('company_governance.refuser')}
                 size="sm"
                 variant="ghost"
                 onPress={() => decider.mutate({ id: demande.id, approve: false })}

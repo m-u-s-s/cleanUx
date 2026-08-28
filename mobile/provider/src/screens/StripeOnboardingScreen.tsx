@@ -33,7 +33,7 @@ export function StripeOnboardingScreen() {
       <Text style={styles.title}>{tr('stripe_onboarding.stripe_connect')}</Text>
       {status?.onboarded ? (
         <View style={styles.statusCard}>
-          <Badge label="Onboarded" variant="success" />
+          <Badge label={tr('stripe_onboarding.onboarded')} variant="success" />
           <Text style={styles.statusText}>
             Charges: {status.charges_enabled ? '✓' : '✗'} | Payouts: {status.payouts_enabled ? '✓' : '✗'}
           </Text>
@@ -47,7 +47,7 @@ export function StripeOnboardingScreen() {
             {tr('stripe_onboarding.connectez_votre_compte_stripe_pour')}
           </Text>
           <Button
-            label="Configurer Stripe"
+            label={tr('stripe_onboarding.configurer_stripe')}
             onPress={handleOnboard}
             fullWidth
             loading={onboard.isPending}

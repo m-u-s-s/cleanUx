@@ -124,7 +124,7 @@ export function NotificationDetailView({ id, onOpenPath }: NotificationDetailVie
 
       {contexte.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Informations</Text>
+          <Text style={styles.sectionTitle}>{tr('notification_detail.informations')}</Text>
           {contexte.map(([cle, valeur]) => (
             <DetailRow key={cle} label={contextLabel(cle)} value={String(valeur)} />
           ))}
@@ -133,10 +133,10 @@ export function NotificationDetailView({ id, onOpenPath }: NotificationDetailVie
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{tr('notification_detail.tracabilite')}</Text>
-        <DetailRow label="Référence" value={notif.id} />
-        <DetailRow label="Source" value={notif.type} />
+        <DetailRow label={tr('notification_detail.reference')} value={notif.id} />
+        <DetailRow label={tr('notification_detail.source')} value={notif.type} />
         <DetailRow
-          label="Lue le"
+          label={tr('notification_detail.lue_le')}
           value={notif.read_at ? formatNotificationDate(notif.read_at, true) : 'Non lue'}
         />
       </View>

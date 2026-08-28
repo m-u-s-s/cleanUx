@@ -78,7 +78,7 @@ export function ProtectionScreen() {
         </Text>
 
         <View style={styles.bloc} testID="assurance">
-          <Text style={styles.sousTitre}>Assurance</Text>
+          <Text style={styles.sousTitre}>{tr('protection.assurance')}</Text>
 
           {(protection?.insurance.policies ?? []).map((police) => (
             <View key={police.id} style={styles.ligne} testID={`police-${police.id}`}>

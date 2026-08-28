@@ -9,10 +9,12 @@ import { useCurrentPosition, distanceKmTo } from '@/tracking';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { formatAdresse, formatDateHeure } from '@brio/shared/format';
+import { useTraduction } from '@/i18n';
 
 const MISSION_CARD_HEIGHT = 120;
 
 export function MissionInboxScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   // Pas de transition quand l’utilisateur a réduit les mouvements.
@@ -62,9 +64,9 @@ export function MissionInboxScreen() {
           return km == null ? null : <Badge label={`${km.toFixed(1)} km`} variant="brand" />;
         })()}
         <View style={styles.actions}>
-          <Button label="Accepter" onPress={() => handleAccept(item)} size="sm" />
+          <Button label={tr('mission_inbox.accepter')} onPress={() => handleAccept(item)} size="sm" />
           <Button
-            label="Décliner"
+            label={tr('mission_inbox.decliner')}
             onPress={() => handleDecline(item)}
             variant="ghost"
             size="sm"
@@ -101,7 +103,7 @@ export function MissionInboxScreen() {
             keyExtractor={i => String(i.id)}
             renderItem={renderMissionCard}
             getItemLayout={getItemLayout}
-            accessibilityLabel="Liste des missions disponibles"
+            accessibilityLabel={tr('mission_inbox.liste_des_missions_disponibles')}
             refreshControl={
               <RefreshControl
                 refreshing={isRefetching}
@@ -110,7 +112,7 @@ export function MissionInboxScreen() {
                 colors={[colors.brand[500]]}
               />
             }
-            ListEmptyComponent={<EmptyState title="Aucune mission en attente" message="Les nouvelles missions vous seront proposées ici." />}
+            ListEmptyComponent={<EmptyState title={tr('mission_inbox.aucune_mission_en_attente')} message="Les nouvelles missions vous seront proposées ici." />}
           />
         </Animated.View>
       )}

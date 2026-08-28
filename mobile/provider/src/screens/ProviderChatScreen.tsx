@@ -16,10 +16,12 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 import { useEffect } from 'react';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ProviderChat'>;
 
 export function ProviderChatScreen({ route }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { threadId } = route.params;
@@ -78,11 +80,11 @@ export function ProviderChatScreen({ route }: Props) {
             label=""
             value={text}
             onChangeText={setText}
-            placeholder="Message…"
+            placeholder={tr('provider_chat.message')}
           />
         </View>
         <Button
-          label="Envoyer"
+          label={tr('provider_chat.envoyer')}
           onPress={handleSend}
           size="sm"
           disabled={!text.trim()}

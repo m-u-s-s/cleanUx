@@ -138,7 +138,7 @@ export function CompanyDispatchScreen() {
       {peutRepartir && (
         <View style={styles.commandes}>
           <Button
-            label="Assigner les missions sans personne"
+            label={tr('company_dispatch.assigner_les_missions_sans_personne')}
             size="sm"
             fullWidth
             onPress={() => lancerAuto.mutate()}
@@ -197,7 +197,7 @@ export function CompanyDispatchScreen() {
                 onPress={() => navigation.navigate('CompanyMissionDetail', { missionId: item.id })}
               />
               <Button
-                label="Équipe"
+                label={tr('company_dispatch.equipe')}
                 size="sm"
                 variant="ghost"
                 onPress={() => proposerLEquipe(item)}
@@ -206,7 +206,7 @@ export function CompanyDispatchScreen() {
           </View>
         )}
         ListEmptyComponent={
-          <EmptyState title="Aucune mission" message="Les missions confiées à votre société apparaîtront ici." />
+          <EmptyState title={tr('company_dispatch.aucune_mission')} message="Les missions confiées à votre société apparaîtront ici." />
         }
       />
     </Screen>

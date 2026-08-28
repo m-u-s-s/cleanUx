@@ -78,7 +78,7 @@ export function FieldQuoteRevision({
           {euros(revision.original_total_cents, revision.currency)}.
         </Text>
         <Button
-          label="Retirer ma proposition"
+          label={tr('field_quote_revision.retirer_ma_proposition')}
           variant="secondary"
           onPress={() =>
             retirer.mutate(revision.id, {
@@ -203,10 +203,10 @@ export function FieldQuoteRevision({
       />
 
       <TextInput
-        label="Ce que vous constatez"
+        label={tr('field_quote_revision.ce_que_vous_constatez')}
         value={motif}
         onChangeText={setMotif}
-        placeholder="Deux cents mètres carrés annoncés vingt."
+        placeholder={tr('field_quote_revision.deux_cents_metres_carres_annonces')}
         multiline
         testID="revision-motif"
       />
@@ -219,14 +219,14 @@ export function FieldQuoteRevision({
 
       <View style={styles.actions}>
         <Button
-          label="Simuler"
+          label={tr('field_quote_revision.simuler')}
           variant="secondary"
           onPress={simulation}
           loading={simuler.isPending}
           testID="revision-simuler"
         />
         <Button
-          label="Envoyer au client"
+          label={tr('field_quote_revision.envoyer_au_client')}
           onPress={envoyer}
           loading={proposer.isPending}
           testID="revision-envoyer"
@@ -241,7 +241,7 @@ export function FieldQuoteRevision({
         renégociation, celle qui met le client sous pression.
       */}
       <Button
-        label="Ou demander du renfort"
+        label={tr('field_quote_revision.ou_demander_du_renfort')}
         variant="secondary"
         onPress={demanderDuRenfort}
         loading={renfort.isPending}

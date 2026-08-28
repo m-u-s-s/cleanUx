@@ -79,7 +79,7 @@ export function ProfileEditScreen({ navigation }: Props) {
       <View style={styles.form}>
         <TextInput label="Nom" value={name} onChangeText={setName} autoFocus returnKeyType="next" onSubmitEditing={() => phoneRef.current?.focus()} />
         <TextInput ref={phoneRef} label={tr('profile_edit.telephone')} value={phone} onChangeText={setPhone} keyboardType="phone-pad" returnKeyType="done" />
-        <Button label="Enregistrer" onPress={handleSave} fullWidth loading={saving} />
+        <Button label={tr('profile_edit.enregistrer')} onPress={handleSave} fullWidth loading={saving} />
       </View>
     </Screen>
   );

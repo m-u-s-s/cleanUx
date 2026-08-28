@@ -77,7 +77,7 @@ export function CompanyQuotesScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Devis</Text>
+      <Text style={styles.title}>{tr('company_quotes.devis')}</Text>
       <Text style={styles.intro}>
         {tr('company_quotes.chiffrez_pendant_la_visite_accepte')}
       </Text>
@@ -87,13 +87,13 @@ export function CompanyQuotesScreen() {
           <TextInput
             value={titre}
             onChangeText={setTitre}
-            placeholder="Objet du devis"
+            placeholder={tr('company_quotes.objet_du_devis')}
             placeholderTextColor={styles.placeholder.color}
             style={styles.champ}
             testID="champ-titre-devis"
           />
           <Button
-            label="Ouvrir le brouillon"
+            label={tr('company_quotes.ouvrir_le_brouillon')}
             size="sm"
             fullWidth
             disabled={titre.trim().length === 0 || creer.isPending}
@@ -135,7 +135,7 @@ export function CompanyQuotesScreen() {
             {/* Un devis envoyé ne se modifie plus : le bouton disparaît avec le brouillon. */}
             {peutGerer && item.status === 'draft' && (
               <Button
-                label="Envoyer"
+                label={tr('company_quotes.envoyer')}
                 size="sm"
                 onPress={() => envoyer.mutate(item.id)}
                 testID={`envoyer-devis-${item.id}`}
@@ -145,7 +145,7 @@ export function CompanyQuotesScreen() {
         )}
         ListEmptyComponent={
           <EmptyState
-            title="Aucun devis"
+            title={tr('company_quotes.aucun_devis')}
             message="Jusqu'ici, seul un administrateur pouvait en saisir un pour vous."
           />
         }

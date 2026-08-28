@@ -6,6 +6,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { FieldInput } from './FieldInput';
 import type { ResourceAction } from './types';
+import { useTraduction } from '@/i18n';
 
 /**
  * La feuille de saisie d'une action qui exige des valeurs.
@@ -38,6 +39,7 @@ export function ActionInputSheet({
   onCancel: () => void;
   onSubmit: (values: Record<string, unknown>) => void;
 }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const [valeurs, setValeurs] = useState<Record<string, unknown>>({});
@@ -87,7 +89,7 @@ export function ActionInputSheet({
                 />
               </View>
               <Button
-                label="Annuler"
+                label={tr('action_input.annuler')}
                 variant="ghost"
                 fullWidth
                 onPress={() => {

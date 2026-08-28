@@ -9,6 +9,7 @@ import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 interface AccueilSociete {
   organization: { id: number; name: string };
@@ -34,6 +35,7 @@ interface AccueilSociete {
  * demandait quatre requêtes et autant d'occasions de dériver de ce que l'écran web affiche.
  */
 export function CompanyOverviewScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -46,7 +48,7 @@ export function CompanyOverviewScreen() {
     return (
       <Screen>
         <EmptyState
-          title="Espace indisponible"
+          title={tr('company_overview.espace_indisponible')}
           message="Impossible de charger le résumé de votre société."
           actionLabel="Réessayer"
           onAction={() => void refetch()}
@@ -64,14 +66,14 @@ export function CompanyOverviewScreen() {
 
         <View style={styles.grille}>
           <View style={styles.kpi}>
-            <KPICard title="Aujourd’hui" value={kpis?.missions_today ?? 0} loading={!kpis} />
+            <KPICard title={tr('company_overview.aujourdhui')} value={kpis?.missions_today ?? 0} loading={!kpis} />
           </View>
           <View style={styles.kpi}>
-            <KPICard title="En cours" value={kpis?.missions_active ?? 0} loading={!kpis} />
+            <KPICard title={tr('company_overview.en_cours')} value={kpis?.missions_active ?? 0} loading={!kpis} />
           </View>
           <View style={styles.kpi}>
             <KPICard
-              title="En retard"
+              title={tr('company_overview.en_retard')}
               value={kpis?.missions_delayed ?? 0}
               tone={kpis && kpis.missions_delayed > 0 ? 'danger' : 'neutral'}
               loading={!kpis}
@@ -83,30 +85,30 @@ export function CompanyOverviewScreen() {
               client qui découvrira l'absence le matin même.
             */}
             <KPICard
-              title="Sans personne"
+              title={tr('company_overview.sans_personne')}
               value={kpis?.missions_unassigned ?? 0}
               tone={kpis && kpis.missions_unassigned > 0 ? 'warning' : 'neutral'}
               loading={!kpis}
             />
           </View>
           <View style={styles.kpi}>
-            <KPICard title="Équipe" value={kpis?.members_active ?? 0} loading={!kpis} />
+            <KPICard title={tr('company_overview.equipe')} value={kpis?.members_active ?? 0} loading={!kpis} />
           </View>
           <View style={styles.kpi}>
-            <KPICard title="Tâches" value={kpis?.open_tasks ?? 0} loading={!kpis} />
+            <KPICard title={tr('company_overview.taches')} value={kpis?.open_tasks ?? 0} loading={!kpis} />
           </View>
         </View>
 
         <View style={styles.action}>
           <Button
-            label="Répartir les missions"
+            label={tr('company_overview.repartir_les_missions')}
             fullWidth
             onPress={() => navigation.navigate('CompanyDispatch')}
           />
         </View>
         <View style={styles.action}>
           <Button
-            label="Sites desservis"
+            label={tr('company_overview.sites_desservis')}
             variant="secondary"
             fullWidth
             onPress={() => navigation.navigate('CompanySites')}
@@ -114,7 +116,7 @@ export function CompanyOverviewScreen() {
         </View>
         <View style={styles.action}>
           <Button
-            label="Équipe"
+            label={tr('company_overview.equipe')}
             variant="secondary"
             fullWidth
             onPress={() => navigation.navigate('CompanyMembers')}
@@ -123,7 +125,7 @@ export function CompanyOverviewScreen() {
 
         <View style={styles.action}>
           <Button
-            label="Rafraîchir"
+            label={tr('company_overview.rafraichir')}
             variant="ghost"
             fullWidth
             disabled={isRefetching}

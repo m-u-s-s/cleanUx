@@ -55,7 +55,7 @@ export function NotificationsScreen() {
         >
           <View style={styles.badges}>
             <Badge label={item.label} variant={severityVariant(item.severity)} />
-            {nonLue && <Badge label="Nouveau" variant="brand" />}
+            {nonLue && <Badge label={tr('notifications.nouveau')} variant="brand" />}
           </View>
 
           <Text style={styles.notifTitle}>{item.title}</Text>
@@ -72,7 +72,7 @@ export function NotificationsScreen() {
   return (
     <Screen>
       <View style={styles.header}>
-        <Text style={styles.title} accessibilityRole="header">Notifications</Text>
+        <Text style={styles.title} accessibilityRole="header">{tr('notifications.notifications')}</Text>
         {unreadCount > 0 && (
           <Button
             label={tr('notifications.tout_marquer_lu')}
