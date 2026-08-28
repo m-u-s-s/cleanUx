@@ -3,6 +3,7 @@
     'subtitle' => null,
     'eyebrow' => null,
     'actions' => null,
+    'typed' => false,
 ])
 
 <div class="brio-hero">
@@ -17,7 +18,12 @@
                  regle par element est `h1, h2, h3, h4 { color }`, et Tailwind remet la taille a
                  `inherit` — ce sont les classes qui la portent. --}}
             <h1 class="mt-3 text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
-                {{ $title }}
+                {{-- `typed` fait s ecrire le titre lettre par lettre ; sans lui, texte nu. --}}
+                @if($typed)
+                    <x-ui.typed-text :text="$title" />
+                @else
+                    {{ $title }}
+                @endif
             </h1>
 
             @if($subtitle)

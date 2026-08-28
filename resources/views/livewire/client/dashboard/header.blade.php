@@ -1,4 +1,5 @@
 <x-page-shell
+    typed
     :eyebrow="__('Espace client')"
     :title="$salutation"
     :subtitle="$isPremium
