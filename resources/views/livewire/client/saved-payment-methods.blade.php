@@ -8,11 +8,12 @@
     La suppression passait par `wire:confirm`, qui ouvre la boite grise du navigateur.
     Elle passe par une modale de verre — meme garde-fou, sans la rupture visuelle.
 --}}
-<div class="brio-page mx-auto max-w-3xl px-4 py-8" x-data="{ aSupprimer: null, marque: '', quatre: '' }">
-    <div class="mb-7 flex flex-wrap items-end justify-between gap-4">
+{{-- SECTION, PLUS PAGE : le portefeuille la monte, les cartes n'ont plus de route a elles. --}}
+<div x-data="{ aSupprimer: null, marque: '', quatre: '' }">
+    <div class="mb-5 flex flex-wrap items-end justify-between gap-4">
         <div>
-            <p class="brio-eyebrow">Paiement</p>
-            <h1>Mes cartes bancaires</h1>
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ __('Mes moyens de paiement') }}</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400">{{ __('Vos cartes enregistrées, pour payer sans les ressaisir.') }}</p>
         </div>
 
         <button type="button" wire:click="startAdd" class="brio-btn brio-btn-accent">

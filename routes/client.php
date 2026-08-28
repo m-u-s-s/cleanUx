@@ -35,7 +35,6 @@ use App\Livewire\Client\ProfilClient;
 use App\Livewire\Client\ProfileEdit;
 use App\Livewire\Client\ReceivedQuotes;
 use App\Livewire\Client\ReferralProgramPage;
-use App\Livewire\Client\SavedPaymentMethods;
 use App\Livewire\Client\Templates\RecurringTemplatesGallery;
 use App\Livewire\Client\WalletClient;
 use App\Livewire\ClientCompany\Analytics\ClientAnalyticsDashboard;
@@ -227,11 +226,6 @@ Route::middleware(['role:client'])
         if (class_exists(BookingCheckout::class)) {
             Route::get('/missions/{bookingId}/checkout', BookingCheckout::class)
                 ->name('booking.checkout');
-        }
-
-        if (class_exists(SavedPaymentMethods::class)) {
-            Route::get('/paiement/cartes', SavedPaymentMethods::class)
-                ->name('payment.methods');
         }
 
         if (class_exists(ProfileEdit::class)) {

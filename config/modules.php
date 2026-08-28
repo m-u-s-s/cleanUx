@@ -102,7 +102,6 @@ return [
          * d'annulation en annulant.
          */
         ['key' => 'client:client.protection', 'label' => 'Ma protection', 'icon' => '🛡️', 'route' => 'client.protection', 'context' => 'client', 'category' => 'qualite', 'primary' => false],
-        ['key' => 'client:client.payment.methods', 'label' => 'Cartes bancaires', 'icon' => '💳', 'route' => 'client.payment.methods', 'context' => 'client', 'category' => 'finance', 'primary' => false],
         ['key' => 'client:client.subscriptions-v2', 'label' => 'Abonnements', 'icon' => '🔄', 'route' => 'client.subscriptions-v2', 'context' => 'client', 'category' => 'finance', 'primary' => false],
         /*
          * NOS LOCATIONS -- l'entree cliente vers le catalogue de vehicules.

@@ -4,6 +4,11 @@
 
     {{-- La coquille de page n'espace pas ses enfants : le groupe porte l'ecart. --}}
     <div class="space-y-6">
+
+        {{-- LES CARTES ET LES CREDITS SONT LE MEME ESPACE : deux moities jamais reunies. --}}
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+            <livewire:client.saved-payment-methods />
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="md:col-span-1 rounded-2xl bg-blue-600 text-white p-6 shadow">
                 <p class="text-sm opacity-80">Solde disponible</p>
