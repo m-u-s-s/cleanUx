@@ -18,14 +18,14 @@ export function ForgotPasswordScreen({ navigation }: Props) {
   });
 
   const handleSubmit = async () => {
-    if (!email) { Alert.alert('Erreur', 'Veuillez entrer votre email.'); return; }
+    if (!email) { Alert.alert(tr('forgot_password.erreur'), tr('forgot_password.veuillez_entrer_votre_email')); return; }
     try {
       await reset.mutateAsync(email);
-      Alert.alert('Email envoyé', 'Si ce compte existe, un lien de réinitialisation a été envoyé.', [
+      Alert.alert(tr('forgot_password.email_envoye'), tr('forgot_password.si_ce_compte_existe_un'), [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (e: any) {
-      Alert.alert('Erreur', messageDErreur(e, "Impossible d'envoyer le lien."));
+      Alert.alert(tr('forgot_password.erreur'), messageDErreur(e, "Impossible d'envoyer le lien."));
     }
   };
 

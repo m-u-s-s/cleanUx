@@ -68,7 +68,7 @@ export function CompanySitesScreen() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['company', 'sites'] }),
     onError: (erreur: any) =>
       Alert.alert(
-        'Action refusée',
+        tr('company_sites.action_refusee'),
         erreur?.data?.message ?? 'Votre rôle ne permet pas de désigner un référent.',
       ),
   });

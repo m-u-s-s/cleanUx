@@ -57,7 +57,7 @@ export function CompanyTasksScreen() {
       setTitre('');
       qc.invalidateQueries({ queryKey: ['company', 'tasks'] });
     },
-    onError: () => Alert.alert('Création refusée', 'Votre rôle ne permet pas de créer une tâche.'),
+    onError: () => Alert.alert(tr('company_tasks.creation_refusee'), tr('company_tasks.votre_role_ne_permet_pas')),
   });
 
   const deplacer = useMutation({
@@ -65,7 +65,7 @@ export function CompanyTasksScreen() {
       await apiClient.patch(`/provider/company/tasks/${id}`, { status });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['company', 'tasks'] }),
-    onError: () => Alert.alert('Déplacement refusé', 'Votre rôle ne permet pas cette action.'),
+    onError: () => Alert.alert(tr('company_tasks.deplacement_refuse'), tr('company_tasks.votre_role_ne_permet_pas_2')),
   });
 
   return (

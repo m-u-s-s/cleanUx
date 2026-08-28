@@ -71,7 +71,7 @@ export function CompanyPlanningScreen() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['company', 'shifts'] }),
     onError: (erreur: any) =>
       Alert.alert(
-        'Publication refusée',
+        tr('company_planning.publication_refusee'),
         erreur?.data?.message ?? 'Votre rôle ne permet pas de publier le planning.',
       ),
   });
@@ -90,7 +90,7 @@ export function CompanyPlanningScreen() {
     onError: (erreur: any) =>
       // Un refus du domaine — dates qui se chevauchent, fin avant début — est une réponse, pas une
       // panne : on affiche la règle plutôt qu'« une erreur est survenue ».
-      Alert.alert('Demande refusée', erreur?.data?.message ?? 'Vérifiez les dates saisies.'),
+      Alert.alert(tr('company_planning.demande_refusee'), erreur?.data?.message ?? 'Vérifiez les dates saisies.'),
   });
 
   const statuer = useMutation({
@@ -101,7 +101,7 @@ export function CompanyPlanningScreen() {
       qc.invalidateQueries({ queryKey: ['company', 'shifts'] });
     },
     onError: (erreur: any) =>
-      Alert.alert('Décision refusée', erreur?.data?.message ?? 'Votre rôle ne permet pas cette action.'),
+      Alert.alert(tr('company_planning.decision_refusee'), erreur?.data?.message ?? 'Votre rôle ne permet pas cette action.'),
   });
 
   const enAttente = (absences ?? []).filter((a) => a.status === 'pending');

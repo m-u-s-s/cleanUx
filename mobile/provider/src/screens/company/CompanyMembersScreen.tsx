@@ -102,7 +102,7 @@ export function CompanyMembersScreen() {
     },
     onError: (erreur: any) => {
       Alert.alert(
-        'Action impossible',
+        tr('company_members.action_impossible'),
         erreur?.data?.message ?? erreur?.message ?? "L'action n'a pas pu être effectuée.",
       );
     },
@@ -126,7 +126,7 @@ export function CompanyMembersScreen() {
    */
   const retirer = (membre: Membre) =>
     Alert.alert(
-      'Retirer ce membre ?',
+      tr('company_members.retirer_ce_membre'),
       `${membre.name ?? 'Ce compte'} perdra l'accès, ses missions à venir retourneront à la répartition et il quittera les canaux de la société. Son historique est conservé.`,
       [
         { text: 'Annuler', style: 'cancel' },

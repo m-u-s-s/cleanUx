@@ -83,14 +83,14 @@ export function ReceivedQuotesScreen() {
 
         // Accepter CRÉE le travail : le dire évite que le client croie n'avoir signé qu'un papier.
         Alert.alert(
-          'Devis accepté',
+          tr('received_quotes.devis_accepte'),
           `${crees} rendez-vous créé(s). Le prestataire vous contactera pour les planifier.`,
         );
       }
     },
     onError: (erreur: any) =>
       // « Ce devis n'est plus valable » est une réponse, pas une panne.
-      Alert.alert('Action refusée', erreur?.data?.message ?? 'Le devis n’a pas pu être traité.'),
+      Alert.alert(tr('received_quotes.action_refusee'), erreur?.data?.message ?? 'Le devis n’a pas pu être traité.'),
   });
 
   return (

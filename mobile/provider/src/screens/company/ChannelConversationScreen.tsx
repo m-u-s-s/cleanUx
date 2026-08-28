@@ -74,7 +74,7 @@ export function ChannelConversationScreen() {
    */
   const ecouter = useCallback(async (message: MessageCanal) => {
     if (!message.audio_url) {
-      Alert.alert('Indisponible', 'Cette note vocale n’est pas encore prête à l’écoute.');
+      Alert.alert(tr('channel_conversation.indisponible'), tr('channel_conversation.cette_note_vocale_nest_pas'));
       return;
     }
 
@@ -84,7 +84,7 @@ export function ChannelConversationScreen() {
 
     if (!lecteur) {
       setEnLecture(null);
-      Alert.alert('Lecture impossible', 'Le son n’a pas pu être ouvert sur cet appareil.');
+      Alert.alert(tr('channel_conversation.lecture_impossible'), tr('channel_conversation.le_son_na_pas_pu'));
       return;
     }
 
@@ -155,7 +155,7 @@ export function ChannelConversationScreen() {
       }),
     onError: (erreur: any) =>
       Alert.alert(
-        'Appel impossible',
+        tr('channel_conversation.appel_impossible'),
         erreur?.data?.message ?? "Les appels ne sont pas disponibles sur cette instance.",
       ),
   });
@@ -171,7 +171,7 @@ export function ChannelConversationScreen() {
       apiClient.post(`/provider/company/channels/${canalId}/read`).catch(() => undefined);
     },
     onError: (erreur: any) =>
-      Alert.alert('Envoi refusé', erreur?.data?.message ?? "Le message n'a pas pu être envoyé."),
+      Alert.alert(tr('channel_conversation.envoi_refuse'), erreur?.data?.message ?? "Le message n'a pas pu être envoyé."),
   });
 
   const gererParticipant = useMutation({
@@ -183,7 +183,7 @@ export function ChannelConversationScreen() {
           }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['company', 'channel-members', canalId] }),
     onError: (erreur: any) =>
-      Alert.alert('Action refusée', erreur?.data?.message ?? 'Vous ne gérez pas ce canal.'),
+      Alert.alert(tr('channel_conversation.action_refusee'), erreur?.data?.message ?? 'Vous ne gérez pas ce canal.'),
   });
 
   const envoyerLaNote = useMutation({
@@ -204,7 +204,7 @@ export function ChannelConversationScreen() {
     onSuccess: () => qc.invalidateQueries({ queryKey: cleMessages }),
     onError: (erreur: any) =>
       Alert.alert(
-        'Note vocale impossible',
+        tr('channel_conversation.note_vocale_impossible'),
         erreur?.data?.message ?? "L'enregistrement n'a pas pu être envoyé.",
       ),
   });

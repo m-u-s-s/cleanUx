@@ -24,7 +24,7 @@ export function StripeOnboardingScreen() {
       const res = await onboard.mutateAsync();
       if (res.url) await Linking.openURL(res.url);
     } catch (e: any) {
-      Alert.alert('Erreur', messageDErreur(e));
+      Alert.alert(tr('stripe_onboarding.erreur'), messageDErreur(e));
     }
   };
 

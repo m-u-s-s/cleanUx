@@ -63,7 +63,7 @@ export function CompanyQuotesScreen() {
       qc.invalidateQueries({ queryKey: ['company', 'quotes'] });
     },
     onError: (erreur: any) =>
-      Alert.alert('Création refusée', erreur?.data?.message ?? 'Votre rôle ne permet pas de chiffrer.'),
+      Alert.alert(tr('company_quotes.creation_refusee'), erreur?.data?.message ?? 'Votre rôle ne permet pas de chiffrer.'),
   });
 
   const envoyer = useMutation({
@@ -72,7 +72,7 @@ export function CompanyQuotesScreen() {
     onError: (erreur: any) =>
       // « Un devis sans ligne n'a rien à proposer » est une règle à LIRE : la remplacer par « une
       // erreur est survenue » ferait recommencer la saisie.
-      Alert.alert('Envoi refusé', erreur?.data?.message ?? 'Le devis n’a pas pu être envoyé.'),
+      Alert.alert(tr('company_quotes.envoi_refuse'), erreur?.data?.message ?? 'Le devis n’a pas pu être envoyé.'),
   });
 
   return (

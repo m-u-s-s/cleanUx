@@ -164,7 +164,7 @@ export function CatalogZoneTradesScreen() {
                 // Le refus du serveur — métier fermé dans la zone, compte en lecture seule —
                 // doit s'afficher : sans cela, le bouton semble ne rien faire.
                 onError: (erreur) =>
-                  Alert.alert('Impossible', messageDErreur(erreur, 'Le tarif n’a pas été enregistré.')),
+                  Alert.alert(tr('catalog_zone_trades.impossible'), messageDErreur(erreur, 'Le tarif n’a pas été enregistré.')),
               },
             )
           }

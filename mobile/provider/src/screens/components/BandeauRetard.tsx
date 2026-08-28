@@ -39,9 +39,9 @@ export function BandeauRetard({ missionId }: { missionId: number }) {
     annoncer.mutate(
       { minutes, reason: motif.trim() === '' ? undefined : motif.trim() },
       {
-        onSuccess: () => Alert.alert('Client prévenu', `Votre arrivée est annoncée dans ${minutes} min.`),
+        onSuccess: () => Alert.alert(tr('bandeau_retard.client_prevenu'), `Votre arrivée est annoncée dans ${minutes} min.`),
         onError: (e: { message?: string }) =>
-          Alert.alert('Impossible', e.message ?? 'L’annonce n’est pas partie.'),
+          Alert.alert(tr('bandeau_retard.impossible'), e.message ?? 'L’annonce n’est pas partie.'),
       },
     );
 

@@ -16,7 +16,7 @@ export function LoyaltyScreen() {
   const themeColors = useThemeColors();
 
   const handleRedeem = (rewardId: number, rewardName: string) => {
-    Alert.alert('Échanger cette récompense ?', rewardName, [
+    Alert.alert(tr('loyalty.echanger_cette_recompense'), rewardName, [
       { text: 'Annuler', style: 'cancel' },
       {
         text: 'Échanger',
@@ -24,12 +24,12 @@ export function LoyaltyScreen() {
           redeem.mutate(rewardId, {
             onSuccess: (result) =>
               Alert.alert(
-                'Échange confirmé 🎉',
+                tr('loyalty.echange_confirme'),
                 result.voucher_code
                   ? `Votre code : ${result.voucher_code}`
                   : 'Votre récompense est en cours de traitement.',
               ),
-            onError: () => Alert.alert('Échec', "L'échange n'a pas pu être effectué. Réessayez."),
+            onError: () => Alert.alert(tr('loyalty.echec'), tr('loyalty.l_echange_n_a_pas')),
           }),
       },
     ]);

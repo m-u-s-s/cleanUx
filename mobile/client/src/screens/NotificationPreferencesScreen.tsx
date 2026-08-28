@@ -93,9 +93,9 @@ export function NotificationPreferencesScreen() {
     onSuccess: async () => {
       setEdits({});
       await queryClient.invalidateQueries({ queryKey: ['notification-preferences'] });
-      Alert.alert('Enregistré', 'Vos préférences ont été mises à jour.');
+      Alert.alert(tr('notification_preferences.enregistre'), tr('notification_preferences.vos_preferences_ont_ete_mises'));
     },
-    onError: () => Alert.alert('Erreur', "Impossible d'enregistrer vos préférences."),
+    onError: () => Alert.alert(tr('notification_preferences.erreur'), tr('notification_preferences.impossible_d_enregistrer_vos_preferences')),
   });
 
   if (isLoading) {

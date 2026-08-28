@@ -107,7 +107,7 @@ export function OfferModal({ offer, onDismiss }: Props) {
       onError: () => {
         // 409 : quelqu'un a été plus rapide. Ce n'est PAS une panne, et le dire autrement ferait
         // croire à un bug de l'application.
-        Alert.alert('Course déjà prise', 'Un autre professionnel a accepté avant vous.');
+        Alert.alert(tr('offer_modal.course_deja_prise'), tr('offer_modal.un_autre_professionnel_a_accepte'));
         onDismiss(offer.assignment_id);
       },
     });

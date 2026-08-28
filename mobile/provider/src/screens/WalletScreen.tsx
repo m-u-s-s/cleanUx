@@ -52,15 +52,15 @@ export function WalletScreen() {
   const handleWithdraw = () => {
     const amount = parseFloat(withdrawAmount);
     if (isNaN(amount) || amount <= 0) {
-      Alert.alert('Montant invalide', 'Veuillez saisir un montant valide.');
+      Alert.alert(tr('wallet.montant_invalide'), tr('wallet.veuillez_saisir_un_montant_valide'));
       return;
     }
     if (balance && amount > balance.available) {
-      Alert.alert('Solde insuffisant', `Vous ne pouvez retirer que ${formatMontant(balance.available, balance.currency)}.`);
+      Alert.alert(tr('wallet.solde_insuffisant'), `Vous ne pouvez retirer que ${formatMontant(balance.available, balance.currency)}.`);
       return;
     }
     Alert.alert(
-      'Confirmer le versement',
+      tr('wallet.confirmer_le_versement'),
       `Virer ${formatMontant(amount, balance?.currency)} vers votre compte bancaire ?`,
       [
         { text: 'Annuler', style: 'cancel' },
@@ -73,9 +73,9 @@ export function WalletScreen() {
                 onSuccess: () => {
                   setWithdrawAmount('');
                   setShowWithdraw(false);
-                  Alert.alert('Versement demandé', 'Votre demande a été soumise avec succès.');
+                  Alert.alert(tr('wallet.versement_demande'), tr('wallet.votre_demande_a_ete_soumise'));
                 },
-                onError: () => Alert.alert('Erreur', 'Impossible de traiter le versement.'),
+                onError: () => Alert.alert(tr('wallet.erreur'), tr('wallet.impossible_de_traiter_le_versement')),
               },
             ),
         },

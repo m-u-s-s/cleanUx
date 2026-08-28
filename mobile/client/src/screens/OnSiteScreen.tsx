@@ -71,7 +71,7 @@ export function OnSiteScreen({ route }: Props) {
     prolonge.mutate(minutes, {
       onSuccess: () => setChoixOuvert(false),
       onError: (erreur: { message?: string }) =>
-        Alert.alert('Impossible', erreur.message ?? 'La prolongation n’a pas pu être enregistrée.'),
+        Alert.alert(tr('on_site.impossible'), erreur.message ?? 'La prolongation n’a pas pu être enregistrée.'),
     });
   };
 
@@ -90,7 +90,7 @@ export function OnSiteScreen({ route }: Props) {
       { extraId, accepte },
       {
         onError: (erreur: { message?: string }) =>
-          Alert.alert('Impossible', erreur.message ?? 'Votre réponse n’a pas pu être enregistrée.'),
+          Alert.alert(tr('on_site.impossible'), erreur.message ?? 'Votre réponse n’a pas pu être enregistrée.'),
       },
     );
   };

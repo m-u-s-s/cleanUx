@@ -45,12 +45,12 @@ export function MissionDetailScreen({ route }: Props) {
     resendCode.mutate(type, {
       onSuccess: (r) =>
         Alert.alert(
-          'Code renvoyé',
+          tr('mission_detail.code_renvoye'),
           r?.sent_to
             ? `Un nouveau code vient d’être envoyé au ${r.sent_to}. L’ancien n’est plus valide.`
             : 'Un nouveau code vient d’être envoyé. L’ancien n’est plus valide.',
         ),
-      onError: (e: any) => Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
+      onError: (e: any) => Alert.alert(tr('mission_detail.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
     });
   };
   const arriveOnSite = useArriveOnSite(mission?.booking_id ?? null, missionId);
@@ -100,10 +100,10 @@ export function MissionDetailScreen({ route }: Props) {
             onSuccess: (resultat) => {
               if (action !== 'complete') return;
 
-              Alert.alert('Félicitations 🎉', messageDeCloture(resultat?.payout));
+              Alert.alert(tr('mission_detail.felicitations'), messageDeCloture(resultat?.payout));
             },
             onError: (e: any) =>
-              Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
+              Alert.alert(tr('mission_detail.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
           }),
       },
     ]);
@@ -122,7 +122,7 @@ export function MissionDetailScreen({ route }: Props) {
 
     arriveOnSite.mutate(undefined, {
       onSuccess: (session) => navigation.navigate('PresenceScan', { sessionId: session.id }),
-      onError: (e: any) => Alert.alert('Impossible', messageDErreur(e, 'Réessayez.')),
+      onError: (e: any) => Alert.alert(tr('mission_detail.impossible'), messageDErreur(e, 'Réessayez.')),
     });
   };
 
@@ -267,10 +267,10 @@ export function MissionDetailScreen({ route }: Props) {
                          * de deviner qu'il fallait redemander un code. Constaté à l'écran.
                          */
                         onError: (e: any) =>
-                          Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
+                          Alert.alert(tr('mission_detail.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
                       },
                     )
-                  : Alert.alert('Code requis', 'Demandez au client le code à six chiffres reçu par SMS.')
+                  : Alert.alert(tr('mission_detail.code_requis'), tr('mission_detail.demandez_au_client_le_code'))
               }
               fullWidth
             />

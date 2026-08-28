@@ -63,7 +63,7 @@ export function AnnulerLaMissionSheet({
     }
 
     if (choisie.requires_text && precision.trim() === '') {
-      Alert.alert('Incomplet', 'Dites en une phrase ce qui se passe.');
+      Alert.alert(tr('annuler_la_mission.incomplet'), tr('annuler_la_mission.dites_en_une_phrase_ce'));
 
       return;
     }
@@ -73,7 +73,7 @@ export function AnnulerLaMissionSheet({
       {
         onSuccess: onAnnulee,
         onError: (e: { message?: string }) =>
-          Alert.alert('Impossible', e.message ?? 'L’annulation n’a pas pu être enregistrée.'),
+          Alert.alert(tr('annuler_la_mission.impossible'), e.message ?? 'L’annulation n’a pas pu être enregistrée.'),
       },
     );
   };

@@ -27,23 +27,23 @@ export function SavedPaymentMethodsScreen() {
         style: 'automatic',
       });
       if (initError) {
-        Alert.alert('Erreur', initError.message);
+        Alert.alert(tr('saved_payment_methods.erreur'), initError.message);
         return;
       }
 
       const { error } = await presentPaymentSheet();
       if (error) {
-        if (error.code !== 'Canceled') Alert.alert('Erreur', error.message);
+        if (error.code !== 'Canceled') Alert.alert(tr('saved_payment_methods.erreur'), error.message);
       } else {
-        Alert.alert('Carte ajoutée', 'Votre moyen de paiement a été enregistré.');
+        Alert.alert(tr('saved_payment_methods.carte_ajoutee'), tr('saved_payment_methods.votre_moyen_de_paiement_a'));
       }
     } catch (e: any) {
-      Alert.alert('Erreur', e.message ?? "Impossible d'ajouter la carte.");
+      Alert.alert(tr('saved_payment_methods.erreur'), e.message ?? "Impossible d'ajouter la carte.");
     }
   };
 
   const handleDelete = (method: PaymentMethod) => {
-    Alert.alert('Supprimer', `Supprimer la carte •••• ${method.last4} ?`, [
+    Alert.alert(tr('saved_payment_methods.supprimer'), `Supprimer la carte •••• ${method.last4} ?`, [
       { text: 'Annuler', style: 'cancel' },
       {
         text: 'Supprimer',

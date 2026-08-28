@@ -53,7 +53,7 @@ export function MissionTodoCard({ bookingId }: { bookingId: number }) {
       // « La liste est figée depuis 10:30 » explique ce qu'un « une erreur est survenue » laisserait
       // deviner — et fait réessayer pour rien.
       onError: (e: { message?: string }) =>
-        Alert.alert('Impossible', e.message ?? 'La tâche n’a pas pu être ajoutée.'),
+        Alert.alert(tr('mission_todo.impossible'), e.message ?? 'La tâche n’a pas pu être ajoutée.'),
     });
   };
 
@@ -80,7 +80,7 @@ export function MissionTodoCard({ bookingId }: { bookingId: number }) {
               onPress={() =>
                 retirer.mutate(item.id, {
                   onError: (e: { message?: string }) =>
-                    Alert.alert('Impossible', e.message ?? 'La tâche n’a pas pu être retirée.'),
+                    Alert.alert(tr('mission_todo.impossible'), e.message ?? 'La tâche n’a pas pu être retirée.'),
                 })
               }
               accessibilityRole="button"
@@ -121,7 +121,7 @@ export function MissionTodoCard({ bookingId }: { bookingId: number }) {
           onPress={() =>
             envoyerLaConsigne.mutate(consigne.trim(), {
               onError: (e: { message?: string }) =>
-                Alert.alert('Impossible', e.message ?? 'La consigne n’a pas pu être envoyée.'),
+                Alert.alert(tr('mission_todo.impossible'), e.message ?? 'La consigne n’a pas pu être envoyée.'),
             })
           }
           loading={envoyerLaConsigne.isPending}

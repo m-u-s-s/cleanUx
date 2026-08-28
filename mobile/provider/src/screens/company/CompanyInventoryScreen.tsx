@@ -59,7 +59,7 @@ export function CompanyInventoryScreen() {
       qc.invalidateQueries({ queryKey: ['company', 'inventory'] });
     },
     onError: (erreur: any) =>
-      Alert.alert('Mouvement refusé', erreur?.data?.message ?? 'Le stock n’a pas pu être modifié.'),
+      Alert.alert(tr('company_inventory.mouvement_refuse'), erreur?.data?.message ?? 'Le stock n’a pas pu être modifié.'),
   });
 
   const quantiteDe = (id: number): number => {

@@ -39,8 +39,8 @@ export function FaceConsentScreen() {
 
   const demanderLeRetrait = () => {
     Alert.alert(
-      'Retirer votre consentement',
-      'Votre visage de référence sera supprimé. Vous ne pourrez plus intervenir sur les métiers '
+      tr('face_consent.retirer_votre_consentement'),
+      tr('face_consent.votre_visage_de_reference_sera')
         + "qui exigent un contrôle d'identité tant que vous ne l'aurez pas ré-enregistré.",
       [
         { text: 'Annuler', style: 'cancel' },
@@ -51,7 +51,7 @@ export function FaceConsentScreen() {
             retrait.mutate(undefined, {
               onSuccess: () => setRetire(true),
               onError: (e: unknown) => Alert.alert(
-                'Retrait impossible',
+                tr('face_consent.retrait_impossible'),
                 e instanceof Error ? e.message : 'Réessayez dans un instant.',
               ),
             });

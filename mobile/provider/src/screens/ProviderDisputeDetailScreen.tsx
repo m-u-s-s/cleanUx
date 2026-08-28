@@ -77,14 +77,14 @@ export function ProviderDisputeDetailScreen() {
 
   const ajouterUnePreuve = async () => {
     if (preuves.length >= MAX_PREUVES) {
-      Alert.alert('Cinq photos au maximum', 'Retirez-en une pour en ajouter une autre.');
+      Alert.alert(tr('provider_dispute_detail.cinq_photos_au_maximum'), tr('provider_dispute_detail.retirez_en_une_pour_en'));
       return;
     }
 
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permission.granted) {
-      Alert.alert('Permission requise', 'Autorisez l’accès aux photos pour joindre une preuve.');
+      Alert.alert(tr('provider_dispute_detail.permission_requise'), tr('provider_dispute_detail.autorisez_lacces_aux_photos_pour'));
       return;
     }
 
@@ -125,9 +125,9 @@ export function ProviderDisputeDetailScreen() {
       setReponse('');
       setPreuves([]);
       queryClient.invalidateQueries({ queryKey: ['provider', 'disputes'] });
-      Alert.alert('Réponse envoyée', 'Le support et le client la verront.');
+      Alert.alert(tr('provider_dispute_detail.reponse_envoyee'), tr('provider_dispute_detail.le_support_et_le_client'));
     },
-    onError: () => Alert.alert('Échec', "La réponse n'a pas pu être envoyée. Réessayez."),
+    onError: () => Alert.alert(tr('provider_dispute_detail.echec'), tr('provider_dispute_detail.la_reponse_n_a_pas')),
   });
 
   if (isError) {

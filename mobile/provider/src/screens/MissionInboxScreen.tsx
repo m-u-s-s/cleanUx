@@ -29,7 +29,7 @@ export function MissionInboxScreen() {
   const position = useCurrentPosition(useIsFocused());
 
   const handleAccept = useCallback((a: MissionAssignment) => {
-    Alert.alert('Accepter', `Accepter la mission ${a.service_name} ?`, [
+    Alert.alert(tr('mission_inbox.accepter'), `Accepter la mission ${a.service_name} ?`, [
       { text: 'Annuler', style: 'cancel' },
       { text: 'Accepter', onPress: () => {
         accept.mutate(a.id);
@@ -39,7 +39,7 @@ export function MissionInboxScreen() {
   }, [accept]);
 
   const handleDecline = useCallback((a: MissionAssignment) => {
-    Alert.alert('Décliner', 'Décliner cette mission ?', [
+    Alert.alert(tr('mission_inbox.decliner'), tr('mission_inbox.decliner_cette_mission'), [
       { text: 'Annuler', style: 'cancel' },
       { text: 'Décliner', style: 'destructive', onPress: () => {
         decline.mutate(a.id);

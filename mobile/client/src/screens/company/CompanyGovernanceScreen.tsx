@@ -84,7 +84,7 @@ export function CompanyGovernanceScreen() {
     },
     onError: (erreur: any) =>
       // « Une demande ne s'approuve pas soi-même » est une règle à LIRE, pas une panne.
-      Alert.alert('Décision refusée', erreur?.data?.message ?? 'La demande n’a pas pu être traitée.'),
+      Alert.alert(tr('company_governance.decision_refusee'), erreur?.data?.message ?? 'La demande n’a pas pu être traitée.'),
   });
 
   return (

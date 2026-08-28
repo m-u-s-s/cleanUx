@@ -141,7 +141,7 @@ export function PresenceScanScreen({ route }: Props) {
 
       if (!code) {
         Alert.alert(
-          'QR non reconnu',
+          tr('presence_scan.qr_non_reconnu'),
           isCompletion
             ? "Ce n'est pas le code de fin du client."
             : "Ce n'est pas le code de présence du client.",
@@ -236,7 +236,7 @@ export function PresenceScanScreen({ route }: Props) {
           onPress={() =>
             manualCode.length === 6
               ? submit(manualCode)
-              : Alert.alert('Code incomplet', 'Le code du client compte six chiffres.')
+              : Alert.alert(tr('presence_scan.code_incomplet'), tr('presence_scan.le_code_du_client_compte'))
           }
           loading={busy}
           fullWidth

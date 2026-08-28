@@ -119,8 +119,8 @@ export function JourneyBuilderScreen() {
       { type: 'publish' },
       {
         onError: (erreur) =>
-          Alert.alert('Publication refusée', messageDErreur(erreur, 'Le parcours n’est pas prêt.')),
-        onSuccess: () => Alert.alert('Publié', 'Les commandes en cours citeront cette version.'),
+          Alert.alert(tr('journey_builder.publication_refusee'), messageDErreur(erreur, 'Le parcours n’est pas prêt.')),
+        onSuccess: () => Alert.alert(tr('journey_builder.publie'), tr('journey_builder.les_commandes_en_cours_citeront')),
       },
     );
   };

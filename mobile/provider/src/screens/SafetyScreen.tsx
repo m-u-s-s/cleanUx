@@ -61,8 +61,8 @@ export function SafetyScreen() {
     },
     onError: () =>
       Alert.alert(
-        'Alerte non transmise',
-        'Appelez directement les secours si vous êtes en danger.',
+        tr('safety.alerte_non_transmise'),
+        tr('safety.appelez_directement_les_secours_si'),
       ),
   });
 

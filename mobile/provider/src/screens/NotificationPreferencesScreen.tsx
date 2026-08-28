@@ -51,9 +51,9 @@ export function NotificationPreferencesScreen() {
     setSaving(true);
     try {
       await apiClient.put('/notifications/preferences', { preferences: prefs });
-      Alert.alert('Sauvegardé', 'Vos préférences ont été mises à jour.');
+      Alert.alert(tr('notification_preferences.sauvegarde'), tr('notification_preferences.vos_preferences_ont_ete_mises'));
     } catch {
-      Alert.alert('Erreur', 'Impossible de sauvegarder.');
+      Alert.alert(tr('notification_preferences.erreur'), tr('notification_preferences.impossible_de_sauvegarder'));
     } finally {
       setSaving(false);
     }

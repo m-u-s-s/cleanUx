@@ -61,9 +61,9 @@ export function PaymentCheckoutScreen({ route, navigation }: Props) {
   const handlePay = async () => {
     const { error } = await presentPaymentSheet();
     if (error) {
-      if (error.code !== 'Canceled') Alert.alert('Erreur paiement', error.message);
+      if (error.code !== 'Canceled') Alert.alert(tr('payment_checkout.erreur_paiement'), error.message);
     } else {
-      Alert.alert('Paiement confirmé', 'Merci ! Le prestataire sera notifié.', [
+      Alert.alert(tr('payment_checkout.paiement_confirme'), tr('payment_checkout.merci_le_prestataire_sera_notifie'), [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     }

@@ -46,14 +46,14 @@ export function DisputesScreen() {
 
   const ajouterUnePreuve = async () => {
     if (preuves.length >= MAX_PREUVES) {
-      Alert.alert('Cinq photos au maximum', 'Retirez-en une pour en ajouter une autre.');
+      Alert.alert(tr('disputes.cinq_photos_au_maximum'), tr('disputes.retirez_en_une_pour_en'));
       return;
     }
 
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permission.granted) {
-      Alert.alert('Permission requise', 'Autorisez l’acces aux photos pour joindre une preuve.');
+      Alert.alert(tr('disputes.permission_requise'), tr('disputes.autorisez_lacces_aux_photos_pour'));
       return;
     }
 
@@ -99,9 +99,9 @@ export function DisputesScreen() {
       setDescription('');
       setCategory(null);
       setPreuves([]);
-      Alert.alert('Litige ouvert', 'Notre équipe va le traiter dans les meilleurs délais.');
+      Alert.alert(tr('disputes.litige_ouvert'), tr('disputes.notre_equipe_va_le_traiter'));
     },
-    onError: () => Alert.alert('Échec', "Le litige n'a pas pu être ouvert. Réessayez."),
+    onError: () => Alert.alert(tr('disputes.echec'), tr('disputes.le_litige_n_a_pas')),
   });
 
   const canSubmit = subject.trim().length >= 3 && description.trim().length >= 10 && !!category && !create.isPending;

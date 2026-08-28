@@ -42,7 +42,7 @@ export function QRScanScreen({ route, navigation }: Props) {
         [{ text: 'OK', onPress: () => navigation.goBack() }],
       );
     } catch (e: any) {
-      Alert.alert('Erreur', e.message ?? 'QR code invalide ou expiré');
+      Alert.alert(tr('q_r_scan.erreur'), e.message ?? 'QR code invalide ou expiré');
       setScanned(false);
     } finally {
       setProcessing(false);

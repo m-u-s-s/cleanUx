@@ -23,7 +23,7 @@ export function NPSScreen({ navigation }: Props) {
     setSending(true);
     try {
       await apiClient.post('/client/nps', { score });
-      Alert.alert('Merci !', 'Votre feedback compte.', [{ text: 'OK', onPress: () => navigation.goBack() }]);
+      Alert.alert(tr('n_p_s.merci'), tr('n_p_s.votre_feedback_compte'), [{ text: 'OK', onPress: () => navigation.goBack() }]);
     } catch {
       // silent — best-effort NPS
     } finally {

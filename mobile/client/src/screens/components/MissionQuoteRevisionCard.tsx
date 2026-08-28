@@ -46,7 +46,7 @@ export function MissionQuoteRevisionCard({ bookingId }: { bookingId: number }) {
         // LE MOTIF DU SERVEUR, TEL QUEL : « le complément n'a pas pu être autorisé » dit au client
         // que sa carte a refusé, là où un « erreur » le ferait réessayer à l'identique.
         onError: (e: { message?: string }) =>
-          Alert.alert('Impossible', e.message ?? 'Votre réponse n’a pas pu être enregistrée.'),
+          Alert.alert(tr('mission_quote_revision.impossible'), e.message ?? 'Votre réponse n’a pas pu être enregistrée.'),
       },
     );
 

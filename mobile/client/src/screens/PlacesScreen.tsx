@@ -67,7 +67,7 @@ export function PlacesScreen() {
     },
     onError: (erreur: any) =>
       // « Votre carnet contient déjà 25 lieux » est une réponse, pas une panne.
-      Alert.alert('Ajout refusé', erreur?.data?.message ?? 'Le lieu n’a pas pu être enregistré.'),
+      Alert.alert(tr('places.ajout_refuse'), erreur?.data?.message ?? 'Le lieu n’a pas pu être enregistré.'),
   });
 
   const definirParDefaut = useMutation({

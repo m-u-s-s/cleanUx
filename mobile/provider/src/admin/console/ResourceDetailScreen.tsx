@@ -225,7 +225,7 @@ export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
               variant="danger"
               loading={suppression.isPending}
               onPress={() =>
-                Alert.alert('Supprimer', 'Cet élément sera définitivement retiré.', [
+                Alert.alert(tr('resource_detail.supprimer'), tr('resource_detail.cet_element_sera_definitivement_retire'), [
                   { text: 'Annuler', style: 'cancel' },
                   {
                     text: 'Supprimer',

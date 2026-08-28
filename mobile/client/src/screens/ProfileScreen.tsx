@@ -213,7 +213,7 @@ export function ProfileScreen() {
         <Button
           label={tr('profile.se_deconnecter')}
           onPress={() =>
-            Alert.alert('Déconnexion', 'Voulez-vous vous déconnecter ?', [
+            Alert.alert(tr('profile.deconnexion'), tr('profile.voulez_vous_vous_deconnecter'), [
               { text: 'Annuler', style: 'cancel' },
               { text: 'Déconnexion', style: 'destructive', onPress: logout },
             ])

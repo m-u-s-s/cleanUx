@@ -40,9 +40,9 @@ export function RatingScreen({ route, navigation }: Props) {
   const [comment, setComment] = useState('');
 
   const handleSubmit = async () => {
-    if (overall === 0) { Alert.alert('Note requise', 'Veuillez donner une note globale.'); return; }
+    if (overall === 0) { Alert.alert(tr('rating.note_requise'), tr('rating.veuillez_donner_une_note_globale')); return; }
     await submit.mutateAsync({ bookingId, overall, punctuality, quality, communication, value, comment });
-    Alert.alert('Merci !', 'Votre avis a été enregistré.', [{ text: 'OK', onPress: () => navigation.goBack() }]);
+    Alert.alert(tr('rating.merci'), tr('rating.votre_avis_a_ete_enregistre'), [{ text: 'OK', onPress: () => navigation.goBack() }]);
   };
 
   return (

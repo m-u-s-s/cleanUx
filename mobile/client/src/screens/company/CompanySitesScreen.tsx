@@ -47,7 +47,7 @@ export function CompanySitesScreen() {
       qc.invalidateQueries({ queryKey: ['client-company', 'overview'] });
     },
     onError: () =>
-      Alert.alert('Création refusée', "Votre rôle ne permet pas d'ajouter un local."),
+      Alert.alert(tr('company_sites.creation_refusee'), tr('company_sites.votre_role_ne_permet_pas')),
   });
 
   if (isError) {

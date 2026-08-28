@@ -21,12 +21,12 @@ export function GDPRScreen() {
 
   const handleExport = () => {
     exportData.mutate(undefined, {
-      onSuccess: () => Alert.alert('Demande envoyée', 'Vous recevrez un email avec vos données.'),
+      onSuccess: () => Alert.alert(tr('g_d_p_r.demande_envoyee'), tr('g_d_p_r.vous_recevrez_un_email_avec')),
     });
   };
 
   const handleErase = () => {
-    Alert.alert('Suppression des données', 'Cette action est irréversible. Continuer ?', [
+    Alert.alert(tr('g_d_p_r.suppression_des_donnees'), tr('g_d_p_r.cette_action_est_irreversible_continuer'), [
       { text: 'Annuler', style: 'cancel' },
       {
         text: 'Supprimer',
@@ -34,7 +34,7 @@ export function GDPRScreen() {
         onPress: () =>
           eraseData.mutate(undefined, {
             onSuccess: () =>
-              Alert.alert('Demande envoyée', 'Votre demande de suppression sera traitée sous 30 jours.'),
+              Alert.alert(tr('g_d_p_r.demande_envoyee'), tr('g_d_p_r.votre_demande_de_suppression_sera')),
           }),
       },
     ]);

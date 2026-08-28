@@ -18,7 +18,7 @@ export function AiQuoteScreen() {
 
   const pickImage = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) { Alert.alert('Permission requise'); return; }
+    if (!perm.granted) { Alert.alert(tr('ai_quote.permission_requise')); return; }
     const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
     if (!res.canceled && res.assets[0]) setImageUri(res.assets[0].uri);
   };
@@ -34,7 +34,7 @@ export function AiQuoteScreen() {
       });
       setResult(res.data.estimate ?? res.data.data?.estimate ?? JSON.stringify(res.data));
     } catch (e: any) {
-      Alert.alert('Erreur', e.message ?? 'Estimation impossible');
+      Alert.alert(tr('ai_quote.erreur'), e.message ?? 'Estimation impossible');
     } finally {
       setLoading(false);
     }

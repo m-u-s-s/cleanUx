@@ -82,7 +82,7 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
 (lien valable ${expires_in_hours} h)`,
         });
       },
-      onError: () => Alert.alert('Impossible', 'Le lien de suivi n’a pas pu être créé.'),
+      onError: () => Alert.alert(tr('mission_tracking.impossible'), tr('mission_tracking.le_lien_de_suivi_na')),
     });
   const { position: livePos, eta: liveEta } = useLiveTracking(filSurPlace?.mission_id ?? null);
   const mapRef = useRef<any>(null);

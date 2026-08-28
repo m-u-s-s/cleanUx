@@ -53,7 +53,7 @@ export function CompanyRolePermissionsScreen() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['company', 'role-permissions'] }),
     onError: (erreur: any) =>
       Alert.alert(
-        'Réglage impossible',
+        tr('company_role_permissions.reglage_impossible'),
         erreur?.data?.message ?? "Ce réglage n'a pas pu être enregistré.",
       ),
   });

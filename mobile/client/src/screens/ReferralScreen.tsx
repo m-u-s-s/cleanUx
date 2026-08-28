@@ -107,7 +107,7 @@ export function ReferralScreen() {
   const handleCopy = () => {
     if (!shareData?.referral_code) return;
     Clipboard.setString(shareData.referral_code);
-    Alert.alert('Copié', 'Le code a été copié dans le presse-papier.');
+    Alert.alert(tr('referral.copie'), tr('referral.le_code_a_ete_copie'));
   };
 
   /*

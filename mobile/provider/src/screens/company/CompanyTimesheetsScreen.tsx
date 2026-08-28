@@ -88,7 +88,7 @@ export function CompanyTimesheetsScreen() {
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['company', 'timesheets'] }),
     onError: (erreur: any) =>
-      Alert.alert('Décision refusée', erreur?.data?.message ?? 'Votre rôle ne permet pas cette action.'),
+      Alert.alert(tr('company_timesheets.decision_refusee'), erreur?.data?.message ?? 'Votre rôle ne permet pas cette action.'),
   });
 
   const sansPointage = rentabilite?.meta?.missions_without_timesheet ?? 0;

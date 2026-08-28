@@ -71,7 +71,7 @@ export function CompanyDispatchScreen() {
     // le réécrire ici produirait deux formulations de la même règle.
     onError: (erreur: any) =>
       Alert.alert(
-        'Assignation refusée',
+        tr('company_dispatch.assignation_refusee'),
         erreur?.data?.message ?? 'Votre rôle ne permet pas de répartir les missions.',
       ),
   });
@@ -80,13 +80,13 @@ export function CompanyDispatchScreen() {
     const actives = (equipes ?? []).filter((e) => e.status !== 'archived');
 
     if (actives.length === 0) {
-      Alert.alert('Aucune équipe', "Créez d'abord une équipe terrain, puis composez-la.");
+      Alert.alert(tr('company_dispatch.aucune_equipe'), tr('company_dispatch.creez_d_abord_une_equipe'));
 
       return;
     }
 
     Alert.alert(
-      'Confier à une équipe',
+      tr('company_dispatch.confier_a_une_equipe'),
       mission.site ?? `Mission #${mission.id}`,
       [
         ...actives.slice(0, 10).map((e) => ({
@@ -116,11 +116,11 @@ export function CompanyDispatchScreen() {
     mutationFn: async () => apiClient.post('/provider/company/missions/auto-assign'),
     onSuccess: () =>
       Alert.alert(
-        'Répartition lancée',
-        'Les missions sans personne sont en cours de traitement. Vous recevrez un résumé.',
+        tr('company_dispatch.repartition_lancee'),
+        tr('company_dispatch.les_missions_sans_personne_sont'),
       ),
     onError: (erreur: any) =>
-      Alert.alert('Lancement refusé', erreur?.data?.message ?? 'Votre rôle ne le permet pas.'),
+      Alert.alert(tr('company_dispatch.lancement_refuse'), erreur?.data?.message ?? 'Votre rôle ne le permet pas.'),
   });
 
   const basculerModeContinu = useMutation({
@@ -128,7 +128,7 @@ export function CompanyDispatchScreen() {
       apiClient.put('/provider/company/auto-assign/settings', { auto_assign_enabled: actif }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['company', 'auto-assign', 'settings'] }),
     onError: (erreur: any) =>
-      Alert.alert('Réglage refusé', erreur?.data?.message ?? 'Votre rôle ne le permet pas.'),
+      Alert.alert(tr('company_dispatch.reglage_refuse'), erreur?.data?.message ?? 'Votre rôle ne le permet pas.'),
   });
 
   return (

@@ -95,7 +95,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
     const euros = Number(extraPrix.replace(',', '.'));
 
     if (!extraLabel.trim() || !Number.isFinite(euros) || euros <= 0) {
-      Alert.alert('Incomplet', 'Dites ce que vous proposez, et à quel prix.');
+      Alert.alert(tr('mission_field.incomplet'), tr('mission_field.dites_ce_que_vous_proposez'));
       return;
     }
 
@@ -107,7 +107,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
           setExtraPrix('');
         },
         onError: (erreur: { message?: string }) =>
-          Alert.alert('Impossible', erreur.message ?? 'Le supplément n’a pas pu être proposé.'),
+          Alert.alert(tr('mission_field.impossible'), erreur.message ?? 'Le supplément n’a pas pu être proposé.'),
       },
     );
   }, [extraLabel, extraPrix, proposerUnExtra]);
@@ -181,18 +181,18 @@ export function MissionFieldScreen({ route, navigation }: Props) {
         onSuccess: (resultat) =>
           resultat &&
           Alert.alert(
-            'Photo enregistrée',
-            'Elle est horodatée, géolocalisée et visible par le client.',
+            tr('mission_field.photo_enregistree'),
+            tr('mission_field.elle_est_horodatee_geolocalisee_et'),
           ),
         onError: (e: any) =>
-          Alert.alert('Envoi impossible', messageDErreur(e, 'Réessayez dans un instant.')),
+          Alert.alert(tr('mission_field.envoi_impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
       },
     );
   };
 
   const envoyerLImprevu = (avecPhoto: boolean) => {
     if (!incidentType || incidentDescription.trim().length < 3) {
-      Alert.alert('Incomplet', 'Choisissez une catégorie et décrivez ce que vous constatez.');
+      Alert.alert(tr('mission_field.incomplet'), tr('mission_field.choisissez_une_categorie_et_decrivez'));
 
       return;
     }
@@ -203,10 +203,10 @@ export function MissionFieldScreen({ route, navigation }: Props) {
         onSuccess: () => {
           setIncidentType(null);
           setIncidentDescription('');
-          Alert.alert('Signalé', 'Le client vient d’être prévenu.');
+          Alert.alert(tr('mission_field.signale'), tr('mission_field.le_client_vient_detre_prevenu'));
         },
         onError: (e: any) =>
-          Alert.alert('Signalement impossible', messageDErreur(e, 'Réessayez dans un instant.')),
+          Alert.alert(tr('mission_field.signalement_impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
       },
     );
   };
@@ -541,7 +541,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
                         { itemId: item.id, done: v },
                         {
                           onError: (e: any) =>
-                            Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
+                            Alert.alert(tr('mission_field.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
                         },
                       )
                     }
@@ -703,7 +703,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
             onPress={() =>
               lifecycle.mutate('ride/start', {
                 onError: (e: any) =>
-                  Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
+                  Alert.alert(tr('mission_field.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
               })
             }
             fullWidth
@@ -718,8 +718,8 @@ export function MissionFieldScreen({ route, navigation }: Props) {
               variant="secondary"
               onPress={() =>
                 Alert.alert(
-                  'Client absent ?',
-                  'La course sera close et des frais lui seront appliqués.',
+                  tr('mission_field.client_absent'),
+                  tr('mission_field.la_course_sera_close_et'),
                   [
                     { text: 'Annuler', style: 'cancel' },
                     {
@@ -728,7 +728,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
                       onPress: () =>
                         declarerAbsence.mutate(undefined, {
                           onError: (e: any) =>
-                            Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
+                            Alert.alert(tr('mission_field.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
                         }),
                     },
                   ],
@@ -752,7 +752,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
             onPress={() =>
               lifecycle.mutate('ride/complete', {
                 onError: (e: any) =>
-                  Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
+                  Alert.alert(tr('mission_field.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
               })
             }
             variant="danger"
@@ -773,7 +773,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
             onPress={() =>
               lifecycle.mutate('complete', {
                 onError: (e: any) =>
-                  Alert.alert('Impossible', messageDErreur(e, 'Réessayez dans un instant.')),
+                  Alert.alert(tr('mission_field.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
               })
             }
             variant="danger"

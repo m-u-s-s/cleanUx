@@ -83,7 +83,7 @@ export function FieldQuoteRevision({
           onPress={() =>
             retirer.mutate(revision.id, {
               onError: (e: { message?: string }) =>
-                Alert.alert('Impossible', e.message ?? 'La proposition n’a pas pu être retirée.'),
+                Alert.alert(tr('field_quote_revision.impossible'), e.message ?? 'La proposition n’a pas pu être retirée.'),
             })
           }
           loading={retirer.isPending}
@@ -107,21 +107,21 @@ export function FieldQuoteRevision({
     const centimes = enCentimes(prix);
 
     if (centimes === null) {
-      Alert.alert('Incomplet', 'Indiquez ce que vaut réellement la prestation.');
+      Alert.alert(tr('field_quote_revision.incomplet'), tr('field_quote_revision.indiquez_ce_que_vaut_reellement'));
 
       return;
     }
 
     if (motif.trim().length < 3) {
-      Alert.alert('Incomplet', 'Dites au client ce qui justifie ce prix.');
+      Alert.alert(tr('field_quote_revision.incomplet'), tr('field_quote_revision.dites_au_client_ce_qui'));
 
       return;
     }
 
     if (photosAvant.length === 0) {
       Alert.alert(
-        'Photo obligatoire',
-        'Prenez d’abord une photo « avant » : sans preuve, le client doit vous croire sur parole.',
+        tr('field_quote_revision.photo_obligatoire'),
+        tr('field_quote_revision.prenez_dabord_une_photo_avant'),
       );
 
       return;
@@ -135,14 +135,14 @@ export function FieldQuoteRevision({
           setMotif('');
         },
         onError: (e: { message?: string }) =>
-          Alert.alert('Impossible', e.message ?? 'La révision n’a pas pu être envoyée.'),
+          Alert.alert(tr('field_quote_revision.impossible'), e.message ?? 'La révision n’a pas pu être envoyée.'),
       },
     );
   };
 
   const demanderDuRenfort = () => {
     if (motif.trim().length < 3) {
-      Alert.alert('Incomplet', 'Dites ce qui justifie le renfort : c’est ce que lira celui qui viendra.');
+      Alert.alert(tr('field_quote_revision.incomplet'), tr('field_quote_revision.dites_ce_qui_justifie_le'));
 
       return;
     }
@@ -152,10 +152,10 @@ export function FieldQuoteRevision({
       {
         onSuccess: () => {
           setMotif('');
-          Alert.alert('Renfort demandé', 'Votre demande est ouverte : quelqu’un va la prendre.');
+          Alert.alert(tr('field_quote_revision.renfort_demande'), tr('field_quote_revision.votre_demande_est_ouverte_quelquun'));
         },
         onError: (e: { message?: string }) =>
-          Alert.alert('Impossible', e.message ?? 'La demande n’a pas pu être ouverte.'),
+          Alert.alert(tr('field_quote_revision.impossible'), e.message ?? 'La demande n’a pas pu être ouverte.'),
       },
     );
   };
@@ -164,7 +164,7 @@ export function FieldQuoteRevision({
     const centimes = enCentimes(prix);
 
     if (centimes === null) {
-      Alert.alert('Incomplet', 'Indiquez un prix à simuler.');
+      Alert.alert(tr('field_quote_revision.incomplet'), tr('field_quote_revision.indiquez_un_prix_a_simuler'));
 
       return;
     }
@@ -172,14 +172,14 @@ export function FieldQuoteRevision({
     simuler.mutate(centimes, {
       onSuccess: (quote) =>
         Alert.alert(
-          'Ce que le client verra',
+          tr('field_quote_revision.ce_que_le_client_verra'),
           // `'EUR'` était écrit en dur ici : la simulation annonçait au prestataire un montant
           // dans une monnaie que son client ne paiera pas — juste avant qu'il l'énonce à voix
           // haute. Le balayage sur le symbole « € » ne pouvait pas voir un code ISO.
           `${euros(quote.total_cents, fenetre?.currency ?? '')} — remises du client réappliquées.`,
         ),
       onError: (e: { message?: string }) =>
-        Alert.alert('Impossible', e.message ?? 'La simulation a échoué.'),
+        Alert.alert(tr('field_quote_revision.impossible'), e.message ?? 'La simulation a échoué.'),
     });
   };
 

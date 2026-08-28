@@ -112,7 +112,7 @@ export function CompanyMissionDetailScreen() {
     },
     onError: (erreur: any) =>
       Alert.alert(
-        'Assignation refusée',
+        tr('company_mission_detail.assignation_refusee'),
         erreur?.data?.message ?? 'Votre rôle ne permet pas de répartir cette mission.',
       ),
   });
@@ -147,7 +147,7 @@ export function CompanyMissionDetailScreen() {
     // lisible : le réécrire ici produirait deux formulations de la même règle.
     onError: (erreur: any) =>
       Alert.alert(
-        'Déplacement refusé',
+        tr('company_mission_detail.deplacement_refuse'),
         erreur?.data?.message ?? "L'intervention n'a pas pu être déplacée.",
       ),
   });
@@ -163,7 +163,7 @@ export function CompanyMissionDetailScreen() {
       rechargerDispos();
     },
     onError: (erreur: any) =>
-      Alert.alert('Action refusée', erreur?.data?.message ?? "L'action n'a pas pu être effectuée."),
+      Alert.alert(tr('company_mission_detail.action_refusee'), erreur?.data?.message ?? "L'action n'a pas pu être effectuée."),
   });
 
   if (mission === null) {

@@ -97,7 +97,7 @@ export function AvailabilityScreen() {
     if (!edition) return;
 
     if (edition.end <= edition.start) {
-      Alert.alert('Horaire impossible', 'La fin doit venir après le début.');
+      Alert.alert(tr('availability.horaire_impossible'), tr('availability.la_fin_doit_venir_apres'));
 
       return;
     }
@@ -175,7 +175,7 @@ export function AvailabilityScreen() {
                     variant="ghost"
                     testID={`supprimer-${slot.id}`}
                     onPress={() => Alert.alert(
-                      'Retirer ce créneau ?',
+                      tr('availability.retirer_ce_creneau'),
                       `${weekdayLabel(slot.weekday)} ${hhmm(slot.start_time)} — ${hhmm(slot.end_time)}, toutes les semaines.`,
                       [
                         { text: 'Annuler', style: 'cancel' },

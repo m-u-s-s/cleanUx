@@ -44,9 +44,9 @@ export function TipsScreen({ route, navigation }: Props) {
         preset_percent: selected.percent,
         preset_label: selected.label,
       });
-      Alert.alert('Merci !', 'Votre pourboire a été envoyé.', [{ text: 'OK', onPress: () => navigation.goBack() }]);
+      Alert.alert(tr('tips.merci'), tr('tips.votre_pourboire_a_ete_envoye'), [{ text: 'OK', onPress: () => navigation.goBack() }]);
     } catch (e: any) {
-      Alert.alert('Erreur', e.message);
+      Alert.alert(tr('tips.erreur'), e.message);
     } finally {
       setSending(false);
     }

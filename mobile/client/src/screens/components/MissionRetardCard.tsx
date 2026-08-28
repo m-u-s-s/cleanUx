@@ -43,9 +43,9 @@ export function MissionRetardCard({
 
   const decaler = (quand: { date: string; time?: string }) =>
     reprogrammer.mutate(quand, {
-      onSuccess: () => Alert.alert('C’est décalé', 'Votre intervention a été replanifiée.'),
+      onSuccess: () => Alert.alert(tr('mission_retard.cest_decale'), tr('mission_retard.votre_intervention_a_ete_replanifiee')),
       onError: (e: { message?: string }) =>
-        Alert.alert('Impossible', e.message ?? 'Le créneau n’a pas pu être déplacé.'),
+        Alert.alert(tr('mission_retard.impossible'), e.message ?? 'Le créneau n’a pas pu être déplacé.'),
     });
 
   const dansDeuxHeures = new Date(Date.now() + 2 * 60 * 60 * 1000);

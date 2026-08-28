@@ -28,7 +28,7 @@ export function ProfileEditScreen({ navigation }: Props) {
       const ImagePicker = await import('expo-image-picker');
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!perm.granted) {
-        Alert.alert('Permission requise', 'Veuillez autoriser l\'accès à la galerie.');
+        Alert.alert(tr('profile_edit.permission_requise'), tr('profile_edit.veuillez_autoriser_l_acces_a'));
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -61,10 +61,10 @@ export function ProfileEditScreen({ navigation }: Props) {
     try {
       const res = await apiClient.put('/client/profile', { name, phone });
       setUser(res.data.user ?? res.data);
-      Alert.alert('Profil mis à jour');
+      Alert.alert(tr('profile_edit.profil_mis_a_jour'));
       navigation.goBack();
     } catch (e: any) {
-      Alert.alert('Erreur', e.message);
+      Alert.alert(tr('profile_edit.erreur'), e.message);
     } finally {
       setSaving(false);
     }

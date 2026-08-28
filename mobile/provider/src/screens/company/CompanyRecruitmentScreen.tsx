@@ -70,7 +70,7 @@ export function CompanyRecruitmentScreen() {
       qc.invalidateQueries({ queryKey: ['company', 'job-postings'] });
     },
     onError: (erreur: any) =>
-      Alert.alert('Décision refusée', erreur?.data?.message ?? 'Votre rôle ne permet pas cette action.'),
+      Alert.alert(tr('company_recruitment.decision_refusee'), erreur?.data?.message ?? 'Votre rôle ne permet pas cette action.'),
   });
 
   return (

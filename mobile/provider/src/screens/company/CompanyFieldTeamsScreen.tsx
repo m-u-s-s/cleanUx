@@ -63,7 +63,7 @@ export function CompanyFieldTeamsScreen() {
       qc.invalidateQueries({ queryKey: ['company', 'field-teams'] });
     },
     // L'API refuse un rôle sans `team.create` : on le dit, plutôt que de laisser l'écran muet.
-    onError: () => Alert.alert('Création refusée', "Votre rôle ne permet pas d'ouvrir une agence."),
+    onError: () => Alert.alert(tr('company_field_teams.creation_refusee'), tr('company_field_teams.votre_role_ne_permet_pas')),
   });
 
   const archiver = useMutation({
@@ -71,7 +71,7 @@ export function CompanyFieldTeamsScreen() {
       await apiClient.patch(`/provider/company/field-teams/${id}/archive`);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['company', 'field-teams'] }),
-    onError: () => Alert.alert('Archivage refusé', 'Votre rôle ne permet pas cette action.'),
+    onError: () => Alert.alert(tr('company_field_teams.archivage_refuse'), tr('company_field_teams.votre_role_ne_permet_pas_2')),
   });
 
   /*
@@ -112,7 +112,7 @@ export function CompanyFieldTeamsScreen() {
     },
     onError: (erreur: any) =>
       Alert.alert(
-        'Action refusée',
+        tr('company_field_teams.action_refusee'),
         erreur?.data?.message ?? 'Votre rôle ne permet pas de composer les équipes.',
       ),
   });

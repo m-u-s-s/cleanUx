@@ -55,7 +55,7 @@ export function CompanyAgenciesScreen() {
     },
     onError: (erreur: any) =>
       Alert.alert(
-        'Création refusée',
+        tr('company_agencies.creation_refusee'),
         erreur?.data?.message ?? "Votre rôle ne permet pas d'ouvrir une implantation.",
       ),
   });
@@ -64,7 +64,7 @@ export function CompanyAgenciesScreen() {
     mutationFn: async (id: number) =>
       apiClient.patch(`/provider/company/agencies/${id}`, { status: 'archived' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['company', 'agencies'] }),
-    onError: () => Alert.alert('Action refusée', 'Votre rôle ne permet pas cette action.'),
+    onError: () => Alert.alert(tr('company_agencies.action_refusee'), tr('company_agencies.votre_role_ne_permet_pas')),
   });
 
   return (
