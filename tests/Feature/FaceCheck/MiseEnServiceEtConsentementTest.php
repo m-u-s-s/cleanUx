@@ -125,13 +125,14 @@ class MiseEnServiceEtConsentementTest extends TestCase
         $prestataire = $this->prestataireSoumis();
         Sanctum::actingAs($prestataire);
 
-        $fr = $this->getJson('/api/provider/face-check/status')->json('data.consent_text');
+        // LA LANGUE SE DÉCLARE DANS LA REQUÊTE, plus par `app()->setLocale()` : l'API la résout
+        // désormais elle-même, et un réglage ambiant n'a aucun moyen d'atteindre un vrai appelant.
+        $texte = fn (string $langue) => $this->getJson('/api/provider/face-check/status?lang='.$langue)
+            ->json('data.consent_text');
 
-        app()->setLocale('nl');
-        $nl = $this->getJson('/api/provider/face-check/status')->json('data.consent_text');
-
-        app()->setLocale('en');
-        $en = $this->getJson('/api/provider/face-check/status')->json('data.consent_text');
+        $fr = $texte('fr');
+        $nl = $texte('nl');
+        $en = $texte('en');
 
         $this->assertNotSame($fr, $nl);
         $this->assertNotSame($fr, $en);

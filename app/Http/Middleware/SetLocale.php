@@ -49,7 +49,8 @@ class SetLocale
 
         $response = $next($request);
 
-        if (method_exists($response, 'withCookie')) {
+        // Le cookie n'a de sens que pour un navigateur : une reponse d'API reste sans etat.
+        if ($request->hasSession() && method_exists($response, 'withCookie')) {
             $response->withCookie(cookie('locale', $locale, 60 * 24 * 365));
         }
 

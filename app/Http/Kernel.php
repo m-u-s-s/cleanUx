@@ -94,6 +94,9 @@ class Kernel extends HttpKernel
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             ThrottleRequests::class.':api',
             SubstituteBindings::class,
+            // La langue du porteur, ou celle qu'annonce la requete : sans lui, toute l'API
+            // repondait dans la langue par defaut, messages de validation compris.
+            SetLocale::class,
             LogSlowQueries::class,
         ],
     ];

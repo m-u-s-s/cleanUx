@@ -46,24 +46,27 @@ class LocaleResolver
 
     public function resolveFromRequest(Request $request): string
     {
+        // Une requete d'API n'a pas de session : chaque acces est garde.
+        $session = $request->hasSession() ? $request->session() : null;
+
         // 1) Query param explicite
         $queryLocale = $request->query('lang');
         if ($this->isSupported($queryLocale)) {
-            $request->session()->put('locale', $queryLocale);
+            $session?->put('locale', $queryLocale);
 
             return $queryLocale;
         }
 
         // 2) Session
-        $sessionLocale = $request->session()->get('locale');
+        $sessionLocale = $session?->get('locale');
         if ($this->isSupported($sessionLocale)) {
             return $sessionLocale;
         }
 
         // 3) User authenticated
-        $userLocale = $this->normalize(Auth::user()?->locale);
+        $userLocale = $this->normalize($this->utilisateurCourant($request)?->locale);
         if ($this->isSupported($userLocale)) {
-            $request->session()->put('locale', $userLocale);
+            $session?->put('locale', $userLocale);
 
             return $userLocale;
         }
@@ -86,6 +89,23 @@ class LocaleResolver
         }
 
         return $this->default();
+    }
+
+    /**
+     * Le porteur de la requete, session ou jeton.
+     *
+     * La garde `sanctum` resout le jeton a la demande, sans attendre `auth:sanctum` : celui-ci
+     * est un middleware de ROUTE, donc posterieur au groupe ou vit `SetLocale`.
+     */
+    protected function utilisateurCourant(Request $request): ?User
+    {
+        $utilisateur = Auth::user();
+
+        if (! $utilisateur && $request->bearerToken()) {
+            $utilisateur = Auth::guard('sanctum')->user();
+        }
+
+        return $utilisateur instanceof User ? $utilisateur : null;
     }
 
     public function resolveForUser(?User $user): string
