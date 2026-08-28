@@ -16,6 +16,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -493,6 +494,35 @@ class ClientDashboard extends Component
         $this->dispatch('toast', message: 'Rendez-vous annulé.', type: 'success');
     }
 
+    /**
+     * La salutation de l'en-tête : elle suit l'heure DE L'UTILISATEUR, pas celle du serveur.
+     *
+     * La plateforme couvre la Belgique, la France et le Maroc : dire « Bonsoir » à seize heures
+     * à Casablanca parce que le serveur est à Bruxelles serait faux pour de vrai.
+     */
+    public function salutation(): string
+    {
+        $utilisateur = Auth::user();
+        $prenom = Str::before(trim((string) $utilisateur?->name), ' ');
+        $heure = now($utilisateur?->timezone ?: config('app.timezone'))->hour;
+
+        // Les six phrases sont ECRITES EN TOUTES LETTRES : composer la clé par concaténation la
+        // rendrait introuvable pour qui cherche ce que la page affiche.
+        if ($prenom === '') {
+            return match (true) {
+                $heure < 12 => __('Bonjour'),
+                $heure < 18 => __('Bon après-midi'),
+                default => __('Bonsoir'),
+            };
+        }
+
+        return match (true) {
+            $heure < 12 => __('Bonjour :prenom', ['prenom' => $prenom]),
+            $heure < 18 => __('Bon après-midi :prenom', ['prenom' => $prenom]),
+            default => __('Bonsoir :prenom', ['prenom' => $prenom]),
+        };
+    }
+
     public function render(): View
     {
         return view('livewire.client-dashboard', [
@@ -510,6 +540,7 @@ class ClientDashboard extends Component
             'availableServices' => $this->availableServices,
             'organizationSitesSummary' => $this->organizationSitesSummary,
             'financeSnapshot' => $this->financeSnapshot,
+            'salutation' => $this->salutation(),
         ]);
     }
 }

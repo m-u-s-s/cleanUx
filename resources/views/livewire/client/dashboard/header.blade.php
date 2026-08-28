@@ -1,6 +1,6 @@
 <x-page-shell
     :eyebrow="__('Espace client')"
-    :title="'Bonjour ' . \Illuminate\Support\Str::before(auth()->user()->name, ' ')"
+    :title="$salutation"
     :subtitle="$isPremium
         ? __('Votre espace premium centralise vos rendez-vous, vos favoris, vos documents et vos services disponibles.')
         : __('Votre espace client centralise vos rendez-vous, vos documents, vos services et vos prochaines interventions.')">
