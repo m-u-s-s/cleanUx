@@ -43,7 +43,8 @@ class CarnetBeneficiaireEtProtectionTest extends TestCase
     {
         $client = User::factory()->client()->create();
 
-        foreach (['places', 'budget', 'protection'] as $ecran) {
+        // « budget » n'a plus d'ecran a lui : il est une section de « finance ».
+        foreach (['places', 'finance', 'protection'] as $ecran) {
             $this->actingAs($client)
                 ->get(route("client.{$ecran}"))
                 ->assertOk();
@@ -60,7 +61,8 @@ class CarnetBeneficiaireEtProtectionTest extends TestCase
 
         // Un écran absent du répertoire est un écran que personne ne trouve.
         $this->assertContains('client.places', $entrees);
-        $this->assertContains('client.budget', $entrees);
+        // Le budget n'a plus de page a lui : il est une section de la finance.
+        $this->assertContains('client.finance', $entrees);
         $this->assertContains('client.protection', $entrees);
     }
 

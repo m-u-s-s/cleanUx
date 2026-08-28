@@ -6,6 +6,11 @@
             @include('livewire.client.finance.controls-and-subscription')
             @include('livewire.client.finance.documents')
             @include('livewire.client.finance.supporting-panels')
+
+            {{-- LES DEPENSES ET LES DOCUMENTS SONT LE MEME ARGENT : deux moities jamais reunies. --}}
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <livewire:client.home-budget />
+            </div>
         </div>
     </div>
 </div>

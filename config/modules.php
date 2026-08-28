@@ -95,7 +95,6 @@ return [
         ['key' => 'client:client.places', 'label' => 'Mes lieux', 'icon' => '🏠', 'route' => 'client.places', 'context' => 'client', 'category' => 'comptes', 'primary' => false],
         // E4 — le budget maison. Tout est déjà en base et personne ne le voit : le client reçoit
         // ses factures une par une, sans jamais voir la tendance.
-        ['key' => 'client:client.budget', 'label' => 'Mon budget', 'icon' => '📈', 'route' => 'client.budget', 'context' => 'client', 'category' => 'finance', 'primary' => false],
         /*
          * E6 — « Ma protection ». Assurance, annulation et litiges ont chacun leur écran, et aucun
          * client ne sait ce qu'il a : il découvre sa couverture au moment du sinistre, ses frais

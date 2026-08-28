@@ -22,7 +22,6 @@ use App\Livewire\Client\EditRecurringBooking;
 use App\Livewire\Client\FinanceDocumentsClient;
 use App\Livewire\Client\GdprDataPage;
 use App\Livewire\Client\HistoriqueClient;
-use App\Livewire\Client\HomeBudget;
 use App\Livewire\Client\LitigesClient;
 use App\Livewire\Client\LoyaltyDashboard;
 use App\Livewire\Client\MesRendezVousClient;
@@ -198,10 +197,6 @@ Route::middleware(['role:client'])
          * ses factures une par une, sans moyen de répondre à la seule question qu'il se pose —
          * « combien est-ce que je dépense, et est-ce que ça augmente ».
          */
-        if (class_exists(HomeBudget::class)) {
-            Route::get('/budget', HomeBudget::class)->name('budget');
-        }
-
         /*
          * « MA PROTECTION » (E6). Insurance, Cancellation v2 et Disputes existent, chacun avec
          * son écran — et aucun client ne sait ce qu'il a. Il découvre son assurance au moment du

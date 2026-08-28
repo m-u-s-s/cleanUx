@@ -3,10 +3,11 @@
     $maxMois = collect($budget['by_month'])->max('total_cents') ?: 1;
 @endphp
 
-<div class="mx-auto max-w-3xl px-4 py-8">
+{{-- SECTION, PLUS PAGE : la finance la monte, le budget n'a plus de route a lui. --}}
+<div>
 
     <header class="mb-6">
-        <h1 class="text-2xl font-bold text-slate-900">Mon budget entretien</h1>
+        <h2 class="text-2xl font-bold text-slate-900">Mon budget entretien</h2>
         <p class="mt-1 text-sm text-slate-500">
             Ce que vous engagez, par mois et par métier.
         </p>
