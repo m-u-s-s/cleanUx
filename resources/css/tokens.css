@@ -124,6 +124,11 @@
     --brio-danger:       #dc2626;
     --brio-info:         #2563eb;
 
+    /* L'APLAT DE DANGER — il porte du texte blanc, la ligne au-dessus s'ecrit sur un fond.
+       `--brio-danger` s'eclaircit en mode sombre pour rester lisible EN TEXTE ; un aplat qui
+       suivrait deviendrait du blanc sur rose. Les deux notions ont donc deux jetons. */
+    --brio-danger-aplat: #dc2626;
+
     /* Les lueurs d'ambiance du fond — les bulles floues des cinq modeles. */
     --brio-aura-1:       rgba(120, 160, 255, 0.28);
     --brio-aura-2:       rgba(255, 182, 72, 0.18);
@@ -185,6 +190,9 @@
     --brio-warning:      #fbbf24;
     --brio-danger:       #f87171;
     --brio-info:         #60a5fa;
+
+    /* Plus profond que l'aplat clair : sur une surface de nuit, il tient le blanc a 6,5:1. */
+    --brio-danger-aplat: #b91c1c;
 
     --brio-aura-1:       rgba(79, 227, 214, 0.16);
     --brio-aura-2:       rgba(255, 138, 61, 0.14);

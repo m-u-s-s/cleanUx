@@ -357,10 +357,12 @@
 .brio-btn-ligne-accent { color: var(--brio-accent-deep); }
 .brio-btn-ligne-danger { color: var(--brio-danger); }
 
-.brio-btn-danger {
-    background: linear-gradient(135deg, var(--brio-danger) 0%, color-mix(in srgb, var(--brio-danger) 70%, #000) 100%);
+/* Modificateur de `.brio-btn`, comme -accent, -verre et -nu : il EXIGE sa base.
+   Sans elle, il deteignait son degrade sur le bouton autonome de tool-mode.css. */
+.brio-btn.brio-btn-danger {
+    background: linear-gradient(135deg, var(--brio-danger-aplat) 0%, color-mix(in srgb, var(--brio-danger-aplat) 70%, #000) 100%);
     color: #fff;
-    box-shadow: 0 8px 24px color-mix(in srgb, var(--brio-danger) 34%, transparent);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--brio-danger-aplat) 34%, transparent);
 }
 
 /* ========================================================== LE CONSENTEMENT */

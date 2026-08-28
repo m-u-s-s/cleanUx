@@ -289,6 +289,9 @@
 
     .dark .brio-btn-primary { @apply bg-sky-500 hover:bg-sky-400; }
     .dark .brio-btn-secondary { @apply border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700; }
+    /* `:not(.brio-btn)` vise le bouton AUTONOME : sans lui, cette regle repeindrait aussi le
+       modificateur plein de composants.css, a specificite egale et chargee apres. */
+    .dark .brio-btn-danger:not(.brio-btn) { @apply border-red-900 bg-red-950 text-red-200 hover:bg-red-900; }
 
     .dark .brio-list-item { @apply border-slate-700 bg-slate-800/90 hover:border-slate-600 hover:bg-slate-700; }
     .dark .brio-empty { @apply border-slate-600 bg-slate-800/90; }
