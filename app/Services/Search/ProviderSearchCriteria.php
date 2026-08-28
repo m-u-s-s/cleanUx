@@ -23,6 +23,8 @@ class ProviderSearchCriteria
         public readonly string $sort = 'rating',
         public readonly int $page = 1,
         public readonly int $perPage = 20,
+        /** @var list<int>|null Restreint l'annuaire a ces prestataires — les preferes du client. */
+        public readonly ?array $onlyIds = null,
     ) {}
 
     public static function fromArray(array $params): self

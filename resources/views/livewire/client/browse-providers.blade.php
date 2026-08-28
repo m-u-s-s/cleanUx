@@ -11,6 +11,23 @@
             </div>
         </div>
 
+        @unless($selectionMode || $this->estPremium)
+            {{-- L'APPEL A L'OFFRE, REPRIS DE LA PAGE DES FAVORIS SUPPRIMEE. Il disait ce que
+                 la note par carte ne dit pas : ce que le Premium change, et ou souscrire. --}}
+            <div class="rounded-2xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-500/30 dark:bg-amber-500/10">
+                <p class="text-sm font-semibold text-amber-800 dark:text-amber-200">{{ __('Fonctionnalité Premium') }}</p>
+                <h2 class="mt-2 text-xl font-bold text-slate-900 dark:text-slate-100">{{ __('Choisissez vos prestataires') }}</h2>
+                <p class="mt-3 max-w-2xl text-sm text-slate-700 dark:text-slate-300">
+                    {{ __('Avec l’offre Premium, vous réservez directement avec le prestataire de votre choix, vous gardez vos préférés sous la main et vous les retrouvez d’un filtre.') }}
+                </p>
+
+                <a href="{{ route('premium.offer') }}"
+                   class="mt-5 inline-flex items-center justify-center rounded-xl bg-amber-500 px-5 py-3 text-sm font-semibold text-white hover:bg-amber-600">
+                    {{ __('Passer en Premium') }}
+                </a>
+            </div>
+        @endunless
+
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
             {{-- Sidebar filtres --}}
@@ -95,6 +112,14 @@
                         <input type="checkbox" wire:model.live="hasPhotoOnly" class="rounded" />
                         Avec photo
                     </label>
+
+                    @if($this->estPremium)
+                        {{-- LE FILTRE DE LA PAGE DES FAVORIS, supprimee : sa raison d'etre vit ici. --}}
+                        <label class="flex items-center gap-2 text-sm font-semibold text-amber-800">
+                            <input type="checkbox" wire:model.live="seulementPreferes" class="rounded" />
+                            {{ __('Mes préférés') }}
+                        </label>
+                    @endif
 
                     <button wire:click="resetFilters"
                             class="w-full rounded-xl border px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">

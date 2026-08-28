@@ -25,6 +25,7 @@ class ProviderSearchService
         $this->applyTradeFilter($query, $criteria);
         $this->applyZoneFilter($query, $criteria);
         $this->applyPostalCodeFilter($query, $criteria);
+        $this->applyOnlyIdsFilter($query, $criteria);
         $this->applyOnlineFilter($query, $criteria);
         $this->applyHasPhotoFilter($query, $criteria);
         $this->applyTextSearch($query, $criteria);
@@ -132,6 +133,18 @@ class ProviderSearchService
                 });
             }
         });
+    }
+
+    /**
+     * Restreint a une liste d'identifiants. Une liste VIDE ne rend rien : c'est le sens voulu.
+     *
+     * @param  Builder<User>  $query
+     */
+    protected function applyOnlyIdsFilter(Builder $query, ProviderSearchCriteria $criteria): void
+    {
+        if ($criteria->onlyIds !== null) {
+            $query->whereIn('users.id', $criteria->onlyIds);
+        }
     }
 
     protected function applyOnlineFilter(Builder $query, ProviderSearchCriteria $criteria): void

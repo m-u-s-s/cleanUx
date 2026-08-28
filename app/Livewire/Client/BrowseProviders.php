@@ -49,6 +49,10 @@ class BrowseProviders extends Component
 
     public bool $hasPhotoOnly = false;
 
+    /** LE FILTRE VENU DE LA PAGE DES FAVORIS, supprimee : ne montrer que mes preferes. */
+    #[Url(as: 'preferes')]
+    public bool $seulementPreferes = false;
+
     public string $postalSearch = '';
 
     public array $postalSuggestions = [];
@@ -162,7 +166,7 @@ class BrowseProviders extends Component
 
     public function resetFilters(): void
     {
-        $this->reset(['query', 'tradeId', 'minRating', 'minPrice', 'maxPrice', 'postalCode', 'postalSearch', 'sort', 'onlineOnly', 'hasPhotoOnly']);
+        $this->reset(['query', 'tradeId', 'minRating', 'minPrice', 'maxPrice', 'postalCode', 'postalSearch', 'sort', 'onlineOnly', 'hasPhotoOnly', 'seulementPreferes']);
         $this->sort = 'rating';
         $this->resetPage();
     }
@@ -181,6 +185,8 @@ class BrowseProviders extends Component
             sort: $this->sort,
             page: $this->getPage(),
             perPage: 12,
+            // Le filtre n'existe que pour un premium : force par le navigateur, il reste sans effet.
+            onlyIds: $this->seulementPreferes && $this->estPremium ? $this->preferes : null,
         );
 
         $results = app(ProviderSearchService::class)->search($criteria);

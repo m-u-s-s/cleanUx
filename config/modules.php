@@ -131,7 +131,6 @@ return [
         ['key' => 'client:client.providers.browse', 'label' => 'Trouver un prestataire', 'icon' => '🔍', 'route' => 'client.providers.browse', 'context' => 'client', 'category' => 'prestataires', 'primary' => true],
         ['key' => 'client:client.companies.browse', 'label' => 'Trouver une société', 'icon' => '🏢', 'route' => 'client.companies.browse', 'context' => 'client', 'category' => 'prestataires', 'primary' => false],
         ['key' => 'client:client.chat.inbox', 'label' => 'Messagerie', 'icon' => '💬', 'route' => 'client.chat.inbox', 'context' => 'client', 'category' => 'communication', 'primary' => false],
-        ['key' => 'client:client.favorite-employes', 'label' => 'Prestataires favoris', 'icon' => '❤️', 'route' => 'client.favorite-employes', 'context' => 'client', 'category' => 'communication', 'primary' => false],
         ['key' => 'client:client.claims', 'label' => 'Litiges', 'icon' => '⚠️', 'route' => 'client.claims', 'context' => 'client', 'category' => 'qualite', 'primary' => false],
         ['key' => 'client:client.gdpr.data', 'label' => 'Mes données RGPD', 'icon' => '🔐', 'route' => 'client.gdpr.data', 'context' => 'client', 'category' => 'conformite', 'primary' => false],
         ['key' => 'client:client.kyb.onboarding', 'label' => 'Vérification entreprise (KYB)', 'icon' => '🏢', 'route' => 'client.kyb.onboarding', 'context' => 'client', 'category' => 'conformite', 'primary' => false],

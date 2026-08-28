@@ -20,7 +20,6 @@ use App\Livewire\Client\ClientSubscriptions;
 use App\Livewire\Client\ClientSubscriptionsV2;
 use App\Livewire\Client\ClientTipBooking;
 use App\Livewire\Client\EditRecurringBooking;
-use App\Livewire\Client\FavoriteEmployesManager;
 use App\Livewire\Client\FinanceDocumentsClient;
 use App\Livewire\Client\GdprDataPage;
 use App\Livewire\Client\HistoriqueClient;
@@ -145,10 +144,6 @@ Route::middleware(['role:client'])
 
         if (class_exists(ProfilClient::class)) {
             Route::get('/profil', ProfilClient::class)->name('profile');
-        }
-
-        if (class_exists(FavoriteEmployesManager::class)) {
-            Route::get('/favoris-employes', FavoriteEmployesManager::class)->name('favorite-employes');
         }
 
         if (class_exists(HistoriqueClient::class)) {
