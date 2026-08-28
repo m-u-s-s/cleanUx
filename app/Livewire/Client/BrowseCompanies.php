@@ -8,12 +8,18 @@ use App\Models\OrganizationAccount;
 use App\Services\Booking\EligibleCompaniesResolver;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
 /**
  * SP3 Task 8 — miroir de BrowseProviders pour les SOCIÉTÉS prestataires.
  *
+ * @property-read Collection<int, OrganizationAccount> $companies
+ */
+/**
+ * @property-read bool $estPremium
  * @property-read Collection<int, OrganizationAccount> $companies
  */
 class BrowseCompanies extends Component
@@ -56,6 +62,34 @@ class BrowseCompanies extends Component
     }
 
     /** SP3 Task 8 — sélection d'une société en mode embarqué : émet l'event que le composant parent écoute. */
+    /** Choisir sa societe est un service Premium. La source est `User::isPremium()`. */
+    #[Computed]
+    public function estPremium(): bool
+    {
+        return (bool) Auth::user()?->isPremium();
+    }
+
+    /**
+     * Ouvre le parcours de commande avec cette societe en PREFERENCE. Le catalogue, le prix et
+     * le dispatch ne changent pas.
+     */
+    public function reserverAvecLaSociete(int $organizationId): void
+    {
+        // Une methode Livewire est une porte HTTP a part entiere : la garde vit ici.
+        abort_unless($this->estPremium && $this->estUneSocietePrestataire($organizationId), 403);
+
+        $this->redirect(route('client.rendezvous.create', ['societe' => $organizationId]), navigate: true);
+    }
+
+    /** Un identifiant venu du navigateur ne designe pas forcement une societe prestataire. */
+    private function estUneSocietePrestataire(int $organizationId): bool
+    {
+        return OrganizationAccount::query()
+            ->whereKey($organizationId)
+            ->where('type', OrganizationType::PROVIDER_COMPANY->value)
+            ->exists();
+    }
+
     public function selectCompany(int $organizationId): void
     {
         if ($this->selectionMode) {

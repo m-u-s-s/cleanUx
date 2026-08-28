@@ -3,14 +3,21 @@
 namespace App\Livewire\Client;
 
 use App\Models\Trade;
+use App\Models\User;
 use App\Services\Search\AddressAutocompleteService;
 use App\Services\Search\ProviderSearchCriteria;
 use App\Services\Search\ProviderSearchService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * @property-read bool $estPremium
+ * @property-read array<int, int> $preferes
+ */
 class BrowseProviders extends Component
 {
     use WithPagination;
@@ -60,6 +67,62 @@ class BrowseProviders extends Component
         if ($this->selectionMode) {
             $this->dispatch('providerSelected', providerId: $providerId);
         }
+    }
+
+    /** Choisir son prestataire est un service Premium. La source est `User::isPremium()`. */
+    #[Computed]
+    public function estPremium(): bool
+    {
+        return (bool) Auth::user()?->isPremium();
+    }
+
+    /** @return array<int, int> Les prestataires deja preferes, pour marquer les cartes. */
+    #[Computed]
+    public function preferes(): array
+    {
+        $client = Auth::user();
+
+        if (! $client || ! $client->isPremium()) {
+            return [];
+        }
+
+        return $client->favoriteEmployes()->pluck('users.id')->all();
+    }
+
+    /**
+     * Ouvre le parcours de commande avec ce prestataire en PREFERENCE. Le catalogue, le prix et
+     * le dispatch ne changent pas : le parcours l'ecarte lui-meme s'il n'est pas eligible.
+     */
+    public function reserverAvec(int $providerId): void
+    {
+        // Une methode Livewire est une porte HTTP a part entiere : la garde vit ici.
+        abort_unless($this->estPremium && $this->estUnPrestataire($providerId), 403);
+
+        $this->redirect(route('client.rendezvous.create', ['prestataire' => $providerId]), navigate: true);
+    }
+
+    /** Ajoute ou retire ce prestataire des preferes du client. */
+    public function basculerPrefere(int $providerId): void
+    {
+        abort_unless($this->estPremium && $this->estUnPrestataire($providerId), 403);
+
+        $client = Auth::user();
+
+        if ($client->favoriteEmployes()->where('users.id', $providerId)->exists()) {
+            $client->favoriteEmployes()->detach($providerId);
+            $this->dispatch('toast', message: __('Retiré de vos préférés.'), type: 'success');
+        } else {
+            $client->favoriteEmployes()->attach($providerId, ['is_favorite' => true]);
+            $this->dispatch('toast', message: __('Ajouté à vos préférés.'), type: 'success');
+        }
+
+        unset($this->preferes);
+    }
+
+    /** Un identifiant venu du navigateur ne designe pas forcement un prestataire. */
+    private function estUnPrestataire(int $providerId): bool
+    {
+        return User::query()->providers()->whereKey($providerId)->exists();
     }
 
     public function updatedPostalSearch(string $value): void

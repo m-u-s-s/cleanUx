@@ -217,6 +217,13 @@
                         </p>
                     @endif
 
+                    {{-- LE PRESTATAIRE VOULU N'EST PAS ELIGIBLE : on le DIT, la commande continue. --}}
+                    @if ($prestataireEcarte)
+                        <p class="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">
+                            {{ $prestataireEcarte }}
+                        </p>
+                    @endif
+
                     {{--
                         COMBIEN DE TEMPS ? — avant les questions, parce que sur une prestation
                         horaire la durée EST le prix. La placer après ferait découvrir le montant au

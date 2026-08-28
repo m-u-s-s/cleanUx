@@ -156,10 +156,38 @@ class OrderJourney extends Component
     /** L'étape du questionnaire en cours d'affichage. */
     public int $stepIndex = 0;
 
+    /**
+     * LE PRESTATAIRE VOULU, VENU DE L'ANNUAIRE PREMIUM. Ce n'est qu'une INTENTION : elle
+     * s'applique quand le metier et l'adresse la rendent eligible, et se dit quand elle ne l'est pas.
+     */
+    #[Locked]
+    public ?int $prestataireSouhaite = null;
+
+    /** LA SOCIETE VOULUE : on retient le premier de SES prestataires qui soit eligible. */
+    #[Locked]
+    public ?int $societeSouhaitee = null;
+
+    #[Locked]
+    public ?string $prestataireEcarte = null;
+
     public function mount(?string $sector = null, ?string $trade = null): void
     {
         // Une valeur inventée dans l'URL est ignorée, sans rien casser : la barre d'adresse est une entrée comme une autre, et rien de ce qui en vient n'est cru sur parole.
         $requested = (string) request()->query('mode', '');
+
+        // L'annuaire premium passe l'identifiant ici. Rien n'est cru : la valeur n'est retenue
+        // que si elle designe un prestataire, et le choix reste soumis a l'eligibilite plus bas.
+        $voulu = (int) request()->query('prestataire', 0);
+
+        $societe = (int) request()->query('societe', 0);
+
+        if (Auth::user()?->isPremium()) {
+            if ($voulu > 0) {
+                $this->prestataireSouhaite = $voulu;
+            } elseif ($societe > 0) {
+                $this->societeSouhaitee = $societe;
+            }
+        }
 
         if (in_array($requested, OrderMode::all(), true)) {
             $this->intendedMode = $requested;
@@ -1725,6 +1753,54 @@ class OrderJourney extends Component
         );
     }
 
+    /**
+     * APPLIQUE L'INTENTION VENUE DE L'ANNUAIRE, une fois seulement, quand la liste des
+     * prestataires eligibles existe. Absent de cette liste, il est ECARTE et on le dit.
+     */
+    protected function appliquerLePrestataireSouhaite(): void
+    {
+        if ($this->prestataireSouhaite === null && $this->societeSouhaitee === null) {
+            return;
+        }
+
+        $options = $this->providerOptions;
+
+        if ($options->isEmpty()) {
+            return;
+        }
+
+        $voulu = $this->prestataireSouhaite;
+        $societe = $this->societeSouhaitee;
+        $this->prestataireSouhaite = null;
+        $this->societeSouhaitee = null;
+
+        if ($voulu !== null) {
+            if ($options->contains('id', $voulu)) {
+                $this->selectProvider($voulu);
+
+                return;
+            }
+
+            $this->prestataireEcarte = __('Ce prestataire n’intervient pas sur ce service à cette adresse. Le reste de votre commande est inchangé.');
+
+            return;
+        }
+
+        // La societe voulue : le premier de SES prestataires qui soit dans la liste eligible.
+        $desLaSociete = DB::table('provider_profiles')
+            ->where('organization_account_id', $societe)
+            ->whereIn('user_id', $options->pluck('id'))
+            ->value('user_id');
+
+        if ($desLaSociete !== null) {
+            $this->selectProvider((int) $desLaSociete);
+
+            return;
+        }
+
+        $this->prestataireEcarte = __('Cette société n’intervient pas sur ce service à cette adresse. Le reste de votre commande est inchangé.');
+    }
+
     protected function refreshDerived(): void
     {
         unset(
@@ -1738,6 +1814,8 @@ class OrderJourney extends Component
 
     public function render(): View
     {
+        $this->appliquerLePrestataireSouhaite();
+
         return view('livewire.order-engine.order-journey');
     }
 }

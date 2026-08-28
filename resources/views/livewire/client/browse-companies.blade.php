@@ -99,6 +99,22 @@
                                         class="brio-btn-primary mt-4 w-full justify-center text-sm">
                                     Choisir cette société
                                 </button>
+                            @elseif($this->estPremium)
+                                {{-- La reservation part du parcours habituel : ce nom n'est qu'une
+                                     preference, le catalogue et le prix ne changent pas. --}}
+                                <button type="button"
+                                        wire:click="reserverAvecLaSociete({{ $org->id }})"
+                                        class="brio-btn-primary mt-4 w-full justify-center text-sm">
+                                    {{ __('Réserver avec cette société') }}
+                                </button>
+                            @else
+                                {{-- L'ANNUAIRE RESTE VISIBLE : on n'enleve rien, on propose. --}}
+                                <p class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                                    {{ __('Choisir votre prestataire est réservé au Premium.') }}
+                                    @if(Route::has('premium.offer'))
+                                        <a href="{{ route('premium.offer') }}" class="font-semibold underline">{{ __('Découvrir') }}</a>
+                                    @endif
+                                </p>
                             @endif
                         </div>
                     @empty
