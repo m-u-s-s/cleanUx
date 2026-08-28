@@ -29,14 +29,15 @@ const CHANNEL_LABELS: Record<string, string> = {
   webhook: 'Webhook',
 };
 
-const CATEGORY_LABELS: Record<string, { label: string; description: string }> = {
-  transactional: { label: 'Réservations & missions', description: 'Confirmations, statuts, factures' },
-  verification: { label: 'Vérifications', description: "Codes de sécurité et confirmations d'identité" },
-  reminder: { label: 'Rappels', description: 'Missions à venir, évaluations en attente' },
-  marketing: { label: 'Offres', description: 'Promotions et réductions' },
-  support: { label: 'Support', description: 'Réponses à vos demandes et litiges' },
-  security: { label: 'Sécurité', description: 'Connexions, changements de mot de passe' },
-  product: { label: 'Nouveautés', description: "Évolutions de l'application" },
+// Hors composant : les deux textes portent leur CLE, l'ecran traduit au rendu.
+const CATEGORY_LABELS: Record<string, { libelleCle: string; descriptionCle: string }> = {
+  transactional: { libelleCle: 'notification_preferences.reservations_missions', descriptionCle: 'notification_preferences.confirmations_statuts_factures' },
+  verification: { libelleCle: 'notification_preferences.verifications', descriptionCle: 'notification_preferences.codes_de_securite' },
+  reminder: { libelleCle: 'notification_preferences.rappels', descriptionCle: 'notification_preferences.missions_a_venir' },
+  marketing: { libelleCle: 'notification_preferences.offres', descriptionCle: 'notification_preferences.promotions_et_reductions' },
+  support: { libelleCle: 'notification_preferences.support', descriptionCle: 'notification_preferences.reponses_a_vos_demandes' },
+  security: { libelleCle: 'notification_preferences.securite', descriptionCle: 'notification_preferences.connexions_changements_mot_de_passe' },
+  product: { libelleCle: 'notification_preferences.nouveautes', descriptionCle: 'notification_preferences.evolutions_de_lapplication' },
 };
 
 interface PreferencesPayload {
@@ -134,8 +135,8 @@ export function NotificationPreferencesScreen() {
           <View key={category} style={styles.category} testID={`preference-category-${category}`}>
             {/* Une catégorie ajoutée côté serveur reste lisible : son code sert de libellé de
                 repli plutôt que d'être omise de l'écran. */}
-            <Text style={styles.catLabel}>{meta?.label ?? category}</Text>
-            {meta ? <Text style={styles.catDesc}>{meta.description}</Text> : null}
+            <Text style={styles.catLabel}>{meta ? tr(meta.libelleCle) : category}</Text>
+            {meta ? <Text style={styles.catDesc}>{tr(meta.descriptionCle)}</Text> : null}
 
             <View style={styles.channels}>
               {data.channels.map(channel => {
@@ -153,7 +154,7 @@ export function NotificationPreferencesScreen() {
                       disabled={isForced}
                       onValueChange={v => setEdits(prev => ({ ...prev, [key]: v }))}
                       trackColor={{ true: colors.brand[500] }}
-                      accessibilityLabel={`${CATEGORY_LABELS[category]?.label ?? category} par ${CHANNEL_LABELS[channel] ?? channel}`}
+                      accessibilityLabel={`${CATEGORY_LABELS[category] ? tr(CATEGORY_LABELS[category].libelleCle) : category} par ${CHANNEL_LABELS[channel] ?? channel}`}
                       testID={`preference-switch-${channel}-${category}`}
                     />
                   </View>

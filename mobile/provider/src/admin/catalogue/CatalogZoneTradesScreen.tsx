@@ -313,6 +313,7 @@ function TradeRow({
   onMonter: () => void;
   onDescendre: () => void;
 }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   return (
@@ -354,24 +355,24 @@ function TradeRow({
       <LigneActions
         sujet={metier.name}
         actions={[
-          { cle: 'edit', libelle: 'Modifier le métier', executer: onEdit },
+          { cle: 'edit', libelle: tr('catalog_zone_trades.modifier_le_metier'), executer: onEdit },
           // Ce que le métier DEMANDE au client, et ce que chaque réponse ajoute au prix.
-          { cle: 'parcours', libelle: 'Parcours de questions', executer: onParcours },
+          { cle: 'parcours', libelle: tr('catalog_zone_trades.parcours_de_questions'), executer: onParcours },
           /*
             Proposé pour les SEULS métiers de trajet. L'offrir partout ferait régler un tarif au
             kilomètre sur un ménage — réglage qui ne s'appliquerait jamais, et que le suivant
             croirait actif.
           */
           ...(metier.is_route_service
-            ? [{ cle: 'tarif-distance', libelle: 'Prix au kilomètre', executer: onTarifDistance }]
+            ? [{ cle: 'tarif-distance', libelle: tr('catalog_zone_trades.prix_au_kilometre'), executer: onTarifDistance }]
             : []),
           /*
             L'ordre des métiers est celui du DOCK client : le premier est ce qu'on propose
             d'abord. Monter et descendre plutôt qu'un glisser-déposer, qui se confond avec le
             défilement de la liste sur un téléphone et n'existe pas au clavier.
           */
-          { cle: 'up', libelle: 'Monter dans le secteur', executer: onMonter },
-          { cle: 'down', libelle: 'Descendre dans le secteur', executer: onDescendre },
+          { cle: 'up', libelle: tr('catalog_zone_trades.monter_dans_le_secteur'), executer: onMonter },
+          { cle: 'down', libelle: tr('catalog_zone_trades.descendre_dans_le_secteur'), executer: onDescendre },
         ]}
       />
 

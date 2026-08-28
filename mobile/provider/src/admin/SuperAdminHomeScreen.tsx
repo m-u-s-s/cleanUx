@@ -28,28 +28,29 @@ import { useTraduction } from '@/i18n';
  * L'idiome visuel est celui des autres espaces natifs : `Screen`, cartes à `radius.md`, libellés
  * en petites capitales, couleurs prises dans les jetons de thème — jamais en dur.
  */
+// Hors de tout composant : la constante porte la CLE, l'ecran traduit au rendu.
 const ROLES = [
-  { cle: 'super_admin', label: 'Super administrateur', icone: 'shield-checkmark-outline', sousRoles: 0 },
-  { cle: 'admin', label: 'Administrateur', icone: 'speedometer-outline', sousRoles: 0 },
-  { cle: 'client_individuelle', label: 'Client particulier', icone: 'person-outline', sousRoles: 0 },
-  { cle: 'client_societe', label: 'Client société', icone: 'business-outline', sousRoles: 0 },
-  { cle: 'provider_individuelle', label: 'Prestataire indépendant', icone: 'construct-outline', sousRoles: 0 },
-  { cle: 'provider_societe', label: 'Société prestataire', icone: 'people-outline', sousRoles: 11 },
+  { cle: 'super_admin', libelleCle: 'super_admin_home.super_administrateur', icone: 'shield-checkmark-outline', sousRoles: 0 },
+  { cle: 'admin', libelleCle: 'super_admin_home.administrateur', icone: 'speedometer-outline', sousRoles: 0 },
+  { cle: 'client_individuelle', libelleCle: 'super_admin_home.client_particulier', icone: 'person-outline', sousRoles: 0 },
+  { cle: 'client_societe', libelleCle: 'super_admin_home.client_societe', icone: 'business-outline', sousRoles: 0 },
+  { cle: 'provider_individuelle', libelleCle: 'super_admin_home.prestataire_independant', icone: 'construct-outline', sousRoles: 0 },
+  { cle: 'provider_societe', libelleCle: 'super_admin_home.societe_prestataire', icone: 'people-outline', sousRoles: 11 },
 ] as const;
 
 /** Les onze rôles d'organisation, avec leur rang d'autorité — `canManage()` compare ces nombres. */
 const SOUS_ROLES = [
-  { label: 'Propriétaire', rang: 100 },
-  { label: 'Directeur opérations', rang: 80 },
-  { label: 'Gestionnaire', rang: 80 },
-  { label: 'Coordinateur', rang: 60 },
-  { label: 'Responsable de site', rang: 60 },
-  { label: 'Responsable qualité', rang: 50 },
-  { label: 'Finance', rang: 50 },
-  { label: 'Chef d’équipe', rang: 40 },
-  { label: 'Demandeur', rang: 20 },
-  { label: 'Nettoyeur', rang: 20 },
-  { label: 'Lecteur', rang: 10 },
+  { libelleCle: 'roles.proprietaire', rang: 100 },
+  { libelleCle: 'roles.directeur_operations', rang: 80 },
+  { libelleCle: 'roles.gestionnaire', rang: 80 },
+  { libelleCle: 'roles.coordinateur', rang: 60 },
+  { libelleCle: 'roles.responsable_de_site', rang: 60 },
+  { libelleCle: 'roles.responsable_qualite', rang: 50 },
+  { libelleCle: 'roles.finance', rang: 50 },
+  { libelleCle: 'roles.chef_dequipe', rang: 40 },
+  { libelleCle: 'roles.demandeur', rang: 20 },
+  { libelleCle: 'roles.nettoyeur', rang: 20 },
+  { libelleCle: 'roles.lecteur', rang: 10 },
 ] as const;
 
 export function SuperAdminHomeScreen() {
@@ -77,7 +78,7 @@ export function SuperAdminHomeScreen() {
             {ROLES.map((role) => (
               <View key={role.cle} style={styles.carte}>
                 <Icon name={role.icone as never} size={20} color={colors.brand[500]} />
-                <Text style={styles.carteLabel}>{role.label}</Text>
+                <Text style={styles.carteLabel}>{tr(role.libelleCle)}</Text>
                 <Text style={styles.carteNote}>
                   {role.sousRoles > 0 ? `${role.sousRoles} sous-rôles` : 'Pas de sous-rôle'}
                 </Text>
@@ -91,8 +92,8 @@ export function SuperAdminHomeScreen() {
 
           <View style={styles.puces}>
             {SOUS_ROLES.map((sousRole) => (
-              <View key={sousRole.label} style={styles.puce}>
-                <Text style={styles.puceLabel}>{sousRole.label}</Text>
+              <View key={sousRole.libelleCle} style={styles.puce}>
+                <Text style={styles.puceLabel}>{tr(sousRole.libelleCle)}</Text>
                 <Text style={styles.puceRang}>rang {sousRole.rang}</Text>
               </View>
             ))}

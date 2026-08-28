@@ -75,7 +75,7 @@ const BOOKING_MODES: BookingMode[] = [
 ];
 
 type QuickAction = {
-  label: string;
+  libelleCle: string;
   screen: string;
   params?: object;
   icon: 'calendar-outline' | 'chatbubble-outline' | 'gift-outline' | 'sparkles-outline' | 'receipt-outline';
@@ -85,11 +85,11 @@ const QUICK_ACTIONS: QuickAction[] = [
   // L'onglet Réservations vit dans MainTabs : sans le paramètre imbriqué, le tap ne fait rien —
   // c'est exactement le défaut qu'avait rencontré le tableau de bord prestataire sur son onglet
   // Revenus, et que son commentaire signale.
-  { label: 'Mes réservations', screen: 'MainTabs', params: { screen: 'Bookings' }, icon: 'calendar-outline' },
-  { label: 'Messagerie', screen: 'ChatList', icon: 'chatbubble-outline' },
-  { label: 'Fidélité', screen: 'Loyalty', icon: 'gift-outline' },
-  { label: 'Devis IA', screen: 'AiQuote', icon: 'sparkles-outline' },
-  { label: 'Mes factures', screen: 'Invoices', icon: 'receipt-outline' },
+  { libelleCle: 'profile.mes_reservations', screen: 'MainTabs', params: { screen: 'Bookings' }, icon: 'calendar-outline' },
+  { libelleCle: 'profile.messagerie', screen: 'ChatList', icon: 'chatbubble-outline' },
+  { libelleCle: 'home_actions.fidelite', screen: 'Loyalty', icon: 'gift-outline' },
+  { libelleCle: 'profile.devis_ia', screen: 'AiQuote', icon: 'sparkles-outline' },
+  { libelleCle: 'invoices.mes_factures', screen: 'Invoices', icon: 'receipt-outline' },
 ];
 
 export const HomeActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref) => {
@@ -150,15 +150,15 @@ export const HomeActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref) => {
         <View style={styles.actions}>
           {QUICK_ACTIONS.map(action => (
             <TouchableOpacity
-              key={action.label}
+              key={action.libelleCle}
               style={[styles.actionCard, { backgroundColor: themeColors.card }]}
               onPress={() => navigation.navigate(action.screen, action.params)}
               accessibilityRole="button"
-              accessibilityLabel={action.label}
+              accessibilityLabel={tr(action.libelleCle)}
               testID={`home-action-${action.screen}`}
             >
               <Icon name={action.icon} size={22} color={colors.brand[500]} />
-              <Text style={styles.actionLabel}>{action.label}</Text>
+              <Text style={styles.actionLabel}>{tr(action.libelleCle)}</Text>
             </TouchableOpacity>
           ))}
         </View>

@@ -65,14 +65,15 @@ type CardState = 'todo' | 'locked' | 'in_review' | 'needs_fix' | 'done';
  * du texte courant : surface[600] 6,99:1, warning[700] 4,92:1, danger[700] 5,91:1,
  * success[700] 5,26:1. Les nuances immédiatement plus claires — surface[500] à 4,27:1, success[600] à 3,61:1 et danger[600] à 4,41:1 — échouent au seuil de 4,5:1 et ne sont donc pas employées ici.
  */
-const statePresentation = (t: ThemeTokens): Record<CardState, { label: string; color: string; background: string }> => ({
+// Hors composant : la presentation porte la CLE du libelle, l'ecran traduit au rendu.
+const statePresentation = (t: ThemeTokens): Record<CardState, { libelleCle: string; color: string; background: string }> => ({
   // Les fonds neutres passent aux jetons ; les couleurs de TEXTE restent sémantiques, leurs
   // ratios de contraste ayant été mesurés et leur sens ne dépendant pas du fond.
-  todo: { label: 'À faire', color: t.textSecondary, background: t.inputBg },
-  locked: { label: 'Verrouillé', color: t.textSecondary, background: t.inputBg },
-  in_review: { label: 'En cours de vérification', color: colors.warning[700], background: colors.warning[50] },
-  needs_fix: { label: 'À corriger', color: colors.danger[700], background: colors.danger[50] },
-  done: { label: 'Vérifié', color: colors.success[700], background: colors.success[50] },
+  todo: { libelleCle: 'provider_onboarding.a_faire', color: t.textSecondary, background: t.inputBg },
+  locked: { libelleCle: 'provider_onboarding.verrouille', color: t.textSecondary, background: t.inputBg },
+  in_review: { libelleCle: 'provider_onboarding.en_cours_de_verification', color: colors.warning[700], background: colors.warning[50] },
+  needs_fix: { libelleCle: 'provider_onboarding.a_corriger', color: colors.danger[700], background: colors.danger[50] },
+  done: { libelleCle: 'provider_onboarding.verifie', color: colors.success[700], background: colors.success[50] },
 });
 
 function stepErrorMessage(error: unknown): string {
@@ -235,7 +236,7 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
                 disabled={state === 'locked' || state === 'done'}
                 accessibilityRole="button"
                 accessibilityState={{ expanded: open, disabled: state === 'locked' || state === 'done' }}
-                accessibilityLabel={`${step.label} — ${presentation.label}`}
+                accessibilityLabel={`${step.label} — ${tr(presentation.libelleCle)}`}
                 testID={`onboarding-card-${step.code}`}
               >
                 <View style={[styles.cardIcon, { backgroundColor: presentation.background }]}>
@@ -246,7 +247,7 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
                   <Text style={styles.cardTitle}>{step.label}</Text>
                   <View style={styles.cardMetaRow}>
                     <Text style={[styles.cardState, { color: presentation.color }]}>
-                      {presentation.label}
+                      {tr(presentation.libelleCle)}
                     </Text>
                     {state === 'todo' && look.duration ? (
                       <Text style={styles.cardDuration}>· {look.duration}</Text>

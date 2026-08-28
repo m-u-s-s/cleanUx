@@ -15,12 +15,13 @@ import type { ReservationSociete } from './types';
 import { useTraduction } from '@/i18n';
 
 /** Les statuts proposés au filtre, dans l'ordre où un gestionnaire les consulte. */
-const FILTRES: Array<{ label: string; valeur: string | null }> = [
-  { label: 'Toutes', valeur: null },
-  { label: 'À approuver', valeur: 'pending_approval' },
-  { label: 'Confirmées', valeur: 'confirmed' },
-  { label: 'En cours', valeur: 'in_progress' },
-  { label: 'Terminées', valeur: 'completed' },
+// Hors composant : la constante porte la CLE, l'ecran traduit au rendu.
+const FILTRES: Array<{ libelleCle: string; valeur: string | null }> = [
+  { libelleCle: 'company_bookings.toutes', valeur: null },
+  { libelleCle: 'company_overview.a_approuver', valeur: 'pending_approval' },
+  { libelleCle: 'company_bookings.confirmees', valeur: 'confirmed' },
+  { libelleCle: 'company_overview.en_cours', valeur: 'in_progress' },
+  { libelleCle: 'company_bookings.terminees', valeur: 'completed' },
 ];
 
 const TON_PAR_STATUT: Record<string, 'success' | 'warning' | 'neutral'> = {
@@ -70,10 +71,10 @@ export function CompanyBookingsScreen() {
       <Text style={styles.title}>{tr('company_bookings.reservations')}</Text>
 
       <View style={styles.filtres}>
-        {FILTRES.map(({ label, valeur }) => (
+        {FILTRES.map(({ libelleCle, valeur }) => (
           <Button
-            key={label}
-            label={label}
+            key={libelleCle}
+            label={tr(libelleCle)}
             size="sm"
             variant={statut === valeur ? 'primary' : 'ghost'}
             onPress={() => setStatut(valeur)}

@@ -11,14 +11,18 @@ import { useJourney, useJourneyMutation } from './journeyHooks';
 import type { JourneyOption, JourneyQuestion } from './journeyHooks';
 import { useTraduction } from '@/i18n';
 
-/** Les types qu'on sait créer depuis le mobile. Les autres se règlent sur le web. */
+/**
+ * Les types qu'on sait créer depuis le mobile. Les autres se règlent sur le web.
+ *
+ * Hors de tout composant : la constante porte la CLE, l'écran traduit au rendu.
+ */
 const TYPES = [
-  { valeur: 'boolean', libelle: 'Oui / Non' },
-  { valeur: 'single_choice', libelle: 'Un choix' },
-  { valeur: 'multi_choice', libelle: 'Plusieurs choix' },
-  { valeur: 'counter', libelle: 'Compteur' },
-  { valeur: 'surface', libelle: 'Surface' },
-  { valeur: 'text', libelle: 'Texte' },
+  { valeur: 'boolean', libelleCle: 'journey_builder.oui_non' },
+  { valeur: 'single_choice', libelleCle: 'journey_builder.un_choix' },
+  { valeur: 'multi_choice', libelleCle: 'journey_builder.plusieurs_choix' },
+  { valeur: 'counter', libelleCle: 'journey_builder.compteur' },
+  { valeur: 'surface', libelleCle: 'journey_builder.surface' },
+  { valeur: 'text', libelleCle: 'journey_builder.texte' },
   /*
    * LES DEUX LOCALISATIONS QUI FONT UN TRAJET.
    *
@@ -27,8 +31,8 @@ const TYPES = [
    * signifierait qu'un métier de transport créé en déplacement part sans ses règles — et que
    * personne ne s'en aperçoive avant qu'un conducteur sans permis reçoive une course.
    */
-  { valeur: 'location:pickup', libelle: 'Départ (carte)' },
-  { valeur: 'location:dropoff', libelle: 'Arrivée (carte)' },
+  { valeur: 'location:pickup', libelleCle: 'journey_builder.depart_carte' },
+  { valeur: 'location:dropoff', libelleCle: 'journey_builder.arrivee_carte' },
 ] as const;
 
 /**
@@ -172,7 +176,7 @@ export function JourneyBuilderScreen() {
               style={[styles.type, nouveauType === type.valeur && styles.typeChoisi]}
             >
               <Text style={[styles.typeTexte, nouveauType === type.valeur && styles.typeTexteChoisi]}>
-                {type.libelle}
+                {tr(type.libelleCle)}
               </Text>
             </Pressable>
           ))}

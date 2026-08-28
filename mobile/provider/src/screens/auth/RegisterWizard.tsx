@@ -78,15 +78,16 @@ function isPlausibleEmail(value: string): boolean {
 }
 
 /** Trois niveaux suffisent à guider sans prétendre mesurer une entropie réelle. */
-function passwordStrength(value: string): { score: 0 | 1 | 2 | 3; label: string; color: string } {
-  if (value.length < PASSWORD_MIN) return { score: 0, label: 'Trop court', color: colors.danger[600] };
+// Hors composant : la force du mot de passe rend une CLE, l'ecran traduit au rendu.
+function passwordStrength(value: string): { score: 0 | 1 | 2 | 3; libelleCle: string; color: string } {
+  if (value.length < PASSWORD_MIN) return { score: 0, libelleCle: 'mot_de_passe.trop_court', color: colors.danger[600] };
 
   const varieties = [/[a-z]/, /[A-Z]/, /\d/, /[^a-zA-Z0-9]/].filter(r => r.test(value)).length;
 
-  if (varieties >= 3 && value.length >= 12) return { score: 3, label: 'Excellent', color: colors.success[600] };
-  if (varieties >= 2) return { score: 2, label: 'Correct', color: colors.warning[700] };
+  if (varieties >= 3 && value.length >= 12) return { score: 3, libelleCle: 'mot_de_passe.excellent', color: colors.success[600] };
+  if (varieties >= 2) return { score: 2, libelleCle: 'mot_de_passe.correct', color: colors.warning[700] };
 
-  return { score: 1, label: 'Faible', color: colors.warning[700] };
+  return { score: 1, libelleCle: 'mot_de_passe.faible', color: colors.warning[700] };
 }
 
 export function RegisterWizard() {
@@ -539,7 +540,7 @@ export function RegisterWizard() {
                     ]}
                   />
                 </View>
-                <Text style={[styles.strengthLabel, { color: strength.color }]}>{strength.label}</Text>
+                <Text style={[styles.strengthLabel, { color: strength.color }]}>{tr(strength.libelleCle)}</Text>
               </View>
             ) : null}
           </Question>

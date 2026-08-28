@@ -15,14 +15,15 @@ import { useTraduction } from '@/i18n';
  */
 const MAX_PREUVES = 5;
 
-const CATEGORIES: { value: string; label: string }[] = [
-  { value: 'quality', label: 'Qualité' },
-  { value: 'no_show', label: 'Absence' },
-  { value: 'payment', label: 'Paiement' },
-  { value: 'damage', label: 'Dommage' },
-  { value: 'safety', label: 'Sécurité' },
-  { value: 'communication', label: 'Communication' },
-  { value: 'other', label: 'Autre' },
+// Hors composant : la constante porte la CLE, l'ecran traduit au rendu.
+const CATEGORIES: { value: string; libelleCle: string }[] = [
+  { value: 'quality', libelleCle: 'disputes.qualite' },
+  { value: 'no_show', libelleCle: 'disputes.absence' },
+  { value: 'payment', libelleCle: 'payment_checkout.paiement' },
+  { value: 'damage', libelleCle: 'disputes.dommage' },
+  { value: 'safety', libelleCle: 'safety.securite' },
+  { value: 'communication', libelleCle: 'rating.communication' },
+  { value: 'other', libelleCle: 'disputes.autre' },
 ];
 
 export function DisputesScreen() {
@@ -133,7 +134,7 @@ export function DisputesScreen() {
                 onPress={() => setCategory(cat.value)}
                 style={[styles.chip, category === cat.value && styles.chipActive]}
               >
-                <Text style={[styles.chipText, category === cat.value && styles.chipTextActive]}>{cat.label}</Text>
+                <Text style={[styles.chipText, category === cat.value && styles.chipTextActive]}>{tr(cat.libelleCle)}</Text>
               </Pressable>
             ))}
           </View>

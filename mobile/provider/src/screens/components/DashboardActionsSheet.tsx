@@ -11,17 +11,17 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useTraduction } from '@/i18n';
 
-type QuickAction = { label: string; screen: string; params?: object };
+type QuickAction = { libelleCle: string; screen: string; params?: object };
 
 const QUICK_ACTIONS: QuickAction[] = [
   // En tête : une course immédiate se joue en secondes, et c'est la seule action de cette
   // feuille qui périme si on la lit trop tard.
-  { label: 'Courses immédiates', screen: 'AsapOffers' },
-  { label: 'Disponibilités', screen: 'Availability' },
-  { label: 'Badges', screen: 'Badges' },
+  { libelleCle: 'asap_offers.courses_immediates', screen: 'AsapOffers' },
+  { libelleCle: 'dashboard_actions.disponibilites', screen: 'Availability' },
+  { libelleCle: 'dashboard_actions.badges', screen: 'Badges' },
   // L'onglet Revenus vit dans MainTabs : sans le param imbriqué, le tap ne fait rien.
-  { label: 'Revenus', screen: 'MainTabs', params: { screen: 'Earnings' } },
-  { label: 'Messagerie', screen: 'ProviderChatList' },
+  { libelleCle: 'dashboard_actions.revenus', screen: 'MainTabs', params: { screen: 'Earnings' } },
+  { libelleCle: 'provider_chat_list.messagerie', screen: 'ProviderChatList' },
 ];
 
 export const DashboardActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref) => {
@@ -122,8 +122,8 @@ export const DashboardActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref)
       <Text style={styles.sectionTitle} accessibilityRole="header">{tr('dashboard_actions.acces_rapide')}</Text>
       <View style={styles.quickActions}>
         {QUICK_ACTIONS.map(action => (
-          <TouchableOpacity key={action.label} style={styles.quickCard} onPress={() => go(action)}>
-            <Text style={styles.quickLabel}>{action.label}</Text>
+          <TouchableOpacity key={action.libelleCle} style={styles.quickCard} onPress={() => go(action)}>
+            <Text style={styles.quickLabel}>{tr(action.libelleCle)}</Text>
           </TouchableOpacity>
         ))}
       </View>

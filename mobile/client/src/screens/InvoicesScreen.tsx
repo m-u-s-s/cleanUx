@@ -38,22 +38,24 @@ type SortOption = 'recent' | 'oldest' | 'amount_desc' | 'amount_asc';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
-  { label: 'Tous', value: 'all' },
-  { label: 'Brouillon', value: 'draft' },
-  { label: 'Envoyé', value: 'sent' },
-  { label: 'Accepté', value: 'accepted' },
-  { label: 'Émise', value: 'issued' },
-  { label: 'Partiel', value: 'partial' },
-  { label: 'Payée', value: 'paid' },
-  { label: 'En retard', value: 'overdue' },
+// Ces constantes vivent hors de tout composant : elles portent la CLE, et c'est l'ecran qui
+// traduit au rendu. Le nom `libelleCle` le dit, et `tsc` nomme alors chaque site de rendu.
+const STATUS_FILTERS: { libelleCle: string; value: StatusFilter }[] = [
+  { libelleCle: 'invoices.tous', value: 'all' },
+  { libelleCle: 'invoices.brouillon', value: 'draft' },
+  { libelleCle: 'invoices.envoye', value: 'sent' },
+  { libelleCle: 'invoices.accepte', value: 'accepted' },
+  { libelleCle: 'invoices.emise', value: 'issued' },
+  { libelleCle: 'invoices.partiel', value: 'partial' },
+  { libelleCle: 'invoices.payee', value: 'paid' },
+  { libelleCle: 'invoices.en_retard', value: 'overdue' },
 ];
 
-const SORT_OPTIONS: { label: string; value: SortOption }[] = [
-  { label: 'Récent', value: 'recent' },
-  { label: 'Ancien', value: 'oldest' },
-  { label: 'Montant ↓', value: 'amount_desc' },
-  { label: 'Montant ↑', value: 'amount_asc' },
+const SORT_OPTIONS: { libelleCle: string; value: SortOption }[] = [
+  { libelleCle: 'invoices.recent', value: 'recent' },
+  { libelleCle: 'invoices.ancien', value: 'oldest' },
+  { libelleCle: 'invoices.montant_decroissant', value: 'amount_desc' },
+  { libelleCle: 'invoices.montant_croissant', value: 'amount_asc' },
 ];
 
 const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'danger' | 'neutral' | 'brand'> = {
@@ -270,7 +272,7 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
                 opt.value === sort && styles.sortLabelActive,
               ]}
             >
-              {opt.label}
+              {tr(opt.libelleCle)}
             </Text>
           </TouchableOpacity>
         ))}
@@ -299,7 +301,7 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
                 item.value === status && styles.filterLabelActive,
               ]}
             >
-              {item.label}
+              {tr(item.libelleCle)}
             </Text>
           </TouchableOpacity>
         ))}

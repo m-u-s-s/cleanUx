@@ -39,7 +39,18 @@ function clesEmployees(): Map<string, string> {
     for (const fichier of fichiers(dossier)) {
       const source = fs.readFileSync(path.join(RACINE, fichier), 'utf8');
 
+      /*
+       * DEUX FORMES, PAS UNE. `tr('cle')` est la plus courante, mais une constante de module range
+       * la clé dans un littéral — `libelleCle: 'invoices.tous'` — et l'écran la traduit au rendu.
+       * Ne chercher que la première déclarerait ces clés-là orphelines.
+       */
       for (const m of source.matchAll(/\btr\('([^']+)'\)/g)) {
+        if (!trouvees.has(m[1])) {
+          trouvees.set(m[1], fichier);
+        }
+      }
+
+      for (const m of source.matchAll(/(?:libelleCle|descriptionCle)\s*:\s*'([^']+)'/g)) {
         if (!trouvees.has(m[1])) {
           trouvees.set(m[1], fichier);
         }

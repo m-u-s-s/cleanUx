@@ -8,6 +8,7 @@ import { useThemeColors, type ThemeTokens } from '@/theme/useThemeColors';
 import { GlassSurface } from '@/ui/GlassSurface';
 import type { LiveMissionClock, MissionClockPhase } from './types';
 import { formatChronometre, formatDureeCourte } from './useMissionClock';
+import { useTraduction, type Traducteur } from '@/i18n';
 
 export type ClockAudience = 'client' | 'provider';
 
@@ -45,12 +46,13 @@ export function MissionClockBar({
 }: MissionClockBarProps) {
   const theme = useThemeColors();
   const styles = stylesFor(theme);
+  const { t: tr } = useTraduction();
   const [regleOuverte, setRegleOuverte] = React.useState(false);
 
   if (!clock.applies) return null;
 
   const accent = accentDe(clock.phase, theme);
-  const { titre, detail } = discours(clock, audience);
+  const { titre, detail } = discours(clock, audience, tr);
   const facturees = clock.server.billable_overtime_minutes ?? 0;
   const montant = clock.server.overtime_amount_cents ?? 0;
   const texteDeLaRegle = audience === 'provider' ? clock.server.rule?.provider : clock.server.rule?.short;
@@ -166,7 +168,12 @@ function accentDe(phase: MissionClockPhase, theme: ThemeTokens): string {
  * majoration pendant qu'elle ne s'applique pas est le meilleur moyen qu'on ne la croie plus quand
  * elle s'applique.
  */
-function discours(clock: LiveMissionClock, audience: ClockAudience): { titre: string; detail: string } {
+// Le traducteur est PASSE : cette fonction vit hors de tout composant, un hook y est illegal.
+function discours(
+  clock: LiveMissionClock,
+  audience: ClockAudience,
+  tr: Traducteur
+): { titre: string; detail: string } {
   const achetees = clock.server.purchased_minutes ?? 0;
   const total = formatDureeCourte(achetees * 60);
   const franchise = clock.server.grace_minutes ?? 0;
@@ -175,32 +182,34 @@ function discours(clock: LiveMissionClock, audience: ClockAudience): { titre: st
   switch (clock.phase) {
     case 'overtime':
       return {
-        titre: 'Temps dépassé',
+        titre: tr('mission_clock.temps_depasse'),
         detail: client
-          ? `Vous aviez réservé ${total}. Le temps supplémentaire est facturé au tarif majoré.`
-          : `${total} étaient prévues. Le temps supplémentaire est facturé au client au tarif majoré.`,
+          ? tr('mission_clock.depasse_client', { total })
+          : tr('mission_clock.depasse_prestataire', { total }),
       };
 
     case 'grace':
       return {
-        titre: 'Fin de la tolérance',
+        titre: tr('mission_clock.fin_de_la_tolerance'),
         detail: client
-          ? `Vos ${total} sont écoulées. ${franchise} min offertes, puis le temps supplémentaire devient payant.`
-          : `Les ${total} prévues sont écoulées. ${franchise} min de tolérance, ensuite le client est facturé en plus.`,
+          ? tr('mission_clock.tolerance_client', { total, franchise })
+          : tr('mission_clock.tolerance_prestataire', { total, franchise }),
       };
 
     case 'ending':
       return {
-        titre: 'Temps restant',
+        titre: tr('mission_clock.temps_restant'),
         detail: client
-          ? `Bientôt la fin de vos ${total}. Vous pouvez prolonger dès maintenant, au tarif normal.`
-          : `Bientôt la fin des ${total} prévues. Le client peut encore prolonger au tarif normal.`,
+          ? tr('mission_clock.bientot_la_fin_client', { total })
+          : tr('mission_clock.bientot_la_fin_prestataire', { total }),
       };
 
     default:
       return {
-        titre: 'Temps restant',
-        detail: client ? `Sur les ${total} réservées.` : `Sur les ${total} prévues.`,
+        titre: tr('mission_clock.temps_restant'),
+        detail: client
+          ? tr('mission_clock.sur_les_reservees', { total })
+          : tr('mission_clock.sur_les_prevues', { total }),
       };
   }
 }

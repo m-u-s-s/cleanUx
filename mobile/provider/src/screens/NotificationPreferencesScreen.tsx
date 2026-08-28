@@ -7,12 +7,13 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useTraduction } from '@/i18n';
 
+// Hors composant : les deux textes portent leur CLE, l'ecran traduit au rendu.
 const CATEGORIES = [
-  { key: 'transactional', label: 'Missions & réservations', description: 'Nouvelles missions, confirmations, statuts' },
-  { key: 'chat', label: 'Messages', description: 'Nouveaux messages de clients' },
-  { key: 'marketing', label: 'Promotions', description: 'Offres spéciales et actualités' },
-  { key: 'reminder', label: 'Rappels', description: 'Missions à venir, évaluations en attente' },
-  { key: 'system', label: 'Système', description: 'Mises à jour, maintenance' },
+  { key: 'transactional', libelleCle: 'notification_preferences.missions_reservations', descriptionCle: 'notification_preferences.nouvelles_missions_confirmations' },
+  { key: 'chat', libelleCle: 'notification_preferences.messages', descriptionCle: 'notification_preferences.nouveaux_messages_de_clients' },
+  { key: 'marketing', libelleCle: 'notification_preferences.promotions', descriptionCle: 'notification_preferences.offres_speciales_et_actualites' },
+  { key: 'reminder', libelleCle: 'notification_preferences.rappels', descriptionCle: 'notification_preferences.missions_a_venir' },
+  { key: 'system', libelleCle: 'notification_preferences.systeme', descriptionCle: 'notification_preferences.mises_a_jour_maintenance' },
 ];
 
 const CHANNELS = [
@@ -64,8 +65,8 @@ export function NotificationPreferencesScreen() {
       <Text style={styles.title}>{tr('notification_preferences.preferences_de_notifications')}</Text>
       {CATEGORIES.map(cat => (
         <View key={cat.key} style={styles.category}>
-          <Text style={styles.catLabel}>{cat.label}</Text>
-          <Text style={styles.catDesc}>{cat.description}</Text>
+          <Text style={styles.catLabel}>{tr(cat.libelleCle)}</Text>
+          <Text style={styles.catDesc}>{tr(cat.descriptionCle)}</Text>
           <View style={styles.channels}>
             {CHANNELS.map(ch => (
               <View key={ch.key} style={styles.channelRow}>
