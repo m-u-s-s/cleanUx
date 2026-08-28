@@ -106,7 +106,7 @@ export function HomeScreen() {
                 : navigation.navigate('BookingDetail', { bookingId: focus.id })
             }
             accessibilityRole="button"
-            accessibilityLabel={`${focus.service_name} — ${focusIsLive ? 'suivre en direct' : 'voir le détail'}`}
+            accessibilityLabel={`${focus.service_name} — ${focusIsLive ? tr('home.suivre_en_direct') : tr('home.voir_le_detail')}`}
             testID="home-focus-booking"
           >
             <View style={styles.focusHeader}>
@@ -141,7 +141,7 @@ export function HomeScreen() {
                 color={colors.brand[600]}
               />
               <Text style={styles.focusCtaText}>
-                {focusIsLive ? 'Suivre en direct' : 'Voir le détail'}
+                {focusIsLive ? tr('home.suivre_en_direct_2') : tr('home.voir_le_detail_2')}
               </Text>
             </View>
           </TouchableOpacity>
@@ -177,7 +177,7 @@ export function HomeScreen() {
                     : navigation.navigate('BookingDetail', { bookingId: b.id })
                 }
                 accessibilityRole="button"
-                accessibilityLabel={`${b.service_name} — ${isLive(b) ? 'suivre en direct' : 'voir le détail'}`}
+                accessibilityLabel={`${b.service_name} — ${isLive(b) ? tr('home.suivre_en_direct') : tr('home.voir_le_detail')}`}
                 testID={`home-other-booking-${b.id}`}
               >
                 <View style={styles.otherText}>

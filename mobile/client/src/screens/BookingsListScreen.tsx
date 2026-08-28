@@ -99,6 +99,7 @@ const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'neutral'
 };
 
 const BookingCard = React.memo(function BookingCard({ booking }: { booking: Booking }) {
+  const { t: tr } = useTraduction();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const themeColors = useThemeColors();
   const styles = stylesFor(themeColors);

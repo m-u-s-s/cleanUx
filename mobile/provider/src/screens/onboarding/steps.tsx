@@ -369,7 +369,7 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
         />
       ) : (
         <Button
-          label={refused ? 'Reprendre la vérification' : 'Démarrer la vérification'}
+          label={refused ? tr('steps.reprendre_la_verification') : tr('steps.demarrer_la_verification')}
           onPress={() => start.mutate()}
           fullWidth
           size="lg"
@@ -520,7 +520,7 @@ export function DocumentsStep({ onDone, submitting, error }: StepProps) {
 
             {document && !rejected ? (
               <Text style={styles.documentStatus}>
-                {document.status === 'approved' ? 'Vérifiée ✓' : 'En cours de vérification'}
+                {document.status === 'approved' ? tr('steps.verifiee') : tr('steps.en_cours_de_verification')}
                 {document.file_name ? ` — ${document.file_name}` : ''}
               </Text>
             ) : null}

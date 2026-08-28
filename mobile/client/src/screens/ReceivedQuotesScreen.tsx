@@ -126,7 +126,7 @@ export function ReceivedQuotesScreen() {
 
             <View style={styles.actions}>
               <Button
-                label={ouvert === item.id ? 'Masquer le détail' : 'Voir le détail'}
+                label={ouvert === item.id ? tr('received_quotes.masquer_le_detail') : tr('received_quotes.voir_le_detail')}
                 size="sm"
                 variant="ghost"
                 onPress={() => setOuvert(ouvert === item.id ? null : item.id)}

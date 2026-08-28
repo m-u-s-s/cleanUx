@@ -411,7 +411,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
               {incident.description}
             </Text>
             <Text style={styles.incidentMeta}>
-              {incident.notified_at ? 'Client prévenu' : 'Client non joint'}
+              {incident.notified_at ? tr('mission_field.client_prevenu') : tr('mission_field.client_non_joint')}
             </Text>
           </View>
         ))}
@@ -484,8 +484,8 @@ export function MissionFieldScreen({ route, navigation }: Props) {
               {extra.awaiting_client
                 ? 'En attente de réponse'
                 : extra.status === 'declined'
-                  ? 'Refusé par le client'
-                  : 'Accepté — vous pouvez le faire'}
+                  ? tr('mission_field.refuse_par_le_client')
+                  : tr('mission_field.accepte_vous_pouvez_le_faire')}
             </Text>
           </View>
         ))}

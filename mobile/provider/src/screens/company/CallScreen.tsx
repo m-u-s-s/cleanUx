@@ -108,7 +108,7 @@ export function CallScreen() {
       <View style={styles.centre} testID="ecran-appel">
         <Text style={styles.etat}>
           {etat === 'connexion' && 'Connexion…'}
-          {etat === 'en_cours' && (avecVideo ? 'Appel vidéo en cours' : 'Appel en cours')}
+          {etat === 'en_cours' && (avecVideo ? tr('call.appel_video_en_cours') : tr('call.appel_en_cours'))}
           {etat === 'indisponible' && 'Appel indisponible sur cet appareil'}
         </Text>
 

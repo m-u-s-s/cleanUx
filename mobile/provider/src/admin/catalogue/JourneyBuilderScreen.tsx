@@ -134,8 +134,8 @@ export function JourneyBuilderScreen() {
       <View style={[styles.verdict, publiable ? styles.verdictOk : styles.verdictBloque]}>
         <Text style={styles.verdictTexte}>
           {publiable
-            ? 'Ce parcours est publiable.'
-            : 'Ce parcours n’est pas encore publiable — il manque des éléments.'}
+            ? tr('journey_builder.ce_parcours_est_publiable')
+            : tr('journey_builder.ce_parcours_nest_pas_encore')}
         </Text>
       </View>
 

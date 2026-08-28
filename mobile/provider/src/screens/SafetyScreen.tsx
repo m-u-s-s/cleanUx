@@ -81,7 +81,7 @@ export function SafetyScreen() {
       {alerte ? (
         <View style={styles.encours} testID="alerte-en-cours">
           <Badge
-            label={alerte.level === 'emergency' ? 'Urgence en cours' : 'Veille en cours'}
+            label={alerte.level === 'emergency' ? tr('safety.urgence_en_cours') : tr('safety.veille_en_cours')}
             variant={alerte.level === 'emergency' ? 'danger' : 'warning'}
           />
 

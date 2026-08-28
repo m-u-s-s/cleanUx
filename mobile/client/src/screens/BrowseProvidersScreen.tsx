@@ -102,6 +102,7 @@ export function BrowseProvidersScreen() {
 }
 
 const ProviderCard = React.memo(function ProviderCard({ provider }: { provider: Provider }) {
+  const { t: tr } = useTraduction();
   const themeColors = useThemeColors();
   return (
     <View style={[styles.card, { backgroundColor: themeColors.card }]}>

@@ -61,7 +61,7 @@ export function BoutonAppelMasque({
       onPress={appeler}
       accessibilityRole="button"
       accessibilityLabel={
-        role === 'client' ? 'Appeler le prestataire' : 'Appeler le client'
+        role === 'client' ? tr('bouton_appel_masque.appeler_le_prestataire') : tr('bouton_appel_masque.appeler_le_client')
       }
       accessibilityHint={tr('bouton_appel_masque.lappel_passe_par_un_numero')}
       style={[styles.bouton, style]}

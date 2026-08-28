@@ -236,7 +236,7 @@ export function AvailabilityScreen() {
         <View style={styles.fondModale}>
           <View style={styles.modale}>
             <Text style={styles.titreModale}>
-              {edition?.mode === 'creation' ? 'Nouveau créneau' : 'Modifier le créneau'}
+              {edition?.mode === 'creation' ? tr('availability.nouveau_creneau') : tr('availability.modifier_le_creneau')}
               {edition ? ` — ${weekdayLabel(edition.weekday)}` : ''}
             </Text>
 

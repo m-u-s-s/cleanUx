@@ -26,7 +26,7 @@ import { Icon } from './Icon';
 import { useReducedMotion } from './a11y';
 import { colors, radius, shadows, spacing, typography } from '../theme';
 import { ApiError } from '../api';
-import { useTraduction } from '@/i18n';
+import { traduireMaintenant, useTraduction } from '@/i18n';
 
 /**
  * Fond clair légèrement bleuté : le kit partagé (TextInput, Button, Divider) est entièrement
@@ -55,8 +55,8 @@ const STAGGER = 70;
 
 export function authErrorMessage(error: unknown, action: 'login' | 'register'): string {
   const fallback = action === 'login'
-    ? 'Connexion impossible pour le moment.'
-    : 'Création du compte impossible pour le moment.';
+    ? traduireMaintenant('auth_shell.connexion_impossible_pour_le_moment')
+    : traduireMaintenant('auth_shell.creation_du_compte_impossible_pour');
 
   if (!(error instanceof ApiError)) {
     return fallback;

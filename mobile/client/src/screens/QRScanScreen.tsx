@@ -35,10 +35,10 @@ export function QRScanScreen({ route, navigation }: Props) {
       await apiClient.post(endpoint, { qr_code: data });
 
       Alert.alert(
-        action === 'start' ? 'Mission démarrée' : 'Mission terminée',
+        action === 'start' ? tr('q_r_scan.mission_demarree') : tr('q_r_scan.mission_terminee'),
         action === 'start'
-          ? 'Le prestataire est confirmé sur site. La mission commence !'
-          : 'La mission est terminée. Le paiement sera capturé.',
+          ? tr('q_r_scan.le_prestataire_est_confirme_sur')
+          : tr('q_r_scan.la_mission_est_terminee_le'),
         [{ text: 'OK', onPress: () => navigation.goBack() }],
       );
     } catch (e: any) {
@@ -82,8 +82,8 @@ export function QRScanScreen({ route, navigation }: Props) {
         <View style={styles.scanFrame} />
         <Text style={styles.instruction}>
           {action === 'start'
-            ? 'Scannez le QR du prestataire pour démarrer'
-            : 'Scannez le QR pour confirmer la fin'}
+            ? tr('q_r_scan.scannez_le_qr_du_prestataire')
+            : tr('q_r_scan.scannez_le_qr_pour_confirmer')}
         </Text>
         {scanned && !processing && (
           <Button

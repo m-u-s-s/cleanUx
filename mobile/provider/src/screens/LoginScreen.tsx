@@ -29,6 +29,7 @@ import { RegisterWizard } from './auth/RegisterWizard';
 import { useTraduction } from '@/i18n';
 
 export function LoginScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const reducedMotion = useReducedMotion();
@@ -44,7 +45,7 @@ export function LoginScreen() {
               entering={reducedMotion ? undefined : FadeInDown.delay(260).duration(500)}
               style={styles.subtitle}
             >
-              {mode === 'login' ? 'Espace prestataire' : 'Rejoindre en tant que prestataire'}
+              {mode === 'login' ? tr('login.espace_prestataire') : tr('login.rejoindre_en_tant_que_prestataire')}
             </Animated.Text>
           </View>
 
@@ -81,7 +82,7 @@ export function LoginScreen() {
               accessibilityRole="button"
             >
               <Text style={styles.switchText}>
-                {mode === 'login' ? "Pas encore de compte ? S'inscrire" : 'Déjà un compte ? Se connecter'}
+                {mode === 'login' ? tr('login.pas_encore_de_compte_s') : tr('login.deja_un_compte_se_connecter')}
               </Text>
             </TouchableOpacity>
           </Animated.View>
@@ -193,7 +194,7 @@ function LoginForm() {
           <TouchableOpacity
             onPress={() => setShowPassword(v => !v)}
             style={styles.eyeButton}
-            accessibilityLabel={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+            accessibilityLabel={showPassword ? tr('login.masquer_le_mot_de_passe') : tr('login.afficher_le_mot_de_passe')}
           >
             <Icon name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color={colors.surface[400]} />
           </TouchableOpacity>

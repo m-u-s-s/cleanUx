@@ -129,6 +129,7 @@ function ZoneRow({
   onToggle: () => void;
   onDelete: () => void;
 }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const reservable = row.is_bookable === true || row.is_bookable === 1 || row.is_bookable === '1';
@@ -148,7 +149,7 @@ function ZoneRow({
       </View>
 
       <Badge
-        label={reservable ? 'Réservable' : 'Fermée'}
+        label={reservable ? tr('catalog_zones.reservable') : tr('catalog_zones.fermee')}
         variant={reservable ? 'success' : 'neutral'}
       />
       <LigneActions
@@ -157,7 +158,7 @@ function ZoneRow({
           { cle: 'edit', libelle: 'Modifier', executer: onEdit },
           {
             cle: 'toggle',
-            libelle: reservable ? 'Fermer aux réservations' : 'Ouvrir aux réservations',
+            libelle: reservable ? tr('catalog_zones.fermer_aux_reservations') : tr('catalog_zones.ouvrir_aux_reservations'),
             executer: onToggle,
           },
           { cle: 'delete', libelle: 'Supprimer', destructive: true, executer: onDelete },

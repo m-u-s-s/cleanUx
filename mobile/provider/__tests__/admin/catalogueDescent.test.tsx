@@ -194,7 +194,9 @@ describe('constructeur de parcours — mobile', () => {
 
     // Régler un parcours sans savoir s'il partira, c'est découvrir le refus après coup.
     expect(ecran).toContain('can_publish');
-    expect(ecran).toContain('n’est pas encore publiable');
+    // Le verdict vit desormais dans le catalogue : on verifie la cle ET ce qu'elle rend.
+    expect(ecran).toContain("tr('journey_builder.ce_parcours_nest_pas_encore')");
+    expect(fr['journey_builder.ce_parcours_nest_pas_encore']).toContain('n’est pas encore publiable');
   });
 
   it('le bouton Publier est désactivé tant que le parcours ne l’est pas', () => {

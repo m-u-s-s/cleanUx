@@ -519,7 +519,7 @@ export function RegisterWizard() {
                 onPress={() => setShowPassword(v => !v)}
                 style={kit.eyeButton}
                 accessibilityRole="button"
-                accessibilityLabel={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                accessibilityLabel={showPassword ? tr('register_wizard.masquer_le_mot_de_passe') : tr('register_wizard.afficher_le_mot_de_passe')}
                 testID="register-password-toggle"
               >
                 <Icon

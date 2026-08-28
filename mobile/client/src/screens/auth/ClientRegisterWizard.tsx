@@ -277,7 +277,7 @@ export function ClientRegisterWizard() {
       case 'identity':
         return (
           <Question
-            title={clientKind === 'company' ? 'Qui vous représente ?' : 'Comment vous appelez-vous ?'}
+            title={clientKind === 'company' ? tr('client_register_wizard.qui_vous_represente') : tr('client_register_wizard.comment_vous_appelez_vous')}
             hint="Ce nom apparaîtra sur vos réservations."
           >
             <TextInput
@@ -336,7 +336,7 @@ export function ClientRegisterWizard() {
                 onPress={() => setShowPassword(v => !v)}
                 style={kit.eyeButton}
                 accessibilityRole="button"
-                accessibilityLabel={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                accessibilityLabel={showPassword ? tr('client_register_wizard.masquer_le_mot_de_passe') : tr('client_register_wizard.afficher_le_mot_de_passe')}
               >
                 <Icon
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}

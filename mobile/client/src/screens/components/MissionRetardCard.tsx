@@ -91,7 +91,7 @@ export function MissionRetardCard({
 
       {onAnnuler ? (
         <Button
-          label={retard.annulation_gratuite ? "Annuler sans frais" : "Annuler l’intervention"}
+          label={retard.annulation_gratuite ? tr('mission_retard.annuler_sans_frais') : tr('mission_retard.annuler_lintervention')}
           variant="ghost"
           onPress={onAnnuler}
           testID="retard-annuler"

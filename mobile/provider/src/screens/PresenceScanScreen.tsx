@@ -63,8 +63,8 @@ export function PresenceScanScreen({ route }: Props) {
           : [
               'Présence confirmée',
               result?.mission_started
-                ? "L'intervention a démarré. Le client a été notifié."
-                : 'Le client a bien été notifié.',
+                ? tr('presence_scan.l_intervention_a_demarre_le')
+                : tr('presence_scan.le_client_a_bien_ete'),
             ];
 
         Alert.alert(title, message, [
@@ -82,7 +82,7 @@ export function PresenceScanScreen({ route }: Props) {
         // `messageDErreur` ne rend JAMAIS `e.message` : c'est le texte interne de la bibliothèque
         // HTTP, et « Request failed with status code 422 » s'affichait tel quel dans cette alerte.
         Alert.alert(
-          position ? 'Position refusée' : 'Code refusé',
+          position ? tr('presence_scan.position_refusee') : tr('presence_scan.code_refuse'),
           position ?? errors.code?.[0] ?? messageDErreur(e, 'Ce code n’est pas valide.'),
         );
         setScanned(false);
@@ -143,8 +143,8 @@ export function PresenceScanScreen({ route }: Props) {
         Alert.alert(
           tr('presence_scan.qr_non_reconnu'),
           isCompletion
-            ? "Ce n'est pas le code de fin du client."
-            : "Ce n'est pas le code de présence du client.",
+            ? tr('presence_scan.ce_n_est_pas_le')
+            : tr('presence_scan.ce_n_est_pas_le_2'),
         );
         setScanned(false);
 
@@ -204,8 +204,8 @@ export function PresenceScanScreen({ route }: Props) {
           <View style={styles.frame} />
           <Text style={styles.instruction}>
             {isCompletion
-              ? 'Scannez le code de fin affiché par le client'
-              : 'Scannez le code affiché sur le téléphone du client'}
+              ? tr('presence_scan.scannez_le_code_de_fin')
+              : tr('presence_scan.scannez_le_code_affiche_sur')}
           </Text>
           {locating && (
             <Text style={styles.instruction} testID="presence-locating">
@@ -232,7 +232,7 @@ export function PresenceScanScreen({ route }: Props) {
           testID="presence-manual-code"
         />
         <Button
-          label={isCompletion ? 'Clôturer la mission' : 'Confirmer ma présence'}
+          label={isCompletion ? tr('presence_scan.cloturer_la_mission') : tr('presence_scan.confirmer_ma_presence')}
           onPress={() =>
             manualCode.length === 6
               ? submit(manualCode)

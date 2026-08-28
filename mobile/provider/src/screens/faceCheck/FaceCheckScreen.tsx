@@ -262,10 +262,10 @@ export default function FaceCheckScreen() {
         <View style={styles.basConteneur} pointerEvents="box-none">
           <GlassSurface strong radius={28} style={styles.panneau}>
             <Text style={styles.eyebrow}>
-              {enrolement ? 'Première étape' : 'Vérification d’identité'}
+              {enrolement ? tr('face_check.premiere_etape') : tr('face_check.verification_didentite')}
             </Text>
             <Text style={styles.titreClair}>
-              {enrolement ? 'Enregistrez votre visage' : 'Confirmez que c’est bien vous'}
+              {enrolement ? tr('face_check.enregistrez_votre_visage') : tr('face_check.confirmez_que_cest_bien_vous')}
             </Text>
             <Text style={styles.texteClair}>
               {enrolement
@@ -310,7 +310,7 @@ export default function FaceCheckScreen() {
 
             <View style={styles.actions}>
               <Button
-                label={enrolement ? 'Enregistrer mon visage' : 'Prendre la photo'}
+                label={enrolement ? tr('face_check.enregistrer_mon_visage') : tr('face_check.prendre_la_photo')}
                 onPress={capturer}
                 loading={enCours}
                 disabled={enCours || (enrolement && !consentementDonne)}
@@ -337,7 +337,7 @@ export default function FaceCheckScreen() {
 
       <SuccessOverlay
         visible={reussi}
-        message={enrolement ? 'Visage enregistré' : 'Identité confirmée'}
+        message={enrolement ? tr('face_check.visage_enregistre') : tr('face_check.identite_confirmee')}
         onDismiss={() => setReussi(false)}
       />
 

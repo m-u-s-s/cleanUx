@@ -58,8 +58,8 @@ export function AsapOffersScreen() {
       onError: (error: { status?: number }) => {
         setNotice(
           error?.status === 409
-            ? 'Cette course vient d’être prise par un autre professionnel.'
-            : 'Impossible d’accepter cette course pour le moment. Réessayez.',
+            ? tr('asap_offers.cette_course_vient_detre_prise')
+            : tr('asap_offers.impossible_daccepter_cette_course_pour'),
         );
       },
     });
