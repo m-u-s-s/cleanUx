@@ -25,6 +25,22 @@
 
     h1, h2, h3, h4 { color: var(--brio-ink); }
 
+    /* UN TITRE HERITE LA COULEUR QUE SON CONTENEUR A DECLAREE.
+       La regle ci-dessus pose `color` DIRECTEMENT sur le titre, et une declaration bat
+       toujours l'heritage : un heros a degrade nuit portant `text-white` se retrouvait avec
+       l'encre sombre dessus. Mesure au navigateur : 1,03 a 1,30:1 sur huit pages. */
+    :is(.text-white, .text-slate-50, .text-slate-100, .text-slate-200) :is(h1, h2, h3, h4) {
+        color: inherit;
+    }
+
+    /* ET LA SURFACE CLAIRE LA PLUS PROCHE REPREND LA MAIN. Un bloc sombre vit souvent DANS
+       une carte blanche : exclure tout descendant d'une surface claire aurait desactive la
+       regle ci-dessus partout. On ne rend l'encre qu'a l'interieur d'une surface claire
+       imbriquee SOUS le conteneur clair — la, et nulle part ailleurs. */
+    :is(.text-white, .text-slate-50, .text-slate-100, .text-slate-200) :is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass) :is(h1, h2, h3, h4) {
+        color: var(--brio-ink);
+    }
+
     /* Un titre de la coquille nuit est clair — SAUF dans une surface restée claire.
        `.brio-glass` vaut rgba(255,255,255,.7) : les titres de /login y étaient blancs sur blanc. */
     body.cx-shell :is(h1, h2, h3, h4):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass) *) {

@@ -9,7 +9,8 @@
     "modules": "node modules.mjs",
     "qa:publiques": "node publiques.mjs",
     "qa:theme": "node theme.mjs",
-    "qa:espacement": "node espacement.mjs"
+    "qa:espacement": "node espacement.mjs",
+    "qa:titres": "node titres.mjs"
   },
   "devDependencies": {
     "playwright": "^1.48.0"
