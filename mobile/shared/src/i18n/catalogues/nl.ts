@@ -1032,4 +1032,8 @@ export const nl: Catalogue = {
   'steps.en_cours_de_verification': 'Verificatie bezig',
   'steps.reprendre_la_verification': 'De verificatie hervatten',
   'steps.verifiee': 'Geverifieerd ✓',
+  'journey_builder.retirer_du_parcours': 'Uit het traject verwijderen',
+  'profile.disponibilites': 'Beschikbaarheid',
+  'profile.metiers_et_zones': 'Vakken en zones',
+  'profile.verification_kyc': 'KYC-verificatie',
 };

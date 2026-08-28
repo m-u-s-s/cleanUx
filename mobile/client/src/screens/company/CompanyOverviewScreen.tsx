@@ -62,8 +62,8 @@ export function CompanyOverviewScreen() {
    * du fichier — y compris celles qu'une pile donnée ne monte pas.
    */
   const RACCOURCIS: Array<{ label: string; screen: string }> = [
-    { label: 'Mes locaux', screen: 'CompanySitesTab' },
-    { label: 'Réservations', screen: 'CompanyBookingsTab' },
+    { label: tr('company_sites.mes_locaux'), screen: 'CompanySitesTab' },
+    { label: tr('company_bookings.reservations'), screen: 'CompanyBookingsTab' },
     { label: 'Membres', screen: 'CompanyMembers' },
     { label: 'Contrats', screen: 'CompanyContracts' },
     { label: 'Facturation', screen: 'CompanyBillingTab' },

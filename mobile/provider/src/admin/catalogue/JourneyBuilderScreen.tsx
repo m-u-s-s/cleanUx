@@ -267,7 +267,7 @@ function QuestionCard({
           actions={[
             ...(premier ? [] : [{ cle: 'up', libelle: 'Monter', executer: onMonter }]),
             ...(dernier ? [] : [{ cle: 'down', libelle: 'Descendre', executer: onDescendre }]),
-            { cle: 'remove', libelle: 'Retirer du parcours', destructive: true, executer: onRetirer },
+            { cle: 'remove', libelle: tr('journey_builder.retirer_du_parcours'), destructive: true, executer: onRetirer },
           ]}
         />
       </View>

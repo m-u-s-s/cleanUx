@@ -19,7 +19,7 @@ export function LoyaltyScreen() {
     Alert.alert(tr('loyalty.echanger_cette_recompense'), rewardName, [
       { text: 'Annuler', style: 'cancel' },
       {
-        text: 'Échanger',
+        text: tr('loyalty.echanger'),
         onPress: () =>
           redeem.mutate(rewardId, {
             onSuccess: (result) =>

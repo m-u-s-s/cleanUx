@@ -1032,4 +1032,8 @@ export const en: Catalogue = {
   'steps.en_cours_de_verification': 'Verification in progress',
   'steps.reprendre_la_verification': 'Resume the verification',
   'steps.verifiee': 'Verified ✓',
+  'journey_builder.retirer_du_parcours': 'Remove from the journey',
+  'profile.disponibilites': 'Availability',
+  'profile.metiers_et_zones': 'Trades and zones',
+  'profile.verification_kyc': 'KYC verification',
 };

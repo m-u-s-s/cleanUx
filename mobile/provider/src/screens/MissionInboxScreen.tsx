@@ -41,7 +41,7 @@ export function MissionInboxScreen() {
   const handleDecline = useCallback((a: MissionAssignment) => {
     Alert.alert(tr('mission_inbox.decliner'), tr('mission_inbox.decliner_cette_mission'), [
       { text: 'Annuler', style: 'cancel' },
-      { text: 'Décliner', style: 'destructive', onPress: () => {
+      { text: tr('mission_inbox.decliner'), style: 'destructive', onPress: () => {
         decline.mutate(a.id);
         a11y.announce('Mission déclinée');
       }},

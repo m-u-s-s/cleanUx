@@ -215,7 +215,7 @@ export function ProfileScreen() {
           onPress={() =>
             Alert.alert(tr('profile.deconnexion'), tr('profile.voulez_vous_vous_deconnecter'), [
               { text: 'Annuler', style: 'cancel' },
-              { text: 'Déconnexion', style: 'destructive', onPress: logout },
+              { text: tr('profile.deconnexion'), style: 'destructive', onPress: logout },
             ])
           }
           variant="danger"

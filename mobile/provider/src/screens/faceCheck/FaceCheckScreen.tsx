@@ -30,6 +30,7 @@ import { useTraduction } from '@/i18n';
  * déciderait quoi que ce soit ici se contournerait en modifiant l'application.
  */
 export default function FaceCheckScreen() {
+  const { t: tr } = useTraduction();
   const theme = useThemeColors();
   const styles = useMemo(() => stylesFor(theme), [theme]);
   const mouvementReduit = useReducedMotion();

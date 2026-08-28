@@ -86,21 +86,21 @@ export function ProfileScreen() {
      * indépendant seul chez un inconnu en a autant besoin qu'un salarié — davantage, même,
      * puisque personne ne l'attend au dépôt le soir.
      */
-    { label: 'Sécurité', screen: 'Safety' },
+    { label: tr('safety.securite'), screen: 'Safety' },
     // E17 + E34 — elle se consulte le matin, en montant dans la voiture.
-    { label: 'Ma journée', screen: 'DailyRoute' },
+    { label: tr('daily_route.ma_journee'), screen: 'DailyRoute' },
     { label: 'Modules', screen: 'Modules' },
-    { label: 'Disponibilités', screen: 'Availability' },
+    { label: tr('profile.disponibilites'), screen: 'Availability' },
     // Sans porte d'entrée, l'écran serait orphelin — le mode d'échec documenté de ce dépôt.
-    { label: 'Métiers et zones', screen: 'TradesZones' },
+    { label: tr('profile.metiers_et_zones'), screen: 'TradesZones' },
     { label: 'Badges', screen: 'Badges' },
-    { label: 'Vérification KYC', screen: 'KYC' },
-    { label: 'Contrôle facial', screen: 'FaceConsent' },
+    { label: tr('profile.verification_kyc'), screen: 'KYC' },
+    { label: tr('face_consent.controle_facial'), screen: 'FaceConsent' },
     { label: 'Litiges', screen: 'ProviderDisputes' },
-    { label: 'Avis reçus', screen: 'ProviderRatings' },
+    { label: tr('provider_ratings.avis_recus'), screen: 'ProviderRatings' },
     { label: 'Messagerie', screen: 'ProviderChatList' },
     { label: 'Notifications', screen: 'ProviderNotifications' },
-    { label: 'Préférences notifications', screen: 'NotificationPreferences' },
+    { label: tr('profile.preferences_notifications'), screen: 'NotificationPreferences' },
     { label: 'Langue', screen: 'Language' },
     { label: 'Apparence', screen: 'Appearance' },
   ];
@@ -127,14 +127,14 @@ export function ProfileScreen() {
     screen: keyof RootStackParamList;
     permission: string | null;
   }> = [
-    { label: 'Répartition', screen: 'CompanyDispatch', permission: 'missions.dispatch' },
-    { label: 'Équipe', screen: 'CompanyMembers', permission: 'team.view' },
-    { label: 'Équipes terrain', screen: 'CompanyFieldTeams', permission: 'team.view' },
-    { label: 'Sites desservis', screen: 'CompanySites', permission: 'sites.view_all' },
+    { label: tr('company_dispatch.repartition'), screen: 'CompanyDispatch', permission: 'missions.dispatch' },
+    { label: tr('company_members.equipe'), screen: 'CompanyMembers', permission: 'team.view' },
+    { label: tr('company_field_teams.equipes_terrain'), screen: 'CompanyFieldTeams', permission: 'team.view' },
+    { label: tr('company_sites.sites_desservis'), screen: 'CompanySites', permission: 'sites.view_all' },
     { label: 'Implantations', screen: 'CompanyAgencies', permission: 'agencies.view' },
-    { label: 'Rôles et permissions', screen: 'CompanyRolePermissions', permission: 'members.manage_permissions' },
-    { label: 'Planning et absences', screen: 'CompanyPlanning', permission: 'team.view' },
-    { label: 'Heures et rentabilité', screen: 'CompanyTimesheets', permission: 'team.view' },
+    { label: tr('company_role_permissions.roles_et_permissions'), screen: 'CompanyRolePermissions', permission: 'members.manage_permissions' },
+    { label: tr('company_planning.planning_et_absences'), screen: 'CompanyPlanning', permission: 'team.view' },
+    { label: tr('company_timesheets.heures_et_rentabilite'), screen: 'CompanyTimesheets', permission: 'team.view' },
     /*
      * `inventory.view` VA JUSQU'AUX EXÉCUTANTS, et c'est délibéré : savoir ce qui reste avant de
      * partir n'est pas commander. Aligner cette entrée sur `inventory.manage` fermerait l'écran à
@@ -148,8 +148,8 @@ export function ProfileScreen() {
      * répertoire annonce la seconde, la plus large des deux. Exiger les deux le fermerait à
      * chacun des deux rôles qu'il sert.
      */
-    { label: 'Qualité et matériel', screen: 'CompanyQualityFleet', permission: 'fleet.view' },
-    { label: 'Tâches', screen: 'CompanyTasks', permission: null },
+    { label: tr('company_quality_fleet.qualite_et_materiel'), screen: 'CompanyQualityFleet', permission: 'fleet.view' },
+    { label: tr('company_tasks.taches'), screen: 'CompanyTasks', permission: null },
     { label: 'Canaux', screen: 'CompanyChannels', permission: null },
   ];
 
@@ -226,7 +226,7 @@ export function ProfileScreen() {
             onPress={() =>
               Alert.alert(tr('profile.deconnexion'), tr('profile.voulez_vous_vous_deconnecter'), [
                 { text: 'Annuler', style: 'cancel' },
-                { text: 'Déconnexion', style: 'destructive', onPress: logout },
+                { text: tr('profile.deconnexion'), style: 'destructive', onPress: logout },
               ])
             }
             variant="danger"
