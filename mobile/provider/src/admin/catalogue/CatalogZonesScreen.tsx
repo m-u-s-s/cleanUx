@@ -9,6 +9,7 @@ import { messageDErreur } from './erreur';
 import { useResourceAction, useResourceDelete, useResourceIndex } from '../console/hooks';
 import type { ResourceRow } from '../console/types';
 import { LigneActions } from './LigneActions';
+import { useTraduction } from '@/i18n';
 
 /**
  * Deuxième niveau : les zones d'un pays.
@@ -18,6 +19,7 @@ import { LigneActions } from './LigneActions';
  * Paris dès qu'un second marché ouvrirait. Cet écran ne fait que transmettre le pays.
  */
 export function CatalogZonesScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const navigation = useNavigation<{ navigate: (screen: string, params?: object) => void }>();
   const route = useRoute<{ key: string; name: string; params: { countryId: number; title?: string } }>();
@@ -57,7 +59,7 @@ export function CatalogZonesScreen() {
     <Screen>
       <View style={styles.entete}>
         <Text style={styles.intro}>
-          Ouvrez une zone pour voir et régler les métiers qu’elle propose.
+          {tr('catalog_zones.ouvrez_une_zone_pour_voir')}
         </Text>
 
         <Pressable

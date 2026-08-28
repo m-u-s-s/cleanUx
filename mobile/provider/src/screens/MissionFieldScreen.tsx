@@ -30,6 +30,7 @@ import type { RootStackParamList } from '@/navigation/types';
 import { formatAdresse, messageDErreur } from '@brio/shared/format';
 import { MissionClockBar, useMissionClock, AnnulerLaMissionSheet, BoutonAppelMasque } from '@brio/shared';
 import { FieldQuoteRevision } from '@/screens/components/FieldQuoteRevision';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionField'>;
 
@@ -48,6 +49,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'MissionField'>;
  * réclame à la clôture.
  */
 export function MissionFieldScreen({ route, navigation }: Props) {
+  const { t: tr } = useTraduction();
   const t = useThemeColors();
   const styles = stylesFor(t);
 
@@ -238,7 +240,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
 
       {/* ── ÉTAT DES LIEUX ─────────────────────────────────────────────── */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>État des lieux</Text>
+        <Text style={styles.sectionTitle}>{tr('mission_field.etat_des_lieux')}</Text>
         <Text style={styles.sectionHint}>
           Chaque photo est horodatée et géolocalisée. C’est elle qui vous protège si le client
           conteste plus tard.
@@ -267,7 +269,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
 
       {/* ── FICHE D'ACCÈS (F5) ─────────────────────────────────────────── */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Accéder au lieu</Text>
+        <Text style={styles.sectionTitle}>{tr('mission_field.acceder_au_lieu')}</Text>
 
         {ficheDAcces?.available ? (
           <>
@@ -351,7 +353,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
 
       {/* ── IMPRÉVUS ───────────────────────────────────────────────────── */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Signaler un imprévu</Text>
+        <Text style={styles.sectionTitle}>{tr('mission_field.signaler_un_imprevu')}</Text>
         <Text style={styles.sectionHint}>
           Le client est prévenu tout de suite, et le dossier de litige est pré-rempli s’il en ouvre
           un.
@@ -440,7 +442,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
       */}
       {moteur !== 'vehicule' && (
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Proposer un supplément</Text>
+        <Text style={styles.sectionTitle}>{tr('mission_field.proposer_un_supplement')}</Text>
         <Text style={styles.sectionHint}>
           Le client répond depuis son téléphone. Son devis d’origine ne bouge pas : le supplément
           est une ligne à part.
@@ -504,7 +506,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
       */}
       {checklist && checklist.checklists.length > 0 && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Tâches à valider</Text>
+          <Text style={styles.sectionTitle}>{tr('mission_field.taches_a_valider')}</Text>
 
           {checklist.blocks_completion ? (
             <Text style={styles.blocageAvis} testID="checklist-blocage">
@@ -514,7 +516,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
             </Text>
           ) : (
             <Text style={styles.blocageLeve}>
-              Toutes les tâches obligatoires sont faites — la clôture est possible.
+              {tr('mission_field.toutes_les_taches_obligatoires_sont')}
             </Text>
           )}
 
@@ -554,7 +556,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
 
       {inspection && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Checklist qualité</Text>
+          <Text style={styles.sectionTitle}>{tr('mission_field.checklist_qualite')}</Text>
           <FlatList
             data={inspection.items}
             scrollEnabled={false}
@@ -591,7 +593,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
           style={[styles.secoursCase, styles.secoursUrgence]}
           testID="terrain-securite"
         >
-          <Text style={styles.secoursTexte}>Sécurité / SOS</Text>
+          <Text style={styles.secoursTexte}>{tr('mission_field.securite_sos')}</Text>
         </TouchableOpacity>
 
         {/*
@@ -625,7 +627,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
           style={styles.secoursCase}
           testID="terrain-itineraire"
         >
-          <Text style={styles.secoursTexte}>Itinéraire</Text>
+          <Text style={styles.secoursTexte}>{tr('mission_field.itineraire')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -678,7 +680,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
       ) : null}
 
       <View style={styles.gpsRow}>
-        <Text style={styles.gpsLabel}>Partage GPS actif</Text>
+        <Text style={styles.gpsLabel}>{tr('mission_field.partage_gps_actif')}</Text>
         <Switch
           value={gpsActive}
           onValueChange={setGpsActive}

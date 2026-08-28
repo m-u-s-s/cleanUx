@@ -9,6 +9,7 @@ import { useAuth, can } from '@/auth';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Devis {
   id: number;
@@ -41,6 +42,7 @@ const LIBELLES: Record<string, string> = {
  * après coup ferait diverger ce que le client a reçu de ce qu'il accepte.
  */
 export function CompanyQuotesScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -77,7 +79,7 @@ export function CompanyQuotesScreen() {
     <Screen>
       <Text style={styles.title}>Devis</Text>
       <Text style={styles.intro}>
-        Chiffrez pendant la visite. Accepté, le devis crée les rendez-vous.
+        {tr('company_quotes.chiffrez_pendant_la_visite_accepte')}
       </Text>
 
       {peutGerer && (

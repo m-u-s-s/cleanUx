@@ -5,6 +5,7 @@ import { Button } from '../ui/Button';
 import { colors, spacing, typography } from '../theme';
 import { useAuth } from './useAuth';
 import { adresseAConfirmer, useRelireLeCompte, useRenvoyerLEmailDeConfirmation } from './emailVerification';
+import { useTraduction } from '@/i18n';
 
 /**
  * LE MUR DE CONFIRMATION D'ADRESSE.
@@ -21,6 +22,7 @@ import { adresseAConfirmer, useRelireLeCompte, useRenvoyerLEmailDeConfirmation }
  * le serveur laisse ouvertes.
  */
 export function EcranConfirmationEmail() {
+  const { t: tr } = useTraduction();
   const { user, setUser, logout } = useAuth();
   const renvoi = useRenvoyerLEmailDeConfirmation();
   const relecture = useRelireLeCompte();
@@ -68,15 +70,15 @@ export function EcranConfirmationEmail() {
       <ScrollView contentContainerStyle={authStyles.scroll} keyboardShouldPersistTaps="handled">
         <View style={authStyles.header}>
           <Wordmark />
-          <Text style={authStyles.subtitle}>Plus qu'une étape</Text>
+          <Text style={authStyles.subtitle}>{tr('ecran_confirmation_email.plus_qu_une_etape')}</Text>
         </View>
 
         <Stagger index={0}>
           <View style={authStyles.card}>
-            <Text style={styles.titre}>Confirmez votre adresse e-mail</Text>
+            <Text style={styles.titre}>{tr('ecran_confirmation_email.confirmez_votre_adresse_e_mail')}</Text>
 
             <Text style={styles.corps}>
-              Nous avons envoyé un lien à <Text style={styles.adresse}>{user?.email ?? 'votre adresse'}</Text>.
+              {tr('ecran_confirmation_email.nous_avons_envoye_un_lien')} <Text style={styles.adresse}>{user?.email ?? 'votre adresse'}</Text>.
               Ouvrez-le pour activer votre compte, puis revenez ici.
             </Text>
 
@@ -88,7 +90,7 @@ export function EcranConfirmationEmail() {
 
             {toujoursEnAttente ? (
               <Text style={styles.attente} accessibilityLiveRegion="polite">
-                Le lien n'a pas encore été ouvert. Vérifiez vos courriers indésirables.
+                {tr('ecran_confirmation_email.le_lien_n_a_pas')}
               </Text>
             ) : null}
 

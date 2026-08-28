@@ -5,6 +5,7 @@ import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { ChosenSpace } from '@/admin/space';
+import { useTraduction } from '@/i18n';
 
 /**
  * Le choix d'espace d'un compte qui porte les deux casquettes.
@@ -24,12 +25,13 @@ export function SpaceSwitcherScreen({
   onChoose: (space: ChosenSpace) => void;
   peutPiloterLaSociete?: boolean;
 }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   return (
     <Screen>
       <View testID="space-switcher" style={styles.container}>
-        <Text style={styles.title}>Où souhaitez-vous travailler ?</Text>
+        <Text style={styles.title}>{tr('space_switcher.ou_souhaitez_vous_travailler')}</Text>
         <Text style={styles.subtitle}>
           Votre compte donne accès à plusieurs espaces. Vous pourrez en changer à tout moment depuis
           votre profil.

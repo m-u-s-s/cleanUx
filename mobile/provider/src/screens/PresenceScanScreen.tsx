@@ -10,6 +10,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import { messageDErreur } from '@brio/shared/format';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'PresenceScan'>;
 
@@ -28,6 +29,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'PresenceScan'>;
  * la confronte au lieu de l'intervention — dicté ou scanné, le code ne vaut que sur place.
  */
 export function PresenceScanScreen({ route }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const params = route.params;
@@ -167,9 +169,9 @@ export function PresenceScanScreen({ route }: Props) {
     return (
       <Screen testID="presence-scan-denied">
         <View style={styles.centered}>
-          <Text style={styles.title}>Accès à la caméra</Text>
+          <Text style={styles.title}>{tr('presence_scan.acces_a_la_camera')}</Text>
           <Text style={styles.hint}>
-            La caméra est nécessaire pour lire le code affiché par le client.
+            {tr('presence_scan.la_camera_est_necessaire_pour')}
           </Text>
           <Button label="Autoriser la caméra" onPress={requestPermission} fullWidth />
         </View>
@@ -207,7 +209,7 @@ export function PresenceScanScreen({ route }: Props) {
           </Text>
           {locating && (
             <Text style={styles.instruction} testID="presence-locating">
-              Relevé de votre position…
+              {tr('presence_scan.releve_de_votre_position')}
             </Text>
           )}
           {scanned && !busy && (

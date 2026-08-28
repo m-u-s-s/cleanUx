@@ -10,6 +10,7 @@ import { ApiError } from '@/api';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 /**
  * CE QU'ON DIT QUAND LE PORTEFEUILLE NE RÉPOND PAS.
@@ -29,6 +30,7 @@ function messageDErreurPortefeuille(error: unknown): string {
 }
 
 export function WalletScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -108,7 +110,7 @@ export function WalletScreen() {
       {!stripe?.onboarded && (
         <View style={styles.stripeBanner}>
           <Text style={styles.stripeBannerText}>
-            Configurez Stripe Connect pour recevoir vos paiements
+            {tr('wallet.configurez_stripe_connect_pour_recevoir')}
           </Text>
           <Button
             label="Configurer"
@@ -157,7 +159,7 @@ export function WalletScreen() {
             />
           ) : (
             <View style={[styles.withdrawCard, { backgroundColor: themeColors.card }]}>
-              <Text style={styles.withdrawTitle}>Montant à virer</Text>
+              <Text style={styles.withdrawTitle}>{tr('wallet.montant_a_virer')}</Text>
               <RNTextInput
                 style={styles.withdrawInput}
                 value={withdrawAmount}
@@ -191,7 +193,7 @@ export function WalletScreen() {
 
       {/* Transactions */}
       <Text style={styles.sectionTitle} accessibilityRole="header">
-        Transactions récentes
+        {tr('wallet.transactions_recentes')}
       </Text>
       {loadingTx ? (
         <Skeleton width="100%" height={200} />

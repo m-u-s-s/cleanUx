@@ -14,6 +14,7 @@ import type { MissionMediaItem } from '@/missions';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * LE NOUVEAU DEVIS, DEPUIS LE TERRAIN.
@@ -43,6 +44,7 @@ export function FieldQuoteRevision({
   missionId: number;
   photosAvant: MissionMediaItem[];
 }) {
+  const { t: tr } = useTraduction();
   const t = useThemeColors();
   const styles = stylesFor(t);
 
@@ -69,7 +71,7 @@ export function FieldQuoteRevision({
   if (revision && revision.awaiting_client) {
     return (
       <View style={styles.section} testID="revision-en-attente">
-        <Text style={styles.titre}>Nouveau devis envoyé</Text>
+        <Text style={styles.titre}>{tr('field_quote_revision.nouveau_devis_envoye')}</Text>
         <Text style={styles.montant}>{euros(revision.revised_total_cents, revision.currency)}</Text>
         <Text style={styles.note}>
           Le client répond depuis son téléphone. Son devis d’origine était de{' '}
@@ -94,7 +96,7 @@ export function FieldQuoteRevision({
   if (!fenetre?.open) {
     return (
       <View style={styles.section} testID="revision-fermee">
-        <Text style={styles.titre}>Nouveau devis</Text>
+        <Text style={styles.titre}>{tr('field_quote_revision.nouveau_devis')}</Text>
         {/* LE MOTIF, PAS UN FORMULAIRE GRISÉ : il dit quel geste employer à la place. */}
         <Text style={styles.note}>{fenetre?.reason ?? 'Indisponible sur cette mission.'}</Text>
       </View>
@@ -183,7 +185,7 @@ export function FieldQuoteRevision({
 
   return (
     <View style={styles.section} testID="revision-formulaire">
-      <Text style={styles.titre}>Nouveau devis</Text>
+      <Text style={styles.titre}>{tr('field_quote_revision.nouveau_devis')}</Text>
       <Text style={styles.note}>
         À faire maintenant, avant de commencer. Un imprévu découvert en travaillant se propose en
         supplément.

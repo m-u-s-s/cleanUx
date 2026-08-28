@@ -7,8 +7,10 @@ import { apiClient } from '@/api';
 import {spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 export function KYCScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: status } = useQuery({
@@ -21,18 +23,18 @@ export function KYCScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Vérification d'identité</Text>
+      <Text style={styles.title}>{tr('k_y_c.verification_d_identite')}</Text>
       {status?.verified ? (
         <View style={styles.card}>
           <Badge label="Vérifié" variant="success" />
-          <Text style={styles.info}>Votre identité est confirmée.</Text>
+          <Text style={styles.info}>{tr('k_y_c.votre_identite_est_confirmee')}</Text>
         </View>
       ) : (
         <View style={styles.card}>
           {/* Le libellé, jamais la valeur brute : l'écran affichait « clear » en toutes lettres. */}
           <Badge label={libelleStatutKyc(status?.status)} variant="warning" />
           <Text style={styles.info}>
-            Complétez la vérification pour recevoir des missions.
+            {tr('k_y_c.completez_la_verification_pour_recevoir')}
           </Text>
           <Button
             label="Lancer la vérification"

@@ -5,6 +5,7 @@ import { apiClient } from '@/api';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 const CATEGORIES = [
   { key: 'transactional', label: 'Missions & réservations', description: 'Nouvelles missions, confirmations, statuts' },
@@ -21,6 +22,7 @@ const CHANNELS = [
 ];
 
 export function NotificationPreferencesScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const [prefs, setPrefs] = useState<Record<string, Record<string, boolean>>>(() => {
@@ -59,7 +61,7 @@ export function NotificationPreferencesScreen() {
 
   return (
     <Screen scroll>
-      <Text style={styles.title}>Préférences de notifications</Text>
+      <Text style={styles.title}>{tr('notification_preferences.preferences_de_notifications')}</Text>
       {CATEGORIES.map(cat => (
         <View key={cat.key} style={styles.category}>
           <Text style={styles.catLabel}>{cat.label}</Text>

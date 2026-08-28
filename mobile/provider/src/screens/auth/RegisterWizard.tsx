@@ -30,6 +30,7 @@ import {
   stylesFor as kitStylesFor,
 } from './kit';
 import { clearDraft, emptyDraft, loadDraft, saveDraft, type RegisterDraft } from './draft';
+import { useTraduction } from '@/i18n';
 
 /**
  * Inscription prestataire : une question par écran.
@@ -89,6 +90,7 @@ function passwordStrength(value: string): { score: 0 | 1 | 2 | 3; label: string;
 }
 
 export function RegisterWizard() {
+  const { t: tr } = useTraduction();
   const jetons = useThemeColors();
   const kit = kitStylesFor(jetons);
   const styles = stylesFor(jetons);
@@ -453,7 +455,7 @@ export function RegisterWizard() {
               accessibilityRole="button"
               testID="register-otp-resend"
             >
-              <Text style={styles.link}>Renvoyer le code</Text>
+              <Text style={styles.link}>{tr('register_wizard.renvoyer_le_code')}</Text>
             </TouchableOpacity>
           </Question>
         );
@@ -588,13 +590,13 @@ export function RegisterWizard() {
                 {lookup.data.address ? (
                   <Text style={styles.suggestionAddress}>{lookup.data.address}</Text>
                 ) : null}
-                <Text style={styles.suggestionSource}>Trouvée au registre officiel</Text>
+                <Text style={styles.suggestionSource}>{tr('register_wizard.trouvee_au_registre_officiel')}</Text>
               </View>
             ) : null}
 
             {lookup.isSuccess && lookup.data === null ? (
               <Text style={styles.lookupMiss} testID="register-company-not-found">
-                Société introuvable au registre. Saisissez sa raison sociale ci-dessous.
+                {tr('register_wizard.societe_introuvable_au_registre_saisissez')}
               </Text>
             ) : null}
 
@@ -669,11 +671,11 @@ export function RegisterWizard() {
               <Text style={kit.termsText}>
                 J'accepte les{' '}
                 <Text style={kit.termsLink} onPress={() => navigation.navigate('Legal', { type: 'terms' })}>
-                  Conditions d'utilisation
+                  {tr('register_wizard.conditions_d_utilisation')}
                 </Text>
                 {' '}et la{' '}
                 <Text style={kit.termsLink} onPress={() => navigation.navigate('Legal', { type: 'privacy' })}>
-                  Politique de confidentialité
+                  {tr('register_wizard.politique_de_confidentialite')}
                 </Text>
               </Text>
             </TouchableOpacity>

@@ -24,8 +24,10 @@ import { Button, Divider, Screen } from '@/ui';
 import { radius, spacing, typography, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useFaceCheckStatus, useWithdrawFaceConsent } from '@/faceCheck';
+import { useTraduction } from '@/i18n';
 
 export function FaceConsentScreen() {
+  const { t: tr } = useTraduction();
   const jetons = useThemeColors();
   const styles = stylesFor(jetons);
   const navigation = useNavigation();
@@ -62,7 +64,7 @@ export function FaceConsentScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.corps}>
-        <Text style={styles.titre}>Contrôle facial</Text>
+        <Text style={styles.titre}>{tr('face_consent.controle_facial')}</Text>
 
         <Text style={styles.texte}>
           Votre visage de référence sert à vérifier, au moment d’une intervention, que la personne
@@ -74,7 +76,7 @@ export function FaceConsentScreen() {
         ) : null}
 
         <View style={styles.encart}>
-          <Text style={styles.encartTitre}>Donnée biométrique</Text>
+          <Text style={styles.encartTitre}>{tr('face_consent.donnee_biometrique')}</Text>
           <Text style={styles.encartTexte}>
             {statut?.consent_legal_note
               ?? 'Catégorie particulière au sens de l’article 9 du RGPD. Vous pouvez retirer votre '
@@ -90,7 +92,7 @@ export function FaceConsentScreen() {
 
         {retire ? (
           <View style={styles.encart}>
-            <Text style={styles.encartTitre}>Consentement retiré</Text>
+            <Text style={styles.encartTitre}>{tr('face_consent.consentement_retire')}</Text>
             <Text style={styles.encartTexte}>
               Votre visage de référence a été supprimé. Vous ne pourrez plus intervenir sur les
               métiers qui exigent un contrôle d’identité tant que vous ne l’aurez pas ré-enregistré.

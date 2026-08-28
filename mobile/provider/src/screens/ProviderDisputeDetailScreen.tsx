@@ -10,6 +10,7 @@ import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 /** Le serveur plafonne à cinq (`PreuvesDeLitige::NOMBRE_MAX`) et n'accepte que des images. */
 const MAX_PREUVES = 5;
@@ -59,6 +60,7 @@ const ROLES: Record<string, string> = {
  * côté serveur, à la requête — ce n'est pas cet écran qui décide de les cacher.
  */
 export function ProviderDisputeDetailScreen() {
+  const { t: tr } = useTraduction();
   const theme = useThemeColors();
   const styles = stylesFor(theme);
 
@@ -159,7 +161,7 @@ export function ProviderDisputeDetailScreen() {
 
         <PiecesRecues fichiers={data.attachments} styles={styles} />
 
-        <Text style={styles.section}>Échanges</Text>
+        <Text style={styles.section}>{tr('provider_dispute_detail.echanges')}</Text>
 
         {(data.events ?? []).map(evenement => (
           <View key={evenement.id} style={styles.evenement} testID={`evenement-${evenement.id}`}>
@@ -174,7 +176,7 @@ export function ProviderDisputeDetailScreen() {
           </View>
         ))}
 
-        <Text style={styles.section}>Votre réponse</Text>
+        <Text style={styles.section}>{tr('provider_dispute_detail.votre_reponse')}</Text>
 
         <TextInput
           label="Message"

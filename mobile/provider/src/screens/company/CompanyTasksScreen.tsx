@@ -6,6 +6,7 @@ import { apiClient } from '@/api';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Tache {
   id: number;
@@ -37,6 +38,7 @@ function statutSuivant(statut: string): string | null {
  * pour son créateur qui garde la main sur la sienne. Les deux surfaces ne doivent pas diverger.
  */
 export function CompanyTasksScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const qc = useQueryClient();
 
@@ -68,7 +70,7 @@ export function CompanyTasksScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Tâches</Text>
+      <Text style={styles.title}>{tr('company_tasks.taches')}</Text>
 
       <View style={styles.formulaire}>
         <TextInput

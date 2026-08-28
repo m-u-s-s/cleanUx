@@ -10,6 +10,7 @@ import { loadMapModule, isMapRenderable, OsmMap } from '@/maps';
 import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /** Repli d'échelle pays centré sur Bruxelles, marché principal du projet. */
 export const FALLBACK_REGION = {
@@ -22,6 +23,7 @@ export const FALLBACK_REGION = {
 type Position = { latitude: number; longitude: number };
 
 export function ProviderMap() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const navigation = useNavigation<any>();
@@ -187,7 +189,7 @@ export function ProviderMap() {
             </Text>
           )}
           {!isError && located.length === 0 && (
-            <Text style={styles.notice}>Aucune mission en attente</Text>
+            <Text style={styles.notice}>{tr('provider_map.aucune_mission_en_attente')}</Text>
           )}
         </View>
       </View>
@@ -253,11 +255,11 @@ export function ProviderMap() {
           </Text>
         )}
         {!isError && located.length === 0 && (
-          <Text style={styles.notice}>Aucune mission en attente</Text>
+          <Text style={styles.notice}>{tr('provider_map.aucune_mission_en_attente')}</Text>
         )}
         {isError && (
           <View style={styles.errorRow}>
-            <Text style={styles.notice}>Missions non chargées.</Text>
+            <Text style={styles.notice}>{tr('provider_map.missions_non_chargees')}</Text>
             <Button label="Réessayer" onPress={() => void refetch()} size="sm" variant="secondary" />
           </View>
         )}

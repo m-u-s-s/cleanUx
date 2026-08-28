@@ -8,8 +8,10 @@ import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { messageDErreur } from '@brio/shared/format';
+import { useTraduction } from '@/i18n';
 
 export function StripeOnboardingScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: status, isLoading } = useStripeConnectStatus();
@@ -28,7 +30,7 @@ export function StripeOnboardingScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Stripe Connect</Text>
+      <Text style={styles.title}>{tr('stripe_onboarding.stripe_connect')}</Text>
       {status?.onboarded ? (
         <View style={styles.statusCard}>
           <Badge label="Onboarded" variant="success" />
@@ -42,7 +44,7 @@ export function StripeOnboardingScreen() {
       ) : (
         <View>
           <Text style={styles.info}>
-            Connectez votre compte Stripe pour recevoir des paiements de vos missions.
+            {tr('stripe_onboarding.connectez_votre_compte_stripe_pour')}
           </Text>
           <Button
             label="Configurer Stripe"

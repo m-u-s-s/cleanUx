@@ -6,6 +6,7 @@ import { apiClient } from '@/api';
 import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Rating {
   id: number;
@@ -16,6 +17,7 @@ interface Rating {
 }
 
 export function ProviderRatingsScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data, isLoading, refetch, isRefetching } = useQuery<Rating[]>({
@@ -25,7 +27,7 @@ export function ProviderRatingsScreen() {
 
   return (
     <Screen scroll>
-      <Text style={styles.title}>Avis reçus</Text>
+      <Text style={styles.title}>{tr('provider_ratings.avis_recus')}</Text>
       {isLoading ? (
         <Skeleton width="100%" height={200} />
       ) : (

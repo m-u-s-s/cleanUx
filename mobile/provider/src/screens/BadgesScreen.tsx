@@ -6,6 +6,7 @@ import { apiClient } from '@/api';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface ProviderBadge {
   id: number;
@@ -16,6 +17,7 @@ interface ProviderBadge {
 }
 
 export function BadgesScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: badges, isLoading, refetch, isRefetching } = useQuery<ProviderBadge[]>({
@@ -25,7 +27,7 @@ export function BadgesScreen() {
 
   return (
     <Screen scroll>
-      <Text style={styles.title}>Mes badges</Text>
+      <Text style={styles.title}>{tr('badges.mes_badges')}</Text>
       {isLoading ? (
         <Skeleton width="100%" height={200} />
       ) : (

@@ -12,6 +12,7 @@ import { useResourceAction } from '../console/hooks';
 import { useToggleTradeInZone, useUpdateDistancePricing, useZoneTrades } from './hooks';
 import { LigneActions } from './LigneActions';
 import type { ZoneTrade } from './types';
+import { useTraduction } from '@/i18n';
 
 /**
  * Troisième niveau : les métiers d'une zone, ouverts ou fermés.
@@ -26,6 +27,7 @@ import type { ZoneTrade } from './types';
  * probable de ce chantier, et il est silencieux.
  */
 export function CatalogZoneTradesScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const route = useRoute<{ key: string; name: string; params: { zoneId: number; title?: string } }>();
   const navigation = useNavigation<{ navigate: (screen: string, params?: object) => void }>();
@@ -86,7 +88,7 @@ export function CatalogZoneTradesScreen() {
     <Screen>
       <View style={styles.bandeau}>
         <Text style={styles.bandeauTexte}>
-          <Text style={styles.bandeauFort}>Réglage préparatoire. </Text>
+          <Text style={styles.bandeauFort}>{tr('catalog_zone_trades.reglage_preparatoire')} </Text>
           L’ouverture d’un métier ici est bien enregistrée, mais elle n’a pas encore d’effet sur ce
           que voit un client : le parcours de commande ne détermine pas encore la zone d’une adresse.
         </Text>
@@ -201,6 +203,7 @@ function FormulaireTarifDistance({
     included_km: number;
   }) => void;
 }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const [actif, setActif] = useState(metier.distance_pricing_enabled ?? false);
@@ -232,7 +235,7 @@ function FormulaireTarifDistance({
             </Text>
 
             <View style={styles.modalLigne}>
-              <Text style={styles.modalLigneTexte}>Facturer à la distance</Text>
+              <Text style={styles.modalLigneTexte}>{tr('catalog_zone_trades.facturer_a_la_distance')}</Text>
               <Switch
                 value={actif}
                 onValueChange={setActif}

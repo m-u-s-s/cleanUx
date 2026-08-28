@@ -9,6 +9,7 @@ import { useWalletBalance } from '@/earnings';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 type QuickAction = { label: string; screen: string; params?: object };
 
@@ -24,6 +25,7 @@ const QUICK_ACTIONS: QuickAction[] = [
 ];
 
 export const DashboardActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref) => {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const navigation = useNavigation<any>();
 
@@ -117,7 +119,7 @@ export const DashboardActionsSheet = forwardRef<GorhomBottomSheet>((_props, ref)
         )}
       </View>
 
-      <Text style={styles.sectionTitle} accessibilityRole="header">Accès rapide</Text>
+      <Text style={styles.sectionTitle} accessibilityRole="header">{tr('dashboard_actions.acces_rapide')}</Text>
       <View style={styles.quickActions}>
         {QUICK_ACTIONS.map(action => (
           <TouchableOpacity key={action.label} style={styles.quickCard} onPress={() => go(action)}>

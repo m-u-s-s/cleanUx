@@ -6,10 +6,12 @@ import { apiClient, ApiError } from '@/api';
 import { colors, spacing, typography } from '@/theme';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { messageDErreur } from '@brio/shared/format';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<any, 'ForgotPassword'>;
 
 export function ForgotPasswordScreen({ navigation }: Props) {
+  const { t: tr } = useTraduction();
   const [email, setEmail] = useState('');
   const reset = useMutation<void, ApiError, string>({
     mutationFn: async (emailArg) => { await apiClient.post('/auth/forgot-password', { email: emailArg }); },
@@ -29,8 +31,8 @@ export function ForgotPasswordScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Mot de passe oublié</Text>
-      <Text style={styles.subtitle}>Entrez votre email pour recevoir un lien de réinitialisation</Text>
+      <Text style={styles.title}>{tr('forgot_password.mot_de_passe_oublie')}</Text>
+      <Text style={styles.subtitle}>{tr('forgot_password.entrez_votre_email_pour_recevoir')}</Text>
       <TextInput label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" placeholder="votre@email.com" autoFocus returnKeyType="done" onSubmitEditing={handleSubmit} />
       <Button label="Envoyer le lien" onPress={handleSubmit} fullWidth size="lg" loading={reset.isPending} />
     </View>

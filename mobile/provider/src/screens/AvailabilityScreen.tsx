@@ -17,6 +17,7 @@ import {
   formatDate,
 } from '@/availability';
 import type { AvailabilitySlot } from '@/availability';
+import { useTraduction } from '@/i18n';
 
 /**
  * LA SEMAINE TYPE, ET LES JOURS QU'ON FERME.
@@ -47,6 +48,7 @@ type Edition =
   | { mode: 'modification'; id: number; weekday: number; start: string; end: string };
 
 export function AvailabilityScreen() {
+  const { t: tr } = useTraduction();
   const t = useThemeColors();
   const styles = stylesFor(t);
 
@@ -131,13 +133,13 @@ export function AvailabilityScreen() {
 
   return (
     <Screen scroll>
-      <Text style={styles.titre} accessibilityRole="header">Mes disponibilités</Text>
+      <Text style={styles.titre} accessibilityRole="header">{tr('availability.mes_disponibilites')}</Text>
       <Text style={styles.sousTitre}>
         Vous recevez des missions pendant ces plages. Fermer un jour précis se fait plus bas, sans
         toucher à votre semaine.
       </Text>
 
-      <Text style={styles.sectionTitre}>Semaine type</Text>
+      <Text style={styles.sectionTitre}>{tr('availability.semaine_type')}</Text>
 
       {WEEK_ORDER.map(jour => {
         const creneaux = parJour[jour] ?? [];
@@ -196,13 +198,13 @@ export function AvailabilityScreen() {
         );
       })}
 
-      <Text style={styles.sectionTitre}>Jours fermés</Text>
+      <Text style={styles.sectionTitre}>{tr('availability.jours_fermes')}</Text>
       <Text style={styles.sousTitre}>
-        Une date fermée l’emporte sur la semaine type, et ne la modifie pas.
+        {tr('availability.une_date_fermee_lemporte_sur')}
       </Text>
 
       {joursFermes.length === 0 ? (
-        <Text style={styles.vide}>Aucun jour fermé.</Text>
+        <Text style={styles.vide}>{tr('availability.aucun_jour_ferme')}</Text>
       ) : (
         joursFermes.map(exception => (
           <View key={exception.id} style={styles.ligneException}>
@@ -238,7 +240,7 @@ export function AvailabilityScreen() {
               {edition ? ` — ${weekdayLabel(edition.weekday)}` : ''}
             </Text>
 
-            <Text style={styles.libelleChamp}>Début</Text>
+            <Text style={styles.libelleChamp}>{tr('availability.debut')}</Text>
             <ChoixHeure
               valeur={edition?.start ?? ''}
               onChoisir={h => setEdition(e => (e ? { ...e, start: h } : e))}
@@ -271,8 +273,8 @@ export function AvailabilityScreen() {
       <Modal visible={fermeture} animationType="slide" transparent onRequestClose={() => setFermeture(false)}>
         <View style={styles.fondModale}>
           <View style={styles.modale}>
-            <Text style={styles.titreModale}>Fermer une date</Text>
-            <Text style={styles.sousTitre}>Vos créneaux récurrents restent intacts.</Text>
+            <Text style={styles.titreModale}>{tr('availability.fermer_une_date')}</Text>
+            <Text style={styles.sousTitre}>{tr('availability.vos_creneaux_recurrents_restent_intacts')}</Text>
 
             <ScrollView style={styles.listeDates}>
               {prochainsJours.map(date => (

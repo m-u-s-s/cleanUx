@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { colors, spacing, typography } from '../theme';
 import { useThemeColors } from '../theme/useThemeColors';
 import type { ThemeTokens } from '../theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * Carte OpenStreetMap rendue dans une WebView, via Leaflet.
@@ -140,6 +141,7 @@ function buildHtml(props: {
 }
 
 export function OsmMap({ markers, position, trail, fallbackCenter, onMarkerPress, testID }: OsmMapProps) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const WebView = useMemo(() => loadWebView()?.WebView ?? null, []);
@@ -174,7 +176,7 @@ export function OsmMap({ markers, position, trail, fallbackCenter, onMarkerPress
   if (!WebView) {
     return (
       <View style={styles.fallback} testID="osm-map-unavailable">
-        <Text style={styles.fallbackText}>Carte indisponible sur cet appareil.</Text>
+        <Text style={styles.fallbackText}>{tr('osm_map.carte_indisponible_sur_cet_appareil')}</Text>
       </View>
     );
   }

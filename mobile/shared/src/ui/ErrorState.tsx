@@ -4,6 +4,7 @@ import { Button } from './Button';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface ErrorStateProps {
   message?: string;
@@ -20,11 +21,12 @@ export function ErrorState({
   onRetry,
   compact = false,
 }: ErrorStateProps) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   return (
     <View style={[styles.container, compact && styles.compactContainer]}>
-      <Text style={styles.title}>Oups !</Text>
+      <Text style={styles.title}>{tr('error_state.oups')}</Text>
       <Text style={styles.message}>{message}</Text>
       {onRetry && <Button label="Réessayer" onPress={onRetry} variant="secondary" />}
     </View>

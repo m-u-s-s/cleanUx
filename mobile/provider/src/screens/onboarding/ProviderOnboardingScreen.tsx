@@ -13,6 +13,7 @@ import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { ContractStep, DocumentsStep, KycStep, ProfileStep, SkillsStep, VehicleStep, type StepProps } from './steps';
+import { useTraduction } from '@/i18n';
 
 /**
  * Cockpit de vérification : le dossier du prestataire, carte par carte.
@@ -89,6 +90,7 @@ function stepErrorMessage(error: unknown): string {
 }
 
 export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => void }) {
+  const { t: tr } = useTraduction();
   const theme = useThemeColors();
   const styles = stylesFor(theme);
   /*
@@ -174,8 +176,8 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
   if (isError) {
     return (
       <View style={styles.centered} testID="onboarding-error">
-        <Text style={styles.errorTitle}>Impossible de charger votre dossier</Text>
-        <Text style={styles.errorHint}>Vérifiez votre connexion, puis réessayez.</Text>
+        <Text style={styles.errorTitle}>{tr('provider_onboarding.impossible_de_charger_votre_dossier')}</Text>
+        <Text style={styles.errorHint}>{tr('provider_onboarding.verifiez_votre_connexion_puis_reessayez')}</Text>
         <Button label="Réessayer" onPress={() => refetch()} variant="secondary" />
       </View>
     );
@@ -187,7 +189,7 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
         <View style={styles.doneBadge}>
           <Icon name="checkmark-circle-outline" size={40} color={colors.success[600]} />
         </View>
-        <Text style={styles.title}>Dossier complet</Text>
+        <Text style={styles.title}>{tr('provider_onboarding.dossier_complet')}</Text>
         <Text style={styles.subtitle}>
           Votre dossier est envoyé. Nous le validons sous peu — vous recevrez une notification dès
           que votre compte sera actif.
@@ -200,7 +202,7 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
   return (
     <ScrollView contentContainerStyle={[styles.container, margeHaute]} keyboardShouldPersistTaps="handled">
       <View>
-        <Text style={styles.title}>Votre dossier de vérification</Text>
+        <Text style={styles.title}>{tr('provider_onboarding.votre_dossier_de_verification')}</Text>
         <Text style={styles.subtitle}>
           {doneCount} sur {steps.length} — à compléter dans l'ordre que vous voulez.
         </Text>

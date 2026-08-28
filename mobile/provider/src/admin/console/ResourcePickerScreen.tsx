@@ -5,6 +5,7 @@ import { Icon, Screen } from '@/ui';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * Le choix entre les ressources d'un module multi-modèles.
@@ -22,6 +23,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
  * jour où un descripteur serait renommé, et l'écran annoncerait une ressource qui n'existe plus.
  */
 export function ResourcePickerScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const navigation = useNavigation<{ navigate: (screen: string, params?: object) => void }>();
 
@@ -36,7 +38,7 @@ export function ResourcePickerScreen() {
   return (
     <Screen>
       <Text style={styles.intro}>
-        Ce module couvre plusieurs domaines. Choisissez celui que vous voulez ouvrir.
+        {tr('resource_picker.ce_module_couvre_plusieurs_domaines')}
       </Text>
 
       <FlatList

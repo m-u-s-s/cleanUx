@@ -6,6 +6,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useAdminOverview } from './hooks';
 import type { AdminKpi } from './types';
+import { useTraduction } from '@/i18n';
 
 /**
  * L'accueil de la console d'administration.
@@ -18,6 +19,7 @@ import type { AdminKpi } from './types';
  * que la requête a échoué ferait croire à un calme qui n'existe pas, et personne n'irait vérifier.
  */
 export function AdminHomeScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data, isLoading, isError, refetch, isRefetching } = useAdminOverview();
@@ -59,7 +61,7 @@ export function AdminHomeScreen() {
           <RefreshControl refreshing={isRefetching} onRefresh={() => void refetch()} />
         }
       >
-        <Text style={styles.heading}>Vue d’ensemble</Text>
+        <Text style={styles.heading}>{tr('admin_home.vue_densemble')}</Text>
 
         <View style={styles.grid}>
           {kpis.map((kpi: AdminKpi) => (

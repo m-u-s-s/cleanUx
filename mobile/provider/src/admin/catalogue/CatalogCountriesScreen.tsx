@@ -9,6 +9,7 @@ import { messageDErreur } from './erreur';
 import { useResourceAction, useResourceDelete, useResourceIndex } from '../console/hooks';
 import type { ResourceRow } from '../console/types';
 import { LigneActions } from './LigneActions';
+import { useTraduction } from '@/i18n';
 
 /**
  * Premier niveau du catalogue : les pays.
@@ -23,6 +24,7 @@ import { LigneActions } from './LigneActions';
  * ou fermer des métiers en déplacement.
  */
 export function CatalogCountriesScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const navigation = useNavigation<{ navigate: (screen: string, params?: object) => void }>();
 
@@ -58,7 +60,7 @@ export function CatalogCountriesScreen() {
     <Screen>
       <View style={styles.entete}>
         <Text style={styles.intro}>
-          Chaque pays contient ses zones, et chaque zone son propre catalogue de métiers.
+          {tr('catalog_countries.chaque_pays_contient_ses_zones')}
         </Text>
 
         <Pressable

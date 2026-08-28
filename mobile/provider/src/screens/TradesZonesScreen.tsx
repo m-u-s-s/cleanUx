@@ -6,6 +6,7 @@ import { Button, Screen, Divider } from '@/ui';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface TradeOption {
   id: number;
@@ -48,6 +49,7 @@ interface Coverage {
  * arrête ses offres dans la seconde, sans déploiement et sans passer par le support.
  */
 export function TradesZonesScreen() {
+  const { t: tr } = useTraduction();
   const theme = useThemeColors();
   const styles = stylesFor(theme);
   const queryClient = useQueryClient();
@@ -100,16 +102,16 @@ export function TradesZonesScreen() {
   return (
     <Screen testID="trades-zones-screen">
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Mes métiers et mes zones</Text>
+        <Text style={styles.title}>{tr('trades_zones.mes_metiers_et_mes_zones')}</Text>
         <Text style={styles.intro}>
           Vous ne recevez que des missions du métier et de la zone que vous avez choisis. Rien
           d’autre ne vous sera proposé.
         </Text>
 
-        <Text style={styles.section}>Métiers</Text>
+        <Text style={styles.section}>{tr('trades_zones.metiers')}</Text>
         {secteurs.length === 0 ? (
           <Text style={styles.vide}>
-            Aucun métier n’est encore ouvert. Revenez quand le catalogue aura été complété.
+            {tr('trades_zones.aucun_metier_nest_encore_ouvert')}
           </Text>
         ) : (
           secteurs.map((secteur) => (
@@ -131,7 +133,7 @@ export function TradesZonesScreen() {
 
         <Divider />
 
-        <Text style={styles.section}>Zones d’intervention</Text>
+        <Text style={styles.section}>{tr('trades_zones.zones_dintervention')}</Text>
         {zones.map((zone) => (
           <View key={zone.id} style={styles.ligne}>
             <Text style={styles.ligneTexte}>{zone.name}</Text>

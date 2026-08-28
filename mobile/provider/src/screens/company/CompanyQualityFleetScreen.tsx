@@ -7,6 +7,7 @@ import { useAuth, can } from '@/auth';
 import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface ScoreLigne {
   user_id: number;
@@ -51,6 +52,7 @@ interface Echeance {
  * plutôt qu'un nombre qui serait lu comme un jugement.
  */
 export function CompanyQualityFleetScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const { user } = useAuth();
 
@@ -75,13 +77,13 @@ export function CompanyQualityFleetScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Qualité et matériel</Text>
-      <Text style={styles.intro}>Qui peut travailler demain, et avec quoi.</Text>
+      <Text style={styles.title}>{tr('company_quality_fleet.qualite_et_materiel')}</Text>
+      <Text style={styles.intro}>{tr('company_quality_fleet.qui_peut_travailler_demain_et')}</Text>
 
       {peutVoirLaFlotte && (flotte?.expiring?.length ?? 0) > 0 && (
         // Découvrir l'expiration quand le moteur refuse l'assignation, c'est la découvrir trop tard.
         <View style={styles.alerte} testID="echeances">
-          <Text style={styles.alerteTitre}>Échéances</Text>
+          <Text style={styles.alerteTitre}>{tr('company_quality_fleet.echeances')}</Text>
           {(flotte?.expiring ?? []).map((echeance) => (
             <Text key={echeance.id} style={styles.alerteTexte}>
               {echeance.certification_type} — expire le {echeance.expires_at ?? 'date inconnue'}
@@ -115,7 +117,7 @@ export function CompanyQualityFleetScreen() {
                   variant={item.score >= 80 ? 'success' : item.score >= 60 ? 'warning' : 'danger'}
                 />
               ) : (
-                <Text style={styles.detail}>Pas assez de données</Text>
+                <Text style={styles.detail}>{tr('company_quality_fleet.pas_assez_de_donnees')}</Text>
               )}
             </View>
           )}
@@ -130,7 +132,7 @@ export function CompanyQualityFleetScreen() {
 
       {peutVoirLaFlotte && (
         <View style={styles.bloc}>
-          <Text style={styles.sousTitre}>Véhicules</Text>
+          <Text style={styles.sousTitre}>{tr('company_quality_fleet.vehicules')}</Text>
 
           {(flotte?.vehicles ?? []).map((vehicule) => (
             <View key={vehicule.id} style={styles.ligne} testID={`vehicule-${vehicule.id}`}>
@@ -152,7 +154,7 @@ export function CompanyQualityFleetScreen() {
 
           {(flotte?.vehicles ?? []).length === 0 && (
             <Text style={styles.detail}>
-              Aucun véhicule déclaré. Jusqu'ici, seule la plateforme pouvait en enregistrer.
+              {tr('company_quality_fleet.aucun_vehicule_declare_jusqu_ici')}
             </Text>
           )}
         </View>

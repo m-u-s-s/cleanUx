@@ -14,6 +14,7 @@ import { jouerCarillonDOffre } from './sound';
 import { AnneauDeDecompte } from './CountdownRing';
 import type { MissionOffer } from './types';
 import { formatDelai } from '@brio/shared/format';
+import { useTraduction } from '@/i18n';
 
 interface Props {
   offer: MissionOffer;
@@ -61,6 +62,7 @@ function formatQuand(iso: string): string {
 }
 
 export function OfferModal({ offer, onDismiss }: Props) {
+  const { t: tr } = useTraduction();
   const theme = useThemeColors();
   const styles = stylesFor(theme);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -142,7 +144,7 @@ export function OfferModal({ offer, onDismiss }: Props) {
             </Text>
           </View>
 
-          <Text style={styles.heading}>Nouvelle mission</Text>
+          <Text style={styles.heading}>{tr('offer_modal.nouvelle_mission')}</Text>
           <Text style={styles.trade} testID="offer-trade">
             {offer.trade_name ?? offer.service_name ?? 'Intervention'}
           </Text>
@@ -186,7 +188,7 @@ export function OfferModal({ offer, onDismiss }: Props) {
             </View>
             <Divider />
             <View style={styles.row}>
-              <Text style={styles.label}>Rémunération</Text>
+              <Text style={styles.label}>{tr('offer_modal.remuneration')}</Text>
               <Text style={styles.value} testID="offer-payout">
                 {offer.payout_cents != null
                   ? formatCentimes(offer.payout_cents)
@@ -197,7 +199,7 @@ export function OfferModal({ offer, onDismiss }: Props) {
               <>
                 <Divider />
                 <View style={styles.row}>
-                  <Text style={styles.label}>Durée estimée</Text>
+                  <Text style={styles.label}>{tr('offer_modal.duree_estimee')}</Text>
                   <Text style={styles.value}>{offer.estimated_duration_minutes} min</Text>
                 </View>
               </>

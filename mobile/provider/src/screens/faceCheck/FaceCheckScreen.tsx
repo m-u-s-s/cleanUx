@@ -14,6 +14,7 @@ import {
 import { Button, GlassSurface, SuccessOverlay, TextInput, useReducedMotion } from '@/ui';
 import { colors } from '@/theme';
 import { useThemeColors, type ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * LE CONTRÔLE D'IDENTITÉ, PLEIN ÉCRAN.
@@ -178,7 +179,7 @@ export default function FaceCheckScreen() {
       <View style={styles.plein}>
         <ScrollView contentContainerStyle={styles.centre}>
           <Text style={styles.emoji}>⛔</Text>
-          <Text style={styles.titre}>Compte suspendu</Text>
+          <Text style={styles.titre}>{tr('face_check.compte_suspendu')}</Text>
           <Text style={styles.texte}>
             {statut?.message ??
               "Un contrôle d'identité n'a pas abouti. Un administrateur doit lever la suspension."}
@@ -207,8 +208,8 @@ export default function FaceCheckScreen() {
       <View style={styles.plein}>
         <View style={styles.centre}>
           <ActivityIndicator color={theme.text} />
-          <Text style={[styles.titre, { marginTop: 24 }]}>Vérification en cours</Text>
-          <Text style={styles.texte}>Encore quelques secondes. Ne fermez pas l'application.</Text>
+          <Text style={[styles.titre, { marginTop: 24 }]}>{tr('face_check.verification_en_cours')}</Text>
+          <Text style={styles.texte}>{tr('face_check.encore_quelques_secondes_ne_fermez')}</Text>
         </View>
       </View>
     );
@@ -223,7 +224,7 @@ export default function FaceCheckScreen() {
       <View style={styles.plein}>
         <ScrollView contentContainerStyle={styles.centre}>
           <Text style={styles.emoji}>📷</Text>
-          <Text style={styles.titre}>Accès à la caméra</Text>
+          <Text style={styles.titre}>{tr('face_check.acces_a_la_camera')}</Text>
           <Text style={styles.texte}>
             La vérification d'identité a besoin de la caméra frontale. Aucune image n'est partagée
             avec vos clients.
@@ -274,7 +275,7 @@ export default function FaceCheckScreen() {
 
             {statut?.liveness_required ? (
               <Text style={styles.precisionClaire}>
-                Prenez la photo en direct : une photo d’écran ne passe pas le contrôle.
+                {tr('face_check.prenez_la_photo_en_direct')}
               </Text>
             ) : null}
 
@@ -364,6 +365,7 @@ function FeuilleDeSignalement({
   onFermer: () => void;
   checkId: number | null;
 }) {
+  const { t: tr } = useTraduction();
   const theme = useThemeColors();
   const styles = useMemo(() => stylesFor(theme), [theme]);
   const signaler = useReportFaceIncident();
@@ -400,7 +402,7 @@ function FeuilleDeSignalement({
       <GlassSurface strong radius={28} style={styles.panneau}>
         {envoye ? (
           <>
-            <Text style={styles.titreClair}>Dossier ouvert</Text>
+            <Text style={styles.titreClair}>{tr('face_check.dossier_ouvert')}</Text>
             <Text style={styles.texteClair}>
               Un administrateur a été prévenu. Votre compte reste en attente de vérification : ce
               signalement ne le débloque pas.
@@ -412,7 +414,7 @@ function FeuilleDeSignalement({
         ) : (
           <>
             <Text style={styles.eyebrow}>Signaler</Text>
-            <Text style={styles.titreClair}>Que se passe-t-il ?</Text>
+            <Text style={styles.titreClair}>{tr('face_check.que_se_passe_t_il')}</Text>
             <TextInput
               label="Décrivez le problème"
               value={message}

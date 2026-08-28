@@ -10,6 +10,7 @@ import Animated, {
 import {spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -21,6 +22,7 @@ interface OfflineBannerProps {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function OfflineBanner({ forceOffline }: OfflineBannerProps) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const duree = useDuree(300);
@@ -51,7 +53,7 @@ export function OfflineBanner({ forceOffline }: OfflineBannerProps) {
     <Animated.View style={[styles.wrapper, animStyle]} testID="offline-banner">
       <View style={styles.banner}>
         <Text style={styles.text} accessibilityRole="alert">
-          Pas de connexion internet
+          {tr('offline_banner.pas_de_connexion_internet')}
         </Text>
       </View>
     </Animated.View>

@@ -4,6 +4,7 @@ import { Button } from '@/ui';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Props { children: React.ReactNode; }
 interface State { hasError: boolean; error: Error | null; }
@@ -17,12 +18,13 @@ interface State { hasError: boolean; error: Error | null; }
  * sombre, au pire moment possible.
  */
 function ErrorFallback({ error, onReset }: { error: Error | null; onReset: () => void }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Oups !</Text>
-      <Text style={styles.message}>Une erreur inattendue est survenue.</Text>
+      <Text style={styles.title}>{tr('error_boundary.oups')}</Text>
+      <Text style={styles.message}>{tr('error_boundary.une_erreur_inattendue_est_survenue')}</Text>
       {__DEV__ && error && <Text style={styles.debug}>{error.message}</Text>}
       <Button label="Réessayer" onPress={onReset} />
     </View>

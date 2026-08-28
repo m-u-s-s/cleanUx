@@ -6,6 +6,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useNotification, useMarkRead } from './hooks';
 import { severityVariant, contextLabel, formatNotificationDate } from './presentation';
+import { useTraduction } from '@/i18n';
 
 /**
  * LA FICHE D'UNE NOTIFICATION, PARTAGÉE PAR LES DEUX APPLICATIONS.
@@ -28,6 +29,7 @@ export type NotificationDetailViewProps = {
 };
 
 export function NotificationDetailView({ id, onOpenPath }: NotificationDetailViewProps) {
+  const { t: tr } = useTraduction();
   const t = useThemeColors();
   const styles = stylesFor(t);
 
@@ -111,8 +113,8 @@ export function NotificationDetailView({ id, onOpenPath }: NotificationDetailVie
 
       {/* La raison d'être de cette fiche : où aller pour régler le problème. */}
       <View style={styles.resolution}>
-        <Text style={styles.resolutionTitle}>Régler le problème</Text>
-        <Text style={styles.resolutionHelp}>Cette notification se traite sur la page ci-dessous.</Text>
+        <Text style={styles.resolutionTitle}>{tr('notification_detail.regler_le_probleme')}</Text>
+        <Text style={styles.resolutionHelp}>{tr('notification_detail.cette_notification_se_traite_sur')}</Text>
         <Button
           label={notif.action_label}
           onPress={ouvrirResolution}
@@ -130,7 +132,7 @@ export function NotificationDetailView({ id, onOpenPath }: NotificationDetailVie
       )}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Traçabilité</Text>
+        <Text style={styles.sectionTitle}>{tr('notification_detail.tracabilite')}</Text>
         <DetailRow label="Référence" value={notif.id} />
         <DetailRow label="Source" value={notif.type} />
         <DetailRow

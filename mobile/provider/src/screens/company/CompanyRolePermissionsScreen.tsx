@@ -6,6 +6,7 @@ import { apiClient } from '@/api';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Matrice {
   permissions: string[];
@@ -30,6 +31,7 @@ interface Matrice {
  * support.
  */
 export function CompanyRolePermissionsScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const queryClient = useQueryClient();
 
@@ -70,7 +72,7 @@ export function CompanyRolePermissionsScreen() {
   return (
     <Screen>
       <ScrollView>
-        <Text style={styles.title}>Rôles et permissions</Text>
+        <Text style={styles.title}>{tr('company_role_permissions.roles_et_permissions')}</Text>
         <Text style={styles.intro}>
           Ce que chaque rôle peut faire chez vous. Un changement s'applique immédiatement à toutes
           les personnes portant ce rôle. Le rôle Propriétaire n'est pas réglable : il porte le droit

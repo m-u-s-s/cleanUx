@@ -13,6 +13,7 @@ import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useReducedMotion } from './a11y';
+import { useTraduction } from '@/i18n';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CONFETTI_COLORS = [
@@ -69,6 +70,7 @@ interface Props {
 }
 
 export function SuccessOverlay({ visible, message, onDismiss }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const reducedMotion = useReducedMotion();
@@ -107,7 +109,7 @@ export function SuccessOverlay({ visible, message, onDismiss }: Props) {
 
       <Animated.View style={[styles.card, cardStyle]}>
         <Text style={styles.check}>✓</Text>
-        <Text style={styles.title}>Confirmé !</Text>
+        <Text style={styles.title}>{tr('success_overlay.confirme')}</Text>
         <Text style={styles.message}>{message}</Text>
         <Button label="Parfait" onPress={onDismiss} fullWidth />
       </Animated.View>

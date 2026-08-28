@@ -6,6 +6,7 @@ import { apiClient } from '@/api';
 import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Etape {
   mission_id: number;
@@ -44,6 +45,7 @@ interface Tournee {
  * sont les seuls chiffres qui appellent une action.
  */
 export function DailyRouteScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: tournee, refetch, isRefetching } = useQuery<Tournee>({
@@ -53,7 +55,7 @@ export function DailyRouteScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Ma journée</Text>
+      <Text style={styles.title}>{tr('daily_route.ma_journee')}</Text>
       <Text style={styles.intro}>
         {tournee
           ? `${tournee.missions_count} intervention(s) · ${tournee.total_travel_km} km de trajet`

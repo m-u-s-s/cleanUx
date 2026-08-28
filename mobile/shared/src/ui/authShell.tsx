@@ -26,6 +26,7 @@ import { Icon } from './Icon';
 import { useReducedMotion } from './a11y';
 import { colors, radius, shadows, spacing, typography } from '../theme';
 import { ApiError } from '../api';
+import { useTraduction } from '@/i18n';
 
 /**
  * Fond clair légèrement bleuté : le kit partagé (TextInput, Button, Divider) est entièrement
@@ -239,6 +240,7 @@ export function Stagger({ index, children }: { index: number; children: React.Re
  * « Oups ! » est prévue pour une section entière en échec, pas pour un formulaire.
  */
 export function FormError({ message, onRetry, testID }: { message: string; onRetry: () => void; testID: string }) {
+  const { t: tr } = useTraduction();
   const reducedMotion = useReducedMotion();
 
   return (
@@ -252,7 +254,7 @@ export function FormError({ message, onRetry, testID }: { message: string; onRet
       <View style={styles.formErrorBody}>
         <Text style={styles.formErrorText}>{message}</Text>
         <TouchableOpacity onPress={onRetry} accessibilityLabel="Réessayer" accessibilityRole="button">
-          <Text style={styles.formErrorRetry}>Réessayer</Text>
+          <Text style={styles.formErrorRetry}>{tr('auth_shell.reessayer')}</Text>
         </TouchableOpacity>
       </View>
     </Animated.View>

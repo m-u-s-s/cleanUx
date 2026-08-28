@@ -7,6 +7,7 @@ import { useAuth, can } from '@/auth';
 import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Referent {
   id: number;
@@ -35,6 +36,7 @@ interface SiteDesservi {
  * peuvent desservir le même immeuble.
  */
 export function CompanySitesScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -91,7 +93,7 @@ export function CompanySitesScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Sites desservis</Text>
+      <Text style={styles.title}>{tr('company_sites.sites_desservis')}</Text>
 
       <FlatList
         data={sites ?? []}
@@ -130,7 +132,7 @@ export function CompanySitesScreen() {
 
             {siteOuvert === item.id && peutDesigner && (
               <View style={styles.referents} testID={`referents-${item.id}`}>
-                <Text style={styles.section}>Référents</Text>
+                <Text style={styles.section}>{tr('company_sites.referents')}</Text>
 
                 {item.referents.map((referent) => (
                   <View key={referent.id} style={styles.ligneReferent}>
@@ -149,7 +151,7 @@ export function CompanySitesScreen() {
                 ))}
 
                 <Divider />
-                <Text style={styles.section}>Désigner un habitué</Text>
+                <Text style={styles.section}>{tr('company_sites.designer_un_habitue')}</Text>
 
                 {(collegues ?? [])
                   .filter((c) => c.status === 'active')

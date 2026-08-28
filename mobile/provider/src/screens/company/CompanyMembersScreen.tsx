@@ -7,6 +7,7 @@ import { useAuth, can } from '@/auth';
 import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Membre {
   id: number;
@@ -62,6 +63,7 @@ const ROLES_ATTRIBUABLES = [
  * matrice : un écran qui testerait `role === 'owner'` ignorerait ce réglage.
  */
 export function CompanyMembersScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -139,7 +141,7 @@ export function CompanyMembersScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Équipe</Text>
+      <Text style={styles.title}>{tr('company_members.equipe')}</Text>
 
       <FlatList
         data={membres ?? []}
@@ -174,7 +176,7 @@ export function CompanyMembersScreen() {
               <View style={styles.actions} testID={`actions-membre-${item.id}`}>
                 {peutChangerLeRole && (
                   <>
-                    <Text style={styles.section}>Changer le rôle</Text>
+                    <Text style={styles.section}>{tr('company_members.changer_le_role')}</Text>
                     {ROLES_ATTRIBUABLES.filter((role) => role !== item.role).map((role) => (
                       <View key={role} style={styles.action}>
                         <Button

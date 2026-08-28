@@ -8,6 +8,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useAdminCatalog } from './hooks';
 import { NATIVE_ADMIN_SCREENS } from './nativeScreens';
 import type { AdminModule } from './types';
+import { useTraduction } from '@/i18n';
 
 /**
  * L'annuaire des modules d'administration.
@@ -21,6 +22,7 @@ import type { AdminModule } from './types';
  * OUVRIR UN ÉCRAN VIDE SERAIT PIRE QUE L'ANNONCER : un module marqué ne réagit pas au toucher.
  */
 export function AdminDirectoryScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const navigation = useNavigation<{ navigate: (screen: string, params?: object) => void }>();
@@ -140,7 +142,7 @@ export function AdminDirectoryScreen() {
             onOpen={() => ouvrir(item)}
           />
         )}
-        ListEmptyComponent={<Text style={styles.empty}>Aucun module ne correspond.</Text>}
+        ListEmptyComponent={<Text style={styles.empty}>{tr('admin_directory.aucun_module_ne_correspond')}</Text>}
       />
     </Screen>
   );

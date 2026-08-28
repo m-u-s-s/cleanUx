@@ -7,6 +7,7 @@ import { useAuth, can } from '@/auth';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Creneau {
   id: number;
@@ -45,6 +46,7 @@ interface Absence {
  * ici : une absence dit la maladie, la garde d'enfant, l'accompagnement d'un proche.
  */
 export function CompanyPlanningScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -106,9 +108,9 @@ export function CompanyPlanningScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Planning et absences</Text>
+      <Text style={styles.title}>{tr('company_planning.planning_et_absences')}</Text>
       <Text style={styles.intro}>
-        Qui travaille quand, et qui s'absente. La répartition des missions lit les deux.
+        {tr('company_planning.qui_travaille_quand_et_qui')}
       </Text>
 
       {peutGerer && (
@@ -155,7 +157,7 @@ export function CompanyPlanningScreen() {
       />
 
       <View style={styles.formulaire}>
-        <Text style={styles.sousTitre}>Poser une absence</Text>
+        <Text style={styles.sousTitre}>{tr('company_planning.poser_une_absence')}</Text>
         <TextInput
           value={debutConge}
           onChangeText={setDebutConge}
@@ -184,7 +186,7 @@ export function CompanyPlanningScreen() {
 
       {peutGerer && enAttente.length > 0 && (
         <View style={styles.aTrancher}>
-          <Text style={styles.sousTitre}>Demandes en attente</Text>
+          <Text style={styles.sousTitre}>{tr('company_planning.demandes_en_attente')}</Text>
           {enAttente.map((absence) => (
             <View key={absence.id} style={styles.ligne} testID={`absence-${absence.id}`}>
               <View style={styles.identite}>

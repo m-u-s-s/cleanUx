@@ -23,6 +23,7 @@ import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
+import { useTraduction } from '@/i18n';
 
 interface Disponibilite {
   user_id: number;
@@ -71,6 +72,7 @@ interface MissionSociete {
  * ailleurs.
  */
 export function CompanyMissionDetailScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -232,7 +234,7 @@ export function CompanyMissionDetailScreen() {
 
         {!peutRepartir && (
           <Text style={styles.info}>
-            Vous consultez cette mission. Sa répartition relève d'un autre rôle.
+            {tr('company_mission_detail.vous_consultez_cette_mission_sa')}
           </Text>
         )}
 
@@ -283,7 +285,7 @@ export function CompanyMissionDetailScreen() {
                   onPress={() => deplacer.mutate()}
                 />
                 <Text style={styles.info}>
-                  Le client et le collaborateur assigné sont prévenus immédiatement.
+                  {tr('company_mission_detail.le_client_et_le_collaborateur')}
                 </Text>
               </View>
             )}
@@ -293,11 +295,11 @@ export function CompanyMissionDetailScreen() {
         {peutRepartir && (
           <>
             <Divider />
-            <Text style={styles.section}>Qui est libre sur ce créneau</Text>
+            <Text style={styles.section}>{tr('company_mission_detail.qui_est_libre_sur_ce')}</Text>
 
             {(dispos ?? []).length === 0 && (
               <Text style={styles.info}>
-                Aucun collaborateur à proposer — la mission n'a peut-être pas d'horaire.
+                {tr('company_mission_detail.aucun_collaborateur_a_proposer_la')}
               </Text>
             )}
 

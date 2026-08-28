@@ -10,6 +10,7 @@ import type { RootStackParamList } from '@/navigation/types';
 import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface MissionARepartir {
   id: number;
@@ -35,6 +36,7 @@ interface EquipeTerrain {
  * deux implémentations de cette règle divergeraient.
  */
 export function CompanyDispatchScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -131,7 +133,7 @@ export function CompanyDispatchScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Répartition</Text>
+      <Text style={styles.title}>{tr('company_dispatch.repartition')}</Text>
 
       {peutRepartir && (
         <View style={styles.commandes}>

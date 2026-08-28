@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { env } from '@/config/env';
 import { colors, radius, spacing, typography, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * Charge react-native-webview sans jamais laisser échapper d'exception.
@@ -49,6 +50,7 @@ interface TurnstileWidgetProps {
 const WIDGET_HEIGHT = 74;
 
 export function TurnstileWidget({ onToken, onSkipped, testID }: TurnstileWidgetProps) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const siteKey = env.turnstileSiteKey;
@@ -127,7 +129,7 @@ export function TurnstileWidget({ onToken, onSkipped, testID }: TurnstileWidgetP
   if (!WebView) {
     return (
       <View style={styles.container} testID={testID}>
-        <Text style={styles.error}>La vérification anti-robot est indisponible sur cet appareil.</Text>
+        <Text style={styles.error}>{tr('turnstile_widget.la_verification_anti_robot_est')}</Text>
       </View>
     );
   }
@@ -148,7 +150,7 @@ export function TurnstileWidget({ onToken, onSkipped, testID }: TurnstileWidgetP
           setFailed(true);
         }}
       />
-      {failed ? <Text style={styles.error}>Le captcha n'a pas pu se charger. Réessayez.</Text> : null}
+      {failed ? <Text style={styles.error}>{tr('turnstile_widget.le_captcha_n_a_pas')}</Text> : null}
     </View>
   );
 }

@@ -11,6 +11,7 @@ import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import { formatAdresse, formatDateHeure } from '@brio/shared/format';
+import { useTraduction } from '@/i18n';
 
 interface ActiveMission {
   id: number;
@@ -42,6 +43,7 @@ function statusBadgeVariant(status: string): 'success' | 'warning' | 'brand' | '
 }
 
 export function MissionsListScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   // Pas de transition quand l’utilisateur a réduit les mouvements.
@@ -80,7 +82,7 @@ export function MissionsListScreen() {
   return (
     <Screen testID="missions-list-screen">
       <Text style={styles.title} accessibilityRole="header">
-        Mes missions
+        {tr('missions_list.mes_missions')}
       </Text>
       {isLoading ? (
         <>

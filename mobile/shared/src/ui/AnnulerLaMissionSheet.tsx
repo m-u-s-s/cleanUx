@@ -13,6 +13,7 @@ import type { AudienceAnnulation, OptionDAnnulation } from '../cancellation';
 import { spacing, typography, radius } from '../theme';
 import { useThemeColors } from '../theme/useThemeColors';
 import type { ThemeTokens } from '../theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * ANNULER, SUR MOBILE — le même questionnaire que le web, la même règle.
@@ -41,6 +42,7 @@ export function AnnulerLaMissionSheet({
   onAnnulee: () => void;
   onFermer: () => void;
 }) {
+  const { t: tr } = useTraduction();
   const t = useThemeColors();
   const styles = stylesFor(t);
 
@@ -79,7 +81,7 @@ export function AnnulerLaMissionSheet({
   return (
     <View style={styles.corps} testID="annuler-la-mission">
       <View style={styles.entete}>
-        <Text style={styles.titre} accessibilityRole="header">Annuler la mission</Text>
+        <Text style={styles.titre} accessibilityRole="header">{tr('annuler_la_mission.annuler_la_mission')}</Text>
         <Text onPress={onFermer} style={styles.fermer} accessibilityRole="button">Fermer</Text>
       </View>
 
@@ -128,14 +130,14 @@ export function AnnulerLaMissionSheet({
           {devis ? (
             <View style={styles.devis} testID="devis-annulation">
               {devis.fee_amount_cents === 0 ? (
-                <Text style={styles.devisGratuit}>Aucun frais d’annulation.</Text>
+                <Text style={styles.devisGratuit}>{tr('annuler_la_mission.aucun_frais_dannulation')}</Text>
               ) : (
                 <Text style={styles.devisTexte}>
                   Frais d’annulation : {montant(devis.fee_amount_cents, devis.currency)}
                 </Text>
               )}
               {devis.exempt_applied ? (
-                <Text style={styles.devisNote}>Motif exonérant appliqué.</Text>
+                <Text style={styles.devisNote}>{tr('annuler_la_mission.motif_exonerant_applique')}</Text>
               ) : null}
             </View>
           ) : null}

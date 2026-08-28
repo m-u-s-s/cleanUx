@@ -30,6 +30,7 @@ import { ApiError } from '@/api';
 import { colors, radius, shadows, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 export function KindChoice({
   value,
@@ -112,13 +113,14 @@ export function TradePicker({
   value: number | null;
   onChange: (id: number) => void;
 }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: options, isLoading, isError, refetch } = useRegistrationOptions();
   const trades = flattenTrades(options);
 
   if (isLoading) {
-    return <Text style={styles.kindPrompt}>Chargement des métiers…</Text>;
+    return <Text style={styles.kindPrompt}>{tr('kit.chargement_des_metiers')}</Text>;
   }
 
   /*
@@ -134,14 +136,14 @@ export function TradePicker({
     return (
       <View>
         <Text style={styles.fieldError}>
-          La liste des métiers n’a pas pu être chargée. Vérifiez votre connexion.
+          {tr('kit.la_liste_des_metiers_na')}
         </Text>
         <TouchableOpacity
           onPress={() => void refetch()}
           accessibilityRole="button"
           testID="register-trades-retry"
         >
-          <Text style={styles.retryLink}>Réessayer</Text>
+          <Text style={styles.retryLink}>{tr('kit.reessayer')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -205,27 +207,28 @@ export function ZonePicker({
   value: number[];
   onChange: (ids: number[]) => void;
 }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: options, isLoading, isError, refetch } = useRegistrationOptions();
   const zones = zonesPourMetier(options, tradeId);
 
   if (isLoading) {
-    return <Text style={styles.kindPrompt}>Chargement des zones…</Text>;
+    return <Text style={styles.kindPrompt}>{tr('kit.chargement_des_zones')}</Text>;
   }
 
   if (isError) {
     return (
       <View>
         <Text style={styles.fieldError}>
-          La liste des zones n’a pas pu être chargée. Vérifiez votre connexion.
+          {tr('kit.la_liste_des_zones_na')}
         </Text>
         <TouchableOpacity
           onPress={() => void refetch()}
           accessibilityRole="button"
           testID="register-zones-retry"
         >
-          <Text style={styles.retryLink}>Réessayer</Text>
+          <Text style={styles.retryLink}>{tr('kit.reessayer')}</Text>
         </TouchableOpacity>
       </View>
     );

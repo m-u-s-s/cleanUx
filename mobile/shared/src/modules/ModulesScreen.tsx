@@ -6,6 +6,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useModuleCatalogue } from './useModuleCatalogue';
 import type { ModuleDuCatalogue } from './useModuleCatalogue';
+import { useTraduction } from '@/i18n';
 
 /**
  * LE RÉPERTOIRE DES MODULES, EN NATIF.
@@ -28,6 +29,7 @@ export function ModulesScreen({
   /** Ouvre un module. L'appelant décide de l'hôte — chaque application a le sien. */
   onOuvrir: (module: ModuleDuCatalogue) => void;
 }) {
+  const { t: tr } = useTraduction();
   const theme = useThemeColors();
   const styles = stylesFor(theme);
 
@@ -69,7 +71,7 @@ export function ModulesScreen({
       >
         <View>
           <Text style={styles.titre}>Modules</Text>
-          <Text style={styles.sousTitre}>Tout ce que cet espace sait faire, rangé par fonction.</Text>
+          <Text style={styles.sousTitre}>{tr('modules.tout_ce_que_cet_espace')}</Text>
         </View>
 
         {groupes.map((groupe) => (
@@ -96,7 +98,7 @@ export function ModulesScreen({
         ))}
 
         {groupes.length === 0 ? (
-          <Text style={styles.vide}>Aucun module disponible pour ce compte.</Text>
+          <Text style={styles.vide}>{tr('modules.aucun_module_disponible_pour_ce')}</Text>
         ) : null}
       </ScrollView>
     </Screen>

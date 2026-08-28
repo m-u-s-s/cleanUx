@@ -7,6 +7,7 @@ import { useAuth, can } from '@/auth';
 import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Offre {
   id: number;
@@ -37,6 +38,7 @@ interface Candidature {
  * défaut exact qu'on répare : une candidature marquée « embauché » et personne dans l'organigramme.
  */
 export function CompanyRecruitmentScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -75,7 +77,7 @@ export function CompanyRecruitmentScreen() {
     <Screen>
       <Text style={styles.title}>Recrutement</Text>
       <Text style={styles.intro}>
-        Vos offres et les candidatures reçues. Embaucher envoie l'invitation.
+        {tr('company_recruitment.vos_offres_et_les_candidatures')}
       </Text>
 
       <FlatList
@@ -157,7 +159,7 @@ export function CompanyRecruitmentScreen() {
           ))}
 
           {(candidatures ?? []).length === 0 && (
-            <Text style={styles.detail}>Aucune candidature pour cette offre.</Text>
+            <Text style={styles.detail}>{tr('company_recruitment.aucune_candidature_pour_cette_offre')}</Text>
           )}
         </View>
       )}

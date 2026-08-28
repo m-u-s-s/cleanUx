@@ -23,6 +23,7 @@ import { pickDocument, pickImage, rejectionReason, type PickedFile } from './doc
 import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 /**
  * Les cinq étapes du parcours de vérification prestataire.
@@ -144,6 +145,7 @@ function contractPlainText(html: string): string {
  * bascule alors lui aussi sur la version, plutôt que de rendre l'étape infranchissable.
  */
 export function ContractStep({ onDone, submitting, error }: StepProps) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const [accepted, setAccepted] = useState(false);
@@ -212,7 +214,7 @@ Je m'engage à ne sous-traiter aucune mission sans accord préalable, et à resp
         testID="onboarding-accept-contract"
       >
         <View style={[styles.checkbox, accepted && styles.checkboxChecked]} />
-        <Text style={styles.acceptText}>J'ai lu et j'accepte ce contrat</Text>
+        <Text style={styles.acceptText}>{tr('steps.j_ai_lu_et_j')}</Text>
       </TouchableOpacity>
 
       <StepError error={localError ?? error} />
@@ -240,6 +242,7 @@ Je m'engage à ne sous-traiter aucune mission sans accord préalable, et à resp
  * parcours, puis on interroge l'état jusqu'à ce qu'il soit tranché.
  */
 export function KycStep({ onDone, submitting, error }: StepProps) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: status, refetch } = useKycStatus();
@@ -312,7 +315,7 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
       {verified ? (
         <View style={styles.notice}>
           <Text style={styles.noticeText} testID="kyc-verified">
-            Identité vérifiée ✓
+            {tr('steps.identite_verifiee')}
           </Text>
         </View>
       ) : null}
@@ -397,6 +400,7 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
  * permet de corriger un dossier sans attendre un email.
  */
 export function DocumentsStep({ onDone, submitting, error }: StepProps) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data, isLoading, refetch } = useOnboardingDocuments();
@@ -463,7 +467,7 @@ export function DocumentsStep({ onDone, submitting, error }: StepProps) {
   if (isLoading) {
     return (
       <StepShell title="Vos justificatifs">
-        <Text style={styles.stepHint}>Chargement des pièces demandées…</Text>
+        <Text style={styles.stepHint}>{tr('steps.chargement_des_pieces_demandees')}</Text>
       </StepShell>
     );
   }
@@ -573,6 +577,7 @@ export function DocumentsStep({ onDone, submitting, error }: StepProps) {
  * par le validateur.
  */
 export function SkillsStep({ onDone, submitting, error }: StepProps) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const { data: trades } = useTrades();
@@ -644,7 +649,7 @@ export function SkillsStep({ onDone, submitting, error }: StepProps) {
         })}
       </View>
 
-      <Text style={styles.stepHint}>Vos zones d'intervention</Text>
+      <Text style={styles.stepHint}>{tr('steps.vos_zones_d_intervention')}</Text>
       <View style={styles.tradeGrid}>
         {(zones ?? []).map(zone => {
           const active = selectedZones.includes(zone.id);

@@ -6,6 +6,7 @@ import { apiClient } from '@/api';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface Alerte {
   id: number;
@@ -35,6 +36,7 @@ interface Alerte {
  * rend une situation effrayante.
  */
 export function SafetyScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const qc = useQueryClient();
 
@@ -71,9 +73,9 @@ export function SafetyScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Sécurité</Text>
+      <Text style={styles.title}>{tr('safety.securite')}</Text>
       <Text style={styles.intro}>
-        Si quelque chose ne va pas, dites-le. Nous saurons où vous êtes.
+        {tr('safety.si_quelque_chose_ne_va')}
       </Text>
 
       {alerte ? (
@@ -91,7 +93,7 @@ export function SafetyScreen() {
           </Text>
 
           {alerte.contact_notified && (
-            <Text style={styles.detail}>Votre contact d’urgence a été prévenu.</Text>
+            <Text style={styles.detail}>{tr('safety.votre_contact_durgence_a_ete')}</Text>
           )}
 
           <Button

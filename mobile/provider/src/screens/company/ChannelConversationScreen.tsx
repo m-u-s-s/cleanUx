@@ -14,6 +14,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import { enregistrerNoteVocale } from '@/company/voiceRecorder';
 import { jouerNoteVocale } from '@/company/voicePlayer';
+import { useTraduction } from '@/i18n';
 
 interface MessageCanal {
   id: number;
@@ -50,6 +51,7 @@ interface Participant {
  * par WhatsApp, hors de l'outil et hors de toute trace.
  */
 export function ChannelConversationScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -219,7 +221,7 @@ export function ChannelConversationScreen() {
     <Screen>
       {appelEntrant !== null && (
         <View style={styles.banniere} testID="banniere-appel">
-          <Text style={styles.texteBanniere}>Appel entrant</Text>
+          <Text style={styles.texteBanniere}>{tr('channel_conversation.appel_entrant')}</Text>
           <Button
             label="Répondre"
             size="sm"

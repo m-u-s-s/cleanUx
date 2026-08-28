@@ -9,6 +9,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import { useSpacePreference } from './useSpacePreference';
+import { useTraduction } from '@/i18n';
 
 /**
  * L'accueil du SUPER ADMINISTRATEUR — le sixième rôle, et le seul qui n'avait pas d'espace.
@@ -52,6 +53,7 @@ const SOUS_ROLES = [
 ] as const;
 
 export function SuperAdminHomeScreen() {
+  const { t: tr } = useTraduction();
   const theme = useThemeColors();
   const styles = stylesFor(theme);
 
@@ -63,13 +65,13 @@ export function SuperAdminHomeScreen() {
     <Screen testID="super-admin-home">
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.contenu}>
         <View>
-          <Text style={styles.surtitre}>Super administration</Text>
-          <Text style={styles.titre}>La plateforme Brio</Text>
+          <Text style={styles.surtitre}>{tr('super_admin_home.super_administration')}</Text>
+          <Text style={styles.titre}>{tr('super_admin_home.la_plateforme_brio')}</Text>
           <Text style={styles.sousTitre}>{user?.name ?? 'Compte'}</Text>
         </View>
 
         <View>
-          <Text style={styles.sectionTitre}>Les six rôles</Text>
+          <Text style={styles.sectionTitre}>{tr('super_admin_home.les_six_roles')}</Text>
 
           <View style={styles.grille}>
             {ROLES.map((role) => (
@@ -85,7 +87,7 @@ export function SuperAdminHomeScreen() {
         </View>
 
         <View>
-          <Text style={styles.sectionTitre}>Sous-rôles — société prestataire</Text>
+          <Text style={styles.sectionTitre}>{tr('super_admin_home.sous_roles_societe_prestataire')}</Text>
 
           <View style={styles.puces}>
             {SOUS_ROLES.map((sousRole) => (

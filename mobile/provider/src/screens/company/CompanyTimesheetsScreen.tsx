@@ -9,6 +9,7 @@ import { useAuth, can } from '@/auth';
 import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface LigneFeuille {
   user_id: number;
@@ -57,6 +58,7 @@ interface Rentabilite {
  * marge présentée sans cette réserve se lirait comme un fait.
  */
 export function CompanyTimesheetsScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -93,14 +95,14 @@ export function CompanyTimesheetsScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Heures et rentabilité</Text>
+      <Text style={styles.title}>{tr('company_timesheets.heures_et_rentabilite')}</Text>
       <Text style={styles.intro}>
-        Ce qui a été travaillé, et ce que ça vous a coûté.
+        {tr('company_timesheets.ce_qui_a_ete_travaille')}
       </Text>
 
       {peutGerer && (feuille?.pending?.length ?? 0) > 0 && (
         <View style={styles.bloc}>
-          <Text style={styles.sousTitre}>Corrections à approuver</Text>
+          <Text style={styles.sousTitre}>{tr('company_timesheets.corrections_a_approuver')}</Text>
           {(feuille?.pending ?? []).map((correction) => (
             <View key={correction.id} style={styles.ligne} testID={`correction-${correction.id}`}>
               <View style={styles.identite}>
@@ -167,7 +169,7 @@ export function CompanyTimesheetsScreen() {
 
       {peutVoirLaMarge && (rentabilite?.data?.length ?? 0) > 0 && (
         <View style={styles.bloc}>
-          <Text style={styles.sousTitre}>Rentabilité</Text>
+          <Text style={styles.sousTitre}>{tr('company_timesheets.rentabilite')}</Text>
           {(rentabilite?.data ?? []).map((ligne) => (
             <View key={String(ligne.key)} style={styles.ligne} testID={`marge-${ligne.key}`}>
               <View style={styles.identite}>

@@ -14,6 +14,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import { formatAdresse } from '@brio/shared/format';
+import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionTracking'>;
 
@@ -27,6 +28,7 @@ interface Position {
 const GEOFENCE_METERS = 150;
 
 export function TrackingScreen({ route }: Props) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   // Deux identifiants distincts : le détail vient de la mission, la session de suivi de la
@@ -147,7 +149,7 @@ export function TrackingScreen({ route }: Props) {
   return (
     <Screen scroll testID="tracking-screen">
       <View style={styles.header}>
-        <Text style={styles.title}>En route</Text>
+        <Text style={styles.title}>{tr('tracking.en_route')}</Text>
         {mission && <Badge label={mission.status} variant="brand" />}
       </View>
 

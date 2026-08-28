@@ -7,6 +7,7 @@ import { useAuth, can } from '@/auth';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface EquipeTerrain {
   id: number;
@@ -41,6 +42,7 @@ interface MembreDeLaSociete {
  * celui-ci lui en rendent la main.
  */
 export function CompanyFieldTeamsScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const qc = useQueryClient();
   const { user } = useAuth();
@@ -117,7 +119,7 @@ export function CompanyFieldTeamsScreen() {
 
   return (
     <Screen>
-      <Text style={styles.title}>Équipes terrain</Text>
+      <Text style={styles.title}>{tr('company_field_teams.equipes_terrain')}</Text>
 
       <View style={styles.formulaire}>
         <TextInput
@@ -177,7 +179,7 @@ export function CompanyFieldTeamsScreen() {
 
                 {(composition?.members ?? []).length === 0 && (
                   <Text style={styles.detail}>
-                    Aucun membre — une équipe vide ne peut recevoir aucune mission.
+                    {tr('company_field_teams.aucun_membre_une_equipe_vide')}
                   </Text>
                 )}
 
@@ -202,7 +204,7 @@ export function CompanyFieldTeamsScreen() {
 
                 {peutComposer && (
                   <>
-                    <Text style={styles.section}>Ajouter un collègue</Text>
+                    <Text style={styles.section}>{tr('company_field_teams.ajouter_un_collegue')}</Text>
                     {(collegues ?? [])
                       .filter((c) => c.status === 'active')
                       .filter(

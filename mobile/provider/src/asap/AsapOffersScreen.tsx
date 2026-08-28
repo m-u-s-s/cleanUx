@@ -9,6 +9,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useAsapOffers, useAcceptAsapOffer, useDeclineAsapOffer } from './hooks';
 import type { AsapOffer } from './types';
+import { useTraduction } from '@/i18n';
 
 /**
  * Les courses immédiates proposées à ce prestataire.
@@ -23,6 +24,7 @@ import type { AsapOffer } from './types';
  * coûte la course.
  */
 export function AsapOffersScreen() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const navigation = useNavigation<any>();
@@ -73,9 +75,9 @@ export function AsapOffersScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.body}>
-        <Text style={styles.title}>Courses immédiates</Text>
+        <Text style={styles.title}>{tr('asap_offers.courses_immediates')}</Text>
         <Text style={styles.subtitle}>
-          Un client attend maintenant. La première réponse emporte la course.
+          {tr('asap_offers.un_client_attend_maintenant_la')}
         </Text>
 
         {notice ? (

@@ -26,6 +26,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import { AnimatedHalo, Wordmark, Stagger, FormError, authErrorMessage, stylesFor } from './auth/kit';
 import { RegisterWizard } from './auth/RegisterWizard';
+import { useTraduction } from '@/i18n';
 
 export function LoginScreen() {
   const styles = stylesFor(useThemeColors());
@@ -91,6 +92,7 @@ export function LoginScreen() {
 }
 
 function LoginForm() {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -216,7 +218,7 @@ function LoginForm() {
       ) : null}
       <Stagger index={2}>
         <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')} accessibilityRole="button">
-          <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
+          <Text style={styles.forgotText}>{tr('login.mot_de_passe_oublie')}</Text>
         </TouchableOpacity>
       </Stagger>
       {formError ? <FormError message={formError} onRetry={handleLogin} testID="login-form-error" /> : null}
