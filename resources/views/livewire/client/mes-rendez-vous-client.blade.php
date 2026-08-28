@@ -12,10 +12,16 @@
     </x-slot>
 
     <div aria-live="polite" aria-atomic="false">
-        @include('livewire.client.rendezvous.filters')
-        @include('livewire.client.rendezvous.edit-panel')
-        @include('livewire.client.rendezvous.list')
-        @include('livewire.client.rendezvous.pagination')
+        {{-- L'ESPACEMENT EST PORTE ICI : la coquille de page n'espace pas ses enfants, et les
+             filtres touchaient la liste. La modale reste HORS de ce groupe — c'est une
+             surcouche fixe, une marge la deplacerait. --}}
+        <div class="space-y-6">
+            @include('livewire.client.rendezvous.filters')
+            @include('livewire.client.rendezvous.edit-panel')
+            @include('livewire.client.rendezvous.list')
+            @include('livewire.client.rendezvous.pagination')
+        </div>
+
         @include('livewire.client.annulation.modale')
     </div>
 </x-page-shell>
