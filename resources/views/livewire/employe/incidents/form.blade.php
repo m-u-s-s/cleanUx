@@ -1,4 +1,4 @@
-<section class="max-w-4xl rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+<section class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
     <div class="mb-5">
         <p class="text-xs font-black uppercase tracking-wide text-blue-600">Déclaration employé</p>
         <h2 class="mt-1 text-xl font-black text-slate-900">Nouveau signalement</h2>
