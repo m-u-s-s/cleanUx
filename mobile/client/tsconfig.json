@@ -38,6 +38,8 @@
       "@/parity/*": ["../shared/src/parity/*"],
       "@/finance": ["../shared/src/finance"],
       "@/finance/*": ["../shared/src/finance/*"],
+      "@/i18n": ["../shared/src/i18n"],
+      "@/i18n/*": ["../shared/src/i18n/*"],
       "@/format": ["../shared/src/format"],
       "@/format/*": ["../shared/src/format/*"],
       "@/ErrorBoundary": ["../shared/src/ErrorBoundary"],

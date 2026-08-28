@@ -23,6 +23,7 @@ module.exports = function (api) {
             '@/parity': '../shared/src/parity',
             '@/webview': '../shared/src/webview',
             '@/finance': '../shared/src/finance',
+            '@/i18n': '../shared/src/i18n',
             '@/format': '../shared/src/format',
             '@/ErrorBoundary': '../shared/src/ErrorBoundary',
             /*

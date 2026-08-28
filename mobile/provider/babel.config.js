@@ -30,6 +30,7 @@ module.exports = function (api) {
             '@/parity': '../shared/src/parity',
             '@/webview': '../shared/src/webview',
             '@/finance': '../shared/src/finance',
+            '@/i18n': '../shared/src/i18n',
             '@/format': '../shared/src/format',
             '@brio/shared': '../shared/src',
             // Provider-only modules — resolve to local src/

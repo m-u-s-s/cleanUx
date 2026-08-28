@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { Screen, Button, Badge } from '@/ui';
-import { apiClient } from '@/api';
 import { useAuth } from '@/auth';
+import { choisirLaLangue, useTraduction, type Langue } from '@/i18n';
 import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 
-const LANGUAGES = [
+const LANGUAGES: Array<{ code: Langue; label: string; flag: string }> = [
   { code: 'fr', label: 'Français', flag: '🇫🇷' },
   { code: 'nl', label: 'Nederlands', flag: '🇳🇱' },
   { code: 'en', label: 'English', flag: '🇬🇧' },
@@ -15,19 +15,24 @@ const LANGUAGES = [
 
 export function LanguageScreen({ navigation }: any) {
   const styles = stylesFor(useThemeColors());
+  const { t, langue } = useTraduction();
 
   const { user, setUser } = useAuth();
-  const [selected, setSelected] = useState((user as any)?.locale ?? 'fr');
+  const [selected, setSelected] = useState<Langue>(langue);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await apiClient.put('/client/profile', { locale: selected });
-      setUser(res.data.user ?? res.data);
-      Alert.alert('Langue mise à jour', '', [{ text: 'OK', onPress: () => navigation.goBack() }]);
+      // La langue s'applique AVANT le retour du serveur : c'est le choix de l'utilisateur,
+      // pas une donnée à confirmer. L'écran est déjà traduit quand l'alerte s'affiche.
+      await choisirLaLangue(selected, '/client/profile');
+      setUser({ ...(user as any), locale: selected });
+      Alert.alert(t('langue.enregistree'), '', [
+        { text: t('commun.ok'), onPress: () => navigation.goBack() },
+      ]);
     } catch {
-      Alert.alert('Erreur');
+      Alert.alert(t('commun.erreur'), t('langue.echec'));
     } finally {
       setSaving(false);
     }
@@ -35,12 +40,15 @@ export function LanguageScreen({ navigation }: any) {
 
   return (
     <Screen>
-      <Text style={styles.title}>Langue</Text>
+      <Text style={styles.title}>{t('langue.titre')}</Text>
       {LANGUAGES.map(lang => (
         <TouchableOpacity
           key={lang.code}
           style={[styles.row, selected === lang.code && styles.rowActive]}
           onPress={() => setSelected(lang.code)}
+          accessibilityRole="radio"
+          accessibilityState={{ selected: selected === lang.code }}
+          testID={`langue-${lang.code}`}
         >
           <Text style={styles.flag}>{lang.flag}</Text>
           <Text style={styles.label}>{lang.label}</Text>
@@ -48,11 +56,12 @@ export function LanguageScreen({ navigation }: any) {
         </TouchableOpacity>
       ))}
       <Button
-        label="Sauvegarder"
+        label={t('langue.enregistrer')}
         onPress={handleSave}
         fullWidth
         loading={saving}
-        disabled={selected === (user as any)?.locale}
+        disabled={selected === langue}
+        testID="langue-enregistrer"
       />
     </Screen>
   );
