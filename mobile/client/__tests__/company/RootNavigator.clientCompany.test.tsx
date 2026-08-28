@@ -63,6 +63,14 @@ jest.mock('@/screens/company/CompanyBillingScreen', () => {
 
 import { RootNavigator } from '@/navigation/RootNavigator';
 
+// La presentation de premiere ouverture est declaree DEJA VUE : ces tests portent sur la
+// navigation d'un utilisateur qui revient, pas sur le carrousel d'accueil.
+jest.mock('expo-secure-store', () => ({
+  getItemAsync: jest.fn().mockResolvedValue('true'),
+  setItemAsync: jest.fn().mockResolvedValue(undefined),
+  deleteItemAsync: jest.fn().mockResolvedValue(undefined),
+}));
+
 function renderRoot() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 

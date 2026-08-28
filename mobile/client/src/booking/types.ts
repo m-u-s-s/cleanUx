@@ -9,7 +9,6 @@ export interface Service {
   id: number;
   name: string;
   slug: string;
-  category_id: number;
   base_price?: number;
   unit?: string;
   description?: string;

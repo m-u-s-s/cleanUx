@@ -14,6 +14,14 @@ jest.mock('@/sentry/init', () => ({}));
 
 import App from '../App';
 
+// La presentation de premiere ouverture est declaree DEJA VUE : ces tests portent sur la
+// navigation d'un utilisateur qui revient, pas sur le carrousel d'accueil.
+jest.mock('expo-secure-store', () => ({
+  getItemAsync: jest.fn().mockResolvedValue('true'),
+  setItemAsync: jest.fn().mockResolvedValue(undefined),
+  deleteItemAsync: jest.fn().mockResolvedValue(undefined),
+}));
+
 describe('App', () => {
   it('renders without crashing', async () => {
     const { getByTestId } = render(<App />);

@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '@/auth';
 import { EcranConfirmationEmail } from '@/auth/EcranConfirmationEmail';
 import { LoginScreen } from '@/screens/LoginScreen';
+import { OnboardingScreen, hasCompletedOnboarding } from '@/screens/OnboardingScreen';
 import { TabNavigator } from './TabNavigator';
 import { MissionTrackingScreen } from '@/screens/MissionTrackingScreen';
 import { OnSiteScreen } from '@/screens/OnSiteScreen';
@@ -69,6 +70,29 @@ export function RootNavigator() {
   // par défaut le temps d'une lecture asynchrone ferait clignoter un écran qui n'est pas le sien.
   const { space: chosenSpace, isLoading: spaceLoading, choose } = useClientSpacePreference();
 
+  /*
+   * LA PRÉSENTATION DE L'APPLICATION, MONTRÉE UNE FOIS.
+   *
+   * `OnboardingScreen` et son témoin `hasCompletedOnboarding()` existaient depuis toujours, sans
+   * qu'aucun navigateur ne les monte : personne n'a jamais vu ce carrousel. Le prestataire avait
+   * exactement le même trou, réparé de cette façon.
+   *
+   * `undefined` = on ne sait pas encore, et l'on n'affiche RIEN plutôt que de faire clignoter
+   * l'application puis le carrousel. Le témoin rend déjà `true` si SecureStore est indisponible :
+   * en cas de doute, on ne bloque pas l'accès.
+   */
+  const [presentationVue, setPresentationVue] = React.useState<boolean | undefined>(undefined);
+
+  React.useEffect(() => {
+    let vivant = true;
+
+    hasCompletedOnboarding()
+      .then((vue) => { if (vivant) setPresentationVue(vue); })
+      .catch(() => { if (vivant) setPresentationVue(true); });
+
+    return () => { vivant = false; };
+  }, []);
+
   const space = resolveClientSpace({
     isLoading: isLoading || spaceLoading,
     isAuthenticated,
@@ -76,7 +100,11 @@ export function RootNavigator() {
     chosenSpace,
   });
 
-  if (space === 'loading') {
+  if (presentationVue === false) {
+    return <OnboardingScreen onComplete={() => setPresentationVue(true)} />;
+  }
+
+  if (space === 'loading' || presentationVue === undefined) {
     return (
       <View testID="root-navigator" style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.page }}>
         <ActivityIndicator size="large" color={colors.brand[500]} />

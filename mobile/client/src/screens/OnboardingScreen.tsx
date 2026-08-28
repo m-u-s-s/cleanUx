@@ -4,6 +4,7 @@ import { Button } from '@/ui';
 import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import * as SecureStore from 'expo-secure-store';
 import { useTraduction } from '@/i18n';
 
 const { width } = Dimensions.get('window');
@@ -50,9 +51,10 @@ export function OnboardingScreen({ onComplete }: Props) {
 
   const handleComplete = async () => {
     try {
-      const SecureStore = await import('expo-secure-store');
       await SecureStore.setItemAsync(ONBOARDING_KEY, 'true');
-    } catch {}
+    } catch {
+      // Stockage refusé : la présentation reviendra, ce qui vaut mieux que de la perdre.
+    }
     onComplete();
   };
 
@@ -135,11 +137,18 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   dotActive: { backgroundColor: colors.accent.amber, width: 24 },
 });
 
+/**
+ * L'IMPORT EST STATIQUE, ET C'EST LE POINT.
+ *
+ * En `await import()` dans un `try` dont le `catch` conclut « déjà vue », un import qui échoue
+ * rend TOUJOURS vrai : la présentation ne peut alors plus jamais s'afficher, sans qu'aucune erreur
+ * ne remonte. Le prestataire a payé exactement ce défaut.
+ */
 export async function hasCompletedOnboarding(): Promise<boolean> {
   try {
-    const SecureStore = await import('expo-secure-store');
     return (await SecureStore.getItemAsync(ONBOARDING_KEY)) === 'true';
   } catch {
-    return true; // skip onboarding if SecureStore unavailable
+    // Stockage indisponible : on n'empêche pas d'entrer dans l'application.
+    return true;
   }
 }
