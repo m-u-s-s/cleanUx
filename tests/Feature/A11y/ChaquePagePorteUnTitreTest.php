@@ -71,28 +71,28 @@ class ChaquePagePorteUnTitreTest extends TestCase
     }
 
     /**
-     * L'inventaire que le harnais visuel emploie déjà — une seule source pour les deux.
+     * Les pages embarquees, lues dans la configuration versionnee — la meme source que
+     * `parity:webview-manifest`, qui n'en fabrique qu'une copie pour le harnais visuel.
      *
      * @return array<string, array{0: string, 1: string}>
      */
     private function pagesRoutees(): array
     {
-        $chemin = storage_path('app/parity_webview.json');
-
-        if (! is_file($chemin)) {
-            return [];
-        }
-
-        /** @var list<array{key: string, path: string, roles?: list<string>}> $modules */
-        $modules = json_decode((string) file_get_contents($chemin), true) ?: [];
-
         $cas = [];
 
+        /** @var array<int, array<string, mixed>> $modules */
+        $modules = (array) config('parity.modules', []);
+
         foreach ($modules as $m) {
-            $roles = $m['roles'] ?? [];
+            if (($m['mobile'] ?? null) !== 'webview') {
+                continue;
+            }
+
+            /** @var list<string> $roles */
+            $roles = array_values((array) ($m['roles'] ?? []));
             $role = $roles[0] ?? 'client';
 
-            $cas[$m['key']] = [$m['path'], $role === 'provider' ? 'employe' : $role];
+            $cas[(string) $m['key']] = [(string) $m['path'], $role === 'provider' ? 'employe' : $role];
         }
 
         return $cas;
