@@ -3,6 +3,7 @@
 use App\Http\Controllers\Analytics\AnalyticsExportController;
 use App\Http\Controllers\Client\ClientExcelExportController;
 use App\Http\Controllers\Client\FinanceDocumentDownloadController;
+use App\Livewire\Client\RendezVousDetail;
 use App\Livewire\Client\AiQuotePhoto;
 use App\Livewire\Client\BookingCheckout;
 use App\Livewire\Client\BrowseCompanies;
@@ -79,6 +80,16 @@ Route::middleware(['role:client'])
          * n'a simplement plus rien à demander.
          */
         Route::get('/rendez-vous/nouveau', OrderJourney::class)->name('rendezvous.create');
+
+        /*
+         * LA PAGE D'UN RENDEZ-VOUS — le suivi de mission et tout ce qui se gere.
+         *
+         * Declaree APRES `/rendez-vous/nouveau` et bornee aux chiffres : sans quoi elle
+         * avalerait « nouveau ». Le suivi s'y monte, il ne vit plus sur chaque ligne.
+         */
+        Route::get('/rendez-vous/{booking}', RendezVousDetail::class)
+            ->whereNumber('booking')
+            ->name('rendezvous.show');
 
         if (class_exists(BrowseProviders::class)) {
             Route::get('/prestataires', BrowseProviders::class)->name('providers.browse');

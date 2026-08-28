@@ -15,18 +15,31 @@ class ClientMissionTrackingPanelTest extends TestCase
     use CreatesMissionPortalFixtures;
     use RefreshDatabase;
 
-    public function test_client_rendez_vous_page_displays_embedded_mission_tracking_when_mission_exists(): void
+    /**
+     * Le suivi vivait sur CHAQUE ligne de la liste, qui devenait interminable. Il vit desormais
+     * sur la page du rendez-vous. Les trois exigences n'ont pas bouge, seul le lieu a change.
+     */
+    public function test_la_page_du_rendez_vous_embarque_le_suivi_quand_une_mission_existe(): void
     {
         $scenario = $this->createMissionPortalContext([
             'status' => 'arrived',
         ], withStartCode: true);
 
-        $this->actingAs($scenario['client']);
-
-        Livewire::test(MesRendezVousClient::class)
+        $this->actingAs($scenario['client'])
+            ->get(route('client.rendezvous.show', $scenario['rendezVous']))
+            ->assertOk()
             ->assertSee('Suivi de mission')
             ->assertSee('Code de début disponible')
             ->assertSee('Actions client');
+    }
+
+    /** TEMOIN — la liste, elle, ne le porte plus : c'est tout l'objet du deplacement. */
+    public function test_temoin_la_liste_ne_porte_plus_le_suivi(): void
+    {
+        $scenario = $this->createMissionPortalContext(['status' => 'arrived'], withStartCode: true);
+
+        Livewire::actingAs($scenario['client'])->test(MesRendezVousClient::class)
+            ->assertDontSee('Suivi de mission');
     }
 
     protected function setUp(): void

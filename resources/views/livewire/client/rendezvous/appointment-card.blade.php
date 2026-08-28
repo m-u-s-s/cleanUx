@@ -1,57 +1,41 @@
-<div class="border rounded-2xl p-4 shadow-sm bg-gray-50 space-y-4">
-    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
-        <div>
-            <h4 class="font-semibold text-gray-800 text-lg">
+{{--
+    LA LIGNE DIT L'ESSENTIEL, LA PAGE DIT LE RESTE.
+
+    Elle portait huit champs de detail, la remarque du client et le panneau de suivi entier :
+    une page de dix rendez-vous devenait interminable. Tout cela vit maintenant sur
+    `client.rendezvous.show`, ou le client gere son intervention.
+--}}
+<div class="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-slate-300 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900">
+    <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div class="min-w-0">
+            {{-- LE TITRE EST LE LIEN : toute la ligne mene au detail, sans bouton supplementaire. --}}
+            <a href="{{ route('client.rendezvous.show', $rdv->id) }}"
+               class="text-lg font-semibold text-slate-900 hover:underline dark:text-slate-100"
+               aria-label="{{ __('Ouvrir le rendez-vous') }} — {{ $rdv->service_display_name }}">
                 {{ $rdv->service_display_name }}
-            </h4>
-            <p class="text-sm text-gray-600">
-                📅 {{ $rdv->date }} à {{ $rdv->heure }}
+            </a>
+
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                {{ $rdv->date }} à {{ $rdv->heure }}
+                @if($rdv->ville)
+                    · {{ $rdv->ville }}
+                @endif
             </p>
-            <p class="text-sm text-gray-600">
-                🧑‍💼 {{ $rdv->employe->name ?? 'Prestataire à confirmer' }}
+
+            <p class="text-sm text-slate-600 dark:text-slate-400">
+                {{ $rdv->employe->name ?? __('Prestataire à confirmer') }}
+            </p>
+
+            <p class="mt-1 font-mono text-xs text-slate-500 dark:text-slate-500">
+                {{ $rdv->booking_reference ?? '#'.$rdv->id }}
             </p>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex shrink-0 items-center gap-2">
             <x-badge :status="$rdv->status" />
             <x-priority-badge :priority="$rdv->priorite" />
         </div>
     </div>
 
-    @if($rdv->recurring_series_id)
-    <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-sm text-indigo-800">
-        <div class="flex flex-wrap items-center gap-2">
-            <span class="font-semibold">🔁 Série récurrente</span>
-            <span>Position : #{{ $rdv->series_position ?? '—' }}</span>
-            <span>Statut série : {{ ucfirst($rdv->series_status ?? 'active') }}</span>
-            <a href="{{ route('client.rendezvous.series', $rdv) }}"
-               class="ml-auto font-semibold text-indigo-700 underline hover:text-indigo-900">Gérer la série</a>
-        </div>
-    </div>
-    @endif
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-        <div class="space-y-1">
-            <p><span class="font-medium">Type de lieu :</span> {{ ucfirst($rdv->place_type ?? '—') }}</p>
-            <p><span class="font-medium">Fréquence :</span> {{ ucfirst(str_replace('_', ' ', $rdv->frequency ?? '—')) }}</p>
-            <p><span class="font-medium">Surface :</span> {{ $rdv->surface ?? ($rdv->surface_m2 ? $rdv->surface_m2 . ' m²' : '—') }}</p>
-            <p><span class="font-medium">Durée estimée :</span> {{ $rdv->estimated_duration_minutes ? $rdv->estimated_duration_minutes . ' min' : '—' }}</p>
-        </div>
-
-        <div class="space-y-1">
-            <p><span class="font-medium">Adresse :</span> {{ $rdv->adresse ?? '—' }}</p>
-            <p><span class="font-medium">Ville :</span> {{ $rdv->ville ?? '—' }}</p>
-            <p><span class="font-medium">Code postal :</span> {{ $rdv->postal_code_display }}</p>
-            <p><span class="font-medium">Téléphone :</span> {{ $rdv->contact_phone ?? '—' }}</p>
-        </div>
-    </div>
-
-    @if($rdv->customer_comment)
-    <div class="text-sm text-gray-700 bg-white border rounded-xl p-3">
-        <span class="font-medium">Remarque :</span> {{ $rdv->customer_comment }}
-    </div>
-    @endif
-
-    @include('livewire.client.rendezvous.mission-tracking-panel', ['rdv' => $rdv])
     @include('livewire.client.rendezvous.actions', ['rdv' => $rdv])
 </div>

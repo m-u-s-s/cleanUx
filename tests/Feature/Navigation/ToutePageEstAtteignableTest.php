@@ -52,6 +52,7 @@ class ToutePageEstAtteignableTest extends TestCase
     private const BOUCHONS = [
         'admin.export.csv',                      // repli ; le CSV réel est produit dans ExportTools
         'admin.rendezvous.series.edit',          // renvoie du HTML en dur avec l'id de la série
+        'client.rendezvous.series.edit',         // le meme bouchon, cote client ; la vraie page est `client.rendezvous.series`
     ];
 
     /**
