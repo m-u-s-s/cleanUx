@@ -28,8 +28,8 @@
             </a>
         @endif
 
-        @if(Route::has('client.subscriptions'))
-            <a href="{{ route('client.subscriptions') }}" class="brio-btn-secondary inline-flex items-center gap-2">
+        @if(Route::has('client.subscriptions-v2'))
+            <a href="{{ route('client.subscriptions-v2') }}" class="brio-btn-secondary inline-flex items-center gap-2">
                 <x-ui.icon name="refresh" class="w-4 h-4" />
                 <span>{{ __('Abonnements') }}</span>
             </a>

@@ -16,7 +16,6 @@ use App\Livewire\Client\ClientFeedbackForm;
 use App\Livewire\Client\ClientKybOnboarding;
 use App\Livewire\Client\ClientLiveTrackingMap;
 use App\Livewire\Client\ClientLoyaltyRewards;
-use App\Livewire\Client\ClientSubscriptions;
 use App\Livewire\Client\ClientSubscriptionsV2;
 use App\Livewire\Client\ClientTipBooking;
 use App\Livewire\Client\EditRecurringBooking;
@@ -148,11 +147,6 @@ Route::middleware(['role:client'])
 
         if (class_exists(HistoriqueClient::class)) {
             Route::get('/historique', HistoriqueClient::class)->name('historique');
-        }
-
-        if (class_exists(ClientSubscriptions::class)) {
-            Route::get('/abonnements', ClientSubscriptions::class)
-                ->name('subscriptions');
         }
 
         if (class_exists(ClientSubscriptionsV2::class)) {
