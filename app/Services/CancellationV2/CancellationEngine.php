@@ -21,6 +21,7 @@ class CancellationEngine
     public function __construct(
         protected CancellationPolicyResolver $resolver,
         protected CancellationIntegrationsRunner $integrations,
+        protected BaremeDeRepli $repli,
     ) {}
 
     /**
@@ -53,6 +54,10 @@ class CancellationEngine
             ? max(0, (int) floor($now->diffInHours($scheduled, false)))
             : 0;
 
+        $minutesBefore = $scheduled
+            ? max(0, (int) floor($now->diffInMinutes($scheduled, false)))
+            : null;
+
         $resolved = $this->resolver->resolveForBooking($bookingId, $actorRole, $hoursBefore, $now);
         $policy = $resolved['policy'];
         $tier = $resolved['tier'];
@@ -67,9 +72,32 @@ class CancellationEngine
         $exemptApplied = false;
         $feePercent = 0.0;
         $feeFlat = 0;
+        $plancherRepli = 0;
+        $libelleRepli = null;
+
         if ($tier) {
             $feePercent = (float) $tier->fee_percent;
             $feeFlat = (int) $tier->fee_flat_cents;
+        } elseif ($repli = $this->repli->pour($actorRole, $minutesBefore)) {
+            // Aucune politique ne repond : `config/cancellation.php` fait filet plutot que 0 EUR.
+            $feePercent = $repli['fee_percent'];
+            $feeFlat = $repli['fee_flat_cents'];
+            $plancherRepli = $repli['min_fee_cents'];
+            $libelleRepli = $repli['label'];
+            $warnings[] = 'politique_de_repli';
+        }
+
+        // LA FENETRE DE GRACE — se tromper et le voir tout de suite ne se facture pas.
+        $graceMinutes = (int) (Config::get('cancellation_v2.grace_minutes')
+            ?? Config::get('cancellation.client.free_cancellation_minutes', 0));
+        $creeeLe = $bookingMeta['created_at'] ?? null;
+
+        if ($actorRole === 'client' && $graceMinutes > 0 && $creeeLe !== null
+            && abs((float) $now->diffInMinutes($creeeLe)) <= $graceMinutes) {
+            $feePercent = 0.0;
+            $feeFlat = 0;
+            $plancherRepli = 0;
+            $warnings[] = 'fenetre_de_grace';
         }
 
         if ($reasonCode && $policy) {
@@ -109,12 +137,17 @@ class CancellationEngine
             }
         }
 
+        if ($plancherRepli > 0 && $feeAmount < $plancherRepli) {
+            $feeAmount = $plancherRepli;
+        }
+
         if ($feeAmount > $amount) {
             $feeAmount = $amount;
         }
         $refundAmount = max(0, $amount - $feeAmount);
 
-        $tierLabel = $tier?->description ?? ($tier ? sprintf('≥%dh : %.0f%%', $tier->min_hours_before, (float) $tier->fee_percent) : null);
+        $tierLabel = $tier?->description
+            ?? ($tier ? sprintf('≥%dh : %.0f%%', $tier->min_hours_before, (float) $tier->fee_percent) : $libelleRepli);
 
         return new CancellationQuote(
             bookingId: $bookingId,
@@ -197,6 +230,18 @@ class CancellationEngine
                     if (Schema::hasColumn('bookings', $colonne)) {
                         $surLaReservation[$colonne] = $valeur;
                     }
+                }
+
+                // LE DETAIL DES FRAIS DANS `metadata` — le contrat que l'API cliente publie.
+                if (Schema::hasColumn('bookings', 'metadata')) {
+                    $existant = DB::table('bookings')->where('id', $bookingId)->value('metadata');
+                    $existant = is_string($existant) ? (json_decode($existant, true) ?: []) : ((array) $existant);
+
+                    $surLaReservation['metadata'] = json_encode(array_merge($existant, [
+                        'cancellation_fee' => round($quote->feeAmountCents / 100, 2),
+                        'cancellation_fee_percent' => (int) round($quote->feePercent),
+                        'cancellation_reason_code' => $reasonCode ?? $quote->tierLabel,
+                    ]));
                 }
 
                 DB::table('bookings')->where('id', $bookingId)->update($surLaReservation);
@@ -310,7 +355,7 @@ class CancellationEngine
     }
 
     /**
-     * @return array{amount_cents:int, currency:?string, scheduled_at:?CarbonImmutable, status:?string}|null
+     * @return array{amount_cents:int, currency:?string, scheduled_at:?CarbonImmutable, created_at:?CarbonImmutable, status:?string}|null
      */
     protected function fetchBookingMeta(int $bookingId): ?array
     {
@@ -345,10 +390,20 @@ class CancellationEngine
             }
         }
 
+        $creeeLe = null;
+        if (isset($row->created_at)) {
+            try {
+                $creeeLe = CarbonImmutable::parse((string) $row->created_at);
+            } catch (\Throwable $e) {
+                $creeeLe = null;
+            }
+        }
+
         return [
             'amount_cents' => $amountCents,
             'currency' => $row->currency ?? null,
             'scheduled_at' => $scheduledAt,
+            'created_at' => $creeeLe,
             'status' => $row->status ?? null,
         ];
     }

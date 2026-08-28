@@ -7,7 +7,6 @@ use App\Models\PricingZoneState;
 use App\Models\ProviderOnboardingDocument;
 use App\Models\ServiceZone;
 use App\Models\User;
-use App\Services\Cancellation\CancelBookingService;
 use App\Services\Cancellation\CancellationFeeCalculator;
 use App\Services\Onboarding\ProviderOnboardingService;
 use App\Services\Pricing\SurgePricingEngine;
@@ -270,94 +269,6 @@ class Phase14Test extends TestCase
     // CANCELLATION FEES
     // ──────────────────────────────────────────────
 
-    public function test_cancellation_fee_more_than_24h_before_is_free(): void
-    {
-        $booking = $this->makeBooking([
-            'scheduled_date' => now()->addDays(2)->toDateString(),
-            'scheduled_time' => '10:00:00',
-            'estimated_price' => 100,
-        ]);
-
-        $details = app(CancellationFeeCalculator::class)->forClientCancellation($booking);
-
-        $this->assertEquals(0.0, $details['fee_amount']);
-        $this->assertTrue($details['is_free']);
-    }
-
-    public function test_cancellation_fee_within_2h_to_24h_is_25_percent(): void
-    {
-        // Booking dans 5h
-        Carbon::setTestNow(Carbon::create(2026, 5, 14, 10, 0, 0));
-        $booking = $this->makeBooking([
-            'scheduled_date' => '2026-05-14',
-            'scheduled_time' => '15:00:00',  // dans 5h
-            'estimated_price' => 100,
-            'created_at' => now()->subHours(48),
-        ]);
-
-        $details = app(CancellationFeeCalculator::class)->forClientCancellation($booking);
-
-        $this->assertEquals(25.0, $details['fee_amount']);
-        $this->assertEquals(25, $details['fee_percent']);
-        $this->assertFalse($details['is_free']);
-
-        Carbon::setTestNow();
-    }
-
-    public function test_cancellation_fee_within_30min_to_2h_is_50_percent(): void
-    {
-        Carbon::setTestNow(Carbon::create(2026, 5, 14, 10, 0, 0));
-        $booking = $this->makeBooking([
-            'scheduled_date' => '2026-05-14',
-            'scheduled_time' => '11:00:00',  // dans 1h
-            'estimated_price' => 100,
-            'created_at' => now()->subHours(48),
-        ]);
-
-        $details = app(CancellationFeeCalculator::class)->forClientCancellation($booking);
-
-        $this->assertEquals(50.0, $details['fee_amount']);
-        $this->assertEquals(50, $details['fee_percent']);
-
-        Carbon::setTestNow();
-    }
-
-    public function test_cancellation_fee_within_30min_is_100_percent(): void
-    {
-        Carbon::setTestNow(Carbon::create(2026, 5, 14, 10, 0, 0));
-        $booking = $this->makeBooking([
-            'scheduled_date' => '2026-05-14',
-            'scheduled_time' => '10:15:00',  // dans 15 min
-            'estimated_price' => 100,
-            'created_at' => now()->subHours(48),
-        ]);
-
-        $details = app(CancellationFeeCalculator::class)->forClientCancellation($booking);
-
-        $this->assertEquals(100.0, $details['fee_amount']);
-        $this->assertEquals(100, $details['fee_percent']);
-
-        Carbon::setTestNow();
-    }
-
-    public function test_cancellation_grace_window_for_just_created_booking(): void
-    {
-        Carbon::setTestNow(Carbon::create(2026, 5, 14, 10, 0, 0));
-        $booking = $this->makeBooking([
-            'scheduled_date' => '2026-05-14',
-            'scheduled_time' => '10:30:00',
-            'estimated_price' => 100,
-            'created_at' => now()->subMinutes(2), // créé il y a 2 min
-        ]);
-
-        $details = app(CancellationFeeCalculator::class)->forClientCancellation($booking);
-
-        $this->assertTrue($details['is_free']);
-        $this->assertEquals('free_within_grace', $details['reason_code']);
-
-        Carbon::setTestNow();
-    }
-
     public function test_provider_cancellation_30min_before_is_free(): void
     {
         Carbon::setTestNow(Carbon::create(2026, 5, 14, 10, 0, 0));
@@ -404,41 +315,6 @@ class Phase14Test extends TestCase
         $this->assertTrue($isNoShow);
 
         Carbon::setTestNow();
-    }
-
-    public function test_cancel_by_client_marks_booking_with_fee_metadata(): void
-    {
-        Carbon::setTestNow(Carbon::create(2026, 5, 14, 10, 0, 0));
-        $client = User::factory()->create();
-        $booking = $this->makeBooking([
-            'scheduled_date' => '2026-05-14',
-            'scheduled_time' => '11:00:00',
-            'estimated_price' => 100,
-            'customer_user_id' => $client->id,
-            'client_id' => $client->id,
-            'created_at' => now()->subHours(48),
-        ]);
-
-        $result = app(CancelBookingService::class)->cancelByClient($booking, $client, 'changement de plans');
-
-        $this->assertTrue($result['ok']);
-        $this->assertEquals(50.0, $result['fee_details']['fee_amount']); // 50% car 1h avant
-        $this->assertEquals('annule', $booking->fresh()->status);
-        $this->assertEquals(50.0, $booking->fresh()->metadata['cancellation_fee']);
-
-        Carbon::setTestNow();
-    }
-
-    public function test_cannot_cancel_already_completed_booking(): void
-    {
-        $client = User::factory()->create();
-        $booking = $this->makeBooking([
-            'status' => 'termine',
-            'customer_user_id' => $client->id,
-        ]);
-
-        $this->expectException(\DomainException::class);
-        app(CancelBookingService::class)->cancelByClient($booking, $client);
     }
 
     // ──────────────────────────────────────────────

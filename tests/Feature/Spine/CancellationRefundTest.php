@@ -101,6 +101,8 @@ class CancellationRefundTest extends TestCase
             'provider_amount_cents' => 8000,
             'platform_fee_cents' => 2000,
             'currency' => 'EUR',
+            // Creee hier : hors de la fenetre de grace, qui n'est pas le sujet de ce test.
+            'created_at' => now()->subDay(),
         ])->save();
 
         $engine = app(CancellationEngine::class);
@@ -126,6 +128,8 @@ class CancellationRefundTest extends TestCase
             'payment_status' => 'captured',
             'payment_amount_cents' => 10000,
             'currency' => 'EUR',
+            // Creee hier : hors de la fenetre de grace, qui n'est pas le sujet de ce test.
+            'created_at' => now()->subDay(),
         ])->save();
 
         $engine = app(CancellationEngine::class);
@@ -155,6 +159,8 @@ class CancellationRefundTest extends TestCase
             'provider_amount_cents' => 8000,
             'platform_fee_cents' => 2000,
             'currency' => 'EUR',
+            // Creee hier : hors de la fenetre de grace, qui n'est pas le sujet de ce test.
+            'created_at' => now()->subDay(),
         ])->save();
 
         // Seed the provider earning so the wallet has a non-zero balance to claw back.
@@ -241,6 +247,8 @@ class CancellationRefundTest extends TestCase
             'provider_amount_cents' => 8000,
             'platform_fee_cents' => 2000,
             'currency' => 'EUR',
+            // Creee hier : hors de la fenetre de grace, qui n'est pas le sujet de ce test.
+            'created_at' => now()->subDay(),
         ])->save();
 
         // Stub the refund for the first call.

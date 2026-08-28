@@ -4,56 +4,18 @@ namespace App\Services\Cancellation;
 
 use App\Models\Booking;
 use App\Models\User;
-use App\Services\Payments\MissionPaymentService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/** Phase 14 — Service d'annulation booking avec calcul + application du fee. */
+/**
+ * Le desistement d'un prestataire (la mission repart au dispatch) et la non-presentation
+ * d'un client. L'annulation PAR LE CLIENT vit dans CancellationV2\CancellationEngine.
+ */
 class CancelBookingService
 {
     public function __construct(
         protected CancellationFeeCalculator $calculator,
     ) {}
-
-    /** Annule un booking par le client. Calcule + applique le fee. */
-    public function cancelByClient(Booking $booking, User $client, ?string $reason = null): array
-    {
-        $this->guardCanCancel($booking);
-
-        $feeDetails = $this->calculator->forClientCancellation($booking);
-
-        return DB::transaction(function () use ($booking, $client, $reason, $feeDetails) {
-            $booking->update([
-                'status' => 'annule',
-                'cancelled_at' => now(),
-                'cancelled_by' => $client->id,
-                'cancellation_reason' => $reason,
-                'metadata' => array_merge($booking->metadata ?? [], [
-                    'cancellation_fee' => $feeDetails['fee_amount'],
-                    'cancellation_fee_percent' => $feeDetails['fee_percent'],
-                    'cancellation_reason_code' => $feeDetails['reason_code'],
-                ]),
-            ]);
-
-            $this->consignerLesFrais($booking, (float) $feeDetails['fee_amount'], (int) $feeDetails['fee_percent']);
-
-            // Si payment authorized/captured, déclencher refund partiel
-            $this->tryRefundPartial($booking, $feeDetails);
-
-            Log::info('CancelBookingService: client cancellation', [
-                'booking_id' => $booking->id,
-                'fee_amount' => $feeDetails['fee_amount'],
-                'reason' => $feeDetails['reason_code'],
-            ]);
-
-            return [
-                'ok' => true,
-                'booking_id' => $booking->id,
-                'fee_details' => $feeDetails,
-                'is_free' => $feeDetails['is_free'],
-            ];
-        });
-    }
 
     /** Annule par le prestataire. Pénalité + redispatch (via Phase 11 si dispo). */
     public function cancelByProvider(Booking $booking, User $provider, ?string $reason = null): array
@@ -155,72 +117,6 @@ class CancelBookingService
             throw new \DomainException(
                 "Booking dans un statut final non annulable: {$booking->status}"
             );
-        }
-    }
-
-    /** Tente un refund partiel via Phase 13 si dispo. Le client est remboursé (prix - fee). */
-    protected function tryRefundPartial(Booking $booking, array $feeDetails): void
-    {
-        if (! $booking->stripe_payment_intent_id) {
-            return;
-        }
-        if (! in_array($booking->payment_status, ['authorized', 'captured'], true)) {
-            return;
-        }
-
-        // DEUX ÉTATS, DEUX GESTES — et les confondre ne facturait rien du tout.
-        if ($booking->payment_status === 'authorized') {
-            $this->encaisserLesFraisSurLEmpreinte($booking, $feeDetails);
-
-            return;
-        }
-
-        $service = '\App\Services\Payments\StripeConnectPaymentService';
-        if (! class_exists($service)) {
-            Log::info('CancelBookingService: pas de Phase 13 — refund manuel requis', [
-                'booking_id' => $booking->id,
-            ]);
-
-            return;
-        }
-
-        $bookingPrice = (float) ($booking->estimated_price ?? 0);
-        $feeAmount = (float) $feeDetails['fee_amount'];
-        $refundAmount = max(0, $bookingPrice - $feeAmount);
-
-        if ($refundAmount <= 0) {
-            return;
-        }
-
-        $refundCents = (int) round($refundAmount * 100);
-
-        try {
-            app($service)->refundMissionPayment($booking, $refundCents, 'requested_by_customer');
-        } catch (\Throwable $e) {
-            Log::error('CancelBookingService: refund échoué', [
-                'booking_id' => $booking->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    /**
-     * Les frais d'annulation, pris sur l'empreinte non capturée.
-     *
-     * @param  array{fee_amount: float|int, fee_percent?: mixed, reason_code?: mixed, is_free?: bool}  $feeDetails
-     */
-    protected function encaisserLesFraisSurLEmpreinte(Booking $booking, array $feeDetails): void
-    {
-        $fraisCents = (int) round(((float) $feeDetails['fee_amount']) * 100);
-
-        try {
-            app(MissionPaymentService::class)->capturerLesFraisDAnnulation($booking, $fraisCents);
-        } catch (\Throwable $e) {
-            Log::error('CancelBookingService: frais d’annulation non encaissés', [
-                'booking_id' => $booking->id,
-                'frais_cents' => $fraisCents,
-                'error' => $e->getMessage(),
-            ]);
         }
     }
 

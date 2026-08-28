@@ -28,6 +28,8 @@ class CancellationApiTest extends TestCase
     protected function makeBooking(User $client): Booking
     {
         return Booking::create([
+            // Creee hier : hors de la fenetre de grace, qui n'est pas le sujet de ce test.
+            'created_at' => now()->subDay(),
             'client_id' => $client->id,
             'date' => now()->addDays(3),
             'heure' => '10:00',
@@ -81,6 +83,8 @@ class CancellationApiTest extends TestCase
         $client = User::factory()->client()->create();
         $provider = User::factory()->employe()->create();
         $booking = Booking::create([
+            // Creee hier : hors de la fenetre de grace, qui n'est pas le sujet de ce test.
+            'created_at' => now()->subDay(),
             'client_id' => $client->id,
             'employe_id' => $provider->id, // provider must be assigned to quote it (ownership guard)
             'date' => now()->addHour(),
@@ -127,6 +131,8 @@ class CancellationApiTest extends TestCase
         $client = User::factory()->client()->create();
         $admin = User::factory()->adminComplet()->create();
         $booking = Booking::create([
+            // Creee hier : hors de la fenetre de grace, qui n'est pas le sujet de ce test.
+            'created_at' => now()->subDay(),
             'client_id' => $client->id,
             'date' => now()->addHour(),
             'heure' => '10:00',

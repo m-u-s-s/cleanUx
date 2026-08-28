@@ -13,12 +13,13 @@ use App\Models\Mission;
 use App\Models\User;
 use App\Services\Booking\ProviderSelectionResolver;
 use App\Services\Booking\ZoneCoverageService;
-use App\Services\Cancellation\CancelBookingService;
+use App\Services\CancellationV2\CancellationEngine;
 use App\Services\Missions\MissionLifecycleService;
 use App\Services\Missions\MissionVerificationCodeService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 /** Phase 12 — Bookings côté client mobile. */
@@ -212,10 +213,16 @@ class ClientBookingController extends Controller
             throw BookingException::notCancellable();
         }
 
-        // ANNULER PASSE PAR LE SERVICE, ET NON PLUS PAR UN `update()` NU.
+        // UN SEUL MOTEUR D'ANNULATION — celui du web et de l'application mobile.
         try {
-            $resultat = app(CancelBookingService::class)
-                ->cancelByClient($booking, $request->user(), $data['reason'] ?? null);
+            $annulation = app(CancellationEngine::class)->execute(
+                bookingId: $booking->id,
+                actor: $request->user(),
+                actorRole: 'client',
+                reasonText: $data['reason'] ?? null,
+            );
+        } catch (ValidationException $e) {
+            throw BookingException::notCancellable();
         } catch (\DomainException $e) {
             throw BookingException::notCancellable();
         }
@@ -224,10 +231,10 @@ class ClientBookingController extends Controller
             'ok' => true,
             // LES FRAIS SONT DITS AU CLIENT, dans la réponse même de son annulation.
             'cancellation' => [
-                'fee_amount' => $resultat['fee_details']['fee_amount'] ?? 0,
-                'fee_percent' => $resultat['fee_details']['fee_percent'] ?? 0,
-                'reason_code' => $resultat['fee_details']['reason_code'] ?? null,
-                'is_free' => (bool) ($resultat['is_free'] ?? false),
+                'fee_amount' => round($annulation->fee_amount_cents / 100, 2),
+                'fee_percent' => (int) round((float) $annulation->fee_percent_applied),
+                'reason_code' => $annulation->reason_code,
+                'is_free' => (int) $annulation->fee_amount_cents === 0,
             ],
             'data' => $this->serialize($booking->fresh()),
         ]);

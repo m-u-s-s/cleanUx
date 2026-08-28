@@ -52,6 +52,8 @@ class ScheduledAtDrivesTheFeeTest extends TestCase
         $rendezVous = now()->addHours(30)->setTime(21, 0);
 
         $booking = Booking::create([
+            // Creee hier : hors de la fenetre de grace, qui n'est pas le sujet de ce test.
+            'created_at' => now()->subDay(),
             'client_id' => $client->id,
             'date' => $rendezVous,
             'heure' => $rendezVous->format('H:i:s'),
@@ -75,6 +77,8 @@ class ScheduledAtDrivesTheFeeTest extends TestCase
         $rendezVous = now()->addHours(30);
 
         $booking = Booking::create([
+            // Creee hier : hors de la fenetre de grace, qui n'est pas le sujet de ce test.
+            'created_at' => now()->subDay(),
             'client_id' => $client->id,
             'date' => $rendezVous,
             'heure' => $rendezVous->format('H:i:s'),
@@ -93,6 +97,8 @@ class ScheduledAtDrivesTheFeeTest extends TestCase
         $client = User::factory()->client()->create();
 
         $booking = Booking::create([
+            // Creee hier : hors de la fenetre de grace, qui n'est pas le sujet de ce test.
+            'created_at' => now()->subDay(),
             'client_id' => $client->id,
             'date' => '2026-09-15',
             'heure' => '09:00:00',
@@ -107,6 +113,8 @@ class ScheduledAtDrivesTheFeeTest extends TestCase
     private function bookingAt(string $date, string $heure): Booking
     {
         return Booking::create([
+            // Creee hier : hors de la fenetre de grace, qui n'est pas le sujet de ce test.
+            'created_at' => now()->subDay(),
             'client_id' => User::factory()->client()->create()->id,
             'date' => $date,
             'heure' => $heure,

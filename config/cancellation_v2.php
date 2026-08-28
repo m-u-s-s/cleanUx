@@ -18,6 +18,14 @@ return [
     'en_route_penalty_percent' => (float) env('CANCELLATION_EN_ROUTE_PENALTY_PERCENT', 5),
 
     /*
+     * Minutes de grace apres la creation : se tromper de reservation et le voir tout de suite
+     * ne se facture pas. Cote client seulement. `null` reprend la valeur historique.
+     */
+    'grace_minutes' => env('CANCELLATION_GRACE_MINUTES') !== null
+        ? (int) env('CANCELLATION_GRACE_MINUTES')
+        : null,
+
+    /*
     |--------------------------------------------------------------------------
     | Refund provider — stripe | wallet | mock
     |--------------------------------------------------------------------------

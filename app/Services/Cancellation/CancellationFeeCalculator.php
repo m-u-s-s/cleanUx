@@ -7,81 +7,9 @@ use App\Models\Mission;
 use App\Models\MissionAssignment;
 use Carbon\Carbon;
 
-/** Phase 14 — Calcul des frais d'annulation selon délai. Pure function : ne touche PAS la DB. */
+/** Penalite de desistement prestataire et detection de non-presentation. Sans acces DB. */
 class CancellationFeeCalculator
 {
-    /** Calcule le fee à appliquer pour une annulation par le client. */
-    public function forClientCancellation(Booking $booking, ?Carbon $cancelledAt = null): array
-    {
-        $cancelledAt = $cancelledAt ?? now();
-        $config = config('cancellation.client');
-        $bookingPrice = (float) ($booking->estimated_price ?? $booking->payment_amount_cents / 100 ?? 0);
-
-        $start = $this->bookingStartDateTime($booking);
-
-        // 1. Fenêtre de grâce après création (pour les ASAP surtout)
-        $createdAt = $booking->created_at;
-        if ($createdAt) {
-            $minutesSinceCreation = abs($cancelledAt->diffInMinutes($createdAt, true));
-            $graceMinutes = (int) ($config['free_cancellation_minutes'] ?? 0);
-            if ($graceMinutes > 0 && $minutesSinceCreation <= $graceMinutes) {
-                return $this->result(0.0, 0, null, true, null, 'free_within_grace');
-            }
-        }
-
-        // 2. Si pas de date de start, on traite comme annulation tardive
-        if (! $start) {
-            $tier = $config['fee_tiers'][count($config['fee_tiers']) - 1] ?? ['fee_percent' => 100];
-
-            return $this->result(
-                $this->applyMinimumFee($bookingPrice * ($tier['fee_percent'] / 100), $config),
-                (int) $tier['fee_percent'],
-                $tier,
-                false,
-                null,
-                'tier_default'
-            );
-        }
-
-        $minutesBeforeStart = (int) $cancelledAt->diffInMinutes($start, false);
-
-        // 3. Match les tiers (1er match wins, évalués par ordre décroissant)
-        foreach ($config['fee_tiers'] as $i => $tier) {
-            $matches = false;
-
-            if (isset($tier['min_hours_before'])) {
-                $minutesNeeded = $tier['min_hours_before'] * 60;
-                if ($minutesBeforeStart >= $minutesNeeded) {
-                    $matches = true;
-                }
-            } elseif (isset($tier['min_minutes_before'])) {
-                if ($minutesBeforeStart >= $tier['min_minutes_before']) {
-                    $matches = true;
-                }
-            }
-
-            if ($matches) {
-                $feePercent = (int) $tier['fee_percent'];
-                $fee = $bookingPrice * ($feePercent / 100);
-                $fee = $this->applyMinimumFee($fee, $config);
-
-                return $this->result(
-                    round($fee, 2),
-                    $feePercent,
-                    $tier,
-                    $feePercent === 0 && $fee === 0.0,
-                    $minutesBeforeStart,
-                    "tier_{$i}",
-                );
-            }
-        }
-
-        // 4. Aucun tier matché : fallback 100%
-        $fee = $this->applyMinimumFee($bookingPrice, $config);
-
-        return $this->result(round($fee, 2), 100, null, false, $minutesBeforeStart, 'tier_fallback');
-    }
-
     /** Calcul de pénalité pour annulation par prestataire. */
     public function forProviderCancellation(Booking $booking, ?Carbon $cancelledAt = null): array
     {

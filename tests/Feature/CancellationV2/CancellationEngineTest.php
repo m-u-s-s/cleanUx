@@ -32,6 +32,8 @@ class CancellationEngineTest extends TestCase
         $scheduledAt ??= now()->addDays(3);
 
         return Booking::create([
+            // Creee hier : hors de la fenetre de grace, qui n'est pas le sujet de ce test.
+            'created_at' => now()->subDay(),
             'client_id' => $client->id,
             'date' => $scheduledAt,
             'heure' => $scheduledAt->format('H:i'),

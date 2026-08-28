@@ -8,6 +8,7 @@ use App\Models\BookingInsurance;
 use App\Models\CancellationAudit;
 use App\Services\Insurance\InsuranceService;
 use App\Services\Loyalty\LoyaltyService;
+use App\Services\Payments\MissionPaymentService;
 use App\Services\Payments\ProviderWalletService;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -106,8 +107,45 @@ class CancellationIntegrationsRunner
     }
 
     /** Effectue le refund réel via Stripe SDK. */
+    /**
+     * UNE EMPREINTE NON CAPTUREE NE SE REMBOURSE PAS : ON Y PREND LES FRAIS.
+     * Rembourser un paiement seulement autorise ne rend rien et ne facture rien.
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function capturerSurLEmpreinte(BookingCancellationV2 $row): ?array
+    {
+        if ($row->fee_amount_cents <= 0) {
+            return null;
+        }
+
+        $booking = Booking::query()->find($row->booking_id);
+
+        if (! $booking || $booking->payment_status !== 'authorized' || ! $booking->stripe_payment_intent_id) {
+            return null;
+        }
+
+        try {
+            app(MissionPaymentService::class)->capturerLesFraisDAnnulation($booking, (int) $row->fee_amount_cents);
+
+            return ['status' => 'fee_captured', 'fee_amount_cents' => (int) $row->fee_amount_cents];
+        } catch (\Throwable $e) {
+            Log::error('[cancellation_v2] frais non encaisses sur l empreinte', [
+                'booking_id' => $row->booking_id,
+                'fee_amount_cents' => $row->fee_amount_cents,
+                'error' => $e->getMessage(),
+            ]);
+
+            return ['status' => 'fee_capture_failed', 'error' => $e->getMessage()];
+        }
+    }
+
     protected function tryStripeRefund(BookingCancellationV2 $row): array
     {
+        if ($capture = $this->capturerSurLEmpreinte($row)) {
+            return $capture;
+        }
+
         if ($row->refund_amount_cents <= 0) {
             return ['status' => 'no_refund', 'refund_amount_cents' => 0];
         }

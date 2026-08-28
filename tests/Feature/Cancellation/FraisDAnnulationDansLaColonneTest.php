@@ -5,7 +5,6 @@ namespace Tests\Feature\Cancellation;
 use App\Livewire\Admin\Analytics\CancellationReasonsCenter;
 use App\Models\Booking;
 use App\Models\User;
-use App\Services\Cancellation\CancelBookingService;
 use App\Services\CancellationV2\CancellationEngine;
 use Carbon\Carbon;
 use Database\Seeders\CancellationPoliciesSeeder;
@@ -36,13 +35,19 @@ class FraisDAnnulationDansLaColonneTest extends TestCase
         $reservation = $this->creerReservation([
             'scheduled_date' => '2026-05-14',
             'scheduled_time' => '11:00:00', // une heure avant → palier à 50 %
+            'scheduled_at' => '2026-05-14 11:00:00',
             'estimated_price' => 100,
             'customer_user_id' => $client->id,
             'client_id' => $client->id,
             'created_at' => now()->subHours(48),
         ]);
 
-        app(CancelBookingService::class)->cancelByClient($reservation, $client, 'changement de plans');
+        app(CancellationEngine::class)->execute(
+            bookingId: $reservation->id,
+            actor: $client,
+            actorRole: 'client',
+            reasonText: 'changement de plans',
+        );
 
         $frais = $reservation->fresh();
 
@@ -60,13 +65,19 @@ class FraisDAnnulationDansLaColonneTest extends TestCase
         $reservation = $this->creerReservation([
             'scheduled_date' => '2026-05-14',
             'scheduled_time' => '11:00:00',
+            'scheduled_at' => '2026-05-14 11:00:00',
             'estimated_price' => 100,
             'customer_user_id' => $client->id,
             'client_id' => $client->id,
             'created_at' => now()->subHours(48),
         ]);
 
-        app(CancelBookingService::class)->cancelByClient($reservation, $client, 'changement de plans');
+        app(CancellationEngine::class)->execute(
+            bookingId: $reservation->id,
+            actor: $client,
+            actorRole: 'client',
+            reasonText: 'changement de plans',
+        );
 
         $metadata = $reservation->fresh()->metadata ?? [];
 
@@ -83,13 +94,19 @@ class FraisDAnnulationDansLaColonneTest extends TestCase
         $reservation = $this->creerReservation([
             'scheduled_date' => '2026-05-14',
             'scheduled_time' => '11:00:00',
+            'scheduled_at' => '2026-05-14 11:00:00',
             'estimated_price' => 100,
             'customer_user_id' => $client->id,
             'client_id' => $client->id,
             'created_at' => now()->subHours(48),
         ]);
 
-        app(CancelBookingService::class)->cancelByClient($reservation, $client, 'changement de plans');
+        app(CancellationEngine::class)->execute(
+            bookingId: $reservation->id,
+            actor: $client,
+            actorRole: 'client',
+            reasonText: 'changement de plans',
+        );
 
         Livewire::actingAs(User::factory()->admin()->create())
             ->test(CancellationReasonsCenter::class)
@@ -139,6 +156,9 @@ class FraisDAnnulationDansLaColonneTest extends TestCase
             'status' => 'confirme',
             'devis_estime' => 100.0,
         ]);
+
+        // Hors de la fenetre de grace : le sujet du test est le palier a 25 %, pas la grace.
+        $reservation->forceFill(['created_at' => now()->subHour()])->save();
 
         app(CancellationEngine::class)->execute(
             bookingId: $reservation->id,
