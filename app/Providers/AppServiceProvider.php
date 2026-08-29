@@ -35,6 +35,10 @@ use App\Services\FeatureFlag\FeatureFlagService;
 use App\Services\Missions\MissionLifecycleService;
 use App\Services\Payments\CommissionService;
 use App\Services\Payments\StripeCountryMapper;
+use App\Services\PeerRental\Partenaires\AssureurContract;
+use App\Services\PeerRental\Partenaires\AssureurDeDemonstration;
+use App\Services\PeerRental\Partenaires\TelematiqueContract;
+use App\Services\PeerRental\Partenaires\TelematiqueDeDemonstration;
 use App\Services\Tax\TaxCalculator;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -69,6 +73,22 @@ class AppServiceProvider extends ServiceProvider
         // instance HTTP-clientée durant un cycle de requête.
         $this->app->singleton(LlmProvider::class, AnthropicProvider::class);
         $this->app->singleton(AnthropicStreamingProvider::class);
+
+        /*
+         * LA LOCATION ENTRE MEMBRES — deux coquilles branchables.
+         *
+         * Ni l'assureur ni le boitier telematique n'ont de partenaire contractualise. Les
+         * implementations de demonstration repondent au contrat et disent, par
+         * `estOperationnel()`, qu'elles ne couvrent ni ne deverrouillent rien. Le jour d'un
+         * vrai contrat, c'est le pilote dans `config/peer_rental.php` qui change, pas le code.
+         */
+        $this->app->bind(AssureurContract::class, fn () => match ((string) config('peer_rental.insurance.driver', 'demo')) {
+            default => new AssureurDeDemonstration,
+        });
+
+        $this->app->bind(TelematiqueContract::class, fn () => match ((string) config('peer_rental.telematics.driver', 'demo')) {
+            default => new TelematiqueDeDemonstration,
+        });
 
         // Feature flags — singleton so the DB-override lookup is memoised per request (M18).
         $this->app->singleton(FeatureFlagService::class);

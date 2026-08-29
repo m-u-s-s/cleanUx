@@ -23,6 +23,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:send-rendezvous-reminders')->everyFifteenMinutes()->withoutOverlapping();
         $schedule->command('app:prune-read-notifications --days=30')->dailyAt('02:30')->withoutOverlapping();
         $schedule->command('google-calendar:sync --future-days=30')->everyFifteenMinutes()->withoutOverlapping();
+        // Quatre echeances qu'aucun clic ne declenche : voir la commande. L'empreinte Stripe
+        // ne tient que sept jours, d'ou une passe HORAIRE et non quotidienne.
+        $schedule->command('peer-rental:entretenir')->hourly()->withoutOverlapping();
         $schedule->command('finance:sync-documents')->hourly()->withoutOverlapping();
         $schedule->command('finance:sync-documents --reminders')->dailyAt('09:00')->withoutOverlapping();
         $schedule->command('app:generate-subscriptions')->daily();

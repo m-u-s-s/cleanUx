@@ -65,6 +65,7 @@ use App\Admin\Resources\NpsResource;
 use App\Admin\Resources\OnboardingDocumentResource;
 use App\Admin\Resources\OnboardingProgressResource;
 use App\Admin\Resources\OrganizationContractResource;
+use App\Admin\Resources\PeerRentalResource;
 use App\Admin\Resources\PlanningResource;
 use App\Admin\Resources\PlatformModuleResource;
 use App\Admin\Resources\PremiumClientResource;
@@ -191,6 +192,7 @@ class AdminConsoleServiceProvider extends ServiceProvider
 
             // NOS LOCATIONS -- le parc vendu aux clients, distinct de la flotte interne ci-dessus.
             $registry->register('rentals', RentalVehicleResource::class);
+            $registry->register('peer-rentals', PeerRentalResource::class);
             $registry->register('platform-modules', PlatformModuleResource::class);
             $registry->register('international', CountrySettingResource::class);
             $registry->register('b2b-operations', ContractRateCardResource::class);

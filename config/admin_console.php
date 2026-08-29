@@ -209,5 +209,8 @@ return [
          * entrée ferait croire à un doublon et pousserait tôt ou tard à les fusionner.
          */
         ['key' => 'rentals', 'title' => 'Nos locations', 'group' => 'argent', 'icon' => 'car-sport-outline', 'coverage' => 'descriptor', 'routes' => ['admin/nos-locations'], 'resources' => ['rentals']],
+        // UN AUTRE METIER, PAS UNE VARIANTE : ici la plateforme ne loue rien, elle arbitre
+        // entre deux membres. Sa capacite est distincte de `manage-rentals`.
+        ['key' => 'peer-rentals', 'title' => 'Location entre membres', 'group' => 'argent', 'icon' => 'key-outline', 'coverage' => 'descriptor', 'routes' => ['admin/location-entre-membres']],
     ],
 ];

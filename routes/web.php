@@ -69,6 +69,12 @@ Route::middleware(['auth', 'verified', 'active.account', 'phone.verified'])->gro
 
 });
 
+/*
+| La location entre membres porte SES PROPRES gardes : la vitrine `/louer` est publique,
+| le reste est derriere `auth`. La charger dans le groupe ci-dessus l'aurait fermee.
+*/
+require __DIR__.'/peer-rental.php';
+
 Route::middleware('auth')->prefix('push')->group(function () {
     Route::post('/subscribe', [PushSubscriptionController::class, 'subscribe']);
     Route::post('/unsubscribe', [PushSubscriptionController::class, 'unsubscribe']);

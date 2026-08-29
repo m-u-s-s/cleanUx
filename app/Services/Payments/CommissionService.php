@@ -42,6 +42,9 @@ class CommissionService
      * @param  User|null  $provider  pour son éventuel taux négocié
      * @param  string|null  $currency  La devise de la reservation. `null` retombe sur la devise de
      *                                 BASE de la plateforme -- jamais sur un « eur » ecrit ici.
+     * @param  float|null  $tauxImpose  Le taux d'un autre metier — la location entre membres ne
+     *                                  se commissionne pas comme une prestation. Il court-circuite
+     *                                  le taux plateforme ET le taux negocie du prestataire.
      * @return array{
      * total_cents: int,
      * platform_fee_cents: int,
@@ -52,15 +55,21 @@ class CommissionService
      * currency: string
      * }
      */
-    public function calculateForAmount(int $totalCents, ?User $provider = null, ?string $currency = null): array
-    {
+    public function calculateForAmount(
+        int $totalCents,
+        ?User $provider = null,
+        ?string $currency = null,
+        ?float $tauxImpose = null,
+    ): array {
         $totalCents = max(0, $totalCents);
 
         $negotiatedRate = $provider?->providerProfile?->commission_rate;
 
-        $commissionRate = ($this->useNegotiatedCommission() && $negotiatedRate !== null)
-            ? (float) $negotiatedRate
-            : $this->platformRate();
+        $commissionRate = match (true) {
+            $tauxImpose !== null => max(0.0, min(1.0, $tauxImpose)),
+            $this->useNegotiatedCommission() && $negotiatedRate !== null => (float) $negotiatedRate,
+            default => $this->platformRate(),
+        };
 
         $platformFeeCents = max(
             (int) round($totalCents * $commissionRate),

@@ -112,6 +112,9 @@ return [
          * trouve qu'en tapant son URL n'existe pas vraiment.
          */
         ['key' => 'client:location.catalogue', 'label' => 'Location de voitures', 'icon' => '🚙', 'route' => 'location.catalogue', 'context' => 'client', 'category' => 'finance', 'primary' => false],
+        ['key' => 'client:peer.catalogue', 'label' => 'Louer entre membres', 'icon' => '🔑', 'route' => 'peer.catalogue', 'context' => 'client', 'category' => 'prestataires', 'primary' => false],
+        ['key' => 'client:peer.my-rentals', 'label' => 'Mes locations de véhicule', 'icon' => '🚗', 'route' => 'peer.my-rentals', 'context' => 'client', 'category' => 'prestataires', 'primary' => false],
+        ['key' => 'client:peer.owner.vehicles', 'label' => 'Mes véhicules en location', 'icon' => '🅿️', 'route' => 'peer.owner.vehicles', 'context' => 'client', 'category' => 'croissance', 'primary' => false],
         ['key' => 'client:client.wallet', 'label' => 'Portefeuille', 'icon' => '👛', 'route' => 'client.wallet', 'context' => 'client', 'category' => 'finance', 'primary' => false],
         /*
          * LA PORTE VERS L'ESPACE SOCIÉTÉ, ET SA CONDITION.
@@ -157,6 +160,9 @@ return [
          * dossier de vérification, et leur présence terrain. Deux pages qui décident de ce qu'ils
          * peuvent faire, et qu'aucun menu ne citait.
          */
+        ['key' => 'employe:peer.catalogue', 'label' => 'Louer entre membres', 'icon' => '🔑', 'route' => 'peer.catalogue', 'context' => 'employe', 'category' => 'prestataires', 'primary' => false],
+        ['key' => 'employe:peer.my-rentals', 'label' => 'Mes locations de véhicule', 'icon' => '🚗', 'route' => 'peer.my-rentals', 'context' => 'employe', 'category' => 'prestataires', 'primary' => false],
+        ['key' => 'employe:peer.owner.vehicles', 'label' => 'Mes véhicules en location', 'icon' => '🅿️', 'route' => 'peer.owner.vehicles', 'context' => 'employe', 'category' => 'croissance', 'primary' => false],
         ['key' => 'employe:provider.onboarding', 'label' => 'Mon dossier', 'icon' => '🚀', 'route' => 'provider.onboarding', 'context' => 'employe', 'category' => 'conformite', 'primary' => false],
         /*
          * VÉRIFICATION FACIALE — visible SEULEMENT quand elle concerne la personne qui regarde.
@@ -224,6 +230,7 @@ return [
         ['key' => 'employe:employe.ratings', 'label' => 'Mes avis', 'icon' => '⭐', 'route' => 'employe.ratings', 'context' => 'employe', 'category' => 'croissance', 'primary' => false],
 
         // ---- admin ----
+        ['key' => 'admin:peer.admin', 'label' => 'Location entre membres', 'icon' => '🔑', 'route' => 'peer.admin', 'context' => 'admin', 'category' => 'prestataires', 'primary' => false, 'gate' => 'manage-peer-rentals'],
         ['key' => 'admin:admin.availability.center', 'label' => 'Disponibilités', 'icon' => '📆', 'route' => 'admin.availability.center', 'context' => 'admin', 'category' => 'rendez-vous', 'primary' => false, 'gate' => 'manage-calendar'],
         ['key' => 'admin:admin.planning', 'label' => 'Planning', 'icon' => '📅', 'route' => 'admin.planning', 'context' => 'admin', 'category' => 'rendez-vous', 'primary' => true, 'gate' => 'manage-calendar'],
         ['key' => 'admin:admin.automation', 'label' => 'Automation', 'icon' => '⚙️', 'route' => 'admin.automation', 'context' => 'admin', 'category' => 'missions', 'primary' => false, 'gate' => 'manage-automation'],

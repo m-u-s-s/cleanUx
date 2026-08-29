@@ -54,6 +54,10 @@ trait HasAdminCapabilities
 
             // NOS LOCATIONS — une capacite a part, et pas un sous-ensemble de la flotte.
             'manage-rentals' => 'Nos locations (vehicules)',
+
+            // LA LOCATION ENTRE MEMBRES — arbitrer entre deux membres n'est pas gerer la
+            // flotte de la plateforme : deux metiers, deux capacites.
+            'manage-peer-rentals' => 'Location entre membres',
             'perform-critical-admin-actions' => 'Actions critiques',
         ];
     }
