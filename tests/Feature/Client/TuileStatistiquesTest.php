@@ -17,8 +17,14 @@ class TuileStatistiquesTest extends TestCase
         $societe = User::factory()->societeCliente()->create();
         $this->assertTrue($societe->isClientCompany(), 'La fabrique ne produit pas une société cliente');
 
+        // La societe n'a plus qu'UN espace : son ancienne adresse personnelle mene a la
+        // jumelle fusionnee. L'ecran, lui, est le meme — et c'est lui que ce temoin mesure.
         $this->actingAs($societe)
             ->get(route('client.analytics.dashboard'))
+            ->assertRedirect(route('client-company.perso.analytics.dashboard'));
+
+        $this->actingAs($societe)
+            ->get(route('client-company.perso.analytics.dashboard'))
             ->assertOk();
     }
 

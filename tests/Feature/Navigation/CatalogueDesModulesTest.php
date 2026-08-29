@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Navigation;
 
+use App\Support\Navigation\ModuleCatalogue;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
@@ -24,8 +25,8 @@ class CatalogueDesModulesTest extends TestCase
 
     public function test_chaque_page_de_tableau_de_bord_a_sa_case_ou_sa_raison(): void
     {
-        $avecCase = collect(config('modules.catalogue'))->pluck('route')->all();
-        $sansCase = array_keys(config('modules.non_modules'));
+        $avecCase = ModuleCatalogue::catalogueComplet()->pluck('route')->all();
+        $sansCase = ModuleCatalogue::sansCaseAssumee();
 
         $orphelines = collect($this->pagesDeTableauDeBord())
             ->reject(fn ($nom) => in_array($nom, $avecCase, true))
@@ -44,7 +45,7 @@ class CatalogueDesModulesTest extends TestCase
     public function test_aucune_case_ne_mene_a_une_route_inexistante(): void
     {
         // Une case morte est pire qu'une case absente : elle promet une page et rend un 404.
-        $mortes = collect(config('modules.catalogue'))
+        $mortes = ModuleCatalogue::catalogueComplet()
             ->reject(fn ($module) => Route::has($module['route']))
             ->pluck('route')
             ->values()
@@ -59,7 +60,7 @@ class CatalogueDesModulesTest extends TestCase
         $contextes = ['*', 'client', 'employe', 'admin', 'client-company', 'provider-company'];
         $categories = array_keys(config('modules.categories'));
 
-        foreach (config('modules.catalogue') as $module) {
+        foreach (ModuleCatalogue::catalogueComplet() as $module) {
             $this->assertContains($module['context'], $contextes, "Contexte inconnu pour {$module['key']}");
             $this->assertContains($module['category'], $categories, "Catégorie inconnue pour {$module['key']}");
         }
@@ -67,7 +68,7 @@ class CatalogueDesModulesTest extends TestCase
 
     public function test_aucune_cle_de_case_en_double(): void
     {
-        $cles = collect(config('modules.catalogue'))->pluck('key');
+        $cles = ModuleCatalogue::catalogueComplet()->pluck('key');
 
         $this->assertSame($cles->unique()->count(), $cles->count(), 'Clés dupliquées dans le catalogue');
     }

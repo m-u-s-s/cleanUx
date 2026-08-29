@@ -31,14 +31,31 @@ class StripeConnectController extends Controller
     private function versLeParcoursStripe(StripeConnectService $service, User $user): RedirectResponse
     {
         try {
-            return redirect()->away($service->onboardingLink($user));
+            return $this->versUneAdresse($service->onboardingLink($user));
         } catch (\Throwable $e) {
             report($e);
 
-            return redirect()
-                ->route('employe.dashboard')
-                ->with('error', __("L'activation des paiements est momentanément indisponible. Réessayez plus tard ou contactez le support."));
+            return $this->versUneAdresse(
+                route('employe.dashboard'),
+                __("L'activation des paiements est momentanément indisponible. Réessayez plus tard ou contactez le support."),
+            );
         }
+    }
+
+    /**
+     * UNE REDIRECTION CONSTRUITE, PAS DEMANDEE AU CONTENEUR.
+     *
+     * Livewire remplace le redirecteur du conteneur pendant qu'un composant se rend et le
+     * restitue en dehydratant — ce qu'un rendu interrompu (403) ne fait jamais. `redirect()`
+     * renvoyait alors un `Redirector`, que le routeur ne sait pas rendre : 500 sur le chemin
+     * meme dont ce controleur promet qu'il n'en produira pas.
+     */
+    private function versUneAdresse(string $adresse, ?string $erreur = null): RedirectResponse
+    {
+        $reponse = new RedirectResponse($adresse);
+        $reponse->setSession(app('session.store'));
+
+        return $erreur === null ? $reponse : $reponse->with('error', $erreur);
     }
 
     public function return(StripeConnectService $service): RedirectResponse
@@ -52,13 +69,15 @@ class StripeConnectController extends Controller
         } catch (\Throwable $e) {
             report($e);
 
-            return redirect()
-                ->route('employe.dashboard')
-                ->with('error', __('Nous n’avons pas pu confirmer votre compte de paiement. Réessayez dans quelques minutes.'));
+            return $this->versUneAdresse(
+                route('employe.dashboard'),
+                __('Nous n’avons pas pu confirmer votre compte de paiement. Réessayez dans quelques minutes.'),
+            );
         }
 
-        return redirect()
-            ->route('employe.dashboard')
-            ->with('success', 'Votre compte Stripe Connect a été vérifié.');
+        $reponse = new RedirectResponse(route('employe.dashboard'));
+        $reponse->setSession(app('session.store'));
+
+        return $reponse->with('success', 'Votre compte Stripe Connect a été vérifié.');
     }
 }

@@ -50,14 +50,124 @@ class ModuleCatalogue
     }
 
     /**
-     * LA PASSERELLE VERS L'ESPACE SOCIÉTÉ — un changement d'espace, pas un module parmi d'autres.
+     * LE REGISTRE, AUGMENTE DES ECRANS PERSONNELS RAPATRIES DANS LES ESPACES SOCIETE.
      *
-     * @return Module|null
+     * Les cinquante entrees jumelles ne sont pas ecrites dans `config/modules.php` : deux
+     * listes auraient diverge des la premiere route ajoutee.
+     *
+     * @return Collection<int, Module>
      */
-    public static function porteVersLEspaceSociete(): ?array
+    public static function catalogueComplet(): Collection
     {
-        return self::visibles('client')
-            ->firstWhere('route', 'client-company.dashboard');
+        /** @var list<Module> $catalogue */
+        $catalogue = config('modules.catalogue');
+
+        $complet = collect($catalogue);
+
+        foreach (EspaceCourant::FUSIONS as $societe => $personnel) {
+            // Une case de l'espace societe qui pointait deja vers un ecran personnel prend sa
+            // jumelle fusionnee : sinon chaque clic passait par une redirection.
+            $complet = $complet->map(fn (array $module): array => $module['context'] === $societe
+                ? [...$module, 'route' => self::jumelle($module['route'], $personnel, $societe)]
+                : $module);
+
+            $complet = $complet->concat(self::ecransRapatries($personnel, $societe));
+        }
+
+        return $complet->values();
+    }
+
+    /**
+     * LES ROUTES ASSUMEES SANS CASE, JUMELLES COMPRISES.
+     *
+     * Un export CSV n'est pas un module. Sa jumelle fusionnee ne l'est pas davantage, et
+     * l'inscrire une seconde fois dans `non_modules` aurait fait deux listes a tenir.
+     *
+     * @return list<string>
+     */
+    public static function sansCaseAssumee(): array
+    {
+        /** @var array<string, string> $raisons */
+        $raisons = config('modules.non_modules');
+
+        $noms = array_keys($raisons);
+
+        foreach (EspaceCourant::FUSIONS as $societe => $personnel) {
+            foreach (array_keys($raisons) as $nom) {
+                $jumelle = self::jumelle($nom, $personnel, $societe);
+
+                if ($jumelle !== $nom) {
+                    $noms[] = $jumelle;
+                }
+            }
+        }
+
+        return array_values(array_unique($noms));
+    }
+
+    /** Le nom de la route sous l'espace societe, ou le nom d'origine s'il n'y en a pas. */
+    private static function jumelle(string $route, string $personnel, string $societe): string
+    {
+        $prefixe = $personnel.'.';
+
+        if (! str_starts_with($route, $prefixe)) {
+            return $route;
+        }
+
+        $jumelle = $societe.'.perso.'.substr($route, strlen($prefixe));
+
+        return Route::has($jumelle) ? $jumelle : $route;
+    }
+
+    /**
+     * Les ecrans d'un espace personnel, vus depuis l'espace societe qui les accueille.
+     *
+     * @return Collection<int, Module>
+     */
+    private static function ecransRapatries(string $personnel, string $societe): Collection
+    {
+        /** @var list<Module> $catalogue */
+        $catalogue = config('modules.catalogue');
+
+        $prefixe = $personnel.'.';
+
+        // Ce que l'espace societe porte deja ne se dedouble pas : « Prendre rendez-vous » et
+        // « Mes donnees RGPD » y figuraient avant la fusion.
+        $dejaLa = collect($catalogue)->where('context', $societe)->pluck('route')->all();
+
+        // « Contrats » et « Litiges » existent des DEUX cotes, et designent deux ecrans
+        // differents. Sans marque, le repertoire fusionne affichait deux cases jumelles.
+        $libellesDeLaSociete = collect($catalogue)->where('context', $societe)->pluck('label')->all();
+
+        return collect($catalogue)
+            ->filter(fn (array $module): bool => $module['context'] === $personnel)
+            ->reject(fn (array $module): bool => in_array($module['route'], $dejaLa, true))
+            // L'accueil et le repertoire sont ceux de la societe : deux d'un meme espace.
+            ->reject(fn (array $module): bool => in_array(
+                substr($module['route'], strlen($prefixe)),
+                EspaceCourant::REPRIS_PAR_LA_SOCIETE,
+                true
+            ))
+            ->map(function (array $module) use ($personnel, $societe, $libellesDeLaSociete): array {
+                // Une route partagee, ou declaree hors du groupe re-declare
+                // (`employe.google.calendar` vit dans `routes/integrations.php`), vaut telle quelle.
+                $route = self::jumelle($module['route'], $personnel, $societe);
+
+                $libelle = in_array($module['label'], $libellesDeLaSociete, true)
+                    ? $module['label'].' (personnel)'
+                    : $module['label'];
+
+                return [
+                    ...$module,
+                    'key' => $societe.':'.$route,
+                    'label' => $libelle,
+                    'route' => $route,
+                    'context' => $societe,
+                    // La barre garde les principaux de la societe.
+                    'primary' => false,
+                ];
+            })
+            ->values();
     }
 
     /**
@@ -67,10 +177,7 @@ class ModuleCatalogue
      */
     private static function visibles(string $contexte): Collection
     {
-        /** @var list<Module> $catalogue */
-        $catalogue = config('modules.catalogue');
-
-        return collect($catalogue)
+        return self::catalogueComplet()
             // `*` DÉSIGNE LES MODULES TRANSVERSAUX — profil, notifications, aide, textes légaux.
             ->filter(fn (array $module): bool => $module['context'] === $contexte || $module['context'] === '*')
             ->filter(fn (array $module): bool => Route::has($module['route']))

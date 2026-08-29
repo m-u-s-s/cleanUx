@@ -120,7 +120,6 @@ return [
          * client, et un particulier cliquerait vers un 403 gardé par `org.type`. L'ancienne navbar
          * portait cette condition en dur — le registre la porte désormais.
          */
-        ['key' => 'client:client-company.dashboard', 'label' => 'Espace entreprise', 'icon' => '🏢', 'route' => 'client-company.dashboard', 'context' => 'client', 'category' => 'comptes', 'primary' => false, 'visible_si' => 'belongsToClientCompany'],
         ['key' => 'client:client.ai.quote.photo', 'label' => 'Devis IA depuis photo', 'icon' => '🤖', 'route' => 'client.ai.quote.photo', 'context' => 'client', 'category' => 'prestataires', 'primary' => false],
         ['key' => 'client:client.bundles.manage', 'label' => 'Chantiers groupés', 'icon' => '🏗️', 'route' => 'client.bundles.manage', 'context' => 'client', 'category' => 'prestataires', 'primary' => false],
         ['key' => 'client:client.providers.browse', 'label' => 'Trouver un prestataire', 'icon' => '🔍', 'route' => 'client.providers.browse', 'context' => 'client', 'category' => 'prestataires', 'primary' => true],
@@ -204,7 +203,7 @@ return [
         ['key' => 'employe:employe.wallet', 'label' => 'Mon portefeuille', 'icon' => '👛', 'route' => 'employe.wallet', 'context' => 'employe', 'category' => 'finance', 'primary' => false],
         ['key' => 'employe:employe.coordination', 'label' => 'Coordination', 'icon' => '🧭', 'route' => 'employe.coordination', 'context' => 'employe', 'category' => 'prestataires', 'primary' => false],
         ['key' => 'employe:employe.team', 'label' => 'Équipe terrain', 'icon' => '👥', 'route' => 'employe.team', 'context' => 'employe', 'category' => 'prestataires', 'primary' => false],
-        ['key' => 'employe:employe.teamlead.operations', 'label' => 'Chef d’équipe', 'icon' => '🧑‍💼', 'route' => 'employe.teamlead.operations', 'context' => 'employe', 'category' => 'prestataires', 'primary' => false],
+        ['key' => 'employe:employe.teamlead.operations', 'label' => 'Chef d’équipe', 'icon' => '🧑‍💼', 'route' => 'employe.teamlead.operations', 'context' => 'employe', 'category' => 'prestataires', 'primary' => false, 'visible_si' => 'isFieldTeamLead'],
         ['key' => 'employe:employe.disputes', 'label' => 'Mes litiges', 'icon' => '⚠️', 'route' => 'employe.disputes', 'context' => 'employe', 'category' => 'qualite', 'primary' => false],
         ['key' => 'employe:employe.incident', 'label' => 'Incident', 'icon' => '⚠️', 'route' => 'employe.incident', 'context' => 'employe', 'category' => 'qualite', 'primary' => false],
         ['key' => 'employe:employe.kyc', 'label' => 'KYC / Identité', 'icon' => '🛡️', 'route' => 'employe.kyc', 'context' => 'employe', 'category' => 'conformite', 'primary' => false],

@@ -63,10 +63,6 @@
                 📅 Voir mes rendez-vous
             </a>
 
-            <a href="{{ route('client.dashboard') }}" class="brio-btn-secondary">
-                ← Retour espace client
-            </a>
-
             @if(! $subscriptionSummary['is_premium'])
                 <a href="{{ route('premium.offer') }}" class="brio-btn-primary !bg-amber-500 hover:!bg-amber-600">
                     ★ Passer Premium

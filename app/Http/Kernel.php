@@ -29,6 +29,7 @@ use App\Http\Middleware\LogSlowQueries;
 use App\Http\Middleware\PremiumGate;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\RedirigeVersLEspaceFusionne;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\TrimStrings;
@@ -123,6 +124,7 @@ class Kernel extends HttpKernel
         'face.verified' => EnsureFaceCheckPassed::class,
         'active.account' => EnsureActiveAccount::class,
         'org.type' => EnsureOrganizationType::class,
+        'espace.fusionne' => RedirigeVersLEspaceFusionne::class,
         // Le middleware existait depuis longtemps SANS être enregistré : toute route qui l'aurait invoqué aurait planté sur un alias inconnu.
         'org.permission' => CheckOrganizationPermission::class,
         'field.team.lead' => EnsureFieldTeamLead::class,

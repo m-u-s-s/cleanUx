@@ -22,6 +22,15 @@ class CoherenceDesTuilesEtDesEcransTest extends TestCase
      *
      * @return list<OrganizationRole>
      */
+    /**
+     * UNE CASE PEUT DEPENDRE DES DONNEES, PAS D'UNE PERMISSION.
+     *
+     * `provider.face-check` suit `estSoumisAuControleFacial` — une cadence tiree au sort, pas
+     * un droit. La page d'enrolement, elle, reste ouverte a tout prestataire : elle lui dit
+     * justement s'il est concerne. Le sens inverse (case visible, ecran refuse) reste un defaut.
+     */
+    private const CASES_CONDITIONNEES_AUX_DONNEES = ['provider.face-check'];
+
     private function tousLesSousRoles(): array
     {
         return OrganizationRole::cases();
@@ -67,7 +76,8 @@ class CoherenceDesTuilesEtDesEcransTest extends TestCase
      */
     private function casesDuContexte(string $contexte): array
     {
-        return collect(config('modules.catalogue'))
+        // Le registre AUGMENTE : c'est celui que la navigation lit depuis la fusion des espaces.
+        return ModuleCatalogue::catalogueComplet()
             ->filter(fn (array $m): bool => $m['context'] === $contexte)
             // Les transversaux (`*`) ne portent pas de permission d'organisation : les inclure
             // mesurerait la garde d'authentification, pas celle du registre.
@@ -101,6 +111,10 @@ class CoherenceDesTuilesEtDesEcransTest extends TestCase
             $lEcranSOuvre = $statut === 200;
 
             if ($laCaseEstVisible === $lEcranSOuvre) {
+                continue;
+            }
+
+            if (! $laCaseEstVisible && in_array($case['route'], self::CASES_CONDITIONNEES_AUX_DONNEES, true)) {
                 continue;
             }
 

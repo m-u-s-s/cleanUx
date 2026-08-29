@@ -29,61 +29,7 @@
 
     {{-- ── Topbar ── --}}
     @unless($embedded ?? false)
-    <nav data-chrome="primary-nav" aria-label="Navigation principale"
-        class="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-100 bg-white/95 px-4 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
-        <div class="flex min-w-0 flex-1 items-center gap-3">
-            <a href="{{ route('provider-company.dashboard') }}"
-                class="flex flex-shrink-0 items-center gap-2 text-lg font-black text-slate-900 dark:text-white">
-                <x-brand.logo space="provider" :size="32" />
-                {{-- L'accent suit `brio-btn-primary` (sky), pas l'ambre qui n'appartenait qu'ici. --}}
-                Brio <span class="text-sky-600 dark:text-sky-400">Pro</span>
-            </a>
-            <div class="hidden min-w-0 items-center gap-1 overflow-x-auto sm:flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {{-- Les liens vivaient en dur ici. Ils viennent désormais de `config/modules.php`,
-                     comme ceux de la navbar et de la page Modules — « Sites desservis » compris,
-                     ajouté au registre plutôt qu'à cette liste. --}}
-                @foreach (\App\Support\Navigation\ModuleCatalogue::principaux('provider-company') as $link)
-                <a href="{{ route($link['route']) }}"
-                    class="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm transition
-                           {{ request()->routeIs($link['route'])
-                               ? 'bg-slate-100 text-slate-900 font-medium dark:bg-slate-700 dark:text-white'
-                               : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200' }}">
-                    <span class="text-sm">{{ $link['icon'] }}</span>
-                    <span>{{ $link['label'] }}</span>
-                </a>
-                @endforeach
-
-                {{-- La porte vers tout le reste — ce bandeau est la seule surface permanente de
-                     l'espace société prestataire. --}}
-                @if (\Illuminate\Support\Facades\Route::has('provider-company.modules'))
-                    <a href="{{ route('provider-company.modules') }}"
-                        class="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm transition
-                               {{ request()->routeIs('provider-company.modules')
-                                   ? 'bg-slate-100 text-slate-900 font-medium dark:bg-slate-700 dark:text-white'
-                                   : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200' }}">
-                        <span class="text-sm">🧩</span>
-                        <span>Modules</span>
-                    </a>
-                @endif
-            </div>
-        </div>
-        <div class="flex flex-shrink-0 items-center gap-2">
-            {{-- Le theme, la langue et la cloche vivaient sur la barre du client seulement :
-                 cet espace n'avait aucun moyen de passer en sombre ni de voir ses notifications. --}}
-            <x-theme-toggle />
-            <div class="hidden lg:block">
-                <x-language-switcher />
-            </div>
-            <x-cloche-notifications />
-
-            <a href="{{ route('profile.show') }}"
-                class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition hover:bg-slate-100 dark:hover:bg-slate-800">
-                <img alt="" src="{{ Auth::user()->profile_photo_url }}"
-                    class="h-7 w-7 rounded-full border border-slate-200 object-cover dark:border-slate-600">
-                <span class="hidden sm:block text-sm text-slate-600 dark:text-slate-300">{{ str(Auth::user()->name)->before(' ') }}</span>
-            </a>
-        </div>
-    </nav>
+    <x-barre-societe espace="provider-company" />
     @endunless
 
     {{--

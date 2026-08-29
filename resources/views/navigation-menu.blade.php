@@ -172,14 +172,6 @@
                 </a>
                 @endif
 
-                @php $porteSociete = \App\Support\Navigation\ModuleCatalogue::porteVersLEspaceSociete(); @endphp
-                @if($porteSociete)
-                <a href="{{ route($porteSociete['route']) }}"
-                    class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-                    <span>{{ $porteSociete['icon'] }}</span>
-                    <span class="hidden lg:inline">{{ __($porteSociete['label']) }}</span>
-                </a>
-                @endif
 
                 <x-cloche-notifications :count="$unreadCount" :apercu="$apercuNotifications" />
 

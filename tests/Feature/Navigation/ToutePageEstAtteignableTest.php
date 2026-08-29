@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Navigation;
 
+use App\Support\Navigation\EspaceCourant;
 use Illuminate\Routing\Route as RouteObjet;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
@@ -121,6 +122,15 @@ class ToutePageEstAtteignableTest extends TestCase
         $inatteignables = $this->routesInatteignables();
 
         $tolerees = array_merge(self::HORS_INTERFACE, self::DEMONSTRATION, self::BOUCHONS, self::LACUNES_CONNUES);
+
+        // Une jumelle fusionnee herite de la tolerance de son original : c'est le meme ecran.
+        foreach (EspaceCourant::FUSIONS as $societe => $personnel) {
+            foreach ($tolerees as $nom) {
+                if (str_starts_with($nom, $personnel.'.')) {
+                    $tolerees[] = $societe.'.perso.'.substr($nom, strlen($personnel.'.'));
+                }
+            }
+        }
 
         $nouvelles = array_values(array_diff($inatteignables, $tolerees));
 
@@ -361,6 +371,25 @@ class ToutePageEstAtteignableTest extends TestCase
                 if (str_contains($texte, "'".$autre."'") || str_contains($texte, '"'.$autre.'"')) {
                     $atteints[] = $autre;
                     $aVoir[] = $autre;
+                }
+            }
+        }
+
+        // LES JUMELLES FUSIONNEES NE PORTENT AUCUN LITTERAL.
+        //
+        // Les ecrans personnels d'un compte en societe sont re-declares sous le prefixe de la
+        // societe, et leur case est DERIVEE dans `ModuleCatalogue` — aucun fichier ne cite leur
+        // nom. Une jumelle est atteignable exactement quand son original l'est.
+        foreach (EspaceCourant::FUSIONS as $societe => $personnel) {
+            $prefixe = $societe.'.perso.';
+
+            foreach ($perimetre as $nom) {
+                if (! str_starts_with($nom, $prefixe) || in_array($nom, $atteints, true)) {
+                    continue;
+                }
+
+                if (in_array($personnel.'.'.substr($nom, strlen($prefixe)), $atteints, true)) {
+                    $atteints[] = $nom;
                 }
             }
         }

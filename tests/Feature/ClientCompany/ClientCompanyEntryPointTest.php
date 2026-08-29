@@ -45,14 +45,20 @@ class ClientCompanyEntryPointTest extends TestCase
             ->assertOk();
     }
 
-    public function test_company_member_sees_bridge_to_company_space_in_individual_nav(): void
+    /**
+     * LA PORTE A DISPARU AVEC LE SECOND ESPACE.
+     *
+     * Le membre d'une societe n'a plus d'espace personnel separe : son accueil personnel
+     * le depose dans l'espace de sa societe, qui porte desormais les deux jeux d'ecrans.
+     */
+    public function test_company_member_lands_in_the_company_space(): void
     {
         $this->actingAs($this->clientCompanyMember())
             ->get(route('client.dashboard'))
-            ->assertOk()
-            ->assertSee('Espace entreprise');
+            ->assertRedirect(route('client-company.dashboard'));
     }
 
+    /** TEMOIN — un particulier garde son accueil personnel, et n'y voit aucune seconde porte. */
     public function test_plain_client_does_not_see_company_bridge(): void
     {
         $client = User::factory()->client()->create([

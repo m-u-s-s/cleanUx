@@ -49,9 +49,9 @@
 
     {{-- Abonnement contre à la demande : le seul chiffre qui serve à décider --}}
     <div class="mb-8 rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 class="mb-4 text-sm font-bold uppercase tracking-wide text-slate-500">
+        <h3 class="mb-4 text-sm font-bold uppercase tracking-wide text-slate-500">
             Abonnement ou à la demande
-        </h2>
+        </h3>
 
         <div class="grid gap-4 sm:grid-cols-2">
             <div class="rounded-xl bg-slate-50 p-4">
@@ -98,7 +98,7 @@
 
     {{-- Par mois --}}
     <div class="mb-8 rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 class="mb-4 text-sm font-bold uppercase tracking-wide text-slate-500">Par mois</h2>
+        <h3 class="mb-4 text-sm font-bold uppercase tracking-wide text-slate-500">Par mois</h3>
 
         @forelse ($budget['by_month'] as $ligne)
         <div class="mb-3 last:mb-0">
@@ -125,9 +125,9 @@
 
     {{-- Par métier --}}
     <div class="rounded-2xl border border-slate-200 bg-white">
-        <h2 class="border-b border-slate-100 px-5 py-3 text-sm font-bold uppercase tracking-wide text-slate-500">
+        <h3 class="border-b border-slate-100 px-5 py-3 text-sm font-bold uppercase tracking-wide text-slate-500">
             Par métier
-        </h2>
+        </h3>
 
         @forelse ($budget['by_trade'] as $ligne)
         <div class="flex items-center justify-between border-b border-slate-50 px-5 py-3 last:border-0">
