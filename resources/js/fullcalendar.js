@@ -27,11 +27,45 @@ import nlLocale from '@fullcalendar/core/locales/nl';
 window.brioFC = function() {
     return {
         calendar: null,
-        wire: null,
         lastDropInfo: null,
+        nom: null,
 
-        init(livewireComponent) {
-            this.wire = livewireComponent;
+        /*
+         * LE COMPOSANT SE RESOUT PAR SON NOM, A CHAQUE APPEL.
+         *
+         * Quatre tentatives ont echoue avant celle-ci, et chacune apprend quelque chose :
+         *   - la magie `$wire` d'Alpine rend une fonction asynchrone sur un noeud `wire:ignore` ;
+         *   - remonter l'arbre tombe sur le composant de la barre de navigation ;
+         *   - un mandataire CAPTURE au montage devient perime des que Livewire rehydrate ;
+         *   - et `typeof $wire.uneMethode === 'function'` est TOUJOURS vrai : le mandataire
+         *     Livewire repond a n'importe quel nom, le serveur seul sait s'il existe. Le
+         *     test de capacite ne discriminait donc rien, d'ou le 500
+         *     « Public method [fetchEvents] not found on component ».
+         *
+         * Le nom vient de la vue, ou il est connu sans ambiguite.
+         */
+        composant() {
+            if (!window.Livewire || !this.nom) return null;
+
+            const porteur = window.Livewire.all().find((c) => c.name === this.nom);
+
+            return porteur ? porteur.$wire : null;
+        },
+
+        /*
+         * `demarrer`, PAS `init`.
+         *
+         * Alpine appelle TOUT SEUL la methode `init()` d'un `x-data`, sans argument — puis
+         * `x-init="init($wire)"` l'appelait une seconde fois. Le premier passage posait donc
+         * `this.wire = undefined`, montait un calendrier, et sa premiere requete d'evenements
+         * echouait avant meme que le second passage n'arrive. Un nom qu'Alpine ne connait pas
+         * supprime le premier passage.
+         */
+        demarrer(nomDuComposant) {
+            if (this.calendar) return; // Un second appel ne monte pas un second calendrier.
+
+            this.nom = nomDuComposant;
+
             const el = document.getElementById('brio-fullcalendar');
             if (!el) return;
 
@@ -69,11 +103,16 @@ window.brioFC = function() {
                 // ─── Chargement events depuis Livewire ───
                 events: async (info, success, failure) => {
                     try {
-                        const events = await this.wire.fetchEvents(
-                            info.startStr,
-                            info.endStr
-                        );
-                        success(events);
+                        const wire = this.composant();
+
+                        if (!wire) {
+                            // Livewire n'a pas fini de monter : le calendrier redemandera.
+                            success([]);
+
+                            return;
+                        }
+
+                        success(await wire.fetchEvents(info.startStr, info.endStr));
                     } catch (err) {
                         console.error('Failed to fetch events', err);
                         failure(err);
@@ -87,7 +126,7 @@ window.brioFC = function() {
                     const newStart = info.event.start.toISOString();
 
                     try {
-                        await this.wire.handleEventDrop(bookingId, newStart);
+                        await this.composant()?.handleEventDrop(bookingId, newStart);
                         // pas de revert auto — Livewire dispatch 'calendar:refresh' si OK
                         // ou 'calendar:revert' si erreur (handlers ci-dessous).
                     } catch (err) {
@@ -99,7 +138,7 @@ window.brioFC = function() {
                 // ─── Clic sur un event ───
                 eventClick: (info) => {
                     const bookingId = parseInt(info.event.id, 10);
-                    this.wire.selectEvent(bookingId);
+                    this.composant()?.selectEvent(bookingId);
                     info.jsEvent.preventDefault();
                 },
 

@@ -1,3 +1,7 @@
+@push('scripts')
+    @vite(['resources/js/apexcharts.js'])
+@endpush
+
 <div class="space-y-6" data-phase2u-root="true">
     @include('livewire.admin.governance.security-checks')
 

@@ -11,10 +11,26 @@
     // ────────────────────────────────────────
     // 1. Enregistrement du Service Worker
     // ────────────────────────────────────────
-    if ('serviceWorker' in navigator) {
+    /*
+     * `'serviceWorker' in navigator` NE SUFFIT PAS.
+     *
+     * Dans un contexte bac a sable — une iframe sans `allow-same-origin`, certaines WebViews —
+     * la cle EXISTE mais la LIRE leve : « Service worker is disabled because the context is
+     * sandboxed ». L'exception remontait non capturee au chargement et interrompait le reste
+     * du module. On lit une fois, sous filet, et on travaille sur le resultat.
+     */
+    const registreSW = (() => {
+        try {
+            return navigator.serviceWorker ?? null;
+        } catch (e) {
+            return null;
+        }
+    })();
+
+    if (registreSW) {
         window.addEventListener('load', async () => {
             try {
-                const registration = await navigator.serviceWorker.register('/sw.js', {
+                const registration = await registreSW.register('/sw.js', {
                     scope: '/',
                 });
 
@@ -22,7 +38,7 @@
 
                 // Auto-reload quand un nouveau SW prend le contrôle
                 let refreshing = false;
-                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                registreSW.addEventListener('controllerchange', () => {
                     if (refreshing) return;
                     refreshing = true;
                     window.location.reload();
@@ -34,7 +50,7 @@
                     if (!newWorker) return;
 
                     newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        if (newWorker.state === 'installed' && registreSW.controller) {
                             window.dispatchEvent(new CustomEvent('pwa:update-available'));
                         }
                     });
@@ -45,7 +61,7 @@
         });
 
         // Réception messages du SW (notamment navigate depuis click notif)
-        navigator.serviceWorker.addEventListener('message', (event) => {
+        registreSW.addEventListener('message', (event) => {
             if (event.data?.type === 'navigate' && event.data.url) {
                 window.location.href = event.data.url;
             }

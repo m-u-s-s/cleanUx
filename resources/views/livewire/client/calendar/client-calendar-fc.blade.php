@@ -54,7 +54,7 @@
             id="brio-fullcalendar"
             wire:ignore
             x-data="brioFC()"
-            x-init="init($wire)"
+            x-init="demarrer('{{ $this->getName() }}')"
             class="min-h-[600px]"
         ></div>
     </div>

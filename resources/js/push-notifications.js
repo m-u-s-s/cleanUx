@@ -1,3 +1,17 @@
+
+/*
+ * LE REGISTRE, LU SOUS FILET.
+ *
+ * Lire `navigator.serviceWorker` LEVE dans un contexte bac a sable, meme quand la cle est
+ * presente : tester `'serviceWorker' in navigator` ne protege de rien.
+ */
+function registreDeServiceWorker() {
+    try {
+        return navigator.serviceWorker ?? null;
+    } catch (e) {
+        return null;
+    }
+}
 /**
  * Phase 8 — Gestion des subscriptions Web Push côté navigateur.
  *
@@ -85,7 +99,8 @@
 
     const brioPush = {
         isSupported() {
-            return 'serviceWorker' in navigator
+            // La cle peut exister et sa lecture lever : c'est le REGISTRE qui tranche.
+            return registreDeServiceWorker() !== null
                 && 'PushManager' in window
                 && 'Notification' in window;
         },
@@ -116,7 +131,7 @@
                 throw new Error('VAPID public key not available — check server config');
             }
 
-            const registration = await navigator.serviceWorker.ready;
+            const registration = await registreDeServiceWorker()?.ready;
             let subscription = await registration.pushManager.getSubscription();
             if (!subscription) {
                 subscription = await registration.pushManager.subscribe({
@@ -155,7 +170,7 @@
         async unsubscribe() {
             if (!this.isSupported()) return false;
 
-            const registration = await navigator.serviceWorker.ready;
+            const registration = await registreDeServiceWorker()?.ready;
             const subscription = await registration.pushManager.getSubscription();
             if (!subscription) return false;
 
@@ -189,7 +204,7 @@
         async hasActiveSubscription() {
             if (!this.isSupported()) return false;
             try {
-                const registration = await navigator.serviceWorker.ready;
+                const registration = await registreDeServiceWorker()?.ready;
                 const subscription = await registration.pushManager.getSubscription();
                 return subscription !== null;
             } catch (err) {
