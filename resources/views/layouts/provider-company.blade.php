@@ -44,7 +44,7 @@
                      ajouté au registre plutôt qu'à cette liste. --}}
                 @foreach (\App\Support\Navigation\ModuleCatalogue::principaux('provider-company') as $link)
                 <a href="{{ route($link['route']) }}"
-                    class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition
+                    class="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm transition
                            {{ request()->routeIs($link['route'])
                                ? 'bg-slate-100 text-slate-900 font-medium dark:bg-slate-700 dark:text-white'
                                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200' }}">
@@ -57,7 +57,7 @@
                      l'espace société prestataire. --}}
                 @if (\Illuminate\Support\Facades\Route::has('provider-company.modules'))
                     <a href="{{ route('provider-company.modules') }}"
-                        class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition
+                        class="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm transition
                                {{ request()->routeIs('provider-company.modules')
                                    ? 'bg-slate-100 text-slate-900 font-medium dark:bg-slate-700 dark:text-white'
                                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200' }}">

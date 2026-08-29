@@ -26,21 +26,21 @@
     {{-- ── Topbar ── --}}
     @unless($embedded ?? false)
     <nav data-chrome="primary-nav" aria-label="Navigation principale" class="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-100 bg-white/95 px-4 backdrop-blur">
-        <div class="flex items-center gap-3">
+        <div class="flex min-w-0 flex-1 items-center gap-3">
             <a href="{{ route('client-company.dashboard') }}"
-                class="flex items-center gap-2 text-lg font-black text-slate-900">
+                class="flex flex-shrink-0 items-center gap-2 text-lg font-black text-slate-900">
                 <x-brand.logo space="client" :size="32" />
                 {{-- La marque était coupée par une balise : « Clean<span>Ux</span> ». Le
                      renommage global ne pouvait pas la voir. --}}
                 Br<span class="text-sky-600">io</span>
             </a>
-            <div class="hidden sm:flex items-center gap-1">
+            <div class="hidden min-w-0 items-center gap-1 overflow-x-auto sm:flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {{-- Les onze liens vivaient en dur ici. Ils viennent désormais de
                      `config/modules.php`, comme ceux de la navbar et de la page Modules :
                      `ModuleCatalogue` retire déjà les routes absentes. --}}
                 @foreach (\App\Support\Navigation\ModuleCatalogue::principaux('client-company') as $link)
                 <a href="{{ route($link['route']) }}"
-                    class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition
+                    class="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm transition
                            {{ request()->routeIs($link['route'])
                                ? 'bg-slate-100 text-slate-900 font-semibold'
                                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700' }}">
@@ -53,7 +53,7 @@
                      l'espace société, et sept de ses modules n'y figurent pas. --}}
                 @if (\Illuminate\Support\Facades\Route::has('client-company.modules'))
                     <a href="{{ route('client-company.modules') }}"
-                        class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition
+                        class="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm transition
                                {{ request()->routeIs('client-company.modules')
                                    ? 'bg-slate-100 text-slate-900 font-semibold'
                                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700' }}">
@@ -63,22 +63,28 @@
                 @endif
             </div>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-shrink-0 items-center gap-2">
             <a href="{{ route('client-company.bookings.create') }}"
-                class="hidden sm:flex items-center gap-1.5 rounded-xl bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-700">
-                ⚡ Demande rapide
+                class="hidden flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-700 sm:flex"
+                title="Demande rapide" aria-label="Demande rapide">
+                ⚡ <span class="hidden 2xl:inline">Demande rapide</span>
             </a>
 
             @if (\Illuminate\Support\Facades\Route::has('client.dashboard'))
                 <a href="{{ route('client.dashboard') }}"
-                    class="hidden sm:flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-slate-600 hover:bg-slate-50"
-                    title="Revenir à mon espace personnel">
-                    👤 Mon espace perso
+                    class="hidden flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-slate-600 hover:bg-slate-50 sm:flex"
+                    title="Revenir à mon espace personnel" aria-label="Revenir à mon espace personnel">
+                    👤 <span class="hidden 2xl:inline">Mon espace perso</span>
                 </a>
             @endif
 
-            {{-- Assistant --}}
-            <livewire:chatbot.assistant-widget />
+            {{-- Le theme, la langue et la cloche vivaient sur la barre du client seulement :
+                 cet espace n'avait aucun moyen de passer en sombre ni de voir ses notifications. --}}
+            <x-theme-toggle />
+            <div class="hidden lg:block">
+                <x-language-switcher />
+            </div>
+            <x-cloche-notifications />
 
             <a href="{{ route('profile.show') }}"
                 class="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-100 transition">
@@ -110,7 +116,17 @@
     <x-toast />
     <x-ui.confirmation />
 
+    {{-- La barre porte `backdrop-blur`, qui fait d'elle le bloc conteneur de tout `fixed`
+         descendant : la bulle « bottom-6 right-6 » atterrissait a -25px, coupee en haut. --}}
+    @auth
+        <livewire:chatbot.assistant-widget />
+    @endauth
+
     @livewireScripts
+
+    {{-- Sans ce stack, aucun `@push('scripts')` de cet espace n'atteignait la page :
+         `dessinerRepartition` restait indefinie et l'anneau ne pouvait pas se dessiner. --}}
+    @stack('scripts')
 </body>
 
 </html>

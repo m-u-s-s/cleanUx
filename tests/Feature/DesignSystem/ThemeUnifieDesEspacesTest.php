@@ -143,7 +143,7 @@ class ThemeUnifieDesEspacesTest extends TestCase
         $tableauxDeBord = [
             'views/livewire/admin-dashboard.blade.php' => 'cockpit-hero',
             'views/livewire/provider-company/provider-dashboard.blade.php' => 'x-page-shell',
-            'views/livewire/client-company/client-company-dashboard.blade.php' => 'ui-page-title',
+            'views/livewire/client-company/client-company-dashboard.blade.php' => 'x-page-shell',
         ];
 
         $isolees = [];

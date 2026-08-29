@@ -1,77 +1,67 @@
-<div>
+{{-- `dessinerRepartition` vit dans ce paquet. Sans ce push, l'anneau ne se dessinait pas. --}}
+@push('scripts')
+    @vite(['resources/js/apexcharts.js'])
+@endpush
 
-    {{--
-        MÊME EN-TÊTE QUE LA CONSOLE D'ADMINISTRATION — voir
-        `livewire/admin/dashboard/cockpit-hero.blade.php`. Les classes `ui-page-*` portent la
-        taille, la graisse et l'espacement en UN endroit ; les recopier en Tailwind brut faisait
-        dériver chaque espace de son côté.
-    --}}
-    <div class="ui-page-header">
-        <div>
-            <p class="ui-page-eyebrow">Tableau de bord</p>
-            <h1 class="ui-page-title">🏢 {{ Auth::user()->currentOrganization?->name }}</h1>
-            <p class="ui-page-subtitle">Réservations, locaux, membres et dépenses de votre organisation.</p>
-        </div>
-        <div class="flex items-center gap-2">
+<div class="space-y-6">
+
+    {{-- La page recopiait le systeme en Tailwind brut : en-tete, cases et etats vides maison.
+         Elle emploie desormais les memes composants que les autres tableaux de bord. --}}
+    <x-page-shell
+        eyebrow="Tableau de bord"
+        :title="Auth::user()->currentOrganization?->name ?? __('Ma société')"
+        subtitle="Réservations, locaux, membres et dépenses de votre organisation.">
+
+        <x-slot name="actions">
             @foreach (['month' => 'Ce mois', 'week' => 'Cette semaine', 'year' => 'Cette année'] as $val => $label)
-                <button wire:click="$set('period', '{{ $val }}')"
-                    class="rounded-xl px-3 py-1.5 text-xs font-semibold transition border
-                        {{ $period === $val
-                            ? 'bg-sky-600 text-white border-sky-600'
-                            : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300' }}">
+                <button type="button" wire:click="$set('period', '{{ $val }}')"
+                    class="{{ $period === $val ? 'brio-btn-primary' : 'brio-btn-secondary' }} !px-3 !py-1.5 !text-xs">
                     {{ $label }}
                 </button>
             @endforeach
-        </div>
-    </div>
+        </x-slot>
 
-    {{-- ── Approbations en attente ── --}}
-    @if ($pendingApprovals->isNotEmpty())
-        <div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-            <div class="flex items-center gap-2 mb-3">
-                <span class="text-lg">⏳</span>
-                <p class="font-bold text-amber-800">
+        @if ($pendingApprovals->isNotEmpty())
+            <div class="brio-alerte brio-alerte-warning !mb-0 flex-wrap">
+                <span class="text-lg leading-none">⏳</span>
+                <span class="font-semibold">
                     {{ $pendingApprovals->count() }} demande(s) en attente de votre approbation
-                </p>
-            </div>
-            <div class="flex flex-wrap gap-2">
-                @foreach ($pendingApprovals->take(3) as $approval)
-                    <div class="flex items-center gap-2 rounded-xl border border-amber-200 bg-white px-3 py-2">
-                        <span class="text-xs text-amber-700">
-                            📍 {{ $approval->organizationSite?->name ?? 'Site inconnu' }}
-                        </span>
-                        <span class="text-[10px] text-amber-700">
-                            par {{ $approval->clientUser?->name }}
-                        </span>
-                        <a href="{{ route('client-company.bookings.index') }}"
-                           class="rounded-lg bg-sky-600 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-sky-700">
-                            Voir →
+                </span>
+
+                <div class="flex w-full flex-wrap gap-2 ps-7">
+                    @foreach ($pendingApprovals->take(3) as $approval)
+                        <a href="{{ route('client-company.bookings.index') }}" class="brio-chip">
+                            <span>📍 {{ $approval->organizationSite?->name ?? 'Site inconnu' }}</span>
+                            <span class="opacity-70">par {{ $approval->clientUser?->name }}</span>
+                            <span aria-hidden="true">→</span>
                         </a>
-                    </div>
-                @endforeach
+                    @endforeach
+                </div>
             </div>
-        </div>
-    @endif
+        @endif
+    </x-page-shell>
 
     {{-- ── KPIs ── --}}
-    <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        @php
-            $cards = [
-                ['value' => $kpis['sites_count'],      'label' => 'Locaux',            'icon' => '🏠', 'route' => 'client-company.sites',    'color' => 'sky'],
-                ['value' => $kpis['bookings_active'],   'label' => 'Missions actives',  'icon' => '🔄', 'route' => 'client-company.bookings.index', 'color' => 'blue'],
-                ['value' => $kpis['bookings_period'],   'label' => 'Réservations mois', 'icon' => '📋', 'route' => 'client-company.bookings.index', 'color' => 'indigo'],
-                ['value' => $kpis['pending_approval'],  'label' => 'À approuver',       'icon' => '⏳', 'route' => 'client-company.bookings.index', 'color' => 'amber'],
-                ['value' => $kpis['members_count'],     'label' => 'Membres',           'icon' => '👥', 'route' => 'client-company.members',   'color' => 'teal'],
-                ['value' => app(\App\Services\Localization\Money::class)->format($kpis['spend_period'], $devise), 'label' => 'Dépenses mois',   'icon' => '💶', 'route' => 'client-company.billing',   'color' => 'green'],
-            ];
-        @endphp
+    @php
+        $cards = [
+            ['value' => $kpis['sites_count'],      'label' => 'Locaux',            'icon' => '🏠', 'route' => 'client-company.sites',           'tone' => 'blue'],
+            ['value' => $kpis['bookings_active'],  'label' => 'Missions actives',  'icon' => '🔄', 'route' => 'client-company.bookings.index',  'tone' => 'blue'],
+            ['value' => $kpis['bookings_period'],  'label' => 'Réservations mois', 'icon' => '📋', 'route' => 'client-company.bookings.index',  'tone' => 'slate'],
+            ['value' => $kpis['pending_approval'], 'label' => 'À approuver',       'icon' => '⏳', 'route' => 'client-company.bookings.index',  'tone' => 'amber'],
+            ['value' => $kpis['members_count'],    'label' => 'Membres',           'icon' => '👥', 'route' => 'client-company.members',         'tone' => 'slate'],
+            ['value' => app(\App\Services\Localization\Money::class)->format($kpis['spend_period'], $devise), 'label' => 'Dépenses mois', 'icon' => '💶', 'route' => 'client-company.billing', 'tone' => 'emerald'],
+        ];
+    @endphp
 
+    <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         @foreach ($cards as $card)
-            <a href="{{ route($card['route']) }}"
-               class="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md hover:border-sky-200">
-                <p class="text-lg mb-1">{{ $card['icon'] }}</p>
-                <p class="text-xl font-black text-slate-900">{{ $card['value'] }}</p>
-                <p class="text-xs text-slate-500 mt-0.5 group-hover:text-sky-600 transition">{{ $card['label'] }}</p>
+            {{-- Chaque case reste un lien : c'etait sa seule fonction en plus d'afficher. --}}
+            <a href="{{ route($card['route']) }}" class="block">
+                <x-ui.stat
+                    :title="$card['label']"
+                    :value="$card['value']"
+                    :icon="$card['icon']"
+                    :tone="$card['tone']" />
             </a>
         @endforeach
     </div>
@@ -80,16 +70,14 @@
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
 
         {{-- Réservations récentes --}}
-        <div class="lg:col-span-2">
-            <div class="mb-3 flex items-center justify-between">
-                <h2 class="text-sm font-bold uppercase tracking-wide text-slate-500">📋 Réservations récentes</h2>
+        <x-app-card class="lg:col-span-2">
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <h3 class="brio-section-title">📋 Réservations récentes</h3>
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('client-company.bookings.create') }}"
-                       class="rounded-xl bg-sky-600 px-3 py-1 text-xs font-bold text-white hover:bg-sky-700">
+                    <a href="{{ route('client-company.bookings.create') }}" class="brio-btn-primary !px-3 !py-1.5 !text-xs">
                         + Nouvelle réservation
                     </a>
-                    <a href="{{ route('client-company.bookings.index') }}"
-                       class="text-xs text-sky-600 hover:text-sky-700">
+                    <a href="{{ route('client-company.bookings.index') }}" class="text-xs font-semibold text-sky-700 hover:text-sky-800">
                         Tout voir →
                     </a>
                 </div>
@@ -99,18 +87,18 @@
                 @forelse ($recentBookings as $booking)
                     @php
                         $statusConfig = [
-                            'pending'          => ['label' => 'En attente',  'bg' => 'bg-slate-100 text-slate-600'],
-                            'pending_approval' => ['label' => 'À approuver', 'bg' => 'bg-amber-100 text-amber-700'],
-                            'confirmed'        => ['label' => 'Confirmée',   'bg' => 'bg-blue-100 text-blue-700'],
-                            'in_progress'      => ['label' => '🔄 En cours', 'bg' => 'bg-green-100 text-green-700'],
-                            'completed'        => ['label' => '✅ Terminée', 'bg' => 'bg-emerald-100 text-emerald-700'],
-                            'cancelled'        => ['label' => 'Annulée',     'bg' => 'bg-red-100 text-red-600'],
+                            'pending'          => ['label' => 'En attente',  'tone' => 'neutral'],
+                            'pending_approval' => ['label' => 'À approuver', 'tone' => 'warning'],
+                            'confirmed'        => ['label' => 'Confirmée',   'tone' => 'info'],
+                            'in_progress'      => ['label' => '🔄 En cours', 'tone' => 'success'],
+                            'completed'        => ['label' => '✅ Terminée', 'tone' => 'success'],
+                            'cancelled'        => ['label' => 'Annulée',     'tone' => 'danger'],
                         ];
-                        $sc = $statusConfig[$booking->status] ?? ['label' => $booking->status, 'bg' => 'bg-slate-100 text-slate-600'];
+                        $sc = $statusConfig[$booking->status] ?? ['label' => $booking->status, 'tone' => 'neutral'];
                     @endphp
-                    <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+                    <div class="brio-list-item flex items-center gap-3 !p-3">
                         <div class="min-w-0 flex-1">
-                            <p class="text-sm font-semibold text-slate-900">
+                            <p class="truncate text-sm font-semibold text-slate-900">
                                 {{ $booking->organizationSite?->name ?? 'Site inconnu' }}
                             </p>
                             <p class="text-xs text-slate-500">
@@ -125,81 +113,68 @@
                                 <img alt="{{ $booking->providerUser->name }}" src="{{ $booking->providerUser->profile_photo_url }}"
                                      class="h-6 w-6 rounded-full object-cover"
                                      title="{{ $booking->providerUser->name }}">
-                                <span class="text-xs text-slate-500 hidden sm:block">{{ $booking->providerUser->name }}</span>
+                                <span class="hidden text-xs text-slate-500 sm:block">{{ $booking->providerUser->name }}</span>
                             </div>
                         @endif
-                        <span class="flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold {{ $sc['bg'] }}">
-                            {{ $sc['label'] }}
-                        </span>
+                        <x-ui.badge :tone="$sc['tone']" :label="$sc['label']" class="flex-shrink-0" />
                     </div>
                 @empty
-                    <div class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 py-10 text-center">
-                        <p class="text-3xl mb-2">📋</p>
-                        <p class="text-sm text-slate-400">Aucune réservation pour le moment</p>
-                        <a href="{{ route('client-company.bookings.create') }}"
-                           class="mt-3 rounded-xl bg-sky-600 px-4 py-2 text-xs font-bold text-white hover:bg-sky-700">
+                    <x-empty-state
+                        icon="📋"
+                        title="Aucune réservation pour le moment"
+                        message="Vos réservations de société apparaîtront ici dès la première demande.">
+                        <a href="{{ route('client-company.bookings.create') }}" class="brio-btn-primary !text-xs">
                             Créer ma première réservation →
                         </a>
-                    </div>
+                    </x-empty-state>
                 @endforelse
             </div>
-        </div>
+        </x-app-card>
 
-        {{-- Sites + navigation rapide --}}
+        {{-- Locaux, répartition et accès rapides --}}
         <div class="space-y-4">
 
-            {{-- Sites overview --}}
-            <div>
-                <div class="mb-3 flex items-center justify-between">
-                    <h2 class="text-sm font-bold uppercase tracking-wide text-slate-500">🏠 Mes locaux</h2>
-                    <a href="{{ route('client-company.sites') }}"
-                       class="text-xs text-sky-600 hover:text-sky-700">
+            <x-app-card>
+                <div class="mb-4 flex items-center justify-between gap-3">
+                    <h3 class="brio-section-title">🏠 Mes locaux</h3>
+                    <a href="{{ route('client-company.sites') }}" class="text-xs font-semibold text-sky-700 hover:text-sky-800">
                         Gérer →
                     </a>
                 </div>
 
                 @if ($sitesOverview->isEmpty())
-                    <a href="{{ route('client-company.sites') }}"
-                       class="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-sky-200 bg-sky-50 py-8 text-center transition hover:bg-sky-100">
-                        <p class="text-2xl mb-1">🏠</p>
-                        <p class="text-xs font-semibold text-sky-700">Enregistrer un local</p>
-                    </a>
+                    <x-empty-state
+                        icon="🏠"
+                        title="Aucun local enregistré"
+                        message="Enregistrez un local pour y planifier vos interventions.">
+                        <a href="{{ route('client-company.sites') }}" class="brio-btn-primary !text-xs">
+                            Enregistrer un local →
+                        </a>
+                    </x-empty-state>
                 @else
                     <div class="space-y-2">
                         @foreach ($sitesOverview as $site)
-                            <div class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm">
+                            <div class="brio-list-item flex items-center justify-between gap-3 !p-2.5">
                                 <div class="min-w-0 flex-1">
                                     <p class="truncate text-sm font-semibold text-slate-900">{{ $site->name }}</p>
                                     <p class="text-xs text-slate-500">{{ $site->city }}</p>
                                 </div>
-                                <div class="flex items-center gap-2">
+                                <div class="flex flex-shrink-0 items-center gap-2">
                                     @if ($site->active_bookings_count > 0)
-                                        <span class="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700">
-                                            {{ $site->active_bookings_count }} actif
-                                        </span>
+                                        <x-ui.badge tone="success" :label="$site->active_bookings_count . ' actif'" />
                                     @endif
                                     <a href="{{ route('client-company.bookings.create', ['site' => $site->id]) }}"
-                                       class="rounded-lg bg-sky-100 px-2 py-1 text-[10px] font-bold text-sky-700 hover:bg-sky-200">
-                                        ⚡
-                                    </a>
+                                       class="brio-chip"
+                                       title="{{ __('Réserver pour ce local') }}">⚡</a>
                                 </div>
                             </div>
                         @endforeach
                     </div>
                 @endif
-            </div>
+            </x-app-card>
 
-            {{--
-                RESERVATIONS PAR METIER — un anneau, pas des barres CSS.
-
-                La serie etait calculee puis rendue en largeurs de `div` : comparer deux metiers
-                demandait de mesurer deux traits a l'oeil. L'anneau donne la part de chacun d'un
-                seul regard, et garde le detail au survol.
-
-                Les donnees passent par des attributs `data-*`. Une expression imbriquee dans une
-                directive Blade casse la compilation de la vue ENTIERE, et l'erreur se signale
-                ailleurs — appris a mes depens sur le tableau de bord de la societe prestataire.
-            --}}
+            {{-- Un anneau, pas des barres CSS : comparer deux metiers demandait de mesurer
+                 deux traits a l'oeil. Les donnees passent par des attributs `data-*`. --}}
             @if (! empty($bookingsByTrade))
                 <section class="brio-graphique" aria-labelledby="titre-metiers">
                     <div class="brio-graphique-tete">
@@ -213,14 +188,8 @@
                              data-libelles="{{ json_encode(array_column($bookingsByTrade, 'trade')) }}"></div>
                     </div>
 
-                    {{--
-                        LE TABLEAU RESTE, SOUS L'ANNEAU.
-
-                        Un graphique ne se lit pas au lecteur d'ecran, et un chiffre exact ne se
-                        releve pas sur un angle. Les deux repondent a des questions differentes.
-                    --}}
-                    {{-- Le style du tableau tient sur l'element `table` lui-meme ; ce cadre
-                         lui donne son defilement propre pour que la page ne parte pas en largeur. --}}
+                    {{-- Le tableau reste sous l'anneau : un graphique ne se lit pas au lecteur
+                         d'ecran, et un chiffre exact ne se releve pas sur un angle. --}}
                     <div class="brio-table-cadre mt-4">
                     <table class="w-full">
                         <caption class="sr-only">{{ __('Reservations par metier, en chiffres') }}</caption>
@@ -243,24 +212,26 @@
                 </section>
             @endif
 
-            {{-- Navigation rapide --}}
-            <div>
-                <h2 class="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">⚡ Accès rapides</h2>
+            <x-app-card title="⚡ Accès rapides">
                 <div class="grid grid-cols-2 gap-2">
                     @foreach ([
-                        ['route' => 'client-company.bookings.create', 'icon' => '+ RDV', 'label' => 'Réserver',     'color' => 'bg-sky-600 text-white'],
-                        ['route' => 'client-company.sites',           'icon' => '🏠',     'label' => 'Mes locaux',   'color' => 'bg-white border border-slate-200 text-slate-700'],
-                        ['route' => 'client-company.members',         'icon' => '👥',     'label' => 'Membres',      'color' => 'bg-white border border-slate-200 text-slate-700'],
-                        ['route' => 'client-company.billing',         'icon' => '🧾',     'label' => 'Facturation',  'color' => 'bg-white border border-slate-200 text-slate-700'],
+                        ['route' => 'client-company.bookings.create', 'icon' => '+ RDV', 'label' => 'Réserver',    'primaire' => true],
+                        ['route' => 'client-company.sites',           'icon' => '🏠',     'label' => 'Mes locaux',  'primaire' => false],
+                        ['route' => 'client-company.members',         'icon' => '👥',     'label' => 'Membres',     'primaire' => false],
+                        ['route' => 'client-company.billing',         'icon' => '🧾',     'label' => 'Facturation', 'primaire' => false],
                     ] as $link)
                         <a href="{{ route($link['route']) }}"
-                           class="flex flex-col items-center gap-1 rounded-xl p-3 text-center transition hover:shadow-md {{ $link['color'] }}">
+                           @class([
+                               'flex flex-col items-center gap-1 rounded-2xl p-3 text-center transition',
+                               'brio-btn-primary !flex-col !rounded-2xl !py-3' => $link['primaire'],
+                               'brio-admin-tile' => ! $link['primaire'],
+                           ])>
                             <span class="text-lg">{{ $link['icon'] }}</span>
                             <span class="text-[11px] font-semibold">{{ $link['label'] }}</span>
                         </a>
                     @endforeach
                 </div>
-            </div>
+            </x-app-card>
         </div>
     </div>
 </div>
