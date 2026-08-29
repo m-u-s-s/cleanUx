@@ -3,7 +3,6 @@
 use App\Http\Controllers\Analytics\AnalyticsExportController;
 use App\Http\Controllers\Client\ClientExcelExportController;
 use App\Http\Controllers\Client\FinanceDocumentDownloadController;
-use App\Livewire\Client\RendezVousDetail;
 use App\Livewire\Client\AiQuotePhoto;
 use App\Livewire\Client\BookingCheckout;
 use App\Livewire\Client\BrowseCompanies;
@@ -32,6 +31,7 @@ use App\Livewire\Client\NpsSurvey;
 use App\Livewire\Client\PlacesBook;
 use App\Livewire\Client\ReceivedQuotes;
 use App\Livewire\Client\ReferralProgramPage;
+use App\Livewire\Client\RendezVousDetail;
 use App\Livewire\Client\Templates\RecurringTemplatesGallery;
 use App\Livewire\Client\WalletClient;
 use App\Livewire\ClientCompany\Analytics\ClientAnalyticsDashboard;
