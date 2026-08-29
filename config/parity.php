@@ -135,6 +135,13 @@ return [
         ['key' => 'dashboard-client-donnees', 'title' => 'Données', 'icon' => 'apps-outline', 'path' => '/dashboard/client/donnees', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
         ['key' => 'dashboard-client-fidelite', 'title' => 'Fidélité', 'icon' => 'apps-outline', 'path' => '/dashboard/client/fidelite', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
         ['key' => 'dashboard-client-parrainage', 'title' => 'Parrainage', 'icon' => 'apps-outline', 'path' => '/dashboard/client/parrainage', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
+
+        // LOCATION ENTRE MEMBRES — un membre loue et prete, quel que soit son role : les trois
+        // ecrans s'ouvrent donc aux quatre profils. Rendus sans chrome sous `?embed=1`, verifie
+        // a 390px. Sans ces lignes, le module etait invisible dans les applications.
+        ['key' => 'peer-catalogue', 'title' => 'Louer un véhicule', 'icon' => 'key-outline', 'path' => '/louer', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client', 'entreprise', 'provider', 'provider_company'], 'responsive_verified' => true],
+        ['key' => 'peer-mes-locations', 'title' => 'Mes locations', 'icon' => 'car-outline', 'path' => '/dashboard/location-entre-membres/mes-locations', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client', 'entreprise', 'provider', 'provider_company'], 'responsive_verified' => true],
+        ['key' => 'peer-mes-vehicules', 'title' => 'Mes véhicules en location', 'icon' => 'construct-outline', 'path' => '/dashboard/location-entre-membres/mes-vehicules', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client', 'entreprise', 'provider', 'provider_company'], 'responsive_verified' => true],
         ['key' => 'dashboard-client-portefeuille', 'title' => 'Portefeuille', 'icon' => 'apps-outline', 'path' => '/dashboard/client/portefeuille', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
         ['key' => 'dashboard-client-litiges', 'title' => 'Litiges', 'icon' => 'apps-outline', 'path' => '/dashboard/client/litiges', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
         ['key' => 'dashboard-client-historique', 'title' => 'Historique', 'icon' => 'apps-outline', 'path' => '/dashboard/client/historique', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
