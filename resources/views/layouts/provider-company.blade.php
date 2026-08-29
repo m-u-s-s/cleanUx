@@ -31,14 +31,14 @@
     @unless($embedded ?? false)
     <nav data-chrome="primary-nav" aria-label="Navigation principale"
         class="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-slate-100 bg-white/95 px-4 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
-        <div class="flex items-center gap-3">
+        <div class="flex min-w-0 flex-1 items-center gap-3">
             <a href="{{ route('provider-company.dashboard') }}"
-                class="flex items-center gap-2 text-lg font-black text-slate-900 dark:text-white">
+                class="flex flex-shrink-0 items-center gap-2 text-lg font-black text-slate-900 dark:text-white">
                 <x-brand.logo space="provider" :size="32" />
                 {{-- L'accent suit `brio-btn-primary` (sky), pas l'ambre qui n'appartenait qu'ici. --}}
                 Brio <span class="text-sky-600 dark:text-sky-400">Pro</span>
             </a>
-            <div class="hidden sm:flex items-center gap-1">
+            <div class="hidden min-w-0 items-center gap-1 overflow-x-auto sm:flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {{-- Les liens vivaient en dur ici. Ils viennent désormais de `config/modules.php`,
                      comme ceux de la navbar et de la page Modules — « Sites desservis » compris,
                      ajouté au registre plutôt qu'à cette liste. --}}
@@ -67,11 +67,15 @@
                 @endif
             </div>
         </div>
-        <div class="flex items-center gap-3">
-            {{-- Assistant --}}
-            <div class="hidden md:block">
-                <livewire:chatbot.assistant-widget />
+        <div class="flex flex-shrink-0 items-center gap-2">
+            {{-- Le theme, la langue et la cloche vivaient sur la barre du client seulement :
+                 cet espace n'avait aucun moyen de passer en sombre ni de voir ses notifications. --}}
+            <x-theme-toggle />
+            <div class="hidden lg:block">
+                <x-language-switcher />
             </div>
+            <x-cloche-notifications />
+
             <a href="{{ route('profile.show') }}"
                 class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition hover:bg-slate-100 dark:hover:bg-slate-800">
                 <img alt="" src="{{ Auth::user()->profile_photo_url }}"
@@ -124,6 +128,12 @@
     @unless($embedded ?? false)
     <x-ui.mobile-bottom-nav />
     <x-pwa-install-prompt />
+
+    {{-- La barre porte `backdrop-blur`, qui fait d'elle le bloc conteneur de tout `fixed`
+         descendant : la bulle « bottom-6 right-6 » atterrissait a -25px, coupee en haut. --}}
+    @auth
+        <livewire:chatbot.assistant-widget />
+    @endauth
     @endunless
 
     {{-- Sans ce stack, les `@push('scripts')` des composants ci-dessus n'atteignaient pas la page. --}}

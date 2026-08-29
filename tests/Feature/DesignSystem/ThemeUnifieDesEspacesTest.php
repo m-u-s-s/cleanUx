@@ -139,10 +139,10 @@ class ThemeUnifieDesEspacesTest extends TestCase
 
     public function test_les_tableaux_de_bord_emploient_l_en_tete_de_l_admin(): void
     {
-        // `ui-page-title` porte la taille, la graisse et l'espacement en UN endroit.
+        // Un en-tete PARTAGE, pas recopie : `ui-page-title` ou la coquille de page.
         $tableauxDeBord = [
             'views/livewire/admin-dashboard.blade.php' => 'cockpit-hero',
-            'views/livewire/provider-company/provider-dashboard.blade.php' => 'ui-page-title',
+            'views/livewire/provider-company/provider-dashboard.blade.php' => 'x-page-shell',
             'views/livewire/client-company/client-company-dashboard.blade.php' => 'ui-page-title',
         ];
 
