@@ -10,7 +10,10 @@
     "qa:publiques": "node publiques.mjs",
     "qa:theme": "node theme.mjs",
     "qa:espacement": "node espacement.mjs",
-    "qa:titres": "node titres.mjs"
+    "qa:titres": "node titres.mjs",
+    "qa:tour": "node tour-plateforme.mjs",
+    "qa:parcours": "node parcours/index.mjs",
+    "qa:racines": "php ../../artisan qa:racines-livewire"
   },
   "devDependencies": {
     "playwright": "^1.48.0"

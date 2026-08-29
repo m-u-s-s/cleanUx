@@ -41,6 +41,7 @@ class UneCommandeMetierNeResteJamaisDebrancheeTest extends TestCase
         'livewire:verify' => 'inventaire, pour un humain',
         'parity:webview-manifest' => 'genere un fichier, a la demande',
         'qa:pages-par-role' => 'inventaire pour le balayage navigateur, a la demande',
+        'qa:racines-livewire' => 'audit de structure ; sa garde est un test, pas une tache planifiee',
         'translations:scan' => 'outil de traduction',
         'translations:sync' => 'outil de traduction',
         'webpush:vapid' => 'genere une paire de cles, une fois',

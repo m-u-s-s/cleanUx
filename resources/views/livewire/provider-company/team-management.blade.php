@@ -225,8 +225,10 @@
         </div>
     </div>
     @endif {{-- fin de l'aiguillage d'onglet ouvert plus haut --}}
-</div>
 
+    {{-- REPLIE DANS LA RACINE : Livewire ne rend QUE le premier element racine.
+         Pose a cote, ce bloc ne s'affichait jamais, meme quand le serveur
+         basculait bien son drapeau. --}}
 {{-- ── Modal Invitation ── --}}
 @if ($showInvite)
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -363,3 +365,4 @@
         </div>
     </div>
 @endif
+</div>

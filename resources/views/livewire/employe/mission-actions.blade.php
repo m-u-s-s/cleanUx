@@ -262,7 +262,10 @@
         @enderror
     </div>
     @endif
-</div>
+
+    {{-- REPLIE DANS LA RACINE : Livewire ne rend QUE le premier element racine.
+         Pose a cote, ce bloc ne s'affichait jamais, meme quand le serveur
+         basculait bien son drapeau. --}}
 <script>
     /**
      * Lit la position du navigateur, ou rend null.
@@ -397,3 +400,4 @@
         setTimeout(() => window.location.reload(), 1400);
     }
 </script>
+</div>

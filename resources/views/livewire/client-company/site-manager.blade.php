@@ -136,8 +136,10 @@
             @endforeach
         </div>
     @endif
-</div>
 
+    {{-- REPLIE DANS LA RACINE : Livewire ne rend QUE le premier element racine.
+         Pose a cote, ce bloc ne s'affichait jamais, meme quand le serveur
+         basculait bien son drapeau. --}}
 {{-- ══════════════════════════════════════════
      MODAL — Formulaire local
 ══════════════════════════════════════════ --}}
@@ -286,3 +288,4 @@
         </div>
     </div>
 @endif
+</div>

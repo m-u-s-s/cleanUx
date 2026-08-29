@@ -151,8 +151,10 @@
             </div>
         @endforeach
     </div>
-</div>
 
+    {{-- REPLIE DANS LA RACINE : Livewire ne rend QUE le premier element racine.
+         Pose a cote, ce bloc ne s'affichait jamais, meme quand le serveur
+         basculait bien son drapeau. --}}
 {{-- ── Modal création ── --}}
 @if ($showCreate)
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -222,3 +224,4 @@
         </div>
     </div>
 @endif
+</div>

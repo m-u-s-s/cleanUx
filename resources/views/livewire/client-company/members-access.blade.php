@@ -94,8 +94,45 @@
             </tbody>
         </table>
     </div>
-</div>
 
+    {{-- LES INVITATIONS EN ATTENTE.
+         Sans ce bloc, l'invitation partait dans le vide : la ligne existait en base et
+         l'ecran ne changeait pas. Impossible de relancer ni d'annuler une faute de frappe. --}}
+    @if ($invitationsEnAttente->isNotEmpty())
+        <div class="mt-6 rounded-2xl border border-slate-200 bg-white">
+            <div class="border-b border-slate-100 px-5 py-3">
+                <h3 class="text-sm font-bold uppercase tracking-wide text-slate-500">
+                    {{ __('Invitations en attente') }} ({{ $invitationsEnAttente->count() }})
+                </h3>
+            </div>
+
+            <ul class="divide-y divide-slate-100">
+                @foreach ($invitationsEnAttente as $invitation)
+                    <li class="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-semibold text-slate-900">{{ $invitation->email }}</p>
+                            <p class="text-xs text-slate-500">
+                                {{ __('Rôle') }} : {{ $invitation->role }}
+                                @if ($invitation->inviter) · {{ __('invité par') }} {{ $invitation->inviter->name }} @endif
+                                @if ($invitation->expires_at)
+                                    · {{ __('expire le') }} {{ $invitation->expires_at->format('d/m/Y') }}
+                                @endif
+                            </p>
+                        </div>
+
+                        <button type="button" wire:click="revoquerInvitation({{ $invitation->id }})"
+                                class="text-xs font-semibold text-red-600 hover:underline">
+                            {{ __('Révoquer') }}
+                        </button>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    {{-- REPLIE DANS LA RACINE : Livewire ne rend QUE le premier element racine.
+         Pose a cote, ce bloc ne s'affichait jamais, meme quand le serveur
+         basculait bien son drapeau. --}}
 {{-- Modal invitation --}}
 @if ($showInvite)
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -136,3 +173,4 @@
         </div>
     </div>
 @endif
+</div>

@@ -24,6 +24,7 @@ use Livewire\Component;
  * @property-read Collection<int, OrganizationMember> $members
  * @property-read array<string, mixed> $availableRoles
  * @property-read ?OrganizationMember $editingMember
+ * @property-read Collection<int, OrganizationInvitation> $invitationsEnAttente
  */
 class MembersAccess extends Component
 {
@@ -350,6 +351,54 @@ class MembersAccess extends Component
     // ──────────────────────────────────────────────────────
     // Render
     // ──────────────────────────────────────────────────────
+    /**
+     * LES INVITATIONS EN ATTENTE.
+     *
+     * Sans elles, l'invitation partait dans le vide : la ligne existait en base, la modale se
+     * fermait, et l'ecran ne changeait pas d'un pixel. Impossible de savoir si l'envoi avait
+     * abouti, de relancer, ou d'annuler une adresse mal tapee. Le meme trou avait ete bouche
+     * cote societe prestataire ; celui-ci etait reste ouvert.
+     *
+     * @return Collection<int, OrganizationInvitation>
+     */
+    public function getInvitationsEnAttenteProperty(): Collection
+    {
+        $orgId = Auth::user()?->current_organization_id;
+
+        if (! $orgId) {
+            return OrganizationInvitation::query()->whereRaw('1 = 0')->get();
+        }
+
+        return OrganizationInvitation::query()
+            ->where('organization_account_id', $orgId)
+            ->where('status', 'pending')
+            ->with('inviter:id,name')
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    /** Revoquer une invitation — une erreur de frappe, un recrutement annule. */
+    public function revoquerInvitation(int $invitationId): void
+    {
+        $user = Auth::user();
+        $orgId = $user?->current_organization_id;
+
+        abort_if($orgId === null, 403);
+
+        abort_unless(
+            app(PermissionService::class)->can($user, 'members.invite', $user->currentOrganization),
+            403
+        );
+
+        // Le perimetre est DANS la requete : une invitation d'une autre societe n'est
+        // jamais chargee, donc jamais revocable par erreur.
+        OrganizationInvitation::query()
+            ->where('organization_account_id', $orgId)
+            ->where('status', 'pending')
+            ->whereKey($invitationId)
+            ->update(['status' => 'revoked']);
+    }
+
     public function render()
     {
         return view('livewire.client-company.members-access', [
@@ -357,6 +406,7 @@ class MembersAccess extends Component
             'availableRoles' => $this->availableRoles,
             'editingMember' => $this->editingMember,
             'allPermissions' => app(PermissionService::class)->allPermissionKeys(),
+            'invitationsEnAttente' => $this->invitationsEnAttente,
         ])->layout('layouts.client-company');
     }
 }

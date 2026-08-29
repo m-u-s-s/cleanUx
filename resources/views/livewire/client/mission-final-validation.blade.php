@@ -50,8 +50,10 @@
             Problème
         </button>
     </div>
-</div>
 
+    {{-- REPLIE DANS LA RACINE : Livewire ne rend QUE le premier element racine.
+         Pose a cote, ce bloc ne s'affichait jamais, meme quand le serveur
+         basculait bien son drapeau. --}}
 <script>
     async function finishMissionWithCode(event, missionId) {
         event.preventDefault();
@@ -103,3 +105,4 @@
         setTimeout(() => window.location.reload(), 1400);
     }
 </script>
+</div>
