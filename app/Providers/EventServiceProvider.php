@@ -8,6 +8,7 @@ use App\Events\Kyc\KycCompleted;
 use App\Events\Kyc\KycRejected;
 use App\Events\Rating\RatingSubmitted;
 use App\Listeners\Alerts\BusinessAlertSentryListener;
+use App\Listeners\Automation\EnregistrerLAlerteMetier;
 use App\Listeners\Disputes\NotifyOnDisputeOpened;
 use App\Listeners\Kyc\EmitKycApprovedWebhook;
 use App\Listeners\Kyc\ReevaluateProviderApproval;
@@ -34,6 +35,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         BusinessAlertRaised::class => [
             BusinessAlertSentryListener::class,
+            EnregistrerLAlerteMetier::class,
         ],
         NotificationSent::class => [
             LogNotificationMailSent::class,
