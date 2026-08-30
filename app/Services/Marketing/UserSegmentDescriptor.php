@@ -7,23 +7,27 @@ use App\Services\Conditions\EntityDescriptor;
 use App\Services\Conditions\FieldBinding;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use WeakMap;
 
 /** Les utilisateurs, vus par un arbre de conditions. La configuration garde la main. */
 class UserSegmentDescriptor implements EntityDescriptor
 {
-    /** @var array<string, true> les alias deja joints sur CETTE requete racine */
-    protected array $jointures = [];
+    /** @var WeakMap<QueryBuilder, array<string, true>>|null alias deja joints, par requete racine — pas par instance */
+    protected ?WeakMap $jointuresParRequete = null;
 
     /** @var array<string, FieldBinding>|null */
     protected ?array $champs = null;
 
+    protected ?string $colonneClientCache = null;
+
+    protected ?string $colonneMontantCache = null;
+
     /** @return Builder<Model> */
     public function baseQuery(): Builder
     {
-        $this->jointures = [];
-
         return $this->modele()->newQuery();
     }
 
@@ -59,14 +63,14 @@ class UserSegmentDescriptor implements EntityDescriptor
         return match ($champ) {
             // `wrapForDomain` rendait la valeur inchangee : une colonne suffit.
             'email_domain' => FieldBinding::colonne('users.email'),
-            'bookings_count' => $this->agregat('b_count_agg', fn ($col) => DB::raw('COUNT(*) AS agg')),
-            'last_booking_at' => $this->agregat('b_lastat_agg', fn ($col) => DB::raw('MAX(created_at) AS agg')),
+            'bookings_count' => $this->agregat('b_count_agg', fn () => DB::raw('COUNT(*) AS agg')),
+            'last_booking_at' => $this->agregat('b_lastat_agg', fn () => DB::raw('MAX(created_at) AS agg')),
             'total_spent_cents' => $this->agregatDeMontant(),
             default => FieldBinding::colonne('users.'.$champ),
         };
     }
 
-    /** @param  \Closure(string): mixed  $selection */
+    /** @param  \Closure(): mixed  $selection */
     protected function agregat(string $alias, \Closure $selection): FieldBinding
     {
         return FieldBinding::jointe(function (Builder $racine) use ($alias, $selection): ?string {
@@ -76,7 +80,7 @@ class UserSegmentDescriptor implements EntityDescriptor
                 return null;
             }
 
-            $this->joindreUneSeuleFois($racine, $alias, $client, $selection($client));
+            $this->joindreUneSeuleFois($racine, $alias, $client, $selection());
 
             return $alias.'.agg';
         });
@@ -92,7 +96,10 @@ class UserSegmentDescriptor implements EntityDescriptor
                 return null;
             }
 
-            $this->joindreUneSeuleFois($racine, 'b_spent_agg', $client, DB::raw("SUM({$montant}) AS agg"));
+            // `final_price` est en euros ; `total_spent_cents` promet des centimes.
+            $expression = $montant === 'final_price' ? "SUM({$montant}) * 100" : "SUM({$montant})";
+
+            $this->joindreUneSeuleFois($racine, 'b_spent_agg', $client, DB::raw("{$expression} AS agg"));
 
             return 'b_spent_agg.agg';
         });
@@ -104,31 +111,57 @@ class UserSegmentDescriptor implements EntityDescriptor
      */
     protected function joindreUneSeuleFois(Builder $racine, string $alias, string $client, mixed $selection): void
     {
-        if (isset($this->jointures[$alias])) {
+        $sousJacente = $racine->getQuery();
+        $deja = $this->jointures()[$sousJacente] ?? [];
+
+        if (isset($deja[$alias])) {
             return;
         }
 
         $sous = DB::table('bookings')
-            ->select($selection, $client.' AS uid')
-            ->groupBy($client);
+            ->select($selection, DB::raw($client.' AS uid'))
+            ->groupBy(DB::raw($client));
 
         $racine->leftJoinSub($sous, $alias, fn ($jointure) => $jointure->on('users.id', '=', $alias.'.uid'));
 
-        $this->jointures[$alias] = true;
+        $deja[$alias] = true;
+        $this->jointures()[$sousJacente] = $deja;
     }
 
+    /** Cle = la requete Query\Builder sous-jacente, jamais le descripteur : rien n'exige un descripteur par requete.
+     *
+     * @return WeakMap<QueryBuilder, array<string, true>>
+     */
+    protected function jointures(): WeakMap
+    {
+        return $this->jointuresParRequete ??= new WeakMap;
+    }
+
+    /** `client_id` est la compatibilite legacy, `customer_user_id` la vraie cle etrangere. */
     protected function colonneClient(): ?string
     {
-        foreach (['client_id', 'customer_user_id'] as $colonne) {
-            if (Schema::hasColumn('bookings', $colonne)) {
-                return $colonne;
-            }
-        }
+        return $this->colonneClientCache ??= $this->resoudreColonneClient();
+    }
 
-        return null;
+    protected function resoudreColonneClient(): ?string
+    {
+        $legacy = Schema::hasColumn('bookings', 'client_id');
+        $moderne = Schema::hasColumn('bookings', 'customer_user_id');
+
+        return match (true) {
+            $legacy && $moderne => 'COALESCE(client_id, customer_user_id)',
+            $legacy => 'client_id',
+            $moderne => 'customer_user_id',
+            default => null,
+        };
     }
 
     protected function colonneDeMontant(): ?string
+    {
+        return $this->colonneMontantCache ??= $this->resoudreColonneDeMontant();
+    }
+
+    protected function resoudreColonneDeMontant(): ?string
     {
         foreach (['final_price', 'payment_amount_cents'] as $colonne) {
             if (Schema::hasColumn('bookings', $colonne)) {
