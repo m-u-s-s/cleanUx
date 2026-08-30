@@ -15,8 +15,35 @@
                     </p>
                 </div>
 
-                <div class="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">
-                    {{ $weekStart->translatedFormat('d M') }} → {{ $weekEnd->translatedFormat('d M Y') }}
+                {{-- LA NAVIGATION DE SEMAINE, LA OU ON REGARDE LA SEMAINE.
+                     Elle n'existait que dans le bloc de filtres, deux sections plus haut :
+                     changer de semaine obligeait a remonter, puis a redescendre. --}}
+                <div class="flex flex-shrink-0 items-center gap-2">
+                    {{-- UN PAGINATEUR, PAS TROIS BOUTONS EN TOUTES LETTRES : « ← Semaine
+                         précédente » et « Semaine suivante → » cote a cote poussaient
+                         « Aujourd'hui » a la ligne et ecrasaient le sous-titre. Les fleches
+                         gardent leur nom pour le lecteur d'ecran et l'infobulle. --}}
+                    <div class="flex items-center gap-1 rounded-2xl bg-slate-100 p-1">
+                        <button type="button" wire:click="semainePrecedente"
+                            class="rounded-xl px-2.5 py-1.5 text-sm font-bold text-slate-600 transition hover:bg-white hover:text-slate-900 dark:hover:bg-white/10"
+                            title="Semaine précédente">
+                            ←<span class="sr-only">Semaine précédente</span>
+                        </button>
+
+                        <span class="whitespace-nowrap px-2 text-sm font-semibold tabular-nums text-slate-700">
+                            {{ $weekStart->translatedFormat('d M') }} → {{ $weekEnd->translatedFormat('d M Y') }}
+                        </span>
+
+                        <button type="button" wire:click="semaineSuivante"
+                            class="rounded-xl px-2.5 py-1.5 text-sm font-bold text-slate-600 transition hover:bg-white hover:text-slate-900 dark:hover:bg-white/10"
+                            title="Semaine suivante">
+                            →<span class="sr-only">Semaine suivante</span>
+                        </button>
+                    </div>
+
+                    <button type="button" wire:click="allerAujourdHui" class="brio-btn-secondary whitespace-nowrap px-3 py-2 text-xs">
+                        Aujourd’hui
+                    </button>
                 </div>
             </div>
 

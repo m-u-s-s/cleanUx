@@ -11,6 +11,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 #[Layout('layouts.app')]
@@ -66,6 +67,17 @@ class PlanningAdmin extends Component
         $this->semaine = $today->copy()->startOfWeek()->format('Y-m-d');
         $this->filtreDate = $today->format('Y-m-d');
     }
+
+    /**
+     * L'AGENDA A AGI : les compteurs de cet ecran doivent le savoir.
+     *
+     * `AgendaHebdomadaire` est un composant enfant. Sans cet ecouteur, assigner un
+     * intervenant depuis sa modale laissait « 3 sans employé » affiché juste au-dessus.
+     * Le corps est vide EXPRES : tout ce qu'affiche cette page est une propriete calculee,
+     * et un simple re-rendu suffit a la recalculer.
+     */
+    #[On('planning-mis-a-jour')]
+    public function rafraichirDepuisAgenda(): void {}
 
     public function resetFiltres(): void
     {
