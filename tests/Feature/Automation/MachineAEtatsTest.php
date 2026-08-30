@@ -77,13 +77,10 @@ class MachineAEtatsTest extends TestCase
         $this->assertSame(AutomationRule::ETAT_DESACTIVEE, $regle->fresh()->etat);
     }
 
-    public function test_les_deux_filtres_de_l_armement_sont_discriminants(): void
+    public function test_une_regle_dont_le_journal_n_est_qu_en_mode_arme_reste_inarmable(): void
     {
         $regleA = $this->regle();
-        $regleB = $this->regle();
-        $regleB->update(['nom' => 'Une autre règle']);
 
-        // Regle A : des lignes en mode 'armee' seulement.
         AutomationAction::create([
             'automation_rule_id' => $regleA->id,
             'entite_type' => 'Booking',
@@ -94,7 +91,27 @@ class MachineAEtatsTest extends TestCase
             'pose_le' => now(),
         ]);
 
-        // Regle B : des lignes en mode 'observation'.
+        $this->expectException(ArmementRefuse::class);
+
+        app(EtatDeRegle::class)->armer($regleA);
+    }
+
+    public function test_l_observation_d_une_autre_regle_ne_rend_pas_la_premiere_armable(): void
+    {
+        $regleA = $this->regle();
+        $regleB = $this->regle();
+        $regleB->update(['nom' => 'Une autre règle']);
+
+        AutomationAction::create([
+            'automation_rule_id' => $regleA->id,
+            'entite_type' => 'Booking',
+            'entite_id' => 1,
+            'mode' => 'armee',
+            'action_cle' => 'journaliser',
+            'resultat' => 'executee',
+            'pose_le' => now(),
+        ]);
+
         AutomationAction::create([
             'automation_rule_id' => $regleB->id,
             'entite_type' => 'Booking',
@@ -105,17 +122,27 @@ class MachineAEtatsTest extends TestCase
             'pose_le' => now(),
         ]);
 
-        // A n'a que du 'armee' : le filtre mode='observation' la refuse.
         $this->expectException(ArmementRefuse::class);
+
         app(EtatDeRegle::class)->armer($regleA);
+    }
 
-        // B a du 'observation', mais A ne doit pas en bénéficier.
-        // On réinitialise l'exception et retentons A.
-        $this->expectException(ArmementRefuse::class);
-        app(EtatDeRegle::class)->armer($regleA->fresh());
+    public function test_temoin_la_regle_qui_a_observe_s_arme(): void
+    {
+        $regleB = $this->regle();
 
-        // B, elle, s'arme : c'est le témoin positif.
+        AutomationAction::create([
+            'automation_rule_id' => $regleB->id,
+            'entite_type' => 'Booking',
+            'entite_id' => 2,
+            'mode' => 'observation',
+            'action_cle' => 'journaliser',
+            'resultat' => 'simulee',
+            'pose_le' => now(),
+        ]);
+
         app(EtatDeRegle::class)->armer($regleB);
+
         $this->assertSame(AutomationRule::ETAT_ARMEE, $regleB->fresh()->etat);
     }
 
