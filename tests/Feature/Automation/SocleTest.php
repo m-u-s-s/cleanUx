@@ -6,6 +6,7 @@ use App\Models\AutomationAction;
 use App\Models\AutomationRule;
 use App\Models\AutomationRun;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class SocleTest extends TestCase
@@ -59,6 +60,26 @@ class SocleTest extends TestCase
         foreach ($defautsAtendus as $colonne => $valeurAttendue) {
             $this->assertSame($valeurAttendue, $regle->$colonne, "La colonne {$colonne} doit avoir {$valeurAttendue}");
         }
+    }
+
+    public function test_toute_colonne_a_defaut_a_son_entree_dans_le_modele(): void
+    {
+        // Colonnes de la migration avec un défaut déclaré
+        $colonnesADefaut = collect(Schema::getColumns('automation_rules'))
+            ->filter(fn (array $c): bool => $c['default'] !== null)
+            ->pluck('name')
+            ->sort()
+            ->values()
+            ->all();
+
+        // Clés du tableau $attributes du modèle
+        $miroitees = collect(array_keys((new AutomationRule)->getAttributes()))
+            ->sort()
+            ->values()
+            ->all();
+
+        // Vérifie que les deux listes sont identiques — l'invariant
+        $this->assertSame($colonnesADefaut, $miroitees);
     }
 
     public function test_les_colonnes_json_se_relisent_en_tableau(): void
