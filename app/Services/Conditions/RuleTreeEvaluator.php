@@ -11,6 +11,10 @@ class RuleTreeEvaluator
     /** `!` et non `\` : mesure du 2026-08-30, l'antislash casse sur l'un ou l'autre moteur. */
     public const CARACTERE_ECHAPPEMENT = '!';
 
+    public const PROFONDEUR_MAX = 10;
+
+    public const NOEUDS_MAX = 200;
+
     /**
      * @param  Builder<Model>  $racine
      * @param  array<string, mixed>  $noeud
@@ -20,6 +24,8 @@ class RuleTreeEvaluator
         if ($noeud === []) {
             return;
         }
+
+        $this->verifierLesBornes($noeud);
 
         $racine->where(function (Builder $groupe) use ($racine, $noeud, $entite) {
             $this->appliquerNoeud($groupe, $racine, $noeud, $entite);
@@ -142,5 +148,31 @@ class RuleTreeEvaluator
         $nom = $q->getQuery()->getGrammar()->wrap($colonne);
 
         return $q->whereRaw($nom." LIKE ? ESCAPE '".self::CARACTERE_ECHAPPEMENT."'", [$motif]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $noeud
+     *
+     * @throws RuleTreeTooComplex
+     */
+    protected function verifierLesBornes(array $noeud, int $profondeur = 1, int &$noeuds = 0): void
+    {
+        if ($profondeur > self::PROFONDEUR_MAX) {
+            throw new RuleTreeTooComplex('Arbre trop profond : '.self::PROFONDEUR_MAX.' niveaux au plus.');
+        }
+
+        if (++$noeuds > self::NOEUDS_MAX) {
+            throw new RuleTreeTooComplex('Arbre trop large : '.self::NOEUDS_MAX.' noeuds au plus.');
+        }
+
+        foreach (['and', 'or'] as $groupe) {
+            foreach ((array) ($noeud[$groupe] ?? []) as $sous) {
+                $this->verifierLesBornes((array) $sous, $profondeur + 1, $noeuds);
+            }
+        }
+
+        if (isset($noeud['not'])) {
+            $this->verifierLesBornes((array) $noeud['not'], $profondeur + 1, $noeuds);
+        }
     }
 }
