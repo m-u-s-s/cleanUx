@@ -15,6 +15,15 @@ class RuleTreeEvaluator
 
     public const NOEUDS_MAX = 200;
 
+    /** @var list<string> les operateurs que `appliquerOperateur` sait traduire */
+    public const OPERATEURS_CONNUS = [
+        'eq', 'neq', 'in', 'not_in',
+        'gt', 'gte', 'lt', 'lte',
+        'older_than_days', 'newer_than_days',
+        'is_null', 'is_not_null',
+        'contains', 'starts_with', 'ends_with',
+    ];
+
     /**
      * @param  Builder<Model>  $racine
      * @param  array<string, mixed>  $noeud

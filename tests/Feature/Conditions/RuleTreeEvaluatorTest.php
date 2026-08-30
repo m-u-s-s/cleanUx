@@ -118,4 +118,16 @@ class RuleTreeEvaluatorTest extends TestCase
 
         $this->assertSame(3, $this->compter([]));
     }
+
+    /** Un operateur ajoute a la config mais pas au `match` tomberait en `1=0` silencieux. */
+    public function test_tout_operateur_configure_est_connu_de_l_evaluateur(): void
+    {
+        foreach ((array) config('marketing.segment_operators') as $operateur) {
+            $this->assertContains(
+                $operateur,
+                RuleTreeEvaluator::OPERATEURS_CONNUS,
+                "L'operateur configure '{$operateur}' n'est traduit par aucun bras du match."
+            );
+        }
+    }
 }
