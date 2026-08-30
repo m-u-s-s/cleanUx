@@ -45,8 +45,11 @@ Le vocabulaire actuel, lu dans `config/marketing.php` :
 
 - **15 opérateurs** : `eq`, `neq`, `in`, `not_in`, `gt`, `gte`, `lt`, `lte`, `older_than_days`,
   `newer_than_days`, `is_null`, `is_not_null`, `contains`, `starts_with`, `ends_with`.
-- **9 champs** : `role`, `locale`, `country_code`, `email_domain`, `created_at`, `last_login_at`,
-  `bookings_count`, `last_booking_at`, `total_spent_cents`.
+- **7 champs** : `role`, `locale`, `email_domain`, `created_at`, `bookings_count`,
+  `last_booking_at`, `total_spent_cents`.
+
+`country_code` et `last_login_at` ont été retirés à la tâche 8 (2026-08-30) : ces colonnes
+n'existent pas sur `users`, un segment qui les employait plantait en « Unknown column ».
 
 ## Architecture
 
