@@ -43,6 +43,7 @@ class AlerteDescriptor implements EntityDescriptor
         return RuleTreeEvaluator::OPERATEURS_CONNUS;
     }
 
+    /** L'invariance des generiques Eloquent interdit `AlerteMetier::query()` ici — voir le lot 1. */
     protected function modele(): Model
     {
         return new AlerteMetier;

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Automation;
 
 use App\Models\AlerteMetier;
+use App\Models\Mission;
 use App\Services\Automation\Registre\EntiteRegistre;
 use App\Services\Conditions\RuleTreeEvaluator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -63,6 +64,36 @@ class DescripteursPhase2Test extends TestCase
         );
 
         $this->assertSame(1, $requete->count());
+    }
+
+    /** GARDE (relecture) — `prestataire_id` a ete retire : Mission::intervenantId() fait
+     *  autorite en coalescant lead_provider_user_id et lead_employee_id, et FieldBinding ne sait
+     *  lier qu'une seule colonne. Un champ borne a une seule des deux mentirait a moitie. */
+    public function test_qui_intervient_ne_s_expose_pas_a_moitie_sur_une_seule_colonne(): void
+    {
+        Mission::factory()->create(['lead_provider_user_id' => 1, 'lead_employee_id' => null]);
+        Mission::factory()->create(['lead_provider_user_id' => null, 'lead_employee_id' => 2]);
+
+        $descripteur = app(EntiteRegistre::class)->descripteur('mission');
+        $requete = $descripteur->baseQuery();
+
+        app(RuleTreeEvaluator::class)->apply(
+            $requete,
+            ['field' => 'prestataire_id', 'op' => 'is_not_null', 'value' => null],
+            $descripteur
+        );
+
+        $this->assertSame(0, $requete->count());
+    }
+
+    /** TEMOIN — les deux missions du test precedent sont bien la ; sans lui, le 0 ci-dessus
+     *  passerait au vert sur une table vide plutot que sur l'absence reelle du champ. */
+    public function test_temoin_les_deux_missions_du_garde_prestataire_existent(): void
+    {
+        Mission::factory()->create(['lead_provider_user_id' => 1, 'lead_employee_id' => null]);
+        Mission::factory()->create(['lead_provider_user_id' => null, 'lead_employee_id' => 2]);
+
+        $this->assertSame(2, app(EntiteRegistre::class)->descripteur('mission')->baseQuery()->count());
     }
 
     /** TEMOIN — sans condition, les deux alertes sont bien la. Sans lui, le test ci-dessus

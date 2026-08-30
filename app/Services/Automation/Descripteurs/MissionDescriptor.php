@@ -12,10 +12,8 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Les missions, vues par une regle d'automatisation.
  *
- * `prestataire_id` vise `lead_provider_user_id`, pas sa jumelle `lead_employee_id` : c'est la
- * colonne que nomme `leadProvider()` sur le modele, et celle qu'ecrit le dispatch marketplace.
- * `date_debut`/`date_fin` visent le planifie (`planned_*`), pas le reel (`actual_*`) : rempli des
- * la creation de la mission, c'est deja la colonne que lit `AdminAlertService::lateMissions()`.
+ * `debut_prevu`/`fin_prevue` visent le planifie (`planned_*`), pas le reel (`actual_*`) : rempli
+ * des la creation de la mission, c'est deja la colonne que lit `AdminAlertService::lateMissions()`.
  */
 class MissionDescriptor implements EntityDescriptor
 {
@@ -34,9 +32,10 @@ class MissionDescriptor implements EntityDescriptor
         return $this->champs ??= [
             'statut' => FieldBinding::colonne('missions.status'),
             'reservation_id' => FieldBinding::colonne('missions.booking_id'),
-            'prestataire_id' => FieldBinding::colonne('missions.lead_provider_user_id'),
-            'date_debut' => FieldBinding::colonne('missions.planned_start_at'),
-            'date_fin' => FieldBinding::colonne('missions.planned_end_at'),
+            // « Qui intervient » n'est PAS expose : Mission::intervenantId() fait autorite en
+            // coalescant deux colonnes, et FieldBinding ne sait lier qu'une colonne ou une jointure.
+            'debut_prevu' => FieldBinding::colonne('missions.planned_start_at'),
+            'fin_prevue' => FieldBinding::colonne('missions.planned_end_at'),
             'cree_le' => FieldBinding::colonne('missions.created_at'),
         ];
     }
