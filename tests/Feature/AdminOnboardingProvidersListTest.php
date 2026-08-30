@@ -7,6 +7,7 @@ use App\Models\ProviderOnboardingDocument;
 use App\Models\ProviderProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -24,9 +25,21 @@ class AdminOnboardingProvidersListTest extends TestCase
         ]);
     }
 
+    /**
+     * L'E-MAIL EST DÉDUIT DU NOM, ET CE N'EST PAS DE LA COQUETTERIE.
+     *
+     * La recherche de l'écran porte sur `name` OU `email` (`AdminOnboardingProvidersList`,
+     * clause `whereHas('user')`). Avec l'e-mail aléatoire de Faker, celui de « Other Person »
+     * contenait parfois « zoe » : sa ligne remontait pour la recherche « Zoe » et
+     * `test_search_filters_providers_by_name` tombait — une fois sur quelques dizaines, donc
+     * seulement en suite complète. Un fixture déterministe supprime le hasard.
+     */
     protected function makeInProgressProvider(string $name): ProviderProfile
     {
-        $user = User::factory()->employe()->create(['name' => $name]);
+        $user = User::factory()->employe()->create([
+            'name' => $name,
+            'email' => Str::slug($name).'@exemple.test',
+        ]);
 
         return ProviderProfile::factory()->create([
             'user_id' => $user->id,
@@ -92,9 +105,33 @@ class AdminOnboardingProvidersListTest extends TestCase
 
         Livewire::test(AdminOnboardingProvidersList::class)
             ->set('filterStatus', 'all')
+            // TEMOIN — les deux prestataires sont bien listes SANS recherche. Sans lui,
+            // l'assertion d'absence ci-dessous passerait au vert sur une liste vide.
+            ->assertSee('Zoe Searchable')
+            ->assertSee('Other Person')
             ->set('search', 'Zoe')
             ->assertSee('Zoe Searchable')
             ->assertDontSee('Other Person');
+    }
+
+    /**
+     * LA BRANCHE QUI A FAIT TOMBER LA SUITE, ET QUE RIEN NE COUVRAIT.
+     *
+     * La recherche porte sur `name` OU `email`. Le `orWhere` n'etait exerce par aucun test :
+     * il n'apparaissait que par accident, quand un e-mail Faker contenait le terme cherche.
+     */
+    public function test_search_filters_providers_by_email(): void
+    {
+        $this->makeInProgressProvider('Zoe Searchable');
+        $this->makeInProgressProvider('Other Person');
+
+        $this->actingAs($this->createAdmin());
+
+        Livewire::test(AdminOnboardingProvidersList::class)
+            ->set('filterStatus', 'all')
+            ->set('search', 'other-person@exemple.test')
+            ->assertSee('Other Person')
+            ->assertDontSee('Zoe Searchable');
     }
 
     public function test_clear_filters_resets_search_and_status(): void
