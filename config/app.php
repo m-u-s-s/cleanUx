@@ -4,6 +4,7 @@ use App\Providers\AdminConsoleServiceProvider;
 use App\Providers\ApiTokensV2ServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\AuthServiceProvider;
+use App\Providers\AutomationServiceProvider;
 use App\Providers\BroadcastServiceProvider;
 use App\Providers\EmailV2ServiceProvider;
 use App\Providers\EventServiceProvider;
@@ -183,6 +184,7 @@ return [
         /*
          * Application Service Providers...
          */
+        AutomationServiceProvider::class,
         AppServiceProvider::class,
         I18nServiceProvider::class,
         KycServiceProvider::class,
