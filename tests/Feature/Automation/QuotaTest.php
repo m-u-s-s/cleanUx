@@ -178,4 +178,17 @@ class QuotaTest extends TestCase
         $this->assertSame(4, $passage->actions_posees);
         $this->assertSame(2, AutomationAction::where('resultat', AutomationAction::RESULTAT_ECHOUEE)->count());
     }
+
+    /** Une regle sans action ne divise pas par zero : le plafond reste calculable. */
+    public function test_une_regle_sans_action_ne_fait_pas_tomber_le_passage(): void
+    {
+        Booking::factory()->count(3)->create(['status' => 'en_attente']);
+        $regle = $this->regleAvecActions([], 50, 500);
+
+        $passage = app(RuleRunner::class)->executer($regle);
+
+        $this->assertSame(3, $passage->entites_vues);
+        $this->assertSame(0, $passage->actions_posees);
+        $this->assertSame('ok', $passage->statut);
+    }
 }
