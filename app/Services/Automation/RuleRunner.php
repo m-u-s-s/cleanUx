@@ -8,6 +8,7 @@ use App\Models\AutomationRun;
 use App\Services\Automation\Registre\ActionRegistre;
 use App\Services\Automation\Registre\EntiteRegistre;
 use App\Services\Conditions\RuleTreeEvaluator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Throwable;
 
@@ -49,6 +50,8 @@ class RuleRunner
         if ($identifiants !== null) {
             $requete->whereKey($identifiants);
         }
+
+        $this->exclureLeDejaAgi($requete, $regle);
 
         $lignes = $requete->get();
         $posees = 0;
@@ -123,5 +126,32 @@ class RuleRunner
                 : LigneDeJournal::RESULTAT_ECHOUEE,
             'message' => $resultat->message,
         ]);
+    }
+
+    /**
+     * @param  Builder<Model>  $requete
+     *
+     * La politique porte TOUJOURS sur l'entite : « une fois » veut dire une fois par entite.
+     */
+    protected function exclureLeDejaAgi(Builder $requete, AutomationRule $regle): void
+    {
+        if ($regle->politique_reprise === 'chaque_passage') {
+            return;
+        }
+
+        $deja = LigneDeJournal::query()
+            ->where('automation_rule_id', $regle->id)
+            ->where('entite_type', $regle->entite)
+            ->whereNotIn('resultat', [
+                LigneDeJournal::RESULTAT_REFUSEE,
+                LigneDeJournal::RESULTAT_EXPIREE,
+            ])
+            ->when(
+                $regle->politique_reprise === 'une_fois_par_jour',
+                fn (Builder $q) => $q->where('pose_le', '>=', now()->subDay())
+            )
+            ->select('entite_id');
+
+        $requete->whereNotIn($requete->getModel()->getQualifiedKeyName(), $deja);
     }
 }
