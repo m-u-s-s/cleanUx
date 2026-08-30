@@ -2,8 +2,22 @@
     @php
     $user = auth()->user();
 
-    $homeHref = auth()->check() && Route::has('dashboard')
-    ? route('dashboard')
+    /*
+     * UNE SEULE BARRE POUR TOUS LES TABLEAUX DE BORD, ESPACES SOCIÉTÉ COMPRIS.
+     *
+     * `x-barre-societe` en était une seconde définition : moitié moins de contenu — pas de menu
+     * mobile, pas d'aperçu de notifications, pas de menu de compte — et une allure qui n'était
+     * celle d'aucun autre espace. L'ESPACE PASSE AVANT LE RÔLE : un patron de société cliente
+     * est aussi `isClient()`, et le rôle seul lui rendait la barre du particulier.
+     */
+    $espaceSociete = \App\Support\Navigation\EspaceCourant::societe();
+
+    $routeAccueil = $espaceSociete
+    ? \App\Support\Navigation\EspaceCourant::routeDAccueil($espaceSociete)
+    : 'dashboard';
+
+    $homeHref = auth()->check() && Route::has($routeAccueil)
+    ? route($routeAccueil)
     : (Route::has('home') ? route('home') : url('/'));
 
     $unreadCount = auth()->check()
@@ -35,7 +49,7 @@
     // Le rôle canonique, tranché une fois dans `Role` — plus une cascade de `is*()` par surface.
     $roleCanonique = $user?->roleCanonique();
 
-    $contexte = match (true) {
+    $contexte = $espaceSociete ?? match (true) {
         /*
          * L'ORDRE COMPTE, et il reste celui de `routes/authenticated.php`. Ces rôles ne s'excluent
          * pas : promouvoir un client en administrateur ne lui retire pas son profil client, donc
@@ -53,12 +67,18 @@
     ? \App\Support\Navigation\ModuleCatalogue::principaux($contexte)
     : collect();
 
-    $modulesRoute = match ($contexte) {
+    $modulesRoute = $espaceSociete
+    ? \App\Support\Navigation\EspaceCourant::routeDesModules($espaceSociete)
+    : match ($contexte) {
         'admin' => 'admin.modules.directory',
         'client' => 'client.modules',
         'employe' => 'employe.modules',
         default => null,
     };
+
+    // Le rôle DANS la société — « Gérant », « Répartiteur ». Il vivait dans la barre société,
+    // et c'est la seule surface web qui le dise.
+    $membreSociete = $espaceSociete ? $user?->membershipIn() : null;
 
 
     // La table emoji → Heroicon vivait ici. Elle est partagée depuis `ModuleIcons` : la page
@@ -135,7 +155,20 @@
                 <x-language-switcher />
 
                 @auth
-                @if($user?->isClient() && Route::has('client.rendezvous.create'))
+                {{--
+                    L'APPEL À L'ACTION SUIT L'ESPACE, PAS LE RÔLE.
+
+                    Un patron de société cliente est `isClient()` : sans cette porte, sa barre
+                    l'invitait à réserver POUR LUI-MÊME, quand il pilote les locaux de sa société.
+                    La société prestataire, elle, n'a rien à commander — elle n'affiche rien.
+                --}}
+                @if($espaceSociete === 'client-company' && Route::has('client-company.bookings.create'))
+                <a href="{{ route('client-company.bookings.create') }}"
+                    class="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400"
+                    title="{{ __('Demande rapide') }}">
+                    ⚡ {{ __('Demande rapide') }}
+                </a>
+                @elseif(! $espaceSociete && $user?->isClient() && Route::has('client.rendezvous.create'))
                 <a href="{{ route('client.rendezvous.create') }}"
                     class="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400">
                     ➕ Réserver
@@ -191,7 +224,20 @@
                                 Compte
                             </div>
 
-                            @if($user?->isClient())
+                            {{-- La société et le rôle qu'on y tient : la barre société les
+                                 portait, et aucune autre surface web ne les dit. --}}
+                            @if($membreSociete)
+                            <div class="border-b border-slate-100 px-4 pb-3 dark:border-slate-700">
+                                <p class="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">
+                                    {{ $user->currentOrganization?->name }}
+                                </p>
+                                @if($membreSociete->roleLabel())
+                                <p class="text-xs text-blue-600 dark:text-blue-400">{{ $membreSociete->roleLabel() }}</p>
+                                @endif
+                            </div>
+                            @endif
+
+                            @if(! $espaceSociete && $user?->isClient())
                             <x-dropdown-link :href="route('profile.show')">
                                 👤 Espace client
                             </x-dropdown-link>
@@ -322,6 +368,14 @@
             <div class="px-4">
                 <div class="text-base font-bold text-slate-800 dark:text-slate-100">{{ $user->name }}</div>
                 <div class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ $user->email }}</div>
+                @if($membreSociete)
+                <div class="mt-1 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                    {{ $user->currentOrganization?->name }}
+                    @if($membreSociete->roleLabel())
+                    <span class="text-blue-600 dark:text-blue-400">· {{ $membreSociete->roleLabel() }}</span>
+                    @endif
+                </div>
+                @endif
                 <div class="mt-3 flex items-center gap-2">
                     <x-language-switcher />
                     <x-theme-toggle />
@@ -329,7 +383,7 @@
             </div>
 
             <div class="mt-3 space-y-1">
-                @if($user?->isClient())
+                @if(! $espaceSociete && $user?->isClient())
                 <x-responsive-nav-link :href="route('profile.show')" :active="request()->routeIs('profile.show')">
                     👤 Espace client
                 </x-responsive-nav-link>

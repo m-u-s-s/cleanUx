@@ -96,9 +96,13 @@ class UnSeulEspacePourUneSocieteTest extends TestCase
             ->get(route('client-company.perso.finance'))
             ->assertOk();
 
-        // `brio-barre` n'appartient qu'a la barre personnelle : sa presence signerait deux espaces.
-        $reponse->assertDontSee('brio-barre', escape: false);
+        /*
+         * LA BARRE EST DESORMAIS LA MEME PARTOUT : ce sont ses LIENS qui disent l'espace,
+         * plus sa classe CSS. `brio-barre` a longtemps servi de discriminant ; il ne prouve
+         * plus rien depuis que les espaces societe montent `navigation-menu`.
+         */
         $reponse->assertSee(route('client-company.modules'), escape: false);
+        $reponse->assertDontSee(route('client.modules'), escape: false);
     }
 
     public function test_le_repertoire_de_la_societe_liste_les_ecrans_personnels(): void
@@ -136,7 +140,8 @@ class UnSeulEspacePourUneSocieteTest extends TestCase
         $reponse = $this->actingAs($client)->get(route('client.finance'))->assertOk();
 
         // Sa barre reste la personnelle : il n'a pas d'espace societe ou aller.
-        $reponse->assertSee('brio-barre', escape: false);
+        $reponse->assertSee(route('client.modules'), escape: false);
+        $reponse->assertDontSee(route('client-company.modules'), escape: false);
     }
 
     /** Les ecrans fusionnes sont gardes par le type d'organisation, comme le reste de l'espace. */

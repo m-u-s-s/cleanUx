@@ -27,9 +27,12 @@
 --}}
 <body class="font-sans antialiased text-slate-800 bg-slate-50/30 selection:bg-brand-100 selection:text-brand-900">
 
-    {{-- ── Topbar ── --}}
+    {{-- ── Topbar ── La MEME que celle des autres tableaux de bord : elle deduit l'espace de
+         la route courante et tire ses liens du meme registre. --}}
     @unless($embedded ?? false)
-    <x-barre-societe espace="provider-company" />
+    <div data-chrome="primary-nav">
+        @livewire('navigation-menu')
+    </div>
     @endunless
 
     {{--

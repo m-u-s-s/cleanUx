@@ -48,15 +48,10 @@
 
     <div class="min-h-screen {{ ($embedded ?? false) ? '' : 'pb-20 sm:pb-0' }}">
         @unless($embedded ?? false)
-        {{-- Les ecrans personnels d'un compte en societe vivent SOUS le prefixe de la
-             societe : c'est la route qui dit quelle barre porter, jamais le role. --}}
-        @php($espaceSociete = \App\Support\Navigation\EspaceCourant::societe())
+        {{-- UNE SEULE BARRE, pour tous les espaces. Elle lit `EspaceCourant::societe()`
+             elle-meme : c'est la route qui dit quels liens porter, jamais le role. --}}
         <div data-chrome="primary-nav">
-            @if ($espaceSociete)
-                <x-barre-societe :espace="$espaceSociete" />
-            @else
-                @livewire('navigation-menu')
-            @endif
+            @livewire('navigation-menu')
         </div>
         @endunless
 
