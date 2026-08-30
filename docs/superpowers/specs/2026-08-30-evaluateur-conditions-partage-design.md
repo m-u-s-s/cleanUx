@@ -73,6 +73,7 @@ Ne connaît que son entité. Jamais l'arbre.
 ```
 baseQuery(): Builder                      // User::query(), Booking::query(), …
 fields(): array<string, FieldBinding>     // les champs exposés, et rien d'autre
+operators(): list<string>                 // les opérateurs permis pour cette entité
 ```
 
 **Les clés de `fields()` SONT la liste blanche.** Une seule source, au lieu d'un tableau de config
@@ -80,14 +81,14 @@ lu au fond d'une méthode.
 
 ### `FieldBinding`
 
-Quatre formes, jamais mélangées.
+Trois formes, jamais mélangées. Noms et signatures ci-dessous sont ceux du code livré — pas de
+`transformeValeur` : `email_domain` reste une colonne simple, cette forme n'a jamais été implémentée.
 
 | Forme | Sert à | Usage marketing |
 |---|---|---|
-| `column('users.locale')` | le cas courant | 3 champs sur 7 |
-| `column('users.email', transformeValeur: …)` | une valeur à préparer avant l'opérateur | `email_domain`, reprend `wrapForDomain` |
-| `custom(fn ($q, $op, $v) => …)` | une sous-requête | `bookings_count`, `last_booking_at`, `total_spent_cents` |
-| `unavailable()` | ce champ n'est pas servable ici | rend `1=0`, comme `Schema::hasTable('bookings')` faux |
+| `colonne('users.locale')` | le cas courant | 4 champs sur 7, dont `email_domain` |
+| `jointe(fn (Builder $racine): ?string => …)` | une sous-requête ; la fermeture reçoit la requête RACINE (jamais le nœud courant) et rend le nom de la colonne jointe, ou `null` si elle ne peut pas se poser | `bookings_count`, `last_booking_at`, `total_spent_cents` |
+| `indisponible()` | ce champ n'est pas servable ici | rend `1=0`, comme `Schema::hasTable('bookings')` faux |
 
 ### Décision : le vocabulaire reste en code
 
