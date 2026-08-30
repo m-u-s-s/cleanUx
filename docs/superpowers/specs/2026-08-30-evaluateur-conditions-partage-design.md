@@ -140,21 +140,31 @@ traduction des opérateurs.
 
 ### 1. Clause `ESCAPE` explicite
 
-Mesure du 2026-08-30, en base :
+Mesures du 2026-08-30, exécutées sur les deux moteurs.
 
 | Requête | MySQL (l'application) | SQLite (la suite de tests) |
 |---|---|---|
-| `'a%b' LIKE 'a\%b'` | **1** — l'échappement marche | **0** — l'échappement ne marche pas |
-| `'a%b' LIKE 'a\%b' ESCAPE '\'` | 1 | **1** |
+| `'a%b' LIKE 'a\%b'` sans clause | **1** — l'échappement marche | **0** — l'échappement ne marche pas |
+| `… ESCAPE '\'` | **erreur 1064** — l'antislash échappe le guillemet fermant | 1 |
+| `… ESCAPE '\\'` | 1 | **erreur** — « ESCAPE expression must be a single character » |
+| `… ESCAPE '!'` | **1** | **1** |
 
-L'échappement de `%` est donc **déjà cassé sur SQLite**. Un test écrit dessus mesurerait le
-contraire de la production. La correction émet `LIKE ? ESCAPE '\'` : MySQL est inchangé, SQLite
-devient correct, et le comportement redevient testable.
+Deux conclusions.
+
+1. L'échappement de `%` est **déjà cassé sur SQLite**. Un test écrit dessus mesurerait le contraire
+   de la production.
+2. **L'antislash ne peut pas servir de caractère d'échappement portable** : la clause qui marche sur
+   l'un est une erreur de syntaxe sur l'autre. Un `whereRaw` figé ne peut pas servir les deux.
+
+La correction émet donc `LIKE ? ESCAPE '!'` — identique sur les deux moteurs, mesuré.
 
 ### 2. Trois caractères échappés
 
-`\`, puis `%`, puis `_` — **dans cet ordre**. L'antislash d'abord, sinon on ré-échappe ce qu'on
-vient d'écrire. Le code actuel n'échappe ni `_` ni `\` : deux jokers SQL au lieu d'un.
+`!`, puis `%`, puis `_` — **dans cet ordre**. Le caractère d'échappement d'abord, sinon on
+ré-échappe ce qu'on vient d'écrire.
+
+Conséquence heureuse : l'antislash redevient un caractère ordinaire dans les valeurs. Aujourd'hui,
+MySQL le traite comme un échappement et le mange silencieusement.
 
 ### 3. Bornes sur l'arbre
 
@@ -205,6 +215,49 @@ couvre MySQL serait un vert obtenu pour une mauvaise raison.
 |---|---|---|
 | Un champ ou opérateur inconnu rend `1=0` **en silence** | Aucun écran, à ce lot, où le dire | Lot 2 : l'éditeur refuse à l'écriture |
 | Les 5 alertes métier écrites en dur (`BusinessAlerts`) | Hors périmètre de l'extraction | Lot 2 : elles deviennent des règles |
+
+## Deux défauts découverts pendant la planification
+
+### Les champs dérivés n'ont jamais fonctionné
+
+`buildQuery` enveloppe **toujours** l'arbre dans `where(function ($q) { … })`. `applyLeaf` y appelle
+`applyBookingDerivedField`, qui pose un `leftJoinSub` **sur le constructeur imbriqué**. Or une
+jointure ajoutée à un constructeur de groupement n'est jamais compilée : seules ses clauses `where`
+le sont.
+
+Mesure du 2026-08-30, MySQL :
+
+```
+SQL produit : select * from `users` where (`b_count_agg`.`agg` > ?)
+                                    ↑ aucun JOIN
+Erreur      : SQLSTATE[42S22] 1054 Unknown column 'b_count_agg.agg' in 'where clause'
+```
+
+**Les trois champs `bookings_count`, `last_booking_at` et `total_spent_cents` plantent donc à
+l'exécution, systématiquement.** Un tiers du vocabulaire des segments est mort. Aucun des 19 tests
+ne les couvre : c'est ce qui l'a caché.
+
+Conséquence sur la conception : `RuleTreeEvaluator::apply()` garde une référence à la requête
+**racine** et la passe aux liaisons jointes, pendant que le parcours de l'arbre travaille sur le
+constructeur imbriqué. La forme `FieldBinding::jointe()` reçoit donc la racine, jamais le nœud
+courant. Le défaut devient structurellement impossible.
+
+### Deux emplois du même champ dérivé entrent en collision
+
+Chaque champ dérivé pose sa jointure sous un **alias fixe** (`b_count_agg`, `b_lastat_agg`,
+`b_spent_agg`). Une fois la jointure remontée à la racine, une règle comme `bookings_count > 2` ET
+`bookings_count < 10` en poserait deux du même nom.
+
+Mesuré : `SQLSTATE[42000] 1066 Not unique table/alias: 'b_count_agg'`.
+
+La jointure se pose donc **au plus une fois par alias** ; le second emploi du champ réutilise la
+colonne déjà jointe.
+
+### Pourquoi ces deux correctifs entrent dans ce lot
+
+Déplacer du code qui plante sans le voir serait pire que de le laisser. Et la caractérisation
+demandée en stratégie de test ne peut pas « figer le comportement actuel » d'un chemin qui lève une
+exception : elle documente le plantage, et l'extraction le répare.
 
 ## Risques
 
