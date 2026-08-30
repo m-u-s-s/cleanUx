@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\AutomationRule;
+use App\Services\Automation\RuleRunner;
+use App\Services\FeatureFlag\FeatureFlagService;
+use Illuminate\Console\Command;
+
+class ExecuterLAutomatisation extends Command
+{
+    protected $signature = 'automation:executer';
+
+    protected $description = "Execute les regles d'automatisation dont le tour est venu.";
+
+    private const ETATS_ACTIFS = [
+        AutomationRule::ETAT_OBSERVATION,
+        AutomationRule::ETAT_ARMEE,
+    ];
+
+    private const CADENCES = [
+        'chaque_minute' => 1,
+        'quart_heure' => 15,
+        'heure' => 60,
+        'jour' => 1440,
+    ];
+
+    public function handle(RuleRunner $runner, FeatureFlagService $drapeaux): int
+    {
+        if (! $drapeaux->isEnabled('automation')) {
+            $this->info("Moteur d'automatisation coupe (drapeau « automation »).");
+
+            return self::SUCCESS;
+        }
+
+        $regles = AutomationRule::query()
+            ->whereIn('etat', self::ETATS_ACTIFS)
+            ->where('declencheur', 'cadence')
+            ->get()
+            ->filter(fn (AutomationRule $regle): bool => $this->estDue($regle));
+
+        foreach ($regles as $regle) {
+            $passage = $runner->executer($regle);
+
+            $this->line(sprintf(
+                '%s : %d entite(s), %d action(s), %s',
+                $regle->nom,
+                $passage->entites_vues,
+                $passage->actions_posees,
+                $passage->statut
+            ));
+        }
+
+        return self::SUCCESS;
+    }
+
+    protected function estDue(AutomationRule $regle): bool
+    {
+        if ($regle->dernier_passage_le === null) {
+            return true;
+        }
+
+        $minutes = self::CADENCES[$regle->cadence] ?? 15;
+
+        return $regle->dernier_passage_le->addMinutes($minutes)->isPast();
+    }
+}

@@ -64,6 +64,12 @@ return [
     'client_mobile_v2' => true,   // Vue 3 islands hybrid (POC)
 
     // ─────────────────────────────────────────
+    // Automation
+    // ─────────────────────────────────────────
+    // L'interrupteur general du moteur d'automatisation. Ferme par defaut.
+    'automation' => false,
+
+    // ─────────────────────────────────────────
     // Admin / internal
     // ─────────────────────────────────────────
     'kyb_b2b' => true,

@@ -147,6 +147,8 @@ class Kernel extends ConsoleKernel
             ->hourly()
             ->withoutOverlapping()
             ->appendOutputTo(storage_path('logs/production-health.log'));
+
+        $schedule->command('automation:executer')->everyMinute()->withoutOverlapping();
     }
 
     protected function commands(): void
