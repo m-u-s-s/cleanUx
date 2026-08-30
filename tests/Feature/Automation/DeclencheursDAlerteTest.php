@@ -36,14 +36,20 @@ class DeclencheursDAlerteTest extends TestCase
     /** L'INVERSE AUSSI : un declencheur qui ecoute une alerte que personne ne leve est mort. */
     public function test_aucun_declencheur_d_alerte_n_ecoute_dans_le_vide(): void
     {
+        $alertes = array_filter(
+            app(DeclencheurRegistre::class)->toutes(),
+            fn (string $cle): bool => str_starts_with($cle, 'alerte.'),
+            ARRAY_FILTER_USE_KEY
+        );
+
+        // ANCRE — sans elle, un registre vide rend ce test vert : la boucle n'itere
+        // sur rien et l'absence d'ecart n'a plus rien a prouver.
+        $this->assertCount(5, $alertes, "Le registre ne porte pas les cinq declencheurs d'alerte.");
+
         $source = (string) file_get_contents(app_path('Support/Alerts/BusinessAlerts.php'));
         $orphelins = [];
 
-        foreach (app(DeclencheurRegistre::class)->toutes() as $cle => $declencheur) {
-            if (! str_starts_with($cle, 'alerte.')) {
-                continue;
-            }
-
+        foreach ($alertes as $cle => $declencheur) {
             $alerte = substr($cle, strlen('alerte.'));
 
             if (! str_contains($source, "'".$alerte."'")) {
@@ -77,10 +83,18 @@ class DeclencheursDAlerteTest extends TestCase
 
     public function test_les_cinq_declencheurs_visent_l_entite_alerte(): void
     {
-        foreach (app(DeclencheurRegistre::class)->toutes() as $cle => $declencheur) {
-            if (str_starts_with($cle, 'alerte.')) {
-                $this->assertSame('alerte', $declencheur->entite(), $cle);
-            }
+        $alertes = array_filter(
+            app(DeclencheurRegistre::class)->toutes(),
+            fn (string $cle): bool => str_starts_with($cle, 'alerte.'),
+            ARRAY_FILTER_USE_KEY
+        );
+
+        // ANCRE — sans elle, un registre vide rend ce test risky : la boucle n'itere
+        // sur rien et aucune assertion n'est executee.
+        $this->assertCount(5, $alertes, "Le registre ne porte pas les cinq declencheurs d'alerte.");
+
+        foreach ($alertes as $cle => $declencheur) {
+            $this->assertSame('alerte', $declencheur->entite(), $cle);
         }
     }
 }
