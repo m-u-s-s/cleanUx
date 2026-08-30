@@ -53,7 +53,14 @@ class RuleRunner
 
         $this->exclureLeDejaAgi($requete, $regle);
 
-        $lignes = $requete->get();
+        // LE +1 EST LE SIGNAL : sans lui, « exactement le quota » et « mille » sont
+        // indiscernables, et l'emballement ne se voit jamais.
+        $restantAujourdhui = max(0, $regle->plafond_journalier - $this->poseesAujourdhui($regle));
+        $quota = min($regle->quota_par_passage, $restantAujourdhui);
+
+        $lignes = $requete->limit($quota + 1)->get();
+        $bride = $lignes->count() > $quota;
+        $lignes = $lignes->take($quota);
         $posees = 0;
 
         foreach ($lignes as $ligne) {
@@ -66,10 +73,11 @@ class RuleRunner
         $passage->forceFill([
             'entites_vues' => $lignes->count(),
             'actions_posees' => $posees,
+            'statut' => $bride ? 'plafond_atteint' : 'ok',
             'termine_le' => now(),
         ])->save();
 
-        $regle->forceFill(['dernier_passage_le' => now()])->save();
+        $this->comptabiliserLePlafond($regle, $bride);
 
         return $passage;
     }
@@ -153,5 +161,25 @@ class RuleRunner
             ->select('entite_id');
 
         $requete->whereNotIn($requete->getModel()->getQualifiedKeyName(), $deja);
+    }
+
+    protected function poseesAujourdhui(AutomationRule $regle): int
+    {
+        return LigneDeJournal::query()
+            ->where('automation_rule_id', $regle->id)
+            ->where('pose_le', '>=', now()->startOfDay())
+            ->count();
+    }
+
+    /** Le quota BRIDE. C'est l'emballement — trois plafonds d'affilee — qui suspend. */
+    protected function comptabiliserLePlafond(AutomationRule $regle, bool $bride): void
+    {
+        $consecutifs = $bride ? $regle->plafonds_consecutifs + 1 : 0;
+
+        $regle->forceFill([
+            'plafonds_consecutifs' => $consecutifs,
+            'dernier_passage_le' => now(),
+            'etat' => $consecutifs >= 3 ? AutomationRule::ETAT_SUSPENDUE : $regle->etat,
+        ])->save();
     }
 }
