@@ -55,8 +55,11 @@ class RuleRunner
 
         // LE +1 EST LE SIGNAL : sans lui, « exactement le quota » et « mille » sont
         // indiscernables, et l'emballement ne se voit jamais.
-        $restantAujourdhui = max(0, $regle->plafond_journalier - $this->poseesAujourdhui($regle));
-        $quota = min($regle->quota_par_passage, $restantAujourdhui);
+        // Le plafond borne des LIGNES ; le quota borne des ENTITES. Une regle a N actions
+        // depense N lignes par entite : on convertit avant de comparer.
+        $parEntite = max(1, count($regle->actions ?? []));
+        $restantAujourdhui = max(0, $regle->plafond_journalier - $this->poseesAujourdhui($regle, $observation));
+        $quota = min($regle->quota_par_passage, intdiv($restantAujourdhui, $parEntite));
 
         $lignes = $requete->limit($quota + 1)->get();
         $bride = $lignes->count() > $quota;
@@ -163,10 +166,11 @@ class RuleRunner
         $requete->whereNotIn($requete->getModel()->getQualifiedKeyName(), $deja);
     }
 
-    protected function poseesAujourdhui(AutomationRule $regle): int
+    protected function poseesAujourdhui(AutomationRule $regle, bool $observation): int
     {
         return LigneDeJournal::query()
             ->where('automation_rule_id', $regle->id)
+            ->where('mode', $observation ? 'observation' : 'armee')
             ->where('pose_le', '>=', now()->startOfDay())
             ->count();
     }
