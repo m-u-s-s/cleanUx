@@ -31,11 +31,13 @@ class DescriptorFieldsResolveTest extends TestCase
         foreach (array_keys(app($classe)->fields()) as $champ) {
             $entite = app($classe);
             $requete = $entite->baseQuery();
+            // Le MEME champ deux fois : couvre la collision d'alias sur tout descripteur futur.
+            $feuille = ['field' => $champ, 'op' => 'is_not_null', 'value' => null];
 
             try {
                 app(RuleTreeEvaluator::class)->apply(
                     $requete,
-                    ['field' => $champ, 'op' => 'is_not_null', 'value' => null],
+                    ['and' => [$feuille, $feuille]],
                     $entite
                 );
                 $requete->count();
