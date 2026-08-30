@@ -15,15 +15,15 @@ class DeclencheurRegistre
         $this->declencheurs[$declencheur->cle()] = $declencheur;
     }
 
+    public function trouver(string $cle): ?Declencheur
+    {
+        return $this->declencheurs[$cle] ?? null;
+    }
+
     /** @return array<string, Declencheur> */
     public function toutes(): array
     {
         return $this->declencheurs;
-    }
-
-    public function trouver(string $cle): ?Declencheur
-    {
-        return $this->declencheurs[$cle] ?? null;
     }
 
     /** @return list<Declencheur> */
