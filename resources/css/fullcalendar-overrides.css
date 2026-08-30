@@ -23,3 +23,75 @@
     color: white !important;
     border-color: #3b82f6 !important;
 }
+/* ==================================================== LA GRILLE DU CALENDRIER
+
+   FullCalendar construit TOUTE sa mise en page en tableaux imbriques : la
+   grille de defilement, l'entete des jours, la table de synchronisation.
+
+   Le systeme de design, lui, reprend l'element `table` lui-meme pour en faire
+   une carte de verre — rayon de 24 px, fond, flou, ombre, entete collante
+   (`composants.css`, « LES TABLEAUX »). Cette regle, ecrite pour les 93
+   tableaux de donnees du produit, tombait donc sur chacune des tables de la
+   grille : les filets de cellule, eux carres, passaient PAR-DESSUS l'arrondi
+   et ressortaient aux quatre coins. Mesure du 2026-08-30 : `border-radius`
+   de 24 px sur `.fc-scrollgrid`, `.fc-col-header` et `.fc-scrollgrid-sync-table`,
+   avec `overflow: visible` — d'ou le debordement, et quatre couches de flou
+   empilees par-dessus le marche.
+
+   `.brio-opaque` est la soupape prevue pour un tableau qui doit garder son
+   rendu d'origine. On ne peut pas la poser sur des tables que la bibliotheque
+   cree elle-meme a chaque changement de vue : la meme reserve s'exprime donc
+   ici. LA SPECIFICITE COMPTE — la regle du systeme vaut 0,2,1 ; `.fc table`
+   seul (0,1,1) perdrait. */
+body:not(.cx-shell) .fc table {
+    border-radius: 0;
+    background-color: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+    overflow: visible;
+    color: inherit;
+}
+
+/* Les cellules retrouvent le modele de la bibliotheque. L'entete collante, le
+   rembourrage de 0,7 rem et les capitales du systeme deformaient la grille du
+   mois : l'entete des jours prenait la forme d'une pastille arrondie. */
+body:not(.cx-shell) .fc table thead th,
+body:not(.cx-shell) .fc table tbody td {
+    position: static;
+    padding: 0;
+    font: inherit;
+    letter-spacing: normal;
+    text-transform: none;
+    color: inherit;
+    background-color: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: 0;
+}
+
+/* UN SEUL CADRE POUR TOUTE LA GRILLE, et c'est lui qui porte l'arrondi.
+   `overflow: hidden` rogne les filets aux coins : sans lui, ils ressortent
+   quel que soit le rayon pose. */
+body:not(.cx-shell) .fc .fc-scrollgrid {
+    overflow: hidden;
+    border-radius: var(--cx-radius-md);
+    border: 1px solid var(--glass-border);
+}
+
+/* L'ENTETE DES JOURS REVIENT AU CENTRE. Le systeme pose `text-align: start` sur
+   tout `thead th` — pertinent pour un tableau de donnees, pas pour sept noms de
+   jours au-dessus de leurs colonnes. */
+body:not(.cx-shell) .fc table thead th {
+    text-align: center;
+}
+
+/* LES FILETS ET LA TEINTE DU JOUR SUIVENT LES JETONS. La bibliotheque livre un
+   `#ddd` et un jaune : deux couleurs qui n'appartiennent a aucun theme du
+   produit, et qui ne bougent pas avec le mode sombre. */
+body:not(.cx-shell) .fc {
+    --fc-border-color: var(--glass-border);
+    --fc-today-bg-color: rgb(var(--brio-accent-rgb) / 0.10);
+    --fc-neutral-bg-color: transparent;
+    --fc-page-bg-color: transparent;
+}
