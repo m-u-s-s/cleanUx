@@ -53,8 +53,8 @@ class SegmentEngineRuleTreeTooComplexTest extends TestCase
         $this->assertSame(['count' => 0, 'sample' => []], $preview);
     }
 
-    /** TEMOIN — sans lui, les deux tests ci-dessus passeraient au vert sur un moteur casse. */
-    public function test_temoin_des_regles_normales_rendent_un_resultat_non_nul(): void
+    /** TEMOIN compute() — sans lui, le rejet ci-dessus passerait au vert sur un moteur casse. */
+    public function test_temoin_compute_regles_normales_rend_un_resultat_non_nul(): void
     {
         User::factory()->client()->count(3)->create();
         $segment = $this->makeSegment(['field' => 'role', 'op' => 'eq', 'value' => 'client']);
@@ -62,5 +62,17 @@ class SegmentEngineRuleTreeTooComplexTest extends TestCase
         $count = app(SegmentEngine::class)->compute($segment);
 
         $this->assertSame(3, $count);
+    }
+
+    /** TEMOIN preview() — distinct du precedent : mutation-teste, un preview() muet
+     *  a `['count' => 0, 'sample' => []]` passait les 3 autres tests du fichier. */
+    public function test_temoin_preview_regles_normales_rend_un_resultat_non_vide(): void
+    {
+        User::factory()->client()->count(3)->create();
+
+        $preview = app(SegmentEngine::class)->preview(['field' => 'role', 'op' => 'eq', 'value' => 'client']);
+
+        $this->assertNotSame(0, $preview['count']);
+        $this->assertNotEmpty($preview['sample']);
     }
 }
