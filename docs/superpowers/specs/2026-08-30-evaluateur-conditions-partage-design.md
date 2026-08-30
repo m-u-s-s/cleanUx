@@ -84,7 +84,7 @@ Quatre formes, jamais mélangées.
 
 | Forme | Sert à | Usage marketing |
 |---|---|---|
-| `column('users.locale')` | le cas courant | 5 champs sur 9 |
+| `column('users.locale')` | le cas courant | 3 champs sur 7 |
 | `column('users.email', transformeValeur: …)` | une valeur à préparer avant l'opérateur | `email_domain`, reprend `wrapForDomain` |
 | `custom(fn ($q, $op, $v) => …)` | une sous-requête | `bookings_count`, `last_booking_at`, `total_spent_cents` |
 | `unavailable()` | ce champ n'est pas servable ici | rend `1=0`, comme `Schema::hasTable('bookings')` faux |
