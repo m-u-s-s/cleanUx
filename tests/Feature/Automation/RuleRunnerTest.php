@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Automation;
 
+use App\Models\AlerteMetier;
 use App\Models\AutomationAction;
 use App\Models\AutomationRule;
 use App\Models\Booking;
@@ -224,5 +225,85 @@ class RuleRunnerTest extends TestCase
         $this->assertNotNull($ligne);
         $this->assertTrue(mb_check_encoding($ligne->message, 'UTF-8'));
         $this->assertSame(250, mb_strlen($ligne->message));
+    }
+
+    private function regleAlerte(array $actions): AutomationRule
+    {
+        return AutomationRule::create([
+            'nom' => 'Regle sur les alertes',
+            'entite' => 'alerte',
+            'declencheur' => 'cadence',
+            'cadence' => 'quart_heure',
+            'conditions' => ['field' => 'niveau', 'op' => 'eq', 'value' => 'critical'],
+            'actions' => $actions,
+            'etat' => AutomationRule::ETAT_ARMEE,
+        ]);
+    }
+
+    /** DEFAUT — `entitesSupportees()` ne protegeait personne : RuleRunner ne la consultait jamais. */
+    public function test_une_action_qui_ne_supporte_pas_l_entite_echoue_proprement(): void
+    {
+        AlerteMetier::create(['cle' => 'x', 'niveau' => 'critical', 'message' => 'm', 'levee_le' => now()]);
+
+        $action = new class implements Action
+        {
+            public function cle(): string
+            {
+                return 'action.seulement.booking';
+            }
+
+            public function libelle(): string
+            {
+                return 'Réservée aux réservations';
+            }
+
+            public function entitesSupportees(): array
+            {
+                return ['booking'];
+            }
+
+            public function champs(): array
+            {
+                return [];
+            }
+
+            public function toucheAuDomaine(): bool
+            {
+                return false;
+            }
+
+            public function executer(Model $entite, array $parametres): ActionResult
+            {
+                return ActionResult::reussie();
+            }
+        };
+        app(ActionRegistre::class)->enregistrer($action);
+
+        // Observee avec 'journaliser' (compatible avec toute entite), puis remplacee : une
+        // action qui echoue toujours empecherait l'armement par le chemin reel.
+        $regle = $this->armer($this->regleAlerte([['cle' => 'journaliser', 'parametres' => ['message' => 'obs']]]));
+        $regle->forceFill(['actions' => [['cle' => 'action.seulement.booking', 'parametres' => []]]])->save();
+
+        app(RuleRunner::class)->executer($regle->fresh());
+
+        $ligne = AutomationAction::where('mode', 'armee')->where('resultat', AutomationAction::RESULTAT_ECHOUEE)->first();
+        $this->assertNotNull($ligne);
+        $this->assertStringContainsString('ne supporte pas', (string) $ligne->message);
+    }
+
+    /** TEMOIN — 'journaliser' sur 'alerte' (l'entite tout juste ajoutee a son support) s'execute
+     *  normalement, au lieu d'echouer comme dans le test precedent. */
+    public function test_temoin_une_action_qui_supporte_l_entite_s_execute(): void
+    {
+        AlerteMetier::create(['cle' => 'x', 'niveau' => 'critical', 'message' => 'm', 'levee_le' => now()]);
+
+        $regle = $this->armer($this->regleAlerte([['cle' => 'journaliser', 'parametres' => ['message' => 'vue']]]));
+        $passage = app(RuleRunner::class)->executer($regle->fresh());
+
+        $this->assertSame(
+            1,
+            AutomationAction::where('mode', 'armee')->where('resultat', AutomationAction::RESULTAT_EXECUTEE)->count()
+        );
+        $this->assertSame(1, $passage->actions_posees);
     }
 }

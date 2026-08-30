@@ -22,7 +22,8 @@ class Journaliser implements Action
 
     public function entitesSupportees(): array
     {
-        return ['booking'];
+        // Generique : ecrire au journal ne touche a aucun champ propre a une entite.
+        return ['booking', 'alerte', 'mission'];
     }
 
     public function champs(): array

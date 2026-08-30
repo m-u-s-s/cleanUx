@@ -24,7 +24,8 @@ class NotifierLesAdmins implements Action
 
     public function entitesSupportees(): array
     {
-        return ['booking'];
+        // Generique : la notification ne lit que getMorphClass()/getKey(), rien de propre a une entite.
+        return ['booking', 'alerte', 'mission'];
     }
 
     public function champs(): array

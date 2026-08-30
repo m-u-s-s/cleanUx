@@ -17,4 +17,19 @@ trait ArmeSesRegles
 
         return $regle->fresh();
     }
+
+    /**
+     * Variante evenementielle : observe restreinte aux identifiants (comme le fait le
+     * drain), pas un passage a vide — le seul chemin reel pour une regle sans condition.
+     *
+     * @param  list<int>  $identifiants
+     */
+    private function armerParDrain(AutomationRule $regle, array $identifiants): AutomationRule
+    {
+        app(EtatDeRegle::class)->observer($regle);
+        app(RuleRunner::class)->executer($regle->fresh(), $identifiants);
+        app(EtatDeRegle::class)->armer($regle->fresh());
+
+        return $regle->fresh();
+    }
 }

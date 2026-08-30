@@ -154,6 +154,16 @@ class RuleRunner
             return LigneDeJournal::RESULTAT_ECHOUEE;
         }
 
+        // Le contrat declare les entites supportees ; jusqu'ici rien ne le faisait respecter.
+        if (! in_array($regle->entite, $action->entitesSupportees(), true)) {
+            LigneDeJournal::create($ligne + [
+                'resultat' => LigneDeJournal::RESULTAT_ECHOUEE,
+                'message' => "L'action « {$cle} » ne supporte pas l'entité « {$regle->entite} ».",
+            ]);
+
+            return LigneDeJournal::RESULTAT_ECHOUEE;
+        }
+
         // EN OBSERVATION, ON N'APPELLE PAS L'ACTION. On ecrit ce qu'on AURAIT fait.
         if ($observation) {
             LigneDeJournal::create($ligne + ['resultat' => LigneDeJournal::RESULTAT_SIMULEE]);

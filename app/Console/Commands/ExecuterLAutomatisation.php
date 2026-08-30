@@ -64,6 +64,7 @@ class ExecuterLAutomatisation extends Command
             $regles = AutomationRule::query()
                 ->whereIn('etat', self::ETATS_ACTIFS)
                 ->where('declencheur', $evenement)
+                ->where('entite', $groupe['entite'])
                 ->get();
 
             foreach ($regles as $regle) {
