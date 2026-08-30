@@ -88,4 +88,18 @@ class CommandeTest extends TestCase
 
         $this->assertSame(0, AutomationAction::count());
     }
+
+    /** L'INTERRUPTEUR EST FERME A LA LIVRAISON. Un moteur qui s'allume seul au deploiement
+     *  n'est pas un interrupteur. */
+    public function test_le_drapeau_est_livre_ferme(): void
+    {
+        $livre = require config_path('features.php');
+
+        $this->assertArrayHasKey(
+            'automation',
+            $livre,
+            'Sans la cle, isEnabled() rend false sans que personne comprenne pourquoi.'
+        );
+        $this->assertFalse($livre['automation'], 'Le moteur serait arme des le premier deploiement.');
+    }
 }

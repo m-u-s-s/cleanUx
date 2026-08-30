@@ -11,7 +11,7 @@ class ExecuterLAutomatisation extends Command
 {
     protected $signature = 'automation:executer';
 
-    protected $description = "Execute les regles d'automatisation dont le tour est venu.";
+    protected $description = "Exécute les règles d'automatisation dont le tour est venu.";
 
     private const ETATS_ACTIFS = [
         AutomationRule::ETAT_OBSERVATION,
@@ -28,7 +28,7 @@ class ExecuterLAutomatisation extends Command
     public function handle(RuleRunner $runner, FeatureFlagService $drapeaux): int
     {
         if (! $drapeaux->isEnabled('automation')) {
-            $this->info("Moteur d'automatisation coupe (drapeau « automation »).");
+            $this->info("Moteur d'automatisation coupé (drapeau « automation »).");
 
             return self::SUCCESS;
         }
@@ -43,7 +43,7 @@ class ExecuterLAutomatisation extends Command
             $passage = $runner->executer($regle);
 
             $this->line(sprintf(
-                '%s : %d entite(s), %d action(s), %s',
+                '%s : %d entité(s), %d action(s), %s',
                 $regle->nom,
                 $passage->entites_vues,
                 $passage->actions_posees,
