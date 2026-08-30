@@ -54,8 +54,8 @@ return [
     ],
 
     'segment_fields' => [
-        'role', 'locale', 'country_code', 'email_domain',
-        'created_at', 'last_login_at',
+        'role', 'locale', 'email_domain',
+        'created_at',
         'bookings_count', 'last_booking_at',
         'total_spent_cents',
     ],
