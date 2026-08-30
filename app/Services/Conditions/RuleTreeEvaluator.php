@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 /** Le parcours d'un arbre de conditions et sa traduction en Eloquent. Ne connait aucune entite. */
 class RuleTreeEvaluator
 {
+    /** `!` et non `\` : mesure du 2026-08-30, l'antislash casse sur l'un ou l'autre moteur. */
+    public const CARACTERE_ECHAPPEMENT = '!';
+
     /**
      * @param  Builder<Model>  $racine
      * @param  array<string, mixed>  $noeud
@@ -114,7 +117,30 @@ class RuleTreeEvaluator
             'newer_than_days' => $q->where($colonne, '>=', now()->subDays((int) $valeur)),
             'is_null' => $q->whereNull($colonne),
             'is_not_null' => $q->whereNotNull($colonne),
+            'contains' => $this->appliquerLike($q, $colonne, '%'.$this->echapper((string) $valeur).'%'),
+            'starts_with' => $this->appliquerLike($q, $colonne, $this->echapper((string) $valeur).'%'),
+            'ends_with' => $this->appliquerLike($q, $colonne, '%'.$this->echapper((string) $valeur)),
             default => $q->whereRaw('1=0'),
         };
+    }
+
+    /** Le caractere d'echappement D'ABORD, sinon on re-echappe ce qu'on vient d'ecrire. */
+    protected function echapper(string $valeur): string
+    {
+        $e = self::CARACTERE_ECHAPPEMENT;
+
+        return str_replace([$e, '%', '_'], [$e.$e, $e.'%', $e.'_'], $valeur);
+    }
+
+    /** Clause explicite : SQLite n'a AUCUN caractere d'echappement par defaut.
+     *
+     * @param  Builder<Model>  $q
+     * @return Builder<Model>
+     */
+    protected function appliquerLike(Builder $q, string $colonne, string $motif): Builder
+    {
+        $nom = $q->getQuery()->getGrammar()->wrap($colonne);
+
+        return $q->whereRaw($nom." LIKE ? ESCAPE '".self::CARACTERE_ECHAPPEMENT."'", [$motif]);
     }
 }
