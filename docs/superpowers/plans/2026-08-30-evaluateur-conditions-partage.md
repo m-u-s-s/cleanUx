@@ -1196,6 +1196,12 @@ Remplacer `buildQuery`, `applyNode`, `applyLeaf`, `applyOperator`, `wrapForDomai
     /** @return Builder<User>|null */
     protected function buildQuery(array $rules): ?Builder
     {
+        // DES REGLES VIDES NE SELECTIONNENT PERSONNE, et surtout pas tout le monde : un
+        // segment vide qui prendrait toute la base lui enverrait la prochaine campagne.
+        if (empty($rules)) {
+            return null;
+        }
+
         $entite = app(UserSegmentDescriptor::class);
         $requete = $entite->baseQuery();
 
@@ -1204,6 +1210,12 @@ Remplacer `buildQuery`, `applyNode`, `applyLeaf`, `applyOperator`, `wrapForDomai
         return $requete;
     }
 ```
+
+**Cette garde est la correction d'un défaut du plan**, relevée à l'exécution. Sans elle,
+`RuleTreeEvaluator::apply([])` traite l'arbre vide comme « aucune contrainte » — ce qui est le bon
+contrat pour un évaluateur générique, et le mauvais pour un segment. Le test existant
+`SegmentEngineCoverageBatch7Test::test_preview_empty_rules_returns_zero` fige le contrat historique
+et a détecté l'écart. C'est le rôle de l'adaptateur de trancher, pas celui de l'évaluateur.
 
 Retirer les `use` devenus inutiles (`Config`, `Schema`, et `DB` s'il n'est plus employé
 ailleurs dans le fichier) et ajouter :
