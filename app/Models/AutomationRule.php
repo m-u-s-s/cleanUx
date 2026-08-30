@@ -19,8 +19,9 @@ class AutomationRule extends Model
     public const ETAT_DESACTIVEE = 'desactivee';
 
     protected $attributes = [
-        'etat' => 'brouillon',
+        'declencheur' => 'cadence',
         'politique_reprise' => 'une_fois',
+        'etat' => 'brouillon',
         'quota_par_passage' => 50,
         'plafond_journalier' => 500,
         'plafonds_consecutifs' => 0,

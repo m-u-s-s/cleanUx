@@ -34,12 +34,31 @@ class SocleTest extends TestCase
         $this->assertSame(0, $regle->plafonds_consecutifs);
     }
 
-    public function test_les_defauts_journaliers_et_echecs_s_appliquent_sans_fresh(): void
+    public function test_tous_les_sept_defauts_de_la_migration_s_appliquent_sans_fresh(): void
     {
-        $regle = $this->regle();
+        // Défauts déclarés dans la migration 2026_09_29_090000
+        $defautsAtendus = [
+            'declencheur' => 'cadence',
+            'politique_reprise' => 'une_fois',
+            'etat' => 'brouillon',
+            'quota_par_passage' => 50,
+            'plafond_journalier' => 500,
+            'plafonds_consecutifs' => 0,
+            'echecs_consecutifs' => 0,
+        ];
 
-        $this->assertSame(500, $regle->plafond_journalier);
-        $this->assertSame(0, $regle->echecs_consecutifs);
+        // Crée une règle minimale, sans surcharger les défauts
+        $regle = AutomationRule::create([
+            'nom' => 'Test invariant défauts',
+            'entite' => 'booking',
+            'conditions' => [],
+            'actions' => [],
+        ]);
+
+        // Vérifie que chaque défaut s'applique sur le modèle fraîchement créé
+        foreach ($defautsAtendus as $colonne => $valeurAttendue) {
+            $this->assertSame($valeurAttendue, $regle->$colonne, "La colonne {$colonne} doit avoir {$valeurAttendue}");
+        }
     }
 
     public function test_les_colonnes_json_se_relisent_en_tableau(): void
