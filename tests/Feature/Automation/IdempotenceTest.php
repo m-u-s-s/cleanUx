@@ -11,6 +11,7 @@ use Tests\TestCase;
 
 class IdempotenceTest extends TestCase
 {
+    use ArmeSesRegles;
     use RefreshDatabase;
 
     private function regle(string $politique): AutomationRule
@@ -30,31 +31,33 @@ class IdempotenceTest extends TestCase
     public function test_une_fois_n_agit_qu_une_seule_fois_par_entite(): void
     {
         Booking::factory()->create(['status' => 'en_attente']);
-        $regle = $this->regle('une_fois');
+        $regle = $this->armer($this->regle('une_fois'));
 
         app(RuleRunner::class)->executer($regle);
         $second = app(RuleRunner::class)->executer($regle);
 
         $this->assertSame(0, $second->entites_vues);
-        $this->assertSame(1, AutomationAction::count());
+        // Scope au mode arme : l'armement a deja pose 1 ligne `simulee` en observation.
+        $this->assertSame(1, AutomationAction::where('mode', 'armee')->count());
     }
 
     public function test_chaque_passage_agit_a_chaque_fois(): void
     {
         Booking::factory()->create(['status' => 'en_attente']);
-        $regle = $this->regle('chaque_passage');
+        $regle = $this->armer($this->regle('chaque_passage'));
 
         app(RuleRunner::class)->executer($regle);
         $second = app(RuleRunner::class)->executer($regle);
 
         $this->assertSame(1, $second->entites_vues);
-        $this->assertSame(2, AutomationAction::count());
+        // Scope au mode arme : l'armement a deja pose 1 ligne `simulee` en observation.
+        $this->assertSame(2, AutomationAction::where('mode', 'armee')->count());
     }
 
     public function test_une_fois_par_jour_reagit_le_lendemain(): void
     {
         Booking::factory()->create(['status' => 'en_attente']);
-        $regle = $this->regle('une_fois_par_jour');
+        $regle = $this->armer($this->regle('une_fois_par_jour'));
 
         app(RuleRunner::class)->executer($regle);
 
@@ -74,7 +77,7 @@ class IdempotenceTest extends TestCase
     public function test_temoin_une_entite_neuve_est_vue_au_passage_suivant(): void
     {
         Booking::factory()->create(['status' => 'en_attente']);
-        $regle = $this->regle('une_fois');
+        $regle = $this->armer($this->regle('une_fois'));
 
         app(RuleRunner::class)->executer($regle);
 

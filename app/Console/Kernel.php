@@ -148,7 +148,8 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->appendOutputTo(storage_path('logs/production-health.log'));
 
-        $schedule->command('automation:executer')->everyMinute()->withoutOverlapping();
+        // Verrou borne a 10 min : un processus tue sans le relacher ne doit pas taire le moteur a vie.
+        $schedule->command('automation:executer')->everyMinute()->withoutOverlapping(10);
     }
 
     protected function commands(): void

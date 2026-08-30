@@ -83,7 +83,7 @@ class MachineAEtatsTest extends TestCase
 
         AutomationAction::create([
             'automation_rule_id' => $regleA->id,
-            'entite_type' => 'Booking',
+            'entite_type' => 'booking',
             'entite_id' => 1,
             'mode' => 'armee',
             'action_cle' => 'journaliser',
@@ -104,7 +104,7 @@ class MachineAEtatsTest extends TestCase
 
         AutomationAction::create([
             'automation_rule_id' => $regleA->id,
-            'entite_type' => 'Booking',
+            'entite_type' => 'booking',
             'entite_id' => 1,
             'mode' => 'armee',
             'action_cle' => 'journaliser',
@@ -114,7 +114,7 @@ class MachineAEtatsTest extends TestCase
 
         AutomationAction::create([
             'automation_rule_id' => $regleB->id,
-            'entite_type' => 'Booking',
+            'entite_type' => 'booking',
             'entite_id' => 2,
             'mode' => 'observation',
             'action_cle' => 'journaliser',
@@ -155,7 +155,7 @@ class MachineAEtatsTest extends TestCase
 
         AutomationAction::create([
             'automation_rule_id' => $regleB->id,
-            'entite_type' => 'Booking',
+            'entite_type' => 'booking',
             'entite_id' => 2,
             'mode' => 'observation',
             'action_cle' => 'journaliser',

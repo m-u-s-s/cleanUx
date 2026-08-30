@@ -19,6 +19,7 @@ class RuleRunner
         protected EntiteRegistre $entites,
         protected ActionRegistre $actions,
         protected RuleTreeEvaluator $evaluateur,
+        protected EtatDeRegle $etats,
     ) {}
 
     /** @param list<int>|null $identifiants restreint le balayage, pour le drain d'evenements */
@@ -32,16 +33,25 @@ class RuleRunner
             'demarre_le' => now(),
         ]);
 
+        // UNE REGLE N'AGIT JAMAIS SANS AVOIR OBSERVE. C'est la contrainte fondatrice, et
+        // c'est ici qu'elle produit ses effets : tous les chemins passent par ce point.
+        if (! $observation && ! $this->aDejaObserve($regle)) {
+            return $this->echecSansBalayage($regle, $passage, $observation, "Règle armée sans journal d'observation.");
+        }
+
         $entite = $this->entites->descripteur($regle->entite);
 
         if ($entite === null) {
-            $passage->forceFill([
-                'statut' => 'echec',
-                'message' => "Entité inconnue : {$regle->entite}",
-                'termine_le' => now(),
-            ])->save();
+            return $this->echecSansBalayage($regle, $passage, $observation, "Entité inconnue : {$regle->entite}");
+        }
 
-            return $passage;
+        if (($regle->conditions ?? []) === []) {
+            return $this->echecSansBalayage(
+                $regle,
+                $passage,
+                $observation,
+                'Aucune condition : la règle balaierait toute la table.'
+            );
         }
 
         $requete = $entite->baseQuery();
@@ -79,8 +89,9 @@ class RuleRunner
             }
         }
 
-        // Entierement en echec : au moins une ligne posee, et aucune n'a reussi.
-        $echecTotal = ! $observation && $posees > 0 && $echouees === $posees;
+        // Entierement en echec : au moins une ligne posee, et aucune n'a reussi. Vrai dans
+        // les deux modes — l'observation doit montrer ses echecs, pas les maquiller en 'ok'.
+        $echecTotal = $posees > 0 && $echouees === $posees;
 
         $precedent = AutomationRun::query()
             ->where('automation_rule_id', $regle->id)
@@ -151,7 +162,7 @@ class RuleRunner
         try {
             $resultat = $action->executer($entite, $parametres);
         } catch (Throwable $e) {
-            $resultat = ActionResult::echouee(substr($e->getMessage(), 0, 250));
+            $resultat = ActionResult::echouee(mb_substr($e->getMessage(), 0, 250));
         }
 
         $resultatCle = $resultat->reussie
@@ -204,6 +215,38 @@ class RuleRunner
             ->count();
     }
 
+    /** Le meme critere que EtatDeRegle::armer() — une seule notion, jamais deux a recopier. */
+    protected function aDejaObserve(AutomationRule $regle): bool
+    {
+        return LigneDeJournal::query()
+            ->where('automation_rule_id', $regle->id)
+            ->where('mode', 'observation')
+            ->where('resultat', LigneDeJournal::RESULTAT_SIMULEE)
+            ->exists();
+    }
+
+    /**
+     * Un retour anticipe qui n'a rien balaye : pas de population a mesurer, mais un
+     * passage qui compte quand meme pour la cadence et, en mode arme, pour les echecs.
+     */
+    protected function echecSansBalayage(
+        AutomationRule $regle,
+        AutomationRun $passage,
+        bool $observation,
+        string $message,
+    ): AutomationRun {
+        $passage->forceFill([
+            'statut' => 'echec',
+            'message' => $message,
+            'entites_eligibles' => null,
+            'termine_le' => now(),
+        ])->save();
+
+        $this->comptabiliserLePlafond($regle, $observation, emballement: false, echecTotal: true);
+
+        return $passage;
+    }
+
     /**
      * Le quota BRIDE, l'emballement et les echecs suspendent — mais seulement en mode arme :
      * observer une grosse population, ou une action qui n'existe pas encore, ne doit rien punir.
@@ -227,7 +270,14 @@ class RuleRunner
             'plafonds_consecutifs' => $plafonds,
             'echecs_consecutifs' => $echecs,
             'dernier_passage_le' => now(),
-            'etat' => ($plafonds >= 3 || $echecs >= 3) ? AutomationRule::ETAT_SUSPENDUE : $regle->etat,
         ])->save();
+
+        // La decision de suspendre passe PAR EtatDeRegle : elle journalise, elle ne se
+        // contente plus d'ecrire `etat` en silence.
+        if ($plafonds >= 3) {
+            $this->etats->suspendre($regle->fresh(), 'Trois plafonds consécutifs : la population visée ne diminue pas.');
+        } elseif ($echecs >= 3) {
+            $this->etats->suspendre($regle->fresh(), 'Trois passages consécutifs entièrement en échec.');
+        }
     }
 }

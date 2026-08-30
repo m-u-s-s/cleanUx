@@ -45,7 +45,13 @@ class EtatDeRegle
     /** @param array<string, mixed> $meta */
     protected function poser(AutomationRule $regle, string $etat, string $suffixe, array $meta = []): void
     {
-        $regle->forceFill(['etat' => $etat, 'plafonds_consecutifs' => 0])->save();
+        // Meme remise a zero pour les deux compteurs : sans elle, une regle rearmee
+        // se re-suspend au premier passage, sur un compteur jamais purge.
+        $regle->forceFill([
+            'etat' => $etat,
+            'plafonds_consecutifs' => 0,
+            'echecs_consecutifs' => 0,
+        ])->save();
 
         ActivityLogger::log('automation.regle_'.$suffixe, $regle, $meta);
     }

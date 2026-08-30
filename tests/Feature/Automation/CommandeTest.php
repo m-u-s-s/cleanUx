@@ -10,6 +10,7 @@ use Tests\TestCase;
 
 class CommandeTest extends TestCase
 {
+    use ArmeSesRegles;
     use RefreshDatabase;
 
     private function regle(string $etat, string $cadence = 'chaque_minute'): AutomationRule
@@ -43,11 +44,14 @@ class CommandeTest extends TestCase
         config()->set('features.automation', true);
 
         Booking::factory()->create(['status' => 'en_attente']);
-        $this->regle(AutomationRule::ETAT_ARMEE);
+        // Armee par le chemin reel : l'observation a deja pose son `dernier_passage_le`,
+        // on le releve pour isoler ce test de la cadence — qui a son propre test plus bas.
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE));
+        $regle->forceFill(['dernier_passage_le' => null])->save();
 
         $this->artisan('automation:executer')->assertExitCode(0);
 
-        $this->assertSame(1, AutomationAction::count());
+        $this->assertSame(1, AutomationAction::where('mode', 'armee')->count());
     }
 
     public function test_une_regle_en_brouillon_ou_desactivee_ne_tourne_pas(): void
