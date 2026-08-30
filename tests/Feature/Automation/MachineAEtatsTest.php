@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Automation;
 
+use App\Models\AutomationAction;
 use App\Models\AutomationRule;
 use App\Models\Booking;
 use App\Services\Automation\ArmementRefuse;
@@ -76,10 +77,65 @@ class MachineAEtatsTest extends TestCase
         $this->assertSame(AutomationRule::ETAT_DESACTIVEE, $regle->fresh()->etat);
     }
 
+    public function test_les_deux_filtres_de_l_armement_sont_discriminants(): void
+    {
+        $regleA = $this->regle();
+        $regleB = $this->regle();
+        $regleB->update(['nom' => 'Une autre règle']);
+
+        // Regle A : des lignes en mode 'armee' seulement.
+        AutomationAction::create([
+            'automation_rule_id' => $regleA->id,
+            'entite_type' => 'Booking',
+            'entite_id' => 1,
+            'mode' => 'armee',
+            'action_cle' => 'journaliser',
+            'resultat' => 'executee',
+            'pose_le' => now(),
+        ]);
+
+        // Regle B : des lignes en mode 'observation'.
+        AutomationAction::create([
+            'automation_rule_id' => $regleB->id,
+            'entite_type' => 'Booking',
+            'entite_id' => 2,
+            'mode' => 'observation',
+            'action_cle' => 'journaliser',
+            'resultat' => 'simulee',
+            'pose_le' => now(),
+        ]);
+
+        // A n'a que du 'armee' : le filtre mode='observation' la refuse.
+        $this->expectException(ArmementRefuse::class);
+        app(EtatDeRegle::class)->armer($regleA);
+
+        // B a du 'observation', mais A ne doit pas en bénéficier.
+        // On réinitialise l'exception et retentons A.
+        $this->expectException(ArmementRefuse::class);
+        app(EtatDeRegle::class)->armer($regleA->fresh());
+
+        // B, elle, s'arme : c'est le témoin positif.
+        app(EtatDeRegle::class)->armer($regleB);
+        $this->assertSame(AutomationRule::ETAT_ARMEE, $regleB->fresh()->etat);
+    }
+
     public function test_chaque_transition_est_journalisee(): void
     {
-        app(EtatDeRegle::class)->observer($this->regle());
+        $regle = $this->regle();
 
+        app(EtatDeRegle::class)->observer($regle);
         $this->assertDatabaseHas('activity_logs', ['action' => 'automation.regle_observation']);
+
+        Booking::factory()->create(['status' => 'en_attente']);
+        app(RuleRunner::class)->executer($regle->fresh());
+
+        app(EtatDeRegle::class)->armer($regle->fresh());
+        $this->assertDatabaseHas('activity_logs', ['action' => 'automation.regle_armee']);
+
+        app(EtatDeRegle::class)->suspendre($regle->fresh(), 'test');
+        $this->assertDatabaseHas('activity_logs', ['action' => 'automation.regle_suspendue']);
+
+        app(EtatDeRegle::class)->desactiver($regle->fresh());
+        $this->assertDatabaseHas('activity_logs', ['action' => 'automation.regle_desactivee']);
     }
 }
