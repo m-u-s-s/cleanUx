@@ -40,12 +40,17 @@ class QuotaTest extends TestCase
         $this->assertSame(AutomationRule::ETAT_ARMEE, $regle->fresh()->etat);
     }
 
+    /**
+     * L'emballement se lit contre le passage precedent : le 1er passage n'a pas de precedent
+     * et ne peut donc jamais compter. Il faut 4 passages pour suspendre, pas 3.
+     */
     public function test_trois_plafonds_consecutifs_suspendent_la_regle(): void
     {
         Booking::factory()->count(5)->create(['status' => 'en_attente']);
         $regle = $this->regle(2);
 
         app(RuleRunner::class)->executer($regle);
+        app(RuleRunner::class)->executer($regle->fresh());
         app(RuleRunner::class)->executer($regle->fresh());
         app(RuleRunner::class)->executer($regle->fresh());
 
@@ -55,6 +60,7 @@ class QuotaTest extends TestCase
     /**
      * TEMOIN — un passage SOUS le plafond remet le compteur a zero. Sans lui, une regle
      * saine finirait suspendue au bout de trois passages charges espaces dans le temps.
+     * (3 passages pour atteindre 2 : le 1er ne compte jamais, voir le test precedent.)
      */
     public function test_temoin_un_passage_sous_le_plafond_remet_le_compteur_a_zero(): void
     {
@@ -63,6 +69,7 @@ class QuotaTest extends TestCase
 
         app(RuleRunner::class)->executer($regle);
         app(RuleRunner::class)->executer($regle->fresh());
+        app(RuleRunner::class)->executer($regle->fresh());
         $this->assertSame(2, $regle->fresh()->plafonds_consecutifs);
 
         Booking::query()->update(['status' => 'confirme']);   // plus rien a traiter
@@ -70,6 +77,66 @@ class QuotaTest extends TestCase
         app(RuleRunner::class)->executer($regle->fresh());
 
         $this->assertSame(0, $regle->fresh()->plafonds_consecutifs);
+        $this->assertSame(AutomationRule::ETAT_ARMEE, $regle->fresh()->etat);
+    }
+
+    /** TEMOIN — vider un arriere n'est pas un emballement : la population diminue. */
+    public function test_une_regle_qui_vide_un_arriere_n_est_pas_suspendue(): void
+    {
+        Booking::factory()->count(7)->create(['status' => 'en_attente']);
+        $regle = $this->regle(2);
+        $regle->forceFill(['politique_reprise' => 'une_fois'])->save();
+
+        foreach (range(1, 4) as $ignore) {
+            app(RuleRunner::class)->executer($regle->fresh());
+        }
+
+        $this->assertSame(AutomationRule::ETAT_ARMEE, $regle->fresh()->etat);
+        $this->assertSame(7, AutomationAction::where('automation_rule_id', $regle->id)->count());
+    }
+
+    /** DEFAUT A5 — observer une grosse population ne doit jamais suspendre : rien n'a ete fait. */
+    public function test_une_regle_en_observation_n_est_jamais_suspendue_par_le_plafond(): void
+    {
+        Booking::factory()->count(10)->create(['status' => 'en_attente']);
+        $regle = $this->regle(2);
+        $regle->forceFill(['etat' => AutomationRule::ETAT_OBSERVATION])->save();
+
+        foreach (range(1, 5) as $ignore) {
+            app(RuleRunner::class)->executer($regle->fresh());
+        }
+
+        $this->assertSame(AutomationRule::ETAT_OBSERVATION, $regle->fresh()->etat);
+    }
+
+    /** DEFAUT A6 — trois passages entierement en echec suspendent la regle. */
+    public function test_trois_passages_entierement_en_echec_suspendent_la_regle(): void
+    {
+        Booking::factory()->create(['status' => 'en_attente']);
+        $regle = $this->regleAvecActions([['cle' => 'action_qui_n_existe_pas', 'parametres' => []]], 50, 500);
+
+        app(RuleRunner::class)->executer($regle);
+        app(RuleRunner::class)->executer($regle->fresh());
+        $passage = app(RuleRunner::class)->executer($regle->fresh());
+
+        $this->assertSame('echec', $passage->statut);
+        $this->assertSame(AutomationRule::ETAT_SUSPENDUE, $regle->fresh()->etat);
+    }
+
+    /** TEMOIN — un seul passage qui reussit remet le compteur d'echecs a zero. */
+    public function test_temoin_un_passage_reussi_remet_le_compteur_d_echecs_a_zero(): void
+    {
+        Booking::factory()->create(['status' => 'en_attente']);
+        $regle = $this->regleAvecActions([['cle' => 'action_qui_n_existe_pas', 'parametres' => []]], 50, 500);
+
+        app(RuleRunner::class)->executer($regle);
+        app(RuleRunner::class)->executer($regle->fresh());
+        $this->assertSame(2, $regle->fresh()->echecs_consecutifs);
+
+        $regle->forceFill(['actions' => [['cle' => 'journaliser', 'parametres' => ['message' => 'ok']]]])->save();
+        app(RuleRunner::class)->executer($regle->fresh());
+
+        $this->assertSame(0, $regle->fresh()->echecs_consecutifs);
         $this->assertSame(AutomationRule::ETAT_ARMEE, $regle->fresh()->etat);
     }
 

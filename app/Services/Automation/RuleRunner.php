@@ -51,48 +51,71 @@ class RuleRunner
             $requete->whereKey($identifiants);
         }
 
-        $this->exclureLeDejaAgi($requete, $regle);
+        $this->exclureLeDejaAgi($requete, $regle, $observation);
 
-        // LE +1 EST LE SIGNAL : sans lui, « exactement le quota » et « mille » sont
-        // indiscernables, et l'emballement ne se voit jamais.
         // Le plafond borne des LIGNES ; le quota borne des ENTITES. Une regle a N actions
         // depense N lignes par entite : on convertit avant de comparer.
         $parEntite = max(1, count($regle->actions ?? []));
         $restantAujourdhui = max(0, $regle->plafond_journalier - $this->poseesAujourdhui($regle, $observation));
         $quota = min($regle->quota_par_passage, intdiv($restantAujourdhui, $parEntite));
 
-        $lignes = $requete->limit($quota + 1)->get();
-        $bride = $lignes->count() > $quota;
-        $lignes = $lignes->take($quota);
+        // La population eligible, mesuree avant le quota : c'est elle qui dit s'il y a
+        // emballement. Sans elle, « exactement le quota » et « mille » sont indiscernables.
+        $eligibles = (clone $requete)->count();
+
+        $lignes = $requete->limit($quota)->get();
+        $bride = $eligibles > $quota;
         $posees = 0;
+        $echouees = 0;
 
         foreach ($lignes as $ligne) {
             foreach (($regle->actions ?? []) as $demande) {
-                $this->poser($regle, $passage, $ligne, (array) $demande, $observation);
+                $resultat = $this->poser($regle, $passage, $ligne, (array) $demande, $observation);
                 $posees++;
+
+                if ($resultat === LigneDeJournal::RESULTAT_ECHOUEE) {
+                    $echouees++;
+                }
             }
         }
 
+        // Entierement en echec : au moins une ligne posee, et aucune n'a reussi.
+        $echecTotal = ! $observation && $posees > 0 && $echouees === $posees;
+
+        $precedent = AutomationRun::query()
+            ->where('automation_rule_id', $regle->id)
+            ->where('mode', $passage->mode)
+            ->where('id', '<', $passage->id)
+            ->orderByDesc('id')
+            ->value('entites_eligibles');
+
+        // EMBALLEMENT : bride, et la population n'a pas diminue depuis le passage precedent.
+        $emballement = $bride && $precedent !== null && $eligibles >= $precedent;
+
         $passage->forceFill([
             'entites_vues' => $lignes->count(),
+            'entites_eligibles' => $eligibles,
             'actions_posees' => $posees,
-            'statut' => $bride ? 'plafond_atteint' : 'ok',
+            'statut' => $echecTotal ? 'echec' : ($bride ? 'plafond_atteint' : 'ok'),
             'termine_le' => now(),
         ])->save();
 
-        $this->comptabiliserLePlafond($regle, $bride);
+        $this->comptabiliserLePlafond($regle, $observation, $emballement, $echecTotal);
 
         return $passage;
     }
 
-    /** @param array<string, mixed> $demande */
+    /**
+     * @param  array<string, mixed>  $demande
+     * @return string le resultat ecrit — pour que l'appelant compte les echecs sans requete de plus
+     */
     protected function poser(
         AutomationRule $regle,
         AutomationRun $passage,
         Model $entite,
         array $demande,
         bool $observation,
-    ): void {
+    ): string {
         $cle = (string) ($demande['cle'] ?? '');
         $parametres = (array) ($demande['parametres'] ?? []);
 
@@ -115,14 +138,14 @@ class RuleRunner
                 'message' => "Action inconnue : {$cle}",
             ]);
 
-            return;
+            return LigneDeJournal::RESULTAT_ECHOUEE;
         }
 
         // EN OBSERVATION, ON N'APPELLE PAS L'ACTION. On ecrit ce qu'on AURAIT fait.
         if ($observation) {
             LigneDeJournal::create($ligne + ['resultat' => LigneDeJournal::RESULTAT_SIMULEE]);
 
-            return;
+            return LigneDeJournal::RESULTAT_SIMULEE;
         }
 
         try {
@@ -131,12 +154,16 @@ class RuleRunner
             $resultat = ActionResult::echouee(substr($e->getMessage(), 0, 250));
         }
 
+        $resultatCle = $resultat->reussie
+            ? LigneDeJournal::RESULTAT_EXECUTEE
+            : LigneDeJournal::RESULTAT_ECHOUEE;
+
         LigneDeJournal::create($ligne + [
-            'resultat' => $resultat->reussie
-                ? LigneDeJournal::RESULTAT_EXECUTEE
-                : LigneDeJournal::RESULTAT_ECHOUEE,
+            'resultat' => $resultatCle,
             'message' => $resultat->message,
         ]);
+
+        return $resultatCle;
     }
 
     /**
@@ -144,7 +171,7 @@ class RuleRunner
      *
      * La politique porte TOUJOURS sur l'entite : « une fois » veut dire une fois par entite.
      */
-    protected function exclureLeDejaAgi(Builder $requete, AutomationRule $regle): void
+    protected function exclureLeDejaAgi(Builder $requete, AutomationRule $regle, bool $observation): void
     {
         if ($regle->politique_reprise === 'chaque_passage') {
             return;
@@ -153,9 +180,11 @@ class RuleRunner
         $deja = LigneDeJournal::query()
             ->where('automation_rule_id', $regle->id)
             ->where('entite_type', $regle->entite)
+            ->where('mode', $observation ? 'observation' : 'armee')
             ->whereNotIn('resultat', [
                 LigneDeJournal::RESULTAT_REFUSEE,
                 LigneDeJournal::RESULTAT_EXPIREE,
+                LigneDeJournal::RESULTAT_ECHOUEE,
             ])
             ->when(
                 $regle->politique_reprise === 'une_fois_par_jour',
@@ -175,15 +204,30 @@ class RuleRunner
             ->count();
     }
 
-    /** Le quota BRIDE. C'est l'emballement — trois plafonds d'affilee — qui suspend. */
-    protected function comptabiliserLePlafond(AutomationRule $regle, bool $bride): void
-    {
-        $consecutifs = $bride ? $regle->plafonds_consecutifs + 1 : 0;
+    /**
+     * Le quota BRIDE, l'emballement et les echecs suspendent — mais seulement en mode arme :
+     * observer une grosse population, ou une action qui n'existe pas encore, ne doit rien punir.
+     */
+    protected function comptabiliserLePlafond(
+        AutomationRule $regle,
+        bool $observation,
+        bool $emballement,
+        bool $echecTotal,
+    ): void {
+        if ($observation) {
+            $regle->forceFill(['dernier_passage_le' => now()])->save();
+
+            return;
+        }
+
+        $plafonds = $emballement ? $regle->plafonds_consecutifs + 1 : 0;
+        $echecs = $echecTotal ? $regle->echecs_consecutifs + 1 : 0;
 
         $regle->forceFill([
-            'plafonds_consecutifs' => $consecutifs,
+            'plafonds_consecutifs' => $plafonds,
+            'echecs_consecutifs' => $echecs,
             'dernier_passage_le' => now(),
-            'etat' => $consecutifs >= 3 ? AutomationRule::ETAT_SUSPENDUE : $regle->etat,
+            'etat' => ($plafonds >= 3 || $echecs >= 3) ? AutomationRule::ETAT_SUSPENDUE : $regle->etat,
         ])->save();
     }
 }

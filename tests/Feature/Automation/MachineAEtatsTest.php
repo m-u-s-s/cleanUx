@@ -127,6 +127,28 @@ class MachineAEtatsTest extends TestCase
         app(EtatDeRegle::class)->armer($regleA);
     }
 
+    /** DEFAUT A3 — un journal d'observation entierement en echec ne suffit pas a armer. */
+    public function test_une_observation_entierement_en_echec_ne_suffit_pas_a_armer(): void
+    {
+        Booking::factory()->create(['status' => 'en_attente']);
+
+        $regle = AutomationRule::create([
+            'nom' => 'Action inconnue',
+            'entite' => 'booking',
+            'declencheur' => 'cadence',
+            'cadence' => 'quart_heure',
+            'conditions' => ['field' => 'statut', 'op' => 'eq', 'value' => 'en_attente'],
+            'actions' => [['cle' => 'action_qui_n_existe_pas', 'parametres' => []]],
+        ]);
+
+        app(EtatDeRegle::class)->observer($regle);
+        app(RuleRunner::class)->executer($regle->fresh());
+
+        $this->expectException(ArmementRefuse::class);
+
+        app(EtatDeRegle::class)->armer($regle->fresh());
+    }
+
     public function test_temoin_la_regle_qui_a_observe_s_arme(): void
     {
         $regleB = $this->regle();

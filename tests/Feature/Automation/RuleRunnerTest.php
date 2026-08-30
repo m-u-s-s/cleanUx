@@ -83,6 +83,38 @@ class RuleRunnerTest extends TestCase
         $this->assertSame(1, AutomationAction::where('resultat', 'echouee')->count());
     }
 
+    /** DEFAUT A1 — l'observation obligatoire ne doit pas empoisonner le registre de la regle armee. */
+    public function test_une_regle_armee_apres_observation_agit_sur_les_entites_observees(): void
+    {
+        Booking::factory()->count(3)->create(['status' => 'en_attente']);
+
+        $regle = $this->regle(AutomationRule::ETAT_OBSERVATION);
+        app(RuleRunner::class)->executer($regle);
+
+        $regle->forceFill(['etat' => AutomationRule::ETAT_ARMEE])->save();
+        $passage = app(RuleRunner::class)->executer($regle->fresh());
+
+        $this->assertSame(3, $passage->entites_vues);
+        $this->assertSame(3, AutomationAction::where('resultat', 'executee')->count());
+    }
+
+    /** DEFAUT A2 — un echec transitoire ne condamne pas l'entite a jamais. */
+    public function test_une_entite_en_echec_est_reprise_au_passage_suivant(): void
+    {
+        Notification::fake();
+        Booking::factory()->create(['status' => 'en_attente']);
+
+        // Aucun administrateur : `notifier.admins` echoue au 1er passage.
+        $regle = $this->regle(AutomationRule::ETAT_ARMEE, [
+            'actions' => [['cle' => 'notifier.admins', 'parametres' => ['message' => 'x']]],
+        ]);
+
+        app(RuleRunner::class)->executer($regle);
+        $passage = app(RuleRunner::class)->executer($regle->fresh());
+
+        $this->assertSame(1, $passage->entites_vues);
+    }
+
     public function test_restreindre_a_des_identifiants_limite_le_balayage(): void
     {
         $vise = Booking::factory()->create(['status' => 'en_attente']);

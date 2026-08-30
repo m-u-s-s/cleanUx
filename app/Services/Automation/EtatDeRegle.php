@@ -20,6 +20,7 @@ class EtatDeRegle
         $observees = LigneDeJournal::query()
             ->where('automation_rule_id', $regle->id)
             ->where('mode', 'observation')
+            ->where('resultat', LigneDeJournal::RESULTAT_SIMULEE)
             ->count();
 
         if ($observees === 0) {

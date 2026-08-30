@@ -12,13 +12,14 @@ class AutomationRun extends Model
 
     protected $fillable = [
         'automation_rule_id', 'mode', 'demarre_le', 'termine_le',
-        'entites_vues', 'actions_posees', 'statut', 'message',
+        'entites_vues', 'entites_eligibles', 'actions_posees', 'statut', 'message',
     ];
 
     protected $casts = [
         'demarre_le' => 'datetime',
         'termine_le' => 'datetime',
         'entites_vues' => 'integer',
+        'entites_eligibles' => 'integer',
         'actions_posees' => 'integer',
     ];
 
