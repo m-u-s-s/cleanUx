@@ -5,6 +5,7 @@ namespace Tests\Feature\Automation;
 use App\Models\AutomationAction;
 use App\Models\AutomationRule;
 use App\Models\Booking;
+use App\Services\Automation\EtatDeRegle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -31,11 +32,14 @@ class CommandeTest extends TestCase
         config()->set('features.automation', false);
 
         Booking::factory()->create(['status' => 'en_attente']);
-        $this->regle(AutomationRule::ETAT_ARMEE);
+        // Armee par le chemin reel : si l'interrupteur ne l'arretait pas, elle agirait pour
+        // de bon — sinon le zero mesure la garde B1, jamais le drapeau.
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE));
+        $regle->forceFill(['dernier_passage_le' => null])->save();
 
         $this->artisan('automation:executer')->assertExitCode(0);
 
-        $this->assertSame(0, AutomationAction::count());
+        $this->assertSame(0, AutomationAction::where('mode', 'armee')->count());
     }
 
     /** TEMOIN — interrupteur ouvert, la meme regle agit. */
@@ -59,13 +63,22 @@ class CommandeTest extends TestCase
         config()->set('features.automation', true);
 
         Booking::factory()->create(['status' => 'en_attente']);
+        // Brouillon n'a jamais observe : la garde B1 la retiendrait de toute facon.
         $this->regle(AutomationRule::ETAT_BROUILLON);
-        $this->regle(AutomationRule::ETAT_DESACTIVEE);
-        $this->regle(AutomationRule::ETAT_SUSPENDUE);
+
+        // Desactivee et suspendue, elles, ONT observe (chemin reel) : seul le filtre
+        // d'etat les retient, la garde B1 les laisserait agir si on l'omettait.
+        $desactivee = $this->armer($this->regle(AutomationRule::ETAT_ARMEE));
+        app(EtatDeRegle::class)->desactiver($desactivee->fresh());
+        $desactivee->forceFill(['dernier_passage_le' => null])->save();
+
+        $suspendue = $this->armer($this->regle(AutomationRule::ETAT_ARMEE));
+        app(EtatDeRegle::class)->suspendre($suspendue->fresh(), 'test');
+        $suspendue->forceFill(['dernier_passage_le' => null])->save();
 
         $this->artisan('automation:executer')->assertExitCode(0);
 
-        $this->assertSame(0, AutomationAction::count());
+        $this->assertSame(0, AutomationAction::where('mode', 'armee')->count());
     }
 
     public function test_une_regle_en_observation_tourne_et_journalise(): void
@@ -85,12 +98,14 @@ class CommandeTest extends TestCase
         config()->set('features.automation', true);
 
         Booking::factory()->create(['status' => 'en_attente']);
-        $regle = $this->regle(AutomationRule::ETAT_ARMEE, 'jour');
+        // Armee par le chemin reel : sans ca, la garde B1 l'arreterait de toute facon et
+        // retirer le filtre de cadence ne ferait tomber personne.
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, 'jour'));
         $regle->forceFill(['dernier_passage_le' => now()->subHour()])->save();
 
         $this->artisan('automation:executer')->assertExitCode(0);
 
-        $this->assertSame(0, AutomationAction::count());
+        $this->assertSame(0, AutomationAction::where('mode', 'armee')->count());
     }
 
     /** L'INTERRUPTEUR EST FERME A LA LIVRAISON. Un moteur qui s'allume seul au deploiement

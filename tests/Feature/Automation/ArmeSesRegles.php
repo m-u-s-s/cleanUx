@@ -11,8 +11,8 @@ trait ArmeSesRegles
 {
     private function armer(AutomationRule $regle): AutomationRule
     {
-        $regle->forceFill(['etat' => AutomationRule::ETAT_OBSERVATION])->save();
-        app(RuleRunner::class)->executer($regle);
+        app(EtatDeRegle::class)->observer($regle);
+        app(RuleRunner::class)->executer($regle->fresh());
         app(EtatDeRegle::class)->armer($regle->fresh());
 
         return $regle->fresh();

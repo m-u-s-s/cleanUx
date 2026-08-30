@@ -17,11 +17,7 @@ class EtatDeRegle
     /** @throws ArmementRefuse */
     public function armer(AutomationRule $regle): void
     {
-        $observees = LigneDeJournal::query()
-            ->where('automation_rule_id', $regle->id)
-            ->where('mode', 'observation')
-            ->where('resultat', LigneDeJournal::RESULTAT_SIMULEE)
-            ->count();
+        $observees = $this->observationsSimulees($regle);
 
         if ($observees === 0) {
             throw new ArmementRefuse(
@@ -40,6 +36,21 @@ class EtatDeRegle
     public function desactiver(AutomationRule $regle): void
     {
         $this->poser($regle, AutomationRule::ETAT_DESACTIVEE, 'desactivee');
+    }
+
+    /** Le seul endroit qui sait ce que « avoir observe » veut dire — RuleRunner l'appelle aussi. */
+    public function aDejaObserve(AutomationRule $regle): bool
+    {
+        return $this->observationsSimulees($regle) > 0;
+    }
+
+    protected function observationsSimulees(AutomationRule $regle): int
+    {
+        return LigneDeJournal::query()
+            ->where('automation_rule_id', $regle->id)
+            ->where('mode', 'observation')
+            ->where('resultat', LigneDeJournal::RESULTAT_SIMULEE)
+            ->count();
     }
 
     /** @param array<string, mixed> $meta */

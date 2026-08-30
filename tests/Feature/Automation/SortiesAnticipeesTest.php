@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Automation;
 
+use App\Models\ActivityLog;
 use App\Models\AutomationAction;
 use App\Models\AutomationRule;
 use App\Models\Booking;
@@ -77,6 +78,13 @@ class SortiesAnticipeesTest extends TestCase
         app(RuleRunner::class)->executer($regle->fresh());
 
         $this->assertSame(AutomationRule::ETAT_SUSPENDUE, $regle->fresh()->etat);
+
+        // DEFAUT B5 (relecture) — le motif nomme la VRAIE cause, pas « entierement en echec ».
+        $log = ActivityLog::where('action', 'automation.regle_suspendue')
+            ->where('target_id', $regle->id)
+            ->first();
+        $this->assertNotNull($log);
+        $this->assertStringContainsString('Entité inconnue', (string) $log->meta['motif']);
     }
 
     /** DEFAUT B4 — conditions vides refuse le passage plutot que de balayer toute la table. */
@@ -106,5 +114,50 @@ class SortiesAnticipeesTest extends TestCase
         $passage = app(RuleRunner::class)->executer($regle);
 
         $this->assertSame(3, $passage->entites_vues);
+    }
+
+    /** DEFAUT B7 — l'entite inconnue en observation ecrit aussi la cadence, sans jamais balayer. */
+    public function test_une_entite_inconnue_en_observation_ecrit_la_cadence(): void
+    {
+        $regle = $this->regle(['entite' => 'entite_qui_n_existe_pas', 'etat' => AutomationRule::ETAT_OBSERVATION]);
+
+        $passage = app(RuleRunner::class)->executer($regle);
+
+        $this->assertSame('observation', $passage->mode);
+        $this->assertSame('echec', $passage->statut);
+        $this->assertSame('Entité inconnue : entite_qui_n_existe_pas', $passage->message);
+        $this->assertNull($passage->entites_eligibles);
+        $this->assertNotNull($regle->fresh()->dernier_passage_le);
+        $this->assertSame(AutomationRule::ETAT_OBSERVATION, $regle->fresh()->etat);
+    }
+
+    /** DEFAUT B7 — conditions vides en observation refuse aussi, sans balayer toute la table. */
+    public function test_conditions_vides_en_observation_refuse_le_passage(): void
+    {
+        Booking::factory()->count(4)->create(['status' => 'en_attente']);
+        $regle = $this->regle(['conditions' => [], 'etat' => AutomationRule::ETAT_OBSERVATION]);
+
+        $passage = app(RuleRunner::class)->executer($regle);
+
+        $this->assertSame('observation', $passage->mode);
+        $this->assertSame('echec', $passage->statut);
+        $this->assertSame('Aucune condition : la règle balaierait toute la table.', $passage->message);
+        $this->assertNull($passage->entites_eligibles);
+        $this->assertNotNull($regle->fresh()->dernier_passage_le);
+        $this->assertSame(0, AutomationAction::where('mode', 'observation')->count());
+    }
+
+    /** DECISION B10 — les identifiants du drain restreignent : conditions vides n'agit qu'AVEC eux. */
+    public function test_conditions_vides_avec_identifiants_agit(): void
+    {
+        $vise = Booking::factory()->create(['status' => 'en_attente']);
+        Booking::factory()->create(['status' => 'en_attente']);   // non vise, hors identifiants
+        $regle = $this->armer($this->regle());
+        $regle->forceFill(['conditions' => []])->save();
+
+        $passage = app(RuleRunner::class)->executer($regle->fresh(), [$vise->id]);
+
+        $this->assertSame('ok', $passage->statut);
+        $this->assertSame(1, $passage->entites_vues);
     }
 }

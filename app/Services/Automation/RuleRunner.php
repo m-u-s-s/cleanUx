@@ -35,7 +35,7 @@ class RuleRunner
 
         // UNE REGLE N'AGIT JAMAIS SANS AVOIR OBSERVE. C'est la contrainte fondatrice, et
         // c'est ici qu'elle produit ses effets : tous les chemins passent par ce point.
-        if (! $observation && ! $this->aDejaObserve($regle)) {
+        if (! $observation && ! $this->etats->aDejaObserve($regle)) {
             return $this->echecSansBalayage($regle, $passage, $observation, "Règle armée sans journal d'observation.");
         }
 
@@ -45,7 +45,9 @@ class RuleRunner
             return $this->echecSansBalayage($regle, $passage, $observation, "Entité inconnue : {$regle->entite}");
         }
 
-        if (($regle->conditions ?? []) === []) {
+        // Sans identifiants, une regle sans condition balaierait toute la table. Avec eux
+        // (le drain d'evenements), ce sont LES IDENTIFIANTS qui restreignent : legitime.
+        if ($identifiants === null && ($regle->conditions ?? []) === []) {
             return $this->echecSansBalayage(
                 $regle,
                 $passage,
@@ -215,16 +217,6 @@ class RuleRunner
             ->count();
     }
 
-    /** Le meme critere que EtatDeRegle::armer() — une seule notion, jamais deux a recopier. */
-    protected function aDejaObserve(AutomationRule $regle): bool
-    {
-        return LigneDeJournal::query()
-            ->where('automation_rule_id', $regle->id)
-            ->where('mode', 'observation')
-            ->where('resultat', LigneDeJournal::RESULTAT_SIMULEE)
-            ->exists();
-    }
-
     /**
      * Un retour anticipe qui n'a rien balaye : pas de population a mesurer, mais un
      * passage qui compte quand meme pour la cadence et, en mode arme, pour les echecs.
@@ -242,7 +234,15 @@ class RuleRunner
             'termine_le' => now(),
         ])->save();
 
-        $this->comptabiliserLePlafond($regle, $observation, emballement: false, echecTotal: true);
+        // Motif propre a CE retour anticipe : sinon l'admin lit « entierement en echec »
+        // pour une regle qui n'a en realite jamais pu balayer quoi que ce soit.
+        $this->comptabiliserLePlafond(
+            $regle,
+            $observation,
+            emballement: false,
+            echecTotal: true,
+            motifEchec: "Trois passages consécutifs en échec : {$message}"
+        );
 
         return $passage;
     }
@@ -256,6 +256,7 @@ class RuleRunner
         bool $observation,
         bool $emballement,
         bool $echecTotal,
+        ?string $motifEchec = null,
     ): void {
         if ($observation) {
             $regle->forceFill(['dernier_passage_le' => now()])->save();
@@ -277,7 +278,7 @@ class RuleRunner
         if ($plafonds >= 3) {
             $this->etats->suspendre($regle->fresh(), 'Trois plafonds consécutifs : la population visée ne diminue pas.');
         } elseif ($echecs >= 3) {
-            $this->etats->suspendre($regle->fresh(), 'Trois passages consécutifs entièrement en échec.');
+            $this->etats->suspendre($regle->fresh(), $motifEchec ?? 'Trois passages consécutifs entièrement en échec.');
         }
     }
 }

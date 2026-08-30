@@ -45,4 +45,17 @@ class ScheduleIntegrityTest extends TestCase
     {
         $this->assertArrayHasKey('gdpr:execute-erasures', Artisan::all());
     }
+
+    /** B5 — sans borne, un verrou jamais relache tait le moteur pendant 1440 min (le defaut Laravel). */
+    public function test_automation_executer_lock_expires_in_ten_minutes(): void
+    {
+        /** @var Schedule $schedule */
+        $schedule = $this->app->make(Schedule::class);
+
+        $event = collect($schedule->events())
+            ->first(fn ($event) => str_contains((string) $event->command, 'automation:executer'));
+
+        $this->assertNotNull($event, 'La tache automation:executer doit etre planifiee.');
+        $this->assertSame(10, $event->expiresAt);
+    }
 }

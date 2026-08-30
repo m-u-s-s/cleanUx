@@ -57,7 +57,7 @@ class RuleRunnerTest extends TestCase
         $passage = app(RuleRunner::class)->executer($regle);
 
         $this->assertSame('armee', $passage->mode);
-        $this->assertSame(2, AutomationAction::where('resultat', 'executee')->count());
+        $this->assertSame(2, AutomationAction::where('mode', 'armee')->where('resultat', 'executee')->count());
         $this->assertDatabaseHas('activity_logs', ['action' => 'automation.note']);
     }
 
@@ -78,7 +78,7 @@ class RuleRunnerTest extends TestCase
         $passage = app(RuleRunner::class)->executer($regle);
 
         $this->assertSame(3, $passage->entites_vues);
-        $this->assertSame(3, AutomationAction::where('resultat', 'echouee')->count());
+        $this->assertSame(3, AutomationAction::where('mode', 'armee')->where('resultat', 'echouee')->count());
     }
 
     public function test_une_action_inconnue_est_journalisee_en_echec(): void
@@ -94,7 +94,7 @@ class RuleRunnerTest extends TestCase
 
         app(RuleRunner::class)->executer($regle->fresh());
 
-        $this->assertSame(1, AutomationAction::where('resultat', 'echouee')->count());
+        $this->assertSame(1, AutomationAction::where('mode', 'armee')->where('resultat', 'echouee')->count());
     }
 
     /** DEFAUT A1 — l'observation obligatoire ne doit pas empoisonner le registre de la regle armee. */
@@ -109,7 +109,7 @@ class RuleRunnerTest extends TestCase
         $passage = app(RuleRunner::class)->executer($regle->fresh());
 
         $this->assertSame(3, $passage->entites_vues);
-        $this->assertSame(3, AutomationAction::where('resultat', 'executee')->count());
+        $this->assertSame(3, AutomationAction::where('mode', 'armee')->where('resultat', 'executee')->count());
     }
 
     /** DEFAUT A2 — un echec transitoire ne condamne pas l'entite a jamais. */
