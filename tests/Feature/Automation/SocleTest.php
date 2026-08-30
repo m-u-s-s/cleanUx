@@ -34,6 +34,14 @@ class SocleTest extends TestCase
         $this->assertSame(0, $regle->plafonds_consecutifs);
     }
 
+    public function test_les_defauts_journaliers_et_echecs_s_appliquent_sans_fresh(): void
+    {
+        $regle = $this->regle();
+
+        $this->assertSame(500, $regle->plafond_journalier);
+        $this->assertSame(0, $regle->echecs_consecutifs);
+    }
+
     public function test_les_colonnes_json_se_relisent_en_tableau(): void
     {
         $regle = $this->regle()->fresh();

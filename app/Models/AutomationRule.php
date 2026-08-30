@@ -22,7 +22,9 @@ class AutomationRule extends Model
         'etat' => 'brouillon',
         'politique_reprise' => 'une_fois',
         'quota_par_passage' => 50,
+        'plafond_journalier' => 500,
         'plafonds_consecutifs' => 0,
+        'echecs_consecutifs' => 0,
     ];
 
     protected $fillable = [
