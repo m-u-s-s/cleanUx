@@ -143,32 +143,50 @@ class RuleRunnerTest extends TestCase
         $this->assertSame(1, $passage->entites_vues);
     }
 
-    /** CORRECTIF 2 — un passage bride n'ecrit QUE les entites reellement servies : le drain
-     *  s'appuie dessus pour ne purger que celles-la, jamais les entites non servies. */
+    /**
+     * CORRECTIF 3 — REDEFINITION. `entites_finies` n'est calculable QUE quand des
+     * identifiants bornent le balayage (le drain) : ce test passe donc desormais les siens,
+     * comme le ferait un drain. Bride : seule l'entite non coupee par le quota est finie.
+     */
     public function test_un_passage_bride_enregistre_les_seules_entites_servies(): void
     {
         $b1 = Booking::factory()->create(['status' => 'en_attente']);
         $b2 = Booking::factory()->create(['status' => 'en_attente']);
 
         $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, ['quota_par_passage' => 1]));
-        $passage = app(RuleRunner::class)->executer($regle->fresh());
+        $passage = app(RuleRunner::class)->executer($regle->fresh(), [$b1->id, $b2->id]);
 
         $this->assertSame('plafond_atteint', $passage->statut);
         $this->assertCount(1, $passage->entites_finies);
         $this->assertContains($passage->entites_finies[0], [$b1->id, $b2->id]);
     }
 
-    /** TEMOIN — non bride (quota suffisant), la liste complete des entites vues est ecrite. */
+    /** TEMOIN — non bride (quota suffisant), la liste complete des identifiants demandes est finie. */
     public function test_temoin_un_passage_non_bride_enregistre_la_liste_complete(): void
     {
         $b1 = Booking::factory()->create(['status' => 'en_attente']);
         $b2 = Booking::factory()->create(['status' => 'en_attente']);
 
         $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, ['quota_par_passage' => 10]));
-        $passage = app(RuleRunner::class)->executer($regle->fresh());
+        $passage = app(RuleRunner::class)->executer($regle->fresh(), [$b1->id, $b2->id]);
 
         $this->assertSame('ok', $passage->statut);
         $this->assertEqualsCanonicalizing([$b1->id, $b2->id], $passage->entites_finies);
+    }
+
+    /**
+     * CORRECTIF 3 — sans identifiants (une regle de cadence balaie toute la table), la
+     * question de la purge ne se pose pas : `entites_finies` reste vide, meme bride.
+     */
+    public function test_sans_identifiants_entites_finies_reste_vide_meme_bride(): void
+    {
+        Booking::factory()->count(2)->create(['status' => 'en_attente']);
+
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, ['quota_par_passage' => 1]));
+        $passage = app(RuleRunner::class)->executer($regle->fresh());
+
+        $this->assertSame('plafond_atteint', $passage->statut);
+        $this->assertSame([], $passage->entites_finies);
     }
 
     /** DEFAUT B9 — un passage d'observation entierement en echec le montre, il ne le maquille pas. */

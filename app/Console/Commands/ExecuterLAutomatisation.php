@@ -82,16 +82,14 @@ class ExecuterLAutomatisation extends Command
                 continue;
             }
 
-            $leve = false;
             $ensembles = [];
 
             foreach ($regles as $regle) {
                 try {
                     $passage = $runner->executer($regle, $groupe['identifiants']);
                 } catch (Throwable $e) {
-                    // Une regle qui leve ne certifie rien : on garde tout le groupe plutot
-                    // que de purger sur une intersection incomplete.
-                    $leve = true;
+                    // Compte comme un echec total : suspend au bout de trois, ne fige plus le groupe.
+                    $runner->enregistrerEchec($regle, mb_substr($e->getMessage(), 0, 250));
                     $this->error(sprintf('%s (%s) : %s', $regle->nom, $groupe['evenement'], $e->getMessage()));
 
                     continue;
@@ -106,11 +104,7 @@ class ExecuterLAutomatisation extends Command
                     $passage->statut
                 ));
 
-                // Un refus en amont ecrit une liste VIDE : l'ignorer, sinon l'intersection
-                // viderait le groupe pour toujours.
-                //
-                // Un echec total (liste NON vide : les entites ont ete balayees) suit le
-                // meme sort — les echecs consecutifs suspendent la regle, pas la file.
+                // Un echec (refus en amont ou levee) est deja exclu de l'intersection.
                 if ($passage->statut === 'echec') {
                     continue;
                 }
@@ -118,9 +112,8 @@ class ExecuterLAutomatisation extends Command
                 $ensembles[] = $passage->entites_finies ?? [];
             }
 
-            // Une regle qui leve, ou aucune dont le passage compte (toutes en echec) :
-            // rien n'est confirme traite, on ne purge rien plutot que de deviner.
-            if ($leve || $ensembles === []) {
+            // Aucun passage ne compte (toutes en echec) : rien n'est confirme traite.
+            if ($ensembles === []) {
                 continue;
             }
 

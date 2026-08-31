@@ -63,12 +63,6 @@ class RuleRunner
             $requete->whereKey($identifiants);
         }
 
-        // Captures AVANT le balayage : ce que cette regle a deja fini, parmi les
-        // identifiants fournis — le drain evenementiel en a besoin pour purger juste.
-        $dejaFinies = $identifiants !== null
-            ? $this->entitesDejaExclues($regle, $observation, $identifiants)
-            : [];
-
         $this->exclureLeDejaAgi($requete, $regle, $observation);
 
         // Le plafond borne des LIGNES ; le quota borne des ENTITES. Une regle a N actions
@@ -77,12 +71,15 @@ class RuleRunner
         $restantAujourdhui = max(0, $regle->plafond_journalier - $this->poseesAujourdhui($regle, $observation));
         $quota = min($regle->quota_par_passage, intdiv($restantAujourdhui, $parEntite));
 
-        // La population eligible, mesuree avant le quota : c'est elle qui dit s'il y a
-        // emballement. Sans elle, « exactement le quota » et « mille » sont indiscernables.
-        $eligibles = (clone $requete)->count();
+        // La population eligible, mesuree avant le quota ET DANS L'ORDRE DU BALAYAGE : le
+        // meme ordre sert a prendre le quota juste apres, sinon la queue soustraite plus
+        // bas ne serait pas celle reellement coupee.
+        $cleModele = $requete->getModel()->getKeyName();
+        $requete->orderBy($requete->getModel()->getQualifiedKeyName());
+        $eligibles = (clone $requete)->pluck($cleModele)->map(fn ($id) => (int) $id)->all();
 
         $lignes = $requete->limit($quota)->get();
-        $bride = $eligibles > $quota;
+        $bride = count($eligibles) > $quota;
         $posees = 0;
         $echouees = 0;
 
@@ -109,18 +106,17 @@ class RuleRunner
             ->value('entites_eligibles');
 
         // EMBALLEMENT : bride, et la population n'a pas diminue depuis le passage precedent.
-        $emballement = $bride && $precedent !== null && $eligibles >= $precedent;
+        $emballement = $bride && $precedent !== null && count($eligibles) >= $precedent;
 
-        // « Fini » = traite CE tour, OU deja exclu par la politique de reprise : une regle
-        // en a fini avec une entite aussi bien en l'agissant qu'en la reconnaissant faite.
-        $finies = array_values(array_unique(array_merge(
-            array_map('intval', $lignes->modelKeys()),
-            $dejaFinies
-        )));
+        // FINI = ce qu'on m'a demande, MOINS ce que le quota me fait remettre a plus tard.
+        // Une entite que les conditions ne retiennent pas, ou qui n'existe plus, est finie.
+        $finies = $identifiants !== null
+            ? array_values(array_diff($identifiants, array_slice($eligibles, $quota)))
+            : [];
 
         $passage->forceFill([
             'entites_vues' => $lignes->count(),
-            'entites_eligibles' => $eligibles,
+            'entites_eligibles' => count($eligibles),
             'entites_finies' => $finies,
             'actions_posees' => $posees,
             'statut' => $echecTotal ? 'echec' : ($bride ? 'plafond_atteint' : 'ok'),
@@ -130,6 +126,21 @@ class RuleRunner
         $this->comptabiliserLePlafond($regle, $observation, $emballement, $echecTotal);
 
         return $passage;
+    }
+
+    /** Une regle qui leve (arbre trop complexe...) avant tout balayage : meme sort qu'un
+     *  refus en amont, via le meme chemin — un passage `echec` qui peut suspendre. */
+    public function enregistrerEchec(AutomationRule $regle, string $message): AutomationRun
+    {
+        $observation = $regle->etat === AutomationRule::ETAT_OBSERVATION;
+
+        $passage = AutomationRun::create([
+            'automation_rule_id' => $regle->id,
+            'mode' => $observation ? 'observation' : 'armee',
+            'demarre_le' => now(),
+        ]);
+
+        return $this->echecSansBalayage($regle, $passage, $observation, $message);
     }
 
     /**
@@ -221,27 +232,7 @@ class RuleRunner
     }
 
     /**
-     * Parmi $identifiants, ceux que la politique de reprise exclut deja : cette regle en a
-     * fini avec eux avant meme ce passage, meme si elle ne les balaie plus.
-     *
-     * @param  list<int>  $identifiants
-     * @return list<int>
-     */
-    protected function entitesDejaExclues(AutomationRule $regle, bool $observation, array $identifiants): array
-    {
-        if ($regle->politique_reprise === 'chaque_passage') {
-            return [];
-        }
-
-        return $this->dejaAgiQuery($regle, $observation)
-            ->whereIn('entite_id', $identifiants)
-            ->pluck('entite_id')
-            ->map(fn ($id) => (int) $id)
-            ->all();
-    }
-
-    /**
-     * La requete « deja agi » brute, partagee par l'exclusion du balayage et entitesDejaExclues().
+     * La requete « deja agi » brute, partagee par l'exclusion du balayage.
      *
      * @return Builder<LigneDeJournal>
      */

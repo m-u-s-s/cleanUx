@@ -627,4 +627,156 @@ class DrainTest extends TestCase
         $this->assertSame(1, AutomationAction::where('automation_rule_id', $premiere->id)->where('mode', 'armee')->count());
         $this->assertSame(1, AutomationAction::where('automation_rule_id', $seconde->id)->where('mode', 'armee')->count());
     }
+
+    /**
+     * CORRECTIF 3 — LA DEFINITION. « Fini » se definit par soustraction : ce qu'on a demande
+     * moins ce que le quota a coupe. Une entite que les conditions ne retiennent PAS n'est
+     * plus jamais balayee par cette regle : elle doit etre finie quand meme, sinon sa ligne
+     * reste en file pour toujours — c'est le defaut le plus frequent des trois mesures.
+     */
+    public function test_les_conditions_ne_retiennent_pas_tout_la_file_se_vide_quand_meme(): void
+    {
+        config()->set('features.automation', true);
+
+        $graine = $this->seedAlerte();
+        $regle = $this->armerParDrain(
+            $this->regleEvenementielle('alerte', 'alerte.payment_capture_failed'),
+            [$graine->id]
+        );
+
+        $bookingA = Booking::factory()->create(['status' => 'en_attente']);
+        $bookingB = Booking::factory()->create(['status' => 'en_attente']);
+        $bookingC = Booking::factory()->create(['status' => 'en_attente']);
+
+        // Posee APRES l'armement : seule bookingA satisfait la condition.
+        $regle->forceFill(['conditions' => ['field' => 'entite_id', 'op' => 'eq', 'value' => $bookingA->id]])->save();
+
+        BusinessAlerts::paymentCaptureFailed($bookingA);
+        BusinessAlerts::paymentCaptureFailed($bookingB);
+        BusinessAlerts::paymentCaptureFailed($bookingC);
+        $this->assertSame(3, AutomationReevaluation::count());
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(
+            1,
+            AutomationAction::where('automation_rule_id', $regle->id)->where('mode', 'armee')->count(),
+            'Une seule des trois alertes correspond a la condition (entite_id = bookingA).'
+        );
+        $this->assertSame(
+            0,
+            AutomationReevaluation::count(),
+            'Les entites que la condition ne retient pas sont FINIES quand meme : la file doit se vider.'
+        );
+    }
+
+    /** TEMOIN — une condition qui retient les trois alertes : trois actions, file vide. */
+    public function test_temoin_une_condition_qui_retient_tout_purge_tout(): void
+    {
+        config()->set('features.automation', true);
+
+        $graine = $this->seedAlerte();
+        $regle = $this->armerParDrain(
+            $this->regleEvenementielle('alerte', 'alerte.payment_capture_failed'),
+            [$graine->id]
+        );
+
+        // Les trois alertes sont 'critical' : la condition les retient toutes.
+        $regle->forceFill(['conditions' => ['field' => 'niveau', 'op' => 'eq', 'value' => 'critical']])->save();
+
+        BusinessAlerts::paymentCaptureFailed(Booking::factory()->create(['status' => 'en_attente']));
+        BusinessAlerts::paymentCaptureFailed(Booking::factory()->create(['status' => 'en_attente']));
+        BusinessAlerts::paymentCaptureFailed(Booking::factory()->create(['status' => 'en_attente']));
+        $this->assertSame(3, AutomationReevaluation::count());
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(3, AutomationAction::where('automation_rule_id', $regle->id)->where('mode', 'armee')->count());
+        $this->assertSame(0, AutomationReevaluation::count());
+    }
+
+    /**
+     * CORRECTIF 3 — L'ENTITE DISPARUE. Supprimee entre le depot et le drain, elle ne peut
+     * plus figurer parmi les eligibles — mais elle ne revient jamais non plus : sa ligne
+     * doit se purger, pas rester en file pour toujours.
+     */
+    public function test_une_entite_supprimee_avant_le_drain_ne_bloque_pas_la_purge(): void
+    {
+        config()->set('features.automation', true);
+
+        $graine = $this->seedAlerte();
+        $this->armerParDrain($this->regleEvenementielle('alerte'), [$graine->id]);
+
+        BusinessAlerts::webhookBacklog(412);
+        $alerte = AlerteMetier::where('cle', 'webhook_backlog')->sole();
+        $this->assertSame(1, AutomationReevaluation::count());
+
+        $alerte->delete();
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(
+            0,
+            AutomationReevaluation::count(),
+            'Une entite supprimee ne doit pas rester en file pour toujours.'
+        );
+        $this->assertSame(0, AutomationAction::where('mode', 'armee')->where('entite_id', $alerte->id)->count());
+    }
+
+    /**
+     * CORRECTIF 3 — LA REGLE QUI LEVE. Un arbre de conditions trop complexe leve avant tout
+     * balayage : ca compte desormais comme un echec total, la regle se suspend au bout de
+     * trois, et son groupe — jusque-la fige pour toujours — se purge au passage suivant.
+     */
+    public function test_une_regle_qui_leve_est_suspendue_apres_trois_passages_puis_purge_le_groupe(): void
+    {
+        config()->set('features.automation', true);
+
+        $graine = $this->seedAlerte();
+        $regle = $this->armerParDrain($this->regleEvenementielle('alerte'), [$graine->id]);
+        $feuille = ['field' => 'cle', 'op' => 'eq', 'value' => 'seed_armement'];
+        $regle->forceFill(['conditions' => ['and' => array_fill(0, 201, $feuille)]])->save();
+
+        BusinessAlerts::webhookBacklog(412);
+        $this->assertSame(1, AutomationReevaluation::count());
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+        $this->artisan('automation:executer')->assertExitCode(0);
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(
+            AutomationRule::ETAT_SUSPENDUE,
+            $regle->fresh()->etat,
+            'Trois levees consecutives doivent suspendre la regle.'
+        );
+        $this->assertSame(
+            1,
+            AutomationReevaluation::count(),
+            'Tant que la regle est encore active, sa levee ne doit pas purger le groupe.'
+        );
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(
+            0,
+            AutomationReevaluation::count(),
+            'Suspendue, la regle ne bloque plus le groupe : plus rien n\'y est branche, purge au passage suivant.'
+        );
+    }
+
+    /** TEMOIN — une regle saine n'est jamais suspendue, et purge des le premier passage. */
+    public function test_temoin_une_regle_saine_n_est_pas_suspendue_et_purge_au_premier_passage(): void
+    {
+        config()->set('features.automation', true);
+
+        $graine = $this->seedAlerte();
+        $regle = $this->armerParDrain($this->regleEvenementielle('alerte'), [$graine->id]);
+
+        BusinessAlerts::webhookBacklog(412);
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(AutomationRule::ETAT_ARMEE, $regle->fresh()->etat);
+        $this->assertSame(0, AutomationReevaluation::count());
+    }
 }
