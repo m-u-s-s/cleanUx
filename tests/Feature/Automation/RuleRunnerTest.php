@@ -5,6 +5,7 @@ namespace Tests\Feature\Automation;
 use App\Models\AlerteMetier;
 use App\Models\AutomationAction;
 use App\Models\AutomationRule;
+use App\Models\AutomationRun;
 use App\Models\Booking;
 use App\Services\Automation\ActionResult;
 use App\Services\Automation\Contracts\Action;
@@ -187,6 +188,29 @@ class RuleRunnerTest extends TestCase
 
         $this->assertSame('plafond_atteint', $passage->statut);
         $this->assertSame([], $passage->entites_finies);
+    }
+
+    /**
+     * RELECTURE CORRECTIF 3, POINT 2 — UN SEUL PASSAGE. `executer()` cree le passage AVANT
+     * de balayer : si le balayage leve, il ne doit pas en laisser un second (fantome `ok`,
+     * zero entite) derriere le vrai passage `echec` — un seul AutomationRun, en echec.
+     */
+    public function test_une_regle_qui_leve_ecrit_un_seul_passage_en_echec(): void
+    {
+        Booking::factory()->create(['status' => 'en_attente']);
+
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE));
+        $feuille = ['field' => 'statut', 'op' => 'eq', 'value' => 'en_attente'];
+        $regle->forceFill(['conditions' => ['and' => array_fill(0, 201, $feuille)]])->save();
+
+        $avant = (int) (AutomationRun::max('id') ?? 0);
+
+        app(RuleRunner::class)->executer($regle->fresh());
+
+        $runs = AutomationRun::where('id', '>', $avant)->get();
+
+        $this->assertCount(1, $runs, 'Une regle qui leve ne doit ecrire QU\'UN SEUL passage.');
+        $this->assertSame('echec', $runs->first()->statut);
     }
 
     /** DEFAUT B9 — un passage d'observation entierement en echec le montre, il ne le maquille pas. */

@@ -7,6 +7,7 @@ use App\Models\AutomationRule;
 use App\Models\AutomationRun;
 use App\Services\Automation\Registre\ActionRegistre;
 use App\Services\Automation\Registre\EntiteRegistre;
+use App\Services\Conditions\EntityDescriptor;
 use App\Services\Conditions\RuleTreeEvaluator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -56,6 +57,23 @@ class RuleRunner
             );
         }
 
+        // TOUT ce qui suit peut lever (arbre trop complexe, requete malformee...) : capture
+        // au MEME passage deja cree, jamais un second — voir enregistrerEchec() plus bas.
+        try {
+            return $this->balayer($regle, $passage, $entite, $identifiants, $observation);
+        } catch (Throwable $e) {
+            return $this->echecSansBalayage($regle, $passage, $observation, mb_substr($e->getMessage(), 0, 250));
+        }
+    }
+
+    /** @param  list<int>|null  $identifiants */
+    protected function balayer(
+        AutomationRule $regle,
+        AutomationRun $passage,
+        EntityDescriptor $entite,
+        ?array $identifiants,
+        bool $observation,
+    ): AutomationRun {
         $requete = $entite->baseQuery();
         $this->evaluateur->apply($requete, $regle->conditions ?? [], $entite);
 
@@ -71,11 +89,10 @@ class RuleRunner
         $restantAujourdhui = max(0, $regle->plafond_journalier - $this->poseesAujourdhui($regle, $observation));
         $quota = min($regle->quota_par_passage, intdiv($restantAujourdhui, $parEntite));
 
-        // La population eligible, mesuree avant le quota ET DANS L'ORDRE DU BALAYAGE : le
-        // meme ordre sert a prendre le quota juste apres, sinon la queue soustraite plus
-        // bas ne serait pas celle reellement coupee.
-        $cleModele = $requete->getModel()->getKeyName();
-        $requete->orderBy($requete->getModel()->getQualifiedKeyName());
+        // L'ORDRE DU BALAYAGE, EXPLICITE : le meme sert a prendre le quota juste apres,
+        // sinon la queue soustraite plus bas ne serait pas celle reellement coupee.
+        $cleModele = $requete->getModel()->getQualifiedKeyName();
+        $requete->orderBy($cleModele);
         $eligibles = (clone $requete)->pluck($cleModele)->map(fn ($id) => (int) $id)->all();
 
         $lignes = $requete->limit($quota)->get();

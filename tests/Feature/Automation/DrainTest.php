@@ -779,4 +779,50 @@ class DrainTest extends TestCase
         $this->assertSame(AutomationRule::ETAT_ARMEE, $regle->fresh()->etat);
         $this->assertSame(0, AutomationReevaluation::count());
     }
+
+    /**
+     * RELECTURE CORRECTIF 3, POINT 1 — LE MEME DEFAUT, QUARANTE LIGNES PLUS HAUT. La boucle
+     * des cadences attrapait la levee sans rien enregistrer : la regle levait indefiniment,
+     * sans jamais suspendre. Meme chemin que le drain desormais : trois passages suspendent.
+     */
+    public function test_une_regle_de_cadence_qui_leve_est_suspendue_apres_trois_passages(): void
+    {
+        config()->set('features.automation', true);
+
+        Booking::factory()->create(['status' => 'en_attente']);
+
+        $feuille = ['field' => 'statut', 'op' => 'eq', 'value' => 'en_attente'];
+        $regle = $this->armer($this->regleCadence());
+        $regle->forceFill(['conditions' => ['and' => array_fill(0, 201, $feuille)]])->save();
+
+        foreach (range(1, 3) as $ignore) {
+            // Requete directe, PAS forceFill+save sur $regle : le passage vient de le
+            // reecrire via une AUTRE instance, et le $original perime de $regle rendrait
+            // ce reset muet (rien de "sale" a son sens, donc aucun UPDATE emis).
+            AutomationRule::whereKey($regle->id)->update(['dernier_passage_le' => null]);
+            $this->artisan('automation:executer')->assertExitCode(0);
+        }
+
+        $this->assertSame(
+            AutomationRule::ETAT_SUSPENDUE,
+            $regle->fresh()->etat,
+            'Trois levees consecutives doivent suspendre la regle de cadence.'
+        );
+    }
+
+    /** TEMOIN — une regle de cadence saine n'est jamais suspendue par plusieurs passages. */
+    public function test_temoin_une_regle_de_cadence_saine_n_est_pas_suspendue(): void
+    {
+        config()->set('features.automation', true);
+
+        Booking::factory()->create(['status' => 'en_attente']);
+        $regle = $this->armer($this->regleCadence());
+
+        foreach (range(1, 3) as $ignore) {
+            AutomationRule::whereKey($regle->id)->update(['dernier_passage_le' => null]);
+            $this->artisan('automation:executer')->assertExitCode(0);
+        }
+
+        $this->assertSame(AutomationRule::ETAT_ARMEE, $regle->fresh()->etat);
+    }
 }

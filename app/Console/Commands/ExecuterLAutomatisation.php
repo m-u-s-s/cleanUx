@@ -47,7 +47,8 @@ class ExecuterLAutomatisation extends Command
             try {
                 $passage = $runner->executer($regle);
             } catch (Throwable $e) {
-                // Une regle qui leve n'emporte pas les autres : la cadence continue.
+                // Meme chemin que le drain : compte comme un echec, peut suspendre au bout de trois.
+                $runner->enregistrerEchec($regle, mb_substr($e->getMessage(), 0, 250));
                 $this->error(sprintf('%s : %s', $regle->nom, $e->getMessage()));
 
                 continue;
