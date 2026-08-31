@@ -150,6 +150,10 @@ class Kernel extends ConsoleKernel
 
         // Verrou borne a 10 min : un processus tue sans le relacher ne doit pas taire le moteur a vie.
         $schedule->command('automation:executer')->everyMinute()->withoutOverlapping(10);
+
+        // Depuis la tache 2, une proposition pendante gele son entite SANS fenetre : seul ce
+        // passage la degele (voir ExpirerLesPropositions::DELAI_HEURES).
+        $schedule->command('automation:expirer-les-propositions')->hourly()->withoutOverlapping();
     }
 
     protected function commands(): void
