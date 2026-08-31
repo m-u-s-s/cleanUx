@@ -221,8 +221,12 @@ class DrainTest extends TestCase
 
                     // Depot concurrent, SUR LE MEME EVENEMENT : arrive apres cette lecture,
                     // ne doit pas etre emporte par la purge du groupe deja lu.
-                    if (isset($groupes['alerte.webhook_backlog'])) {
-                        $this->deposer('alerte.webhook_backlog', 'alerte', 777777);
+                    foreach ($groupes as $groupe) {
+                        if ($groupe['evenement'] === 'alerte.webhook_backlog') {
+                            $this->deposer('alerte.webhook_backlog', 'alerte', 777777);
+
+                            break;
+                        }
                     }
 
                     return $groupes;
@@ -272,5 +276,158 @@ class DrainTest extends TestCase
             0,
             AutomationAction::where('automation_rule_id', $regleBooking->id)->where('mode', 'armee')->count()
         );
+    }
+
+    /**
+     * C1 — le quota bride le BALAYAGE, mais la purge emportait tout le groupe : la
+     * troisieme alerte etait perdue sans trace. Elle doit survivre au premier passage,
+     * et se voir traitee (puis purgee) au second.
+     */
+    public function test_le_quota_bride_le_passage_et_la_purge_garde_le_groupe_pour_le_suivant(): void
+    {
+        config()->set('features.automation', true);
+
+        $graine = $this->seedAlerte();
+        $regle = $this->regleEvenementielle('alerte');
+        $regle->forceFill(['quota_par_passage' => 2])->save();
+        $regle = $this->armerParDrain($regle, [$graine->id]);
+
+        BusinessAlerts::webhookBacklog(1);
+        BusinessAlerts::webhookBacklog(2);
+        BusinessAlerts::webhookBacklog(3);
+        $this->assertSame(3, AutomationReevaluation::count());
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(2, AutomationAction::where('mode', 'armee')->count());
+        $this->assertSame(
+            3,
+            AutomationReevaluation::count(),
+            'Un passage bride ne doit purger AUCUNE ligne du groupe : la 3e alerte serait perdue sans trace.'
+        );
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(3, AutomationAction::where('mode', 'armee')->count());
+        $this->assertSame(0, AutomationReevaluation::count(), 'Le second passage doit vider la file.');
+    }
+
+    /** TEMOIN — quota suffisant : le premier passage traite tout et vide la file. */
+    public function test_temoin_quota_suffisant_le_premier_passage_vide_la_file(): void
+    {
+        config()->set('features.automation', true);
+
+        $graine = $this->seedAlerte();
+        $regle = $this->regleEvenementielle('alerte');
+        $regle->forceFill(['quota_par_passage' => 10])->save();
+        $regle = $this->armerParDrain($regle, [$graine->id]);
+
+        BusinessAlerts::webhookBacklog(1);
+        BusinessAlerts::webhookBacklog(2);
+        BusinessAlerts::webhookBacklog(3);
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(3, AutomationAction::where('mode', 'armee')->count());
+        $this->assertSame(0, AutomationReevaluation::count());
+    }
+
+    /**
+     * C4 — une regle evenementielle dont les conditions levent (arbre trop large) ne doit
+     * pas empecher une regle de cadence de tourner dans le MEME passage : le drain passe
+     * en premier, une regle empoisonnee bloquerait sinon tout le moteur, chaque minute.
+     */
+    public function test_une_regle_evenementielle_qui_leve_n_empeche_pas_la_cadence_de_tourner(): void
+    {
+        config()->set('features.automation', true);
+
+        $graine = $this->seedAlerte();
+        $regleCassee = $this->armerParDrain($this->regleEvenementielle('alerte'), [$graine->id]);
+        $feuille = ['field' => 'cle', 'op' => 'eq', 'value' => 'seed_armement'];
+        $regleCassee->forceFill(['conditions' => ['and' => array_fill(0, 201, $feuille)]])->save();
+
+        Booking::factory()->create(['status' => 'en_attente']);
+        $regleCadence = $this->armer($this->regleCadence());
+        $regleCadence->forceFill(['dernier_passage_le' => null])->save();
+
+        BusinessAlerts::webhookBacklog(412);
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(
+            1,
+            AutomationAction::where('automation_rule_id', $regleCadence->id)->where('mode', 'armee')->count(),
+            'La regle cassee ne doit pas empecher la regle de cadence de tourner.'
+        );
+    }
+
+    /** TEMOIN — sans regle cassee, la regle evenementielle ET la regle de cadence tournent toutes les deux. */
+    public function test_temoin_une_regle_evenementielle_saine_et_une_cadence_saine_tournent_toutes_les_deux(): void
+    {
+        config()->set('features.automation', true);
+
+        $graine = $this->seedAlerte();
+        $regleEvenement = $this->armerParDrain($this->regleEvenementielle('alerte'), [$graine->id]);
+
+        Booking::factory()->create(['status' => 'en_attente']);
+        $regleCadence = $this->armer($this->regleCadence());
+        $regleCadence->forceFill(['dernier_passage_le' => null])->save();
+
+        BusinessAlerts::webhookBacklog(412);
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(1, AutomationAction::where('automation_rule_id', $regleEvenement->id)->where('mode', 'armee')->count());
+        $this->assertSame(1, AutomationAction::where('automation_rule_id', $regleCadence->id)->where('mode', 'armee')->count());
+    }
+
+    /**
+     * C4 — meme regle si l'echec vient de la boucle des CADENCES : une regle cassee n'empeche
+     * pas une deuxieme regle de cadence, saine, de tourner dans le meme passage.
+     */
+    public function test_une_regle_de_cadence_qui_leve_n_empeche_pas_une_autre_regle_de_cadence(): void
+    {
+        config()->set('features.automation', true);
+
+        Booking::factory()->create(['status' => 'en_attente']);
+
+        $feuille = ['field' => 'statut', 'op' => 'eq', 'value' => 'en_attente'];
+        $regleCassee = $this->armer($this->regleCadence());
+        $regleCassee->forceFill([
+            'conditions' => ['and' => array_fill(0, 201, $feuille)],
+            'dernier_passage_le' => null,
+        ])->save();
+
+        $regleSaine = $this->armer($this->regleCadence());
+        $regleSaine->forceFill(['dernier_passage_le' => null])->save();
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(
+            1,
+            AutomationAction::where('automation_rule_id', $regleSaine->id)->where('mode', 'armee')->count(),
+            'La regle cassee ne doit pas empecher une autre regle de cadence de tourner.'
+        );
+    }
+
+    /** TEMOIN — deux regles de cadence saines tournent toutes les deux dans le meme passage. */
+    public function test_temoin_deux_regles_de_cadence_saines_tournent_toutes_les_deux(): void
+    {
+        config()->set('features.automation', true);
+
+        // UNE seule reservation : chaque regle la voit independamment (pas de partage de quota
+        // entre regles), donc une action chacune plutot que deux si on en avait cree deux.
+        Booking::factory()->create(['status' => 'en_attente']);
+
+        $premiere = $this->armer($this->regleCadence());
+        $premiere->forceFill(['dernier_passage_le' => null])->save();
+
+        $seconde = $this->armer($this->regleCadence());
+        $seconde->forceFill(['dernier_passage_le' => null])->save();
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(1, AutomationAction::where('automation_rule_id', $premiere->id)->where('mode', 'armee')->count());
+        $this->assertSame(1, AutomationAction::where('automation_rule_id', $seconde->id)->where('mode', 'armee')->count());
     }
 }

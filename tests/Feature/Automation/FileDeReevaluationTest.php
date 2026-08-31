@@ -62,6 +62,10 @@ class FileDeReevaluationTest extends TestCase
         $this->assertSame(0, $tentatives, 'Le garde laisse partir une tentative d\'ecriture pour rien.');
     }
 
+    /**
+     * C2 — `parEvenement()` rend une LISTE de groupes, chacun portant son evenement ET
+     * son entite : plus de cle associative par seul evenement, qui masquait l'entite.
+     */
     public function test_la_file_se_lit_groupee_par_evenement(): void
     {
         $this->file()->deposer('alerte.payout_failed', 'alerte', 7);
@@ -70,17 +74,50 @@ class FileDeReevaluationTest extends TestCase
 
         $lue = $this->file()->parEvenement();
 
-        $this->assertSame(['alerte.payout_failed', 'booking.annulee'], array_keys($lue));
-        $this->assertSame([7, 9], $lue['alerte.payout_failed']['identifiants']);
-        $this->assertSame('alerte', $lue['alerte.payout_failed']['entite']);
-        $this->assertSame([3], $lue['booking.annulee']['identifiants']);
+        $this->assertCount(2, $lue);
+        $this->assertSame('alerte.payout_failed', $lue[0]['evenement']);
+        $this->assertSame('alerte', $lue[0]['entite']);
+        $this->assertSame([7, 9], $lue[0]['identifiants']);
+        $this->assertSame('booking.annulee', $lue[1]['evenement']);
+        $this->assertSame('booking', $lue[1]['entite']);
+        $this->assertSame([3], $lue[1]['identifiants']);
 
         // `lignes` doit porter les vrais identifiants de LIGNES DE FILE (id), pas les
         // identifiants d'entite : la tache 8 purge sur ceux-la, jamais sur les autres.
         $idsAlerte = AutomationReevaluation::where('evenement', 'alerte.payout_failed')->orderBy('id')->pluck('id')->all();
         $idsBooking = AutomationReevaluation::where('evenement', 'booking.annulee')->orderBy('id')->pluck('id')->all();
-        $this->assertSame($idsAlerte, $lue['alerte.payout_failed']['lignes']);
-        $this->assertSame($idsBooking, $lue['booking.annulee']['lignes']);
+        $this->assertSame($idsAlerte, $lue[0]['lignes']);
+        $this->assertSame($idsBooking, $lue[1]['lignes']);
+    }
+
+    /** DEFAUT C2 — `entite_type` est ecrite par LIGNE : deux depots du meme evenement sur
+     *  deux entites doivent rendre DEUX groupes, jamais l'identifiant de l'un chez l'autre. */
+    public function test_deux_entites_pour_le_meme_evenement_font_deux_groupes(): void
+    {
+        $this->file()->deposer('alerte.webhook_backlog', 'alerte', 11);
+        $this->file()->deposer('alerte.webhook_backlog', 'booking', 22);
+
+        $lue = $this->file()->parEvenement();
+
+        $this->assertCount(2, $lue);
+
+        $parEntite = collect($lue)->keyBy('entite');
+        $this->assertSame('alerte.webhook_backlog', $parEntite['alerte']['evenement']);
+        $this->assertSame([11], $parEntite['alerte']['identifiants']);
+        $this->assertSame('alerte.webhook_backlog', $parEntite['booking']['evenement']);
+        $this->assertSame([22], $parEntite['booking']['identifiants']);
+    }
+
+    /** TEMOIN — meme evenement, MEME entite : un seul groupe, deux identifiants. */
+    public function test_temoin_meme_evenement_et_meme_entite_font_un_seul_groupe(): void
+    {
+        $this->file()->deposer('alerte.webhook_backlog', 'alerte', 11);
+        $this->file()->deposer('alerte.webhook_backlog', 'alerte', 22);
+
+        $lue = $this->file()->parEvenement();
+
+        $this->assertCount(1, $lue);
+        $this->assertSame([11, 22], $lue[0]['identifiants']);
     }
 
     /** TEMOIN DU RATTRAPAGE — une panne qui n'est PAS un doublon doit remonter. Sans lui,

@@ -5,26 +5,22 @@ namespace Tests\Feature\Automation;
 use App\Events\BusinessAlertRaised;
 use App\Services\Automation\Contracts\Declencheur;
 use App\Services\Automation\Registre\DeclencheurRegistre;
-use App\Support\Alerts\BusinessAlerts;
 use Tests\TestCase;
 
 class DeclencheursDAlerteTest extends TestCase
 {
-    /** Les cinq cles emises par BusinessAlerts, relevees dans le code le 2026-08-30. */
-    private const CLES_EMISES = [
-        'payment_capture_failed',
-        'payout_failed',
-        'webhook_backlog',
-        'stuck_mission_holding_funds',
-        'reconciliation_divergence',
-    ];
+    use ExtraitLesClesEmises;
 
+    /** C3 — les cles emises font foi ; plus aucune liste recopiee a la main. */
     public function test_chaque_alerte_emise_a_son_declencheur(): void
     {
+        $emises = $this->clesEmises();
+        $this->assertNotEmpty($emises, 'Aucune cle emise trouvee : la lecture de la source a echoue.');
+
         $registre = app(DeclencheurRegistre::class);
         $manquants = [];
 
-        foreach (self::CLES_EMISES as $cle) {
+        foreach ($emises as $cle) {
             if ($registre->trouver('alerte.'.$cle) === null) {
                 $manquants[] = $cle;
             }
@@ -33,9 +29,16 @@ class DeclencheursDAlerteTest extends TestCase
         $this->assertSame([], $manquants, 'Alertes sans declencheur : '.implode(', ', $manquants));
     }
 
-    /** L'INVERSE AUSSI : un declencheur qui ecoute une alerte que personne ne leve est mort. */
+    /**
+     * L'INVERSE AUSSI : un declencheur qui ecoute une alerte que personne ne leve est mort.
+     * C3/defaut 4 — l'appartenance se verifie contre les CLES (clesEmises), jamais par
+     * sous-chaine dans le fichier source : `alerte.amount` matcherait un contexte, pas une cle.
+     */
     public function test_aucun_declencheur_d_alerte_n_ecoute_dans_le_vide(): void
     {
+        $emises = $this->clesEmises();
+        $this->assertNotEmpty($emises, 'Aucune cle emise trouvee : la lecture de la source a echoue.');
+
         $alertes = array_filter(
             app(DeclencheurRegistre::class)->toutes(),
             fn (string $cle): bool => str_starts_with($cle, 'alerte.'),
@@ -44,15 +47,14 @@ class DeclencheursDAlerteTest extends TestCase
 
         // ANCRE — sans elle, un registre vide rend ce test vert : la boucle n'itere
         // sur rien et l'absence d'ecart n'a plus rien a prouver.
-        $this->assertCount(5, $alertes, "Le registre ne porte pas les cinq declencheurs d'alerte.");
+        $this->assertNotEmpty($alertes, "Le registre ne porte aucun declencheur d'alerte.");
 
-        $source = (string) file_get_contents(app_path('Support/Alerts/BusinessAlerts.php'));
         $orphelins = [];
 
         foreach ($alertes as $cle => $declencheur) {
             $alerte = substr($cle, strlen('alerte.'));
 
-            if (! str_contains($source, "'".$alerte."'")) {
+            if (! in_array($alerte, $emises, true)) {
                 $orphelins[] = $cle;
             }
         }

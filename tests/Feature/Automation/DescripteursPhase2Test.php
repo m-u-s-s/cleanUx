@@ -66,6 +66,24 @@ class DescripteursPhase2Test extends TestCase
         $this->assertSame(1, $requete->count());
     }
 
+    /** C6 — `entite_id` s'expose comme les autres champs : filtrer « l'alerte de LA reservation 42 ». */
+    public function test_une_condition_sur_entite_id_selectionne(): void
+    {
+        AlerteMetier::create(['cle' => 'payment_capture_failed', 'niveau' => 'critical', 'message' => 'a', 'entite_type' => 'booking', 'entite_id' => 42, 'levee_le' => now()]);
+        AlerteMetier::create(['cle' => 'payment_capture_failed', 'niveau' => 'critical', 'message' => 'b', 'entite_type' => 'booking', 'entite_id' => 43, 'levee_le' => now()]);
+
+        $descripteur = app(EntiteRegistre::class)->descripteur('alerte');
+        $requete = $descripteur->baseQuery();
+
+        app(RuleTreeEvaluator::class)->apply(
+            $requete,
+            ['field' => 'entite_id', 'op' => 'eq', 'value' => 42],
+            $descripteur
+        );
+
+        $this->assertSame(1, $requete->count());
+    }
+
     /** GARDE (relecture) — `prestataire_id` a ete retire : Mission::intervenantId() fait
      *  autorite en coalescant lead_provider_user_id et lead_employee_id, et FieldBinding ne sait
      *  lier qu'une seule colonne. Un champ borne a une seule des deux mentirait a moitie. */

@@ -41,23 +41,31 @@ class FileDeReevaluation
         return true;
     }
 
-    /** @return array<string, array{entite: string, identifiants: list<int>, lignes: list<int>}> */
+    /**
+     * Groupe sur le COUPLE (evenement, entite_type) : `entite_type` est ecrite par ligne,
+     * jamais par evenement — deux depots du meme evenement sur deux entites font deux groupes.
+     *
+     * @return list<array{evenement: string, entite: string, identifiants: list<int>, lignes: list<int>}>
+     */
     public function parEvenement(): array
     {
         $groupes = [];
 
         foreach (AutomationReevaluation::query()->orderBy('id')->get() as $ligne) {
-            $groupes[$ligne->evenement] ??= [
+            $cle = $ligne->evenement.'|'.$ligne->entite_type;
+
+            $groupes[$cle] ??= [
+                'evenement' => $ligne->evenement,
                 'entite' => $ligne->entite_type,
                 'identifiants' => [],
                 'lignes' => [],
             ];
 
-            $groupes[$ligne->evenement]['identifiants'][] = $ligne->entite_id;
-            $groupes[$ligne->evenement]['lignes'][] = $ligne->id;
+            $groupes[$cle]['identifiants'][] = $ligne->entite_id;
+            $groupes[$cle]['lignes'][] = $ligne->id;
         }
 
-        return $groupes;
+        return array_values($groupes);
     }
 
     /** @param list<int> $ids */

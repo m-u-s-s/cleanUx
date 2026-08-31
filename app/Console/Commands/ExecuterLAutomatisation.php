@@ -7,6 +7,7 @@ use App\Services\Automation\FileDeReevaluation;
 use App\Services\Automation\RuleRunner;
 use App\Services\FeatureFlag\FeatureFlagService;
 use Illuminate\Console\Command;
+use Throwable;
 
 class ExecuterLAutomatisation extends Command
 {
@@ -43,7 +44,14 @@ class ExecuterLAutomatisation extends Command
             ->filter(fn (AutomationRule $regle): bool => $this->estDue($regle));
 
         foreach ($regles as $regle) {
-            $passage = $runner->executer($regle);
+            try {
+                $passage = $runner->executer($regle);
+            } catch (Throwable $e) {
+                // Une regle qui leve n'emporte pas les autres : la cadence continue.
+                $this->error(sprintf('%s : %s', $regle->nom, $e->getMessage()));
+
+                continue;
+            }
 
             $this->line(sprintf(
                 '%s : %d entité(s), %d action(s), %s',
@@ -60,29 +68,46 @@ class ExecuterLAutomatisation extends Command
     /** Le drain passe AVANT la cadence : une alerte levee se traite au premier passage. */
     protected function drainer(RuleRunner $runner, FileDeReevaluation $file): void
     {
-        foreach ($file->parEvenement() as $evenement => $groupe) {
+        foreach ($file->parEvenement() as $groupe) {
             $regles = AutomationRule::query()
                 ->whereIn('etat', self::ETATS_ACTIFS)
-                ->where('declencheur', $evenement)
+                ->where('declencheur', $groupe['evenement'])
                 ->where('entite', $groupe['entite'])
                 ->get();
 
+            $bride = false;
+
             foreach ($regles as $regle) {
-                $passage = $runner->executer($regle, $groupe['identifiants']);
+                try {
+                    $passage = $runner->executer($regle, $groupe['identifiants']);
+                } catch (Throwable $e) {
+                    // Une regle qui leve n'emporte pas les autres, et ne certifie pas le
+                    // groupe traite : on le garde en place plutot que de perdre l'evenement.
+                    $bride = true;
+                    $this->error(sprintf('%s (%s) : %s', $regle->nom, $groupe['evenement'], $e->getMessage()));
+
+                    continue;
+                }
+
+                if ($passage->statut === 'plafond_atteint') {
+                    $bride = true;
+                }
 
                 $this->line(sprintf(
                     '%s (%s) : %d entité(s), %d action(s), %s',
                     $regle->nom,
-                    $evenement,
+                    $groupe['evenement'],
                     $passage->entites_vues,
                     $passage->actions_posees,
                     $passage->statut
                 ));
             }
 
-            // On purge MEME sans regle branchee : sinon la file grossit sans fin et le
-            // meme evenement se relit chaque minute pour rien.
-            $file->purger($groupe['lignes']);
+            // Purge meme sans regle branchee (sinon la file grossit sans fin), sauf si un
+            // passage a bride ou leve : ces lignes restent pour le passage suivant (C1).
+            if (! $bride) {
+                $file->purger($groupe['lignes']);
+            }
         }
     }
 

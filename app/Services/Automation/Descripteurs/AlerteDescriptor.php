@@ -33,6 +33,7 @@ class AlerteDescriptor implements EntityDescriptor
             'cle' => FieldBinding::colonne('business_alertes.cle'),
             'niveau' => FieldBinding::colonne('business_alertes.niveau'),
             'entite_type' => FieldBinding::colonne('business_alertes.entite_type'),
+            'entite_id' => FieldBinding::colonne('business_alertes.entite_id'),
             'levee_le' => FieldBinding::colonne('business_alertes.levee_le'),
         ];
     }
