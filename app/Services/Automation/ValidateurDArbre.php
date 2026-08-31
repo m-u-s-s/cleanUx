@@ -126,10 +126,15 @@ class ValidateurDArbre
     protected function verifierApplication(array $arbre, EntityDescriptor $entite): array
     {
         try {
-            $this->evaluateur->apply($entite->baseQuery(), $arbre, $entite);
+            $requete = $entite->baseQuery();
+            $this->evaluateur->apply($requete, $arbre, $entite);
+            // LIMIT 0 : la base analyse et rejette une colonne inconnue, sans rapporter une ligne.
+            $requete->limit(0)->get();
         } catch (RuleTreeTooComplex $e) {
             return [$e->getMessage()];
         } catch (Throwable $e) {
+            // Attrape aussi une panne d'infra (table absente, connexion morte) : assume, le
+            // message reste lisible et l'administrateur ne peut de toute facon que le signaler.
             return ["L'arbre ne s'applique pas : ".$e->getMessage()];
         }
 

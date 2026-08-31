@@ -72,6 +72,30 @@ class ValidateurDArbreTest extends TestCase
         };
     }
 
+    /** Un seul champ 'x', dont la colonne est parametrable — pour isoler l'effet de la colonne seule. */
+    private function entiteColonneUnique(string $colonne): EntityDescriptor
+    {
+        return new class($colonne) implements EntityDescriptor
+        {
+            public function __construct(private string $colonne) {}
+
+            public function baseQuery(): Builder
+            {
+                return User::query();
+            }
+
+            public function fields(): array
+            {
+                return ['x' => FieldBinding::colonne($this->colonne)];
+            }
+
+            public function operators(): array
+            {
+                return ['eq'];
+            }
+        };
+    }
+
     /** @return array<string, mixed> */
     private function feuille(string $champ = 'role', string $op = 'eq', mixed $valeur = 'client'): array
     {
@@ -183,5 +207,30 @@ class ValidateurDArbreTest extends TestCase
         $erreurs = $this->validateur()->valider($this->feuille(), $this->entiteAvecJointureCassee());
 
         $this->assertSame(["L'arbre ne s'applique pas : jointure cassee"], $erreurs);
+    }
+
+    /**
+     * La forme seule ne peut pas voir une colonne absente de la table : seule l'exécution réelle
+     * le peut. Sans exécution, ce cas passerait `valider()` sans erreur.
+     */
+    public function test_une_colonne_inexistante_devient_une_erreur_lisible(): void
+    {
+        $erreurs = $this->validateur()->valider(
+            $this->feuille('x'),
+            $this->entiteColonneUnique('users.colonne_absente')
+        );
+
+        $this->assertNotSame([], $erreurs);
+    }
+
+    /** TÉMOIN — le même descripteur, une colonne RÉELLE : aucune erreur. Isole l'effet de la colonne. */
+    public function test_temoin_une_colonne_existante_ne_produit_aucune_erreur(): void
+    {
+        $erreurs = $this->validateur()->valider(
+            $this->feuille('x'),
+            $this->entiteColonneUnique('users.role')
+        );
+
+        $this->assertSame([], $erreurs);
     }
 }
