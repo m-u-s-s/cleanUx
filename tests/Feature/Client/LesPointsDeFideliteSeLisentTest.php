@@ -93,6 +93,42 @@ class LesPointsDeFideliteSeLisentTest extends TestCase
         $this->assertSame(300, $serie[11]['points']);
     }
 
+    /**
+     * UN 31 DEBORDE. `subMonths(11)` depuis le 31 aout tombe sur un 31 septembre qui n'existe
+     * pas : Carbon rend le 1er octobre, et la fenetre glissait d'un cran en perdant le mois
+     * courant. Les deux tests ci-dessus l'attrapaient — mais seulement les jours ou le
+     * quantieme deborde, c'est-a-dire un jour sur trente.
+     */
+    public function test_la_fenetre_ne_glisse_pas_un_trente_et_un(): void
+    {
+        $this->travelTo('2026-08-31 03:14:00');
+
+        $this->credit(LoyaltyTransaction::TYPE_EARN_BOOKING, 300, now()->toDateTimeString());
+
+        $this->actingAs($this->client);
+
+        $serie = Livewire::test(LoyaltyDashboard::class)->instance()->pointsParMois();
+
+        $this->assertSame('2026-08', $serie[11]['mois'] ?? null, 'Le dernier mois de la serie doit etre le mois courant.');
+        $this->assertSame('2025-09', $serie[0]['mois'] ?? null, 'La fenetre commence onze mois plus tot.');
+        $this->assertSame(300, $serie[11]['points']);
+    }
+
+    /** TEMOIN — la meme fenetre, un jour qui ne deborde pas, reste juste. */
+    public function test_temoin_la_fenetre_est_juste_un_jour_ordinaire(): void
+    {
+        $this->travelTo('2026-08-15 03:14:00');
+
+        $this->credit(LoyaltyTransaction::TYPE_EARN_BOOKING, 300, now()->toDateTimeString());
+
+        $this->actingAs($this->client);
+
+        $serie = Livewire::test(LoyaltyDashboard::class)->instance()->pointsParMois();
+
+        $this->assertSame('2026-08', $serie[11]['mois'] ?? null);
+        $this->assertSame(300, $serie[11]['points']);
+    }
+
     public function test_l_origine_des_points_est_groupee_et_triee(): void
     {
         $this->credit(LoyaltyTransaction::TYPE_EARN_BOOKING, 200, now()->toDateTimeString());

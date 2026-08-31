@@ -343,7 +343,8 @@ class ClientDashboard extends Component
             return [];
         }
 
-        $debut = now()->copy()->subMonths(5)->startOfMonth();
+        // LE PREMIER DU MOIS D'ABORD : soustraire depuis un 31 deborde sur le mois suivant.
+        $debut = now()->copy()->startOfMonth()->subMonths(5);
 
         /*
          * DEUX DIALECTES, UNE SEULE EXPRESSION CHOISIE AVANT.

@@ -40,7 +40,9 @@ class LoyaltyDashboard extends Component
     public function pointsParMois(): array
     {
         $compte = app(LoyaltyService::class)->accountFor(Auth::user());
-        $debut = now()->copy()->subMonths(11)->startOfMonth();
+        // LE PREMIER DU MOIS D'ABORD. Soustraire depuis un 31 deborde sur le mois suivant,
+        // et la serie de douze mois glissait d'un cran en perdant le mois courant.
+        $debut = now()->copy()->startOfMonth()->subMonths(11);
 
         /*
          * DEUX DIALECTES, UNE SEULE EXPRESSION CHOISIE AVANT.
