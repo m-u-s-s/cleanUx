@@ -69,6 +69,12 @@ Elles lient **chaque** tâche.
   `tests/Feature/Security/AdminComponentGuardTest.php`. **Lance-le avant chaque commit** d'un
   composant neuf.
 - **Commentaires : deux lignes maximum.**
+- **Les trois familles de garde-fous se lancent avant tout commit d'une vue ou d'un composant
+  neuf** : `tests/Feature/Security/`, `tests/Feature/DesignSystem/`, `tests/Feature/A11y/`. Elles
+  prennent quelques secondes et balaient **tout** le dépôt, pas seulement ce que la tâche a écrit.
+  Deux tâches de cette phase ont laissé `main` rouge en ne lançant que leurs suites ciblées — l'une
+  sur la garde d'accès des 105 composants admin, l'autre sur des `<label>` qui ne reliaient rien.
+  Une suite ciblée verte ne dit rien de ces trois-là.
 - Portails avant chaque commit : `./vendor/bin/pint` sur les fichiers touchés, puis
   `./vendor/bin/phpstan analyse --no-progress` **sans argument de chemin**.
 
