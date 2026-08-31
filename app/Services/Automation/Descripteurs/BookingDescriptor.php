@@ -20,6 +20,11 @@ class BookingDescriptor implements EntityDescriptor
     /** @var array<string, FieldBinding>|null */
     protected ?array $champs = null;
 
+    public function libelle(): string
+    {
+        return 'Réservation';
+    }
+
     /** @return Builder<Model> */
     public function baseQuery(): Builder
     {

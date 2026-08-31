@@ -12,6 +12,7 @@ use App\Services\Conditions\RuleTreeTooComplex;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -26,6 +27,22 @@ class ConstructeurDeRegle extends Component
 
     /** Les quatre formes qu'un noeud d'arbre peut prendre — tout le reste est ignore, pas devine. */
     private const TYPES_NOEUD = ['feuille', 'and', 'or', 'not'];
+
+    /**
+     * LES TYPES DE PARAMETRE QUE CE FORMULAIRE SAIT RENDRE — cle de type => type d'input HTML.
+     * `RegistresTest` exige que tout `champs()` d'action n'emploie que ces cles.
+     */
+    public const TYPES_DE_CHAMP = [
+        'texte' => 'text',
+        'nombre' => 'number',
+    ];
+
+    // `/livewire/update` NE REJOUE AUCUN INTERMEDIAIRE DE ROUTE : la porte de route protege
+    // l'AFFICHAGE, pas `enregistrer()` ni `appliquerJson()`.
+    public function boot(): void
+    {
+        abort_unless(Gate::allows('manage-automation'), 403);
+    }
 
     /**
      * LA REGLE EN EDITION — `#[Locked]`, ET C'EST LA GARDE : sans elle, le navigateur pourrait
@@ -368,18 +385,10 @@ class ConstructeurDeRegle extends Component
         ]);
     }
 
-    /**
-     * Le catalogue ne porte aucun libellé d'entité (`entites()` ne rend que `cle`/`champs`/
-     * `operateurs`) — repli lisible (`ucfirst`) si le registre en enregistre une de plus demain.
-     */
-    public function libelleEntite(string $cle): string
+    /** `RegistresTest` interdit qu'une action declare un type absent de la table : pas de repli devine. */
+    public function typeDInput(string $type): string
     {
-        return match ($cle) {
-            'booking' => 'Réservation',
-            'alerte' => 'Alerte métier',
-            'mission' => 'Mission',
-            default => ucfirst($cle),
-        };
+        return self::TYPES_DE_CHAMP[$type] ?? 'text';
     }
 
     public function libelleCadence(string $cle): string

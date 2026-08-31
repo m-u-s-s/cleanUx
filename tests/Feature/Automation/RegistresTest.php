@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Automation;
 
+use App\Livewire\Admin\Automation\ConstructeurDeRegle;
+use App\Services\Automation\Catalogue;
 use App\Services\Automation\Registre\ActionRegistre;
 use App\Services\Automation\Registre\DeclencheurRegistre;
 use App\Services\Automation\Registre\EntiteRegistre;
@@ -100,6 +102,51 @@ class RegistresTest extends TestCase
     public function test_temoin_le_registre_des_declencheurs_porte_quelque_chose(): void
     {
         $this->assertNotEmpty(app(DeclencheurRegistre::class)->toutes());
+    }
+
+    /**
+     * LE FORMULAIRE NE DEVINE PAS UN TYPE. `constructeur-de-regle` rend un `input` par type
+     * declare ; un type absent de la table y tomberait en `text` sans que rien ne le dise.
+     */
+    public function test_chaque_action_ne_declare_que_des_types_de_champ_connus_du_formulaire(): void
+    {
+        $connus = array_keys(ConstructeurDeRegle::TYPES_DE_CHAMP);
+        $ecarts = [];
+        $champsVus = 0;
+
+        foreach (app(ActionRegistre::class)->toutes() as $cle => $action) {
+            foreach ($action->champs() as $champ => $type) {
+                $champsVus++;
+
+                if (! in_array($type, $connus, true)) {
+                    $ecarts[] = "{$cle}.{$champ} : type inconnu du formulaire « {$type} »";
+                }
+            }
+        }
+
+        // TEMOIN — sans champ declare nulle part, la boucle ci-dessus ne mesurerait rien.
+        $this->assertGreaterThan(0, $champsVus, 'Aucune action ne declare de champ : ce test ne prouve rien.');
+        $this->assertSame([], $ecarts, implode("\n", $ecarts));
+    }
+
+    /**
+     * CHAQUE ENTITE SAIT DIRE SON NOM. Sans ce libelle, une quatrieme entite ajoutee en code
+     * arriverait a l'ecran sous sa cle brute, et rien ne le signalerait.
+     */
+    public function test_chaque_entite_enregistree_porte_un_libelle(): void
+    {
+        $entites = app(Catalogue::class)->entites();
+        $ecarts = [];
+
+        foreach ($entites as $cle => $entite) {
+            if (trim((string) ($entite['libelle'] ?? '')) === '') {
+                $ecarts[] = "{$cle} : libelle vide";
+            }
+        }
+
+        // TEMOIN — le catalogue n'est pas vide : sinon la boucle ci-dessus passerait sur du neant.
+        $this->assertGreaterThan(0, count($entites), 'Le catalogue d’entites est vide : ce test ne prouve rien.');
+        $this->assertSame([], $ecarts, implode("\n", $ecarts));
     }
 
     /** LA CONVENTION EST LA GARDE. Un nom non qualifie echappe au test d'execution : sur

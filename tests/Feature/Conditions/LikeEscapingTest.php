@@ -24,6 +24,11 @@ class LikeEscapingTest extends TestCase
     {
         return new class implements EntityDescriptor
         {
+            public function libelle(): string
+            {
+                return 'Double de test';
+            }
+
             public function baseQuery(): Builder
             {
                 return User::query();

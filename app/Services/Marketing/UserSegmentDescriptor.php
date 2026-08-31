@@ -25,6 +25,11 @@ class UserSegmentDescriptor implements EntityDescriptor
 
     protected ?string $colonneMontantCache = null;
 
+    public function libelle(): string
+    {
+        return 'Utilisateur';
+    }
+
     /** @return Builder<Model> */
     public function baseQuery(): Builder
     {

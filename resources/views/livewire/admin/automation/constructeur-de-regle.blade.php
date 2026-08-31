@@ -41,7 +41,7 @@
                         <select id="entite" wire:model.live="entite">
                             <option value="">— Choisir une entité —</option>
                             @foreach($entites as $cle => $descripteur)
-                                <option value="{{ $cle }}">{{ $this->libelleEntite($cle) }}</option>
+                                <option value="{{ $cle }}">{{ $descripteur['libelle'] }}</option>
                             @endforeach
                         </select>
                         @error('entite') <p class="mt-1 text-xs" style="color: var(--brio-danger);">{{ $message }}</p> @enderror
@@ -158,7 +158,7 @@
                                     @foreach($champs as $param => $type)
                                         <div>
                                             <label class="brio-field-label" for="action-{{ $i }}-{{ $param }}">{{ $param }}</label>
-                                            <input id="action-{{ $i }}-{{ $param }}" type="{{ $type === 'nombre' ? 'number' : 'text' }}" wire:model.defer="actions.{{ $i }}.parametres.{{ $param }}">
+                                            <input id="action-{{ $i }}-{{ $param }}" type="{{ $this->typeDInput($type) }}" wire:model.defer="actions.{{ $i }}.parametres.{{ $param }}">
                                         </div>
                                     @endforeach
                                 </div>

@@ -20,6 +20,11 @@ class MissionDescriptor implements EntityDescriptor
     /** @var array<string, FieldBinding>|null */
     protected ?array $champs = null;
 
+    public function libelle(): string
+    {
+        return 'Mission';
+    }
+
     /** @return Builder<Model> */
     public function baseQuery(): Builder
     {

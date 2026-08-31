@@ -20,6 +20,11 @@ class AlerteDescriptor implements EntityDescriptor
     /** @var array<string, FieldBinding>|null */
     protected ?array $champs = null;
 
+    public function libelle(): string
+    {
+        return 'Alerte métier';
+    }
+
     /** @return Builder<Model> */
     public function baseQuery(): Builder
     {

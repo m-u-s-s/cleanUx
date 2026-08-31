@@ -7,6 +7,7 @@ use App\Models\AutomationRule;
 use App\Services\Automation\Catalogue;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -17,6 +18,13 @@ use Livewire\Component;
 class JournalDeRegle extends Component
 {
     use EnforcesAdminAccess;
+
+    // `/livewire/update` NE REJOUE AUCUN INTERMEDIAIRE DE ROUTE : la porte de route protege
+    // l'AFFICHAGE, pas la lecture d'un journal par appel de methode.
+    public function boot(): void
+    {
+        abort_unless(Gate::allows('manage-automation'), 403);
+    }
 
     /** Les sept resultats fixes de la machine a etats (AutomationAction) — jamais un catalogue. */
     private const RESULTATS = [

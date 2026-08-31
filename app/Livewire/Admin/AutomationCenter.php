@@ -9,15 +9,22 @@ use App\Services\Automation\EtatDeRegle;
 use App\Services\FeatureFlag\FeatureFlagService;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /** La liste des regles : ce qu'elles font, leur etat, et si le moteur agit vraiment. */
 class AutomationCenter extends Component
 {
-    // DEFENSE EN PROFONDEUR (AdminComponentGuardTest) : orthogonale a `manage-automation`,
-    // deja verifiee sur la route par `module_gate` — pas une deuxieme source de verite.
+    // DEFENSE EN PROFONDEUR (AdminComponentGuardTest) : `isAdmin()` seulement.
     use EnforcesAdminAccess;
+
+    // `/livewire/update` NE REJOUE AUCUN INTERMEDIAIRE DE ROUTE : la porte de `module_gate`
+    // protege l'AFFICHAGE, pas ce chemin d'action.
+    public function boot(): void
+    {
+        abort_unless(Gate::allows('manage-automation'), 403);
+    }
 
     /**
      * LA REGLE CIBLEE PAR LE PANNEAU OUVERT — `#[Locked]`, ET C'EST LA GARDE.
@@ -114,6 +121,7 @@ class AutomationCenter extends Component
 
         return view('livewire.admin.automation-center', [
             'regles' => $regles,
+            'entites' => $catalogue->entites(),
             'declencheurs' => $catalogue->declencheurs(),
             'moteurActif' => $drapeaux->isEnabled('automation'),
         ]);

@@ -15,7 +15,7 @@ class Catalogue
         private DeclencheurRegistre $declencheurRegistre
     ) {}
 
-    /** @return array<string, array{cle: string, champs: list<string>, operateurs: list<string>}> */
+    /** @return array<string, array{cle: string, libelle: string, champs: list<string>, operateurs: list<string>}> */
     public function entites(): array
     {
         $catalogue = [];
@@ -29,6 +29,7 @@ class Catalogue
 
             $catalogue[$cle] = [
                 'cle' => $cle,
+                'libelle' => $descripteur->libelle(),
                 'champs' => array_keys($descripteur->fields()),
                 'operateurs' => RuleTreeEvaluator::OPERATEURS_CONNUS,
             ];

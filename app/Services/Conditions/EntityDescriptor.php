@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 /** Ce qu'une entite doit savoir dire pour etre filtrable par un arbre de conditions. */
 interface EntityDescriptor
 {
+    /** Le nom lisible de l'entite — c'est le registre qui le dit, jamais l'ecran. */
+    public function libelle(): string;
+
     /** @return Builder<Model> */
     public function baseQuery(): Builder;
 

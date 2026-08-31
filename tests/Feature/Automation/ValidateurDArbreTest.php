@@ -25,6 +25,11 @@ class ValidateurDArbreTest extends TestCase
     {
         return new class implements EntityDescriptor
         {
+            public function libelle(): string
+            {
+                return 'Double de test';
+            }
+
             public function baseQuery(): Builder
             {
                 return User::query();
@@ -51,6 +56,11 @@ class ValidateurDArbreTest extends TestCase
     {
         return new class implements EntityDescriptor
         {
+            public function libelle(): string
+            {
+                return 'Double de test';
+            }
+
             public function baseQuery(): Builder
             {
                 return User::query();
@@ -78,6 +88,11 @@ class ValidateurDArbreTest extends TestCase
         return new class($colonne) implements EntityDescriptor
         {
             public function __construct(private string $colonne) {}
+
+            public function libelle(): string
+            {
+                return 'Double de test';
+            }
 
             public function baseQuery(): Builder
             {
