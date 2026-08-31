@@ -12,7 +12,7 @@ class AutomationRun extends Model
 
     protected $fillable = [
         'automation_rule_id', 'mode', 'demarre_le', 'termine_le',
-        'entites_vues', 'entites_eligibles', 'actions_posees', 'statut', 'message',
+        'entites_vues', 'entites_eligibles', 'entites_traitees', 'actions_posees', 'statut', 'message',
     ];
 
     protected $casts = [
@@ -20,6 +20,7 @@ class AutomationRun extends Model
         'termine_le' => 'datetime',
         'entites_vues' => 'integer',
         'entites_eligibles' => 'integer',
+        'entites_traitees' => 'array',
         'actions_posees' => 'integer',
     ];
 

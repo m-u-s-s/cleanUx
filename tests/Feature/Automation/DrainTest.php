@@ -279,9 +279,10 @@ class DrainTest extends TestCase
     }
 
     /**
-     * C1 — le quota bride le BALAYAGE, mais la purge emportait tout le groupe : la
-     * troisieme alerte etait perdue sans trace. Elle doit survivre au premier passage,
-     * et se voir traitee (puis purgee) au second.
+     * C1 — NON-REGRESSION. Le quota bride le balayage : aucune entite ne doit se perdre.
+     * Depuis le correctif 2, le drain purge sur l'intersection des entites REELLEMENT
+     * traitees (une seule regle ici : l'intersection vaut sa propre liste) — il ne garde
+     * donc que la 3e alerte, jamais les trois, et les trois finissent servies.
      */
     public function test_le_quota_bride_le_passage_et_la_purge_garde_le_groupe_pour_le_suivant(): void
     {
@@ -301,15 +302,138 @@ class DrainTest extends TestCase
 
         $this->assertSame(2, AutomationAction::where('mode', 'armee')->count());
         $this->assertSame(
-            3,
+            1,
             AutomationReevaluation::count(),
-            'Un passage bride ne doit purger AUCUNE ligne du groupe : la 3e alerte serait perdue sans trace.'
+            'Le passage bride doit purger les 2 lignes DEJA traitees et garder la 3e pour le suivant.'
         );
 
         $this->artisan('automation:executer')->assertExitCode(0);
 
         $this->assertSame(3, AutomationAction::where('mode', 'armee')->count());
         $this->assertSame(0, AutomationReevaluation::count(), 'Le second passage doit vider la file.');
+    }
+
+    /**
+     * CORRECTIF 2 — LA FAMINE. Sous `chaque_passage`, le registre « deja agi » n'exclut
+     * rien : sans purge partielle, les memes entites regagnent le quota indefiniment et la
+     * derniere n'est jamais servie. La purge doit desormais liberer les entites deja
+     * traitees a chaque passage, si bien que la file finit par se vider.
+     */
+    public function test_un_groupe_bride_sert_toutes_ses_entites_en_plusieurs_passages(): void
+    {
+        config()->set('features.automation', true);
+
+        $graine = $this->seedAlerte();
+        $regle = $this->regleEvenementielle('alerte');
+        $regle->forceFill(['quota_par_passage' => 2, 'politique_reprise' => 'chaque_passage'])->save();
+        $regle = $this->armerParDrain($regle, [$graine->id]);
+
+        BusinessAlerts::webhookBacklog(1);
+        BusinessAlerts::webhookBacklog(2);
+        BusinessAlerts::webhookBacklog(3);
+        $alertes = AlerteMetier::where('cle', 'webhook_backlog')->pluck('id')->all();
+        $this->assertSame(3, AutomationReevaluation::count());
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+        $this->artisan('automation:executer')->assertExitCode(0);
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(
+            0,
+            AutomationReevaluation::count(),
+            'La file ne se vide jamais : les memes entites regagnent le quota a chaque passage.'
+        );
+        foreach ($alertes as $id) {
+            $this->assertSame(
+                1,
+                AutomationAction::where('mode', 'armee')->where('entite_id', $id)->count(),
+                "L'alerte {$id} n'a jamais ete servie."
+            );
+        }
+    }
+
+    /** TEMOIN — meme regle, quota suffisant : `chaque_passage` sert les trois d'un coup et
+     *  vide la file des le premier passage. */
+    public function test_temoin_chaque_passage_avec_quota_suffisant_vide_la_file_au_premier_passage(): void
+    {
+        config()->set('features.automation', true);
+
+        $graine = $this->seedAlerte();
+        $regle = $this->regleEvenementielle('alerte');
+        $regle->forceFill(['quota_par_passage' => 10, 'politique_reprise' => 'chaque_passage'])->save();
+        $regle = $this->armerParDrain($regle, [$graine->id]);
+
+        BusinessAlerts::webhookBacklog(1);
+        BusinessAlerts::webhookBacklog(2);
+        BusinessAlerts::webhookBacklog(3);
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(3, AutomationAction::where('mode', 'armee')->count());
+        $this->assertSame(0, AutomationReevaluation::count());
+    }
+
+    /**
+     * CORRECTIF 2 — INTERSECTION, PAS UNION. Deux regles du meme groupe peuvent traiter des
+     * sous-ensembles differents (quotas differents) : seule l'entite traitee par TOUTES les
+     * regles est finie. Ici B (quota 1) ne traite qu'une entite, incluse dans les deux de A
+     * (quota 2) : seule celle-la doit purger.
+     */
+    public function test_le_drain_purge_l_intersection_des_regles_pas_leur_union(): void
+    {
+        config()->set('features.automation', true);
+
+        $graine = $this->seedAlerte();
+        $regleA = $this->regleEvenementielle('alerte');
+        $regleA->forceFill(['quota_par_passage' => 2])->save();
+        $this->armerParDrain($regleA, [$graine->id]);
+
+        $regleB = $this->regleEvenementielle('alerte');
+        $regleB->forceFill(['quota_par_passage' => 1])->save();
+        $this->armerParDrain($regleB, [$graine->id]);
+
+        BusinessAlerts::webhookBacklog(1);
+        BusinessAlerts::webhookBacklog(2);
+        BusinessAlerts::webhookBacklog(3);
+        $this->assertSame(3, AutomationReevaluation::count());
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(
+            2,
+            AutomationReevaluation::count(),
+            "L'union purgerait 2 lignes ; l'intersection n'en purge qu'une, la seule commune aux deux regles."
+        );
+    }
+
+    /**
+     * CORRECTIF 2 — PASSAGES EN ECHEC IGNORES. Une regle armee SANS observation refuse en
+     * amont : `echec` avec une liste vide. Sans l'exclure de l'intersection, elle viderait
+     * l'ensemble commun pour toujours et bloquerait la purge decidee par l'autre regle.
+     */
+    public function test_un_passage_en_echec_n_empeche_pas_la_purge_de_l_autre_regle(): void
+    {
+        config()->set('features.automation', true);
+
+        $graine = $this->seedAlerte();
+        $regleBonne = $this->regleEvenementielle('alerte');
+        $this->armerParDrain($regleBonne, [$graine->id]);
+
+        // Armee directement, SANS observation : refus en amont garanti (voir le piege de
+        // l'armement documente dans ArmeSesRegles) — statut `echec`, liste vide.
+        $regleCassee = $this->regleEvenementielle('alerte');
+        $regleCassee->forceFill(['etat' => AutomationRule::ETAT_ARMEE])->save();
+
+        BusinessAlerts::webhookBacklog(412);
+        $this->assertSame(1, AutomationReevaluation::count());
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(
+            0,
+            AutomationReevaluation::count(),
+            "Le passage en echec de la regle cassee ne doit pas retenir la ligne traitee par l'autre regle."
+        );
     }
 
     /** TEMOIN — quota suffisant : le premier passage traite tout et vide la file. */

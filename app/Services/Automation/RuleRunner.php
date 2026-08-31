@@ -108,6 +108,7 @@ class RuleRunner
         $passage->forceFill([
             'entites_vues' => $lignes->count(),
             'entites_eligibles' => $eligibles,
+            'entites_traitees' => array_map('intval', $lignes->modelKeys()),
             'actions_posees' => $posees,
             'statut' => $echecTotal ? 'echec' : ($bride ? 'plafond_atteint' : 'ok'),
             'termine_le' => now(),

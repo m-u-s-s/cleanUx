@@ -143,6 +143,34 @@ class RuleRunnerTest extends TestCase
         $this->assertSame(1, $passage->entites_vues);
     }
 
+    /** CORRECTIF 2 — un passage bride n'ecrit QUE les entites reellement servies : le drain
+     *  s'appuie dessus pour ne purger que celles-la, jamais les entites non servies. */
+    public function test_un_passage_bride_enregistre_les_seules_entites_servies(): void
+    {
+        $b1 = Booking::factory()->create(['status' => 'en_attente']);
+        $b2 = Booking::factory()->create(['status' => 'en_attente']);
+
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, ['quota_par_passage' => 1]));
+        $passage = app(RuleRunner::class)->executer($regle->fresh());
+
+        $this->assertSame('plafond_atteint', $passage->statut);
+        $this->assertCount(1, $passage->entites_traitees);
+        $this->assertContains($passage->entites_traitees[0], [$b1->id, $b2->id]);
+    }
+
+    /** TEMOIN — non bride (quota suffisant), la liste complete des entites vues est ecrite. */
+    public function test_temoin_un_passage_non_bride_enregistre_la_liste_complete(): void
+    {
+        $b1 = Booking::factory()->create(['status' => 'en_attente']);
+        $b2 = Booking::factory()->create(['status' => 'en_attente']);
+
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, ['quota_par_passage' => 10]));
+        $passage = app(RuleRunner::class)->executer($regle->fresh());
+
+        $this->assertSame('ok', $passage->statut);
+        $this->assertEqualsCanonicalizing([$b1->id, $b2->id], $passage->entites_traitees);
+    }
+
     /** DEFAUT B9 — un passage d'observation entierement en echec le montre, il ne le maquille pas. */
     public function test_un_passage_d_observation_entierement_en_echec_est_marque_echec(): void
     {

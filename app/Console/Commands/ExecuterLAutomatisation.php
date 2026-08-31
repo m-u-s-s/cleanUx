@@ -75,22 +75,26 @@ class ExecuterLAutomatisation extends Command
                 ->where('entite', $groupe['entite'])
                 ->get();
 
-            $bride = false;
+            // Aucune regle branchee : rien a attendre, la file grossirait sans fin sinon.
+            if ($regles->isEmpty()) {
+                $file->purger($groupe['lignes']);
+
+                continue;
+            }
+
+            $leve = false;
+            $ensembles = [];
 
             foreach ($regles as $regle) {
                 try {
                     $passage = $runner->executer($regle, $groupe['identifiants']);
                 } catch (Throwable $e) {
-                    // Une regle qui leve n'emporte pas les autres, et ne certifie pas le
-                    // groupe traite : on le garde en place plutot que de perdre l'evenement.
-                    $bride = true;
+                    // Une regle qui leve ne certifie rien : on garde tout le groupe plutot
+                    // que de purger sur une intersection incomplete.
+                    $leve = true;
                     $this->error(sprintf('%s (%s) : %s', $regle->nom, $groupe['evenement'], $e->getMessage()));
 
                     continue;
-                }
-
-                if ($passage->statut === 'plafond_atteint') {
-                    $bride = true;
                 }
 
                 $this->line(sprintf(
@@ -101,13 +105,37 @@ class ExecuterLAutomatisation extends Command
                     $passage->actions_posees,
                     $passage->statut
                 ));
+
+                // Un refus en amont ecrit une liste VIDE : l'ignorer, sinon l'intersection
+                // viderait le groupe pour toujours.
+                if ($passage->statut === 'echec') {
+                    continue;
+                }
+
+                $ensembles[] = $passage->entites_traitees ?? [];
             }
 
-            // Purge meme sans regle branchee (sinon la file grossit sans fin), sauf si un
-            // passage a bride ou leve : ces lignes restent pour le passage suivant (C1).
-            if (! $bride) {
-                $file->purger($groupe['lignes']);
+            // Une regle qui leve, ou aucune dont le passage compte (toutes en echec) :
+            // rien n'est confirme traite, on ne purge rien plutot que de deviner.
+            if ($leve || $ensembles === []) {
+                continue;
             }
+
+            $traitees = array_shift($ensembles);
+            foreach ($ensembles as $ensemble) {
+                $traitees = array_intersect($traitees, $ensemble);
+            }
+
+            // Une ligne purge quand son entite figure dans TOUTES les regles du groupe :
+            // deux regles aux conditions differentes peuvent servir des entites differentes.
+            $aPurger = [];
+            foreach ($groupe['identifiants'] as $i => $entiteId) {
+                if (in_array($entiteId, $traitees, true)) {
+                    $aPurger[] = $groupe['lignes'][$i];
+                }
+            }
+
+            $file->purger($aPurger);
         }
     }
 
