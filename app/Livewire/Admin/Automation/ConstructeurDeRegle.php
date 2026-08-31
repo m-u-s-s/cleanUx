@@ -8,6 +8,7 @@ use App\Services\Automation\EtatDeRegle;
 use App\Services\Automation\Registre\EntiteRegistre;
 use App\Services\Automation\ValidateurDArbre;
 use App\Services\Conditions\RuleTreeEvaluator;
+use App\Services\Conditions\RuleTreeTooComplex;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -84,7 +85,7 @@ class ConstructeurDeRegle extends Component
         $this->declencheur = $regle->declencheur;
         $this->cadence = $regle->cadence;
         $this->conditions = (array) ($regle->conditions ?? []);
-        $this->plafonnerLaProfondeurDesConditions();
+        $this->plafonnerLesBornesDesConditions();
         $this->actions = array_map(fn (array $ligne): array => [
             'cle' => (string) ($ligne['cle'] ?? ''),
             'parametres' => (array) ($ligne['parametres'] ?? []),
@@ -107,7 +108,7 @@ class ConstructeurDeRegle extends Component
             // LE RENDU RECURSE SANS BORNE : sans ce garde AVANT le rendu, un `$conditions`
             // profond poste par le client fige le processus bien avant qu'`enregistrer()` ne
             // valide quoi que ce soit (mesure : profondeur 1000 ~19 s, 5000 tue apres 5 min).
-            $this->plafonnerLaProfondeurDesConditions();
+            $this->plafonnerLesBornesDesConditions();
 
             return;
         }
@@ -155,7 +156,7 @@ class ConstructeurDeRegle extends Component
         $this->definirNoeudAu($chemin, $this->noeudVide($type));
         // `$chemin` peut lui-meme encoder une profondeur arbitraire : `data_set` la construit
         // sans jamais la lire, contrairement au rendu qui la recuse ensuite sans borne.
-        $this->plafonnerLaProfondeurDesConditions();
+        $this->plafonnerLesBornesDesConditions();
     }
 
     /** AJOUTE un enfant a la LISTE d'un groupe `and`/`or` : `$cheminListe` pointe cette liste. */
@@ -172,7 +173,7 @@ class ConstructeurDeRegle extends Component
         $this->conditions = $conditions;
         // Meme raison que dans `definirNoeud()` : `$cheminListe` peut deja encoder une profondeur
         // arbitraire.
-        $this->plafonnerLaProfondeurDesConditions();
+        $this->plafonnerLesBornesDesConditions();
     }
 
     /**
@@ -313,6 +314,7 @@ class ConstructeurDeRegle extends Component
             'operateursEntite' => $entites[$this->entite]['operateurs'] ?? [],
             'profondeurMax' => RuleTreeEvaluator::PROFONDEUR_MAX,
             'noeudsMax' => RuleTreeEvaluator::NOEUDS_MAX,
+            'arbreAffichable' => $this->arbreRespecteLesBornes(),
         ]);
     }
 
@@ -418,44 +420,34 @@ class ConstructeurDeRegle extends Component
     }
 
     /**
-     * BORNE LA PROFONDEUR DES QUE L'ARBRE ARRIVE — hydratation (mount) et mutation (updated()) —
-     * PAS seulement a l'enregistrement : le partiel recursif rend AVANT toute validation.
+     * BORNE PROFONDEUR ET NOMBRE DE NOEUDS DES QUE L'ARBRE ARRIVE — hydratation (mount),
+     * mutation (updated(), definirNoeud(), ajouterEnfant()) ET rendu (render()) : les TROIS
+     * partagent LA MEME marche (`RuleTreeEvaluator::verifierLesBornes()`), jamais un parcours
+     * maison qui divergerait un jour de celle qui s'applique reellement dans `apply()`.
      */
-    protected function plafonnerLaProfondeurDesConditions(): void
+    protected function plafonnerLesBornesDesConditions(): void
     {
-        if (! $this->profondeurDepasse($this->conditions, RuleTreeEvaluator::PROFONDEUR_MAX)) {
-            return;
+        try {
+            app(RuleTreeEvaluator::class)->verifierLesBornes($this->conditions);
+        } catch (RuleTreeTooComplex $e) {
+            $this->conditions = [];
+            $this->addError('conditions', $e->getMessage());
         }
-
-        $this->conditions = [];
-        $this->addError('conditions', 'Arbre trop profond : '.RuleTreeEvaluator::PROFONDEUR_MAX.' niveaux au plus.');
     }
 
     /**
-     * S'ARRETE DES QUE `$limite` EST DEPASSEE : jamais plus de `$limite + 1` niveaux de
-     * recursion, quelle que soit la profondeur REELLE d'un tableau hostile — mesure toujours sure.
-     *
-     * @param  array<string, mixed>  $noeud
+     * DEFENSE AU RENDU, INDEPENDANTE DE LA MUTATION : si `$conditions` a echappe aux gardes
+     * precedentes, le partiel recursif ne doit jamais le parcourir sans le savoir.
      */
-    protected function profondeurDepasse(array $noeud, int $limite, int $profondeur = 1): bool
+    protected function arbreRespecteLesBornes(): bool
     {
-        if ($profondeur > $limite) {
+        try {
+            app(RuleTreeEvaluator::class)->verifierLesBornes($this->conditions);
+
             return true;
+        } catch (RuleTreeTooComplex) {
+            return false;
         }
-
-        foreach (['and', 'or'] as $groupe) {
-            foreach ((array) ($noeud[$groupe] ?? []) as $sous) {
-                if (is_array($sous) && $this->profondeurDepasse($sous, $limite, $profondeur + 1)) {
-                    return true;
-                }
-            }
-        }
-
-        if (isset($noeud['not']) && is_array($noeud['not']) && $this->profondeurDepasse($noeud['not'], $limite, $profondeur + 1)) {
-            return true;
-        }
-
-        return false;
     }
 
     /**

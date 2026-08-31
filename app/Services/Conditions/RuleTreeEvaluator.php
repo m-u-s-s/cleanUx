@@ -160,11 +160,14 @@ class RuleTreeEvaluator
     }
 
     /**
+     * PUBLIC : reutilisee telle quelle par le constructeur de regle (hydratation, mutation, rendu)
+     * pour ne jamais faire diverger sa garde de celle qui s'applique reellement dans `apply()`.
+     *
      * @param  array<string, mixed>  $noeud
      *
      * @throws RuleTreeTooComplex
      */
-    protected function verifierLesBornes(array $noeud, int $profondeur = 1, int &$noeuds = 0): void
+    public function verifierLesBornes(array $noeud, int $profondeur = 1, int &$noeuds = 0): void
     {
         if ($profondeur > self::PROFONDEUR_MAX) {
             throw new RuleTreeTooComplex('Arbre trop profond : '.self::PROFONDEUR_MAX.' niveaux au plus.');

@@ -320,22 +320,80 @@ class ArbreDeConditionsTest extends TestCase
         $this->assertDatabaseHas('automation_rules', ['nom' => 'Profondeur temoin']);
     }
 
+    /**
+     * TOUR DE CORRECTION 2 — LE POINT QUI COMPTE, SUR L'AUTRE AXE. Un arbre PEU PROFOND mais TRES
+     * LARGE (beaucoup de feuilles sous un seul `and`) echappait a la garde de profondeur (tour 1)
+     * et partait au rendu : chaque feuille emet un select champ + un select operateur. Meme
+     * defaut que la profondeur, sur l'axe largeur — refuse desormais a la MEME mutation, via la
+     * MEME marche (`RuleTreeEvaluator::verifierLesBornes()`) que la profondeur.
+     */
+    public function test_un_arbre_de_cinq_mille_feuilles_poste_directement_est_refuse_immediatement(): void
+    {
+        $arbreHostile = ['and' => array_fill(0, 5000, ['field' => 'statut', 'op' => 'eq', 'value' => 'confirme'])];
+
+        $depart = microtime(true);
+
+        $composant = Livewire::actingAs($this->adminGlobal())
+            ->test(ConstructeurDeRegle::class)
+            ->set('entite', 'booking')
+            ->set('conditions', $arbreHostile);
+
+        $duree = microtime(true) - $depart;
+
+        $this->assertErreurConditionsExacte($composant, 'Arbre trop large : '.RuleTreeEvaluator::NOEUDS_MAX.' noeuds au plus.');
+        $composant->assertSet('conditions', []);
+
+        // Meme exigence que pour la profondeur (tour 1) : IMMEDIAT, pas seulement plus rapide.
+        $this->assertLessThan(
+            1.0,
+            $duree,
+            "Le refus a pris {$duree}s : la borne de largeur ne mord plus a la mutation, elle laisse le rendu s'en charger."
+        );
+    }
+
+    /**
+     * TÉMOIN — un arbre de trois feuilles (loin sous la borne), posté de la même façon, s'affiche
+     * et s'enregistre normalement. Sans lui, le test ci-dessus pourrait passer parce que TOUT
+     * `$set('conditions', ...)` est refusé, pas seulement les arbres trop larges.
+     */
+    public function test_temoin_un_arbre_de_trois_feuilles_poste_directement_saffiche_et_senregistre(): void
+    {
+        $arbreValide = ['and' => array_fill(0, 3, ['field' => 'statut', 'op' => 'eq', 'value' => 'confirme'])];
+
+        $composant = Livewire::actingAs($this->adminGlobal())
+            ->test(ConstructeurDeRegle::class)
+            ->set('nom', 'Largeur temoin')
+            ->set('entite', 'booking')
+            ->set('declencheur', 'cadence')
+            ->set('actions', [['cle' => 'journaliser', 'parametres' => ['message' => 'vu']]])
+            ->set('conditions', $arbreValide);
+
+        $composant->assertHasNoErrors('conditions')
+            ->assertSet('conditions', $arbreValide)
+            ->assertOk();
+
+        $composant->call('enregistrer')->assertHasNoErrors();
+
+        $this->assertDatabaseHas('automation_rules', ['nom' => 'Largeur temoin']);
+    }
+
     /** LA BORNE — au-delà de `NOEUDS_MAX`, même refus lisible avant l'enregistrement. */
+    /**
+     * TOUR DE CORRECTION 2 — meme point que la profondeur (tour 1) : la borne de NOMBRE DE
+     * NOEUDS mord elle aussi DES LA MUTATION, avant tout rendu — pas seulement a
+     * `enregistrer()`. L'arbre hostile est refuse et remis a `[]` avant meme d'y arriver.
+     */
     public function test_un_arbre_trop_large_est_refuse_avec_son_message(): void
     {
         $feuilles = array_fill(0, RuleTreeEvaluator::NOEUDS_MAX, ['field' => 'statut', 'op' => 'eq', 'value' => 'confirme']);
 
         $composant = Livewire::actingAs($this->adminGlobal())
             ->test(ConstructeurDeRegle::class)
-            ->set('nom', 'Trop large')
             ->set('entite', 'booking')
-            ->set('declencheur', 'cadence')
-            ->set('actions', [['cle' => 'journaliser', 'parametres' => ['message' => 'vu']]])
-            ->set('conditions', ['and' => $feuilles])
-            ->call('enregistrer');
+            ->set('conditions', ['and' => $feuilles]);
 
         $this->assertErreurConditionsExacte($composant, 'Arbre trop large : '.RuleTreeEvaluator::NOEUDS_MAX.' noeuds au plus.');
-        $this->assertDatabaseMissing('automation_rules', ['nom' => 'Trop large']);
+        $composant->assertSet('conditions', []);
     }
 
     /** TÉMOIN — la taille EXACTE de la borne passe (1 racine + (MAX-1) feuilles = MAX nœuds). */

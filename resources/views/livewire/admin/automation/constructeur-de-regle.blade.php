@@ -102,13 +102,18 @@
                             message="Le champ et l'opérateur d'une condition dépendent de l'entité choisie."
                             icon="🌳"
                         />
+                    @elseif(! $arbreAffichable)
+                        {{-- DEFENSE AU RENDU : ne devrait jamais se produire, les gardes de
+                             mutation remettent deja `conditions` a `[]` au-dela des bornes. --}}
+                        <div role="alert" class="brio-alerte brio-alerte-danger">
+                            Cet arbre dépasse les bornes autorisées et ne peut pas être affiché.
+                        </div>
                     @else
                         @include('livewire.admin.automation.partials.noeud-condition', [
                             'noeud' => $conditions,
                             'chemin' => '',
                             'champs' => $champsEntite,
                             'operateurs' => $operateursEntite,
-                            'profondeur' => 1,
                         ])
                     @endif
                 </div>
