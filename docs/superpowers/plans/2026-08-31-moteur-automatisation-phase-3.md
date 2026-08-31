@@ -532,4 +532,5 @@ composer test:parallele
 | Les réglages d'actions (autonome / à valider) | Phase 4 — la ligne se règle là où elle est tenue |
 | Les cinq règles reproduisant `BusinessAlerts` | Phase 5 |
 | Les actions qui écrivent dans le domaine | Phase 4, et seulement après les contrepoids |
+| Filtrer les opérateurs par TYPE de champ (`contains` sur une date passe en silence) | Demanderait que `FieldBinding` déclare un type — un contrat du lot 1, partagé avec le segment marketing. Mesuré et nommé, pas oublié |
 | Valider `declencheur` ↔ `entite` à la création | **Si**, le constructeur le fait — c'est le point reporté de la phase 2 |
