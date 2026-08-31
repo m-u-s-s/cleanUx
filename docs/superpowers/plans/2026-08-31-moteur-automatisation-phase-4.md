@@ -234,7 +234,7 @@ et **suis le patron du dépôt**, n'en invente pas un.
 - Modifier : `app/Console/Kernel.php`, `docs/exploitation.md`
 - Créer : `tests/Feature/Automation/ExpirationDesPropositionsTest.php`
 
-**Pourquoi elle existe** : une proposition en attente compte comme « déjà agi ». Tant que personne
+**Pourquoi elle existe, et pourquoi elle pese plus lourd qu'au moment ou ce plan a ete ecrit** : une proposition en attente compte comme « deja agi », ET la tache 2 a rendu ce gel TOTAL — une proposition pendante immobilise son entite quelle que soit la politique de reprise, sans fenetre ni echappatoire. Il n'existe plus aucun chemin qui degele une entite proposee, sauf toi. Tu dois donc expirer TOUS les cas pendants, pas un sous-ensemble, et le prouver. Tant que personne
 ne tranche, la règle ne repasse jamais sur cette entité — **une file oubliée gèle silencieusement
 une partie du domaine**. L'expiration est la garde qui l'empêche.
 
