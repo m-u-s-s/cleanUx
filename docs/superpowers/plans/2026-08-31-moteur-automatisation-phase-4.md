@@ -46,7 +46,7 @@ Mesuré le 2026-08-31.
 | Où une action est posée | `App\Services\Automation\RuleRunner::poser()` — écrit une ligne `automation_actions` |
 | Les résultats déjà prévus | `simulee`, `executee`, **`proposee`**, **`validee`**, **`refusee`**, `echouee`, **`expiree`** |
 | Les colonnes déjà prévues | `automation_actions.decide_par`, `.decide_le`, `.motif` |
-| Le registre « déjà agi » | `RuleRunner::exclureLeDejaAgi()` — exclut tout sauf `refusee` et `expiree` |
+| Le registre « déjà agi » | `RuleRunner::exclureLeDejaAgi()` -> `dejaAgiQuery()` — exclut tout sauf **TROIS** resultats : `refusee`, `expiree` ET `echouee` (cette derniere ajoutee en phase 1 : « un echec transitoire ne condamne pas l'entite »). MESURE le 2026-08-31, ne pas se fier a une liste de deux |
 | Le catalogue des écrans | `App\Services\Automation\Catalogue` — `actions(?string $entite)` expose déjà `touche_au_domaine` |
 | Les écrans | `AutomationCenter` (liste), `Automation\ConstructeurDeRegle`, `Automation\JournalDeRegle` |
 | L'ordonnanceur | `automation:executer`, chaque minute, drain puis cadences |
@@ -54,7 +54,7 @@ Mesuré le 2026-08-31.
 **Le journal porte déjà les quatre résultats et les trois colonnes de décision.** La phase 1 les a
 posés exprès — rien à migrer de ce côté.
 
-**Le registre « déjà agi » traite déjà `refusee` et `expiree` comme « à refaire »**, et tout le
+**Le registre « déjà agi » traite déjà `refusee`, `expiree` ET `echouee` comme « à refaire »**, et tout le
 reste — dont `proposee` — comme « déjà agi ». C'est exactement ce que le contrepoids 5 décrit.
 **Vérifie-le avant d'écrire quoi que ce soit** : si ce n'est plus vrai, dis-le, tout le reste en
 dépend.
