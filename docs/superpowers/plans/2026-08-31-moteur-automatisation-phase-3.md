@@ -61,6 +61,13 @@ Elles lient **chaque** tâche.
   retourner par `$set`.
 - **`#[Computed]` ne met en cache que l'accès par propriété** (`$this->truc`), pas `$this->truc()`.
 - **Un test de refus exige un témoin positif.**
+- **Tout composant Livewire du dossier `App\Livewire\Admin` emploie le trait
+  `EnforcesAdminAccess`.** Ce n'est PAS un doublon du garde de route : celui-ci protège l'affichage
+  de la page, tandis que les actions Livewire passent par `/livewire/update`, qui ne porte aucun
+  intermédiaire de cette route. Sans le trait, n'importe quel compte authentifié peut invoquer une
+  méthode du composant. Un test de sécurité du dépôt l'exige pour les 105 composants admin :
+  `tests/Feature/Security/AdminComponentGuardTest.php`. **Lance-le avant chaque commit** d'un
+  composant neuf.
 - **Commentaires : deux lignes maximum.**
 - Portails avant chaque commit : `./vendor/bin/pint` sur les fichiers touchés, puis
   `./vendor/bin/phpstan analyse --no-progress` **sans argument de chemin**.
