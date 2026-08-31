@@ -37,7 +37,7 @@
                         <td class="text-sm text-slate-600">{{ $regle->entite }}</td>
                         <td class="text-sm text-slate-600">{{ $declencheurs[$regle->declencheur]['libelle'] ?? $regle->declencheur }}</td>
                         <td>
-                            <span class="brio-chip {{ $this->classeEtat($regle->etat) }}">{{ $this->libelleEtat($regle->etat) }}</span>
+                            <span class="brio-chip brio-teinte" style="--teinte: {{ $this->teinteEtat($regle->etat) }};">{{ $this->libelleEtat($regle->etat) }}</span>
                         </td>
                         <td class="whitespace-nowrap text-sm text-slate-600">
                             {{ $regle->dernier_passage_le?->format('d/m/Y H:i') ?? '—' }}

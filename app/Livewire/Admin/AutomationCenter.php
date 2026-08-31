@@ -40,14 +40,15 @@ class AutomationCenter extends Component
         };
     }
 
-    public function classeEtat(string $etat): string
+    /** Le jeton de teinte du systeme (`.brio-teinte`), jamais une couleur Tailwind litterale. */
+    public function teinteEtat(string $etat): string
     {
         return match ($etat) {
-            AutomationRule::ETAT_ARMEE => '!border-emerald-200 !bg-emerald-50 !text-emerald-700',
-            AutomationRule::ETAT_OBSERVATION => '!border-sky-200 !bg-sky-50 !text-sky-700',
-            AutomationRule::ETAT_SUSPENDUE => '!border-amber-200 !bg-amber-50 !text-amber-700',
-            AutomationRule::ETAT_DESACTIVEE => '!border-rose-200 !bg-rose-50 !text-rose-700',
-            default => '',
+            AutomationRule::ETAT_ARMEE => 'var(--brio-success)',
+            AutomationRule::ETAT_OBSERVATION => 'var(--brio-info)',
+            AutomationRule::ETAT_SUSPENDUE => 'var(--brio-warning)',
+            AutomationRule::ETAT_DESACTIVEE => 'var(--brio-danger)',
+            default => 'var(--brio-muted)',
         };
     }
 }

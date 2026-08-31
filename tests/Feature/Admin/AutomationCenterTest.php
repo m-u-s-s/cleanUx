@@ -163,4 +163,21 @@ class AutomationCenterTest extends TestCase
             ->test(AutomationCenter::class)
             ->assertSee('Aucune règle');
     }
+
+    /** TOUR DE CORRECTION 1 — la chip d'etat passe par le jeton `--brio-success` (via `.brio-teinte`),
+     *  jamais par une classe Tailwind litterale comme `bg-emerald-50` : sans ce test, le retour
+     *  d'une couleur en dur ne faisait tomber ni ce fichier ni le garde-fou du systeme de design. */
+    public function test_la_chip_d_etat_emploie_le_jeton_de_teinte_pas_une_couleur_litterale(): void
+    {
+        $this->regle(['etat' => AutomationRule::ETAT_ARMEE]);
+
+        $html = Livewire::actingAs($this->adminGlobal())
+            ->test(AutomationCenter::class)
+            ->html();
+
+        $this->assertStringContainsString('--teinte: var(--brio-success)', $html);
+        $this->assertStringNotContainsString('bg-emerald-50', $html);
+        $this->assertStringNotContainsString('text-emerald-700', $html);
+        $this->assertStringNotContainsString('border-emerald-200', $html);
+    }
 }
