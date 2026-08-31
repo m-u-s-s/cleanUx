@@ -18,6 +18,17 @@ class AutomationRule extends Model
 
     public const ETAT_DESACTIVEE = 'desactivee';
 
+    /** Cle de cadence => minutes. Source unique : ExecuterLAutomatisation la lisait en prive. */
+    public const CADENCES = [
+        'chaque_minute' => 1,
+        'quart_heure' => 15,
+        'heure' => 60,
+        'jour' => 1440,
+    ];
+
+    /** Les trois politiques que RuleRunner sait interpreter (defaut : une_fois). */
+    public const POLITIQUES_REPRISE = ['une_fois', 'chaque_passage', 'une_fois_par_jour'];
+
     protected $attributes = [
         'declencheur' => 'cadence',
         'politique_reprise' => 'une_fois',

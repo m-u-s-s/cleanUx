@@ -20,13 +20,6 @@ class ExecuterLAutomatisation extends Command
         AutomationRule::ETAT_ARMEE,
     ];
 
-    private const CADENCES = [
-        'chaque_minute' => 1,
-        'quart_heure' => 15,
-        'heure' => 60,
-        'jour' => 1440,
-    ];
-
     public function handle(RuleRunner $runner, FeatureFlagService $drapeaux, FileDeReevaluation $file): int
     {
         if (! $drapeaux->isEnabled('automation')) {
@@ -142,7 +135,7 @@ class ExecuterLAutomatisation extends Command
             return true;
         }
 
-        $minutes = self::CADENCES[$regle->cadence] ?? 15;
+        $minutes = AutomationRule::CADENCES[$regle->cadence] ?? 15;
 
         return $regle->dernier_passage_le->addMinutes($minutes)->isPast();
     }
