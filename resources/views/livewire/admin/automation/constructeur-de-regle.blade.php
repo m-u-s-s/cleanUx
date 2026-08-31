@@ -1,7 +1,6 @@
 {{--
-    LE CONSTRUCTEUR — nom, entité, déclencheur, actions et leurs paramètres, reprise, quotas.
-    Les conditions viennent à la tâche suivante : cet écran ne les pose pas. Le vocabulaire vient
-    entièrement du catalogue ($entites, $declencheurs, $actionsDisponibles) — rien n'est en dur.
+    LE CONSTRUCTEUR — nom, entité, déclencheur, conditions, actions et leurs paramètres, reprise,
+    quotas. Le vocabulaire vient entièrement du catalogue ($entites, $champsEntite, ...), rien en dur.
 --}}
 <div>
     <x-page-shell
@@ -109,6 +108,7 @@
                             'chemin' => '',
                             'champs' => $champsEntite,
                             'operateurs' => $operateursEntite,
+                            'profondeur' => 1,
                         ])
                     @endif
                 </div>

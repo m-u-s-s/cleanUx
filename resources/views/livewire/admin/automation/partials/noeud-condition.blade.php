@@ -3,8 +3,13 @@
     Recursif via @include : chaque enfant se rend avec son propre chemin (notation pointee).
 --}}
 @php($prop = 'conditions'.($chemin === '' ? '' : ".{$chemin}"))
+@php($profondeur = $profondeur ?? 1)
 
-@if($noeud === [])
+@if($profondeur > \App\Services\Conditions\RuleTreeEvaluator::PROFONDEUR_MAX)
+    {{-- DEFENSE AU RENDU : meme si un arbre trop profond a echappe a la borne du composant, la
+         recursion s'arrete ici plutot que de continuer sans fin. --}}
+    <p class="brio-alerte brio-alerte-danger">Profondeur maximale atteinte, cette branche n'est plus affichee.</p>
+@elseif($noeud === [])
     <div class="flex flex-wrap items-center gap-2">
         <span class="brio-field-label" style="margin:0;">Ajouter :</span>
         <button type="button" class="brio-btn brio-btn-secondary" wire:click="definirNoeud('{{ $chemin }}', 'feuille')">Condition</button>
@@ -26,6 +31,7 @@
                     'chemin' => "{$cheminListe}.{$i}",
                     'champs' => $champs,
                     'operateurs' => $operateurs,
+                    'profondeur' => $profondeur + 1,
                 ])
             @endforeach
         </div>
@@ -50,6 +56,7 @@
                     'chemin' => "{$cheminListe}.{$i}",
                     'champs' => $champs,
                     'operateurs' => $operateurs,
+                    'profondeur' => $profondeur + 1,
                 ])
             @endforeach
         </div>
@@ -73,6 +80,7 @@
                 'chemin' => $cheminEnfant,
                 'champs' => $champs,
                 'operateurs' => $operateurs,
+                'profondeur' => $profondeur + 1,
             ])
         </div>
     </div>

@@ -227,19 +227,21 @@ class ArbreDeConditionsTest extends TestCase
     }
 
     /** LA BORNE — au-delà de `PROFONDEUR_MAX`, l'admin lit le message avant l'enregistrement, pas après. */
+    /**
+     * TOUR DE CORRECTION 1 — la borne mord DES LA MUTATION (`updated()`/`definirNoeud`/
+     * `ajouterEnfant`), avant tout rendu : le refus et la remise a `[]` sont immediats, la ligne
+     * n'atteint meme pas `enregistrer()`. Avant le correctif, ce test passait par
+     * `ValidateurDArbre` a l'enregistrement — desormais l'arbre hostile n'y arrive jamais.
+     */
     public function test_un_arbre_trop_profond_est_refuse_avec_son_message(): void
     {
         $composant = Livewire::actingAs($this->adminGlobal())
             ->test(ConstructeurDeRegle::class)
-            ->set('nom', 'Trop profond')
             ->set('entite', 'booking')
-            ->set('declencheur', 'cadence')
-            ->set('actions', [['cle' => 'journaliser', 'parametres' => ['message' => 'vu']]])
-            ->set('conditions', $this->arbreDeProfondeur(RuleTreeEvaluator::PROFONDEUR_MAX + 1))
-            ->call('enregistrer');
+            ->set('conditions', $this->arbreDeProfondeur(RuleTreeEvaluator::PROFONDEUR_MAX + 1));
 
         $this->assertErreurConditionsExacte($composant, 'Arbre trop profond : '.RuleTreeEvaluator::PROFONDEUR_MAX.' niveaux au plus.');
-        $this->assertDatabaseMissing('automation_rules', ['nom' => 'Trop profond']);
+        $composant->assertSet('conditions', []);
     }
 
     /** TÉMOIN — la profondeur EXACTE de la borne passe, sinon la borne serait décalée d'un cran. */
@@ -256,6 +258,66 @@ class ArbreDeConditionsTest extends TestCase
             ->assertHasNoErrors('conditions');
 
         $this->assertDatabaseHas('automation_rules', ['nom' => 'Profondeur maximale']);
+    }
+
+    /**
+     * TOUR DE CORRECTION 1 — LE POINT QUI COMPTE. `noeud-condition.blade.php` s'inclut lui-meme
+     * SANS BORNE : avant ce correctif, poster un `$conditions` profond par `$set` (pas par les
+     * actions de l'ecran) faisait recurser le rendu sans fin, LONGTEMPS avant qu'`enregistrer()`
+     * ne valide quoi que ce soit. Mesure sur ce depot avant correction : profondeur 200 ~0,33 s,
+     * profondeur 1000 ~19 s, profondeur 5000 : processus tue apres 5 minutes sans terminer. La
+     * borne doit mordre A LA MUTATION, pas au rendu ni a l'enregistrement — le chrono le prouve.
+     */
+    public function test_un_arbre_de_profondeur_cinquante_poste_directement_est_refuse_immediatement(): void
+    {
+        $arbreHostile = $this->arbreDeProfondeur(50);
+
+        $depart = microtime(true);
+
+        $composant = Livewire::actingAs($this->adminGlobal())
+            ->test(ConstructeurDeRegle::class)
+            ->set('entite', 'booking')
+            ->set('conditions', $arbreHostile);
+
+        $duree = microtime(true) - $depart;
+
+        $this->assertErreurConditionsExacte($composant, 'Arbre trop profond : '.RuleTreeEvaluator::PROFONDEUR_MAX.' niveaux au plus.');
+        $composant->assertSet('conditions', []);
+
+        // Le refus doit etre IMMEDIAT, pas seulement plus rapide qu'avant : une seconde est deja
+        // trois ordres de grandeur au-dessus du cout reel d'une comparaison de profondeur.
+        $this->assertLessThan(
+            1.0,
+            $duree,
+            "Le refus a pris {$duree}s : la borne ne mord plus a la mutation, elle laisse le rendu s'en charger."
+        );
+    }
+
+    /**
+     * TÉMOIN — un arbre de profondeur 3 (loin sous la borne), posté de la même façon (par `$set`,
+     * pas par les actions de l'écran), s'affiche et s'enregistre normalement. Sans lui, le test
+     * ci-dessus pourrait passer parce que TOUT `$set('conditions', ...)` est refusé, pas
+     * seulement les arbres trop profonds.
+     */
+    public function test_temoin_un_arbre_de_profondeur_trois_poste_directement_saffiche_et_senregistre(): void
+    {
+        $arbreValide = $this->arbreDeProfondeur(3);
+
+        $composant = Livewire::actingAs($this->adminGlobal())
+            ->test(ConstructeurDeRegle::class)
+            ->set('nom', 'Profondeur temoin')
+            ->set('entite', 'booking')
+            ->set('declencheur', 'cadence')
+            ->set('actions', [['cle' => 'journaliser', 'parametres' => ['message' => 'vu']]])
+            ->set('conditions', $arbreValide);
+
+        $composant->assertHasNoErrors('conditions')
+            ->assertSet('conditions', $arbreValide)
+            ->assertOk();
+
+        $composant->call('enregistrer')->assertHasNoErrors();
+
+        $this->assertDatabaseHas('automation_rules', ['nom' => 'Profondeur temoin']);
     }
 
     /** LA BORNE — au-delà de `NOEUDS_MAX`, même refus lisible avant l'enregistrement. */

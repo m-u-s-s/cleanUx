@@ -84,6 +84,7 @@ class ConstructeurDeRegle extends Component
         $this->declencheur = $regle->declencheur;
         $this->cadence = $regle->cadence;
         $this->conditions = (array) ($regle->conditions ?? []);
+        $this->plafonnerLaProfondeurDesConditions();
         $this->actions = array_map(fn (array $ligne): array => [
             'cle' => (string) ($ligne['cle'] ?? ''),
             'parametres' => (array) ($ligne['parametres'] ?? []),
@@ -102,6 +103,15 @@ class ConstructeurDeRegle extends Component
      */
     public function updated(string $property): void
     {
+        if ($property === 'conditions' || str_starts_with($property, 'conditions.')) {
+            // LE RENDU RECURSE SANS BORNE : sans ce garde AVANT le rendu, un `$conditions`
+            // profond poste par le client fige le processus bien avant qu'`enregistrer()` ne
+            // valide quoi que ce soit (mesure : profondeur 1000 ~19 s, 5000 tue apres 5 min).
+            $this->plafonnerLaProfondeurDesConditions();
+
+            return;
+        }
+
         if ($property === 'entite') {
             $this->reinitialiserPourEntite();
             // LES CHAMPS D'UNE CONDITION APPARTIENNENT A L'ENTITE : en changer rend l'arbre caduc.
@@ -143,6 +153,9 @@ class ConstructeurDeRegle extends Component
         }
 
         $this->definirNoeudAu($chemin, $this->noeudVide($type));
+        // `$chemin` peut lui-meme encoder une profondeur arbitraire : `data_set` la construit
+        // sans jamais la lire, contrairement au rendu qui la recuse ensuite sans borne.
+        $this->plafonnerLaProfondeurDesConditions();
     }
 
     /** AJOUTE un enfant a la LISTE d'un groupe `and`/`or` : `$cheminListe` pointe cette liste. */
@@ -157,6 +170,9 @@ class ConstructeurDeRegle extends Component
         $liste[] = $this->noeudVide($type);
         data_set($conditions, $cheminListe, $liste);
         $this->conditions = $conditions;
+        // Meme raison que dans `definirNoeud()` : `$cheminListe` peut deja encoder une profondeur
+        // arbitraire.
+        $this->plafonnerLaProfondeurDesConditions();
     }
 
     /**
@@ -399,6 +415,47 @@ class ConstructeurDeRegle extends Component
             'plafondJournalier' => 'plafond journalier',
             'actions.*.cle' => 'action',
         ];
+    }
+
+    /**
+     * BORNE LA PROFONDEUR DES QUE L'ARBRE ARRIVE — hydratation (mount) et mutation (updated()) —
+     * PAS seulement a l'enregistrement : le partiel recursif rend AVANT toute validation.
+     */
+    protected function plafonnerLaProfondeurDesConditions(): void
+    {
+        if (! $this->profondeurDepasse($this->conditions, RuleTreeEvaluator::PROFONDEUR_MAX)) {
+            return;
+        }
+
+        $this->conditions = [];
+        $this->addError('conditions', 'Arbre trop profond : '.RuleTreeEvaluator::PROFONDEUR_MAX.' niveaux au plus.');
+    }
+
+    /**
+     * S'ARRETE DES QUE `$limite` EST DEPASSEE : jamais plus de `$limite + 1` niveaux de
+     * recursion, quelle que soit la profondeur REELLE d'un tableau hostile — mesure toujours sure.
+     *
+     * @param  array<string, mixed>  $noeud
+     */
+    protected function profondeurDepasse(array $noeud, int $limite, int $profondeur = 1): bool
+    {
+        if ($profondeur > $limite) {
+            return true;
+        }
+
+        foreach (['and', 'or'] as $groupe) {
+            foreach ((array) ($noeud[$groupe] ?? []) as $sous) {
+                if (is_array($sous) && $this->profondeurDepasse($sous, $limite, $profondeur + 1)) {
+                    return true;
+                }
+            }
+        }
+
+        if (isset($noeud['not']) && is_array($noeud['not']) && $this->profondeurDepasse($noeud['not'], $limite, $profondeur + 1)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
