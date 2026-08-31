@@ -10,7 +10,7 @@
         subtitle="Elle naît en brouillon — ce constructeur ne l'arme jamais."
     >
         <x-slot:actions>
-            <a href="{{ route('admin.automation') }}" class="brio-btn brio-btn-ligne brio-btn-nu">← Règles</a>
+            <a href="{{ route('admin.automation') }}" class="brio-btn brio-btn-secondary">← Règles</a>
         </x-slot:actions>
     </x-page-shell>
 
@@ -42,7 +42,7 @@
                         <select id="entite" wire:model.live="entite">
                             <option value="">— Choisir une entité —</option>
                             @foreach($entites as $cle => $descripteur)
-                                <option value="{{ $cle }}">{{ $cle }}</option>
+                                <option value="{{ $cle }}">{{ $this->libelleEntite($cle) }}</option>
                             @endforeach
                         </select>
                         @error('entite') <p class="mt-1 text-xs" style="color: var(--brio-danger);">{{ $message }}</p> @enderror
@@ -102,7 +102,7 @@
                                 <button type="button" class="brio-btn brio-btn-ligne-danger" wire:click="retirerAction({{ $i }})">Retirer</button>
                             </div>
 
-                            @php($champs = $actionsDisponibles[$action['cle']]['champs'] ?? [])
+                            @php($champs = $actionsDisponibles[$action['cle'] ?? '']['champs'] ?? [])
                             @if($champs !== [])
                                 <div class="brio-form-grid mt-3 md:grid-cols-2">
                                     @foreach($champs as $param => $type)
@@ -118,7 +118,7 @@
                         <x-empty-state title="Aucune action" message="Cette règle ne pose encore aucune action." icon="⚙️" />
                     @endforelse
 
-                    <button type="button" class="brio-btn brio-btn-ligne brio-btn-nu" wire:click="ajouterAction">+ Ajouter une action</button>
+                    <button type="button" class="brio-btn brio-btn-secondary" wire:click="ajouterAction">+ Ajouter une action</button>
                 </div>
             </x-table-shell>
 
@@ -147,7 +147,7 @@
             </x-table-shell>
 
             <div class="flex flex-wrap gap-3">
-                <button type="submit" class="brio-btn brio-btn-accent">{{ $regleId ? 'Mettre à jour' : 'Créer la règle' }}</button>
+                <button type="submit" class="brio-btn brio-btn-primary">{{ $regleId ? 'Mettre à jour' : 'Créer la règle' }}</button>
             </div>
         </form>
     </div>

@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Automation;
 
 use App\Models\AutomationRule;
 use App\Services\Automation\Catalogue;
+use App\Services\Automation\EtatDeRegle;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -134,8 +135,27 @@ class ConstructeurDeRegle extends Component
         ];
 
         if ($this->regleId !== null) {
-            // `conditions` N'APPARTIENT PAS A CE CONSTRUCTEUR (tache suivante) : jamais touchee ici.
-            AutomationRule::query()->findOrFail($this->regleId)->forceFill($attributs)->save();
+            $regle = AutomationRule::query()->findOrFail($this->regleId);
+            $etatAvant = $regle->etat;
+
+            // CE QUI CHANGE CE QUE LA REGLE FAIT retrograde une regle deja armee/observee en
+            // observation : `armer()` exige un journal, mais ce journal porte sur l'ANCIENNE
+            // definition — personne n'a observe la nouvelle. Renommer, changer la description,
+            // le quota ou le plafond ne change rien a ce qu'elle FAIT : jamais de retrogradation
+            // pour ca seul. `actions` compare en `!=` (pas `!==`) : MySQL reordonne les cles d'un
+            // objet JSON au stockage (piege deja paye sur ce depot), une comparaison stricte y
+            // verrait un changement pour une valeur juste reordonnee. `conditions` n'appartient
+            // pas a ce constructeur (tache suivante) : jamais touchee ici.
+            $comportementChange = $regle->entite !== $attributs['entite']
+                || $regle->declencheur !== $attributs['declencheur']
+                || $regle->actions != $attributs['actions'];
+
+            $regle->forceFill($attributs)->save();
+
+            if ($comportementChange && $etatAvant !== AutomationRule::ETAT_BROUILLON) {
+                app(EtatDeRegle::class)->observer($regle);
+            }
+
             $this->flash = 'Règle mise à jour.';
 
             return;
@@ -161,6 +181,20 @@ class ConstructeurDeRegle extends Component
             'cadences' => AutomationRule::CADENCES,
             'politiques' => AutomationRule::POLITIQUES_REPRISE,
         ]);
+    }
+
+    /**
+     * Le catalogue ne porte aucun libellé d'entité (`entites()` ne rend que `cle`/`champs`/
+     * `operateurs`) — repli lisible (`ucfirst`) si le registre en enregistre une de plus demain.
+     */
+    public function libelleEntite(string $cle): string
+    {
+        return match ($cle) {
+            'booking' => 'Réservation',
+            'alerte' => 'Alerte métier',
+            'mission' => 'Mission',
+            default => ucfirst($cle),
+        };
     }
 
     public function libelleCadence(string $cle): string
@@ -207,10 +241,32 @@ class ConstructeurDeRegle extends Component
             'politiqueReprise' => ['required', 'string', Rule::in(AutomationRule::POLITIQUES_REPRISE)],
             'quotaParPassage' => ['required', 'integer', 'min:1', 'max:10000'],
             'plafondJournalier' => ['required', 'integer', 'min:1', 'max:100000'],
-            'actions' => ['array'],
+            // AU MOINS UNE ACTION : une regle sans action ne pose jamais rien, brouillon ou pas.
+            'actions' => ['array', 'min:1'],
             'actions.*.cle' => ['required', 'string', Rule::in($actionsValides)],
-            'actions.*.parametres' => ['array'],
+            'actions.*.parametres' => ['array', $this->regleParametresConnus($catalogue)],
         ];
+    }
+
+    /**
+     * Un parametre absent du `champs()` de l'action choisie est refuse : sans cette garde, un
+     * parametre invente passerait au silence jusqu'a ce que `RuleRunner` l'ignore sans le dire.
+     */
+    protected function regleParametresConnus(Catalogue $catalogue): \Closure
+    {
+        return function (string $attribut, mixed $valeur, \Closure $echoue) use ($catalogue): void {
+            if (preg_match('/^actions\.(\d+)\.parametres$/', $attribut, $m) !== 1) {
+                return;
+            }
+
+            $cle = (string) ($this->actions[(int) $m[1]]['cle'] ?? '');
+            $champsConnus = array_keys($catalogue->actions($this->entite ?: null)[$cle]['champs'] ?? []);
+            $inconnus = array_diff(array_keys((array) $valeur), $champsConnus);
+
+            if ($inconnus !== []) {
+                $echoue('Paramètre(s) inconnu(s) pour cette action : '.implode(', ', $inconnus).'.');
+            }
+        };
     }
 
     /** @return array<string, string> */

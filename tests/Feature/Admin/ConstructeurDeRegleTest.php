@@ -259,6 +259,47 @@ class ConstructeurDeRegleTest extends TestCase
             ->assertSet('cadence', 'jour');
     }
 
+    /** MINEUR 4 — la branche `declencheur` du hook `updated()` : elle gère la cadence, pas seulement les actions. */
+    public function test_changer_de_declencheur_gere_la_cadence(): void
+    {
+        $composant = Livewire::actingAs($this->adminGlobal())
+            ->test(ConstructeurDeRegle::class)
+            ->set('entite', 'alerte')
+            ->set('declencheur', 'cadence')
+            ->set('cadence', 'jour');
+
+        // PASSER A UN DECLENCHEUR D'EVENEMENT VIDE LA CADENCE : elle ne s'applique plus.
+        $composant->set('declencheur', 'alerte.payment_capture_failed')
+            ->assertSet('cadence', null);
+
+        // REVENIR A `cadence` REPOSE UNE VALEUR PAR DEFAUT : le champ ne reste pas vide.
+        $composant->set('declencheur', 'cadence')
+            ->assertSet('cadence', 'quart_heure');
+    }
+
+    /** MINEUR 5 — changer l'action choisie d'une ligne réinitialise ses paramètres. */
+    public function test_changer_l_action_choisie_reinitialise_ses_parametres(): void
+    {
+        $composant = Livewire::actingAs($this->adminGlobal())
+            ->test(ConstructeurDeRegle::class)
+            ->set('entite', 'booking')
+            ->set('actions', [['cle' => 'journaliser', 'parametres' => ['message' => 'vu']]]);
+
+        $composant->set('actions.0.cle', 'notifier.admins');
+
+        $composant->assertSet('actions', [['cle' => 'notifier.admins', 'parametres' => []]]);
+    }
+
+    /** MAJEUR 2 — une ligne d'action malformée (sans `cle`) ne fait pas planter le formulaire. */
+    public function test_une_ligne_d_action_sans_cle_ne_fait_pas_planter_le_formulaire(): void
+    {
+        Livewire::actingAs($this->adminGlobal())
+            ->test(ConstructeurDeRegle::class)
+            ->set('entite', 'booking')
+            ->set('actions', [['parametres' => []]])
+            ->assertOk();
+    }
+
     /**
      * DEFENSE EN PROFONDEUR — un déclencheur ou une action incohérents avec l'entité soumise
      * sont refusés à l'enregistrement, pas seulement nettoyés côté client. Sans cette garde
@@ -316,12 +357,67 @@ class ConstructeurDeRegleTest extends TestCase
             ->set('nom', 'Bornes valides')
             ->set('entite', 'booking')
             ->set('declencheur', 'cadence')
+            ->set('actions', [['cle' => 'journaliser', 'parametres' => ['message' => 'vu']]])
             ->set('quotaParPassage', 10)
             ->set('plafondJournalier', 100)
             ->call('enregistrer')
             ->assertHasNoErrors(['quotaParPassage', 'plafondJournalier']);
 
         $this->assertDatabaseHas('automation_rules', ['nom' => 'Bornes valides']);
+    }
+
+    /** MINEUR 7 — une règle sans AUCUNE action ne pose jamais rien : elle est refusée. */
+    public function test_une_regle_sans_aucune_action_est_refusee(): void
+    {
+        Livewire::actingAs($this->adminGlobal())
+            ->test(ConstructeurDeRegle::class)
+            ->set('nom', 'Sans action')
+            ->set('entite', 'booking')
+            ->set('declencheur', 'cadence')
+            ->call('enregistrer')
+            ->assertHasErrors('actions');
+
+        $this->assertDatabaseMissing('automation_rules', ['nom' => 'Sans action']);
+    }
+
+    /** MINEUR 6 — un paramètre absent de `champs()` pour l'action choisie est refusé. */
+    public function test_un_parametre_inconnu_pour_l_action_est_refuse(): void
+    {
+        Livewire::actingAs($this->adminGlobal())
+            ->test(ConstructeurDeRegle::class)
+            ->set('nom', 'Paramètre inventé')
+            ->set('entite', 'booking')
+            ->set('declencheur', 'cadence')
+            ->set('actions', [['cle' => 'journaliser', 'parametres' => ['message' => 'vu', 'fantome' => 'x']]])
+            ->call('enregistrer')
+            ->assertHasErrors('actions.0.parametres');
+
+        $this->assertDatabaseMissing('automation_rules', ['nom' => 'Paramètre inventé']);
+    }
+
+    /** TEMOIN — les paramètres réellement déclarés par `champs()` de l'action passent. */
+    public function test_temoin_les_parametres_connus_de_l_action_sont_acceptes(): void
+    {
+        Livewire::actingAs($this->adminGlobal())
+            ->test(ConstructeurDeRegle::class)
+            ->set('nom', 'Paramètre connu')
+            ->set('entite', 'booking')
+            ->set('declencheur', 'cadence')
+            ->set('actions', [['cle' => 'journaliser', 'parametres' => ['message' => 'vu']]])
+            ->call('enregistrer')
+            ->assertHasNoErrors('actions.0.parametres');
+
+        $this->assertDatabaseHas('automation_rules', ['nom' => 'Paramètre connu']);
+    }
+
+    /** MINEUR 8 — l'entité s'affiche avec un libellé lisible, pas sa clé brute. */
+    public function test_l_entite_s_affiche_avec_un_libelle_lisible(): void
+    {
+        Livewire::actingAs($this->adminGlobal())
+            ->test(ConstructeurDeRegle::class)
+            ->assertSee('Réservation')
+            ->assertSee('Alerte métier')
+            ->assertSee('Mission');
     }
 
     /** Les paramètres déclarés par `champs()` de l'action choisie apparaissent au formulaire. */
@@ -364,11 +460,42 @@ class ConstructeurDeRegleTest extends TestCase
     }
 
     /**
-     * Modifier une règle EXISTANTE met à jour ses champs sans jamais toucher à son état ni à
-     * ses conditions — ce constructeur ne les possède pas (armement : liste ; conditions :
-     * tâche suivante).
+     * MAJEUR 1 — LE POINT QUI COMPTE. Modifier `actions` (ou `entite`/`declencheur`) sur une
+     * règle déjà armée la retrograde en `observation` : `armer()` exige un journal d'observation,
+     * mais ce journal porte sur l'ANCIENNE définition — personne n'a observé la nouvelle. Sans
+     * cette rétrogradation, le moteur agirait sur un comportement que personne n'a jamais vu
+     * tourner. `conditions` n'appartient pas à ce constructeur (tâche suivante) : jamais touchée.
      */
-    public function test_modifier_une_regle_existante_met_a_jour_sans_toucher_a_l_etat_ni_aux_conditions(): void
+    public function test_modifier_les_actions_d_une_regle_armee_la_retrograde_en_observation(): void
+    {
+        $regle = AutomationRule::create([
+            'nom' => 'À modifier',
+            'entite' => 'booking',
+            'declencheur' => 'cadence',
+            'cadence' => 'heure',
+            'etat' => AutomationRule::ETAT_ARMEE,
+            'conditions' => ['champ' => 'statut'],
+            'actions' => [['cle' => 'journaliser', 'parametres' => ['message' => 'vu']]],
+        ]);
+
+        Livewire::actingAs($this->adminGlobal())
+            ->test(ConstructeurDeRegle::class, ['regleId' => $regle->id])
+            ->set('actions', [['cle' => 'notifier.admins', 'parametres' => ['message' => 'alerte']]])
+            ->call('enregistrer')
+            ->assertHasNoErrors();
+
+        $regle->refresh();
+
+        $this->assertSame(AutomationRule::ETAT_OBSERVATION, $regle->etat);
+        $this->assertSame(['champ' => 'statut'], $regle->conditions, 'Les conditions n\'appartiennent pas à ce constructeur.');
+    }
+
+    /**
+     * TEMOIN — renommer une règle armée, ou changer sa description/son quota/son plafond, ne
+     * change rien à CE QU'ELLE FAIT : jamais de rétrogradation pour ça seul. Sans ce témoin, la
+     * rétrogradation ci-dessus pourrait être un déclenchement systématique à chaque enregistrement.
+     */
+    public function test_renommer_une_regle_armee_et_changer_son_quota_ne_la_retrograde_pas(): void
     {
         $regle = AutomationRule::create([
             'nom' => 'À modifier',
@@ -383,7 +510,9 @@ class ConstructeurDeRegleTest extends TestCase
         Livewire::actingAs($this->adminGlobal())
             ->test(ConstructeurDeRegle::class, ['regleId' => $regle->id])
             ->set('nom', 'Renommée')
+            ->set('description', 'Nouvelle description')
             ->set('quotaParPassage', 99)
+            ->set('plafondJournalier', 999)
             ->call('enregistrer')
             ->assertHasNoErrors();
 
@@ -391,8 +520,33 @@ class ConstructeurDeRegleTest extends TestCase
 
         $this->assertSame('Renommée', $regle->nom);
         $this->assertSame(99, $regle->quota_par_passage);
-        $this->assertSame(AutomationRule::ETAT_ARMEE, $regle->etat, "L'état n'appartient pas à ce constructeur.");
+        $this->assertSame(AutomationRule::ETAT_ARMEE, $regle->etat, 'Renommer ne change pas ce que la règle fait : pas de rétrogradation.');
         $this->assertSame(['champ' => 'statut'], $regle->conditions, 'Les conditions n\'appartiennent pas à ce constructeur.');
+    }
+
+    /**
+     * Une règle EN BROUILLON qui change de comportement reste en brouillon : elle n'a jamais été
+     * armée, il n'y a rien à rétrograder. Sans ce témoin, retirer la garde `$etatAvant !==
+     * BROUILLON` passerait inaperçu — toutes les créations naissent déjà en brouillon.
+     */
+    public function test_modifier_une_regle_en_brouillon_qui_change_de_comportement_reste_en_brouillon(): void
+    {
+        $regle = AutomationRule::create([
+            'nom' => 'Brouillon',
+            'entite' => 'booking',
+            'declencheur' => 'cadence',
+            'cadence' => 'heure',
+            'conditions' => [],
+            'actions' => [['cle' => 'journaliser', 'parametres' => ['message' => 'vu']]],
+        ]);
+
+        Livewire::actingAs($this->adminGlobal())
+            ->test(ConstructeurDeRegle::class, ['regleId' => $regle->id])
+            ->set('actions', [['cle' => 'notifier.admins', 'parametres' => ['message' => 'alerte']]])
+            ->call('enregistrer')
+            ->assertHasNoErrors();
+
+        $this->assertSame(AutomationRule::ETAT_BROUILLON, $regle->fresh()->etat);
     }
 
     /**
