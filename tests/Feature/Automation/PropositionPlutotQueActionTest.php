@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Notifications\Automation\RegleDeclencheeNotification;
 use App\Services\Automation\RuleRunner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -155,6 +156,37 @@ class PropositionPlutotQueActionTest extends TestCase
 
         $this->assertSame(1, $second->entites_vues);
         $this->assertSame(1, $this->compter(AutomationAction::RESULTAT_PROPOSEE));
+    }
+
+    /** Les reglages se lisent UNE fois par passage : dans la boucle, c'est une requete par ligne. */
+    public function test_les_reglages_ne_sont_lus_qu_une_fois_par_passage(): void
+    {
+        Booking::factory()->count(10)->create(['status' => 'en_attente']);
+
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, [
+            'actions' => [
+                ['cle' => 'journaliser', 'parametres' => ['message' => 'a']],
+                ['cle' => 'notifier.admins', 'parametres' => ['message' => 'b']],
+            ],
+        ]));
+
+        // Cadre sur la SEULE table des reglages : stable quoi qu'on ajoute ailleurs, la ou un
+        // budget de requetes global rougirait au premier ajout legitime.
+        $lectures = 0;
+        DB::listen(function ($requete) use (&$lectures) {
+            if (str_contains($requete->sql, 'automation_action_settings')) {
+                $lectures++;
+            }
+        });
+
+        $passage = app(RuleRunner::class)->executer($regle);
+
+        $this->assertSame(1, $lectures);
+        // TEMOIN — le passage a vraiment travaille : sans lui, « une seule lecture » serait
+        // tout aussi vrai d'un passage qui ne pose rien du tout.
+        $this->assertSame(10, $passage->entites_vues);
+        $this->assertSame(20, $passage->actions_posees);
+        $this->assertSame(20, $this->compter(AutomationAction::RESULTAT_PROPOSEE));
     }
 
     /** `chaque_passage` fait re-AGIR, pas re-PROPOSER : sinon la file se remplit de doublons. */
