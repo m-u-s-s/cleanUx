@@ -53,6 +53,9 @@ class ConstructeurDeRegle extends Component
      */
     public array $conditions = [];
 
+    /** LA PORTE JSON — un arbre collé à la main, pas encore validé. Pas `#[Locked]` : l'admin le remplit. */
+    public string $conditionsJson = '';
+
     /**
      * Chaque ligne DEVRAIT porter `cle` et `parametres`, mais la forme n'est garantie qu'APRES
      * `validate()` : Livewire hydrate cette propriete publique depuis la requete, et rien
@@ -197,6 +200,51 @@ class ConstructeurDeRegle extends Component
         unset($liste[$index]);
         data_set($conditions, $cheminListe, array_values($liste));
         $this->conditions = $conditions;
+    }
+
+    /**
+     * LA PORTE JSON — colle un arbre écrit à la main. `ValidateurDArbre` fait autorité sur la
+     * forme, les champs, les opérateurs ET les bornes ; un arbre bon remplit le MÊME `$conditions`.
+     */
+    public function appliquerJson(EntiteRegistre $entiteRegistre, ValidateurDArbre $validateurDArbre): void
+    {
+        $this->resetErrorBag('conditionsJson');
+
+        $arbre = json_decode($this->conditionsJson, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $this->addError('conditionsJson', 'JSON invalide : '.json_last_error_msg().'.');
+
+            return;
+        }
+
+        if (! is_array($arbre)) {
+            $this->addError('conditionsJson', 'Un arbre de conditions doit être {field, op, value} ou {and|or|not: ...}.');
+
+            return;
+        }
+
+        $entiteDescripteur = $this->entite !== '' ? $entiteRegistre->descripteur($this->entite) : null;
+
+        if ($entiteDescripteur === null) {
+            $this->addError('conditionsJson', "Choisissez d'abord une entité.");
+
+            return;
+        }
+
+        $erreurs = $validateurDArbre->valider($arbre, $entiteDescripteur);
+
+        if ($erreurs !== []) {
+            foreach ($erreurs as $erreur) {
+                $this->addError('conditionsJson', $erreur);
+            }
+
+            return;
+        }
+
+        // MEME MARCHE QUE mount()/definirNoeud()/ajouterEnfant() : jamais une seconde borne maison.
+        $this->conditions = $arbre;
+        $this->plafonnerLesBornesDesConditions();
     }
 
     /** @return array<string, mixed> */

@@ -109,6 +109,21 @@
                             Cet arbre dépasse les bornes autorisées et ne peut pas être affiché.
                         </div>
                     @else
+                        {{-- LA PORTE JSON — colle un arbre écrit à la main, valide, remplit le constructeur ci-dessous. --}}
+                        <div class="brio-choice-card !flex-col !items-stretch !cursor-auto">
+                            <label class="brio-field-label" for="conditionsJson">Coller un arbre JSON (expert)</label>
+                            <textarea
+                                id="conditionsJson"
+                                rows="4"
+                                wire:model="conditionsJson"
+                                placeholder='{"and": [{"field": "statut", "op": "eq", "value": "confirme"}]}'
+                            ></textarea>
+                            @error('conditionsJson') <p class="mt-1 text-xs" style="color: var(--brio-danger);">{{ $message }}</p> @enderror
+                            <div class="mt-3">
+                                <button type="button" class="brio-btn brio-btn-secondary" wire:click="appliquerJson">Appliquer le JSON</button>
+                            </div>
+                        </div>
+
                         @include('livewire.admin.automation.partials.noeud-condition', [
                             'noeud' => $conditions,
                             'chemin' => '',
