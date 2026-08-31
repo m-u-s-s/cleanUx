@@ -274,14 +274,16 @@ class ReglagesDActionsEcranTest extends TestCase
     }
 
     /**
-     * CONFIRMER SANS RIEN EN ATTENTE NE POSE RIEN — sans cette garde, `(string) null` vaut '' et
-     * `ReglagesDActions::basculer('', true, ...)` inserterait un reglage a cle vide en base.
+     * CONFIRMER SANS RIEN EN ATTENTE NE POSE RIEN, ET NE LEVE RIEN — `assertOk()` est la partie
+     * qui manquait : sans elle, l'etat (deja null avant l'appel) et le compte (deja a zero avant
+     * l'appel) restent identiques que la garde existe ou non, et ne prouvent donc rien seuls.
      */
     public function test_confirmer_sans_confirmation_en_attente_ne_pose_aucun_reglage(): void
     {
         Livewire::actingAs($this->adminGlobal())
             ->test(ReglagesDActionsEcran::class)
             ->call('confirmerAutonomie')
+            ->assertOk()
             ->assertSet('actionEnConfirmation', null);
 
         $this->assertDatabaseCount('automation_action_settings', 0);
@@ -289,9 +291,13 @@ class ReglagesDActionsEcranTest extends TestCase
 
     /**
      * L'ACTION A PU DISPARAITRE DU REGISTRE ENTRE LES DEUX APPELS (deploiement en cours) — le
-     * registre est un singleton du conteneur, le remplacer simule exactement ce retrait.
+     * registre est un singleton du conteneur, le remplacer simule exactement ce retrait. Le
+     * meme controle explicite que « rien en attente » s'applique : ni exception, ni reglage pose
+     * pour une cle qui n'existe plus. `assertDatabaseMissing` est la partie qui manquait :
+     * `estAutonome()` rend deja `false` pour une cle hors registre MEME s'il existe une ligne en
+     * base pour elle — sans ce controle direct, une ligne fantome resterait invisible au test.
      */
-    public function test_confirmer_une_action_retiree_du_registre_entre_les_deux_appels_est_refusee(): void
+    public function test_confirmer_une_action_retiree_du_registre_entre_les_deux_appels_ne_pose_rien(): void
     {
         $this->enregistrerActionDeDomaine('action.qui.disparait');
 
@@ -303,9 +309,12 @@ class ReglagesDActionsEcranTest extends TestCase
         // Simule le retrait : un registre neuf, sans l'action en attente de confirmation.
         app()->instance(ActionRegistre::class, new ActionRegistre);
 
-        $composant->call('confirmerAutonomie')->assertNotFound();
+        $composant->call('confirmerAutonomie')
+            ->assertOk()
+            ->assertSet('actionEnConfirmation', null);
 
         $this->assertFalse(app(ReglagesDActions::class)->estAutonome('action.qui.disparait'));
+        $this->assertDatabaseMissing('automation_action_settings', ['action_cle' => 'action.qui.disparait']);
     }
 
     /**

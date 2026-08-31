@@ -63,12 +63,18 @@ class ReglagesDActionsEcran extends Component
     /** ACHEVE CE QUE `basculer()` A OUVERT — c'est ici, et seulement ici, que l'autonomie prend effet. */
     public function confirmerAutonomie(Catalogue $catalogue, ReglagesDActions $reglages): void
     {
-        if ($this->actionEnConfirmation === null) {
+        // AUCUNE CONFIRMATION EN ATTENTE, OU L'ACTION A DISPARU DU REGISTRE ENTRE LES DEUX
+        // APPELS (deploiement en cours) : UN SEUL controle explicite couvre les deux, jamais
+        // la conversion PHP null -> '' d'une cle de tableau.
+        $descripteur = $this->actionEnConfirmation !== null
+            ? ($catalogue->actions()[$this->actionEnConfirmation] ?? null)
+            : null;
+
+        if ($descripteur === null) {
+            $this->actionEnConfirmation = null;
+
             return;
         }
-
-        // Defense en profondeur : l'action a pu disparaitre du registre entre les deux appels.
-        abort_if(($catalogue->actions()[$this->actionEnConfirmation] ?? null) === null, 404);
 
         $reglages->basculer($this->actionEnConfirmation, true, Auth::user());
         $this->actionEnConfirmation = null;
