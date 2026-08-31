@@ -227,7 +227,9 @@ class ConstructeurDeRegle extends Component
         $entiteDescripteur = $this->entite !== '' ? $entiteRegistre->descripteur($this->entite) : null;
 
         if ($entiteDescripteur === null) {
-            $this->addError('conditionsJson', "Choisissez d'abord une entité.");
+            $this->addError('conditionsJson', $this->entite === ''
+                ? "Choisissez d'abord une entité : les conditions se lisent contre ses champs."
+                : "Entité inconnue : « {$this->entite} ». Choisissez-en une dans la liste.");
 
             return;
         }
@@ -242,9 +244,9 @@ class ConstructeurDeRegle extends Component
             return;
         }
 
-        // MEME MARCHE QUE mount()/definirNoeud()/ajouterEnfant() : jamais une seconde borne maison.
+        // `valider()` a deja borne l'arbre par la meme marche : le replafonner ici serait
+        // deux appels du meme controle, pas une garde de plus.
         $this->conditions = $arbre;
-        $this->plafonnerLesBornesDesConditions();
     }
 
     /** @return array<string, mixed> */

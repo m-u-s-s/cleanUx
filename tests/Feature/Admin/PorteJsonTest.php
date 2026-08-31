@@ -86,7 +86,31 @@ class PorteJsonTest extends TestCase
             ->set('conditionsJson', json_encode(['field' => 'statut', 'op' => 'eq', 'value' => 'confirme']))
             ->call('appliquerJson');
 
-        $this->assertErreurJsonExacte($composant, "Choisissez d'abord une entité.");
+        $this->assertErreurJsonExacte(
+            $composant,
+            "Choisissez d'abord une entité : les conditions se lisent contre ses champs."
+        );
+        $composant->assertSet('conditions', []);
+    }
+
+    /**
+     * DEUX CAUSES, DEUX MESSAGES.
+     *
+     * `entite` est une propriete publique : le navigateur peut y poser n'importe quoi. « Choisissez
+     * d'abord une entite » enverrait alors l'administrateur choisir ce qu'il a deja choisi.
+     */
+    public function test_une_entite_inconnue_le_dit_au_lieu_d_en_reclamer_une(): void
+    {
+        $composant = Livewire::actingAs($this->adminGlobal())
+            ->test(ConstructeurDeRegle::class)
+            ->set('entite', 'entite_qui_n_existe_pas')
+            ->set('conditionsJson', json_encode(['field' => 'statut', 'op' => 'eq', 'value' => 'confirme']))
+            ->call('appliquerJson');
+
+        $this->assertErreurJsonExacte(
+            $composant,
+            'Entité inconnue : « entite_qui_n_existe_pas ». Choisissez-en une dans la liste.'
+        );
         $composant->assertSet('conditions', []);
     }
 
