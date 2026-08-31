@@ -81,11 +81,15 @@
 @else
     {{-- FEUILLE : {field, op, value} --}}
     <div class="brio-choice-card !flex-col !items-stretch !cursor-auto">
+        {{-- UN LABEL DOIT NOMMER SON CHAMP. La vue est recursive : l'ancre se derive du chemin
+             du noeud, seule valeur unique a chaque niveau de l'arbre. --}}
+        @php($ancre = 'cond-'.preg_replace('/[^a-z0-9]+/i', '-', $chemin))
+
         <div class="flex flex-wrap items-end gap-3">
             <div class="brio-form-grid flex-1 md:grid-cols-3">
                 <div>
-                    <label class="brio-field-label">Champ</label>
-                    <select wire:model="{{ $prop }}.field">
+                    <label class="brio-field-label" for="{{ $ancre }}-field">Champ</label>
+                    <select id="{{ $ancre }}-field" wire:model="{{ $prop }}.field">
                         <option value="">— Choisir —</option>
                         @foreach($champs as $champ)
                             <option value="{{ $champ }}">{{ $champ }}</option>
@@ -93,8 +97,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="brio-field-label">Opérateur</label>
-                    <select wire:model="{{ $prop }}.op">
+                    <label class="brio-field-label" for="{{ $ancre }}-op">Opérateur</label>
+                    <select id="{{ $ancre }}-op" wire:model="{{ $prop }}.op">
                         <option value="">— Choisir —</option>
                         @foreach($operateurs as $operateur)
                             <option value="{{ $operateur }}">{{ $operateur }}</option>
@@ -102,8 +106,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="brio-field-label">Valeur</label>
-                    <input type="text" wire:model="{{ $prop }}.value">
+                    <label class="brio-field-label" for="{{ $ancre }}-value">Valeur</label>
+                    <input id="{{ $ancre }}-value" type="text" wire:model="{{ $prop }}.value">
                 </div>
             </div>
             <button type="button" class="brio-btn brio-btn-ligne-danger" wire:click="retirerNoeud('{{ $chemin }}')">Retirer</button>
