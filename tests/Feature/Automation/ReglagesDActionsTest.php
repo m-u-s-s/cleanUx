@@ -107,4 +107,20 @@ class ReglagesDActionsTest extends TestCase
 
         $this->assertFalse(app(ReglagesDActions::class)->estAutonome('action_retiree_du_code'));
     }
+
+    /** LE DEFAUT DE LA COLONNE — l'invariant central : une ligne sans valeur explicite vaut « a valider ». */
+    public function test_une_ligne_creee_sans_preciser_autonome_est_a_valider(): void
+    {
+        $reglage = AutomationActionSetting::create(['action_cle' => 'journaliser']);
+
+        $this->assertFalse($reglage->fresh()->autonome);
+    }
+
+    /** TEMOIN — une ligne qui precise autonome=true se relit bien autonome, le defaut ne l'ecrase pas. */
+    public function test_temoin_une_ligne_creee_avec_autonome_vrai_se_relit_autonome(): void
+    {
+        $reglage = AutomationActionSetting::create(['action_cle' => 'notifier.admins', 'autonome' => true]);
+
+        $this->assertTrue($reglage->fresh()->autonome);
+    }
 }
