@@ -108,11 +108,14 @@ class ExecuterLAutomatisation extends Command
 
                 // Un refus en amont ecrit une liste VIDE : l'ignorer, sinon l'intersection
                 // viderait le groupe pour toujours.
+                //
+                // Un echec total (liste NON vide : les entites ont ete balayees) suit le
+                // meme sort — les echecs consecutifs suspendent la regle, pas la file.
                 if ($passage->statut === 'echec') {
                     continue;
                 }
 
-                $ensembles[] = $passage->entites_traitees ?? [];
+                $ensembles[] = $passage->entites_finies ?? [];
             }
 
             // Une regle qui leve, ou aucune dont le passage compte (toutes en echec) :
@@ -121,16 +124,16 @@ class ExecuterLAutomatisation extends Command
                 continue;
             }
 
-            $traitees = array_shift($ensembles);
+            $finies = array_shift($ensembles);
             foreach ($ensembles as $ensemble) {
-                $traitees = array_intersect($traitees, $ensemble);
+                $finies = array_intersect($finies, $ensemble);
             }
 
             // Une ligne purge quand son entite figure dans TOUTES les regles du groupe :
             // deux regles aux conditions differentes peuvent servir des entites differentes.
             $aPurger = [];
             foreach ($groupe['identifiants'] as $i => $entiteId) {
-                if (in_array($entiteId, $traitees, true)) {
+                if (in_array($entiteId, $finies, true)) {
                     $aPurger[] = $groupe['lignes'][$i];
                 }
             }

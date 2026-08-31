@@ -436,6 +436,79 @@ class DrainTest extends TestCase
         );
     }
 
+    /**
+     * CORRECTIF 2, TOUR 2 — LA FAMINE UN CRAN PLUS HAUT. Sous `une_fois`, une regle qui a
+     * deja fini avec une entite ne la balaie plus JAMAIS : compter seulement ce qui est
+     * balaye CE tour la ferait disparaitre de `entites_finies` a chaque tour suivant, et
+     * l'intersection ne se reconstituerait jamais tant qu'une AUTRE regle reste bridee.
+     */
+    public function test_deux_regles_une_fois_avec_des_quotas_differents_finissent_par_tout_purger(): void
+    {
+        config()->set('features.automation', true);
+
+        $graine = $this->seedAlerte();
+        $regleA = $this->regleEvenementielle('alerte');
+        $regleA->forceFill(['quota_par_passage' => 10])->save();
+        $regleA = $this->armerParDrain($regleA, [$graine->id]);
+
+        $regleB = $this->regleEvenementielle('alerte');
+        $regleB->forceFill(['quota_par_passage' => 1])->save();
+        $regleB = $this->armerParDrain($regleB, [$graine->id]);
+
+        BusinessAlerts::webhookBacklog(1);
+        BusinessAlerts::webhookBacklog(2);
+        BusinessAlerts::webhookBacklog(3);
+        $alertes = AlerteMetier::where('cle', 'webhook_backlog')->pluck('id')->all();
+        $this->assertSame(3, AutomationReevaluation::count());
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+        $this->artisan('automation:executer')->assertExitCode(0);
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(
+            0,
+            AutomationReevaluation::count(),
+            'La file ne se vide jamais : la regle au quota large ne balaie plus les entites deja finies.'
+        );
+        foreach ($alertes as $id) {
+            $this->assertSame(
+                1,
+                AutomationAction::where('automation_rule_id', $regleA->id)->where('mode', 'armee')->where('entite_id', $id)->count(),
+                "La regle A n'a pas servi l'alerte {$id}."
+            );
+            $this->assertSame(
+                1,
+                AutomationAction::where('automation_rule_id', $regleB->id)->where('mode', 'armee')->where('entite_id', $id)->count(),
+                "La regle B n'a pas servi l'alerte {$id}."
+            );
+        }
+    }
+
+    /** TEMOIN — deux quotas larges : les deux regles servent tout au premier passage, file vide. */
+    public function test_temoin_deux_regles_une_fois_avec_des_quotas_larges_vident_la_file_au_premier_passage(): void
+    {
+        config()->set('features.automation', true);
+
+        $graine = $this->seedAlerte();
+        $regleA = $this->regleEvenementielle('alerte');
+        $regleA->forceFill(['quota_par_passage' => 10])->save();
+        $regleA = $this->armerParDrain($regleA, [$graine->id]);
+
+        $regleB = $this->regleEvenementielle('alerte');
+        $regleB->forceFill(['quota_par_passage' => 10])->save();
+        $regleB = $this->armerParDrain($regleB, [$graine->id]);
+
+        BusinessAlerts::webhookBacklog(1);
+        BusinessAlerts::webhookBacklog(2);
+        BusinessAlerts::webhookBacklog(3);
+
+        $this->artisan('automation:executer')->assertExitCode(0);
+
+        $this->assertSame(0, AutomationReevaluation::count());
+        $this->assertSame(3, AutomationAction::where('automation_rule_id', $regleA->id)->where('mode', 'armee')->count());
+        $this->assertSame(3, AutomationAction::where('automation_rule_id', $regleB->id)->where('mode', 'armee')->count());
+    }
+
     /** TEMOIN — quota suffisant : le premier passage traite tout et vide la file. */
     public function test_temoin_quota_suffisant_le_premier_passage_vide_la_file(): void
     {

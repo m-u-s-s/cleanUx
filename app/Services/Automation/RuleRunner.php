@@ -63,6 +63,12 @@ class RuleRunner
             $requete->whereKey($identifiants);
         }
 
+        // Captures AVANT le balayage : ce que cette regle a deja fini, parmi les
+        // identifiants fournis — le drain evenementiel en a besoin pour purger juste.
+        $dejaFinies = $identifiants !== null
+            ? $this->entitesDejaExclues($regle, $observation, $identifiants)
+            : [];
+
         $this->exclureLeDejaAgi($requete, $regle, $observation);
 
         // Le plafond borne des LIGNES ; le quota borne des ENTITES. Une regle a N actions
@@ -105,10 +111,17 @@ class RuleRunner
         // EMBALLEMENT : bride, et la population n'a pas diminue depuis le passage precedent.
         $emballement = $bride && $precedent !== null && $eligibles >= $precedent;
 
+        // « Fini » = traite CE tour, OU deja exclu par la politique de reprise : une regle
+        // en a fini avec une entite aussi bien en l'agissant qu'en la reconnaissant faite.
+        $finies = array_values(array_unique(array_merge(
+            array_map('intval', $lignes->modelKeys()),
+            $dejaFinies
+        )));
+
         $passage->forceFill([
             'entites_vues' => $lignes->count(),
             'entites_eligibles' => $eligibles,
-            'entites_traitees' => array_map('intval', $lignes->modelKeys()),
+            'entites_finies' => $finies,
             'actions_posees' => $posees,
             'statut' => $echecTotal ? 'echec' : ($bride ? 'plafond_atteint' : 'ok'),
             'termine_le' => now(),
@@ -201,7 +214,40 @@ class RuleRunner
             return;
         }
 
-        $deja = LigneDeJournal::query()
+        $requete->whereNotIn(
+            $requete->getModel()->getQualifiedKeyName(),
+            $this->dejaAgiQuery($regle, $observation)
+        );
+    }
+
+    /**
+     * Parmi $identifiants, ceux que la politique de reprise exclut deja : cette regle en a
+     * fini avec eux avant meme ce passage, meme si elle ne les balaie plus.
+     *
+     * @param  list<int>  $identifiants
+     * @return list<int>
+     */
+    protected function entitesDejaExclues(AutomationRule $regle, bool $observation, array $identifiants): array
+    {
+        if ($regle->politique_reprise === 'chaque_passage') {
+            return [];
+        }
+
+        return $this->dejaAgiQuery($regle, $observation)
+            ->whereIn('entite_id', $identifiants)
+            ->pluck('entite_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
+    /**
+     * La requete « deja agi » brute, partagee par l'exclusion du balayage et entitesDejaExclues().
+     *
+     * @return Builder<LigneDeJournal>
+     */
+    protected function dejaAgiQuery(AutomationRule $regle, bool $observation): Builder
+    {
+        return LigneDeJournal::query()
             ->where('automation_rule_id', $regle->id)
             ->where('entite_type', $regle->entite)
             ->where('mode', $observation ? 'observation' : 'armee')
@@ -215,8 +261,6 @@ class RuleRunner
                 fn (Builder $q) => $q->where('pose_le', '>=', now()->subDay())
             )
             ->select('entite_id');
-
-        $requete->whereNotIn($requete->getModel()->getQualifiedKeyName(), $deja);
     }
 
     protected function poseesAujourdhui(AutomationRule $regle, bool $observation): int

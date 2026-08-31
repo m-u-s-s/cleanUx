@@ -6,18 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /** Les cles reellement traitees par CE passage : le drain purge sur leur intersection. */
+    /** Les cles avec lesquelles CE passage en a fini : le drain purge sur leur intersection. */
     public function up(): void
     {
         Schema::table('automation_runs', function (Blueprint $table) {
-            $table->json('entites_traitees')->nullable()->after('entites_eligibles');
+            $table->json('entites_finies')->nullable()->after('entites_eligibles');
         });
     }
 
     public function down(): void
     {
         Schema::table('automation_runs', function (Blueprint $table) {
-            $table->dropColumn('entites_traitees');
+            $table->dropColumn('entites_finies');
         });
     }
 };

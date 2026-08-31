@@ -154,8 +154,8 @@ class RuleRunnerTest extends TestCase
         $passage = app(RuleRunner::class)->executer($regle->fresh());
 
         $this->assertSame('plafond_atteint', $passage->statut);
-        $this->assertCount(1, $passage->entites_traitees);
-        $this->assertContains($passage->entites_traitees[0], [$b1->id, $b2->id]);
+        $this->assertCount(1, $passage->entites_finies);
+        $this->assertContains($passage->entites_finies[0], [$b1->id, $b2->id]);
     }
 
     /** TEMOIN — non bride (quota suffisant), la liste complete des entites vues est ecrite. */
@@ -168,7 +168,7 @@ class RuleRunnerTest extends TestCase
         $passage = app(RuleRunner::class)->executer($regle->fresh());
 
         $this->assertSame('ok', $passage->statut);
-        $this->assertEqualsCanonicalizing([$b1->id, $b2->id], $passage->entites_traitees);
+        $this->assertEqualsCanonicalizing([$b1->id, $b2->id], $passage->entites_finies);
     }
 
     /** DEFAUT B9 — un passage d'observation entierement en echec le montre, il ne le maquille pas. */
