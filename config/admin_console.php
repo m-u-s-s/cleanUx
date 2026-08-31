@@ -110,7 +110,7 @@ return [
         ['key' => 'realtime', 'title' => 'Temps réel', 'group' => 'operations', 'icon' => 'pulse-outline', 'coverage' => 'descriptor', 'routes' => ['admin/realtime']],
         ['key' => 'bookings', 'title' => 'Rendez-vous et récurrences', 'group' => 'operations', 'icon' => 'repeat-outline', 'coverage' => 'descriptor', 'routes' => ['admin/recurrence/{rendezVous}/serie', 'admin/rendez-vous/{rendezVous}', 'admin/rendez-vous-series/{series}/edit']],
         ['key' => 'b2b-operations', 'title' => 'Opérations B2B', 'group' => 'operations', 'icon' => 'business-outline', 'coverage' => 'descriptor', 'routes' => ['admin/b2b/operations'], 'resources' => ['b2b-contracts', 'b2b-work-orders']],
-        ['key' => 'automation', 'title' => 'Automatisation', 'group' => 'operations', 'icon' => 'flash-outline', 'coverage' => 'report', 'routes' => ['admin/automation', 'admin/automation/regles/nouvelle', 'admin/automation/regles/{regleId}/modifier', 'admin/automation/regles/{regleId}/journal']],
+        ['key' => 'automation', 'title' => 'Automatisation', 'group' => 'operations', 'icon' => 'flash-outline', 'coverage' => 'report', 'routes' => ['admin/automation', 'admin/automation/regles/nouvelle', 'admin/automation/regles/{regleId}/modifier', 'admin/automation/regles/{regleId}/journal', 'admin/automation/reglages']],
 
         // ── Personnes et comptes ────────────────────────────────────────────────────────────
         ['key' => 'users', 'title' => 'Utilisateurs', 'group' => 'personnes', 'icon' => 'people-outline', 'coverage' => 'descriptor', 'routes' => ['admin/utilisateurs']],

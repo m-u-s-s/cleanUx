@@ -497,5 +497,6 @@ return [
         // Sous-page d'`admin.automation`, atteinte depuis sa liste : une case propre la ferait
         // apparaître comme un module distinct, sous la même capacité que celui qui l'ouvre.
         'admin.automation.regles.creer' => 'Sous-page du centre d’automatisation, pas un module',
+        'admin.automation.reglages' => 'Sous-page du centre d’automatisation, pas un module',
     ],
 ];

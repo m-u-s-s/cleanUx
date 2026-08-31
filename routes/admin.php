@@ -15,6 +15,7 @@ use App\Livewire\Admin\ApiTokensV2\ApiTokensCenter;
 use App\Livewire\Admin\Audit\AuditCenter;
 use App\Livewire\Admin\Automation\ConstructeurDeRegle;
 use App\Livewire\Admin\Automation\JournalDeRegle;
+use App\Livewire\Admin\Automation\ReglagesDActionsEcran;
 use App\Livewire\Admin\Availability\AvailabilityCenter;
 use App\Livewire\Admin\Availability\ProviderAvailabilityDetail;
 use App\Livewire\Admin\B2BMonthlyInvoicesCenter;
@@ -703,7 +704,7 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
             ->name('order-engine.builder');
 
         // `module_gate` ne ferme que les noms de route declares dans `config/modules.php`, et
-        // seul `admin.automation` y figure : ces trois-ci portent leur capacite explicitement.
+        // seul `admin.automation` y figure : ces quatre-ci portent leur capacite explicitement.
         Route::get('/automation/regles/nouvelle', ConstructeurDeRegle::class)
             ->middleware('can:manage-automation')
             ->name('automation.regles.creer');
@@ -715,6 +716,11 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
         Route::get('/automation/regles/{regleId}/journal', JournalDeRegle::class)
             ->middleware('can:manage-automation')
             ->name('automation.regles.journal');
+
+        // LE SEUL ENDROIT OU UN ADMINISTRATEUR DONNE AU MOTEUR LE DROIT D'AGIR SEUL.
+        Route::get('/automation/reglages', ReglagesDActionsEcran::class)
+            ->middleware('can:manage-automation')
+            ->name('automation.reglages');
     });
 
 /*
