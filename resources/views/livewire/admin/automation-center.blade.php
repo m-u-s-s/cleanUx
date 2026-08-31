@@ -3,7 +3,11 @@
         eyebrow="Automatisation"
         title="Centre d'automatisation"
         subtitle="Ce que chaque règle observe, arme et pose — et si le moteur agit vraiment."
-    />
+    >
+        <x-slot:actions>
+            <a href="{{ route('admin.automation.regles.creer') }}" class="brio-btn brio-btn-primary">+ Nouvelle règle</a>
+        </x-slot:actions>
+    </x-page-shell>
 
     <div role="alert" class="brio-alerte {{ $moteurActif ? 'brio-alerte-success' : 'brio-alerte-warning' }}">
         @if($moteurActif)
@@ -30,26 +34,31 @@
                 @forelse($regles as $regle)
                     <tr>
                         <td>
-                            <div class="font-semibold text-slate-900">{{ $regle->nom }}</div>
+                            <div class="font-semibold" style="color: var(--brio-ink);">{{ $regle->nom }}</div>
                             @if($regle->description)
-                                <div class="text-xs text-slate-500">{{ $regle->description }}</div>
+                                <div class="text-xs" style="color: var(--brio-muted);">{{ $regle->description }}</div>
                             @endif
                         </td>
-                        <td class="text-sm text-slate-600">{{ $regle->entite }}</td>
-                        <td class="text-sm text-slate-600">{{ $declencheurs[$regle->declencheur]['libelle'] ?? $regle->declencheur }}</td>
+                        {{-- LE LIBELLE VIENT DU REGISTRE (EntityDescriptor::libelle), jamais d'une liste en dur. --}}
+                        <td class="text-sm" style="color: var(--brio-muted);">{{ $entites[$regle->entite]['libelle'] ?? $regle->entite }}</td>
+                        <td class="text-sm" style="color: var(--brio-muted);">{{ $declencheurs[$regle->declencheur]['libelle'] ?? $regle->declencheur }}</td>
                         <td>
                             <span class="brio-chip brio-teinte" style="--teinte: {{ $this->teinteEtat($regle->etat) }};">{{ $this->libelleEtat($regle->etat) }}</span>
                         </td>
-                        <td class="whitespace-nowrap text-sm text-slate-600">
+                        <td class="whitespace-nowrap text-sm" style="color: var(--brio-muted);">
                             {{ $regle->dernier_passage_le?->format('d/m/Y H:i') ?? '—' }}
                         </td>
-                        <td class="text-sm text-slate-600">{{ $regle->actions_sept_jours }}</td>
-                        <td class="text-right">
-                            @if($regleCiblee === $regle->id)
-                                <button type="button" class="brio-btn brio-btn-ligne brio-btn-nu" wire:click="fermerCible">Fermer</button>
-                            @else
-                                <button type="button" class="brio-btn brio-btn-ligne brio-btn-nu" wire:click="cibler({{ $regle->id }})">Gérer</button>
-                            @endif
+                        <td class="text-sm" style="color: var(--brio-muted);">{{ $regle->actions_sept_jours }}</td>
+                        <td>
+                            <div class="flex flex-wrap items-center justify-end gap-2">
+                                <a href="{{ route('admin.automation.regles.journal', $regle) }}" class="brio-btn brio-btn-ligne brio-btn-nu">Journal</a>
+                                <a href="{{ route('admin.automation.regles.modifier', $regle) }}" class="brio-btn brio-btn-ligne brio-btn-nu">Modifier</a>
+                                @if($regleCiblee === $regle->id)
+                                    <button type="button" class="brio-btn brio-btn-ligne brio-btn-nu" wire:click="fermerCible">Fermer</button>
+                                @else
+                                    <button type="button" class="brio-btn brio-btn-ligne brio-btn-nu" wire:click="cibler({{ $regle->id }})">Gérer</button>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @if($regleCiblee === $regle->id)

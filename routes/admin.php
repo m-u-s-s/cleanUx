@@ -13,6 +13,8 @@ use App\Livewire\Admin\Analytics\CancellationReasonsCenter;
 use App\Livewire\Admin\AnalyticsCenter as ExplorationAnalytique;
 use App\Livewire\Admin\ApiTokensV2\ApiTokensCenter;
 use App\Livewire\Admin\Audit\AuditCenter;
+use App\Livewire\Admin\Automation\ConstructeurDeRegle;
+use App\Livewire\Admin\Automation\JournalDeRegle;
 use App\Livewire\Admin\Availability\AvailabilityCenter;
 use App\Livewire\Admin\Availability\ProviderAvailabilityDetail;
 use App\Livewire\Admin\B2BMonthlyInvoicesCenter;
@@ -699,6 +701,20 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
 
         Route::get('/parcours/{trade}', QuestionnaireBuilder::class)
             ->name('order-engine.builder');
+
+        // `module_gate` ne ferme que les noms de route declares dans `config/modules.php`, et
+        // seul `admin.automation` y figure : ces trois-ci portent leur capacite explicitement.
+        Route::get('/automation/regles/nouvelle', ConstructeurDeRegle::class)
+            ->middleware('can:manage-automation')
+            ->name('automation.regles.creer');
+
+        Route::get('/automation/regles/{regleId}/modifier', ConstructeurDeRegle::class)
+            ->middleware('can:manage-automation')
+            ->name('automation.regles.modifier');
+
+        Route::get('/automation/regles/{regleId}/journal', JournalDeRegle::class)
+            ->middleware('can:manage-automation')
+            ->name('automation.regles.journal');
     });
 
 /*
