@@ -5,6 +5,9 @@ namespace App\Livewire\Admin\Automation;
 use App\Models\AutomationRule;
 use App\Services\Automation\Catalogue;
 use App\Services\Automation\EtatDeRegle;
+use App\Services\Automation\Registre\EntiteRegistre;
+use App\Services\Automation\ValidateurDArbre;
+use App\Services\Conditions\RuleTreeEvaluator;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -13,12 +16,15 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
- * Créé et modifie une règle : son nom, son entité, son déclencheur, ses actions, sa reprise et
- * ses quotas. Les conditions viennent à la tâche suivante — cet écran ne les pose pas.
+ * Créé et modifie une règle : son nom, son entité, son déclencheur, ses conditions, ses actions,
+ * sa reprise et ses quotas. `ValidateurDArbre` fait autorité sur la forme des conditions.
  */
 class ConstructeurDeRegle extends Component
 {
     use EnforcesAdminAccess;
+
+    /** Les quatre formes qu'un noeud d'arbre peut prendre — tout le reste est ignore, pas devine. */
+    private const TYPES_NOEUD = ['feuille', 'and', 'or', 'not'];
 
     /**
      * LA REGLE EN EDITION — `#[Locked]`, ET C'EST LA GARDE : sans elle, le navigateur pourrait
@@ -37,6 +43,14 @@ class ConstructeurDeRegle extends Component
     public string $declencheur = 'cadence';
 
     public ?string $cadence = 'quart_heure';
+
+    /**
+     * L'ARBRE DE CONDITIONS — {field, op, value} pour une feuille, {and|or: [...]} ou {not: {...}}
+     * pour un noeud composite. `ValidateurDArbre::valider()` fait autorité, jamais reimplemente ici.
+     *
+     * @var array<string, mixed>
+     */
+    public array $conditions = [];
 
     /**
      * Chaque ligne DEVRAIT porter `cle` et `parametres`, mais la forme n'est garantie qu'APRES
@@ -69,6 +83,7 @@ class ConstructeurDeRegle extends Component
         $this->entite = $regle->entite;
         $this->declencheur = $regle->declencheur;
         $this->cadence = $regle->cadence;
+        $this->conditions = (array) ($regle->conditions ?? []);
         $this->actions = array_map(fn (array $ligne): array => [
             'cle' => (string) ($ligne['cle'] ?? ''),
             'parametres' => (array) ($ligne['parametres'] ?? []),
@@ -89,6 +104,8 @@ class ConstructeurDeRegle extends Component
     {
         if ($property === 'entite') {
             $this->reinitialiserPourEntite();
+            // LES CHAMPS D'UNE CONDITION APPARTIENNENT A L'ENTITE : en changer rend l'arbre caduc.
+            $this->conditions = [];
 
             return;
         }
@@ -115,9 +132,101 @@ class ConstructeurDeRegle extends Component
         $this->actions = array_values($this->actions);
     }
 
-    public function enregistrer(): void
+    /**
+     * DEFINIT un noeud encore vide (racine, ou enfant unique d'un `not`) : `$chemin` pointe la
+     * PLACE du noeud lui-meme dans `$conditions`, en notation pointee ('' pour la racine).
+     */
+    public function definirNoeud(string $chemin, string $type): void
+    {
+        if (! in_array($type, self::TYPES_NOEUD, true)) {
+            return;
+        }
+
+        $this->definirNoeudAu($chemin, $this->noeudVide($type));
+    }
+
+    /** AJOUTE un enfant a la LISTE d'un groupe `and`/`or` : `$cheminListe` pointe cette liste. */
+    public function ajouterEnfant(string $cheminListe, string $type): void
+    {
+        if (! in_array($type, self::TYPES_NOEUD, true)) {
+            return;
+        }
+
+        $conditions = $this->conditions;
+        $liste = (array) data_get($conditions, $cheminListe, []);
+        $liste[] = $this->noeudVide($type);
+        data_set($conditions, $cheminListe, $liste);
+        $this->conditions = $conditions;
+    }
+
+    /**
+     * RETIRE un noeud de sa liste ('' retire la racine, vidant tout l'arbre). Le dernier segment
+     * du chemin est TOUJOURS un index de liste : reindexer derriere lui evite un trou.
+     */
+    public function retirerNoeud(string $chemin): void
+    {
+        if ($chemin === '') {
+            $this->conditions = [];
+
+            return;
+        }
+
+        $segments = explode('.', $chemin);
+        $index = (int) array_pop($segments);
+        $cheminListe = implode('.', $segments);
+
+        $conditions = $this->conditions;
+        $liste = (array) data_get($conditions, $cheminListe, []);
+        unset($liste[$index]);
+        data_set($conditions, $cheminListe, array_values($liste));
+        $this->conditions = $conditions;
+    }
+
+    /** @return array<string, mixed> */
+    private function noeudVide(string $type): array
+    {
+        return match ($type) {
+            'and' => ['and' => []],
+            'or' => ['or' => []],
+            'not' => ['not' => []],
+            default => ['field' => '', 'op' => '', 'value' => null],
+        };
+    }
+
+    /** @param  array<string, mixed>  $valeur */
+    private function definirNoeudAu(string $chemin, array $valeur): void
+    {
+        if ($chemin === '') {
+            $this->conditions = $valeur;
+
+            return;
+        }
+
+        $conditions = $this->conditions;
+        data_set($conditions, $chemin, $valeur);
+        $this->conditions = $conditions;
+    }
+
+    public function enregistrer(EntiteRegistre $entiteRegistre, ValidateurDArbre $validateurDArbre): void
     {
         $valide = $this->validate($this->regles(), attributes: $this->libelles());
+
+        $entiteDescripteur = $entiteRegistre->descripteur($valide['entite']);
+
+        if ($entiteDescripteur === null) {
+            // Defense en profondeur : Rule::in(array_keys($catalogue->entites())) le garantit deja.
+            $this->addError('conditions', "L'entité choisie n'a pas de descripteur de conditions.");
+
+            return;
+        }
+
+        foreach ($validateurDArbre->valider($this->conditions, $entiteDescripteur) as $erreur) {
+            $this->addError('conditions', $erreur);
+        }
+
+        if ($this->getErrorBag()->has('conditions')) {
+            return;
+        }
 
         $attributs = [
             'nom' => $valide['nom'],
@@ -129,6 +238,7 @@ class ConstructeurDeRegle extends Component
                 'cle' => $ligne['cle'],
                 'parametres' => $ligne['parametres'] ?? [],
             ], $valide['actions'] ?? []),
+            'conditions' => $this->conditions,
             'politique_reprise' => $valide['politiqueReprise'],
             'quota_par_passage' => $valide['quotaParPassage'],
             'plafond_journalier' => $valide['plafondJournalier'],
@@ -142,13 +252,15 @@ class ConstructeurDeRegle extends Component
             // observation : `armer()` exige un journal, mais ce journal porte sur l'ANCIENNE
             // definition — personne n'a observe la nouvelle. Renommer, changer la description,
             // le quota ou le plafond ne change rien a ce qu'elle FAIT : jamais de retrogradation
-            // pour ca seul. `actions` compare en `!=` (pas `!==`) : MySQL reordonne les cles d'un
-            // objet JSON au stockage (piege deja paye sur ce depot), une comparaison stricte y
-            // verrait un changement pour une valeur juste reordonnee. `conditions` n'appartient
-            // pas a ce constructeur (tache suivante) : jamais touchee ici.
+            // pour ca seul. `actions`/`conditions` comparent en `!=` (pas `!==`) : MySQL reordonne
+            // les cles d'un objet JSON au stockage (piege deja paye sur ce depot), une comparaison
+            // stricte y verrait un changement pour une valeur juste reordonnee. Les CONDITIONS
+            // filtrent quelles entites la regle touche, au meme titre que l'entite/le declencheur/
+            // les actions : les changer retrograde donc aussi.
             $comportementChange = $regle->entite !== $attributs['entite']
                 || $regle->declencheur !== $attributs['declencheur']
-                || $regle->actions != $attributs['actions'];
+                || $regle->actions != $attributs['actions']
+                || $regle->conditions != $attributs['conditions'];
 
             $regle->forceFill($attributs)->save();
 
@@ -161,9 +273,8 @@ class ConstructeurDeRegle extends Component
             return;
         }
 
-        // UNE REGLE NAIT EN BROUILLON, SANS CONDITION : ce constructeur ne l'arme jamais.
+        // UNE REGLE NAIT TOUJOURS EN BROUILLON, SES CONDITIONS COMPRISES : jamais armee ici.
         $regle = AutomationRule::query()->create($attributs + [
-            'conditions' => [],
             'etat' => AutomationRule::ETAT_BROUILLON,
             'cree_par' => Auth::id(),
         ]);
@@ -174,12 +285,18 @@ class ConstructeurDeRegle extends Component
 
     public function render(Catalogue $catalogue): View
     {
+        $entites = $catalogue->entites();
+
         return view('livewire.admin.automation.constructeur-de-regle', [
-            'entites' => $catalogue->entites(),
+            'entites' => $entites,
             'declencheurs' => $catalogue->declencheurs($this->entite ?: null),
             'actionsDisponibles' => $catalogue->actions($this->entite ?: null),
             'cadences' => AutomationRule::CADENCES,
             'politiques' => AutomationRule::POLITIQUES_REPRISE,
+            'champsEntite' => $entites[$this->entite]['champs'] ?? [],
+            'operateursEntite' => $entites[$this->entite]['operateurs'] ?? [],
+            'profondeurMax' => RuleTreeEvaluator::PROFONDEUR_MAX,
+            'noeudsMax' => RuleTreeEvaluator::NOEUDS_MAX,
         ]);
     }
 
@@ -320,6 +437,7 @@ class ConstructeurDeRegle extends Component
         $this->entite = '';
         $this->declencheur = 'cadence';
         $this->cadence = 'quart_heure';
+        $this->conditions = [];
         $this->actions = [];
         $this->politiqueReprise = 'une_fois';
         $this->quotaParPassage = 50;

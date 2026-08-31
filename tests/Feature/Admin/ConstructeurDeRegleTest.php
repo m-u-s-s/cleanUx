@@ -17,7 +17,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * LE CONSTRUCTEUR — création et modification d'une règle, sans ses conditions (tâche suivante).
+ * LE CONSTRUCTEUR — création et modification d'une règle, hors conditions (ArbreDeConditionsTest).
  *
  * Le point qui compte : changer d'entité doit remettre à zéro le déclencheur et les actions qui
  * ne lui conviennent plus, sinon la règle enregistrée est silencieusement inerte (RuleRunner la
@@ -460,11 +460,11 @@ class ConstructeurDeRegleTest extends TestCase
     }
 
     /**
-     * MAJEUR 1 — LE POINT QUI COMPTE. Modifier `actions` (ou `entite`/`declencheur`) sur une
-     * règle déjà armée la retrograde en `observation` : `armer()` exige un journal d'observation,
-     * mais ce journal porte sur l'ANCIENNE définition — personne n'a observé la nouvelle. Sans
-     * cette rétrogradation, le moteur agirait sur un comportement que personne n'a jamais vu
-     * tourner. `conditions` n'appartient pas à ce constructeur (tâche suivante) : jamais touchée.
+     * MAJEUR 1 — LE POINT QUI COMPTE. Modifier `actions` (ou `entite`/`declencheur`/`conditions`)
+     * sur une règle déjà armée la retrograde en `observation` : `armer()` exige un journal
+     * d'observation, mais ce journal porte sur l'ANCIENNE définition — personne n'a observé la
+     * nouvelle. Les conditions restent `[]` ici (couvertes par ArbreDeConditionsTest) : c'est bien
+     * l'action seule qui retrograde.
      */
     public function test_modifier_les_actions_d_une_regle_armee_la_retrograde_en_observation(): void
     {
@@ -474,7 +474,7 @@ class ConstructeurDeRegleTest extends TestCase
             'declencheur' => 'cadence',
             'cadence' => 'heure',
             'etat' => AutomationRule::ETAT_ARMEE,
-            'conditions' => ['champ' => 'statut'],
+            'conditions' => [],
             'actions' => [['cle' => 'journaliser', 'parametres' => ['message' => 'vu']]],
         ]);
 
@@ -487,7 +487,7 @@ class ConstructeurDeRegleTest extends TestCase
         $regle->refresh();
 
         $this->assertSame(AutomationRule::ETAT_OBSERVATION, $regle->etat);
-        $this->assertSame(['champ' => 'statut'], $regle->conditions, 'Les conditions n\'appartiennent pas à ce constructeur.');
+        $this->assertSame([], $regle->conditions, 'Une edition des actions ne touche pas les conditions.');
     }
 
     /**
@@ -503,7 +503,7 @@ class ConstructeurDeRegleTest extends TestCase
             'declencheur' => 'cadence',
             'cadence' => 'heure',
             'etat' => AutomationRule::ETAT_ARMEE,
-            'conditions' => ['champ' => 'statut'],
+            'conditions' => [],
             'actions' => [['cle' => 'journaliser', 'parametres' => ['message' => 'vu']]],
         ]);
 
@@ -521,7 +521,7 @@ class ConstructeurDeRegleTest extends TestCase
         $this->assertSame('Renommée', $regle->nom);
         $this->assertSame(99, $regle->quota_par_passage);
         $this->assertSame(AutomationRule::ETAT_ARMEE, $regle->etat, 'Renommer ne change pas ce que la règle fait : pas de rétrogradation.');
-        $this->assertSame(['champ' => 'statut'], $regle->conditions, 'Les conditions n\'appartiennent pas à ce constructeur.');
+        $this->assertSame([], $regle->conditions);
     }
 
     /**

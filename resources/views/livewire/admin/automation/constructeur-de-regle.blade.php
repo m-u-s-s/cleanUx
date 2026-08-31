@@ -84,6 +84,36 @@
                 </div>
             </x-table-shell>
 
+            <x-table-shell
+                title="Conditions"
+                subtitle="Ce que la règle doit lire vrai pour s'appliquer. Profondeur maximale : {{ $profondeurMax }} niveaux, {{ $noeudsMax }} noeuds au total."
+            >
+                <div class="space-y-4 p-5 md:p-6">
+                    @if($errors->has('conditions'))
+                        <div role="alert" class="brio-alerte brio-alerte-danger">
+                            @foreach($errors->get('conditions') as $message)
+                                <p>{{ $message }}</p>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    @if($entite === '')
+                        <x-empty-state
+                            title="Choisissez d'abord une entité"
+                            message="Le champ et l'opérateur d'une condition dépendent de l'entité choisie."
+                            icon="🌳"
+                        />
+                    @else
+                        @include('livewire.admin.automation.partials.noeud-condition', [
+                            'noeud' => $conditions,
+                            'chemin' => '',
+                            'champs' => $champsEntite,
+                            'operateurs' => $operateursEntite,
+                        ])
+                    @endif
+                </div>
+            </x-table-shell>
+
             <x-table-shell title="Actions" subtitle="Ce que la règle pose sur chaque entité retenue, avec leurs paramètres.">
                 <div class="space-y-4 p-5 md:p-6">
                     @forelse($actions as $i => $action)
