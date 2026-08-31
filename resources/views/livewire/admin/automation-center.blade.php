@@ -5,6 +5,7 @@
         subtitle="Ce que chaque règle observe, arme et pose — et si le moteur agit vraiment."
     >
         <x-slot:actions>
+            <a href="{{ route('admin.automation.propositions') }}" class="brio-btn brio-btn-secondary">Propositions en attente</a>
             <a href="{{ route('admin.automation.reglages') }}" class="brio-btn brio-btn-secondary">Réglages d'actions</a>
             <a href="{{ route('admin.automation.regles.creer') }}" class="brio-btn brio-btn-primary">+ Nouvelle règle</a>
         </x-slot:actions>

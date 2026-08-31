@@ -15,6 +15,7 @@ use App\Livewire\Admin\ApiTokensV2\ApiTokensCenter;
 use App\Livewire\Admin\Audit\AuditCenter;
 use App\Livewire\Admin\Automation\ConstructeurDeRegle;
 use App\Livewire\Admin\Automation\JournalDeRegle;
+use App\Livewire\Admin\Automation\PropositionsEnAttente;
 use App\Livewire\Admin\Automation\ReglagesDActionsEcran;
 use App\Livewire\Admin\Availability\AvailabilityCenter;
 use App\Livewire\Admin\Availability\ProviderAvailabilityDetail;
@@ -721,6 +722,11 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
         Route::get('/automation/reglages', ReglagesDActionsEcran::class)
             ->middleware('can:manage-automation')
             ->name('automation.reglages');
+
+        // CE QU'UNE ACTION NON AUTONOME A PROPOSE, EN ATTENTE D'UN HUMAIN — voir FileDePropositions.
+        Route::get('/automation/propositions', PropositionsEnAttente::class)
+            ->middleware('can:manage-automation')
+            ->name('automation.propositions');
     });
 
 /*

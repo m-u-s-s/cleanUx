@@ -498,5 +498,6 @@ return [
         // apparaître comme un module distinct, sous la même capacité que celui qui l'ouvre.
         'admin.automation.regles.creer' => 'Sous-page du centre d’automatisation, pas un module',
         'admin.automation.reglages' => 'Sous-page du centre d’automatisation, pas un module',
+        'admin.automation.propositions' => 'Sous-page du centre d’automatisation, pas un module',
     ],
 ];

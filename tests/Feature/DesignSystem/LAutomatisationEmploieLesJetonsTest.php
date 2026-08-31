@@ -107,7 +107,7 @@ class LAutomatisationEmploieLesJetonsTest extends TestCase
         $php = array_filter(array_keys($fichiers), fn (string $f): bool => str_starts_with($f, 'app/'));
 
         $this->assertGreaterThanOrEqual(3, count($vues), 'Le balayage ne voit presque aucune vue : le chemin est faux.');
-        $this->assertSame(4, count($php), 'Les quatre composants de la phase doivent etre balayes.');
+        $this->assertSame(5, count($php), 'Les cinq composants de la phase doivent etre balayes.');
 
         $motif = $this->motif();
 

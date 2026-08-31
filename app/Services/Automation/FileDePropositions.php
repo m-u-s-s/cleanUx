@@ -18,10 +18,12 @@ class FileDePropositions
         protected EntiteRegistre $entites,
     ) {}
 
-    /** @return Collection<int, AutomationAction> */
+    /** `with('regle')` : sans lui, l'ecran qui affiche son nom ouvre une requete par ligne.
+     *  @return Collection<int, AutomationAction> */
     public function enAttente(): Collection
     {
         return AutomationAction::query()
+            ->with('regle')
             ->where('resultat', AutomationAction::RESULTAT_PROPOSEE)
             ->orderBy('pose_le')
             ->get();
