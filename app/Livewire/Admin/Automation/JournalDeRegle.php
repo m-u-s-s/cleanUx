@@ -120,4 +120,18 @@ class JournalDeRegle extends Component
             default => 'var(--brio-muted)',
         };
     }
+
+    /**
+     * C'EST CE QUE L'ADMIN VIENT LIRE AVANT D'ARMER — le contenu du parametre, jamais un tableau
+     * PHP brut ni son export JSON en pleine cellule.
+     */
+    public function valeurParametreAffichable(mixed $valeur): string
+    {
+        return match (true) {
+            $valeur === null => '—',
+            is_bool($valeur) => $valeur ? 'oui' : 'non',
+            is_array($valeur) => json_encode($valeur, JSON_UNESCAPED_UNICODE) ?: '—',
+            default => (string) $valeur,
+        };
+    }
 }

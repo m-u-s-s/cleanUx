@@ -91,6 +91,59 @@ class JournalDeRegleTest extends TestCase
             ->assertDontSee('Aucun passage');
     }
 
+    /**
+     * LES PARAMETRES D'UNE LIGNE POSEE SONT LISIBLES — AVEC SON TEMOIN. C'est precisement ce que
+     * l'admin vient lire avant d'armer : voir qu'une notification "aurait ete envoyee" sans voir
+     * SON CONTENU ne permet pas de decider. Le temoin (sans parametre) ne doit rien afficher de
+     * bancal — pas de "[]", pas de "null", pas de ligne vide.
+     */
+    public function test_les_parametres_d_une_ligne_posee_sont_affiches_avec_leur_temoin(): void
+    {
+        $regle = $this->regle();
+
+        $passage = AutomationRun::create([
+            'automation_rule_id' => $regle->id,
+            'mode' => 'observation',
+            'demarre_le' => now(),
+            'statut' => 'ok',
+        ]);
+
+        AutomationAction::create([
+            'automation_rule_id' => $regle->id,
+            'automation_run_id' => $passage->id,
+            'entite_type' => 'booking',
+            'entite_id' => 10,
+            'action_cle' => 'journaliser',
+            'parametres' => ['message' => 'Alerte paiement en échec'],
+            'mode' => 'observation',
+            'resultat' => AutomationAction::RESULTAT_SIMULEE,
+            'pose_le' => now(),
+        ]);
+
+        // TEMOIN — sans parametre du tout (colonne NULL en base) : rien de bancal.
+        AutomationAction::create([
+            'automation_rule_id' => $regle->id,
+            'automation_run_id' => $passage->id,
+            'entite_type' => 'booking',
+            'entite_id' => 11,
+            'action_cle' => 'journaliser',
+            'mode' => 'observation',
+            'resultat' => AutomationAction::RESULTAT_SIMULEE,
+            'pose_le' => now(),
+        ]);
+
+        $html = Livewire::actingAs($this->adminGlobal())
+            ->test(JournalDeRegle::class, ['regleId' => $regle->id])
+            ->assertSee('message')
+            ->assertSee('Alerte paiement en échec')
+            ->html();
+
+        // ">[]<"/">null<" et non "[]"/"null" nus : le wire:snapshot de Livewire contient deja
+        // des "[]" legitimes (children/scripts/assets/errors), etrangers a cette colonne.
+        $this->assertStringNotContainsString('>[]<', $html);
+        $this->assertStringNotContainsString('>null<', $html);
+    }
+
     /** UNE REGLE SANS PASSAGE MONTRE UN ETAT VIDE, JAMAIS UN TABLEAU VIDE. */
     public function test_une_regle_sans_passage_affiche_un_etat_vide(): void
     {

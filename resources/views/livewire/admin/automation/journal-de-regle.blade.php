@@ -78,6 +78,7 @@
                     <tr>
                         <th>Entité</th>
                         <th>Action</th>
+                        <th>Paramètres</th>
                         <th>Mode</th>
                         <th>Résultat</th>
                         <th>Message</th>
@@ -89,6 +90,19 @@
                         <tr>
                             <td style="font-size: 0.875rem; color: var(--brio-ink);">{{ $ligne->entite_type }} #{{ $ligne->entite_id }}</td>
                             <td style="font-size: 0.875rem; color: var(--brio-ink);">{{ $actionsCatalogue[$ligne->action_cle]['libelle'] ?? $ligne->action_cle }}</td>
+                            {{-- C'EST CE QUE L'ADMIN VIENT LIRE AVANT D'ARMER : lisible, borne a 120
+                                 caracteres par valeur, jamais coupe au point de perdre le sens —
+                                 `title` porte le texte integral. --}}
+                            <td style="font-size: 0.8125rem; color: var(--brio-ink); max-width: 20rem;">
+                                @forelse(($ligne->parametres ?? []) as $nom => $valeur)
+                                    <div>
+                                        <span style="color: var(--brio-muted);">{{ $nom }}</span> :
+                                        <span title="{{ $this->valeurParametreAffichable($valeur) }}">{{ \Illuminate\Support\Str::limit($this->valeurParametreAffichable($valeur), 120) }}</span>
+                                    </div>
+                                @empty
+                                    <span style="color: var(--brio-muted);">—</span>
+                                @endforelse
+                            </td>
                             <td style="font-size: 0.875rem; color: var(--brio-muted);">{{ $this->libelleMode($ligne->mode) }}</td>
                             <td>
                                 <span class="brio-chip brio-teinte" style="--teinte: {{ $this->teinteResultat($ligne->resultat) }};">{{ $this->libelleResultat($ligne->resultat) }}</span>
@@ -101,7 +115,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6">
+                            <td colspan="7">
                                 <x-empty-state title="Aucune ligne" message="Aucune action posée ne correspond à ce filtre." icon="📭" />
                             </td>
                         </tr>
