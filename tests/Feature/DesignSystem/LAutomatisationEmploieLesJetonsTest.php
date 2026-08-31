@@ -83,9 +83,13 @@ class LAutomatisationEmploieLesJetonsTest extends TestCase
             glob(app_path('Livewire/Admin/Automation/*.php')) ?: []
         );
 
+        // LE CHEMIN RAPPORTE DOIT EXISTER : le reconstruire a partir du dossier parent doublait
+        // « Admin » pour le composant qui vit a la racine du dossier.
+        $racine = str_replace(chr(92), '/', base_path()).'/';
+
         foreach ($composants as $chemin) {
             $chemin = str_replace(chr(92), '/', $chemin);
-            $fichiers['app/Livewire/Admin/'.basename(dirname($chemin)).'/'.basename($chemin)] = $chemin;
+            $fichiers[str_replace($racine, '', $chemin)] = $chemin;
         }
 
         return $fichiers;

@@ -385,7 +385,8 @@ class ConstructeurDeRegle extends Component
         ]);
     }
 
-    /** `RegistresTest` interdit qu'une action declare un type absent de la table : pas de repli devine. */
+    /** `RegistresTest` interdit deja qu'une action declare un type absent de la table ; le repli
+     *  sur `text` n'est que le dernier recours, pour qu'un formulaire ne casse jamais au rendu. */
     public function typeDInput(string $type): string
     {
         return self::TYPES_DE_CHAMP[$type] ?? 'text';
