@@ -75,7 +75,7 @@
         @teleport('body')
             <div class="brio-modal-fond grid place-items-center p-4" x-data x-on:keydown.escape.window="$wire.fermerRefus()">
                 <div class="brio-modal" role="dialog" aria-modal="true" aria-labelledby="titre-refus-proposition">
-                    <h3 id="titre-refus-proposition" class="brio-modal-titre">Refuser cette proposition</h3>
+                    <h2 id="titre-refus-proposition" class="brio-modal-titre">Refuser cette proposition</h2>
                     <p class="brio-modal-texte">Le motif est obligatoire : c'est la seule trace de pourquoi on n'a pas fait.</p>
 
                     <div class="mt-3">
