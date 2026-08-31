@@ -2,10 +2,15 @@
 
 namespace Tests\Feature\Automation;
 
+use App\Services\Automation\ActionResult;
 use App\Services\Automation\Catalogue;
+use App\Services\Automation\Contracts\Action;
+use App\Services\Automation\Contracts\Declencheur;
 use App\Services\Automation\Registre\ActionRegistre;
+use App\Services\Automation\Registre\DeclencheurRegistre;
 use App\Services\Automation\Registre\EntiteRegistre;
 use App\Services\Conditions\RuleTreeEvaluator;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,6 +21,83 @@ class CatalogueTest extends TestCase
     private function catalogue(): Catalogue
     {
         return app(Catalogue::class);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Action qui supporte UNIQUEMENT 'booking' — pour mesurer le filtre.
+        $actionBooking = new class implements Action
+        {
+            public function cle(): string
+            {
+                return 'action-booking-only';
+            }
+
+            public function libelle(): string
+            {
+                return 'Action pour booking uniquement';
+            }
+
+            public function entitesSupportees(): array
+            {
+                return ['booking'];
+            }
+
+            public function champs(): array
+            {
+                return ['message' => 'string'];
+            }
+
+            public function toucheAuDomaine(): bool
+            {
+                return false;
+            }
+
+            public function executer(Model $entite, array $parametres): ActionResult
+            {
+                return ActionResult::succes();
+            }
+        };
+
+        app(ActionRegistre::class)->enregistrer($actionBooking);
+
+        // Déclencheur qui cible UNIQUEMENT 'booking' — pour mesurer le filtre.
+        $declencheurBooking = new class implements Declencheur
+        {
+            public function cle(): string
+            {
+                return 'declencheur-booking-only';
+            }
+
+            public function evenement(): string
+            {
+                return \stdClass::class;
+            }
+
+            public function entite(): string
+            {
+                return 'booking';
+            }
+
+            public function sApplique(object $evenement): bool
+            {
+                return true;
+            }
+
+            public function identifiant(object $evenement): ?int
+            {
+                return 1;
+            }
+
+            public function libelle(): string
+            {
+                return 'Déclencheur pour booking uniquement';
+            }
+        };
+
+        app(DeclencheurRegistre::class)->enregistrer($declencheurBooking);
     }
 
     /** ANCRE — un registre vide rendrait tous les tests ci-dessous verts a vide. */
@@ -57,12 +139,23 @@ class CatalogueTest extends TestCase
     {
         $toutes = array_keys($this->catalogue()->actions());
         $pourAlerte = array_keys($this->catalogue()->actions('alerte'));
+        $pourBooking = array_keys($this->catalogue()->actions('booking'));
 
+        // L'action booking-only doit être dans toutes() et actions('booking').
+        $this->assertContains('action-booking-only', $toutes);
+        $this->assertContains('action-booking-only', $pourBooking);
+
+        // Mais elle ne doit PAS être dans actions('alerte') — c'est LA GARDE.
+        $this->assertNotContains('action-booking-only', $pourAlerte);
+
+        // Vérifier que chaque action proposée supporte bien l'entité demandée.
         $ecarts = [];
 
         foreach ($pourAlerte as $cle) {
             $action = app(ActionRegistre::class)->trouver($cle);
-            if ($action && ! in_array('alerte', $action->entitesSupportees(), true)) {
+            $this->assertNotNull($action, "Action « $cle » introuvable dans le registre");
+
+            if (! in_array('alerte', $action->entitesSupportees(), true)) {
                 $ecarts[] = $cle;
             }
         }
@@ -83,11 +176,27 @@ class CatalogueTest extends TestCase
 
     public function test_les_declencheurs_se_filtrent_par_entite(): void
     {
-        foreach ($this->catalogue()->declencheurs('alerte') as $cle => $declencheur) {
+        $tousDecl = $this->catalogue()->declencheurs();
+        $declAlerte = $this->catalogue()->declencheurs('alerte');
+        $declBooking = $this->catalogue()->declencheurs('booking');
+
+        $toutes = array_keys($tousDecl);
+        $pourAlerte = array_keys($declAlerte);
+        $pourBooking = array_keys($declBooking);
+
+        // Le déclencheur booking-only doit être dans toutes() et declencheurs('booking').
+        $this->assertContains('declencheur-booking-only', $toutes);
+        $this->assertContains('declencheur-booking-only', $pourBooking);
+
+        // Mais il ne doit PAS être dans declencheurs('alerte') — c'est LA GARDE.
+        $this->assertNotContains('declencheur-booking-only', $pourAlerte);
+
+        // Vérifier que chaque déclencheur proposé cible bien l'entité demandée.
+        foreach ($declAlerte as $cle => $declencheur) {
             $this->assertSame('alerte', $declencheur['entite'], $cle);
         }
 
-        $this->assertNotEmpty($this->catalogue()->declencheurs('alerte'));
+        $this->assertNotEmpty($declAlerte);
     }
 
     public function test_chaque_action_expose_son_libelle_et_ses_champs(): void
