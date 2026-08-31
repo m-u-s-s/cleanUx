@@ -243,7 +243,7 @@ dit pas — il lève à la première borne dépassée, ou pire, laisse passer un
 SQLite prendra pour une chaîne littérale.
 
 **Ce que le validateur vérifie :**
-1. la forme : un nœud est soit `{field, op, value}`, soit `{all: [...]}` ou `{any: [...]}` ;
+1. la forme : un nœud est soit `{field, op, value}`, soit `{and: [...]}`, `{or: [...]}` ou `{not: {...}}` — MESURE dans `RuleTreeEvaluator::apply()`, c'est lui qui fait autorite ;
 2. `field` existe dans `$entite->fields()` ;
 3. `op` figure dans `$entite->operators()` ;
 4. les bornes de `RuleTreeEvaluator` — profondeur et nombre de nœuds ;
@@ -255,7 +255,7 @@ SQLite prendra pour une chaîne littérale.
 - [ ] **Étape 1 : écrire le test** — au minimum ces cas, chacun avec son message attendu :
   un arbre vide (accepté ou refusé — **tranche et écris pourquoi** : rappelle-toi que le moteur
   refuse une règle sans condition, sauf restreinte par identifiants) ; un `field` inconnu ; un `op`
-  inconnu ; un nœud mal formé ; un arbre trop profond ; un arbre de plus de 200 nœuds ; un `all`
+  inconnu ; un nœud mal formé ; un arbre trop profond ; un arbre de plus de 200 nœuds ; un `and`
   vide ; un arbre valide (**le témoin**, qui rend une liste d'erreurs vide).
 
 - [ ] **Étape 2 : lancer, vérifier l'échec**
@@ -415,7 +415,7 @@ enregistre une règle incohérente que le moteur refusera en silence.
 - Modifier : `ConstructeurDeRegle.php` et sa vue
 - Créer : `tests/Feature/Admin/ArbreDeConditionsTest.php`
 
-Ajouter, retirer, imbriquer des nœuds ; choisir `tous` ou `au moins un` ; choisir un champ parmi
+Ajouter, retirer, imbriquer des nœuds ; choisir `and`, `or` ou `not` — la forme reelle, mesuree dans l'evaluateur, PAS `all`/`any` ; choisir un champ parmi
 ceux de l'entité, un opérateur parmi ceux qu'elle accepte, et une valeur.
 
 **Les bornes se voient dans l'écran** : profondeur 10, 200 nœuds. Un administrateur qui les dépasse
