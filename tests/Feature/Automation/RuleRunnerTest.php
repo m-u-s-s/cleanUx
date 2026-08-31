@@ -21,6 +21,7 @@ class RuleRunnerTest extends TestCase
 {
     use ArmeSesRegles;
     use RefreshDatabase;
+    use RendSesActionsAutonomes;
 
     private function regle(string $etat, array $attributs = []): AutomationRule
     {
@@ -53,6 +54,7 @@ class RuleRunnerTest extends TestCase
     public function test_temoin_armee_la_meme_regle_agit(): void
     {
         Booking::factory()->count(2)->create(['status' => 'en_attente']);
+        $this->rendreAutonome('journaliser');
 
         // Arme par le chemin reel : elle observe d'abord (2 lignes `simulee` en plus).
         $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE));
@@ -69,6 +71,7 @@ class RuleRunnerTest extends TestCase
 
         // Aucun administrateur : `notifier.admins` echoue pour chaque entite.
         Booking::factory()->count(3)->create(['status' => 'en_attente']);
+        $this->rendreAutonome('notifier.admins');
 
         $regle = $this->regle(AutomationRule::ETAT_ARMEE, [
             'actions' => [['cle' => 'notifier.admins', 'parametres' => ['message' => 'x']]],
@@ -103,6 +106,7 @@ class RuleRunnerTest extends TestCase
     public function test_une_regle_armee_apres_observation_agit_sur_les_entites_observees(): void
     {
         Booking::factory()->count(3)->create(['status' => 'en_attente']);
+        $this->rendreAutonome('journaliser');
 
         $regle = $this->regle(AutomationRule::ETAT_OBSERVATION);
         app(RuleRunner::class)->executer($regle);
@@ -119,6 +123,7 @@ class RuleRunnerTest extends TestCase
     {
         Notification::fake();
         Booking::factory()->create(['status' => 'en_attente']);
+        $this->rendreAutonome('notifier.admins');
 
         // Aucun administrateur : `notifier.admins` echoue au 1er passage.
         $regle = $this->regle(AutomationRule::ETAT_ARMEE, [
@@ -284,6 +289,7 @@ class RuleRunnerTest extends TestCase
             }
         };
         app(ActionRegistre::class)->enregistrer($action);
+        $this->rendreAutonome('action.qui.explose');
 
         $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, [
             'actions' => [['cle' => 'action.qui.explose', 'parametres' => []]],
@@ -366,6 +372,7 @@ class RuleRunnerTest extends TestCase
     public function test_temoin_une_action_qui_supporte_l_entite_s_execute(): void
     {
         AlerteMetier::create(['cle' => 'x', 'niveau' => 'critical', 'message' => 'm', 'levee_le' => now()]);
+        $this->rendreAutonome('journaliser');
 
         $regle = $this->armer($this->regleAlerte([['cle' => 'journaliser', 'parametres' => ['message' => 'vue']]]));
         $passage = app(RuleRunner::class)->executer($regle->fresh());

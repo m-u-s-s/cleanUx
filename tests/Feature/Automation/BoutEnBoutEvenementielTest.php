@@ -16,6 +16,7 @@ class BoutEnBoutEvenementielTest extends TestCase
 {
     use ArmeSesRegles;
     use RefreshDatabase;
+    use RendSesActionsAutonomes;
 
     private function regleVersementEnEchec(): AutomationRule
     {
@@ -43,6 +44,7 @@ class BoutEnBoutEvenementielTest extends TestCase
     public function test_un_versement_en_echec_traverse_tout_le_chemin(): void
     {
         config()->set('features.automation', true);
+        $this->rendreAutonome('journaliser');
 
         $graine = $this->seedAlerte();
         $regle = $this->armerParDrain($this->regleVersementEnEchec(), [$graine->id]);

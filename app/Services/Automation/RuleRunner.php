@@ -21,6 +21,7 @@ class RuleRunner
         protected ActionRegistre $actions,
         protected RuleTreeEvaluator $evaluateur,
         protected EtatDeRegle $etats,
+        protected ReglagesDActions $reglages,
     ) {}
 
     /** @param list<int>|null $identifiants restreint le balayage, pour le drain d'evenements */
@@ -211,6 +212,14 @@ class RuleRunner
             LigneDeJournal::create($ligne + ['resultat' => LigneDeJournal::RESULTAT_SIMULEE]);
 
             return LigneDeJournal::RESULTAT_SIMULEE;
+        }
+
+        // L'AUTONOMIE EST EXPLICITE. Sans elle on PROPOSE : rien n'est appele, et la ligne
+        // `proposee` gele l'entite (voir dejaAgiQuery) jusqu'a ce qu'un humain tranche.
+        if (! $this->reglages->estAutonome($cle)) {
+            LigneDeJournal::create($ligne + ['resultat' => LigneDeJournal::RESULTAT_PROPOSEE]);
+
+            return LigneDeJournal::RESULTAT_PROPOSEE;
         }
 
         try {

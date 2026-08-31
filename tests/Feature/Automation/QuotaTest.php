@@ -17,6 +17,7 @@ class QuotaTest extends TestCase
 {
     use ArmeSesRegles;
     use RefreshDatabase;
+    use RendSesActionsAutonomes;
 
     private function regle(int $quota): AutomationRule
     {
@@ -376,6 +377,7 @@ class QuotaTest extends TestCase
     {
         Notification::fake();
         Booking::factory()->count(5)->create(['status' => 'en_attente']);
+        $this->rendreAutonome('notifier.admins');
 
         // `notifier.admins` echoue sans administrateur actif : chaque ligne posee echoue.
         $regle = $this->armer($this->regleAvecActions(
