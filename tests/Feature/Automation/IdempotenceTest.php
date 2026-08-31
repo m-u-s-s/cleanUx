@@ -13,6 +13,16 @@ class IdempotenceTest extends TestCase
 {
     use ArmeSesRegles;
     use RefreshDatabase;
+    use RendSesActionsAutonomes;
+
+    /** Ce fichier mesure la POLITIQUE DE REPRISE sur une action qui agit vraiment : une
+     *  proposition pendante gele l'entite quelle que soit la politique, et masquerait tout. */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->rendreAutonome('journaliser');
+    }
 
     private function regle(string $politique): AutomationRule
     {

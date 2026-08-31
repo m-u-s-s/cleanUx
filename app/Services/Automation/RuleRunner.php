@@ -101,9 +101,13 @@ class RuleRunner
         $posees = 0;
         $echouees = 0;
 
+        // UNE lecture des reglages par passage, sinon c'est une requete par ligne posee. Une
+        // bascule d'administrateur est donc prise au passage suivant, jamais en plein balayage.
+        $autonomies = $this->reglages->tous();
+
         foreach ($lignes as $ligne) {
             foreach (($regle->actions ?? []) as $demande) {
-                $resultat = $this->poser($regle, $passage, $ligne, (array) $demande, $observation);
+                $resultat = $this->poser($regle, $passage, $ligne, (array) $demande, $observation, $autonomies);
                 $posees++;
 
                 if ($resultat === LigneDeJournal::RESULTAT_ECHOUEE) {
@@ -163,6 +167,7 @@ class RuleRunner
 
     /**
      * @param  array<string, mixed>  $demande
+     * @param  array<string, bool>  $autonomies  lues UNE fois par passage, jamais par ligne
      * @return string le resultat ecrit — pour que l'appelant compte les echecs sans requete de plus
      */
     protected function poser(
@@ -171,6 +176,7 @@ class RuleRunner
         Model $entite,
         array $demande,
         bool $observation,
+        array $autonomies,
     ): string {
         $cle = (string) ($demande['cle'] ?? '');
         $parametres = (array) ($demande['parametres'] ?? []);
@@ -215,8 +221,8 @@ class RuleRunner
         }
 
         // L'AUTONOMIE EST EXPLICITE. Sans elle on PROPOSE : rien n'est appele, et la ligne
-        // `proposee` gele l'entite (voir dejaAgiQuery) jusqu'a ce qu'un humain tranche.
-        if (! $this->reglages->estAutonome($cle)) {
+        // `proposee` gele l'entite (voir exclureLeDejaAgi) jusqu'a ce qu'un humain tranche.
+        if (! ($autonomies[$cle] ?? false)) {
             LigneDeJournal::create($ligne + ['resultat' => LigneDeJournal::RESULTAT_PROPOSEE]);
 
             return LigneDeJournal::RESULTAT_PROPOSEE;
@@ -247,14 +253,33 @@ class RuleRunner
      */
     protected function exclureLeDejaAgi(Builder $requete, AutomationRule $regle, bool $observation): void
     {
+        $cleModele = $requete->getModel()->getQualifiedKeyName();
+
+        // UNE PROPOSITION PENDANTE GELE SON ENTITE, quelle que soit la politique : reproposer
+        // ne fait agir personne, ca noie la file de doublons. Seul un humain (ou l'expiration) tranche.
+        $requete->whereNotIn($cleModele, $this->propositionsPendantesQuery($regle, $observation));
+
         if ($regle->politique_reprise === 'chaque_passage') {
             return;
         }
 
-        $requete->whereNotIn(
-            $requete->getModel()->getQualifiedKeyName(),
-            $this->dejaAgiQuery($regle, $observation)
-        );
+        $requete->whereNotIn($cleModele, $this->dejaAgiQuery($regle, $observation));
+    }
+
+    /**
+     * Les entites qui attendent une decision humaine. Ni fenetre de temps ni politique : une
+     * proposition ne se libere que par un verdict ou par l'expiration.
+     *
+     * @return Builder<LigneDeJournal>
+     */
+    protected function propositionsPendantesQuery(AutomationRule $regle, bool $observation): Builder
+    {
+        return LigneDeJournal::query()
+            ->where('automation_rule_id', $regle->id)
+            ->where('entite_type', $regle->entite)
+            ->where('mode', $observation ? 'observation' : 'armee')
+            ->where('resultat', LigneDeJournal::RESULTAT_PROPOSEE)
+            ->select('entite_id');
     }
 
     /**

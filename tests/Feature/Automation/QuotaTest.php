@@ -53,6 +53,9 @@ class QuotaTest extends TestCase
     public function test_trois_plafonds_consecutifs_suspendent_la_regle(): void
     {
         Booking::factory()->count(5)->create(['status' => 'en_attente']);
+        // L'emballement se mesure sur une population qui NE diminue PAS : il faut donc que
+        // l'action agisse, sinon les propositions pendantes vident la population toutes seules.
+        $this->rendreAutonome('journaliser');
         $regle = $this->armer($this->regle(2));
 
         app(RuleRunner::class)->executer($regle);
@@ -78,6 +81,7 @@ class QuotaTest extends TestCase
     public function test_temoin_un_passage_sous_le_plafond_remet_le_compteur_a_zero(): void
     {
         Booking::factory()->count(5)->create(['status' => 'en_attente']);
+        $this->rendreAutonome('journaliser');
         $regle = $this->armer($this->regle(2));
 
         app(RuleRunner::class)->executer($regle);

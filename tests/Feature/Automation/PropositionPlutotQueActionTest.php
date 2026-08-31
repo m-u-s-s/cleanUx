@@ -156,4 +156,71 @@ class PropositionPlutotQueActionTest extends TestCase
         $this->assertSame(1, $second->entites_vues);
         $this->assertSame(1, $this->compter(AutomationAction::RESULTAT_PROPOSEE));
     }
+
+    /** `chaque_passage` fait re-AGIR, pas re-PROPOSER : sinon la file se remplit de doublons. */
+    public function test_chaque_passage_ne_repropose_pas_une_entite_qui_attend_une_decision(): void
+    {
+        Booking::factory()->create(['status' => 'en_attente']);
+
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, [
+            'politique_reprise' => 'chaque_passage',
+        ]));
+
+        app(RuleRunner::class)->executer($regle);
+        $second = app(RuleRunner::class)->executer($regle->fresh());
+
+        $this->assertSame(0, $second->entites_vues);
+        $this->assertSame(1, $this->compter(AutomationAction::RESULTAT_PROPOSEE));
+    }
+
+    /** TEMOIN — la politique garde tout son sens des qu'il y a vraiment action. */
+    public function test_temoin_chaque_passage_agit_bien_aux_deux_passages_si_l_action_est_autonome(): void
+    {
+        Booking::factory()->create(['status' => 'en_attente']);
+        $this->rendreAutonome('journaliser');
+
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, [
+            'politique_reprise' => 'chaque_passage',
+        ]));
+
+        app(RuleRunner::class)->executer($regle);
+        $second = app(RuleRunner::class)->executer($regle->fresh());
+
+        $this->assertSame(1, $second->entites_vues);
+        $this->assertSame(2, $this->compter(AutomationAction::RESULTAT_EXECUTEE));
+    }
+
+    /** Meme invariant sur la fenetre de 24 h : elle oublie les lignes, pas les propositions. */
+    public function test_une_fois_par_jour_ne_repropose_pas_le_lendemain(): void
+    {
+        Booking::factory()->create(['status' => 'en_attente']);
+
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, [
+            'politique_reprise' => 'une_fois_par_jour',
+        ]));
+        app(RuleRunner::class)->executer($regle);
+
+        $this->travel(25)->hours();
+        $lendemain = app(RuleRunner::class)->executer($regle->fresh());
+
+        $this->assertSame(0, $lendemain->entites_vues);
+        $this->assertSame(1, $this->compter(AutomationAction::RESULTAT_PROPOSEE));
+    }
+
+    /** TEMOIN — la fenetre de 24 h fonctionne toujours quand l'action agit vraiment. */
+    public function test_temoin_une_fois_par_jour_agit_le_lendemain_si_l_action_est_autonome(): void
+    {
+        Booking::factory()->create(['status' => 'en_attente']);
+        $this->rendreAutonome('journaliser');
+
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, [
+            'politique_reprise' => 'une_fois_par_jour',
+        ]));
+        app(RuleRunner::class)->executer($regle);
+
+        $this->travel(25)->hours();
+
+        $this->assertSame(1, app(RuleRunner::class)->executer($regle->fresh())->entites_vues);
+        $this->assertSame(2, $this->compter(AutomationAction::RESULTAT_EXECUTEE));
+    }
 }
