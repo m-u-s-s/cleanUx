@@ -253,18 +253,16 @@ class JournalDeRegleTest extends TestCase
     {
         $regle = $this->regle();
         $decideur = User::factory()->admin()->create(['name' => 'Zoé Trancheuse']);
+        $ligne = $this->proposition($regle);
 
-        app(FileDePropositions::class)->refuser(
-            $this->proposition($regle),
-            $decideur,
-            'Le client a déjà été relancé hier.'
-        );
+        app(FileDePropositions::class)->refuser($ligne, $decideur, 'Le client a déjà été relancé hier.');
 
         Livewire::actingAs($this->adminGlobal())
             ->test(JournalDeRegle::class, ['regleId' => $regle->id])
             ->assertSee('Zoé Trancheuse')
             ->assertSee('Le client a déjà été relancé hier.')
-            ->assertSee(now()->format('d/m/Y H:i'));
+            // La date VENUE DE LA BASE, jamais un second `now()` : la minute peut tourner entre les deux.
+            ->assertSee($ligne->fresh()->decide_le->format('d/m/Y H:i'));
     }
 
     /**
