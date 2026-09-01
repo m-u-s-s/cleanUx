@@ -7,6 +7,7 @@ use App\Services\Automation\Catalogue;
 use App\Services\Automation\Registre\ActionRegistre;
 use App\Services\Automation\Registre\DeclencheurRegistre;
 use App\Services\Automation\Registre\EntiteRegistre;
+use App\Services\Automation\ReglagesDActions;
 use App\Services\Conditions\RuleTreeEvaluator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -146,6 +147,35 @@ class RegistresTest extends TestCase
 
         // TEMOIN — le catalogue n'est pas vide : sinon la boucle ci-dessus passerait sur du neant.
         $this->assertGreaterThan(0, count($entites), 'Le catalogue d’entites est vide : ce test ne prouve rien.');
+        $this->assertSame([], $ecarts, implode("\n", $ecarts));
+    }
+
+    /**
+     * LE CONTREPOIDS CENTRAL DE LA PHASE 4 : une action qui ecrit dans le domaine ne doit
+     * JAMAIS naitre autonome — ni graine, ni migration, seule une decision humaine explicite
+     * (l'ecran des reglages) peut la faire basculer. `estAutonome()` fait deja foi : absence de
+     * ligne de reglage = a valider, jamais l'inverse (`ReglagesDActions`).
+     */
+    public function test_aucune_action_touchant_au_domaine_n_est_autonome_par_defaut(): void
+    {
+        $reglages = app(ReglagesDActions::class);
+        $ecarts = [];
+        $touchentAuDomaine = 0;
+
+        foreach (app(ActionRegistre::class)->toutes() as $cle => $action) {
+            if (! $action->toucheAuDomaine()) {
+                continue;
+            }
+
+            $touchentAuDomaine++;
+
+            if ($reglages->estAutonome($cle)) {
+                $ecarts[] = "{$cle} : autonome par defaut, sans decision humaine";
+            }
+        }
+
+        // TEMOIN — le registre n'est pas vide : sans lui, la boucle ci-dessus ne prouverait rien.
+        $this->assertGreaterThan(0, $touchentAuDomaine, 'Aucune action ne touche au domaine : ce test ne prouve rien.');
         $this->assertSame([], $ecarts, implode("\n", $ecarts));
     }
 
