@@ -7,8 +7,12 @@ use App\Models\AutomationRule;
 use App\Models\Booking;
 use App\Models\User;
 use App\Notifications\Automation\RegleDeclencheeNotification;
+use App\Services\Automation\ActionResult;
+use App\Services\Automation\Contracts\Action;
 use App\Services\Automation\FileDePropositions;
+use App\Services\Automation\Registre\ActionRegistre;
 use App\Services\Automation\RuleRunner;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -223,6 +227,84 @@ class PropositionPlutotQueActionTest extends TestCase
 
         $this->assertSame(1, app(RuleRunner::class)->executer($regle->fresh())->entites_vues);
         $this->assertSame(1, $this->compter(AutomationAction::RESULTAT_PROPOSEE));
+    }
+
+    /** Une action du registre dont on choisit la nature — c'est elle qui peut changer sous le reglage. */
+    private function enregistrerAction(string $cle, bool $toucheAuDomaine): void
+    {
+        app(ActionRegistre::class)->enregistrer(new class($cle, $toucheAuDomaine) implements Action
+        {
+            public function __construct(private readonly string $cle, private readonly bool $domaine) {}
+
+            public function cle(): string
+            {
+                return $this->cle;
+            }
+
+            public function libelle(): string
+            {
+                return 'Action de mesure';
+            }
+
+            public function entitesSupportees(): array
+            {
+                return ['booking'];
+            }
+
+            public function champs(): array
+            {
+                return [];
+            }
+
+            public function toucheAuDomaine(): bool
+            {
+                return $this->domaine;
+            }
+
+            public function executer(Model $entite, array $parametres): ActionResult
+            {
+                return ActionResult::reussie();
+            }
+        });
+    }
+
+    /**
+     * LE CONTREPOIDS 3 JUSQU'AU MOTEUR — une action devenue « touche au domaine » repasse a
+     * « proposee » tant qu'aucun humain n'a reconfirme : sinon elle agirait seule sur le
+     * domaine sans que personne n'ait jamais franchi la confirmation renforcee pour elle.
+     */
+    public function test_une_action_devenue_du_domaine_repropose_au_lieu_d_executer(): void
+    {
+        Booking::factory()->create(['status' => 'en_attente']);
+        $this->enregistrerAction('action.mutante', toucheAuDomaine: false);
+        $this->rendreAutonome('action.mutante');
+
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, [
+            'actions' => [['cle' => 'action.mutante', 'parametres' => []]],
+        ]));
+
+        $this->enregistrerAction('action.mutante', toucheAuDomaine: true);
+        app(RuleRunner::class)->executer($regle);
+
+        $this->assertSame(1, $this->compter(AutomationAction::RESULTAT_PROPOSEE));
+        $this->assertSame(0, $this->compter(AutomationAction::RESULTAT_EXECUTEE));
+    }
+
+    /** TEMOIN — nature inchangee, la meme action autonome execute bien. */
+    public function test_temoin_une_action_de_nature_stable_execute_bien(): void
+    {
+        Booking::factory()->create(['status' => 'en_attente']);
+        $this->enregistrerAction('action.stable', toucheAuDomaine: false);
+        $this->rendreAutonome('action.stable');
+
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, [
+            'actions' => [['cle' => 'action.stable', 'parametres' => []]],
+        ]));
+
+        app(RuleRunner::class)->executer($regle);
+
+        $this->assertSame(1, $this->compter(AutomationAction::RESULTAT_EXECUTEE));
+        $this->assertSame(0, $this->compter(AutomationAction::RESULTAT_PROPOSEE));
     }
 
     /** Les reglages se lisent UNE fois par passage : dans la boucle, c'est une requete par ligne. */

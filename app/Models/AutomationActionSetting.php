@@ -9,10 +9,11 @@ class AutomationActionSetting extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['action_cle', 'autonome', 'modifie_par', 'modifie_le'];
+    protected $fillable = ['action_cle', 'autonome', 'domaine_au_moment_du_reglage', 'modifie_par', 'modifie_le'];
 
     protected $casts = [
         'autonome' => 'boolean',
+        'domaine_au_moment_du_reglage' => 'boolean',
         'modifie_le' => 'datetime',
     ];
 }

@@ -4,7 +4,11 @@ namespace Tests\Feature\Automation;
 
 use App\Models\AutomationActionSetting;
 use App\Models\User;
+use App\Services\Automation\ActionResult;
+use App\Services\Automation\Contracts\Action;
+use App\Services\Automation\Registre\ActionRegistre;
 use App\Services\Automation\ReglagesDActions;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -131,5 +135,127 @@ class ReglagesDActionsTest extends TestCase
         $reglage = AutomationActionSetting::create(['action_cle' => 'notifier.admins', 'autonome' => true]);
 
         $this->assertTrue($reglage->fresh()->autonome);
+    }
+
+    // ── Le reglage fige ce qu'il a confirme ──────────────────────────────
+
+    /** Une action du registre, dont on choisit la nature — c'est elle qui peut changer. */
+    private function enregistrerAction(string $cle, bool $toucheAuDomaine): void
+    {
+        app(ActionRegistre::class)->enregistrer(new class($cle, $toucheAuDomaine) implements Action
+        {
+            public function __construct(private readonly string $cle, private readonly bool $domaine) {}
+
+            public function cle(): string
+            {
+                return $this->cle;
+            }
+
+            public function libelle(): string
+            {
+                return 'Action de mesure';
+            }
+
+            public function entitesSupportees(): array
+            {
+                return ['booking'];
+            }
+
+            public function champs(): array
+            {
+                return [];
+            }
+
+            public function toucheAuDomaine(): bool
+            {
+                return $this->domaine;
+            }
+
+            public function executer(Model $entite, array $parametres): ActionResult
+            {
+                return ActionResult::reussie();
+            }
+        });
+    }
+
+    /**
+     * LE CONTREPOIDS 3, EN INVARIANT PLUTOT QU'EN FAIT DU CLIC. Un reglage accorde alors que
+     * l'action ne touchait pas au domaine ne doit pas survivre au jour ou elle s'y met : personne
+     * n'a jamais franchi la confirmation renforcee POUR CETTE NATURE-LA.
+     */
+    public function test_une_action_dont_la_nature_change_perd_son_autonomie(): void
+    {
+        $admin = User::factory()->create();
+        $this->enregistrerAction('action.qui.change', toucheAuDomaine: false);
+        app(ReglagesDActions::class)->basculer('action.qui.change', true, $admin);
+
+        $this->enregistrerAction('action.qui.change', toucheAuDomaine: true);
+
+        $this->assertFalse(app(ReglagesDActions::class)->estAutonome('action.qui.change'));
+        $this->assertFalse(app(ReglagesDActions::class)->tous()['action.qui.change']);
+    }
+
+    /** TEMOIN — nature inchangee, l'autonomie tient : la garde ne coupe pas tout par principe. */
+    public function test_temoin_une_action_dont_la_nature_ne_change_pas_garde_son_autonomie(): void
+    {
+        $admin = User::factory()->create();
+        $this->enregistrerAction('action.stable', toucheAuDomaine: true);
+        app(ReglagesDActions::class)->basculer('action.stable', true, $admin);
+
+        $this->enregistrerAction('action.stable', toucheAuDomaine: true);
+
+        $this->assertTrue(app(ReglagesDActions::class)->estAutonome('action.stable'));
+        $this->assertTrue(app(ReglagesDActions::class)->tous()['action.stable']);
+    }
+
+    /**
+     * LE SECOND CHEMIN : les gardes MASQUENT un reglage orphelin, elles ne le suppriment pas.
+     * Une cle retiree du registre puis reintroduite avec une AUTRE nature ne doit pas
+     * ressusciter l'autonomie accordee a l'ancienne.
+     */
+    public function test_une_cle_reintroduite_avec_une_autre_nature_ne_ressuscite_pas_son_autonomie(): void
+    {
+        $admin = User::factory()->create();
+        $this->enregistrerAction('action.ressuscitee', toucheAuDomaine: false);
+        app(ReglagesDActions::class)->basculer('action.ressuscitee', true, $admin);
+
+        // Le retrait du code : un registre neuf, sans la cle. La ligne, elle, reste en base.
+        app()->instance(ActionRegistre::class, new ActionRegistre);
+        $this->assertFalse(app(ReglagesDActions::class)->estAutonome('action.ressuscitee'));
+
+        $this->enregistrerAction('action.ressuscitee', toucheAuDomaine: true);
+
+        $this->assertFalse(app(ReglagesDActions::class)->estAutonome('action.ressuscitee'));
+        $this->assertDatabaseHas('automation_action_settings', [
+            'action_cle' => 'action.ressuscitee',
+            'autonome' => true,
+        ]);
+    }
+
+    /** TEMOIN — la meme cle reintroduite avec la MEME nature retrouve bien son autonomie. */
+    public function test_temoin_une_cle_reintroduite_avec_la_meme_nature_retrouve_son_autonomie(): void
+    {
+        $admin = User::factory()->create();
+        $this->enregistrerAction('action.revenue', toucheAuDomaine: true);
+        app(ReglagesDActions::class)->basculer('action.revenue', true, $admin);
+
+        app()->instance(ActionRegistre::class, new ActionRegistre);
+        $this->enregistrerAction('action.revenue', toucheAuDomaine: true);
+
+        $this->assertTrue(app(ReglagesDActions::class)->estAutonome('action.revenue'));
+    }
+
+    /** La bascule fige la nature du moment : c'est elle que la relecture compare. */
+    public function test_la_bascule_fige_la_nature_de_l_action_au_moment_du_reglage(): void
+    {
+        $admin = User::factory()->create();
+        $this->enregistrerAction('action.figee', toucheAuDomaine: true);
+
+        app(ReglagesDActions::class)->basculer('action.figee', true, $admin);
+
+        $this->assertDatabaseHas('automation_action_settings', [
+            'action_cle' => 'action.figee',
+            'domaine_au_moment_du_reglage' => true,
+        ]);
     }
 }
