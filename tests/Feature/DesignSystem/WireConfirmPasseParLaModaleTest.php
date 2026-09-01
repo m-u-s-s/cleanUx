@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * LES CINQUANTE `wire:confirm` PASSENT PAR LA MODALE DE VERRE.
+ * LES QUARANTE-NEUF `wire:confirm` PASSENT PAR LA MODALE DE VERRE.
  *
  * Livewire implemente `wire:confirm` avec `window.confirm()` : la boite grise du navigateur,
  * celle que ce chantier a retiree partout ailleurs. Elle ignore le theme, ignore la langue de
@@ -70,9 +70,8 @@ class WireConfirmPasseParLaModaleTest extends TestCase
     /**
      * TEMOIN — `wire:confirm.prompt` reste a Livewire.
      *
-     * Cette variante demande de RETAPER un mot pour valider. Aucune vue ne l'emploie
-     * aujourd'hui ; l'avaler en silence ferait qu'une future confirmation forte se
-     * degraderait en simple oui/non, sans que rien ne le dise.
+     * Cette variante demande de RETAPER un mot pour valider. L'avaler en silence ferait qu'une
+     * confirmation forte se degraderait en simple oui/non, sans que rien ne le dise.
      */
     public function test_temoin_la_variante_prompt_est_laissee_a_livewire(): void
     {
@@ -80,9 +79,44 @@ class WireConfirmPasseParLaModaleTest extends TestCase
     }
 
     /**
+     * ET AUCUNE VUE NE L'EMPLOIE — l'affirmation ecrite deux fois dans le depot, enfin MESUREE.
+     *
+     * Elle etait fausse : un `wire:confirm.prompt` vivait dans les reglages d'actions, et rien
+     * ne le voyait — ce test-ci ne lisait que la source JS, et le detecteur de soumission plus
+     * bas acceptait ce bouton (type="button", hors formulaire). Livewire rend cette variante par
+     * `prompt()` : un navigateur qui bloque les dialogues rend le bouton inerte, sans rien dire.
+     */
+    public function test_aucune_vue_n_emploie_la_variante_prompt(): void
+    {
+        $coupables = [];
+
+        foreach ($this->vues() as $chemin) {
+            if (str_contains((string) file_get_contents($chemin), 'wire:confirm.prompt')) {
+                $coupables[] = str_replace(resource_path('views').DIRECTORY_SEPARATOR, '', $chemin);
+            }
+        }
+
+        $this->assertSame([], $coupables, "Ces vues aboutissent a `prompt()`, la boite native :\n".implode("\n", $coupables));
+    }
+
+    /** TEMOIN — le meme balayage, sur `wire:confirm` nu, trouve bien des vues : il lit vraiment. */
+    public function test_temoin_le_balayage_lit_vraiment_le_contenu_des_vues(): void
+    {
+        $porteuses = 0;
+
+        foreach ($this->vues() as $chemin) {
+            if (str_contains((string) file_get_contents($chemin), 'wire:confirm')) {
+                $porteuses++;
+            }
+        }
+
+        $this->assertGreaterThan(20, $porteuses, 'Le balayage ne lit rien : le test precedent mesurerait le vide.');
+    }
+
+    /**
      * LE DANGER EST LE DEFAUT, et dix confirmations disent explicitement le contraire.
      *
-     * Sur cinquante, une quarantaine suppriment, retirent, suspendent ou annulent. Une modale
+     * Sur quarante-neuf, trente-neuf suppriment, retirent, suspendent ou annulent. Une modale
      * qui crie « Action irreversible » sur « Approuver ce document ? » apprend a cliquer sans
      * lire — et c'est ce qui rend la vraie alerte inutile.
      */

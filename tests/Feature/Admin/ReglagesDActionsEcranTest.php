@@ -232,10 +232,76 @@ class ReglagesDActionsEcranTest extends TestCase
         Livewire::actingAs($this->adminGlobal())
             ->test(ReglagesDActionsEcran::class)
             ->call('basculer', 'action.domaine.confirmee', true)
+            ->set('motDeConfirmation', ReglagesDActionsEcran::MOT_DE_CONFIRMATION)
             ->call('confirmerAutonomie')
             ->assertSet('actionEnConfirmation', null);
 
         $this->assertTrue(app(ReglagesDActions::class)->estAutonome('action.domaine.confirmee'));
+    }
+
+    /**
+     * LE MOT SE VERIFIE AU SERVEUR, PAS DANS LE NAVIGATEUR. Il passait par `wire:confirm.prompt`,
+     * donc par `prompt()` : un navigateur qui bloque les dialogues rendait le bouton inerte, et
+     * `/livewire/update` n'execute aucun JavaScript — la confirmation renforcee n'etait qu'un
+     * fait du clic.
+     */
+    public function test_confirmer_sans_taper_le_mot_ne_rend_pas_l_action_autonome(): void
+    {
+        $this->enregistrerActionDeDomaine('action.domaine.sans.mot');
+
+        Livewire::actingAs($this->adminGlobal())
+            ->test(ReglagesDActionsEcran::class)
+            ->call('basculer', 'action.domaine.sans.mot', true)
+            ->call('confirmerAutonomie')
+            ->assertHasErrors('motDeConfirmation')
+            // LE PANNEAU RESTE OUVERT : sinon l'administrateur perd sa confirmation en route.
+            ->assertSet('actionEnConfirmation', 'action.domaine.sans.mot');
+
+        $this->assertFalse(app(ReglagesDActions::class)->estAutonome('action.domaine.sans.mot'));
+    }
+
+    /** Un AUTRE mot ne vaut pas mieux qu'aucun — sinon la garde ne mesurerait que le vide. */
+    public function test_confirmer_avec_un_autre_mot_ne_rend_pas_l_action_autonome(): void
+    {
+        $this->enregistrerActionDeDomaine('action.domaine.mauvais.mot');
+
+        Livewire::actingAs($this->adminGlobal())
+            ->test(ReglagesDActionsEcran::class)
+            ->call('basculer', 'action.domaine.mauvais.mot', true)
+            ->set('motDeConfirmation', 'non')
+            ->call('confirmerAutonomie')
+            ->assertHasErrors('motDeConfirmation');
+
+        $this->assertFalse(app(ReglagesDActions::class)->estAutonome('action.domaine.mauvais.mot'));
+    }
+
+    /** Rouvrir une confirmation repart d'un champ vide : le mot d'une action ne sert pas pour une autre. */
+    public function test_ouvrir_une_confirmation_vide_le_mot_deja_tape(): void
+    {
+        $this->enregistrerActionDeDomaine('action.domaine.premiere');
+        $this->enregistrerActionDeDomaine('action.domaine.seconde');
+
+        Livewire::actingAs($this->adminGlobal())
+            ->test(ReglagesDActionsEcran::class)
+            ->call('basculer', 'action.domaine.premiere', true)
+            ->set('motDeConfirmation', ReglagesDActionsEcran::MOT_DE_CONFIRMATION)
+            ->call('basculer', 'action.domaine.seconde', true)
+            ->assertSet('actionEnConfirmation', 'action.domaine.seconde')
+            ->assertSet('motDeConfirmation', '');
+    }
+
+    /** LA MODALE, PAS LA BOITE NATIVE — la vue ne doit plus porter aucun `wire:confirm`. */
+    public function test_l_ecran_ne_confie_plus_sa_confirmation_a_une_boite_native(): void
+    {
+        $vue = (string) file_get_contents(
+            resource_path('views/livewire/admin/automation/reglages-d-actions-ecran.blade.php')
+        );
+
+        $this->assertStringNotContainsString('wire:confirm', $vue);
+
+        // TEMOIN — la modale de verre est bien celle qui porte la confirmation.
+        $this->assertStringContainsString("@teleport('body')", $vue);
+        $this->assertStringContainsString('brio-modal-titre', $vue);
     }
 
     /** ANNULER LA CONFIRMATION NE BASCULE RIEN — l'action reste a valider. */

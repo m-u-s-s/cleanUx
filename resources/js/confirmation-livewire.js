@@ -1,7 +1,7 @@
 /**
  * `wire:confirm` PASSE PAR LA MODALE DE VERRE — sans qu'aucune vue ne soit touchee.
  *
- * Cinquante boutons du produit portent `wire:confirm`. Livewire l'implemente avec
+ * Quarante-neuf boutons du produit portent `wire:confirm`. Livewire l'implemente avec
  * `window.confirm()` : la boite grise du navigateur, celle que ce chantier a retiree
  * partout ailleurs. Elle ignore le theme, ignore la langue de la page, bloque le fil, se
  * signale hors du cadre sur un telephone, et ne distingue pas « Approuver ce document ? »
@@ -39,16 +39,19 @@ document.addEventListener('livewire:init', () => {
 
         /*
          * `wire:confirm.prompt` demande de RETAPER un mot pour valider. Aucune vue ne
-         * l'emploie aujourd'hui, mais l'avaler en silence ferait qu'une future
-         * confirmation forte se degraderait en simple oui/non, sans que rien ne le dise.
-         * On laisse Livewire s'en charger.
+         * l'emploie — c'est desormais MESURE, par
+         * `WireConfirmPasseParLaModaleTest::test_aucune_vue_n_emploie_la_variante_prompt` :
+         * l'affirmation etait fausse et rien ne le voyait. Une confirmation forte se retape
+         * dans une modale, verifiee au serveur (voir ReglagesDActionsEcran). Si une vue en
+         * portait une, l'avaler en silence la degraderait en simple oui/non : on la laisse
+         * a Livewire.
          */
         if (directive.modifiers.includes('prompt')) return;
 
         const message = (directive.expression || '').replaceAll('\\n', '\n');
 
         /*
-         * LE DANGER EST LE DEFAUT, et c'est delibere : sur cinquante confirmations, une
+         * LE DANGER EST LE DEFAUT, et c'est delibere : sur quarante-neuf confirmations, une
          * quarantaine suppriment, retirent, suspendent ou annulent. Les dix autres
          * approuvent ou remettent en ligne, et disent `.doux`.
          *

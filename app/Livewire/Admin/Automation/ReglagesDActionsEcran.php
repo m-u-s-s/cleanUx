@@ -36,6 +36,12 @@ class ReglagesDActionsEcran extends Component
     #[Locked]
     public ?string $actionEnConfirmation = null;
 
+    /** LE MOT A RETAPER — verifie ICI, jamais par le navigateur : c'est ce qui rend la
+     *  confirmation renforcee opposable a `/livewire/update`, qui n'execute aucun JavaScript. */
+    public const MOT_DE_CONFIRMATION = 'OUI';
+
+    public string $motDeConfirmation = '';
+
     /**
      * BASCULE UN REGLAGE. Repasser a valider prend toujours effet ici, tout de suite : c'est
      * le sens SUR de la bascule. Rendre autonome une action qui touche au domaine ne bascule
@@ -47,6 +53,10 @@ class ReglagesDActionsEcran extends Component
         $descripteur = $catalogue->actions()[$actionCle] ?? null;
 
         abort_if($descripteur === null, 404);
+
+        // Le mot d'une confirmation ne sert jamais pour une autre action, ni une seconde fois.
+        $this->motDeConfirmation = '';
+        $this->resetErrorBag();
 
         if ($autonome && $descripteur['touche_au_domaine']) {
             $this->actionEnConfirmation = $actionCle;
@@ -72,17 +82,28 @@ class ReglagesDActionsEcran extends Component
 
         if ($descripteur === null) {
             $this->actionEnConfirmation = null;
+            $this->motDeConfirmation = '';
+
+            return;
+        }
+
+        // LE PANNEAU RESTE OUVERT SUR ECHEC : sinon un mot mal tape perd la confirmation en route.
+        if (mb_strtoupper(trim($this->motDeConfirmation)) !== self::MOT_DE_CONFIRMATION) {
+            $this->addError('motDeConfirmation', 'Tapez « '.self::MOT_DE_CONFIRMATION.' » pour confirmer : le moteur agira seul, sans validation humaine.');
 
             return;
         }
 
         $reglages->basculer($this->actionEnConfirmation, true, Auth::user());
         $this->actionEnConfirmation = null;
+        $this->motDeConfirmation = '';
     }
 
     public function annulerConfirmation(): void
     {
         $this->actionEnConfirmation = null;
+        $this->motDeConfirmation = '';
+        $this->resetErrorBag();
     }
 
     public function render(Catalogue $catalogue, ReglagesDActions $reglages): View

@@ -1,9 +1,8 @@
 {{--
     LE SEUL ECRAN QUI ARME LE MOTEUR. Une action « autonome » s'execute seule ; « a valider »
     propose et attend un humain (voir FileDePropositions). Rendre autonome une action qui touche
-    au domaine passe par une confirmation renforcee : `wire:confirm.prompt`, reserve par ce depot
-    a exactement ce futur (voir WireConfirmPasseParLaModaleTest) plutot que la modale de verre
-    ordinaire, utilisee ailleurs pour des actions a un seul clic.
+    au domaine passe par une confirmation renforcee : la modale de verre du depot, avec un mot a
+    retaper que le SERVEUR verifie — une boite native se tait quand le navigateur la bloque.
 --}}
 <div class="space-y-6">
     <x-page-shell
@@ -78,6 +77,18 @@
                         Une fois autonome, le moteur l'exécutera seul sur les entités concernées, sans qu'un
                         administrateur ne tranche au préalable.
                     </p>
+                    {{-- LE MOT A RETAPER — meme patron que le motif de refus de la file des
+                         propositions : un champ dans la modale, verifie au serveur. --}}
+                    <div class="mt-3">
+                        <label class="brio-field-label" for="motDeConfirmation">
+                            Tapez « {{ \App\Livewire\Admin\Automation\ReglagesDActionsEcran::MOT_DE_CONFIRMATION }} » pour confirmer
+                        </label>
+                        <input id="motDeConfirmation" type="text" autocomplete="off" wire:model="motDeConfirmation" />
+                        @error('motDeConfirmation')
+                            <p class="mt-1 text-xs" style="color: var(--brio-danger);">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <div class="brio-modal-actions">
                         {{-- LE REFUS PORTE LE FOCUS. Une modale qui s'ouvre sur son bouton le
                              plus consequent transforme une touche Entree en autonomie accordee. --}}
@@ -85,12 +96,7 @@
                             Annuler
                         </button>
 
-                        <button
-                            type="button"
-                            class="brio-btn brio-btn-primary"
-                            wire:confirm.prompt="Tapez OUI pour confirmer : le moteur agira seul, sans validation humaine.|OUI"
-                            wire:click="confirmerAutonomie"
-                        >
+                        <button type="button" class="brio-btn brio-btn-primary" wire:click="confirmerAutonomie">
                             Confirmer l'autonomie
                         </button>
                     </div>
