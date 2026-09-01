@@ -20,6 +20,8 @@ class ReferencePlatformSeeder extends Seeder
             PlatformModuleSeeder::class,
             ZoneManagementSeeder::class,
             CoreSettingsSeeder::class,
+            // Cinq alertes du chemin de l'argent, données de référence — pas de démo.
+            ReglesDAlerteMetierSeeder::class,
             // Configuration, pas données de démo : le parcours de vérification et les questions
             // métier doivent exister sur TOUS les profils, production comprise. Sans le parcours,
             // aucune vérification ne s'applique à un compte créé. Placés après TradeSeeder, dont
