@@ -7,6 +7,7 @@ use App\Models\AutomationRule;
 use App\Models\Booking;
 use App\Models\User;
 use App\Notifications\Automation\RegleDeclencheeNotification;
+use App\Services\Automation\FileDePropositions;
 use App\Services\Automation\RuleRunner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -140,8 +141,11 @@ class PropositionPlutotQueActionTest extends TestCase
         $this->assertSame(1, $this->compter(AutomationAction::RESULTAT_PROPOSEE));
     }
 
-    /** TEMOIN du gel — une proposition refusee rend l'entite au balayage suivant. */
-    public function test_temoin_une_proposition_refusee_libere_l_entite(): void
+    /**
+     * TEMOIN du gel — une proposition EXPIREE rend l'entite au balayage suivant, sous
+     * `une_fois` comme ailleurs : personne n'a decide, il faut redemander.
+     */
+    public function test_temoin_une_proposition_expiree_libere_l_entite(): void
     {
         Booking::factory()->create(['status' => 'en_attente']);
 
@@ -150,11 +154,74 @@ class PropositionPlutotQueActionTest extends TestCase
 
         AutomationAction::query()
             ->where('resultat', AutomationAction::RESULTAT_PROPOSEE)
-            ->update(['resultat' => AutomationAction::RESULTAT_REFUSEE]);
+            ->update(['resultat' => AutomationAction::RESULTAT_EXPIREE]);
 
         $second = app(RuleRunner::class)->executer($regle->fresh());
 
         $this->assertSame(1, $second->entites_vues);
+        $this->assertSame(1, $this->compter(AutomationAction::RESULTAT_PROPOSEE));
+    }
+
+    /** Refuse par le chemin reel — jamais par un `update()` qui contournerait le verrou. */
+    private function refuserLaPropositionEnAttente(): void
+    {
+        $ligne = AutomationAction::query()->where('resultat', AutomationAction::RESULTAT_PROPOSEE)->firstOrFail();
+
+        app(FileDePropositions::class)->refuser($ligne, User::factory()->create(), 'Non, pas cette entité.');
+    }
+
+    /**
+     * UN REFUS EST UNE DECISION, PAS UN ECHEC. Sous `une_fois`, l'administrateur a dit non une
+     * fois pour toutes : le passage suivant ne doit pas defaire son refus a la minute.
+     */
+    public function test_une_proposition_refusee_n_est_jamais_reproposee_sous_une_fois(): void
+    {
+        Booking::factory()->create(['status' => 'en_attente']);
+
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE));
+        app(RuleRunner::class)->executer($regle);
+        $this->refuserLaPropositionEnAttente();
+
+        $second = app(RuleRunner::class)->executer($regle->fresh());
+
+        $this->assertSame(0, $second->entites_vues);
+        $this->assertSame(0, $this->compter(AutomationAction::RESULTAT_PROPOSEE));
+        $this->assertSame(1, $this->compter(AutomationAction::RESULTAT_REFUSEE));
+    }
+
+    /** C'est la POLITIQUE qui dit quand redemander : sous `chaque_passage`, au passage suivant. */
+    public function test_une_proposition_refusee_est_reproposee_sous_chaque_passage(): void
+    {
+        Booking::factory()->create(['status' => 'en_attente']);
+
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, [
+            'politique_reprise' => 'chaque_passage',
+        ]));
+        app(RuleRunner::class)->executer($regle);
+        $this->refuserLaPropositionEnAttente();
+
+        $second = app(RuleRunner::class)->executer($regle->fresh());
+
+        $this->assertSame(1, $second->entites_vues);
+        $this->assertSame(1, $this->compter(AutomationAction::RESULTAT_PROPOSEE));
+    }
+
+    /** Et sous `une_fois_par_jour` : pas le meme jour, mais le lendemain — avec son temoin. */
+    public function test_une_proposition_refusee_n_est_reproposee_que_le_lendemain_sous_une_fois_par_jour(): void
+    {
+        Booking::factory()->create(['status' => 'en_attente']);
+
+        $regle = $this->armer($this->regle(AutomationRule::ETAT_ARMEE, [
+            'politique_reprise' => 'une_fois_par_jour',
+        ]));
+        app(RuleRunner::class)->executer($regle);
+        $this->refuserLaPropositionEnAttente();
+
+        $this->assertSame(0, app(RuleRunner::class)->executer($regle->fresh())->entites_vues);
+
+        $this->travel(25)->hours();
+
+        $this->assertSame(1, app(RuleRunner::class)->executer($regle->fresh())->entites_vues);
         $this->assertSame(1, $this->compter(AutomationAction::RESULTAT_PROPOSEE));
     }
 

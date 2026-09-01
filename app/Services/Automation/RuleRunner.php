@@ -285,6 +285,10 @@ class RuleRunner
     /**
      * La requete « deja agi » brute, partagee par l'exclusion du balayage.
      *
+     * DEUX RESULTATS SEULEMENT LIBERENT INCONDITIONNELLEMENT : `echouee` (rien ne s'est passe,
+     * on retente) et `expiree` (personne n'a decide, on redemande). `refusee` est une DECISION
+     * humaine : elle se soumet a `politique_reprise` comme `executee` et `validee`.
+     *
      * @return Builder<LigneDeJournal>
      */
     protected function dejaAgiQuery(AutomationRule $regle, bool $observation): Builder
@@ -294,7 +298,6 @@ class RuleRunner
             ->where('entite_type', $regle->entite)
             ->where('mode', $observation ? 'observation' : 'armee')
             ->whereNotIn('resultat', [
-                LigneDeJournal::RESULTAT_REFUSEE,
                 LigneDeJournal::RESULTAT_EXPIREE,
                 LigneDeJournal::RESULTAT_ECHOUEE,
             ])

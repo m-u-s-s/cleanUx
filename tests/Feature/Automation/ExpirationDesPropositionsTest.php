@@ -77,7 +77,7 @@ class ExpirationDesPropositionsTest extends TestCase
         $this->assertSame(AutomationAction::RESULTAT_PROPOSEE, $ligne->fresh()->resultat);
     }
 
-    /** Aucun des trois resultats deja decides (RuleRunner::dejaAgiQuery en exclut trois, pas deux) ne doit bouger. */
+    /** Aucun des trois resultats deja decides ne doit bouger : expirer, c'est trancher a la place de personne. */
     public function test_une_ligne_deja_decidee_n_est_jamais_expiree(): void
     {
         $regle = $this->regle();
