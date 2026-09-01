@@ -6,6 +6,7 @@ use App\Events\BusinessAlertRaised;
 use App\Models\Booking;
 use App\Models\ProviderPayout;
 use App\Models\StripeReconciliationRun;
+use App\Models\StripeWebhookEvent;
 use App\Models\User;
 use App\Services\Payments\StripeReconciliationService;
 use App\Services\Payments\Webhooks\StripeWebhookHandlers;
@@ -105,14 +106,23 @@ class LesAlertesPartentVraimentTest extends TestCase
      */
     private function messageSentryPour(array $captured, string $cle): array
     {
-        $trouves = array_values(array_filter(
-            $captured,
-            fn (array $appel): bool => str_contains($appel['message'], "[{$cle}]"),
-        ));
+        $trouves = $this->messagesSentryPour($captured, $cle);
 
         $this->assertCount(1, $trouves, "La voie Sentry devrait recevoir exactement un message pour « {$cle} ».");
 
         return $trouves[0];
+    }
+
+    /**
+     * @param  list<array{message: string, level: mixed}>  $captured
+     * @return list<array{message: string, level: mixed}>
+     */
+    private function messagesSentryPour(array $captured, string $cle): array
+    {
+        return array_values(array_filter(
+            $captured,
+            fn (array $appel): bool => str_contains($appel['message'], "[{$cle}]"),
+        ));
     }
 
     /** @param array{captures: list<BusinessAlertRaised>, sentry: object} $resultat */
@@ -230,6 +240,64 @@ class LesAlertesPartentVraimentTest extends TestCase
 
         // Le comportement d'avant reste : le versement est bien marque en echec.
         $this->assertSame(ProviderPayout::STATUS_FAILED, $payout->fresh()->status);
+    }
+
+    /**
+     * `stripe:retry-failed-webhooks` rejoue l'evenement, et ce qui fait echouer une livraison est
+     * souvent le traitement lui-meme : sans la garde de son jumeau, le rejeu pose DEUX alertes.
+     */
+    public function test_rejouer_le_meme_versement_en_echec_ne_pose_qu_une_alerte(): void
+    {
+        $payout = ProviderPayout::factory()->create(['provider_payout_id' => 'po_rejeu']);
+
+        // ANCRE : si la factory naissait deja `failed`, la garde couperait des le premier passage.
+        $this->assertNotSame(ProviderPayout::STATUS_FAILED, $payout->status);
+
+        $secondPassage = null;
+        $resultat = $this->observe(function () use (&$secondPassage): void {
+            app(StripeWebhookHandlers::class)->handlePayoutFailed($this->versementEnEchec('po_rejeu'));
+            $secondPassage = app(StripeWebhookHandlers::class)->handlePayoutFailed($this->versementEnEchec('po_rejeu'));
+        });
+
+        $this->uneCapture($resultat['captures'], 'payout_failed');
+        $this->assertCount(1, $this->messagesSentryPour($resultat['sentry']->captured, 'payout_failed'));
+        $this->assertDatabaseCount('business_alertes', 1);
+
+        // La meme sortie que son jumeau `handlePayoutPaid` sur un rejeu.
+        $this->assertSame(
+            ['status' => StripeWebhookEvent::STATUS_PROCESSED, 'details' => ['already' => true]],
+            $secondPassage,
+        );
+        $this->assertSame(ProviderPayout::STATUS_FAILED, $payout->fresh()->status);
+    }
+
+    /** TEMOIN : deux versements DIFFERENTS posent bien deux alertes — la garde dedoublonne le
+     *  rejeu d'un meme fait, jamais deux faits distincts. */
+    public function test_temoin_deux_versements_differents_posent_deux_alertes(): void
+    {
+        ProviderPayout::factory()->create(['provider_payout_id' => 'po_premier']);
+        ProviderPayout::factory()->create(['provider_payout_id' => 'po_second']);
+
+        $resultat = $this->observe(function (): void {
+            app(StripeWebhookHandlers::class)->handlePayoutFailed($this->versementEnEchec('po_premier'));
+            app(StripeWebhookHandlers::class)->handlePayoutFailed($this->versementEnEchec('po_second'));
+        });
+
+        $levees = array_filter($resultat['captures'], fn (BusinessAlertRaised $e): bool => $e->key === 'payout_failed');
+
+        $this->assertCount(2, $levees);
+        $this->assertCount(2, $this->messagesSentryPour($resultat['sentry']->captured, 'payout_failed'));
+        $this->assertDatabaseCount('business_alertes', 2);
+    }
+
+    /** @return array<string, mixed> */
+    private function versementEnEchec(string $stripePayoutId): array
+    {
+        return [
+            'id' => $stripePayoutId,
+            'failure_code' => 'account_closed',
+            'failure_message' => 'bank declined',
+        ];
     }
 
     /** TEMOIN : un versement qui aboutit ne doit alerter personne. */

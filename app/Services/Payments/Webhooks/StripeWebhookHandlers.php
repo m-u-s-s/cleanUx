@@ -115,6 +115,12 @@ class StripeWebhookHandlers
             return ['status' => StripeWebhookEvent::STATUS_IGNORED];
         }
 
+        // Meme garde que son jumeau `handlePayoutPaid` : `stripe:retry-failed-webhooks` rejoue
+        // l'evenement, et sans elle le rejeu leve une SECONDE alerte pour le meme echec.
+        if ($payoutModel->status === ProviderPayout::STATUS_FAILED) {
+            return ['status' => StripeWebhookEvent::STATUS_PROCESSED, 'details' => ['already' => true]];
+        }
+
         $payoutModel->markAsFailed([
             'failure_code' => $payout['failure_code'] ?? null,
             'failure_message' => $payout['failure_message'] ?? null,
