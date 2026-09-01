@@ -46,7 +46,7 @@ class ImposerDOffice implements Action
 
         $assignation = $this->moteur->imposerDOffice($entite);
 
-        // `null` = deja pourvue, hors du planifie, ou aucun candidat a contraindre.
+        // `null` = deja pourvue, reservation immediate, offre en cours, ou aucun candidat.
         if ($assignation === null) {
             return ActionResult::echouee('Aucune imposition : mission déjà pourvue, ou aucun prestataire à désigner.');
         }

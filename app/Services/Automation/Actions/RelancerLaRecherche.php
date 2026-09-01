@@ -49,9 +49,13 @@ class RelancerLaRecherche implements Action
         // deux actes ; celui-ci ne fait que le premier, valide ou autonome.
         $offre = $this->moteur->next($entite, imposerSiEpuise: false);
 
-        // `null` = deja pourvue, offre en cours, ou plus personne d'eligible. Aucune offre, echec.
+        // LE MOTEUR NE DIT PAS LEQUEL DES QUATRE : le message les nomme tous plutot que d'en
+        // affirmer un seul. Le plafond d'escalade laisse des candidats disponibles.
         if ($offre === null) {
-            return ActionResult::echouee('Aucune offre émise : mission déjà pourvue, ou plus aucun prestataire éligible.');
+            return ActionResult::echouee(
+                'Aucune offre émise : mission déjà pourvue, offre déjà en cours, '
+                .'chaîne à sa profondeur maximale, ou plus aucun prestataire éligible.'
+            );
         }
 
         return ActionResult::reussie("Offre #{$offre->id} émise au prestataire #{$offre->user_id}.");

@@ -105,7 +105,7 @@ class ReglagesDActionsTest extends TestCase
 
         // TOUTE ACTION AJOUTEE AU CODE ARRIVE « A VALIDER » — nommees, pas deduites du registre :
         // comparer `tous()` a son propre registre reviendrait a comparer l'implementation a elle-meme.
-        foreach (['mission.ping_client', 'mission.relancer_la_recherche'] as $neuve) {
+        foreach (['mission.ping_client', 'mission.relancer_la_recherche', 'mission.imposer_doffice'] as $neuve) {
             $this->assertArrayHasKey($neuve, $tous, $neuve);
             $this->assertFalse($tous[$neuve], $neuve);
         }

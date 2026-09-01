@@ -8,6 +8,7 @@ use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\OrderDraftItem;
+use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Notifications\Dispatch\MissionOfferNotification;
 use App\Services\FaceCheck\FaceCheckGate;
@@ -92,7 +93,7 @@ class DispatchEngine
         return $search->fresh();
     }
 
-    /** Le rendez-vous planifié devient une OFFRE, plus une assignation d'office silencieuse. */
+    /** Le rendez-vous planifié devient une OFFRE d'abord — le repli d'office reste sa garantie. */
     public function openScheduled(Booking $booking): ?MissionAssignment
     {
         $mission = $this->ensureMission($booking);
@@ -268,6 +269,18 @@ class DispatchEngine
         $booking = $mission->booking;
 
         if (! $booking || $mission->lead_provider_user_id || $mission->status !== 'planned') {
+            return null;
+        }
+
+        // LE MODE IMMEDIAT A SA PROPRE SORTIE et son propre selecteur de candidats. Contraindre
+        // ici designerait un prestataire hors ligne, la recherche restant ouverte cote client.
+        if (($booking->booking_mode ?? null) === 'asap') {
+            return null;
+        }
+
+        // UNE OFFRE VIVANTE PASSE AVANT LA CONTRAINTE : sans cette garde, son destinataire
+        // accepterait une mission dont le lead est deja quelqu'un d'autre.
+        if ($this->currentOffer($mission->id)) {
             return null;
         }
 
@@ -608,10 +621,15 @@ class DispatchEngine
             ],
         );
 
+        // MEME PROPAGATION QU'A L'ACCEPTATION : sans elle, la mission imposee reste invisible
+        // du tableau de bord et du centre de repartition de la societe du prestataire.
         $mission->update([
             'status' => 'assigned',
             'lead_provider_user_id' => $best->user->id,
             'lead_employee_id' => $best->user->id,
+            'provider_organization_id' => ProviderProfile::query()
+                ->where('user_id', $best->user->id)
+                ->value('organization_account_id'),
         ]);
 
         $booking->update([

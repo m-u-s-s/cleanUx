@@ -9,6 +9,7 @@ use App\Models\AutomationRule;
 use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
+use App\Models\OrganizationAccount;
 use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
 use App\Models\Trade;
@@ -25,13 +26,14 @@ use App\Services\Automation\RuleRunner;
 use App\Support\Domain\BookingStatus;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
 use Tests\TestCase;
 
-/** Les deux premieres actions qui ecrivent dans le domaine — chacune par un service existant. */
+/** Les actions qui ecrivent dans le domaine — chacune par un service existant. */
 class ActionsDuDomaineTest extends TestCase
 {
     use ArmeSesRegles;
@@ -296,6 +298,83 @@ class ActionsDuDomaineTest extends TestCase
         $this->assertSame($titulaire, (int) $mission->fresh()->lead_provider_user_id);
     }
 
+    /** Une offre vivante passe avant la contrainte : sinon deux prestataires tiennent la mission. */
+    public function test_l_imposition_refuse_quand_une_offre_est_en_cours(): void
+    {
+        $mission = $this->missionSansIntervenant();
+
+        app(RelancerLaRecherche::class)->executer($mission, []);
+
+        $refusee = app(ImposerDOffice::class)->executer($mission->fresh(), []);
+
+        $this->assertFalse($refusee->reussie);
+        $this->assertDatabaseMissing('mission_assignments', [
+            'mission_id' => $mission->id,
+            'assignment_status' => 'accepted',
+        ]);
+
+        // TEMOIN — l'offre expiree, la meme contrainte passe. Le refus tenait bien a l'offre vivante.
+        MissionAssignment::query()
+            ->where('mission_id', $mission->id)
+            ->update(['expires_at' => now()->subMinute()]);
+
+        $this->assertTrue(app(ImposerDOffice::class)->executer($mission->fresh(), [])->reussie);
+    }
+
+    /** Le mode immediat a sa propre sortie : le selecteur du planifie y designerait un hors-ligne. */
+    public function test_l_imposition_refuse_une_reservation_immediate(): void
+    {
+        $mission = $this->missionSansIntervenant();
+        $mission->booking->update(['booking_mode' => 'asap']);
+
+        $refusee = app(ImposerDOffice::class)->executer($mission->fresh(), []);
+
+        $this->assertFalse($refusee->reussie);
+        $this->assertDatabaseHas('missions', ['id' => $mission->id, 'status' => 'planned']);
+
+        // TEMOIN — la MEME mission repassee en planifie est bien imposee.
+        $mission->booking->update(['booking_mode' => 'scheduled']);
+        $this->assertTrue(app(ImposerDOffice::class)->executer($mission->fresh(), [])->reussie);
+    }
+
+    /** La societe du prestataire suit la contrainte, comme elle suit l'acceptation. */
+    public function test_l_imposition_renseigne_la_societe_du_prestataire(): void
+    {
+        $societe = OrganizationAccount::factory()->create();
+        $mission = $this->missionSansIntervenant();
+
+        ProviderProfile::query()->update(['organization_account_id' => $societe->id]);
+
+        $this->assertTrue(app(ImposerDOffice::class)->executer($mission->fresh(), [])->reussie);
+        $this->assertDatabaseHas('missions', [
+            'id' => $mission->id,
+            'provider_organization_id' => $societe->id,
+        ]);
+    }
+
+    /**
+     * AU PLAFOND D'ESCALADE, DES CANDIDATS RESTENT DISPONIBLES. Le message ne doit pas affirmer
+     * qu'il n'y a plus personne — c'est la seule des portes ou ce serait faux.
+     */
+    public function test_la_relance_ne_pretend_pas_la_zone_vide_au_plafond_d_escalade(): void
+    {
+        $mission = $this->missionSansIntervenant();
+        Config::set('dispatch.max_escalation_depth', 0);
+
+        $epuisee = app(RelancerLaRecherche::class)->executer($mission, []);
+
+        $this->assertFalse($epuisee->reussie);
+        $this->assertStringContainsString('profondeur maximale', (string) $epuisee->message);
+        $this->assertDatabaseMissing('mission_assignments', [
+            'mission_id' => $mission->id,
+            'assignment_status' => 'accepted',
+        ]);
+
+        // TEMOIN — le plafond rendu a sa valeur, la meme mission recoit bien une offre.
+        Config::set('dispatch.max_escalation_depth', 5);
+        $this->assertTrue(app(RelancerLaRecherche::class)->executer($mission->fresh(), [])->reussie);
+    }
+
     /** Aucun candidat : le moteur rend `null`, et l'action le rapporte en echec. */
     public function test_la_relance_echoue_quand_le_moteur_ne_trouve_personne(): void
     {
@@ -326,7 +405,7 @@ class ActionsDuDomaineTest extends TestCase
             'permissions' => ['manage-automation'],
         ]);
 
-        foreach (['mission.ping_client', 'mission.relancer_la_recherche'] as $cle) {
+        foreach (['mission.ping_client', 'mission.relancer_la_recherche', 'mission.imposer_doffice'] as $cle) {
             Livewire::actingAs($admin)
                 ->test(ReglagesDActionsEcran::class)
                 ->call('basculer', $cle, true)
@@ -415,6 +494,7 @@ class ActionsDuDomaineTest extends TestCase
 
         $this->assertNotContains('mission.ping_client', $offertes);
         $this->assertNotContains('mission.relancer_la_recherche', $offertes);
+        $this->assertNotContains('mission.imposer_doffice', $offertes);
         // TEMOIN — le filtre rend bien quelque chose : sans lui, tout serait « absent ».
         $this->assertContains('journaliser', $offertes);
         $this->assertContains('mission.ping_client', array_keys(app(Catalogue::class)->actions('mission')));
@@ -454,14 +534,14 @@ class ActionsDuDomaineTest extends TestCase
     }
 
     /**
-     * LE CONTRAT DIT `Model`, PAS `Mission`. Sans le retrecissement des deux actions, ce test
+     * LE CONTRAT DIT `Model`, PAS `Mission`. Sans le retrecissement de ces actions, ce test
      * leve un TypeError au lieu de rendre un echec — et la file, elle, ne voit qu'un `Throwable`.
      */
     public function test_une_entite_qui_n_est_pas_une_mission_donne_un_echec_propre(): void
     {
         $reservation = Booking::factory()->create();
 
-        foreach ([EnvoyerLePingAuClient::class, RelancerLaRecherche::class] as $classe) {
+        foreach ([EnvoyerLePingAuClient::class, RelancerLaRecherche::class, ImposerDOffice::class] as $classe) {
             $resultat = app($classe)->executer($reservation, []);
 
             $this->assertFalse($resultat->reussie, $classe);
