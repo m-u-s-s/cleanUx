@@ -7,12 +7,15 @@ use App\Jobs\Dispatch\EscalateMissionAssignmentJob;
 use App\Models\AsapDispatchRequest;
 use App\Models\Booking;
 use App\Models\MissionAssignment;
+use App\Models\ProviderFaceCheck;
+use App\Models\ProviderFaceProfile;
 use App\Models\ProviderPresence;
 use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\TradeZonePricing;
 use App\Models\User;
+use App\Services\Dispatch\CandidateFinder;
 use App\Services\Dispatch\DispatchEngine;
 use App\Services\Dispatch\MissionDispatchService;
 use App\Support\Domain\AsapStatus;
@@ -20,11 +23,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Feature\Dispatch\Concerns\OuvreLeCatalogue;
+use Tests\Feature\FaceCheck\Concerns\ActiveLeControleFacial;
 use Tests\TestCase;
 
 /** LE MOTEUR DE RÉPARTITION, BOUT EN BOUT — consignes 1, 3, 4, 5, 6, 10. */
 class MoteurDeRepartitionTest extends TestCase
 {
+    use ActiveLeControleFacial;
     use OuvreLeCatalogue;
     use RefreshDatabase;
 
@@ -544,5 +549,91 @@ class MoteurDeRepartitionTest extends TestCase
 
         $this->assertNotNull($assignee, 'Le repli d’office doit avoir désigné quelqu’un.');
         $this->assertSame($prestataire->id, (int) $assignee->user_id);
+    }
+
+    // ─── L'office repasse les gardes de la voie courtoise ────────────────────────────────────
+
+    /**
+     * LE FILTRE SQL SORT D'EMBLEE QUAND LA RESERVATION N'EST PAS SOUMISE. Le prestataire l'est
+     * pourtant, par son PROFIL — un metier controle qu'il exerce par ailleurs.
+     */
+    #[Test]
+    public function l_office_ecarte_un_prestataire_soumis_par_son_profil(): void
+    {
+        // Le controle porte sur la PEINTURE ; la reservation sera en PLOMBERIE.
+        $this->activerLeControleFacial($this->zone, $this->peinture);
+
+        $prestataire = $this->prestataire($this->plomberie, 50.8480, 4.3540);
+        $prestataire->trades()->syncWithoutDetaching([$this->peinture->id]);
+        $this->oublierLesCachesDuControleFacial();
+
+        $booking = $this->reservationImmediate();
+        $booking->update(['booking_mode' => 'scheduled']);
+        Config::set('dispatch.max_escalation_depth', 0);
+
+        $this->assertNull($this->moteur()->openScheduled($booking->fresh()));
+        $this->assertDatabaseMissing('mission_assignments', ['assignment_status' => 'accepted']);
+
+        // TEMOIN — module eteint, le MEME prestataire est bien impose. La zone n'etait pas vide.
+        $this->eteindreLeControleFacial();
+
+        $this->assertNotNull($this->moteur()->openScheduled($booking->fresh()));
+        $this->assertDatabaseHas('mission_assignments', [
+            'user_id' => $prestataire->id,
+            'assignment_status' => 'accepted',
+        ]);
+    }
+
+    /**
+     * ENROLE, CONSENTANT, NON BLOQUE : le filtre SQL le laisse passer. Seul le verdict voit le
+     * controle ouvert que personne n'a tranche — et la voie courtoise, elle, le refuse.
+     */
+    #[Test]
+    public function l_office_ecarte_un_prestataire_dont_le_controle_facial_est_ouvert(): void
+    {
+        $this->activerLeControleFacial($this->zone, $this->plomberie);
+
+        $prestataire = $this->prestataire($this->plomberie, 50.8480, 4.3540);
+
+        $profil = new ProviderFaceProfile;
+        $profil->forceFill([
+            'user_id' => $prestataire->id,
+            'status' => ProviderFaceProfile::STATUS_ENROLLED,
+            'reference_path' => 'face/reference.jpg',
+            'consent_given_at' => now(),
+        ])->save();
+
+        (new ProviderFaceCheck)->forceFill([
+            'user_id' => $prestataire->id,
+            'provider_face_profile_id' => $profil->id,
+            'status' => ProviderFaceCheck::STATUS_PENDING,
+            'triggered_by' => ProviderFaceCheck::TRIGGER_INTERVAL,
+            'requested_at' => now(),
+        ])->save();
+
+        $booking = $this->reservationImmediate();
+        $booking->update(['booking_mode' => 'scheduled']);
+        Config::set('dispatch.max_escalation_depth', 0);
+
+        // LA MESURE DU TROU : le filtre SQL le rend candidat, puisqu'il est enrole, consentant et
+        // non bloque. C'est donc bien le verdict, et lui seul, qui arrete la contrainte.
+        $candidats = app(CandidateFinder::class)->scheduled($booking->fresh(), []);
+        $this->assertContains(
+            $prestataire->id,
+            $candidats->map(fn ($c) => (int) $c->user->id)->all(),
+            'Le filtre SQL doit le laisser passer : sans cela le test mesure le filtre, pas la garde.'
+        );
+
+        $this->assertNull($this->moteur()->openScheduled($booking->fresh()));
+        $this->assertDatabaseMissing('mission_assignments', ['assignment_status' => 'accepted']);
+
+        // TEMOIN — module eteint, le MEME prestataire est bien impose.
+        $this->eteindreLeControleFacial();
+
+        $this->assertNotNull($this->moteur()->openScheduled($booking->fresh()));
+        $this->assertDatabaseHas('mission_assignments', [
+            'user_id' => $prestataire->id,
+            'assignment_status' => 'accepted',
+        ]);
     }
 }

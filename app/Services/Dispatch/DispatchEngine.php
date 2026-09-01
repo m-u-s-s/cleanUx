@@ -599,12 +599,28 @@ class DispatchEngine
 
         $candidates = $this->candidates->scheduled($booking, $declined);
 
-        $best = $candidates->all()[0] ?? null;
+        // LES MEMES DEUX GARDES QUE LA VOIE COURTOISE. Le filtre SQL est plus faible : il ignore
+        // le controle du au PROFIL, et laisse passer un controle ouvert non tranche.
+        $best = null;
+
+        foreach ($candidates->all() as $candidat) {
+            if (! $candidat->user->hasClearedKyc()) {
+                continue;
+            }
+
+            if (! $this->passeLeControleFacial($candidat->user, $mission)) {
+                continue;
+            }
+
+            $best = $candidat;
+            break;
+        }
 
         if ($best === null) {
-            Log::info('DispatchEngine: planifié sans candidat, aucune assignation d’office', [
+            Log::info('DispatchEngine: planifié sans candidat en règle, aucune assignation d’office', [
                 'mission_id' => $mission->id,
                 'tried' => $tried,
+                'candidats_ecartes' => $candidates->count(),
             ]);
 
             return null;
