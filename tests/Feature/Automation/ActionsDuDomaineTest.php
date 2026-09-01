@@ -8,6 +8,7 @@ use App\Models\AutomationAction;
 use App\Models\AutomationRule;
 use App\Models\Booking;
 use App\Models\Mission;
+use App\Models\MissionAssignment;
 use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
 use App\Models\Trade;
@@ -20,6 +21,7 @@ use App\Services\Automation\Catalogue;
 use App\Services\Automation\EtatDeRegle;
 use App\Services\Automation\ReglagesDActions;
 use App\Services\Automation\RuleRunner;
+use App\Support\Domain\BookingStatus;
 use App\Support\Domain\MissionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -49,7 +51,10 @@ class ActionsDuDomaineTest extends TestCase
 
     // ─── Fabriques ───────────────────────────────────────────────────────────────────────────
 
-    /** Une mission en cours, son client joignable : le terrain du ping. */
+    /**
+     * Une mission en cours, son client joignable : le terrain du ping. L'etat est celui que le
+     * domaine produit vraiment — `setArrived()` porte la reservation a `sur_place`, pas ailleurs.
+     */
     private function missionEnCours(): Mission
     {
         $client = User::factory()->create();
@@ -59,15 +64,31 @@ class ActionsDuDomaineTest extends TestCase
             'client_id' => $client->id,
             'customer_user_id' => $client->id,
             'employe_id' => $prestataire->id,
+            'status' => BookingStatus::SUR_PLACE,
         ]);
 
-        $mission = Mission::factory()->create(['booking_id' => $booking->id]);
+        // `sur_place` fait NAITRE la mission (RendezVousObserver) : la retrouver, jamais en creer
+        // une seconde — la regle en verrait deux pour la meme reservation.
+        $mission = Mission::query()->where('booking_id', $booking->id)->firstOrFail();
 
         $mission->forceFill([
             'status' => MissionStatus::ARRIVED,
             'lead_employee_id' => $prestataire->id,
             'lead_provider_user_id' => $prestataire->id,
         ])->save();
+
+        // La synchronisation a DEJA pose la ligne du lead : on l'avance, on n'en cree pas une
+        // seconde — la table porte un index unique (mission, prestataire).
+        MissionAssignment::query()->updateOrCreate(
+            ['mission_id' => $mission->id, 'user_id' => $prestataire->id],
+            [
+                'role_on_mission' => 'lead',
+                'assignment_status' => 'arrived',
+                'assigned_at' => now()->subHour(),
+                'accepted_at' => now()->subHour(),
+                'arrived_at' => now()->subMinutes(5),
+            ],
+        );
 
         return $mission->fresh();
     }
@@ -187,10 +208,42 @@ class ActionsDuDomaineTest extends TestCase
         $resultat = app(RelancerLaRecherche::class)->executer($mission, []);
 
         $this->assertTrue($resultat->reussie);
+        $this->assertStringContainsString('Offre', (string) $resultat->message);
         $this->assertDatabaseHas('mission_assignments', [
             'mission_id' => $mission->id,
             'assignment_status' => 'assigned',
         ]);
+    }
+
+    /**
+     * LE JOURNAL NE DOIT PAS APPELER « OFFRE » UNE CONTRAINTE. Zone mince, profondeur 1 : le seul
+     * candidat a laisse filer son offre, `offerScheduled()` l'ecarte comme deja sollicite, puis
+     * `assignByDefault()` le lui IMPOSE. Deux chemins, deux messages, chacun disant le vrai.
+     */
+    public function test_une_assignation_d_office_ne_se_journalise_pas_comme_une_offre(): void
+    {
+        $mission = $this->missionSansIntervenant();
+
+        $offerte = app(RelancerLaRecherche::class)->executer($mission, []);
+
+        // L'offre expire sans reponse : le seul candidat de la zone devient « deja sollicite ».
+        MissionAssignment::query()
+            ->where('mission_id', $mission->id)
+            ->update(['expires_at' => now()->subMinute()]);
+
+        $imposee = app(RelancerLaRecherche::class)->executer($mission->fresh(), []);
+
+        $this->assertTrue($imposee->reussie);
+        $this->assertDatabaseHas('mission_assignments', [
+            'mission_id' => $mission->id,
+            'assignment_status' => 'accepted',
+        ]);
+
+        // LES DEUX MESSAGES DIFFERENT, et chacun nomme ce qui s'est reellement passe.
+        $this->assertNotSame($offerte->message, $imposee->message);
+        $this->assertStringContainsString('Offre', (string) $offerte->message);
+        $this->assertStringNotContainsString('imposée', (string) $offerte->message);
+        $this->assertStringContainsString('imposée', (string) $imposee->message);
     }
 
     /** Aucun candidat : le moteur rend `null`, et l'action le rapporte en echec. */

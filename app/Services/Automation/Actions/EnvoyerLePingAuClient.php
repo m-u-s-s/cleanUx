@@ -45,9 +45,10 @@ class EnvoyerLePingAuClient implements Action
             return ActionResult::echouee('Cette action ne vise que les missions.');
         }
 
-        // `false` = deja envoye, aucun client, ou notification impossible. Rien fait, donc echec.
+        // Les TROIS causes de `false`, dans l'ordre du service : deja parti, personne a joindre,
+        // notification qui leve. En nommer deux enverrait chercher au mauvais endroit.
         return $this->checkin->envoyerLePing($entite)
             ? ActionResult::reussie('Ping de présence envoyé au client.')
-            : ActionResult::echouee('Ping non envoyé : déjà parti, ou aucun client à joindre.');
+            : ActionResult::echouee('Ping non envoyé : déjà parti, aucun client à joindre, ou notification en échec.');
     }
 }

@@ -48,8 +48,14 @@ class RelancerLaRecherche implements Action
         $offre = $this->moteur->next($entite);
 
         // `null` = deja pourvue, offre en cours, ou plus personne d'eligible. Aucune offre, echec.
-        return $offre === null
-            ? ActionResult::echouee('Aucune offre émise : mission déjà pourvue, ou plus aucun prestataire éligible.')
-            : ActionResult::reussie("Offre #{$offre->id} émise.");
+        if ($offre === null) {
+            return ActionResult::echouee('Aucune offre émise : mission déjà pourvue, ou plus aucun prestataire éligible.');
+        }
+
+        // `accepted` SANS QUE PERSONNE N'AIT ACCEPTE : c'est le repli d'office du moteur. Seul
+        // `assignByDefault()` l'ecrit ; toute offre, immediate ou planifiee, nait `assigned`.
+        return $offre->assignment_status === 'accepted'
+            ? ActionResult::reussie("Mission imposée d'office au prestataire #{$offre->user_id} : personne n'avait accepté.")
+            : ActionResult::reussie("Offre #{$offre->id} émise au prestataire #{$offre->user_id}.");
     }
 }
