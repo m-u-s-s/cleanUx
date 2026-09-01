@@ -239,6 +239,40 @@ class WireConfirmPasseParLaModaleTest extends TestCase
      */
 
     /** @return array<int, string> */
+    /**
+     * DEUX AFFIRMATIONS DE CE FICHIER NE TENAIENT QUE DANS SES COMMENTAIRES.
+     *
+     * « Aucune page invitee ne porte wire:confirm » et le compte de quarante-neuf vivaient en
+     * prose. Un commentaire ne peut pas rougir : c'est exactement ainsi qu'une vue a pu employer
+     * la variante `prompt` pendant que ce fichier affirmait le contraire, tout vert.
+     */
+    public function test_les_deux_affirmations_de_ce_fichier_sont_mesurees(): void
+    {
+        $confirmations = 0;
+        $invitees = [];
+
+        foreach ($this->vues() as $chemin) {
+            $contenu = (string) file_get_contents($chemin);
+            $confirmations += preg_match_all('/wire:confirm(\.[a-z]+)?=/', $contenu);
+
+            // Une page invitee est une vue dont la coquille est `layouts.guest` : elle ne monte
+            // pas la modale, donc un `wire:confirm` y retomberait sur la boite du navigateur.
+            if (preg_match('/wire:confirm(\.[a-z]+)?=/', $contenu) === 1
+                && preg_match('/layouts\.guest|x-guest-layout/', $contenu) === 1) {
+                $invitees[] = str_replace(str_replace(chr(92), '/', resource_path('views')).'/', '', str_replace(chr(92), '/', $chemin));
+            }
+        }
+
+        $this->assertSame([], $invitees, 'Une page invitee porte `wire:confirm` : la modale n’y est pas montee.');
+
+        $this->assertSame(
+            49,
+            $confirmations,
+            "Le compte de `wire:confirm` a change : ce fichier en annonce quarante-neuf.\n"
+            .'Mets a jour ses trois docblocks EN MEME TEMPS que ce nombre, sinon ils rementiront.'
+        );
+    }
+
     private function vues(): array
     {
         $trouvees = [];
