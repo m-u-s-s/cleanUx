@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\Automation\Actions\EnvoyerLePingAuClient;
+use App\Services\Automation\Actions\ImposerDOffice;
 use App\Services\Automation\Actions\Journaliser;
 use App\Services\Automation\Actions\NotifierLesAdmins;
 use App\Services\Automation\Actions\RelancerLaRecherche;
@@ -28,6 +29,7 @@ class AutomationServiceProvider extends ServiceProvider
             // Celles-ci ecrivent dans le domaine : elles naissent « a valider », voir la spec.
             $registre->enregistrer($app->make(EnvoyerLePingAuClient::class));
             $registre->enregistrer($app->make(RelancerLaRecherche::class));
+            $registre->enregistrer($app->make(ImposerDOffice::class));
 
             return $registre;
         });

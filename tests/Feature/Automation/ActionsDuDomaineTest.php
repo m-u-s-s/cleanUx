@@ -15,6 +15,7 @@ use App\Models\Trade;
 use App\Models\User;
 use App\Notifications\MissionCheckInPingNotification;
 use App\Services\Automation\Actions\EnvoyerLePingAuClient;
+use App\Services\Automation\Actions\ImposerDOffice;
 use App\Services\Automation\Actions\RelancerLaRecherche;
 use App\Services\Automation\ArmementRefuse;
 use App\Services\Automation\Catalogue;
@@ -216,34 +217,83 @@ class ActionsDuDomaineTest extends TestCase
     }
 
     /**
-     * LE JOURNAL NE DOIT PAS APPELER « OFFRE » UNE CONTRAINTE. Zone mince, profondeur 1 : le seul
-     * candidat a laisse filer son offre, `offerScheduled()` l'ecarte comme deja sollicite, puis
-     * `assignByDefault()` le lui IMPOSE. Deux chemins, deux messages, chacun disant le vrai.
+     * LA RELANCE NE CONTRAINT JAMAIS. Zone mince, profondeur 1 : le seul candidat a laisse filer
+     * son offre. Le moteur imposerait d'office ; l'action refuse cette porte et le dit.
      */
-    public function test_une_assignation_d_office_ne_se_journalise_pas_comme_une_offre(): void
+    public function test_la_relance_n_impose_jamais_une_mission(): void
     {
         $mission = $this->missionSansIntervenant();
 
         $offerte = app(RelancerLaRecherche::class)->executer($mission, []);
+
+        $this->assertTrue($offerte->reussie);
+        $this->assertStringContainsString('Offre', (string) $offerte->message);
 
         // L'offre expire sans reponse : le seul candidat de la zone devient « deja sollicite ».
         MissionAssignment::query()
             ->where('mission_id', $mission->id)
             ->update(['expires_at' => now()->subMinute()]);
 
-        $imposee = app(RelancerLaRecherche::class)->executer($mission->fresh(), []);
+        $epuisee = app(RelancerLaRecherche::class)->executer($mission->fresh(), []);
+
+        $this->assertFalse($epuisee->reussie);
+        $this->assertStringNotContainsString('imposée', (string) $epuisee->message);
+
+        // RIEN N'A ETE CONTRAINT : ni assignation acceptee, ni mission pourvue.
+        $this->assertDatabaseMissing('mission_assignments', [
+            'mission_id' => $mission->id,
+            'assignment_status' => 'accepted',
+        ]);
+        $this->assertDatabaseHas('missions', [
+            'id' => $mission->id,
+            'status' => 'planned',
+            'lead_provider_user_id' => null,
+        ]);
+    }
+
+    /**
+     * TEMOIN — le MEME etat epuise, confie a l'action qui assume la contrainte, impose bien.
+     * Sans lui, le refus ci-dessus passerait au vert en mesurant une zone vide.
+     */
+    public function test_temoin_le_meme_etat_epuise_est_bien_impose_par_l_action_dediee(): void
+    {
+        $mission = $this->missionSansIntervenant();
+
+        app(RelancerLaRecherche::class)->executer($mission, []);
+
+        MissionAssignment::query()
+            ->where('mission_id', $mission->id)
+            ->update(['expires_at' => now()->subMinute()]);
+
+        $imposee = app(ImposerDOffice::class)->executer($mission->fresh(), []);
 
         $this->assertTrue($imposee->reussie);
+        $this->assertStringContainsString('imposée', (string) $imposee->message);
         $this->assertDatabaseHas('mission_assignments', [
             'mission_id' => $mission->id,
             'assignment_status' => 'accepted',
         ]);
+        $this->assertDatabaseHas('missions', ['id' => $mission->id, 'status' => 'assigned']);
+    }
 
-        // LES DEUX MESSAGES DIFFERENT, et chacun nomme ce qui s'est reellement passe.
-        $this->assertNotSame($offerte->message, $imposee->message);
-        $this->assertStringContainsString('Offre', (string) $offerte->message);
-        $this->assertStringNotContainsString('imposée', (string) $offerte->message);
-        $this->assertStringContainsString('imposée', (string) $imposee->message);
+    /** Une mission deja pourvue ne se reprend pas : la contrainte ne vole personne. */
+    public function test_l_imposition_refuse_une_mission_deja_pourvue(): void
+    {
+        $mission = $this->missionSansIntervenant();
+
+        app(RelancerLaRecherche::class)->executer($mission, []);
+        MissionAssignment::query()
+            ->where('mission_id', $mission->id)
+            ->update(['expires_at' => now()->subMinute()]);
+
+        $premier = app(ImposerDOffice::class)->executer($mission->fresh(), []);
+        $this->assertTrue($premier->reussie);
+
+        $titulaire = (int) $mission->fresh()->lead_provider_user_id;
+        $second = app(ImposerDOffice::class)->executer($mission->fresh(), []);
+
+        $this->assertFalse($second->reussie);
+        $this->assertSame($titulaire, (int) $mission->fresh()->lead_provider_user_id);
     }
 
     /** Aucun candidat : le moteur rend `null`, et l'action le rapporte en echec. */

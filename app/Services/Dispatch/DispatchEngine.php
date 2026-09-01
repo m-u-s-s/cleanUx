@@ -107,7 +107,7 @@ class DispatchEngine
     // ─── Progression de la chaîne ────────────────────────────────────────────────────────────
 
     /** L'offre suivante pour cette mission — quel que soit le mode. */
-    public function next(Mission $mission): ?MissionAssignment
+    public function next(Mission $mission, bool $imposerSiEpuise = true): ?MissionAssignment
     {
         $search = AsapDispatchRequest::query()
             ->where('mission_id', $mission->id)
@@ -127,7 +127,7 @@ class DispatchEngine
             return $ouverte ? $this->currentOffer($ouverte->mission_id) : null;
         }
 
-        return $this->offerScheduled($mission);
+        return $this->offerScheduled($mission, $imposerSiEpuise);
     }
 
     /** La suite d'une recherche immédiate : offre, élargissement, broadcast, ou épuisement. */
@@ -219,7 +219,7 @@ class DispatchEngine
     }
 
     /** La suite d'une chaîne planifiée : le meilleur candidat non encore tenté. */
-    public function offerScheduled(Mission $mission): ?MissionAssignment
+    public function offerScheduled(Mission $mission, bool $imposerSiEpuise = true): ?MissionAssignment
     {
         $booking = $mission->booking;
 
@@ -235,19 +235,19 @@ class DispatchEngine
         $depth = count($tried);
 
         if ($depth >= (int) Config::get('dispatch.max_escalation_depth', 5)) {
-            return $this->assignByDefault($mission, $booking);
+            return $imposerSiEpuise ? $this->assignByDefault($mission, $booking) : null;
         }
 
         $candidates = $this->candidates->scheduled($booking, $tried);
 
         if ($candidates->isEmpty()) {
-            return $this->assignByDefault($mission, $booking);
+            return $imposerSiEpuise ? $this->assignByDefault($mission, $booking) : null;
         }
 
         $premier = $candidates->all()[0] ?? null;
 
         if ($premier === null) {
-            return $this->assignByDefault($mission, $booking);
+            return $imposerSiEpuise ? $this->assignByDefault($mission, $booking) : null;
         }
 
         return $this->createOffer(
@@ -257,6 +257,21 @@ class DispatchEngine
             $premier->distanceM,
             null,
         );
+    }
+
+    /**
+     * Impose la mission au meilleur candidat, sans offre prealable. Acte DISTINCT de la recherche :
+     * il ne se declenche pas d'un epuisement, il se decide.
+     */
+    public function imposerDOffice(Mission $mission): ?MissionAssignment
+    {
+        $booking = $mission->booking;
+
+        if (! $booking || $mission->lead_provider_user_id || $mission->status !== 'planned') {
+            return null;
+        }
+
+        return $this->assignByDefault($mission, $booking);
     }
 
     // ─── Résolutions ─────────────────────────────────────────────────────────────────────────

@@ -8,7 +8,7 @@ use App\Services\Automation\Contracts\Action;
 use App\Services\Dispatch\DispatchEngine;
 use Illuminate\Database\Eloquent\Model;
 
-/** Remet une mission dans le moteur de repartition. Qui est eligible reste l'affaire du moteur. */
+/** Remet une mission dans le moteur de repartition. Elle CHERCHE : elle n'impose jamais. */
 class RelancerLaRecherche implements Action
 {
     public function __construct(protected DispatchEngine $moteur) {}
@@ -45,17 +45,15 @@ class RelancerLaRecherche implements Action
             return ActionResult::echouee('Cette action ne vise que les missions.');
         }
 
-        $offre = $this->moteur->next($entite);
+        // LA PORTE D'OFFICE RESTE FERMEE. « Relancer la recherche » et « imposer d'office » sont
+        // deux actes ; celui-ci ne fait que le premier, valide ou autonome.
+        $offre = $this->moteur->next($entite, imposerSiEpuise: false);
 
         // `null` = deja pourvue, offre en cours, ou plus personne d'eligible. Aucune offre, echec.
         if ($offre === null) {
             return ActionResult::echouee('Aucune offre émise : mission déjà pourvue, ou plus aucun prestataire éligible.');
         }
 
-        // `accepted` SANS QUE PERSONNE N'AIT ACCEPTE : c'est le repli d'office du moteur. Seul
-        // `assignByDefault()` l'ecrit ; toute offre, immediate ou planifiee, nait `assigned`.
-        return $offre->assignment_status === 'accepted'
-            ? ActionResult::reussie("Mission imposée d'office au prestataire #{$offre->user_id} : personne n'avait accepté.")
-            : ActionResult::reussie("Offre #{$offre->id} émise au prestataire #{$offre->user_id}.");
+        return ActionResult::reussie("Offre #{$offre->id} émise au prestataire #{$offre->user_id}.");
     }
 }

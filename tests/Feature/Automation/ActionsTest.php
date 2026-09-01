@@ -54,7 +54,7 @@ class ActionsTest extends TestCase
     /** LA LIGNE DE PARTAGE, ecrite une fois : qui ecrit dans le domaine, et qui pas. */
     private const SANS_DOMAINE = ['journaliser', 'notifier.admins'];
 
-    private const AVEC_DOMAINE = ['mission.ping_client', 'mission.relancer_la_recherche'];
+    private const AVEC_DOMAINE = ['mission.ping_client', 'mission.relancer_la_recherche', 'mission.imposer_doffice'];
 
     public function test_chaque_action_declare_juste_si_elle_ecrit_dans_le_domaine(): void
     {
@@ -71,9 +71,9 @@ class ActionsTest extends TestCase
         $this->assertSame([], $ecarts, implode("\n", $ecarts));
     }
 
-    /** TEMOIN — le registre porte bien les quatre actions. Sans lui, le test ci-dessus
+    /** TEMOIN — le registre porte bien les cinq actions. Sans lui, le test ci-dessus
      *  passerait au vert sur un registre vide. */
-    public function test_temoin_le_registre_porte_les_quatre_actions(): void
+    public function test_temoin_le_registre_porte_les_cinq_actions(): void
     {
         $cles = array_keys(app(ActionRegistre::class)->toutes());
         $attendues = array_merge(self::SANS_DOMAINE, self::AVEC_DOMAINE);
