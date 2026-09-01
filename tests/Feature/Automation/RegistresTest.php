@@ -3,12 +3,14 @@
 namespace Tests\Feature\Automation;
 
 use App\Livewire\Admin\Automation\ConstructeurDeRegle;
+use App\Models\AutomationRule;
 use App\Services\Automation\Catalogue;
 use App\Services\Automation\Registre\ActionRegistre;
 use App\Services\Automation\Registre\DeclencheurRegistre;
 use App\Services\Automation\Registre\EntiteRegistre;
 use App\Services\Automation\ReglagesDActions;
 use App\Services\Conditions\RuleTreeEvaluator;
+use Database\Seeders\ReglesDAlerteMetierSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -189,6 +191,49 @@ class RegistresTest extends TestCase
             foreach (app(EntiteRegistre::class)->descripteur($cle)->fields() as $champ => $liaison) {
                 if ($liaison->colonne !== null && ! str_contains($liaison->colonne, '.')) {
                     $ecarts[] = "{$cle}.{$champ} : « {$liaison->colonne} » ne nomme pas sa table";
+                }
+            }
+        }
+
+        $this->assertSame([], $ecarts, implode("\n", $ecarts));
+    }
+
+    /**
+     * LA CLÔTURE : toute règle posée par un seeder naît en brouillon, vise du vocabulaire
+     * enregistré, et ne délègue le domaine à personne — jamais un simple `forceCreate`.
+     */
+    public function test_toute_regle_seedee_est_en_brouillon_et_ne_delegue_pas_le_domaine(): void
+    {
+        $this->seed(ReglesDAlerteMetierSeeder::class);
+
+        $entitesConnues = app(EntiteRegistre::class)->cles();
+        $declencheurs = app(DeclencheurRegistre::class);
+        $actions = app(ActionRegistre::class);
+        $regles = AutomationRule::query()->whereNotNull('cle_de_reference')->get();
+
+        // TÉMOIN — sans lui, un seeder muet rendrait la boucle ci-dessous vide, donc vraie à tort.
+        $this->assertNotEmpty($regles, 'Aucune règle posée par un seeder : ce test ne prouve rien.');
+
+        $ecarts = [];
+
+        foreach ($regles as $regle) {
+            if ($regle->etat !== AutomationRule::ETAT_BROUILLON) {
+                $ecarts[] = "{$regle->declencheur} : naît en « {$regle->etat} », pas en brouillon";
+            }
+            if (! in_array($regle->entite, $entitesConnues, true)) {
+                $ecarts[] = "{$regle->declencheur} : entité inconnue « {$regle->entite} »";
+            }
+            if ($regle->declencheur !== 'cadence' && $declencheurs->trouver($regle->declencheur) === null) {
+                $ecarts[] = "{$regle->declencheur} : déclencheur inconnu du registre";
+            }
+            foreach (($regle->actions ?? []) as $demande) {
+                $cle = (string) ($demande['cle'] ?? '');
+                $action = $actions->trouver($cle);
+
+                if ($action === null) {
+                    $ecarts[] = "{$regle->declencheur} : action inconnue « {$cle} »";
+                } elseif ($action->toucheAuDomaine()) {
+                    $ecarts[] = "{$regle->declencheur} : action « {$cle} » touche au domaine";
                 }
             }
         }
