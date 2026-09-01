@@ -142,6 +142,8 @@ class LesAlertesPartentVraimentTest extends TestCase
         $booking->forceFill([
             'stripe_payment_intent_id' => $piId,
             'payment_status' => $statutPaiement,
+            // Pose par le meme `forceFill` que l'intention Stripe, en production comme ici.
+            'payment_amount_cents' => 9000,
         ])->save();
 
         return $booking->fresh();
@@ -173,7 +175,8 @@ class LesAlertesPartentVraimentTest extends TestCase
         $this->assertSame($booking->id, $mesuree->context['booking_id']);
         $this->assertSame($booking->client_id, $mesuree->context['client_id']);
         $this->assertSame('EUR', $mesuree->context['currency']);
-        $this->assertNull($mesuree->context['amount']);
+        // Le montant autorise sur l'intention Stripe, en unites majeures.
+        $this->assertSame(90.00, $mesuree->context['amount']);
 
         $appel = $this->messageSentryPour($resultat['sentry']->captured, 'payment_capture_failed');
         $this->assertSame('fatal', (string) $appel['level']);

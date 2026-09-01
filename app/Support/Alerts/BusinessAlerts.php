@@ -20,7 +20,9 @@ class BusinessAlerts
             context: [
                 'booking_id' => $booking->id,
                 'client_id' => $booking->client_id ?? null,
-                'amount' => $booking->total ?? $booking->price ?? null,
+                // `effective_price` : le montant autorise s'il existe, sinon l'estime. `total` et
+                // `price` n'existent sur aucune reservation — l'alerte ne disait jamais combien.
+                'amount' => $booking->effective_price,
                 'currency' => $booking->currency ?? null,
             ],
         ));

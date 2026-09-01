@@ -110,6 +110,11 @@ class CeQueLesAlertesFontAujourdHuiTest extends TestCase
         // un appelant reel recevrait un Booking rechargé, jamais l'instance brute du create().
         $booking = Booking::factory()->create()->refresh();
 
+        // `payment_amount_cents` est pose en meme temps que l'intention Stripe : toute
+        // reservation qui peut voir sa capture echouer le porte deja.
+        $booking->forceFill(['payment_amount_cents' => 9000, 'estimated_price' => 75.00])->save();
+        $booking->refresh();
+
         $resultat = $this->observeDeuxAlertes(
             fn () => BusinessAlerts::paymentCaptureFailed($booking),
             fn () => BusinessAlerts::webhookBacklog(999),
@@ -126,8 +131,8 @@ class CeQueLesAlertesFontAujourdHuiTest extends TestCase
         $this->assertSame($booking->id, $mesuree->context['booking_id']);
         $this->assertSame($booking->client_id, $mesuree->context['client_id']);
         $this->assertSame('EUR', $mesuree->context['currency']);
-        // Booking n'a ni colonne ni accesseur `total`/`price` : cette cle est morte aujourd'hui.
-        $this->assertNull($mesuree->context['amount']);
+        // Le montant autorise, celui dont la capture a echoue — pas l'estime, qui n'est qu'un repli.
+        $this->assertSame(90.00, $mesuree->context['amount']);
 
         $appel = $this->messageSentryPour($resultat['sentry']->captured, 'payment_capture_failed');
         $this->messageSentryPour($resultat['sentry']->captured, 'webhook_backlog'); // temoin cote Sentry
@@ -135,6 +140,23 @@ class CeQueLesAlertesFontAujourdHuiTest extends TestCase
 
         $this->assertDatabaseCount('business_alertes', 2);
         $this->assertDatabaseHas('business_alertes', ['cle' => 'payment_capture_failed', 'niveau' => 'critical']);
+    }
+
+    /** TEMOIN : sans montant autorise, l'alerte dit l'estime — jamais `null`, qui ne dit rien. */
+    public function test_temoin_sans_prix_final_l_alerte_dit_le_prix_estime(): void
+    {
+        $booking = Booking::factory()->create()->refresh();
+        $booking->forceFill(['payment_amount_cents' => null, 'estimated_price' => 75.00])->save();
+        $booking->refresh();
+
+        $resultat = $this->observeDeuxAlertes(
+            fn () => BusinessAlerts::paymentCaptureFailed($booking),
+            fn () => BusinessAlerts::webhookBacklog(999),
+        );
+
+        $mesuree = $this->uneCapture($resultat['captures'], 'payment_capture_failed');
+
+        $this->assertSame(75.00, $mesuree->context['amount']);
     }
 
     public function test_versement_prestataire_en_echec(): void
