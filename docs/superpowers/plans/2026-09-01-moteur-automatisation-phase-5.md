@@ -209,12 +209,80 @@ composer test:parallele
 
 ---
 
+### Tâche 7 : brancher les émetteurs qui ne partent jamais
+
+**Indépendante des tâches 2 à 6** — elle ne touche ni au seeder ni aux écrans. Elle peut se faire
+après la tâche 1.
+
+**Fichiers :**
+- Modifier : `app/Services/Payments/Webhooks/StripeWebhookHandlers.php`
+- Modifier : `app/Services/Payments/StripeReconciliationService.php`
+- Créer : `tests/Feature/Alerts/LesAlertesPartentVraimentTest.php`
+
+**Ce que la mesure a trouvé, et pourquoi cette tâche existe.** `BusinessAlerts::*` n'a **aucun
+appelant de production** : les cinq émetteurs, la voie Sentry, la persistance et le dépôt au moteur
+sont complets, testés — et ne se déclenchent jamais. La spec supposait l'inverse. Sans cette tâche,
+les cinq règles de la phase seraient des consommateurs branchés sur une source muette.
+
+**Trois des cinq se branchent en une ligne**, à un endroit qui connaît déjà le fait et tient déjà
+l'objet attendu :
+
+| Alerte | Où | Ce que le code y fait aujourd'hui |
+|---|---|---|
+| `paymentCaptureFailed` | `StripeWebhookHandlers.php:358-394`, `handlePaymentIntentFailed` | Marque `payment_status=failed`, prévient **le client**, émet un événement métier — **personne de l'équipe n'est prévenu** |
+| `payoutFailed` | `StripeWebhookHandlers.php:102-122`, `handlePayoutFailed` | Marque l'échec et renverse le portefeuille prestataire — **aucun log, aucune notification, aucun événement**. Le seul handler de ce fichier à ne rien signaler |
+| `reconciliationDivergence` | `StripeReconciliationService.php:62-75`, `run()` | Persiste le passage et avertit en console — **aucun canal actif** |
+
+**Vérifie chaque emplacement toi-même avant d'écrire** : les numéros de ligne bougent, le fait
+qu'ils décrivent ne bouge pas.
+
+**Pour la réconciliation**, l'émission est conditionnelle : seulement quand le passage réclame une
+attention. **Mesure la variable qui le dit** plutôt que de la deviner.
+
+- [ ] **Étape 1 : écrire le test**
+
+Pour chacune des trois : le chemin réel — le webhook Stripe traité, ou le service de réconciliation
+lancé — **lève bien l'alerte**, avec les clés de contexte que la tâche 1 a établies. Emploie le même
+procédé que la tâche 1 pour observer l'événement sans empêcher les écouteurs réels de tourner.
+
+**Les trois témoins** : un webhook de paiement **réussi** ne lève rien ; un versement **réussi** ne
+lève rien ; une réconciliation **sans divergence** ne lève rien. Sans eux, un test qui lève à chaque
+fois passerait au vert.
+
+- [ ] **Étape 2 : lancer, vérifier l'échec**
+- [ ] **Étape 3 : brancher les trois émetteurs**
+
+Une ligne chacun. **N'ajoute aucune logique** : si tu te surprends à écrire une condition métier,
+c'est que l'endroit est le mauvais.
+
+- [ ] **Étape 4 : relancer, vérifier le vert**
+- [ ] **Étape 5 : portails, puis commit**
+
+**Ce que cette tâche NE fait PAS, et qui est mesuré et nommé :**
+
+- **`webhookBacklog`** — rien ne surveille la file de webhooks sortants. Le seul chiffre qui s'en
+  approche est un indicateur d'écran admin (`WebhooksCenter.php:132-137`), recalculé quand un
+  administrateur ouvre l'onglet. Brancher là n'alerterait que si quelqu'un regarde déjà. Il faudrait
+  **créer une tâche planifiée** qui compare la profondeur de file à un seuil — un mécanisme neuf,
+  pas un branchement.
+- **`stuckMissionHoldingFunds`** — `spine:check-stuck-missions` tourne bien chaque heure, mais il ne
+  fait qu'un `count()` sur le retard, ne connaît aucune mission individuellement, et **ne regarde
+  jamais si des fonds sont retenus**. Il porte mal son nom. Émettre l'alerte demanderait un
+  prédicat « fonds retenus » qui n'existe pas.
+
+Ces deux-là restent en brouillon avec une source muette, **et c'est dit** : leur règle existera,
+prête, le jour où le mécanisme sera écrit.
+
+---
+
 ## Ce que la phase 5 ne fait pas
 
 | Sujet | Pourquoi |
 |---|---|
 | Armer les cinq règles | C'est la décision de l'administrateur, après observation. Un seeder qui armerait contournerait la garde fondatrice |
 | Ouvrir le drapeau `automation` | C'est une décision d'exploitation, pas de développement |
+| Surveiller la file de webhooks sortants | Rien ne la surveille : le seul chiffre est un indicateur d'ecran recalcule a la visite. Il faudrait CREER une tache planifiee, pas brancher un emetteur. Mesure et nomme |
+| Detecter une mission bloquee QUI RETIENT DES FONDS | `spine:check-stuck-missions` ne fait qu'un `count()` sur le retard et ne regarde jamais les fonds. Le predicat n'existe pas. Mesure et nomme |
 | Retirer la voie Sentry | Interdit par la spec : on ne retire pas un chemin d'alerte sur l'argent dans le lot qui construit son remplaçant |
 | La règle multi-étapes | Hors du lot ; le point d'extension est la colonne `etape` |
 | Filtrer les opérateurs par type de champ | Nommé à la phase 3 ; demanderait que `FieldBinding` déclare un type |
