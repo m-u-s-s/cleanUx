@@ -50,7 +50,7 @@ class ReglesDAlerteMetierSeeder extends Seeder
             $this->regle(
                 cle: 'payment_capture_failed',
                 nom: 'Capture de paiement en échec',
-                description: "Surveille les captures de paiement client qui échouent, pour qu'un administrateur en soit informé — pas seulement le client.",
+                description: "Surveille l'échec de capture du solde d'une réservation, pour qu'un administrateur en soit informé — pas seulement le client. L'acompte, débité à la commande sur sa propre intention Stripe, n'est pas couvert : son échec ne dit rien du solde.",
                 message: "La capture d'un paiement a échoué.",
             ),
             $this->regle(
@@ -62,13 +62,13 @@ class ReglesDAlerteMetierSeeder extends Seeder
             $this->regle(
                 cle: 'webhook_backlog',
                 nom: 'File de webhooks qui déborde',
-                description: 'Surveille le débordement de la file de webhooks sortants, avant que la file ne devienne invisible.',
+                description: "Cette alerte n'est pas encore émise : rien ne mesure aujourd'hui la profondeur de la file de webhooks sortants. La règle est prête et agira le jour où une source l'émettra ; d'ici là, elle ne peut ni s'observer, ni s'armer.",
                 message: 'La file de webhooks sortants déborde.',
             ),
             $this->regle(
                 cle: 'stuck_mission_holding_funds',
                 nom: 'Mission bloquée retenant des fonds',
-                description: "Surveille les missions bloquées qui retiennent encore les fonds d'un client.",
+                description: "Cette alerte n'est pas encore émise : rien ne détecte aujourd'hui une mission bloquée qui retient les fonds d'un client. La règle est prête et agira le jour où une source l'émettra ; d'ici là, elle ne peut ni s'observer, ni s'armer.",
                 message: 'Une mission bloquée retient des fonds.',
             ),
             $this->regle(

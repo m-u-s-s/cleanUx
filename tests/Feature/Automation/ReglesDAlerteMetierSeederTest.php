@@ -217,6 +217,78 @@ class ReglesDAlerteMetierSeederTest extends TestCase
         $this->assertSame(5, AutomationRule::query()->count(), 'Toujours cinq lignes : pas un doublon en plus.');
     }
 
+    /** Les deux règles dont l'émetteur n'a AUCUN appelant : `BusinessAlerts::webhookBacklog()` et
+     *  `::stuckMissionHoldingFunds()`. Sans journal d'observation, `armer()` les refusera. */
+    private const DORMANTES = ['webhook_backlog', 'stuck_mission_holding_funds'];
+
+    /** « pas encore » porte à lui seul la restriction : toute réécriture qui promet au présent
+     *  ce que la règle ne fait pas doit forcément l'avoir laissé tomber. */
+    private const AVEU_DE_DORMANCE = 'pas encore';
+
+    public function test_une_regle_sans_emetteur_dit_qu_elle_ne_surveille_rien_encore(): void
+    {
+        $this->seed(ReglesDAlerteMetierSeeder::class);
+
+        foreach (self::DORMANTES as $cle) {
+            $regle = AutomationRule::query()->where('declencheur', "alerte.{$cle}")->firstOrFail();
+
+            $this->assertStringContainsString(
+                self::AVEU_DE_DORMANCE,
+                $regle->description,
+                "La règle « {$cle} » n'a aucun émetteur : sa description ne doit rien promettre au présent.",
+            );
+        }
+    }
+
+    /** TÉMOIN — les trois règles VIVANTES ne doivent pas porter cet aveu : sans lui, coller
+     *  « pas encore » aux cinq descriptions passerait au vert en mentant sur trois. */
+    public function test_temoin_les_trois_regles_vivantes_ne_s_avouent_pas_dormantes(): void
+    {
+        $this->seed(ReglesDAlerteMetierSeeder::class);
+
+        $vivantes = array_values(array_diff(self::CLES, self::DORMANTES));
+
+        $this->assertCount(3, $vivantes);
+
+        foreach ($vivantes as $cle) {
+            $regle = AutomationRule::query()->where('declencheur', "alerte.{$cle}")->firstOrFail();
+
+            $this->assertStringNotContainsString(self::AVEU_DE_DORMANCE, $regle->description);
+        }
+    }
+
+    /** `StripeWebhookHandlers` n'émet que sur le volet `balance` : l'acompte, déjà débité à la
+     *  commande, sort par `$alreadyFailed`. « solde » est le nom que le dépôt donne à ce volet. */
+    public function test_la_regle_de_capture_dit_quel_volet_de_paiement_elle_couvre(): void
+    {
+        $this->seed(ReglesDAlerteMetierSeeder::class);
+
+        $regle = AutomationRule::query()->where('declencheur', 'alerte.payment_capture_failed')->firstOrFail();
+
+        $this->assertStringContainsString(
+            'solde',
+            $regle->description,
+            "L'émission ne couvre que le solde : une description qui ne le dit pas promet aussi l'acompte.",
+        );
+    }
+
+    /** TÉMOIN — les quatre autres descriptions ne parlent pas de solde : le mot mesure bien la
+     *  restriction de CETTE règle, pas un mot qui traînerait partout. */
+    public function test_temoin_les_autres_regles_ne_parlent_pas_de_solde(): void
+    {
+        $this->seed(ReglesDAlerteMetierSeeder::class);
+
+        $autres = array_values(array_diff(self::CLES, ['payment_capture_failed']));
+
+        $this->assertCount(4, $autres);
+
+        foreach ($autres as $cle) {
+            $regle = AutomationRule::query()->where('declencheur', "alerte.{$cle}")->firstOrFail();
+
+            $this->assertStringNotContainsString('solde', $regle->description);
+        }
+    }
+
     /** Le seeder ne touche jamais le drapeau de feature : ce n'est pas son rôle. */
     public function test_le_drapeau_automation_reste_ferme(): void
     {
