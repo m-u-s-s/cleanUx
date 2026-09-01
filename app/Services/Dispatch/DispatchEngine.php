@@ -8,7 +8,6 @@ use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\OrderDraftItem;
-use App\Models\ProviderProfile;
 use App\Models\User;
 use App\Notifications\Dispatch\MissionOfferNotification;
 use App\Services\FaceCheck\FaceCheckGate;
@@ -621,15 +620,10 @@ class DispatchEngine
             ],
         );
 
-        // MEME PROPAGATION QU'A L'ACCEPTATION : sans elle, la mission imposee reste invisible
-        // du tableau de bord et du centre de repartition de la societe du prestataire.
         $mission->update([
             'status' => 'assigned',
             'lead_provider_user_id' => $best->user->id,
             'lead_employee_id' => $best->user->id,
-            'provider_organization_id' => ProviderProfile::query()
-                ->where('user_id', $best->user->id)
-                ->value('organization_account_id'),
         ]);
 
         $booking->update([

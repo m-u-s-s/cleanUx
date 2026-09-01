@@ -298,12 +298,41 @@ class ActionsDuDomaineTest extends TestCase
         $this->assertSame($titulaire, (int) $mission->fresh()->lead_provider_user_id);
     }
 
+    /** Un candidat de plus sur la zone de la mission : sans second, l'office n'a personne a designer. */
+    private function unCandidatDePlus(Mission $mission): User
+    {
+        $booking = $mission->booking;
+
+        $prestataire = User::factory()->create([
+            'role' => User::ROLE_EMPLOYE,
+            'is_active' => true,
+            'primary_service_zone_id' => $booking->service_zone_id,
+        ]);
+
+        ProviderProfile::create([
+            'user_id' => $prestataire->id,
+            'provider_type' => ProviderType::INDEPENDENT->value,
+            'status' => 'active',
+            'verification_status' => 'verified',
+            'current_lat' => self::LAT,
+            'current_lng' => self::LNG,
+        ]);
+
+        $prestataire->trades()->syncWithoutDetaching([$booking->trade_id]);
+
+        return $prestataire;
+    }
+
     /** Une offre vivante passe avant la contrainte : sinon deux prestataires tiennent la mission. */
     public function test_l_imposition_refuse_quand_une_offre_est_en_cours(): void
     {
         $mission = $this->missionSansIntervenant();
 
         app(RelancerLaRecherche::class)->executer($mission, []);
+
+        // DEUX CANDIDATS, SINON LE TEST MESURE LA FIXTURE : avec un seul, le selecteur l'ecarte
+        // deja pour son offre vivante, et l'office rendrait `null` garde ou pas.
+        $this->unCandidatDePlus($mission);
 
         $refusee = app(ImposerDOffice::class)->executer($mission->fresh(), []);
 
@@ -312,13 +341,16 @@ class ActionsDuDomaineTest extends TestCase
             'mission_id' => $mission->id,
             'assignment_status' => 'accepted',
         ]);
+        $this->assertNull($mission->fresh()->lead_provider_user_id);
 
-        // TEMOIN — l'offre expiree, la meme contrainte passe. Le refus tenait bien a l'offre vivante.
+        // TEMOIN — l'offre expiree, la meme contrainte passe. Elle peut reprendre celui qui a
+        // laisse filer : l'office n'ecarte que les refus explicites.
         MissionAssignment::query()
             ->where('mission_id', $mission->id)
             ->update(['expires_at' => now()->subMinute()]);
 
         $this->assertTrue(app(ImposerDOffice::class)->executer($mission->fresh(), [])->reussie);
+        $this->assertNotNull($mission->fresh()->lead_provider_user_id);
     }
 
     /** Le mode immediat a sa propre sortie : le selecteur du planifie y designerait un hors-ligne. */
@@ -337,7 +369,7 @@ class ActionsDuDomaineTest extends TestCase
         $this->assertTrue(app(ImposerDOffice::class)->executer($mission->fresh(), [])->reussie);
     }
 
-    /** La societe du prestataire suit la contrainte, comme elle suit l'acceptation. */
+    /** La societe suit la contrainte — par la synchro du booking, pas par l'office lui-meme. */
     public function test_l_imposition_renseigne_la_societe_du_prestataire(): void
     {
         $societe = OrganizationAccount::factory()->create();
