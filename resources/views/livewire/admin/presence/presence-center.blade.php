@@ -42,7 +42,7 @@
             </div>
         </div>
 
-        <div class="rounded-2xl border bg-white shadow-sm">
+        <div class="rounded-2xl border bg-white shadow-sm overflow-hidden">
             <div class="p-4 flex flex-col md:flex-row gap-3 border-b">
                 <input wire:model.live.debounce.300ms="search" type="text" placeholder="Recherche nom / email..." class="rounded-lg border-slate-300 text-sm flex-1">
                 <select wire:model.live="statusFilter" class="rounded-lg border-slate-300 text-sm">
