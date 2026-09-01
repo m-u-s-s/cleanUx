@@ -73,10 +73,10 @@
                             $color = ['online'=>'emerald','busy'=>'purple','on_break'=>'amber','offline'=>'slate'][$r->status] ?? 'slate';
                             $isStale = $r->heartbeat_at && $r->heartbeat_at->lt(now()->subMinutes(5));
                         @endphp
-                        <tr class="border-t hover:bg-slate-50 {{ $isStale ? 'bg-rose-50' : '' }}">
+                        <tr class="border-t hover:bg-slate-50 {{ $isStale ? 'bg-rose-50 dark:bg-rose-900/20' : '' }}">
                             <td class="px-3 py-2">
                                 <p class="font-semibold">{{ $r->provider?->name }}</p>
-                                <p class="text-xs text-slate-500">{{ $r->provider?->email }}</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">{{ $r->provider?->email }}</p>
                             </td>
                             <td class="px-3 py-2">
                                 <span class="inline-block rounded-full bg-{{ $color }}-100 text-{{ $color }}-700 px-2 py-0.5 text-xs font-semibold">{{ $r->status }}</span>
