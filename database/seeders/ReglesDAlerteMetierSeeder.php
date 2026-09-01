@@ -16,16 +16,28 @@ class ReglesDAlerteMetierSeeder extends Seeder
     public function run(): void
     {
         foreach ($this->regles() as $regle) {
-            // CRÉATION SEULE, JAMAIS DE MISE À JOUR : `ConstructeurDeRegle` expose CHAQUE champ
-            // de cette liste à un administrateur (nom, description, quota, plafond, politique,
-            // conditions, actions...). Un redéploiement qui rejouerait ce seeder ne doit écraser
-            // ni un renommage, ni un quota ajusté, ni — surtout — faire régresser l'état d'une
-            // règle déjà observée ou armée. Seule l'absence de la ligne (première installation)
-            // déclenche une écriture.
-            AutomationRule::query()->firstOrCreate(
-                ['declencheur' => $regle['declencheur']],
-                $regle
-            );
+            // MATCH SUR `cle_de_reference`, PAS `declencheur` : un administrateur a le droit de
+            // poser sa propre règle sur le même événement (deux règles, deux conditions, c'est
+            // l'intérêt du moteur) — `declencheur` n'est donc pas une identité fiable pour NOUS.
+            // `cle_de_reference` n'appartient qu'au seeder ; une règle admin la laisse NULL, et un
+            // index unique nullable admet plusieurs NULL (mesuré MySQL et SQLite), donc aucune
+            // collision entre elles.
+            $existante = AutomationRule::query()
+                ->where('cle_de_reference', $regle['cle_de_reference'])
+                ->first();
+
+            if ($existante !== null) {
+                // CRÉATION SEULE, JAMAIS DE MISE À JOUR : `ConstructeurDeRegle` expose CHAQUE
+                // champ de cette liste à un administrateur (nom, description, quota, plafond,
+                // politique, conditions, actions...). Un redéploiement qui rejouerait ce seeder
+                // ne doit écraser ni un renommage, ni un quota ajusté, ni — surtout — faire
+                // régresser l'état d'une règle déjà observée ou armée.
+                continue;
+            }
+
+            // `forceCreate`, pas `create` : `cle_de_reference` est hors `$fillable` par choix
+            // (aucun formulaire admin ne doit la poser), donc un simple `create()` la rejetterait.
+            AutomationRule::query()->forceCreate($regle);
         }
 
         $this->command?->info('✅ Cinq règles d\'alerte métier semées, toutes en brouillon.');
@@ -76,6 +88,8 @@ class ReglesDAlerteMetierSeeder extends Seeder
             'description' => $description,
             'entite' => 'alerte',
             'declencheur' => "alerte.{$cle}",
+            // L'identité DU SEEDER, distincte du déclencheur qu'un admin peut réutiliser.
+            'cle_de_reference' => "systeme.alerte_metier.{$cle}",
             'cadence' => null,
             'conditions' => ['field' => 'cle', 'op' => 'eq', 'value' => $cle],
             'actions' => [[

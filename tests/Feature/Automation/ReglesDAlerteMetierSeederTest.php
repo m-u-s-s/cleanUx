@@ -64,8 +64,12 @@ class ReglesDAlerteMetierSeederTest extends TestCase
         $this->seed(ReglesDAlerteMetierSeeder::class);
 
         $registre = app(DeclencheurRegistre::class);
+        $declencheurs = AutomationRule::query()->pluck('declencheur');
 
-        foreach (AutomationRule::query()->pluck('declencheur') as $declencheur) {
+        // ANCRE — sans elle, une boucle sur zéro ligne passerait au vert sans avoir rien mesuré.
+        $this->assertNotEmpty($declencheurs);
+
+        foreach ($declencheurs as $declencheur) {
             $this->assertNotNull($registre->trouver($declencheur), "Déclencheur inconnu du registre : {$declencheur}");
         }
     }
@@ -75,8 +79,12 @@ class ReglesDAlerteMetierSeederTest extends TestCase
         $this->seed(ReglesDAlerteMetierSeeder::class);
 
         $registre = app(EntiteRegistre::class);
+        $entites = AutomationRule::query()->pluck('entite')->unique();
 
-        foreach (AutomationRule::query()->pluck('entite')->unique() as $entite) {
+        // ANCRE — sans elle, une boucle sur zéro ligne passerait au vert sans avoir rien mesuré.
+        $this->assertNotEmpty($entites);
+
+        foreach ($entites as $entite) {
             $this->assertNotNull($registre->descripteur($entite), "Entité inconnue du registre : {$entite}");
         }
     }
@@ -86,8 +94,12 @@ class ReglesDAlerteMetierSeederTest extends TestCase
         $this->seed(ReglesDAlerteMetierSeeder::class);
 
         $registre = app(ActionRegistre::class);
+        $regles = AutomationRule::query()->get();
 
-        foreach (AutomationRule::query()->get() as $regle) {
+        // ANCRE — sans elle, une boucle sur zéro ligne passerait au vert sans avoir rien mesuré.
+        $this->assertNotEmpty($regles);
+
+        foreach ($regles as $regle) {
             foreach ($regle->actions as $demande) {
                 $action = $registre->trouver($demande['cle']);
 
@@ -108,8 +120,12 @@ class ReglesDAlerteMetierSeederTest extends TestCase
 
         $entiteRegistre = app(EntiteRegistre::class);
         $validateur = app(ValidateurDArbre::class);
+        $regles = AutomationRule::query()->get();
 
-        foreach (AutomationRule::query()->get() as $regle) {
+        // ANCRE — sans elle, une boucle sur zéro ligne passerait au vert sans avoir rien mesuré.
+        $this->assertNotEmpty($regles);
+
+        foreach ($regles as $regle) {
             $entite = $entiteRegistre->descripteur($regle->entite);
             $erreurs = $validateur->valider($regle->conditions, $entite);
 
@@ -123,9 +139,50 @@ class ReglesDAlerteMetierSeederTest extends TestCase
     {
         $this->seed(ReglesDAlerteMetierSeeder::class);
 
-        foreach (AutomationRule::query()->pluck('conditions') as $conditions) {
+        $toutesLesConditions = AutomationRule::query()->pluck('conditions');
+
+        // ANCRE — sans elle, une boucle sur zéro ligne passerait au vert sans avoir rien mesuré.
+        $this->assertNotEmpty($toutesLesConditions);
+
+        foreach ($toutesLesConditions as $conditions) {
             $this->assertNotSame([], $conditions);
         }
+    }
+
+    /** LE TROU TROUVÉ EN RELECTURE — une règle ADMIN posée AVANT le seed, sur le MÊME
+     *  déclencheur qu'une règle système, ne doit jamais empêcher celle-ci d'exister. Matcher
+     *  sur `declencheur` le ferait (`payout_failed` déjà pris) ; `cle_de_reference` ne collisionne
+     *  jamais, car cette règle admin la laisse NULL. */
+    public function test_une_regle_admin_preexistante_sur_le_meme_declencheur_n_empeche_pas_le_seed(): void
+    {
+        $regleAdmin = AutomationRule::query()->forceCreate([
+            'nom' => "Alerte perso d'un administrateur",
+            'entite' => 'alerte',
+            'declencheur' => 'alerte.payout_failed',
+            'conditions' => ['field' => 'cle', 'op' => 'eq', 'value' => 'payout_failed'],
+            'actions' => [[
+                'cle' => 'notifier.admins',
+                'parametres' => ['message' => 'Une alerte personnalisée.'],
+            ]],
+            // `cle_de_reference` reste NULL : cette règle n'a jamais été semée.
+        ]);
+
+        $this->seed(ReglesDAlerteMetierSeeder::class);
+
+        $this->assertSame(6, AutomationRule::query()->count(), 'Cinq règles système + la règle admin préexistante.');
+        $this->assertDatabaseHas('automation_rules', [
+            'declencheur' => 'alerte.payout_failed',
+            'cle_de_reference' => 'systeme.alerte_metier.payout_failed',
+        ]);
+        $this->assertNotNull(
+            AutomationRule::query()->find($regleAdmin->id),
+            'La règle admin doit survivre, intacte, à côté de la règle système.'
+        );
+        $this->assertSame(
+            2,
+            AutomationRule::query()->where('declencheur', 'alerte.payout_failed')->count(),
+            'Les deux règles coexistent bien sur le même déclencheur.'
+        );
     }
 
     public function test_relancer_le_seeder_ne_cree_pas_de_doublon(): void

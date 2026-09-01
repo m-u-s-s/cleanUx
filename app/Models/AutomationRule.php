@@ -39,6 +39,8 @@ class AutomationRule extends Model
         'echecs_consecutifs' => 0,
     ];
 
+    // `cle_de_reference` est VOLONTAIREMENT absente : identité d'un seeder, jamais du produit —
+    // aucun formulaire admin ne doit pouvoir la poser. Seul `forceCreate`/`forceFill` l'écrit.
     protected $fillable = [
         'nom', 'description', 'entite', 'declencheur', 'cadence', 'conditions', 'actions',
         'politique_reprise', 'etat', 'quota_par_passage', 'plafond_journalier',
