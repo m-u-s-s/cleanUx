@@ -78,7 +78,7 @@
         </div>
 
         @if (count($slaParLocal) > 0)
-        <div class="overflow-x-auto border-t border-slate-100">
+        <div class="brio-table-cadre border-t border-slate-100">
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-slate-500">

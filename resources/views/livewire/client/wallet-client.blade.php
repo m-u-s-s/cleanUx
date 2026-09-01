@@ -77,7 +77,7 @@
                 <h3 class="font-semibold text-slate-900">Historique des crédits</h3>
             </div>
 
-            <div class="overflow-x-auto">
+            <div class="brio-table-cadre">
                 <table class="min-w-full text-sm">
                     <thead class="bg-slate-50 text-slate-600">
                         <tr>

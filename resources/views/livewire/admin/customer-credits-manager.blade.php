@@ -108,7 +108,7 @@
                         <h2 class="font-bold text-slate-900">Historique des crédits</h2>
                     </div>
 
-                    <div class="overflow-x-auto">
+                    <div class="brio-table-cadre">
                         <table class="min-w-full text-sm">
                             <thead class="bg-slate-50 text-slate-600">
                                 <tr>

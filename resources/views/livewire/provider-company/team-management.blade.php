@@ -107,7 +107,7 @@
 
     {{-- ── Tableau membres ── --}}
     <div class="rounded-2xl border border-slate-200 overflow-hidden">
-        <div class="overflow-x-auto">
+        <div class="brio-table-cadre">
         <table class="w-full min-w-[640px]">
             <thead>
                 <tr class="border-b border-slate-200 bg-white/80">

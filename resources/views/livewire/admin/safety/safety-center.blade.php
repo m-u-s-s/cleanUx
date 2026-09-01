@@ -127,7 +127,7 @@
                     </select>
                 </div>
 
-                <div class="overflow-x-auto"><table class="w-full text-sm">
+                <div class="brio-table-cadre"><table class="w-full text-sm">
                     <thead class="bg-slate-50 text-left text-xs uppercase text-slate-500">
                         <tr>
                             <th class="px-3 py-2">Code</th>
@@ -166,7 +166,7 @@
 
         @if ($tab === 'blocks')
             <div class="rounded-2xl border bg-white shadow-sm">
-                <div class="overflow-x-auto"><table class="w-full text-sm">
+                <div class="brio-table-cadre"><table class="w-full text-sm">
                     <thead class="bg-slate-50 text-left text-xs uppercase text-slate-500">
                         <tr>
                             <th class="px-3 py-2">Bloqueur</th>

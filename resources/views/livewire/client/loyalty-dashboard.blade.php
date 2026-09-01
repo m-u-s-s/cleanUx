@@ -195,7 +195,7 @@
             <div class="p-4 border-b">
                 <h2 class="text-lg font-bold text-slate-900">Historique des points</h2>
             </div>
-            <div class="overflow-x-auto">
+            <div class="brio-table-cadre">
                 <table class="min-w-full text-sm">
                     <thead class="bg-slate-50 text-xs uppercase text-slate-500">
                         <tr>

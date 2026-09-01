@@ -40,7 +40,7 @@
             Score qualité interne
         </h2>
 
-        <div class="overflow-x-auto">
+        <div class="brio-table-cadre">
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-slate-500">

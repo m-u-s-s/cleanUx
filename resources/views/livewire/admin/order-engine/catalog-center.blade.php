@@ -481,7 +481,7 @@
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
+            <div class="brio-table-cadre">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b text-left text-xs uppercase tracking-wide text-slate-500">
