@@ -59,7 +59,10 @@ class JournalDeRegle extends Component
 
         $passages = $regle->passages()->orderByDesc('id')->get();
 
+        // `with('decideur')` : la colonne « Décision » nomme l'humain qui a tranche, sinon
+        // c'est une requete par ligne posee.
         $lignes = $regle->actionsPosees()
+            ->with('decideur')
             ->when($this->filtreResultat !== '', fn ($q) => $q->where('resultat', $this->filtreResultat))
             ->orderByDesc('id')
             ->get();

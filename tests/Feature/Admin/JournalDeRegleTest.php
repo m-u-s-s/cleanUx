@@ -2,11 +2,13 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Console\Commands\ExpirerLesPropositions;
 use App\Livewire\Admin\Automation\JournalDeRegle;
 use App\Models\AutomationAction;
 use App\Models\AutomationRule;
 use App\Models\AutomationRun;
 use App\Models\User;
+use App\Services\Automation\FileDePropositions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
@@ -39,6 +41,21 @@ class JournalDeRegleTest extends TestCase
             'conditions' => [],
             'actions' => [],
         ], $attributs));
+    }
+
+    /** Une ligne `proposee`, telle que RuleRunner::poser() l'ecrit pour une action non autonome. */
+    private function proposition(AutomationRule $regle, int $entiteId = 7): AutomationAction
+    {
+        return AutomationAction::create([
+            'automation_rule_id' => $regle->id,
+            'entite_type' => 'booking',
+            'entite_id' => $entiteId,
+            'action_cle' => 'journaliser',
+            'parametres' => ['message' => 'vue'],
+            'mode' => 'armee',
+            'resultat' => AutomationAction::RESULTAT_PROPOSEE,
+            'pose_le' => now(),
+        ]);
     }
 
     /**
@@ -225,6 +242,65 @@ class JournalDeRegleTest extends TestCase
         Livewire::actingAs($this->adminGlobal())
             ->test(JournalDeRegle::class, ['regleId' => $regle->id])
             ->assertSee("Règle armée sans journal d'observation.");
+    }
+
+    /**
+     * QUI A DECIDE, QUAND, ET POURQUOI — la moitie du quatrieme contrepoids. `decide_par`,
+     * `decide_le` et `motif` s'ecrivaient sans qu'aucun ecran ne les lise : une trace illisible
+     * ne distingue plus `executee` (le moteur) de `validee` (un humain).
+     */
+    public function test_le_journal_montre_qui_a_refuse_quand_et_pourquoi(): void
+    {
+        $regle = $this->regle();
+        $decideur = User::factory()->admin()->create(['name' => 'Zoé Trancheuse']);
+
+        app(FileDePropositions::class)->refuser(
+            $this->proposition($regle),
+            $decideur,
+            'Le client a déjà été relancé hier.'
+        );
+
+        Livewire::actingAs($this->adminGlobal())
+            ->test(JournalDeRegle::class, ['regleId' => $regle->id])
+            ->assertSee('Zoé Trancheuse')
+            ->assertSee('Le client a déjà été relancé hier.')
+            ->assertSee(now()->format('d/m/Y H:i'));
+    }
+
+    /**
+     * UNE EXPIRATION N'A PAS DE DECIDEUR — elle se dit telle quelle, sans inventer de nom.
+     * Le motif, lui, reste lisible : c'est ce qui explique pourquoi l'entite a ete rendue.
+     */
+    public function test_une_expiration_montre_son_motif_et_aucun_decideur(): void
+    {
+        $regle = $this->regle();
+        $this->proposition($regle);
+
+        $this->travel(ExpirerLesPropositions::DELAI_HEURES + 1)->hours();
+        $this->artisan('automation:expirer-les-propositions')->assertExitCode(0);
+
+        Livewire::actingAs($this->adminGlobal())
+            ->test(JournalDeRegle::class, ['regleId' => $regle->id])
+            ->assertSee(sprintf('Expirée automatiquement après %d h sans décision.', ExpirerLesPropositions::DELAI_HEURES))
+            ->assertSee('aucun décideur');
+    }
+
+    /**
+     * TEMOIN — une ligne jamais decidee n'affiche rien de bancal : ni faux decideur automatique,
+     * ni date, ni `null`. Sans lui, une colonne qui remplit toujours quelque chose passerait au vert.
+     */
+    public function test_temoin_une_ligne_jamais_decidee_n_affiche_aucune_decision(): void
+    {
+        $regle = $this->regle();
+        $this->proposition($regle);
+
+        $html = Livewire::actingAs($this->adminGlobal())
+            ->test(JournalDeRegle::class, ['regleId' => $regle->id])
+            ->assertSee('booking #7')
+            ->assertDontSee('aucun décideur')
+            ->html();
+
+        $this->assertStringNotContainsString('>null<', $html);
     }
 
     /**

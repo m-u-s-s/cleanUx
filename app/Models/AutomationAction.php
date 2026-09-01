@@ -43,4 +43,14 @@ class AutomationAction extends Model
     {
         return $this->belongsTo(AutomationRule::class, 'automation_rule_id');
     }
+
+    /**
+     * Nul quand personne n'a tranche : une expiration ecrit `decide_le` sans decideur.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function decideur(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'decide_par');
+    }
 }

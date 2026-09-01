@@ -81,6 +81,7 @@
                         <th>Paramètres</th>
                         <th>Mode</th>
                         <th>Résultat</th>
+                        <th>Décision</th>
                         <th>Message</th>
                         <th>Posé le</th>
                     </tr>
@@ -107,6 +108,21 @@
                             <td>
                                 <span class="brio-chip brio-teinte" style="--teinte: {{ $this->teinteResultat($ligne->resultat) }};">{{ $this->libelleResultat($ligne->resultat) }}</span>
                             </td>
+                            {{-- QUI A DECIDE, QUAND, POURQUOI. Une expiration ecrit `decide_le` sans
+                                 decideur : on le dit comme tel, on n'invente aucun nom. --}}
+                            <td style="font-size: 0.8125rem; color: var(--brio-muted); max-width: 20rem;">
+                                @if($ligne->decide_le === null)
+                                    <span>—</span>
+                                @else
+                                    <div style="color: var(--brio-ink);">
+                                        {{ $ligne->decideur?->name ?? 'Automatique, aucun décideur' }}
+                                    </div>
+                                    <div class="whitespace-nowrap">{{ $ligne->decide_le->format('d/m/Y H:i') }}</div>
+                                    @if($ligne->motif !== null)
+                                        <div title="{{ $ligne->motif }}">{{ \Illuminate\Support\Str::limit($ligne->motif, 160) }}</div>
+                                    @endif
+                                @endif
+                            </td>
                             {{-- Meme regle de visibilite qu'au tableau des passages : un resultat en echec ressort. --}}
                             <td style="font-size: 0.875rem; max-width: 24rem; {{ $this->teinteResultat($ligne->resultat) === 'var(--brio-danger)' ? 'color: var(--brio-danger); font-weight: 600;' : 'color: var(--brio-muted);' }}">
                                 {{ $ligne->message ?? '—' }}
@@ -115,7 +131,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7">
+                            <td colspan="8">
                                 <x-empty-state title="Aucune ligne" message="Aucune action posée ne correspond à ce filtre." icon="📭" />
                             </td>
                         </tr>
