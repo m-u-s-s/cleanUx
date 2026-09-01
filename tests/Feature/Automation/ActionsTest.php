@@ -51,24 +51,36 @@ class ActionsTest extends TestCase
         Notification::assertNothingSent();
     }
 
-    public function test_aucune_action_de_la_phase_1_n_ecrit_dans_le_domaine(): void
+    /** LA LIGNE DE PARTAGE, ecrite une fois : qui ecrit dans le domaine, et qui pas. */
+    private const SANS_DOMAINE = ['journaliser', 'notifier.admins'];
+
+    private const AVEC_DOMAINE = ['mission.ping_client', 'mission.relancer_la_recherche'];
+
+    public function test_chaque_action_declare_juste_si_elle_ecrit_dans_le_domaine(): void
     {
-        foreach (app(ActionRegistre::class)->toutes() as $action) {
-            $this->assertFalse(
-                $action->toucheAuDomaine(),
-                "L'action {$action->cle()} ecrit dans le domaine : interdit en phase 1."
-            );
+        $ecarts = [];
+
+        foreach (app(ActionRegistre::class)->toutes() as $cle => $action) {
+            $attendu = in_array($cle, self::AVEC_DOMAINE, true);
+
+            if ($action->toucheAuDomaine() !== $attendu) {
+                $ecarts[] = $cle.' declare '.var_export($action->toucheAuDomaine(), true);
+            }
         }
+
+        $this->assertSame([], $ecarts, implode("\n", $ecarts));
     }
 
-    /** TEMOIN — le registre porte bien les deux actions. Sans lui, le test ci-dessus
+    /** TEMOIN — le registre porte bien les quatre actions. Sans lui, le test ci-dessus
      *  passerait au vert sur un registre vide. */
-    public function test_temoin_le_registre_porte_les_deux_actions(): void
+    public function test_temoin_le_registre_porte_les_quatre_actions(): void
     {
         $cles = array_keys(app(ActionRegistre::class)->toutes());
+        $attendues = array_merge(self::SANS_DOMAINE, self::AVEC_DOMAINE);
 
         sort($cles);
+        sort($attendues);
 
-        $this->assertSame(['journaliser', 'notifier.admins'], $cles);
+        $this->assertSame($attendues, $cles);
     }
 }

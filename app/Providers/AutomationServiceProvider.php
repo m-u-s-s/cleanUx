@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Services\Automation\Actions\EnvoyerLePingAuClient;
 use App\Services\Automation\Actions\Journaliser;
 use App\Services\Automation\Actions\NotifierLesAdmins;
+use App\Services\Automation\Actions\RelancerLaRecherche;
 use App\Services\Automation\Declencheurs\AlerteMetierDeclencheur;
 use App\Services\Automation\Descripteurs\AlerteDescriptor;
 use App\Services\Automation\Descripteurs\BookingDescriptor;
@@ -11,6 +13,7 @@ use App\Services\Automation\Descripteurs\MissionDescriptor;
 use App\Services\Automation\Registre\ActionRegistre;
 use App\Services\Automation\Registre\DeclencheurRegistre;
 use App\Services\Automation\Registre\EntiteRegistre;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
 /** Le vocabulaire du moteur : ce qui existe, et rien d'autre. */
@@ -18,10 +21,13 @@ class AutomationServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(ActionRegistre::class, function (): ActionRegistre {
+        $this->app->singleton(ActionRegistre::class, function (Application $app): ActionRegistre {
             $registre = new ActionRegistre;
             $registre->enregistrer(new Journaliser);
             $registre->enregistrer(new NotifierLesAdmins);
+            // Celles-ci ecrivent dans le domaine : elles naissent « a valider », voir la spec.
+            $registre->enregistrer($app->make(EnvoyerLePingAuClient::class));
+            $registre->enregistrer($app->make(RelancerLaRecherche::class));
 
             return $registre;
         });

@@ -4,6 +4,7 @@ namespace Tests\Feature\Automation;
 
 use App\Models\AutomationActionSetting;
 use App\Models\User;
+use App\Services\Automation\Registre\ActionRegistre;
 use App\Services\Automation\ReglagesDActions;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,7 +97,10 @@ class ReglagesDActionsTest extends TestCase
 
         $tous = app(ReglagesDActions::class)->tous();
 
-        $this->assertSame(['journaliser' => false, 'notifier.admins' => true], $tous);
+        // Le registre, pas une liste figee : toute action ajoutee au code y arrive « a valider ».
+        $this->assertSame(array_keys(app(ActionRegistre::class)->toutes()), array_keys($tous));
+        $this->assertTrue($tous['notifier.admins']);
+        $this->assertFalse($tous['journaliser']);
         $this->assertArrayNotHasKey('action_retiree_du_code', $tous);
     }
 
