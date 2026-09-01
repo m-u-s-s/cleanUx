@@ -15,6 +15,7 @@ use App\Services\Payments\StripeConnectPaymentService;
 use App\Services\Payments\StripeConnectService;
 use App\Services\Tips\TipService;
 use App\Support\Accounting\BookingAutoPoster;
+use App\Support\Alerts\BusinessAlerts;
 use App\Support\Webhooks\BusinessEventEmitter;
 use Illuminate\Support\Facades\Log;
 
@@ -120,6 +121,8 @@ class StripeWebhookHandlers
         ]);
 
         $this->walletService->reversePayout($payoutModel, $payout['failure_message'] ?? 'stripe_payout_failed');
+
+        BusinessAlerts::payoutFailed($payoutModel);
 
         return ['status' => StripeWebhookEvent::STATUS_PROCESSED, 'details' => ['payout_id' => $payoutModel->id]];
     }
@@ -391,6 +394,9 @@ class StripeWebhookHandlers
                     'error' => $e->getMessage(),
                 ]);
             }
+
+            // HORS du catch ci-dessus, qui avalerait l'emission sans rien dire.
+            BusinessAlerts::paymentCaptureFailed($booking);
         }
 
         BusinessEventEmitter::emit(

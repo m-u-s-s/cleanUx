@@ -7,6 +7,7 @@ use App\Models\Mission;
 use App\Models\ProviderPayout;
 use App\Models\StripeReconciliationRun;
 use App\Models\User;
+use App\Support\Alerts\BusinessAlerts;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Stripe\Exception\ApiErrorException;
@@ -84,6 +85,17 @@ class StripeReconciliationService
                 'error' => $e->getMessage(),
             ]);
             throw $e;
+        }
+
+        // HORS du try : le catch ci-dessus marquerait le passage FAILED pour un ecouteur en panne.
+        if ($requiresAttention > 0) {
+            BusinessAlerts::reconciliationDivergence([
+                'run_id' => $run->id,
+                'scope' => $scope,
+                'items_checked' => $itemsChecked,
+                'mismatches_found' => count($mismatches),
+                'requires_attention' => $requiresAttention,
+            ]);
         }
 
         return $run->fresh();
