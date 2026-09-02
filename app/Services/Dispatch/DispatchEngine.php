@@ -626,8 +626,61 @@ class DispatchEngine
             return null;
         }
 
+        $assignment = $this->poserLAssignation($mission, $booking, $best->user);
+
+        Log::info('DispatchEngine: assignation d’office (repli planifié)', [
+            'mission_id' => $mission->id,
+            'provider_id' => $best->user->id,
+        ]);
+
+        return $assignment;
+    }
+
+    /**
+     * IMPOSER UN PRESTATAIRE DÉSIGNÉ. Même geste que `imposerDOffice()`, mais le choix vient
+     * de l’appelant — un administrateur devant un classement, plutôt que le moteur.
+     *
+     * Les deux gardes de la voie courtoise s’appliquent quand même : le choix porte sur QUI,
+     * pas sur le droit d’y aller.
+     */
+    public function imposerCePrestataire(Mission $mission, User $provider): ?MissionAssignment
+    {
+        $booking = $mission->booking;
+
+        if (! $booking || $mission->lead_provider_user_id === $provider->id) {
+            return null;
+        }
+
+        if (! $provider->hasClearedKyc() || ! $this->passeLeControleFacial($provider, $mission)) {
+            Log::info('DispatchEngine: prestataire designe refuse par les gardes', [
+                'mission_id' => $mission->id,
+                'provider_id' => $provider->id,
+            ]);
+
+            return null;
+        }
+
+        $assignment = $this->poserLAssignation($mission, $booking, $provider);
+
+        Log::info('DispatchEngine: prestataire impose sur designation', [
+            'mission_id' => $mission->id,
+            'provider_id' => $provider->id,
+        ]);
+
+        return $assignment;
+    }
+
+    /**
+     * L'ÉCRITURE D'UNE ASSIGNATION — une ligne d'assignation, la mission, la réservation.
+     *
+     * Elle etait le corps de `assignByDefault()`. Deux chemins l’empruntent desormais : le
+     * repli d’office et la designation par un administrateur. Un seul endroit ecrit, donc un
+     * seul endroit a corriger le jour ou ce que « assigner » veut dire changera.
+     */
+    protected function poserLAssignation(Mission $mission, Booking $booking, User $provider): MissionAssignment
+    {
         $assignment = MissionAssignment::updateOrCreate(
-            ['mission_id' => $mission->id, 'user_id' => $best->user->id],
+            ['mission_id' => $mission->id, 'user_id' => $provider->id],
             [
                 'role_on_mission' => 'lead',
                 'assignment_status' => 'accepted',
@@ -638,19 +691,14 @@ class DispatchEngine
 
         $mission->update([
             'status' => 'assigned',
-            'lead_provider_user_id' => $best->user->id,
-            'lead_employee_id' => $best->user->id,
+            'lead_provider_user_id' => $provider->id,
+            'lead_employee_id' => $provider->id,
         ]);
 
         $booking->update([
-            'employe_id' => $best->user->id,
+            'employe_id' => $provider->id,
             'matched_at' => now(),
             'status' => $booking->status === BookingStatus::EN_ATTENTE ? BookingStatus::CONFIRME : $booking->status,
-        ]);
-
-        Log::info('DispatchEngine: assignation d’office (repli planifié)', [
-            'mission_id' => $mission->id,
-            'provider_id' => $best->user->id,
         ]);
 
         return $assignment;

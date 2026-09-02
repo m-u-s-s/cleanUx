@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Notifications\MissionReplanifieeNotification;
 use App\Services\Booking\SmartDispatchService;
+use App\Services\Dispatch\DispatchEngine;
 use App\Services\Missions\MissionFromRendezVousSyncService;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
@@ -208,7 +209,12 @@ class AgendaHebdomadaire extends Component
         $this->apresAction('Rendez-vous mis à jour.');
     }
 
-    /** L'affectation automatique — le meme moteur que la page Missions. */
+    /**
+     * L'AFFECTATION AUTOMATIQUE — meme choix et meme ecriture que la page Missions.
+     *
+     * `SmartDispatchService` choisit ; `DispatchEngine` assigne, avec ses gardes et sa
+     * ligne d'assignation. Les deux ecrans empruntent le meme chemin, exprès.
+     */
     public function dispatchAutomatique(): void
     {
         $rdv = $this->rdvVerrouille();
@@ -223,12 +229,17 @@ class AgendaHebdomadaire extends Component
 
         $ancienId = $rdv->intervenantId();
 
-        $rdv->forceFill([
-            'employe_id' => $employe->id,
-            'status' => BookingStatus::CONFIRME,
-        ])->save();
+        // LA CHAINE ECRIT, PAS CET ECRAN. Il posait `employe_id` et `CONFIRME` par un
+        // `forceFill` : la mission n’avait aucune ligne d’assignation, et les deux gardes de
+        // l’offre — KYC et controle facial — n’etaient repassees ni l’une ni l’autre.
+        $moteur = app(DispatchEngine::class);
+        $mission = $moteur->ensureMission($rdv);
 
-        app(MissionFromRendezVousSyncService::class)->syncFromRendezVous($rdv->fresh());
+        if (! $mission || ! $moteur->imposerCePrestataire($mission, $employe)) {
+            $this->dispatch('toast', "Affectation refusée : {$employe->name} ne remplit pas les conditions.", 'error');
+
+            return;
+        }
 
         ActivityLogger::log('rdv_auto_dispatched', $rdv, [
             'old_employee_id' => $ancienId,

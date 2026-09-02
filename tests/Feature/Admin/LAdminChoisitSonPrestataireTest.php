@@ -36,6 +36,18 @@ class LAdminChoisitSonPrestataireTest extends TestCase
             ->assertSet('dispatchPreviewRdvId', null);
 
         $this->assertSame($choisi->id, (int) $rdv->fresh()->employe_id);
+
+        // LE POINT DU REBRANCHEMENT : l’ecran ecrivait `employe_id` en direct, sans ligne
+        // d’assignation — la mission restait invisible de la chaine d’offres et son historique
+        // vide. La chaine ecrit desormais, et elle laisse sa trace.
+        $mission = $rdv->fresh()->resolveMission();
+        $this->assertNotNull($mission, 'Aucune mission n’a ete creee pour ce rendez-vous.');
+        $this->assertDatabaseHas('mission_assignments', [
+            'mission_id' => $mission->id,
+            'user_id' => $choisi->id,
+            'assignment_status' => 'accepted',
+        ]);
+        $this->assertSame($choisi->id, (int) $mission->lead_provider_user_id);
     }
 
     /**

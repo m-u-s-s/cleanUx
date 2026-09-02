@@ -5,10 +5,9 @@ namespace App\Livewire\Admin;
 use App\Models\Booking;
 use App\Models\User;
 use App\Services\Booking\SmartDispatchService;
+use App\Services\Dispatch\DispatchEngine;
 use App\Services\FaceCheck\FaceCheckGate;
-use App\Services\Missions\MissionFromRendezVousSyncService;
 use App\Support\ActivityLogger;
-use App\Support\Domain\BookingStatus;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -140,12 +139,23 @@ class MissionsAdmin extends Component
 
         $oldEmployeeId = $rdv->employe_id;
 
-        $rdv->update([
-            'employe_id' => $employee->id,
-            'status' => BookingStatus::CONFIRME,
-        ]);
+        // LA CHAINE ECRIT, PAS CET ECRAN. Il posait `employe_id` et `CONFIRME` en direct :
+        // la mission n’avait alors AUCUNE ligne d’assignation, et son historique restait vide
+        // — un rendez-vous affecté depuis ici était invisible de la chaîne d’offres.
+        $moteur = app(DispatchEngine::class);
+        $mission = $moteur->ensureMission($rdv);
 
-        app(MissionFromRendezVousSyncService::class)->syncFromRendezVous($rdv->fresh());
+        if (! $mission) {
+            $this->dispatch('toast', 'Mission introuvable pour ce rendez-vous.', 'error');
+
+            return false;
+        }
+
+        if (! $moteur->imposerCePrestataire($mission, $employee)) {
+            $this->dispatch('toast', "Affectation refusée : {$employee->name} ne remplit pas les conditions.", 'error');
+
+            return false;
+        }
 
         ActivityLogger::log($evenement, $rdv, [
             'old_employee_id' => $oldEmployeeId,
