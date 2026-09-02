@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?string $longitude
  * @property ?int $surface_m2
  * @property ?int $floor_count
+ * @property ?string $cleaning_frequency
  * @property ?array $metadata
  * @property ?array $trade_preferences
  */
@@ -53,6 +54,13 @@ class OrganizationSite extends Model
         // ÉCRITES PAR LE CODE, ÉCARTÉES PAR ELOQUENT. Ces colonnes existent en base et des
         // appels d'écriture les renseignent, mais leur absence de cette liste les faisait
         // disparaître SANS ERREUR — Eloquent écarte en silence ce qu'il ne peut pas assigner.
+        // LES QUATRE CONTRAINTES D ACCES. Renseignees sur les sept sites de la base, et pourtant
+        // absentes d ici : Eloquent les ECARTE. Hors production il leve, en production il se tait.
+        'parking_available',
+        'badge_required',
+        'alarm_code_required',
+        'has_sensitive_areas',
+
         'client_user_id',
         'site_code',
         'email',

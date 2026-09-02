@@ -14,6 +14,10 @@
         'en_route' => ['classes' => 'bg-blue-100 text-blue-700 border-blue-200', 'label' => 'En route'],
         'sur_place' => ['classes' => 'bg-indigo-100 text-indigo-700 border-indigo-200', 'label' => 'Sur place'],
         'termine' => ['classes' => 'bg-emerald-100 text-emerald-700 border-emerald-200', 'label' => 'Terminé'],
+        // PORTES PAR LES SITES DES SOCIETES. Sans eux le repli imprimait « Active » et
+        // « Archived » — la valeur brute de la base, en anglais, sur un ecran francais.
+        'active' => ['classes' => 'bg-emerald-100 text-emerald-700 border-emerald-200', 'label' => 'Actif'],
+        'archived' => ['classes' => 'bg-slate-100 text-slate-600 border-slate-200', 'label' => 'Archivé'],
         default => ['classes' => 'bg-gray-100 text-gray-700 border-gray-200', 'label' => ucfirst(str_replace('_', ' ', $normalized))],
     };
 @endphp
