@@ -6,7 +6,6 @@ use App\Livewire\Admin\AdminB2BOperationsCenter;
 use App\Livewire\Admin\AdminCalendar;
 use App\Livewire\Admin\AdminEmailsCenter;
 use App\Livewire\Admin\AdminFinance;
-use App\Livewire\Admin\AdminInternationalOperationsCenter;
 use App\Livewire\Admin\AdminOrchestrationTerrainCenter;
 use App\Livewire\Admin\AdminPlanning;
 use App\Livewire\Admin\AdminPremiumClients;
@@ -17,15 +16,12 @@ use App\Livewire\Admin\AuditLogsCenter;
 use App\Livewire\Admin\AutomationCenter;
 use App\Livewire\Admin\B2BOperationsCenter;
 use App\Livewire\Admin\CalendrierInterne;
-use App\Livewire\Admin\CatalogueServices;
-use App\Livewire\Admin\CountryOperationsCenter;
 use App\Livewire\Admin\EmailsCenter;
 use App\Livewire\Admin\ExportTools;
 use App\Livewire\Admin\FeedbacksAdmin;
 use App\Livewire\Admin\FinanceCenter;
 use App\Livewire\Admin\FinanceDashboard;
 use App\Livewire\Admin\GestionEquipesPartenaires;
-use App\Livewire\Admin\InternationalOperationsCenter;
 use App\Livewire\Admin\ModulesCenter;
 use App\Livewire\Admin\OrchestrationTerrainCenter;
 use App\Livewire\Admin\OutilsAdmin;
@@ -152,9 +148,8 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
                 ], 'Audit logs'))->name('audit.logs');
             }
 
-            Route::get('/services', CatalogueServices::class)
-                ->middleware('can:manage-services')
-                ->name('services');
+            // Fusionnee dans le catalogue : l'URL conduit a son onglet.
+            Route::redirect('/services', '/admin/catalogue?onglet=services')->name('services');
 
             if (! Route::has('admin.premium.clients')) {
                 Route::get('/premium/clients', $livewireOrFallback([
@@ -182,10 +177,8 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
             }
 
             if (! Route::has('admin.international')) {
-                Route::get('/international', $livewireOrFallback([
-                    InternationalOperationsCenter::class,
-                    AdminInternationalOperationsCenter::class,
-                ], 'Opérations internationales'))->name('international');
+                // Fusionnee dans le catalogue : l'URL conduit a son onglet.
+                Route::redirect('/international', '/admin/catalogue?onglet=marche')->name('international');
             }
 
             if (! Route::has('admin.orchestration')) {
@@ -212,8 +205,9 @@ Route::middleware(['auth', 'verified', 'active.account'])->group(function () use
             }
 
             if (! Route::has('admin.countries')) {
-                Route::get('/countries', CountryOperationsCenter::class)
-                    ->name('countries');
+                // VRAI DOUBLON du catalogue, qui edite les memes champs avec en plus la garde
+                // devise/pays. Son seul apport, `iso3_code`, y a ete porte.
+                Route::redirect('/countries', '/admin/catalogue')->name('countries');
             }
 
             if (! Route::has('admin.emails')) {

@@ -11,6 +11,7 @@ use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -22,6 +23,14 @@ class CountryCenter extends Component
     use EnforcesAdminAccess;
 
     use WithPagination;
+
+    /**
+     * L'ONGLET COURANT. Le catalogue reste la colonne vertebrale — Pays, puis Zones, puis
+     * Metiers et prix. Les autres onglets sont des vues transverses, pas des detours.
+     * pays | zones | metiers | services | marche
+     */
+    #[Url(as: 'onglet')]
+    public string $onglet = 'pays';
 
     public ?int $editionId = null;
 
@@ -63,7 +72,7 @@ class CountryCenter extends Component
         $this->editionId = $id;
         $this->blocage = null;
         $this->formulaire = $pays->only([
-            'iso_code', 'name', 'currency_code', 'default_locale', 'timezone', 'phone_code',
+            'iso_code', 'iso3_code', 'name', 'currency_code', 'default_locale', 'timezone', 'phone_code',
         ]);
     }
 
@@ -74,6 +83,7 @@ class CountryCenter extends Component
 
         $valide = $this->validate([
             'formulaire.iso_code' => ['required', 'string', 'size:2', $unicite],
+            'formulaire.iso3_code' => ['nullable', 'string', 'size:3'],
             'formulaire.name' => ['required', 'string', 'max:120'],
             'formulaire.currency_code' => ['required', 'string', 'size:3'],
             'formulaire.default_locale' => ['nullable', 'string', 'max:10'],
@@ -83,6 +93,9 @@ class CountryCenter extends Component
 
         $valide['iso_code'] = strtoupper((string) $valide['iso_code']);
         $valide['currency_code'] = strtoupper((string) $valide['currency_code']);
+        $valide['iso3_code'] = $valide['iso3_code'] === '' || $valide['iso3_code'] === null
+            ? null
+            : strtoupper((string) $valide['iso3_code']);
 
         // LA DEVISE DOIT CORRESPONDRE AU PAYS, ET LE FORMULAIRE PROPOSAIT `EUR` A TOUT LE MONDE.
         $attendue = DeviseParPays::pour($valide['iso_code']);
@@ -168,6 +181,9 @@ class CountryCenter extends Component
     {
         $this->formulaire = [
             'iso_code' => '',
+            // REPRIS DE LA PAGE « PILOTAGE DES PAYS » : le seul champ qu'elle savait editer et
+            // que le catalogue ignorait. Facultatif, comme la colonne.
+            'iso3_code' => '',
             'name' => '',
             // Vide, et non `EUR` : voir `deduireLaDevise()`. Une valeur pre-remplie qui se trouve
             // etre juste vingt fois sur vingt-cinq est le pire des defauts -- on cesse de la lire.

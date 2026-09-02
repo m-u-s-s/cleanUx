@@ -39,7 +39,6 @@ use App\Livewire\Admin\Gdpr\GdprCenter;
 use App\Livewire\Admin\GeolocationV2\GeolocationCenter;
 use App\Livewire\Admin\GestionEntreprises;
 use App\Livewire\Admin\GestionUtilisateurs;
-use App\Livewire\Admin\GestionZones;
 use App\Livewire\Admin\I18n\TranslationsCenter;
 use App\Livewire\Admin\Insurance\InsuranceCenter;
 use App\Livewire\Admin\KybV2\KybCenter;
@@ -74,7 +73,6 @@ use App\Livewire\Admin\Sms\SmsCenter;
 use App\Livewire\Admin\StripeConnectProviders;
 use App\Livewire\Admin\SubscriptionsV2\SubscriptionsCenter;
 use App\Livewire\Admin\Tips\TipsCenter;
-use App\Livewire\Admin\Trades;
 use App\Livewire\Admin\TradeZonePricingManager;
 use App\Livewire\Admin\TripTracking\TripTrackingCenter;
 use App\Livewire\Admin\WebhooksV2\WebhooksCenter;
@@ -122,7 +120,8 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
             ->name('modules.directory');
 
         // Récupération d'orphelins — pages admin auparavant non routées.
-        Route::get('/zones', GestionZones::class)->name('zones');
+        // Fusionnee dans le catalogue : l'URL conduit a son onglet.
+        Route::redirect('/zones', '/admin/catalogue?onglet=zones')->name('zones');
         Route::get('/entreprises', GestionEntreprises::class)->name('entreprises');
         Route::get('/recurrence/{rendezVous}/serie', EditRecurringBooking::class)->name('recurrence.edit');
 
@@ -636,7 +635,8 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
             };
         })->name('feedbacks.export.csv');
 
-        Route::get('/trades', Trades::class)->name('trades');
+        // Fusionnee dans le catalogue : l'URL conduit a son onglet.
+        Route::redirect('/trades', '/admin/catalogue?onglet=metiers')->name('trades');
 
         Route::get('/trades/{trade}/pricing', TradeZonePricingManager::class)->name('trades.pricing');
 

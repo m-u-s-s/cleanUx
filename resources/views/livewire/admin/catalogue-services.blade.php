@@ -1,16 +1,14 @@
-<div class="brio-page">
-    <x-page-shell
-        eyebrow="Pilotage admin"
-        title="Catalogue services"
-        subtitle="Gère les services vendables, leurs paramètres métier et leurs règles par zone."
-    >
-        <x-slot name="actions">
+<div class="space-y-6">
+    {{-- La coquille de page est portee par le catalogue qui accueille cet onglet. --}}
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <p class="text-sm text-slate-500">Gère les services vendables, leurs paramètres métier et leurs règles par zone.</p>
+        <div class="flex flex-wrap items-center gap-2">
             <button wire:click="resetServiceForm" class="brio-btn-secondary">Nouveau service</button>
             @if($selectedService)
                 <span class="brio-chip !border-sky-200 !bg-sky-50 !text-sky-700">Service sélectionné : {{ $selectedService->name }}</span>
             @endif
-        </x-slot>
-    </x-page-shell>
+        </div>
+    </div>
 
     @if (session()->has('success'))
         <div class="brio-note !border-emerald-200 !bg-emerald-50 !text-emerald-700">{{ session('success') }}</div>

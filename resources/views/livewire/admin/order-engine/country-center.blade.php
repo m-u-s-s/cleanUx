@@ -8,7 +8,7 @@
 
     <header class="flex flex-wrap items-start justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-semibold text-slate-900">Catalogue — Pays</h1>
+            <h1 class="text-2xl font-semibold text-slate-900">Catalogue</h1>
             <p class="mt-1 text-sm text-slate-500">
                 Chaque pays contient ses zones, et chaque zone son propre catalogue de métiers.
                 Ouvrez un pays pour gérer ses zones.
@@ -20,6 +20,30 @@
             Ajouter un pays
         </button>
     </header>
+
+    {{-- ─── Les cinq vues du catalogue ──────────────────────────────────────────────────── --}}
+    <div class="flex flex-nowrap gap-2 overflow-x-auto border-b border-slate-200">
+        @foreach (['pays' => 'Pays', 'zones' => 'Zones', 'metiers' => 'Métiers', 'services' => 'Services', 'marche' => 'Marché'] as $cle => $libelle)
+            <button type="button" wire:click="$set('onglet', '{{ $cle }}')"
+                    @class([
+                        'px-4 py-2 min-h-[44px] inline-flex shrink-0 items-center whitespace-nowrap text-sm font-semibold',
+                        'border-b-2 border-indigo-600 text-indigo-700' => $onglet === $cle,
+                        'text-slate-500 hover:text-slate-900' => $onglet !== $cle,
+                    ])>{{ $libelle }}</button>
+        @endforeach
+    </div>
+
+    @if ($onglet === 'zones')
+        <livewire:admin.gestion-zones />
+    @elseif ($onglet === 'metiers')
+        <livewire:admin.trades />
+    @elseif ($onglet === 'services')
+        <livewire:admin.catalogue-services />
+    @elseif ($onglet === 'marche')
+        <livewire:admin.international-operations-center />
+    @endif
+
+    @if ($onglet === 'pays')
 
     @if ($flash)
         <p class="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900">{{ $flash }}</p>
@@ -57,6 +81,15 @@
                 <input type="text" wire:model="formulaire.iso_code" wire:blur="deduireLaDevise" maxlength="2" placeholder="FR"
                     class="mt-1 w-full min-h-[44px] rounded-xl border-slate-300 text-sm uppercase">
                 @error('formulaire.iso_code')
+                    <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span>
+                @enderror
+            </label>
+
+            <label class="block">
+                <span class="text-xs font-medium text-slate-600">Code ISO 3 (facultatif)</span>
+                <input type="text" wire:model="formulaire.iso3_code" maxlength="3" placeholder="FRA"
+                    class="mt-1 w-full min-h-[44px] rounded-xl border-slate-300 text-sm uppercase">
+                @error('formulaire.iso3_code')
                     <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span>
                 @enderror
             </label>
@@ -183,4 +216,5 @@
     </div>
 
     <div>{{ $this->pays->links() }}</div>
+    @endif
 </div>
