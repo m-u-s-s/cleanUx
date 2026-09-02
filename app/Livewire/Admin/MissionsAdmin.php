@@ -77,19 +77,65 @@ class MissionsAdmin extends Component
             return;
         }
 
-        // LES DEUX GARDES DE LA VOIE COURTOISE. `DispatchEngine::createOffer()` refuse
-        // individuellement un prestataire sur son KYC et sur le verdict du controle facial ;
-        // ce bouton ecrivait sans repasser ni l'un ni l'autre.
+        $this->affecter($rdv, $employee, 'rdv_auto_dispatched');
+    }
+
+    /**
+     * CHOISIR UN PRESTATAIRE DEPUIS LE SCORING. L'administrateur voit les scores ; il peut
+     * désormais désigner quelqu’un d’autre que le premier — le moteur propose, il décide.
+     */
+    public function choisirPrestataire(int $rdvId, int $employeeId): void
+    {
+        $rdv = Booking::with([
+            'client',
+            'serviceZone',
+            'employe',
+            'mission',
+        ])->findOrFail($rdvId);
+
+        // LE CHOIX NE S’AFFRANCHIT PAS DU CLASSEMENT : on ne retient que les candidats que
+        // le scoring a réellement proposés pour CE rendez-vous. Un identifiant envoyé à la
+        // main depuis le navigateur ne désigne donc personne.
+        $propose = collect(app(SmartDispatchService::class)->explainScores($rdv))
+            ->contains(fn (array $ligne) => (int) ($ligne['employee_id'] ?? 0) === $employeeId);
+
+        if (! $propose) {
+            $this->dispatch('toast', 'Ce prestataire ne fait pas partie des candidats proposés.', 'error');
+
+            return;
+        }
+
+        $employee = User::find($employeeId);
+
+        if (! $employee) {
+            $this->dispatch('toast', 'Prestataire introuvable.', 'error');
+
+            return;
+        }
+
+        if ($this->affecter($rdv, $employee, 'rdv_dispatch_choisi')) {
+            $this->closeDispatchPreview();
+        }
+    }
+
+    /**
+     * Les gardes, l’écriture et la trace — communes aux deux chemins.
+     *
+     * `DispatchEngine::createOffer()` refuse individuellement un prestataire sur son KYC et
+     * sur le verdict du contrôle facial. Ce chemin écrivait sans repasser ni l’un ni l’autre.
+     */
+    private function affecter(Booking $rdv, User $employee, string $evenement): bool
+    {
         if (! $employee->hasClearedKyc()) {
             $this->dispatch('toast', "Affectation refusée : l'identité de {$employee->name} n'est pas vérifiée.", 'error');
 
-            return;
+            return false;
         }
 
         if (! app(FaceCheckGate::class)->inspectForBooking($employee, $rdv)->allowed()) {
             $this->dispatch('toast', "Affectation refusée : {$employee->name} doit passer son contrôle facial.", 'error');
 
-            return;
+            return false;
         }
 
         $oldEmployeeId = $rdv->employe_id;
@@ -101,13 +147,15 @@ class MissionsAdmin extends Component
 
         app(MissionFromRendezVousSyncService::class)->syncFromRendezVous($rdv->fresh());
 
-        ActivityLogger::log('rdv_auto_dispatched', $rdv, [
+        ActivityLogger::log($evenement, $rdv, [
             'old_employee_id' => $oldEmployeeId,
             'new_employee_id' => $employee->id,
             'new_employee_name' => $employee->name,
         ]);
 
         $this->dispatch('toast', 'Rendez-vous assigné à '.$employee->name.'.', 'success');
+
+        return true;
     }
 
     public function previewDispatch(int $rdvId): void
