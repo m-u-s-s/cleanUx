@@ -1,5 +1,10 @@
 <div class="space-y-6" data-phase2s-root="true">
-    @includeIf('livewire.admin.pilotage.layout-stack')
+    {{-- LE BANDEAU DE PILOTAGE NE S OUVRE PLUS ICI : ses quatre tuiles etaient figees et fausses.
+         Les raccourcis portent de vrais liens gardes par permission, eux restent. --}}
+    <div class="mb-6 space-y-5">
+        @includeIf('livewire.admin.pilotage.quick-actions')
+        @includeIf('livewire.admin.pilotage.go-live-checklist')
+    </div>
 
 <div class="space-y-6">
     <x-page-shell
