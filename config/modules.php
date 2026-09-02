@@ -301,7 +301,6 @@ return [
         ['key' => 'admin:admin.promotions.campaigns', 'label' => 'Campagnes promo', 'icon' => '📢', 'route' => 'admin.promotions.campaigns', 'context' => 'admin', 'category' => 'croissance', 'primary' => false, 'gate' => 'manage-automation'],
         ['key' => 'admin:admin.promotions.codes', 'label' => 'Codes promo', 'icon' => '🎟️', 'route' => 'admin.promotions.codes', 'context' => 'admin', 'category' => 'croissance', 'primary' => false, 'gate' => 'manage-automation'],
         ['key' => 'admin:admin.promotions.referrals', 'label' => 'Parrainage', 'icon' => '🤝', 'route' => 'admin.promotions.referrals', 'context' => 'admin', 'category' => 'croissance', 'primary' => false, 'gate' => 'manage-automation'],
-        ['key' => 'admin:admin.ai.dispatch', 'label' => 'IA Dispatch', 'icon' => '🤖', 'route' => 'admin.ai.dispatch', 'context' => 'admin', 'category' => 'donnees', 'primary' => false, 'gate' => 'manage-orchestration'],
         /*
          * Le centre de répartition : l'histoire complète d'une recherche — qui a été sollicité,
          * quand, à quelle distance, refus ou silence. Sans lui, les quatre causes d'un échec de
@@ -319,7 +318,6 @@ return [
         ['key' => 'admin:admin.analytics.exploration', 'label' => 'Exploration métier', 'icon' => '🔎', 'route' => 'admin.analytics.exploration', 'context' => 'admin', 'category' => 'donnees', 'primary' => false, 'gate' => 'manage-analytics'],
         ['key' => 'admin:admin.dashboard', 'label' => 'Dashboard', 'icon' => '📊', 'route' => 'admin.dashboard', 'context' => 'admin', 'category' => 'donnees', 'primary' => true],
         ['key' => 'admin:admin.home', 'label' => 'Vue d’ensemble', 'icon' => '🗂️', 'route' => 'admin.home', 'context' => 'admin', 'category' => 'donnees', 'primary' => true],
-        ['key' => 'admin:admin.matching.insights', 'label' => 'Matching insights', 'icon' => '🎯', 'route' => 'admin.matching.insights', 'context' => 'admin', 'category' => 'donnees', 'primary' => false, 'gate' => 'manage-analytics'],
         ['key' => 'admin:admin.nps.center', 'label' => 'NPS scoring', 'icon' => '📊', 'route' => 'admin.nps.center', 'context' => 'admin', 'category' => 'donnees', 'primary' => false, 'gate' => 'manage-analytics'],
         ['key' => 'admin:admin.api-tokens-v2.center', 'label' => 'API Tokens v2', 'icon' => '🔑', 'route' => 'admin.api-tokens-v2.center', 'context' => 'admin', 'category' => 'plateforme', 'primary' => false, 'gate' => 'manage-platform'],
         ['key' => 'admin:admin.countries', 'label' => 'Pays', 'icon' => '🗺️', 'route' => 'admin.countries', 'context' => 'admin', 'category' => 'plateforme', 'primary' => false, 'gate' => 'manage-international'],

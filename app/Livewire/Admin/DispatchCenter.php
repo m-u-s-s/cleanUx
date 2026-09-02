@@ -4,9 +4,13 @@ namespace App\Livewire\Admin;
 
 use App\Models\AsapDispatchRequest;
 use App\Models\Booking;
+use App\Models\Mission;
 use App\Models\MissionAssignment;
+use App\Models\ProviderPerformanceMetric;
 use App\Services\Dispatch\CandidateFinder;
 use App\Services\Dispatch\DispatchCandidate;
+use App\Services\Dispatch\DispatchEngine;
+use App\Support\ActivityLogger;
 use App\Support\Domain\AsapStatus;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
@@ -30,6 +34,9 @@ class DispatchCenter extends Component
 
     /** searching | expired | accepted | all */
     public string $filtre = 'searching';
+
+    /** recherches | sans_intervenant | poids | metriques */
+    public string $onglet = 'recherches';
 
     public ?int $rechercheOuverte = null;
 
@@ -61,6 +68,41 @@ class DispatchCenter extends Component
                 ->where('updated_at', '>=', now()->subDay())
                 ->count(),
         ];
+    }
+
+    public function updatedOnglet(): void
+    {
+        $this->resetPage();
+    }
+
+    /**
+     * IMPOSER D'OFFICE — l'acte que portait « IA Dispatch », rebranche sur le moteur de
+     * production. L'ancien ecrivait `employe_id` en direct, sans offre ni garde.
+     */
+    public function imposer(int $missionId): void
+    {
+        $mission = Mission::find($missionId);
+
+        if (! $mission) {
+            $this->dispatch('toast', 'Mission introuvable.', 'error');
+
+            return;
+        }
+
+        $assignation = app(DispatchEngine::class)->imposerDOffice($mission);
+
+        if ($assignation === null) {
+            $this->dispatch('toast', 'Aucune imposition : mission deja pourvue, ou aucun prestataire en regle.', 'error');
+
+            return;
+        }
+
+        ActivityLogger::log('dispatch_impose_doffice', $mission, [
+            'mission_id' => (int) $mission->id,
+            'provider_user_id' => (int) $assignation->user_id,
+        ]);
+
+        $this->dispatch('toast', 'Mission imposee au prestataire #'.$assignation->user_id.'.', 'success');
     }
 
     public function ouvrir(int $rechercheId): void
@@ -145,14 +187,40 @@ class DispatchCenter extends Component
 
     public function render(): View
     {
-        $recherches = AsapDispatchRequest::query()
-            ->with(['trade:id,name', 'booking:id,booking_reference,city,postal_code', 'acceptedBy:id,name'])
-            ->when($this->filtre !== 'all', fn ($q) => $q->where('status', $this->filtre))
-            ->latest('id')
-            ->paginate(15);
+        $recherches = $this->onglet === 'recherches'
+            ? AsapDispatchRequest::query()
+                ->with(['trade:id,name', 'booking:id,booking_reference,city,postal_code', 'acceptedBy:id,name'])
+                ->when($this->filtre !== 'all', fn ($q) => $q->where('status', $this->filtre))
+                ->latest('id')
+                ->paginate(15)
+            : null;
+
+        // LA LISTE DIT VRAI : uniquement les missions sur lesquelles l'imposition peut agir —
+        // planifiees, sans intervenant, hors mode immediat qui a sa propre sortie.
+        $sansIntervenant = $this->onglet === 'sans_intervenant'
+            ? Mission::query()
+                ->whereNull('lead_provider_user_id')
+                ->where('status', 'planned')
+                ->whereHas('booking', fn ($q) => $q->where('booking_mode', '!=', 'asap'))
+                ->with(['booking:id,booking_reference,date,heure,city,client_id', 'booking.client:id,name'])
+                ->orderBy('id')
+                ->paginate(15)
+            : null;
+
+        $metriques = $this->onglet === 'metriques'
+            ? ProviderPerformanceMetric::query()
+                ->with(['provider:id,name'])
+                ->latest('period_end')
+                ->paginate(15)
+            : null;
 
         return view('livewire.admin.dispatch-center', [
             'recherches' => $recherches,
+            'sansIntervenant' => $sansIntervenant,
+            'metriques' => $metriques,
+            // LES POIDS DU SCORE DE PRODUCTION : `MatchingScoreEngine::weights()` lit ce meme
+            // reglage. Ce panneau decrit donc ce que le dispatch fait, pas un moteur voisin.
+            'poids' => Config::get('matching.weights', []),
             'chaine' => $this->chaine(),
             'reglages' => [
                 'ttl_immediat' => (int) Config::get('dispatch.default_timeout', 20),

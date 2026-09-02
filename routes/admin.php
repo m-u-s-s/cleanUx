@@ -7,7 +7,6 @@ use App\Livewire\Admin\AccountingV2\AccountingCenter;
 use App\Livewire\Admin\AdminAlertsCenter;
 use App\Livewire\Admin\AdminAnalyticsDashboard;
 use App\Livewire\Admin\AdminHomeDashboard;
-use App\Livewire\Admin\AiDispatchCenter;
 use App\Livewire\Admin\Analytics\AnalyticsCenter;
 use App\Livewire\Admin\Analytics\CancellationReasonsCenter;
 use App\Livewire\Admin\AnalyticsCenter as ExplorationAnalytique;
@@ -49,7 +48,6 @@ use App\Livewire\Admin\Loyalty\LoyaltyCenter;
 use App\Livewire\Admin\Loyalty\LoyaltyRewardsCenter;
 use App\Livewire\Admin\Marketing\MarketingCenter;
 use App\Livewire\Admin\MarketplaceHealthCenter;
-use App\Livewire\Admin\Matching\MatchingInsightsCenter;
 use App\Livewire\Admin\MissionsAdmin;
 use App\Livewire\Admin\NotificationPreferences\NotificationPreferencesCenter;
 use App\Livewire\Admin\Nps\NpsCenter;
@@ -249,12 +247,6 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
         if (class_exists(RatingModerationCenter::class)) {
             Route::get('/avis', RatingModerationCenter::class)
                 ->name('ratings.moderation');
-        }
-
-        // Matching v2 — Insights & simulator
-        if (class_exists(MatchingInsightsCenter::class)) {
-            Route::get('/matching', MatchingInsightsCenter::class)
-                ->name('matching.insights');
         }
 
         // Stripe v2 — Hardening center (webhooks idempotents, reconciliation, failures)
@@ -569,9 +561,7 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
             Route::get('/stripe-connect-providers', StripeConnectProviders::class)->name('stripe-connect.providers');
         }
 
-        if (class_exists(AiDispatchCenter::class)) {
-            Route::get('/ia-dispatch', AiDispatchCenter::class)->name('ai.dispatch');
-
+        if (class_exists(DispatchCenter::class)) {
             /*
              * LE CENTRE DE RÉPARTITION — l'histoire d'une recherche, pas un compteur.
              *

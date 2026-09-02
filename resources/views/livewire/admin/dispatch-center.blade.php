@@ -105,7 +105,23 @@
         @endif
     </section>
 
+    {{-- ─── Onglets ────────────────────────────────────────────────────────────────────────── --}}
+    <div class="flex flex-wrap gap-2">
+        @foreach ([
+            'recherches' => 'Recherches',
+            'sans_intervenant' => 'Sans intervenant',
+            'poids' => 'Poids du score',
+            'metriques' => 'Métriques prestataires',
+        ] as $cle => $libelle)
+            <button type="button" wire:click="$set('onglet', '{{ $cle }}')"
+                class="min-h-[36px] rounded-lg px-3 text-sm {{ $onglet === $cle ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900' : 'bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-slate-300' }}">
+                {{ $libelle }}
+            </button>
+        @endforeach
+    </div>
+
     {{-- ─── Recherches ─────────────────────────────────────────────────────────────────────── --}}
+    @if ($onglet === 'recherches')
     <section class="rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-slate-900">
         <div class="flex flex-wrap gap-2 border-b border-slate-100 p-4 dark:border-white/5">
             @foreach ([
@@ -175,6 +191,19 @@
 
         <div class="p-4">{{ $recherches->links() }}</div>
     </section>
+    @endif
+
+    @if ($onglet === 'sans_intervenant')
+        @include('livewire.admin.dispatch.sans-intervenant')
+    @endif
+
+    @if ($onglet === 'poids')
+        @include('livewire.admin.dispatch.poids-du-score')
+    @endif
+
+    @if ($onglet === 'metriques')
+        @include('livewire.admin.dispatch.metriques-prestataires')
+    @endif
 
     {{-- ─── La chaîne d'offres ─────────────────────────────────────────────────────────────── --}}
     @if ($rechercheOuverte)
