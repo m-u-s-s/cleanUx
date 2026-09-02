@@ -7,7 +7,6 @@ use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\ProviderProfile;
 use App\Models\User;
-use App\Services\Dispatch\AiDispatchService;
 use App\Services\Dispatch\MissionDispatchService;
 use App\Services\Provider\ProviderPresenceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -200,7 +199,6 @@ class Phase11Test extends TestCase
         $service = app(MissionDispatchService::class);
 
         $assignment = $service->createOffer($mission, $user);
-        // On override AiDispatchService pour ne pas escalader (pas de candidat)
         $service->decline($assignment, 'too far');
 
         $this->assertSame('declined', $assignment->fresh()->assignment_status);

@@ -12,6 +12,7 @@ use App\Models\ProviderProfile;
 use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\User;
+use App\Models\UserBlock;
 use App\Services\Dispatch\CandidateFinder;
 use App\Services\Dispatch\DispatchCandidate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -262,6 +263,50 @@ class CandidateFinderTest extends TestCase
         $prestataire = $this->provider($this->babysitting, 50.8470, 4.3530);
 
         $this->assertSame([], $this->ids($this->booking($this->babysitting), 10000, [$prestataire->id]));
+    }
+
+    // ─── Blocage entre personnes ─────────────────────────────────────────────────────────────
+
+    /**
+     * PORTÉ DEPUIS `AiDispatchService`, moteur qu'aucun code de production n'appelait.
+     *
+     * `CandidateFinder:170` retire les personnes bloquées, mais la règle n’était attestée que
+     * sur le moteur mort. `UserSafetyServiceTest` éprouve le service, pas le fait que le
+     * dispatch l’honore — et c’est ce fait-là qui protège un client.
+     */
+    #[Test]
+    public function un_prestataire_bloque_par_le_client_ne_recoit_rien(): void
+    {
+        $prestataire = $this->provider($this->babysitting, 50.8470, 4.3530);
+        $rdv = $this->booking($this->babysitting);
+
+        // TÉMOIN — sans blocage, il est bien candidat. Sans lui, le refus mesurerait une
+        // zone vide plutôt que la règle.
+        $this->assertContains($prestataire->id, $this->ids($rdv));
+
+        UserBlock::create([
+            'blocker_user_id' => $rdv->client_id,
+            'blocked_user_id' => $prestataire->id,
+        ]);
+
+        $this->assertNotContains($prestataire->id, $this->ids($rdv->fresh()));
+    }
+
+    /** Le blocage vaut dans les DEUX SENS : celui qui bloque ne reçoit pas non plus. */
+    #[Test]
+    public function un_prestataire_qui_a_bloque_le_client_ne_recoit_rien(): void
+    {
+        $prestataire = $this->provider($this->babysitting, 50.8470, 4.3530);
+        $rdv = $this->booking($this->babysitting);
+
+        $this->assertContains($prestataire->id, $this->ids($rdv));
+
+        UserBlock::create([
+            'blocker_user_id' => $prestataire->id,
+            'blocked_user_id' => $rdv->client_id,
+        ]);
+
+        $this->assertNotContains($prestataire->id, $this->ids($rdv->fresh()));
     }
 
     // ─── Type de prestataire ─────────────────────────────────────────────────────────────────

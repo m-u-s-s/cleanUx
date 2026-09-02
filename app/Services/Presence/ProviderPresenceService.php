@@ -65,7 +65,7 @@ class ProviderPresenceService
         $presence->update($updates);
 
         // F2 — keep the legacy ProviderProfile.is_online flag in sync. Dispatch/matching
-        // (MatchingV2Service, AiDispatchService) filter ASAP candidates on is_online, so a
+        // (CandidateFinder) filters ASAP candidates on is_online, so a
         // provider who goes online via presence-v2 must also flip is_online to be dispatchable.
         $this->syncLegacyOnlineFlag($provider, true);
 

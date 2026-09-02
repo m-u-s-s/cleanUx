@@ -5,10 +5,8 @@ namespace Tests\Feature\Regression;
 use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\ProviderProfile;
-use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\User;
-use App\Services\Dispatch\AiDispatchService;
 use App\Services\Dispatch\MissionDispatchService;
 use App\Services\Pricing\DynamicPricingService\DynamicPricingService;
 use App\Services\Pricing\SurgePricingEngine;
@@ -201,48 +199,7 @@ class PostFixesRegressionTest extends TestCase
     }
 
     // ──────────────────────────────────────────────────────
-    // Fix #7 — AiDispatchService::filter() return true manquant
     // ──────────────────────────────────────────────────────
-
-    /** Bug d'origine : la closure `filter()` de rankEmployees() manquait un `return true` final. */
-    public function test_ai_dispatch_returns_candidates_for_scheduled_bookings(): void
-    {
-        // `service_zones` n'a pas de colonne `is_active` : elle marque son état par `status` et
-        // les horodatages d'activation. La clé précédente était jetée en silence, et la zone
-        // naissait avec le statut par défaut plutôt qu'avec celui que le test croyait poser.
-        $zone = ServiceZone::create([
-            'name' => 'Test Zone',
-            'slug' => 'test-zone-'.uniqid(),
-            'status' => 'active',
-            'activated_at' => now(),
-        ]);
-
-        // `primary_service_zone_id` vit sur `users`, PAS sur `provider_profiles` : la passer au
-        // profil la faisait disparaître sans un mot. La ligne suivante, elle, l'écrit au bon
-        // endroit — et c'est elle qui portait le test depuis toujours.
-        $user = $this->makeProvider();
-        // `forceFill` comme le fait le code de production : la zone principale est hors de la
-        // liste blanche de `User` À DESSEIN — elle passe par `ProviderCoverageWriter`, pas par une
-        // assignation en masse. Un `update()` l'aurait écartée en silence.
-        $user->forceFill(['primary_service_zone_id' => $zone->id])->save();
-
-        $booking = $this->makeBooking([
-            'service_zone_id' => $zone->id,
-            'booking_mode' => 'scheduled',  // <-- le cas qui était cassé
-        ]);
-
-        $ranked = app(AiDispatchService::class)->rankEmployees($booking);
-
-        // Avant le fix, $ranked était toujours vide pour scheduled.
-        // Note : ce test peut être faux-négatif si EmployeeAvailabilityService
-        // a ses propres filtres restrictifs ; dans ce cas, la régression
-        // testée reste valable mais le test demande adaptation au schéma
-        // local. Ce qu'on veut surtout vérifier, c'est que la closure
-        // filter() ne retourne pas falsy pour scheduled.
-        $this->assertIsObject($ranked,
-            'rankEmployees() doit retourner une Collection même vide.'
-        );
-    }
 
     // ──────────────────────────────────────────────────────
     // Helpers (calqués sur Phase11Test)

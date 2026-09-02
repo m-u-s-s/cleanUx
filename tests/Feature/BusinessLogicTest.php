@@ -3,8 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Booking;
-use App\Models\User;
-use App\Services\Dispatch\MatchingScorer;
 use App\Services\Payments\CommissionService;
 use App\Services\Payments\StripeCountryMapper;
 use App\Services\Tax\TaxCalculator;
@@ -128,52 +126,6 @@ class BusinessLogicTest extends TestCase
         $this->assertContains('BE', $calc->supportedCountries());
         $this->assertContains('FR', $calc->supportedCountries());
         $this->assertContains('DE', $calc->supportedCountries());
-    }
-
-    // ─── MatchingScorer ───────────────────────────────────────────────────────
-
-    public function test_matching_scorer_returns_sorted_providers(): void
-    {
-        $scorer = new MatchingScorer;
-        $booking = Booking::factory()->create();
-        $providers = User::factory()->count(3)->create(['role' => 'employe']);
-
-        $results = $scorer->scoreProviders($booking, $providers);
-
-        $this->assertCount(3, $results);
-        $this->assertArrayHasKey('total_score', $results->first());
-        $this->assertArrayHasKey('provider_id', $results->first());
-        $this->assertArrayHasKey('scores', $results->first());
-
-        // Verify sorted descending
-        $scores = $results->pluck('total_score')->all();
-        $this->assertEquals($scores, collect($scores)->sortDesc()->values()->all());
-    }
-
-    public function test_matching_scorer_scores_have_expected_keys(): void
-    {
-        $scorer = new MatchingScorer;
-        $booking = Booking::factory()->create();
-        $user = User::factory()->create(['role' => 'employe']);
-
-        $results = $scorer->scoreProviders($booking, collect([$user]));
-        $scores = $results->first()['scores'];
-
-        $this->assertArrayHasKey('distance', $scores);
-        $this->assertArrayHasKey('rating', $scores);
-        $this->assertArrayHasKey('availability', $scores);
-        $this->assertArrayHasKey('completion_rate', $scores);
-        $this->assertArrayHasKey('price', $scores);
-    }
-
-    public function test_matching_scorer_empty_collection(): void
-    {
-        $scorer = new MatchingScorer;
-        $booking = Booking::factory()->create();
-
-        $results = $scorer->scoreProviders($booking, collect([]));
-
-        $this->assertCount(0, $results);
     }
 
     // ─── StripeCountryMapper ──────────────────────────────────────────────────

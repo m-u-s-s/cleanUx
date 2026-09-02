@@ -30,7 +30,6 @@ use App\Services\Assistant\Llm\LlmProvider;
 use App\Services\Calendar\Contracts\GoogleBusyFetcher;
 use App\Services\Calendar\Fetchers\MockGoogleBusyFetcher;
 use App\Services\Country\CountryConfigService;
-use App\Services\Dispatch\MatchingScorer;
 use App\Services\FeatureFlag\FeatureFlagService;
 use App\Services\Missions\MissionLifecycleService;
 use App\Services\Payments\CommissionService;
@@ -109,8 +108,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(CountryConfigService::class);
 
         // Dispatch — scoring engine singleton (stateless, thread-safe)
-        $this->app->singleton(MatchingScorer::class);
-
         // Feature flags — singleton, config-driven, no I/O
         $this->app->singleton(FeatureFlagService::class);
     }

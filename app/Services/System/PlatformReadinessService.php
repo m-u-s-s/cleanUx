@@ -2,7 +2,7 @@
 
 namespace App\Services\System;
 
-use App\Services\Dispatch\AiDispatchService;
+use App\Services\Dispatch\DispatchEngine;
 use App\Services\Enterprise\EnterpriseBookingApprovalService;
 use App\Services\Finance\B2BMonthlyInvoiceService;
 use App\Services\Notifications\SmartNotificationService;
@@ -70,7 +70,9 @@ class PlatformReadinessService
     protected function checkFeatures(): array
     {
         return [
-            'dispatch' => class_exists(AiDispatchService::class),
+            // Le moteur REELLEMENT employe. Ce controle visait `AiDispatchService`,
+            // qu'aucun code de production n'appelait : il attestait un fichier, pas un service.
+            'dispatch' => class_exists(DispatchEngine::class),
             'notifications' => class_exists(SmartNotificationService::class),
             'b2b_invoice' => class_exists(B2BMonthlyInvoiceService::class),
             'workflow' => class_exists(EnterpriseBookingApprovalService::class),

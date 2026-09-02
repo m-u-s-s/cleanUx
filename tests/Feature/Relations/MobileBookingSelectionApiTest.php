@@ -2,24 +2,21 @@
 
 namespace Tests\Feature\Relations;
 
-use App\Enums\ProviderType;
 use App\Models\Booking;
 use App\Models\BookingFavorite;
 use App\Models\CustomerProfile;
 use App\Models\Disponibilite;
-use App\Models\OrganizationAccount;
 use App\Models\ProviderProfile;
 use App\Models\ServiceCatalog;
 use App\Models\Trade;
 use App\Models\User;
-use App\Services\Dispatch\AiDispatchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Support\CreatesZoneAwareFixtures;
 use Tests\TestCase;
 
-/** SP2 mobile parity — le chemin API booking (ClientBookingController::store + CreateBookingFromApiAction) doit : - persister provider_type_preference + preferred_provider_user_id - appliquer le gating premium via ProviderSelectionResolver (frontière sécurité) - le matching mobile (AiDispatchService::rankEmployees) doit honorer le type - /auth/me doit exposer is_premium */
+/** SP2 mobile parity — le chemin API booking (ClientBookingController::store + CreateBookingFromApiAction) doit : - persister provider_type_preference + preferred_provider_user_id - appliquer le gating premium via ProviderSelectionResolver (frontière sécurité) - le matching mobile doit honorer le type, ce que `CandidateFinderTest` atteste desormais sur le moteur reellement employe - /auth/me doit exposer is_premium */
 class MobileBookingSelectionApiTest extends TestCase
 {
     use CreatesZoneAwareFixtures;
@@ -163,45 +160,6 @@ class MobileBookingSelectionApiTest extends TestCase
         $this->getJson('/api/auth/me')
             ->assertOk()
             ->assertJsonPath('is_premium', false);
-    }
-
-    /** Le matching mobile (AiDispatchService::rankEmployees, utilisé par MissionDispatchService::dispatchToNextProvider) doit honorer $booking->provider_type_preference : un booking 'independent' ne doit pas proposer un company_worker pourtant éligible en mode 'any'. */
-    #[Test]
-    public function mobile_matching_honors_independent_preference_and_excludes_company_worker(): void
-    {
-        $context = $this->createCoverageContext();
-        $zoneId = $context['zone']->id;
-        $date = now()->addDays(3)->toDateString();
-
-        $independent = $this->eligibleProvider(ProviderType::INDEPENDENT->value, $zoneId, $date);
-
-        $org = OrganizationAccount::factory()->create();
-        $companyWorker = $this->eligibleProvider(ProviderType::COMPANY_WORKER->value, $zoneId, $date, $org->id);
-
-        $client = User::factory()->create(['role' => User::ROLE_CLIENT, 'is_active' => true]);
-
-        $booking = Booking::factory()->create([
-            'client_id' => $client->id,
-            'employe_id' => null,
-            'service_zone_id' => $zoneId,
-            'date' => $date,
-            'heure' => '10:00:00',
-            'duree' => 90,
-            'estimated_duration_minutes' => 90,
-            'booking_mode' => 'scheduled',
-            'status' => 'en_attente',
-            'provider_type_preference' => 'independent',
-            'trade_id' => $this->matchingTrade()->id,
-        ]);
-
-        $ranked = app(AiDispatchService::class)->rankEmployees($booking->fresh());
-        $rankedIds = $ranked->pluck('employee.id');
-
-        $this->assertTrue($rankedIds->contains($independent->id));
-        $this->assertFalse(
-            $rankedIds->contains($companyWorker->id),
-            'le company_worker ne doit pas être proposé pour une préférence independent'
-        );
     }
 
     private function eligibleProvider(string $type, int $zoneId, string $date, ?int $orgId = null): User
