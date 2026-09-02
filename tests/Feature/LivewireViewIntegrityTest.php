@@ -32,10 +32,16 @@ class LivewireViewIntegrityTest extends TestCase
             'is_active' => true,
         ]);
 
+        // « Pilotage des pays » a fusionne dans le catalogue : son URL y conduit, et la page
+        // qui l’absorbe rend bien — c’est elle que ce test doit desormais eprouver.
         $this->actingAs($admin)
             ->get(route('admin.countries'))
+            ->assertRedirect('/admin/catalogue');
+
+        $this->actingAs($admin)
+            ->get('/admin/catalogue')
             ->assertOk()
-            ->assertSee('Pilotage des pays');
+            ->assertSee('Catalogue');
     }
 
     public function test_client_recurring_edit_route_renders(): void
