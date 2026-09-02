@@ -20,7 +20,10 @@ class EnterpriseApprovalsCenterCoverageBatch16Test extends TestCase
     {
         parent::setUp();
 
-        $this->admin = User::factory()->admin()->create();
+        // LA CAPACITE, PAS SEULEMENT LE ROLE. `module_gate` exige `manage-entreprises` sur la
+        // route depuis toujours ; seul un test de composant pouvait s'en passer, et mesurait
+        // donc un chemin que la production refuse.
+        $this->admin = User::factory()->admin()->create(['permissions' => ['manage-entreprises']]);
     }
 
     public function test_renders_with_seeded_approvals(): void
@@ -66,12 +69,14 @@ class EnterpriseApprovalsCenterCoverageBatch16Test extends TestCase
             'status' => 'pending_manager',
         ]);
 
+        // LA NOTE EST DESORMAIS INDEXEE PAR DEMANDE. Une propriete unique partagee par toutes
+        // les cartes attachait la note saisie sur l'une au geste donne sur une autre.
         Livewire::actingAs($this->admin)
             ->test(EnterpriseApprovalsCenter::class)
-            ->set('note', 'OK manager')
+            ->set('notes.'.$approval->id, 'OK manager')
             ->call('approveManager', $approval->id)
             ->assertDispatched('toast')
-            ->assertSet('note', '');
+            ->assertSet('notes.'.$approval->id, null);
 
         $this->assertDatabaseHas('enterprise_booking_approvals', [
             'id' => $approval->id,

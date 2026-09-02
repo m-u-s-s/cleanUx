@@ -76,9 +76,15 @@ class EnterpriseApprovalResource implements AdminResource
                     return ['ok' => false];
                 }
 
-                $this->approvals->approveManager($model, $admin, 'Validé depuis la console mobile.');
+                // LE SERVICE SORT EN SILENCE si le statut n'autorise plus le geste. Sans cette
+                // comparaison, la console annonce un succes pour une action qui n'a rien fait.
+                $avant = $model->status;
 
-                return ['ok' => true];
+                if ($this->approvals->approveManager($model, $admin, 'Validé depuis la console mobile.')->status === $avant) {
+                    return ['ok' => false, 'message' => 'Cette demande n’attendait plus la validation manager.'];
+                }
+
+                return ['ok' => true, 'message' => 'Validation manager effectuée.'];
             }),
 
             Action::make('reject', 'Refuser', function (EnterpriseBookingApproval $model, array $saisie) {
@@ -88,9 +94,13 @@ class EnterpriseApprovalResource implements AdminResource
                     return ['ok' => false];
                 }
 
-                $this->approvals->reject($model, $admin, (string) $saisie['reason']);
+                $avant = $model->status;
 
-                return ['ok' => true];
+                if ($this->approvals->reject($model, $admin, (string) $saisie['reason'])->status === $avant) {
+                    return ['ok' => false, 'message' => 'Cette demande était déjà close.'];
+                }
+
+                return ['ok' => true, 'message' => 'Demande refusée.'];
             })
                 ->destructive('La demande sera refusée et le demandeur en sera informé.')
                 ->requires([
@@ -109,9 +119,13 @@ class EnterpriseApprovalResource implements AdminResource
 
                 // Le service refuse cette étape tant que le manager n'a pas validé : l'ordre est
                 // sa règle, pas la nôtre.
-                $this->approvals->approveFinance($model, $admin, 'Validé depuis la console mobile.');
+                $avant = $model->status;
 
-                return ['ok' => true];
+                if ($this->approvals->approveFinance($model, $admin, 'Validé depuis la console mobile.')->status === $avant) {
+                    return ['ok' => false, 'message' => 'Cette demande n’attendait plus la validation finance.'];
+                }
+
+                return ['ok' => true, 'message' => 'Validation finance effectuée.'];
             }),
         ];
     }
