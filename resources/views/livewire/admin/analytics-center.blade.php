@@ -1,9 +1,8 @@
 <div class="space-y-6" data-phase2s-root="true">
-    {{-- LE BANDEAU DE PILOTAGE NE S OUVRE PLUS ICI : ses quatre tuiles etaient figees et fausses.
+    {{-- BANDEAU ET CHECKLIST NE S OUVRENT PLUS ICI : deux blocs figes dans le gabarit, sans donnee.
          Les raccourcis portent de vrais liens gardes par permission, eux restent. --}}
-    <div class="mb-6 space-y-5">
+    <div class="mb-6">
         @includeIf('livewire.admin.pilotage.quick-actions')
-        @includeIf('livewire.admin.pilotage.go-live-checklist')
     </div>
 
 <div class="space-y-6">
