@@ -171,7 +171,7 @@ class OrganizationSite extends Model
             self::FREQ_WEEKLY => 'Hebdomadaire',
             self::FREQ_BIWEEKLY => 'Bi-mensuel',
             self::FREQ_MONTHLY => 'Mensuel',
-            default => 'Non defini',
+            default => 'Non défini',
         };
     }
 
