@@ -128,7 +128,9 @@ class B2BMonthlyInvoiceService
             'date' => $rdv->date?->format('Y-m-d'),
             'heure' => substr((string) $rdv->heure, 0, 5),
             'site' => $rdv->organizationSite?->name,
-            'cost_center' => $rdv->cost_center ?? data_get($rdv->pricing_snapshot, 'cost_center'),
+            // `bookings.cost_center` N'EXISTE PAS — ni colonne, ni accesseur. Le premier membre
+            // du `??` rendait donc toujours nul, et masquait la seule vraie source.
+            'cost_center' => data_get($rdv->pricing_snapshot, 'cost_center'),
             'service' => $rdv->service_display_name,
             'amount' => (float) $rdv->devis_estime,
         ])->values()->all();
