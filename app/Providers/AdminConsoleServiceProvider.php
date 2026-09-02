@@ -40,7 +40,6 @@ use App\Admin\Resources\ContractSignatureResource;
 use App\Admin\Resources\CountryResource;
 use App\Admin\Resources\CountrySettingResource;
 use App\Admin\Resources\CustomerCreditResource;
-use App\Admin\Resources\DispatchResource;
 use App\Admin\Resources\DisputeResource;
 use App\Admin\Resources\EmailLogResource;
 use App\Admin\Resources\EnterpriseApprovalResource;
@@ -57,7 +56,6 @@ use App\Admin\Resources\KybResource;
 use App\Admin\Resources\KycResource;
 use App\Admin\Resources\LoyaltyAccountResource;
 use App\Admin\Resources\MarketingCampaignResource;
-use App\Admin\Resources\MatchingDecisionResource;
 use App\Admin\Resources\MissionBatchResource;
 use App\Admin\Resources\MissionResource;
 use App\Admin\Resources\NotificationPreferenceResource;
@@ -173,7 +171,6 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('availability', AvailabilitySlotResource::class);
             $registry->register('presence', PresenceResource::class);
             $registry->register('trip-tracking', TripTrackingResource::class);
-            $registry->register('matching', MatchingDecisionResource::class);
             $registry->register('quality', QualityInspectionResource::class);
             $registry->register('safety', UserReportResource::class);
             $registry->register('teams', FieldTeamResource::class);
@@ -203,7 +200,6 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('bookings', BookingResource::class);
             $registry->register('planning', PlanningResource::class);
             $registry->register('calendar', CalendarResource::class);
-            $registry->register('ia-dispatch', DispatchResource::class);
             $registry->register('cancellation-reasons', CancellationReasonResource::class);
             // LE QUESTIONNAIRE, distinct de la liste des motifs juste au-dessus : celle-ci REGARDE ce qui s'est passé, celui-là DÉCIDE ce qu'on demandera demain.
             $registry->register('cancellation-questions', CancellationQuestionResource::class);

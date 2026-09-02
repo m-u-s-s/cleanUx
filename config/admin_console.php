@@ -85,7 +85,6 @@ return [
         ['key' => 'availability', 'title' => 'Disponibilités', 'group' => 'operations', 'icon' => 'time-outline', 'coverage' => 'descriptor', 'routes' => ['admin/availability', 'admin/availability/{user}']],
         ['key' => 'presence', 'title' => 'Présence', 'group' => 'operations', 'icon' => 'radio-outline', 'coverage' => 'descriptor', 'routes' => ['admin/presence']],
         ['key' => 'trip-tracking', 'title' => 'Suivi de trajet', 'group' => 'operations', 'icon' => 'navigate-outline', 'coverage' => 'descriptor', 'routes' => ['admin/trip-tracking']],
-        ['key' => 'ia-dispatch', 'title' => 'Dispatch IA', 'group' => 'operations', 'icon' => 'sparkles-outline', 'coverage' => 'descriptor', 'routes' => ['admin/ia-dispatch']],
         /*
          * LE CENTRE DE RÉPARTITION — l'histoire d'une recherche, pas un compteur.
          *
@@ -94,7 +93,6 @@ return [
          * aucune table à elle seule, et le moteur de console générique n'a pas de forme pour ça.
          */
         ['key' => 'dispatch-center', 'title' => 'Répartition', 'group' => 'operations', 'icon' => 'radio-outline', 'coverage' => 'report', 'routes' => ['admin/repartition']],
-        ['key' => 'matching', 'title' => 'Matching', 'group' => 'operations', 'icon' => 'git-compare-outline', 'coverage' => 'descriptor', 'routes' => ['admin/matching']],
         ['key' => 'orchestration', 'title' => 'Orchestration terrain', 'group' => 'operations', 'icon' => 'options-outline', 'coverage' => 'descriptor', 'routes' => ['admin/orchestration']],
         ['key' => 'quality', 'title' => 'Qualité', 'group' => 'operations', 'icon' => 'ribbon-outline', 'coverage' => 'descriptor', 'routes' => ['admin/quality', 'admin/quality/export/incidents.csv', 'admin/quality/export/missions.csv']],
         ['key' => 'safety', 'title' => 'Sécurité terrain', 'group' => 'operations', 'icon' => 'shield-outline', 'coverage' => 'descriptor', 'routes' => ['admin/safety']],
