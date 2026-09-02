@@ -13,7 +13,8 @@
                 <div>
                     <h3 class="text-lg font-semibold text-slate-900">Scoring dispatch</h3>
                     <p class="text-sm text-slate-500">
-                        Classement des employés disponibles. Choisissez celui que vous voulez affecter.
+                        Prestataires du métier demandé, libres sur ce créneau.
+                        Choisissez celui que vous voulez affecter.
                     </p>
                 </div>
 
@@ -34,8 +35,8 @@
                                 <span class="mr-1 text-xs text-slate-400">{{ $rang + 1 }}.</span>
                                 {{ $row['name'] }}
                             </p>
-                            <p class="text-xs {{ $row['available'] ? 'text-emerald-600' : 'text-red-600' }}">
-                                {{ $row['available'] ? 'Disponible' : 'Indisponible' }}
+                            <p class="text-xs text-emerald-600">
+                                Libre sur ce créneau
                                 @if (($row['distance_km'] ?? null) !== null)
                                     <span class="text-slate-400">· {{ $row['distance_km'] }} km</span>
                                 @endif
@@ -48,30 +49,27 @@
                                 <p class="text-xs text-slate-500">score</p>
                             </div>
 
-                            {{-- L'indisponible reste VISIBLE mais non choisissable : le masquer
-                                 laisserait croire qu'il n'existe pas, et son score explique
-                                 justement pourquoi le premier est premier. --}}
-                            @if ($row['available'])
-                                <button
-                                    type="button"
-                                    wire:click="choisirPrestataire({{ $dispatchPreviewRdvId }}, {{ $row['employee_id'] }})"
-                                    wire:confirm="Affecter ce rendez-vous à {{ $row['name'] }} ? Le rendez-vous passe en confirmé."
-                                    class="brio-btn-ligne brio-btn-ligne-accent gap-1.5 font-semibold"
-                                >
-                                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.7" stroke="currentColor" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M4.5 12.75l6 6 9-13.5" />
-                                    </svg>
-                                    Choisir
-                                </button>
-                            @else
-                                <span class="text-xs text-slate-400">Non affectable</span>
-                            @endif
+                            <button
+                                type="button"
+                                wire:click="choisirPrestataire({{ $dispatchPreviewRdvId }}, {{ $row['employee_id'] }})"
+                                wire:confirm="Affecter ce rendez-vous à {{ $row['name'] }} ? Le rendez-vous passe en confirmé."
+                                class="brio-btn-ligne brio-btn-ligne-accent gap-1.5 font-semibold"
+                            >
+                                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.7" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M4.5 12.75l6 6 9-13.5" />
+                                </svg>
+                                Choisir
+                            </button>
                         </div>
                     </div>
                 @empty
-                    <p class="text-sm text-slate-500">Aucun employé trouvé.</p>
+                    <p class="text-sm text-slate-500">
+                        Aucun prestataire du métier demandé n’est libre sur ce créneau.
+                        {{-- Les deux causes se ressemblent tant qu’on ne les nomme pas :
+                             personne du bon métier, ou tout le monde déjà pris. --}}
+                    </p>
                 @endforelse
             </div>
         </div>

@@ -292,14 +292,35 @@ class SmartDispatchService
         return $client->isPremium() ? 80 : 0;
     }
 
+    /**
+     * LE CLASSEMENT PROPOSÉ À L'ADMINISTRATEUR — et il ne propose que des candidats réels.
+     *
+     * Il rendait TOUS les employés éligibles de la zone, chacun marqué « Disponible » ou
+     * « Indisponible », et sans jamais regarder le MÉTIER. Un écran d’aide à la décision qui
+     * propose quelqu’un d’occupé, ou un peintre pour une plomberie, fait perdre le temps
+     * qu’il prétend gagner.
+     *
+     * Deux conditions désormais, celles-là mêmes que le dispatch applique : le métier du
+     * rendez-vous, et la disponibilité SUR SON CRÉNEAU.
+     */
     public function explainScores(Booking $rdv): Collection
     {
         if (! $rdv->service_zone_id) {
             return collect();
         }
 
+        // SANS MÉTIER, ON NE PROPOSE PERSONNE plutôt que n’importe qui — c’est la position
+        // que le moteur de répartition tient déjà, et la seule qui ne trompe pas.
+        $metierId = $rdv->resolveTradeId();
+
+        if ($metierId === null) {
+            return collect();
+        }
+
         return $this->availabilityService
             ->sortedEligibleEmployeesForZone((int) $rdv->service_zone_id)
+            ->load('trades:id')
+            ->filter(fn (User $employee) => $employee->trades->contains('id', $metierId))
             ->map(function (User $employee) use ($rdv) {
                 return [
                     'employee_id' => $employee->id,
@@ -324,6 +345,7 @@ class SmartDispatchService
                         : null,
                 ];
             })
+            ->filter(fn (array $ligne) => $ligne['available'] === true)
             ->sortByDesc('score')
             ->values();
     }

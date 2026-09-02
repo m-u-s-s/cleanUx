@@ -6,6 +6,7 @@ use App\Enums\ProviderType;
 use App\Models\Booking;
 use App\Models\Disponibilite;
 use App\Models\ProviderProfile;
+use App\Models\Trade;
 use App\Models\User;
 use App\Services\Booking\SmartDispatchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,7 +20,11 @@ class SmartDispatchServiceScoringTest extends TestCase
     use CreatesZoneAwareFixtures;
     use RefreshDatabase;
 
-    private function eligibleEmployee(int $zoneId, string $date, array $userOverrides = []): User
+    /**
+     * `$tradeId` : `explainScores()` ne retient que les prestataires DU métier demandé.
+     * Sans lui, l’employé reste éligible à la zone mais n’apparaît dans aucun classement.
+     */
+    private function eligibleEmployee(int $zoneId, string $date, array $userOverrides = [], ?int $tradeId = null): User
     {
         $user = User::factory()->create(array_merge([
             'role' => User::ROLE_EMPLOYE,
@@ -41,6 +46,10 @@ class SmartDispatchServiceScoringTest extends TestCase
             'heure_fin' => '18:00:00',
         ]);
 
+        if ($tradeId !== null) {
+            $user->trades()->syncWithoutDetaching([$tradeId]);
+        }
+
         return $user;
     }
 
@@ -55,7 +64,8 @@ class SmartDispatchServiceScoringTest extends TestCase
         $zoneId = $context['zone']->id;
         $date = now()->addDays(3)->toDateString();
 
-        $employee = $this->eligibleEmployee($zoneId, $date);
+        $metier = Trade::factory()->create();
+        $employee = $this->eligibleEmployee($zoneId, $date, [], $metier->id);
         $client = User::factory()->create(['role' => User::ROLE_CLIENT, 'is_active' => true]);
 
         $booking = Booking::factory()->create([
@@ -68,6 +78,7 @@ class SmartDispatchServiceScoringTest extends TestCase
             'estimated_duration_minutes' => 90,
             'booking_mode' => 'scheduled',
             'status' => 'en_attente',
+            'trade_id' => $metier->id,
         ]);
 
         // zone 500 + favori 0 + qualité 100 + charge 250 + premium 0 + asap 0 + distance 0
@@ -80,7 +91,8 @@ class SmartDispatchServiceScoringTest extends TestCase
         $zoneId = $context['zone']->id;
         $date = now()->toDateString();
 
-        $employee = $this->eligibleEmployee($zoneId, $date);
+        $metier = Trade::factory()->create();
+        $employee = $this->eligibleEmployee($zoneId, $date, [], $metier->id);
 
         $client = User::factory()->create([
             'role' => User::ROLE_CLIENT,
@@ -99,6 +111,7 @@ class SmartDispatchServiceScoringTest extends TestCase
             'estimated_duration_minutes' => 90,
             'booking_mode' => 'asap',
             'status' => 'en_attente',
+            'trade_id' => $metier->id,
         ]);
 
         // zone 500 + qualité 100 + charge 250 + premium 80 + asap (200+150) + distance 0
@@ -111,7 +124,8 @@ class SmartDispatchServiceScoringTest extends TestCase
         $zoneId = $context['zone']->id;
         $date = now()->addDays(3)->toDateString();
 
-        $employee = $this->eligibleEmployee($zoneId, $date);
+        $metier = Trade::factory()->create();
+        $employee = $this->eligibleEmployee($zoneId, $date, [], $metier->id);
         $client = User::factory()->create(['role' => User::ROLE_CLIENT, 'is_active' => true]);
 
         $booking = Booking::factory()->create([
@@ -124,6 +138,7 @@ class SmartDispatchServiceScoringTest extends TestCase
             'estimated_duration_minutes' => 90,
             'booking_mode' => 'scheduled',
             'status' => 'en_attente',
+            'trade_id' => $metier->id,
         ]);
 
         $best = $this->service()->assignBestEmployee($booking->fresh());
@@ -148,7 +163,8 @@ class SmartDispatchServiceScoringTest extends TestCase
         $zoneId = $context['zone']->id;
         $date = now()->addDays(3)->toDateString();
 
-        $employee = $this->eligibleEmployee($zoneId, $date);
+        $metier = Trade::factory()->create();
+        $employee = $this->eligibleEmployee($zoneId, $date, [], $metier->id);
         $client = User::factory()->create(['role' => User::ROLE_CLIENT, 'is_active' => true]);
 
         $booking = Booking::factory()->create([
@@ -161,6 +177,7 @@ class SmartDispatchServiceScoringTest extends TestCase
             'estimated_duration_minutes' => 90,
             'booking_mode' => 'scheduled',
             'status' => 'en_attente',
+            'trade_id' => $metier->id,
         ]);
 
         $explained = $this->service()->explainScores($booking->fresh());
@@ -194,7 +211,8 @@ class SmartDispatchServiceScoringTest extends TestCase
         $zoneId = $context['zone']->id;
         $date = now()->addDays(3)->toDateString();
 
-        $employee = $this->eligibleEmployee($zoneId, $date);
+        $metier = Trade::factory()->create();
+        $employee = $this->eligibleEmployee($zoneId, $date, [], $metier->id);
         $client = User::factory()->create(['role' => User::ROLE_CLIENT, 'is_active' => true]);
 
         $booking = Booking::factory()->create([
@@ -207,7 +225,13 @@ class SmartDispatchServiceScoringTest extends TestCase
             'estimated_duration_minutes' => 90,
             'booking_mode' => 'scheduled',
             'status' => 'en_attente',
+            'trade_id' => $metier->id,
         ]);
+
+        // LE CLASSEMENT NE RETIENT QUE LES LIBRES : l'employe deja pose sur CE rendez-vous ne
+        // s'y propose plus. On ajoute donc un second prestataire du meme metier, lui vraiment
+        // libre, pour que le resume ait quelque chose de reel a resumer.
+        $libre = $this->eligibleEmployee($zoneId, $date, [], $metier->id);
 
         $summary = $this->service()->explainBestMatch($booking->fresh());
 
@@ -217,5 +241,6 @@ class SmartDispatchServiceScoringTest extends TestCase
         $this->assertSame(1, $summary['candidates_count']);
         $this->assertIsArray($summary['candidates']);
         $this->assertCount(1, $summary['candidates']);
+        $this->assertSame($libre->id, $summary['candidates'][0]['employee_id']);
     }
 }

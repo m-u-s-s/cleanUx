@@ -5,6 +5,7 @@ namespace Tests\Feature\Admin;
 use App\Livewire\Admin\MissionsAdmin;
 use App\Models\Booking;
 use App\Models\ProviderProfile;
+use App\Models\Trade;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
@@ -81,12 +82,17 @@ class LAdminChoisitSonPrestataireTest extends TestCase
     /** @return array{0: Booking, 1: Collection<int, User>} */
     private function rendezVousAvecCandidats(): array
     {
+        // LE MÉTIER EST DÉSORMAIS UNE CONDITION DU CLASSEMENT : un rendez-vous sans métier
+        // ne propose personne, et un prestataire qui ne l’exerce pas n’y figure pas.
+        $metier = Trade::factory()->create();
+
         $rdv = Booking::factory()->create([
             'employe_id' => null,
             'assigned_employee_id' => null,
+            'trade_id' => $metier->id,
         ]);
 
-        $candidats = collect(range(1, 2))->map(function () use ($rdv) {
+        $candidats = collect(range(1, 2))->map(function () use ($rdv, $metier) {
             $user = User::factory()->create([
                 'role' => User::ROLE_EMPLOYE,
                 'is_active' => true,
@@ -98,6 +104,8 @@ class LAdminChoisitSonPrestataireTest extends TestCase
                 'status' => 'active',
                 'verification_status' => 'verified',
             ]);
+
+            $user->trades()->syncWithoutDetaching([$metier->id]);
 
             return $user;
         });
