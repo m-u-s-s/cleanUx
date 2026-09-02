@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\Booking;
 use App\Models\User;
 use App\Services\Booking\SmartDispatchService;
+use App\Services\FaceCheck\FaceCheckGate;
 use App\Services\Missions\MissionFromRendezVousSyncService;
 use App\Support\ActivityLogger;
 use App\Support\Domain\BookingStatus;
@@ -72,6 +73,21 @@ class MissionsAdmin extends Component
 
         if (! $employee) {
             $this->dispatch('toast', 'Aucun employé disponible pour ce rendez-vous.', 'error');
+
+            return;
+        }
+
+        // LES DEUX GARDES DE LA VOIE COURTOISE. `DispatchEngine::createOffer()` refuse
+        // individuellement un prestataire sur son KYC et sur le verdict du controle facial ;
+        // ce bouton ecrivait sans repasser ni l'un ni l'autre.
+        if (! $employee->hasClearedKyc()) {
+            $this->dispatch('toast', "Affectation refusée : l'identité de {$employee->name} n'est pas vérifiée.", 'error');
+
+            return;
+        }
+
+        if (! app(FaceCheckGate::class)->inspectForBooking($employee, $rdv)->allowed()) {
+            $this->dispatch('toast', "Affectation refusée : {$employee->name} doit passer son contrôle facial.", 'error');
 
             return;
         }
