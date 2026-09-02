@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Employe;
 
-use App\Livewire\Admin\AuditLogsCenter;
+use App\Livewire\Admin\ProductEmailsCenter;
 use App\Livewire\Employe\SignalerIncident;
 use App\Models\ProviderProfile;
 use App\Models\User;
@@ -48,12 +48,13 @@ class LIncidentNOuvrePasSurLAdministrationTest extends TestCase
 
     /**
      * TEMOIN — le bandeau n'est pas supprime du produit : il reste sur les pages
-     * d'administration qui l'incluent. Sans ce controle, le premier test resterait vert
+     * d'administration qui l'incluent — le centre d'audit ne l'inclut plus depuis qu'il ouvre
+     * sur son propre titre. Sans ce controle, le premier test resterait vert
      * meme si le partiel avait ete vide de son contenu.
      */
     public function test_temoin_les_pages_d_administration_le_gardent(): void
     {
-        Livewire::actingAs(User::factory()->admin()->create())->test(AuditLogsCenter::class)
+        Livewire::actingAs(User::factory()->admin()->create())->test(ProductEmailsCenter::class)
             ->assertSee('Centre de communication');
     }
 }

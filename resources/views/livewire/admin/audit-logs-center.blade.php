@@ -1,14 +1,5 @@
-<div class="space-y-6" data-phase2u-root="true">
-    @include('livewire.admin.governance.hero')
-
-    @includeIf('livewire.admin.readiness.layout-stack')
-
-<div class="space-y-6" data-phase2t-root="true">
-    @includeIf('livewire.shared.communication.layout-stack')
-
-<div class="space-y-6" data-phase2s-root="true">
-    @includeIf('livewire.admin.pilotage.layout-stack')
-
+{{-- TROIS EMPILEMENTS ET UN HEROS PASSAIENT AVANT LE TITRE : blocs figes, aucune donnee reelle.
+     Les dix liens qu ils portaient sont tous au catalogue des modules, donc joignables ailleurs. --}}
 <div class="space-y-6">
     <x-page-shell
         title="Centre d’audit et logs"
@@ -148,8 +139,4 @@
             <div class="mt-4">{{ $logs->links() }}</div>
         </x-table-shell>
     </div>
-</div>
-
-</div>
-</div>
 </div>
