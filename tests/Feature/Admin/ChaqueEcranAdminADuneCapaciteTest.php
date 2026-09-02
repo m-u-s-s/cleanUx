@@ -45,14 +45,21 @@ class ChaqueEcranAdminADuneCapaciteTest extends TestCase
         );
     }
 
-    /** TÉMOIN DE PORTÉE — on a bien lu des modules. */
+    /**
+     * TÉMOIN DE PORTÉE — on a bien lu des modules.
+     *
+     * Le seuil descend de 80 à 70 : neuf cases ont disparu quand l’onboarding et le catalogue
+     * ont absorbé leurs pages voisines. Ce n’est pas une perte de couverture — leurs écrans
+     * vivent en onglets, et leurs URL en redirections. Le témoin garde ce qu’il gardait :
+     * que la liste ne soit pas vide, pas qu’elle ait une taille précise.
+     */
     public function test_temoin_le_catalogue_admin_nest_pas_vide(): void
     {
         $admin = collect(config('modules.catalogue', []))
             ->filter(fn (array $m) => ($m['context'] ?? null) === 'admin');
 
-        $this->assertGreaterThan(80, $admin->count());
-        $this->assertGreaterThan(80, $admin->filter(fn (array $m) => ($m['gate'] ?? null) !== null)->count());
+        $this->assertGreaterThan(70, $admin->count());
+        $this->assertGreaterThan(70, $admin->filter(fn (array $m) => ($m['gate'] ?? null) !== null)->count());
     }
 
     /** Toute capacité déclarée doit exister : une faute de frappe masquerait l'écran pour tous. */
