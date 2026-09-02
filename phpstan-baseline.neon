@@ -17701,30 +17701,6 @@ parameters:
 			path: app/Services/Marketing/SegmentEngine.php
 
 		-
-			message: '#^Call to function method_exists\(\) with App\\Models\\User and ''providerProfile'' will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: app/Services/Matching/GeoMatchingEnhancer.php
-
-		-
-			message: '#^Dead catch \- Throwable is never thrown in the try block\.$#'
-			identifier: catch.neverThrown
-			count: 1
-			path: app/Services/Matching/GeoMatchingEnhancer.php
-
-		-
-			message: '#^Method App\\Services\\Matching\\GeoMatchingEnhancer\:\:coordsFor\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Matching/GeoMatchingEnhancer.php
-
-		-
-			message: '#^Method App\\Services\\Matching\\GeoMatchingEnhancer\:\:coordsForBooking\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Services/Matching/GeoMatchingEnhancer.php
-
-		-
 			message: '#^Method App\\Services\\Matching\\MatchingScoreBreakdown\:\:__construct\(\) has parameter \$context with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1

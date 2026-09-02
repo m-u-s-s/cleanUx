@@ -264,6 +264,56 @@ class CandidateFinderTest extends TestCase
         $this->assertSame([], $this->ids($this->booking($this->babysitting), 10000, [$prestataire->id]));
     }
 
+    // ─── Type de prestataire ─────────────────────────────────────────────────────────────────
+
+    /**
+     * PORTE DEPUIS `AiDispatchService`, moteur qu'aucun code de production n'appelait.
+     *
+     * Cette regle produit — un client qui demande un independant n'en recoit pas un salarie —
+     * n'etait attestee QUE la : `CandidateFinder:195` l'applique, sans qu'aucun test ne le dise.
+     */
+    #[Test]
+    public function le_client_qui_demande_un_independant_ne_voit_pas_un_salarie(): void
+    {
+        $societe = OrganizationAccount::create([
+            'name' => 'ProServices3', 'legal_name' => 'ProServices3', 'slug' => 'proservices-cf3',
+            'type' => 'provider_company', 'status' => 'active',
+        ]);
+
+        $salarie = $this->provider($this->babysitting, 50.8470, 4.3530, 'online', 0, $societe->id);
+        $independant = $this->provider($this->babysitting, 50.8471, 4.3531);
+
+        $rdv = $this->booking($this->babysitting);
+        $rdv->forceFill(['provider_type_preference' => 'independent'])->save();
+
+        $candidats = $this->ids($rdv->fresh());
+
+        $this->assertContains($independant->id, $candidats);
+        $this->assertNotContains(
+            $salarie->id,
+            $candidats,
+            'Le client a demande un independant : un salarie de societe n’est pas ce qu’il a demande.',
+        );
+    }
+
+    /** TEMOIN — sans preference, les deux concourent. Sinon le refus mesurerait une zone vide. */
+    #[Test]
+    public function temoin_sans_preference_de_type_les_deux_concourent(): void
+    {
+        $societe = OrganizationAccount::create([
+            'name' => 'ProServices4', 'legal_name' => 'ProServices4', 'slug' => 'proservices-cf4',
+            'type' => 'provider_company', 'status' => 'active',
+        ]);
+
+        $salarie = $this->provider($this->babysitting, 50.8470, 4.3530, 'online', 0, $societe->id);
+        $independant = $this->provider($this->babysitting, 50.8471, 4.3531);
+
+        $candidats = $this->ids($this->booking($this->babysitting));
+
+        $this->assertContains($independant->id, $candidats);
+        $this->assertContains($salarie->id, $candidats);
+    }
+
     // ─── Société ─────────────────────────────────────────────────────────────────────────────
 
     #[Test]
