@@ -180,58 +180,16 @@ class AdminOnboardingProvidersListTest extends TestCase
         $this->assertSame(1, $counts['rejected']);
     }
 
-    public function test_approve_onboarding_succeeds_when_all_documents_approved(): void
-    {
-        $provider = $this->makeInProgressProvider('Approvable Provider');
-        $userId = $provider->user_id;
-
-        ProviderOnboardingDocument::factory()->approved()->create(['user_id' => $userId]);
-
-        $this->actingAs($this->createAdmin());
-
-        Livewire::test(AdminOnboardingProvidersList::class)
-            ->call('approveOnboarding', $userId)
-            ->assertHasNoErrors();
-
-        $provider->refresh();
-        $this->assertSame('verified', $provider->verification_status);
-        $this->assertSame('active', $provider->status);
-        $this->assertNotNull($provider->onboarding_completed_at);
-    }
-
-    public function test_approve_onboarding_fails_without_documents(): void
-    {
-        $provider = $this->makeInProgressProvider('No Docs Provider');
-        $userId = $provider->user_id;
-
-        $this->actingAs($this->createAdmin());
-
-        Livewire::test(AdminOnboardingProvidersList::class)
-            ->call('approveOnboarding', $userId)
-            ->assertHasErrors('onboarding');
-
-        $provider->refresh();
-        $this->assertNotSame('verified', $provider->verification_status);
-    }
-
-    public function test_approve_onboarding_fails_with_blocking_documents(): void
-    {
-        $provider = $this->makeInProgressProvider('Blocked Provider');
-        $userId = $provider->user_id;
-
-        ProviderOnboardingDocument::factory()->approved()->create(['user_id' => $userId]);
-        ProviderOnboardingDocument::factory()->create([
-            'user_id' => $userId,
-            'status' => ProviderOnboardingDocument::STATUS_PENDING,
-        ]);
-
-        $this->actingAs($this->createAdmin());
-
-        Livewire::test(AdminOnboardingProvidersList::class)
-            ->call('approveOnboarding', $userId)
-            ->assertHasErrors('onboarding');
-
-        $provider->refresh();
-        $this->assertNotSame('verified', $provider->verification_status);
-    }
+    /*
+     * LES TROIS TESTS D'APPROBATION ONT ETE RETIRES AVEC LA METHODE QU'ILS EXERCAIENT.
+     *
+     * `approveOnboarding` approuvait le meme prestataire que l'espace « Inscriptions », par un
+     * `forceFill` nu : sans trace, sans motif, sans activer la societe. Les deux voies vivaient
+     * cote a cote ; la fusion des pages d'onboarding a garde la rigoureuse.
+     *
+     * Leur intention — un dossier incomplet ne passe pas — n'est pas perdue : les documents
+     * manquants sont des blocages de `ProviderDossierSummary`, et `ProviderApprovalDivergenceTest`
+     * atteste qu'un dossier incomplet ne s'approuve pas SILENCIEUSEMENT. La regle a change de
+     * forme, pas de sens : elle exige desormais un motif ecrit plutot qu'un refus muet.
+     */
 }

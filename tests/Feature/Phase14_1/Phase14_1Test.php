@@ -171,52 +171,13 @@ class Phase14_1Test extends TestCase
         $this->assertSame(1, $counts['verified']);
     }
 
-    public function test_admin_can_approve_onboarding_when_all_ready(): void
-    {
-        Storage::fake('private');
-        $admin = User::factory()->admin()->create();
-
-        $provider = User::factory()->create();
-        $provider->update(['stripe_connect_status' => 'active']);
-
-        $svc = app(ProviderOnboardingService::class);
-        $svc->startOnboarding($provider);
-
-        // Doc identité approved
-        $idDoc = $svc->uploadDocument($provider, 'identity_card',
-            UploadedFile::fake()->create('id.pdf', 50, 'application/pdf'));
-        $svc->reviewDocument($idDoc, $admin, true);
-
-        // Doc insurance approved
-        $insDoc = $svc->uploadDocument($provider, 'insurance',
-            UploadedFile::fake()->create('ins.pdf', 50, 'application/pdf'));
-        $svc->reviewDocument($insDoc, $admin, true);
-
-        Livewire::actingAs($admin)
-            ->test(AdminOnboardingProvidersList::class)
-            ->call('approveOnboarding', $provider->id);
-
-        $profile = ProviderProfile::where('user_id', $provider->id)->first();
-        $this->assertSame('verified', $profile->verification_status);
-        $this->assertSame('active', $profile->status);
-        $this->assertNotNull($profile->onboarding_completed_at);
-    }
-
-    public function test_admin_approve_fails_without_documents(): void
-    {
-        $admin = User::factory()->admin()->create();
-        $provider = User::factory()->create();
-        $provider->update(['stripe_connect_status' => 'active']);
-
-        app(ProviderOnboardingService::class)->startOnboarding($provider);
-
-        Livewire::actingAs($admin)
-            ->test(AdminOnboardingProvidersList::class)
-            ->call('approveOnboarding', $provider->id);
-
-        $profile = ProviderProfile::where('user_id', $provider->id)->first();
-        $this->assertNotEquals('verified', $profile->verification_status);
-    }
+    /*
+     * DEUX TESTS RETIRES AVEC `approveOnboarding`.
+     *
+     * La page du suivi approuvait le meme prestataire que l'espace « Inscriptions », par un
+     * `forceFill` nu. La fusion des pages d'onboarding a garde la voie rigoureuse, qui exige un
+     * motif ecrit sur un dossier incomplet — voir `ProviderApprovalDivergenceTest`.
+     */
 
     // ──────────────────────────────────────────────
     // PROVIDER — Wizard
