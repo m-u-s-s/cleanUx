@@ -1,11 +1,5 @@
-<div class="space-y-6" data-phase2u-root="true">
-    @include('livewire.admin.governance.command-hints')
-
-    @includeIf('livewire.admin.readiness.layout-stack')
-
-<div class="space-y-6" data-phase2s-root="true">
-    @includeIf('livewire.admin.pilotage.layout-stack')
-
+{{-- DEUX EMPILEMENTS ET UN MEMO DE COMMANDES PASSAIENT AVANT LE TITRE : aucun ne portait de donnee.
+     Leurs liens figurent au catalogue des modules ; le memo, lui, n avait plus d appelant. --}}
 <div class="space-y-6">
     <x-page-shell
         title="Centre de contrôle des modules"
@@ -235,7 +229,4 @@
             @endif
         </x-app-card>
     </div>
-</div>
-
-</div>
 </div>
