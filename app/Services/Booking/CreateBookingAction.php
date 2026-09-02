@@ -171,6 +171,10 @@ class CreateBookingAction
             'service_zone_id' => Arr::get($data, 'service_zone_id'),
             'postal_code_id' => Arr::get($data, 'postal_code_id'),
             'service_catalog_id' => $catalog->id,
+            // LE SERVICE DIT CE QUI EST VENDU, LE METIER CE QUI EST DEPECHE. Ce chemin ne posait
+            // que le premier : le dispatch retrouvait le second par un repli sur la relation, et
+            // toute requete directe sur `bookings.trade_id` ignorait ces reservations.
+            'trade_id' => $catalog->trade_id,
             'preferred_provider_user_id' => Arr::get($data, 'preferred_provider_user_id'),
             'assigned_provider_organization_id' => Arr::get($data, 'assigned_provider_organization_id'),
             // SP4 Task 6 : lien contrat-cadre posé par le hook contrat.

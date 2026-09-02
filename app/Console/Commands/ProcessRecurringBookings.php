@@ -6,6 +6,7 @@ use App\Jobs\Missions\GeocodeMissionDestination;
 use App\Models\Booking;
 use App\Models\Mission;
 use App\Models\RecurringBookingSeries;
+use App\Models\ServiceCatalog;
 use App\Services\Contracts\ContractSlaService;
 use App\Services\Dispatch\MissionDispatchService;
 use Carbon\Carbon;
@@ -120,6 +121,8 @@ class ProcessRecurringBookings extends Command
             'customer_organization_id' => $series->customer_organization_id,
             'organization_site_id' => $series->organization_site_id,
             'service_catalog_id' => $series->service_catalog_id,
+            // Le metier suit le service, comme partout ailleurs.
+            'trade_id' => optional(ServiceCatalog::find($series->service_catalog_id))->trade_id,
             'service_zone_id' => $series->service_zone_id,
             'scheduled_date' => $scheduledDate,
             'scheduled_time' => $scheduledTime,
