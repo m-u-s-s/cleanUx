@@ -24,8 +24,8 @@ class AdminParityInventoryTest extends TestCase
             .'ce qu’elle ne peut pas distinguer d’une écriture.',
 
         'missions' => 'Sa page web agit sur des RÉSERVATIONS, pas sur des missions — la table '
-            .'`missions` est vide et le dispatch vit dans le module ia-dispatch, où il est porté. '
-            .'Y ajouter une action porterait sur un modèle que personne n’alimente.',
+            .'`missions` est vide et le dispatch vit dans le centre de répartition, où il est '
+            .'porté. Y ajouter une action porterait sur un modèle que personne n’alimente.',
 
         'face-check' => 'Le geste central de cet écran est de COMPARER DEUX VISAGES À L’ŒIL : lever '
             .'un blocage sans avoir regardé les deux images n’est pas une décision, c’est un clic. '

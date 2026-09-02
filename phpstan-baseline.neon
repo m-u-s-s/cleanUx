@@ -1471,24 +1471,6 @@ parameters:
 			path: app/Livewire/Admin/AgendaHebdomadaire.php
 
 		-
-			message: '#^Method App\\Livewire\\Admin\\AiDispatchCenter\:\:render\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: app/Livewire/Admin/AiDispatchCenter.php
-
-		-
-			message: '#^Property App\\Livewire\\Admin\\AiDispatchCenter\:\:\$paginationTheme has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: app/Livewire/Admin/AiDispatchCenter.php
-
-		-
-			message: '#^Property App\\Livewire\\Admin\\AiDispatchCenter\:\:\$ranking type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Livewire/Admin/AiDispatchCenter.php
-
-		-
 			message: '#^Method App\\Livewire\\Admin\\Analytics\\AnalyticsCenter\:\:buildFunnel\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -3179,18 +3161,6 @@ parameters:
 			identifier: missingType.property
 			count: 1
 			path: app/Livewire/Admin/Marketing/MarketingCenter.php
-
-		-
-			message: '#^Property App\\Livewire\\Admin\\Matching\\MatchingInsightsCenter\:\:\$paginationTheme has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: app/Livewire/Admin/Matching/MatchingInsightsCenter.php
-
-		-
-			message: '#^Property App\\Livewire\\Admin\\Matching\\MatchingInsightsCenter\:\:\$simulationResult type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Livewire/Admin/Matching/MatchingInsightsCenter.php
 
 		-
 			message: '#^Method App\\Livewire\\Admin\\MissionHistoryPanel\:\:render\(\) has no return type specified\.$#'
