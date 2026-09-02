@@ -5,7 +5,7 @@
             <div>
                 <p class="text-sm font-bold uppercase text-indigo-600">Onboarding v2</p>
                 <h1 class="text-2xl font-black text-slate-900">Centre Onboarding</h1>
-                <p class="text-sm text-slate-500">Journeys + progress + step validators cross-modules</p>
+                <p class="text-sm text-slate-500">Inscriptions, dossiers, documents, KYC et parcours — tout l’onboarding prestataire, sans changer de page.</p>
             </div>
             <a href="{{ route('admin.dashboard') }}" class="rounded-xl border px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">← Dashboard</a>
         </div>
@@ -29,6 +29,29 @@
             </div>
         </div>
 
+        {{-- ─── Les cinq espaces ─────────────────────────────────────────────────────── --}}
+        <div class="flex flex-nowrap gap-2 overflow-x-auto border-b border-slate-200">
+            @foreach(['inscriptions' => 'Inscriptions', 'suivi' => 'Suivi des dossiers', 'documents' => 'Documents', 'kyc' => 'KYC', 'parcours' => 'Parcours'] as $cle => $libelle)
+                <button type="button" wire:click="$set('espace', '{{ $cle }}')"
+                        @class([
+                            'px-4 py-2 min-h-[44px] inline-flex shrink-0 items-center whitespace-nowrap text-sm font-semibold',
+                            'border-b-2 border-indigo-600 text-indigo-700' => $espace === $cle,
+                            'text-slate-500 hover:text-slate-900' => $espace !== $cle,
+                        ])>{{ $libelle }}</button>
+            @endforeach
+        </div>
+
+        @if ($espace === 'inscriptions')
+            <livewire:admin.providers.provider-registrations-center />
+        @elseif ($espace === 'suivi')
+            <livewire:admin.onboarding.admin-onboarding-providers-list />
+        @elseif ($espace === 'documents')
+            <livewire:admin.onboarding.admin-onboarding-documents-center />
+        @elseif ($espace === 'kyc')
+            <livewire:admin.kyc.kyc-verifications-center />
+        @endif
+
+        @if ($espace === 'parcours')
         <div class="flex flex-nowrap gap-2 overflow-x-auto border-b border-slate-200">
             @foreach(['progress' => 'Progress', 'journeys' => 'Journeys'] as $key => $label)
                 <button wire:click="$set('tab', '{{ $key }}')"
@@ -125,5 +148,7 @@
             @endif
             <div class="p-3">{{ $items->links() }}</div>
         </div>
-    </div>
+            @endif
+
+</div>
 </div>

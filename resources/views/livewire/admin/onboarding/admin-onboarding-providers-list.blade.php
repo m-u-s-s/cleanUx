@@ -1,4 +1,4 @@
-<div class="p-4 md:p-6 space-y-6">
+<div class="space-y-6">
 
     {{-- Header --}}
     <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
@@ -10,10 +10,10 @@
             </p>
         </div>
 
-        <a href="{{ route('admin.onboarding.documents') }}"
-           class="rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-700">
+        <button type="button" wire:click="$parent.$set('espace', 'documents')"
+                class="rounded-2xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-sky-700">
             📄 Documents à valider
-        </a>
+        </button>
     </div>
 
     {{-- Flash messages --}}
@@ -161,11 +161,13 @@
                             @endif
                         </td>
                         <td class="px-4 py-3 text-right">
-                            @if ($profile->verification_status !== 'verified' && $profile->onboarding_step >= 5)
-                                <button wire:click="approveOnboarding({{ $profile->user_id }})"
-                                        wire:confirm.doux="Approuver définitivement l'onboarding de {{ $profile->user?->name }} ? Le prestataire pourra recevoir des missions immédiatement."
-                                        class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700">
-                                    Approuver
+                            @if ($profile->verification_status !== 'verified')
+                                {{-- UNE SEULE APPROBATION DANS LA PAGE : celle de l’espace
+                                     « Inscriptions », qui trace le motif et n’active la société
+                                     que si le dossier le permet. --}}
+                                <button type="button" wire:click="$parent.$set('espace', 'inscriptions')"
+                                        class="text-xs font-semibold text-indigo-600 hover:underline">
+                                    Décider dans « Inscriptions »
                                 </button>
                             @endif
                         </td>

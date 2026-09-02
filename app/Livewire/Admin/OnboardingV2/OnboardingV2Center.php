@@ -6,6 +6,7 @@ use App\Models\OnboardingJourney;
 use App\Models\OnboardingProgress;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -16,7 +17,15 @@ class OnboardingV2Center extends Component
 
     protected $paginationTheme = 'tailwind';
 
-    public string $tab = 'progress';  // progress | journeys
+    /**
+     * L'ESPACE COURANT — les cinq pages d'onboarding tiennent desormais dans celle-ci.
+     * inscriptions | suivi | documents | kyc | parcours
+     */
+    #[Url(as: 'espace')]
+    public string $espace = 'inscriptions';
+
+    /** L'onglet INTERNE de l'espace « parcours ». progress | journeys */
+    public string $tab = 'progress';
 
     public string $filterStatus = '';
 
@@ -32,6 +41,15 @@ class OnboardingV2Center extends Component
             'abandoned' => OnboardingProgress::query()->where('status', OnboardingProgress::STATUS_ABANDONED)->count(),
             'active_journeys' => OnboardingJourney::query()->where('is_active', true)->count(),
         ];
+
+        // Les quatre autres espaces sont des composants imbriques : ils portent leur propre
+        // requete. On ne pagine ici que ce que la page hote rend elle-meme.
+        if ($this->espace !== 'parcours') {
+            return view('livewire.admin.onboarding-v2.onboarding-v2-center', [
+                'kpis' => $kpis,
+                'items' => null,
+            ]);
+        }
 
         if ($this->tab === 'progress') {
             $items = OnboardingProgress::query()

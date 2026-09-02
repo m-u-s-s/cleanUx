@@ -1,4 +1,4 @@
-<div class="p-4 md:p-6 space-y-6">
+<div class="space-y-6">
 
     {{-- Header --}}
     <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">

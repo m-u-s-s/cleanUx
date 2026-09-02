@@ -43,7 +43,6 @@ use App\Livewire\Admin\GestionZones;
 use App\Livewire\Admin\I18n\TranslationsCenter;
 use App\Livewire\Admin\Insurance\InsuranceCenter;
 use App\Livewire\Admin\KybV2\KybCenter;
-use App\Livewire\Admin\Kyc\KycVerificationsCenter;
 use App\Livewire\Admin\Loyalty\LoyaltyCenter;
 use App\Livewire\Admin\Loyalty\LoyaltyRewardsCenter;
 use App\Livewire\Admin\Marketing\MarketingCenter;
@@ -51,8 +50,6 @@ use App\Livewire\Admin\MarketplaceHealthCenter;
 use App\Livewire\Admin\MissionsAdmin;
 use App\Livewire\Admin\NotificationPreferences\NotificationPreferencesCenter;
 use App\Livewire\Admin\Nps\NpsCenter;
-use App\Livewire\Admin\Onboarding\AdminOnboardingDocumentsCenter;
-use App\Livewire\Admin\Onboarding\AdminOnboardingProvidersList;
 use App\Livewire\Admin\OnboardingV2\OnboardingV2Center;
 use App\Livewire\Admin\OrderEngine\CatalogCenter;
 use App\Livewire\Admin\OrderEngine\CountryCenter;
@@ -66,7 +63,6 @@ use App\Livewire\Admin\PricingV2\PricingCenter;
 use App\Livewire\Admin\Promotions\PromoCampaignsCenter;
 use App\Livewire\Admin\Promotions\PromoCodesCenter;
 use App\Livewire\Admin\Promotions\ReferralsCenter;
-use App\Livewire\Admin\Providers\ProviderRegistrationsCenter;
 use App\Livewire\Admin\Push\PushCenter;
 use App\Livewire\Admin\Quality\QualityCenter;
 use App\Livewire\Admin\Ratings\RatingModerationCenter;
@@ -265,12 +261,6 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
         if (class_exists(DisputesCenter::class)) {
             Route::get('/disputes', DisputesCenter::class)
                 ->name('disputes.center');
-        }
-
-        // KYC v2 — Vérifications d'identité (Onfido / Veriff / Mock)
-        if (class_exists(KycVerificationsCenter::class)) {
-            Route::get('/kyc', KycVerificationsCenter::class)
-                ->name('kyc.center');
         }
 
         // GDPR v2 — Compliance + audit log + retention
@@ -650,20 +640,22 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
 
         Route::get('/trades/{trade}/pricing', TradeZonePricingManager::class)->name('trades.pricing');
 
-        // Approbation des inscriptions prestataires en libre-service (app mobile).
-        // Distinct de l'onboarding ci-dessous, qui valide le DOSSIER sur pièces : ici on ouvre
-        // l'accès à un compte tout juste créé, que le middleware provider.approved bloque encore.
-        Route::get('/inscriptions-prestataires', ProviderRegistrationsCenter::class)
-            ->name('providers.registrations');
-
-        // Phase 14.1 — Onboarding admin
-        Route::get('/onboarding-providers', AdminOnboardingProvidersList::class)
-            ->name('onboarding.providers');
-
-        Route::get('/onboarding-documents', AdminOnboardingDocumentsCenter::class)
-            ->name('onboarding.documents');
-
         // Téléchargement de fichier privé via URL signée temporaire
+        /*
+         * LES QUATRE PAGES D'ONBOARDING TIENNENT DANS UNE SEULE.
+         *
+         * Leurs URL survivent en redirection : un signet, un courriel ou un module de la
+         * console mobile qui les vise atterrit sur le bon onglet, pas sur une 404.
+         */
+        Route::redirect('/inscriptions-prestataires', '/admin/onboarding-v2?espace=inscriptions')
+            ->name('providers.registrations');
+        Route::redirect('/onboarding-providers', '/admin/onboarding-v2?espace=suivi')
+            ->name('onboarding.providers');
+        Route::redirect('/onboarding-documents', '/admin/onboarding-v2?espace=documents')
+            ->name('onboarding.documents');
+        Route::redirect('/kyc', '/admin/onboarding-v2?espace=kyc')
+            ->name('kyc.center');
+
         Route::get('/onboarding-documents/{document}/file', [OnboardingDocumentController::class, 'show'])
             ->middleware('signed')
             ->name('onboarding.document.file');

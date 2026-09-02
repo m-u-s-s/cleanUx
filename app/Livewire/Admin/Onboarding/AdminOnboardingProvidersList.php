@@ -72,43 +72,6 @@ class AdminOnboardingProvidersList extends Component
         return $query->paginate(15);
     }
 
-    public function approveOnboarding(int $providerId): void
-    {
-        $profile = ProviderProfile::query()
-            ->where('user_id', $providerId)
-            ->first();
-
-        if (! $profile) {
-            $profile = ProviderProfile::query()->findOrFail($providerId);
-        }
-
-        $documentsQuery = ProviderOnboardingDocument::query()
-            ->where('user_id', $providerId);
-
-        $totalDocuments = $documentsQuery->count();
-
-        $hasBlockingDocuments = ProviderOnboardingDocument::query()
-            ->where('user_id', $providerId)
-            ->whereNotIn('status', ['approved', 'valid', 'validated'])
-            ->exists();
-
-        if ($totalDocuments === 0 || $hasBlockingDocuments) {
-            $this->addError('onboarding', 'Impossible d’approuver ce prestataire : les documents requis ne sont pas encore validés.');
-
-            return;
-        }
-
-        // Garde ici ton contrôle existant sur les documents si tu en as un.
-
-        $profile->forceFill([
-            'verification_status' => 'verified',
-            'status' => 'active',
-            'onboarding_completed_at' => now(),
-        ])->save();
-
-        session()->flash('success', 'Prestataire validé avec succès.');
-    }
-
     /** Compte les documents par statut pour un user (helper UI). */
     public function documentsCountFor(int $userId): array
     {

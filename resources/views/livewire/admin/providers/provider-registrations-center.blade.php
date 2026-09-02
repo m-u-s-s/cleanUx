@@ -2,7 +2,7 @@
     Approbation des inscriptions prestataires en libre-service.
     Le composant ne liste que les profils portant self_registered_at (voir son docblock).
 --}}
-<div class="p-6 space-y-6">
+<div class="space-y-6">
 
     <div class="flex flex-wrap items-start justify-between gap-4">
         <div>
