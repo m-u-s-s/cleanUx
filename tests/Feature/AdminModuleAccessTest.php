@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\Admin\CatalogueServices;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class AdminModuleAccessTest extends TestCase
@@ -18,8 +20,10 @@ class AdminModuleAccessTest extends TestCase
             'status' => 'active',
         ]);
 
-        $this->actingAs($admin)
-            ->get(route('admin.services'))
+        // La route redirige vers l'onglet du catalogue ; la capacite se mesure la ou elle vit
+        // desormais — dans le composant, que `/livewire/update` atteint sans middleware de route.
+        Livewire::actingAs($admin)
+            ->test(CatalogueServices::class)
             ->assertOk();
     }
 
@@ -31,8 +35,8 @@ class AdminModuleAccessTest extends TestCase
             'status' => 'active',
         ]);
 
-        $this->actingAs($admin)
-            ->get(route('admin.services'))
+        Livewire::actingAs($admin)
+            ->test(CatalogueServices::class)
             ->assertForbidden();
     }
 
@@ -45,7 +49,7 @@ class AdminModuleAccessTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->get(route('admin.services'))
+            ->get(route('admin.order-engine.catalog'))
             ->assertForbidden();
     }
 }

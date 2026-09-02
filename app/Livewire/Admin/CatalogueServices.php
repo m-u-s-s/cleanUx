@@ -12,6 +12,7 @@ use App\Support\Livewire\Concerns\Admin\ManagesServiceOptions;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -21,6 +22,16 @@ class CatalogueServices extends Component
     use EnforcesAdminAccess;
     use ManagesServiceOptions;
     use WithPagination;
+
+    /**
+     * LA CAPACITE QUE PORTAIT SA ROUTE, AVANT LA FUSION DANS LE CATALOGUE.
+     * Elle vit ici et non sur la route : `/livewire/update` n'en rejoue aucune. Et c'est
+     * `boot()` et non `bootQuelqueChose()` : Livewire n'appelle que `boot()` et `boot{Trait}`.
+     */
+    public function boot(): void
+    {
+        abort_unless(Gate::allows('manage-services'), 403);
+    }
 
     public $search = '';
 

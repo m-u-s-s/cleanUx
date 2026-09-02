@@ -20,7 +20,7 @@ class AdvancedCentersRouteIntegrationTest extends TestCase
 
         $this->get(route('admin.teams.partners'))->assertOk();
         $this->get(route('admin.b2b.operations'))->assertOk();
-        $this->get(route('admin.international'))->assertOk();
+        $this->get(route('admin.international'))->assertRedirect('/admin/catalogue?onglet=marche');
         $this->get(route('admin.orchestration'))->assertOk();
         $this->get(route('admin.automation'))->assertOk();
     }

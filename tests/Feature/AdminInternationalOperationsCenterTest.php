@@ -44,9 +44,7 @@ class AdminInternationalOperationsCenterTest extends TestCase
 
         $this->actingAs($admin)
             ->get(route('admin.international'))
-            ->assertOk()
-            ->assertSee('International exploitable')
-            ->assertSee('Readiness');
+            ->assertRedirect('/admin/catalogue?onglet=marche');
     }
 
     public function test_admin_can_update_country_operational_billing_and_service_rules(): void

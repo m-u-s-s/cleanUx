@@ -32,11 +32,14 @@ class AdminTradesCenterTest extends TestCase
 
         $this->actingAs($admin);
 
+        // CES QUATRE NOMS ETAIENT CEUX D'UNE PHRASE D'EN-TETE — « Categories racines de la
+        // marketplace : Nettoyage, Batiment, Peinture, Levage… ». Le test passait au vert sans
+        // jamais regarder une ligne du tableau. Il vise desormais un metier reellement seme.
+        $metier = Trade::query()->orderBy('id')->first();
+        $this->assertNotNull($metier, 'Temoin : le seeder n a produit aucun metier.');
+
         Livewire::test(AdminTradesComponent::class)
-            ->assertSee('Nettoyage')
-            ->assertSee('Bâtiment')
-            ->assertSee('Peinture')
-            ->assertSee('Levage');
+            ->assertSee($metier->name);
     }
 
     public function test_admin_can_create_a_new_trade(): void

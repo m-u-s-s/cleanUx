@@ -11,11 +11,22 @@ use App\Models\ServiceCatalog;
 use App\Support\ActivityLogger;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
 class InternationalOperationsCenter extends Component
 {
     use EnforcesAdminAccess;
+
+    /**
+     * LA CAPACITE QUE PORTAIT SA ROUTE, AVANT LA FUSION DANS LE CATALOGUE.
+     * Elle vit ici et non sur la route : `/livewire/update` n'en rejoue aucune. Et c'est
+     * `boot()` et non `bootQuelqueChose()` : Livewire n'appelle que `boot()` et `boot{Trait}`.
+     */
+    public function boot(): void
+    {
+        abort_unless(Gate::allows('manage-international'), 403);
+    }
 
     public string $search = '';
 

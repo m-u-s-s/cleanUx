@@ -26,7 +26,11 @@ class OrphanPageRoutingTest extends TestCase
 
     public function test_admin_zones_page_renders(): void
     {
+        // La page a fusionne dans le catalogue : son URL y conduit, et le composant y vit.
         $this->actingAs($this->admin())->get(route('admin.zones'))
+            ->assertRedirect('/admin/catalogue?onglet=zones');
+
+        $this->actingAs($this->admin())->get('/admin/catalogue?onglet=zones')
             ->assertOk()
             ->assertSeeLivewire(GestionZones::class);
     }
