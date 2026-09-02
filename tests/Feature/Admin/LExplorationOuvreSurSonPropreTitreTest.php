@@ -53,10 +53,10 @@ class LExplorationOuvreSurSonPropreTitreTest extends TestCase
      * accent perdu ou une esperluette echappee : ils mesureraient leur propre faute de frappe.
      */
     #[DataProvider('blocsRetires')]
-    public function test_temoin_ce_bloc_reste_visible_sur_le_tableau_de_bord(string $phrase): void
+    public function test_temoin_ce_bloc_reste_visible_sur_le_centre_emails(string $phrase): void
     {
         $this->actingAs($this->admin())
-            ->get('/admin/business-dashboard')
+            ->get('/admin/emails')
             ->assertOk()
             ->assertSee($phrase, false);
     }

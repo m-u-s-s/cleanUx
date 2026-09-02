@@ -66,13 +66,17 @@ class LAuditOuvreSurSonPropreTitreTest extends TestCase
         $this->assertStringContainsString($phrase, view($gabarit)->render());
     }
 
-    /** TEMOIN — deux de ces blocs restent VISIBLES en HTTP la ou ils sont encore inclus. */
-    public function test_temoin_les_blocs_restent_visibles_sur_le_tableau_de_bord(): void
+    /** TEMOIN — deux de ces blocs restent VISIBLES en HTTP, chacun la ou il est encore inclus. */
+    public function test_temoin_les_blocs_restent_visibles_ailleurs(): void
     {
         $this->actingAs($this->admin())
-            ->get('/admin/business-dashboard')
+            ->get('/admin/platform-readiness')
             ->assertOk()
-            ->assertSee('Centre de préparation production', false)
+            ->assertSee('Centre de préparation production', false);
+
+        $this->actingAs($this->admin())
+            ->get('/admin/emails')
+            ->assertOk()
             ->assertSee('Pilotage opérationnel & qualité plateforme', false);
     }
 

@@ -2,14 +2,9 @@
     @vite(['resources/js/apexcharts.js'])
 @endpush
 
-<div class="space-y-6" data-phase2u-root="true">
-    @include('livewire.admin.governance.security-checks')
-
-    @includeIf('livewire.admin.readiness.layout-stack')
-
-<div class="space-y-6" data-phase2s-root="true">
-    @includeIf('livewire.admin.pilotage.layout-stack')
-
+{{-- DEUX EMPILEMENTS ET UN MEMO DE SECURITE PASSAIENT AVANT LE TITRE : trois cartes de prose,
+     sans donnee ni lien. Le memo n avait plus d appelant apres le retrait. --}}
+<div class="space-y-6">
 <x-page-shell
     title="📊 Business Dashboard"
     subtitle="Vue globale de la croissance, du chiffre d’affaires, des clients et des opérations.">
@@ -151,5 +146,4 @@
         </div>
     </div>
 </x-page-shell>
-</div>
 </div>
