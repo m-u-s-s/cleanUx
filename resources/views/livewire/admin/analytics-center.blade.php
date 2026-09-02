@@ -1,10 +1,5 @@
-<div class="space-y-6" data-phase2s-root="true">
-    {{-- BANDEAU ET CHECKLIST NE S OUVRENT PLUS ICI : deux blocs figes dans le gabarit, sans donnee.
-         Les raccourcis portent de vrais liens gardes par permission, eux restent. --}}
-    <div class="mb-6">
-        @includeIf('livewire.admin.pilotage.quick-actions')
-    </div>
-
+{{-- BANDEAU, CHECKLIST ET RACCOURCIS NE S OUVRENT PLUS ICI : la page part sur son propre titre.
+     Les quatre liens des raccourcis figurent au catalogue des modules, donc joignables ailleurs. --}}
 <div class="space-y-6">
     <x-page-shell
         title="Centre analytics"
@@ -223,6 +218,4 @@
             <div class="mt-4">{{ $rows->links() }}</div>
         </x-table-shell>
     </div>
-</div>
-
 </div>
