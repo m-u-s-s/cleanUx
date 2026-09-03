@@ -113,8 +113,10 @@ return [
          */
         ['key' => 'client:location.catalogue', 'label' => 'Location de voitures', 'icon' => '🚙', 'route' => 'location.catalogue', 'context' => 'client', 'category' => 'finance', 'primary' => false],
         ['key' => 'client:peer.catalogue', 'label' => 'Louer entre membres', 'icon' => '🔑', 'route' => 'peer.catalogue', 'context' => 'client', 'category' => 'prestataires', 'primary' => false],
+        ['key' => 'client:peer.sejours', 'label' => 'Louer un logement', 'icon' => '🏠', 'route' => 'peer.sejours', 'context' => 'client', 'category' => 'prestataires', 'primary' => false],
         ['key' => 'client:peer.my-rentals', 'label' => 'Mes locations de véhicule', 'icon' => '🚗', 'route' => 'peer.my-rentals', 'context' => 'client', 'category' => 'prestataires', 'primary' => false],
         ['key' => 'client:peer.owner.vehicles', 'label' => 'Mes véhicules en location', 'icon' => '🅿️', 'route' => 'peer.owner.vehicles', 'context' => 'client', 'category' => 'croissance', 'primary' => false],
+        ['key' => 'client:peer.owner.stays', 'label' => 'Mes logements en location', 'icon' => '🏠', 'route' => 'peer.owner.stays', 'context' => 'client', 'category' => 'croissance', 'primary' => false],
         ['key' => 'client:client.wallet', 'label' => 'Portefeuille', 'icon' => '👛', 'route' => 'client.wallet', 'context' => 'client', 'category' => 'finance', 'primary' => false],
         /*
          * LA PORTE VERS L'ESPACE SOCIÉTÉ, ET SA CONDITION.
@@ -161,8 +163,10 @@ return [
          * peuvent faire, et qu'aucun menu ne citait.
          */
         ['key' => 'employe:peer.catalogue', 'label' => 'Louer entre membres', 'icon' => '🔑', 'route' => 'peer.catalogue', 'context' => 'employe', 'category' => 'prestataires', 'primary' => false],
+        ['key' => 'employe:peer.sejours', 'label' => 'Louer un logement', 'icon' => '🏠', 'route' => 'peer.sejours', 'context' => 'employe', 'category' => 'prestataires', 'primary' => false],
         ['key' => 'employe:peer.my-rentals', 'label' => 'Mes locations de véhicule', 'icon' => '🚗', 'route' => 'peer.my-rentals', 'context' => 'employe', 'category' => 'prestataires', 'primary' => false],
         ['key' => 'employe:peer.owner.vehicles', 'label' => 'Mes véhicules en location', 'icon' => '🅿️', 'route' => 'peer.owner.vehicles', 'context' => 'employe', 'category' => 'croissance', 'primary' => false],
+        ['key' => 'employe:peer.owner.stays', 'label' => 'Mes logements en location', 'icon' => '🏠', 'route' => 'peer.owner.stays', 'context' => 'employe', 'category' => 'croissance', 'primary' => false],
         ['key' => 'employe:provider.onboarding', 'label' => 'Mon dossier', 'icon' => '🚀', 'route' => 'provider.onboarding', 'context' => 'employe', 'category' => 'conformite', 'primary' => false],
         /*
          * VÉRIFICATION FACIALE — visible SEULEMENT quand elle concerne la personne qui regarde.
@@ -452,6 +456,8 @@ return [
      * puisse pas y glisser un vrai module en douce.
      */
     'non_modules' => [
+        'peer.owner.stay' => 'Éditeur d’une annonce : on y entre depuis « Mes logements », jamais depuis un menu',
+        'peer.sejour' => 'Page publique d’une annonce : on y entre depuis le catalogue, jamais depuis un menu',
         'admin.kyc.center' => 'Fusionnée dans le centre onboarding ; l’URL survit en redirection',
         'admin.onboarding.documents' => 'Fusionnée dans le centre onboarding ; l’URL survit en redirection',
         'admin.onboarding.providers' => 'Fusionnée dans le centre onboarding ; l’URL survit en redirection',
