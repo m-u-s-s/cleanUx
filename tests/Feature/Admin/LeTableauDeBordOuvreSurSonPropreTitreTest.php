@@ -25,19 +25,25 @@ class LeTableauDeBordOuvreSurSonPropreTitreTest extends TestCase
      * Chaque phrase voyage avec la page qui la porte ENCORE, ou `null` si le bloc a disparu.
      * L'esperluette n'est pas echappee dans les gabarits, d'ou le `false` des assertions.
      *
-     * @return array<string, array{0: string, 1: ?string}>
+     * Chaque ligne porte sa phrase, la page qui la montre ENCORE (ou `null` si le bloc a quitte
+     * le produit), et le gabarit dont on verifie alors la disparition.
+     *
+     * @return array<string, array{0: string, 1: ?string, 2: string}>
      */
     public static function blocsRetires(): array
     {
         return [
-            'memo de securite' => ['Contrôler les exports, les restrictions par zone', null],
-            'preparation production' => ['Centre de préparation production', '/admin/platform-readiness'],
-            'pilotage' => ['Pilotage opérationnel & qualité plateforme', '/admin/emails'],
+            'memo de securite' => ['Contrôler les exports, les restrictions par zone', null,
+                'livewire.admin.governance.security-checks'],
+            'preparation production' => ['Centre de préparation production', '/admin/platform-readiness',
+                'livewire.admin.readiness.hero'],
+            'pilotage' => ['Pilotage opérationnel & qualité plateforme', null,
+                'livewire.admin.pilotage.phase2s-banner'],
         ];
     }
 
     #[DataProvider('blocsRetires')]
-    public function test_la_page_n_ouvre_plus_sur_ce_bloc(string $phrase, ?string $temoinUrl): void
+    public function test_la_page_n_ouvre_plus_sur_ce_bloc(string $phrase, ?string $temoinUrl, string $gabarit): void
     {
         $this->actingAs($this->admin())
             ->get('/admin/business-dashboard')
@@ -46,17 +52,18 @@ class LeTableauDeBordOuvreSurSonPropreTitreTest extends TestCase
     }
 
     /**
-     * TEMOIN — chaque bloc survivant reste VISIBLE la ou il est encore inclus.
+     * TEMOIN — chaque bloc est verifie LA OU IL EST, pas ailleurs.
      *
-     * Sans lui, les refus ci-dessus passeraient au vert sur une phrase mal orthographiee ou un
-     * accent perdu : ils mesureraient leur propre faute de frappe.
+     * Un bloc encore inclus doit rester VISIBLE sur sa page ; un bloc retire du produit doit avoir
+     * disparu du disque. Sans cela les refus ci-dessus passeraient au vert sur une phrase mal
+     * orthographiee ou un accent perdu : ils mesureraient leur propre faute de frappe.
      */
     #[DataProvider('blocsRetires')]
-    public function test_temoin_ce_bloc_reste_visible_la_ou_il_est_inclus(string $phrase, ?string $temoinUrl): void
+    public function test_temoin_ce_bloc_est_verifie_la_ou_il_est(string $phrase, ?string $temoinUrl, string $gabarit): void
     {
         if ($temoinUrl === null) {
-            $this->assertFalse(view()->exists('livewire.admin.governance.security-checks'),
-                'Le memo de securite existe encore alors que plus aucune vue ne l’inclut.');
+            $this->assertFalse(view()->exists($gabarit),
+                "Le gabarit {$gabarit} existe encore alors que plus aucune vue ne l’inclut.");
 
             return;
         }

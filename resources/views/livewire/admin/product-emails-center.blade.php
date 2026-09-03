@@ -1,8 +1,7 @@
+{{-- L EMPILEMENT DE PILOTAGE NE S OUVRE PLUS ICI : bandeau chiffre en dur, checklist sans etat
+     et raccourcis dont les quatre liens figurent tous au catalogue des modules. --}}
 <div class="space-y-6" data-phase2t-root="true">
     @includeIf('livewire.shared.communication.layout-stack')
-
-<div class="space-y-6" data-phase2s-root="true">
-    @includeIf('livewire.admin.pilotage.layout-stack')
 
 <div class="space-y-6">
     <div class="bg-white rounded-xl shadow border p-4 space-y-4">
@@ -92,5 +91,4 @@
     </div>
 </div>
 
-</div>
 </div>

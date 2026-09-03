@@ -26,19 +26,25 @@ class LExplorationOuvreSurSonPropreTitreTest extends TestCase
      * L'esperluette du bandeau n'est PAS echappee dans le gabarit, d'ou le `false` des assertions :
      * `assertSee` echappe par defaut et chercherait `&amp;`.
      *
-     * @return array<string, array{0: string}>
+     * Chaque ligne porte sa phrase et le gabarit qui la portait. Les trois ont quitte le produit
+     * le 2026-09-03, avec leur derniere page porteuse.
+     *
+     * @return array<string, array{0: string, 1: string}>
      */
     public static function blocsRetires(): array
     {
         return [
-            'bandeau de pilotage' => ['Pilotage opérationnel & qualité plateforme'],
-            'checklist go-live' => ['Checklist go-live'],
-            'cartes de raccourcis' => ['Suivre les indicateurs de performance.'],
+            'bandeau de pilotage' => ['Pilotage opérationnel & qualité plateforme',
+                'livewire.admin.pilotage.phase2s-banner'],
+            'checklist go-live' => ['Checklist go-live',
+                'livewire.admin.pilotage.go-live-checklist'],
+            'cartes de raccourcis' => ['Suivre les indicateurs de performance.',
+                'livewire.admin.pilotage.quick-actions'],
         ];
     }
 
     #[DataProvider('blocsRetires')]
-    public function test_la_page_n_ouvre_plus_sur_ce_bloc(string $phrase): void
+    public function test_la_page_n_ouvre_plus_sur_ce_bloc(string $phrase, string $gabarit): void
     {
         $this->actingAs($this->admin())
             ->get('/admin/analytics/exploration')
@@ -47,18 +53,17 @@ class LExplorationOuvreSurSonPropreTitreTest extends TestCase
     }
 
     /**
-     * TEMOIN — chaque phrase reste VISIBLE la ou l'empilement est encore inclus.
+     * TEMOIN — chaque gabarit a bien quitte le disque.
      *
-     * Sans lui, les refus ci-dessus passeraient au vert sur une phrase mal orthographiee, un
-     * accent perdu ou une esperluette echappee : ils mesureraient leur propre faute de frappe.
+     * Tant qu'un porteur subsistait, le temoin etait une page ou la phrase restait visible. Le
+     * dernier est parti : c'est desormais la disparition du gabarit qui garantit que la phrase
+     * cherchee etait bien la sienne, et non une faute de frappe qui rougirait a tort.
      */
     #[DataProvider('blocsRetires')]
-    public function test_temoin_ce_bloc_reste_visible_sur_le_centre_emails(string $phrase): void
+    public function test_temoin_le_gabarit_a_quitte_le_disque(string $phrase, string $gabarit): void
     {
-        $this->actingAs($this->admin())
-            ->get('/admin/emails')
-            ->assertOk()
-            ->assertSee($phrase, false);
+        $this->assertFalse(view()->exists($gabarit),
+            "Le gabarit {$gabarit} existe encore alors que plus aucune vue ne l’inclut.");
     }
 
     /** TEMOIN — la page rend son propre contenu : le retrait n'a pas casse sa racine unique. */

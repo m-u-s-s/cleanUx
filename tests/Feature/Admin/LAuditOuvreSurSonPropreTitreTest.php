@@ -30,15 +30,17 @@ class LAuditOuvreSurSonPropreTitreTest extends TestCase
     public static function blocsRetires(): array
     {
         return [
-            'heros de gouvernance' => ['Sécurité, audit et préparation production', null],
-            'preparation production' => ['Centre de préparation production', 'livewire.admin.readiness.hero'],
-            'communication' => ['Centre de communication & suivi qualité', 'livewire.shared.communication.hero'],
-            'pilotage' => ['Pilotage opérationnel & qualité plateforme', 'livewire.admin.pilotage.phase2s-banner'],
+            'heros de gouvernance' => ['Sécurité, audit et préparation production', null,
+                'livewire.admin.governance.hero'],
+            'preparation production' => ['Centre de préparation production', 'livewire.admin.readiness.hero', null],
+            'communication' => ['Centre de communication & suivi qualité', 'livewire.shared.communication.hero', null],
+            'pilotage' => ['Pilotage opérationnel & qualité plateforme', null,
+                'livewire.admin.pilotage.phase2s-banner'],
         ];
     }
 
     #[DataProvider('blocsRetires')]
-    public function test_la_page_n_ouvre_plus_sur_ce_bloc(string $phrase, ?string $gabarit): void
+    public function test_la_page_n_ouvre_plus_sur_ce_bloc(string $phrase, ?string $gabarit, ?string $disparu): void
     {
         $this->actingAs($this->admin())
             ->get('/admin/audit/logs')
@@ -53,12 +55,13 @@ class LAuditOuvreSurSonPropreTitreTest extends TestCase
      * sa propre erreur au lieu du retrait.
      */
     #[DataProvider('blocsRetires')]
-    public function test_temoin_la_phrase_est_bien_celle_du_gabarit(string $phrase, ?string $gabarit): void
+    public function test_temoin_la_phrase_est_bien_celle_du_gabarit(string $phrase, ?string $gabarit, ?string $disparu): void
     {
         if ($gabarit === null) {
-            // Le heros de gouvernance n'a plus d'appelant : c'est sa disparition qui est verifiee.
-            $this->assertFalse(view()->exists('livewire.admin.governance.hero'),
-                'Le heros de gouvernance existe encore alors que plus aucune vue ne l’inclut.');
+            // Le bloc a quitte le produit : c'est LA DISPARITION DE SON PROPRE GABARIT qui est
+            // verifiee. Verifier celui d'un voisin serait un temoin qui mesure autre chose.
+            $this->assertFalse(view()->exists((string) $disparu),
+                "Le gabarit {$disparu} existe encore alors que plus aucune vue ne l’inclut.");
 
             return;
         }
@@ -66,18 +69,19 @@ class LAuditOuvreSurSonPropreTitreTest extends TestCase
         $this->assertStringContainsString($phrase, view($gabarit)->render());
     }
 
-    /** TEMOIN — deux de ces blocs restent VISIBLES en HTTP, chacun la ou il est encore inclus. */
-    public function test_temoin_les_blocs_restent_visibles_ailleurs(): void
+    /** TEMOIN — le bloc encore vivant reste VISIBLE en HTTP ; celui qui est parti a quitte le disque. */
+    public function test_temoin_chaque_bloc_est_verifie_la_ou_il_est(): void
     {
         $this->actingAs($this->admin())
             ->get('/admin/platform-readiness')
             ->assertOk()
             ->assertSee('Centre de préparation production', false);
 
-        $this->actingAs($this->admin())
-            ->get('/admin/emails')
-            ->assertOk()
-            ->assertSee('Pilotage opérationnel & qualité plateforme', false);
+        // L EMPILEMENT DE PILOTAGE A QUITTE LE PRODUIT le 2026-09-03, avec sa derniere page
+        // porteuse. Le temoin ne peut plus etre une page : c'est la disparition du gabarit qui
+        // garantit desormais que la phrase cherchee etait bien la sienne.
+        $this->assertFalse(view()->exists('livewire.admin.pilotage.phase2s-banner'),
+            'Le bandeau de pilotage existe encore alors que plus aucune vue ne l’inclut.');
     }
 
     /** TEMOIN — la page rend son propre contenu : le retrait n'a pas casse sa racine unique. */
