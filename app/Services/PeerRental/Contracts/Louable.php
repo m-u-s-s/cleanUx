@@ -24,6 +24,20 @@ interface Louable
 
     public function proprietaire(): ?User;
 
+    /**
+     * DE QUOI S'AFFICHER PARTOUT OU LE CONTRAT PASSE.
+     *
+     * L'ecran d'une location, sa liste, la file de l'administration : tous rendent un bien qu'ils
+     * ne connaissent que par ce contrat. Sans ces trois methodes, chacun retomberait sur un
+     * `instanceof`, et la premiere page oubliee afficherait une location sans nom.
+     */
+    public function titre(): string;
+
+    public function urlPublique(): string;
+
+    /** Le chemin de stockage de la photo de couverture, ou null. */
+    public function photoDeCouverture(): ?string;
+
     public function estPubliable(): bool;
 
     /** Le prix d'une journée, en centimes. */

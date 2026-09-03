@@ -7,7 +7,9 @@ use App\Models\PeerInspection;
 use App\Models\PeerRental;
 use App\Models\PeerVehicle;
 use App\Models\User;
+use App\Services\PeerRental\Contracts\Louable;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -39,38 +41,46 @@ class PeerRentalService
      * @throws ValidationException
      */
     public function demander(
-        PeerVehicle $vehicule,
+        Louable&Model $bien,
         User $locataire,
         CarbonInterface $debut,
         CarbonInterface $fin,
         string $paymentMethodId,
         array $options = [],
     ): PeerRental {
-        $refus = $this->eligibilite->motifDeRefus($locataire, $vehicule);
+        // L'ELIGIBILITE DU CONDUCTEUR NE VAUT QUE POUR UN VEHICULE : personne n'exige un
+        // permis pour dormir dans un studio. Elle ne s'applique donc qu'a ce qu'elle concerne.
+        $refus = $bien instanceof PeerVehicle
+            ? $this->eligibilite->motifDeRefus($locataire, $bien)
+            : null;
 
         if ($refus !== null) {
             throw ValidationException::withMessages(['locataire' => $refus]);
         }
 
-        $indisponible = $this->disponibilite->motifDIndisponibilite($vehicule, $debut, $fin);
+        $indisponible = $this->disponibilite->motifDIndisponibilite($bien, $debut, $fin);
 
         if ($indisponible !== null) {
             throw ValidationException::withMessages(['dates' => $indisponible]);
         }
 
-        $devis = $this->tarification->devis($vehicule, $debut, $fin, $options);
+        $devis = $this->tarification->devis($bien, $debut, $fin, $options);
 
-        $location = DB::transaction(function () use ($vehicule, $locataire, $debut, $fin, $devis, $options): PeerRental {
+        $location = DB::transaction(function () use ($bien, $locataire, $debut, $fin, $devis, $options): PeerRental {
             // LA DERNIERE VERIFICATION SE FAIT DANS LA TRANSACTION : entre le devis et
             // l'ecriture, une autre demande a pu prendre les memes dates.
-            if (! $this->disponibilite->estLibre($vehicule, $debut, $fin)) {
+            if (! $this->disponibilite->estLibre($bien, $debut, $fin)) {
                 throw ValidationException::withMessages(['dates' => __('Ces dates viennent d’être réservées.')]);
             }
 
             return PeerRental::create([
                 'reference' => PeerRental::genererUneReference(),
-                'peer_vehicle_id' => $vehicule->id,
-                'owner_id' => $vehicule->owner_id,
+                // LES DEUX COLONNES : la polymorphe pour la couche partagee, l'ancienne pour
+                // tout le module vehicules qui la lit encore.
+                'rentable_type' => $bien->getMorphClass(),
+                'rentable_id' => $bien->getKey(),
+                'peer_vehicle_id' => $bien instanceof PeerVehicle ? $bien->id : null,
+                'owner_id' => $bien->proprietaire()?->id,
                 'renter_id' => $locataire->id,
                 'status' => PeerRental::STATUT_EN_ATTENTE,
                 'starts_at' => $debut,
@@ -90,7 +100,7 @@ class PeerRentalService
                 'commission_rate' => $devis['commission_rate'],
                 'deposit_cents' => $devis['deposit_cents'],
                 'included_km' => $devis['included_km'],
-                'extra_km_price_cents' => $vehicule->extra_km_price_cents,
+                'extra_km_price_cents' => $bien instanceof PeerVehicle ? $bien->extra_km_price_cents : 0,
                 'insurance_plan_key' => $options['assurance'] ?? null,
                 'metadata' => ['devis' => $devis],
             ]);
@@ -99,8 +109,8 @@ class PeerRentalService
         $this->paiement->autoriserLeLoyer($location, $paymentMethodId);
 
         // LA RESERVATION INSTANTANEE N'ATTEND PAS : le proprietaire l'a decidee a l'avance.
-        if ($vehicule->instant_booking) {
-            $this->accepter($location->refresh(), $vehicule->owner);
+        if ($bien->reservationInstantanee()) {
+            $this->accepter($location->refresh(), $bien->proprietaire());
         }
 
         return $location->refresh();
@@ -212,10 +222,20 @@ class PeerRentalService
     /** Ce que le bareme de l'annonce retient, en centimes. */
     public function fraisDAnnulation(PeerRental $location): int
     {
-        $politique = $location->vehicle->cancellation_policy;
+        // LE BAREME VIENT DU BIEN, QUEL QU IL SOIT. Lire `vehicle` ici faisait planter
+        // l annulation d un sejour - et l annulation est le moment ou l argent bouge.
+        $politique = $location->bien()?->politiqueDAnnulation() ?? '';
 
         /** @var list<array{heures: int, retenue_percent: int}> $paliers */
         $paliers = config('peer_rental.cancellation.'.$politique, []);
+
+        // UN BAREME INCONNU NE VAUT PAS « ON GARDE TOUT ». Sans paliers, la boucle ci-dessous
+        // tombe sur la retenue totale : une faute de frappe couterait au locataire son loyer
+        // entier. Le bareme median s'applique a la place.
+        if ($paliers === []) {
+            /** @var list<array{heures: int, retenue_percent: int}> $paliers */
+            $paliers = config('peer_rental.cancellation.moderee', []);
+        }
 
         $heuresAvant = now()->diffInHours($location->starts_at, false);
 

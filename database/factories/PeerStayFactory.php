@@ -37,7 +37,7 @@ class PeerStayFactory extends Factory
             'min_nights' => 2,
             'max_nights' => 60,
             'instant_booking' => false,
-            'cancellation_policy' => 'flexible',
+            'cancellation_policy' => 'moderee',
             'address_line' => $this->faker->streetAddress(),
             'postal_code' => '1000',
             'city' => 'Bruxelles',

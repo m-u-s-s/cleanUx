@@ -1,6 +1,9 @@
 @php
     $location = $this->location();
-    $vehicule = $location->vehicle;
+    // LE BIEN, PAS LA VOITURE. Rendre `vehicle` ici plantait la page des qu un logement
+    // empruntait le meme chemin d argent - et c est justement ce que ce chemin autorise.
+    $bien = $location->bien();
+    $vehicule = $bien instanceof \App\Models\PeerVehicle ? $bien : null;
     $phase = $this->phase();
     $etat = $this->etatDesLieux();
 
@@ -33,7 +36,7 @@
 
     <x-page-shell
         :eyebrow="__('Location') . ' ' . $location->reference"
-        :title="$vehicule->titre()"
+        :title="$bien?->titre() ?? $location->reference"
         :subtitle="$location->starts_at->translatedFormat('d M Y, H:i') . ' → ' . $location->ends_at->translatedFormat('d M Y, H:i')">
         <x-slot name="actions">
             <x-ui.badge :tone="$tons[$location->status] ?? 'neutral'" :label="$libelles[$location->status] ?? $location->status" />
@@ -376,25 +379,31 @@
                     <button type="button" wire:click="annuler" class="brio-btn-danger mt-4 w-full !text-xs">
                         {{ $this->estLeProprietaire() ? __('Me désister') : __('Annuler ma location') }}
                     </button>
-                    @if ($this->estLeLocataire())
+                    @if ($this->estLeLocataire() && $bien)
                         <p class="mt-2 text-center text-xs text-slate-500">
-                            {{ __('Barème :politique.', ['politique' => $vehicule->cancellation_policy]) }}
+                            {{ __('Barème :politique.', ['politique' => $bien->politiqueDAnnulation()]) }}
                         </p>
                     @endif
                 @endif
             </x-app-card>
 
-            <x-app-card :title="__('Le véhicule')">
-                <a href="{{ route('peer.vehicule', $vehicule) }}" class="flex items-center gap-3">
-                    @if ($photo = $vehicule->photoPrincipale())
-                        <img src="{{ \Illuminate\Support\Facades\Storage::url($photo->path) }}" alt=""
-                             class="h-14 w-20 flex-shrink-0 rounded-xl object-cover">
-                    @endif
-                    <div class="min-w-0">
-                        <p class="truncate text-sm font-bold text-slate-900">{{ $vehicule->titre() }}</p>
-                        <p class="text-xs text-slate-500">{{ $vehicule->plate }} · {{ $vehicule->city }}</p>
-                    </div>
-                </a>
+            <x-app-card :title="$vehicule ? __('Le véhicule') : __('Le logement')">
+                @if ($bien)
+                    <a href="{{ $bien->urlPublique() }}" class="flex items-center gap-3">
+                        @if ($couverture = $bien->photoDeCouverture())
+                            <img src="{{ \Illuminate\Support\Facades\Storage::url($couverture) }}" alt=""
+                                 class="h-14 w-20 flex-shrink-0 rounded-xl object-cover">
+                        @endif
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-bold text-slate-900">{{ $bien->titre() }}</p>
+                            {{-- LA PLAQUE N EXISTE QUE POUR UNE VOITURE ; un logement dit sa ville. --}}
+                            <p class="text-xs text-slate-500">
+                                {{ collect($vehicule ? [$vehicule->plate, $vehicule->city] : [$bien->city, $bien->country_code])
+                                    ->filter()->join(' · ') }}
+                            </p>
+                        </div>
+                    </a>
+                @endif
 
                 <div class="mt-3 border-t border-slate-100 pt-3">
                     <p class="text-xs uppercase tracking-wide text-slate-500">

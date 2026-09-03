@@ -246,7 +246,19 @@ class PeerVehicle extends Model implements Louable
 
     public function titre(): string
     {
-        return trim($this->brand.' '.$this->model);
+        $titre = trim($this->brand.' '.$this->model);
+
+        return $titre === '' ? (string) $this->reference : $titre;
+    }
+
+    public function urlPublique(): string
+    {
+        return route('peer.vehicule', $this);
+    }
+
+    public function photoDeCouverture(): ?string
+    {
+        return $this->photoPrincipale()?->path;
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\PeerRental;
+use App\Models\PeerStay;
 use App\Models\PeerVehicle;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -39,6 +40,28 @@ class PeerRentalFactory extends Factory
             'extra_km_price_cents' => 25,
             'payment_status' => PeerRental::PAIEMENT_EN_ATTENTE,
         ];
+    }
+
+    /**
+     * UNE LOCATION DE LOGEMENT.
+     *
+     * Le meme contrat, sans vehicule : `peer_vehicle_id` reste nul, et seules les colonnes
+     * polymorphes designent le bien.
+     */
+    public function pourUnLogement(?PeerStay $logement = null): static
+    {
+        return $this->state(function () use ($logement): array {
+            $logement ??= PeerStay::factory()->publiee()->create();
+
+            return [
+                'peer_vehicle_id' => null,
+                'rentable_type' => PeerStay::class,
+                'rentable_id' => $logement->id,
+                'owner_id' => $logement->owner_id,
+                'included_km' => 0,
+                'extra_km_price_cents' => 0,
+            ];
+        });
     }
 
     public function confirmee(): static

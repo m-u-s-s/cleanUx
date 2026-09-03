@@ -84,7 +84,7 @@ class PeerRentalDetail extends Component
     public function location(): PeerRental
     {
         return PeerRental::query()
-            ->with(['vehicle.media', 'owner', 'renter', 'inspections.photos', 'claims', 'reviews'])
+            ->with(['rentable', 'vehicle.media', 'owner', 'renter', 'inspections.photos', 'claims', 'reviews'])
             ->findOrFail($this->locationId);
     }
 

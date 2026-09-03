@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\PeerRental\Contracts\Louable;
 use Database\Factories\PeerRentalFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -167,6 +168,21 @@ class PeerRental extends Model
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(PeerVehicle::class, 'peer_vehicle_id');
+    }
+
+    /**
+     * LE BIEN, POUR CEUX QUI DOIVENT L'AFFICHER.
+     *
+     * Les ecrans partages — la liste, le detail, l'arbitrage — rendaient `vehicle`, donc `null`
+     * des qu'un logement passait par la : le titre plantait la page entiere. Ils passent par ici.
+     *
+     * Le repli sur `vehicle` sert les lignes anterieures a la colonne polymorphe.
+     */
+    public function bien(): (Louable&Model)|null
+    {
+        $bien = $this->rentable ?? $this->vehicle;
+
+        return $bien instanceof Louable ? $bien : null;
     }
 
     /** @return BelongsTo<User, $this> */

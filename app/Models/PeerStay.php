@@ -96,6 +96,22 @@ class PeerStay extends Model implements Louable
         return $this->status === self::STATUT_PUBLIE;
     }
 
+    /** UNE ANNONCE SANS TITRE EXISTE : elle nait en brouillon, vide. Sa reference la nomme. */
+    public function titre(): string
+    {
+        return trim((string) $this->title) === '' ? (string) $this->reference : (string) $this->title;
+    }
+
+    public function urlPublique(): string
+    {
+        return route('peer.sejour', $this);
+    }
+
+    public function photoDeCouverture(): ?string
+    {
+        return $this->photoPrincipale()?->path;
+    }
+
     /** POUR UN LOGEMENT, LA NUIT EST LA JOURNEE : le contrat parle de jours, le prix de nuits. */
     public function prixJournalierCents(): int
     {

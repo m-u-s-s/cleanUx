@@ -16,11 +16,13 @@
 
     <x-page-shell
         :eyebrow="__('Location entre membres')"
-        :title="$role === 'owner' ? __('Les locations de mes véhicules') : __('Mes locations')"
+        :title="$role === 'owner' ? __('Les locations de mes biens') : __('Mes locations')"
         :subtitle="__('Paiement bloqué à la réservation, capturé à la remise des clés.')">
         <x-slot name="actions">
             <a href="{{ route('peer.catalogue') }}" class="brio-btn-primary !text-xs">{{ __('Louer un véhicule') }}</a>
+            <a href="{{ route('peer.sejours') }}" class="brio-btn-primary !text-xs">{{ __('Louer un logement') }}</a>
             <a href="{{ route('peer.owner.vehicles') }}" class="brio-btn-secondary !text-xs">{{ __('Mes véhicules') }}</a>
+            <a href="{{ route('peer.owner.stays') }}" class="brio-btn-secondary !text-xs">{{ __('Mes logements') }}</a>
         </x-slot>
     </x-page-shell>
 
@@ -56,17 +58,20 @@
 
         <div class="space-y-2">
             @forelse ($this->locations as $location)
+                @php($bien = $location->bien())
                 <a href="{{ route('peer.rental', $location) }}" class="brio-list-item flex items-center gap-3 !p-3">
-                    @if ($photo = $location->vehicle?->photoPrincipale())
-                        <img src="{{ \Illuminate\Support\Facades\Storage::url($photo->path) }}" alt=""
+                    @if ($couverture = $bien?->photoDeCouverture())
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($couverture) }}" alt=""
                              class="h-12 w-16 flex-shrink-0 rounded-lg object-cover">
                     @else
-                        <div class="flex h-12 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xl">🚗</div>
+                        <div class="flex h-12 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xl">
+                            {{ $bien?->typeDeBien() === 'stay' ? '🏠' : '🚗' }}
+                        </div>
                     @endif
 
                     <div class="min-w-0 flex-1">
                         <p class="truncate text-sm font-semibold text-slate-900">
-                            {{ $location->vehicle?->titre() ?? $location->reference }}
+                            {{ $bien?->titre() ?? $location->reference }}
                         </p>
                         <p class="text-xs text-slate-500">
                             {{ $location->starts_at->translatedFormat('d M') }} → {{ $location->ends_at->translatedFormat('d M Y') }}
@@ -85,14 +90,18 @@
                 </a>
             @empty
                 <x-empty-state
-                    icon="🚗"
-                    :title="$role === 'owner' ? __('Personne n’a encore loué vos véhicules') : __('Aucune location pour le moment')"
+                    icon="🔑"
+                    :title="$role === 'owner' ? __('Personne n’a encore loué vos biens') : __('Aucune location pour le moment')"
                     :message="$role === 'owner'
-                        ? __('Publiez une annonce pour recevoir vos premières demandes.')
-                        : __('Trouvez un véhicule près de chez vous et réservez en deux minutes.')">
+                        ? __('Publiez une annonce — véhicule ou logement — pour recevoir vos premières demandes.')
+                        : __('Trouvez un véhicule ou un logement près de chez vous et réservez en deux minutes.')">
                     <a href="{{ $role === 'owner' ? route('peer.owner.vehicles') : route('peer.catalogue') }}"
                        class="brio-btn-primary !text-xs">
                         {{ $role === 'owner' ? __('Mettre un véhicule en location') : __('Voir les véhicules') }}
+                    </a>
+                    <a href="{{ $role === 'owner' ? route('peer.owner.stays') : route('peer.sejours') }}"
+                       class="brio-btn-secondary !text-xs">
+                        {{ $role === 'owner' ? __('Mettre un logement en location') : __('Voir les logements') }}
                     </a>
                 </x-empty-state>
             @endforelse
