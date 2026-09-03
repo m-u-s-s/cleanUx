@@ -89,7 +89,7 @@ class EmailMesureStudio extends Component
     /**
      * Les envois par gabarit sur la fenêtre, du plus actif au plus discret.
      *
-     * @return Collection<int, object>
+     * @return Collection<int, EmailMessage>
      */
     #[Computed]
     public function parGabarit(): Collection

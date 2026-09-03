@@ -54,7 +54,7 @@ class MailgunVerificateur implements VerificateurDeSignature
     public function evenements(Request $requete): array
     {
         $donnees = (array) $requete->input('event-data', []);
-        $type = $this->typeNormalise((string) ($donnees['event' ?? ''] ?? ''), $donnees);
+        $type = $this->typeNormalise((string) ($donnees['event'] ?? ''), $donnees);
 
         if ($type === null) {
             return [];
