@@ -7,6 +7,7 @@ use App\Http\Controllers\PricingPageController;
 use App\Http\Controllers\PublicSeoController;
 use App\Http\Controllers\ServicePageController;
 use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\Webhooks\EmailWebhookController;
 use App\Http\Controllers\Webhooks\GoogleCalendarWebhookController;
 use App\Http\Controllers\Webhooks\InsuranceWebhookController;
 use App\Http\Controllers\Webhooks\KycWebhookController;
@@ -181,6 +182,13 @@ Route::post('/webhooks/sms/{provider}', [SmsWebhookController::class, 'handle'])
 // Phase Insurance v2 — Webhooks providers assurance (mock|hiscox|wakam)
 Route::post('/webhooks/insurance/{provider}', [InsuranceWebhookController::class, 'handle'])
     ->name('webhooks.insurance');
+
+// Retours d'expedition e-mail (mailgun|mock). Verifie sa propre signature ; un fournisseur sans
+// verificateur est REFUSE, jamais accepte en attendant. Bride pour qu'un rejeu ne devienne pas
+// une charge : un fournisseur qui n'obtient pas de reponse rejoue, puis suspend le point d'entree.
+Route::post('/webhooks/email/{provider}', EmailWebhookController::class)
+    ->middleware('throttle:120,1')
+    ->name('webhooks.email');
 
 // GCal bidirectionnel — notifications push Google Calendar (headers X-Goog-*).
 Route::post('/webhooks/google-calendar', [GoogleCalendarWebhookController::class, 'handle'])

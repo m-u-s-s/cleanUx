@@ -12,12 +12,12 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
- * CE QUI EST REELLEMENT PARTI, ET CE QU'ON NE MESURE PAS ENCORE.
+ * CE QUI EST REELLEMENT PARTI, ET CE QUI EN EST REVENU.
  *
- * Le tableau ne montre que ce que la base sait. LES OUVERTURES ET LES CLICS N'Y FIGURENT PAS :
- * les colonnes existent sur `email_messages`, `EmailWebhookEvent` existe aussi, mais AUCUNE route
- * ni aucun ecrivain ne les alimente. Un taux d'ouverture serait un zero permanent presente comme
- * un resultat — exactement le chiffre faux qu'un tableau de bord ne doit jamais produire.
+ * Les remis, ouvertures, clics et rebonds viennent du point d'entree des retours d'expedition.
+ * UN ZERO N'A PAS LE MEME SENS SELON QUE CE POINT EST BRANCHE OU NON : sans clef de signature,
+ * « zero ouverture » veut dire « nous l'ignorons », pas « personne n'a ouvert ». L'ecran dit
+ * lequel des deux — le taire serait mentir par omission.
  */
 class LaMesureDesEnvoisTest extends TestCase
 {
@@ -85,26 +85,41 @@ class LaMesureDesEnvoisTest extends TestCase
             ->assertSee('booking_confirmed');
     }
 
-    /** LES ANGLES MORTS SE DISENT A VOIX HAUTE, plutot que de s'afficher a zero. */
-    public function test_l_ecran_nomme_ce_qu_il_ne_mesure_pas(): void
+    /**
+     * UN ZERO NE VEUT PAS DIRE LA MEME CHOSE selon que le point d'entree est branche ou non.
+     *
+     * Sans clef, « zero ouverture » se lit « nous l'ignorons ». L'ecran doit le dire, sinon il
+     * ment par omission — et c'est exactement le « Tests 200 » retire de cinq pages ce matin.
+     */
+    public function test_l_ecran_dit_que_le_point_d_entree_n_est_pas_configure(): void
     {
+        config()->set('email_v2.webhooks', ['mailgun' => ['signing_key' => null]]);
+
         Livewire::actingAs($this->admin())->test(EmailMesureStudio::class)
-            ->assertSee('Ce qui n’est pas encore mesuré', false)
-            ->assertSee('Ouvertures et clics', false);
+            ->assertSee('Aucun point d’entrée n’est configuré', false);
     }
 
-    /**
-     * TEMOIN — aucun taux d'ouverture n'est affiche.
-     *
-     * C'est le controle qui empeche un futur lot d'ajouter un compteur toujours nul en croyant
-     * enrichir l'ecran : tant qu'aucun webhook n'ecrit, un tel chiffre ment.
-     */
-    public function test_temoin_aucun_taux_d_ouverture_n_est_affiche(): void
+    /** TEMOIN — avec une clef, l'ecran dit l'inverse, et les zeros redeviennent des resultats. */
+    public function test_temoin_avec_une_clef_l_ecran_dit_le_contraire(): void
     {
-        $rendu = Livewire::actingAs($this->admin())->test(EmailMesureStudio::class)->html();
+        config()->set('email_v2.webhooks', ['mailgun' => ['signing_key' => 'une-clef']]);
 
-        $this->assertStringNotContainsString('Taux d’ouverture', $rendu);
-        $this->assertStringNotContainsString('Taux de clic', $rendu);
+        Livewire::actingAs($this->admin())->test(EmailMesureStudio::class)
+            ->assertSee('Le point d’entrée est configuré', false)
+            ->assertDontSee('Aucun point d’entrée n’est configuré', false);
+    }
+
+    /** LES RETOURS COMPTENT VRAIMENT : une ouverture posee sur un envoi remonte au compteur. */
+    public function test_une_ouverture_remonte_au_compteur(): void
+    {
+        $this->envoyer('client@brio.test');
+
+        DB::table('email_messages')->update(['opened_at' => now(), 'status' => 'opened']);
+
+        $reperes = Livewire::actingAs($this->admin())->test(EmailMesureStudio::class)->get('reperes');
+
+        $this->assertSame(1, $reperes['ouverts']);
+        $this->assertSame(0, $reperes['cliques'], 'Un clic n’a pas été rapporté : le compteur doit rester à zéro.');
     }
 
     /** LA CAPACITE GARDE AUSSI CE COMPOSANT — il est imbrique, donc atteignable directement. */

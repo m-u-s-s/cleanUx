@@ -17,6 +17,7 @@ class VerifyCsrfToken extends Middleware
         'webhooks/kyc/*',
         'webhooks/sms/*',
         'webhooks/insurance/*',
+        'webhooks/email/*',
         'webhooks/google-calendar',
     ];
 }

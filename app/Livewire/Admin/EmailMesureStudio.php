@@ -18,14 +18,15 @@ use Livewire\Component;
 /**
  * CE QUI EST RÉELLEMENT PARTI, ET CE QU'ON NE MESURE PAS ENCORE.
  *
- * L'écran ne montre que ce que la base sait : les envois, leur gabarit, leur statut, leur date.
+ * L'écran ne montre que ce que la base sait : les envois, leur gabarit, leur statut, leur date, et
+ * les retours rapportés par le service d'expédition.
  *
- * LES OUVERTURES ET LES CLICS NE SONT PAS MESURÉS. Les colonnes existent sur `email_messages`,
- * `EmailWebhookEvent` existe aussi — mais AUCUNE route ni aucun écrivain ne les alimente. Afficher
- * un taux d'ouverture serait afficher un zéro permanent présenté comme un résultat : c'est
- * exactement le genre de chiffre faux qu'un tableau de bord ne doit jamais produire.
+ * UN ZÉRO N'A PAS LE MÊME SENS SELON QUE LE POINT D'ENTRÉE EST BRANCHÉ OU NON. Sans clé de
+ * signature, aucun retour n'arrive : « zéro ouverture » veut alors dire « nous l'ignorons », pas
+ * « personne n'a ouvert ». L'écran dit lequel des deux — le taire serait mentir par omission.
  *
  * @property-read array<string, int> $reperes
+ * @property-read bool $retoursConfigures
  * @property-read Collection<int, object> $parGabarit
  * @property-read Collection<int, EmailMessage> $derniers
  */
@@ -46,7 +47,10 @@ class EmailMesureStudio extends Component
     public function reperes(): array
     {
         if (! Schema::hasTable('email_messages')) {
-            return ['envoyes' => 0, 'gabarits' => 0, 'destinataires' => 0, 'echecs' => 0];
+            return array_fill_keys(
+                ['envoyes', 'gabarits', 'destinataires', 'echecs', 'remis', 'ouverts', 'cliques', 'rebonds'],
+                0,
+            );
         }
 
         $base = EmailMessage::query()->where('created_at', '>=', $this->depuis());
@@ -56,7 +60,30 @@ class EmailMesureStudio extends Component
             'gabarits' => (clone $base)->whereNotNull('template_code')->distinct()->count('template_code'),
             'destinataires' => (clone $base)->distinct()->count('to_email'),
             'echecs' => (clone $base)->whereIn('status', ['failed', 'bounced'])->count(),
+            'remis' => (clone $base)->whereNotNull('delivered_at')->count(),
+            'ouverts' => (clone $base)->whereNotNull('opened_at')->count(),
+            'cliques' => (clone $base)->whereNotNull('clicked_at')->count(),
+            'rebonds' => (clone $base)->whereNotNull('bounced_at')->count(),
         ];
+    }
+
+    /**
+     * LE POINT D'ENTREE EST-IL CONFIGURE ?
+     *
+     * Sans clef de signature, aucun retour n'arrive : les ouvertures resteront a zero, et ce zero
+     * ne voudra pas dire « personne n'a ouvert » mais « nous ne le savons pas ». L'ecran doit dire
+     * lequel des deux, sinon il ment par omission.
+     */
+    #[Computed]
+    public function retoursConfigures(): bool
+    {
+        foreach ((array) config('email_v2.webhooks', []) as $reglages) {
+            if (trim((string) ($reglages['signing_key'] ?? '')) !== '') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -30,6 +30,20 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Webhooks — retours d'expedition
+    |--------------------------------------------------------------------------
+    | UNE CLE ABSENTE VAUT REFUS, jamais « accepter tout le monde » : le point d'entree
+    | est public, et sans signature verifiee n'importe qui peut declarer qu'un e-mail a
+    | ete ouvert ou rejete, et fausser durablement la mesure.
+    */
+    'webhooks' => [
+        'mailgun' => [
+            'signing_key' => env('MAILGUN_WEBHOOK_SIGNING_KEY'),
+        ],
+    ],
+
     'from_default' => [
         'email' => env('MAIL_FROM_ADDRESS', 'noreply@brio.com'),
         'name' => env('MAIL_FROM_NAME', 'Brio'),

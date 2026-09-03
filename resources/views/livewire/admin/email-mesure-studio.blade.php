@@ -1,5 +1,5 @@
-{{-- CE QUI EST REELLEMENT PARTI. Les ouvertures et les clics ne sont pas mesures : les colonnes
-     existent, aucun webhook ne les alimente. Un taux d ouverture serait un zero permanent. --}}
+{{-- CE QUI EST REELLEMENT PARTI, ET CE QUI EN EST REVENU. Les remis, ouvertures, clics et
+     rebonds viennent du point d entree des retours ; s il n est pas configure, l ecran le dit. --}}
 <div class="space-y-4">
     <x-filter-panel title="Fenêtre d’observation" subtitle="Tout ce qui suit porte sur cette période.">
         <label class="sr-only" for="fenetre-mesure">Fenêtre en jours</label>
@@ -16,6 +16,15 @@
         <x-kpi-card title="Gabarits employés" icon="🧩" :value="$this->reperes['gabarits']" />
         <x-kpi-card title="Destinataires" icon="👥" :value="number_format($this->reperes['destinataires'], 0, ',', ' ')" />
         <x-kpi-card title="Échecs" icon="⚠️" :value="$this->reperes['echecs']" />
+    </div>
+
+    {{-- LES RETOURS DU SERVICE D EXPEDITION. Un zero ici ne veut rien dire tant que le point
+         d entree n est pas configure : la carte plus bas dit lequel des deux. --}}
+    <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <x-kpi-card title="Remis" icon="✅" :value="number_format($this->reperes['remis'], 0, ',', ' ')" />
+        <x-kpi-card title="Ouverts" icon="👀" :value="number_format($this->reperes['ouverts'], 0, ',', ' ')" />
+        <x-kpi-card title="Cliqués" icon="🖱️" :value="number_format($this->reperes['cliques'], 0, ',', ' ')" />
+        <x-kpi-card title="Rebonds" icon="↩️" :value="number_format($this->reperes['rebonds'], 0, ',', ' ')" />
     </div>
 
     <x-table-shell title="Envois par gabarit" subtitle="Du plus actif au plus discret, sur la fenêtre choisie.">
@@ -82,21 +91,31 @@
         </table>
     </x-table-shell>
 
-    {{-- CE QU ON NE MESURE PAS, DIT A VOIX HAUTE. Un tableau de bord qui tait ses angles morts
-         laisse croire que ses zeros sont des resultats. --}}
-    <x-app-card title="Ce qui n’est pas encore mesuré"
-                subtitle="Nommé ici plutôt qu’affiché à zéro : un compteur toujours nul se lit comme un résultat.">
-        <ul class="space-y-2 text-sm">
-            <li>
-                <span class="font-semibold">Ouvertures et clics.</span>
-                Les colonnes existent sur les envois et la table des événements du prestataire aussi —
-                mais aucune route ni aucun écrivain ne les alimente. Il manque le point d’entrée qui
-                reçoit les retours du service d’expédition.
-            </li>
-            <li>
-                <span class="font-semibold">Rebonds et plaintes.</span>
-                Même chaîne, même manque : ils arrivent par le même canal.
-            </li>
-        </ul>
+    {{-- UN ZERO NE VEUT PAS DIRE LA MEME CHOSE selon que le point d entree est branche ou non.
+         Le taire laisserait lire « personne n a ouvert » la ou il faut lire « nous l ignorons ». --}}
+    <x-app-card title="Retours du service d’expédition"
+                subtitle="D’où viennent les remis, les ouvertures, les clics et les rebonds.">
+        @if($this->retoursConfigures)
+            <p class="text-sm">
+                <span class="font-semibold">Le point d’entrée est configuré.</span>
+                Les compteurs ci-dessus reflètent ce que le service d’expédition nous a rapporté :
+                un zéro se lit alors comme une absence réelle.
+            </p>
+            <p class="mt-2 text-sm opacity-70">
+                Adresse à déclarer chez le fournisseur : <code>{{ url('/webhooks/email/mailgun') }}</code>.
+                Chaque appel est vérifié par signature et daté ; un événement rejoué n’est jamais compté deux fois.
+            </p>
+        @else
+            <p class="text-sm">
+                <span class="font-semibold">Aucun point d’entrée n’est configuré.</span>
+                Les compteurs de remis, d’ouvertures, de clics et de rebonds resteront donc à zéro —
+                et ce zéro veut dire « nous ne le savons pas », pas « personne n’a ouvert ».
+            </p>
+            <p class="mt-2 text-sm opacity-70">
+                Pour l’activer : renseigner <code>MAILGUN_WEBHOOK_SIGNING_KEY</code>, puis déclarer
+                <code>{{ url('/webhooks/email/mailgun') }}</code> chez le fournisseur. Sans clé, la porte
+                reste fermée — un webhook qui accepte des charges non vérifiées est pire que pas de webhook.
+            </p>
+        @endif
     </x-app-card>
 </div>
