@@ -27,7 +27,8 @@ class PlatformSettlementTest extends TestCase
 
     private function superAdmin(): User
     {
-        return User::factory()->create(['platform_role' => 'super_admin']);
+        // LE SIEGE NE SE POSE QUE PAR SA PORTE : le modele refuse l'ecriture directe.
+        return $this->prendreLeSiege();
     }
 
     /** Une commission encaissée dans une devise, sans secours : la page doit le crier. */

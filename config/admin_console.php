@@ -111,6 +111,14 @@ return [
         ['key' => 'automation', 'title' => 'Automatisation', 'group' => 'operations', 'icon' => 'flash-outline', 'coverage' => 'report', 'routes' => ['admin/automation', 'admin/automation/regles/nouvelle', 'admin/automation/regles/{regleId}/modifier', 'admin/automation/regles/{regleId}/journal', 'admin/automation/reglages', 'admin/automation/propositions']],
 
         // ── Personnes et comptes ────────────────────────────────────────────────────────────
+        /*
+         * LE SIEGE RESTE AU WEB, ET C'EST UNE DECISION.
+         *
+         * Deplacer la propriete de la plateforme depuis un telephone perdu ou preté n'a aucun
+         * interet operationnel et ouvre un chemin de plus. `pending` est l'etat le moins faux
+         * que ce registre sache dire : ce n'est pas une tache en retard.
+         */
+        ['key' => 'platform-seat', 'title' => 'Le siège', 'group' => 'personnes', 'icon' => 'ribbon-outline', 'coverage' => 'pending', 'routes' => ['admin/siege']],
         ['key' => 'users', 'title' => 'Utilisateurs', 'group' => 'personnes', 'icon' => 'people-outline', 'coverage' => 'descriptor', 'routes' => ['admin/utilisateurs']],
         ['key' => 'companies', 'title' => 'Entreprises', 'group' => 'personnes', 'icon' => 'business-outline', 'coverage' => 'descriptor', 'routes' => ['admin/entreprises']],
         ['key' => 'sites', 'title' => 'Sites', 'group' => 'personnes', 'icon' => 'location-outline', 'coverage' => 'descriptor', 'routes' => ['admin/sites']],

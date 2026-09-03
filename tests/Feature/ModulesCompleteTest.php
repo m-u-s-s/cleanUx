@@ -25,7 +25,9 @@ class ModulesCompleteTest extends TestCase
 
     private function actingAsAdmin(): User
     {
-        $user = User::factory()->admin()->create(['is_super_admin' => true]);
+        // `is_super_admin` est devenue un MIROIR de `platform_role` : la poser n'eleve
+        // plus personne. Le siege se prend par sa porte.
+        $user = $this->prendreLeSiege(['role' => 'admin']);
         Sanctum::actingAs($user);
 
         return $user;

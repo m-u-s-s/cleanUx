@@ -171,9 +171,6 @@ class FacturationHoraireSocleTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create([
-            'platform_role' => 'super_admin',
-            'is_active' => true,
-        ]);
+        return $this->prendreLeSiege();
     }
 }

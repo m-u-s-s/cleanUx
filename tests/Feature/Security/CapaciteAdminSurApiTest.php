@@ -44,8 +44,7 @@ class CapaciteAdminSurApiTest extends TestCase
     /** TÉMOIN — le super-administrateur n'est jamais bridé. */
     public function test_temoin_le_super_administrateur_passe(): void
     {
-        $super = User::factory()->create([
-            'platform_role' => 'super_admin',
+        $super = $this->prendreLeSiege([
             'role' => 'super_admin',
             'permissions' => [],
             'two_factor_confirmed_at' => now(),

@@ -93,6 +93,8 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         // Sécurité admin
         'access_scope',
         'managed_service_zone_id',
+        // MIROIR, PAS COMMANDE : `bootHasAdminCapabilities()` la reecrit depuis
+        // `platform_role` a chaque enregistrement. La poser n'eleve personne.
         'is_super_admin',
         'admin_permissions',
 
@@ -113,11 +115,15 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     protected $hidden = [
         'password',
         'remember_token',
+        // LA PHRASE DU SIEGE N'EST NI ASSIGNABLE NI EXPOSEE : elle ne sort par aucune API,
+        // aucun export, aucun journal.
+        'seat_secret_hash',
         'two_factor_secret',
         'two_factor_recovery_codes',
     ];
 
     protected $casts = [
+        'seat_claimed_at' => 'datetime',
         'email_verified_at' => 'datetime',
         'phone_verified_at' => 'datetime',
         'password' => 'hashed',

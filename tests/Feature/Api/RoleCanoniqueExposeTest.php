@@ -15,7 +15,7 @@ class RoleCanoniqueExposeTest extends TestCase
 
     public function test_auth_me_annonce_le_role_canonique(): void
     {
-        $user = User::factory()->create(['platform_role' => 'super_admin']);
+        $user = $this->prendreLeSiege();
 
         $reponse = $this->actingAs($user, 'sanctum')->getJson('/api/auth/me');
 

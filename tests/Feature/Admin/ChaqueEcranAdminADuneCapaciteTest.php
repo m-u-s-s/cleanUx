@@ -4,7 +4,9 @@ namespace Tests\Feature\Admin;
 
 use App\Models\User;
 use App\Support\Navigation\ModuleCatalogue;
+use App\Support\Platform\PorteDuSiege;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
@@ -15,6 +17,16 @@ class ChaqueEcranAdminADuneCapaciteTest extends TestCase
 
     /** LES DEUX SEULS MODULES VOLONTAIREMENT OUVERTS À TOUT ADMINISTRATEUR. */
     private const OUVERTS_A_TOUS = ['admin:admin.dashboard', 'admin:admin.home'];
+
+    /**
+     * LES CAPACITES QUI NE S'ACCORDENT PAS, avec leur motif.
+     *
+     * `allowedAdminPermissions()` liste ce qu'on PEUT donner a un administrateur. Le siege
+     * de super-administrateur n'en fait pas partie : ce n'est pas une permission qu'on
+     * accorde, c'est un fait sur qui l'on est. L'y inscrire le rendrait cochable dans
+     * l'ecran des permissions — exactement ce que ce siege interdit.
+     */
+    private const NON_ASSIGNABLES = ['hold-platform-seat'];
 
     public function test_chaque_module_admin_declare_une_capacite(): void
     {
@@ -78,9 +90,26 @@ class ChaqueEcranAdminADuneCapaciteTest extends TestCase
         $inconnues = array_values(array_diff(
             is_array($declarees) ? $declarees : $declarees->all(),
             is_array($connues) ? $connues : $connues->all(),
+            self::NON_ASSIGNABLES,
         ));
 
         $this->assertSame([], $inconnues, 'Ces capacites declarees par les ecrans n existent pas.');
+    }
+
+    /**
+     * TEMOIN — une capacite non assignable existe QUAND MEME comme garde.
+     *
+     * Sans ce controle, la liste d'exemption ci-dessus laisserait passer une faute de
+     * frappe : l'ecran se fermerait pour tout le monde, en silence.
+     */
+    public function test_temoin_les_capacites_non_assignables_sont_de_vraies_gardes(): void
+    {
+        foreach (self::NON_ASSIGNABLES as $capacite) {
+            $this->assertTrue(
+                Gate::has($capacite),
+                "La capacite {$capacite} n'est definie nulle part : l'ecran se fermerait pour tous."
+            );
+        }
     }
 
     // ── La porte, pas seulement la tuile ─────────────────────────────────
@@ -159,10 +188,12 @@ class ChaqueEcranAdminADuneCapaciteTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin', 'is_active' => true]);
 
-        $admin->forceFill([
+        // LE SIEGE NE SE POSE QUE PAR SA PORTE : le modele refuse l'ecriture directe, et
+        // c'est cette garde-la qui empeche un vol en deux temps.
+        PorteDuSiege::ouvrir(fn () => $admin->forceFill([
             'platform_role' => $superAdmin ? 'super_admin' : 'admin',
             'permissions' => $capacites,
-        ])->save();
+        ])->save());
 
         return $admin->refresh();
     }

@@ -2,6 +2,7 @@
 
 namespace App\Models\Concerns;
 
+use App\Support\Platform\PorteDuSiege;
 use Illuminate\Support\Collection;
 
 trait HasAdminCapabilities
@@ -25,6 +26,50 @@ trait HasAdminCapabilities
     public const ACCESS_SCOPE_ZONE = 'zone';
 
     public const ACCESS_SCOPE_READONLY = 'readonly';
+
+    /**
+     * LE SIEGE NE SE POSE QUE PAR SA PORTE.
+     *
+     * Eloquent appelle `boot{NomDuTrait}` : la garde vit donc avec la notion qu'elle protege.
+     * Elle attrape ce qu'aucun middleware ne voit — un seeder, un `forceFill`, la console
+     * d'administration, `/livewire/update` qui ne rejoue aucun middleware de route.
+     *
+     * La base refuse deja un SECOND siege ; ce crochet refuse en plus qu'on DEPLACE le siege
+     * sans passer par le service, et donne un message qui explique au lieu d'une violation
+     * d'index brute.
+     */
+    public static function bootHasAdminCapabilities(): void
+    {
+        static::saving(function (self $utilisateur) {
+            $devientSuperAdmin = $utilisateur->platform_role === self::PLATFORM_SUPER_ADMIN
+                && $utilisateur->getOriginal('platform_role') !== self::PLATFORM_SUPER_ADMIN;
+
+            // ET LA PERTE DU SIEGE EST GARDEE COMME SA PRISE. Ne garder que la promotion
+            // laisserait un vol en DEUX temps : retrograder le titulaire, puis se promouvoir
+            // sur un siege devenu vacant. Chacune des deux ecritures est donc refusee.
+            $perdLeSiege = $utilisateur->exists
+                && $utilisateur->getOriginal('platform_role') === self::PLATFORM_SUPER_ADMIN
+                && $utilisateur->platform_role !== self::PLATFORM_SUPER_ADMIN;
+
+            if (($devientSuperAdmin || $perdLeSiege) && ! PorteDuSiege::estOuverte()) {
+                throw new \DomainException(
+                    'Le siege de super-administrateur ne se deplace que par SiegeDuSuperAdmin.'
+                );
+            }
+
+            // LA SECONDE NOTION DEVIENT UN MIROIR. `is_super_admin` ouvrait
+            // `hasAdminPermission()` a elle seule : deux verites pour un fait, donc un second
+            // super-administrateur de fait des que quelqu'un posait la colonne.
+            $utilisateur->is_super_admin = $utilisateur->platform_role === self::PLATFORM_SUPER_ADMIN;
+
+            // LA PHRASE MEURT AVEC LE SIEGE : un ancien titulaire ne garde pas de quoi
+            // reclamer celui de son successeur.
+            if (! $utilisateur->is_super_admin) {
+                $utilisateur->seat_secret_hash = null;
+                $utilisateur->seat_claimed_at = null;
+            }
+        });
+    }
 
     public static function allowedAdminPermissions(): array
     {
@@ -84,8 +129,7 @@ trait HasAdminCapabilities
             return false;
         }
 
-        if (($this->platform_role ?? null) === 'super_admin'
-            || ($this->is_super_admin ?? false)) {
+        if ($this->isSuperAdmin()) {
             return true;
         }
 
@@ -133,7 +177,10 @@ trait HasAdminCapabilities
 
     public function hasAdminPermission(string $permission): bool
     {
-        if ($this->is_super_admin ?? false) {
+        // LE ROLE, PAS LA COLONNE. `is_super_admin` seule ouvrait TOUTES les permissions,
+        // avant meme de verifier que le compte est administrateur : un seeder qui posait la
+        // colonne sans le role creait un super-administrateur de fait, invisible.
+        if ($this->isSuperAdmin()) {
             return true;
         }
 

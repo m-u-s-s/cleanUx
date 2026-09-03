@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
@@ -25,11 +24,7 @@ class ToutePageAdminRepondTest extends TestCase
     public function test_chaque_page_admin_sans_parametre_repond(): void
     {
         // UN SUPER-ADMINISTRATEUR, ET C'EST DELIBERE.
-        $admin = User::factory()->admin()->create([
-            'is_active' => true,
-            'status' => 'active',
-            'platform_role' => 'super_admin',
-        ]);
+        $admin = $this->prendreLeSiege(['role' => 'admin', 'status' => 'active']);
 
         $this->actingAs($admin);
 

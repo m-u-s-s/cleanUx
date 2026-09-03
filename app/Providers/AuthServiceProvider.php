@@ -37,6 +37,11 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('manage-calendar', fn (User $user) => $user->canAccessAdminModule('manage-calendar'));
         Gate::define('manage-users', fn (User $user) => $user->canAccessAdminModule('manage-users'));
+
+        // LE SIEGE NE S'OUVRE PAS PAR UNE PERMISSION. Le rattacher a `manage-users`
+        // laisserait n'importe quel administrateur charge des comptes voir la page qui
+        // deplace la propriete de la plateforme.
+        Gate::define('hold-platform-seat', fn (User $user) => $user->isSuperAdmin());
         Gate::define('manage-services', fn (User $user) => $user->canAccessAdminModule('manage-services'));
         Gate::define('manage-entreprises', fn (User $user) => $user->canAccessAdminModule('manage-entreprises'));
         Gate::define('manage-finance', fn (User $user) => $user->canAccessAdminModule('manage-finance'));

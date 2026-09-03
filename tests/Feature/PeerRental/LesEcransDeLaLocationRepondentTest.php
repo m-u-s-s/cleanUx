@@ -93,11 +93,10 @@ class LesEcransDeLaLocationRepondentTest extends TestCase
         // LA CAPACITE, PAS LE SEUL ROLE : `manage-peer-rentals` garde cet ecran comme
         // `manage-rentals` garde celui de la flotte maison. Un administrateur sans elle
         // ne doit pas y entrer — c'est justement ce que le second cas mesure.
-        $arbitre = User::factory()->admin()->create([
+        $arbitre = $this->prendreLeSiege([
+            'role' => 'admin',
             'email_verified_at' => now(),
-            'is_active' => true,
             'status' => 'active',
-            'platform_role' => 'super_admin',
         ]);
 
         $this->actingAs($arbitre)->get(route('peer.admin'))->assertOk();

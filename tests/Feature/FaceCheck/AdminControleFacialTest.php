@@ -34,10 +34,7 @@ class AdminControleFacialTest extends TestCase
         Notification::fake();
         $this->activerLeControleFacial();
 
-        $this->admin = User::factory()->create([
-            'platform_role' => 'super_admin',
-            'is_active' => true,
-        ]);
+        $this->admin = $this->prendreLeSiege();
 
         $this->prestataire = $this->prestataireSoumis();
         app(FaceCheckService::class)->enroll($this->prestataire, 'ref#face:jean', 'image/jpeg', true);

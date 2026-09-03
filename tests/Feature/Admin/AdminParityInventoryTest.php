@@ -27,6 +27,12 @@ class AdminParityInventoryTest extends TestCase
             .'`missions` est vide et le dispatch vit dans le centre de répartition, où il est '
             .'porté. Y ajouter une action porterait sur un modèle que personne n’alimente.',
 
+        'platform-seat' => 'Déplacer la PROPRIÉTÉ de la plateforme depuis un téléphone perdu ou '
+            .'prêté n’a aucun intérêt opérationnel et ouvre un chemin de plus vers le seul siège qui '
+            .'passe partout. Le transfert exige déjà la phrase, le second facteur et un délai : '
+            .'lui offrir une seconde surface reviendrait à multiplier les portes d’une pièce '
+            .'qu’on cherche justement à n’ouvrir que d’un seul côté.',
+
         'face-check' => 'Le geste central de cet écran est de COMPARER DEUX VISAGES À L’ŒIL : lever '
             .'un blocage sans avoir regardé les deux images n’est pas une décision, c’est un clic. '
             .'Porter ces gestes sur mobile obligerait à servir des images biométriques (RGPD art. 9) '

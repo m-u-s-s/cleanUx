@@ -2,6 +2,9 @@
 
 namespace Tests;
 
+use App\Models\User;
+use App\Services\Platform\SiegeDuSuperAdmin;
+use App\Support\Platform\PorteDuSiege;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Http;
 
@@ -39,5 +42,25 @@ abstract class TestCase extends BaseTestCase
                 ['lat' => '50.8503', 'lon' => '4.3517', 'address' => []],
             ], 200),
         ]);
+    }
+
+    /**
+     * UN SUPER-ADMINISTRATEUR, PAR LA PORTE.
+     *
+     * Le modele refuse desormais qu'on pose ou retire ce role hors de
+     * {@see SiegeDuSuperAdmin} : c'est cette garde qui empeche un vol en
+     * deux temps. Les tests l'ouvrent explicitement, plutot que de la contourner en ecrivant la
+     * colonne — un helper qui contournerait la garde ne prouverait plus rien de ce qu'elle protege.
+     *
+     * @param  array<string, mixed>  $attributs
+     */
+    protected function prendreLeSiege(array $attributs = []): User
+    {
+        return PorteDuSiege::ouvrir(
+            fn () => User::factory()->create($attributs + [
+                'platform_role' => User::PLATFORM_SUPER_ADMIN,
+                'is_active' => true,
+            ]),
+        );
     }
 }

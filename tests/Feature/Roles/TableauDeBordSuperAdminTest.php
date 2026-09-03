@@ -15,7 +15,8 @@ class TableauDeBordSuperAdminTest extends TestCase
 
     private function superAdmin(): User
     {
-        return User::factory()->create(['platform_role' => 'super_admin']);
+        // LE SIEGE NE SE POSE QUE PAR SA PORTE : le modele refuse l'ecriture directe.
+        return $this->prendreLeSiege();
     }
 
     public function test_chaque_role_pointe_vers_une_route_qui_existe(): void

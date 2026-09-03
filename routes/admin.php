@@ -42,6 +42,7 @@ use App\Livewire\Admin\GestionUtilisateurs;
 use App\Livewire\Admin\I18n\TranslationsCenter;
 use App\Livewire\Admin\Insurance\InsuranceCenter;
 use App\Livewire\Admin\KybV2\KybCenter;
+use App\Livewire\Admin\LeSiegeDeLaPlateforme;
 use App\Livewire\Admin\Loyalty\LoyaltyCenter;
 use App\Livewire\Admin\Loyalty\LoyaltyRewardsCenter;
 use App\Livewire\Admin\Marketing\MarketingCenter;
@@ -196,6 +197,15 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
 
         Route::get('/utilisateurs', $utilisateurs)
             ->name('utilisateurs.manage');
+
+        /*
+         * LE SIEGE DE SUPER-ADMINISTRATEUR — sa propre page, et son propre garde.
+         *
+         * Il n'est pas un module d'administration de plus : ce n'est pas une permission qui
+         * l'ouvre, c'est le fait d'etre le titulaire. Le composant le verifie dans son
+         * `mount()`, parce que `/livewire/update` ne rejoue aucun middleware de route.
+         */
+        Route::get('/siege', LeSiegeDeLaPlateforme::class)->name('siege');
 
         /*
          * `/admin/users` (nom `admin.utilisateurs`) a été retiré le 2026-08-05 : c'était une

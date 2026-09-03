@@ -41,11 +41,7 @@ class NavAdminNOffrePasDePorteFermeeTest extends TestCase
 
     public function test_un_super_admin_voit_tout(): void
     {
-        $super = User::factory()->admin()->create([
-            'is_active' => true,
-            'status' => 'active',
-            'platform_role' => 'super_admin',
-        ]);
+        $super = $this->prendreLeSiege(['role' => 'admin', 'status' => 'active']);
 
         $html = $this->rendu($super, 'livewire.admin.readiness.quick-links');
 

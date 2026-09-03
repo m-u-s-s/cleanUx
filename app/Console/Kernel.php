@@ -26,6 +26,10 @@ class Kernel extends ConsoleKernel
         // Quatre echeances qu'aucun clic ne declenche : voir la commande. L'empreinte Stripe
         // ne tient que sept jours, d'ou une passe HORAIRE et non quotidienne.
         $schedule->command('peer-rental:entretenir')->hourly()->withoutOverlapping();
+
+        // SANS CETTE PASSE, AUCUN TRANSFERT DE SIEGE N'ABOUTIT : le delai qui protege le
+        // titulaire deviendrait un refus deguise, et le siege ne changerait plus de mains.
+        $schedule->command('plateforme:siege-appliquer')->everyFifteenMinutes()->withoutOverlapping();
         $schedule->command('finance:sync-documents')->hourly()->withoutOverlapping();
         $schedule->command('finance:sync-documents --reminders')->dailyAt('09:00')->withoutOverlapping();
         $schedule->command('app:generate-subscriptions')->daily();

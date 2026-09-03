@@ -24,12 +24,8 @@ class RepartitionDeLaPopulationTest extends TestCase
 
     private function superAdmin(): User
     {
-        return User::factory()->create([
-            'role' => 'super_admin',
-            'platform_role' => 'super_admin',
-            'is_super_admin' => true,
-            'is_active' => true,
-        ]);
+        // LE SIEGE NE SE POSE QUE PAR SA PORTE : le modele refuse l'ecriture directe.
+        return $this->prendreLeSiege(['role' => 'super_admin']);
     }
 
     public function test_l_anneau_s_affiche_quand_la_plateforme_a_des_comptes(): void

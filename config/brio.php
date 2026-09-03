@@ -1,6 +1,17 @@
 <?php
 
 return [
+    /*
+     * LE SIEGE DE SUPER-ADMINISTRATEUR.
+     *
+     * Le delai entre l'armement d'un transfert et son effet. C'est lui qui rend le vol de
+     * session inoffensif : le titulaire est prevenu et garde ce temps pour annuler. Le mettre
+     * a zero rend le transfert immediat, et retire cette protection.
+     */
+    'seat' => [
+        'transfer_delay_hours' => (int) env('BRIO_SEAT_TRANSFER_DELAY_HOURS', 24),
+    ],
+
     'platform_fee_percent' => (int) env('BRIO_PLATFORM_FEE_PERCENT', 15),
 
     /*

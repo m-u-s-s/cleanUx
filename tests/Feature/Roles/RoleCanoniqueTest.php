@@ -31,7 +31,7 @@ class RoleCanoniqueTest extends TestCase
 
     public function test_le_super_admin_prime_sur_tout(): void
     {
-        $user = User::factory()->create(['platform_role' => 'super_admin']);
+        $user = $this->prendreLeSiege();
 
         $this->assertSame(Role::SUPER_ADMIN, $user->roleCanonique());
     }

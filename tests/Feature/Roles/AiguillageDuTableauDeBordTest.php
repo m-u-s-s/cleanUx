@@ -19,7 +19,7 @@ class AiguillageDuTableauDeBordTest extends TestCase
 
     public function test_le_super_admin_va_chez_lui(): void
     {
-        $user = User::factory()->create(['platform_role' => 'super_admin']);
+        $user = $this->prendreLeSiege();
 
         $this->actingAs($user)->get('/dashboard')->assertRedirect(route('super-admin.dashboard'));
     }

@@ -29,7 +29,7 @@ class UserConcernsTest extends TestCase
 
     public function test_is_platform_admin_returns_true_for_super_admin_platform_role(): void
     {
-        $user = User::factory()->create(['platform_role' => 'super_admin']);
+        $user = $this->prendreLeSiege();
 
         $this->assertTrue($user->isPlatformAdmin());
     }
@@ -44,7 +44,7 @@ class UserConcernsTest extends TestCase
     public function test_is_super_admin_returns_true_only_for_super_admin_role(): void
     {
         $admin = User::factory()->create(['platform_role' => 'admin']);
-        $superAdmin = User::factory()->create(['platform_role' => 'super_admin']);
+        $superAdmin = $this->prendreLeSiege();
 
         $this->assertFalse($admin->isSuperAdmin());
         $this->assertTrue($superAdmin->isSuperAdmin());
@@ -59,11 +59,7 @@ class UserConcernsTest extends TestCase
 
     public function test_can_access_admin_module_returns_true_for_super_admin_without_permission_check(): void
     {
-        $user = User::factory()->create([
-            'role' => 'super_admin',
-            'platform_role' => 'super_admin',
-            'is_active' => true,
-        ]);
+        $user = $this->prendreLeSiege(['role' => 'super_admin']);
 
         $this->assertTrue($user->canAccessAdminModule('manage-finance'));
     }

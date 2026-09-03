@@ -4,6 +4,7 @@ namespace Tests\Feature\Admin;
 
 use App\Models\User;
 use App\Support\Navigation\ModuleCatalogue;
+use App\Support\Platform\PorteDuSiege;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -62,6 +63,18 @@ class NavigationEtGatesAdminTest extends TestCase
         $this->assertNotContains('admin:admin.finance', $visibles);
     }
 
+    /**
+     * LES CAPACITÉS QUI NE S'ACCORDENT PAS, avec leur motif.
+     *
+     * `allowedAdminPermissions()` liste ce qu'on PEUT donner à un administrateur. Le siège de
+     * super-administrateur n'en fait pas partie : ce n'est pas une permission qu'on accorde,
+     * c'est un fait sur qui l'on est. L'y inscrire le rendrait cochable dans l'écran des
+     * permissions — exactement ce que ce siège interdit.
+     *
+     * @var list<string>
+     */
+    private const NON_ASSIGNABLES = ['hold-platform-seat'];
+
     /** TOUTE CAPACITÉ DÉCLARÉE DOIT EXISTER. */
     public function test_chaque_gate_declare_est_une_capacite_reelle(): void
     {
@@ -76,7 +89,7 @@ class NavigationEtGatesAdminTest extends TestCase
         $this->assertGreaterThan(0, $declares->count());
 
         // $declares est une Collection : on la ramene a un tableau avant la difference.
-        $inconnues = array_values(array_diff($declares->all(), $connues));
+        $inconnues = array_values(array_diff($declares->all(), $connues, self::NON_ASSIGNABLES));
 
         $this->assertSame([], $inconnues, 'Ces capacites declarees par la navigation n existent pas.');
     }
@@ -111,13 +124,13 @@ class NavigationEtGatesAdminTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin', 'is_active' => true]);
 
-        $admin->forceFill([
+        PorteDuSiege::ouvrir(fn () => $admin->forceFill([
             'platform_role' => $superAdmin ? 'super_admin' : 'admin',
             // La colonne est `permissions` -- `admin_permissions` n'existe pas, et y ecrire
             // laissait le compte sans aucune capacite : le test mesurait alors un refus par
             // absence, pas le filtre qu'il visait.
             'permissions' => $capacites,
-        ])->save();
+        ])->save());
 
         return $admin->refresh();
     }
