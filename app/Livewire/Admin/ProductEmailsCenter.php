@@ -46,6 +46,10 @@ class ProductEmailsCenter extends Component
     #[Url(as: 'categorie', except: '')]
     public string $filtreCategorie = '';
 
+    /** Deux volets d'un meme studio : ce qui est ECRIT, et ce qui l'HABILLE. */
+    #[Url(as: 'volet', except: 'gabarits')]
+    public string $onglet = 'gabarits';
+
     public string $recipientName = 'Client Démo';
 
     public string $recipientEmail = 'client@example.test';

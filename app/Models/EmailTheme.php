@@ -15,8 +15,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Un thème porte le logo, les couleurs, le fond et la typographie ; un gabarit porte les mots.
  * Changer de saison ne touche donc aucun gabarit — c'est le thème actif qui change.
  *
- * @property ?string $starts_on
- * @property ?string $ends_on
+ * Les deux dates sont CASTEES en `date:Y-m-d` : elles rendent un Carbon, jamais une chaine.
+ * L'annotation inverse aveuglait PHPStan sur tout appel a `format()`.
+ *
+ * @property ?CarbonInterface $starts_on
+ * @property ?CarbonInterface $ends_on
  */
 class EmailTheme extends Model
 {

@@ -100,17 +100,17 @@ class LeSocleDuStudioDEmailsTest extends TestCase
     /** LA SAISON L'EMPORTE sur le theme permanent, a l'interieur de sa fenetre. */
     public function test_un_theme_saisonnier_gagne_dans_sa_fenetre(): void
     {
-        EmailTheme::factory()->saison('2026-11-24', '2026-11-30', 50)->create(['code' => 'black-friday']);
+        EmailTheme::factory()->saison('2026-11-24', '2026-11-30', 50)->create(['code' => 'saison-test-bf']);
 
         $moteur = app(MoteurDeThemeEmail::class);
 
-        $this->assertSame('black-friday', $moteur->pour(null, Carbon::parse('2026-11-27'))->code);
+        $this->assertSame('saison-test-bf', $moteur->pour(null, Carbon::parse('2026-11-27'))->code);
     }
 
     /** TEMOIN — hors de la fenetre, le theme permanent reprend la main. */
     public function test_temoin_hors_fenetre_le_theme_permanent_reprend(): void
     {
-        EmailTheme::factory()->saison('2026-11-24', '2026-11-30', 50)->create(['code' => 'black-friday']);
+        EmailTheme::factory()->saison('2026-11-24', '2026-11-30', 50)->create(['code' => 'saison-test-bf']);
 
         $this->assertSame('brio', app(MoteurDeThemeEmail::class)->pour(null, Carbon::parse('2026-12-15'))->code);
     }
@@ -123,22 +123,22 @@ class LeSocleDuStudioDEmailsTest extends TestCase
      */
     public function test_une_fenetre_annuelle_franchit_le_nouvel_an(): void
     {
-        EmailTheme::factory()->saison('2020-12-20', '2021-01-02', 40, true)->create(['code' => 'noel']);
+        EmailTheme::factory()->saison('2020-12-20', '2021-01-02', 40, true)->create(['code' => 'saison-test-noel']);
 
         $moteur = app(MoteurDeThemeEmail::class);
 
-        $this->assertSame('noel', $moteur->pour(null, Carbon::parse('2026-12-24'))->code, 'Avant le passage d’année.');
-        $this->assertSame('noel', $moteur->pour(null, Carbon::parse('2027-01-01'))->code, 'Après le passage d’année.');
+        $this->assertSame('saison-test-noel', $moteur->pour(null, Carbon::parse('2026-12-24'))->code, 'Avant le passage d’année.');
+        $this->assertSame('saison-test-noel', $moteur->pour(null, Carbon::parse('2027-01-01'))->code, 'Après le passage d’année.');
         $this->assertSame('brio', $moteur->pour(null, Carbon::parse('2027-01-10'))->code, 'Hors fenêtre.');
     }
 
     /** A FENETRES QUI SE CHEVAUCHENT, LA PRIORITE TRANCHE. */
     public function test_la_priorite_departage_deux_saisons(): void
     {
-        EmailTheme::factory()->saison('2026-11-20', '2026-12-05', 10)->create(['code' => 'promo-longue']);
-        EmailTheme::factory()->saison('2026-11-24', '2026-11-30', 50)->create(['code' => 'black-friday']);
+        EmailTheme::factory()->saison('2026-11-20', '2026-12-05', 10)->create(['code' => 'saison-test-longue']);
+        EmailTheme::factory()->saison('2026-11-24', '2026-11-30', 50)->create(['code' => 'saison-test-bf']);
 
-        $this->assertSame('black-friday', app(MoteurDeThemeEmail::class)->pour(null, Carbon::parse('2026-11-27'))->code);
+        $this->assertSame('saison-test-bf', app(MoteurDeThemeEmail::class)->pour(null, Carbon::parse('2026-11-27'))->code);
     }
 
     /**
@@ -149,7 +149,7 @@ class LeSocleDuStudioDEmailsTest extends TestCase
      */
     public function test_un_gabarit_qui_impose_son_theme_ignore_la_saison(): void
     {
-        EmailTheme::factory()->saison('2026-11-24', '2026-11-30', 50)->create(['code' => 'black-friday']);
+        EmailTheme::factory()->saison('2026-11-24', '2026-11-30', 50)->create(['code' => 'saison-test-bf']);
 
         $facture = EmailTemplate::query()->where('code', 'finance_reminder')->firstOrFail();
 
@@ -160,12 +160,12 @@ class LeSocleDuStudioDEmailsTest extends TestCase
     /** TEMOIN — un gabarit qui n'impose rien suit bien la saison, lui. */
     public function test_temoin_un_gabarit_libre_suit_la_saison(): void
     {
-        EmailTheme::factory()->saison('2026-11-24', '2026-11-30', 50)->create(['code' => 'black-friday']);
+        EmailTheme::factory()->saison('2026-11-24', '2026-11-30', 50)->create(['code' => 'saison-test-bf']);
 
         $libre = EmailTemplate::query()->where('code', 'booking_confirmed')->firstOrFail();
 
         $this->assertNull($libre->email_theme_id);
-        $this->assertSame('black-friday', app(MoteurDeThemeEmail::class)->pour($libre, Carbon::parse('2026-11-27'))->code);
+        $this->assertSame('saison-test-bf', app(MoteurDeThemeEmail::class)->pour($libre, Carbon::parse('2026-11-27'))->code);
     }
 
     /** LE REPLI : un envoi ne depend jamais de la presence d'une ligne en base. */

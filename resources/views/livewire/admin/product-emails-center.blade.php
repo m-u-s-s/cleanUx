@@ -12,6 +12,23 @@
         </x-slot:actions>
     </x-page-shell>
 
+    {{-- DEUX VOLETS D UN MEME STUDIO : le contenu d un cote, l habillage de l autre. --}}
+    <div class="flex gap-2" role="tablist" aria-label="Volets du studio">
+        <button type="button" role="tab" wire:click="$set('onglet', 'gabarits')"
+                aria-selected="{{ $onglet === 'gabarits' ? 'true' : 'false' }}"
+                @class(['brio-btn-ligne', 'brio-btn-primary' => $onglet === 'gabarits'])>
+            Gabarits
+        </button>
+        <button type="button" role="tab" wire:click="$set('onglet', 'themes')"
+                aria-selected="{{ $onglet === 'themes' ? 'true' : 'false' }}"
+                @class(['brio-btn-ligne', 'brio-btn-primary' => $onglet === 'themes'])>
+            Thèmes &amp; saisons
+        </button>
+    </div>
+
+    @if($onglet === 'themes')
+        <livewire:admin.email-themes-studio />
+    @else
     <div class="grid grid-cols-1 gap-4 xl:grid-cols-12">
 
         {{-- ── La bibliothèque ─────────────────────────────────────────── --}}
@@ -254,6 +271,7 @@
             </x-app-card>
         </div>
     </div>
+    @endif
 
     {{-- ── Confirmation de suppression ──────────────────────────────────── --}}
     @if($gabaritASupprimer)

@@ -133,7 +133,7 @@ class LAtelierDEmailsTest extends TestCase
     public function test_l_apercu_se_rejoue_sous_le_theme_demande(): void
     {
         $noel = EmailTheme::factory()->saison('2026-12-20', '2026-12-31', 40)
-            ->create(['code' => 'noel', 'color_accent' => '#c81d25']);
+            ->create(['code' => 'saison-test-noel', 'color_accent' => '#c81d25']);
 
         $composant = Livewire::actingAs($this->admin())->test(ProductEmailsCenter::class)
             ->set('templateKey', 'booking_confirmed');
