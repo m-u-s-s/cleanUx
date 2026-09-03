@@ -116,7 +116,7 @@ class WireConfirmPasseParLaModaleTest extends TestCase
     /**
      * LE DANGER EST LE DEFAUT, et neuf confirmations disent explicitement le contraire.
      *
-     * Sur cinquante-deux, trente-neuf suppriment, retirent, suspendent ou annulent. Une modale
+     * Sur cinquante-trois, quarante suppriment, retirent, suspendent ou annulent. Une modale
      * qui crie « Action irreversible » sur « Approuver ce document ? » apprend a cliquer sans
      * lire — et c'est ce qui rend la vraie alerte inutile.
      */
@@ -164,7 +164,7 @@ class WireConfirmPasseParLaModaleTest extends TestCase
      * rien — et un bouton `submit` dans un `<form>` enverrait son formulaire avant que
      * l'utilisateur n'ait repondu.
      *
-     * Aucun des cinquante-deux ne le fait aujourd'hui. Ce test le maintient.
+     * Aucun des cinquante-trois ne le fait aujourd'hui. Ce test le maintient.
      */
     public function test_aucune_confirmation_ne_soumet_un_formulaire(): void
     {
@@ -242,7 +242,7 @@ class WireConfirmPasseParLaModaleTest extends TestCase
     /**
      * DEUX AFFIRMATIONS DE CE FICHIER NE TENAIENT QUE DANS SES COMMENTAIRES.
      *
-     * « Aucune page invitee ne porte wire:confirm » et le compte de cinquante-deux vivaient en
+     * « Aucune page invitee ne porte wire:confirm » et le compte de cinquante-trois vivaient en
      * prose. Un commentaire ne peut pas rougir : c'est exactement ainsi qu'une vue a pu employer
      * la variante `prompt` pendant que ce fichier affirmait le contraire, tout vert.
      */
@@ -266,9 +266,9 @@ class WireConfirmPasseParLaModaleTest extends TestCase
         $this->assertSame([], $invitees, 'Une page invitee porte `wire:confirm` : la modale n’y est pas montee.');
 
         $this->assertSame(
-            52,
+            53,
             $confirmations,
-            "Le compte de `wire:confirm` a change : ce fichier en annonce cinquante-deux.\n"
+            "Le compte de `wire:confirm` a change : ce fichier en annonce cinquante-trois.\n"
             .'Mets a jour ses trois docblocks EN MEME TEMPS que ce nombre, sinon ils rementiront.'
         );
     }
