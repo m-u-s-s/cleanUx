@@ -3,7 +3,7 @@
     <x-page-shell
         :eyebrow="__('Administration')"
         :title="__('Location entre membres')"
-        :subtitle="__('Les annonces à vérifier, les papiers à valider, les retenues contestées.')" />
+        :subtitle="__('Les annonces de véhicules et de logements à vérifier, les papiers à valider, les retenues contestées.')" />
 
     @if ($message)
         <div class="brio-alerte brio-alerte-success !mb-0"><span aria-hidden="true">✅</span><span>{{ $message }}</span></div>
@@ -12,8 +12,9 @@
         <div class="brio-alerte brio-alerte-danger !mb-0"><span aria-hidden="true">⚠️</span><span>{{ $erreur }}</span></div>
     @endif
 
-    <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+    <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         <x-ui.stat :title="__('Véhicules en ligne')" :value="$this->chiffres['vehicules']" icon="🚗" tone="blue" />
+        <x-ui.stat :title="__('Logements en ligne')" :value="$this->chiffres['logements']" icon="🏠" tone="blue" />
         <x-ui.stat :title="__('Locations en cours')" :value="$this->chiffres['locations_en_cours']" icon="🔑" tone="emerald" />
         <x-ui.stat :title="__('Commission encaissée')"
                    :value="locale_currency($this->chiffres['commission_cents'] / 100)" icon="💶" tone="emerald" />
@@ -23,7 +24,8 @@
     <x-app-card>
         <div class="mb-4 flex flex-wrap gap-2">
             @foreach ([
-                'annonces' => __('Annonces') . ' (' . $this->annoncesAVerifier->count() . ')',
+                'annonces' => __('Véhicules') . ' (' . $this->annoncesAVerifier->count() . ')',
+                'logements' => __('Logements') . ' (' . $this->logementsAVerifier->count() . ')',
                 'papiers' => __('Papiers') . ' (' . $this->papiersAValider->count() . ')',
                 'litiges' => __('Litiges') . ' (' . $this->retenuesContestees->count() . ')',
             ] as $cle => $libelle)
@@ -69,6 +71,117 @@
                 @empty
                     <x-empty-state icon="✅" :title="__('Aucune annonce en attente')"
                                    :message="__('Toutes les annonces déposées ont été traitées.')" />
+                @endforelse
+            </div>
+
+        @elseif ($onglet === 'logements')
+            <div class="mb-4">
+                <label for="recherche-logement" class="sr-only">{{ __('Chercher un logement') }}</label>
+                <input id="recherche-logement" wire:model.live.debounce.400ms="rechercheLogement" type="search"
+                       class="w-full" placeholder="{{ __('Titre, ville ou référence…') }}">
+            </div>
+
+            {{-- LA FILE D ATTENTE : chaque annonce se publie ou se refuse AVEC UN MOTIF. --}}
+            <div class="space-y-2">
+                @forelse ($this->logementsAVerifier as $logement)
+                    <div class="brio-list-item !p-3" wire:key="verif-{{ $logement->id }}">
+                        <div class="min-w-0">
+                            <p class="font-semibold">{{ $logement->titre() }}</p>
+                            <p class="text-xs opacity-70">
+                                {{ collect([
+                                    $logement->owner?->name,
+                                    $logement->city,
+                                    ucfirst($logement->property_type),
+                                    $logement->max_guests . ' voyageur(s)',
+                                    locale_currency($logement->nightly_price_cents / 100) . ' / nuit',
+                                ])->filter()->join(' · ') }}
+                            </p>
+                            <p class="text-xs opacity-70">
+                                {{ $logement->media->count() }} photo(s) · {{ $logement->reference }}
+                            </p>
+                        </div>
+
+                        <div class="flex shrink-0 flex-wrap items-center gap-2">
+                            <a href="{{ route('peer.sejour', $logement) }}" class="brio-btn-ligne !text-xs">
+                                {{ __('Voir l’annonce') }}
+                            </a>
+                            <button type="button" wire:click="publierLeLogement({{ $logement->id }})"
+                                    class="brio-btn-primary !px-3 !py-1.5 !text-xs">{{ __('Publier') }}</button>
+                            <button type="button" wire:click="refuserLeLogement({{ $logement->id }})"
+                                    class="brio-btn-ligne-danger !text-xs">{{ __('Refuser') }}</button>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-sm opacity-70">{{ __('Aucun logement n’attend de vérification.') }}</p>
+                @endforelse
+
+                <div>
+                    <label for="motif-refus-logement" class="mb-1 block text-xs font-semibold">
+                        {{ __('Motif du refus') }}
+                        <span class="font-normal opacity-70">
+                            {{ __('— un refus sans explication écrite n’est ni corrigeable, ni défendable') }}
+                        </span>
+                    </label>
+                    <input id="motif-refus-logement" wire:model="motifRefus" type="text" class="w-full"
+                           placeholder="{{ __('Photos illisibles, adresse absente…') }}">
+                </div>
+            </div>
+
+            {{-- LES ANNONCES DEJA EN LIGNE : pouvoir en retirer une sans attendre un signalement. --}}
+            <h3 class="mt-6 text-sm font-bold">{{ __('Logements en ligne') }}</h3>
+            <div class="mt-2 space-y-2">
+                @forelse ($this->logementsEnLigne as $logement)
+                    <div class="brio-list-item !p-3" wire:key="ligne-{{ $logement->id }}">
+                        <div class="min-w-0">
+                            <p class="font-semibold">{{ $logement->titre() }}</p>
+                            <p class="text-xs opacity-70">
+                                {{ collect([
+                                    $logement->owner?->name,
+                                    $logement->city,
+                                    $logement->sejours_count . ' séjour(s)',
+                                ])->filter()->join(' · ') }}
+                            </p>
+                        </div>
+
+                        <div class="flex shrink-0 items-center gap-2">
+                            <a href="{{ route('peer.sejour', $logement) }}" class="brio-btn-ligne !text-xs">
+                                {{ __('Voir') }}
+                            </a>
+                            <button type="button" wire:click="suspendreLeLogement({{ $logement->id }})"
+                                    wire:confirm="{{ __('Retirer ce logement du catalogue ? Les séjours déjà réservés continuent.') }}"
+                                    class="brio-btn-ligne-danger !text-xs">{{ __('Retirer') }}</button>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-sm opacity-70">{{ __('Aucun logement publié pour l’instant.') }}</p>
+                @endforelse
+            </div>
+
+            {{-- CE QUI EST SORTI DU CATALOGUE. Sans cette liste, retirer une annonce etait
+                 sans retour : plus aucun ecran ne la montrait. --}}
+            <h3 class="mt-6 text-sm font-bold">{{ __('Refusés et retirés') }}</h3>
+            <div class="mt-2 space-y-2">
+                @forelse ($this->logementsHorsLigne as $logement)
+                    <div class="brio-list-item !p-3" wire:key="hors-{{ $logement->id }}">
+                        <div class="min-w-0">
+                            <p class="font-semibold">{{ $logement->titre() }}</p>
+                            <p class="text-xs opacity-70">
+                                {{ collect([
+                                    $logement->owner?->name,
+                                    $logement->city,
+                                    $logement->status === \App\Models\PeerStay::STATUT_REFUSE ? __('Refusé') : __('Retiré'),
+                                    $logement->rejection_reason,
+                                ])->filter()->join(' · ') }}
+                            </p>
+                        </div>
+
+                        <div class="flex shrink-0 items-center gap-2">
+                            <button type="button" wire:click="publierLeLogement({{ $logement->id }})"
+                                    class="brio-btn-primary !px-3 !py-1.5 !text-xs">{{ __('Remettre en ligne') }}</button>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-sm opacity-70">{{ __('Aucun logement refusé ni retiré.') }}</p>
                 @endforelse
             </div>
 
