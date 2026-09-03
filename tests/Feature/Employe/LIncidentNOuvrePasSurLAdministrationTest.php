@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Employe;
 
-use App\Livewire\Admin\ProductEmailsCenter;
 use App\Livewire\Employe\SignalerIncident;
 use App\Models\ProviderProfile;
 use App\Models\User;
@@ -47,14 +46,17 @@ class LIncidentNOuvrePasSurLAdministrationTest extends TestCase
     }
 
     /**
-     * TEMOIN — le bandeau n'est pas supprime du produit : il reste sur les pages
-     * d'administration qui l'incluent — le centre d'audit ne l'inclut plus depuis qu'il ouvre
-     * sur son propre titre. Sans ce controle, le premier test resterait vert
-     * meme si le partiel avait ete vide de son contenu.
+     * TEMOIN — le bandeau n'est pas supprime du produit, il rend toujours sa phrase.
+     *
+     * Il n'a plus de page d'ADMINISTRATION porteuse : le centre d'audit l'a quitte, et le centre
+     * e-mails est devenu un atelier. Le temoin ne peut donc plus etre une page — c'est le gabarit
+     * lui-meme qui prouve que la phrase cherchee au test precedent est bien la sienne.
      */
-    public function test_temoin_les_pages_d_administration_le_gardent(): void
+    public function test_temoin_le_gabarit_rend_toujours_sa_phrase(): void
     {
-        Livewire::actingAs(User::factory()->admin()->create())->test(ProductEmailsCenter::class)
-            ->assertSee('Centre de communication');
+        $this->assertStringContainsString(
+            'Centre de communication',
+            view('livewire.shared.communication.hero')->render(),
+        );
     }
 }

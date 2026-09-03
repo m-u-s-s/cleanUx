@@ -45,26 +45,19 @@ class LesEmailsOuvrentSurLeurPropreTitreTest extends TestCase
     }
 
     /**
-     * TEMOIN — LE BANDEAU DE COMMUNICATION RESTE, LUI.
+     * TEMOIN — LA PAGE REND SON ATELIER.
      *
-     * C'est le controle qui distingue « le bon empilement est parti » de « la page a ete videe ».
-     * Sans lui, les refus ci-dessus passeraient au vert sur un ecran devenu blanc.
+     * C'est le controle qui distingue « les blocs decoratifs sont partis » de « la page a ete
+     * videe ». Sans lui, les refus ci-dessus passeraient au vert sur un ecran devenu blanc.
      */
-    public function test_temoin_le_bandeau_de_communication_reste(): void
+    public function test_temoin_la_page_rend_son_atelier(): void
     {
         $this->actingAs($this->admin())
             ->get('/admin/emails')
             ->assertOk()
-            ->assertSee('Centre de communication & suivi qualité', false);
-    }
-
-    /** TEMOIN — la page rend son propre contenu : le retrait n'a pas casse sa racine unique. */
-    public function test_temoin_la_page_rend_son_contenu(): void
-    {
-        $this->actingAs($this->admin())
-            ->get('/admin/emails')
-            ->assertOk()
-            ->assertSee('Emails produit', false);
+            ->assertSee('Emails produit', false)
+            ->assertSee('Composez vos e-mails en blocs', false)
+            ->assertSee('Aperçu email', false);
     }
 
     /** Les quatre gabarits de `pilotage/` ont quitte le depot avec leur dernier porteur. */

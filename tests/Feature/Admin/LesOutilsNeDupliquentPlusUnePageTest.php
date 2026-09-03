@@ -22,25 +22,25 @@ class LesOutilsNeDupliquentPlusUnePageTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** LE BANDEAU DE LA PAGE E-MAILS n'a plus rien a faire au milieu des outils. */
+    /** L ATELIER D E-MAILS n'a plus rien a faire au milieu des outils. */
     public function test_la_page_n_imbrique_plus_le_centre_e_mails(): void
     {
         Livewire::actingAs($this->outilleur())->test(OutilsAdmin::class)
-            ->assertDontSee('Centre de communication & suivi qualité', false);
+            ->assertDontSee('Composez vos e-mails en blocs', false);
     }
 
     /**
-     * TEMOIN — ce bandeau existe toujours, et reste visible sur la page a laquelle il appartient.
+     * TEMOIN — cet atelier existe, et rend cette phrase sur la page a laquelle il appartient.
      *
-     * Sans lui, le refus ci-dessus passerait au vert sur une phrase mal orthographiee, ou parce
-     * que le bandeau aurait ete supprime du produit : il mesurerait alors autre chose.
+     * Sans lui, le refus ci-dessus passerait au vert sur une phrase mal orthographiee : il
+     * mesurerait sa propre faute de frappe au lieu du retrait.
      */
-    public function test_temoin_le_bandeau_reste_sur_la_page_e_mails(): void
+    public function test_temoin_l_atelier_rend_sa_phrase_sur_sa_page(): void
     {
         $this->actingAs($this->toutPuissant())
             ->get('/admin/emails')
             ->assertOk()
-            ->assertSee('Centre de communication & suivi qualité', false);
+            ->assertSee('Composez vos e-mails en blocs', false);
     }
 
     /** LA PAGE VOISINE RESTE ATTEIGNABLE : le lien remplace l'imbrication, il ne la supprime pas. */

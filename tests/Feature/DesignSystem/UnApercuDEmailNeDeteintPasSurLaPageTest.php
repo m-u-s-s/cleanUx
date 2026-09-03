@@ -32,7 +32,10 @@ class UnApercuDEmailNeDeteintPasSurLaPageTest extends TestCase
     private function admin(): User
     {
         return User::factory()->admin()->create([
-            'permissions' => ['perform-critical-admin-actions'],
+            // LA CAPACITE DU MODULE, PAS SEULEMENT LE ROLE. `module_gate` exige
+            // `manage-communication` sur `/admin/emails` depuis toujours : seul un test de
+            // composant pouvait s'en passer, et mesurait un chemin que la production refuse.
+            'permissions' => ['perform-critical-admin-actions', 'manage-communication'],
             'access_scope' => User::ACCESS_SCOPE_ALL,
             'is_active' => true,
         ]);
