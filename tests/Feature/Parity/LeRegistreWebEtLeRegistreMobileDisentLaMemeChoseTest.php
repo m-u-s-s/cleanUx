@@ -40,18 +40,13 @@ class LeRegistreWebEtLeRegistreMobileDisentLaMemeChoseTest extends TestCase
     /**
      * CE QUI N'EST PAS UNE PAGE, avec son motif.
      *
-     * Deux lignes, deux décisions — pas une liste de tâches déguisée. Le jour où l'une d'elles
-     * devient une vraie page, sa ligne se retire et le registre reprend la main.
+     * Une seule ligne, et une décision — pas une liste de tâches déguisée. `/presence/me` y
+     * figurait : elle rendait du JSON, elle a reçu son écran, la ligne est partie.
      *
      * @var array<string, string>
      */
     private const PAS_DES_PAGES = [
         '/dashboard/employe/stripe-connect/start' => 'Part chez Stripe : une session d’identification bancaire n’a rien à faire dans un WebView embarqué.',
-        // DEFAUT CONNU DU REPERTOIRE WEB, pas du registre mobile : `PresenceController@me`
-        // rend du JSON. La case « Ma présence » du menu prestataire montre donc du JSON brut
-        // à qui clique dessus, sur le web comme ailleurs. À trancher côté produit : lui
-        // donner un écran, ou retirer la case.
-        '/presence/me' => 'Point d’API : `PresenceController@me` rend du JSON, pas une page.',
     ];
 
     public function test_chaque_ecran_du_repertoire_est_annonce_au_mobile(): void

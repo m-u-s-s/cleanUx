@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Livewire\Provider\MaPresence;
 use App\Services\Presence\PresenceTracker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/** Phase 3 — Endpoints de présence appelés depuis echo-listeners.js. */
+/**
+ * Phase 3 — Endpoints de presence de la MESSAGERIE, appeles depuis echo-listeners.js.
+ *
+ * Ne pas confondre avec `provider_presence`, la presence qui decide des missions : c'est
+ * {@see MaPresence} qui la porte.
+ */
 class PresenceController extends Controller
 {
     public function touch(Request $request): JsonResponse
@@ -36,13 +42,6 @@ class PresenceController extends Controller
             'ok' => true,
             'status' => $validated['status'],
             'custom_message' => $validated['custom_message'] ?? null,
-        ]);
-    }
-
-    public function me(Request $request): JsonResponse
-    {
-        return response()->json([
-            'presence' => PresenceTracker::get($request->user()),
         ]);
     }
 }
