@@ -191,6 +191,26 @@ class PeerStay extends Model implements Louable
         return $lignes;
     }
 
+    /**
+     * CE QU'UN LOGEMENT DOIT PROUVER.
+     *
+     * L'assurance couvre le voyageur ; le titre prouve le droit de louer, et c'est lui qui
+     * separe une place de marche serieuse d'un panneau d'annonces. Le numero communal et le
+     * certificat energetique restent facultatifs : toutes les communes n'en delivrent pas.
+     *
+     * @return list<string>
+     */
+    public function typesDeDocumentsRequis(): array
+    {
+        return [PeerVehicleDocument::TYPE_ASSURANCE, PeerVehicleDocument::TYPE_TITRE];
+    }
+
+    /** @return MorphMany<PeerVehicleDocument, $this> */
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(PeerVehicleDocument::class, 'documentable');
+    }
+
     /** @return MorphMany<PeerVehicleAvailability, $this> */
     public function indisponibilites(): MorphMany
     {

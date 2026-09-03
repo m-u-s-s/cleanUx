@@ -67,7 +67,7 @@ class PeerAdminCenter extends Component
     public function papiersAValider(): Collection
     {
         return PeerVehicleDocument::query()
-            ->with(['vehicle.owner:id,name'])
+            ->with(['documentable'])
             ->where('status', PeerVehicleDocument::STATUT_EN_REVUE)
             ->orderBy('created_at')
             ->get();

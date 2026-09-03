@@ -5,8 +5,10 @@ namespace App\Livewire\PeerRental;
 use App\Models\PeerStay;
 use App\Models\PeerStayMedium;
 use App\Models\PeerVehicleAvailability;
+use App\Models\PeerVehicleDocument;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -95,6 +97,13 @@ class PeerStayEditor extends Component
     /** @var list<int> Les mois de haute saison, de 1 a 12. */
     public array $moisHauteSaison = [];
 
+    // ── Papiers ────────────────────────────────────────────────────────────
+    public mixed $fichierDocument = null;
+
+    public string $typeDocument = PeerVehicleDocument::TYPE_ASSURANCE;
+
+    public string $expirationDocument = '';
+
     public string $politiqueDAnnulation = 'moderee';
 
     // ── Où ─────────────────────────────────────────────────────────────────
@@ -117,6 +126,19 @@ class PeerStayEditor extends Component
     public array $photos = [];
 
     /** Les équipements qu'une annonce peut cocher, dans l'ordre où on les cherche. */
+    /**
+     * LES PAPIERS QU'UN LOGEMENT PEUT DEPOSER.
+     *
+     * Les deux premiers sont exiges ; les deux suivants rassurent le voyageur sans fermer la
+     * porte aux communes qui n'en delivrent pas.
+     */
+    public const DOCUMENTS = [
+        PeerVehicleDocument::TYPE_ASSURANCE,
+        PeerVehicleDocument::TYPE_TITRE,
+        PeerVehicleDocument::TYPE_ENREGISTREMENT,
+        PeerVehicleDocument::TYPE_ENERGIE,
+    ];
+
     public const EQUIPEMENTS = [
         'wifi' => 'Wi-Fi', 'cuisine' => 'Cuisine', 'lave-linge' => 'Lave-linge',
         'seche-linge' => 'Sèche-linge', 'climatisation' => 'Climatisation', 'chauffage' => 'Chauffage',
@@ -192,7 +214,7 @@ class PeerStayEditor extends Component
     #[Computed]
     public function logement(): PeerStay
     {
-        return PeerStay::query()->with(['media', 'indisponibilites'])->findOrFail($this->stayId);
+        return PeerStay::query()->with(['media', 'indisponibilites', 'documents'])->findOrFail($this->stayId);
     }
 
     /**
@@ -227,6 +249,20 @@ class PeerStayEditor extends Component
 
         if (trim((string) $logement->description) === '') {
             $motifs[] = __('Décrivez le logement en quelques lignes.');
+        }
+
+        // LES PAPIERS EXIGES, DITS PAR LE BIEN. Un logement loue sans titre ni assurance
+        // expose la plateforme autant que son proprietaire : la porte reste fermee.
+        foreach ($logement->typesDeDocumentsRequis() as $type) {
+            $valide = $logement->documents
+                ->where('document_type', $type)
+                ->contains(fn (PeerVehicleDocument $d): bool => $d->estValide());
+
+            if (! $valide) {
+                $motifs[] = __('Le document « :papier » doit être validé.', [
+                    'papier' => __(PeerVehicleDocument::LIBELLES[$type] ?? $type),
+                ]);
+            }
         }
 
         if (! auth()->user()?->canReceiveStripeConnectPayments()) {
@@ -376,6 +412,62 @@ class PeerStayEditor extends Component
 
         unset($this->logement, $this->motifsDeBlocage);
         $this->message = __('Photo retirée.');
+    }
+
+    /**
+     * LE DEPOT D'UN PAPIER.
+     *
+     * Le fichier va sur le disque PRIVE : un titre de propriete porte un nom, une adresse et
+     * parfois un numero national. Rien de tout cela n'a sa place derriere une URL publique.
+     */
+    public function deposerUnDocument(): void
+    {
+        $this->validate([
+            'fichierDocument' => ['required', 'file', 'max:8192', 'mimes:pdf,jpg,jpeg,png'],
+            'typeDocument' => ['required', 'in:'.implode(',', self::DOCUMENTS)],
+            'expirationDocument' => ['nullable', 'date'],
+        ]);
+
+        $logement = $this->logement();
+        $chemin = $this->fichierDocument->store('peer-documents/'.$logement->reference, 'local');
+
+        $logement->documents()->create([
+            'document_type' => $this->typeDocument,
+            'status' => PeerVehicleDocument::STATUT_EN_REVUE,
+            'file_path' => $chemin,
+            'file_name' => $this->fichierDocument->getClientOriginalName(),
+            'mime_type' => $this->fichierDocument->getMimeType(),
+            'file_size' => $this->fichierDocument->getSize(),
+            'expires_at' => $this->expirationDocument === '' ? null : $this->expirationDocument,
+        ]);
+
+        $this->fichierDocument = null;
+        $this->expirationDocument = '';
+        $this->message = __('Document déposé. Un administrateur le vérifie.');
+        unset($this->logement, $this->motifsDeBlocage);
+    }
+
+    /**
+     * RETIRER UN PAPIER REFUSE, pour en redeposer un lisible.
+     *
+     * Un papier DEJA VALIDE ne se retire pas : il justifie les sejours deja conclus, et le
+     * faire disparaitre effacerait la preuve sur laquelle la plateforme s'est engagee.
+     */
+    public function supprimerUnDocument(int $documentId): void
+    {
+        $papier = $this->logement()->documents()->whereKey($documentId)->firstOrFail();
+
+        if ($papier->status === PeerVehicleDocument::STATUT_VALIDE) {
+            $this->erreur = __('Un document validé ne se retire pas.');
+
+            return;
+        }
+
+        Storage::disk('local')->delete((string) $papier->file_path);
+        $papier->delete();
+
+        $this->message = __('Document retiré.');
+        unset($this->logement, $this->motifsDeBlocage);
     }
 
     public function fermerUnePeriode(): void

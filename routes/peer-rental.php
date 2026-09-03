@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PeerRental\PeerDocumentController;
 use App\Livewire\PeerRental\PeerAdminCenter;
 use App\Livewire\PeerRental\PeerCatalogue;
 use App\Livewire\PeerRental\PeerMyRentals;
@@ -49,6 +50,10 @@ Route::middleware(['auth', 'verified', 'active.account'])
         Route::get('/mes-logements', PeerMyStays::class)->name('owner.stays');
         Route::get('/mes-logements/{stay}', PeerStayEditor::class)->name('owner.stay');
         Route::get('/locations/{rental}', PeerRentalDetail::class)->name('rental');
+
+        // LE FICHIER D'UN PAPIER. Il vit sur le disque prive : le proprietaire et
+        // l'administrateur qui l'examine sont les deux seuls a pouvoir l'ouvrir.
+        Route::get('/papiers/{document}', PeerDocumentController::class)->name('document');
     });
 
 Route::middleware(['auth', 'verified', 'role:admin'])

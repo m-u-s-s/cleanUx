@@ -305,6 +305,80 @@
                 </form>
             </x-app-card>
 
+            {{-- LES PAPIERS. Le fichier part sur le disque PRIVE : un titre de propriete porte
+                 un nom, une adresse et parfois un numero national. --}}
+            <x-app-card title="Papiers" subtitle="L’assurance et le titre sont vérifiés avant la mise en ligne.">
+                <div class="space-y-2">
+                    @forelse($logement->documents as $papier)
+                        <div class="brio-list-item flex items-center justify-between gap-3 !p-3"
+                             wire:key="papier-{{ $papier->id }}">
+                            <div class="min-w-0">
+                                <p class="text-sm font-semibold">{{ $papier->libelle() }}</p>
+                                <p class="text-xs opacity-70">
+                                    {{ collect([
+                                        $papier->file_name,
+                                        $papier->expires_at ? "expire le " . $papier->expires_at->format('d/m/Y') : null,
+                                        $papier->rejection_reason,
+                                    ])->filter()->join(' · ') }}
+                                </p>
+                            </div>
+
+                            <div class="flex shrink-0 items-center gap-2">
+                                <a href="{{ route('peer.document', $papier) }}" target="_blank" rel="noopener"
+                                   class="brio-btn-ligne text-xs">Ouvrir</a>
+                                @php($tons = [
+                                    \App\Models\PeerVehicleDocument::STATUT_VALIDE => 'success',
+                                    \App\Models\PeerVehicleDocument::STATUT_REFUSE => 'danger',
+                                ])
+                                <x-ui.badge :tone="$tons[$papier->status] ?? 'warning'"
+                                            :label="match($papier->status) {
+                                                \App\Models\PeerVehicleDocument::STATUT_VALIDE => __('Validé'),
+                                                \App\Models\PeerVehicleDocument::STATUT_REFUSE => __('Refusé'),
+                                                default => __('En vérification'),
+                                            }" />
+
+                                @if($papier->status !== \App\Models\PeerVehicleDocument::STATUT_VALIDE)
+                                    <button type="button" wire:click="supprimerUnDocument({{ $papier->id }})"
+                                            class="brio-btn-ligne-danger text-xs"
+                                            aria-label="Retirer ce document">&times;</button>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-sm opacity-70">Aucun papier déposé pour l’instant.</p>
+                    @endforelse
+                </div>
+
+                <div class="mt-4 space-y-2 border-t border-slate-200/60 pt-4 dark:border-slate-700">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label for="s-type-doc" class="mb-1 block text-sm font-semibold">Type</label>
+                            <select id="s-type-doc" wire:model="typeDocument" class="w-full">
+                                @foreach(\App\Livewire\PeerRental\PeerStayEditor::DOCUMENTS as $type)
+                                    <option value="{{ $type }}">
+                                        {{ \App\Models\PeerVehicleDocument::LIBELLES[$type] ?? $type }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="s-exp-doc" class="mb-1 block text-sm font-semibold">Expire le</label>
+                            <input id="s-exp-doc" wire:model="expirationDocument" type="date" class="w-full">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="s-fichier-doc" class="mb-1 block text-sm font-semibold">Fichier</label>
+                        <input id="s-fichier-doc" type="file" accept=".pdf,image/*" wire:model="fichierDocument"
+                               class="w-full">
+                        @error('fichierDocument') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <button type="button" wire:click="deposerUnDocument" class="brio-btn-ligne w-full">Déposer</button>
+                </div>
+            </x-app-card>
+
             <x-app-card title="Calendrier" subtitle="Fermez les périodes où le logement n’est pas disponible.">
                 @forelse($logement->indisponibilites as $periode)
                     <div class="flex items-center justify-between gap-2 border-b border-slate-200/60 py-2 text-sm last:border-0 dark:border-slate-700"

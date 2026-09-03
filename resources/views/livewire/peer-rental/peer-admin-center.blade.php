@@ -190,21 +190,21 @@
                 @forelse ($this->papiersAValider as $document)
                     <div class="brio-list-item flex items-center justify-between gap-3 !p-3">
                         <div class="min-w-0">
+                            {{-- LE LIBELLE VIENT DU MODELE : le recopier ici le ferait mentir
+                                 au premier type ajoute. --}}
                             <p class="truncate text-sm font-semibold text-slate-900">
-                                {{ match ($document->document_type) {
-                                    'registration' => __('Carte grise'),
-                                    'insurance' => __('Assurance'),
-                                    'technical_inspection' => __('Contrôle technique'),
-                                    default => $document->document_type,
-                                } }}
-                                — {{ $document->vehicle?->titre() }}
+                                {{ __($document->libelle()) }}
+                                — {{ $document->documentable?->titre() }}
                             </p>
                             <p class="text-xs text-slate-500">
-                                {{ $document->vehicle?->owner?->name }}
+                                {{ $document->documentable?->proprietaire()?->name }}
                                 @if ($document->expires_at) · {{ __('expire le') }} {{ $document->expires_at->format('d/m/Y') }} @endif
                             </p>
                         </div>
                         <div class="flex flex-shrink-0 gap-2">
+                            {{-- VALIDER UN FICHIER QU'ON NE PEUT PAS LIRE N'EST PAS UNE VERIFICATION. --}}
+                            <a href="{{ route('peer.document', $document) }}" target="_blank" rel="noopener"
+                               class="brio-btn-ligne !text-xs">{{ __('Ouvrir') }}</a>
                             <button type="button" wire:click="validerLePapier({{ $document->id }})" class="brio-btn-primary !text-xs">
                                 {{ __('Valider') }}
                             </button>
@@ -215,7 +215,7 @@
                     </div>
                 @empty
                     <x-empty-state icon="📄" :title="__('Aucun papier en attente')"
-                                   :message="__('Les cartes grises et attestations déposées ont toutes été traitées.')" />
+                                   :message="__('Les papiers déposés — véhicules et logements — ont tous été traités.')" />
                 @endforelse
             </div>
 

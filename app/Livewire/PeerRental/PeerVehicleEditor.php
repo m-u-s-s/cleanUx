@@ -205,7 +205,13 @@ class PeerVehicleEditor extends Component
     {
         $this->validate([
             'fichierDocument' => ['required', 'file', 'max:8192', 'mimes:pdf,jpg,jpeg,png'],
-            'typeDocument' => ['required', 'string', 'max:40'],
+            // LES TROIS TYPES DU VEHICULE, ET PAS UN DE PLUS : depuis que la table est
+            // partagee, `max:40` laisserait deposer un papier de logement sur une voiture.
+            'typeDocument' => ['required', 'in:'.implode(',', [
+                PeerVehicleDocument::TYPE_CARTE_GRISE,
+                PeerVehicleDocument::TYPE_ASSURANCE,
+                PeerVehicleDocument::TYPE_CONTROLE_TECHNIQUE,
+            ])],
             'expirationDocument' => ['nullable', 'date'],
         ]);
 

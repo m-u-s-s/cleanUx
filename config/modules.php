@@ -456,6 +456,7 @@ return [
      * puisse pas y glisser un vrai module en douce.
      */
     'non_modules' => [
+        'peer.document' => 'Fichier d’un papier déposé : on l’ouvre depuis l’annonce ou la file d’attente',
         'peer.owner.stay' => 'Éditeur d’une annonce : on y entre depuis « Mes logements », jamais depuis un menu',
         'peer.sejour' => 'Page publique d’une annonce : on y entre depuis le catalogue, jamais depuis un menu',
         'admin.kyc.center' => 'Fusionnée dans le centre onboarding ; l’URL survit en redirection',

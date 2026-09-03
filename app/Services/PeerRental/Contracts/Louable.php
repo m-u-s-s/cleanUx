@@ -3,6 +3,7 @@
 namespace App\Services\PeerRental\Contracts;
 
 use App\Models\PeerVehicleAvailability;
+use App\Models\PeerVehicleDocument;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
@@ -87,4 +88,18 @@ interface Louable
      * @return MorphMany<PeerVehicleAvailability, covariant \Illuminate\Database\Eloquent\Model>
      */
     public function indisponibilites(): MorphMany;
+
+    /**
+     * LES PAPIERS DU BIEN, et ceux qu'il exige avant d'etre publie.
+     *
+     * La file d'attente de l'administration est la meme pour les deux : un fichier, un
+     * examen, un motif de refus. Ce qui change est la LISTE des papiers exiges — et c'est
+     * au bien de la dire, pas a l'ecran qui l'affiche.
+     *
+     * @return MorphMany<PeerVehicleDocument, covariant \Illuminate\Database\Eloquent\Model>
+     */
+    public function documents(): MorphMany;
+
+    /** @return list<string> */
+    public function typesDeDocumentsRequis(): array;
 }

@@ -216,10 +216,16 @@ class PeerVehicle extends Model implements Louable
         return $this->hasMany(PeerVehicleAvailability::class);
     }
 
-    /** @return HasMany<PeerVehicleDocument, $this> */
-    public function documents(): HasMany
+    /** @return MorphMany<PeerVehicleDocument, $this> */
+    public function documents(): MorphMany
     {
-        return $this->hasMany(PeerVehicleDocument::class);
+        return $this->morphMany(PeerVehicleDocument::class, 'documentable');
+    }
+
+    /** @return list<string> */
+    public function typesDeDocumentsRequis(): array
+    {
+        return PeerVehicleDocument::TYPES_REQUIS;
     }
 
     /** @return HasMany<PeerRental, $this> */
