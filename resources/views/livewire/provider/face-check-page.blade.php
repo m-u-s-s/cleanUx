@@ -15,6 +15,13 @@
 --}}
 <div class="mx-auto max-w-3xl space-y-6 py-8" wire:key="face-check-page">
 
+    {{-- LA PAGE DIT SON NOM. Sans h1, un lecteur d ecran commence par le menu, identique
+         d un ecran a l autre : la coquille du depot le porte pour toutes les autres. --}}
+    <x-page-shell
+        :eyebrow="__('face_check.screen.eyebrow_check')"
+        :title="__('face_check.screen.title_check')"
+        :subtitle="__('face_check.screen.help_check')" />
+
     @if(! $soumis)
         <x-app-card :title="__('face_check.screen.eyebrow_check')">
             <p class="text-sm text-slate-600">{{ __('face_check.screen.not_concerned') }}</p>

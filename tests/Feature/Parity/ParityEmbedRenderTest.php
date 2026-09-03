@@ -117,6 +117,13 @@ class ParityEmbedRenderTest extends TestCase
                 $this->seedOwnerMembership($org, $user);
                 break;
 
+            case 'employe-metiers-zones':
+                // TradesAndZones refuse un compte sans ProviderProfile : c'est la fiche
+                // prestataire qui porte les metiers et les zones. Prerequis minimal.
+                ProviderProfile::factory()->create(['user_id' => $user->id]);
+                $user->refresh();
+                break;
+
             case 'dashboard-employe-chef-equipe':
                 // Route is gated by EnsureFieldTeamLead → isFieldTeamLead(), which
                 // checks an active field team led by this user. Minimal prerequisite:

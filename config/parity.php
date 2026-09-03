@@ -189,6 +189,37 @@ return [
         ['key' => 'dashboard-entreprise-prestataire-dispatch', 'title' => 'Dispatch', 'icon' => 'apps-outline', 'path' => '/dashboard/entreprise-prestataire/dispatch', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['provider_company'], 'responsive_verified' => true],
         ['key' => 'dashboard-entreprise-prestataire-equipe', 'title' => 'Équipe', 'icon' => 'apps-outline', 'path' => '/dashboard/entreprise-prestataire/equipe', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['provider_company'], 'responsive_verified' => true],
 
+        // ── LES 21 ECRANS QUI N'ARRIVAIENT PAS JUSQU'AUX APPLICATIONS ──────────
+        //
+        // Ils existaient sur le web, le repertoire mobile les annonçait (`config/modules.php`
+        // le remplit), mais ce registre-ci les ignorait : ni mode de livraison, ni controle de
+        // rendu sans chrome. Deux registres decidaient, et rien ne les reliait.
+        //
+        // `LeRegistreWebEtLeRegistreMobileDisentLaMemeChoseTest` empeche desormais le trou de
+        // se rouvrir, pour tout le catalogue et non plus pour un seul module.
+        //
+        // DEUX DES 21 N'ONT PAS LEUR LIGNE, ET C'EST VOULU : `/prendre-rendez-vous` n'est
+        // qu'une redirection vers `/commander`, deja present ; `stripe-connect/start` part
+        // chez Stripe — une session d'identification bancaire n'a rien a faire dans un
+        // WebView embarque. Le garde nomme les deux, avec leur motif.
+        ['key' => 'client-rendezvous-nouveau', 'title' => 'Nouveau rendez-vous', 'icon' => 'add-circle-outline', 'path' => '/dashboard/client/rendez-vous/nouveau', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
+        ['key' => 'client-devis', 'title' => 'Devis reçus', 'icon' => 'document-text-outline', 'path' => '/dashboard/client/devis', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
+        ['key' => 'client-mes-lieux', 'title' => 'Mes lieux', 'icon' => 'location-outline', 'path' => '/dashboard/client/mes-lieux', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
+        ['key' => 'client-ma-protection', 'title' => 'Ma protection', 'icon' => 'shield-checkmark-outline', 'path' => '/dashboard/client/ma-protection', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
+        ['key' => 'location-catalogue', 'title' => 'Location de voitures', 'icon' => 'car-sport-outline', 'path' => '/location', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
+        ['key' => 'client-societes-prestataires', 'title' => 'Trouver une société', 'icon' => 'business-outline', 'path' => '/dashboard/client/societes-prestataires', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
+        ['key' => 'client-fidelite-recompenses', 'title' => 'Récompenses', 'icon' => 'gift-outline', 'path' => '/dashboard/client/fidelite/recompenses', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
+        ['key' => 'client-calendrier-interactif', 'title' => 'Calendrier interactif', 'icon' => 'calendar-outline', 'path' => '/dashboard/client/calendrier/interactif', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
+        ['key' => 'client-recurrences-templates', 'title' => 'Templates 1-clic', 'icon' => 'repeat-outline', 'path' => '/dashboard/client/recurrences/templates', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
+        ['key' => 'premium-offer', 'title' => 'Offre Premium', 'icon' => 'diamond-outline', 'path' => '/premium', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['client'], 'responsive_verified' => true],
+        ['key' => 'provider-onboarding', 'title' => 'Mon dossier', 'icon' => 'rocket-outline', 'path' => '/provider/onboarding', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['provider'], 'responsive_verified' => true],
+        ['key' => 'provider-verification-faciale', 'title' => 'Vérification d’identité', 'icon' => 'scan-outline', 'path' => '/provider/verification-faciale', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['provider'], 'responsive_verified' => true],
+        ['key' => 'employe-devis-chantiers', 'title' => 'Devis chantiers', 'icon' => 'construct-outline', 'path' => '/dashboard/employe/devis-chantiers', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['provider'], 'responsive_verified' => true],
+        ['key' => 'employe-securite', 'title' => 'Sécurité', 'icon' => 'alert-circle-outline', 'path' => '/dashboard/employe/securite', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['provider'], 'responsive_verified' => true],
+        ['key' => 'employe-demande', 'title' => 'Où me placer', 'icon' => 'map-outline', 'path' => '/dashboard/employe/demande', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['provider'], 'responsive_verified' => true],
+        ['key' => 'employe-conduite', 'title' => 'Conduite et véhicule', 'icon' => 'speedometer-outline', 'path' => '/dashboard/employe/conduite', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['provider'], 'responsive_verified' => true],
+        ['key' => 'employe-metiers-zones', 'title' => 'Métiers et zones', 'icon' => 'grid-outline', 'path' => '/dashboard/employe/metiers-zones', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['provider'], 'responsive_verified' => true],
+
         // ── B2B operations (admin oversight of company contracts + SLA breaches)
         ['key' => 'admin-b2b-operations', 'title' => 'Opérations B2B', 'icon' => 'business-outline', 'path' => '/admin/b2b/operations', 'web' => 'native', 'mobile' => 'webview', 'roles' => ['admin'], 'responsive_verified' => true],
     ],
