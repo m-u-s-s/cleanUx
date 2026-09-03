@@ -24,10 +24,17 @@
                 @class(['brio-btn-ligne', 'brio-btn-primary' => $onglet === 'themes'])>
             Thèmes &amp; saisons
         </button>
+        <button type="button" role="tab" wire:click="$set('onglet', 'mesure')"
+                aria-selected="{{ $onglet === 'mesure' ? 'true' : 'false' }}"
+                @class(['brio-btn-ligne', 'brio-btn-primary' => $onglet === 'mesure'])>
+            Mesure
+        </button>
     </div>
 
     @if($onglet === 'themes')
         <livewire:admin.email-themes-studio />
+    @elseif($onglet === 'mesure')
+        <livewire:admin.email-mesure-studio />
     @else
     <div class="grid grid-cols-1 gap-4 xl:grid-cols-12">
 
