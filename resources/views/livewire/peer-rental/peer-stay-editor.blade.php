@@ -124,6 +124,14 @@
 
             {{-- ── Prix ─────────────────────────────────────────────────── --}}
             <x-app-card title="Prix" subtitle="Le prix affiché au voyageur se calcule à partir d’ici, nuit par nuit.">
+                {{-- CE QUE LA PLATEFORME PRELEVE, ICI ET MAINTENANT. La note interroge le
+                     resolveur a chaque rendu : recopier un chiffre ferait mentir la page le
+                     jour ou le taux change. --}}
+                <x-note-commission class="mb-4"
+                    :module="\App\Models\CommissionRule::MODULE_LOCATION_MEMBRES"
+                    type-de-bien="stay"
+                    :montant-cents="$logement->nightly_price_cents ?: 9000" />
+
                 <form wire:submit="enregistrer" class="grid gap-3 md:grid-cols-2">
                     <div>
                         <label for="s-prix" class="mb-1 block text-sm font-semibold">Prix par nuit (centimes)</label>

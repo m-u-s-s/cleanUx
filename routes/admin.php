@@ -24,6 +24,7 @@ use App\Livewire\Admin\Bundles\BundlesCenter;
 use App\Livewire\Admin\BusinessDashboard;
 use App\Livewire\Admin\CancellationV2\CancellationsCenter;
 use App\Livewire\Admin\CancellationV2\QuestionnaireCenter;
+use App\Livewire\Admin\CentreDesCommissions;
 use App\Livewire\Admin\ChatV2\ChatCenter;
 use App\Livewire\Admin\ContractsV2\ContractsCenter;
 use App\Livewire\Admin\CustomerCreditsManager;
@@ -216,6 +217,14 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
          * `mount()`, parce que `/livewire/update` ne rejoue aucun middleware de route.
          */
         Route::get('/siege', LeSiegeDeLaPlateforme::class)->name('siege');
+
+        /*
+         * LE CENTRE DES COMMISSIONS — reserve au titulaire du siege, comme le siege lui-meme.
+         *
+         * Un taux decide de ce que gagnent des milliers de prestataires : ce n'est pas une
+         * capacite qu'on accorde a un administrateur, c'est la propriete de la plateforme.
+         */
+        Route::get('/commissions', CentreDesCommissions::class)->name('commissions');
 
         /*
          * `/admin/users` (nom `admin.utilisateurs`) a été retiré le 2026-08-05 : c'était une

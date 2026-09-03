@@ -33,6 +33,10 @@ class AdminParityInventoryTest extends TestCase
             .'surface d’élévation pour un gain nul — on n’accorde pas la finance à quelqu’un dans un '
             .'couloir. La LECTURE, elle, reste utile et passe déjà par le web.',
 
+        'commissions' => 'Régler un taux de commission depuis un téléphone, entre deux portes, est '
+            .'exactement la situation où l’on se trompe de chiffre. L’écran vit avec son simulateur '
+            .'et son conseiller : les trois se lisent ensemble, sur un vrai écran.',
+
         'platform-seat' => 'Déplacer la PROPRIÉTÉ de la plateforme depuis un téléphone perdu ou '
             .'prêté n’a aucun intérêt opérationnel et ouvre un chemin de plus vers le seul siège qui '
             .'passe partout. Le transfert exige déjà la phrase, le second facteur et un délai : '

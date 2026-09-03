@@ -118,6 +118,7 @@ return [
          * interet operationnel et ouvre un chemin de plus. `pending` est l'etat le moins faux
          * que ce registre sache dire : ce n'est pas une tache en retard.
          */
+        ['key' => 'commissions', 'title' => 'Commissions', 'group' => 'personnes', 'icon' => 'options-outline', 'coverage' => 'pending', 'routes' => ['admin/commissions']],
         ['key' => 'platform-seat', 'title' => 'Le siège', 'group' => 'personnes', 'icon' => 'ribbon-outline', 'coverage' => 'pending', 'routes' => ['admin/siege']],
         ['key' => 'admin-roles', 'title' => 'Rôles et permissions', 'group' => 'personnes', 'icon' => 'key-outline', 'coverage' => 'pending', 'routes' => ['admin/roles-et-permissions']],
         ['key' => 'users', 'title' => 'Utilisateurs', 'group' => 'personnes', 'icon' => 'people-outline', 'coverage' => 'descriptor', 'routes' => ['admin/utilisateurs']],

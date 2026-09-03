@@ -4,6 +4,8 @@ namespace App\Services\Payments;
 
 use App\Models\Booking;
 use App\Models\User;
+use App\Services\Commission\ContexteDeCommission;
+use App\Services\Commission\ResolveurDeCommission;
 
 class CommissionService
 {
@@ -33,7 +35,9 @@ class CommissionService
      * commission_rate: float,
      * effective_commission_rate: float,
      * minimum_applied: bool,
-     * currency: string
+     * currency: string,
+     * commission_rule_id: int|null,
+     * commission_origin: string
      * }
      */
     /**
@@ -52,7 +56,9 @@ class CommissionService
      * commission_rate: float,
      * effective_commission_rate: float,
      * minimum_applied: bool,
-     * currency: string
+     * currency: string,
+     * commission_rule_id: int|null,
+     * commission_origin: string
      * }
      */
     public function calculateForAmount(
@@ -60,20 +66,31 @@ class CommissionService
         ?User $provider = null,
         ?string $currency = null,
         ?float $tauxImpose = null,
+        ?ContexteDeCommission $contexte = null,
     ): array {
         $totalCents = max(0, $totalCents);
 
         $negotiatedRate = $provider?->providerProfile?->commission_rate;
 
+        // LA REGLE REGLEE PAR LE SUPER-ADMINISTRATEUR, quand il y en a une. Sans contexte, ou
+        // sans regle qui couvre le cas, le taux d'avant s'applique a la virgule pres : poser
+        // ce socle ne change le prix de personne tant que rien n'est regle.
+        $reglee = $contexte === null ? null : app(ResolveurDeCommission::class)->pour($contexte);
+
         $commissionRate = match (true) {
             $tauxImpose !== null => max(0.0, min(1.0, $tauxImpose)),
+            $reglee?->regle !== null => $reglee->taux,
             $this->useNegotiatedCommission() && $negotiatedRate !== null => (float) $negotiatedRate,
             default => $this->platformRate(),
         };
 
+        // LE PLANCHER SUIT LA REGLE. Sans cela, un taux regle a 0 % prelverait quand meme
+        // deux euros, et « gratuit » ne serait jamais gratuit.
+        $plancher = $reglee?->regle !== null ? $reglee->planchercents : $this->minimumCommissionCents();
+
         $platformFeeCents = max(
             (int) round($totalCents * $commissionRate),
-            $this->minimumCommissionCents()
+            $plancher
         );
 
         // La commission ne dépasse jamais le total : sur un petit supplément, le minimum de 2 €
@@ -91,6 +108,12 @@ class CommissionService
                 : 0.0,
             'minimum_applied' => $totalCents > 0
                 && $platformFeeCents > (int) round($totalCents * $commissionRate),
+            // LA REGLE QUI A DECIDE. Sans elle, expliquer six mois plus tard pourquoi cette
+            // mission a paye 8 % demande de rejouer l'etat de la table a la date du devis.
+            'commission_rule_id' => $tauxImpose === null ? $reglee?->regle?->id : null,
+            'commission_origin' => $tauxImpose !== null
+                ? 'taux impose par le module'
+                : ($reglee === null ? 'taux par defaut de la plateforme' : $reglee->origine),
             // LA DEVISE VIENT DE LA RESERVATION, PAS D'UNE CONSTANTE.
             'currency' => strtolower($currency ?: (string) config('fx.base_currency', 'EUR')),
         ];
@@ -106,7 +129,9 @@ class CommissionService
      * commission_rate: float,
      * effective_commission_rate: float,
      * minimum_applied: bool,
-     * currency: string
+     * currency: string,
+     * commission_rule_id: int|null,
+     * commission_origin: string
      * }
      */
     public function calculateForBooking(Booking $booking): array
@@ -126,7 +151,14 @@ class CommissionService
             ?? $booking->provider
             ?? null;
 
-        // LA MÊME RÈGLE, APPELÉE — PAS RECOPIÉE.
-        return $this->calculateForAmount($totalCents, $provider, $booking->currency);
+        // LA MÊME RÈGLE, APPELÉE — PAS RECOPIÉE. Le metier et la zone viennent de la
+        // reservation : les deviner ailleurs les ferait diverger au premier ecran de plus.
+        return $this->calculateForAmount(
+            $totalCents,
+            $provider,
+            $booking->currency,
+            null,
+            ContexteDeCommission::pourUneReservation($booking),
+        );
     }
 }

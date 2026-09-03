@@ -3,6 +3,8 @@
 namespace App\Services\PeerRental;
 
 use App\Models\PeerVehicle;
+use App\Services\Commission\ContexteDeCommission;
+use App\Services\Commission\ResolveurDeCommission;
 use App\Services\Payments\CommissionService;
 use App\Services\PeerRental\Contracts\Louable;
 use Carbon\CarbonInterface;
@@ -167,6 +169,17 @@ class PeerPricing
      */
     public function tauxDeCommission(?string $typeDeBien = null): float
     {
+        // LE TAUX REGLE PAR LE SUPER-ADMINISTRATEUR D'ABORD. Sans regle qui couvre le cas,
+        // le resolveur rend exactement le taux de `config/peer_rental.php` : brancher ce
+        // socle ne change le prix d'aucune location tant que rien n'est regle.
+        $reglee = app(ResolveurDeCommission::class)->pour(
+            ContexteDeCommission::locationEntreMembres($typeDeBien),
+        );
+
+        if ($reglee->regle !== null) {
+            return $reglee->taux;
+        }
+
         $general = (int) config('peer_rental.commission_percent', 25);
 
         $propre = $typeDeBien === null

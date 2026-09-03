@@ -19,6 +19,12 @@
         </div>
     </div>
 
+    {{-- CE QUE LA PLATEFORME PRELEVE SUR CHAQUE MISSION. Un prestataire qui voit ses gains
+         sans voir le prelevement ne peut ni verifier, ni contester. --}}
+    <x-note-commission class="mb-6" :montant-cents="10000">
+        {{ __('Ce taux s’applique aux missions à venir. Celles déjà conclues gardent le taux qui était en vigueur au moment du devis.') }}
+    </x-note-commission>
+
     {{-- KPI Cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="rounded-2xl bg-white border border-slate-200/80 shadow-soft-sm p-5">

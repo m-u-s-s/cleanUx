@@ -93,6 +93,12 @@
             </x-app-card>
 
             <x-app-card :title="__('Le prix')" :subtitle="__('Les week-ends et la haute saison sont majorés automatiquement.')">
+                {{-- LE TAUX TEL QU'IL S'APPLIQUE MAINTENANT, pas celui qu'on croit. --}}
+                <x-note-commission class="mb-4"
+                    :module="\App\Models\CommissionRule::MODULE_LOCATION_MEMBRES"
+                    type-de-bien="vehicle"
+                    :montant-cents="$vehicule->daily_price_cents ?: 5000" />
+
                 <div class="grid gap-3 sm:grid-cols-3">
                     @foreach ([
                         ['daily_price_cents', __('Prix / jour (€)'), '0.01'],
