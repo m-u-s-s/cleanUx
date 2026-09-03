@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Services\PeerRental\Contracts\Louable;
 use Database\Factories\PeerVehicleFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -18,7 +20,7 @@ use Illuminate\Support\Str;
  * « Nos locations ». Ici le proprietaire est un compte, la plateforme prend une commission, et
  * l'argent transite par Stripe Connect.
  */
-class PeerVehicle extends Model
+class PeerVehicle extends Model implements Louable
 {
     /** @use HasFactory<PeerVehicleFactory> */
     use HasFactory;
@@ -97,6 +99,82 @@ class PeerVehicle extends Model
     public static function genererUneReference(): string
     {
         return 'PV'.now()->format('ymd').strtoupper(Str::random(6));
+    }
+
+    // ── Le contrat partage avec les logements ──────────────────────────────
+
+    public function typeDeBien(): string
+    {
+        return 'vehicle';
+    }
+
+    public function proprietaire(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function estPubliable(): bool
+    {
+        return $this->status === self::STATUT_PUBLIE;
+    }
+
+    public function prixJournalierCents(): int
+    {
+        return (int) $this->daily_price_cents;
+    }
+
+    public function devise(): string
+    {
+        return (string) ($this->currency ?: 'EUR');
+    }
+
+    public function remisePourDuree(int $jours): int
+    {
+        return match (true) {
+            $jours >= 28 => (int) $this->discount_28_days_percent,
+            $jours >= 7 => (int) $this->discount_7_days_percent,
+            $jours >= 3 => (int) $this->discount_3_days_percent,
+            default => 0,
+        };
+    }
+
+    public function cautionCents(): int
+    {
+        return (int) $this->deposit_cents;
+    }
+
+    public function dureeMinimum(): int
+    {
+        return max(1, (int) $this->min_rental_days);
+    }
+
+    public function dureeMaximum(): int
+    {
+        return max($this->dureeMinimum(), (int) $this->max_rental_days);
+    }
+
+    public function reservationInstantanee(): bool
+    {
+        return (bool) $this->instant_booking;
+    }
+
+    public function politiqueDAnnulation(): string
+    {
+        return (string) ($this->cancellation_policy ?: self::ANNULATION_SOUPLE);
+    }
+
+    /**
+     * LE MEME CALENDRIER QUE LES LOGEMENTS.
+     *
+     * `availability()` reste : tout le module vivant ecrit par elle. Les deux vues portent sur la
+     * MEME table, et un crochet du modele tient les deux colonnes en accord — sans quoi une
+     * indisponibilite ecrite par l'ancienne voie serait invisible a la nouvelle.
+     *
+     * @return MorphMany<PeerVehicleAvailability, $this>
+     */
+    public function indisponibilites(): MorphMany
+    {
+        return $this->morphMany(PeerVehicleAvailability::class, 'rentable');
     }
 
     /** @return BelongsTo<User, $this> */

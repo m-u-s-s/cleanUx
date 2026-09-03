@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Str;
 
 /**
@@ -70,7 +71,7 @@ class PeerRental extends Model
     public const PAIEMENT_EXPIRE = 'expired';
 
     protected $fillable = [
-        'reference', 'peer_vehicle_id', 'owner_id', 'renter_id', 'status',
+        'reference', 'peer_vehicle_id', 'rentable_type', 'rentable_id', 'owner_id', 'renter_id', 'status',
         'starts_at', 'ends_at', 'days',
         'delivery_requested', 'delivery_address', 'delivery_lat', 'delivery_lng',
         'daily_price_cents', 'subtotal_cents', 'discount_cents', 'delivery_cents',
@@ -129,6 +130,19 @@ class PeerRental extends Model
     public static function genererUneReference(): string
     {
         return 'PL'.now()->format('ymd').strtoupper(Str::random(6));
+    }
+
+    /**
+     * LE BIEN LOUE, QUEL QU'IL SOIT.
+     *
+     * `vehicle()` reste pour tout le module vivant ; cette relation-ci est celle que la couche
+     * partagee interroge, et la seule qui sache repondre pour un logement.
+     *
+     * @return MorphTo<Model, $this>
+     */
+    public function rentable(): MorphTo
+    {
+        return $this->morphTo();
     }
 
     /** @return BelongsTo<PeerVehicle, $this> */
