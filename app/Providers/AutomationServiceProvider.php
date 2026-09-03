@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\Automation\Actions\EnvoyerLePingAuClient;
+use App\Services\Automation\Actions\EnvoyerUnEmail;
 use App\Services\Automation\Actions\ImposerDOffice;
 use App\Services\Automation\Actions\Journaliser;
 use App\Services\Automation\Actions\NotifierLesAdmins;
@@ -26,6 +27,9 @@ class AutomationServiceProvider extends ServiceProvider
             $registre = new ActionRegistre;
             $registre->enregistrer(new Journaliser);
             $registre->enregistrer(new NotifierLesAdmins);
+            // ECRIRE A QUELQU UN NE TOUCHE PAS AU DOMAINE : le moteur portait cinq actions,
+            // et aucune ne savait envoyer un e-mail.
+            $registre->enregistrer($app->make(EnvoyerUnEmail::class));
             // Celles-ci ecrivent dans le domaine : elles naissent « a valider », voir la spec.
             $registre->enregistrer($app->make(EnvoyerLePingAuClient::class));
             $registre->enregistrer($app->make(RelancerLaRecherche::class));

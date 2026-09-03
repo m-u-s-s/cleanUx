@@ -4,7 +4,10 @@ namespace App\Services\EmailV2;
 
 use App\Models\EmailMessage;
 use App\Models\EmailTemplate;
+use App\Models\MarketingOptOut;
+use App\Models\User;
 use App\Services\EmailV2\Contracts\EmailProviderContract;
+use App\Services\Marketing\OptOutService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -184,7 +187,13 @@ class EmailService
     protected function isOptedOut(string $email): bool
     {
         if (Schema::hasTable('marketing_opt_outs')) {
-            return DB::table('marketing_opt_outs')->where('email', $email)->exists();
+            // MEME DEFAUT QU'AILLEURS : la table porte `user_id` et `channel`, jamais
+            // `email`. La requete rendait toujours faux sur SQLite, et aurait leve sur MySQL.
+            $compte = User::query()->where('email', $email)->first();
+
+            return $compte instanceof User
+                && app(OptOutService::class)
+                    ->isOptedOut($compte, MarketingOptOut::CHANNEL_EMAIL);
         }
 
         return false;

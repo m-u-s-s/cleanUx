@@ -3,6 +3,7 @@
 namespace Tests\Feature\Email;
 
 use App\Livewire\Admin\ProductEmailsCenter;
+use App\Models\EmailSendRule;
 use App\Models\EmailTemplate;
 use App\Models\EmailTheme;
 use App\Models\User;
@@ -180,6 +181,113 @@ class LAtelierDEmailsTest extends TestCase
         ]);
 
         Livewire::actingAs($avecCapacite)->test(ProductEmailsCenter::class)->assertOk();
+    }
+
+    // ── Les regles d'envoi ─────────────────────────────────────────────────
+
+    /** UNE REGLE NEUVE NAIT INACTIVE : rien ne part avant qu'on l'ait relue. */
+    public function test_une_regle_neuve_nait_inactive(): void
+    {
+        Livewire::actingAs($this->admin())->test(ProductEmailsCenter::class)
+            ->set('templateKey', 'booking_confirmed')
+            ->call('ajouterUneRegle');
+
+        $gabarit = EmailTemplate::query()->where('code', 'booking_confirmed')->firstOrFail();
+
+        $this->assertSame(1, $gabarit->sendRules()->count());
+        $this->assertFalse((bool) $gabarit->sendRules()->first()->is_active);
+    }
+
+    /**
+     * CHAQUE REGLE PORTE SON PROPRE BROUILLON.
+     *
+     * Une seule propriete partagee attacherait la saisie faite sur une regle a l'enregistrement
+     * d'une autre — le defaut deja paye sur les approbations entreprises.
+     */
+    public function test_la_saisie_d_une_regle_ne_part_pas_avec_une_autre(): void
+    {
+        $gabarit = EmailTemplate::query()->where('code', 'booking_confirmed')->firstOrFail();
+
+        $premiere = EmailSendRule::factory()->create(['email_template_id' => $gabarit->id, 'name' => 'Première']);
+        $seconde = EmailSendRule::factory()->create(['email_template_id' => $gabarit->id, 'name' => 'Seconde']);
+
+        Livewire::actingAs($this->admin())->test(ProductEmailsCenter::class)
+            ->set('templateKey', 'booking_confirmed')
+            ->set('brouillons.'.$premiere->id.'.name', 'Nom destiné à la PREMIÈRE')
+            ->call('enregistrerUneRegle', $seconde->id);
+
+        $this->assertSame('Seconde', $seconde->fresh()->name,
+            'Le nom saisi sur une autre règle s’est attaché à celle-ci.');
+    }
+
+    /** TEMOIN — la saisie faite sur LA BONNE regle arrive bien jusqu'a la base. */
+    public function test_temoin_la_saisie_de_la_bonne_regle_est_enregistree(): void
+    {
+        $gabarit = EmailTemplate::query()->where('code', 'booking_confirmed')->firstOrFail();
+        $regle = EmailSendRule::factory()->create(['email_template_id' => $gabarit->id, 'name' => 'Avant']);
+
+        Livewire::actingAs($this->admin())->test(ProductEmailsCenter::class)
+            ->set('templateKey', 'booking_confirmed')
+            ->set('brouillons.'.$regle->id.'.name', 'Rappel J-1')
+            ->set('brouillons.'.$regle->id.'.trigger_type', 'reminder')
+            ->set('brouillons.'.$regle->id.'.offset_minutes', -1440)
+            ->call('enregistrerUneRegle', $regle->id);
+
+        $regle->refresh();
+
+        $this->assertSame('Rappel J-1', $regle->name);
+        $this->assertSame('reminder', $regle->trigger_type);
+        $this->assertSame(-1440, $regle->offset_minutes);
+    }
+
+    /** UN TYPE DE DECLENCHEUR INCONNU NE S'ECRIT PAS. */
+    public function test_un_declencheur_inconnu_est_ignore(): void
+    {
+        $gabarit = EmailTemplate::query()->where('code', 'booking_confirmed')->firstOrFail();
+        $regle = EmailSendRule::factory()->surEvenement('booking.confirmed')->create([
+            'email_template_id' => $gabarit->id,
+        ]);
+
+        Livewire::actingAs($this->admin())->test(ProductEmailsCenter::class)
+            ->set('templateKey', 'booking_confirmed')
+            ->set('brouillons.'.$regle->id.'.trigger_type', 'appeler_le_client')
+            ->call('enregistrerUneRegle', $regle->id);
+
+        $this->assertSame('event', $regle->fresh()->trigger_type);
+    }
+
+    /** LE PLAFOND NE DESCEND PAS SOUS ZERO, et zero veut dire « aucun plafond ». */
+    public function test_le_plafond_ne_descend_pas_sous_zero(): void
+    {
+        $gabarit = EmailTemplate::query()->where('code', 'booking_confirmed')->firstOrFail();
+        $regle = EmailSendRule::factory()->create(['email_template_id' => $gabarit->id]);
+
+        Livewire::actingAs($this->admin())->test(ProductEmailsCenter::class)
+            ->set('templateKey', 'booking_confirmed')
+            ->set('brouillons.'.$regle->id.'.cap_per_recipient', -5)
+            ->set('brouillons.'.$regle->id.'.cap_window_hours', 0)
+            ->call('enregistrerUneRegle', $regle->id);
+
+        $regle->refresh();
+
+        $this->assertSame(0, $regle->cap_per_recipient);
+        $this->assertSame(1, $regle->cap_window_hours, 'Une fenêtre nulle rendrait le plafond inapplicable.');
+    }
+
+    public function test_une_regle_se_suspend_et_se_supprime(): void
+    {
+        $gabarit = EmailTemplate::query()->where('code', 'booking_confirmed')->firstOrFail();
+        $regle = EmailSendRule::factory()->create(['email_template_id' => $gabarit->id, 'is_active' => true]);
+
+        $composant = Livewire::actingAs($this->admin())->test(ProductEmailsCenter::class)
+            ->set('templateKey', 'booking_confirmed')
+            ->call('basculerUneRegle', $regle->id);
+
+        $this->assertFalse((bool) $regle->fresh()->is_active);
+
+        $composant->call('retirerUneRegle', $regle->id);
+
+        $this->assertDatabaseMissing('email_send_rules', ['id' => $regle->id]);
     }
 
     private function admin(): User

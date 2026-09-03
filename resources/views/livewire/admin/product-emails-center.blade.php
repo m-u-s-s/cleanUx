@@ -228,6 +228,129 @@
             @endif
         </div>
 
+        {{-- ── Les règles d’envoi ──────────────────────────── --}}
+        @if($this->gabaritCourant)
+            <div class="xl:col-span-5 xl:col-start-4">
+                <x-app-card title="Envoi"
+                            subtitle="Quand ce gabarit part, et combien de fois. Un gabarit peut porter plusieurs règles.">
+                    @forelse($this->regles as $regle)
+                        <div class="mb-3 rounded-2xl border border-slate-200/80 p-3 dark:border-slate-700"
+                             wire:key="regle-{{ $regle->id }}">
+                            <div class="mb-2 flex items-center justify-between gap-2">
+                                <span class="font-semibold">{{ $regle->name }}</span>
+
+                                <div class="flex items-center gap-2">
+                                    <span class="brio-chip">{{ $regle->is_active ? 'active' : 'inactive' }}</span>
+                                    <button type="button" wire:click="basculerUneRegle({{ $regle->id }})"
+                                            class="brio-btn-ligne">
+                                        {{ $regle->is_active ? 'Suspendre' : 'Activer' }}
+                                    </button>
+                                    <button type="button" wire:click="retirerUneRegle({{ $regle->id }})"
+                                            class="brio-btn-ligne-danger" aria-label="Supprimer cette règle">&times;</button>
+                                </div>
+                            </div>
+
+                            <p class="mb-3 text-sm opacity-70">{{ $regle->enUnePhrase() }}</p>
+
+                            <div class="grid gap-2 md:grid-cols-2">
+                                <div>
+                                    <label class="mb-1 block text-xs font-semibold" for="r-nom-{{ $regle->id }}">Nom</label>
+                                    <input id="r-nom-{{ $regle->id }}" type="text" class="w-full"
+                                           wire:model="brouillons.{{ $regle->id }}.name">
+                                </div>
+
+                                <div>
+                                    <label class="mb-1 block text-xs font-semibold" for="r-type-{{ $regle->id }}">Déclencheur</label>
+                                    <select id="r-type-{{ $regle->id }}" class="w-full"
+                                            wire:model="brouillons.{{ $regle->id }}.trigger_type">
+                                        <option value="manual">Manuel</option>
+                                        <option value="event">À un événement</option>
+                                        <option value="schedule">À une fréquence</option>
+                                        <option value="reminder">En rappel</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="mb-1 block text-xs font-semibold" for="r-cle-{{ $regle->id }}">
+                                        Événement ou jalon
+                                    </label>
+                                    <input id="r-cle-{{ $regle->id }}" type="text" class="w-full"
+                                           placeholder="booking.confirmed"
+                                           wire:model="brouillons.{{ $regle->id }}.trigger_key">
+                                </div>
+
+                                <div>
+                                    <label class="mb-1 block text-xs font-semibold" for="r-decalage-{{ $regle->id }}">
+                                        Décalage (minutes) <span class="font-normal opacity-70">— négatif = avant</span>
+                                    </label>
+                                    <input id="r-decalage-{{ $regle->id }}" type="number" class="w-full"
+                                           wire:model="brouillons.{{ $regle->id }}.offset_minutes">
+                                </div>
+
+                                <div>
+                                    <label class="mb-1 block text-xs font-semibold" for="r-freq-{{ $regle->id }}">Fréquence</label>
+                                    <select id="r-freq-{{ $regle->id }}" class="w-full"
+                                            wire:model="brouillons.{{ $regle->id }}.frequency">
+                                        <option value="">—</option>
+                                        <option value="daily">Chaque jour</option>
+                                        <option value="weekly">Chaque semaine</option>
+                                        <option value="monthly">Chaque mois</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="mb-1 block text-xs font-semibold" for="r-heure-{{ $regle->id }}">Heure d’envoi</label>
+                                    <input id="r-heure-{{ $regle->id }}" type="number" min="0" max="23" class="w-full"
+                                           wire:model="brouillons.{{ $regle->id }}.hour">
+                                </div>
+
+                                <div>
+                                    <label class="mb-1 block text-xs font-semibold" for="r-plafond-{{ $regle->id }}">
+                                        Plafond par destinataire <span class="font-normal opacity-70">— 0 = aucun</span>
+                                    </label>
+                                    <input id="r-plafond-{{ $regle->id }}" type="number" min="0" class="w-full"
+                                           wire:model="brouillons.{{ $regle->id }}.cap_per_recipient">
+                                </div>
+
+                                <div>
+                                    <label class="mb-1 block text-xs font-semibold" for="r-fenetre-{{ $regle->id }}">
+                                        Fenêtre du plafond (heures)
+                                    </label>
+                                    <input id="r-fenetre-{{ $regle->id }}" type="number" min="1" class="w-full"
+                                           wire:model="brouillons.{{ $regle->id }}.cap_window_hours">
+                                </div>
+
+                                <label class="flex items-start gap-2 text-sm md:col-span-2">
+                                    <input type="checkbox" class="mt-0.5"
+                                           wire:model="brouillons.{{ $regle->id }}.respects_opt_out">
+                                    <span>
+                                        Respecter le désabonnement
+                                        <span class="block text-xs opacity-70">
+                                            Ne peut que RESSERRER : une campagne marketing respecte le refus quoi
+                                            qu’il arrive, et une alerte de fraude ne se refuse jamais.
+                                        </span>
+                                    </span>
+                                </label>
+
+                                <div class="flex justify-end md:col-span-2">
+                                    <button type="button" wire:click="enregistrerUneRegle({{ $regle->id }})"
+                                            class="brio-btn-ligne">Enregistrer cette règle</button>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="mb-3 text-sm opacity-70">
+                            Aucune règle : ce gabarit ne part que sur demande explicite.
+                        </p>
+                    @endforelse
+
+                    <button type="button" wire:click="ajouterUneRegle" class="brio-btn-ligne">
+                        Ajouter une règle d’envoi
+                    </button>
+                </x-app-card>
+            </div>
+        @endif
+
         {{-- ── L’aperçu ────────────────────────────────────────────────── --}}
         <div class="xl:col-span-4 space-y-4">
             <x-app-card title="Aperçu email" subtitle="Le rendu réel, sous le thème que vous choisissez.">

@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\EmailLog;
+use App\Models\EmailSendRule;
 use App\Models\EmailTemplate;
 use App\Models\EmailTheme;
 use App\Services\Email\EmailLogService;
@@ -34,6 +35,7 @@ use Livewire\Component;
  * @property-read Collection<int, EmailTheme> $themes
  * @property-read ?EmailTemplate $gabaritCourant
  * @property-read array<string, int> $reperes
+ * @property-read Collection<int, EmailSendRule> $regles
  */
 class ProductEmailsCenter extends Component
 {
@@ -80,6 +82,16 @@ class ProductEmailsCenter extends Component
 
     /** Le theme SOUS LEQUEL on regarde, qui n'est pas celui qui partira forcement. */
     public string $themeDApercu = '';
+
+    /**
+     * LES REGLES EN COURS D'EDITION, indexees par identifiant.
+     *
+     * Une seule propriete partagee attacherait la saisie faite sur une regle a l'enregistrement
+     * d'une autre — le defaut deja paye sur les approbations entreprises.
+     *
+     * @var array<int, array<string, mixed>>
+     */
+    public array $brouillons = [];
 
     #[Locked]
     public ?int $gabaritASupprimer = null;
@@ -411,6 +423,111 @@ class ProductEmailsCenter extends Component
             ->unique()
             ->values()
             ->all();
+    }
+
+    // ── Regles d'envoi ─────────────────────────────────────────────────────
+
+    /**
+     * Les regles du gabarit ouvert : un gabarit peut en porter plusieurs.
+     *
+     * @return Collection<int, EmailSendRule>
+     */
+    #[Computed]
+    public function regles(): Collection
+    {
+        $gabarit = $this->gabaritCourant;
+
+        $regles = $gabarit instanceof EmailTemplate
+            ? $gabarit->sendRules()->orderBy('id')->get()
+            : collect();
+
+        // LE BROUILLON EST PRE-REMPLI depuis la base : un champ vide au premier affichage
+        // effacerait la valeur enregistree des que l'administrateur touche a autre chose.
+        foreach ($regles as $regle) {
+            $this->brouillons[$regle->id] ??= [
+                'name' => $regle->name,
+                'trigger_type' => $regle->trigger_type,
+                'trigger_key' => $regle->trigger_key,
+                'offset_minutes' => $regle->offset_minutes,
+                'frequency' => $regle->frequency,
+                'hour' => $regle->hour,
+                'cap_per_recipient' => $regle->cap_per_recipient,
+                'cap_window_hours' => $regle->cap_window_hours,
+                'respects_opt_out' => $regle->respects_opt_out,
+            ];
+        }
+
+        return $regles;
+    }
+
+    /** UNE REGLE NEUVE NAIT INACTIVE : rien ne part avant qu'on l'ait relue. */
+    public function ajouterUneRegle(): void
+    {
+        $gabarit = $this->gabaritCourant;
+
+        if (! $gabarit instanceof EmailTemplate) {
+            return;
+        }
+
+        EmailSendRule::query()->create([
+            'email_template_id' => $gabarit->id,
+            'name' => 'Nouvelle règle',
+            'is_active' => false,
+            'trigger_type' => 'manual',
+            'cap_per_recipient' => 0,
+            'cap_window_hours' => 24,
+            'respects_opt_out' => true,
+        ]);
+
+        unset($this->regles);
+        $this->dispatch('toast', 'Règle créée — inactive tant que vous ne l’activez pas.', 'success');
+    }
+
+    public function basculerUneRegle(int $id): void
+    {
+        $regle = EmailSendRule::query()->find($id);
+
+        if ($regle instanceof EmailSendRule) {
+            $regle->update(['is_active' => ! $regle->is_active]);
+            unset($this->regles);
+        }
+    }
+
+    public function retirerUneRegle(int $id): void
+    {
+        EmailSendRule::query()->whereKey($id)->delete();
+
+        unset($this->regles);
+        $this->dispatch('toast', 'Règle supprimée', 'success');
+    }
+
+    public function enregistrerUneRegle(int $id): void
+    {
+        $regle = EmailSendRule::query()->find($id);
+
+        if (! $regle instanceof EmailSendRule) {
+            return;
+        }
+
+        $valeurs = $this->brouillons[$id] ?? [];
+
+        $regle->update([
+            'name' => (string) ($valeurs['name'] ?? $regle->name),
+            'trigger_type' => in_array($valeurs['trigger_type'] ?? '', EmailSendRule::TYPES, true)
+                ? $valeurs['trigger_type'] : $regle->trigger_type,
+            'trigger_key' => ($valeurs['trigger_key'] ?? null) ?: null,
+            'offset_minutes' => (int) ($valeurs['offset_minutes'] ?? 0),
+            'frequency' => in_array($valeurs['frequency'] ?? '', EmailSendRule::FREQUENCES, true)
+                ? $valeurs['frequency'] : null,
+            'hour' => max(0, min(23, (int) ($valeurs['hour'] ?? 9))),
+            // ZERO VEUT DIRE « PAS DE PLAFOND », pas « zero envoi ».
+            'cap_per_recipient' => max(0, (int) ($valeurs['cap_per_recipient'] ?? 0)),
+            'cap_window_hours' => max(1, (int) ($valeurs['cap_window_hours'] ?? 24)),
+            'respects_opt_out' => (bool) ($valeurs['respects_opt_out'] ?? true),
+        ]);
+
+        unset($this->regles);
+        $this->dispatch('toast', 'Règle enregistrée', 'success');
     }
 
     // ── Listes ─────────────────────────────────────────────────────────────

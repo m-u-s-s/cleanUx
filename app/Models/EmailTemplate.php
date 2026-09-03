@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EmailTemplate extends Model
 {
@@ -31,6 +32,12 @@ class EmailTemplate extends Model
     public function scopeActive(Builder $q): Builder
     {
         return $q->where('is_active', true);
+    }
+
+    /** @return HasMany<EmailSendRule, $this> */
+    public function sendRules(): HasMany
+    {
+        return $this->hasMany(EmailSendRule::class);
     }
 
     /** @return BelongsTo<EmailTheme, $this> */
