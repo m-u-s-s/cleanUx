@@ -3,28 +3,33 @@
 namespace App\Services\PeerRental;
 
 use App\Models\PeerRental;
-use App\Models\PeerVehicle;
 use App\Models\PeerVehicleAvailability;
+use App\Services\PeerRental\Contracts\Louable;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * LE VEHICULE EST-IL LIBRE ?
+ * LE BIEN EST-IL LIBRE ?
  *
  * Deux sources se combinent : les periodes que le proprietaire a fermees, et les locations
  * qui bloquent deja les dates. `pending_owner` bloque AUSSI — sans quoi deux locataires
  * retiendraient les memes jours en attendant la meme reponse.
+ *
+ * IL IGNORE CE QU'IL COMPTE. Une voiture et un logement se reservent de la meme facon : des
+ * dates, une duree plancher, une duree plafond, un calendrier ferme par le proprietaire. Le
+ * service ne connait que `Louable`, et c'est ce qui lui evite d'exister en deux exemplaires.
  */
 class PeerAvailability
 {
     /** Le vehicule est-il libre sur toute la periode ? */
     public function estLibre(
-        PeerVehicle $vehicule,
+        Louable&Model $bien,
         CarbonInterface $debut,
         CarbonInterface $fin,
         ?int $saufLocationId = null,
     ): bool {
-        return $this->motifDIndisponibilite($vehicule, $debut, $fin, $saufLocationId) === null;
+        return $this->motifDIndisponibilite($bien, $debut, $fin, $saufLocationId) === null;
     }
 
     /**
@@ -33,7 +38,7 @@ class PeerAvailability
      * @return string|null null si la periode est libre
      */
     public function motifDIndisponibilite(
-        PeerVehicle $vehicule,
+        Louable&Model $bien,
         CarbonInterface $debut,
         CarbonInterface $fin,
         ?int $saufLocationId = null,
@@ -42,25 +47,25 @@ class PeerAvailability
             return __('La date de retour doit suivre la date de départ.');
         }
 
-        if (! $vehicule->estPubliee()) {
-            return __('Ce véhicule n’est pas proposé à la location.');
+        if (! $bien->estPubliable()) {
+            return __('Ce bien n’est pas proposé à la location.');
         }
 
         $jours = $this->joursEntre($debut, $fin);
 
-        if ($jours < $vehicule->min_rental_days) {
-            return __('La durée minimale est de :n jour(s).', ['n' => $vehicule->min_rental_days]);
+        if ($jours < $bien->dureeMinimum()) {
+            return __('La durée minimale est de :n jour(s).', ['n' => $bien->dureeMinimum()]);
         }
 
-        if ($vehicule->max_rental_days > 0 && $jours > $vehicule->max_rental_days) {
-            return __('La durée maximale est de :n jour(s).', ['n' => $vehicule->max_rental_days]);
+        if ($bien->dureeMaximum() > 0 && $jours > $bien->dureeMaximum()) {
+            return __('La durée maximale est de :n jour(s).', ['n' => $bien->dureeMaximum()]);
         }
 
-        if ($this->chevauche($vehicule, $debut, $fin, $saufLocationId)) {
+        if ($this->chevauche($bien, $debut, $fin, $saufLocationId)) {
             return __('Ces dates sont déjà réservées.');
         }
 
-        if ($this->estFerme($vehicule, $debut, $fin)) {
+        if ($this->estFerme($bien, $debut, $fin)) {
             return __('Le propriétaire a fermé cette période.');
         }
 
@@ -76,13 +81,14 @@ class PeerAvailability
     }
 
     private function chevauche(
-        PeerVehicle $vehicule,
+        Louable&Model $bien,
         CarbonInterface $debut,
         CarbonInterface $fin,
         ?int $sauf,
     ): bool {
         return PeerRental::query()
-            ->where('peer_vehicle_id', $vehicule->id)
+            ->where('rentable_type', $bien->getMorphClass())
+            ->where('rentable_id', $bien->getKey())
             ->quiBloquent()
             ->when($sauf !== null, fn ($q) => $q->whereKeyNot($sauf))
             // Deux periodes se chevauchent des que l'une commence avant que l'autre finisse.
@@ -97,10 +103,11 @@ class PeerAvailability
      * Le proprietaire ferme un mois puis rouvre un week-end dedans : la ligne `open` la plus
      * precise l'emporte. Sans cela, il devrait decouper sa fermeture en trois.
      */
-    private function estFerme(PeerVehicle $vehicule, CarbonInterface $debut, CarbonInterface $fin): bool
+    private function estFerme(Louable&Model $bien, CarbonInterface $debut, CarbonInterface $fin): bool
     {
         $periodes = PeerVehicleAvailability::query()
-            ->where('peer_vehicle_id', $vehicule->id)
+            ->where('rentable_type', $bien->getMorphClass())
+            ->where('rentable_id', $bien->getKey())
             ->whereDate('starts_on', '<=', $fin->toDateString())
             ->whereDate('ends_on', '>=', $debut->toDateString())
             ->get();
@@ -135,7 +142,7 @@ class PeerAvailability
      *
      * @return list<string> dates au format Y-m-d
      */
-    public function joursOccupes(PeerVehicle $vehicule, CarbonInterface $du, CarbonInterface $au): array
+    public function joursOccupes(Louable&Model $bien, CarbonInterface $du, CarbonInterface $au): array
     {
         $occupes = [];
         $jour = Carbon::parse($du->toDateString());
@@ -144,7 +151,7 @@ class PeerAvailability
         while ($jour->lessThanOrEqualTo($dernier)) {
             $finDeJournee = (clone $jour)->addDay();
 
-            if ($this->chevauche($vehicule, $jour, $finDeJournee, null) || $this->estFerme($vehicule, $jour, $jour)) {
+            if ($this->chevauche($bien, $jour, $finDeJournee, null) || $this->estFerme($bien, $jour, $jour)) {
                 $occupes[] = $jour->toDateString();
             }
 

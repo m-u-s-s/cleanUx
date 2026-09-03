@@ -50,7 +50,7 @@ class PeerStay extends Model implements Louable
         'title', 'description', 'property_type', 'space_type',
         'max_guests', 'bedrooms', 'beds', 'bathrooms', 'surface_m2', 'amenities', 'house_rules',
         'nightly_price_cents', 'currency', 'cleaning_fee_cents',
-        'guests_included', 'extra_guest_price_cents',
+        'guests_included', 'extra_guest_price_cents', 'pricing_rules',
         'discount_3_days_percent', 'discount_7_days_percent', 'discount_28_days_percent',
         'deposit_cents', 'min_nights', 'max_nights', 'check_in_from', 'check_out_before',
         'instant_booking', 'cancellation_policy',
@@ -62,6 +62,7 @@ class PeerStay extends Model implements Louable
         'published_at' => 'datetime',
         'reviewed_at' => 'datetime',
         'amenities' => 'array',
+        'pricing_rules' => 'array',
         'metadata' => 'array',
         'instant_booking' => 'boolean',
         'bathrooms' => 'decimal:1',
@@ -139,6 +140,39 @@ class PeerStay extends Model implements Louable
     public function politiqueDAnnulation(): string
     {
         return (string) ($this->cancellation_policy ?: 'flexible');
+    }
+
+    /** @return array<string, mixed> */
+    public function reglesDePrix(): array
+    {
+        return (array) ($this->pricing_rules ?? []);
+    }
+
+    /**
+     * LE MENAGE SE FACTURE UNE FOIS, PAS PAR NUIT.
+     *
+     * C'est la regle de toutes les plateformes du secteur, et l'inverse rendrait un long sejour
+     * absurdement cher. Le supplement voyageurs, lui, suit bien le nombre de nuits.
+     *
+     * @param  array<string, mixed>  $options
+     * @return array<string, int>
+     */
+    public function lignesSupplementaires(int $jours, array $options = []): array
+    {
+        $lignes = [];
+
+        if ((int) $this->cleaning_fee_cents > 0) {
+            $lignes['menage'] = (int) $this->cleaning_fee_cents;
+        }
+
+        $voyageurs = max(1, (int) ($options['voyageurs'] ?? 1));
+        $supplement = $this->supplementVoyageursCents($voyageurs);
+
+        if ($supplement > 0) {
+            $lignes['voyageurs'] = $supplement * max(1, $jours);
+        }
+
+        return $lignes;
     }
 
     /** @return MorphMany<PeerVehicleAvailability, $this> */

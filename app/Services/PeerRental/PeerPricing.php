@@ -4,7 +4,9 @@ namespace App\Services\PeerRental;
 
 use App\Models\PeerVehicle;
 use App\Services\Payments\CommissionService;
+use App\Services\PeerRental\Contracts\Louable;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
@@ -14,6 +16,12 @@ use Illuminate\Support\Carbon;
  * duree longue le degresse. Le calcul est fait JOUR PAR JOUR et non sur une moyenne : un
  * sejour a cheval sur un week-end coute ce que valent ses jours, pas ce que vaudrait leur
  * moyenne — et le devis affiche se retrouve a l'euro pres dans le prelevement.
+ *
+ * IL IGNORE CE QU'IL CHIFFRE. Chaque bien declare ses propres supplements — une livraison pour
+ * une voiture, un menage et des voyageurs pour un logement. Les demander au bien plutot que de
+ * les enumerer ici est ce qui permet d'ajouter un troisieme type sans rouvrir ce fichier.
+ *
+ * ET LA COMMISSION SUIT LE TYPE DE BIEN : le risque d'un logement n'est pas celui d'une voiture.
  */
 class PeerPricing
 {
@@ -31,6 +39,8 @@ class PeerPricing
      *   discount_cents: int,
      *   discount_percent: int,
      *   delivery_cents: int,
+     *   supplements: array<string, int>,
+     *   supplements_cents: int,
      *   insurance_cents: int,
      *   total_cents: int,
      *   deposit_cents: int,
@@ -43,49 +53,53 @@ class PeerPricing
      * }
      */
     public function devis(
-        PeerVehicle $vehicule,
+        Louable&Model $bien,
         CarbonInterface $debut,
         CarbonInterface $fin,
         array $options = [],
     ): array {
         $jours = app(PeerAvailability::class)->joursEntre($debut, $fin);
-        $detail = $this->detailParJour($vehicule, $debut, $jours);
+        $detail = $this->detailParJour($bien, $debut, $jours);
 
         $sousTotal = array_sum(array_column($detail, 'cents'));
-        $degressif = $this->degressifPercent($vehicule, $jours);
+        $degressif = $bien->remisePourDuree($jours);
         $remise = (int) round($sousTotal * $degressif / 100);
 
-        $livraison = ($options['livraison'] ?? false) && $vehicule->delivery_enabled
-            ? $vehicule->delivery_price_cents
-            : 0;
+        // CHAQUE BIEN DIT CE QU'IL FACTURE EN PLUS. La livraison reste nommee a part dans le
+        // devis : tout le module vehicules la lit sous ce nom.
+        $supplements = $bien->lignesSupplementaires($jours, $options);
+        $livraison = (int) ($supplements['livraison'] ?? 0);
 
         $assurance = $this->assuranceCents($options['assurance'] ?? null, $jours);
 
-        $total = max(0, $sousTotal - $remise + $livraison + $assurance);
+        $total = max(0, $sousTotal - $remise + array_sum($supplements) + $assurance);
 
         // LE MEME PARTAGE QUE PARTOUT AILLEURS, avec le taux propre a la location.
         $partage = $this->commissions->calculateForAmount(
             $total,
             null,
-            $vehicule->currency,
-            $this->tauxDeCommission(),
+            $bien->devise(),
+            $this->tauxDeCommission($bien->typeDeBien()),
         );
 
         return [
             'days' => $jours,
-            'daily_price_cents' => $vehicule->daily_price_cents,
+            'daily_price_cents' => $bien->prixJournalierCents(),
             'subtotal_cents' => $sousTotal,
             'discount_cents' => $remise,
             'discount_percent' => $degressif,
             'delivery_cents' => $livraison,
+            'supplements' => $supplements,
+            'supplements_cents' => array_sum($supplements),
             'insurance_cents' => $assurance,
             'total_cents' => $total,
-            'deposit_cents' => $vehicule->deposit_cents,
-            'included_km' => $vehicule->included_km_per_day * $jours,
+            'deposit_cents' => $bien->cautionCents(),
+            // PROPRE AUX VEHICULES : un logement n'a pas de kilometrage. Zero se lit « sans objet ».
+            'included_km' => $bien instanceof PeerVehicle ? $bien->included_km_per_day * $jours : 0,
             'platform_fee_cents' => $partage['platform_fee_cents'],
             'owner_payout_cents' => $partage['provider_payout_cents'],
             'commission_rate' => $partage['commission_rate'],
-            'currency' => $vehicule->currency,
+            'currency' => $bien->devise(),
             'detail_par_jour' => $detail,
         ];
     }
@@ -93,9 +107,9 @@ class PeerPricing
     /**
      * @return list<array{date: string, cents: int, majoration: string|null}>
      */
-    public function detailParJour(PeerVehicle $vehicule, CarbonInterface $debut, int $jours): array
+    public function detailParJour(Louable&Model $bien, CarbonInterface $debut, int $jours): array
     {
-        $regles = $vehicule->pricing_rules ?? [];
+        $regles = $bien->reglesDePrix();
         $weekend = (float) ($regles['weekend_multiplier'] ?? config('peer_rental.pricing.weekend_multiplier', 1.15));
         $saison = (float) ($regles['high_season_multiplier'] ?? config('peer_rental.pricing.high_season_multiplier', 1.20));
         /** @var list<int> $moisHauts */
@@ -124,7 +138,7 @@ class PeerPricing
 
             $detail[] = [
                 'date' => $jour->toDateString(),
-                'cents' => (int) round($vehicule->daily_price_cents * $multiplicateur),
+                'cents' => (int) round($bien->prixJournalierCents() * $multiplicateur),
                 'majoration' => $majoration,
             ];
 
@@ -135,19 +149,31 @@ class PeerPricing
     }
 
     /** Le degressif du sejour : le palier le plus haut atteint, jamais leur somme. */
-    public function degressifPercent(PeerVehicle $vehicule, int $jours): int
+    /** Le bien porte desormais son propre degressif ; cette methode delegue. */
+    public function degressifPercent(Louable&Model $bien, int $jours): int
     {
-        return match (true) {
-            $jours >= 28 => (int) $vehicule->discount_28_days_percent,
-            $jours >= 7 => (int) $vehicule->discount_7_days_percent,
-            $jours >= 3 => (int) $vehicule->discount_3_days_percent,
-            default => 0,
-        };
+        return $bien->remisePourDuree($jours);
     }
 
-    public function tauxDeCommission(): float
+    /**
+     * LA COMMISSION SUIT LE TYPE DE BIEN, ET SEULEMENT S'IL EN A UN PROPRE.
+     *
+     * Le risque d'un logement n'est pas celui d'une voiture, et les places de marche du secteur
+     * l'ont toutes tranche ainsi. Sans reglage dedie, le taux general s'applique : aucune decision
+     * n'est forcee aujourd'hui, et rien ne se casse le jour ou on en prendra une.
+     *
+     * Le taux est FIGE sur chaque location au moment du devis : le changer n'altere aucune
+     * location deja conclue.
+     */
+    public function tauxDeCommission(?string $typeDeBien = null): float
     {
-        return max(0, (int) config('peer_rental.commission_percent', 25)) / 100;
+        $general = (int) config('peer_rental.commission_percent', 25);
+
+        $propre = $typeDeBien === null
+            ? null
+            : config('peer_rental.commission_percent_par_type.'.$typeDeBien);
+
+        return max(0, (int) ($propre ?? $general)) / 100;
     }
 
     /** COQUILLE — aucun assureur partenaire n'est contractualise, le tarif reste indicatif. */

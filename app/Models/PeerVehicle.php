@@ -163,6 +163,27 @@ class PeerVehicle extends Model implements Louable
         return (string) ($this->cancellation_policy ?: self::ANNULATION_SOUPLE);
     }
 
+    /** @return array<string, mixed> */
+    public function reglesDePrix(): array
+    {
+        return (array) ($this->pricing_rules ?? []);
+    }
+
+    /**
+     * LA LIVRAISON, quand le proprietaire la propose et que le locataire la demande.
+     *
+     * @param  array<string, mixed>  $options
+     * @return array<string, int>
+     */
+    public function lignesSupplementaires(int $jours, array $options = []): array
+    {
+        $demandee = (bool) ($options['livraison'] ?? false);
+
+        return $demandee && $this->delivery_enabled && (int) $this->delivery_price_cents > 0
+            ? ['livraison' => (int) $this->delivery_price_cents]
+            : [];
+    }
+
     /**
      * LE MEME CALENDRIER QUE LES LOGEMENTS.
      *

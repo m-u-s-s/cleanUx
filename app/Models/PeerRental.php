@@ -133,6 +133,24 @@ class PeerRental extends Model
     }
 
     /**
+     * LES DEUX COLONNES DISENT LE MEME BIEN, ET DOIVENT LE DIRE ENSEMBLE.
+     *
+     * Tout le module vehicules ecrit `peer_vehicle_id` ; la couche partagee lit `rentable_*`.
+     * Sans ce crochet, une location creee par l'ancienne voie serait INVISIBLE au controle de
+     * chevauchement — et deux locataires retiendraient les memes dates sans que rien ne l'empeche.
+     * C'est un test qui l'a montre, pas une relecture.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (self $location) {
+            if ($location->rentable_type === null && $location->peer_vehicle_id !== null) {
+                $location->rentable_type = PeerVehicle::class;
+                $location->rentable_id = $location->peer_vehicle_id;
+            }
+        });
+    }
+
+    /**
      * LE BIEN LOUE, QUEL QU'IL SOIT.
      *
      * `vehicle()` reste pour tout le module vivant ; cette relation-ci est celle que la couche

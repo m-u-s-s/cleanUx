@@ -18,6 +18,18 @@ return [
     'commission_percent' => (int) env('PEER_RENTAL_COMMISSION_PERCENT', 25),
 
     /*
+     * UN TAUX PROPRE A UN TYPE DE BIEN, quand on le veut.
+     *
+     * Le risque d'un logement n'est pas celui d'une voiture : les places de marche du secteur
+     * l'ont toutes tranche ainsi. Une entree absente laisse le taux general s'appliquer — aucune
+     * decision n'est donc forcee, et le taux reste FIGE sur chaque location deja conclue.
+     */
+    'commission_percent_par_type' => [
+        'vehicle' => env('PEER_RENTAL_COMMISSION_VEHICLE_PERCENT'),
+        'stay' => env('PEER_RENTAL_COMMISSION_STAY_PERCENT'),
+    ],
+
+    /*
      * UNE AUTORISATION STRIPE EXPIRE AU BOUT DE SEPT JOURS.
      *
      * Une reservation prise trois semaines a l'avance verrait ses fonds retomber avant la

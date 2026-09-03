@@ -46,6 +46,28 @@ interface Louable
     public function politiqueDAnnulation(): string;
 
     /**
+     * LES MAJORATIONS DE CALENDRIER — week-end, haute saison.
+     *
+     * Elles valent pour les deux biens : un studio se paie plus cher un samedi de juillet, tout
+     * comme une voiture. Un tableau vide laisse les valeurs de la plateforme s'appliquer.
+     *
+     * @return array<string, mixed>
+     */
+    public function reglesDePrix(): array;
+
+    /**
+     * CE QUE CE BIEN-LÀ FACTURE EN PLUS, et que l'autre ne connaît pas.
+     *
+     * Une voiture facture une livraison ; un logement, un ménage et les voyageurs au-delà de ce
+     * que le prix couvre. Les faire remonter par le bien, plutôt que par une suite de `instanceof`
+     * dans le calcul, est ce qui permet d'ajouter un troisième type sans rouvrir la tarification.
+     *
+     * @param  array<string, mixed>  $options
+     * @return array<string, int> libellé => centimes
+     */
+    public function lignesSupplementaires(int $jours, array $options = []): array;
+
+    /**
      * Les périodes pendant lesquelles le bien n'est pas disponible.
      *
      * @return MorphMany<PeerVehicleAvailability, covariant \Illuminate\Database\Eloquent\Model>
