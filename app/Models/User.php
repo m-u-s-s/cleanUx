@@ -195,6 +195,16 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     /**
      * Clients who have marked this user as a favourite provider.
      *
+     * LE ROLE D'ADMINISTRATION — un paquet de capacites, pas un tampon.
+     *
+     * @return BelongsTo<AdminRole, $this>
+     */
+    public function adminRole(): BelongsTo
+    {
+        return $this->belongsTo(AdminRole::class, 'admin_role_id');
+    }
+
+    /**
      * @return BelongsToMany<self, $this>
      */
     public function favoriteEmployes(): BelongsToMany

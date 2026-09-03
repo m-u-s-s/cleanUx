@@ -27,6 +27,12 @@ class AdminParityInventoryTest extends TestCase
             .'`missions` est vide et le dispatch vit dans le centre de répartition, où il est '
             .'porté. Y ajouter une action porterait sur un modèle que personne n’alimente.',
 
+        'admin-roles' => 'Distribuer des capacités d’administration est le geste le plus sensible de '
+            .'la console : il exige déjà « Actions critiques », et il se relit à froid, à côté de la '
+            .'liste de ce que chaque capacité ouvre. Le porter sur mobile ajouterait une seconde '
+            .'surface d’élévation pour un gain nul — on n’accorde pas la finance à quelqu’un dans un '
+            .'couloir. La LECTURE, elle, reste utile et passe déjà par le web.',
+
         'platform-seat' => 'Déplacer la PROPRIÉTÉ de la plateforme depuis un téléphone perdu ou '
             .'prêté n’a aucun intérêt opérationnel et ouvre un chemin de plus vers le seul siège qui '
             .'passe partout. Le transfert exige déjà la phrase, le second facteur et un délai : '

@@ -152,6 +152,10 @@ trait HasAdminCapabilities
             $permissions = [];
         }
 
+        // LE ROLE COMPTE AUTANT QUE LES CAPACITES INDIVIDUELLES : sans cette union, un
+        // administrateur a qui l'on donne un role garderait toutes ses portes fermees.
+        $permissions = [...$permissions, ...$this->capacitesDuRole()];
+
         $aliases = [$permission];
 
         $aliasMap = [
@@ -196,8 +200,10 @@ trait HasAdminCapabilities
         }
 
         if (! is_array($permissions)) {
-            return false;
+            $permissions = [];
         }
+
+        $permissions = [...$permissions, ...$this->capacitesDuRole()];
 
         if (in_array($permission, $permissions, true)) {
             return true;
@@ -227,6 +233,24 @@ trait HasAdminCapabilities
             );
     }
 
+    /**
+     * LES CAPACITES QUE LE ROLE APPORTE.
+     *
+     * L'union NE PEUT QU'AJOUTER : un role ne retire jamais une capacite posee a la main,
+     * sinon changer le role d'un compte lui ferait perdre en silence un acces qu'on lui
+     * avait accorde exprès.
+     *
+     * @return list<string>
+     */
+    public function capacitesDuRole(): array
+    {
+        if (($this->admin_role_id ?? null) === null) {
+            return [];
+        }
+
+        return $this->adminRole?->capacites() ?? [];
+    }
+
     public function permissionList(): array
     {
         $permissions = $this->permissions ?? [];
@@ -240,7 +264,9 @@ trait HasAdminCapabilities
             $permissions = $permissions->all();
         }
 
-        return is_array($permissions) ? array_values((array) $permissions) : [];
+        $individuelles = is_array($permissions) ? array_values((array) $permissions) : [];
+
+        return array_values(array_unique([...$individuelles, ...$this->capacitesDuRole()]));
     }
 
     public function getIsAdminAttribute(): bool

@@ -119,6 +119,7 @@ return [
          * que ce registre sache dire : ce n'est pas une tache en retard.
          */
         ['key' => 'platform-seat', 'title' => 'Le siège', 'group' => 'personnes', 'icon' => 'ribbon-outline', 'coverage' => 'pending', 'routes' => ['admin/siege']],
+        ['key' => 'admin-roles', 'title' => 'Rôles et permissions', 'group' => 'personnes', 'icon' => 'key-outline', 'coverage' => 'pending', 'routes' => ['admin/roles-et-permissions']],
         ['key' => 'users', 'title' => 'Utilisateurs', 'group' => 'personnes', 'icon' => 'people-outline', 'coverage' => 'descriptor', 'routes' => ['admin/utilisateurs']],
         ['key' => 'companies', 'title' => 'Entreprises', 'group' => 'personnes', 'icon' => 'business-outline', 'coverage' => 'descriptor', 'routes' => ['admin/entreprises']],
         ['key' => 'sites', 'title' => 'Sites', 'group' => 'personnes', 'icon' => 'location-outline', 'coverage' => 'descriptor', 'routes' => ['admin/sites']],

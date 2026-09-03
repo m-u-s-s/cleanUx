@@ -69,6 +69,7 @@ use App\Livewire\Admin\Ratings\RatingModerationCenter;
 use App\Livewire\Admin\Realtime\RealtimeCenter;
 use App\Livewire\Admin\Rental\NosLocationsCenter;
 use App\Livewire\Admin\Risk\RiskCenter;
+use App\Livewire\Admin\RolesEtPermissions;
 use App\Livewire\Admin\Safety\SafetyCenter;
 use App\Livewire\Admin\Sms\SmsCenter;
 use App\Livewire\Admin\StripeConnectProviders;
@@ -197,6 +198,15 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
 
         Route::get('/utilisateurs', $utilisateurs)
             ->name('utilisateurs.manage');
+
+        /*
+         * LES ROLES ET LES CAPACITES, a cote des comptes et non dedans.
+         *
+         * L'ecran des utilisateurs porte le compte : qui est-ce, est-il actif, quel metier.
+         * Celui-ci porte le POUVOIR : distribuer des capacites n'est pas administrer une
+         * fiche, et melanger les deux ferait un ecran ou l'on eleve quelqu'un par megarde.
+         */
+        Route::get('/roles-et-permissions', RolesEtPermissions::class)->name('roles.permissions');
 
         /*
          * LE SIEGE DE SUPER-ADMINISTRATEUR — sa propre page, et son propre garde.

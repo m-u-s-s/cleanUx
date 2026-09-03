@@ -31,8 +31,8 @@ class GestionUtilisateursCoverageBatch10Test extends TestCase
             ->test(GestionUtilisateurs::class)
             ->assertOk()
             ->assertViewHas('users')
-            ->assertViewHas('zones')
-            ->assertViewHas('permissionOptions')
+            // `zones` et `permissionOptions` sont parties avec l'editeur de securite : la vue
+            // n'en lisait aucune, et le reglage vit sur `/admin/roles-et-permissions`.
             ->assertViewHas('allAvailableTrades');
     }
 
@@ -97,71 +97,13 @@ class GestionUtilisateursCoverageBatch10Test extends TestCase
 
         $this->assertSame(User::ROLE_EMPLOYE, $target->refresh()->role);
     }
-
-    public function test_edit_security_loads_target_then_cancel_resets(): void
-    {
-        $admin = $this->makeAdmin();
-        $zone = ServiceZone::factory()->create();
-        $target = User::factory()->admin()->create([
-            'access_scope' => User::ACCESS_SCOPE_ZONE,
-            'managed_service_zone_id' => $zone->id,
-            'permissions' => ['manage-users'],
-        ]);
-
-        Livewire::actingAs($admin)
-            ->test(GestionUtilisateurs::class)
-            ->call('editSecurity', $target->id)
-            ->assertSet('editingUserId', $target->id)
-            ->assertSet('securityAccessScope', User::ACCESS_SCOPE_ZONE)
-            ->assertSet('securityManagedZoneId', $zone->id)
-            ->assertSet('securityPermissions', ['manage-users'])
-            ->call('cancelSecurityEdit')
-            ->assertSet('editingUserId', null)
-            ->assertSet('securityAccessScope', User::ACCESS_SCOPE_ALL)
-            ->assertSet('securityManagedZoneId', null)
-            ->assertSet('securityPermissions', []);
-    }
-
-    public function test_save_security_zone_scope_requires_a_zone(): void
-    {
-        $admin = $this->makeAdmin();
-        $target = User::factory()->admin()->create();
-
-        Livewire::actingAs($admin)
-            ->test(GestionUtilisateurs::class)
-            ->call('editSecurity', $target->id)
-            ->set('securityAccessScope', User::ACCESS_SCOPE_ZONE)
-            ->set('securityManagedZoneId', null)
-            ->call('saveSecurity')
-            ->assertHasErrors('securityManagedZoneId');
-
-        $this->assertNotSame(User::ACCESS_SCOPE_ZONE, $target->refresh()->access_scope);
-    }
-
-    public function test_save_security_readonly_scope_clears_managed_zone(): void
-    {
-        $admin = $this->makeAdmin();
-        $zone = ServiceZone::factory()->create();
-        $target = User::factory()->admin()->create([
-            'access_scope' => User::ACCESS_SCOPE_ZONE,
-            'managed_service_zone_id' => $zone->id,
-        ]);
-
-        Livewire::actingAs($admin)
-            ->test(GestionUtilisateurs::class)
-            ->call('editSecurity', $target->id)
-            ->set('securityAccessScope', User::ACCESS_SCOPE_READONLY)
-            ->set('securityManagedZoneId', $zone->id)
-            ->set('securityPermissions', ['manage-users', 'manage-users', ''])
-            ->call('saveSecurity')
-            ->assertHasNoErrors()
-            ->assertSet('editingUserId', null);
-
-        $target->refresh();
-        $this->assertSame(User::ACCESS_SCOPE_READONLY, $target->access_scope);
-        $this->assertNull($target->managed_service_zone_id);
-        $this->assertSame(['manage-users'], $target->permissions);
-    }
+    /*
+     * LES DEUX CAS DE SECURITE ONT SUIVI LEUR ECRAN.
+     *
+     * `editSecurity` et `saveSecurity` vivaient ici sans qu'aucune Blade ne les appelle.
+     * Le reglage des capacites, du perimetre et de la zone geree se mesure desormais sur
+     * `RolesEtPermissions`, avec les regles d'elevation qui manquaient a cette porte-ci.
+     */
 
     public function test_render_filters_by_access_scope_and_search(): void
     {
@@ -200,25 +142,6 @@ class GestionUtilisateursCoverageBatch10Test extends TestCase
             ->assertOk()
             ->assertSee('Eddy Employe')
             ->assertDontSee('Carla Client');
-    }
-
-    public function test_zone_scoped_admin_only_sees_own_zone_in_zones_property(): void
-    {
-        $zoneA = ServiceZone::factory()->create(['name' => 'Owned Zone']);
-        ServiceZone::factory()->create(['name' => 'Other Zone']);
-
-        $admin = $this->makeAdmin([
-            'access_scope' => User::ACCESS_SCOPE_ZONE,
-            'managed_service_zone_id' => $zoneA->id,
-        ]);
-
-        $component = Livewire::actingAs($admin)
-            ->test(GestionUtilisateurs::class)
-            ->assertOk();
-
-        $zones = $component->viewData('zones');
-        $this->assertCount(1, $zones);
-        $this->assertSame($zoneA->id, $zones->first()->id);
     }
 
     public function test_non_admin_is_forbidden_from_toggle_activation(): void

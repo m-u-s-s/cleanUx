@@ -2,14 +2,12 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\ServiceZone;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use App\Support\Livewire\Concerns\Admin\ManagesEmployeeTrades;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -28,14 +26,16 @@ class GestionUtilisateurs extends Component
 
     public int $perPage = 10;
 
-    public ?int $editingUserId = null;
-
-    public string $securityAccessScope = User::ACCESS_SCOPE_ALL;
-
-    public ?int $securityManagedZoneId = null;
-
-    public array $securityPermissions = [];
-
+    /*
+     * L'EDITEUR DE SECURITE A QUITTE CET ECRAN, ET CE N'EST PAS UNE PERTE.
+     *
+     * Il vivait ici sans qu'aucune Blade ne l'appelle — donc atteignable seulement par
+     * `/livewire/update`, qui n'a besoin d'aucun bouton. Deux portes sur la meme serrure,
+     * et une seule des deux refusait qu'on accorde une capacite qu'on n'a pas soi-meme.
+     *
+     * Tout est porte par `/admin/roles-et-permissions` : capacites, perimetre, zone geree,
+     * et les regles d'elevation qui manquaient ici.
+     */
     protected function currentAdmin(): ?User
     {
         $user = auth()->user();
@@ -98,94 +98,6 @@ class GestionUtilisateurs extends Component
         ]);
 
         session()->flash('success', 'Rôle mis à jour.');
-    }
-
-    public function editSecurity(int $userId): void
-    {
-        $user = User::findOrFail($userId);
-        Gate::authorize('updateAdminSecurity', $user);
-
-        $this->editingUserId = $user->id;
-        $this->securityAccessScope = $user->access_scope ?: User::ACCESS_SCOPE_ALL;
-        $this->securityManagedZoneId = $user->managed_service_zone_id;
-        $this->securityPermissions = $user->permissionList();
-    }
-
-    public function cancelSecurityEdit(): void
-    {
-        $this->editingUserId = null;
-        $this->securityAccessScope = User::ACCESS_SCOPE_ALL;
-        $this->securityManagedZoneId = null;
-        $this->securityPermissions = [];
-    }
-
-    public function saveSecurity(): void
-    {
-        $user = User::findOrFail((int) $this->editingUserId);
-        Gate::authorize('updateAdminSecurity', $user);
-
-        $validated = $this->validate([
-            'securityAccessScope' => [
-                'required',
-                'in:'.implode(',', [
-                    User::ACCESS_SCOPE_ALL,
-                    User::ACCESS_SCOPE_ZONE,
-                    User::ACCESS_SCOPE_READONLY,
-                ]),
-            ],
-            'securityManagedZoneId' => ['nullable', 'exists:service_zones,id'],
-            'securityPermissions' => ['array'],
-            'securityPermissions.*' => [
-                'string',
-                'in:'.implode(',', array_keys(User::allowedAdminPermissions())),
-            ],
-        ]);
-
-        if (
-            $validated['securityAccessScope'] === User::ACCESS_SCOPE_ZONE
-            && empty($validated['securityManagedZoneId'])
-        ) {
-            $this->addError('securityManagedZoneId', 'Une zone est obligatoire pour un admin scope zone.');
-
-            return;
-        }
-
-        $permissions = array_values(array_unique(array_filter($validated['securityPermissions'] ?? [])));
-
-        $user->update([
-            'access_scope' => $validated['securityAccessScope'],
-            'managed_service_zone_id' => $validated['securityAccessScope'] === User::ACCESS_SCOPE_ZONE
-                ? $validated['securityManagedZoneId']
-                : null,
-            'permissions' => $permissions,
-        ]);
-
-        ActivityLogger::critical('security.admin_security_updated', $user, [
-            'domain' => 'security',
-            'access_scope' => $user->access_scope,
-            'managed_service_zone_id' => $user->managed_service_zone_id,
-            'permissions' => $permissions,
-        ]);
-
-        session()->flash('success', 'Sécurité admin mise à jour.');
-        $this->cancelSecurityEdit();
-    }
-
-    public function getPermissionOptionsProperty(): array
-    {
-        return User::allowedAdminPermissions();
-    }
-
-    public function getZonesProperty(): Collection
-    {
-        $admin = $this->currentAdmin();
-
-        return ServiceZone::query()
-            ->when($admin?->isZoneScopedAdmin(), function (Builder $query) use ($admin) {
-                $query->whereKey($admin->managed_service_zone_id);
-            })
-            ->orderBy('name')
-            ->get(['id', 'name']);
     }
 
     protected function applyZoneScope(Builder $query): void
@@ -256,10 +168,11 @@ class GestionUtilisateurs extends Component
             ->orderBy('name')
             ->paginate($this->perPage);
 
+        // `zones` ET `permissionOptions` PARTENT AVEC L'EDITEUR : `render()` les passait a une
+        // vue qui n'en lisait aucune. Elles servaient le formulaire de securite, qui vit
+        // desormais sur `/admin/roles-et-permissions`.
         return view('livewire.admin.gestion-utilisateurs', [
             'users' => $users,
-            'zones' => $this->zones,
-            'permissionOptions' => $this->permissionOptions,
             'allAvailableTrades' => $this->allAvailableTrades,
         ]);
     }

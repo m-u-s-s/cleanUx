@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Livewire\Admin\GestionUtilisateurs;
+use App\Livewire\Admin\RolesEtPermissions;
 use App\Models\Booking;
 use App\Models\Feedback;
 use App\Models\ServiceZone;
@@ -58,32 +58,59 @@ class AdminSecurityHardeningTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_admin_can_update_admin_security_from_livewire_component(): void
+    /**
+     * LES CAPACITES SE REGLENT DEPUIS `/admin/roles-et-permissions`, ET NULLE PART AILLEURS.
+     *
+     * L'editeur qui vivait dans `GestionUtilisateurs` n'etait rendu par aucune Blade — donc
+     * atteignable seulement par `/livewire/update`, et surtout SANS la regle « on ne donne
+     * que ce qu'on a » : ce test-ci accordait `manage-audit-logs` a un acteur qui ne l'avait
+     * pas, et le tenait pour normal.
+     */
+    public function test_les_capacites_se_reglent_depuis_l_ecran_des_roles(): void
     {
         $zone = ServiceZone::factory()->create();
-        $superAdmin = User::factory()->admin()->create([
+        $acteur = User::factory()->admin()->create([
+            'is_active' => true,
+            'permissions' => ['manage-users', 'perform-critical-admin-actions', 'manage-audit-logs'],
+        ]);
+        $cible = User::factory()->admin()->create(['is_active' => true]);
+
+        Livewire::actingAs($acteur)
+            ->test(RolesEtPermissions::class)
+            ->call('editerLAdministrateur', $cible->id)
+            ->set('perimetre', 'zone')
+            ->set('zoneGeree', $zone->id)
+            ->set('capacitesEnPlus', ['manage-users', 'manage-audit-logs'])
+            ->call('enregistrerLAdministrateur')
+            ->assertSet('erreur', null);
+
+        $cible->refresh();
+
+        $this->assertSame('zone', $cible->access_scope);
+        $this->assertSame($zone->id, $cible->managed_service_zone_id);
+        $this->assertEqualsCanonicalizing(['manage-users', 'manage-audit-logs'], $cible->permissionList());
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'security.admin_capabilities_updated',
+            'user_id' => $acteur->id,
+        ]);
+    }
+
+    /** TEMOIN — la meme saisie SANS detenir la capacite est refusee, et rien n'est ecrit. */
+    public function test_temoin_on_n_accorde_pas_une_capacite_qu_on_n_a_pas(): void
+    {
+        $acteur = User::factory()->admin()->create([
+            'is_active' => true,
             'permissions' => ['manage-users', 'perform-critical-admin-actions'],
         ]);
-        $target = User::factory()->admin()->create();
+        $cible = User::factory()->admin()->create(['is_active' => true]);
 
-        Livewire::actingAs($superAdmin)
-            ->test(GestionUtilisateurs::class)
-            ->call('editSecurity', $target->id)
-            ->set('securityAccessScope', 'zone')
-            ->set('securityManagedZoneId', $zone->id)
-            ->set('securityPermissions', ['manage-users', 'manage-audit-logs'])
-            ->call('saveSecurity')
-            ->assertHasNoErrors();
+        Livewire::actingAs($acteur)
+            ->test(RolesEtPermissions::class)
+            ->call('editerLAdministrateur', $cible->id)
+            ->set('capacitesEnPlus', ['manage-audit-logs'])
+            ->call('enregistrerLAdministrateur');
 
-        $target->refresh();
-
-        $this->assertSame('zone', $target->access_scope);
-        $this->assertSame($zone->id, $target->managed_service_zone_id);
-        $this->assertSame(['manage-users', 'manage-audit-logs'], $target->permissions);
-        $this->assertDatabaseHas('activity_logs', [
-            'action' => 'security.admin_security_updated',
-            'user_id' => $superAdmin->id,
-        ]);
+        $this->assertNotContains('manage-audit-logs', $cible->fresh()->permissionList());
     }
 
     public function test_zone_scoped_admin_only_sees_feedback_of_his_zone(): void
