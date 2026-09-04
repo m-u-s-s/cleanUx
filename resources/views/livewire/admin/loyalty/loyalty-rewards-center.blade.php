@@ -58,7 +58,7 @@
                         <option value="partner_voucher">Voucher partenaire</option>
                         <option value="charity_donation">Don caritatif</option>
                     </select>
-                    <button wire:click="openCreate" class="rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-500">+ Nouvelle récompense</button>
+                    <button wire:click="openCreate" class="brio-btn-primary whitespace-nowrap">+ Nouvelle récompense</button>
                 </div>
 
                 <table class="w-full text-sm">
@@ -234,8 +234,8 @@
                     </div>
 
                     <div class="mt-5 flex justify-end gap-2">
-                        <button wire:click="closeForm" class="rounded-lg border px-4 py-2 text-sm font-semibold text-slate-700">Annuler</button>
-                        <button wire:click="save" class="rounded-lg bg-indigo-600 text-white px-4 py-2 text-sm font-semibold hover:bg-indigo-500">Enregistrer</button>
+                        <button wire:click="closeForm" class="brio-btn-secondary">Annuler</button>
+                        <button wire:click="save" class="brio-btn-primary">Enregistrer</button>
                     </div>
                 </div>
             </div>
