@@ -23,7 +23,11 @@
                         :tone="$santePlateforme['webhooks_echoues_24h'] > 0 ? 'red' : 'slate'" icon="🔌" />
         </div>
 
-        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
+        {{-- Un montant ne se coupe pas en deux, et les titres reservent deux lignes pour que les
+             cinq valeurs partagent la meme ligne de base. --}}
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5
+                    [&_.brio-kpi-label]:min-h-[2.6em]
+                    [&_.brio-kpi-value]:whitespace-nowrap [&_.brio-kpi-value]:!text-2xl">
             <x-kpi-card title="CA total" :value="locale_currency($santePlateforme['ca_total'])" tone="blue" icon="📊" />
             <x-kpi-card title="Marge plateforme" :value="locale_currency($santePlateforme['marge_plateforme'])"
                         hint="La commission encaissée" tone="green" icon="🏛️" />

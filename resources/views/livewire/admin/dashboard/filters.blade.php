@@ -41,11 +41,6 @@
                 Réinitialiser
             </button>
         </div>
-        <button>
-            wire:loading.attr="disabled"
-            class="rounded-xl bg-slate-100 px-4 py-2 text-sm font-black text-slate-700 hover:bg-slate-200 disabled:opacity-50">
-            Réinitialiser
-        </button>
     </div>
 
     <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">

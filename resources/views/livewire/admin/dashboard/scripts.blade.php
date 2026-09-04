@@ -89,7 +89,8 @@
                 width: 3
             },
             fill: {
-                opacity: 0.25
+                // Le remplissage n'appartient qu'a l'aire des RDV : la courbe du CA reste une ligne.
+                opacity: [0.25, 0]
             },
             dataLabels: {
                 enabled: false
