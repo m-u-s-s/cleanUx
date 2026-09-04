@@ -69,11 +69,11 @@
                 </div>
                 <div class="p-4 space-y-2">
                     @forelse ($byCancelledBy as $b)
-                        @php $pct = $totalCancelled > 0 ? round(($b->count / $totalCancelled) * 100, 1) : 0; @endphp
+                        @php $pct = $totalCancelled > 0 ? round(($b['count'] / $totalCancelled) * 100, 1) : 0; @endphp
                         <div>
                             <div class="flex justify-between text-sm">
-                                <span class="font-semibold">{{ $b->cancelled_by }}</span>
-                                <span class="text-slate-500 text-xs">{{ number_format($b->count) }} ({{ $pct }}%)</span>
+                                <span class="font-semibold">{{ $b['nom'] }}</span>
+                                <span class="text-slate-500 text-xs">{{ number_format($b['count']) }} ({{ $pct }}%)</span>
                             </div>
                             <div class="w-full bg-slate-100 h-2 rounded mt-1">
                                 <div class="bg-indigo-600 h-2 rounded" style="width: {{ $pct }}%"></div>

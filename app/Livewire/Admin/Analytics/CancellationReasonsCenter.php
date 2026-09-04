@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Analytics;
 
 use App\Models\Booking;
+use App\Models\User;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
@@ -71,6 +72,20 @@ class CancellationReasonsCenter extends Component
             ->whereNotNull('cancelled_by')
             ->groupBy('cancelled_by')
             ->get();
+
+        // `bookings.cancelled_by` EST UN IDENTIFIANT, et la carte l'affichait tel quel :
+        // « Annulé par 3 » ne dit rien a personne. Une requete pour toute la colonne.
+        $noms = User::query()
+            ->whereIn('id', $byCancelledBy->pluck('cancelled_by')->filter()->all())
+            ->pluck('name', 'id');
+
+        // DES TABLEAUX, PAS DES MODELES : une colonne agregee posee sur un `Booking` fait
+        // croire a une propriete qui n'existe pas, et PHPStan le dit.
+        $byCancelledBy = $byCancelledBy->map(fn ($ligne) => [
+            'nom' => $noms[(int) $ligne->getAttribute('cancelled_by')]
+                ?? 'Utilisateur #'.$ligne->getAttribute('cancelled_by'),
+            'count' => (int) $ligne->getAttribute('count'),
+        ]);
 
         return view('livewire.admin.analytics.cancellation-reasons-center', [
             'totalCancelled' => $totalCancelled,

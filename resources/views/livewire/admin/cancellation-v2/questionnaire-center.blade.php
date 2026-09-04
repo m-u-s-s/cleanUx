@@ -18,9 +18,9 @@
 
     <form wire:submit="ajouterQuestion"
           class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
-        <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Ajouter une question
-        </h2>
+        </h3>
 
         <div class="mt-4 grid gap-4 md:grid-cols-4">
             <label class="block">

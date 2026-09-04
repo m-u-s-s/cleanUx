@@ -107,6 +107,24 @@ class FusionAnnulationsTest extends TestCase
         $this->assertSame(0, (int) $annulation->fresh()->fee_amount_cents);
     }
 
+    public function test_l_onglet_raisons_nomme_qui_a_annule(): void
+    {
+        $client = User::factory()->create(['name' => 'Camille Renard']);
+
+        Booking::factory()->create([
+            'status' => 'annule',
+            'cancelled_at' => now(),
+            'cancelled_by' => $client->id,
+            'cancellation_reason' => 'Créneau plus disponible',
+        ]);
+
+        // `bookings.cancelled_by` est un IDENTIFIANT : la carte affichait « Annulé par 3 ».
+        Livewire::actingAs($this->admin(['manage-analytics']))
+            ->test(CancellationsCenter::class, ['tab' => 'raisons'])
+            ->assertSee('Camille Renard')
+            ->assertDontSee('Annulé par '.$client->id);
+    }
+
     public function test_renoncer_aux_frais_les_efface_aussi_sur_la_reservation(): void
     {
         $booking = Booking::factory()->create(['cancellation_fee_amount' => 50.0]);
