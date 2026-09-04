@@ -36,7 +36,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 rounded-2xl border bg-white shadow-sm">
                 <div class="p-4 border-b">
-                    <h2 class="text-sm font-bold text-slate-900">Top raisons d'annulation</h2>
+                    <h3 class="text-sm font-bold text-slate-900">Top raisons d'annulation</h3>
                 </div>
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 text-left text-xs uppercase text-slate-500">
@@ -49,12 +49,12 @@
                     </thead>
                     <tbody>
                         @forelse ($rows as $r)
-                            @php $pct = $totalCancelled > 0 ? round(($r->count / $totalCancelled) * 100, 1) : 0; @endphp
+                            @php $pct = $totalCancelled > 0 ? round(($r['count'] / $totalCancelled) * 100, 1) : 0; @endphp
                             <tr class="border-t hover:bg-slate-50">
-                                <td class="px-3 py-2 text-sm">{{ \Illuminate\Support\Str::limit($r->cancellation_reason, 80) }}</td>
-                                <td class="px-3 py-2 text-right font-bold">{{ number_format($r->count) }}</td>
+                                <td class="px-3 py-2 text-sm">{{ \Illuminate\Support\Str::limit($r['raison'], 80) }}</td>
+                                <td class="px-3 py-2 text-right font-bold">{{ number_format($r['count']) }}</td>
                                 <td class="px-3 py-2 text-right text-slate-600 text-xs">{{ $pct }}%</td>
-                                <td class="px-3 py-2 text-right text-emerald-700"><x-money :amount="(float) ((float) $r->total_fee_euros)" /></td>
+                                <td class="px-3 py-2 text-right text-emerald-700"><x-money :amount="(float) $r['frais_euros']" /></td>
                             </tr>
                         @empty
                             <tr><td colspan="4" class="px-3 py-8 text-center text-slate-400">Aucune annulation sur cette période.</td></tr>
@@ -65,14 +65,17 @@
 
             <div class="rounded-2xl border bg-white shadow-sm">
                 <div class="p-4 border-b">
-                    <h2 class="text-sm font-bold text-slate-900">Annulé par</h2>
+                    <h3 class="text-sm font-bold text-slate-900">Annulé par</h3>
                 </div>
                 <div class="p-4 space-y-2">
-                    @forelse ($byCancelledBy as $b)
-                        @php $pct = $totalCancelled > 0 ? round(($b['count'] / $totalCancelled) * 100, 1) : 0; @endphp
+                    @forelse ($byActorRole as $b)
+                        @php
+                            $pct = $totalCancelled > 0 ? round(($b['count'] / $totalCancelled) * 100, 1) : 0;
+                            $libelle = ['client' => 'Client', 'provider' => 'Prestataire', 'admin' => 'Administration'][$b['role']] ?? $b['role'];
+                        @endphp
                         <div>
                             <div class="flex justify-between text-sm">
-                                <span class="font-semibold">{{ $b['nom'] }}</span>
+                                <span class="font-semibold">{{ $libelle }}</span>
                                 <span class="text-slate-500 text-xs">{{ number_format($b['count']) }} ({{ $pct }}%)</span>
                             </div>
                             <div class="w-full bg-slate-100 h-2 rounded mt-1">

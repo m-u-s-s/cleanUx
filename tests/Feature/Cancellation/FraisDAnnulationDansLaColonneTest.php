@@ -110,10 +110,11 @@ class FraisDAnnulationDansLaColonneTest extends TestCase
 
         Livewire::actingAs(User::factory()->admin()->create())
             ->test(CancellationReasonsCenter::class)
+            // L'ecran lit desormais `booking_cancellations_v2`, qui fait foi.
             ->assertViewHas('rows', function ($lignes) {
-                $ligne = $lignes->firstWhere('cancellation_reason', 'changement de plans');
+                $ligne = $lignes->firstWhere('raison', 'changement de plans');
 
-                return $ligne !== null && abs(((float) $ligne->total_fee_euros) - 50.0) < 0.001;
+                return $ligne !== null && abs(((float) $ligne['frais_euros']) - 50.0) < 0.001;
             });
     }
 
@@ -178,7 +179,7 @@ class FraisDAnnulationDansLaColonneTest extends TestCase
             ->test(CancellationReasonsCenter::class)
             ->assertViewHas('totalCancelled', 1)
             ->assertViewHas('rows', fn ($lignes) => $lignes->count() === 1
-                && abs(((float) $lignes->first()->total_fee_euros) - 25.0) < 0.001);
+                && abs(((float) $lignes->first()['frais_euros']) - 25.0) < 0.001);
     }
 
     protected function creerReservation(array $surcharges = []): Booking

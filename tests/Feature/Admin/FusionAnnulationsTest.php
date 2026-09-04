@@ -107,22 +107,45 @@ class FusionAnnulationsTest extends TestCase
         $this->assertSame(0, (int) $annulation->fresh()->fee_amount_cents);
     }
 
-    public function test_l_onglet_raisons_nomme_qui_a_annule(): void
+    public function test_l_onglet_raisons_dit_qu_i_a_annule_par_son_role(): void
     {
-        $client = User::factory()->create(['name' => 'Camille Renard']);
-
-        Booking::factory()->create([
-            'status' => 'annule',
+        BookingCancellationV2::factory()->create([
             'cancelled_at' => now(),
-            'cancelled_by' => $client->id,
-            'cancellation_reason' => 'Créneau plus disponible',
+            'actor_role' => 'provider',
+            'reason_text' => 'Créneau plus disponible',
         ]);
 
-        // `bookings.cancelled_by` est un IDENTIFIANT : la carte affichait « Annulé par 3 ».
+        // La carte lisait `bookings.cancelled_by`, une colonne d'IDENTIFIANTS, et affichait
+        // « Annulé par 3 ». `actor_role` porte ce qu'elle voulait dire.
         Livewire::actingAs($this->admin(['manage-analytics']))
             ->test(CancellationsCenter::class, ['tab' => 'raisons'])
-            ->assertSee('Camille Renard')
-            ->assertDontSee('Annulé par '.$client->id);
+            ->assertSee('Prestataire')
+            ->assertSee('Créneau plus disponible');
+    }
+
+    public function test_l_onglet_raisons_et_l_onglet_recentes_annoncent_les_memes_frais(): void
+    {
+        // LA COLONNE MIROIR MENT EXPRES : c'est le defaut qui a motive l'unification.
+        $booking = Booking::factory()->create([
+            'status' => 'annule',
+            'cancellation_fee_amount' => 87.75,
+            'cancellation_reason' => 'motif porte par la reservation',
+        ]);
+
+        BookingCancellationV2::factory()->create([
+            'booking_id' => $booking->id,
+            'cancelled_at' => now(),
+            'actor_role' => 'client',
+            'reason_text' => 'motif porte par le moteur',
+            'fee_amount_cents' => 0,
+        ]);
+
+        Livewire::actingAs($this->admin(['manage-finance', 'manage-analytics']))
+            ->test(CancellationsCenter::class, ['tab' => 'raisons'])
+            ->assertSee('motif porte par le moteur')
+            // La colonne miroir de `bookings` ne parle plus : ni son motif, ni ses 87,75 €.
+            ->assertDontSee('motif porte par la reservation')
+            ->assertDontSee('87,75');
     }
 
     public function test_renoncer_aux_frais_les_efface_aussi_sur_la_reservation(): void

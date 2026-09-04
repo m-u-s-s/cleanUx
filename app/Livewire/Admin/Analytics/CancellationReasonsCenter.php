@@ -3,13 +3,20 @@
 namespace App\Livewire\Admin\Analytics;
 
 use App\Models\Booking;
-use App\Models\User;
+use App\Models\BookingCancellationV2;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Carbon;
 use Livewire\Component;
 
-/** Admin analytics : pivot des raisons d'annulation pour identifier les frictions. */
+/**
+ * Admin analytics : pivot des raisons d'annulation pour identifier les frictions.
+ *
+ * `booking_cancellations_v2` FAIT FOI. Cet ecran lisait `bookings.cancellation_reason` et
+ * `bookings.cancellation_fee_amount` : deux colonnes miroir qu'un second service ecrit sans
+ * passer par le moteur, si bien que la meme annulation s'affichait a 87,75 € de frais ici et
+ * a 0 € dans l'onglet voisin.
+ */
 class CancellationReasonsCenter extends Component
 {
     use EnforcesAdminAccess;
@@ -32,20 +39,17 @@ class CancellationReasonsCenter extends Component
     {
         $since = match ($this->period) {
             '7d' => Carbon::now()->subDays(7),
-            '30d' => Carbon::now()->subDays(30),
             '90d' => Carbon::now()->subDays(90),
             'all' => Carbon::create(2020, 1, 1),
             default => Carbon::now()->subDays(30),
         };
 
-        $base = Booking::query()
-            ->whereIn('status', ['annule', 'cancelled', 'canceled'])
-            ->where(function ($q) use ($since) {
-                $q->where('cancelled_at', '>=', $since)
-                    ->orWhere('updated_at', '>=', $since);
-            });
+        $base = BookingCancellationV2::query()->where('cancelled_at', '>=', $since);
 
         $totalCancelled = (clone $base)->count();
+
+        // LE DENOMINATEUR RESTE LES RESERVATIONS : un taux d'annulation se mesure sur ce qui
+        // aurait pu etre annule, pas sur les annulations elles-memes.
         $totalAll = Booking::query()
             ->where(function ($q) use ($since) {
                 $q->where('created_at', '>=', $since)
@@ -57,42 +61,42 @@ class CancellationReasonsCenter extends Component
             ? round(($totalCancelled / $totalAll) * 100, 2)
             : 0;
 
+        // Le motif libre d'abord, le code ensuite : une annulation sans texte porte quand meme
+        // le palier qui l'a tarifee.
+        $motif = "COALESCE(NULLIF(reason_text, ''), NULLIF(reason_code, ''))";
+
         $rows = (clone $base)
-            // `cancellation_fee_amount` est un `decimal(10,2)` EN EUROS — son alias annonçait des centimes, et la vue divisait donc le total par cent.
-            ->selectRaw('cancellation_reason, COUNT(*) as count, SUM(COALESCE(cancellation_fee_amount,0)) as total_fee_euros')
-            ->whereNotNull('cancellation_reason')
-            ->where('cancellation_reason', '!=', '')
-            ->groupBy('cancellation_reason')
-            ->orderByDesc('count')
+            ->selectRaw($motif.' as raison, COUNT(*) as total, SUM(COALESCE(fee_amount_cents, 0)) as frais_cents')
+            ->whereRaw($motif.' IS NOT NULL')
+            ->groupBy('raison')
+            ->orderByDesc('total')
             ->limit(30)
-            ->get();
+            ->get()
+            ->map(fn ($ligne) => [
+                'raison' => (string) $ligne->getAttribute('raison'),
+                'count' => (int) $ligne->getAttribute('total'),
+                'frais_euros' => round(((int) $ligne->getAttribute('frais_cents')) / 100, 2),
+            ]);
 
-        $byCancelledBy = (clone $base)
-            ->selectRaw('cancelled_by, COUNT(*) as count')
-            ->whereNotNull('cancelled_by')
-            ->groupBy('cancelled_by')
-            ->get();
-
-        // `bookings.cancelled_by` EST UN IDENTIFIANT, et la carte l'affichait tel quel :
-        // « Annulé par 3 » ne dit rien a personne. Une requete pour toute la colonne.
-        $noms = User::query()
-            ->whereIn('id', $byCancelledBy->pluck('cancelled_by')->filter()->all())
-            ->pluck('name', 'id');
-
-        // DES TABLEAUX, PAS DES MODELES : une colonne agregee posee sur un `Booking` fait
-        // croire a une propriete qui n'existe pas, et PHPStan le dit.
-        $byCancelledBy = $byCancelledBy->map(fn ($ligne) => [
-            'nom' => $noms[(int) $ligne->getAttribute('cancelled_by')]
-                ?? 'Utilisateur #'.$ligne->getAttribute('cancelled_by'),
-            'count' => (int) $ligne->getAttribute('count'),
-        ]);
+        // « ANNULE PAR » VOULAIT DIRE LE ROLE, PAS L'IDENTIFIANT. L'ecran lisait
+        // `bookings.cancelled_by`, une colonne d'identifiants, et affichait « Annule par 3 ».
+        $byActorRole = (clone $base)
+            ->selectRaw('actor_role, COUNT(*) as total')
+            ->whereNotNull('actor_role')
+            ->groupBy('actor_role')
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn ($ligne) => [
+                'role' => (string) $ligne->getAttribute('actor_role'),
+                'count' => (int) $ligne->getAttribute('total'),
+            ]);
 
         return view('livewire.admin.analytics.cancellation-reasons-center', [
             'totalCancelled' => $totalCancelled,
             'totalAll' => $totalAll,
             'cancellationRate' => $cancellationRate,
             'rows' => $rows,
-            'byCancelledBy' => $byCancelledBy,
+            'byActorRole' => $byActorRole,
         ]);
     }
 }
