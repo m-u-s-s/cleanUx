@@ -31,28 +31,40 @@ trait ComputesAdminDashboardInsights
 
     public function getChargeEmployesProperty()
     {
-        return $this->scopedEmployeesQuery()
-            ->get()
-            ->map(function ($employe) {
-                $rdvsJour = $this->scopedRendezVousQuery(false)
-                    ->intervenantEst((int) $employe->id)
-                    ->whereDate('date', today())
-                    ->whereIn('status', ['confirme', 'en_attente', 'en_route', 'sur_place'])
-                    ->get();
+        $employes = $this->scopedEmployeesQuery()->get()->keyBy('id');
 
-                $totalMinutes = $rdvsJour->sum(function ($rdv) {
-                    $duration = $rdv->duree ?? $rdv->estimated_duration_minutes ?? 90;
+        // UNE REQUETE, PAS UNE PAR EMPLOYE. Le tableau de bord se sonde toutes les dix secondes :
+        // trente employes coutaient trente requetes a chaque battement.
+        $rdvsDuJour = $this->scopedRendezVousQuery(false)
+            ->with('missions')
+            ->whereDate('date', today())
+            ->whereIn('status', ['confirme', 'en_attente', 'en_route', 'sur_place'])
+            ->get();
 
-                    return $duration + 30;
-                });
+        $charges = [];
 
-                return [
-                    'employe' => $employe,
-                    'count' => $rdvsJour->count(),
-                    'minutes' => $totalMinutes,
-                    'hours' => round($totalMinutes / 60, 1),
-                ];
-            })
+        foreach ($rdvsDuJour as $rdv) {
+            $id = $rdv->intervenantId();
+
+            if ($id === null || ! $employes->has($id)) {
+                continue;
+            }
+
+            $minutes = ($rdv->duree ?? $rdv->estimated_duration_minutes ?? 90) + 30;
+
+            $charges[$id]['count'] = ($charges[$id]['count'] ?? 0) + 1;
+            $charges[$id]['minutes'] = ($charges[$id]['minutes'] ?? 0) + $minutes;
+        }
+
+        // SEULS LES EMPLOYES QUI ONT UNE CHARGE. La carte annonce « les surcharges du jour » :
+        // y aligner trente personnes a zero intervention noyait le signal sous du vide.
+        return collect($charges)
+            ->map(fn (array $charge, int $id) => [
+                'employe' => $employes[$id],
+                'count' => $charge['count'],
+                'minutes' => $charge['minutes'],
+                'hours' => round($charge['minutes'] / 60, 1),
+            ])
             ->sortByDesc('minutes')
             ->values();
     }

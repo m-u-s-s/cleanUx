@@ -56,7 +56,13 @@ class AdminAnalyticsService
             }
         }
 
-        $totalRevenue = (float) Booking::query()->sum('devis_estime');
+        // UNE RESERVATION ANNULEE N'EST PAS DU CHIFFRE D'AFFAIRES. La somme les comptait :
+        // sur les donnees locales, 87,75 € d'une annulation gonflaient le total affiche.
+        $statutsSansSuite = ['annule', 'annulé', 'refuse', 'refusé', 'cancelled', 'rejected'];
+
+        $totalRevenue = (float) Booking::query()
+            ->whereNotIn('status', $statutsSansSuite)
+            ->sum('devis_estime');
 
         // LA MARGE DE LA PLATEFORME, C'EST SA COMMISSION — et elle est enfin lue quelque part.
         // Le transtypage n'est pas cosmétique : en PHP, `/` rend un ENTIER quand les deux opérandes
@@ -65,7 +71,9 @@ class AdminAnalyticsService
         // stricte et fait sérialiser tantôt `20`, tantôt `43.25` dans la même réponse.
         $totalMargin = (float) (((int) Booking::query()->sum('platform_fee_cents')) / 100);
 
-        $missionsCount = Booking::query()->count();
+        // MEME BASE QUE LE CA. Compter les annulations ici pendant que le chiffre d'affaires les
+        // ecarte ferait un ticket moyen faux et un « terminees sur missions » qui ne tombe jamais juste.
+        $missionsCount = Booking::query()->whereNotIn('status', $statutsSansSuite)->count();
 
         $completedMissions = Booking::query()
             ->whereIn('status', ['termine', 'terminé', 'completed'])
@@ -95,11 +103,11 @@ class AdminAnalyticsService
             ->toArray();
 
         $averageTicket = $missionsCount > 0
-            ? (float) Booking::query()->avg('devis_estime')
+            ? (float) Booking::query()->whereNotIn('status', $statutsSansSuite)->avg('devis_estime')
             : 0.0;
 
         return [
-            // Clés attendues par admin-analytics-dashboard.blade.php
+            // Les cinq totaux de la section « Plateforme » du tableau de bord.
             'total_revenue' => $totalRevenue,
             'total_margin' => $totalMargin,
             'missions_count' => $missionsCount,

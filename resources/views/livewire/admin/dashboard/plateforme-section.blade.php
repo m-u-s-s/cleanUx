@@ -28,9 +28,13 @@
         <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5
                     [&_.brio-kpi-label]:min-h-[2.6em]
                     [&_.brio-kpi-value]:whitespace-nowrap [&_.brio-kpi-value]:!text-2xl">
-            <x-kpi-card title="CA total" :value="locale_currency($santePlateforme['ca_total'])" tone="blue" icon="📊" />
+            <x-kpi-card title="CA total" :value="locale_currency($santePlateforme['ca_total'])"
+                        hint="Hors annulations et refus" tone="blue" icon="📊" />
+            {{-- Un zero sans explication se lit comme une panne : la carte dit pourquoi. --}}
             <x-kpi-card title="Marge plateforme" :value="locale_currency($santePlateforme['marge_plateforme'])"
-                        hint="La commission encaissée" tone="green" icon="🏛️" />
+                        :hint="$santePlateforme['marge_plateforme'] > 0
+                            ? 'Commission sur les missions payées'
+                            : 'Aucune mission encaissée à ce jour'" tone="green" icon="🏛️" />
             <x-kpi-card title="Missions" :value="number_format($santePlateforme['missions_total'], 0, ',', ' ')" tone="slate" icon="📋" />
             <x-kpi-card title="Terminées" :value="number_format($santePlateforme['missions_terminees'], 0, ',', ' ')" tone="green" icon="✅" />
             <x-kpi-card title="Note moyenne" :value="$santePlateforme['note_moyenne'].'/5'" tone="amber" icon="⭐" />

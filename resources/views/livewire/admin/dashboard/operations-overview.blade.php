@@ -160,8 +160,8 @@
                 </article>
             @empty
                 <x-empty-state
-                    title="Aucun employé trouvé"
-                    message="Les charges employés apparaîtront ici."
+                    title="Personne n’est chargé aujourd’hui"
+                    message="Aucun employé n’a d’intervention planifiée pour la journée."
                     icon="👥" />
             @endforelse
         </div>
