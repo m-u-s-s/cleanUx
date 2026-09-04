@@ -1,99 +1,87 @@
-<div class="py-6">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+{{-- Onglet « Usage produit » de /admin/analytics/exploration : la page porte le titre,
+     cette vue ne pose que ses cartes. --}}
+<div class="space-y-6">
 
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-                <p class="text-sm font-bold uppercase text-indigo-600">Analytics v2</p>
-                <h1 class="text-2xl font-black text-slate-900">Centre Analytics produit</h1>
-                <p class="text-sm text-slate-500">
-                    Période : <code class="font-mono">{{ $from->format('d/m H:i') }} → {{ $to->format('d/m H:i') }}</code>
-                </p>
-            </div>
-            <div class="flex gap-2">
-                <select wire:model.live="rangeKey" class="rounded-xl border-gray-300 text-sm">
-                    <option value="24h">Dernières 24h</option>
-                    <option value="7d">7 derniers jours</option>
-                    <option value="30d">30 derniers jours</option>
+    <x-app-card muted padding="p-4 md:p-5">
+        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <p class="brio-section-subtitle">
+                Période : <code class="font-mono">{{ $from->format('d/m H:i') }} → {{ $to->format('d/m H:i') }}</code>
+            </p>
+            <select wire:model.live="rangeKey" class="rounded-xl text-sm">
+                <option value="24h">Dernières 24h</option>
+                <option value="7d">7 derniers jours</option>
+                <option value="30d">30 derniers jours</option>
+            </select>
+        </div>
+    </x-app-card>
+
+    <div class="grid gap-4 grid-cols-2 xl:grid-cols-4">
+        <x-kpi-card title="Événements" :value="number_format($kpis['events'], 0, ',', ' ')" tone="slate" icon="📡" />
+        <x-kpi-card title="Utilisateurs uniques" :value="number_format($kpis['unique_users'], 0, ',', ' ')" tone="blue" icon="👥" />
+        <x-kpi-card title="Sessions" :value="number_format($kpis['sessions'], 0, ',', ' ')" tone="green" icon="🧭" />
+        <x-kpi-card title="Revenu attribué" :value="locale_currency($kpis['revenue_cents'] / 100)" tone="amber" icon="💶" />
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <x-table-shell title="Entonnoir" subtitle="Où les visiteurs s'arrêtent, étape par étape.">
+            <div class="flex justify-end px-5 pt-4 md:px-6">
+                <select wire:model.live="funnelType" class="rounded-lg text-xs">
+                    <option value="booking">Parcours de réservation</option>
+                    <option value="registration">Inscription → 1re réservation</option>
                 </select>
-                <a href="{{ route('admin.dashboard') }}" class="rounded-xl border px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">← Dashboard</a>
             </div>
-        </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="rounded-2xl border bg-white p-4 shadow-sm">
-                <p class="text-xs uppercase font-bold text-slate-500">Events</p>
-                <p class="text-2xl font-black text-slate-900">{{ number_format($kpis['events']) }}</p>
-            </div>
-            <div class="rounded-2xl border bg-white p-4 shadow-sm">
-                <p class="text-xs uppercase font-bold text-slate-500">Users uniques</p>
-                <p class="text-2xl font-black text-indigo-600">{{ number_format($kpis['unique_users']) }}</p>
-            </div>
-            <div class="rounded-2xl border bg-white p-4 shadow-sm">
-                <p class="text-xs uppercase font-bold text-slate-500">Sessions</p>
-                <p class="text-2xl font-black text-emerald-600">{{ number_format($kpis['sessions']) }}</p>
-            </div>
-            <div class="rounded-2xl border bg-white p-4 shadow-sm">
-                <p class="text-xs uppercase font-bold text-slate-500">Revenu attribué (€)</p>
-                <p class="text-2xl font-black text-amber-600">{{ number_format($kpis['revenue_cents'] / 100, 2, ',', ' ') }}</p>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div class="rounded-2xl border bg-white shadow-sm">
-                <div class="flex items-center justify-between px-4 py-3 border-b">
-                    <h2 class="font-bold text-slate-900">Funnel</h2>
-                    <select wire:model.live="funnelType" class="rounded-lg border-gray-300 text-xs">
-                        <option value="booking">Booking flow</option>
-                        <option value="registration">Registration → first booking</option>
-                    </select>
-                </div>
-                <table class="min-w-full text-sm">
-                    <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+            <table class="min-w-full brio-table">
+                <thead>
+                    <tr>
+                        <th class="text-left">Étape</th>
+                        <th class="text-right">Personnes</th>
+                        <th class="text-right">% vs départ</th>
+                        <th class="text-right">% vs précédente</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($funnel as $step)
                         <tr>
-                            <th class="px-4 py-2 text-left">Step</th>
-                            <th class="px-4 py-2 text-right">Users</th>
-                            <th class="px-4 py-2 text-right">% vs start</th>
-                            <th class="px-4 py-2 text-right">% vs prev</th>
+                            <td class="font-mono text-xs">{{ $step['step'] }}</td>
+                            <td class="text-right tabular-nums">{{ number_format($step['count'], 0, ',', ' ') }}</td>
+                            <td class="text-right tabular-nums">{{ number_format($step['rate_from_start'] * 100, 1, ',', ' ') }}%</td>
+                            <td class="text-right tabular-nums">{{ number_format($step['rate_from_prev'] * 100, 1, ',', ' ') }}%</td>
                         </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        @forelse($funnel as $step)
-                            <tr>
-                                <td class="px-4 py-2 text-xs font-mono">{{ $step['step'] }}</td>
-                                <td class="px-4 py-2 text-right text-xs">{{ number_format($step['count']) }}</td>
-                                <td class="px-4 py-2 text-right text-xs">{{ number_format($step['rate_from_start'] * 100, 1) }}%</td>
-                                <td class="px-4 py-2 text-right text-xs">{{ number_format($step['rate_from_prev'] * 100, 1) }}%</td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="4" class="px-4 py-6 text-center text-slate-400">Aucune donnée funnel.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="rounded-2xl border bg-white shadow-sm">
-                <div class="px-4 py-3 border-b">
-                    <h2 class="font-bold text-slate-900">Top events</h2>
-                </div>
-                <table class="min-w-full text-sm">
-                    <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+                    @empty
                         <tr>
-                            <th class="px-4 py-2 text-left">Event</th>
-                            <th class="px-4 py-2 text-right">Total</th>
+                            <td colspan="4">
+                                <x-empty-state title="Aucun entonnoir" message="Aucun événement sur cette période." icon="🧭" />
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody class="divide-y">
-                        @forelse($topEvents as $row)
-                            <tr>
-                                <td class="px-4 py-2 text-xs font-mono">{{ $row->event_name }}</td>
-                                <td class="px-4 py-2 text-right text-xs">{{ number_format($row->total) }}</td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="2" class="px-4 py-6 text-center text-slate-400">Aucun event.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    @endforelse
+                </tbody>
+            </table>
+        </x-table-shell>
+
+        <x-table-shell title="Événements les plus fréquents" subtitle="Ce que les visiteurs déclenchent le plus.">
+            <table class="min-w-full brio-table">
+                <thead>
+                    <tr>
+                        <th class="text-left">Événement</th>
+                        <th class="text-right">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($topEvents as $row)
+                        <tr>
+                            <td class="font-mono text-xs">{{ $row->event_name }}</td>
+                            <td class="text-right tabular-nums">{{ number_format($row->total, 0, ',', ' ') }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="2">
+                                <x-empty-state title="Aucun événement" message="Rien n'a été enregistré sur cette période." icon="📡" />
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </x-table-shell>
     </div>
 </div>

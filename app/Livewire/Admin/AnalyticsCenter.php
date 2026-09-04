@@ -37,12 +37,39 @@ class AnalyticsCenter extends Component
 
     public string $market = '';
 
+    /** L'onglet affiche ; il vit dans l'URL parce que les trois anciennes adresses y renvoient. */
+    public string $onglet = 'metier';
+
     protected $queryString = [
         'search', 'dateFrom', 'dateTo', 'status', 'zoneId', 'serviceId', 'employeeId', 'market', 'page',
+        'onglet' => ['except' => 'metier'],
     ];
+
+    /** @var array<string, string> */
+    public const ONGLETS = [
+        'metier' => 'Metier',
+        'ensemble' => 'Vue d ensemble',
+        'usage' => 'Usage produit',
+        'nps' => 'Satisfaction (NPS)',
+    ];
+
+    /**
+     * UN ONGLET INCONNU RETOMBE SUR LE METIER.
+     *
+     * `onglet` vient de l'URL : le navigateur peut y ecrire n'importe quoi, et une valeur
+     * inventee afficherait une page vide sans le moindre message.
+     */
+    public function updatedOnglet(): void
+    {
+        if (! array_key_exists($this->onglet, self::ONGLETS)) {
+            $this->onglet = 'metier';
+        }
+    }
 
     public function mount(): void
     {
+        $this->updatedOnglet();
+
         if (blank($this->dateFrom)) {
             $this->dateFrom = now()->startOfMonth()->toDateString();
         }
@@ -332,15 +359,18 @@ class AnalyticsCenter extends Component
 
     public function render()
     {
+        // Huit agregations lourdes, un seul onglet les montre : hors de lui, on ne les calcule pas.
+        $metier = $this->onglet === 'metier';
+
         return view('livewire.admin.analytics-center', [
-            'rows' => $this->rows,
-            'kpis' => $this->kpis,
-            'zoneAnalytics' => $this->zoneAnalytics,
-            'serviceAnalytics' => $this->serviceAnalytics,
-            'employeeAnalytics' => $this->employeeAnalytics,
-            'clientAnalytics' => $this->clientAnalytics,
-            'heatmapZones' => $this->heatmapZones,
-            'monthTrend' => $this->monthTrend,
+            'rows' => $metier ? $this->rows : null,
+            'kpis' => $metier ? $this->kpis : null,
+            'zoneAnalytics' => $metier ? $this->zoneAnalytics : null,
+            'serviceAnalytics' => $metier ? $this->serviceAnalytics : null,
+            'employeeAnalytics' => $metier ? $this->employeeAnalytics : null,
+            'clientAnalytics' => $metier ? $this->clientAnalytics : null,
+            'heatmapZones' => $metier ? $this->heatmapZones : null,
+            'monthTrend' => $metier ? $this->monthTrend : null,
         ]);
     }
 }

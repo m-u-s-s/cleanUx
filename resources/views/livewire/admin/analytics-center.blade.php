@@ -6,12 +6,31 @@
         subtitle="Vue consolidée des performances, du chiffre d'affaires, de la marge estimée et des signaux opérationnels par axe." 
         eyebrow="Pilotage premium"
     >
-        <x-slot:actions>
-            <span class="brio-inline-stat">{{ $kpis['count'] }} mission(s)</span>
-            <span class="brio-inline-stat"><x-money :amount="(float) ($kpis['turnover'])" /> HTVA</span>
-            <button wire:click="exportAnalyticsCsv" class="brio-btn-primary">Exporter CSV</button>
-        </x-slot:actions>
+        @if($onglet === 'metier')
+            {{-- Ces trois actions lisent le comptage metier : hors de son onglet il n'est pas calcule. --}}
+            <x-slot:actions>
+                <span class="brio-inline-stat">{{ $kpis['count'] }} mission(s)</span>
+                <span class="brio-inline-stat"><x-money :amount="(float) ($kpis['turnover'])" /> HTVA</span>
+                <button wire:click="exportAnalyticsCsv" class="brio-btn-primary">Exporter CSV</button>
+            </x-slot:actions>
+        @endif
     </x-page-shell>
+
+    {{-- Quatre lectures du même sujet : les trois anciennes pages de chiffres sont devenues
+         des onglets, montés tels quels — recopier leur contenu ferait deux vérités à corriger. --}}
+    {{-- DES LIENS, PAS DES BOUTONS LIVEWIRE. L'onglet « Vue d'ensemble » empile ses scripts de
+         graphique via @@push : un echange AJAX ne les rejouerait pas, les courbes resteraient vides. --}}
+    <nav class="flex flex-wrap gap-2" aria-label="Lectures analytiques">
+        @foreach(\App\Livewire\Admin\AnalyticsCenter::ONGLETS as $cle => $libelle)
+            <a href="{{ route('admin.analytics.exploration', ['onglet' => $cle]) }}"
+               @if($onglet === $cle) aria-current="page" @endif
+               class="{{ $onglet === $cle ? 'brio-btn-primary' : 'brio-btn-secondary' }} !px-3 !py-1.5 !text-xs">
+                {{ $libelle }}
+            </a>
+        @endforeach
+    </nav>
+
+    @if($onglet === 'metier')
 
     <x-filter-panel title="Filtres analytics" subtitle="Affinez les résultats par période, marché, zone, service ou employé.">
         <div class="brio-filter-grid-wide">
@@ -218,4 +237,15 @@
             <div class="mt-4">{{ $rows->links() }}</div>
         </x-table-shell>
     </div>
+
+    {{-- Les trois écrans fusionnés sont MONTÉS, pas recopiés : une seule vérité à corriger. --}}
+    @elseif($onglet === 'ensemble')
+        <livewire:admin.admin-analytics-dashboard />
+
+    @elseif($onglet === 'usage')
+        <livewire:admin.analytics.analytics-center />
+
+    @else
+        <livewire:admin.nps.nps-center />
+    @endif
 </div>

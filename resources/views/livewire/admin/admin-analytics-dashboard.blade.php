@@ -1,4 +1,5 @@
-{{-- resources/views/livewire/admin/admin-analytics-dashboard.blade.php --}}
+{{-- Onglet « Vue d'ensemble » de /admin/analytics/exploration : la page porte le titre,
+     cette vue ne pose que ses cartes. --}}
 
 @once
     @push('scripts')
@@ -7,57 +8,22 @@
 @endonce
 
 <div class="space-y-6">
-    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p class="text-xs font-black uppercase tracking-[0.18em] text-blue-600">Analytics</p>
-        <h1 class="mt-2 text-2xl font-black text-slate-900">Centre analytics</h1>
-        <div class="mt-4 grid gap-3 md:grid-cols-2">
-            <div class="rounded-2xl bg-slate-50 p-4">
-                <h3 class="font-bold text-slate-900">Mix marché</h3>
-                <p class="text-sm text-slate-500">Répartition particulier, entreprise et premium.</p>
-            </div>
-            <div class="rounded-2xl bg-slate-50 p-4">
-                <h3 class="font-bold text-slate-900">KPIs par zone</h3>
-                <p class="text-sm text-slate-500">Lecture opérationnelle par zone de service.</p>
-            </div>
-        </div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div class="bg-white rounded-2xl p-5 border">
-            <p class="text-sm text-slate-500">CA total</p>
-            <p class="text-2xl font-bold"><x-money :amount="(float) ($stats['total_revenue'])" /></p>
-        </div>
-
-        <div class="bg-white rounded-2xl p-5 border">
-            <p class="text-sm text-slate-500">Marge totale</p>
-            <p class="text-2xl font-bold"><x-money :amount="(float) ($stats['total_margin'])" /></p>
-        </div>
-
-        <div class="bg-white rounded-2xl p-5 border">
-            <p class="text-sm text-slate-500">Missions</p>
-            <p class="text-2xl font-bold">{{ $stats['missions_count'] }}</p>
-        </div>
-
-        <div class="bg-white rounded-2xl p-5 border">
-            <p class="text-sm text-slate-500">Terminées</p>
-            <p class="text-2xl font-bold">{{ $stats['completed_missions'] }}</p>
-        </div>
-
-        <div class="bg-white rounded-2xl p-5 border">
-            <p class="text-sm text-slate-500">Note moyenne</p>
-            <p class="text-2xl font-bold">{{ $stats['average_rating'] }}/5</p>
-        </div>
+    <div class="grid gap-4 md:grid-cols-3 xl:grid-cols-5">
+        <x-kpi-card title="CA total" :value="locale_currency((float) $stats['total_revenue'])" tone="blue" icon="💶" />
+        <x-kpi-card title="Marge totale" :value="locale_currency((float) $stats['total_margin'])" tone="green" icon="📈" />
+        <x-kpi-card title="Missions" :value="$stats['missions_count']" tone="slate" icon="📅" />
+        <x-kpi-card title="Terminées" :value="$stats['completed_missions']" tone="green" icon="✅" />
+        <x-kpi-card title="Note moyenne" :value="$stats['average_rating'].'/5'" tone="amber" icon="⭐" />
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-white rounded-3xl p-6 border">
-            <h3 class="font-bold mb-4">CA par mois</h3>
+        <x-app-card title="CA par mois" subtitle="Chiffre d'affaires encaissé, mois par mois.">
             <div id="revenueChart"></div>
-        </div>
+        </x-app-card>
 
-        <div class="bg-white rounded-3xl p-6 border">
-            <h3 class="font-bold mb-4">Missions par mois</h3>
+        <x-app-card title="Missions par mois" subtitle="Volume de missions, mois par mois.">
             <div id="missionsChart"></div>
-        </div>
+        </x-app-card>
     </div>
 </div>
 
@@ -66,33 +32,33 @@
     document.addEventListener('livewire:init', () => {
         const revenueData = @json(array_values($stats['monthly_revenue']));
         const missionsData = @json(array_values($stats['monthly_missions']));
+        const mois = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
 
-        new ApexCharts(document.querySelector("#revenueChart"), {
-            chart: {
-                type: 'area',
-                height: 300
-            },
-            series: [{
-                name: 'CA',
-                data: revenueData
-            }],
-            xaxis: {
-                categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc']
-            }
+        // LE GRAPHIQUE LIT LE THEME. Une couleur en dur serait illisible dans l'autre mode ;
+        // ces deux jetons sont redefinis en clair comme en sombre par tokens.css.
+        const jeton = (nom, repli) =>
+            getComputedStyle(document.documentElement).getPropertyValue(nom)?.trim() || repli;
+
+        const encre = jeton('--brio-muted', 'currentColor');
+        const grille = jeton('--brio-border', 'currentColor');
+
+        const commun = (hauteur) => ({
+            chart: { height: hauteur, toolbar: { show: false }, fontFamily: 'inherit', foreColor: encre },
+            grid: { borderColor: grille },
+            dataLabels: { enabled: false },
+            xaxis: { categories: mois },
+        });
+
+        new ApexCharts(document.querySelector('#revenueChart'), {
+            ...commun(300),
+            chart: { ...commun(300).chart, type: 'area' },
+            series: [{ name: 'CA', data: revenueData }],
         }).render();
 
-        new ApexCharts(document.querySelector("#missionsChart"), {
-            chart: {
-                type: 'bar',
-                height: 300
-            },
-            series: [{
-                name: 'Missions',
-                data: missionsData
-            }],
-            xaxis: {
-                categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc']
-            }
+        new ApexCharts(document.querySelector('#missionsChart'), {
+            ...commun(300),
+            chart: { ...commun(300).chart, type: 'bar' },
+            series: [{ name: 'Missions', data: missionsData }],
         }).render();
     });
 </script>

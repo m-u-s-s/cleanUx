@@ -5,7 +5,6 @@ use App\Http\Controllers\Admin\MissionAdminController;
 use App\Http\Controllers\Admin\OnboardingDocumentController;
 use App\Livewire\Admin\AccountingV2\AccountingCenter;
 use App\Livewire\Admin\AdminAlertsCenter;
-use App\Livewire\Admin\AdminAnalyticsDashboard;
 use App\Livewire\Admin\AdminHomeDashboard;
 use App\Livewire\Admin\Analytics\AnalyticsCenter;
 use App\Livewire\Admin\Analytics\CancellationReasonsCenter;
@@ -51,7 +50,6 @@ use App\Livewire\Admin\Marketing\MarketingCenter;
 use App\Livewire\Admin\MarketplaceHealthCenter;
 use App\Livewire\Admin\MissionsAdmin;
 use App\Livewire\Admin\NotificationPreferences\NotificationPreferencesCenter;
-use App\Livewire\Admin\Nps\NpsCenter;
 use App\Livewire\Admin\OnboardingV2\OnboardingV2Center;
 use App\Livewire\Admin\OrderEngine\CatalogCenter;
 use App\Livewire\Admin\OrderEngine\CountryCenter;
@@ -246,9 +244,8 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
             Route::get('/alerts', AdminAlertsCenter::class)->name('alerts');
         }
 
-        if (class_exists(AdminAnalyticsDashboard::class)) {
-            Route::get('/analytics', AdminAnalyticsDashboard::class)->name('analytics');
-        }
+        // Fusionnee dans l'exploration analytique ; l'URL survit en redirection vers son onglet.
+        Route::redirect('/analytics', '/admin/analytics/exploration?onglet=ensemble')->name('analytics');
 
         /*
          * L'EXPLORATION ANALYTIQUE MÉTIER — trois cent quarante-six lignes que rien n'atteignait.
@@ -342,10 +339,8 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
                 ->name('analytics.cancellations');
         }
 
-        // NPS Center
-        if (class_exists(NpsCenter::class)) {
-            Route::get('/nps', NpsCenter::class)->name('nps.center');
-        }
+        // NPS — fusionne dans l'exploration analytique ; l'URL survit en redirection.
+        Route::redirect('/nps', '/admin/analytics/exploration?onglet=nps')->name('nps.center');
 
         // UserSafety Admin (block/report moderation)
         /*
@@ -390,11 +385,8 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
                 ->name('realtime.center');
         }
 
-        // Analytics v2 — Centre Analytics produit (KPIs, funnel, top events)
-        if (class_exists(AnalyticsCenter::class)) {
-            Route::get('/analytics-v2', AnalyticsCenter::class)
-                ->name('analytics.center');
-        }
+        // Analytics produit — fusionne dans l'exploration ; l'URL survit en redirection.
+        Route::redirect('/analytics-v2', '/admin/analytics/exploration?onglet=usage')->name('analytics.center');
 
         // Availability v2 — Centre Calendrier providers
         if (class_exists(AvailabilityCenter::class)) {
