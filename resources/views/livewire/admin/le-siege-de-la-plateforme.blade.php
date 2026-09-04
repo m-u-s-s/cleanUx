@@ -95,6 +95,128 @@
         </x-app-card>
     @endif
 
+    {{-- ── LE COFFRE ─────────────────────────────────────────────────────
+         Ce qu'on protège n'est pas l'IBAN — il figure sur chaque facture émise — mais le
+         CHANGEMENT d'IBAN : le remplacer détourne tous les encaissements à venir.
+    --}}
+    <x-app-card :title="__('Le compte qui reçoit les commissions')"
+                :subtitle="__('Fermé par un code distinct de votre mot de passe et de la phrase du siège. Compromettre l’un n’ouvre pas les autres.')">
+
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="min-w-0">
+                @if($this->compteBancaire)
+                    <p class="text-lg font-black tabular-nums">{{ $this->compteBancaire->masque() }}</p>
+                    <p class="text-xs opacity-70">
+                        {{ collect([
+                            $this->compteBancaire->bank_name,
+                            $this->compteBancaire->country_code,
+                            $this->compteBancaire->currency,
+                            __('enregistré le') . ' ' . $this->compteBancaire->created_at?->translatedFormat('d/m/Y'),
+                        ])->filter()->join(' · ') }}
+                    </p>
+                @else
+                    <p class="text-sm opacity-70">
+                        {{ __('Aucun compte enregistré. Les commissions n’ont nulle part où aller.') }}
+                    </p>
+                @endif
+            </div>
+
+            <x-ui.badge :tone="$this->unCodeExiste ? 'success' : 'warning'"
+                        :label="$this->unCodeExiste ? __('Coffre verrouillé') : __('Aucun code — premier enregistrement')" />
+        </div>
+
+        @unless($coffreOuvert)
+            <div class="mt-4 space-y-2 border-t border-slate-200/60 pt-4 dark:border-slate-700">
+                @if($this->unCodeExiste)
+                    <label for="code-coffre" class="block text-sm font-semibold">{{ __('Code du coffre') }}</label>
+                    <input id="code-coffre" wire:model="codeDuCoffre" type="password" autocomplete="off" class="w-full max-w-xs">
+                    <button type="button" wire:click="ouvrirLeCoffre" class="brio-btn-ligne">{{ __('Ouvrir le coffre') }}</button>
+                @else
+                    <p class="text-sm opacity-70">
+                        {{ __('Le coffre est vide : votre accès au siège suffit pour y déposer le premier compte. Vous choisirez son code au même moment.') }}
+                    </p>
+                    <button type="button" wire:click="$set('coffreOuvert', true)" class="brio-btn-primary">
+                        {{ __('Déposer le premier compte') }}
+                    </button>
+                @endif
+            </div>
+        @else
+            <div class="mt-4 space-y-3 border-t border-slate-200/60 pt-4 dark:border-slate-700">
+                <div class="grid gap-3 md:grid-cols-2">
+                    <div>
+                        <label for="v-titulaire" class="mb-1 block text-sm font-semibold">{{ __('Titulaire du compte') }}</label>
+                        <input id="v-titulaire" wire:model="titulaireDuCompte" type="text" class="w-full">
+                    </div>
+
+                    <div>
+                        <label for="v-iban" class="mb-1 block text-sm font-semibold">{{ __('IBAN') }}</label>
+                        <input id="v-iban" wire:model="iban" type="text" autocomplete="off" class="w-full"
+                               placeholder="BE00 0000 0000 0000">
+                        <p class="mt-1 text-xs opacity-70">
+                            {{ __('Saisissez-le en entier : il n’est jamais réaffiché, seuls les quatre derniers chiffres le seront.') }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="v-bic" class="mb-1 block text-sm font-semibold">{{ __('BIC') }}</label>
+                        <input id="v-bic" wire:model="bic" type="text" class="w-full">
+                    </div>
+
+                    <div>
+                        <label for="v-banque" class="mb-1 block text-sm font-semibold">{{ __('Banque') }}</label>
+                        <input id="v-banque" wire:model="banque" type="text" class="w-full">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="v-note" class="mb-1 block text-sm font-semibold">{{ __('Note') }}</label>
+                    <input id="v-note" wire:model="noteDuCompte" type="text" class="w-full">
+                </div>
+
+                {{-- LE CODE SE REPOSE A CHAQUE CHANGEMENT — et il a le droit d'etre le meme. --}}
+                <div class="grid gap-3 md:grid-cols-2">
+                    @if($this->unCodeExiste)
+                        <div>
+                            <label for="v-code-actuel" class="mb-1 block text-sm font-semibold">{{ __('Code actuel') }}</label>
+                            <input id="v-code-actuel" wire:model="codeDuCoffre" type="password" autocomplete="off" class="w-full">
+                        </div>
+                    @endif
+
+                    <div>
+                        <label for="v-code-neuf" class="mb-1 block text-sm font-semibold">{{ __('Code pour ce compte') }}</label>
+                        <input id="v-code-neuf" wire:model="codeNeufDuCoffre" type="password" autocomplete="off" class="w-full">
+                        <p class="mt-1 text-xs opacity-70">
+                            {{ __('Huit caractères minimum. Il peut être le même qu’avant — ce qui compte est que vous le saisissiez à chaque changement.') }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" wire:click="enregistrerLeCompte" class="brio-btn-primary"
+                            wire:confirm="{{ __('Changer le compte qui reçoit les commissions ? Tous les versements à venir iront vers ce nouvel IBAN.') }}">
+                        {{ __('Enregistrer ce compte') }}
+                    </button>
+                    <button type="button" wire:click="refermerLeCoffre" class="brio-btn-ligne">{{ __('Refermer le coffre') }}</button>
+                </div>
+            </div>
+        @endunless
+
+        {{-- LES OUVERTURES, REFUS COMPRIS. --}}
+        @if($this->ouverturesDuCoffre->isNotEmpty())
+            <h3 class="mt-6 text-sm font-bold">{{ __('Dernières ouvertures') }}</h3>
+            <div class="mt-2 space-y-1">
+                @foreach($this->ouverturesDuCoffre as $ouverture)
+                    <p class="text-xs opacity-70" wire:key="ouv-{{ $ouverture->id }}">
+                        <span class="font-semibold">{{ $ouverture->action }}</span>
+                        · {{ $ouverture->acteur?->email ?? __('inconnu') }}
+                        · {{ $ouverture->created_at?->translatedFormat('d/m/Y à H:i') }}
+                        · {{ $ouverture->actor_ip ?? '—' }}
+                    </p>
+                @endforeach
+            </div>
+        @endif
+    </x-app-card>
+
     <div class="grid gap-4 lg:grid-cols-3">
 
         {{-- LE SEUL GESTE QUI DÉPLACE LE SIÈGE --}}

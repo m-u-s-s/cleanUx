@@ -2,9 +2,12 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\PlatformBankAccount;
 use App\Models\PlatformSeatTransfer;
+use App\Models\PlatformVaultAccess;
 use App\Models\User;
 use App\Notifications\TransfertDeSiegeArme;
+use App\Services\Platform\CoffreBancaire;
 use App\Services\Platform\SiegeDuSuperAdmin;
 use App\Support\ActivityLogger;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
@@ -44,6 +47,24 @@ class LeSiegeDeLaPlateforme extends Component
     public string $codeDouble = '';
 
     public string $motifAnnulation = '';
+
+    // ── Le coffre ──────────────────────────────────────────────────────────
+    /** LE COFFRE SE REFERME A CHAQUE RENDU : il ne reste jamais ouvert derriere soi. */
+    public bool $coffreOuvert = false;
+
+    public string $codeDuCoffre = '';
+
+    public string $codeNeufDuCoffre = '';
+
+    public string $titulaireDuCompte = '';
+
+    public string $iban = '';
+
+    public string $bic = '';
+
+    public string $banque = '';
+
+    public string $noteDuCompte = '';
 
     /**
      * SEUL LE TITULAIRE, ET A CHAQUE REQUETE.
@@ -89,6 +110,98 @@ class LeSiegeDeLaPlateforme extends Component
     public function delaiEnHeures(): int
     {
         return app(SiegeDuSuperAdmin::class)->delaiEnHeures();
+    }
+
+    #[Computed]
+    public function compteBancaire(): ?PlatformBankAccount
+    {
+        return app(CoffreBancaire::class)->compteActif();
+    }
+
+    #[Computed]
+    public function unCodeExiste(): bool
+    {
+        return app(CoffreBancaire::class)->unCodeExiste(auth()->user());
+    }
+
+    /**
+     * LES DERNIERES OUVERTURES, refus compris.
+     *
+     * Une serie de codes faux est le premier signe qu'on essaie d'entrer, et le seul moment
+     * ou l'on peut encore reagir.
+     *
+     * @return Collection<int, PlatformVaultAccess>
+     */
+    #[Computed]
+    public function ouverturesDuCoffre(): Collection
+    {
+        return app(CoffreBancaire::class)->dernieresOuvertures();
+    }
+
+    // ── Le coffre ──────────────────────────────────────────────────────────
+
+    public function ouvrirLeCoffre(): void
+    {
+        $this->message = $this->erreur = null;
+
+        try {
+            $compte = app(CoffreBancaire::class)->ouvrir(auth()->user(), $this->codeDuCoffre);
+        } catch (DomainException $e) {
+            $this->erreur = $e->getMessage();
+            $this->codeDuCoffre = '';
+
+            return;
+        }
+
+        $this->coffreOuvert = true;
+        $this->codeDuCoffre = '';
+
+        // LE FORMULAIRE PART DU COMPTE EXISTANT, sauf l'IBAN : le reafficher en entier
+        // annulerait tout l'interet de ne montrer que quatre chiffres ailleurs.
+        $this->titulaireDuCompte = (string) $compte?->holder_name;
+        $this->bic = (string) $compte?->bic;
+        $this->banque = (string) $compte?->bank_name;
+        $this->noteDuCompte = (string) $compte?->note;
+
+        unset($this->ouverturesDuCoffre);
+    }
+
+    public function refermerLeCoffre(): void
+    {
+        $this->coffreOuvert = false;
+        $this->reset(['codeDuCoffre', 'codeNeufDuCoffre', 'iban', 'bic', 'banque', 'titulaireDuCompte', 'noteDuCompte']);
+    }
+
+    public function enregistrerLeCompte(): void
+    {
+        $this->message = $this->erreur = null;
+
+        try {
+            $compte = app(CoffreBancaire::class)->remplacerLeCompte(
+                auth()->user(),
+                [
+                    'holder_name' => $this->titulaireDuCompte,
+                    'iban' => $this->iban,
+                    'bic' => $this->bic ?: null,
+                    'bank_name' => $this->banque ?: null,
+                    'note' => $this->noteDuCompte ?: null,
+                ],
+                $this->codeDuCoffre,
+                $this->codeNeufDuCoffre,
+            );
+        } catch (DomainException $e) {
+            $this->erreur = $e->getMessage();
+            $this->codeDuCoffre = $this->codeNeufDuCoffre = '';
+
+            return;
+        }
+
+        $this->refermerLeCoffre();
+        $this->message = __('Compte enregistre : :masque. Les commissions y seront versees.', [
+            'masque' => $compte->masque(),
+        ]);
+
+        unset($this->compteBancaire, $this->ouverturesDuCoffre, $this->unCodeExiste);
     }
 
     public function armerLeTransfert(): void

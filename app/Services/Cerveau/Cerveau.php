@@ -26,6 +26,7 @@ class Cerveau
         'commission' => 'Commissions',
         'marketing' => 'Marketing',
         'fraude' => 'Fraude et abus',
+        'incident' => 'Incidents de code',
     ];
 
     /**
@@ -39,6 +40,7 @@ class Cerveau
             ...$this->depuisLesCommissions(),
             ...app(AnalyseDuMarketing::class)->recommandations(),
             ...app(AnalyseDeLaFraude::class)->recommandations(),
+            ...app(JournalDesIncidents::class)->recommandations(),
         ];
 
         if ($domaine !== null) {

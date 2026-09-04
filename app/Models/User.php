@@ -118,6 +118,9 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         // LA PHRASE DU SIEGE N'EST NI ASSIGNABLE NI EXPOSEE : elle ne sort par aucune API,
         // aucun export, aucun journal.
         'seat_secret_hash',
+        // LE CODE DU COFFRE : ni assignable, ni expose, comme la phrase du siege — et
+        // DISTINCT d'elle, pour que compromettre l'une n'ouvre pas l'autre.
+        'vault_code_hash',
         'two_factor_secret',
         'two_factor_recovery_codes',
     ];

@@ -2,6 +2,7 @@
 
 namespace App\Services\Cerveau;
 
+use App\Models\CodeIncident;
 use App\Models\CommissionRule;
 use App\Models\MarketingCampaign;
 use App\Models\PromoCode;
@@ -37,6 +38,8 @@ class RegistreDesGestes
     public const METTRE_EN_REVUE = 'fraude.mettre_en_revue';
 
     public const SUSPENDRE_LA_REGLE = 'commission.suspendre_regle';
+
+    public const CONTENIR_INCIDENT = 'incident.contenir';
 
     /** @return array<string, Geste> */
     public function tous(): array
@@ -131,6 +134,30 @@ class RegistreDesGestes
                     app(ResolveurDeCommission::class)->oublierLeCache();
 
                     return 'Règle « '.$regle->label.' » suspendue.';
+                },
+            ),
+
+            self::CONTENIR_INCIDENT => new Geste(
+                cle: self::CONTENIR_INCIDENT,
+                domaine: 'incident',
+                libelle: 'Marquer l’incident comme contenu',
+                fait: 'L’incident cesse de remonter en tête du cerveau. Il continue d’être compté : '
+                    .'si l’erreur revient, le compteur monte toujours.',
+                implique: 'CELA NE CORRIGE RIEN, et c’est délibéré : ce cerveau ne réécrit pas de code. '
+                    .'Un serveur qui modifie son propre PHP en production est à la fois une faille et une '
+                    .'panne en puissance. Contenir sert à ne plus voir remonter ce que vous avez déjà '
+                    .'traité — si vous le marquez sans corriger, la page reste cassée et plus rien ne '
+                    .'vous le rappellera.',
+                reversible: true,
+                executer: function (User $acteur, array $args): string {
+                    $incident = CodeIncident::findOrFail($args['id'] ?? 0);
+                    $incident->forceFill([
+                        'statut' => CodeIncident::CONTENU,
+                        'traite_par' => $acteur->id,
+                        'traite_le' => now(),
+                    ])->save();
+
+                    return 'Incident « '.$incident->courtCirconstance().' » marqué contenu.';
                 },
             ),
         ];
