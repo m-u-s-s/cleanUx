@@ -179,6 +179,7 @@ trait ComputesAdminDashboardScopes
     {
         Cache::forget($this->cacheKey('statistiquesData'));
         Cache::forget($this->cacheKey('statsMensuelles'));
+        Cache::forget($this->cacheKey('caMensuel'));
         Cache::forget($this->cacheKey('topServices'));
         Cache::forget($this->cacheKey('topVilles'));
         Cache::forget($this->cacheKey('dureeStats'));

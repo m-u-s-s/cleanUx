@@ -10,6 +10,7 @@
 
     const initialStats = @js($statistiquesData ?? []);
     const initialMonthlyStats = @js($statsMensuelles ?? []);
+    const initialMonthlyRevenue = @js($caMensuel ?? []);
     const initialEvents = @js($rdvs ?? []);
 
     function initAdminCharts() {
@@ -55,7 +56,7 @@
 
         chartMensuelInstance = new ApexCharts(chartMensuelEl, {
             chart: {
-                type: 'area',
+                type: 'line',
                 height: 300,
                 toolbar: {
                     show: false
@@ -63,13 +64,26 @@
             },
             series: [{
                 name: 'RDV',
+                type: 'area',
                 data: Array.isArray(initialMonthlyStats) && initialMonthlyStats.length ?
                     initialMonthlyStats.map(value => Number(value || 0)) :
+                    Array(12).fill(0)
+            }, {
+                name: 'CA',
+                type: 'line',
+                data: Array.isArray(initialMonthlyRevenue) && initialMonthlyRevenue.length ?
+                    initialMonthlyRevenue.map(value => Number(value || 0)) :
                     Array(12).fill(0)
             }],
             xaxis: {
                 categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc']
             },
+            yaxis: [
+                { seriesName: 'RDV', title: { text: 'RDV' }, labels: { formatter: v => Math.round(v) } },
+                { seriesName: 'CA', opposite: true, title: { text: 'CA' },
+                  labels: { formatter: v => new Intl.NumberFormat('fr-BE').format(Math.round(v)) } }
+            ],
+            legend: { show: true },
             stroke: {
                 curve: 'smooth',
                 width: 3
@@ -80,7 +94,7 @@
             dataLabels: {
                 enabled: false
             },
-            colors: [window.brioJeton('--brio-info', '#2563eb')],
+            colors: [window.brioJeton('--brio-info', '#2563eb'), window.brioJeton('--brio-success', '#059669')],
             noData: {
                 text: 'Aucune donnée'
             }
@@ -160,9 +174,16 @@
 
             if (!chartMensuelInstance) return;
 
+            const ca = event?.ca ?? [];
+
             chartMensuelInstance.updateSeries([{
                 name: 'RDV',
+                type: 'area',
                 data: Array.isArray(data) ? data.map(value => Number(value || 0)) : []
+            }, {
+                name: 'CA',
+                type: 'line',
+                data: Array.isArray(ca) ? ca.map(value => Number(value || 0)) : []
             }]);
         });
     }

@@ -48,7 +48,6 @@ class AnalyticsCenter extends Component
     /** @var array<string, string> */
     public const ONGLETS = [
         'metier' => 'Metier',
-        'ensemble' => 'Vue d ensemble',
         'usage' => 'Usage produit',
         'nps' => 'Satisfaction (NPS)',
     ];

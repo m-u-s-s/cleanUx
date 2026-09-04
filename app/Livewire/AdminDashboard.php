@@ -23,6 +23,9 @@ class AdminDashboard extends Component
 
     public array $statsMensuelles = [];
 
+    /** @var array<int, float> */
+    public array $caMensuel = [];
+
     public array $rdvs = [];
 
     public $employes = [];
@@ -333,6 +336,7 @@ class AdminDashboard extends Component
 
         return view('livewire.admin-dashboard', [
             'santePlateforme' => $santeVisible ? $this->santePlateforme : null,
+            'caMensuel' => $this->caMensuel,
             'employes' => $this->employes,
             'clients' => $this->clients,
             'stats' => $this->statistiquesData,

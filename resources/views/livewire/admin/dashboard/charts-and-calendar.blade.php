@@ -23,7 +23,7 @@
             <div class="mb-4 flex items-center justify-between">
                 <div>
                     <h4 class="font-black text-slate-900">Évolution mensuelle</h4>
-                    <p class="text-sm text-slate-500">Nombre de RDV par mois.</p>
+                    <p class="text-sm text-slate-500">Nombre de RDV et chiffre d’affaires par mois, sur l’année en cours.</p>
                 </div>
             </div>
 

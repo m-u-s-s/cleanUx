@@ -244,8 +244,8 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
             Route::get('/alerts', AdminAlertsCenter::class)->name('alerts');
         }
 
-        // Fusionnee dans l'exploration analytique ; l'URL survit en redirection vers son onglet.
-        Route::redirect('/analytics', '/admin/analytics/exploration?onglet=ensemble')->name('analytics');
+        // Fusionnee dans le tableau de bord (section « Plateforme ») ; l'URL survit en redirection.
+        Route::redirect('/analytics', '/admin/dashboard')->name('analytics');
 
         /*
          * L'EXPLORATION ANALYTIQUE MÉTIER — trois cent quarante-six lignes que rien n'atteignait.

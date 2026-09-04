@@ -20,15 +20,15 @@ class AdminAnalyticsCenterExperienceTest extends TestCase
 
     public function test_admin_can_render_analytics_center(): void
     {
-        // `/admin/analytics` a fusionne dans l'exploration : l'URL redirige vers son onglet.
+        // `/admin/analytics` a rejoint la section « Plateforme » du tableau de bord.
         $response = $this->actingAs($this->administrateurDesChiffres())
             ->followingRedirects()
             ->get('/admin/analytics');
 
         $response->assertOk();
-        $response->assertSee('Centre analytics');
-        $response->assertSee('CA par mois');
-        $response->assertSee('Missions par mois');
+        $response->assertSee('Santé de la plateforme');
+        $response->assertSee('CA total');
+        $response->assertSee('Marge plateforme');
     }
 
     public function test_les_deux_lectures_annoncees_par_l_ancienne_page_existent_toujours(): void

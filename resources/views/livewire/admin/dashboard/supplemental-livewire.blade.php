@@ -3,8 +3,8 @@
 @endif
 
 @if($visibleDashboardSections['analytics'] ?? true)
-    <livewire:admin.admin-analytics-dashboard />
-
+    {{-- L'apercu monte ici doublait la courbe mensuelle voisine, avec d'autres chiffres :
+         ses totaux sont passes en section « Plateforme », son CA dans le graphique mensuel. --}}
     @if(! $compactMode)
         <livewire:admin.employee-performance />
     @endif

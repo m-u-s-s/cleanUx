@@ -77,8 +77,25 @@ trait BootsAdminDashboardFilters
             return collect(range(1, 12))->map(fn ($mois) => $comptes[$mois] ?? 0)->toArray();
         });
 
+        // LE CA SUIT LE MEME PERIMETRE QUE LES RDV. Deux courbes cote a cote sur deux perimetres
+        // differents mentiraient : celle-ci lit le filtre de zone comme sa voisine.
+        $this->caMensuel = Cache::remember($this->cacheKey('caMensuel'), now()->addMinutes(10), function () use ($baseQuery) {
+            $expressionDuMois = DB::connection()->getDriverName() === 'sqlite'
+                ? "CAST(strftime('%m', date) AS INTEGER)"
+                : 'MONTH(date)';
+
+            $montants = (clone $baseQuery)
+                ->whereYear('date', now()->year)
+                ->selectRaw($expressionDuMois.' as mois, SUM(devis_estime) as total')
+                ->groupBy('mois')
+                ->pluck('total', 'mois')
+                ->mapWithKeys(fn ($total, $mois) => [(int) $mois => round((float) $total, 2)]);
+
+            return collect(range(1, 12))->map(fn ($mois) => $montants[$mois] ?? 0.0)->toArray();
+        });
+
         $this->dispatch('updateChartData', data: $this->statistiquesData);
-        $this->dispatch('updateMonthlyChart', data: $this->statsMensuelles);
+        $this->dispatch('updateMonthlyChart', data: $this->statsMensuelles, ca: $this->caMensuel);
     }
 
     public function chargerRdvs()

@@ -23,6 +23,15 @@
                         :tone="$santePlateforme['webhooks_echoues_24h'] > 0 ? 'red' : 'slate'" icon="🔌" />
         </div>
 
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
+            <x-kpi-card title="CA total" :value="locale_currency($santePlateforme['ca_total'])" tone="blue" icon="📊" />
+            <x-kpi-card title="Marge plateforme" :value="locale_currency($santePlateforme['marge_plateforme'])"
+                        hint="La commission encaissée" tone="green" icon="🏛️" />
+            <x-kpi-card title="Missions" :value="number_format($santePlateforme['missions_total'], 0, ',', ' ')" tone="slate" icon="📋" />
+            <x-kpi-card title="Terminées" :value="number_format($santePlateforme['missions_terminees'], 0, ',', ' ')" tone="green" icon="✅" />
+            <x-kpi-card title="Note moyenne" :value="$santePlateforme['note_moyenne'].'/5'" tone="amber" icon="⭐" />
+        </div>
+
         <x-app-card title="Tendance 7 jours" subtitle="Réservations créées, jour par jour.">
             <div id="tendance-reservations" wire:ignore class="min-h-[240px]"></div>
         </x-app-card>

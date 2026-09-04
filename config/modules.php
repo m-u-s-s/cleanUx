@@ -460,7 +460,7 @@ return [
         'peer.owner.stay' => 'Éditeur d’une annonce : on y entre depuis « Mes logements », jamais depuis un menu',
         'peer.sejour' => 'Page publique d’une annonce : on y entre depuis le catalogue, jamais depuis un menu',
         'admin.home' => 'Fusionnée dans le tableau de bord (section « Plateforme ») ; l’URL survit en redirection',
-        'admin.analytics' => 'Fusionnée dans l’exploration analytique (onglet « Vue d’ensemble ») ; l’URL survit en redirection',
+        'admin.analytics' => 'Fusionnée dans le tableau de bord (section « Plateforme ») ; l’URL survit en redirection',
         'admin.analytics.center' => 'Fusionnée dans l’exploration analytique (onglet « Usage produit ») ; l’URL survit en redirection',
         'admin.nps.center' => 'Fusionnée dans l’exploration analytique (onglet « Satisfaction ») ; l’URL survit en redirection',
         'admin.kyc.center' => 'Fusionnée dans le centre onboarding ; l’URL survit en redirection',

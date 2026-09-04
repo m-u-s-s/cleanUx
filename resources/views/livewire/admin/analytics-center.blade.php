@@ -239,9 +239,6 @@
     </div>
 
     {{-- Les trois écrans fusionnés sont MONTÉS, pas recopiés : une seule vérité à corriger. --}}
-    @elseif($onglet === 'ensemble')
-        <livewire:admin.admin-analytics-dashboard />
-
     @elseif($onglet === 'usage')
         <livewire:admin.analytics.analytics-center />
 

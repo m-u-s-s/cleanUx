@@ -52,6 +52,34 @@ class SantePlateformeTest extends TestCase
             ->assertSee('Dernières réservations');
     }
 
+    public function test_le_ca_mensuel_suit_le_meme_perimetre_que_les_rdv(): void
+    {
+        Booking::factory()->create(['date' => now()->startOfMonth(), 'devis_estime' => 120.0]);
+        Booking::factory()->create(['date' => now()->startOfMonth(), 'devis_estime' => 80.0]);
+        // L'annee derniere : elle ne doit PAS retomber dans le meme mois.
+        Booking::factory()->create(['date' => now()->subYear()->startOfMonth(), 'devis_estime' => 999.0]);
+
+        $composant = Livewire::actingAs($this->prendreLeSiege())->test(AdminDashboard::class);
+
+        $mois = (int) now()->month;
+        $ca = $composant->get('caMensuel');
+
+        $this->assertCount(12, $ca);
+        $this->assertSame(200.0, (float) $ca[$mois - 1], 'le CA du mois doit valoir 120 + 80, sans l’année passée');
+
+        // Temoin positif : les RDV du meme mois sont bien comptes, sans celui de l'an dernier.
+        $this->assertSame(2, (int) $composant->get('statsMensuelles')[$mois - 1]);
+    }
+
+    public function test_les_totaux_d_argent_de_l_ancien_onglet_sont_la(): void
+    {
+        Livewire::actingAs($this->prendreLeSiege())
+            ->test(AdminDashboard::class)
+            ->assertSee('CA total')
+            ->assertSee('Marge plateforme')
+            ->assertSee('Note moyenne');
+    }
+
     public function test_la_reference_de_reservation_s_affiche(): void
     {
         // `reference` n'existe pas sur `bookings` : l'ancienne page rendait une colonne vide.

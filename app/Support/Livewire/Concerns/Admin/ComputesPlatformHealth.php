@@ -8,6 +8,7 @@ use App\Models\Mission;
 use App\Models\ProviderPayout;
 use App\Models\ProviderPresence;
 use App\Models\WebhookDelivery;
+use App\Services\Admin\AdminAnalyticsService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 
@@ -34,7 +35,16 @@ trait ComputesPlatformHealth
     {
         $aujourdhui = now()->startOfDay();
 
+        // LES CINQ TOTAUX VENAIENT DE L'ONGLET « Vue d'ensemble ». Le service reste la seule
+        // source : la marge de la plateforme n'etait lue que la, et ses tests la gardent.
+        $apercu = app(AdminAnalyticsService::class)->overview();
+
         return [
+            'ca_total' => (float) $apercu['total_revenue'],
+            'marge_plateforme' => (float) $apercu['total_margin'],
+            'missions_total' => (int) $apercu['missions_count'],
+            'missions_terminees' => (int) $apercu['completed_missions'],
+            'note_moyenne' => (float) $apercu['average_rating'],
             'reservations_du_jour' => Booking::whereDate('created_at', $aujourdhui)->count(),
             'missions_actives' => Mission::whereIn('status', ['planned', 'en_route', 'started'])->count(),
             'prestataires_en_ligne' => ProviderPresence::where('status', 'online')->count(),
