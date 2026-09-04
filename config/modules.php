@@ -249,10 +249,9 @@ return [
         ['key' => 'admin:admin.contracts-v2.center', 'label' => 'Contrats v2', 'icon' => '📜', 'route' => 'admin.contracts-v2.center', 'context' => 'admin', 'category' => 'documents', 'primary' => false, 'gate' => 'manage-entreprises'],
         ['key' => 'admin:admin.b2b.monthly-invoices', 'label' => 'Factures B2B', 'icon' => '🧾', 'route' => 'admin.b2b.monthly-invoices', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'manage-entreprises'],
         ['key' => 'admin:admin.business.dashboard', 'label' => 'Business', 'icon' => '🏢', 'route' => 'admin.business.dashboard', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'manage-finance'],
-        ['key' => 'admin:admin.cancellations-v2.center', 'label' => 'Annulations v2', 'icon' => '🚫', 'route' => 'admin.cancellations-v2.center', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'manage-finance'],
+        ['key' => 'admin:admin.cancellations-v2.center', 'label' => 'Annulations', 'icon' => '🚫', 'route' => 'admin.cancellations-v2.center', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'voir-les-annulations'],
         // Meme categorie et meme garde que son voisin : qui administre les politiques d'annulation
         // administre leur questionnaire.
-        ['key' => 'admin:admin.cancellation-questions.center', 'label' => 'Questionnaire d’annulation', 'icon' => '❓', 'route' => 'admin.cancellation-questions.center', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'manage-finance'],
         ['key' => 'admin:admin.customer.credits', 'label' => 'Crédits clients', 'icon' => '💰', 'route' => 'admin.customer.credits', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'manage-finance'],
         ['key' => 'admin:admin.enterprise.approvals', 'label' => 'Approbations', 'icon' => '📑', 'route' => 'admin.enterprise.approvals', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'manage-entreprises'],
         ['key' => 'admin:admin.finance', 'label' => 'Finance', 'icon' => '💶', 'route' => 'admin.finance', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'manage-finance'],
@@ -313,7 +312,6 @@ return [
          */
         ['key' => 'admin:admin.dispatch.center', 'label' => 'Répartition', 'icon' => '📡', 'route' => 'admin.dispatch.center', 'context' => 'admin', 'category' => 'donnees', 'primary' => false, 'gate' => 'manage-orchestration'],
         ['key' => 'admin:admin.alerts', 'label' => 'Alertes', 'icon' => '🚨', 'route' => 'admin.alerts', 'context' => 'admin', 'category' => 'donnees', 'primary' => true, 'gate' => 'manage-analytics'],
-        ['key' => 'admin:admin.analytics.cancellations', 'label' => 'Raisons annulation', 'icon' => '❌', 'route' => 'admin.analytics.cancellations', 'context' => 'admin', 'category' => 'donnees', 'primary' => false, 'gate' => 'manage-analytics'],
         ['key' => 'admin:admin.analytics.exploration', 'label' => 'Analytics', 'icon' => '📈', 'route' => 'admin.analytics.exploration', 'context' => 'admin', 'category' => 'donnees', 'primary' => true, 'gate' => 'manage-analytics'],
         ['key' => 'admin:admin.dashboard', 'label' => 'Dashboard', 'icon' => '📊', 'route' => 'admin.dashboard', 'context' => 'admin', 'category' => 'donnees', 'primary' => true],
         ['key' => 'admin:admin.api-tokens-v2.center', 'label' => 'API Tokens v2', 'icon' => '🔑', 'route' => 'admin.api-tokens-v2.center', 'context' => 'admin', 'category' => 'plateforme', 'primary' => false, 'gate' => 'manage-platform'],
@@ -460,6 +458,8 @@ return [
         'peer.owner.stay' => 'Éditeur d’une annonce : on y entre depuis « Mes logements », jamais depuis un menu',
         'peer.sejour' => 'Page publique d’une annonce : on y entre depuis le catalogue, jamais depuis un menu',
         'admin.home' => 'Fusionnée dans le tableau de bord (section « Plateforme ») ; l’URL survit en redirection',
+        'admin.analytics.cancellations' => 'Fusionnée dans le centre des annulations (onglet « Raisons ») ; l’URL survit en redirection',
+        'admin.cancellation-questions.center' => 'Fusionnée dans le centre des annulations (onglet « Questionnaire ») ; l’URL survit en redirection',
         'admin.analytics' => 'Fusionnée dans le tableau de bord (section « Plateforme ») ; l’URL survit en redirection',
         'admin.analytics.center' => 'Fusionnée dans l’exploration analytique (onglet « Usage produit ») ; l’URL survit en redirection',
         'admin.nps.center' => 'Fusionnée dans l’exploration analytique (onglet « Satisfaction ») ; l’URL survit en redirection',

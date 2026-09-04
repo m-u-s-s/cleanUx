@@ -29,16 +29,25 @@
             </div>
         </div>
 
-        <div class="flex flex-nowrap gap-2 overflow-x-auto border-b border-slate-200">
-            @foreach(['recent' => 'Récentes', 'overrides' => 'Overrides', 'policies' => 'Policies'] as $key => $label)
+        {{-- Un onglet qu'on ne peut pas ouvrir ne s'affiche pas : la tuile et la porte disent la meme chose. --}}
+        <nav class="flex flex-nowrap gap-2 overflow-x-auto border-b border-slate-200" aria-label="Sections des annulations">
+            @foreach($this->ongletsOuverts() as $key)
                 <button wire:click="$set('tab', '{{ $key }}')"
+                        @if($tab === $key) aria-current="page" @endif
                         @class([
                             'px-4 py-2 min-h-[44px] inline-flex shrink-0 items-center whitespace-nowrap text-sm font-semibold',
                             'border-b-2 border-indigo-600 text-indigo-700' => $tab === $key,
                             'text-slate-500 hover:text-slate-900' => $tab !== $key,
-                        ])>{{ $label }}</button>
+                        ])>{{ \App\Livewire\Admin\CancellationV2\CancellationsCenter::ONGLETS[$key]['libelle'] }}</button>
             @endforeach
-        </div>
+        </nav>
+
+        {{-- Les deux ecrans fusionnes sont MONTES, pas recopies : une seule verite a corriger. --}}
+        @if($tab === 'questionnaire')
+            <livewire:admin.cancellation-v2.questionnaire-center />
+        @elseif($tab === 'raisons')
+            <livewire:admin.analytics.cancellation-reasons-center />
+        @else
 
         @if($tab === 'recent')
             <div class="flex flex-wrap gap-2">
@@ -141,5 +150,6 @@
             @endif
             <div class="p-3">{{ $items->links() }}</div>
         </div>
+        @endif
     </div>
 </div>

@@ -26,7 +26,12 @@ class ChaqueEcranAdminADuneCapaciteTest extends TestCase
      * accorde, c'est un fait sur qui l'on est. L'y inscrire le rendrait cochable dans
      * l'ecran des permissions — exactement ce que ce siege interdit.
      */
-    private const NON_ASSIGNABLES = ['hold-platform-seat'];
+    private const NON_ASSIGNABLES = [
+        'hold-platform-seat',
+        // `voir-les-annulations` n'est pas une capacite qu'on accorde : c'est une porte qui
+        // s'ouvre a `manage-finance` OU `manage-analytics`, parce que la page reunit les deux.
+        'voir-les-annulations',
+    ];
 
     public function test_chaque_module_admin_declare_une_capacite(): void
     {

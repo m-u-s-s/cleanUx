@@ -6,7 +6,6 @@ use App\Http\Controllers\Admin\OnboardingDocumentController;
 use App\Livewire\Admin\AccountingV2\AccountingCenter;
 use App\Livewire\Admin\AdminAlertsCenter;
 use App\Livewire\Admin\Analytics\AnalyticsCenter;
-use App\Livewire\Admin\Analytics\CancellationReasonsCenter;
 use App\Livewire\Admin\AnalyticsCenter as ExplorationAnalytique;
 use App\Livewire\Admin\ApiTokensV2\ApiTokensCenter;
 use App\Livewire\Admin\Audit\AuditCenter;
@@ -21,7 +20,6 @@ use App\Livewire\Admin\Badges\BadgesCenter;
 use App\Livewire\Admin\Bundles\BundlesCenter;
 use App\Livewire\Admin\BusinessDashboard;
 use App\Livewire\Admin\CancellationV2\CancellationsCenter;
-use App\Livewire\Admin\CancellationV2\QuestionnaireCenter;
 use App\Livewire\Admin\CentreDesCommissions;
 use App\Livewire\Admin\ChatV2\ChatCenter;
 use App\Livewire\Admin\ContractsV2\ContractsCenter;
@@ -333,11 +331,9 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
                 ->name('presence.center');
         }
 
-        // Analytics — Raisons d'annulation
-        if (class_exists(CancellationReasonsCenter::class)) {
-            Route::get('/analytics/cancellations', CancellationReasonsCenter::class)
-                ->name('analytics.cancellations');
-        }
+        // Fusionnee dans le centre des annulations (onglet « Raisons ») ; l'URL survit en redirection.
+        Route::redirect('/analytics/cancellations', '/admin/cancellations-v2?tab=raisons')
+            ->name('analytics.cancellations');
 
         // NPS — fusionne dans l'exploration analytique ; l'URL survit en redirection.
         Route::redirect('/nps', '/admin/analytics/exploration?onglet=nps')->name('nps.center');
@@ -473,18 +469,9 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
                 ->name('cancellations-v2.center');
         }
 
-        /*
-         * LE QUESTIONNAIRE — module distinct de la page ci-dessus, et pas un onglet.
-         *
-         * Celle-ci REGARDE ce qui s'est passé : les annulations, leurs frais, les dérogations.
-         * Celui-ci DÉCIDE ce qu'on demandera demain. Deux gestes d'administration différents, deux
-         * moments différents, et un administrateur qui vient régler le questionnaire n'a pas à
-         * traverser une liste d'annulations pour l'atteindre.
-         */
-        if (class_exists(QuestionnaireCenter::class)) {
-            Route::get('/cancellation-questions', QuestionnaireCenter::class)
-                ->name('cancellation-questions.center');
-        }
+        // Fusionne dans le centre des annulations (onglet « Questionnaire ») ; l'URL survit en redirection.
+        Route::redirect('/cancellation-questions', '/admin/cancellations-v2?tab=questionnaire')
+            ->name('cancellation-questions.center');
 
         // Onboarding v2 — Journeys + progress per user
         if (class_exists(OnboardingV2Center::class)) {

@@ -47,6 +47,11 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('manage-finance', fn (User $user) => $user->canAccessAdminModule('manage-finance'));
         Gate::define('manage-accounting', fn (User $user) => $user->canAccessAdminModule('manage-accounting'));
         Gate::define('manage-analytics', fn (User $user) => $user->canAccessAdminModule('manage-analytics'));
+
+        // UNE PORTE POUR DEUX METIERS. Le centre des annulations reunit des ecrans de finance
+        // et un pivot d'analyse : exiger une seule capacite fermerait la page a l'un des deux.
+        Gate::define('voir-les-annulations', fn (User $user) => $user->canAccessAdminModule('manage-finance')
+            || $user->canAccessAdminModule('manage-analytics'));
         Gate::define('manage-quality', fn (User $user) => $user->canAccessAdminModule('manage-quality'));
         Gate::define('manage-premium', fn (User $user) => $user->canAccessAdminModule('manage-premium'));
         Gate::define('manage-audit-logs', fn (User $user) => $user->canAccessAdminModule('manage-audit-logs'));

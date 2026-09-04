@@ -1,6 +1,7 @@
-<div class="space-y-6 p-4 sm:p-6 lg:p-8">
+{{-- Onglet « Questionnaire » du centre des annulations : la page porte le titre. --}}
+<div class="space-y-6">
     <div>
-        <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">Questionnaire d’annulation</h1>
+        <h3 class="brio-section-title">Questionnaire d’annulation</h3>
         <p class="mt-1 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
             Ce que l’on demande à quelqu’un qui annule. Chaque réponse décide des frais, ou renvoie
             vers un autre geste — un chantier trop gros n’est pas une annulation.

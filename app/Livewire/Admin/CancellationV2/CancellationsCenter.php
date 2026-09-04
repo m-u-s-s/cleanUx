@@ -8,6 +8,7 @@ use App\Services\CancellationV2\CancellationEngine;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -18,14 +19,71 @@ class CancellationsCenter extends Component
 
     protected $paginationTheme = 'tailwind';
 
-    public string $tab = 'recent';  // recent | overrides | policies
+    public string $tab = 'recent';
 
     public string $filterActorRole = '';
 
     public string $search = '';
 
+    /**
+     * LES ONGLETS ET LA CAPACITE QUI LES OUVRE.
+     *
+     * La page reunit des ecrans de finance et un pivot d'analyse : sans capacite par onglet, un
+     * analyste entre par la porte commune et se retrouve devant le bouton qui annule des frais.
+     *
+     * @var array<string, array{libelle: string, capacite: string}>
+     */
+    public const ONGLETS = [
+        'recent' => ['libelle' => 'Récentes', 'capacite' => 'manage-finance'],
+        'overrides' => ['libelle' => 'Overrides', 'capacite' => 'manage-finance'],
+        'policies' => ['libelle' => 'Politiques', 'capacite' => 'manage-finance'],
+        'questionnaire' => ['libelle' => 'Questionnaire', 'capacite' => 'manage-finance'],
+        'raisons' => ['libelle' => 'Raisons', 'capacite' => 'manage-analytics'],
+    ];
+
+    /** @var array<string, array<string, string>> */
+    protected $queryString = [
+        'tab' => ['except' => 'recent'],
+        'filterActorRole' => ['except' => ''],
+        'search' => ['except' => ''],
+    ];
+
+    public function mount(): void
+    {
+        $this->updatedTab();
+    }
+
+    /** Un onglet interdit ou invente retombe sur le premier que l'on peut ouvrir. */
+    public function updatedTab(): void
+    {
+        if (! $this->peutOuvrir($this->tab)) {
+            $this->tab = collect(self::ONGLETS)
+                ->keys()
+                ->first(fn (string $cle) => $this->peutOuvrir($cle)) ?? 'raisons';
+        }
+
+        $this->resetPage();
+    }
+
+    /** @return list<string> */
+    public function ongletsOuverts(): array
+    {
+        return array_values(array_filter(array_keys(self::ONGLETS), fn (string $cle) => $this->peutOuvrir($cle)));
+    }
+
+    private function peutOuvrir(string $onglet): bool
+    {
+        $capacite = self::ONGLETS[$onglet]['capacite'] ?? null;
+
+        return $capacite !== null && Gate::allows($capacite);
+    }
+
     public function override(int $cancellationId, string $reason = ''): void
     {
+        // RENONCER A DES FRAIS EST UN ACTE DE FINANCE. Cette methode est joignable par
+        // `/livewire/update` sans qu'aucun bouton existe : la garde vit ici, pas dans la vue.
+        abort_unless(Gate::allows('manage-finance'), 403);
+
         $row = BookingCancellationV2::findOrFail($cancellationId);
         try {
             app(CancellationEngine::class)->override($row, Auth::user(), $reason ?: 'Override via admin UI: '.now()->toIso8601String());
@@ -48,6 +106,14 @@ class CancellationsCenter extends Component
                 ->where('cancelled_at', '>=', now()->subDays(7))->count(),
             'active_policies' => CancellationPolicy::query()->active()->count(),
         ];
+
+        // Les deux onglets rapportes rendent leur propre composant : rien a paginer ici.
+        if (in_array($this->tab, ['questionnaire', 'raisons'], true)) {
+            return view('livewire.admin.cancellation-v2.cancellations-center', [
+                'kpis' => $kpis,
+                'items' => null,
+            ]);
+        }
 
         if ($this->tab === 'recent') {
             $items = BookingCancellationV2::query()

@@ -314,12 +314,48 @@ class CancellationEngine
             'occurred_at' => now(),
         ]);
 
+        // LA RESERVATION PORTE LES MEMES FRAIS, ET ELLE LES GARDAIT. L'ecran des raisons lit
+        // `bookings.cancellation_fee_amount` : sans cette remise a zero, des frais annules
+        // continuaient d'y etre comptes, et deux ecrans annoncaient deux montants.
+        $this->effacerLesFraisSurLaReservation((int) $cancellation->booking_id);
+
         ActivityLogger::log('cancellation_v2.overridden', $cancellation, [
             'admin_id' => $admin->id,
             'new_refund_cents' => $newRefund,
         ]);
 
         return $cancellation->fresh();
+    }
+
+    /** Remet a zero les frais d'annulation portes par la reservation, colonnes et `metadata`. */
+    protected function effacerLesFraisSurLaReservation(int $bookingId): void
+    {
+        if ($bookingId <= 0 || ! Schema::hasTable('bookings')) {
+            return;
+        }
+
+        $miseAJour = [];
+
+        foreach (['cancellation_fee_amount' => 0, 'cancellation_fee_percent' => 0] as $colonne => $valeur) {
+            if (Schema::hasColumn('bookings', $colonne)) {
+                $miseAJour[$colonne] = $valeur;
+            }
+        }
+
+        if (Schema::hasColumn('bookings', 'metadata')) {
+            $existant = DB::table('bookings')->where('id', $bookingId)->value('metadata');
+            $existant = is_string($existant) ? (json_decode($existant, true) ?: []) : ((array) $existant);
+
+            $miseAJour['metadata'] = json_encode(array_merge($existant, [
+                'cancellation_fee' => 0,
+                'cancellation_fee_percent' => 0,
+                'cancellation_fee_waived' => true,
+            ]));
+        }
+
+        if ($miseAJour !== []) {
+            DB::table('bookings')->where('id', $bookingId)->update($miseAJour);
+        }
     }
 
     protected function ensureActorRole(string $actorRole): void

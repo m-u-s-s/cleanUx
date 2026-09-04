@@ -23,7 +23,10 @@ class CancellationsCenterCoverageBatch17Test extends TestCase
     {
         parent::setUp();
 
-        $this->admin = User::factory()->admin()->create();
+        // `adminComplet` PLUTOT QUE `admin` : le centre des annulations exige desormais
+        // `manage-finance` dans le composant lui-meme. Un admin nu passait ici parce que
+        // `Livewire::test()` ne rejoue aucun middleware de route — pas parce qu'il en avait le droit.
+        $this->admin = User::factory()->adminComplet()->create();
     }
 
     private function makeCancellation(array $attributes = []): BookingCancellationV2

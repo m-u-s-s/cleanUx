@@ -73,7 +73,12 @@ class NavigationEtGatesAdminTest extends TestCase
      *
      * @var list<string>
      */
-    private const NON_ASSIGNABLES = ['hold-platform-seat'];
+    private const NON_ASSIGNABLES = [
+        'hold-platform-seat',
+        // `voir-les-annulations` n'est pas une capacite qu'on accorde : c'est une porte qui
+        // s'ouvre a `manage-finance` OU `manage-analytics`, parce que la page reunit les deux.
+        'voir-les-annulations',
+    ];
 
     /** TOUTE CAPACITÉ DÉCLARÉE DOIT EXISTER. */
     public function test_chaque_gate_declare_est_une_capacite_reelle(): void

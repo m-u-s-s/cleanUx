@@ -1,13 +1,10 @@
-<div class="py-6">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+{{-- Onglet « Raisons » du centre des annulations : la page porte le titre. --}}
+<div>
+    <div class="space-y-6">
 
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-                <p class="text-sm font-bold uppercase text-indigo-600">Analytics</p>
-                <h1 class="text-2xl font-black text-slate-900">Raisons d'annulation</h1>
-                <p class="text-sm text-slate-500">Pivot des annulations pour identifier les frictions.</p>
-            </div>
-            <a href="{{ route('admin.dashboard') }}" class="rounded-xl border px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">← Dashboard</a>
+        <div>
+            <h3 class="brio-section-title">Raisons d'annulation</h3>
+            <p class="text-sm text-slate-500">Pivot des annulations pour identifier les frictions.</p>
         </div>
 
         <div class="flex gap-2">
