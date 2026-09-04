@@ -70,6 +70,9 @@
 
     <div class="bg-white border rounded-2xl shadow-sm overflow-hidden {{ $selectedRendezVous?->id === $rdv->id ? 'ring-2 ring-indigo-300' : '' }}">
         <div class="p-5 space-y-4">
+            {{-- UN AVOIR A REDUIT LE PRIX : le prestataire l'apprend ici, pas en comptant
+                 ses virements. Sans avoir applique, la note ne s'affiche pas du tout. --}}
+            <x-note-avoir-client :booking="$rdv" />
             <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                 <div class="space-y-1">
                     <div class="flex flex-wrap items-center gap-2">

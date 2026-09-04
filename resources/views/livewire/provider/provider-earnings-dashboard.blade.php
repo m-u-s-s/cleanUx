@@ -25,6 +25,22 @@
         {{ __('Ce taux s’applique aux missions à venir. Celles déjà conclues gardent le taux qui était en vigueur au moment du devis.') }}
     </x-note-commission>
 
+    {{-- LES AVOIRS CLIENTS, DITS UNE FOIS ET CLAIREMENT.
+
+         Un avoir reduit le prix de la mission, et la part du prestataire suit ce prix reduit.
+         C'est une decision assumee : le geste commercial est partage entre la plateforme et le
+         prestataire. Ce qui ne serait PAS acceptable, c'est qu'il le decouvre seul, six mois plus
+         tard, en rapprochant ses releves. --}}
+    <div class="mb-6 rounded-xl border border-amber-300/60 bg-amber-50/60 px-3 py-2 text-xs text-amber-900">
+        <p class="font-semibold">{{ __('Quand un client règle avec un avoir') }}</p>
+        <p class="mt-1">
+            {{ __('Un avoir accordé par la plateforme réduit le prix de la mission. Votre part et la commission de la plateforme sont calculées sur ce prix réduit : le geste commercial est donc partagé entre nous deux, au prorata.') }}
+        </p>
+        <p class="mt-1">
+            {{ __('Les missions concernées le disent sur leur fiche. Le prix que vous voyez au moment d’accepter est déjà le prix après avoir — il ne baissera pas ensuite.') }}
+        </p>
+    </div>
+
     {{-- KPI Cards --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="rounded-2xl bg-white border border-slate-200/80 shadow-soft-sm p-5">
