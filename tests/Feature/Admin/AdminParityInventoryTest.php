@@ -33,6 +33,10 @@ class AdminParityInventoryTest extends TestCase
             .'surface d’élévation pour un gain nul — on n’accorde pas la finance à quelqu’un dans un '
             .'couloir. La LECTURE, elle, reste utile et passe déjà par le web.',
 
+        'cerveau' => 'Ses gestes suspendent des campagnes et mettent des comptes en revue. Chacun se '
+            .'lit AVEC ce qu’il implique, en trois paragraphes : c’est exactement ce qu’on ne lit pas '
+            .'sur un téléphone. Le porter sur mobile transformerait une décision réfléchie en clic.',
+
         'commissions' => 'Régler un taux de commission depuis un téléphone, entre deux portes, est '
             .'exactement la situation où l’on se trompe de chiffre. L’écran vit avec son simulateur '
             .'et son conseiller : les trois se lisent ensemble, sur un vrai écran.',

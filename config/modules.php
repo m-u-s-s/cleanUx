@@ -266,6 +266,7 @@ return [
         ['key' => 'admin:admin.premium.clients', 'label' => 'Clients premium', 'icon' => '⭐', 'route' => 'admin.premium.clients', 'context' => 'admin', 'category' => 'comptes', 'primary' => false, 'gate' => 'manage-premium'],
         ['key' => 'admin:admin.sites', 'label' => 'Sites', 'icon' => '📍', 'route' => 'admin.sites', 'context' => 'admin', 'category' => 'comptes', 'primary' => false, 'gate' => 'manage-entreprises'],
         ['key' => 'admin:admin.teams.partners', 'label' => 'Équipes & partenaires', 'icon' => '👥', 'route' => 'admin.teams.partners', 'context' => 'admin', 'category' => 'comptes', 'primary' => false, 'gate' => 'manage-entreprises'],
+        ['key' => 'admin:admin.cerveau', 'label' => 'Le cerveau', 'icon' => '🧠', 'route' => 'admin.cerveau', 'context' => 'admin', 'category' => 'donnees', 'primary' => false, 'gate' => 'hold-platform-seat'],
         ['key' => 'admin:admin.commissions', 'label' => 'Commissions', 'icon' => '⚖️', 'route' => 'admin.commissions', 'context' => 'admin', 'category' => 'finance', 'primary' => false, 'gate' => 'hold-platform-seat'],
         ['key' => 'admin:admin.siege', 'label' => 'Le siège', 'icon' => '👑', 'route' => 'admin.siege', 'context' => 'admin', 'category' => 'comptes', 'primary' => false, 'gate' => 'hold-platform-seat'],
         ['key' => 'admin:admin.roles.permissions', 'label' => 'Rôles et permissions', 'icon' => '🗝️', 'route' => 'admin.roles.permissions', 'context' => 'admin', 'category' => 'comptes', 'primary' => false, 'gate' => 'manage-users'],

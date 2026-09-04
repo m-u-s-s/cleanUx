@@ -43,6 +43,7 @@ use App\Livewire\Admin\GestionUtilisateurs;
 use App\Livewire\Admin\I18n\TranslationsCenter;
 use App\Livewire\Admin\Insurance\InsuranceCenter;
 use App\Livewire\Admin\KybV2\KybCenter;
+use App\Livewire\Admin\LeCerveau;
 use App\Livewire\Admin\LeSiegeDeLaPlateforme;
 use App\Livewire\Admin\Loyalty\LoyaltyCenter;
 use App\Livewire\Admin\Loyalty\LoyaltyRewardsCenter;
@@ -225,6 +226,14 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
          * capacite qu'on accorde a un administrateur, c'est la propriete de la plateforme.
          */
         Route::get('/commissions', CentreDesCommissions::class)->name('commissions');
+
+        /*
+         * LE CERVEAU — il lit toute la plateforme, il propose, il n'applique jamais seul.
+         *
+         * Reserve au titulaire du siege comme le siege et les commissions : ses gestes touchent
+         * aux campagnes, aux codes promo et a la mise en revue de comptes.
+         */
+        Route::get('/cerveau', LeCerveau::class)->name('cerveau');
 
         /*
          * `/admin/users` (nom `admin.utilisateurs`) a été retiré le 2026-08-05 : c'était une
