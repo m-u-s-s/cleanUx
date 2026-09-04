@@ -48,7 +48,7 @@ class NavigationEtGatesAdminTest extends TestCase
         $visibles = collect($this->modulesAdmin())->pluck('key')->all();
 
         $disparues = array_values(array_diff(
-            ['*:profile.show', 'admin:admin.dashboard', 'admin:admin.home'],
+            ['*:profile.show', 'admin:admin.dashboard'],
             $visibles,
         ));
 

@@ -15,8 +15,8 @@ class ChaqueEcranAdminADuneCapaciteTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** LES DEUX SEULS MODULES VOLONTAIREMENT OUVERTS À TOUT ADMINISTRATEUR. */
-    private const OUVERTS_A_TOUS = ['admin:admin.dashboard', 'admin:admin.home'];
+    /** LE SEUL MODULE VOLONTAIREMENT OUVERT À TOUT ADMINISTRATEUR. */
+    private const OUVERTS_A_TOUS = ['admin:admin.dashboard'];
 
     /**
      * LES CAPACITES QUI NE S'ACCORDENT PAS, avec leur motif.
@@ -160,8 +160,8 @@ class ChaqueEcranAdminADuneCapaciteTest extends TestCase
         // ON NE COMPTE QUE LES TUILES D'ADMINISTRATION, et cette précision n'est pas cosmétique.
         $tuilesAdmin = array_values(array_filter($visibles, fn (string $cle) => str_starts_with($cle, 'admin:')));
 
-        // Garde-fou : son propre écran, plus les deux pages d'arrivée. Rien d'autre.
-        $this->assertCount(3, $tuilesAdmin, implode(', ', $tuilesAdmin));
+        // Garde-fou : son propre écran, plus la page d'arrivée. Rien d'autre.
+        $this->assertCount(2, $tuilesAdmin, implode(', ', $tuilesAdmin));
 
         $this->assertContains('admin:admin.accounting-v2.center', $visibles);
         $this->assertNotContains('admin:admin.finance', $visibles);

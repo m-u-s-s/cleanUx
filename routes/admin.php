@@ -5,7 +5,6 @@ use App\Http\Controllers\Admin\MissionAdminController;
 use App\Http\Controllers\Admin\OnboardingDocumentController;
 use App\Livewire\Admin\AccountingV2\AccountingCenter;
 use App\Livewire\Admin\AdminAlertsCenter;
-use App\Livewire\Admin\AdminHomeDashboard;
 use App\Livewire\Admin\Analytics\AnalyticsCenter;
 use App\Livewire\Admin\Analytics\CancellationReasonsCenter;
 use App\Livewire\Admin\AnalyticsCenter as ExplorationAnalytique;
@@ -108,7 +107,8 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
     ->group(function () {
 
         Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
-        Route::get('/home', AdminHomeDashboard::class)->name('home');
+        // Fusionnee dans le tableau de bord (section « Plateforme ») ; l'URL survit en redirection.
+        Route::redirect('/home', '/admin/dashboard')->name('home');
 
         /*
          * Le répertoire des modules — voir `config/modules.php`.

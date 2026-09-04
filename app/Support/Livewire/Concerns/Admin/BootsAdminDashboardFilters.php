@@ -3,6 +3,7 @@
 namespace App\Support\Livewire\Concerns\Admin;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 trait BootsAdminDashboardFilters
 {
@@ -60,9 +61,20 @@ trait BootsAdminDashboardFilters
         });
 
         $this->statsMensuelles = Cache::remember($this->cacheKey('statsMensuelles'), now()->addMinutes(10), function () use ($baseQuery) {
-            return collect(range(1, 12))->map(function ($mois) use ($baseQuery) {
-                return (clone $baseQuery)->whereMonth('date', $mois)->count();
-            })->toArray();
+            // L'ANNEE MANQUAIT : `whereMonth` seul empilait tous les janviers de tous les ans dans
+            // la meme barre. Une requete groupee remplace au passage les douze comptages.
+            $expressionDuMois = DB::connection()->getDriverName() === 'sqlite'
+                ? "CAST(strftime('%m', date) AS INTEGER)"
+                : 'MONTH(date)';
+
+            $comptes = (clone $baseQuery)
+                ->whereYear('date', now()->year)
+                ->selectRaw($expressionDuMois.' as mois, count(*) as total')
+                ->groupBy('mois')
+                ->pluck('total', 'mois')
+                ->mapWithKeys(fn ($total, $mois) => [(int) $mois => (int) $total]);
+
+            return collect(range(1, 12))->map(fn ($mois) => $comptes[$mois] ?? 0)->toArray();
         });
 
         $this->dispatch('updateChartData', data: $this->statistiquesData);

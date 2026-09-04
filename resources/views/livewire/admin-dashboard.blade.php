@@ -22,6 +22,7 @@
         @if($executiveMode)
             @include('livewire.admin.dashboard.executive-mode')
         @else
+            @include('livewire.admin.dashboard.plateforme-section')
             @include('livewire.admin.dashboard.operations-section')
             @include('livewire.admin.dashboard.analytics-section')
             @include('livewire.admin.dashboard.premium-section')

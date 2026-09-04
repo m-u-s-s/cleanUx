@@ -13,6 +13,7 @@
 
     <div class="flex flex-wrap gap-2">
         @foreach([
+        'plateforme' => 'Plateforme',
         'operations' => 'Opérations',
         'analytics' => 'Analyse',
         'premium' => 'Premium',

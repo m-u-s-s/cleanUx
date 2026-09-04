@@ -62,6 +62,7 @@ class AdminDashboard extends Component
     public bool $compactMode = true;
 
     public array $visibleDashboardSections = [
+        'plateforme' => true,
         'operations' => true,
         'analytics' => true,
         'premium' => false,
@@ -213,6 +214,7 @@ class AdminDashboard extends Component
         ]);
 
         $this->visibleDashboardSections = [
+            'plateforme' => true,
             'operations' => true,
             'analytics' => true,
             'premium' => true,
@@ -326,7 +328,11 @@ class AdminDashboard extends Component
 
     public function render(): View
     {
+        // Neuf requetes que seule cette section montre : fermee, on ne les lance pas.
+        $santeVisible = ! $this->executiveMode && ($this->visibleDashboardSections['plateforme'] ?? true);
+
         return view('livewire.admin-dashboard', [
+            'santePlateforme' => $santeVisible ? $this->santePlateforme : null,
             'employes' => $this->employes,
             'clients' => $this->clients,
             'stats' => $this->statistiquesData,
