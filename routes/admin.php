@@ -37,6 +37,7 @@ use App\Livewire\Admin\GeolocationV2\GeolocationCenter;
 use App\Livewire\Admin\GestionEntreprises;
 use App\Livewire\Admin\GestionUtilisateurs;
 use App\Livewire\Admin\I18n\TranslationsCenter;
+use App\Livewire\Admin\IdentiteLegale;
 use App\Livewire\Admin\Insurance\InsuranceCenter;
 use App\Livewire\Admin\KybV2\KybCenter;
 use App\Livewire\Admin\LeCerveau;
@@ -543,6 +544,9 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
             Route::get('/fleet-v2', FleetCenter::class)
                 ->name('fleet-v2.center');
         }
+
+        // L'identite legale publiee sur /legal/mentions-legales — elle etait ecrite en dur.
+        Route::get('/identite-legale', IdentiteLegale::class)->name('identite-legale');
 
         // Feature Flags — runtime toggle for config/features.php flags
         if (class_exists(FeatureFlagsManager::class)) {

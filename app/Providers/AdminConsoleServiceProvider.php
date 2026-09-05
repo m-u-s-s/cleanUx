@@ -54,6 +54,7 @@ use App\Admin\Resources\GdprRequestResource;
 use App\Admin\Resources\InsuranceClaimResource;
 use App\Admin\Resources\KybResource;
 use App\Admin\Resources\KycResource;
+use App\Admin\Resources\LegalIdentityResource;
 use App\Admin\Resources\LoyaltyAccountResource;
 use App\Admin\Resources\MarketingCampaignResource;
 use App\Admin\Resources\MissionBatchResource;
@@ -134,6 +135,7 @@ class AdminConsoleServiceProvider extends ServiceProvider
             // sur ces lignes, et les effacer laisserait des références sans explication.
             $registry->register('promo-codes', PromoCodeResource::class);
             $registry->register('badges', BadgeResource::class);
+            $registry->register('identite-legale', LegalIdentityResource::class);
             $registry->register('feature-flags', FeatureFlagResource::class);
 
             // Lot 4 — les domaines adossés à un modèle unique, décrits par `EloquentResource`.

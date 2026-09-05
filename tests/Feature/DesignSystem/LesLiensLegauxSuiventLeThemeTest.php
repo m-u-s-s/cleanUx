@@ -101,7 +101,8 @@ class LesLiensLegauxSuiventLeThemeTest extends TestCase
             $employee += substr_count((string) file_get_contents($chemin), 'class="brio-lien"');
         }
 
-        $this->assertSame(6, $employee);
+        // Six liens repares, plus le `mailto:` que l'email de contact rend cliquable.
+        $this->assertSame(7, $employee);
     }
 
     /**

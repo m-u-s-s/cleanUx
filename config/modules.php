@@ -314,6 +314,7 @@ return [
         ['key' => 'admin:admin.alerts', 'label' => 'Alertes', 'icon' => '🚨', 'route' => 'admin.alerts', 'context' => 'admin', 'category' => 'donnees', 'primary' => true, 'gate' => 'manage-analytics'],
         ['key' => 'admin:admin.analytics.exploration', 'label' => 'Analytics', 'icon' => '📈', 'route' => 'admin.analytics.exploration', 'context' => 'admin', 'category' => 'donnees', 'primary' => true, 'gate' => 'manage-analytics'],
         ['key' => 'admin:admin.dashboard', 'label' => 'Dashboard', 'icon' => '📊', 'route' => 'admin.dashboard', 'context' => 'admin', 'category' => 'donnees', 'primary' => true],
+        ['key' => 'admin:admin.identite-legale', 'label' => 'Identité légale', 'icon' => '⚖️', 'route' => 'admin.identite-legale', 'context' => 'admin', 'category' => 'plateforme', 'primary' => false, 'gate' => 'manage-platform'],
         ['key' => 'admin:admin.api-tokens-v2.center', 'label' => 'API Tokens v2', 'icon' => '🔑', 'route' => 'admin.api-tokens-v2.center', 'context' => 'admin', 'category' => 'plateforme', 'primary' => false, 'gate' => 'manage-platform'],
         ['key' => 'admin:admin.feature-flags.manager', 'label' => 'Feature flags', 'icon' => '🚩', 'route' => 'admin.feature-flags.manager', 'context' => 'admin', 'category' => 'plateforme', 'primary' => false, 'gate' => 'manage-modules'],
         ['key' => 'admin:admin.fx.center', 'label' => 'FX (devises)', 'icon' => '💱', 'route' => 'admin.fx.center', 'context' => 'admin', 'category' => 'plateforme', 'primary' => false, 'gate' => 'manage-international'],
