@@ -30,25 +30,23 @@
         <form wire:submit="enregistrer" class="space-y-5">
             @foreach(\App\Livewire\Admin\IdentiteLegale::CHAMPS as $cle => $champ)
                 <div>
-                    <label for="{{ $cle }}" class="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    <label for="{{ $cle }}" class="brio-field-label">
                         {{ $champ['libelle'] }}
                     </label>
 
                     @if($cle === 'legal_hebergeur')
-                        <textarea id="{{ $cle }}" rows="2"
-                                  wire:model="valeurs.{{ $cle }}"
-                                  class="mt-1 w-full rounded-xl text-sm"></textarea>
+                        <textarea id="{{ $cle }}" rows="2" class="w-full"
+                                  wire:model="valeurs.{{ $cle }}"></textarea>
                     @else
-                        <input id="{{ $cle }}"
+                        <input id="{{ $cle }}" class="w-full"
                                type="{{ $cle === 'legal_email_contact' ? 'email' : 'text' }}"
-                               wire:model="valeurs.{{ $cle }}"
-                               class="mt-1 w-full rounded-xl text-sm">
+                               wire:model="valeurs.{{ $cle }}">
                     @endif
 
                     <p class="brio-section-subtitle mt-1">{{ $champ['aide'] }}</p>
 
                     @error('valeurs.'.$cle)
-                        <p class="mt-1 text-xs font-semibold text-rose-600">{{ $message }}</p>
+                        <p class="mt-1 text-xs font-semibold" style="color: var(--brio-danger);">{{ $message }}</p>
                     @enderror
                 </div>
             @endforeach
