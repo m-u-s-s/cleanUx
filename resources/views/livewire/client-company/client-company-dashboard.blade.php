@@ -178,7 +178,7 @@
             @if (! empty($bookingsByTrade))
                 <section class="brio-graphique" aria-labelledby="titre-metiers">
                     <div class="brio-graphique-tete">
-                        <h2 id="titre-metiers" class="brio-graphique-titre">{{ __('Reservations par metier') }}</h2>
+                        <h2 id="titre-metiers" class="brio-graphique-titre">{{ __('Réservations par métier') }}</h2>
                         <p class="brio-graphique-note">{{ $kpis['bookings_period'] }} {{ __('sur la periode') }}</p>
                     </div>
 
@@ -192,11 +192,11 @@
                          d'ecran, et un chiffre exact ne se releve pas sur un angle. --}}
                     <div class="brio-table-cadre mt-4">
                     <table class="w-full">
-                        <caption class="sr-only">{{ __('Reservations par metier, en chiffres') }}</caption>
+                        <caption class="sr-only">{{ __('Réservations par métier, en chiffres') }}</caption>
                         <thead>
                             <tr>
                                 <th scope="col">{{ __('Metier') }}</th>
-                                <th scope="col" class="text-right">{{ __('Reservations') }}</th>
+                                <th scope="col" class="text-right">{{ __('Réservations') }}</th>
                             </tr>
                         </thead>
                         <tbody>

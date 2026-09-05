@@ -3,8 +3,8 @@
     {{-- Header --}}
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-black text-slate-900">Reservations</h1>
-            <p class="text-sm text-slate-500">Gerez toutes vos demandes de service</p>
+            <h1 class="text-2xl font-black text-slate-900">Réservations</h1>
+            <p class="text-sm text-slate-500">Gérez toutes vos demandes de service</p>
         </div>
         <button wire:click="$set('view', 'create')"
             class="flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700">
@@ -197,7 +197,7 @@
             <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
                 <h3 class="text-lg font-black text-slate-900">
                     @if ($step === 1) Choisir un local
-                    @elseif ($step === 2) Choisir le metier
+                    @elseif ($step === 2) Choisir le métier
                     @elseif ($step === 3) Planification et details
                     @else Confirmation
                     @endif
@@ -245,7 +245,7 @@
                     @endif
 
                     @if ($trades->isEmpty())
-                        <p class="text-sm text-slate-500">Aucun metier disponible pour le moment.</p>
+                        <p class="text-sm text-slate-500">Aucun métier disponible pour le moment.</p>
                     @else
                         <p class="text-sm text-slate-500 mb-3">Quel type de service souhaitez-vous ?</p>
                         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -311,7 +311,7 @@
                     {{-- Champs specifiques au metier --}}
                     @if ($this->hasTradeFormSchema())
                         <div class="rounded-xl border border-blue-200 bg-blue-50/40 p-4 space-y-3">
-                            <h4 class="text-sm font-semibold text-blue-900">Informations specifiques au metier</h4>
+                            <h4 class="text-sm font-semibold text-blue-900">Informations spécifiques au métier</h4>
                             <x-trade-form-fields :schema="$tradeFormSchema" wire-model-prefix="tradeFormAnswers" />
                         </div>
                     @endif
