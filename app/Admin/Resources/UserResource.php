@@ -69,14 +69,14 @@ class UserResource implements AdminResource
     public function actions(): array
     {
         return [
-            Action::make('suspend', 'Suspendre', function (Model $model) {
-                $model->forceFill(['is_active' => false])->save();
+            Action::make('suspend', 'Suspendre', function (User $model) {
+                $model->definirActivation(false);
 
                 return ['ok' => true];
             })->destructive('Ce compte ne pourra plus se connecter tant qu’il n’est pas réactivé.'),
 
-            Action::make('reactivate', 'Réactiver', function (Model $model) {
-                $model->forceFill(['is_active' => true])->save();
+            Action::make('reactivate', 'Réactiver', function (User $model) {
+                $model->definirActivation(true);
 
                 return ['ok' => true];
             }),
@@ -119,7 +119,7 @@ class UserResource implements AdminResource
                     ->orWhere('tva_number', 'like', '%'.$value.'%');
             }),
             'platform_role' => $query->where('platform_role', $value),
-            'actifs' => $query->where('is_active', true),
+            'actifs' => $query->compteActif(),
             default => $query,
         };
     }
@@ -133,7 +133,7 @@ class UserResource implements AdminResource
             'email' => $model->email,
             'platform_role' => $model->platform_role,
             'created_at' => $model->created_at?->toIso8601String(),
-            'is_active' => (bool) $model->is_active,
+            'is_active' => $model->compteActif(),
         ];
     }
 

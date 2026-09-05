@@ -12,6 +12,7 @@ use App\Support\Notifications\NotificationChannelResolver;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Translation\HasLocalePreference;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -252,6 +253,13 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         return $this->phone_verified_at !== null;
     }
 
+    /**
+     * Les valeurs de `status` qui ferment le compte, quelle que soit `is_active`.
+     *
+     * @var list<string>
+     */
+    public const STATUTS_HORS_SERVICE = ['inactive', 'disabled', 'suspended', 'blocked'];
+
     /** LE COMPTE EST-IL EN ÉTAT DE SERVIR — la définition unique de « suspendu ». */
     public function compteActif(): bool
     {
@@ -261,7 +269,39 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
 
         $statut = strtolower((string) ($this->status ?? 'active'));
 
-        return ! in_array($statut, ['inactive', 'disabled', 'suspended', 'blocked'], true);
+        return ! in_array($statut, self::STATUTS_HORS_SERVICE, true);
+    }
+
+    /**
+     * La meme question, en SQL. Un ecran qui filtre sur `is_active` seul ment.
+     *
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
+    public function scopeCompteActif(Builder $query, bool $actif = true): Builder
+    {
+        $enService = function (Builder $q): void {
+            $q->where('is_active', true)
+                ->where(function (Builder $q): void {
+                    $q->whereNull('status')->orWhereNotIn('status', self::STATUTS_HORS_SERVICE);
+                });
+        };
+
+        return $actif ? $query->where($enService) : $query->whereNot($enService);
+    }
+
+    /**
+     * OUVRIR OU FERMER UN COMPTE — les DEUX colonnes, jamais une seule.
+     *
+     * Ecrire `is_active` sans `status` laissait un compte affiche « actif » que la connexion
+     * refusait quand meme : c'est ce que la console mobile faisait.
+     */
+    public function definirActivation(bool $actif): void
+    {
+        $this->forceFill([
+            'is_active' => $actif,
+            'status' => $actif ? 'active' : 'inactive',
+        ])->save();
     }
 
     public function isAdmin(): bool

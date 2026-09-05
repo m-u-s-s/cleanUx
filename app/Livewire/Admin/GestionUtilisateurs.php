@@ -63,12 +63,11 @@ class GestionUtilisateurs extends Component
         $user = User::findOrFail($userId);
         Gate::authorize('toggleActivation', $user);
 
-        $nextActive = ! (bool) $user->is_active;
+        // `is_active` seule mentait : un compte a `status = 'inactive'` s'affichait actif, et
+        // il fallait DEUX clics pour le rouvrir. La bascule part de ce que la connexion mesure.
+        $nextActive = ! $user->compteActif();
 
-        $user->update([
-            'is_active' => $nextActive,
-            'status' => $nextActive ? 'active' : 'inactive',
-        ]);
+        $user->definirActivation($nextActive);
 
         ActivityLogger::critical('security.user_activation_toggled', $user, [
             'domain' => 'security',
