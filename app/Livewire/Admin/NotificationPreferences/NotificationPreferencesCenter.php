@@ -4,8 +4,11 @@ namespace App\Livewire\Admin\NotificationPreferences;
 
 use App\Models\NotificationPreference;
 use App\Models\NotificationPreferenceAudit;
+use App\Services\NotificationPreferences\NotificationPreferenceService;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -23,6 +26,49 @@ class NotificationPreferencesCenter extends Component
     public string $filterChannel = '';
 
     public string $filterCategory = '';
+
+    /**
+     * L'ECRAN NE SAVAIT QUE REGARDER — une seule methode, `render`.
+     *
+     * Un centre de preferences qui affiche les opt-out sans pouvoir en corriger un oblige a
+     * passer par la base. On ne reecrit pas la regle ici : `NotificationPreferenceService`
+     * refuse deja de couper une categorie obligatoire et ecrit le journal RGPD versionne.
+     * La source est `admin` et l'acteur est nomme : une correction faite POUR quelqu'un ne doit
+     * pas se confondre avec un choix fait PAR lui.
+     */
+    public function basculerLaPreference(int $preferenceId): void
+    {
+        abort_unless(Gate::allows('manage-compliance'), 403);
+
+        $preference = NotificationPreference::query()->with('user')->findOrFail($preferenceId);
+
+        if (! $preference->user) {
+            $this->dispatch('toast', 'Préférence orpheline : son porteur n’existe plus.', 'error');
+
+            return;
+        }
+
+        $avant = (bool) $preference->is_allowed;
+
+        $apres = app(NotificationPreferenceService::class)->setPreference(
+            user: $preference->user,
+            channel: (string) $preference->channel,
+            category: (string) $preference->category,
+            isAllowed: ! $avant,
+            source: NotificationPreference::SOURCE_ADMIN,
+            request: request(),
+            actor: Auth::user(),
+        );
+
+        // Une categorie obligatoire se refuse EN SILENCE cote service : on le dit.
+        if ((bool) $apres->is_allowed === $avant) {
+            $this->dispatch('toast', 'Catégorie obligatoire : elle ne peut pas être coupée.', 'error');
+
+            return;
+        }
+
+        $this->dispatch('toast', $apres->is_allowed ? 'Préférence rouverte.' : 'Préférence coupée.', 'success');
+    }
 
     public function render(): View
     {

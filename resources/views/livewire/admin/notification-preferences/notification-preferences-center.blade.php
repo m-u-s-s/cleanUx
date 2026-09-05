@@ -113,6 +113,7 @@
                             <th class="px-4 py-2 text-right">Version</th>
                             <th class="px-4 py-2 text-left">Source</th>
                             <th class="px-4 py-2 text-left">Modifié</th>
+                            <th class="px-4 py-2 text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
@@ -125,9 +126,20 @@
                                 <td class="px-4 py-2 text-right text-xs font-mono">v{{ $p->version }}</td>
                                 <td class="px-4 py-2 text-xs">{{ $p->source }}</td>
                                 <td class="px-4 py-2 text-xs text-slate-500">{{ $p->last_changed_at?->diffForHumans() }}</td>
+                                <td class="px-4 py-2 text-right">
+                                    {{-- Corriger POUR quelqu'un se trace : la source devient `admin`. --}}
+                                    <button type="button"
+                                            wire:click="basculerLaPreference({{ $p->id }})"
+                                            wire:confirm="{{ $p->is_allowed
+                                                ? 'Couper cette notification pour cet utilisateur ?'
+                                                : 'Rouvrir cette notification pour cet utilisateur ?' }}"
+                                            class="brio-btn-secondary !px-2.5 !py-1 !text-xs">
+                                        {{ $p->is_allowed ? 'Couper' : 'Rouvrir' }}
+                                    </button>
+                                </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="px-4 py-10 text-center text-slate-400">Aucune preference.</td></tr>
+                            <tr><td colspan="8" class="px-4 py-10 text-center text-slate-400">Aucune preference.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
