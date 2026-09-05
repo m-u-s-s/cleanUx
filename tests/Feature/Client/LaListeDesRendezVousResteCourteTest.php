@@ -79,6 +79,8 @@ class LaListeDesRendezVousResteCourteTest extends TestCase
 
         Livewire::actingAs($scenario['client'])->test(MesRendezVousClient::class)
             ->assertSee($rdv->service_display_name)
-            ->assertSee((string) $rdv->date->format('Y-m-d'));
+            // LA DATE EST LUE PAR UN CLIENT, pas par une base : ce test attendait `Y-m-d`,
+            // c'est-a-dire le format qui etait justement le defaut.
+            ->assertSee(locale_date($rdv->date));
     }
 }

@@ -38,7 +38,7 @@
                         <div class="brio-toolbar gap-4">
                             <div>
                                 <p class="text-lg font-semibold text-slate-900">{{ $rdv->service_display_name }}</p>
-                                <p class="mt-1 text-sm text-slate-500">{{ $rdv->date }} à {{ $rdv->heure }}</p>
+                                <p class="mt-1 text-sm text-slate-500">{{ locale_date($rdv->date) }} à {{ \Illuminate\Support\Str::substr((string) $rdv->heure, 0, 5) }}</p>
                                 <p class="mt-1 text-sm text-slate-600">👤 {{ $rdv->client->name ?? __('—') }}</p>
                             </div>
 

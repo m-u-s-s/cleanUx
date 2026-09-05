@@ -34,8 +34,8 @@
             @foreach($rdvs as $rdv)
                 <tr class="border-t">
                     <td class="px-2 py-1">{{ $rdv->id }}</td>
-                    <td class="px-2 py-1">{{ $rdv->date }}</td>
-                    <td class="px-2 py-1">{{ $rdv->heure }}</td>
+                    <td class="px-2 py-1">{{ locale_date($rdv->date) }}</td>
+                    <td class="px-2 py-1">{{ \Illuminate\Support\Str::substr((string) $rdv->heure, 0, 5) }}</td>
                     <td class="px-2 py-1">{{ $rdv->client->name ?? '—' }}</td>
                     <td class="px-2 py-1 text-center">
                         <input type="checkbox"

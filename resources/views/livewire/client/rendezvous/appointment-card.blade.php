@@ -16,7 +16,7 @@
             </a>
 
             <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                {{ $rdv->date }} à {{ $rdv->heure }}
+                {{ locale_date($rdv->date) }} à {{ \Illuminate\Support\Str::substr((string) $rdv->heure, 0, 5) }}
                 @if($rdv->ville)
                     · {{ $rdv->ville }}
                 @endif

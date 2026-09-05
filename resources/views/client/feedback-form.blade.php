@@ -4,7 +4,7 @@
     <h2 class="text-2xl font-bold text-blue-900 mb-4">🗣️ Laisser un feedback</h2>
 
     <p class="text-sm text-gray-600 mb-4">
-        📅 <strong>Rendez-vous du {{ $rendezVous->date }} à {{ $rendezVous->heure }}</strong><br>
+        📅 <strong>Rendez-vous du {{ locale_date($rendezVous->date) }} à {{ \Illuminate\Support\Str::substr((string) $rendezVous->heure, 0, 5) }}</strong><br>
         🧑‍💼 Avec : <strong>{{ $rendezVous->employe->name ?? '—' }}</strong>
     </p>
 

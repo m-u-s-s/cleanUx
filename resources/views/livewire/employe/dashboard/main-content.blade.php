@@ -213,7 +213,7 @@
                         </p>
                         <p class="mt-0.5 inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
                             <x-ui.icon name="calendar" class="w-3 h-3 text-slate-400" />
-                            {{ $rdv->date }} à {{ substr((string) $rdv->heure, 0, 5) }}
+                            {{ locale_date($rdv->date) }} à {{ substr((string) $rdv->heure, 0, 5) }}
                         </p>
                         <p class="inline-flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
                             <x-ui.icon name="user" class="w-3 h-3 text-slate-400" />

@@ -68,7 +68,7 @@
                         <div class="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                             <div>
                                 <div class="flex flex-wrap items-center gap-2 mb-2">
-                                    <p class="font-semibold text-gray-900">{{ $rdv->heure }} — {{ $rdv->service_display_name }}</p>
+                                    <p class="font-semibold text-gray-900">{{ \Illuminate\Support\Str::substr((string) $rdv->heure, 0, 5) }} — {{ $rdv->service_display_name }}</p>
                                     <x-badge :status="$rdv->status" />
                                     @if($rdv->serviceZone)
                                         <span class="px-2 py-1 rounded-full text-xs bg-indigo-100 text-indigo-700">{{ $rdv->serviceZone->name }}</span>

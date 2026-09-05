@@ -54,7 +54,7 @@
                     <p class="font-medium text-gray-800 text-lg dark:text-slate-100">
                         {{ $rdv->service_display_name }}
                     </p>
-                    <p>{{ $rdv->date }} à {{ $rdv->heure }}</p>
+                    <p>{{ locale_date($rdv->date) }} à {{ \Illuminate\Support\Str::substr((string) $rdv->heure, 0, 5) }}</p>
                     <p>🧑‍💼 {{ $rdv->employe->name ?? '—' }}</p>
                 </div>
 

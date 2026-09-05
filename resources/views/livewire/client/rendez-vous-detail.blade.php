@@ -30,7 +30,7 @@
             <x-badge :status="$reservation->status" />
             <x-priority-badge :priority="$reservation->priorite" />
             <span class="text-sm text-slate-600 dark:text-slate-400">
-                {{ $reservation->date }} à {{ $reservation->heure }}
+                {{ locale_date($reservation->date) }} à {{ \Illuminate\Support\Str::substr((string) $reservation->heure, 0, 5) }}
             </span>
             <span class="text-sm text-slate-600 dark:text-slate-400">
                 {{ $reservation->employe->name ?? __('Prestataire à confirmer') }}
