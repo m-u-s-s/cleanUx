@@ -99,7 +99,7 @@ body:not(.cx-shell) :is(.brio-kpi-value, .brio-stat-value, .tabular, td) {
         color: var(--brio-ink);
     }
 
-    body:not(.cx-shell) :is(.bg-slate-50, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-slate-50\/90):not(.brio-opaque):not([data-surface="solid"]) {
+    body:not(.cx-shell) :is(.bg-slate-50, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-slate-50\/90):not(.brio-opaque):not([data-surface="solid"]):not(input):not(select):not(textarea) {
         background-color: var(--glass-bg-faint);
         border-color: var(--glass-border);
         color: var(--brio-ink);
@@ -115,7 +115,9 @@ body:not(.cx-shell) :is(.brio-kpi-value, .brio-stat-value, .tabular, td) {
     }
 
     /* Les bordures grises deviennent la tranche du verre. */
-    body:not(.cx-shell) :is(.border-slate-200, .border-slate-100, .border-gray-200, .border-gray-100, .border-slate-200\/70):not(.brio-opaque) {
+    /* Un CHAMP est exclu : la tranche du verre est du blanc, et un champ pose DANS une carte
+       claire y disparait. Sa bordure vient de `--brio-field-border`, dans `composants.css`. */
+    body:not(.cx-shell) :is(.border-slate-200, .border-slate-100, .border-gray-200, .border-gray-100, .border-slate-200\/70):not(.brio-opaque):not(input):not(select):not(textarea) {
         border-color: var(--glass-border);
     }
 

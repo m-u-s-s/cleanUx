@@ -96,6 +96,10 @@
     --glass-bg-strong:   rgba(255, 255, 255, 0.74);
     --glass-bg-faint:    rgba(255, 255, 255, 0.34);
     --glass-border:      rgba(255, 255, 255, 0.72);
+
+    /* La bordure d'un CHAMP. `--glass-border` est du blanc : elle dessine la tranche d'une
+       carte posee sur le fond, mais disparait autour d'un champ pose DANS cette carte. */
+    --brio-field-border: rgb(var(--brio-ink-rgb) / 0.16);
     --glass-blur:        22px;
     --glass-blur-deep:   40px;
     --glass-sat:         160%;
@@ -171,6 +175,9 @@
     --glass-bg-strong:   rgba(255, 255, 255, 0.10);
     --glass-bg-faint:    rgba(255, 255, 255, 0.03);
     --glass-border:      rgba(255, 255, 255, 0.11);
+
+    /* Sur la nuit, la bordure de verre eclaircit deja le champ : rien a corriger. */
+    --brio-field-border: var(--glass-border);
 
     --glass-highlight:   inset 0 1px 0 rgba(255, 255, 255, 0.16),
                          inset 0 -1px 0 rgba(0, 0, 0, 0.35);

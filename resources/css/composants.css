@@ -1100,7 +1100,7 @@ body:not(.cx-shell) :is(
     select, textarea
 ):not(.brio-opaque) {
     background-color: var(--glass-bg-faint);
-    border-color: var(--glass-border);
+    border-color: var(--brio-field-border);
     border-radius: var(--cx-radius-sm);
     color: var(--brio-ink);
     transition: border-color var(--cx-dur-fast) var(--cx-ease),
