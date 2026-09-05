@@ -371,6 +371,36 @@ class DemoPlatformSeeder extends Seeder
                 ->whereNull($colonne)
                 ->update([$colonne => $organizationId]);
         }
+
+        $this->alignerLeTypeDePrestataire($organizationId, $userId);
+    }
+
+    /**
+     * REJOINDRE UNE SOCIETE PRESTATAIRE CHANGE CE QU'ON EST.
+     *
+     * `isProviderCompanyWorker()` — la garde de tout l'espace societe prestataire — ne lit ni
+     * l'adhesion ni le type de la societe : elle lit `provider_profiles.provider_type`. Ce seeder
+     * creait les profils en `independent` puis inserait l'adhesion EN DIRECT, sans repasser par
+     * `OrganizationMembershipService` qui, lui, aligne le type. Resultat : trois membres actifs
+     * d'une societe prestataire sur six recevaient 403 sur leur propre espace, et ses dix-sept
+     * ecrans n'etaient exercables par aucune donnee de demonstration.
+     */
+    protected function alignerLeTypeDePrestataire(int $organizationId, int $userId): void
+    {
+        if (! Schema::hasTable('provider_profiles') || ! Schema::hasColumn('provider_profiles', 'provider_type')) {
+            return;
+        }
+
+        $type = DB::table('organization_accounts')->where('id', $organizationId)->value('type');
+
+        if (! in_array((string) $type, ['provider_company', 'provider_solo', 'hybrid'], true)) {
+            return;
+        }
+
+        DB::table('provider_profiles')
+            ->where('user_id', $userId)
+            ->whereIn('provider_type', ['independent', 'individual'])
+            ->update(['provider_type' => 'company_worker', 'updated_at' => now()]);
     }
 
     protected function seedSite(?int $organizationId, string $name, array $payload): ?object
