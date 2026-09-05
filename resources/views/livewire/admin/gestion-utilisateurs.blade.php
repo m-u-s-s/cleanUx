@@ -45,7 +45,8 @@
                         </select>
                     </td>
                     <td class="px-2 py-1">
-                        @if($u->active)
+                        {{-- `active` N'EXISTE PAS sur User : la colonne est `is_active`. --}}
+                        @if($u->is_active)
                             <span class="text-green-600 font-semibold">{{ __('ui.admin_users.yes') }}</span>
                         @else
                             <span class="text-red-600 font-semibold">{{ __('ui.admin_users.no') }}</span>
@@ -55,7 +56,7 @@
                         <div class="flex flex-wrap gap-1">
                             <button wire:click="toggleActivation({{ $u->id }})"
                                     class="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-gray-300">
-                                {{ $u->active ? __('ui.admin_users.deactivate') : __('ui.admin_users.activate') }}
+                                {{ $u->is_active ? __('ui.admin_users.deactivate') : __('ui.admin_users.activate') }}
                             </button>
 
                             @if(in_array($u->role, [\App\Models\User::ROLE_EMPLOYE, \App\Models\User::ROLE_PROVIDER], true))
