@@ -48,7 +48,7 @@ class GestionEquipesPartenaires extends Component
     {
         $this->teamForm = [
             'name' => '',
-            'country_id' => Country::query()->value('id'),
+            'country_id' => $this->paysParDefaut(),
             'service_zone_id' => null,
             'organization_account_id' => null,
             'service_partner_id' => null,
@@ -74,7 +74,7 @@ class GestionEquipesPartenaires extends Component
         $this->partnerForm = [
             'name' => '',
             'legal_name' => '',
-            'country_id' => Country::query()->value('id'),
+            'country_id' => $this->paysParDefaut(),
             'status' => 'active',
             'email' => null,
             'phone' => null,
@@ -307,7 +307,17 @@ class GestionEquipesPartenaires extends Component
 
     public function getCountriesProperty()
     {
-        return Country::query()->orderBy('name')->get();
+        // LE DRAPEAU EXISTAIT, LA LISTE L'IGNORAIT : un pays desactive depuis le catalogue
+        // continuait de s'offrir ici. Les ecrans de GESTION, eux, montrent tout — il faut bien
+        // voir un pays eteint pour le rallumer.
+        return Country::query()->where('is_active', true)->orderBy('name')->get();
+    }
+
+    /** Le pays d'un formulaire neuf : le premier ACTIF par ordre de nom, jamais la premiere ligne venue. */
+    private function paysParDefaut(): ?int
+    {
+        return Country::query()->where('is_active', true)->orderBy('name')->value('id')
+            ?? Country::query()->orderBy('name')->value('id');
     }
 
     public function getZonesProperty()
