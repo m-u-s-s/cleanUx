@@ -3,12 +3,15 @@
 namespace App\Livewire\Admin;
 
 use App\Models\AutomationRule;
+use App\Models\FeatureFlagOverride;
 use App\Services\Automation\ArmementRefuse;
 use App\Services\Automation\Catalogue;
 use App\Services\Automation\EtatDeRegle;
 use App\Services\FeatureFlag\FeatureFlagService;
+use App\Support\ActivityLogger;
 use App\Support\Livewire\Concerns\EnforcesAdminAccess;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -108,6 +111,42 @@ class AutomationCenter extends Component
     {
         $this->fermerCible();
         $this->dispatch('toast', $message, 'success');
+    }
+
+    /**
+     * ALLUME OU ETEINT LE MOTEUR, DEPUIS LA PAGE QUI ANNONCE SON ETAT.
+     *
+     * Le bandeau disait « moteur desactive » sans dire ou le rallumer : il fallait connaitre
+     * `/admin/feature-flags` et y trouver la clef. Le drapeau reste la source unique — on ecrit
+     * la meme derogation que l'ecran des drapeaux, avec la meme trace.
+     */
+    public function basculerLeMoteur(): void
+    {
+        abort_unless(Gate::allows('manage-automation'), 403);
+
+        $derogation = FeatureFlagOverride::firstOrNew(['flag_key' => 'automation']);
+        $actuel = $derogation->exists
+            ? (bool) $derogation->is_enabled
+            : (bool) (config('features.automation') === true);
+
+        $derogation->fill([
+            'is_enabled' => ! $actuel,
+            'reason' => 'Bascule depuis le centre d’automatisation',
+            'updated_by_user_id' => Auth::id(),
+        ])->save();
+
+        ActivityLogger::log('feature_flag.toggled', $derogation, [
+            'flag_key' => 'automation',
+            'is_enabled' => $derogation->is_enabled,
+        ]);
+
+        $this->dispatch(
+            'toast',
+            $derogation->is_enabled
+                ? 'Moteur d’automatisation activé — les règles armées agissent.'
+                : 'Moteur d’automatisation désactivé.',
+            'success',
+        );
     }
 
     public function render(Catalogue $catalogue, FeatureFlagService $drapeaux): View

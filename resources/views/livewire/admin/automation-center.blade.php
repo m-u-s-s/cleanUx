@@ -11,12 +11,26 @@
         </x-slot:actions>
     </x-page-shell>
 
-    <div role="alert" class="brio-alerte {{ $moteurActif ? 'brio-alerte-success' : 'brio-alerte-warning' }}">
-        @if($moteurActif)
-            Moteur d'automatisation activé — les règles armées agissent.
-        @else
-            Moteur d'automatisation désactivé — aucune règle n'agit, quel que soit son état.
-        @endif
+    {{-- Le bandeau annonçait l'état du moteur sans dire où le rallumer : il fallait connaître
+         l'écran des drapeaux et y trouver la clef. L'interrupteur vit ici. --}}
+    <div role="alert" class="brio-alerte {{ $moteurActif ? 'brio-alerte-success' : 'brio-alerte-warning' }}
+                flex flex-wrap items-center justify-between gap-3">
+        <span>
+            @if($moteurActif)
+                Moteur d'automatisation activé — les règles armées agissent.
+            @else
+                Moteur d'automatisation désactivé — aucune règle n'agit, quel que soit son état.
+            @endif
+        </span>
+
+        <button type="button"
+                wire:click="basculerLeMoteur"
+                wire:confirm="{{ $moteurActif
+                    ? 'Éteindre le moteur ? Les règles armées cesseront d’agir.'
+                    : 'Allumer le moteur ? Les règles armées se mettront à agir sur le domaine.' }}"
+                class="{{ $moteurActif ? 'brio-btn-secondary' : 'brio-btn-primary' }} !px-3 !py-1.5 !text-xs shrink-0">
+            {{ $moteurActif ? 'Éteindre le moteur' : 'Allumer le moteur' }}
+        </button>
     </div>
 
     <x-table-shell title="Règles d'automatisation" subtitle="Nom, entité, déclencheur, état, dernier passage et ce qu'elles ont posé sur sept jours.">
