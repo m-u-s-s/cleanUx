@@ -26,21 +26,9 @@ class ProductionBootstrapSeeder extends Seeder
         $this->safeCall(BelgiumGeographySeeder::class);
         $this->safeCall(ZoneManagementSeeder::class);
 
-        // ─── 4. Modules v2 catalogues ───
-        $this->safeIf('loyalty_tiers', LoyaltyTierSeeder::class);
-        $this->safeIf('provider_badges', ProviderBadgesSeeder::class);
-        $this->safeIf('api_token_scopes', ApiTokenScopesSeeder::class);
-        $this->safeIf('audit_redaction_rules', AuditDefaultsSeeder::class);
-        $this->safeIf('currencies', CurrenciesSeeder::class);
-        $this->safeIf('insurance_plans', InsurancePlansSeeder::class);
-        $this->safeIf('risk_rules', RiskRulesSeeder::class);
-        $this->safeIf('quality_checklists', QualityChecklistsSeeder::class);
-        $this->safeIf('onboarding_journeys', OnboardingJourneysSeeder::class);
-        $this->safeIf('cancellation_policies', CancellationPoliciesSeeder::class);
-        $this->safeIf('pricing_rules', PricingV2Seeder::class);
-        $this->safeIf('contract_templates', ContractTemplatesSeeder::class);
-        $this->safeIf('subscription_plans_v2', SubscriptionPlansV2Seeder::class);
-        $this->safeIf('webhook_endpoints', WebhookEndpointsSeeder::class);
+        // ─── 4. Reglages de base des modules ───
+        // Ils ont rejoint `ReferencePlatformSeeder`, appele en 1 : un niveau de fidelite ou une
+        // devise n'est pas une donnee de production, c'est un reglage sans lequel l'ecran est vide.
         $this->safeIf('tenants', TenantsSeeder::class);
 
         // ─── 5. Templates récurrents ───

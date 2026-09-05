@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class ReferencePlatformSeeder extends Seeder
 {
@@ -40,6 +41,51 @@ class ReferencePlatformSeeder extends Seeder
             CatalogueTraductionsSeeder::class,
         ]);
 
-        $this->command?->info('✅ Référentiel plateforme chargé (géographie, trades, services multi-métiers, modules, zones, paramètres, parcours prestataire, catalogue de commande, grille métier × zone).');
+        $this->reglagesDeBase();
+
+        $this->command?->info('✅ Référentiel plateforme chargé (géographie, trades, services multi-métiers, modules, zones, paramètres, parcours prestataire, catalogue de commande, grille métier × zone, réglages de base des modules).');
+    }
+
+    /**
+     * LES REGLAGES DE BASE DES MODULES — ils vivaient dans le seul profil `production`.
+     *
+     * Un niveau de fidelite, une devise, une regle de risque, une police d'annulation ou un
+     * modele de contrat ne sont pas des DONNEES de production : ce sont les reglages sans
+     * lesquels le module ne peut pas fonctionner. Les reserver a la production laissait huit
+     * ecrans vides sur toute machine de developpement, de test ou de demonstration — et donnait
+     * a croire que ces modules etaient casses.
+     */
+    protected function reglagesDeBase(): void
+    {
+        foreach ([
+            'loyalty_tiers' => LoyaltyTierSeeder::class,
+            'provider_badges' => ProviderBadgesSeeder::class,
+            'api_token_scopes' => ApiTokenScopesSeeder::class,
+            'audit_redaction_rules' => AuditDefaultsSeeder::class,
+            'currencies' => CurrenciesSeeder::class,
+            'insurance_plans' => InsurancePlansSeeder::class,
+            'risk_rules' => RiskRulesSeeder::class,
+            'quality_checklists' => QualityChecklistsSeeder::class,
+            'onboarding_journeys' => OnboardingJourneysSeeder::class,
+            'cancellation_policies' => CancellationPoliciesSeeder::class,
+            'cancellation_questions' => CancellationQuestionnaireSeeder::class,
+            'pricing_rules' => PricingV2Seeder::class,
+            'contract_templates' => ContractTemplatesSeeder::class,
+            'subscription_plans_v2' => SubscriptionPlansV2Seeder::class,
+            'webhook_endpoints' => WebhookEndpointsSeeder::class,
+        ] as $table => $seeder) {
+            // Un module desinstalle n'a pas sa table : on passe, on n'echoue pas.
+            if (! Schema::hasTable($table)) {
+                $this->command?->line("   ↷ {$seeder} ignore (table {$table} absente)");
+
+                continue;
+            }
+
+            try {
+                $this->call($seeder);
+            } catch (\Throwable $e) {
+                $this->command?->warn("   ⚠ {$seeder} a echoue : ".$e->getMessage());
+            }
+        }
     }
 }
