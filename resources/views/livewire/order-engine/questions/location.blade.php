@@ -36,7 +36,15 @@
             class="w-full rounded-xl border border-slate-300 px-4 py-3 text-[15px] text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10">
 
         @if (count($this->locationSuggestions))
-            <ul class="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200">
+            {{--
+                LA LISTE S'AMÈNE À L'ŒIL, ET DÉGAGE LA BARRE DU POUCE.
+
+                Elle naît SOUS le pli quand le champ est bas : la barre fixe la recouvrait, et
+                l'appui atteignait « Continuer » au lieu de la suggestion — l'adresse restait donc
+                sans coordonnées, sans que rien ne le dise. `pb-28` ne réserve que la FIN de page.
+            --}}
+            <ul x-data x-init="$nextTick(() => $el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))"
+                class="scroll-mb-32 divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200">
                 @foreach ($this->locationSuggestions as $suggestion)
                     <li>
                         <button type="button"

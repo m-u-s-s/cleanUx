@@ -103,7 +103,9 @@
         mobile s'en sert ; c'était l'écran le plus rentable du produit qui s'en passait.
     --}}
     @if (count($this->addressSuggestions))
-        <ul class="mt-2 overflow-hidden rounded-xl border border-slate-200" role="listbox"
+        {{-- Même raison que sur le trajet : la barre du pouce recouvrait la liste née sous le pli. --}}
+        <ul x-data x-init="$nextTick(() => $el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))"
+            class="mt-2 scroll-mb-32 overflow-hidden rounded-xl border border-slate-200" role="listbox"
             aria-label="Adresses proposées">
             @foreach ($this->addressSuggestions as $suggestion)
                 <li role="option" aria-selected="false" wire:key="sugg-{{ md5($suggestion->description) }}">
