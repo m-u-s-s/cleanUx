@@ -86,6 +86,7 @@ Route::get('/push/public-key', [PushSubscriptionController::class, 'publicKey'])
 
 // WebView session handoff — redeems a single-use ticket and logs the user in
 Route::get('/m/enter', WebViewEntryController::class)->name('webview.enter');
+Route::get('/m/session-expired', [WebViewEntryController::class, 'expired'])->name('webview.session-expired');
 
 // OTP téléphone — page de vérification (auth seule, hors garde phone.verified pour éviter une boucle)
 Route::middleware('auth')->get('/verify-phone', VerifyPhone::class)->name('phone.verify');

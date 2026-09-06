@@ -12,13 +12,43 @@ class EmbedMode
 {
     public const SESSION_KEY = 'ui.embedded';
 
+    /**
+     * LE MEME FAIT, HORS SESSION.
+     *
+     * `ui.embedded` disparait avec la session qui l'a pose — et c'est PRECISEMENT a ce
+     * moment-la qu'il faut savoir qu'on parle a une WebView, pour lui rendre la page que
+     * son pont attend au lieu d'un formulaire de connexion qu'elle ne sait pas remplir.
+     */
+    public const COOKIE = 'brio_embed';
+
     public function handle(Request $request, Closure $next): Response
     {
         $embedded = $this->resolve($request);
 
         View::share('embedded', $embedded);
 
-        return $next($request);
+        $response = $next($request);
+
+        if ($embedded && $request->cookie(self::COOKIE) !== '1') {
+            $response->headers->setCookie(cookie(self::COOKIE, '1', 60 * 24 * 30, null, null, null, true));
+        } elseif (! $embedded && $request->cookie(self::COOKIE) !== null) {
+            $response->headers->setCookie(cookie()->forget(self::COOKIE));
+        }
+
+        return $response;
+    }
+
+    /** Embarque, meme sans session : le cookie, l'URL ou l'en-tete suffisent. */
+    public static function estEmbarque(Request $request): bool
+    {
+        if ($request->has('embed') && ! $request->boolean('embed')) {
+            return false;
+        }
+
+        return $request->cookie(self::COOKIE) === '1'
+            || $request->boolean('embed')
+            || $request->header('X-Embedded') === '1'
+            || ($request->hasSession() && (bool) $request->session()->get(self::SESSION_KEY, false));
     }
 
     private function resolve(Request $request): bool

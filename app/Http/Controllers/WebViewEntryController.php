@@ -30,4 +30,15 @@ class WebViewEntryController extends Controller
 
         return redirect()->to($target.$separator.'embed=1');
     }
+
+    /**
+     * LA PAGE QUE LE PONT ATTEND QUAND LA SESSION MEURT EN COURS DE ROUTE.
+     *
+     * Elle poste `sessionExpired` : l'application refait alors la passation avec son jeton,
+     * sans que personne voie de formulaire de connexion.
+     */
+    public function expired(): Response
+    {
+        return response()->view('webview.session-expired', [], 419);
+    }
 }
