@@ -221,6 +221,32 @@ class OrderJourney extends Component
 
         if ($trade) {
             $this->selectTrade((int) Trade::where('slug', $trade)->value('id'));
+
+            return;
+        }
+
+        $this->reprendreLeBrouillon($draft);
+    }
+
+    /**
+     * REVENIR SUR SA COMMANDE SANS LA PERDRE.
+     *
+     * « Modifier », au recapitulatif, ramene ici SANS RIEN porter dans l'URL. Le metier, le
+     * domaine et le mode repartaient donc a zero — devant un client qui venait seulement
+     * corriger son adresse — alors que `order_drafts.mode` et `order_draft_items.trade_id`
+     * les connaissent deja. L'URL garde la main : elle n'est simplement plus la seule source.
+     */
+    protected function reprendreLeBrouillon(OrderDraft $draft): void
+    {
+        // Avant `selectTrade`, qui applique l'intention au moment du choix du metier.
+        if ($this->intendedMode === null && in_array((string) $draft->mode, OrderMode::all(), true)) {
+            $this->intendedMode = (string) $draft->mode;
+        }
+
+        $tradeId = (int) $draft->items()->orderByDesc('id')->value('trade_id');
+
+        if ($tradeId > 0) {
+            $this->selectTrade($tradeId);
         }
     }
 
