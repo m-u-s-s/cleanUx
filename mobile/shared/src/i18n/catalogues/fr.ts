@@ -192,6 +192,8 @@ export const fr: Catalogue = {
   'payment_checkout.reessayer': 'Réessayer',
   'places.ajouter_ce_lieu': 'Ajouter ce lieu',
   'places.aucun_lieu': 'Aucun lieu',
+  'places.code_postal': 'Code postal',
+  'places.ville': 'Ville',
   'places.etage_porte': 'Étage / porte',
   'places.il_y_a_une_alarme': 'Il y a une alarme à désactiver',
   'places.l_adresse_l_etage_le': 'L\'adresse, l\'étage, le code — enregistrés une fois, transmis au bon moment.',

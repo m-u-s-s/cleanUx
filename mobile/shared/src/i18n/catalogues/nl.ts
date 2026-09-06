@@ -188,6 +188,8 @@ export const nl: Catalogue = {
   'payment_checkout.reessayer': 'Opnieuw proberen',
   'places.ajouter_ce_lieu': 'Deze plaats toevoegen',
   'places.aucun_lieu': 'Geen plaats',
+  'places.code_postal': 'Postcode',
+  'places.ville': 'Stad',
   'places.etage_porte': 'Verdieping / deur',
   'places.il_y_a_une_alarme': 'Er is een alarm uit te schakelen',
   'places.l_adresse_l_etage_le': 'Het adres, de verdieping, de code — één keer bewaard, op het juiste moment doorgegeven.',

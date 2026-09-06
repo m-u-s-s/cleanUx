@@ -39,6 +39,8 @@ export function PlacesScreen() {
 
   const [libelle, setLibelle] = useState('');
   const [adresse, setAdresse] = useState('');
+  const [codePostal, setCodePostal] = useState('');
+  const [ville, setVille] = useState('');
   const [etage, setEtage] = useState('');
   const [consignes, setConsignes] = useState('');
   const [alarme, setAlarme] = useState(false);
@@ -53,6 +55,8 @@ export function PlacesScreen() {
       apiClient.post('/client/places', {
         label: libelle.trim(),
         address: adresse.trim(),
+        postal_code: codePostal.trim() || null,
+        city: ville.trim() || null,
         floor: etage.trim() || null,
         access_instructions: consignes.trim() || null,
         alarm_code_required: alarme,
@@ -60,6 +64,8 @@ export function PlacesScreen() {
     onSuccess: () => {
       setLibelle('');
       setAdresse('');
+      setCodePostal('');
+      setVille('');
       setEtage('');
       setConsignes('');
       setAlarme(false);
@@ -103,6 +109,25 @@ export function PlacesScreen() {
           placeholderTextColor={styles.placeholder.color}
           style={styles.champ}
           testID="champ-adresse-lieu"
+        />
+        {/* SANS EUX, PAS DE ZONE : la zone se resout du code postal, et sans zone il n'y a ni
+            grille de prix locale ni prestataire trouvable pour ce lieu. */}
+        <TextInput
+          value={codePostal}
+          onChangeText={setCodePostal}
+          placeholder={tr('places.code_postal')}
+          placeholderTextColor={styles.placeholder.color}
+          style={styles.champ}
+          keyboardType="number-pad"
+          testID="champ-code-postal-lieu"
+        />
+        <TextInput
+          value={ville}
+          onChangeText={setVille}
+          placeholder={tr('places.ville')}
+          placeholderTextColor={styles.placeholder.color}
+          style={styles.champ}
+          testID="champ-ville-lieu"
         />
         <TextInput
           value={etage}

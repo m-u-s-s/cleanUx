@@ -188,6 +188,8 @@ export const en: Catalogue = {
   'payment_checkout.reessayer': 'Try again',
   'places.ajouter_ce_lieu': 'Add this place',
   'places.aucun_lieu': 'No place',
+  'places.code_postal': 'Postcode',
+  'places.ville': 'City',
   'places.etage_porte': 'Floor / door',
   'places.il_y_a_une_alarme': 'There is an alarm to switch off',
   'places.l_adresse_l_etage_le': 'The address, the floor, the code — saved once, passed on at the right moment.',
