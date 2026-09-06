@@ -122,6 +122,15 @@ export function OfferModal({ offer, onDismiss }: Props) {
   const total = offer.ttl_seconds && offer.ttl_seconds > 0 ? offer.ttl_seconds : 20;
   const ratio = Math.max(0, Math.min(1, secondsLeft / total));
 
+  /*
+    PAS D'ÉCHÉANCE, PAS DE DÉCOMPTE.
+
+    `useServerCountdown` rend 0 quand le serveur n'a pas envoyé d'`expires_at` — et l'anneau
+    affichait alors « 0 s pour répondre » sur une offre parfaitement vivante, que l'on pouvait
+    accepter. Vu sur l'émulateur : offre acceptée à 21h44 pendant que l'écran annonçait zéro.
+  */
+  const aUneEcheance = Boolean(offer.expires_at);
+
   return (
     <Modal
       visible
@@ -132,17 +141,19 @@ export function OfferModal({ offer, onDismiss }: Props) {
     >
       <View style={styles.backdrop}>
         <View style={styles.card}>
-          <View style={styles.timerRow}>
-            <AnneauDeDecompte ratio={ratio} secondes={secondsLeft} />
-            {/*
-              Un délai se LIT. « 1658 s pour répondre » — vu sur une offre planifiée — demande une
-              division mentale ; sous la minute, les secondes restent la bonne unité, c'est là
-              qu'elles pressent.
-            */}
-            <Text style={styles.timerText} testID="offer-countdown">
-              {formatDelai(secondsLeft)} pour répondre
-            </Text>
-          </View>
+          {aUneEcheance ? (
+            <View style={styles.timerRow}>
+              <AnneauDeDecompte ratio={ratio} secondes={secondsLeft} />
+              {/*
+                Un délai se LIT. « 1658 s pour répondre » — vu sur une offre planifiée — demande une
+                division mentale ; sous la minute, les secondes restent la bonne unité, c'est là
+                qu'elles pressent.
+              */}
+              <Text style={styles.timerText} testID="offer-countdown">
+                {formatDelai(secondsLeft)} pour répondre
+              </Text>
+            </View>
+          ) : null}
 
           <Text style={styles.heading}>{tr('offer_modal.nouvelle_mission')}</Text>
           <Text style={styles.trade} testID="offer-trade">
