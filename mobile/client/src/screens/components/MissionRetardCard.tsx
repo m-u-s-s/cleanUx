@@ -6,6 +6,7 @@ import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useTraduction } from '@/i18n';
+import { formatRetard } from '@/format';
 
 /**
  * « VOTRE PRESTATAIRE A DU RETARD » — dit par la plateforme, pas découvert par le client.
@@ -56,7 +57,7 @@ export function MissionRetardCard({
   return (
     <CarteDeMission
       ton="attention"
-      titre={`${retard.minutes} min de retard`}
+      titre={`${formatRetard(retard.minutes)} de retard`}
       testID="retard-prestataire"
     >
 

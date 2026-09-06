@@ -21,6 +21,7 @@ import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { libelleStatut, formatDateHeure } from '@/lib/format';
+import { formatAdresse } from '@/format';
 import type { RootStackParamList } from '@/navigation/types';
 import { useTraduction } from '@/i18n';
 
@@ -195,10 +196,9 @@ export function BookingDetailScreen({ route }: Props) {
           value={formatDateHeure(booking.scheduled_date, booking.scheduled_time)}
         />
         <Divider />
-        {/* `order_drafts` ne porte pas de ville : le gabarit imprimait « null » a l'ecran. */}
         <DetailRow
           label={tr('booking_detail.adresse')}
-          value={[booking.address, booking.city].filter(Boolean).join(', ')}
+          value={formatAdresse(booking.address, booking.city)}
         />
         {booking.provider_name ? (
           <>

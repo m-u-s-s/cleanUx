@@ -131,6 +131,35 @@ export function formatDelai(secondes: number | null | undefined): string {
 }
 
 /**
+ * UN RETARD, EN UNITÉ LISIBLE.
+ *
+ * Les deux applications affichaient la valeur brute : « 17732 min de retard » sur une mission
+ * oubliée depuis douze jours. Personne ne divise ça de tête, et le chiffre cesse d'informer.
+ *
+ * Sous l'heure on garde les minutes, précisément parce que c'est là qu'elles pressent.
+ */
+export function formatRetard(minutes: number | null | undefined): string {
+  const valeur = Math.max(0, Math.floor(Number(minutes ?? 0)));
+
+  if (valeur < 60) {
+    return `${valeur} min`;
+  }
+
+  const heures = Math.floor(valeur / 60);
+
+  if (heures < 24) {
+    const reste = valeur % 60;
+
+    return reste === 0 ? `${heures} h` : `${heures} h ${reste} min`;
+  }
+
+  const jours = Math.floor(heures / 24);
+  const resteHeures = heures % 24;
+
+  return resteHeures === 0 ? `${jours} j` : `${jours} j ${resteHeures} h`;
+}
+
+/**
  * CE QU'ON MONTRE QUAND UNE REQUÊTE ÉCHOUE — jamais le texte d'axios.
  *
  * Le repli habituel était `error.message`, c'est-à-dire le message interne de la bibliothèque

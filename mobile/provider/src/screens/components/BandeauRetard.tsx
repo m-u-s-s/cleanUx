@@ -6,6 +6,7 @@ import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useTraduction } from '@/i18n';
+import { formatRetard } from '@/format';
 
 /**
  * « VOUS AVEZ 22 MIN DE RETARD — ET LE CLIENT LE SAIT DEPUIS 14 H 12 ».
@@ -52,7 +53,7 @@ export function BandeauRetard({ missionId }: { missionId: number }) {
   return (
     <CarteDeMission
       ton="attention"
-      titre={`${retard.minutes} min de retard`}
+      titre={`${formatRetard(retard.minutes)} de retard`}
       testID="bandeau-retard"
     >
 
