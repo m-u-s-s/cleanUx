@@ -12,6 +12,8 @@ import { Screen, Button, Badge, Divider, DetailRow, EmptyState, ErrorState } fro
 /* Chemin direct : trente-six suites mockent `@/ui` a la main, et un export neuf y manque
    sans que `tsc` bronche — le composant arrive alors `undefined` au rendu. */
 import { GrilleDeCases } from '@/ui/GrilleDeCases';
+import { AnnulerLaMissionSheet } from '@/ui/AnnulerLaMissionSheet';
+import { ReprogrammerSheet } from '@/screens/components/ReprogrammerSheet';
 import { useBookingDetail } from '@/booking';
 import { useCompletionCode } from '@/tracking';
 import type { CompletionCode } from '@/tracking';
@@ -68,6 +70,9 @@ export function BookingDetailScreen({ route }: Props) {
    * Les hooks sont déclarés AVANT les retours anticipés de chargement et d'erreur : placés après,
    * ils n'existeraient pas au premier rendu puis apparaîtraient au second, ce que React refuse.
    */
+  const [reprogrammationOuverte, setReprogrammationOuverte] = React.useState(false);
+  const [annulationOuverte, setAnnulationOuverte] = React.useState(false);
+
   const demandeCode = useCompletionCode(bookingId);
   const [codeDeFin, setCodeDeFin] = React.useState<CompletionCode | null>(null);
   const [refusCode, setRefusCode] = React.useState<string | null>(null);
@@ -134,6 +139,9 @@ export function BookingDetailScreen({ route }: Props) {
   const canStart = etat === 'confirmed';
   const canEnd = etat === 'in_progress';
   const canTrack = ['confirmed', 'in_progress'].includes(etat);
+  // Deplacer n'a de sens qu'avant le depart ; annuler reste ouvert tant que rien n'est clos.
+  const peutDeplacer = ['pending', 'confirmed'].includes(etat);
+  const peutAnnuler = !['completed', 'cancelled'].includes(etat);
 
   const statusVariant =
     etat === 'completed'
@@ -187,9 +195,10 @@ export function BookingDetailScreen({ route }: Props) {
           value={formatDateHeure(booking.scheduled_date, booking.scheduled_time)}
         />
         <Divider />
+        {/* `order_drafts` ne porte pas de ville : le gabarit imprimait « null » a l'ecran. */}
         <DetailRow
           label={tr('booking_detail.adresse')}
-          value={`${booking.address}, ${booking.city}`}
+          value={[booking.address, booking.city].filter(Boolean).join(', ')}
         />
         {booking.provider_name ? (
           <>
@@ -298,6 +307,52 @@ export function BookingDetailScreen({ route }: Props) {
             onPress={() => navigation.navigate('Tips', { bookingId })}
             variant="secondary"
             fullWidth
+          />
+        )}
+
+        {/*
+          DEPLACER, PUIS ANNULER — dans cet ordre, et annuler en dernier.
+
+          Les deux services existaient et n'etaient atteignables QUE depuis le suivi de mission,
+          c'est-a-dire une fois le prestataire en route. Le client qui veut deplacer ou renoncer
+          le fait AVANT, sur une demande que personne n'a encore acceptee.
+        */}
+        {peutDeplacer && !reprogrammationOuverte && !annulationOuverte && (
+          <Button
+            label={tr('booking_detail.deplacer_le_rendez_vous')}
+            variant="secondary"
+            onPress={() => setReprogrammationOuverte(true)}
+            fullWidth
+            testID="ouvrir-reprogrammation"
+          />
+        )}
+
+        {peutDeplacer && reprogrammationOuverte && (
+          <ReprogrammerSheet
+            bookingId={bookingId}
+            dateActuelle={booking.scheduled_date}
+            heureActuelle={booking.scheduled_time}
+            onReprogrammee={() => setReprogrammationOuverte(false)}
+            onFermer={() => setReprogrammationOuverte(false)}
+          />
+        )}
+
+        {peutAnnuler && !annulationOuverte && !reprogrammationOuverte && (
+          <Button
+            label={tr('booking_detail.annuler_le_rendez_vous')}
+            variant="ghost"
+            onPress={() => setAnnulationOuverte(true)}
+            fullWidth
+            testID="ouvrir-annulation"
+          />
+        )}
+
+        {peutAnnuler && annulationOuverte && (
+          <AnnulerLaMissionSheet
+            audience="client"
+            bookingId={bookingId}
+            onAnnulee={() => setAnnulationOuverte(false)}
+            onFermer={() => setAnnulationOuverte(false)}
           />
         )}
       </View>
