@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\OrderEngine\ZonePricingResolver;
 use Database\Factories\OrganizationSiteFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -200,7 +201,35 @@ class OrganizationSite extends Model
             if (blank($site->address_line_1) && filled($site->address)) {
                 $site->address_line_1 = $site->address;
             }
+
+            $site->rattacherALaZone();
         });
+    }
+
+    /**
+     * RATTACHER LE SITE A SA ZONE, DEPUIS SON CODE POSTAL.
+     *
+     * Trois des cinq chemins de creation ecrivaient l'adresse sans la zone. Un site sans zone
+     * est un site que le moteur de commande ne sait pas servir : « aucun professionnel ne couvre
+     * encore cette zone », tous les jours et pour tous les metiers — mesure faite sur l'emulateur
+     * le 2026-09-06, sur un local cree a Bruxelles 1000 alors que « Zone Bruxelles » existe.
+     *
+     * Le resolveur est CELUI DU MOTEUR DE COMMANDE : rattacher avec un autre donnerait une zone
+     * que la recherche de prix n'irait pas chercher.
+     */
+    public function rattacherALaZone(): void
+    {
+        if ($this->service_zone_id !== null || blank($this->postal_code)) {
+            return;
+        }
+
+        try {
+            $this->service_zone_id = app(ZonePricingResolver::class)
+                ->resolveZone((string) $this->postal_code, (string) $this->city)?->id;
+        } catch (\Throwable $e) {
+            // SOFT-FAIL DELIBERE : un resolveur muet ne doit pas empecher d'enregistrer un site.
+            report($e);
+        }
     }
 
     /** @return BelongsTo<OrganizationAccount, $this> */
