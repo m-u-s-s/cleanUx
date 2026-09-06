@@ -183,6 +183,20 @@
 
     .brio-filter-grid       { @apply grid gap-3 md:grid-cols-2 xl:grid-cols-4; }
     .brio-filter-grid-wide  { @apply grid gap-3 md:grid-cols-2 xl:grid-cols-6; }
+
+    /*
+       UN CHAMP REMPLIT SA CELLULE. Sans largeur, un `<select>` se dimensionne sur son option
+       la plus longue et deborde sur la colonne voisine — mesure sur /admin/audit/logs :
+       « Action » occupait 403 px dans une cellule de 282, par-dessus « Acteur ».
+       `min-width: 0` empeche en plus une option longue d'elargir la colonne elle-meme.
+    */
+    .brio-filter-grid > *,
+    .brio-filter-grid-wide > * { @apply min-w-0; }
+
+    .brio-filter-grid :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea),
+    .brio-filter-grid-wide :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+        @apply w-full;
+    }
     .brio-admin-tile        { @apply rounded-2xl border border-slate-200 bg-slate-50/90 p-4 transition hover:border-slate-300 hover:bg-white; }
     .brio-code-block        { @apply block overflow-x-auto rounded-2xl bg-slate-950 px-4 py-3 text-sm text-slate-100 shadow-inner; }
     .brio-note              { @apply rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800; }
