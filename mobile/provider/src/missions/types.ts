@@ -90,6 +90,13 @@ export interface Mission {
    * formulaire de nouveau devis à quelqu'un dont le prix est déjà fixé par l'horloge.
    */
   engine?: 'domicile' | 'horaire' | 'vehicule';
+  /**
+   * LES MINUTES ACHETÉES, hors horloge.
+   *
+   * Le compteur ne parle qu'à partir du démarrage : avant, le prestataire ne savait pas pour
+   * combien de temps il se déplaçait.
+   */
+  purchased_minutes?: number | null;
   /** Le point de dépose, pour la carte et pour dire au conducteur où il va. */
   dropoff?: {
     address: string | null;

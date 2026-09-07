@@ -25,6 +25,18 @@ import { useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionDetail'>;
 
+/** « 120 » se lit « 2 h », et « 150 » « 2 h 30 » — personne ne divise de tete. */
+function formatHeuresAchetees(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const r = minutes % 60;
+
+  if (h === 0) {
+    return `${r} min`;
+  }
+
+  return r === 0 ? `${h} h` : `${h} h ${r}`;
+}
+
 export function MissionDetailScreen({ route }: Props) {
   const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
@@ -158,6 +170,13 @@ export function MissionDetailScreen({ route }: Props) {
             valeur: formatDateHeure(mission.scheduled_date, mission.scheduled_time),
             ton: 'accent',
           },
+          ...(mission.engine === 'horaire' && mission.purchased_minutes
+            ? [{
+                libelle: 'Achetées',
+                valeur: formatHeuresAchetees(mission.purchased_minutes),
+                ton: 'accent' as const,
+              }]
+            : []),
           ...(mission.total_price != null
             ? [{ libelle: 'Prix', valeur: formatMontant(mission.total_price), ton: 'bon' as const }]
             : []),
@@ -169,6 +188,25 @@ export function MissionDetailScreen({ route }: Props) {
         <DetailRow label={tr('mission_detail.client')} value={mission.client_name} />
         <Divider />
         <DetailRow label={tr('mission_detail.adresse')} value={formatAdresse(mission.address, mission.city)} />
+        {/*
+          SUR UNE COURSE, L'ADRESSE CI-DESSUS N'EST QUE LA PRISE EN CHARGE.
+
+          Le conducteur voyait sa destination dans l'OFFRE, puis la perdait en ouvrant sa mission.
+          Le serveur l'envoie depuis toujours (`dropoff`) — l'ecran ne la lisait pas.
+        */}
+        {mission.dropoff?.address ? (
+          <>
+            <Divider />
+            <DetailRow
+              label="Destination"
+              value={
+                mission.dropoff.distance_m
+                  ? `${mission.dropoff.address} · ${(mission.dropoff.distance_m / 1000).toFixed(1)} km`
+                  : mission.dropoff.address
+              }
+            />
+          </>
+        ) : null}
       </View>
       {/*
         LE RETARD PASSE AVANT LES ACTIONS.

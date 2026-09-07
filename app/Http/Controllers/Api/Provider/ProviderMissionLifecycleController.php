@@ -31,7 +31,7 @@ class ProviderMissionLifecycleController extends Controller
 
     /** Colonnes de réservation nécessaires au payload plat. */
     /** Colonnes de réservation nécessaires au payload plat. */
-    private const BOOKING_COLUMNS = 'id,booking_reference,address,city,postal_code,scheduled_date,scheduled_time,service_catalog_id,trade_id,destination_lat,destination_lng,dropoff_address,dropoff_lat,dropoff_lng,route_distance_m,customer_comment,client_id,customer_user_id';
+    private const BOOKING_COLUMNS = 'id,booking_reference,address,city,postal_code,scheduled_date,scheduled_time,service_catalog_id,trade_id,destination_lat,destination_lng,dropoff_address,dropoff_lat,dropoff_lng,route_distance_m,purchased_minutes,customer_comment,client_id,customer_user_id';
 
     public function __construct(
         protected MissionLifecycleService $lifecycle,
@@ -620,6 +620,9 @@ class ProviderMissionLifecycleController extends Controller
             'actual_duration_minutes' => $mission->actual_duration_minutes,
             // CE QUI DIT À L'ÉCRAN QUEL PARCOURS DÉROULER.
             'is_ride' => (bool) $booking?->estUneCourse(),
+            // LES HEURES ACHETÉES, HORS HORLOGE. Le compteur ne parle qu'à partir du démarrage :
+            // avant, le prestataire ne savait pas pour combien de temps il se déplaçait.
+            'purchased_minutes' => $booking?->purchased_minutes,
             // LE MOTEUR, TRANCHÉ PAR LE SERVEUR — et c'est ce qui décide de la page à dérouler.
             'engine' => MissionEngine::pourMission($mission),
             // Le point de dépose, pour la carte et pour l'annonce « vous allez à… ».
