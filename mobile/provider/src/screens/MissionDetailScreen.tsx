@@ -184,6 +184,20 @@ export function MissionDetailScreen({ route }: Props) {
         style={styles.grille}
       />
 
+      {/*
+        LA REGLE DU TEMPS, AVANT DE PARTIR.
+
+        Le client la connait avant d'acheter ; le prestataire ne la voyait nulle part. C'est
+        pourtant elle qui dit si deborder d'un quart d'heure lui coute quelque chose.
+      */}
+      {mission.hourly_rule?.applies && mission.hourly_rule.hourly_rate_cents ? (
+        <Text style={[styles.regleHoraire, { color: themeColors.textSecondary }]} testID="regle-horaire">
+          {formatMontant(mission.hourly_rule.hourly_rate_cents / 100)} de l’heure ·{' '}
+          {mission.hourly_rule.grace_minutes} min de tolérance, puis ×
+          {String(mission.hourly_rule.overtime_multiplier).replace('.', ',')}
+        </Text>
+      ) : null}
+
       <View style={[styles.card, { backgroundColor: themeColors.card }]}>
         <DetailRow label={tr('mission_detail.client')} value={mission.client_name} />
         <Divider />
@@ -454,6 +468,10 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     color: t.text,
   },
   grille: {
+    marginBottom: spacing.md,
+  },
+  regleHoraire: {
+    fontSize: typography.fontSize.sm,
     marginBottom: spacing.md,
   },
   card: {

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Missions;
 
 use App\Http\Controllers\Api\Provider\ProviderMissionLifecycleController;
+use App\Services\Missions\HourlyMissionClock;
 use App\Support\Domain\MissionEngine;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use ReflectionClass;
@@ -49,6 +50,23 @@ class CeQueLeTerrainVoitTest extends TestCase
         foreach (['dropoff_address', 'route_distance_m'] as $colonne) {
             $this->assertContains($colonne, $this->colonnes());
         }
+    }
+
+    public function test_le_prix_annonce_est_charge(): void
+    {
+        // `client_price` n'est ecrit qu'a la cloture : sans `estimated_price`, la case « Prix »
+        // reste vide sur toute mission qui n'a pas encore eu lieu.
+        $this->assertContains('estimated_price', $this->colonnes());
+    }
+
+    public function test_la_regle_horaire_se_connait_avant_le_demarrage(): void
+    {
+        $horloge = app(HourlyMissionClock::class);
+
+        $this->assertTrue(
+            method_exists($horloge, 'regle'),
+            'Sans elle, le tarif et la tolerance n’existent qu’une fois la mission commencee.',
+        );
     }
 
     public function test_temoin_le_moteur_lit_bien_ces_colonnes(): void

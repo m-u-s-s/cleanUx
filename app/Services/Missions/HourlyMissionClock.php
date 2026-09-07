@@ -132,6 +132,33 @@ class HourlyMissionClock
         return $minutes !== null && (int) $minutes > 0 ? (int) $minutes : null;
     }
 
+    /**
+     * LA RÈGLE, SANS ATTENDRE LE DÉMARRAGE.
+     *
+     * `etat()` ne parle qu'à partir de `actual_start_at` — c'est juste, un compteur n'a rien à
+     * compter avant. Mais le prestataire doit connaître le tarif et la tolérance AVANT de partir :
+     * c'est ce qui lui dit si dépasser d'un quart d'heure lui coûte ou non.
+     *
+     * @return array{applies: bool, purchased_minutes?: int, hourly_rate_cents?: int|null, grace_minutes?: int, overtime_multiplier?: float}
+     */
+    public function regle(Mission $mission): array
+    {
+        $booking = $mission->booking;
+        $achetees = $this->minutesAchetees($booking);
+
+        if ($booking === null || $achetees === null || ! $this->rates->seFactureALHeure($booking)) {
+            return ['applies' => false];
+        }
+
+        return [
+            'applies' => true,
+            'purchased_minutes' => $achetees,
+            'hourly_rate_cents' => $this->rates->tarifEffectifDeLaReservation($booking),
+            'grace_minutes' => $this->franchiseEnMinutes(),
+            'overtime_multiplier' => $this->multiplicateur(),
+        ];
+    }
+
     private function franchiseEnMinutes(): int
     {
         return max(0, (int) Config::get('order_engine.overtime_grace_minutes', 15));

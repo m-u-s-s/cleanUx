@@ -97,6 +97,14 @@ export interface Mission {
    * combien de temps il se déplaçait.
    */
   purchased_minutes?: number | null;
+  /** La regle horaire, disponible des l'assignation — l'horloge, elle, attend le demarrage. */
+  hourly_rule?: {
+    applies: boolean;
+    purchased_minutes?: number;
+    hourly_rate_cents?: number | null;
+    grace_minutes?: number;
+    overtime_multiplier?: number;
+  } | null;
   /** Le point de dépose, pour la carte et pour dire au conducteur où il va. */
   dropoff?: {
     address: string | null;

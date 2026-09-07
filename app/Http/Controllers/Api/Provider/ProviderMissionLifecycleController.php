@@ -31,7 +31,7 @@ class ProviderMissionLifecycleController extends Controller
 
     /** Colonnes de réservation nécessaires au payload plat. */
     /** Colonnes de réservation nécessaires au payload plat. */
-    private const BOOKING_COLUMNS = 'id,booking_reference,address,city,postal_code,scheduled_date,scheduled_time,service_catalog_id,trade_id,destination_lat,destination_lng,dropoff_address,dropoff_lat,dropoff_lng,route_distance_m,purchased_minutes,customer_comment,client_id,customer_user_id';
+    private const BOOKING_COLUMNS = 'id,booking_reference,address,city,postal_code,scheduled_date,scheduled_time,service_catalog_id,trade_id,destination_lat,destination_lng,dropoff_address,dropoff_lat,dropoff_lng,route_distance_m,purchased_minutes,estimated_price,estimated_duration_minutes,customer_comment,client_id,customer_user_id';
 
     public function __construct(
         protected MissionLifecycleService $lifecycle,
@@ -636,12 +636,18 @@ class ProviderMissionLifecycleController extends Controller
             'no_show_available_at' => $this->absenceDeclarableA($mission),
             // LE COMPTEUR D'UNE MISSION VENDUE AU TEMPS.
             'clock' => $this->horloge->etat($mission),
+            // LA RÈGLE, ELLE, N'ATTEND PAS LE DÉMARRAGE : le tarif et la tolérance décident si
+            // déborder d'un quart d'heure coûte, et cela se sait AVANT de partir.
+            'hourly_rule' => $this->horloge->regle($mission),
         ];
 
         if ($detailed) {
             $base['client_phone'] = $client?->phone;
             $base['notes'] = $booking?->customer_comment;
-            $base['total_price'] = $this->toFloat($mission->client_price);
+            // `client_price` est un chiffre de COMPTABILITÉ : `MissionProfitService` ne l'écrit
+            // qu'à la clôture. Avant, la case « Prix » restait vide sur toute mission née du
+            // moteur de commande — alors que la réservation porte son devis depuis le départ.
+            $base['total_price'] = $this->toFloat($mission->client_price ?? $booking?->estimated_price);
             $base['provider_cost'] = $this->toFloat($mission->provider_cost);
             $base['checklists_count'] = $mission->checklists->count();
             $base['checklist_items_pending'] = $mission->checklists
