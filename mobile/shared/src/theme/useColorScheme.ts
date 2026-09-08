@@ -53,8 +53,19 @@ export function useColorScheme(): {
     // conservation inerte sans que rien ne le dise.
     void chargerLeModeEnregistre();
 
+    /*
+     * LE THEME DE L'APPAREIL CHANGE PENDANT QUE L'APPLICATION TOURNE.
+     *
+     * `Appearance.getColorScheme()` est lu A CHAQUE RENDU, mais rien ne provoquait ce rendu :
+     * `listeners` ne porte que le choix ENREGISTRE. En mode « systeme », basculer le telephone en
+     * sombre ne changeait donc rien tant qu'on ne relançait pas l'application — et la bascule
+     * automatique du soir passait inapercue.
+     */
+    const abonnement = Appearance.addChangeListener(cb);
+
     return () => {
       listeners.delete(cb);
+      abonnement.remove();
     };
   }, []);
 
