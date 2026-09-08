@@ -32,7 +32,9 @@ export {
   Wordmark,
   Stagger,
   FormError,
-  authStyles,
+  authStylesFor,
+  useAuthStyles,
+  fondDAuthentification,
   KindChoiceCards,
 } from './authShell';
 export { loadMapModule, isMapRenderable } from './mapModule';

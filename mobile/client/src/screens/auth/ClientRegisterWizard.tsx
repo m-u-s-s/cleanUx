@@ -8,7 +8,7 @@ import {
   FormError,
   KindChoiceCards,
   authErrorMessage,
-  authStyles as kit,
+  useAuthStyles,
 } from '@/ui/authShell';
 import { useRegister, useAuth, isValidBusinessNumber } from '@/auth';
 import { ApiError } from '@/api';
@@ -61,6 +61,7 @@ export function ClientRegisterWizard() {
   const { t: tr } = useTraduction();
   const jetons = useThemeColors();
   const styles = stylesFor(jetons);
+  const kit = useAuthStyles();
 
   const [stepIndex, setStepIndex] = useState(0);
   const [clientKind, setClientKind] = useState<'individual' | 'company' | null>(null);

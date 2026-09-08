@@ -21,9 +21,9 @@ import { TextInput, Icon, useReducedMotion } from '@/ui';
 // Le fond, le wordmark, la mise en scène et le bandeau d'erreur sont partagés avec
 // l'application cliente : ils vivent dans @/ui/authShell. Ce fichier ne garde que ce qui est
 // propre au prestataire — le choix indépendant/société et les métiers.
-import { CANVAS } from '@/ui/authShell';
+import { fondDAuthentification } from '@/ui/authShell';
 
-export { CANVAS, authErrorMessage, AnimatedHalo, Wordmark, Stagger, FormError } from '@/ui/authShell';
+export { CANVAS, fondDAuthentification, authErrorMessage, AnimatedHalo, Wordmark, Stagger, FormError } from '@/ui/authShell';
 import { type ProviderField } from '@/trades';
 import { useRegistrationOptions, zonesPourMetier, flattenTrades } from '@/catalog';
 import { ApiError } from '@/api';
@@ -337,7 +337,7 @@ export function TradeQuestions({
 }
 
 export const stylesFor = (t: ThemeTokens) => StyleSheet.create({
-  container: { flex: 1, backgroundColor: CANVAS },
+  container: { flex: 1, backgroundColor: fondDAuthentification(t.isDark) },
   flex: { flex: 1 },
   halo: {
     position: 'absolute',
@@ -360,7 +360,7 @@ export const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   brand: {
     fontSize: typography.fontSize['4xl'],
     fontWeight: typography.fontWeight.extraBold,
-    color: colors.mode.tool.ink,
+    color: t.text,
   },
   brandDot: {
     width: 9,
@@ -370,8 +370,7 @@ export const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     marginBottom: 9,
     marginLeft: 3,
   },
-  // tool.muted (#64748b) sur CANVAS (#F7F8FB) : ~4,5:1, au seuil AA pour ce corps de texte.
-  subtitle: { fontSize: typography.fontSize.sm, color: colors.mode.tool.muted, marginTop: spacing.sm },
+  subtitle: { fontSize: typography.fontSize.sm, color: t.textSecondary, marginTop: spacing.sm },
   card: {
     backgroundColor: t.card,
     borderRadius: radius.lg,

@@ -27,7 +27,7 @@ import {
   Stagger,
   FormError,
   authErrorMessage,
-  authStyles as styles,
+  useAuthStyles,
 } from '@/ui/authShell';
 import { useLogin, useRegister, useAuth, SECOND_FACTEUR_REQUIS } from '@/auth';
 import { ApiError } from '@/api';
@@ -50,6 +50,7 @@ import { useTraduction } from '@/i18n';
  */
 export function LoginScreen() {
   const { t: tr } = useTraduction();
+  const styles = useAuthStyles();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const reducedMotion = useReducedMotion();
 
@@ -112,6 +113,7 @@ export function LoginScreen() {
 }
 
 function LoginForm() {
+  const styles = useAuthStyles();
   const { t: tr } = useTraduction();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

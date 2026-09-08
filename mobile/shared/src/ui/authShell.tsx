@@ -25,6 +25,8 @@ import Animated, {
 import { Icon } from './Icon';
 import { useReducedMotion } from './a11y';
 import { colors, radius, shadows, spacing, typography } from '../theme';
+import { useThemeColors } from '../theme/useThemeColors';
+import type { ThemeTokens } from '../theme/useThemeColors';
 import { ApiError } from '../api';
 import { traduireMaintenant, useTraduction } from '@/i18n';
 
@@ -34,6 +36,20 @@ import { traduireMaintenant, useTraduction } from '@/i18n';
  * nuit était l'élément dissonant, il obligeait chaque composant à lutter contre sa propre palette.
  */
 export const CANVAS = '#F7F8FB';
+
+/**
+ * LE FOND DE L'AUTHENTIFICATION, PAR THEME.
+ *
+ * Ce fond etait clair EN DUR, au motif que « le kit partage est entierement concu pour une
+ * surface claire ». Cette premisse a expire : `TextInput`, `Button` et `Divider` consultent le
+ * theme depuis le 2026-08-26. Restait une porte d'entree blanche sur un telephone en sombre.
+ *
+ * En sombre le fond est TRANSPARENT, pas noir : `NightShell` peint deja sa toile Skia dessous, et
+ * la couvrir rendrait les gouttes invisibles ici seulement.
+ */
+export function fondDAuthentification(isDark: boolean): string {
+  return isDark ? 'transparent' : CANVAS;
+}
 
 /** Cadence des entrées en scène : chaque élément décale son apparition sur cette base. */
 const STAGGER = 70;
@@ -186,6 +202,7 @@ export function AnimatedHalo() {
  * définitive — l'animation porte l'identité plutôt qu'un simple fondu.
  */
 export function Wordmark() {
+  const t = useThemeColors();
   const reducedMotion = useReducedMotion();
   const spread = useSharedValue(reducedMotion ? 0 : 14);
 
@@ -204,7 +221,7 @@ export function Wordmark() {
     <View style={styles.wordmarkRow}>
       <Animated.Text
         entering={reducedMotion ? undefined : FadeIn.duration(700)}
-        style={[styles.brand, letterStyle]}
+        style={[styles.brand, { color: t.text }, letterStyle]}
         accessibilityRole="header"
       >
         brio
@@ -240,19 +257,20 @@ export function Stagger({ index, children }: { index: number; children: React.Re
  * « Oups ! » est prévue pour une section entière en échec, pas pour un formulaire.
  */
 export function FormError({ message, onRetry, testID }: { message: string; onRetry: () => void; testID: string }) {
+  const t = useThemeColors();
   const { t: tr } = useTraduction();
   const reducedMotion = useReducedMotion();
 
   return (
     <Animated.View
       entering={reducedMotion ? undefined : FadeInDown.duration(260)}
-      style={styles.formError}
+      style={[styles.formError, { borderColor: t.danger, backgroundColor: t.tint.danger }]}
       testID={testID}
       accessibilityLiveRegion="polite"
     >
-      <Icon name="alert-circle-outline" size={18} color={colors.danger[600]} />
+      <Icon name="alert-circle-outline" size={18} color={t.danger} />
       <View style={styles.formErrorBody}>
-        <Text style={styles.formErrorText}>{message}</Text>
+        <Text style={[styles.formErrorText, { color: t.text }]}>{message}</Text>
         <TouchableOpacity onPress={onRetry} accessibilityLabel={tr('auth_shell.reessayer')} accessibilityRole="button">
           <Text style={styles.formErrorRetry}>{tr('auth_shell.reessayer')}</Text>
         </TouchableOpacity>
@@ -315,19 +333,23 @@ const styles = StyleSheet.create({
  * Feuille de style partagée par les deux écrans d'authentification : carte, en-tête, formulaire,
  * pied. Exposée pour que chaque application compose sa page sans redéfinir la même chose.
  */
-export const authStyles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: CANVAS },
+export function useAuthStyles() {
+  return authStylesFor(useThemeColors());
+}
+
+export const authStylesFor = (t: ThemeTokens) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: fondDAuthentification(t.isDark) },
   flex: { flex: 1 },
   scroll: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.xl },
   header: { alignItems: 'center', marginBottom: spacing.xl },
   // tool.muted (#64748b) sur CANVAS (#F7F8FB) : ~4,5:1, au seuil AA pour ce corps de texte.
-  subtitle: { fontSize: typography.fontSize.sm, color: colors.mode.tool.muted, marginTop: spacing.sm },
+  subtitle: { fontSize: typography.fontSize.sm, color: t.textSecondary, marginTop: spacing.sm },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: t.card,
     borderRadius: radius.lg,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: colors.surface[200],
+    borderColor: t.border,
     ...shadows.md,
   },
   form: { gap: spacing.md },
@@ -341,11 +363,11 @@ export const authStyles = StyleSheet.create({
   },
   forgotText: { color: colors.brand[600], fontSize: typography.fontSize.sm, textAlign: 'right' },
   termsRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
-  checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: colors.surface[400], marginTop: 2, flexShrink: 0 },
+  checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: t.border, marginTop: 2, flexShrink: 0 },
   checkboxChecked: { backgroundColor: colors.brand[500], borderColor: colors.brand[500] },
-  termsText: { flex: 1, fontSize: typography.fontSize.sm, color: colors.surface[700] },
+  termsText: { flex: 1, fontSize: typography.fontSize.sm, color: t.text },
   termsLink: { color: colors.brand[600], textDecorationLine: 'underline' },
-  errorText: { fontSize: typography.fontSize.xs, color: colors.danger[600] },
+  errorText: { fontSize: typography.fontSize.xs, color: t.danger },
   passwordWrapper: { position: 'relative' },
   eyeButton: { position: 'absolute', right: 12, top: 32, zIndex: 1 },
 });
@@ -381,10 +403,12 @@ export function KindChoiceCards<T extends string>({
   onChange: (kind: T) => void;
   testIdPrefix?: string;
 }) {
+  const t = useThemeColors();
+
   // Deux teintes, dans l'ordre des options : la première distingue, la seconde souligne.
   const palette = [
-    { accent: colors.warning[700], wash: colors.warning[50] },
-    { accent: colors.brand[600], wash: colors.brand[50] },
+    { accent: t.warning, wash: t.tint.warning },
+    { accent: colors.brand[t.isDark ? 400 : 600], wash: t.tint.brand },
   ];
 
   return (
@@ -398,6 +422,7 @@ export function KindChoiceCards<T extends string>({
             key={option.kind}
             style={[
               kindStyles.card,
+              { borderColor: t.border, backgroundColor: t.card },
               selected && { borderColor: tone.accent, backgroundColor: tone.wash },
             ]}
             onPress={() => onChange(option.kind)}
@@ -406,9 +431,9 @@ export function KindChoiceCards<T extends string>({
             accessibilityLabel={`${option.title} — ${option.hint}`}
             testID={`${testIdPrefix}-${option.kind}`}
           >
-            <Icon name={option.icon as never} size={22} color={selected ? tone.accent : colors.surface[400]} />
-            <Text style={[kindStyles.title, selected && { color: tone.accent }]}>{option.title}</Text>
-            <Text style={kindStyles.hint}>{option.hint}</Text>
+            <Icon name={option.icon as never} size={22} color={selected ? tone.accent : t.textMuted} />
+            <Text style={[kindStyles.title, { color: t.text }, selected && { color: tone.accent }]}>{option.title}</Text>
+            <Text style={[kindStyles.hint, { color: t.textSecondary }]}>{option.hint}</Text>
           </TouchableOpacity>
         );
       })}

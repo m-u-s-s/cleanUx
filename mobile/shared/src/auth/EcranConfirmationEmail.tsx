@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, SafeAreaView } from 'react-native';
-import { AnimatedHalo, FormError, Stagger, Wordmark, authStyles } from '../ui/authShell';
+import { AnimatedHalo, FormError, Stagger, Wordmark, useAuthStyles } from '../ui/authShell';
 import { Button } from '../ui/Button';
 import { colors, spacing, typography } from '../theme';
 import { useAuth } from './useAuth';
@@ -22,6 +22,7 @@ import { useTraduction } from '@/i18n';
  * le serveur laisse ouvertes.
  */
 export function EcranConfirmationEmail() {
+  const authStyles = useAuthStyles();
   const { t: tr } = useTraduction();
   const { user, setUser, logout } = useAuth();
   const renvoi = useRenvoyerLEmailDeConfirmation();
