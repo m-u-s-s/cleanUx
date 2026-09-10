@@ -82,9 +82,19 @@
        qui couperait un menu ou une infobulle légitimement débordants.
        ------------------------------------------------------------------ */
     @media (max-width: 767.98px) {
-        html,
-        body {
+        html {
             overflow-x: clip;
+        }
+
+        /* LE CORPS NE CLIPPE PAS, ET NE MASQUE PAS NON PLUS.
+           `base.css` pose `overflow-x: hidden` sur `body.cx-shell`. Sur grand écran c'est
+           inoffensif : `html` y est `visible`, donc l'overflow du corps SE PROPAGE à la
+           fenêtre et le corps lui-même reste inerte. Dès que `html` clippe, la propagation
+           cesse : le corps devient un conteneur de défilement, et `position: sticky` casse
+           pour TOUS ses descendants — mesuré, la scène du film ne collait plus sous 768 px.
+           `html` clippe déjà : le corps n'a rien à ajouter. */
+        body.cx-shell {
+            overflow-x: visible;
         }
     }
 }

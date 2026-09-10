@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "total": 350,
+  "parPlan": 25,
+  "plans": 14,
+  "tailles": { "desktop": [1280, 720], "mobile": [768, 432] },
+  "poster": "poster.webp"
+}

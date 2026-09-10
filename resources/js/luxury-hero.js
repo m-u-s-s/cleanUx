@@ -6,7 +6,7 @@
    resources/js/hero-r3f.jsx. Pointer parallax of the DOM layers is handled by
    the shared engine in app.js ([data-cx-parallax-root] / [data-cx-parallax]).
 
-   ROBUSTNESS (mirrors home-journey.js conventions):
+   ROBUSTNESS (mirrors journey-film.js conventions):
    - Bundle loaded ONLY on the home (CSP prod = script-src 'self').
    - prefers-reduced-motion -> no JS animation; the hero is shown static & fully
      legible (CSS guard releases [data-lux-anim] to opacity 1).

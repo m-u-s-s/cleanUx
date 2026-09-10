@@ -12,13 +12,15 @@ export default defineConfig({
                 // Heavy libs loaded only on pages that need them (see @vite in those blades).
                 'resources/js/apexcharts.js',
                 'resources/js/fullcalendar.js',
-                // Home "parcours d'une mission" : GSAP ScrollTrigger + globe 3D Three.js.
+                // Home « Le Film » : 350 photogrammes AVIF scrubbés au scroll, rendus
+                // dans un plan WebGL (three.js) + GSAP ScrollTrigger. Le cœur lourd
+                // n'arrive qu'à l'approche de la section (journey-film.js l'observe).
                 // Chargé uniquement sur la home via @push('scripts') dans home.blade.php.
                 // Nos locations : visualiseur 3D glTF des vehicules. Charge UNIQUEMENT sur la
                 // fiche d'une voiture qui porte un modele, et three.js n'arrive qu'a l'entree en
                 // vue -- le catalogue peut montrer vingt voitures sans payer un octet de WebGL.
                 'resources/js/rental-3d.js',
-                'resources/js/home-journey.js',
+                'resources/js/journey-film.js',
                 // Home luxury hero : GSAP entrance + Motion scroll effects.
                 'resources/js/luxury-hero.js',
                 // Home luxury hero : React Three Fiber particle background (procedural

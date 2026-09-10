@@ -527,7 +527,7 @@
     </section>
 
     @push('scripts')
-        @vite('resources/js/home-journey.js')
+        @vite('resources/js/journey-film.js')
         @vite('resources/js/luxury-hero.js')
         @vite('resources/js/hero-r3f.jsx')
     @endpush

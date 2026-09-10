@@ -8,7 +8,7 @@
    DYNAMIQUE uniquement quand la page les utilise → coût ~0 sur les pages qui
    n'activent pas le moteur (le bootstrap synchrone fait juste un querySelector).
 
-   ROBUSTESSE (mêmes conventions que home-journey.js / luxury-hero.js) :
+   ROBUSTESSE (mêmes conventions que journey-film.js / luxury-hero.js) :
    - prefers-reduced-motion  -> moteur désactivé, contenu 100 % visible, scroll natif.
    - pointeur grossier / tactile -> Lenis ne lisse PAS le tactile (momentum natif),
      parallaxe adoucie. Aucune capture du scroll natif.
@@ -17,7 +17,7 @@
      teardown. Rien n'est pré-masqué : si le JS échoue, tout reste lisible.
    - Livewire 3 : teardown sur `livewire:navigating`, re-init sur `livewire:navigated`.
    - Cleanup ISOLÉ via gsap.matchMedia().revert() : ne touche QUE nos triggers,
-     jamais ceux d'un autre module (ex. home-journey.js sur la home).
+     jamais ceux d'un autre module (ex. journey-film.js sur la home).
 
    API DÉCLARATIVE (data-attributes) :
      [data-premium-scroll]                 active le smooth scroll Lenis pour la page

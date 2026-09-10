@@ -8,6 +8,7 @@ use App\Livewire\Admin\AdminAlertsCenter;
 use App\Livewire\Admin\Analytics\AnalyticsCenter;
 use App\Livewire\Admin\AnalyticsCenter as ExplorationAnalytique;
 use App\Livewire\Admin\ApiTokensV2\ApiTokensCenter;
+use App\Livewire\Admin\ApplicationsMobiles;
 use App\Livewire\Admin\Audit\AuditCenter;
 use App\Livewire\Admin\Automation\ConstructeurDeRegle;
 use App\Livewire\Admin\Automation\JournalDeRegle;
@@ -547,6 +548,9 @@ Route::middleware(['role:admin', 'enforce_2fa', 'module_gate'])
 
         // L'identite legale publiee sur /legal/mentions-legales — elle etait ecrite en dur.
         Route::get('/identite-legale', IdentiteLegale::class)->name('identite-legale');
+
+        // Les liens des deux applications, affiches en bout de la home. Ils n'existaient nulle part.
+        Route::get('/applications-mobiles', ApplicationsMobiles::class)->name('applications-mobiles');
 
         // Feature Flags — runtime toggle for config/features.php flags
         if (class_exists(FeatureFlagsManager::class)) {

@@ -166,7 +166,7 @@ class TranslationOverrideLoader implements Loader
         }
 
         if ($locale) {
-            foreach (['app', 'ui', 'messages', 'validation', 'auth', '*'] as $g) {
+            foreach (['app', 'ui', 'messages', 'validation', 'auth', 'vitrine', '*'] as $g) {
                 Cache::forget("i18n:overrides:*:{$locale}:{$g}");
             }
 
@@ -178,7 +178,7 @@ class TranslationOverrideLoader implements Loader
         // Worst case : flush par config locales × groupes connus
         $locales = (array) Config::get('i18n.locales', []);
         foreach (array_keys($locales) as $loc) {
-            foreach (['app', 'ui', 'messages', 'validation', 'auth', '*'] as $g) {
+            foreach (['app', 'ui', 'messages', 'validation', 'auth', 'vitrine', '*'] as $g) {
                 Cache::forget("i18n:overrides:*:{$loc}:{$g}");
             }
 

@@ -59,6 +59,7 @@ use App\Admin\Resources\LoyaltyAccountResource;
 use App\Admin\Resources\MarketingCampaignResource;
 use App\Admin\Resources\MissionBatchResource;
 use App\Admin\Resources\MissionResource;
+use App\Admin\Resources\MobileAppsResource;
 use App\Admin\Resources\NotificationPreferenceResource;
 use App\Admin\Resources\NpsResource;
 use App\Admin\Resources\OnboardingDocumentResource;
@@ -136,6 +137,7 @@ class AdminConsoleServiceProvider extends ServiceProvider
             $registry->register('promo-codes', PromoCodeResource::class);
             $registry->register('badges', BadgeResource::class);
             $registry->register('identite-legale', LegalIdentityResource::class);
+            $registry->register('applications-mobiles', MobileAppsResource::class);
             $registry->register('feature-flags', FeatureFlagResource::class);
 
             // Lot 4 — les domaines adossés à un modèle unique, décrits par `EloquentResource`.

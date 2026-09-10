@@ -189,6 +189,7 @@ return [
         ['key' => 'gdpr', 'title' => 'RGPD', 'group' => 'plateforme', 'icon' => 'lock-closed-outline', 'coverage' => 'descriptor', 'routes' => ['admin/gdpr']],
         ['key' => 'face-check', 'title' => 'Vérification faciale', 'group' => 'plateforme', 'icon' => 'scan-outline', 'coverage' => 'pending', 'routes' => ['admin/verification-faciale', 'admin/verification-faciale/profils/{profile}/reference', 'admin/verification-faciale/controles/{faceCheck}/selfie']],
         ['key' => 'identite-legale', 'title' => 'Identité légale', 'group' => 'plateforme', 'icon' => 'document-text-outline', 'coverage' => 'descriptor', 'routes' => ['admin/identite-legale']],
+        ['key' => 'applications-mobiles', 'title' => 'Applications mobiles', 'group' => 'plateforme', 'icon' => 'phone-portrait-outline', 'coverage' => 'descriptor', 'routes' => ['admin/applications-mobiles'], 'resources' => ['applications-mobiles']],
         ['key' => 'feature-flags', 'title' => 'Feature flags', 'group' => 'plateforme', 'icon' => 'flag-outline', 'coverage' => 'descriptor', 'routes' => ['admin/feature-flags']],
         ['key' => 'api-tokens', 'title' => 'Jetons d’API', 'group' => 'plateforme', 'icon' => 'key-outline', 'coverage' => 'descriptor', 'routes' => ['admin/api-tokens-v2'], 'resources' => ['api-tokens-list']],
         ['key' => 'webhooks', 'title' => 'Webhooks sortants', 'group' => 'plateforme', 'icon' => 'git-network-outline', 'coverage' => 'descriptor', 'routes' => ['admin/webhooks-v2']],

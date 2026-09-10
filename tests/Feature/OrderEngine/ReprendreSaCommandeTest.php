@@ -123,5 +123,4 @@ class ReprendreSaCommandeTest extends TestCase
         Livewire::test(OrderJourney::class)->assertSet('tradeId', null);
 
     }
-
 }

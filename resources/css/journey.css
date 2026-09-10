@@ -1,297 +1,491 @@
 /* ============================================================================
-   Brio — "Le parcours d'une mission" : scrollytelling cinématique
-   (added 14/06/2026)
-   Section qui se fige (sticky) pendant que le scroll fait défiler 7 scènes
-   SVG animées : Terre -> téléphone -> tracking -> scan QR -> travail ->
-   rescan QR -> poignée de main. GPU-only, prefers-reduced-motion-safe.
-   Pilotage du scroll : IIFE dans app.js (ajoute .is-animated + --p + .is-active).
+   Brio — « Le Film » : de la réservation à la poignée de main.
+   (réécrite le 10/09/2026 — la version précédente datait d'avant la refonte
+   d'août et portait #6366f1, #0f172a et #f8fafc en dur, sans mode sombre.)
+
+   La section est une salle de cinéma : elle est SOMBRE dans les deux thèmes.
+   Ce n'est pas un oubli du mode clair, c'est la direction — un film ne se
+   projette pas sur un mur blanc. Les jetons ci-dessous étendent le système,
+   ils ne le contournent pas : tout ce qui existait déjà est réutilisé.
    ========================================================================= */
 
-.cx-journey {
+.cx-film {
+    /* --- Les jetons de la salle ------------------------------------------ */
+    --cx-film-nuit:      rgb(5 7 13);                      /* le noir d'encre du film */
+    --cx-film-nuit-doux: rgb(11 15 26);
+    --cx-film-encre:     rgb(247 244 238);                 /* le texte sur la nuit */
+    --cx-film-faible:    rgb(247 244 238 / 0.62);
+    --cx-film-or:        var(--cx-amber);
+    --cx-film-or-profond: var(--cx-amber-deep);
+    --cx-film-verre:     rgb(255 255 255 / 0.05);
+    --cx-film-verre-bord: rgb(255 255 255 / 0.10);
+
     position: relative;
-    background:
-        radial-gradient(120% 90% at 50% 0%, #f5f3ff 0%, transparent 55%),
-        linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    background: var(--cx-film-nuit);
+    color: var(--cx-film-encre);
+    isolation: isolate;
 }
 
-/* --- Fallback statique (pas de JS / reduced-motion) : stepper --------- */
-.cx-journey:not(.is-animated) .cx-journey__sticky {
-    position: static;
-    height: auto;
-    padding: 4rem 0 5rem;
+/* Le raccord avec les sections claires d'avant et d'après : la nuit ne coupe
+   pas la page au couteau, elle y entre et en sort. */
+.cx-film::before,
+.cx-film::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    height: clamp(3rem, 8vh, 7rem);
+    pointer-events: none;
+    z-index: 2;
 }
-.cx-journey:not(.is-animated) .cx-stage,
-.cx-journey:not(.is-animated) .cx-journey__bar,
-.cx-journey:not(.is-animated) .cx-journey__dots { display: none; }
-.cx-journey:not(.is-animated) .cx-journey__steps { display: grid; }
+.cx-film::before {
+    top: 0;
+    background: linear-gradient(to bottom, var(--brio-bg), transparent);
+}
+.cx-film::after {
+    bottom: 0;
+    background: linear-gradient(to top, var(--brio-bg), transparent);
+}
 
-/* --- Mode animé : section haute + enfant sticky ----------------------- */
-/* 9 scènes (globe 3D, réserver, devis IA, chantier groupé, tracking, QR
-   départ, travail, QR fin, paiement) -> ~75vh par scène. */
-.cx-journey.is-animated { height: 680vh; }
-.cx-journey.is-animated .cx-journey__steps { display: none; }
+/* ---------------------------------------------------------------- L'EN-TÊTE */
+.cx-film__intro {
+    position: relative;
+    z-index: 3;
+    max-width: 46rem;
+    margin-inline: auto;
+    padding: clamp(4rem, 12vh, 8rem) 1.5rem 0;
+    text-align: center;
+}
 
-.cx-journey__sticky {
+.cx-film__eyebrow {
+    font-family: var(--cx-body);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--cx-film-or);
+}
+
+/* h2 sort en Allura dans ce dépôt : c'est voulu ici, le titre est le générique. */
+.cx-film__titre {
+    margin-top: 0.6rem;
+    font-size: clamp(2rem, 6vw, 3.6rem);
+    line-height: 1.05;
+    color: var(--cx-film-encre);
+    text-wrap: balance;
+}
+
+.cx-film__sous-titre {
+    margin-top: 1rem;
+    font-family: var(--cx-body);
+    font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+    color: var(--cx-film-faible);
+    text-wrap: balance;
+}
+
+/* ------------------------------------------------- LE REPLI : LA LISTE
+   Elle est le contenu accessible de la section. Le film n'est que sa mise en
+   scène : dès que le film tourne, la liste s'efface. */
+.cx-film__etapes {
+    position: relative;
+    z-index: 3;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    max-width: 68rem;
+    margin: clamp(2rem, 6vh, 3.5rem) auto 0;
+    padding: 0 1.5rem clamp(4rem, 12vh, 8rem);
+    list-style: none;
+    counter-reset: film;
+}
+
+.cx-film__etapes li {
+    counter-increment: film;
+    position: relative;
+    padding: 1.15rem 1.25rem 1.15rem 3.25rem;
+    border: 1px solid var(--cx-film-verre-bord);
+    border-radius: var(--cx-radius-md);
+    background: var(--cx-film-verre);
+}
+
+.cx-film__etapes li::before {
+    content: counter(film, decimal-leading-zero);
+    position: absolute;
+    left: 1.25rem;
+    top: 1.15rem;
+    font-family: var(--cx-body);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--cx-film-or);
+}
+
+.cx-film__etapes b {
+    display: block;
+    font-family: var(--cx-body);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--cx-film-encre);
+}
+
+.cx-film__etapes span {
+    display: block;
+    margin-top: 0.3rem;
+    font-family: var(--cx-body);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--cx-film-faible);
+}
+
+/* ------------------------------------------------------------- LA SCÈNE
+   Tant que le film ne tourne pas, la scène n'occupe aucune place : pas de
+   trou noir de 100vh au milieu de la page. */
+.cx-film__scene {
+    display: none;
+}
+
+.cx-film.is-film .cx-film__etapes { display: none; }
+
+/* LA HAUTEUR VIT SUR LA PISTE, PAS SUR LA SECTION.
+   Posée sur la section, elle emprisonnait le bloc de téléchargement — qui est un
+   frère de la piste — SOUS la scène collante, film jouant à travers les cartes. */
+.cx-film.is-film .cx-film__piste {
+    /* 14 chapitres : ~55vh chacun, plus l'écran de la scène elle-même. */
+    height: 800vh;
+}
+
+.cx-film.is-film .cx-film__scene {
+    display: block;
     position: sticky;
     top: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    height: 100svh;
     overflow: hidden;
-    gap: 1.25rem;
+    background: var(--cx-film-nuit);
 }
 
-.cx-journey__eyebrow {
-    font-size: .72rem;
-    font-weight: 700;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: #6366f1;
-}
-.cx-journey__title {
-    font-family: "Space Grotesk", system-ui, sans-serif;
-    font-size: clamp(1.5rem, 3.4vw, 2.25rem);
-    font-weight: 700;
-    color: #0f172a;
-    text-align: center;
-    max-width: 32ch;
-    line-height: 1.15;
-}
-
-/* --- La scène (carré) qui contient les 7 calques --------------------- */
-.cx-stage {
-    position: relative;
-    width: min(82vw, 460px);
-    aspect-ratio: 1 / 1;
-}
-.cx-scene {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-    opacity: 0;
-    transform: scale(.94) translateY(14px);
-    transition: opacity .7s var(--cx-ease), transform .7s var(--cx-ease);
-    pointer-events: none;
-}
-.cx-scene.is-active {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-    pointer-events: auto;
-}
-.cx-art { width: 72%; height: auto; max-height: 64%; overflow: visible; }
-
-/* --- Globe 3D (Three.js) : remplace le SVG dans la scène 0 quand prêt --- */
-.cx-globe3d {
-    height: 64%;
-    aspect-ratio: 1 / 1;
-    width: auto;
-    display: none;            /* visible seulement quand .cx-scene.has-3d */
-}
-.cx-scene.has-3d .cx-globe3d { display: block; }
-.cx-scene.has-3d .cx-art { display: none; }
-.cx-globe3d canvas { display: block; width: 100%; height: 100%; }
-
-/* --- Monde 3D plein cadre (Three.js) : canvas + masquage des visuels SVG -- */
-.cx-journey__canvas {
+.cx-film__canvas,
+.cx-film__poster {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     z-index: 0;
-    display: none;              /* visible uniquement en .is-3d */
-}
-.cx-journey.is-3d .cx-journey__canvas { display: block; }
-/* titre, légendes, barre et puces passent au-dessus du canvas */
-.cx-journey.is-3d .cx-journey__eyebrow,
-.cx-journey.is-3d .cx-journey__title,
-.cx-journey.is-3d .cx-stage,
-.cx-journey.is-3d .cx-journey__bar,
-.cx-journey.is-3d .cx-journey__dots { position: relative; z-index: 1; }
-/* on masque les visuels dessinés (le 3D les remplace), on garde les légendes */
-.cx-journey.is-3d .cx-art,
-.cx-journey.is-3d .cx-globe3d { display: none !important; }
-.cx-journey.is-3d .cx-scene { justify-content: flex-end; padding-bottom: 4%; }
-/* légende lisible par-dessus la 3D */
-.cx-journey.is-3d .cx-scene__cap {
-    background: rgba(255, 255, 255, .72);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(226, 232, 240, .8);
-    border-radius: 1rem;
-    padding: .85rem 1.15rem;
 }
 
-.cx-scene__cap { text-align: center; max-width: 30ch; }
-.cx-scene__cap b {
+.cx-film__canvas { display: block; }
+
+.cx-film__poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     display: block;
-    font-family: "Space Grotesk", system-ui, sans-serif;
-    font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+}
+
+/* Le poster ne s'efface qu'une fois le canvas REELLEMENT peint (`is-peint`), pas
+   a l'activation : sinon un onglet dont le rAF ne tourne pas encore montrerait un
+   rectangle noir a la place du film. */
+.cx-film.is-film .cx-film__poster {
+    transition: opacity var(--cx-dur-slow) var(--cx-ease);
+}
+.cx-film.is-peint .cx-film__poster { opacity: 0; }
+
+/* Le voile : il garantit la lisibilité des légendes quel que soit le plan —
+   un texte blanc sur un plan de ville dorée serait illisible sans lui. */
+.cx-film__voile {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+        linear-gradient(to top, rgb(5 7 13 / 0.92) 0%, rgb(5 7 13 / 0.55) 26%, transparent 52%),
+        radial-gradient(120% 80% at 50% 0%, transparent 40%, rgb(5 7 13 / 0.45) 100%);
+}
+
+/* ------------------------------------------------------------ LES LÉGENDES */
+.cx-film__legendes {
+    position: absolute;
+    inset-inline: 0;
+    bottom: clamp(4.5rem, 12vh, 8rem);
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    padding-inline: 1.5rem;
+    pointer-events: none;
+}
+
+.cx-film__legende {
+    grid-area: 1 / 1;
+    max-width: 34rem;
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--cx-dur) var(--cx-ease);
+}
+
+.cx-film__legende.is-active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.cx-film__legende b {
+    display: block;
+    font-family: var(--cx-body);
+    font-size: clamp(1.15rem, 2.6vw, 1.85rem);
     font-weight: 700;
-    color: #0f172a;
-}
-.cx-scene__cap span {
-    display: block;
-    margin-top: .35rem;
-    font-size: .92rem;
-    line-height: 1.5;
-    color: #475569;
+    line-height: 1.15;
+    color: var(--cx-film-encre);
+    text-wrap: balance;
 }
 
-/* --- Progress bar + dots --------------------------------------------- */
-.cx-journey__bar {
-    width: min(82vw, 460px);
-    height: 4px;
-    border-radius: 9999px;
-    background: #e2e8f0;
+.cx-film__legende span {
+    display: block;
+    margin-top: 0.5rem;
+    font-family: var(--cx-body);
+    font-size: clamp(0.85rem, 1.4vw, 1rem);
+    line-height: 1.5;
+    color: var(--cx-film-faible);
+    text-wrap: balance;
+}
+
+/* ------------------------------------------------- LA BARRE ET LES PUCES */
+.cx-film__barre {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: clamp(2.6rem, 7vh, 4.5rem);
+    z-index: 2;
+    width: min(60vw, 22rem);
+    height: 2px;
+    border-radius: var(--cx-radius-pill);
+    background: var(--cx-film-verre-bord);
     overflow: hidden;
 }
-.cx-journey__bar i {
+
+.cx-film__barre i {
     display: block;
     height: 100%;
-    width: calc(var(--p, 0) * 100%);
-    border-radius: inherit;
-    background: linear-gradient(90deg, #6366f1, #9333ea, #ffb648);
-    transition: width .12s linear;
+    width: calc(var(--film-p, 0) * 100%);
+    background: linear-gradient(to right, var(--cx-film-or-profond), var(--cx-film-or));
 }
-.cx-journey__dots { display: flex; gap: .5rem; }
-.cx-dot {
-    width: 8px; height: 8px; border-radius: 9999px;
-    background: #cbd5e1;
-    transition: transform var(--cx-dur-fast) var(--cx-ease), background-color var(--cx-dur-fast) var(--cx-ease);
-}
-.cx-dot.is-active { background: #6366f1; transform: scale(1.5); }
 
-/* --- Stepper statique (fallback) ------------------------------------- */
-.cx-journey__steps {
-    max-width: 64rem;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-    grid-template-columns: repeat(1, 1fr);
-    gap: .75rem;
-    counter-reset: jstep;
-}
-@media (min-width: 768px) { .cx-journey__steps { grid-template-columns: repeat(2, 1fr); } }
-.cx-journey__steps li {
-    list-style: none;
+.cx-film__puces {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: clamp(1.4rem, 4vh, 2.6rem);
+    z-index: 2;
     display: flex;
-    align-items: flex-start;
-    gap: .85rem;
-    padding: 1rem 1.15rem;
-    background: rgba(255, 255, 255, .7);
-    border: 1px solid #e2e8f0;
-    border-radius: 0.9rem;
+    gap: 0.4rem;
 }
-.cx-journey__steps li::before {
-    counter-increment: jstep;
-    content: counter(jstep);
+
+.cx-film__puce {
+    width: 4px;
+    height: 4px;
+    border-radius: var(--cx-radius-pill);
+    background: var(--cx-film-verre-bord);
+    transition: background var(--cx-dur-fast) var(--cx-ease),
+                transform var(--cx-dur-fast) var(--cx-ease);
+}
+
+.cx-film__puce.is-active {
+    background: var(--cx-film-or);
+    transform: scale(1.8);
+}
+
+/* ==========================================================================
+   LE BLOC DE TÉLÉCHARGEMENT — la fin du scroll.
+   ======================================================================= */
+.cx-apps {
+    position: relative;
+    z-index: 3;
+    padding: clamp(4rem, 12vh, 8rem) 1.5rem clamp(5rem, 14vh, 9rem);
+}
+
+.cx-apps__inner {
+    max-width: 62rem;
+    margin-inline: auto;
+    text-align: center;
+}
+
+.cx-apps__eyebrow {
+    font-family: var(--cx-body);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--cx-film-or);
+}
+
+/* h3 : au-delà de h2 la fonte repasse en sans — voulu, ce n'est pas un titre
+   de générique mais une invitation. */
+.cx-apps__titre {
+    margin-top: 0.6rem;
+    font-family: var(--cx-body);
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--cx-film-encre);
+    text-wrap: balance;
+}
+
+.cx-apps__sous-titre {
+    margin-top: 0.75rem;
+    font-family: var(--cx-body);
+    color: var(--cx-film-faible);
+}
+
+.cx-apps__grille {
+    display: grid;
+    gap: clamp(1rem, 3vw, 1.75rem);
+    grid-template-columns: 1fr;
+    margin-top: clamp(2rem, 6vh, 3.5rem);
+    text-align: start;
+}
+
+/* Deux colonnes dès qu'il y a la place. Une seule carte occupe alors la moitié
+   gauche : `1fr 1fr` plutôt qu'`auto-fit`, qui étirait la carte unique sur toute
+   la largeur et donnait une colonne fantôme de 0 px. */
+@media (min-width: 48rem) {
+    .cx-apps__grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* UNE SURFACE DE NUIT, PAS UNE `.brio-glass`.
+   `.brio-glass` du système est un verre CLAIR, et `vitrine-mode.css` impose à juste
+   titre l'encre sombre à tout `p`/`span` qui s'y trouve, avec une spécificité qu'une
+   classe simple ne peut pas battre. Plutôt que de la forcer à coups de `!important`,
+   la carte de nuit se bâtit ici sur le MEME vocabulaire de jetons — flou, rayon et
+   ombre du système compris. */
+.cx-apps__carte {
+    background-color: var(--cx-film-verre);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    border: 1px solid var(--cx-film-verre-bord);
+    border-radius: var(--cx-radius-lg);
+    box-shadow: var(--glass-shadow);
+    color: var(--cx-film-encre);
+    padding: clamp(1.5rem, 3vw, 2rem);
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.cx-apps__logo {
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: var(--cx-radius-md);
+}
+
+.cx-apps__carte-titre {
+    font-family: var(--cx-body);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--cx-film-encre);
+}
+
+.cx-apps__carte-accroche {
+    font-family: var(--cx-body);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--cx-film-faible);
+}
+
+.cx-apps__liens {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 0.35rem;
+    list-style: none;
+    padding: 0;
+}
+
+/* Le bouton est typographique : on ne reproduit pas les macarons officiels des
+   magasins, dont l'usage est encadré par leurs propriétaires. */
+.cx-apps__bouton {
+    display: block;
+    padding: 0.7rem 1.1rem;
+    border: 1px solid var(--cx-film-verre-bord);
+    border-radius: var(--cx-radius-md);
+    background: rgb(255 255 255 / 0.03);
+    text-decoration: none;
+    transition: border-color var(--cx-dur-fast) var(--cx-ease),
+                background var(--cx-dur-fast) var(--cx-ease),
+                transform var(--cx-dur-fast) var(--cx-ease);
+}
+
+.cx-apps__bouton:hover,
+.cx-apps__bouton:focus-visible {
+    border-color: rgb(var(--brio-accent-rgb) / 0.55);
+    background: rgb(var(--brio-accent-rgb) / 0.09);
+    transform: translateY(-2px);
+}
+
+.cx-apps__bouton:focus-visible {
+    outline: 2px solid var(--cx-film-or);
+    outline-offset: 3px;
+}
+
+.cx-apps__bouton-magasin {
+    display: block;
+    font-family: var(--cx-body);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--cx-film-or);
+}
+
+.cx-apps__bouton-action {
+    display: block;
+    margin-top: 0.15rem;
+    font-family: var(--cx-body);
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--cx-film-encre);
+}
+
+/* ------------------------------------------------------------------ LE QR */
+.cx-apps__qr {
+    display: none; /* scanner depuis le téléphone qu'on tient n'a pas de sens */
+    margin: 0.5rem 0 0;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.cx-apps__qr-cadre {
     flex: 0 0 auto;
-    display: grid; place-items: center;
-    width: 1.75rem; height: 1.75rem;
-    border-radius: 9999px;
-    background: #eef2ff; color: #4f46e5;
-    font-weight: 700; font-size: .82rem;
-}
-.cx-journey__steps b { display: block; color: #0f172a; font-size: .95rem; }
-.cx-journey__steps span { color: #64748b; font-size: .85rem; }
-
-/* ============================================================================
-   Animations internes des scènes (boucles légères, actives quand visibles)
-   ========================================================================= */
-
-/* Terre qui tourne + satellite */
-.cx-earth-spin {
-    transform-box: view-box;
-    transform-origin: 120px 120px;
-    animation: cx-earth-spin 24s linear infinite;
-}
-@keyframes cx-earth-spin { to { transform: rotate(360deg); } }
-.cx-earth-sat {
-    transform-box: view-box;
-    transform-origin: 120px 120px;
-    animation: cx-earth-spin 9s linear infinite;
-}
-.cx-earth-orbit {
-    transform-box: view-box;
-    transform-origin: 120px 120px;
-    animation: cx-earth-spin 40s linear infinite reverse;
+    width: 5.5rem;
+    height: 5.5rem;
+    padding: 0.35rem;
+    border-radius: var(--cx-radius-sm);
+    background: rgb(255 255 255 / 0.92);
 }
 
-/* Marqueur de tracking qui suit la route (translate entre les coins) */
-.cx-track-marker { animation: cx-track-move 3.6s ease-in-out infinite; }
-@keyframes cx-track-move {
-    0%       { transform: translate(96px, 186px); }
-    28%      { transform: translate(96px, 150px); }
-    52%      { transform: translate(140px, 150px); }
-    82%, 100%{ transform: translate(140px, 92px); }
-}
-.cx-track-pulse { animation: cx-pulse 1.8s ease-in-out infinite; transform-origin: center; }
-@keyframes cx-pulse { 0%,100% { opacity: .5; transform: scale(1);} 50% { opacity: 0; transform: scale(2.4);} }
-
-/* Ligne de scan QR */
-.cx-scanline {
-    transform-box: fill-box;
-    animation: cx-scan 1.7s ease-in-out infinite alternate;
-}
-@keyframes cx-scan { from { transform: translateY(0); } to { transform: translateY(38px); } }
-
-/* Étincelles "travail en cours" */
-.cx-spark { transform-box: fill-box; transform-origin: center; animation: cx-spark 1.6s ease-in-out infinite; }
-.cx-spark--2 { animation-delay: .35s; }
-.cx-spark--3 { animation-delay: .7s; }
-@keyframes cx-spark { 0%,100% { opacity: 0; transform: scale(.4); } 50% { opacity: 1; transform: scale(1); } }
-
-/* Outil qui s'agite (scène travail) */
-.cx-tool { transform-box: fill-box; transform-origin: 50% 100%; animation: cx-tool 1.1s ease-in-out infinite alternate; }
-@keyframes cx-tool { from { transform: rotate(-10deg); } to { transform: rotate(14deg); } }
-
-/* Poignée de main (léger mouvement) */
-.cx-shake { transform-box: fill-box; transform-origin: center; animation: cx-shake 1.1s ease-in-out infinite alternate; }
-@keyframes cx-shake { from { transform: translateY(-2px); } to { transform: translateY(3px); } }
-
-/* Check qui apparaît */
-.cx-check-draw {
-    stroke-dasharray: 36; stroke-dashoffset: 36;
-    animation: cx-draw .7s var(--cx-ease) forwards;
-}
-.cx-scene.is-active .cx-check-draw { animation: cx-draw .7s var(--cx-ease) .2s forwards; }
-@keyframes cx-draw { to { stroke-dashoffset: 0; } }
-
-/* Confettis poignée de main */
-.cx-confetti { transform-box: fill-box; transform-origin: center; opacity: 0; }
-.cx-scene.is-active .cx-confetti { animation: cx-confetti 1.1s var(--cx-ease) .25s forwards; }
-.cx-confetti--2 { animation-delay: .35s !important; }
-.cx-confetti--3 { animation-delay: .5s !important; }
-@keyframes cx-confetti {
-    0%   { opacity: 0; transform: translateY(0) scale(.4); }
-    40%  { opacity: 1; }
-    100% { opacity: 0; transform: translateY(-26px) scale(1); }
+.cx-apps__qr-cadre svg {
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
-/* Devis IA : badge prix qui apparaît / Chantier groupé : lignes en cascade.
-   On n'anime que l'opacité : les <g> portent un transform="translate(...)" de
-   positionnement qu'une animation CSS transform écraserait. */
-.cx-price-pop { opacity: 0; }
-.cx-scene.is-active .cx-price-pop { animation: cx-soft-in .55s var(--cx-ease) .5s both; }
+.cx-apps__qr figcaption {
+    font-family: var(--cx-body);
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: var(--cx-film-faible);
+}
 
-.cx-step-row { opacity: 0; }
-.cx-scene.is-active .cx-step-row { animation: cx-soft-in .5s var(--cx-ease) both; }
-.cx-scene.is-active .cx-step-row--0 { animation-delay: .12s; }
-.cx-scene.is-active .cx-step-row--1 { animation-delay: .24s; }
-.cx-scene.is-active .cx-step-row--2 { animation-delay: .36s; }
-.cx-scene.is-active .cx-step-row--3 { animation-delay: .48s; }
-@keyframes cx-soft-in { to { opacity: 1; } }
+@media (min-width: 60rem) {
+    .cx-apps__qr { display: flex; }
+}
 
-/* Reduced motion : tout figé, fallback stepper (géré par :not(.is-animated)) */
+/* ==========================================================================
+   MOUVEMENT RÉDUIT — le film ne se charge même pas (voir journey-film.js).
+   La section reste une liste d'étapes, et c'est très bien.
+   ======================================================================= */
 @media (prefers-reduced-motion: reduce) {
-    .cx-earth-spin, .cx-earth-sat, .cx-earth-orbit, .cx-track-marker,
-    .cx-track-pulse, .cx-scanline, .cx-spark, .cx-tool, .cx-shake,
-    .cx-check-draw, .cx-confetti { animation: none !important; }
-    /* nouvelles scènes : rester visibles sans animation */
-    .cx-price-pop, .cx-step-row { opacity: 1 !important; animation: none !important; }
+    .cx-film.is-film .cx-film__piste { height: auto; }
+    .cx-film.is-film .cx-film__scene { display: none; }
+    .cx-film.is-film .cx-film__etapes { display: grid; }
+
+    .cx-film__legende,
+    .cx-apps__bouton {
+        transition: none;
+    }
 }
