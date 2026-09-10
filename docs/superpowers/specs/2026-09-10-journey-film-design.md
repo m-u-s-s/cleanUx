@@ -151,8 +151,13 @@ de téléchargement.
    en mouvements lents et continus, une cadence constante suffit — et elle garantit que chaque
    chapitre tombe sur un multiple de 25.
 
-Sortie : `public/images/journey-film/` + `frames.json` (nombre de frames, chapitres, ancres des
-légendes).
+Sortie : `public/images/journey-film/` + `frames.json` (nombre de frames, chapitres, et une
+**`version` horodatée**).
+
+**La version n'est pas décorative.** Les 700 fichiers gardent leurs noms d'un tournage à l'autre :
+sans jeton `?v=` dans l'URL, le navigateur d'un visiteur qui a déjà vu le film lui reservirait
+l'ancien, indéfiniment. Voir le détail et le point aveugle du harnais dans le document des
+prompts, § 5.1.
 
 ### 5.4 Budget
 

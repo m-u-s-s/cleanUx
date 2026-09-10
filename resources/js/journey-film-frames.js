@@ -27,8 +27,15 @@ export function avifDisponible() {
     });
 }
 
+/**
+ * Le manifeste, TOUJOURS REVALIDÉ.
+ *
+ * Il portait `cache: 'force-cache'`, ce qui servait l'ancien manifeste même quand un nouveau
+ * film était en ligne — donc l'ancienne version, donc les anciennes frames. C'est le seul
+ * fichier du lot qu'on ne peut pas versionner : il est celui qui PORTE la version.
+ */
 export async function chargerManifeste() {
-    const reponse = await fetch(BASE + 'frames.json', { cache: 'force-cache' });
+    const reponse = await fetch(BASE + 'frames.json', { cache: 'no-cache' });
     if (!reponse.ok) throw new Error('manifeste absent');
     return reponse.json();
 }
@@ -50,8 +57,14 @@ export function creerMagasin(manifeste, taille) {
     let derniereConnue = -1; // la dernière frame réellement décodée : jamais de trou noir
     let abandonne = false;
 
+    // LE JETON DE VERSION EST OBLIGATOIRE DANS L'URL.
+    // Les 700 fichiers gardent leurs noms d'un tournage à l'autre : sans lui, le navigateur d'un
+    // visiteur qui a déjà vu le film lui reservirait l'ancien depuis son cache, et aucun
+    // rechargement de page n'y changerait quoi que ce soit.
+    const jeton = manifeste.version ? `?v=${encodeURIComponent(manifeste.version)}` : '';
+
     function url(index) {
-        return `${BASE}${taille}/${String(index).padStart(3, '0')}.avif`;
+        return `${BASE}${taille}/${String(index).padStart(3, '0')}.avif${jeton}`;
     }
 
     /** Réveille ce qui attendait cette frame — chargée ou définitivement absente. */

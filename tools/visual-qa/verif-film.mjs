@@ -53,6 +53,14 @@ async function etat(page) {
 {
     const { contexte, page, erreurs } = await ouvrir({ width: 1440, height: 900 });
 
+    // Le jeton de version dans l'URL des frames : sans lui, un visiteur qui a deja vu le film
+    // se voit reservir l'ancien depuis son cache, quel que soit le nombre de rechargements.
+    const framesDemandees = [];
+    page.on('request', (r) => {
+        const u = r.url();
+        if (u.includes('/journey-film/') && u.includes('.avif')) framesDemandees.push(u);
+    });
+
     const haut = await page.evaluate(() => {
         const s = document.querySelector('[data-cx-film]');
         return s.getBoundingClientRect().top + window.scrollY;
@@ -91,6 +99,9 @@ async function etat(page) {
     });
     await page.waitForTimeout(900);
     await page.screenshot({ path: `${SORTIE}desktop-telechargement.png` });
+
+    const sansJeton = framesDemandees.filter((u) => !u.includes('?v='));
+    console.log('  frames sans jeton de version :', sansJeton.length, sansJeton.length ? '— DEFAUT DE CACHE' : '(bon)');
 
     const fin = await etat(page);
     console.log('  debordement horizontal :', fin.debordementH ? 'OUI — DEFAUT' : 'non');

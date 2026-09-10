@@ -78,9 +78,16 @@ ffmpeg -y -loglevel error -i "$TRAVAIL/d_01_001.png" -q:v 4 "$SORTIE/poster.jpg"
 
 # ---------------------------------------------------------------- 4. manifeste
 total=$((PLANS * FRAMES_PAR_PLAN))
+
+# LA VERSION CHANGE A CHAQUE FABRICATION, ET C'EST TOUT L'INTERET.
+# Les 700 fichiers gardent leurs noms d'un tournage a l'autre : sans ce jeton dans l'URL, le
+# navigateur d'un visiteur qui a deja vu le film lui reservirait l'ANCIEN depuis son cache.
+# Mesure du 2026-09-11 : le film refait en plein jour restait nocturne apres deux rechargements.
+version="$(date -u +%Y%m%d%H%M%S)"
+
 {
     printf '{\n'
-    printf '  "version": 1,\n'
+    printf '  "version": "%s",\n' "$version"
     printf '  "total": %d,\n' "$total"
     printf '  "parPlan": %d,\n' "$FRAMES_PAR_PLAN"
     printf '  "plans": %d,\n' "$PLANS"

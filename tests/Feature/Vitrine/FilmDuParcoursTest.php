@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Vitrine;
 
+use App\Support\Vitrine\FilmDuParcours;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -71,6 +72,30 @@ class FilmDuParcoursTest extends TestCase
 
             $this->assertSame([], $manquantes, "Frames manquantes en « {$taille} » : ".implode(', ', $manquantes));
         }
+    }
+
+    public function test_le_manifeste_porte_une_version_qui_change_a_chaque_fabrication(): void
+    {
+        $version = (string) ($this->manifeste()['version'] ?? '');
+
+        // LE JETON EST CE QUI REND LE FILM REMPLACABLE. Les 700 fichiers gardent leurs noms d'un
+        // tournage a l'autre : sans version dans l'URL, le navigateur d'un visiteur qui a deja vu
+        // le film lui reservirait l'ancien. Mesure du 2026-09-11 : le film refait en plein jour
+        // est reste nocturne apres deux rechargements.
+        $this->assertMatchesRegularExpression('/^\d{14}$/', $version,
+            'La version doit etre un horodatage de fabrication (AAAAMMJJhhmmss), pas une constante.');
+
+        $this->assertSame($version, FilmDuParcours::version());
+    }
+
+    public function test_le_poster_de_la_home_porte_le_jeton_de_version(): void
+    {
+        $version = FilmDuParcours::version();
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('journey-film/poster.jpg?v='.$version, false)
+            ->assertSee('journey-film/poster.webp?v='.$version, false);
     }
 
     public function test_le_poster_existe_dans_les_deux_formats(): void

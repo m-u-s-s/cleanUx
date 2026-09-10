@@ -50,8 +50,9 @@
         {{-- Le poster : visible tant que la première frame n'est pas décodée, et
              visuel définitif des navigateurs sans AVIF. --}}
         <picture class="cx-film__poster" aria-hidden="true">
-            <source srcset="{{ asset('images/journey-film/poster.webp') }}" type="image/webp">
-            <img src="{{ asset('images/journey-film/poster.jpg') }}" alt="" width="1280" height="720"
+            {{-- Versionne : le poster garde son nom d'un tournage a l'autre. --}}
+            <source srcset="{{ \App\Support\Vitrine\FilmDuParcours::asset('poster.webp') }}" type="image/webp">
+            <img src="{{ \App\Support\Vitrine\FilmDuParcours::asset('poster.jpg') }}" alt="" width="1280" height="720"
                  loading="lazy" decoding="async">
         </picture>
 

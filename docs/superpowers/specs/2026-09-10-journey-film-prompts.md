@@ -291,7 +291,37 @@ C'est ce qui fait que le film se lit comme une chute unique et non comme un mont
 | Deux tailles | 1280×720 et 768×432 | le téléphone ne télécharge pas les pixels du bureau |
 | Encodage | AVIF, `libaom-av1`, CRF **40** / **42**, `cpu-used 8` | mesuré : CRF 32, 38 et 42 sont indistinguables à 100 % sur ce contenu. CRF 40 économise 39 % |
 | Poster | WebP **et** JPEG | c'est le visuel des navigateurs SANS AVIF : il ne peut pas être en AVIF |
-| Manifeste | `frames.json` | `JourneyFilmAssetsTest` compare son `total` au nombre de fichiers réellement présents |
+| Manifeste | `frames.json`, avec une **`version` horodatée** | `FilmDuParcoursTest` compare son `total` au nombre de fichiers réellement présents, et exige que la version soit un horodatage |
+
+### 5.1 Le jeton de version — sans lui, rien ne change pour le visiteur
+
+Les 700 fichiers gardent leurs noms d'un tournage à l'autre. **Un visiteur qui a déjà vu le film
+se verrait reservir l'ancien depuis le cache de son navigateur, quel que soit le nombre de
+rechargements** — mesuré le 2026-09-11 : le film refait en plein jour est resté nocturne après
+deux rafraîchissements, parce que `php artisan serve` n'envoie ni `Cache-Control`, ni `ETag`,
+ni `Last-Modified`, et que le navigateur applique alors son cache heuristique.
+
+Le script écrit donc dans `frames.json` une `version` qui est l'horodatage UTC de la
+fabrication. Elle se propage à trois endroits :
+
+- **les frames** — `journey-film-frames.js` ajoute `?v=<version>` à chaque URL ;
+- **le poster** — `FilmDuParcours::asset('poster.jpg')` fait de même côté Blade ;
+- **le manifeste lui-même** — impossible à versionner puisqu'il PORTE la version : il se lit en
+  `cache: 'no-cache'`. Il portait `force-cache`, ce qui servait l'ancien manifeste, donc
+  l'ancienne version, donc les anciennes frames.
+
+**Il y avait DEUX couches de cache, pas une.** Le cache HTTP du navigateur, et le service worker
+`public/sw.js`, qui applique une stratégie *cache-first* à tout `request.destination === 'image'` —
+donc aux frames et au poster. Même un rechargement forcé ne l'aurait pas contournée. Le jeton les
+défait toutes les deux d'un coup, parce que `caches.match()` compare l'URL **query comprise**
+(il faudrait `ignoreSearch: true` pour l'ignorer, et ce n'est pas ce que fait le SW).
+
+**Le point aveugle qu'il faut connaître** : `tools/visual-qa/verif-film.mjs` ouvre un contexte
+neuf à chaque exécution, donc un cache vide. Il a déclaré le film diurne conforme pendant que le
+navigateur de l'utilisateur affichait le film nocturne. Un harnais qui repart d'un profil neuf ne
+peut pas, par construction, reproduire un défaut de cache. Ce qui se vérifie à la place — et qui
+est vérifiable dans un contexte neuf — c'est que **chaque URL demandée porte le jeton** ; le
+harnais l'affiche désormais (`frames sans jeton de version : 0`).
 
 **Total : 350 frames × 2 tailles — 7,0 Mo en bureau, 3,3 Mo en mobile**, soit ~500 Ko par chapitre,
 et jamais téléchargés par qui ne descend pas.
@@ -308,5 +338,7 @@ autorise un AVIF aussi compressé en dessous sans que ça se voie.
    proposé, renvoyer l'appel avec `declined_preset_id`.
 3. Remplacer `shotNN.mp4` dans le dossier des plans.
 4. Relancer le script de montage. Il refait les 350 frames — c'est deux minutes, et cela garantit
-   que le manifeste et le disque ne divergent jamais.
+   que le manifeste et le disque ne divergent jamais. **Il pose au passage une `version` neuve :
+   c'est elle, et elle seule, qui fait qu'un visiteur revoit le film modifié plutôt que celui de
+   son cache.**
 5. `php artisan test --filter=FilmDuParcoursTest` puis `node tools/visual-qa/verif-film.mjs`.
