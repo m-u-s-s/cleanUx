@@ -37,12 +37,18 @@ de la poignée de main jusqu'à la galaxie du début, et le film se referme sur 
 
 ## 1. Le bloc de style — collé à la fin de CHAQUE prompt
 
-> Photoreal documentary cinematography, large-format cinema camera, fast vintage prime lens,
-> shallow depth of field, fine 35mm film grain, true deep blacks lifted only by warm practical
-> light, warm amber and old-gold colour grade, real skin texture with visible pores and natural
-> asymmetry, no beauty filter, no digital smoothing, no CGI look, no 3D render look, no
-> illustration, no cartoon, no text, no captions, no subtitles, no watermark, no logos,
-> 16:9 cinematic framing
+> Photoreal documentary cinematography, large-format cinema camera, fast prime lens, shallow
+> depth of field, fine 35mm film grain, **bright natural daylight, clean high-key exposure, open
+> shadows with plenty of detail, no crushed blacks**, natural colour, real skin texture with
+> visible pores and natural asymmetry, no beauty filter, no digital smoothing, no CGI look, no
+> 3D render look, no illustration, no cartoon, no text, no captions, no subtitles, no watermark,
+> no logos, 16:9 cinematic framing
+
+**Révisé le 2026-09-10.** La première version était nocturne (`warm amber and old-gold colour
+grade, true deep blacks`) et l'utilisateur l'a jugée trop sombre. Les trois expressions qui font
+le travail sont `bright natural daylight`, `open shadows with plenty of detail` et surtout
+`no crushed blacks` : sans la dernière, le modèle referme les ombres même quand on lui demande
+du jour.
 
 Sur les plans qui montrent un écran de téléphone, remplacer les deux dernières lignes par :
 

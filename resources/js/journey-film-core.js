@@ -215,10 +215,14 @@ function construireMonde(canvas, compositeur) {
         uFilm: { value: texture },
         uCouverture: { value: new THREE.Vector2(1, 1) },
         uTemps: { value: 0 },
-        uGrain: { value: 0.055 },
-        uVignette: { value: 0.55 },
-        uAberration: { value: 0.006 },
-        uBloom: { value: 0.35 },
+        // REGLE POUR DU PLEIN JOUR. La vignette etait a 0,55 et le bloom a 0,35 : ecrits pour
+        // des plans nocturnes, ils assombrissaient les bords et bavaient sur les hautes
+        // lumieres d'une image diurne. Le grain, lui, ne bouge pas : c'est lui qui autorise
+        // un AVIF tres compresse en dessous.
+        uGrain: { value: 0.048 },
+        uVignette: { value: 0.24 },
+        uAberration: { value: 0.005 },
+        uBloom: { value: 0.16 },
         uCourbure: { value: 0.045 },
         uOuverture: { value: 1 },
     };

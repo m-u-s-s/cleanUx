@@ -188,16 +188,22 @@
 }
 .cx-film.is-peint .cx-film__poster { opacity: 0; }
 
-/* Le voile : il garantit la lisibilité des légendes quel que soit le plan —
-   un texte blanc sur un plan de ville dorée serait illisible sans lui. */
+/* Le voile : il garantit la lisibilité des légendes quel que soit le plan.
+   RESSERRE POUR DU PLEIN JOUR : il montait à 52 % de la hauteur et éteignait la
+   moitié d'une image diurne. Il ne couvre plus que la bande où le texte se pose,
+   et le texte porte en plus son propre halo (voir `.cx-film__legende`). */
 .cx-film__voile {
     position: absolute;
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    background:
-        linear-gradient(to top, rgb(5 7 13 / 0.92) 0%, rgb(5 7 13 / 0.55) 26%, transparent 52%),
-        radial-gradient(120% 80% at 50% 0%, transparent 40%, rgb(5 7 13 / 0.45) 100%);
+    background: linear-gradient(
+        to top,
+        rgb(5 7 13 / 0.86) 0%,
+        rgb(5 7 13 / 0.62) 12%,
+        rgb(5 7 13 / 0.22) 26%,
+        transparent 38%
+    );
 }
 
 /* ------------------------------------------------------------ LES LÉGENDES */
@@ -226,6 +232,8 @@
     visibility: visible;
 }
 
+/* Le halo : la lisibilité ne peut pas dépendre du plan qui passe derrière. Un voile
+   suffit sur une image sombre, pas sur un ciel de midi. */
 .cx-film__legende b {
     display: block;
     font-family: var(--cx-body);
@@ -233,6 +241,7 @@
     font-weight: 700;
     line-height: 1.15;
     color: var(--cx-film-encre);
+    text-shadow: 0 1px 2px rgb(5 7 13 / 0.85), 0 2px 14px rgb(5 7 13 / 0.65);
     text-wrap: balance;
 }
 
@@ -242,7 +251,8 @@
     font-family: var(--cx-body);
     font-size: clamp(0.85rem, 1.4vw, 1rem);
     line-height: 1.5;
-    color: var(--cx-film-faible);
+    color: rgb(247 244 238 / 0.86);
+    text-shadow: 0 1px 2px rgb(5 7 13 / 0.85), 0 2px 12px rgb(5 7 13 / 0.6);
     text-wrap: balance;
 }
 

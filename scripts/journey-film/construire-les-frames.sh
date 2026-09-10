@@ -21,8 +21,11 @@ trap 'rm -rf "$TRAVAIL"' EXIT
 
 PLANS=14
 FRAMES_PAR_PLAN=25          # 121 images source, une sur cinq -> 25 exactement, sans dérive
-CRF_DESKTOP=40              # mesuré : CRF 32 / 38 / 42 indistinguables à 100 % sur ce contenu
-CRF_MOBILE=42               # petit écran : la tolérance y est plus large encore
+# Mesuré sur le film DIURNE (2026-09-10). Le plein jour coûte plus cher que la nuit : plus de
+# détail, moins de noir. À 100 % sur un plan de cuisine, CRF 40/44/48 sont indistinguables ;
+# c'est le plan de ville vue du ciel qui décide — au-delà de 44, ses toitures se ramollissent.
+CRF_DESKTOP=44
+CRF_MOBILE=48               # 768x432 sur un téléphone : la tolérance y est bien plus large
 CPU_USED=8                  # libaom : 8 encode vite pour ~3 % de poids en plus
 
 echo "→ Sortie : $SORTIE"

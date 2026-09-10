@@ -37,11 +37,14 @@ L'identité Brio (`public/images/brand/brio-provider-dark-512.png`) est du **mar
 d'or** portant un **anneau doré** et le mot « Brio » en Allura. Cette identité ne se peint pas
 par-dessus le réel : elle devient **la lumière et l'étalonnage**.
 
-- **Palette** : noir d'encre (`#0b0f1a`), or ancien et ambre (`--cx-amber #ffb648`,
-  `--cx-amber-deep #ff8a3d`). Le seul froid autorisé est le bleu de la Terre, qui arrive comme
-  un événement au plan 2, et le vert de validation (`--brio-success #059669`) aux plans 9 et 11.
-- **Lumière** : froide et immense en haut (l'espace, l'échelle), chaude et serrée en bas (un
-  seuil de porte, une main). La bascule tombe au plan 9, quand on sonne.
+- **Lumière : PLEIN JOUR.** Révisé le 2026-09-10 sur retour de l'utilisateur — la première
+  version était nocturne, et « trop sombre ». Le film se déroule un après-midi d'automne clair :
+  exposition ouverte, ombres qui gardent du détail, aucun noir écrasé. La mission entière, du
+  téléphone à la poignée de main, se passe à la lumière du jour.
+- **Palette** : la lumière naturelle porte l'image ; l'or et l'ambre (`--cx-amber #ffb648`,
+  `--cx-amber-deep #ff8a3d`) ne sont plus l'étalonnage global mais **l'accent de marque** —
+  l'anneau doré, les boutons de l'app, la ligne de scan. Le vert de validation
+  (`--brio-success #059669`) marque les deux scans.
 - **Grammaire de caméra** : une seule descente. L'image de fin de chaque plan est l'image de
   début du suivant (`start_image` / `end_image`), donc aucune coupe franche. Le plan 14 rembobine
   la descente entière en un seul retrait.
@@ -51,11 +54,12 @@ par-dessus le réel : elle devient **la lumière et l'étalonnage**.
 
 ### 3.1 Le bloc de style, répété dans chaque plan
 
-> shot on ARRI Alexa 35 with vintage fast prime lenses, shallow depth of field, natural motion
-> blur, fine 35mm film grain, true deep blacks lifted only by warm practical light, photoreal
-> documentary cinematography, real people with real skin texture, visible pores and natural
-> asymmetry, no beauty filter, no digital smoothing, no CGI look, no 3D render look, no
-> illustration, no cartoon, no on-screen text, no subtitles, no watermark, no logos
+> photoreal documentary cinematography, large-format cinema camera, fast prime lens, shallow
+> depth of field, natural motion blur, fine 35mm film grain, **bright natural daylight, clean
+> high-key exposure, open shadows with plenty of detail, no crushed blacks**, natural colour,
+> real people with real skin texture, visible pores and natural asymmetry, no beauty filter, no
+> digital smoothing, no CGI look, no 3D render look, no illustration, no cartoon, no on-screen
+> text, no subtitles, no watermark, no logos
 
 ## 4. Les 14 plans
 
@@ -66,8 +70,8 @@ modèles de génération y sont nettement plus précis, et aucun de ces mots n'a
 |---|---|---|
 | 01 | La galaxie | l'accroche |
 | 02 | La Terre | 9 pays |
-| 03 | L'Europe de nuit | 30+ métiers, un maillage réel |
-| 04 | La rue | chez vous, ce soir |
+| 03 | La ville vue du ciel | 30+ métiers, un maillage réel |
+| 04 | La rue au soleil | chez vous, aujourd'hui |
 | 05 | Le téléphone de la cliente | réserver prend 30 secondes |
 | 06 | Le devis IA | fourchette de prix en 10 s, prix avant identité |
 | 07 | Brio Provider accepte | un pro vérifié KYC et assuré |
@@ -94,6 +98,11 @@ devient :
 - un **champ de poussière d'or** (`THREE.Points`, ~1200 points, dérive lente, parallaxe liée au scroll) ;
 - un **shader de post-traitement** : grain argentique animé, vignette, aberration chromatique
   douce sur les bords, bloom sur les hautes lumières, courbure imperceptible.
+
+  **Réglé pour du plein jour** : vignette 0,24 et bloom 0,16 (contre 0,55 et 0,35 dans la
+  version nocturne, qui assombrissaient les bords et bavaient sur les hautes lumières d'une
+  image diurne). Le grain, lui, ne bouge pas — c'est lui qui autorise un AVIF très compressé
+  en dessous.
 
 **Couche B — le décodeur de frames** (`resources/js/journey-film-frames.js`)
 - **350 frames** (14 plans × 25), en deux tailles : 1280×720 et 768×432 ;
