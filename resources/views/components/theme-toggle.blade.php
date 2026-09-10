@@ -1,6 +1,7 @@
 {{--
     Bouton de bascule clair / sombre. Toute la logique vit dans `<x-theme-amorce />`.
-    `variant="responsive"` rend la version pleine largeur du menu mobile.
+    `variant="responsive"` rend la version pleine largeur du menu mobile,
+    `variant="vitrine"` celle de la barre publique (coquille nuit permanente).
 --}}
 @props(['variant' => 'inline'])
 
@@ -10,7 +11,17 @@
     $svg = 'h-5 w-5 shrink-0';
 @endphp
 
-@if ($variant === 'responsive')
+@if ($variant === 'vitrine')
+    {{-- La barre publique est en nuit permanente (coquille vitrine) : le bouton parle son
+         vocabulaire — `cx-btn--ghost` — et non celui de la coquille outil. 44 px de cote,
+         la cible tactile exigee par le harnais mobile. --}}
+    <button type="button" x-data x-on:click="window.brioTheme.basculer()"
+            class="cx-btn cx-btn--ghost cx-btn--icone"
+            aria-label="{{ __('Changer le thème') }}">
+        <svg class="{{ $svg }} dark:hidden" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $lune }}" /></svg>
+        <svg class="{{ $svg }} hidden dark:block" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $soleil }}" /></svg>
+    </button>
+@elseif ($variant === 'responsive')
     {{-- Pleine largeur et 44 px de haut : la cible tactile exigée par le harnais mobile. --}}
     <button type="button" x-data x-on:click="window.brioTheme.basculer()"
             class="flex min-h-11 w-full items-center gap-3 border-l-4 border-transparent px-4 py-2 text-start text-base font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200">

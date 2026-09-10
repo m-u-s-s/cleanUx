@@ -136,6 +136,7 @@ uniform float uAberration;
 uniform float uBloom;
 uniform float uCourbure;
 uniform float uOuverture;    // 0 -> noir, 1 -> plein : l'entrée et la sortie du film
+uniform vec3  uHorsCadre;    // la couleur de la salle, thème compris
 
 varying vec2 vUv;
 
@@ -143,14 +144,16 @@ float bruit(vec2 p) {
     return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
-const vec3 ENCRE = vec3(0.020, 0.027, 0.051); // le noir de la salle, cf. --cx-film-nuit
-
 vec3 lire(vec2 centre) {
     vec2 uv = centre * uCouverture + 0.5;
 
-    // HORS CADRE, ON REND L'ENCRE — pas le pixel de bord etire. En portrait le film est
-    // volontairement en bande : sans ce test, les bords se seraient etales en trainees.
-    if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return ENCRE;
+    // HORS CADRE, ON REND LA COULEUR DE LA SALLE — pas le pixel de bord etire. En portrait le
+    // film est volontairement en bande : sans ce test, les bords s'etaleraient en trainees.
+    // La couleur vient du CSS (--cx-film-fond), donc elle suit le theme : une bande noire
+    // autour du film sur une page claire se verrait comme un defaut.
+    // PAS D'ACCENT GRAVE DANS CE SHADER : il vit dans un litteral de gabarit JS, et un
+    // accent grave le termine. Le build casse alors sur la ligne suivante, pas ici.
+    if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return uHorsCadre;
 
     return texture2D(uFilm, uv).rgb;
 }
@@ -225,6 +228,7 @@ function construireMonde(canvas, compositeur) {
         uBloom: { value: 0.16 },
         uCourbure: { value: 0.045 },
         uOuverture: { value: 1 },
+        uHorsCadre: { value: new THREE.Color(0x05070d) },
     };
 
     // Le film : un quad plein écran, caméra orthographique. Rien de plus.
@@ -285,6 +289,11 @@ function construireMonde(canvas, compositeur) {
             texture.needsUpdate = true;
         },
 
+        /** Accorde la couleur hors-cadre à celle que le CSS donne à la salle. */
+        accorderAuTheme(couleurCss) {
+            uniforms.uHorsCadre.value.setStyle(couleurCss, THREE.SRGBColorSpace);
+        },
+
         /** @param {number} position 0..1 sur tout le film */
         placer(position) {
             // La poussière dérive à contre-sens du scroll : c'est la parallaxe.
@@ -335,10 +344,16 @@ function construireMonde2D(canvas, compositeur) {
 
     dimensionner();
 
+    let couleurSalle = '#05070d';
+
     return {
         moteur: '2d',
         rafraichirTexture() {},
         placer() {},
+
+        accorderAuTheme(couleurCss) {
+            couleurSalle = couleurCss;
+        },
 
         rendre() {
             const l = canvas.width;
@@ -351,7 +366,7 @@ function construireMonde2D(canvas, compositeur) {
             if (ratioVue > ratioFilm) dh = l / ratioFilm;
             else dl = h * ratioFilm;
 
-            ctx.fillStyle = '#05070d';
+            ctx.fillStyle = couleurSalle;
             ctx.fillRect(0, 0, l, h);
             ctx.drawImage(compositeur.canvas, (l - dl) / 2, (h - dh) / 2, dl, dh);
         },
@@ -416,6 +431,25 @@ export async function init() {
 
     section.classList.add(monde.moteur === 'webgl' ? 'is-webgl' : 'is-2d');
     monde.dimensionner(); // la mise en page vient de changer : on remesure avant le premier rendu
+
+    /* ------------------------------------------------------------------ LE THEME
+       La couleur hors-cadre est celle que le CSS donne à la salle, pas une constante :
+       une bande noire autour du film sur une page claire se verrait comme un défaut.
+
+       ON OBSERVE LA CLASSE DE `<html>`, PAS L'EVENEMENT `brio:theme`. Celui-ci n'est
+       émis que par un choix explicite de l'utilisateur ; quand c'est la PREFERENCE
+       SYSTEME qui bascule en cours de visite, l'amorce applique la classe sans rien
+       émettre. L'observateur, lui, voit les deux chemins. */
+    const scene = section.querySelector('.cx-film__scene') || section;
+
+    function accorder() {
+        monde.accorderAuTheme(getComputedStyle(scene).backgroundColor);
+    }
+
+    accorder();
+
+    const observateurDeTheme = new MutationObserver(accorder);
+    observateurDeTheme.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
     const chapitres = Array.prototype.slice.call(section.querySelectorAll('[data-cx-film-chapitre]'));
     const puces = Array.prototype.slice.call(section.querySelectorAll('[data-cx-film-puce]'));
@@ -492,6 +526,7 @@ export async function init() {
         monde,
         declencheur,
         surRedimensionnement,
+        observateurDeTheme,
         pause() {
             vivant = false;
             if (raf != null) cancelAnimationFrame(raf);
@@ -513,6 +548,7 @@ export function teardown() {
 
     etat.arreter();
     window.removeEventListener('resize', etat.surRedimensionnement);
+    etat.observateurDeTheme.disconnect();
     etat.declencheur.kill();
     etat.monde.detruire();
     etat.magasin.detruire();

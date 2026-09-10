@@ -87,6 +87,14 @@
     }
     .cx-btn--ghost:hover { border-color: var(--cx-amber); color: var(--cx-amber); }
 
+    /* Un bouton qui ne porte qu'une icone : carre, et 44 px pour le doigt. */
+    .cx-btn--icone {
+        width: 2.75rem;
+        height: 2.75rem;
+        padding: 0;
+        flex: 0 0 auto;
+    }
+
     body.cx-shell .cx-field input,
     body.cx-shell .cx-field select,
     body.cx-shell .cx-field textarea {
@@ -181,12 +189,12 @@
    La liste est celle des surfaces de CONTENU ; les boutons et puces fixent deja leur encre.
    ========================================================================= */
 @layer components {
-    body.cx-shell :is(.text-slate-900, .text-slate-800):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass) *) {
+    body.cx-shell :is(.text-slate-900, .text-slate-800):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass, .cx-film) *) {
         color: var(--cx-text);
     }
 
     body.cx-shell
-        :is(.text-slate-700, .text-slate-600, .text-slate-500, .text-slate-400):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass) *) {
+        :is(.text-slate-700, .text-slate-600, .text-slate-500, .text-slate-400):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass, .cx-film) *) {
         color: var(--cx-muted);
     }
 }
@@ -201,11 +209,11 @@
 
        La rampe s'eclaircit donc, sauf sur une surface restee vraiment claire.
        ------------------------------------------------------------------ */
-    body.cx-shell :is(.text-brand-600, .text-brand-700):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass) *) {
+    body.cx-shell :is(.text-brand-600, .text-brand-700):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass, .cx-film) *) {
         color: theme('colors.brand.300');
     }
 
-    body.cx-shell :is(.text-brand-500):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass) *) {
+    body.cx-shell :is(.text-brand-500):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass, .cx-film) *) {
         color: theme('colors.brand.400');
     }
 }

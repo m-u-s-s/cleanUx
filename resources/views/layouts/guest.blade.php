@@ -157,6 +157,11 @@
                     <a href="{{ route('booking.create') }}" class="cx-btn cx-btn--primary px-4 py-2 text-sm">Réserver</a>
                 @endauth
 
+                {{-- La bascule clair / sombre, visible a toutes les largeurs : sans elle, un
+                     visiteur ne pouvait obtenir le mode sombre qu'en changeant sa preference
+                     systeme. La logique vit dans `<x-theme-amorce />`. --}}
+                <x-theme-toggle variant="vitrine" />
+
                 {{-- Bouton du menu mobile (caché en ≥ md, cf. floating-nav.css) --}}
                 <button type="button" class="cxnav__toggle"
                         data-fn-toggle aria-expanded="false" aria-controls="cxnav-panel"

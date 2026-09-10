@@ -37,19 +37,21 @@
        une carte blanche : exclure tout descendant d'une surface claire aurait desactive la
        regle ci-dessus partout. On ne rend l'encre qu'a l'interieur d'une surface claire
        imbriquee SOUS le conteneur clair — la, et nulle part ailleurs. */
-    :is(.text-white, .text-slate-50, .text-slate-100, .text-slate-200) :is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass) :is(h1, h2, h3, h4) {
+    :is(.text-white, .text-slate-50, .text-slate-100, .text-slate-200) :is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass, .cx-film) :is(h1, h2, h3, h4) {
         color: var(--brio-ink);
     }
 
     /* Un titre de la coquille nuit est clair — SAUF dans une surface restée claire.
-       `.brio-glass` vaut rgba(255,255,255,.7) : les titres de /login y étaient blancs sur blanc. */
-    body.cx-shell :is(h1, h2, h3, h4):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass) *) {
+       `.brio-glass` vaut rgba(255,255,255,.7) : les titres de /login y étaient blancs sur blanc.
+       `.cx-film` a rejoint la liste : la section du film peint SON PROPRE fond, qui suit le
+       thème. Sans cette exclusion, ses titres restaient clairs sur un fond clair. */
+    body.cx-shell :is(h1, h2, h3, h4):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass, .cx-film) *) {
         color: var(--cx-text);
     }
 
     /* Même réserve qu'au-dessus : un titre posé sur une surface CLAIRE garde sa couleur,
        sinon le mode sombre le peint en blanc sur du blanc. */
-    .dark :is(h1, h2, h3, h4):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass) *) {
+    .dark :is(h1, h2, h3, h4):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass, .cx-film) *) {
         color: var(--brio-ink);
     }
 

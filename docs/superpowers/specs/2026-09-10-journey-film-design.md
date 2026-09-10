@@ -51,6 +51,12 @@ par-dessus le réel : elle devient **la lumière et l'étalonnage**.
 - **Aucun texte cuit dans la vidéo**, sauf les écrans de téléphone. Titres, légendes et badges
   sont du HTML par-dessus : nets à tout DPI, traduits en six langues, lus par les lecteurs
   d'écran, modifiables sans regénérer un plan à 45 crédits.
+- **Les deux thèmes sont traités** (révisé le 2026-09-11). Une première version posait la section
+  en sombre quel que soit le thème, présentée ici comme un parti pris ; c'était une décision de
+  direction prise seul, et l'utilisateur l'a refusée. La section suit maintenant `:root.dark`
+  comme le reste du système. Deux choses ne basculent pas, et c'est motivé : **la photographie**
+  (un plan de film n'a pas de thème) et **le fond du QR**, qui reste blanc parce qu'un code se
+  lit en sombre sur clair.
 
 ### 3.1 Le bloc de style, répété dans chaque plan
 

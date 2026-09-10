@@ -15,11 +15,12 @@ mkdirSync(SORTIE, { recursive: true });
 
 const navigateur = await chromium.launch();
 
-async function ouvrir({ width, height, reducedMotion = 'no-preference' }) {
+async function ouvrir({ width, height, reducedMotion = 'no-preference', theme = 'dark' }) {
     const contexte = await navigateur.newContext({
         viewport: { width, height },
         deviceScaleFactor: 1,
         reducedMotion,
+        colorScheme: theme,
     });
     const page = await contexte.newPage();
     const erreurs = [];
@@ -175,6 +176,45 @@ async function etat(page) {
     console.log('  erreurs JS  :', erreurs.length ? erreurs.join(' | ') : 'aucune');
     await page.screenshot({ path: `${SORTIE}reduced-motion.png`, fullPage: false });
     await contexte.close();
+}
+
+/* --------------------------------------------------------------- 4. LES DEUX THEMES
+   La section a longtemps été sombre quel que soit le thème. Ce contrôle mesure qu'elle
+   RÉPOND au thème : si les deux colonnes sont identiques, elle ne le fait plus. */
+{
+    const lu = {};
+
+    for (const theme of ['light', 'dark']) {
+        const { contexte, page } = await ouvrir({ width: 1440, height: 900, theme });
+        await page.evaluate(() => {
+            const b = document.getElementById('telecharger');
+            if (b) b.scrollIntoView({ block: 'center', behavior: 'instant' });
+        });
+        await page.waitForTimeout(900);
+
+        lu[theme] = await page.evaluate(() => {
+            const g = (sel, prop) => {
+                const el = document.querySelector(sel);
+                return el ? getComputedStyle(el)[prop] : null;
+            };
+            return {
+                fond: g('[data-cx-film]', 'backgroundColor'),
+                titre: g('.cx-apps__titre', 'color'),
+                carte: g('.cx-apps__carte', 'backgroundColor'),
+                magasin: g('.cx-apps__bouton-magasin', 'color'),
+            };
+        });
+
+        await page.screenshot({ path: `${SORTIE}theme-${theme}.png` });
+        await contexte.close();
+    }
+
+    console.log('\nTHEMES');
+    for (const cle of ['fond', 'titre', 'carte', 'magasin']) {
+        const identique = lu.light[cle] === lu.dark[cle];
+        console.log(`  ${cle.padEnd(9)} clair=${String(lu.light[cle]).padEnd(26)} sombre=${lu.dark[cle]}`
+            + (identique ? '   — NE SUIT PAS LE THEME' : ''));
+    }
 }
 
 await navigateur.close();

@@ -3,47 +3,65 @@
    (réécrite le 10/09/2026 — la version précédente datait d'avant la refonte
    d'août et portait #6366f1, #0f172a et #f8fafc en dur, sans mode sombre.)
 
-   La section est une salle de cinéma : elle est SOMBRE dans les deux thèmes.
-   Ce n'est pas un oubli du mode clair, c'est la direction — un film ne se
-   projette pas sur un mur blanc. Les jetons ci-dessous étendent le système,
-   ils ne le contournent pas : tout ce qui existait déjà est réutilisé.
+   LES DEUX THEMES SONT TRAITES. Une première version posait la section en
+   sombre quel que soit le thème ; c'était une décision de direction que je
+   n'avais pas à prendre seul. Tout ce qui suit s'appuie sur les jetons du
+   système, qui basculent déjà sur `:root.dark` — la seule porte du thème dans
+   ce dépôt (voir `tokens.css`, « UNE SEULE PORTE »).
+
+   CE QUI NE BASCULE PAS, ET POURQUOI :
+     • la photographie — un plan de film n'a pas de thème ;
+     • le fond du QR, qui reste blanc : un code se scanne en sombre sur clair,
+       c'est une contrainte de lecture optique, pas un choix esthétique.
    ========================================================================= */
 
 .cx-film {
-    /* --- Les jetons de la salle ------------------------------------------ */
-    --cx-film-nuit:      rgb(5 7 13);                      /* le noir d'encre du film */
-    --cx-film-nuit-doux: rgb(11 15 26);
-    --cx-film-encre:     rgb(247 244 238);                 /* le texte sur la nuit */
-    --cx-film-faible:    rgb(247 244 238 / 0.62);
-    --cx-film-or:        var(--cx-amber);
+    /* --- Les jetons de la salle, en MODE CLAIR (le défaut) ---------------- */
+    --cx-film-fond:       var(--brio-bg);
+    --cx-film-encre:      var(--brio-ink);
+    --cx-film-faible:     var(--brio-muted);
+    /* DEUX ORS, ET C'EST VOULU. `--cx-film-or` peint des GRAPHIQUES (barre, puces) ;
+       `--brio-accent-texte` est l'or du système quand il devient du TEXTE, et lui seul
+       bascule pour rester lisible : mesuré à 1,54:1 en clair avec l'ambre pur. */
+    --cx-film-or:         var(--cx-amber-deep);
     --cx-film-or-profond: var(--cx-amber-deep);
-    --cx-film-verre:     rgb(255 255 255 / 0.05);
-    --cx-film-verre-bord: rgb(255 255 255 / 0.10);
+    --cx-film-or-texte:   var(--brio-accent-texte);
+    --cx-film-verre:      var(--glass-bg);
+    --cx-film-verre-bord: var(--glass-border);
+    --cx-film-relief:     rgb(var(--brio-ink-rgb) / 0.04);
+
+    /* Le voile sous la légende et le halo du texte : en clair on ÉCLAIRCIT
+       l'image sous le texte et on écrit en encre ; en sombre, l'inverse. */
+    --cx-film-voile-rgb:  248 250 253;
+    --cx-film-halo-rgb:   255 255 255;
+    --cx-film-legende:    var(--brio-ink);
+    /* Plus soutenu que `--brio-muted` : la legende ne se pose pas sur une page, elle se
+       pose sur une PHOTO, a travers un voile partiel. Mesure a l'oeil sur le plan de
+       cuisine en plein soleil — le gris du systeme y disparaissait. */
+    --cx-film-legende-2:  rgb(var(--brio-ink-rgb) / 0.84);
 
     position: relative;
-    background: var(--cx-film-nuit);
+    background: var(--cx-film-fond);
     color: var(--cx-film-encre);
     isolation: isolate;
 }
 
-/* Le raccord avec les sections claires d'avant et d'après : la nuit ne coupe
-   pas la page au couteau, elle y entre et en sort. */
-.cx-film::before,
-.cx-film::after {
-    content: "";
-    position: absolute;
-    inset-inline: 0;
-    height: clamp(3rem, 8vh, 7rem);
-    pointer-events: none;
-    z-index: 2;
-}
-.cx-film::before {
-    top: 0;
-    background: linear-gradient(to bottom, var(--brio-bg), transparent);
-}
-.cx-film::after {
-    bottom: 0;
-    background: linear-gradient(to top, var(--brio-bg), transparent);
+/* --- Les mêmes jetons, en MODE SOMBRE -------------------------------------
+   Le noir de la salle est plus profond que `--brio-bg` : c'est un écran, pas
+   une page. Le reste suit le système. */
+:root.dark .cx-film {
+    --cx-film-fond:       rgb(5 7 13);
+    --cx-film-encre:      rgb(247 244 238);
+    --cx-film-faible:     rgb(247 244 238 / 0.62);
+    --cx-film-verre:      rgb(255 255 255 / 0.05);
+    --cx-film-verre-bord: rgb(255 255 255 / 0.10);
+    --cx-film-relief:     rgb(255 255 255 / 0.04);
+
+    --cx-film-or:         var(--cx-amber);
+    --cx-film-voile-rgb:  5 7 13;
+    --cx-film-halo-rgb:   5 7 13;
+    --cx-film-legende:    rgb(247 244 238);
+    --cx-film-legende-2:  rgb(247 244 238 / 0.86);
 }
 
 /* ---------------------------------------------------------------- L'EN-TÊTE */
@@ -62,7 +80,7 @@
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--cx-film-or);
+    color: var(--cx-film-or-texte);
 }
 
 /* h2 sort en Allura dans ce dépôt : c'est voulu ici, le titre est le générique. */
@@ -116,7 +134,7 @@
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.08em;
-    color: var(--cx-film-or);
+    color: var(--cx-film-or-texte);
 }
 
 .cx-film__etapes b {
@@ -159,7 +177,7 @@
     top: 0;
     height: 100svh;
     overflow: hidden;
-    background: var(--cx-film-nuit);
+    background: var(--cx-film-fond);
 }
 
 .cx-film__canvas,
@@ -199,9 +217,9 @@
     pointer-events: none;
     background: linear-gradient(
         to top,
-        rgb(5 7 13 / 0.86) 0%,
-        rgb(5 7 13 / 0.62) 12%,
-        rgb(5 7 13 / 0.22) 26%,
+        rgb(var(--cx-film-voile-rgb) / 0.88) 0%,
+        rgb(var(--cx-film-voile-rgb) / 0.64) 12%,
+        rgb(var(--cx-film-voile-rgb) / 0.23) 26%,
         transparent 38%
     );
 }
@@ -240,8 +258,9 @@
     font-size: clamp(1.15rem, 2.6vw, 1.85rem);
     font-weight: 700;
     line-height: 1.15;
-    color: var(--cx-film-encre);
-    text-shadow: 0 1px 2px rgb(5 7 13 / 0.85), 0 2px 14px rgb(5 7 13 / 0.65);
+    color: var(--cx-film-legende);
+    text-shadow: 0 1px 2px rgb(var(--cx-film-halo-rgb) / 0.85),
+                 0 2px 14px rgb(var(--cx-film-halo-rgb) / 0.65);
     text-wrap: balance;
 }
 
@@ -251,8 +270,9 @@
     font-family: var(--cx-body);
     font-size: clamp(0.85rem, 1.4vw, 1rem);
     line-height: 1.5;
-    color: rgb(247 244 238 / 0.86);
-    text-shadow: 0 1px 2px rgb(5 7 13 / 0.85), 0 2px 12px rgb(5 7 13 / 0.6);
+    color: var(--cx-film-legende-2);
+    text-shadow: 0 1px 2px rgb(var(--cx-film-halo-rgb) / 0.85),
+                 0 2px 12px rgb(var(--cx-film-halo-rgb) / 0.6);
     text-wrap: balance;
 }
 
@@ -322,7 +342,7 @@
     font-weight: 700;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: var(--cx-film-or);
+    color: var(--cx-film-or-texte);
 }
 
 /* h3 : au-delà de h2 la fonte repasse en sans — voulu, ce n'est pas un titre
@@ -413,7 +433,7 @@
     padding: 0.7rem 1.1rem;
     border: 1px solid var(--cx-film-verre-bord);
     border-radius: var(--cx-radius-md);
-    background: rgb(255 255 255 / 0.03);
+    background: var(--cx-film-relief);
     text-decoration: none;
     transition: border-color var(--cx-dur-fast) var(--cx-ease),
                 background var(--cx-dur-fast) var(--cx-ease),
@@ -439,7 +459,7 @@
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--cx-film-or);
+    color: var(--cx-film-or-texte);
 }
 
 .cx-apps__bouton-action {
@@ -465,7 +485,9 @@
     height: 5.5rem;
     padding: 0.35rem;
     border-radius: var(--cx-radius-sm);
-    background: rgb(255 255 255 / 0.92);
+    /* BLANC DANS LES DEUX THEMES : un QR se lit en sombre sur clair. Le teinter
+       en mode sombre le rendrait joli et illisible par la moitie des appareils. */
+    background: rgb(255 255 255 / 0.94);
 }
 
 .cx-apps__qr-cadre svg {
