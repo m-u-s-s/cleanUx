@@ -38,7 +38,7 @@
                 </form>
 
                 <p class="mt-6 text-center text-sm" style="color:var(--cx-muted)">
-                    <a href="{{ route('login') }}" class="font-bold" style="color:var(--cx-amber)">← Retour à la connexion</a>
+                    <a href="{{ route('login') }}" class="font-bold" style="color:var(--brio-accent-texte)">← Retour à la connexion</a>
                 </p>
             </div>
         </section>

@@ -33,9 +33,27 @@ class LeThemeEstLeMemeSurLesTroisSurfacesTest extends TestCase
         '--cx-muted' => 'mode.showcase.muted',
     ];
 
+    /**
+     * Les jetons de la vitrine ont DEUX valeurs sur le web depuis le 2026-09-11 : la coquille
+     * suit le theme. L'app native, elle, n'a qu'une palette `mode.showcase`, et c'est celle de
+     * NUIT. C'est donc la valeur sous `:root.dark` qui doit egaler le natif — pas la premiere
+     * rencontree dans le fichier, qui est desormais la valeur claire.
+     *
+     * L'invariant ne faiblit pas : si la valeur de nuit diverge du natif, le test tombe.
+     *
+     * @var list<string>
+     */
+    private const REFERENCE_DANS_LE_BLOC_SOMBRE = [
+        '--cx-night', '--cx-night-soft', '--cx-panel', '--cx-line', '--cx-text', '--cx-muted',
+    ];
+
     private function jetonWeb(string $nom): ?string
     {
         $css = (string) file_get_contents(resource_path('css/tokens.css'));
+
+        if (in_array($nom, self::REFERENCE_DANS_LE_BLOC_SOMBRE, true)) {
+            $css = $this->blocSombre($css);
+        }
 
         if (preg_match('/'.preg_quote($nom, '/').'\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/', $css, $m) === 1) {
             return strtolower($m[1]);
@@ -48,6 +66,38 @@ class LeThemeEstLeMemeSurLesTroisSurfacesTest extends TestCase
         }
 
         return null;
+    }
+
+    /** Le bloc `:root.dark { … }` seul, accolades comptees — un `{` imbrique couperait trop tot. */
+    private function blocSombre(string $css): string
+    {
+        $debut = strpos($css, ':root.dark');
+
+        if ($debut === false) {
+            return '';
+        }
+
+        $ouvrante = strpos($css, '{', $debut);
+
+        if ($ouvrante === false) {
+            return '';
+        }
+
+        $profondeur = 0;
+
+        for ($i = $ouvrante; $i < strlen($css); $i++) {
+            if ($css[$i] === '{') {
+                $profondeur++;
+            } elseif ($css[$i] === '}') {
+                $profondeur--;
+
+                if ($profondeur === 0) {
+                    return substr($css, $ouvrante, $i - $ouvrante);
+                }
+            }
+        }
+
+        return '';
     }
 
     /** Rend `15 23 42` sous la forme `#0f172a`, pour comparer ce qui est comparable. */

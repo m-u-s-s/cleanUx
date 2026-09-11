@@ -82,7 +82,9 @@ input[type="password"]:focus {
 
 /* Typography refinements */
 .cx-headline { letter-spacing: -0.025em; line-height: 1.1; }
-.cx-subhead { letter-spacing: 0.02em; text-transform: uppercase; font-size: 0.75rem; font-weight: 600; color: var(--cx-amber); }
+/* L'ambre en TEXTE prend le jeton qui bascule : sur la coquille redevenue claire,
+   l'ambre pur tombait a 1,54:1. `--brio-accent-texte` vaut #a8530a en clair. */
+.cx-subhead { letter-spacing: 0.02em; text-transform: uppercase; font-size: 0.75rem; font-weight: 600; color: var(--brio-accent-texte); }
 .cx-body-readable { max-width: 65ch; line-height: 1.7; }
 .cx-tabular { font-variant-numeric: tabular-nums; }
 .cx-balance { text-wrap: balance; }

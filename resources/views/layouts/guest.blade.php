@@ -226,7 +226,7 @@
                     </p>
                 </div>
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.2em]" style="color:var(--cx-amber)">Métiers</p>
+                    <p class="text-xs font-bold uppercase tracking-[0.2em]" style="color:var(--brio-accent-texte)">Métiers</p>
                     <ul class="mt-4 space-y-2 text-sm">
                         <li><a href="{{ route('home') }}#metiers">Nettoyage</a></li>
                         <li><a href="{{ route('home') }}#metiers">Peinture</a></li>
@@ -235,7 +235,7 @@
                     </ul>
                 </div>
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.2em]" style="color:var(--cx-amber)">Plateforme</p>
+                    <p class="text-xs font-bold uppercase tracking-[0.2em]" style="color:var(--brio-accent-texte)">Plateforme</p>
                     <ul class="mt-4 space-y-2 text-sm">
                         <li><a href="{{ route('booking.create') }}">Réserver</a></li>
                         @if(Route::has('premium.offer'))<li><a href="{{ route('premium.offer') }}">Premium</a></li>@endif
@@ -253,7 +253,7 @@
                     </ul>
                 </div>
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.2em]" style="color:var(--cx-amber)">Légal</p>
+                    <p class="text-xs font-bold uppercase tracking-[0.2em]" style="color:var(--brio-accent-texte)">Légal</p>
                     <ul class="mt-4 space-y-2 text-sm">
                         <li><a href="{{ route('terms.show') }}">Conditions générales</a></li>
                         <li><a href="{{ route('policy.show') }}">Confidentialité</a></li>
@@ -266,7 +266,7 @@
                     </ul>
                 </div>
                 <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.2em]" style="color:var(--cx-amber)">Ressources</p>
+                    <p class="text-xs font-bold uppercase tracking-[0.2em]" style="color:var(--brio-accent-texte)">Ressources</p>
                     <ul class="mt-4 space-y-2 text-sm">
                         @if (Route::has('help.center'))
                             <li><a href="{{ route('help.center') }}">Aide / FAQ</a></li>

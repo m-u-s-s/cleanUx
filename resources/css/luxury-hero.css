@@ -13,7 +13,19 @@
    ========================================================================= */
 
 /* --- Shell -------------------------------------------------------------- */
+/* LE HEROS GARDE SA NUIT, DANS LES DEUX THEMES — ET C'EST MOTIVE.
+   Son fond n'est pas une couleur : c'est un champ de particules lumineuses (WebGL)
+   et des halos ambres, qui n'existent que sur du noir. Il n'y a pas de version claire
+   de cette image ; la peindre en clair ne la traduirait pas, elle l'effacerait.
+   Il se repinne donc localement plutot que d'empecher toute la vitrine de basculer. */
 .cx-lux-hero {
+    --cx-night:      #070b14;
+    --cx-night-soft: #0c1322;
+    --cx-panel:      #111a2e;
+    --cx-line:       rgba(148, 178, 230, 0.14);
+    --cx-text:       #e8eefc;
+    --cx-muted:      #93a4c6;
+
     position: relative;
     isolation: isolate;
     min-height: 100svh;

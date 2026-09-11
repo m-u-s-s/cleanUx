@@ -28,10 +28,11 @@
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
+    /* Meme raison que `.cx-subhead` : un surtitre est du TEXTE, pas un graphique. */
     .cx-kicker {
         font-family: var(--cx-display);
         font-size: 12px; font-weight: 700; letter-spacing: .32em;
-        text-transform: uppercase; color: var(--cx-amber);
+        text-transform: uppercase; color: var(--brio-accent-texte);
     }
     .cx-h {
         font-family: var(--cx-display); font-weight: 700;
@@ -139,7 +140,7 @@
         animation: cx-orbit-ring 7s ease-in-out infinite;
     }
     .cx-nav-link { color: var(--cx-muted); transition: color var(--cx-dur-fast) ease; font-weight: 600; }
-    .cx-nav-link:hover { color: var(--cx-amber); }
+    .cx-nav-link:hover { color: var(--brio-accent-texte); }
 
     .cx-progress {
         position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 90;
@@ -172,7 +173,7 @@
         background: linear-gradient(180deg, transparent, var(--cx-night-soft));
     }
     .cx-footer a { color: var(--cx-muted); transition: color var(--cx-dur-fast); }
-    .cx-footer a:hover { color: var(--cx-amber); }
+    .cx-footer a:hover { color: var(--brio-accent-texte); }
 }
 
 /* ============================================================================
@@ -209,16 +210,76 @@
 
        La rampe s'eclaircit donc, sauf sur une surface restee vraiment claire.
        ------------------------------------------------------------------ */
-    body.cx-shell :is(.text-brand-600, .text-brand-700):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass, .cx-film) *) {
+    /* SEULEMENT DE NUIT : sur une coquille redevenue claire, `brand-600` est deja
+       le bon indigo — l'eclaircir le rendrait pale sur clair. */
+    :root.dark body.cx-shell :is(.text-brand-600, .text-brand-700):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass, .cx-film) *) {
         color: theme('colors.brand.300');
     }
 
-    body.cx-shell :is(.text-brand-500):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass, .cx-film) *) {
+    :root.dark body.cx-shell :is(.text-brand-500):not(:is(.bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50, .brio-glass, .brio-card-muted, .brio-hero, .brio-surface-glass, .cx-film) *) {
         color: theme('colors.brand.400');
     }
 }
 
 /* ============================================================================
+   LA CONTREPARTIE DE NUIT DES SURFACES DE VERRE
+
+   `base.css` exempte `.brio-glass` de la repeinture des titres : la reserve suppose
+   qu'un verre est une surface CLAIRE posee dans une coquille de nuit. C'etait vrai
+   quand la vitrine ne basculait pas ; ca ne l'est plus. `--glass-bg` vaut 0.055 en
+   mode sombre : la carte est sombre, et le titre garde alors la teinte de sa classe
+   Tailwind — `text-slate-900` sur du gris anthracite. Mesure du 2026-09-11 sur la
+   home : « Prestataires verifies KYC » et « Tracking GPS en direct » etaient
+   invisibles.
+
+   On n'AFFAIBLIT PAS la reserve — `ThemeUnifieDesEspacesTest` exige a juste titre
+   qu'elle soit la meme partout. On ajoute la regle qui manquait de l'autre cote.
+   ========================================================================= */
+:root.dark body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(h1, h2, h3, h4):not(:is([class~="bg-white"], .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50)):not(:is([class~="bg-white"], .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50) *) {
+    color: var(--brio-ink);
+}
+
+:root.dark body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(p, label, span):not([class*="text-"]):not(:is([class~="bg-white"], .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50)):not(:is([class~="bg-white"], .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50) *) {
+    color: var(--brio-muted);
+}
+
+/* ET LA RAMPE TAILWIND QUI S'Y TROUVE.
+   La reserve de `base.css` epargne les descendants d'un verre : elle suppose une surface
+   claire. En mode sombre le verre est sombre, et `text-slate-600` y reste gris fonce sur
+   gris fonce. Mesure du 2026-09-11 sur /pricing : deux des trois cartes avaient toute leur
+   liste illisible. Le defaut est ANTERIEUR — `--glass-bg` basculait deja — il se voyait des
+   que la preference systeme etait sombre. */
+/* LA RESERVE EST ICI CELLE DES .bg-white, .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50 QUI NE BASCULENT PAS.
+   Elle n'est PAS la reserve du systeme, et c'est voulu : celle-ci contient les classes de
+   verre, or c'est justement a l'interieur d'un verre que la regle s'applique — l'y mettre
+   l'annulerait. Restent les fonds Tailwind, qui eux demeurent clairs en mode sombre : un
+   bouton `bg-white` dans une carte de verre garde son encre. Mesure : sans cette reserve,
+   « Commencer » sur /pricing devenait du texte clair sur un bouton blanc.
+
+   ELLE EXCLUT LA SURFACE ELLE-MEME, PAS SEULEMENT SES DESCENDANTS. Le bouton en question
+   porte `bg-white` ET `text-slate-700` sur le MEME element : un `:not(… *)` seul ne l'attrape
+   pas. La reserve du systeme a la meme forme, mais elle ne vise que des titres — le cas ne
+   s'y presentait pas.
+
+   L'ORDRE DES CLASSES DIFFERE EXPRES de celui des regles surveillees par
+   `ThemeUnifieDesEspacesTest` : il les trouve par `strpos` sur leur texte, et deux regles
+   dont le selecteur se contient l'une l'autre se confondraient. */
+:root.dark body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(.text-slate-800, .text-slate-900):not(:is([class~="bg-white"], .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50)):not(:is([class~="bg-white"], .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50) *) {
+    color: var(--brio-ink);
+}
+
+:root.dark body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(.text-slate-400, .text-slate-500, .text-slate-600, .text-slate-700):not(:is([class~="bg-white"], .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50)):not(:is([class~="bg-white"], .bg-white\/90, .bg-white\/95, .bg-slate-50, .bg-slate-50\/90, .bg-slate-100, .bg-gray-50, .bg-gray-100, .bg-emerald-50, .bg-amber-50, .bg-rose-50, .bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-brand-50, .bg-violet-50) *) {
+    color: var(--brio-muted);
+}
+
+/* ============================================================================
+   CES QUATRE REGLES NE VALENT QU'EN MODE CLAIR (`:root:not(.dark)`).
+
+   Elles protegent un ilot CLAIR pose au milieu d'une coquille de nuit. En mode
+   sombre il n'y a plus d'ilot clair : `--glass-bg` vaut 0.055, la carte est
+   sombre, et y forcer l'encre sombre rendait son texte illisible. Mesure du
+   2026-09-11 sur la home : le titre « Tracking GPS en direct » disparaissait.
+
    LA RESERVE S'APPLIQUE AUX CHAMPS AUSSI
 
    `/login` et `/register` posent leur formulaire dans une `.brio-glass` — une
@@ -230,24 +291,24 @@
    ancien — l'ancien `base.css` peignait `.dark input` sans exclure la vitrine —
    et il se voit des que la preference systeme est sombre.
    ========================================================================= */
-body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(input, select, textarea) {
+:root:not(.dark) body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(input, select, textarea) {
     background: rgba(255, 255, 255, 0.82);
     border: 1px solid rgba(15, 23, 42, 0.10);
     color: #1a2436;
     border-radius: var(--cx-radius-sm);
 }
 
-body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(input, textarea)::placeholder {
+:root:not(.dark) body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(input, textarea)::placeholder {
     color: rgba(26, 36, 54, 0.45);
 }
 
-body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(input, select, textarea):focus {
+:root:not(.dark) body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(input, select, textarea):focus {
     background: #ffffff;
     border-color: var(--cx-amber);
     box-shadow: 0 0 0 4px rgba(255, 182, 72, 0.20);
 }
 
 /* Le texte d'accompagnement d'une carte claire suit son encre, pas celle de la nuit. */
-body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(p, label, span):not([class*="text-"]) {
+:root:not(.dark) body.cx-shell :is(.brio-glass, .brio-card, .brio-card-muted, .brio-surface-glass) :is(p, label, span):not([class*="text-"]) {
     color: rgba(26, 36, 54, 0.72);
 }

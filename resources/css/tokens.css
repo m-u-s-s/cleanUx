@@ -138,14 +138,20 @@
     --brio-aura-2:       rgba(255, 182, 72, 0.18);
     --brio-aura-3:       rgba(139, 123, 255, 0.20);
 
-    /* ---------------------------------------------- COQUILLE VITRINE (nuit permanente)
-       Ces jetons ne suivent PAS le mode : la vitrine est sombre par choix. */
-    --cx-night:        #070b14;
-    --cx-night-soft:   #0c1322;
-    --cx-panel:        #111a2e;
-    --cx-line:         rgba(148, 178, 230, 0.14);
-    --cx-text:         #e8eefc;
-    --cx-muted:        #93a4c6;
+    /* ---------------------------------------------- COQUILLE VITRINE
+       Ces jetons ne suivaient PAS le mode : « la vitrine est sombre par choix ».
+       Revise le 2026-09-11 a la demande de l'utilisateur — la vitrine suit desormais
+       le theme comme le reste. Valeurs CLAIRES ici, valeurs de nuit sous `:root.dark`.
+
+       DEUX SURFACES GARDENT LEUR NUIT, ET C'EST MOTIVE : le heros (`.cx-lux-hero`,
+       champ de particules lumineuses et halos ambres, sans equivalent clair) et la
+       photographie du film. Elles se repinnent localement, pas ici. */
+    --cx-night:        #eef1f8;
+    --cx-night-soft:   #e4e9f4;
+    --cx-panel:        #ffffff;
+    --cx-line:         rgba(26, 36, 54, 0.12);
+    --cx-text:         #1a2436;
+    --cx-muted:        #5b6b85;
 }
 
 /* ============================ MODE SOMBRE — VERRE CHARBON ============================
@@ -158,6 +164,14 @@
    Ajouter une media query ici ferait une SECONDE source de verite, qui divergerait
    des que l'utilisateur choisit un mode contre son systeme. */
 :root.dark {
+    /* La coquille vitrine, de nuit. */
+    --cx-night:          #070b14;
+    --cx-night-soft:     #0c1322;
+    --cx-panel:          #111a2e;
+    --cx-line:           rgba(148, 178, 230, 0.14);
+    --cx-text:           #e8eefc;
+    --cx-muted:          #93a4c6;
+
     --brio-bg:           #0a0e1a;
     --brio-bg-deep:      #060911;
     --brio-bg-rgb:       10 14 26;

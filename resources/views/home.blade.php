@@ -117,7 +117,7 @@
     </x-hero.luxury>
 
     {{-- TRUST BAR --}}
-    <section id="decouvrir" class="border-y border-slate-100 bg-slate-50/50 py-8 scroll-mt-20">
+    <section id="decouvrir" class="border-y border-slate-100 bg-slate-50/50 py-8 scroll-mt-20 dark:border-slate-800 dark:bg-slate-900/40">
         <div class="mx-auto max-w-7xl px-6">
             <p class="text-center text-xs font-semibold uppercase tracking-wider text-slate-500" data-cx-reveal>
                 30+ métiers · 6 langues · Conformité RGPD + Factur-X EU
@@ -266,7 +266,7 @@
     </section>
 
     {{-- DIFFERENTIATING SECTION : multi-trades bundle --}}
-    <section class="bg-slate-50/40 py-24 sm:py-32">
+    <section class="bg-slate-50/40 py-24 sm:py-32 dark:bg-slate-900/30">
         <div class="mx-auto max-w-7xl px-6">
             <div class="grid items-center gap-12 lg:grid-cols-2">
                 <div data-cx-reveal>
@@ -395,7 +395,7 @@
     @include('partials.journey')
 
     {{-- SOCIAL PROOF / METRICS --}}
-    <section class="py-20 bg-gradient-to-b from-white to-slate-50" data-cx-reveal>
+    <section class="py-20 bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950" data-cx-reveal>
         <div class="max-w-6xl mx-auto px-6">
             <h2 class="text-3xl font-bold text-center text-slate-900 mb-4" style="font-family: 'Space Grotesk', sans-serif;">
                 La confiance de nos utilisateurs
@@ -423,7 +423,7 @@
     </section>
 
     {{-- TESTIMONIALS --}}
-    <section class="py-20 bg-white" data-cx-reveal>
+    <section class="py-20 bg-white dark:bg-slate-900" data-cx-reveal>
         <div class="max-w-6xl mx-auto px-6">
             <h2 class="text-3xl font-bold text-center text-slate-900 mb-12 cx-headline" style="font-family: 'Space Grotesk', sans-serif;">
                 Ce qu'ils en disent
@@ -473,7 +473,7 @@
     </section>
 
     {{-- FAQ --}}
-    <section class="py-20 bg-slate-50" data-cx-reveal>
+    <section class="py-20 bg-slate-50 dark:bg-slate-950" data-cx-reveal>
         <div class="max-w-5xl mx-auto px-6">
             <h2 class="text-3xl font-bold text-center text-slate-900 mb-12 cx-headline" style="font-family: 'Space Grotesk', sans-serif;">
                 Questions fréquentes
