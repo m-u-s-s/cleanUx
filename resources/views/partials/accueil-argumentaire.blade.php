@@ -1,12 +1,15 @@
 {{-- ============================================================
      Brio — l'argumentaire de l'accueil.
 
-     TOUT LE TEXTE VIT DANS lang/*/vitrine.php, sous la clé « accueil » : il passe
-     par __() et se modifie depuis /admin/traductions sans toucher au code.
+     DEUX PORTES, UN SEUL ÉCRAN. Le visiteur choisit « je commande » ou « je gagne »,
+     et ne lit que sa moitié : la page faisait le double de long quand elle montrait
+     les deux à la suite.
+
+     TOUT LE TEXTE VIT DANS lang/*/vitrine.php sous « accueil » : il passe par __()
+     et se modifie depuis /admin/traductions sans toucher au code.
 
      AUCUN CHIFFRE N'EST ÉCRIT ICI. Ils sont lus dans le moteur au rendu
-     (App\Support\Vitrine\ChiffresDeLaVitrine) : la page annonçait « 30+ métiers
-     dans 9 pays » quand le catalogue en ouvrait seize dans un seul.
+     (App\Support\Vitrine\ChiffresDeLaVitrine).
      ============================================================ --}}
 @php
     $chiffres = [
@@ -16,239 +19,140 @@
         'zones' => \App\Support\Vitrine\ChiffresDeLaVitrine::zonesOuvertes(),
     ];
 
-    $a = fn (string $cle, array $extra = []) => __('vitrine.accueil.'.$cle, $extra + $chiffres);
+    $a = fn (string $cle) => __('vitrine.accueil.'.$cle, $chiffres);
     $liste = fn (string $cle) => (array) __('vitrine.accueil.'.$cle);
 
-    $versCommande = Route::has('order.journey')? route('order.journey'): route('booking.create');
+    $versCommande = Route::has('order.journey') ? route('order.journey') : route('booking.create');
     $versInscription = route('register');
+
+    // Chaque carte « gagner » mène là où l'on gagne vraiment, quand la route existe.
+    $destinations = [
+        'Recevoir des missions' => $versInscription,
+        'Mettre ma voiture en location' => Route::has('peer.catalogue') ? route('peer.catalogue') : $versInscription,
+        'Mettre mon logement en location' => Route::has('peer.sejours') ? route('peer.sejours') : $versInscription,
+        'Ouvrir un compte société' => $versInscription,
+    ];
 @endphp
 
-{{-- ─────────────────────────────────────────── LES QUATRE SITUATIONS --}}
-<section id="situations" class="cx-arg scroll-mt-20 py-24 sm:py-28" aria-labelledby="cx-arg-situations">
+{{-- ─────────────────────────────────────────── LES DEUX PORTES --}}
+<section id="commencer" class="cx-arg cx-arg--pose scroll-mt-20 py-20 sm:py-24"
+         x-data="{ cote: 'client' }"
+         aria-labelledby="cx-arg-portes">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-2xl text-center">
-            <p class="cx-subhead">{{ $a('situations.surtitre') }}</p>
-            <h3 id="cx-arg-situations" class="cx-arg__titre cx-headline cx-balance">{{ $a('situations.titre') }}</h3>
-            <p class="cx-arg__chapeau cx-body-readable">{{ $a('situations.sous_titre') }}</p>
+            <p class="cx-subhead">{{ $a('portes.surtitre') }}</p>
+            <h3 id="cx-arg-portes" class="cx-arg__titre cx-headline cx-balance">{{ $a('portes.titre') }}</h3>
+            <p class="cx-arg__chapeau cx-body-readable">{{ $a('portes.sous_titre') }}</p>
         </div>
 
-        <div class="mt-14 grid gap-6 lg:grid-cols-2">
-            @foreach ($liste('situations.cartes') as $i => $carte)
-                <article class="cx-arg__carte" data-cx-reveal data-cx-delay="{{ $i * 80 }}">
-                    <h4 class="cx-arg__carte-titre">{{ $carte['titre'] }}</h4>
-
-                    @foreach ($carte['textes'] as $texte)
-                        <p class="cx-arg__texte">{{ __($texte, $chiffres) }}</p>
-                    @endforeach
-
-                    <ul class="cx-arg__puces">
-                        @foreach ($carte['puces'] as $puce)
-                            <li>{{ __($puce, $chiffres) }}</li>
-                        @endforeach
-                    </ul>
-
-                    @if ($carte['bouton'])
-                        <a href="{{ str_contains($carte['bouton'], 'entreprise') ? $versInscription : $versCommande }}"
-                           class="cx-arg__lien">
-                            {{ $carte['bouton'] }}
-                            <x-ui.icon name="arrow-right" class="h-4 w-4" />
-                        </a>
-                    @endif
-                </article>
+        {{-- Les deux portes restent visibles : on change d'avis sans remonter la page. --}}
+        <div class="cx-arg__portes" role="tablist" aria-label="{{ $a('portes.titre') }}">
+            @foreach (['client', 'gagnant'] as $cle)
+                @php($porte = $liste('portes.'.$cle))
+                <button type="button"
+                        class="cx-arg__porte"
+                        role="tab"
+                        :class="cote === '{{ $cle }}' && 'is-choisie'"
+                        :aria-selected="cote === '{{ $cle }}' ? 'true' : 'false'"
+                        aria-controls="cx-arg-volet-{{ $cle }}"
+                        id="cx-arg-porte-{{ $cle }}"
+                        @click="cote = '{{ $cle }}'">
+                    <span class="cx-arg__porte-titre">{{ $porte['titre'] }}</span>
+                    <span class="cx-arg__porte-phrase">{{ $porte['phrase'] }}</span>
+                    <span class="cx-arg__porte-lien">
+                        {{ $porte['lien'] }}
+                        <x-ui.icon name="arrow-right" class="h-4 w-4" />
+                    </span>
+                </button>
             @endforeach
         </div>
 
-        <p class="cx-arg__note cx-arg__note--large">{{ $a('situations.note') }}</p>
-    </div>
-</section>
+        {{-- ── VOLET CLIENT ────────────────────────────────────────────── --}}
+        <div id="cx-arg-volet-client" role="tabpanel" aria-labelledby="cx-arg-porte-client"
+             x-show="cote === 'client'" class="cx-arg__volet">
+            <div class="mx-auto max-w-2xl text-center">
+                <p class="cx-subhead">{{ $a('client.surtitre') }}</p>
+                <h4 class="cx-arg__titre cx-headline cx-balance">{{ $a('client.titre') }}</h4>
+                <p class="cx-arg__chapeau cx-body-readable">{{ $a('client.sous_titre') }}</p>
+            </div>
 
-{{-- ─────────────────────────────────────────────── LES TROIS TEMPS --}}
-<section id="fonctionnement" class="cx-arg cx-arg--pose scroll-mt-20 py-24 sm:py-28" aria-labelledby="cx-arg-fonctionnement">
-    <div class="mx-auto max-w-7xl px-6">
-        <div class="mx-auto max-w-2xl text-center">
-            <p class="cx-subhead">{{ $a('fonctionnement.surtitre') }}</p>
-            <h3 id="cx-arg-fonctionnement" class="cx-arg__titre cx-headline cx-balance">{{ $a('fonctionnement.titre') }}</h3>
+            <div class="cx-arg__grille">
+                @foreach ($liste('client.cartes') as $carte)
+                    <article class="cx-arg__carte @if ($carte['image']) cx-arg__carte--illustree @endif">
+                        @if ($carte['image'])
+                            <x-accueil.illustration :nom="$carte['image']" :alt="$carte['titre']" />
+                        @endif
+                        <div class="cx-arg__carte-corps">
+                            <h5 class="cx-arg__carte-titre">{{ $carte['titre'] }}</h5>
+                            <p class="cx-arg__texte">{{ __($carte['texte'], $chiffres) }}</p>
+                            <p class="cx-arg__pastille">{{ __($carte['chiffre'], $chiffres) }}</p>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+
+            <div class="mt-10 text-center">
+                <x-ui.button :href="$versCommande" variant="amber" size="xl" icon="arrow-right" iconPosition="right">
+                    {{ $a('client.bouton') }}
+                </x-ui.button>
+            </div>
         </div>
 
-        <ol class="mt-14 grid gap-6 md:grid-cols-3">
-            @foreach ($liste('fonctionnement.temps') as $i => $temps)
-                <li class="cx-arg__carte cx-arg__carte--temps" data-cx-reveal data-cx-delay="{{ $i * 90 }}">
-                    <span class="cx-arg__rang" aria-hidden="true">{{ $i + 1 }}</span>
-                    <h4 class="cx-arg__carte-titre">{{ $temps['titre'] }}</h4>
-                    @foreach ($temps['textes'] as $texte)
-                        <p class="cx-arg__texte">{{ __($texte, $chiffres) }}</p>
-                    @endforeach
-                </li>
-            @endforeach
-        </ol>
+        {{-- ── VOLET GAGNANT ───────────────────────────────────────────── --}}
+        <div id="cx-arg-volet-gagnant" role="tabpanel" aria-labelledby="cx-arg-porte-gagnant"
+             x-show="cote === 'gagnant'" x-cloak class="cx-arg__volet">
+            <div class="mx-auto max-w-2xl text-center">
+                <p class="cx-subhead">{{ $a('gagnant.surtitre') }}</p>
+                <h4 class="cx-arg__titre cx-headline cx-balance">{{ $a('gagnant.titre') }}</h4>
+                <p class="cx-arg__chapeau cx-body-readable">{{ $a('gagnant.sous_titre') }}</p>
+            </div>
+
+            <div class="cx-arg__grille cx-arg__grille--gagner">
+                @foreach ($liste('gagnant.cartes') as $carte)
+                    <article class="cx-arg__carte cx-arg__carte--illustree">
+                        <x-accueil.illustration :nom="$carte['image']" :alt="$carte['titre']" />
+                        <div class="cx-arg__carte-corps">
+                            <h5 class="cx-arg__carte-titre">{{ $carte['titre'] }}</h5>
+                            <p class="cx-arg__texte">{{ __($carte['texte'], $chiffres) }}</p>
+                            <p class="cx-arg__pastille cx-arg__pastille--gain">{{ $carte['chiffre'] }}</p>
+                            <a href="{{ $destinations[$carte['lien']] ?? $versInscription }}" class="cx-arg__lien">
+                                {{ $carte['lien'] }}
+                                <x-ui.icon name="arrow-right" class="h-4 w-4" />
+                            </a>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        </div>
     </div>
 </section>
 
-{{-- ──────────────────────────────────────── QUI ENTRE, ET CE QUI RESTE --}}
-<section id="confiance" class="cx-arg scroll-mt-20 py-24 sm:py-28" aria-labelledby="cx-arg-confiance">
+{{-- ──────────────────────────────────────── CE QUI PROTÈGE LES DEUX CÔTÉS --}}
+<section id="confiance" class="cx-arg scroll-mt-20 py-20 sm:py-24" aria-labelledby="cx-arg-confiance">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-2xl text-center">
             <p class="cx-subhead">{{ $a('confiance.surtitre') }}</p>
             <h3 id="cx-arg-confiance" class="cx-arg__titre cx-headline cx-balance">{{ $a('confiance.titre') }}</h3>
         </div>
 
-        <div class="mt-14 grid gap-6 md:grid-cols-2">
-            @foreach ($liste('confiance.points') as $i => $point)
-                <article class="cx-arg__carte" data-cx-reveal data-cx-delay="{{ $i * 80 }}">
-                    <h4 class="cx-arg__carte-titre">{{ $point['titre'] }}</h4>
-                    @foreach ($point['textes'] as $texte)
-                        <p class="cx-arg__texte">{{ __($texte, $chiffres) }}</p>
-                    @endforeach
+        <div class="cx-arg__grille cx-arg__grille--confiance">
+            @foreach ($liste('confiance.points') as $point)
+                <article class="cx-arg__carte @if ($point['image']) cx-arg__carte--illustree @endif">
+                    @if ($point['image'])
+                        <x-accueil.illustration :nom="$point['image']" :alt="$point['titre']" />
+                    @endif
+                    <div class="cx-arg__carte-corps">
+                        <h5 class="cx-arg__carte-titre">{{ $point['titre'] }}</h5>
+                        <p class="cx-arg__texte">{{ __($point['texte'], $chiffres) }}</p>
+                    </div>
                 </article>
             @endforeach
-        </div>
-    </div>
-</section>
-
-{{-- ────────────────────────────────────────────────── LE PRIX, EN ENTIER --}}
-<section id="prix" class="cx-arg cx-arg--pose scroll-mt-20 py-24 sm:py-28" aria-labelledby="cx-arg-prix">
-    <div class="mx-auto max-w-7xl px-6">
-        <p class="cx-arg__position">{{ $a('position') }}</p>
-
-        <div class="mx-auto max-w-2xl text-center">
-            <p class="cx-subhead">{{ $a('prix.surtitre') }}</p>
-            <h3 id="cx-arg-prix" class="cx-arg__titre cx-headline cx-balance">{{ $a('prix.titre') }}</h3>
-            <p class="cx-arg__chapeau cx-body-readable">{{ $a('prix.sous_titre') }}</p>
-        </div>
-
-        <div class="mx-auto mt-12 max-w-3xl">
-            @foreach ($liste('prix.paragraphes') as $paragraphe)
-                <p class="cx-arg__texte cx-arg__texte--large">{{ __($paragraphe, $chiffres) }}</p>
-            @endforeach
-        </div>
-
-        <div class="mt-14 grid gap-6 lg:grid-cols-2">
-            <article class="cx-arg__carte" data-cx-reveal>
-                <h4 class="cx-arg__carte-titre">{{ $a('prix.variations.titre') }}</h4>
-                <ul class="cx-arg__puces">
-                    @foreach ($liste('prix.variations.puces') as $puce)
-                        <li>{{ __($puce, $chiffres) }}</li>
-                    @endforeach
-                </ul>
-                <p class="cx-arg__note">{{ $a('prix.note_acompte') }}</p>
-            </article>
-
-            <article class="cx-arg__carte" data-cx-reveal data-cx-delay="90">
-                <h4 class="cx-arg__carte-titre">{{ $a('prix.annulation.titre') }}</h4>
-                <ul class="cx-arg__puces">
-                    @foreach ($liste('prix.annulation.puces') as $puce)
-                        <li>{{ __($puce, $chiffres) }}</li>
-                    @endforeach
-                </ul>
-            </article>
-        </div>
-
-        {{-- L'AVEU. Une page qui ne concède rien ne se croit pas ; celle-ci dit son prix. --}}
-        <div class="cx-arg__aveu" data-cx-reveal>
-            <h4 class="cx-arg__aveu-titre">{{ $a('prix.aveu.titre') }}</h4>
-            @foreach ($liste('prix.aveu.paragraphes') as $paragraphe)
-                <p class="cx-arg__texte">{{ __($paragraphe, $chiffres) }}</p>
-            @endforeach
-        </div>
-    </div>
-</section>
-
-{{-- ──────────────────────────────────────────────────── LES ENGAGEMENTS --}}
-<section id="engagements" class="cx-arg scroll-mt-20 py-24 sm:py-28" aria-labelledby="cx-arg-engagements">
-    <div class="mx-auto max-w-7xl px-6">
-        <div class="mx-auto max-w-2xl text-center">
-            <p class="cx-subhead">{{ $a('engagements.surtitre') }}</p>
-            <h3 id="cx-arg-engagements" class="cx-arg__titre cx-headline cx-balance">{{ $a('engagements.titre') }}</h3>
-            <p class="cx-arg__chapeau cx-body-readable">{{ $a('engagements.sous_titre') }}</p>
-        </div>
-
-        <ul class="cx-arg__engagements">
-            @foreach ($liste('engagements.puces') as $i => $puce)
-                <li data-cx-reveal data-cx-delay="{{ $i * 70 }}">
-                    <x-ui.icon name="check" class="cx-arg__coche" />
-                    <span>{{ __($puce, $chiffres) }}</span>
-                </li>
-            @endforeach
-        </ul>
-
-        <p class="cx-arg__chiffre">{{ $a('engagements.chiffre') }}</p>
-        <p class="cx-arg__note cx-arg__note--large">{{ $a('engagements.note') }}</p>
-
-        <div class="mt-10 text-center">
-            <x-ui.button :href="$versCommande" variant="amber" size="xl" icon="arrow-right" iconPosition="right">
-                {{ $a('engagements.bouton') }}
-            </x-ui.button>
-        </div>
-    </div>
-</section>
-
-{{-- ─────────────────────────── VOUS AVEZ DÉJÀ QUELQU'UN ? TANT MIEUX --}}
-<section class="cx-arg cx-arg--pose py-24 sm:py-28" aria-labelledby="cx-arg-habitude">
-    <div class="mx-auto max-w-7xl px-6">
-        <div class="mx-auto max-w-2xl text-center">
-            <p class="cx-subhead">{{ $a('habitude.surtitre') }}</p>
-            <h3 id="cx-arg-habitude" class="cx-arg__titre cx-headline cx-balance">{{ $a('habitude.titre') }}</h3>
-            <p class="cx-arg__chapeau cx-body-readable">{{ $a('habitude.sous_titre') }}</p>
-        </div>
-
-        <p class="cx-arg__texte cx-arg__texte--large mx-auto mt-8 max-w-2xl text-center">{{ $a('habitude.intro') }}</p>
-
-        <div class="mt-14 grid gap-6 md:grid-cols-2">
-            @foreach ($liste('habitude.moments') as $i => $moment)
-                <article class="cx-arg__carte" data-cx-reveal data-cx-delay="{{ $i * 80 }}">
-                    <h4 class="cx-arg__carte-titre">{{ $moment['titre'] }}</h4>
-                    @foreach ($moment['textes'] as $texte)
-                        <p class="cx-arg__texte">{{ __($texte, $chiffres) }}</p>
-                    @endforeach
-                    @foreach ($moment['notes'] as $note)
-                        <p class="cx-arg__note">{{ __($note, $chiffres) }}</p>
-                    @endforeach
-                </article>
-            @endforeach
-        </div>
-
-        <div class="mt-10 text-center">
-            <x-ui.button :href="$versCommande" variant="outline" size="lg" icon="arrow-right" iconPosition="right">
-                {{ $a('habitude.bouton') }}
-            </x-ui.button>
-        </div>
-    </div>
-</section>
-
-{{-- ──────────────────────────────────────────── LE CÔTÉ PRESTATAIRE --}}
-<section id="prestataires" class="cx-arg cx-arg--prestataire scroll-mt-20 py-24 sm:py-28" aria-labelledby="cx-arg-prestataire">
-    <div class="mx-auto max-w-7xl px-6">
-        {{-- LA PHRASE CHARNIÈRE : elle répond à « quel est votre intérêt là-dedans ? »
-             avant que le lecteur ne se le demande. --}}
-        <p class="cx-arg__charniere">{{ $a('prestataire.charniere') }}</p>
-
-        <div class="mx-auto max-w-2xl text-center">
-            <p class="cx-subhead">{{ $a('prestataire.surtitre') }}</p>
-            <h3 id="cx-arg-prestataire" class="cx-arg__titre cx-headline cx-balance">{{ $a('prestataire.titre') }}</h3>
-        </div>
-
-        <div class="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            @foreach ($liste('prestataire.cartes') as $i => $carte)
-                <article class="cx-arg__carte" data-cx-reveal data-cx-delay="{{ $i * 70 }}">
-                    <span class="cx-arg__rang" aria-hidden="true">{{ $i + 1 }}</span>
-                    <h4 class="cx-arg__carte-titre">{{ $carte['titre'] }}</h4>
-                    @foreach ($carte['textes'] as $texte)
-                        <p class="cx-arg__texte">{{ __($texte, $chiffres) }}</p>
-                    @endforeach
-                </article>
-            @endforeach
-        </div>
-
-        <div class="mt-10 text-center">
-            <x-ui.button :href="$versInscription" variant="amber" size="xl" icon="arrow-right" iconPosition="right">
-                {{ $a('prestataire.bouton') }}
-            </x-ui.button>
         </div>
     </div>
 </section>
 
 {{-- ───────────────────────────────────────────────────── LES ENTREPRISES --}}
-<section id="b2b" class="cx-arg cx-arg--pose scroll-mt-20 py-24 sm:py-28" aria-labelledby="cx-arg-b2b">
+<section id="b2b" class="cx-arg cx-arg--pose scroll-mt-20 py-20 sm:py-24" aria-labelledby="cx-arg-b2b">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-2xl text-center">
             <p class="cx-subhead">{{ $a('entreprises.surtitre') }}</p>
@@ -256,20 +160,16 @@
             <p class="cx-arg__chapeau cx-body-readable">{{ $a('entreprises.sous_titre') }}</p>
         </div>
 
-        <div class="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            @foreach ($liste('entreprises.cartes') as $i => $carte)
-                <article class="cx-arg__carte cx-arg__carte--compacte" data-cx-reveal data-cx-delay="{{ $i * 60 }}">
-                    <h4 class="cx-arg__carte-titre">{{ $carte['titre'] }}</h4>
-                    @foreach ($carte['textes'] as $texte)
-                        <p class="cx-arg__texte">{{ __($texte, $chiffres) }}</p>
-                    @endforeach
+        <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach ($liste('entreprises.cartes') as $carte)
+                <article class="cx-arg__carte cx-arg__carte--compacte">
+                    <h5 class="cx-arg__carte-titre">{{ $carte['titre'] }}</h5>
+                    <p class="cx-arg__texte">{{ $carte['texte'] }}</p>
                 </article>
             @endforeach
         </div>
 
-        <p class="cx-arg__note cx-arg__note--large">{{ $a('entreprises.note') }}</p>
-
-        <div class="mt-8 text-center">
+        <div class="mt-10 text-center">
             <x-ui.button :href="$versInscription" variant="outline" size="lg" icon="arrow-right" iconPosition="right">
                 {{ $a('entreprises.bouton') }}
             </x-ui.button>
@@ -277,17 +177,14 @@
     </div>
 </section>
 
-{{-- ────────────────────────────────────────── LES SIX QUESTIONS GÊNANTES --}}
-<section class="cx-arg py-24 sm:py-28" aria-labelledby="cx-arg-questions">
-    <div class="mx-auto max-w-4xl px-6">
-        <div class="text-center">
-            <h3 id="cx-arg-questions" class="cx-arg__titre cx-headline cx-balance">{{ $a('questions.titre') }}</h3>
-            <p class="cx-arg__chapeau cx-body-readable">{{ $a('questions.sous_titre') }}</p>
-        </div>
+{{-- ───────────────────────────────────────────── QUATRE QUESTIONS --}}
+<section class="cx-arg py-20 sm:py-24" aria-labelledby="cx-arg-questions">
+    <div class="mx-auto max-w-3xl px-6">
+        <h3 id="cx-arg-questions" class="cx-arg__titre cx-headline cx-balance text-center">{{ $a('questions.titre') }}</h3>
 
-        <div class="mt-12 space-y-3">
-            @foreach ($liste('questions.items') as $i => $item)
-                <details class="cx-arg__question" data-cx-reveal data-cx-delay="{{ $i * 60 }}">
+        <div class="mt-10 space-y-3">
+            @foreach ($liste('questions.items') as $item)
+                <details class="cx-arg__question">
                     <summary>
                         <span>{{ $item['q'] }}</span>
                         <span class="cx-arg__croix" aria-hidden="true">+</span>
@@ -296,7 +193,5 @@
                 </details>
             @endforeach
         </div>
-
-        <p class="cx-arg__position cx-arg__position--fin">{{ $a('position') }}</p>
     </div>
 </section>

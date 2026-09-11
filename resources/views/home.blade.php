@@ -25,15 +25,15 @@
          HERO — Luxury cinématique (dark, fullscreen).
          WebGL (Three.js) + GSAP + Motion ; composants dans components/hero/*.
          ============================================================ --}}
-    <x-hero.luxury scroll-target="#situations" scroll-label="Découvrir">
+    <x-hero.luxury scroll-target="#commencer" scroll-label="Découvrir">
         <x-slot:eyebrow>
             <x-brand.logo space="client" variant="dark" :size="72" class="mb-5" />
-            <x-hero.eyebrow>{{ __('vitrine.accueil.situations.surtitre') }}</x-hero.eyebrow>
+            <x-hero.eyebrow>Commandez un pro · Louez votre voiture · Louez votre logement</x-hero.eyebrow>
         </x-slot:eyebrow>
 
         <x-slot:title>
-            <span class="cx-line"><span>Vous voulez repeindre le salon,</span></span>
-            <span class="cx-line"><span class="cx-lux-serif cx-lux-gradient-ink">sans savoir combien.</span></span>
+            <span class="cx-line"><span>Avec Brio,</span></span>
+            <span class="cx-line"><span class="cx-lux-serif cx-lux-gradient-ink">tout le monde gagne de l’argent.</span></span>
         </x-slot:title>
 
         {{ $h('sous_titre') }}
@@ -44,6 +44,14 @@
                     {{ $h('bouton') }}
                 </x-ui.button>
             </span>
+            {{-- La seconde porte dès le premier écran : la moitié du public de cette
+                 page vient pour gagner de l’argent, pas pour en dépenser. --}}
+            <span class="cx-magnetic" data-cx-magnetic="0.22">
+                <a href="#commencer" class="cx-lux-btn-ghost">
+                    <x-ui.icon name="sparkles" class="w-5 h-5" />
+                    {{ $h('bouton_secondaire') }}
+                </a>
+            </span>
             @if (Route::has('services.index'))
                 <span class="cx-magnetic" data-cx-magnetic="0.22">
                     <a href="{{ route('services.index') }}" class="cx-lux-btn-ghost">
@@ -52,14 +60,6 @@
                     </a>
                 </span>
             @endif
-            {{-- Le prestataire a sa porte dès le premier écran : la moitié du public
-                 de cette page vient pour travailler, pas pour commander. --}}
-            <span class="cx-magnetic" data-cx-magnetic="0.22">
-                <a href="#prestataires" class="cx-lux-btn-ghost">
-                    <x-ui.icon name="wrench" class="w-5 h-5" />
-                    Je suis professionnel
-                </a>
-            </span>
         </x-slot:actions>
 
         {{-- La barre de confiance ne porte QUE des mécanismes vérifiables : ni note
@@ -67,13 +67,13 @@
         <x-slot:trust>
             <x-ui.icon name="shield-check" class="w-4 h-4" style="color: var(--cx-amber)" />
             Le prix avant votre nom
-            <span class="cx-lux-trust__sep">·</span> Débité à la fin, pas avant
-            <span class="cx-lux-trust__sep">·</span> Un code à six chiffres pour démarrer
+            <span class="cx-lux-trust__sep">·</span> Un pro garde 85 %
+            <span class="cx-lux-trust__sep">·</span> Inscription gratuite, sans abonnement
         </x-slot:trust>
 
         <x-slot:proof>
             <span class="cx-lux-proof__chip">
-                <span class="cx-lux-proof__sub">{{ $h('notes.0') }}</span>
+                <span class="cx-lux-proof__sub">{{ $h('note') }}</span>
             </span>
         </x-slot:proof>
 
@@ -104,15 +104,12 @@
         </x-slot:media>
     </x-hero.luxury>
 
-    {{-- LA PHRASE DE POSITION, premier des trois endroits où elle paraît mot pour mot. --}}
+    {{-- L'ACCROCHE, reprise mot pour mot du hero : elle tient la page. --}}
     <section class="cx-arg border-y py-10" style="border-color: var(--cx-arg-ligne)">
         <div class="mx-auto max-w-7xl px-6">
-            <p class="cx-arg__position" style="margin-bottom:0; padding-bottom:0; border-bottom:0">
-                {{ __('vitrine.accueil.position') }}
-            </p>
-            <ul class="mx-auto mt-6 grid max-w-4xl gap-3 sm:grid-cols-3">
+            <ul class="mx-auto grid max-w-4xl gap-3 sm:grid-cols-3">
                 @foreach ((array) __('vitrine.accueil.hero.puces') as $i => $puce)
-                    <li class="cx-arg__engagement-puce flex gap-2 text-sm" data-cx-reveal data-cx-delay="{{ $i * 80 }}"
+                    <li class="flex gap-2 text-sm" data-cx-reveal data-cx-delay="{{ $i * 80 }}"
                         style="color: var(--cx-arg-doux)">
                         <x-ui.icon name="check" class="cx-arg__coche" />
                         <span>{{ $puce }}</span>
@@ -196,18 +193,18 @@
     {{-- PARCOURS D'UNE MISSION (le film, scrollytelling cinématique) --}}
     @include('partials.journey')
 
-    {{-- L'ARGUMENTAIRE : situations, fonctionnement, confiance, prix, engagements,
-         l'habitude en place, le côté prestataire, les entreprises, les six questions. --}}
+    {{-- L'ARGUMENTAIRE : deux portes (je commande / je gagne), puis ce qui protège
+         les deux côtés, les entreprises, et quatre questions. --}}
     @include('partials.accueil-argumentaire')
 
     {{-- CTA FINAL --}}
     <section class="cx-cta-animated relative isolate overflow-hidden py-24">
         <div class="mx-auto max-w-4xl px-6 text-center">
             <h3 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                Voyez votre prix avant de donner votre nom
+                {{ __('vitrine.accueil.final.titre') }}
             </h3>
             <p class="mt-4 text-base leading-7 text-brand-100">
-                Le parcours de commande s’ouvre sans compte. Vous répondez aux questions de votre métier, le montant bouge, et vous décidez ensuite.
+                {{ __('vitrine.accueil.final.sous_titre') }}
             </p>
             <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
                 <span class="cx-magnetic" data-cx-magnetic="0.3">
@@ -218,9 +215,9 @@
                     </a>
                 </span>
                 <span class="cx-magnetic" data-cx-magnetic="0.22">
-                    <a href="#prestataires"
+                    <a href="#commencer"
                        class="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-base font-semibold text-white backdrop-blur hover:bg-white/20 transition">
-                        Je veux recevoir des missions
+                        {{ __('vitrine.accueil.final.bouton_secondaire') }}
                     </a>
                 </span>
             </div>

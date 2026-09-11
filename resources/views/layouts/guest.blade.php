@@ -144,7 +144,7 @@
 
             <nav aria-label="Navigation principale" class="hidden items-center gap-7 text-sm md:flex">
                 <a href="{{ route('home') }}#metiers" class="cx-nav-link">Métiers</a>
-                <a href="{{ route('home') }}#fonctionnement" class="cx-nav-link">Fonctionnement</a>
+                <a href="{{ route('home') }}#commencer" class="cx-nav-link">Commencer</a>
                 <a href="{{ route('home') }}#confiance" class="cx-nav-link">Confiance</a>
                 <a href="{{ route('home') }}#b2b" class="cx-nav-link">Entreprises</a>
             </nav>
@@ -181,7 +181,7 @@
         <nav class="cxnav-panel__inner" aria-label="Menu mobile">
             <button type="button" class="cxnav-panel__close" data-fn-close aria-label="Fermer le menu">&times;</button>
             <a href="{{ route('home') }}#metiers" class="cxnav-panel__link">Métiers</a>
-            <a href="{{ route('home') }}#fonctionnement" class="cxnav-panel__link">Fonctionnement</a>
+            <a href="{{ route('home') }}#commencer" class="cxnav-panel__link">Commencer</a>
             <a href="{{ route('home') }}#confiance" class="cxnav-panel__link">Confiance</a>
             <a href="{{ route('home') }}#b2b" class="cxnav-panel__link">Entreprises</a>
             <div class="cxnav-panel__cta">
