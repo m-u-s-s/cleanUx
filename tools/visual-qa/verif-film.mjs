@@ -186,6 +186,25 @@ async function etat(page) {
 
     for (const theme of ['light', 'dark']) {
         const { contexte, page } = await ouvrir({ width: 1440, height: 900, theme });
+
+        // DEUX FILMS : le clair montre la mission de jour, le sombre celle de nuit.
+        const variantes = new Set();
+        page.on('request', (r) => {
+            const m = r.url().match(/journey-film\/(jour|nuit)\//);
+            if (m) variantes.add(m[1]);
+        });
+
+        await page.evaluate(() => {
+            const s = document.querySelector('[data-cx-film]');
+            window.scrollTo({ top: s.getBoundingClientRect().top + window.scrollY - 200, behavior: 'instant' });
+        });
+        await page.waitForFunction(() => {
+            const s = document.querySelector('[data-cx-film]');
+            return s && s.classList.contains('is-peint');
+        }, null, { timeout: 20000 }).catch(() => {});
+
+        lu[theme + ':variantes'] = [...variantes].join(',') || 'aucune';
+
         await page.evaluate(() => {
             const b = document.getElementById('telecharger');
             if (b) b.scrollIntoView({ block: 'center', behavior: 'instant' });
@@ -210,6 +229,8 @@ async function etat(page) {
     }
 
     console.log('\nTHEMES');
+    console.log(`  film      clair=${lu['light:variantes']} (attendu jour)   sombre=${lu['dark:variantes']} (attendu nuit)`
+        + (lu['light:variantes'] === 'jour' && lu['dark:variantes'] === 'nuit' ? '' : '   — MAUVAISE VARIANTE'));
     for (const cle of ['fond', 'titre', 'carte', 'magasin']) {
         const identique = lu.light[cle] === lu.dark[cle];
         console.log(`  ${cle.padEnd(9)} clair=${String(lu.light[cle]).padEnd(26)} sombre=${lu.dark[cle]}`

@@ -21,7 +21,7 @@ class FilmDuParcoursTest extends TestCase
 
     private const PLANS = 14;
 
-    /** @return array{version:int,total:int,parPlan:int,plans:int,tailles:array<string,array{int,int}>,poster:string} */
+    /** @return array{version:string,total:int,parPlan:int,plans:int,tailles:array<string,array{int,int}>,variantes:array<string,string>,poster:string} */
     private function manifeste(): array
     {
         $chemin = public_path(self::RACINE.'/frames.json');
@@ -40,17 +40,19 @@ class FilmDuParcoursTest extends TestCase
         $this->assertSame(self::PLANS, $manifeste['plans']);
         $this->assertSame($manifeste['plans'] * $manifeste['parPlan'], $manifeste['total']);
 
-        foreach (array_keys($manifeste['tailles']) as $taille) {
-            $dossier = public_path(self::RACINE.'/'.$taille);
-            $this->assertDirectoryExists($dossier, "Taille « {$taille} » annoncée mais absente du disque.");
+        foreach (FilmDuParcours::VARIANTES as $variante => $classe) {
+            foreach (array_keys($manifeste['tailles']) as $taille) {
+                $dossier = public_path(self::RACINE.'/'.$variante.'/'.$taille);
+                $this->assertDirectoryExists($dossier, "Variante « {$variante} » / taille « {$taille} » absente du disque.");
 
-            $presentes = glob($dossier.'/*.avif') ?: [];
+                $presentes = glob($dossier.'/*.avif') ?: [];
 
-            $this->assertCount(
-                $manifeste['total'],
-                $presentes,
-                "Le manifeste annonce {$manifeste['total']} frames en « {$taille} », le disque en porte ".count($presentes).'.',
-            );
+                $this->assertCount(
+                    $manifeste['total'],
+                    $presentes,
+                    "Le manifeste annonce {$manifeste['total']} frames en « {$variante}/{$taille} », le disque en porte ".count($presentes).'.',
+                );
+            }
         }
     }
 
@@ -60,17 +62,19 @@ class FilmDuParcoursTest extends TestCase
 
         // Le decodeur construit ses URL avec un index sur trois chiffres : un trou dans la
         // numerotation le ferait attendre indefiniment, sans erreur.
-        foreach (array_keys($manifeste['tailles']) as $taille) {
-            $manquantes = [];
+        foreach (array_keys(FilmDuParcours::VARIANTES) as $variante) {
+            foreach (array_keys($manifeste['tailles']) as $taille) {
+                $manquantes = [];
 
-            for ($i = 0; $i < $manifeste['total']; $i++) {
-                $nom = str_pad((string) $i, 3, '0', STR_PAD_LEFT).'.avif';
-                if (! is_file(public_path(self::RACINE.'/'.$taille.'/'.$nom))) {
-                    $manquantes[] = $nom;
+                for ($i = 0; $i < $manifeste['total']; $i++) {
+                    $nom = str_pad((string) $i, 3, '0', STR_PAD_LEFT).'.avif';
+                    if (! is_file(public_path(self::RACINE.'/'.$variante.'/'.$taille.'/'.$nom))) {
+                        $manquantes[] = $nom;
+                    }
                 }
-            }
 
-            $this->assertSame([], $manquantes, "Frames manquantes en « {$taille} » : ".implode(', ', $manquantes));
+                $this->assertSame([], $manquantes, "Frames manquantes en « {$variante}/{$taille} » : ".implode(', ', $manquantes));
+            }
         }
     }
 
@@ -92,17 +96,36 @@ class FilmDuParcoursTest extends TestCase
     {
         $version = FilmDuParcours::version();
 
-        $this->get(route('home'))
-            ->assertOk()
-            ->assertSee('journey-film/poster.jpg?v='.$version, false)
-            ->assertSee('journey-film/poster.webp?v='.$version, false);
+        $reponse = $this->get(route('home'))->assertOk();
+
+        // LES DEUX posters sont rendus : le serveur ne connait pas le theme du visiteur.
+        foreach (array_keys(FilmDuParcours::VARIANTES) as $variante) {
+            $reponse->assertSee("journey-film/{$variante}/poster.jpg?v={$version}", false)
+                ->assertSee("journey-film/{$variante}/poster.webp?v={$version}", false);
+        }
     }
 
-    public function test_le_poster_existe_dans_les_deux_formats(): void
+    public function test_chaque_variante_a_son_poster_dans_les_deux_formats(): void
     {
         // Le poster est le visuel des navigateurs sans AVIF : il ne peut pas etre en AVIF.
-        $this->assertFileExists(public_path(self::RACINE.'/poster.webp'));
-        $this->assertFileExists(public_path(self::RACINE.'/poster.jpg'));
+        foreach (array_keys(FilmDuParcours::VARIANTES) as $variante) {
+            $this->assertFileExists(public_path(self::RACINE.'/'.$variante.'/poster.webp'));
+            $this->assertFileExists(public_path(self::RACINE.'/'.$variante.'/poster.jpg'));
+        }
+    }
+
+    public function test_le_manifeste_nomme_une_variante_par_theme(): void
+    {
+        $variantes = $this->manifeste()['variantes'] ?? [];
+
+        // DEUX TOURNAGES, PAS DEUX ETALONNAGES : le clair montre le jour, le sombre la nuit.
+        $this->assertSame(['clair' => 'jour', 'sombre' => 'nuit'], $variantes);
+
+        // Et ce que le manifeste nomme doit exister sur le disque ET dans le support PHP.
+        foreach ($variantes as $dossier) {
+            $this->assertDirectoryExists(public_path(self::RACINE.'/'.$dossier));
+            $this->assertArrayHasKey($dossier, FilmDuParcours::VARIANTES);
+        }
     }
 
     public function test_les_quatorze_legendes_existent_dans_les_langues_ecrites(): void
@@ -130,7 +153,6 @@ class FilmDuParcoursTest extends TestCase
         $reponse->assertSee(trans('vitrine.film.plans.1.titre'), false);
         $reponse->assertSee(trans('vitrine.film.plans.14.titre'), false);
 
-        $reponse->assertSee('journey-film/poster.jpg', false);
         $reponse->assertSee('data-cx-film', false);
     }
 }

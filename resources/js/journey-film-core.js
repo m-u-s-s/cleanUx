@@ -23,7 +23,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import * as THREE from 'three';
 
-import { avifDisponible, chargerManifeste, creerMagasin } from './journey-film-frames';
+import { avifDisponible, chargerManifeste, creerMagasin, varianteDuTheme } from './journey-film-frames';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -404,7 +404,12 @@ export async function init() {
     const taille = petit ? 'mobile' : 'desktop';
     const [largeur, hauteur] = manifeste.tailles[taille];
 
-    const magasin = creerMagasin(manifeste, taille);
+    /* DEUX FILMS, UN PAR THEME : le clair montre la mission de JOUR, le sombre celle de NUIT.
+       Ce ne sont pas deux etalonnages du meme rendu, ce sont deux tournages. */
+    const sombre = () => document.documentElement.classList.contains('dark');
+
+    let variante = varianteDuTheme(manifeste, sombre());
+    let magasin = creerMagasin(manifeste, taille, variante);
     const compositeur = creerCompositeur(largeur, hauteur);
 
     // Rien ne s'affiche tant que la première image n'est pas décodée : sinon la
@@ -444,6 +449,18 @@ export async function init() {
 
     function accorder() {
         monde.accorderAuTheme(getComputedStyle(scene).backgroundColor);
+
+        /* ET LE FILM LUI-MEME CHANGE. On ne jette l'ancien magasin qu'apres avoir cree le
+           nouveau : le compositeur garde donc la derniere image peinte a l'ecran pendant que
+           la premiere vague de l'autre film arrive. Aucun trou noir a la bascule. */
+        const voulue = varianteDuTheme(manifeste, sombre());
+        if (voulue === variante) return;
+
+        const ancien = magasin;
+        variante = voulue;
+        magasin = creerMagasin(manifeste, taille, variante);
+        magasin.amorcer();
+        ancien.detruire();
     }
 
     accorder();
@@ -522,7 +539,8 @@ export async function init() {
 
     etat = {
         section,
-        magasin,
+        // Une FONCTION, pas la reference : le magasin est remplace a chaque bascule de theme.
+        magasinCourant: () => magasin,
         monde,
         declencheur,
         surRedimensionnement,
@@ -551,7 +569,7 @@ export function teardown() {
     etat.observateurDeTheme.disconnect();
     etat.declencheur.kill();
     etat.monde.detruire();
-    etat.magasin.detruire();
+    etat.magasinCourant().detruire();
 
     delete etat.section.dataset.cxFilmActif;
     etat.section.classList.remove('is-film', 'is-webgl', 'is-2d', 'is-peint');

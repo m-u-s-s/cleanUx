@@ -8,7 +8,21 @@ ces mots n'atterrit à l'écran. Le français ne vit qu'à deux endroits — les
 
 ---
 
-## 0. La chaîne, en trois gestes
+## 0. DEUX FILMS, UN PAR THÈME
+
+Le mode clair montre la **mission de jour**, le mode sombre la **mission de nuit**. Deux
+tournages complets de 14 plans, pas deux étalonnages. Les **fiches de casting du § 2 sont
+communes aux deux** : c'est ce qui fait que le même plombier et la même cliente jouent la même
+histoire à deux moments de la journée.
+
+Le bloc de style du § 1 est celui du film de JOUR. Pour la nuit, remplacer les trois expressions
+de lumière par : `warm amber and old-gold colour grade, true deep blacks lifted only by warm
+practical light`.
+
+Le script de fabrication prend les deux dossiers de rushes :
+`construire-les-frames.sh <dossier-jour> <dossier-nuit>`.
+
+## 1. La chaîne, en trois gestes
 
 ```
 1. fiches de casting  → gpt_image_2, 16:9, 2k, quality:high      (6,5 crédits pièce)
@@ -35,7 +49,7 @@ de la poignée de main jusqu'à la galaxie du début, et le film se referme sur 
 
 ---
 
-## 1. Le bloc de style — collé à la fin de CHAQUE prompt
+## 2. Le bloc de style — collé à la fin de CHAQUE prompt
 
 > Photoreal documentary cinematography, large-format cinema camera, fast prime lens, shallow
 > depth of field, fine 35mm film grain, **bright natural daylight, clean high-key exposure, open
@@ -58,12 +72,12 @@ Sur les plans qui montrent un écran de téléphone, remplacer les deux dernièr
 
 ---
 
-## 2. Les deux fiches de casting
+## 3. Les deux fiches de casting
 
 Sans elles, le plombier change de visage entre deux plans. Elles se génèrent **une fois** ; leur
 identifiant de job sert ensuite de référence à toutes les images-clés qui montrent un humain.
 
-### 2.1 Le prestataire — plombier, la quarantaine
+### 3.1 Le prestataire — plombier, la quarantaine
 
 > Split-screen character sheet composition, left side a full-body shot of the character standing
 > upright in a neutral straight standing pose facing the camera with both feet flat on the ground
@@ -99,7 +113,7 @@ identifiant de job sert ensuite de référence à toutes les images-clés qui mo
 > skin, no text, no watermark, no logos, no frame borders, original character not resembling any
 > real celebrity or existing character
 
-### 2.2 La cliente — la trentaine finissante, en fin de journée
+### 3.2 La cliente — la trentaine finissante, en fin de journée
 
 Même armature. Les variables qui changent :
 
@@ -119,11 +133,11 @@ Même armature. Les variables qui changent :
 > jeans, thick charcoal wool socks and no shoes, a thin gold chain necklace, small gold stud
 > earrings, a slim silver watch on a worn strap, no bag
 
-*(compléter avec la même queue négative que 2.1)*
+*(compléter avec la même queue négative que 3.1)*
 
 ---
 
-## 3. Les 14 images-clés
+## 4. Les 14 images-clés
 
 `R+` indique les fiches de casting à passer en `medias` (rôle `image`).
 
@@ -256,7 +270,7 @@ Même armature. Les variables qui changent :
 
 ---
 
-## 4. Les 14 plans vidéo
+## 5. Les 14 plans vidéo
 
 Règle commune à tous : **un seul mouvement continu, aucune coupe**, `no shake`, `no whip pans`.
 C'est ce qui fait que le film se lit comme une chute unique et non comme un montage.
@@ -280,7 +294,7 @@ C'est ce qui fait que le film se lit comme une chute unique et non comme un mont
 
 ---
 
-## 5. Le montage — ce que fait le script
+## 6. Le montage — ce que fait le script
 
 `scripts/journey-film/construire-les-frames.sh <dossier-des-plans>`
 
@@ -293,7 +307,7 @@ C'est ce qui fait que le film se lit comme une chute unique et non comme un mont
 | Poster | WebP **et** JPEG | c'est le visuel des navigateurs SANS AVIF : il ne peut pas être en AVIF |
 | Manifeste | `frames.json`, avec une **`version` horodatée** | `FilmDuParcoursTest` compare son `total` au nombre de fichiers réellement présents, et exige que la version soit un horodatage |
 
-### 5.1 Le jeton de version — sans lui, rien ne change pour le visiteur
+### 6.1 Le jeton de version — sans lui, rien ne change pour le visiteur
 
 Les 700 fichiers gardent leurs noms d'un tournage à l'autre. **Un visiteur qui a déjà vu le film
 se verrait reservir l'ancien depuis le cache de son navigateur, quel que soit le nombre de
@@ -331,7 +345,7 @@ autorise un AVIF aussi compressé en dessous sans que ça se voie.
 
 ---
 
-## 6. Refaire UN plan
+## 7. Refaire UN plan
 
 1. Regénérer son image-clé si le cadre est en cause (§ 3), sinon garder l'ancienne.
 2. Relancer `flux_3_video` avec les mêmes `start_image` / `end_image` (§ 4). Si un préréglage est

@@ -40,9 +40,29 @@ final class FilmDuParcours
         return (string) $manifeste['version'];
     }
 
-    /** L'URL versionnée d'un asset du film — `poster.webp`, `poster.jpg`, `frames.json`… */
+    /** L'URL versionnée d'un asset du film — `frames.json`, `jour/poster.jpg`… */
     public static function asset(string $fichier): string
     {
         return asset(self::RACINE.'/'.$fichier).'?v='.rawurlencode(self::version());
+    }
+
+    /**
+     * Les deux variantes du film, et ce qu'elles montrent.
+     *
+     * DEUX TOURNAGES, PAS DEUX ETALONNAGES : le mode clair montre la mission de jour, le mode
+     * sombre la mission de nuit. Le serveur ne connaît pas le thème du visiteur — les deux
+     * posters sont donc rendus, et le CSS montre le bon.
+     *
+     * @var array<string, string> variante => classe CSS qui décide de sa visibilité
+     */
+    public const VARIANTES = [
+        'jour' => 'cx-film__poster--clair',
+        'nuit' => 'cx-film__poster--sombre',
+    ];
+
+    /** L'URL versionnée d'un poster de variante. */
+    public static function poster(string $variante, string $extension): string
+    {
+        return self::asset($variante.'/poster.'.$extension);
     }
 }

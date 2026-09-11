@@ -47,14 +47,17 @@
     <div class="cx-film__scene">
         <canvas class="cx-film__canvas" data-cx-film-canvas aria-hidden="true"></canvas>
 
-        {{-- Le poster : visible tant que la première frame n'est pas décodée, et
-             visuel définitif des navigateurs sans AVIF. --}}
-        <picture class="cx-film__poster" aria-hidden="true">
-            {{-- Versionne : le poster garde son nom d'un tournage a l'autre. --}}
-            <source srcset="{{ \App\Support\Vitrine\FilmDuParcours::asset('poster.webp') }}" type="image/webp">
-            <img src="{{ \App\Support\Vitrine\FilmDuParcours::asset('poster.jpg') }}" alt="" width="1280" height="720"
-                 loading="lazy" decoding="async">
-        </picture>
+        {{-- Les posters : visibles tant que la première frame n'est pas décodée, et visuels
+             définitifs des navigateurs sans AVIF. UN PAR THÈME — le serveur ne connaît pas le
+             thème du visiteur, on rend les deux et le CSS montre le bon. Versionnés : ils
+             gardent leur nom d'un tournage à l'autre. --}}
+        @foreach(\App\Support\Vitrine\FilmDuParcours::VARIANTES as $variante => $classe)
+            <picture class="cx-film__poster {{ $classe }}" aria-hidden="true">
+                <source srcset="{{ \App\Support\Vitrine\FilmDuParcours::poster($variante, 'webp') }}" type="image/webp">
+                <img src="{{ \App\Support\Vitrine\FilmDuParcours::poster($variante, 'jpg') }}" alt="" width="1280" height="720"
+                     loading="lazy" decoding="async">
+            </picture>
+        @endforeach
 
         <div class="cx-film__voile" aria-hidden="true"></div>
 

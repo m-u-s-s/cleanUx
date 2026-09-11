@@ -1,8 +1,9 @@
 {
-  "version": "20260910221854",
+  "version": "20260911002252",
   "total": 350,
   "parPlan": 25,
   "plans": 14,
   "tailles": { "desktop": [1280, 720], "mobile": [768, 432] },
+  "variantes": { "clair": "jour", "sombre": "nuit" },
   "poster": "poster.webp"
 }

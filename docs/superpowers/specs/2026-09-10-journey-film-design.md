@@ -51,12 +51,18 @@ par-dessus le réel : elle devient **la lumière et l'étalonnage**.
 - **Aucun texte cuit dans la vidéo**, sauf les écrans de téléphone. Titres, légendes et badges
   sont du HTML par-dessus : nets à tout DPI, traduits en six langues, lus par les lecteurs
   d'écran, modifiables sans regénérer un plan à 45 crédits.
-- **Les deux thèmes sont traités** (révisé le 2026-09-11). Une première version posait la section
-  en sombre quel que soit le thème, présentée ici comme un parti pris ; c'était une décision de
-  direction prise seul, et l'utilisateur l'a refusée. La section suit maintenant `:root.dark`
-  comme le reste du système. Deux choses ne basculent pas, et c'est motivé : **la photographie**
-  (un plan de film n'a pas de thème) et **le fond du QR**, qui reste blanc parce qu'un code se
-  lit en sombre sur clair.
+- **DEUX FILMS, UN PAR THÈME** (révisé le 2026-09-11). Le mode clair montre la **mission de
+  jour**, le mode sombre la **mission de nuit**. Ce ne sont pas deux étalonnages du même rendu :
+  ce sont deux tournages de 14 plans, avec les **mêmes acteurs** — ce sont les fiches de casting
+  qui rendent la chose possible, et c'est ce qui fait lire les deux films comme une seule
+  plateforme à deux moments.
+
+  L'histoire est la première version de ce travail : elle était nocturne, l'utilisateur l'a
+  jugée trop sombre, on l'a refaite en plein jour — puis il a demandé de garder la nuit pour le
+  mode sombre. Les deux tournages étaient encore sur le disque.
+
+  Une seule chose ne bascule pas, et c'est motivé : **le fond du QR**, qui reste blanc parce
+  qu'un code se lit en sombre sur clair.
 
 ### 3.1 Le bloc de style, répété dans chaque plan
 
@@ -157,8 +163,14 @@ de téléchargement.
    en mouvements lents et continus, une cadence constante suffit — et elle garantit que chaque
    chapitre tombe sur un multiple de 25.
 
-Sortie : `public/images/journey-film/` + `frames.json` (nombre de frames, chapitres, et une
-**`version` horodatée**).
+Sortie : `public/images/journey-film/<variante>/{desktop,mobile}/` + un `frames.json` unique
+(nombre de frames, chapitres, **`variantes`** et une **`version` horodatée`**).
+
+Deux variantes — `jour` et `nuit` — soit **13 Mo + 11 Mo dans le dépôt**. Le visiteur, lui,
+ne charge QUE celle de son thème, et seulement les chapitres qu'il traverse. La bascule de
+thème en cours de lecture remplace le magasin de frames sans jeter l'image à l'écran : le
+compositeur garde la dernière frame peinte pendant que la première vague de l'autre film
+arrive — aucun trou noir.
 
 **La version n'est pas décorative.** Les 700 fichiers gardent leurs noms d'un tournage à l'autre :
 sans jeton `?v=` dans l'URL, le navigateur d'un visiteur qui a déjà vu le film lui reservirait

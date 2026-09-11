@@ -40,13 +40,21 @@ export async function chargerManifeste() {
     return reponse.json();
 }
 
+/** La variante de film qu'un thème demande : le clair montre le jour, le sombre la nuit. */
+export function varianteDuTheme(manifeste, sombre) {
+    const variantes = manifeste.variantes || {};
+
+    return (sombre ? variantes.sombre : variantes.clair) || 'jour';
+}
+
 /**
  * Le magasin de frames.
  *
  * @param {{total:number, parPlan:number, plans:number}} manifeste
  * @param {'desktop'|'mobile'} taille
+ * @param {string} variante  « jour » ou « nuit » — deux tournages distincts, pas deux étalonnages
  */
-export function creerMagasin(manifeste, taille) {
+export function creerMagasin(manifeste, taille, variante) {
     const total = manifeste.total;
     const parPlan = manifeste.parPlan;
     const images = new Array(total).fill(null);
@@ -64,7 +72,7 @@ export function creerMagasin(manifeste, taille) {
     const jeton = manifeste.version ? `?v=${encodeURIComponent(manifeste.version)}` : '';
 
     function url(index) {
-        return `${BASE}${taille}/${String(index).padStart(3, '0')}.avif${jeton}`;
+        return `${BASE}${variante}/${taille}/${String(index).padStart(3, '0')}.avif${jeton}`;
     }
 
     /** Réveille ce qui attendait cette frame — chargée ou définitivement absente. */

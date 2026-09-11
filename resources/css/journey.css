@@ -198,6 +198,12 @@
     display: block;
 }
 
+/* UN POSTER PAR THEME : les deux sont dans le HTML, le CSS montre celui qui va avec
+   le film que le decodeur va charger — le serveur ne connait pas le theme du visiteur. */
+.cx-film__poster--sombre { display: none; }
+:root.dark .cx-film__poster--clair { display: none; }
+:root.dark .cx-film__poster--sombre { display: block; }
+
 /* Le poster ne s'efface qu'une fois le canvas REELLEMENT peint (`is-peint`), pas
    a l'activation : sinon un onglet dont le rAF ne tourne pas encore montrerait un
    rectangle noir a la place du film. */
