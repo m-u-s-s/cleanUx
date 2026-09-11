@@ -222,7 +222,7 @@
                         <span class="text-lg font-extrabold" style="font-family:var(--cx-display)">{{ config('app.name', 'Brio') }}</span>
                     </div>
                     <p class="mt-4 max-w-xs text-sm" style="color:var(--cx-muted)">
-                        La plateforme de services à domicile : du devis à la preuve d'exécution, en toute confiance.
+                        La plateforme de services à domicile : du devis à la preuve d’exécution, en toute confiance.
                     </p>
                 </div>
                 <div>
@@ -283,7 +283,7 @@
             <div class="mt-12 flex flex-col items-start justify-between gap-3 border-t pt-6 sm:flex-row sm:items-center"
                  style="border-color:var(--cx-line)">
                 <p class="text-xs" style="color:var(--cx-muted)">© {{ date('Y') }} {{ config('app.name', 'Brio') }}. Tous droits réservés.</p>
-                <p class="text-xs" style="color:var(--cx-muted)">Conçu pour la Belgique &amp; l'Europe.</p>
+                <p class="text-xs" style="color:var(--cx-muted)">Ouvert en Belgique. Les autres pays viendront quand leur catalogue sera prêt.</p>
             </div>
         </div>
     </footer>

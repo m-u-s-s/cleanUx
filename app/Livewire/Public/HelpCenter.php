@@ -54,7 +54,8 @@ class HelpCenter extends Component
                     ],
                     [
                         'q' => 'Quand suis-je débité ?',
-                        'a' => 'Votre carte est autorisée à la réservation. Le débit effectif intervient au démarrage de la mission. Vous pouvez ajouter un pourboire après.',
+                        'a' => 'Votre carte est empreintée à la réservation : la somme est bloquée, pas prélevée. '
+                            .'Le débit a lieu à la clôture de la mission. Vous pouvez ajouter un pourboire ensuite.',
                     ],
                     [
                         'q' => 'Comment télécharger ma facture ?',
@@ -84,15 +85,18 @@ class HelpCenter extends Component
                 'items' => [
                     [
                         'q' => 'Comment devenir prestataire ?',
-                        'a' => "Inscrivez-vous avec un compte 'Prestataire', complétez le wizard d'onboarding (identité, métiers, zones, RIB Stripe Connect). Validation sous 48h après vérifications.",
+                        'a' => 'Créez un compte prestataire, puis renseignez votre identité, vos métiers, vos zones '
+                            .'et votre compte bancaire. Vous recevez des missions une fois ce dossier validé.',
                     ],
                     [
                         'q' => 'Quel est le pourcentage de commission ?',
-                        'a' => '20% sur chaque mission. 0% sur les pourboires (intégralement reversés).',
+                        'a' => "15 % sur chaque mission, avec un minimum de 2 € qui couvre les frais d'encaissement. "
+                            .'0 % sur les pourboires : ils vous sont reversés en entier.',
                     ],
                     [
                         'q' => 'Quand suis-je payé ?',
-                        'a' => 'Les fonds sont versés via Stripe Connect, généralement sous 2-5 jours ouvrés après la mission selon votre banque.',
+                        'a' => 'Votre part part sur votre compte Stripe dès la clôture. Stripe la vire ensuite vers '
+                            .'votre banque selon son propre calendrier, en général sous sept jours.',
                     ],
                 ],
             ],

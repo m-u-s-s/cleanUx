@@ -14,6 +14,11 @@
      ============================================================ --}}
 @php
     $nombreDePlans = 14;
+    // Le premier plan annonçait « 30 métiers dans 9 pays » : le catalogue en ouvre 19, dans un seul.
+    $chiffresDuFilm = [
+        'metiers' => \App\Support\Vitrine\ChiffresDeLaVitrine::metiersOuverts(),
+        'zones' => \App\Support\Vitrine\ChiffresDeLaVitrine::zonesOuvertes(),
+    ];
 @endphp
 
 <section class="cx-film"
@@ -38,7 +43,7 @@
         @for ($i = 1; $i <= $nombreDePlans; $i++)
             <li>
                 <b>{{ __('vitrine.film.plans.'.$i.'.titre') }}</b>
-                <span>{{ __('vitrine.film.plans.'.$i.'.detail') }}</span>
+                <span>{{ __('vitrine.film.plans.'.$i.'.detail', $chiffresDuFilm) }}</span>
             </li>
         @endfor
     </ol>
@@ -68,7 +73,7 @@
             @for ($i = 1; $i <= $nombreDePlans; $i++)
                 <p class="cx-film__legende @if($i === 1) is-active @endif" data-cx-film-chapitre>
                     <b>{{ __('vitrine.film.plans.'.$i.'.titre') }}</b>
-                    <span>{{ __('vitrine.film.plans.'.$i.'.detail') }}</span>
+                    <span>{{ __('vitrine.film.plans.'.$i.'.detail', $chiffresDuFilm) }}</span>
                 </p>
             @endfor
         </div>

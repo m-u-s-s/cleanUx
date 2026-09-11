@@ -1,209 +1,141 @@
 <x-guest-layout :cta="true">
     {{-- ============================================================
-         Brio — Landing page (refonte Stripe/Linear-light, 21/05/2026)
-         Direction : sérieux SaaS multi-métiers B2B + B2C.
-         Clean, dense info, trust signals.
+         Brio — l'accueil.
+
+         REFAITE LE 2026-09-11. La version précédente annonçait « 30+ métiers »,
+         « 9 pays supportés », « 12 480 avis vérifiés », « 4.8 », « assurance RC pro
+         incluse », « identité contrôlée Onfido/Veriff » et « satisfaction garantie ».
+         Mesuré dans le code : seize métiers, un seul pays ouvert, aucune table d'avis
+         alimentée, aucun assureur branché et un pilote d'identité simulé.
+
+         Le texte vit dans lang/*/vitrine.php sous « accueil » ; les chiffres se lisent
+         dans le moteur au rendu (App\Support\Vitrine\ChiffresDeLaVitrine).
          ============================================================ --}}
-    {{-- Note: no <img> tags here — all visuals use CSS backgrounds/gradients.
-         loading="lazy" is applied automatically where <img> tags are added.
-         OG image preloaded via <link rel="preload"> in layouts/guest.blade.php. --}}
+    @php
+        $chiffresHero = [
+            'metiers' => \App\Support\Vitrine\ChiffresDeLaVitrine::metiersOuverts(),
+            'immediat' => \App\Support\Vitrine\ChiffresDeLaVitrine::metiersEnImmediat(),
+            'zones' => \App\Support\Vitrine\ChiffresDeLaVitrine::zonesOuvertes(),
+        ];
+        $h = fn (string $cle) => __('vitrine.accueil.hero.'.$cle, $chiffresHero);
+        $versCommande = Route::has('order.journey')? route('order.journey'): route('booking.create');
+    @endphp
 
     {{-- ============================================================
          HERO — Luxury cinématique (dark, fullscreen).
-         WebGL (Three.js) + GSAP + Motion ; composants réutilisables dans
-         resources/views/components/hero/*. Bundle JS poussé en bas de page.
-         Parallaxe pointeur via le moteur partagé [data-cx-parallax] (app.js).
+         WebGL (Three.js) + GSAP + Motion ; composants dans components/hero/*.
          ============================================================ --}}
-    <x-hero.luxury scroll-target="#decouvrir" scroll-label="Découvrir">
+    <x-hero.luxury scroll-target="#situations" scroll-label="Découvrir">
         <x-slot:eyebrow>
-            {{-- LA MARQUE EN TÊTE DE L'ACCUEIL. Elle n'était présente que dans la barre de
-                 navigation, qui se rétracte au défilement : la première chose qu'un visiteur voyait
-                 en arrivant était un titre sans signature. --}}
             <x-brand.logo space="client" variant="dark" :size="72" class="mb-5" />
-            <x-hero.eyebrow>Marketplace multi-métiers • B2C &amp; B2B</x-hero.eyebrow>
+            <x-hero.eyebrow>{{ __('vitrine.accueil.situations.surtitre') }}</x-hero.eyebrow>
         </x-slot:eyebrow>
 
         <x-slot:title>
-            <span class="cx-line"><span>L'excellence des services pros,</span></span>
-            <span class="cx-line"><span class="cx-lux-serif cx-lux-gradient-ink">à la demande.</span></span>
+            <span class="cx-line"><span>Vous voulez repeindre le salon,</span></span>
+            <span class="cx-line"><span class="cx-lux-serif cx-lux-gradient-ink">sans savoir combien.</span></span>
         </x-slot:title>
 
-        Nettoyage, peinture, plomberie, jardinage, babysitting — un seul compte, un prestataire vérifié près de chez vous en quelques clics. Devis IA depuis photo, paiement sécurisé Stripe, satisfaction garantie.
+        {{ $h('sous_titre') }}
 
         <x-slot:actions>
             <span class="cx-magnetic" data-cx-magnetic="0.3">
-                <x-ui.button href="{{ route('booking.create') }}" variant="amber" size="xl" icon="arrow-right" iconPosition="right" class="brio-glow-amber cx-cta-primary">
-                    Réserver une mission
+                <x-ui.button :href="$versCommande" variant="amber" size="xl" icon="arrow-right" iconPosition="right" class="brio-glow-amber cx-cta-primary">
+                    {{ $h('bouton') }}
                 </x-ui.button>
             </span>
-            @if (Route::has('providers.browse.public'))
-                <span class="cx-magnetic" data-cx-magnetic="0.22">
-                    <a href="{{ route('providers.browse.public') }}" class="cx-lux-btn-ghost">
-                        <x-ui.icon name="magnifying-glass" class="w-5 h-5" />
-                        Trouver un prestataire
-                    </a>
-                </span>
-            @endif
-            {{--
-                DEUX ENTRÉES AJOUTÉES LE 2026-08-05, parce qu'elles n'existaient nulle part.
-                Un parcours d'accessibilité a montré que cette page ne citait que quatre routes
-                — booking.create, login, register, providers.browse.public — et ne menait donc
-                NI au moteur de commande (`order.journey` : secteur → métier → questions), NI aux
-                pages services publiques. Les deux ensembles ne se citaient qu'entre eux : des
-                boucles fermées, sans porte d'entrée depuis le site.
-
-                Le bouton principal reste `booking.create` : le remplacer par le moteur de commande
-                est une décision produit, pas une correction d'accessibilité. Ces liens ouvrent
-                l'accès sans arbitrer entre les deux parcours.
-            --}}
-            @if (Route::has('order.journey'))
-                <span class="cx-magnetic" data-cx-magnetic="0.22">
-                    <a href="{{ route('order.journey') }}" class="cx-lux-btn-ghost">
-                        <x-ui.icon name="bolt" class="w-5 h-5" />
-                        Commander en quelques questions
-                    </a>
-                </span>
-            @endif
             @if (Route::has('services.index'))
                 <span class="cx-magnetic" data-cx-magnetic="0.22">
                     <a href="{{ route('services.index') }}" class="cx-lux-btn-ghost">
                         <x-ui.icon name="cube" class="w-5 h-5" />
-                        Tous nos services
+                        Voir les métiers ouverts
                     </a>
                 </span>
             @endif
+            {{-- Le prestataire a sa porte dès le premier écran : la moitié du public
+                 de cette page vient pour travailler, pas pour commander. --}}
+            <span class="cx-magnetic" data-cx-magnetic="0.22">
+                <a href="#prestataires" class="cx-lux-btn-ghost">
+                    <x-ui.icon name="wrench" class="w-5 h-5" />
+                    Je suis professionnel
+                </a>
+            </span>
         </x-slot:actions>
 
+        {{-- La barre de confiance ne porte QUE des mécanismes vérifiables : ni note
+             moyenne, ni assurance, ni nom de fournisseur d'identité. --}}
         <x-slot:trust>
             <x-ui.icon name="shield-check" class="w-4 h-4" style="color: var(--cx-amber)" />
-            KYC validé
-            <span class="cx-lux-trust__sep">·</span> Stripe Connect
-            <span class="cx-lux-trust__sep">·</span> Assurance incluse
+            Le prix avant votre nom
+            <span class="cx-lux-trust__sep">·</span> Débité à la fin, pas avant
+            <span class="cx-lux-trust__sep">·</span> Un code à six chiffres pour démarrer
         </x-slot:trust>
 
-        {{-- Puce d'avis compacte : visible seulement < lg (cf. .cx-lux-proof). --}}
         <x-slot:proof>
             <span class="cx-lux-proof__chip">
-                <span class="cx-lux-stars">★★★★★</span>
-                <strong>4.8</strong>
-                <span class="cx-lux-proof__sub">12 480 avis vérifiés</span>
+                <span class="cx-lux-proof__sub">{{ $h('notes.0') }}</span>
             </span>
         </x-slot:proof>
 
         <x-slot:media>
-            {{-- Floating mock-UI glass cards (procedural, no copyrighted assets). --}}
-            <x-hero.floating-card tone="amber" icon="star"
+            {{-- Trois cartes, trois mécanismes réels du moteur. --}}
+            <x-hero.floating-card tone="amber" icon="sparkles"
                 position="top: 1rem; left: 0; right: auto;" delay="0s">
-                <p class="cx-lux-card__label">Note moyenne</p>
-                <p class="cx-lux-card__value">4.8 <span class="cx-lux-stars">★★★★★</span></p>
-                <p class="cx-lux-card__sub">12 480 avis vérifiés</p>
+                <p class="cx-lux-card__label">Votre estimation</p>
+                <p class="cx-lux-card__value">280 € <span class="cx-lux-card__sub" style="margin:0">à 340 €</span></p>
+                <p class="cx-lux-card__sub">C’est le bas qui vous engage</p>
             </x-hero.floating-card>
 
             <x-hero.floating-card tone="cyan" icon="map-pin"
                 position="top: 8.5rem; right: 0;" delay="-2.5s">
                 <div class="flex items-center gap-2">
                     <span class="cx-lux-dot"></span>
-                    <p class="cx-lux-card__value">Prestataire en route</p>
+                    <p class="cx-lux-card__value">Un pro a accepté</p>
                 </div>
-                <p class="cx-lux-card__sub">Plomberie · Bruxelles · ETA 8 min</p>
+                <p class="cx-lux-card__sub">Peinture · Bruxelles · sa position en direct</p>
             </x-hero.floating-card>
 
-            <x-hero.floating-card tone="violet" icon="sparkles"
+            <x-hero.floating-card tone="violet" icon="shield-check"
                 position="bottom: 1.5rem; left: 1.5rem;" delay="-4.5s">
-                <p class="cx-lux-card__label">Devis IA depuis photo</p>
-                <p class="cx-lux-card__value">≈ 320 € <span class="cx-lux-card__sub" style="margin:0">en 10 s</span></p>
+                <p class="cx-lux-card__label">Le code du démarrage</p>
+                <p class="cx-lux-card__value">4 8 2 1 0 6</p>
+                <p class="cx-lux-card__sub">C’est vous qui l’avez</p>
             </x-hero.floating-card>
         </x-slot:media>
     </x-hero.luxury>
 
-    {{-- TRUST BAR --}}
-    <section id="decouvrir" class="border-y border-slate-100 bg-slate-50/50 py-8 scroll-mt-20 dark:border-slate-800 dark:bg-slate-900/40">
+    {{-- LA PHRASE DE POSITION, premier des trois endroits où elle paraît mot pour mot. --}}
+    <section class="cx-arg border-y py-10" style="border-color: var(--cx-arg-ligne)">
         <div class="mx-auto max-w-7xl px-6">
-            <p class="text-center text-xs font-semibold uppercase tracking-wider text-slate-500" data-cx-reveal>
-                30+ métiers · 6 langues · Conformité RGPD + Factur-X EU
+            <p class="cx-arg__position" style="margin-bottom:0; padding-bottom:0; border-bottom:0">
+                {{ __('vitrine.accueil.position') }}
             </p>
-            <div class="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-4 lg:grid-cols-6">
-                @foreach (['Nettoyage', 'Peinture', 'Plomberie', 'Jardinage', 'Babysitting', 'Toiture'] as $i => $trade)
-                    <div class="cx-trade-pill flex items-center justify-center text-sm font-medium text-slate-600" data-cx-reveal data-cx-delay="{{ $i + 1 }}">
-                        {{ $trade }}
-                    </div>
+            <ul class="mx-auto mt-6 grid max-w-4xl gap-3 sm:grid-cols-3">
+                @foreach ((array) __('vitrine.accueil.hero.puces') as $i => $puce)
+                    <li class="cx-arg__engagement-puce flex gap-2 text-sm" data-cx-reveal data-cx-delay="{{ $i * 80 }}"
+                        style="color: var(--cx-arg-doux)">
+                        <x-ui.icon name="check" class="cx-arg__coche" />
+                        <span>{{ $puce }}</span>
+                    </li>
                 @endforeach
-            </div>
+            </ul>
         </div>
     </section>
 
-    {{-- FEATURES SHOWCASE --}}
-    <section class="py-24 sm:py-32">
-        <div class="mx-auto max-w-7xl px-6">
-            <div class="mx-auto max-w-2xl text-center">
-                <span class="cx-subhead">Comment ça marche</span>
-                <h2 class="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl cx-headline cx-balance">
-                    Trouvez. Réservez. C'est fait.
-                </h2>
-                <p class="mt-4 text-base text-slate-600 cx-body-readable mx-auto">
-                    Plus de devis interminables, plus de no-shows. Notre IA estime, notre matching trouve, notre prestataire intervient — tracking GPS en temps réel.
-                </p>
-            </div>
-
-            <div class="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
-                {{-- Feature 1: spans 2 columns, larger, amber border-left accent --}}
-                <div class="md:col-span-2 brio-glass cx-lift cx-tilt rounded-2xl p-8 border-l-4 border-accent-amber" data-cx-reveal data-cx-tilt="5">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-200">
-                        <x-ui.icon name="camera" class="w-6 h-6" />
-                    </div>
-                    <h3 class="mt-5 text-lg font-semibold text-slate-900">Devis IA depuis photo</h3>
-                    <p class="mt-2 text-sm leading-6 text-slate-600 cx-body-readable">
-                        Prenez une photo, choisissez le métier — recevez une fourchette de prix en 10 secondes, sans appel commercial.
-                    </p>
-                </div>
-
-                {{-- Feature 2: single column --}}
-                <div class="brio-glass cx-lift cx-tilt rounded-2xl p-6" data-cx-reveal data-cx-delay="100" data-cx-tilt="6">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200">
-                        <x-ui.icon name="badge-check" class="w-6 h-6" />
-                    </div>
-                    <h3 class="mt-5 text-base font-semibold text-slate-900">Prestataires vérifiés KYC</h3>
-                    <p class="mt-2 text-sm leading-6 text-slate-600">
-                        Identité contrôlée Onfido/Veriff, casier judiciaire vérifié, assurance RC pro incluse sur chaque mission.
-                    </p>
-                </div>
-
-                {{-- Feature 3: full width, horizontal layout --}}
-                <div class="md:col-span-3 brio-glass cx-lift rounded-2xl p-6 flex flex-col md:flex-row md:items-center gap-6" data-cx-reveal data-cx-delay="200">
-                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600 ring-1 ring-purple-200">
-                        <x-ui.icon name="map-pin" class="w-7 h-7" />
-                    </div>
-                    <div>
-                        <h3 class="text-base font-semibold text-slate-900">Tracking GPS en direct</h3>
-                        <p class="mt-1 text-sm leading-6 text-slate-600">
-                            Suivez l'arrivée de votre prestataire sur carte, ETA en temps réel, géofence d'arrivée auto. Votre prestataire est déjà en route — vous le savez avant même qu'il sonne.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- ============================================================
-         MÉTIERS — galerie horizontale épinglée (premium-scroll engine).
-         [data-scroll-horizontal] : pin + scale/translateX/fade par panneau
-         sur desktop ; scroll natif tactile (snap + inertie) sur mobile.
-         PAS de [data-premium-scroll] ici -> on n'active PAS Lenis global :
-         le moteur ne fait QUE cette section, son cleanup est isolé via
-         gsap.matchMedia et ne touche pas le ScrollTrigger 3D du parcours.
-         id="metiers" : cible l'ancre de nav « Métiers » (était orpheline).
-         ============================================================ --}}
-    <section id="metiers" class="scroll-mt-20" data-scroll-horizontal aria-label="Nos métiers à la demande">
+    {{-- MÉTIERS — galerie horizontale épinglée (moteur premium-scroll).
+         [data-scroll-horizontal] : pin + scale/translateX/fade par panneau sur desktop ;
+         scroll natif tactile sur mobile. PAS de [data-premium-scroll] : on n'active pas
+         Lenis global, le cleanup reste isolé du ScrollTrigger du film. --}}
+    <section id="metiers" class="scroll-mt-20" data-scroll-horizontal aria-label="Les métiers ouverts">
         <div data-scroll-track>
-            {{-- Intro --}}
-            <article class="flex items-center justify-center bg-white" data-scroll-panel>
+            <article class="flex items-center justify-center bg-white dark:bg-slate-900" data-scroll-panel>
                 <div class="mx-auto max-w-xl px-6 text-center" data-scroll-panel-inner>
-                    <span class="cx-subhead">Nos métiers</span>
-                    <h2 class="mt-2 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl cx-headline cx-balance">
-                        30+ métiers.<br><span class="text-brand-600">Un seul compte.</span>
-                    </h2>
-                    <p class="mt-5 text-base text-slate-600 cx-body-readable mx-auto">
-                        Du ménage hebdomadaire à la rénovation complète — un prestataire vérifié pour chaque besoin, près de chez vous.
+                    <span class="cx-subhead">Ce que vous pouvez commander</span>
+                    <h3 class="mt-2 text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100 cx-headline cx-balance">
+                        {{ \App\Support\Vitrine\ChiffresDeLaVitrine::metiersOuverts() }} métiers.<br><span class="text-brand-600 dark:text-brand-300">Six secteurs.</span>
+                    </h3>
+                    <p class="mt-5 text-base text-slate-600 dark:text-slate-400 cx-body-readable mx-auto">
+                        Ce chiffre est celui du catalogue, lu au moment où vous chargez cette page. Il monte quand un métier ouvre, et il descend quand un métier ferme.
                     </p>
                     <p class="mt-8 inline-flex items-center gap-2 text-sm font-medium text-slate-400">
                         Faites défiler <span aria-hidden="true">→</span>
@@ -211,53 +143,49 @@
                 </div>
             </article>
 
-            {{-- Maison & ménage --}}
-            <article class="flex items-center justify-center bg-brand-50" data-scroll-panel>
+            <article class="flex items-center justify-center bg-brand-50 dark:bg-slate-800" data-scroll-panel>
                 <div class="mx-auto max-w-md px-6 text-center" data-scroll-panel-inner>
                     <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-brand-600 ring-1 ring-brand-200 shadow-soft-md">
                         <x-ui.icon name="sparkles" class="w-8 h-8" />
                     </div>
-                    <h3 class="mt-6 text-2xl font-bold text-slate-900">Maison &amp; ménage</h3>
-                    <p class="mt-3 text-base text-slate-600">Nettoyage régulier, grand ménage, repassage, vitres, désinfection.</p>
-                    <p class="mt-5 text-sm font-semibold text-brand-600">Nettoyage · Repassage · Vitres · Désinfection</p>
+                    <h4 class="mt-6 text-2xl font-bold text-slate-900 dark:text-slate-100">Maison &amp; ménage</h4>
+                    <p class="mt-3 text-base text-slate-600 dark:text-slate-400">Nettoyage à domicile, vitres, fin de chantier.</p>
+                    <p class="mt-5 text-sm font-semibold text-brand-600 dark:text-brand-300">Le nettoyage à domicile accepte l’intervention immédiate</p>
                 </div>
             </article>
 
-            {{-- Travaux & rénovation --}}
-            <article class="flex items-center justify-center bg-amber-50" data-scroll-panel>
+            <article class="flex items-center justify-center bg-amber-50 dark:bg-slate-800" data-scroll-panel>
                 <div class="mx-auto max-w-md px-6 text-center" data-scroll-panel-inner>
                     <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-amber-600 ring-1 ring-amber-200 shadow-soft-md">
                         <x-ui.icon name="wrench" class="w-8 h-8" />
                     </div>
-                    <h3 class="mt-6 text-2xl font-bold text-slate-900">Travaux &amp; rénovation</h3>
-                    <p class="mt-3 text-base text-slate-600">Peinture, plomberie, carrelage, menuiserie — orchestrés dans le bon ordre.</p>
-                    <p class="mt-5 text-sm font-semibold text-amber-600">Peinture · Plomberie · Carrelage · Menuiserie</p>
+                    <h4 class="mt-6 text-2xl font-bold text-slate-900 dark:text-slate-100">Travaux &amp; rénovation</h4>
+                    <p class="mt-3 text-base text-slate-600 dark:text-slate-400">Peinture, plomberie, bâtiment, rénovation.</p>
+                    <p class="mt-5 text-sm font-semibold text-amber-700 dark:text-amber-300">Commandés ensemble, ils se suivent dans le bon ordre</p>
                 </div>
             </article>
 
-            {{-- Énergie & confort --}}
-            <article class="flex items-center justify-center bg-emerald-50" data-scroll-panel>
+            <article class="flex items-center justify-center bg-emerald-50 dark:bg-slate-800" data-scroll-panel>
                 <div class="mx-auto max-w-md px-6 text-center" data-scroll-panel-inner>
                     <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-emerald-600 ring-1 ring-emerald-200 shadow-soft-md">
                         <x-ui.icon name="bolt" class="w-8 h-8" />
                     </div>
-                    <h3 class="mt-6 text-2xl font-bold text-slate-900">Énergie &amp; confort</h3>
-                    <p class="mt-3 text-base text-slate-600">Électricité, domotique, chauffage, bornes de recharge — par des pros assurés.</p>
-                    <p class="mt-5 text-sm font-semibold text-emerald-600">Électricité · Domotique · Chauffage · Bornes</p>
+                    <h4 class="mt-6 text-2xl font-bold text-slate-900 dark:text-slate-100">Extérieur &amp; technique</h4>
+                    <p class="mt-3 text-base text-slate-600 dark:text-slate-400">Électricité, jardinage, toiture, élagage.</p>
+                    <p class="mt-5 text-sm font-semibold text-emerald-700 dark:text-emerald-300">La toiture et l’élagage passent par un devis, et le disent d’entrée</p>
                 </div>
             </article>
 
-            {{-- CTA --}}
             <article class="flex items-center justify-center bg-brand-600" data-scroll-panel>
                 <div class="mx-auto max-w-md px-6 text-center" data-scroll-panel-inner>
                     <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 text-white ring-1 ring-white/20">
-                        <x-ui.icon name="star" class="w-8 h-8" />
+                        <x-ui.icon name="cube" class="w-8 h-8" />
                     </div>
-                    <h3 class="mt-6 text-3xl font-bold text-white sm:text-4xl">Et bien plus encore.</h3>
-                    <p class="mt-4 text-base text-white/80">Babysitting, jardinage, toiture, déménagement, montage de meubles…</p>
+                    <h4 class="mt-6 text-3xl font-bold text-white sm:text-4xl">Et le reste du catalogue.</h4>
+                    <p class="mt-4 text-base text-white/80">Garde d’enfants, déménagement, levage, gardiennage, courses d’un point à un autre.</p>
                     <div class="mt-8">
-                        <x-ui.button href="{{ route('booking.create') }}" variant="amber" icon="arrow-right" iconPosition="right">
-                            Réserver une mission
+                        <x-ui.button :href="$versCommande" variant="amber" icon="arrow-right" iconPosition="right">
+                            {{ $h('bouton') }}
                         </x-ui.button>
                     </div>
                 </div>
@@ -265,261 +193,34 @@
         </div>
     </section>
 
-    {{-- DIFFERENTIATING SECTION : multi-trades bundle --}}
-    <section class="bg-slate-50/40 py-24 sm:py-32 dark:bg-slate-900/30">
-        <div class="mx-auto max-w-7xl px-6">
-            <div class="grid items-center gap-12 lg:grid-cols-2">
-                <div data-cx-reveal>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-brand-600">Différenciateur</p>
-                    <h2 class="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-                        Plusieurs métiers ?<br>
-                        <span class="text-brand-600">Un seul chantier groupé.</span>
-                    </h2>
-                    <p class="mt-6 text-base leading-7 text-slate-600">
-                        Rénovation salle de bain ? Carreleur + plombier + peintre + électricien — orchestrés dans le bon ordre, prix groupé, facture consolidée, 1 seul interlocuteur. <strong>Aucun concurrent ne fait ça.</strong>
-                    </p>
-                    <ul class="mt-8 space-y-3 text-sm text-slate-700">
-                        <li class="flex gap-3">
-                            <x-ui.icon name="check" class="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                            Dépendances cascade (carreleur avant peintre)
-                        </li>
-                        <li class="flex gap-3">
-                            <x-ui.icon name="check" class="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                            Discount groupage automatique
-                        </li>
-                        <li class="flex gap-3">
-                            <x-ui.icon name="check" class="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                            Suivi unifié & facturation consolidée
-                        </li>
-                    </ul>
-                    <div class="mt-8">
-                        <x-ui.button href="{{ route('booking.create') }}" variant="outline" icon="arrow-right" iconPosition="right">
-                            Démarrer un chantier groupé
-                        </x-ui.button>
-                    </div>
-                </div>
-
-                <div class="relative" data-cx-reveal data-cx-delay="100">
-                    <div class="cx-float overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-soft-md">
-                        <div class="border-b border-slate-100 bg-slate-50/50 px-5 py-3">
-                            <p class="text-xs font-mono text-slate-500">bundle_demo_renovation</p>
-                            <p class="text-sm font-semibold text-slate-900">Rénovation salle de bain</p>
-                        </div>
-                        <div class="divide-y divide-slate-100 text-sm">
-                            <div class="flex items-center justify-between px-5 py-3">
-                                <div class="flex items-center gap-3">
-                                    <span class="font-mono text-xs text-slate-400">1.</span>
-                                    <x-ui.icon name="wrench" class="w-4 h-4 text-brand-600" />
-                                    <span class="text-slate-700"><strong>Plombier</strong> — dépose ancienne robinetterie</span>
-                                </div>
-                                <span class="text-sm font-bold text-slate-900">320€</span>
-                            </div>
-                            <div class="flex items-center justify-between px-5 py-3">
-                                <div class="flex items-center gap-3">
-                                    <span class="font-mono text-xs text-slate-400">2.</span>
-                                    <x-ui.icon name="cube" class="w-4 h-4 text-amber-600" />
-                                    <span class="text-slate-700"><strong>Carreleur</strong> — pose carrelage sol + mur</span>
-                                </div>
-                                <span class="text-sm font-bold text-slate-900">1 240€</span>
-                            </div>
-                            <div class="flex items-center justify-between px-5 py-3">
-                                <div class="flex items-center gap-3">
-                                    <span class="font-mono text-xs text-slate-400">3.</span>
-                                    <x-ui.icon name="sparkles" class="w-4 h-4 text-purple-600" />
-                                    <span class="text-slate-700"><strong>Peintre</strong> — plafond + finitions</span>
-                                </div>
-                                <span class="text-sm font-bold text-slate-900">480€</span>
-                            </div>
-                            <div class="flex items-center justify-between px-5 py-3">
-                                <div class="flex items-center gap-3">
-                                    <span class="font-mono text-xs text-slate-400">4.</span>
-                                    <x-ui.icon name="bolt" class="w-4 h-4 text-yellow-600" />
-                                    <span class="text-slate-700"><strong>Électricien</strong> — éclairage LED + miroir</span>
-                                </div>
-                                <span class="text-sm font-bold text-slate-900">220€</span>
-                            </div>
-                        </div>
-                        <div class="bg-emerald-50/50 px-5 py-4">
-                            <div class="flex items-center justify-between">
-                                <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700">Total avec groupage</span>
-                                <span class="text-lg font-bold text-emerald-700">2 084€ <span class="text-xs font-medium line-through text-slate-400 ml-2">2 260€</span></span>
-                            </div>
-                            <p class="mt-1 text-xs text-emerald-600">Économie groupage : 176€ (−8%)</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- B2B SECTION --}}
-    <section class="py-24 sm:py-32">
-        <div class="mx-auto max-w-7xl px-6">
-            <div class="mx-auto max-w-2xl text-center">
-                <span class="cx-subhead">Pour les entreprises</span>
-                <h2 class="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl cx-headline cx-balance">
-                    Facility management, simplifié.
-                </h2>
-                <p class="mt-4 text-base text-slate-600 cx-body-readable mx-auto">
-                    API Tokens, webhooks B2B HMAC, multi-sites, bulk booking CSV, factures Peppol/Factur-X 09/2026-ready. Conçu pour scaler de 5 à 5000 sites.
-                </p>
-            </div>
-            <div class="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
-                {{-- B2B card 1: full-width top, horizontal layout --}}
-                <div class="md:col-span-3 brio-glass cx-lift rounded-2xl p-8 border-l-4 border-accent-amber flex flex-col md:flex-row md:items-center gap-6" data-cx-reveal data-cx-delay="0">
-                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-200">
-                        <x-ui.icon name="building-office" class="w-7 h-7" />
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold text-slate-900">Multi-sites & multi-membres</h3>
-                        <p class="mt-1 text-sm text-slate-600">Plusieurs locaux, équipe avec rôles personnalisés, validation hiérarchique. De 5 à 5 000 sites — la plateforme scale avec vous.</p>
-                    </div>
-                </div>
-                {{-- B2B card 2: spans 2 columns --}}
-                <div class="md:col-span-2 brio-glass cx-lift cx-tilt rounded-2xl p-6" data-cx-reveal data-cx-delay="100" data-cx-tilt="5">
-                    <x-ui.icon name="receipt" class="w-6 h-6 text-brand-600" />
-                    <h3 class="mt-4 font-semibold text-slate-900">Facturation Peppol</h3>
-                    <p class="mt-2 text-sm text-slate-600">Factur-X XML CII embedded, conformité réglementation 09/2026 FR. Export FEC DGFiP/Sage/QuickBooks.</p>
-                </div>
-                {{-- B2B card 3: single column --}}
-                <div class="brio-glass cx-lift cx-tilt rounded-2xl p-6" data-cx-reveal data-cx-delay="200" data-cx-tilt="6">
-                    <x-ui.icon name="key" class="w-6 h-6 text-brand-600" />
-                    <h3 class="mt-4 font-semibold text-slate-900">API + Webhooks HMAC</h3>
-                    <p class="mt-2 text-sm text-slate-600">18 scopes, rotation tokens, webhooks signés HMAC SHA256 retry exponentiel.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- PARCOURS D'UNE MISSION (scrollytelling cinématique) --}}
+    {{-- PARCOURS D'UNE MISSION (le film, scrollytelling cinématique) --}}
     @include('partials.journey')
 
-    {{-- SOCIAL PROOF / METRICS --}}
-    <section class="py-20 bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950" data-cx-reveal>
-        <div class="max-w-6xl mx-auto px-6">
-            <h2 class="text-3xl font-bold text-center text-slate-900 mb-4" style="font-family: 'Space Grotesk', sans-serif;">
-                La confiance de nos utilisateurs
-            </h2>
-            <p class="text-center text-slate-500 mb-12">Rejoignez une communauté qui grandit chaque jour</p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                <div class="text-center" data-cx-reveal data-cx-delay="0">
-                    <p class="text-4xl font-bold text-accent-amber cx-tabular" style="font-family: 'Space Grotesk', sans-serif;" data-cx-count="20" data-cx-suffix="+">20+</p>
-                    <p class="text-sm text-slate-500 mt-2">Métiers disponibles</p>
-                </div>
-                <div class="text-center" data-cx-reveal data-cx-delay="100">
-                    <p class="text-4xl font-bold text-accent-amber cx-tabular" style="font-family: 'Space Grotesk', sans-serif;" data-cx-count="9">9</p>
-                    <p class="text-sm text-slate-500 mt-2">Pays supportés</p>
-                </div>
-                <div class="text-center" data-cx-reveal data-cx-delay="200">
-                    <p class="text-4xl font-bold text-accent-amber cx-tabular" style="font-family: 'Space Grotesk', sans-serif;" data-cx-count="4.8" data-cx-suffix="★">4.8★</p>
-                    <p class="text-sm text-slate-500 mt-2">Note moyenne</p>
-                </div>
-                <div class="text-center" data-cx-reveal data-cx-delay="300">
-                    <p class="text-4xl font-bold text-accent-amber cx-tabular" style="font-family: 'Space Grotesk', sans-serif;">24/7</p>
-                    <p class="text-sm text-slate-500 mt-2">Support disponible</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- TESTIMONIALS --}}
-    <section class="py-20 bg-white dark:bg-slate-900" data-cx-reveal>
-        <div class="max-w-6xl mx-auto px-6">
-            <h2 class="text-3xl font-bold text-center text-slate-900 mb-12 cx-headline" style="font-family: 'Space Grotesk', sans-serif;">
-                Ce qu'ils en disent
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
-                {{-- Featured testimonial: spans 3 columns --}}
-                <div class="md:col-span-3 brio-glass cx-lift rounded-2xl p-8" data-cx-reveal>
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="w-14 h-14 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-xl">M</div>
-                        <div>
-                            <p class="font-semibold text-slate-900 text-lg">Marie D.</p>
-                            <p class="text-sm text-slate-500">Bruxelles • Cliente depuis 2024</p>
-                        </div>
-                    </div>
-                    <blockquote class="text-slate-700 text-lg leading-relaxed italic cx-body-readable">
-                        "Réservation en 2 minutes, prestataire ponctuel, paiement transparent. Je ne cherche plus ailleurs."
-                    </blockquote>
-                    <p class="text-accent-amber mt-4 text-lg">★★★★★</p>
-                </div>
-                {{-- Side column: 2 smaller testimonials stacked --}}
-                <div class="md:col-span-2 flex flex-col gap-6">
-                    <div class="brio-glass cx-lift rounded-2xl p-6 flex-1" data-cx-reveal data-cx-delay="100">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold">A</div>
-                            <div>
-                                <p class="font-semibold text-slate-900">Ahmed K.</p>
-                                <p class="text-xs text-slate-500">Paris • Prestataire</p>
-                            </div>
-                        </div>
-                        <p class="text-sm text-slate-600">"Grâce à Brio, j'ai triplé mes missions mensuelles. L'app terrain est intuitive et les paiements arrivent vite."</p>
-                        <p class="text-accent-amber mt-3 text-sm">★★★★★</p>
-                    </div>
-                    <div class="brio-glass cx-lift rounded-2xl p-6 flex-1" data-cx-reveal data-cx-delay="200">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 font-bold">S</div>
-                            <div>
-                                <p class="font-semibold text-slate-900">Sophie L.</p>
-                                <p class="text-xs text-slate-500">Liège • Gestionnaire multi-sites</p>
-                            </div>
-                        </div>
-                        <p class="text-sm text-slate-600">"Gérer 12 bureaux avec un seul tableau de bord, c'est un gain de temps énorme. Le chantier groupé est brillant."</p>
-                        <p class="text-accent-amber mt-3 text-sm">★★★★☆</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- FAQ --}}
-    <section class="py-20 bg-slate-50 dark:bg-slate-950" data-cx-reveal>
-        <div class="max-w-5xl mx-auto px-6">
-            <h2 class="text-3xl font-bold text-center text-slate-900 mb-12 cx-headline" style="font-family: 'Space Grotesk', sans-serif;">
-                Questions fréquentes
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @foreach([
-                    ['Comment fonctionne Brio ?', 'Choisissez un service, précisez vos besoins, et un prestataire vérifié vous est attribué automatiquement. Suivez la mission en temps réel et payez en toute sécurité.'],
-                    ['Combien ça coûte ?', 'Le prix dépend du service et de la durée estimée. Vous recevez un devis avant de confirmer — pas de surprise. Vous pouvez même obtenir un devis instantané par photo grâce à notre IA.'],
-                    ['Les prestataires sont-ils vérifiés ?', "Oui. Chaque prestataire passe une vérification d'identité (KYC), fournit ses certifications professionnelles et est noté après chaque mission."],
-                    ['Comment devenir prestataire ?', "Téléchargez l'app Brio Provider, inscrivez-vous, complétez la vérification et commencez à recevoir des missions. Paiements directs sur votre compte via Stripe."],
-                    ['Dans quels pays est disponible Brio ?', 'Belgique, France, Pays-Bas, Allemagne, Espagne, Italie, Portugal, Luxembourg et Autriche. Nous étendons notre couverture régulièrement.'],
-                    ['Puis-je annuler une réservation ?', 'Oui, avec des conditions selon le délai. Annulation gratuite > 24h avant. Des frais peuvent s\'appliquer dans les 24h précédant la mission.'],
-                ] as [$question, $answer])
-                    <details class="brio-glass cx-lift rounded-xl p-5 group cursor-pointer" data-cx-reveal>
-                        <summary class="font-semibold text-slate-900 list-none flex justify-between items-center">
-                            {{ $question }}
-                            <span class="text-brand-500 group-open:rotate-45 transition-transform">+</span>
-                        </summary>
-                        <p class="text-sm text-slate-600 mt-3 leading-relaxed">{{ $answer }}</p>
-                    </details>
-                @endforeach
-            </div>
-        </div>
-    </section>
+    {{-- L'ARGUMENTAIRE : situations, fonctionnement, confiance, prix, engagements,
+         l'habitude en place, le côté prestataire, les entreprises, les six questions. --}}
+    @include('partials.accueil-argumentaire')
 
     {{-- CTA FINAL --}}
     <section class="cx-cta-animated relative isolate overflow-hidden py-24">
         <div class="mx-auto max-w-4xl px-6 text-center">
-            <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                Prêt à essayer ?
-            </h2>
+            <h3 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                Voyez votre prix avant de donner votre nom
+            </h3>
             <p class="mt-4 text-base leading-7 text-brand-100">
-                Inscription en 30 secondes. Aucune carte requise pour explorer.
+                Le parcours de commande s’ouvre sans compte. Vous répondez aux questions de votre métier, le montant bouge, et vous décidez ensuite.
             </p>
             <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
                 <span class="cx-magnetic" data-cx-magnetic="0.3">
-                    <a href="{{ route('register') }}"
+                    <a href="{{ $versCommande }}"
                        class="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-semibold text-brand-700 shadow-soft-md hover:bg-brand-50 transition">
-                        Créer un compte gratuit
+                        {{ $h('bouton') }}
                         <x-ui.icon name="arrow-right" class="w-5 h-5" />
                     </a>
                 </span>
                 <span class="cx-magnetic" data-cx-magnetic="0.22">
-                    <a href="{{ route('login') }}"
+                    <a href="#prestataires"
                        class="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-base font-semibold text-white backdrop-blur hover:bg-white/20 transition">
-                        Se connecter
+                        Je veux recevoir des missions
                     </a>
                 </span>
             </div>

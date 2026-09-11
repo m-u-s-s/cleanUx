@@ -16,31 +16,31 @@ return [
         'plans' => [
             1 => [
                 'titre' => 'Waar u ook bent',
-                'detail' => 'Meer dan 30 vakgebieden, in 9 landen.',
+                'detail' => ':metiers vakgebieden, in :zones regio\'s van België.',
             ],
             2 => [
-                'titre' => 'Eén platform, één continent',
-                'detail' => 'Dezelfde eisen in Brussel als in Casablanca.',
+                'titre' => 'Overal dezelfde eis',
+                'detail' => 'Van Brussel tot Gent: hetzelfde verloop en dezelfde regels.',
             ],
             3 => [
                 'titre' => 'Een echt netwerk',
-                'detail' => 'Geverifieerde vakmensen, een paar straten verderop.',
+                'detail' => 'Vakmensen die uw vak en uw regio zelf hebben gekozen.',
             ],
             4 => [
                 'titre' => 'Vanavond, bij u thuis',
                 'detail' => 'Een lek maakt geen afspraak. Brio ook niet.',
             ],
             5 => [
-                'titre' => 'Boek in 30 seconden',
-                'detail' => 'Een vak, een adres, een tijdslot. Klaar.',
+                'titre' => 'Het vak, het adres, het uur',
+                'detail' => 'Drie antwoorden en u hebt een prijs. Geen account nodig.',
             ],
             6 => [
                 'titre' => 'De prijs vóór uw gegevens',
-                'detail' => 'Eén foto volstaat: prijsvork in 10 seconden, zonder verkooptelefoontje.',
+                'detail' => 'U ziet een prijsvork voordat u uw naam geeft.',
             ],
             7 => [
                 'titre' => 'Een geverifieerde vakman aanvaardt',
-                'detail' => 'Identiteit gecontroleerd, verzekering nagekeken, openbare score.',
+                'detail' => 'Hij kiest zijn opdracht. U ziet zijn naam en zijn score voor hij aanbelt.',
             ],
             8 => [
                 'titre' => 'Volg hem in realtime',
@@ -48,27 +48,27 @@ return [
             ],
             9 => [
                 'titre' => 'Hij scant, de opdracht start',
-                'detail' => 'Ter plaatse geregistreerd: zijn aanwezigheid is bewezen, niet beweerd.',
+                'detail' => 'De code van zes cijfers geeft u. Zonder die code start er niets.',
             ],
             10 => [
                 'titre' => 'Het werk is gedaan',
-                'detail' => 'Door een vakman, met zijn gereedschap en zijn ervaring.',
+                'detail' => 'Door iemand van het vak, met eigen gereedschap en ervaring.',
             ],
             11 => [
                 'titre' => 'Hij scant opnieuw, de opdracht sluit',
-                'detail' => 'Langs beide kanten bevestigd, met foto\'s en tijdstempel.',
+                'detail' => 'Foto\'s met tijdstempel en vingerafdruk: het bewijs blijft, ook bij betwisting.',
             ],
             12 => [
-                'titre' => 'De betaling komt vrij',
-                'detail' => 'Uw geld stond tot hier in bewaring. U beoordeelt, hij wordt betaald.',
+                'titre' => 'Nu pas wordt er betaald',
+                'detail' => 'Tot hier werd er niets afgeschreven. De kaart wordt pas bij afsluiting gedebiteerd.',
             ],
             13 => [
                 'titre' => 'Iedereen wint',
                 'detail' => 'Werk gedaan, vakman betaald, vertrouwen verdiend.',
             ],
             14 => [
-                'titre' => 'En het begint opnieuw, overal',
-                'detail' => 'Duizenden opdrachten zoals deze, elke dag.',
+                'titre' => 'En het begint opnieuw',
+                'detail' => 'Volgende keer hetzelfde verloop, en dezelfde code van zes cijfers.',
             ],
         ],
     ],

@@ -16,31 +16,31 @@ return [
         'plans' => [
             1 => [
                 'titre' => 'Wherever you are',
-                'detail' => 'Over 30 trades covered, across 9 countries.',
+                'detail' => ':metiers trades open, across :zones regions of Belgium.',
             ],
             2 => [
-                'titre' => 'One platform, one continent',
-                'detail' => 'The same standard in Brussels as in Casablanca.',
+                'titre' => 'One standard, everywhere',
+                'detail' => 'From Brussels to Ghent: the same sequence and the same rules.',
             ],
             3 => [
                 'titre' => 'A real network',
-                'detail' => 'Vetted professionals, a few streets from your door.',
+                'detail' => 'Tradespeople who picked your trade and your area themselves.',
             ],
             4 => [
                 'titre' => 'Tonight, at your place',
                 'detail' => 'A leak does not book an appointment. Neither does Brio.',
             ],
             5 => [
-                'titre' => 'Book in 30 seconds',
-                'detail' => 'A trade, an address, a slot. Done.',
+                'titre' => 'The trade, the address, the time',
+                'detail' => 'Three answers and you have a price. No account needed.',
             ],
             6 => [
                 'titre' => 'The price before your details',
-                'detail' => 'One photo is enough: an estimated range in 10 seconds, no sales call.',
+                'detail' => 'You see a price range before you give your name.',
             ],
             7 => [
                 'titre' => 'A vetted professional accepts',
-                'detail' => 'Identity checked, insurance verified, rating public.',
+                'detail' => 'They pick the job. You see their name and rating before they ring.',
             ],
             8 => [
                 'titre' => 'Follow them in real time',
@@ -48,27 +48,27 @@ return [
             ],
             9 => [
                 'titre' => 'They scan, the mission starts',
-                'detail' => 'Timestamped on site: presence proven, not claimed.',
+                'detail' => 'You hold the six-digit code. Without it, nothing starts.',
             ],
             10 => [
                 'titre' => 'The work gets done',
-                'detail' => 'By someone who knows the trade, with their own tools.',
+                'detail' => 'By someone from the trade, with their own tools and experience.',
             ],
             11 => [
                 'titre' => 'They scan again, the mission closes',
-                'detail' => 'Confirmed on both sides, with photos and timestamps.',
+                'detail' => 'Timestamped, fingerprinted photos: the proof stays, even in a dispute.',
             ],
             12 => [
-                'titre' => 'The payment is released',
-                'detail' => 'Your money was held until now. You rate, they get paid.',
+                'titre' => 'Now the payment goes through',
+                'detail' => 'Nothing was charged until now. The card is debited only at closing.',
             ],
             13 => [
                 'titre' => 'Everyone walks away better off',
                 'detail' => 'Work done, professional paid, trust earned.',
             ],
             14 => [
-                'titre' => 'And it starts again, everywhere',
-                'detail' => 'Thousands of missions like this one, every single day.',
+                'titre' => 'And it starts again',
+                'detail' => 'Same sequence next time, and the same six-digit code.',
             ],
         ],
     ],

@@ -24,6 +24,7 @@
 @import './premium.css';
 @import './luxury-hero.css';
 @import './journey.css';
+@import './accueil-argumentaire.css';
 @import './fullcalendar-overrides.css';
 
 @tailwind base;

@@ -92,7 +92,7 @@
                 @if($trade->default_hourly_rate)
                 <p class="mt-5 text-sm" style="color:var(--cx-muted)">
                     A partir de <strong style="color:var(--brio-accent-texte)"><x-money :amount="(float) ((float) $trade->default_hourly_rate)" :decimals="0" />/heure</strong>
-                    · Paiement apres prestation
+                    · Paiement après prestation
                 </p>
                 @endif
             </div>
@@ -110,8 +110,8 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="font-semibold" style="color:var(--cx-text)">Providers verifies</p>
-                        <p class="text-sm" style="color:var(--cx-muted)">KYC complet, assurance pro controlee</p>
+                        <p class="font-semibold" style="color:var(--cx-text)">Providers vérifiés</p>
+                        <p class="text-sm" style="color:var(--cx-muted)">KYC complet, assurance pro contrôlée</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-4">
@@ -121,8 +121,8 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="font-semibold" style="color:var(--cx-text)">Paiement securise</p>
-                        <p class="text-sm" style="color:var(--cx-muted)">Stripe 3DS, debit apres execution</p>
+                        <p class="font-semibold" style="color:var(--cx-text)">Paiement sécurisé</p>
+                        <p class="text-sm" style="color:var(--cx-muted)">Stripe 3DS, débit après exécution</p>
                     </div>
                 </div>
                 <div class="flex items-start gap-4">
@@ -144,8 +144,8 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="font-semibold" style="color:var(--cx-text)">Avis verifies</p>
-                        <p class="text-sm" style="color:var(--cx-muted)">Notes publiques apres chaque mission</p>
+                        <p class="font-semibold" style="color:var(--cx-text)">Avis vérifiés</p>
+                        <p class="text-sm" style="color:var(--cx-muted)">Notes publiques après chaque mission</p>
                     </div>
                 </div>
             </div>
@@ -203,15 +203,15 @@
 
                         <details class="group py-5">
                             <summary class="flex cursor-pointer items-center justify-between font-medium" style="color:var(--cx-text)">
-                                Comment reserver un {{ strtolower($trade->name) }} sur Brio ?
+                                Comment réserver un {{ strtolower($trade->name) }} sur Brio ?
                                 <svg class="h-5 w-5 flex-shrink-0 transition-transform group-open:rotate-180" style="color:var(--cx-muted)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
                             </summary>
                             <p class="mt-3 text-sm leading-relaxed" style="color:var(--cx-muted)">
-                                Remplissez le formulaire de reservation en 2 minutes, decrivez votre besoin,
+                                Remplissez le formulaire de réservation en 2 minutes, décrivez votre besoin,
                                 choisissez votre creneau horaire et votre zone geographique.
-                                Un prestataire verifie vous est assigne automatiquement.
+                                Un prestataire vérifié vous est assigne automatiquement.
                             </p>
                         </details>
 
@@ -241,9 +241,9 @@
                                 </svg>
                             </summary>
                             <p class="mt-3 text-sm leading-relaxed" style="color:var(--cx-muted)">
-                                Oui, tous les prestataires {{ strtolower($trade->name) }} sur Brio sont verifies KYC
+                                Oui, tous les prestataires {{ strtolower($trade->name) }} sur Brio sont vérifiés KYC
                                 et disposent d'une assurance professionnelle valide.
-                                En cas de probleme, notre SAV intervient sous 24h.
+                                En cas de problème, notre SAV intervient sous 24h.
                             </p>
                         </details>
 
@@ -255,8 +255,8 @@
                                 </svg>
                             </summary>
                             <p class="mt-3 text-sm leading-relaxed" style="color:var(--cx-muted)">
-                                Le paiement est debite uniquement apres la confirmation de fin de mission via QR code.
-                                Votre carte est pre-autorisee au moment de la reservation mais rien n'est preleve avant.
+                                Le paiement est debite uniquement après la confirmation de fin de mission via QR code.
+                                Votre carte est pre-autorisee au moment de la réservation mais rien n'est preleve avant.
                             </p>
                         </details>
 
@@ -286,10 +286,10 @@
                         "mainEntity": [
                             {
                                 "@type": "Question",
-                                "name": "Comment reserver un {{ strtolower($trade->name) }} sur Brio ?",
+                                "name": "Comment réserver un {{ strtolower($trade->name) }} sur Brio ?",
                                 "acceptedAnswer": {
                                     "@type": "Answer",
-                                    "text": "Remplissez le formulaire de reservation en 2 minutes. Un prestataire verifie vous est assigne automatiquement."
+                                    "text": "Remplissez le formulaire de réservation en 2 minutes. Un prestataire vérifié vous est assigne automatiquement."
                                 }
                             },
                             {
@@ -297,7 +297,7 @@
                                 "name": "Quel est le tarif pour un {{ strtolower($trade->name) }} ?",
                                 "acceptedAnswer": {
                                     "@type": "Answer",
-                                    "text": "{{ $trade->default_hourly_rate ? 'A partir de ' . number_format((float) $trade->default_hourly_rate, 0) . $symboleDevise . '/heure.' : 'Tarif sur devis gratuit.' }} Paiement apres prestation."
+                                    "text": "{{ $trade->default_hourly_rate ? 'A partir de ' . number_format((float) $trade->default_hourly_rate, 0) . $symboleDevise . '/heure.' : 'Tarif sur devis gratuit.' }} Paiement après prestation."
                                 }
                             },
                             {
@@ -305,7 +305,7 @@
                                 "name": "Les prestataires sont-ils assures ?",
                                 "acceptedAnswer": {
                                     "@type": "Answer",
-                                    "text": "Oui, tous les prestataires sont verifies KYC et disposent d'une assurance professionnelle valide."
+                                    "text": "Oui, tous les prestataires sont vérifiés KYC et disposent d'une assurance professionnelle valide."
                                 }
                             }
                         ]
@@ -336,7 +336,7 @@
                                 <svg class="h-4 w-4 flex-shrink-0" style="color:var(--brio-accent-texte)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                 </svg>
-                                Reservation en 2 minutes
+                                Réservation en 2 minutes
                             </li>
                             <li class="flex items-center gap-2">
                                 <svg class="h-4 w-4 flex-shrink-0" style="color:var(--brio-accent-texte)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -348,7 +348,7 @@
                                 <svg class="h-4 w-4 flex-shrink-0" style="color:var(--brio-accent-texte)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                 </svg>
-                                Paiement apres execution
+                                Paiement après exécution
                             </li>
                             <li class="flex items-center gap-2">
                                 <svg class="h-4 w-4 flex-shrink-0" style="color:var(--brio-accent-texte)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
