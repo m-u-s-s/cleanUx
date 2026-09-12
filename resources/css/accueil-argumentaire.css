@@ -585,3 +585,65 @@
 @media (max-width: 767.98px) {
     #metiers [data-scroll-panel-inner] { padding: 2.25rem 1.5rem; }
 }
+
+/* ═══════════════════════════ LES FONDS DU CARROUSEL, PAR CÔTÉ */
+
+/* Le panneau devient un cadre : la photographie occupe le fond, la carte se pose
+   dessus. `isolation` garde l'image sous le contenu sans z-index négatif — un
+   z-index négatif la ferait passer derrière le fond du panneau lui-même. */
+#metiers [data-scroll-panel] {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.cx-metier__fond {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    opacity: 0;
+    transition: opacity 420ms var(--cx-courbe, cubic-bezier(0.2, 0.8, 0.2, 1));
+    pointer-events: none;
+}
+
+/* Sans JavaScript, `is-visible` n'est jamais posée : le côté client s'affiche. */
+.cx-metier__fond.is-visible,
+html:not(.has-premium-scroll) .cx-metier__fond[data-defaut] {
+    opacity: 1;
+}
+
+.cx-metier__fond img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* LE VOILE. Une photographie sous une carte de verre lui vole son contraste :
+   le voile rend au panneau sa couleur de secteur et calme l'image. Il suit le
+   thème, donc il ne devient jamais un noir figé en mode clair. */
+#metiers [data-scroll-panel]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: color-mix(in srgb, var(--cx-arg-fond, #fff) 62%, transparent);
+}
+
+:root.dark #metiers [data-scroll-panel]::after {
+    background: color-mix(in srgb, var(--cx-arg-fond, #0b1120) 68%, transparent);
+}
+
+/* La carte passe au-dessus du voile. */
+#metiers [data-scroll-panel-inner] {
+    position: relative;
+    z-index: 2;
+}
+
+/* Le dernier panneau porte son propre dégradé de marque : pas d'image, pas de voile. */
+#metiers .cx-metier__panneau--fin::after { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .cx-metier__fond { transition: none; }
+}

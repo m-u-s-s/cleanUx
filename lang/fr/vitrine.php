@@ -48,6 +48,7 @@ return [
             'secteurs' => [
                 [
                     'icone' => 'sparkles',
+                    'fond' => 'maison',
                     'titre' => 'Maison et ménage',
                     'metiers' => 'Nettoyage à domicile, vitres, fin de chantier.',
                     'client' => 'Le nettoyage à domicile accepte l’intervention immédiate',
@@ -55,6 +56,7 @@ return [
                 ],
                 [
                     'icone' => 'wrench',
+                    'fond' => 'travaux',
                     'titre' => 'Travaux et rénovation',
                     'metiers' => 'Peinture, plomberie, bâtiment, rénovation.',
                     'client' => 'Commandés ensemble, ils s’enchaînent dans le bon ordre',
@@ -62,6 +64,7 @@ return [
                 ],
                 [
                     'icone' => 'bolt',
+                    'fond' => 'exterieur',
                     'titre' => 'Extérieur et technique',
                     'metiers' => 'Électricité, jardinage, toiture, élagage.',
                     'client' => 'La toiture et l’élagage passent par un devis, et le disent d’entrée',

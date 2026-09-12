@@ -155,6 +155,18 @@
 
                 @foreach ((array) __('vitrine.accueil.metiers.secteurs') as $i => $secteur)
                     <article class="cx-metier__panneau cx-metier__panneau--{{ $i + 1 }}" data-scroll-panel>
+                        {{-- LE MÊME SECTEUR, DEUX REGARDS : le client voit le résultat chez lui,
+                             le professionnel voit le chantier. Les deux images sont dans le DOM
+                             et l'opacité les échange — les charger à la bascule ferait clignoter
+                             le panneau au moment précis où on le regarde. --}}
+                        @foreach (['client', 'prestataire'] as $vue)
+                            <picture class="cx-metier__fond" :class="cote === '{{ $vue }}' && 'is-visible'"
+                                     @if ($vue === 'client') data-defaut @endif aria-hidden="true">
+                                <source srcset="{{ asset('images/accueil/secteurs/'.$secteur['fond'].'-'.($vue === 'client' ? 'client' : 'presta').'.avif') }}" type="image/avif">
+                                <img src="{{ asset('images/accueil/secteurs/'.$secteur['fond'].'-'.($vue === 'client' ? 'client' : 'presta').'.webp') }}"
+                                     alt="" width="1400" height="933" loading="lazy" decoding="async">
+                            </picture>
+                        @endforeach
                         <div class="mx-auto max-w-md px-6 text-center" data-scroll-panel-inner>
                             <div class="cx-metier__pastille">
                                 <x-ui.icon :name="$secteur['icone']" class="w-8 h-8" />
@@ -182,9 +194,11 @@
                         </p>
                         <div class="mt-8">
                             @php($cibles = ['client' => $versCommande, 'prestataire' => $versInscription])
+                            <span class="cx-magnetic" data-cx-magnetic="0.26">
                             <a class="cx-metier__bouton" href="{{ $versCommande }}"
                                :href="{{ Js::from($cibles) }}[cote]"
                                x-text="textes.metiers[cote].bouton">{{ $h('bouton') }}</a>
+                            </span>
                         </div>
                     </div>
                 </article>

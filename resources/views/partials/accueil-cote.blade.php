@@ -95,9 +95,11 @@
 
             @if (! empty($bloc['bouton']))
                 <div class="mt-12 text-center">
-                    <x-ui.button :href="$destination" variant="amber" size="xl" icon="arrow-right" iconPosition="right">
-                        {{ $bloc['bouton'] }}
-                    </x-ui.button>
+                    <span class="cx-magnetic" data-cx-magnetic="0.3">
+                        <x-ui.button :href="$destination" variant="amber" size="xl" icon="arrow-right" iconPosition="right">
+                            {{ $bloc['bouton'] }}
+                        </x-ui.button>
+                    </span>
                 </div>
             @endif
         </div>
