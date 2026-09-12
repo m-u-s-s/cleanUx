@@ -75,11 +75,32 @@ describe('les couleurs de texte du theme', () => {
     // Les valeurs ecartees, et la raison de chaque cran. Elles DOIVENT echouer.
     expect(contraste(colors.success[600], JOUR)).toBeLessThan(SEUIL);
     expect(contraste(colors.warning[600], JOUR)).toBeLessThan(SEUIL);
-    expect(contraste(colors.brand[500], NUIT)).toBeLessThan(SEUIL);
     expect(contraste(colors.danger[500], NUIT)).toBeLessThan(SEUIL);
 
     // Et un couple evident doit passer, sinon le calcul est casse dans l'autre sens.
     expect(contraste('#000000', '#ffffff')).toBeCloseTo(21, 0);
+  });
+
+  /**
+   * LA RAMPE PRIMAIRE A LA BONNE POLARITE.
+   *
+   * Une rampe utilisable se comporte d'une seule facon : ses crans CLAIRS tiennent sur la nuit et
+   * echouent sur le jour, ses crans SOMBRES font l'inverse. Une rampe qui passerait partout
+   * n'aurait pas assez d'amplitude, et une qui echouerait partout serait mal centree — dans les
+   * deux cas, choisir un cran deviendrait un tirage au sort.
+   *
+   * Ce test l'a attrape une fois : le temoin d'origine affirmait que `brand[500]` echouait sur la
+   * nuit. C'etait vrai de l'indigo, ca ne l'est plus du teal, et l'assertion mesurait donc une
+   * propriete de l'ancienne palette.
+   */
+  it('la rampe primaire s’inverse d’un theme a l’autre', () => {
+    // Les crans clairs : lisibles sur la nuit, perdus sur le jour.
+    expect(contraste(colors.brand[400], NUIT)).toBeGreaterThanOrEqual(SEUIL);
+    expect(contraste(colors.brand[400], JOUR)).toBeLessThan(SEUIL);
+
+    // Les crans sombres : l'inverse exactement.
+    expect(contraste(colors.brand[800], JOUR)).toBeGreaterThanOrEqual(SEUIL);
+    expect(contraste(colors.brand[800], NUIT)).toBeLessThan(SEUIL);
   });
 
   /**

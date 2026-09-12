@@ -42,15 +42,15 @@ interface Habillage {
 }
 
 /**
- * Les huit variantes historiques, inchangées.
+ * Les variantes SÉMANTIQUES, hors du thème : un bouton danger est rouge sur n'importe quel fond,
+ * sinon ce n'est plus un bouton danger.
  *
- * Elles sont volontairement hors du thème : leurs couleurs sont SÉMANTIQUES — un bouton danger est
- * rouge sur n'importe quel fond, sinon ce n'est plus un bouton danger. Seuls `ghost` et `glass`
- * dépendent du fond, et sont donc résolus par la fonction ci-dessous.
+ * `primary` ET `secondary` N'EN FONT PLUS PARTIE. Elles portaient l'indigo de marque, figé à
+ * l'import — et un bouton indigo posé sur Profondeur se lit comme un morceau rapporté d'une
+ * autre application. Ce ne sont pas des couleurs sémantiques mais l'action du monde courant :
+ * elles viennent donc du thème, comme `ghost` et `glass`.
  */
-const variantStyles: Record<Exclude<Variant, 'glass'>, Habillage> = {
-  primary: { bg: colors.brand[500], text: '#ffffff' },
-  secondary: { bg: 'transparent', text: colors.brand[500], border: colors.brand[500] },
+const variantStyles: Record<Exclude<Variant, 'glass' | 'primary' | 'secondary'>, Habillage> = {
   ghost: { bg: 'transparent', text: colors.surface[600] },
   danger: { bg: colors.danger[500], text: '#ffffff' },
   success: { bg: colors.success[500], text: '#ffffff' },
@@ -75,6 +75,14 @@ const variantStyles: Record<Exclude<Variant, 'glass'>, Habillage> = {
 function habillageDe(variant: Variant, theme: ThemeTokens): Habillage {
   if (variant === 'glass') {
     return { bg: theme.glassStrong, text: theme.textOnGlass, border: theme.glassBorder };
+  }
+
+  if (variant === 'primary') {
+    return { bg: theme.action, text: theme.textOnAction };
+  }
+
+  if (variant === 'secondary') {
+    return { bg: 'transparent', text: theme.action, border: theme.action };
   }
 
   if (variant === 'ghost' && theme.isDark) {

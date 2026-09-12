@@ -1,8 +1,22 @@
 export const colors = {
+  /**
+   * LA RAMPE PRIMAIRE EST TEAL DEPUIS MAREE, et non plus indigo.
+   *
+   * Repointer la rampe plutot que corriger les appels : l'indigo ne vivait pas dans les jetons
+   * mais dans 89 lectures directes de `colors.brand` reparties dans les ecrans. Un bouton indigo
+   * pose sur Profondeur se lit comme un morceau rapporte, et corriger 89 sites un par un aurait
+   * laisse passer ceux qu'on n'a pas vus.
+   *
+   * Elle se comporte comme une rampe doit se comporter : les crans clairs tiennent sur la nuit,
+   * les crans sombres tiennent sur le jour.
+   *
+   *   sur #f5f7fb (jour)   400 = 1,65   600 = 4,66   800 = 6,61
+   *   sur #082a3a (nuit)   400 = 8,45   600 = 3,00   800 = 2,11
+   */
   brand: {
-    50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
-    400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
-    800: '#3730a3', 900: '#312e81', 950: '#1e1b4b',
+    50: '#e8fbf8', 100: '#c6f5ee', 200: '#93ebe0', 300: '#57dccd',
+    400: '#2fd9c5', 500: '#12a897', 600: '#0b7d75', 700: '#0a6a63',
+    800: '#08554f', 900: '#06423e', 950: '#032826',
   },
   surface: {
     50: '#fafafa', 100: '#f5f5f5', 200: '#e5e5e5', 300: '#d4d4d4',

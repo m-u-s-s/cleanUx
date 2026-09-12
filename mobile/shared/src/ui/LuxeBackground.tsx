@@ -47,7 +47,7 @@ const NOMBRE_DE_BULLES = 9;
 const NOMBRE_DE_CAUSTIQUES = 5;
 
 /** Jusqu'où descend la lumière. Sous cette fraction de l'écran, il n'y a plus de caustiques. */
-const BANDE_ECLAIREE = 0.42;
+const BANDE_ECLAIREE = 0.32;
 
 export function LuxeBackground() {
   const { isDark } = useThemeColors();
@@ -148,8 +148,12 @@ export function LuxeBackground() {
           <LinearGradient
             start={vec(0, 0)}
             end={vec(0, height)}
-            colors={[eau.eau, '#03202c', eau.abysse]}
-            positions={[0, 0.46, 1]}
+            /*
+             * LES TROIS ARRETS ETAIENT TROP PROCHES : #04222e et #03202c ne se distinguent pas, et
+             * la moitie basse se lisait « vide » plutot que « profond ». L'ecart fait la descente.
+             */
+            colors={['#073545', eau.eau, '#02171f', eau.abysse]}
+            positions={[0, 0.3, 0.72, 1]}
           />
         </Rect>
 
@@ -159,8 +163,8 @@ export function LuxeBackground() {
             c={vec(width * 0.5, -height * 0.05)}
             r={height * 0.72}
             colors={[
-              'rgba(47, 217, 197, 0.20)',
-              'rgba(47, 217, 197, 0.06)',
+              'rgba(47, 217, 197, 0.18)',
+              'rgba(47, 217, 197, 0.05)',
               'rgba(47, 217, 197, 0)',
             ]}
             positions={[0, 0.45, 1]}
@@ -217,7 +221,7 @@ function CaustiqueQuiOndule({
   return (
     <Group transform={transformation} opacity={caustique.opacite}>
       {/* Le flou est ce qui fait lire « nappe de lumière » et non « rangée de points ». */}
-      <BlurMask blur={11} style="normal" />
+      <BlurMask blur={18} style="normal" />
 
       {perles.map((perle) => (
         <Circle
@@ -261,13 +265,28 @@ function BulleQuiMonte({
   const opacite = useDerivedValue(() => {
     const montee = (phase.value * harmonique + bulle.depart) % 1;
 
-    return Math.sin(montee * Math.PI) * 0.5;
+    return Math.sin(montee * Math.PI) * 0.75;
   });
 
   return (
     <Group transform={transformation} opacity={opacite}>
-      <Circle cx={bulle.x} cy={0} r={bulle.r} color="rgba(200, 240, 238, 0.55)" />
-      <Circle cx={bulle.x - bulle.r * 0.3} cy={-bulle.r * 0.3} r={bulle.r * 0.28} color="rgba(255, 255, 255, 0.7)" />
+      {/* UN ANNEAU, PAS UN DISQUE. Une bulle pleine se lit comme une poussiere : c'est la paroi
+          qui capte la lumiere, l'interieur est de l'eau. */}
+      <Circle
+        cx={bulle.x}
+        cy={0}
+        r={bulle.r}
+        style="stroke"
+        strokeWidth={1.4}
+        color="rgba(176, 240, 234, 0.55)"
+      />
+      <Circle cx={bulle.x} cy={0} r={bulle.r} color="rgba(120, 224, 214, 0.10)" />
+      <Circle
+        cx={bulle.x - bulle.r * 0.32}
+        cy={-bulle.r * 0.34}
+        r={Math.max(0.9, bulle.r * 0.2)}
+        color="rgba(255, 255, 255, 0.75)"
+      />
     </Group>
   );
 }
@@ -325,26 +344,38 @@ function semerLesCaustiques(hauteur: number): Caustique[] {
   return Array.from({ length: NOMBRE_DE_CAUSTIQUES }, (_, i) => ({
     cle: `caustique-${i}`,
     // Elles se resserrent près de la surface : c'est là que la lumière est la plus vive.
-    y: hauteur * BANDE_ECLAIREE * Math.pow(suivant(), 1.6),
-    opacite: 0.26 - i * 0.035,
-    amplitude: 26 + suivant() * 34,
-    epaisseur: 2 + suivant() * 2.5,
+    y: hauteur * BANDE_ECLAIREE * Math.pow(suivant(), 1.7),
+    /*
+     * L'OPACITÉ SE CUMULE SUR CINQ COUCHES. Réglée à 0,5, la nappe devient un aplat vert opaque
+     * — vu sur l'émulateur. Ce qui doit rester vrai : l'eau est sombre, et la lumière la traverse.
+     */
+    opacite: 0.34 - i * 0.05,
+    amplitude: 30 + suivant() * 40,
+    // Un RAYON, pas une épaisseur de trait : c'est ce que les perles multiplient.
+    epaisseur: 16 + suivant() * 10,
   }));
 }
 
 interface Perle { cle: string; x: number; y: number; taille: number }
 
-/** Les cercles qui composent une nappe : posés sur une double sinusoïde, jamais alignés. */
+/**
+ * Les cercles qui composent une nappe : posés sur une double sinusoïde, jamais alignés.
+ *
+ * LEUR TAILLE EST LE RÉGLAGE QUI DÉCIDE DE TOUT. Réglés à 2-4 px, ils étaient rigoureusement
+ * invisibles sur l'appareil — mesuré sur l'émulateur, pas supposé. Il faut qu'ils SE
+ * CHEVAUCHENT : c'est le recouvrement, pas le flou, qui fait lire une nappe de lumière plutôt
+ * qu'un chapelet de points.
+ */
 function semerLesPerles(largeur: number): Perle[] {
   const perles: Perle[] = [];
-  const pas = 26;
+  const pas = 30;
 
   for (let x = -largeur, i = 0; x <= largeur * 2; x += pas, i++) {
     perles.push({
       cle: `perle-${i}`,
       x,
-      y: Math.sin(x / 54) * 10 + Math.sin(x / 21) * 4.5,
-      taille: 0.8 + Math.abs(Math.sin(x / 37)) * 0.7,
+      y: Math.sin(x / 90) * 16 + Math.sin(x / 34) * 7,
+      taille: 0.75 + Math.abs(Math.sin(x / 61)) * 0.55,
     });
   }
 
@@ -358,7 +389,7 @@ function semerLesBulles(largeur: number): Bulle[] {
     cle: `bulle-${i}`,
     x: suivant() * largeur,
     // Biaisé vers le petit : une répartition uniforme donne des ballons, pas des bulles.
-    r: 1.5 + Math.pow(suivant(), 2.4) * 5,
+    r: 3 + Math.pow(suivant(), 2.2) * 9,
     depart: suivant(),
   }));
 }

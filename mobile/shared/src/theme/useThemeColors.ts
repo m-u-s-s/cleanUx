@@ -77,9 +77,9 @@ export function useThemeColors() {
      * dès que quelque chose de clair défile derrière — et ça n'arrive qu'en usage réel, jamais
      * sur une maquette au fond fixe.
      */
-    glass: isDark ? 'rgba(47, 217, 197, 0.07)' : 'rgba(255, 255, 255, 0.72)',
-    glassStrong: isDark ? 'rgba(47, 217, 197, 0.11)' : 'rgba(255, 255, 255, 0.86)',
-    glassBorder: isDark ? 'rgba(232, 246, 246, 0.16)' : 'rgba(91, 127, 166, 0.18)',
+    glass: isDark ? 'rgba(120, 224, 214, 0.13)' : 'rgba(255, 255, 255, 0.72)',
+    glassStrong: isDark ? 'rgba(120, 224, 214, 0.19)' : 'rgba(255, 255, 255, 0.86)',
+    glassBorder: isDark ? 'rgba(190, 240, 236, 0.30)' : 'rgba(91, 127, 166, 0.18)',
     textOnGlass: isDark ? nuit.texte : jour.texte,
     mutedOnGlass: isDark ? nuit.muted : jour.muted,
 
@@ -122,18 +122,34 @@ export function useThemeColors() {
     danger: isDark ? colors.danger[400] : colors.danger[600],
 
     /*
-     * LA MARQUE, QUAND ELLE PORTE DU TEXTE. Aucun indigo unique ne tient sur les deux fonds :
-     * `brand.500` echoue des deux cotes. Ce jeton double `brand`, il ne le remplace pas.
+     * LE TEXTE D'ACTION — un lien, une entree cliquable. Il vaut `action` : deux couleurs
+     * differentes pour la meme intention se lisent comme deux intentions.
      *
-     *   sur #f5f7fb   brand.600 = 5,86        sur #082a3a   brand.400 = 5,02
+     *   sur #f5f7fb   #0b7d75 = 4,66        sur #082a3a   #2fd9c5 = 8,45
      */
-    brandText: isDark ? colors.brand[400] : colors.brand[600],
+    brandText: isDark ? '#2fd9c5' : '#0b7d75',
 
     /** La lumiere dans l'eau. Absente en clair : on est deja au-dessus de la surface. */
     glow: isDark ? 'rgba(47, 217, 197, 0.26)' : 'transparent',
 
     /** La couleur de la lumiere dans l'eau : traces vivants, caustiques, etats en cours. */
     caustique: isDark ? nuit.caustique : '#2f8fa6',
+
+    /*
+     * L'ACTION PRINCIPALE PREND LA LUMIERE DU MONDE, et non l'indigo de marque.
+     *
+     * Un bouton indigo pose sur Profondeur se lit comme un morceau rapporte : c'est la premiere
+     * chose qu'on voit de l'ecran, et la seule couleur qui n'appartient a rien. Le teal de la
+     * caustique est deja celle de ce qui vit — un trajet, une mission en cours.
+     *
+     * DEUX VALEURS, parce qu'aucune ne tient des deux cotes : #2fd9c5 rend 1,58 sur la page
+     * claire, un bouton y serait invisible. Le clair prend donc un teal profond.
+     *
+     *   sombre  #2fd9c5 sur l'abysse 10,75   texte #062a2a dessus 8,64
+     *   clair   #0b7d75 sur la page   4,44   texte blanc dessus  4,99
+     */
+    action: isDark ? '#2fd9c5' : '#0b7d75',
+    textOnAction: isDark ? '#062a2a' : '#ffffff',
 
     /*
      * LES TEINTES — des voiles sémantiques, à poser en FOND.
@@ -147,7 +163,7 @@ export function useThemeColors() {
      * distingue plus du fond.
      */
     tint: {
-      brand: isDark ? 'rgba(99, 102, 241, 0.22)' : 'rgba(99, 102, 241, 0.10)',
+      brand: isDark ? 'rgba(47, 217, 197, 0.20)' : 'rgba(18, 168, 151, 0.12)',
       success: isDark ? 'rgba(16, 185, 129, 0.20)' : 'rgba(16, 185, 129, 0.10)',
       warning: isDark ? 'rgba(245, 158, 11, 0.20)' : 'rgba(245, 158, 11, 0.12)',
       danger: isDark ? 'rgba(239, 68, 68, 0.20)' : 'rgba(239, 68, 68, 0.10)',

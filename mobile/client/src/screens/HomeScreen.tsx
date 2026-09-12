@@ -170,7 +170,7 @@ export function HomeScreen() {
                 <Icon
                   name={focusIsLive ? 'navigate-outline' : 'chevron-forward'}
                   size={18}
-                  color={colors.brand[600]}
+                  color={themeColors.action}
                 />
                 <Text style={styles.focusCtaText}>
                   {focusIsLive ? tr('home.suivre_en_direct_2') : tr('home.voir_le_detail_2')}
@@ -238,7 +238,7 @@ export function HomeScreen() {
                       <Icon
                         name={isLive(b) ? 'navigate-outline' : 'chevron-forward'}
                         size={18}
-                        color={colors.brand[600]}
+                        color={themeColors.action}
                       />
                     </View>
                   </CarteDeMission>
