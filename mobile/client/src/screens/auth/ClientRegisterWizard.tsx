@@ -35,9 +35,13 @@ type StepId = 'kind' | 'company' | 'identity' | 'email' | 'password' | 'terms';
 
 const PASSWORD_MIN = 8;
 
+/**
+ * Les deux profils. Le libellé se traduit au rendu, pas au chargement du module :
+ * une table constante fige la langue de la première ouverture.
+ */
 const KIND_OPTIONS = [
-  { kind: 'individual' as const, title: 'Particulier', hint: 'Pour mon domicile', icon: 'person-outline' },
-  { kind: 'company' as const, title: 'Société', hint: 'Pour mon entreprise', icon: 'business-outline' },
+  { kind: 'individual' as const, titreCle: 'client_register.particulier', hintCle: 'client_register.pour_mon_domicile', icon: 'person-outline' },
+  { kind: 'company' as const, titreCle: 'client_register.societe', hintCle: 'client_register.pour_mon_entreprise', icon: 'business-outline' },
 ];
 
 /** L'ancien contrôle était `email.includes('@')`, que « @ » satisfait. */
@@ -98,23 +102,23 @@ export function ClientRegisterWizard() {
   function validateStep(): string | null {
     switch (step) {
       case 'kind':
-        return clientKind ? null : 'Choisissez le type de compte.';
+        return clientKind ? null : tr('client_register.choisissez_le_type_de_compte');
       case 'company':
-        if (!companyName.trim()) return 'La raison sociale est requise.';
+        if (!companyName.trim()) return tr('client_register.raison_sociale_requise');
         if (vatNumber.trim() && !isValidBusinessNumber(vatNumber)) {
           return "Numéro d'entreprise invalide. Exemples : BE0202239951, 44306184100047.";
         }
         return null;
       case 'identity':
-        return name.trim() ? null : 'Votre nom est requis.';
+        return name.trim() ? null : tr('client_register.nom_requis');
       case 'email':
         return isPlausibleEmail(email) ? null : 'Adresse email invalide.';
       case 'password':
         return password.length >= PASSWORD_MIN
           ? null
-          : `Le mot de passe doit compter au moins ${PASSWORD_MIN} caractères.`;
+          : tr('client_register.mot_de_passe_trop_court', { n: PASSWORD_MIN });
       case 'terms':
-        return acceptTerms ? null : 'Vous devez accepter les conditions pour continuer.';
+        return acceptTerms ? null : tr('client_register.conditions_a_accepter');
       default:
         return null;
     }
@@ -142,7 +146,7 @@ export function ClientRegisterWizard() {
     // Le serveur refuse l'inscription sans jeton quand le captcha est actif : mieux vaut le dire
     // ici que laisser partir un appel voué à un 400.
     if (!captchaSkipped && !captchaToken) {
-      setFormError('Veuillez patienter, la vérification anti-robot est en cours.');
+      setFormError(tr('client_register.verification_en_cours'));
 
       return;
     }
@@ -225,7 +229,7 @@ export function ClientRegisterWizard() {
       ) : null}
 
       <Button
-        label={isLast ? 'Créer mon compte' : 'Continuer'}
+        label={isLast ? tr('client_register.creer_mon_compte') : 'Continuer'}
         onPress={goNext}
         fullWidth
         size="lg"
@@ -240,10 +244,10 @@ export function ClientRegisterWizard() {
         return (
           <Question
             title={tr('client_register_wizard.vous_reservez_pour_qui')}
-            hint="Ce choix détermine votre facturation et vos options de gestion."
+            hint={tr('client_register.ce_choix_determine')}
           >
             <KindChoiceCards
-              options={KIND_OPTIONS}
+              options={KIND_OPTIONS.map(o => ({ kind: o.kind, icon: o.icon, title: tr(o.titreCle), hint: tr(o.hintCle) }))}
               value={clientKind}
               onChange={kind => { setClientKind(kind); setFieldError(null); }}
               testIdPrefix="client-register-kind"
@@ -255,7 +259,7 @@ export function ClientRegisterWizard() {
         return (
           <Question
             title={tr('client_register_wizard.votre_societe')}
-            hint="Elle pourra gérer plusieurs sites et recevoir une facturation centralisée."
+            hint={tr('client_register.societe_plusieurs_sites')}
           >
             <TextInput
               label={tr('client_register_wizard.raison_sociale')}
@@ -280,7 +284,7 @@ export function ClientRegisterWizard() {
         return (
           <Question
             title={clientKind === 'company' ? tr('client_register_wizard.qui_vous_represente') : tr('client_register_wizard.comment_vous_appelez_vous')}
-            hint="Ce nom apparaîtra sur vos réservations."
+            hint={tr('client_register.nom_sur_reservations')}
           >
             <TextInput
               label={tr('client_register_wizard.nom_complet')}
@@ -304,7 +308,7 @@ export function ClientRegisterWizard() {
 
       case 'email':
         return (
-          <Question title={tr('client_register_wizard.votre_adresse_email')} hint="Elle sert à vous connecter et à recevoir vos factures.">
+          <Question title={tr('client_register_wizard.votre_adresse_email')} hint={tr('client_register.email_sert_a')}>
             <TextInput
               label={tr('client_register_wizard.email')}
               value={email}
@@ -323,7 +327,7 @@ export function ClientRegisterWizard() {
         const strength = passwordStrength(password);
 
         return (
-          <Question title={tr('client_register_wizard.choisissez_un_mot_de_passe')} hint={`${PASSWORD_MIN} caractères minimum.`}>
+          <Question title={tr('client_register_wizard.choisissez_un_mot_de_passe')} hint={tr('client_register.caracteres_minimum', { n: PASSWORD_MIN })}>
             <View style={kit.passwordWrapper}>
               <TextInput
                 label={tr('client_register_wizard.mot_de_passe')}
@@ -366,13 +370,13 @@ export function ClientRegisterWizard() {
 
       case 'terms':
         return (
-          <Question title={tr('client_register_wizard.derniere_etape')} hint="Vous pourrez réserver un service juste après.">
+          <Question title={tr('client_register_wizard.derniere_etape')} hint={tr('client_register.reserver_juste_apres')}>
             <TouchableOpacity
               style={kit.termsRow}
               onPress={() => { setAcceptTerms(v => !v); setFieldError(null); }}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: acceptTerms }}
-              accessibilityLabel="J'accepte les conditions d'utilisation et la politique de confidentialité"
+              accessibilityLabel={tr('client_register.accepte_conditions_a11y')}
               testID="client-register-accept-terms"
             >
               <View style={[kit.checkbox, acceptTerms && kit.checkboxChecked]} />

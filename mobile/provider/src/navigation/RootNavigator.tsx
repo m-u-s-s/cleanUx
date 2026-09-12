@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '@/auth';
+import { useTraduction } from '@/i18n';
 import { EcranConfirmationEmail } from '@/auth/EcranConfirmationEmail';
 import { useOnboardingProgress, isJourneyComplete } from '@/onboarding';
 import { WalkthroughScreen, hasCompletedWalkthrough } from '@/screens/WalkthroughScreen';
@@ -80,6 +81,7 @@ import type { RootStackParamList } from './types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
+  const { t: tr } = useTraduction();
   const theme = useThemeColors();
   const { user, isAuthenticated, isLoading } = useAuth();
 
@@ -215,87 +217,87 @@ export function RootNavigator() {
           <Stack.Screen
             name="Modules"
             component={ModulesRoute}
-            options={{ headerShown: true, title: 'Modules' }}
+            options={{ headerShown: true, title: tr('nav.modules') }}
           />
           <Stack.Screen
             name="CompanyMembers"
             component={CompanyMembersScreen}
-            options={{ headerShown: true, title: 'Équipe' }}
+            options={{ headerShown: true, title: tr('nav.equipe') }}
           />
           <Stack.Screen
             name="CompanySites"
             component={CompanySitesScreen}
-            options={{ headerShown: true, title: 'Sites desservis' }}
+            options={{ headerShown: true, title: tr('nav.sites_desservis') }}
           />
           <Stack.Screen
             name="CompanyRolePermissions"
             component={CompanyRolePermissionsScreen}
-            options={{ headerShown: true, title: 'Rôles et permissions' }}
+            options={{ headerShown: true, title: tr('nav.roles_et_permissions') }}
           />
           <Stack.Screen
             name="CompanyMissionDetail"
             component={CompanyMissionDetailScreen}
-            options={{ headerShown: true, title: 'Mission' }}
+            options={{ headerShown: true, title: tr('nav.mission') }}
           />
           <Stack.Screen
             name="CompanyAgencies"
             component={CompanyAgenciesScreen}
-            options={{ headerShown: true, title: 'Implantations' }}
+            options={{ headerShown: true, title: tr('nav.implantations') }}
           />
           <Stack.Screen
             name="CompanyPlanning"
             component={CompanyPlanningScreen}
-            options={{ headerShown: true, title: 'Planning et absences' }}
+            options={{ headerShown: true, title: tr('nav.planning_et_absences') }}
           />
           <Stack.Screen
             name="CompanyTimesheets"
             component={CompanyTimesheetsScreen}
-            options={{ headerShown: true, title: 'Heures et rentabilité' }}
+            options={{ headerShown: true, title: tr('nav.heures_et_rentabilite') }}
           />
           <Stack.Screen
             name="CompanyInventory"
             component={CompanyInventoryScreen}
-            options={{ headerShown: true, title: 'Consommables' }}
+            options={{ headerShown: true, title: tr('nav.consommables') }}
           />
           <Stack.Screen
             name="CompanyQuotes"
             component={CompanyQuotesScreen}
-            options={{ headerShown: true, title: 'Devis' }}
+            options={{ headerShown: true, title: tr('nav.devis') }}
           />
           <Stack.Screen
             name="CompanyRecruitment"
             component={CompanyRecruitmentScreen}
-            options={{ headerShown: true, title: 'Recrutement' }}
+            options={{ headerShown: true, title: tr('nav.recrutement') }}
           />
           <Stack.Screen
             name="CompanyQualityFleet"
             component={CompanyQualityFleetScreen}
-            options={{ headerShown: true, title: 'Qualité et matériel' }}
+            options={{ headerShown: true, title: tr('nav.qualite_et_materiel') }}
           />
           <Stack.Screen
             name="DailyRoute"
             component={DailyRouteScreen}
-            options={{ headerShown: true, title: 'Ma journée' }}
+            options={{ headerShown: true, title: tr('nav.ma_journee') }}
           />
           <Stack.Screen
             name="Safety"
             component={SafetyScreen}
-            options={{ headerShown: true, title: 'Sécurité' }}
+            options={{ headerShown: true, title: tr('nav.securite') }}
           />
           <Stack.Screen
             name="ChannelConversation"
             component={ChannelConversationScreen}
-            options={{ headerShown: true, title: 'Conversation' }}
+            options={{ headerShown: true, title: tr('nav.conversation') }}
           />
           <Stack.Screen
             name="Call"
             component={CallScreen}
-            options={{ headerShown: true, title: 'Appel' }}
+            options={{ headerShown: true, title: tr('nav.appel') }}
           />
           <Stack.Screen
             name="CompanyDispatch"
             component={CompanyDispatchScreen}
-            options={{ headerShown: true, title: 'Répartition' }}
+            options={{ headerShown: true, title: tr('nav.repartition') }}
           />
           <Stack.Screen
             name="ProviderChat"
@@ -305,12 +307,12 @@ export function RootNavigator() {
           <Stack.Screen
             name="ProviderNotifications"
             component={ProviderNotificationsScreen}
-            options={{ headerShown: true, title: 'Notifications' }}
+            options={{ headerShown: true, title: tr('nav.notifications') }}
           />
           <Stack.Screen
             name="ProviderNotificationDetail"
             component={ProviderNotificationDetailScreen}
-            options={{ headerShown: true, title: 'Notification' }}
+            options={{ headerShown: true, title: tr('nav.notification') }}
           />
           {/*
             L'ISSUE VERS L'ESPACE TERRAIN EST UN ONGLET, PAS UNE ROUTE DÉCLARÉE ICI.
@@ -328,17 +330,17 @@ export function RootNavigator() {
           <Stack.Screen
             name="NotificationPreferences"
             component={NotificationPreferencesScreen}
-            options={{ title: 'Préférences notifications', headerShown: true }}
+            options={{ title: tr('nav.preferences_notifications'), headerShown: true }}
           />
           <Stack.Screen
             name="Language"
             component={LanguageScreen}
-            options={{ title: 'Langue', headerShown: true }}
+            options={{ title: tr('nav.langue'), headerShown: true }}
           />
           <Stack.Screen
             name="Appearance"
             component={AppearanceScreen}
-            options={{ title: 'Apparence', headerShown: true }}
+            options={{ title: tr('nav.apparence'), headerShown: true }}
           />
           <Stack.Screen
             name="EmbeddedModule"
@@ -376,7 +378,7 @@ export function RootNavigator() {
           <Stack.Screen
             name="Modules"
             component={ModulesRoute}
-            options={{ headerShown: true, title: 'Modules' }}
+            options={{ headerShown: true, title: tr('nav.modules') }}
           />
           {/*
             SANS CET ÉCRAN, LE RÉPERTOIRE DE MODULES NE MÈNE NULLE PART.
@@ -395,17 +397,17 @@ export function RootNavigator() {
           <Stack.Screen
             name="Appearance"
             component={AppearanceScreen}
-            options={{ title: 'Apparence', headerShown: true }}
+            options={{ title: tr('nav.apparence'), headerShown: true }}
           />
           <Stack.Screen
             name="Language"
             component={LanguageScreen}
-            options={{ title: 'Langue', headerShown: true }}
+            options={{ title: tr('nav.langue'), headerShown: true }}
           />
           <Stack.Screen
             name="NotificationPreferences"
             component={NotificationPreferencesScreen}
-            options={{ title: 'Préférences notifications', headerShown: true }}
+            options={{ title: tr('nav.preferences_notifications'), headerShown: true }}
           />
         </Stack.Navigator>
       </View>
@@ -420,7 +422,7 @@ export function RootNavigator() {
           <Stack.Screen
             name="Modules"
             component={ModulesRoute}
-            options={{ headerShown: true, title: 'Modules' }}
+            options={{ headerShown: true, title: tr('nav.modules') }}
           />
           {/*
             SANS CET ÉCRAN, LE RÉPERTOIRE DE MODULES NE MÈNE NULLE PART.
@@ -498,12 +500,12 @@ export function RootNavigator() {
           <Stack.Screen
             name="AdminResourceDetail"
             component={ResourceDetailScreen}
-            options={{ headerShown: true, title: 'Détail' }}
+            options={{ headerShown: true, title: tr('nav.detail') }}
           />
           <Stack.Screen
             name="AdminResourceForm"
             component={ResourceFormScreen}
-            options={{ headerShown: true, title: 'Formulaire' }}
+            options={{ headerShown: true, title: tr('nav.formulaire') }}
           />
           <Stack.Screen
             name="AdminResource"
@@ -553,7 +555,7 @@ export function RootNavigator() {
             <Stack.Screen
               name="Modules"
               component={ModulesRoute}
-              options={{ headerShown: true, title: 'Modules' }}
+              options={{ headerShown: true, title: tr('nav.modules') }}
             />
             {/*
               Les courses immédiates. Les points d'API existaient depuis la livraison du moteur
@@ -563,42 +565,42 @@ export function RootNavigator() {
             <Stack.Screen
               name="AsapOffers"
               component={AsapOffersScreen}
-              options={{ title: 'Courses immédiates', headerShown: true }}
+              options={{ title: tr('nav.courses_immediates'), headerShown: true }}
             />
             <Stack.Screen
               name="MissionDetail"
               component={MissionDetailScreen}
-              options={{ headerShown: true, title: 'Mission' }}
+              options={{ headerShown: true, title: tr('nav.mission') }}
             />
             <Stack.Screen
               name="MissionInbox"
               component={MissionInboxScreen}
-              options={{ headerShown: true, title: 'Missions disponibles' }}
+              options={{ headerShown: true, title: tr('nav.missions_disponibles') }}
             />
             <Stack.Screen
               name="MissionField"
               component={MissionFieldScreen}
-              options={{ headerShown: true, title: 'Mission terrain' }}
+              options={{ headerShown: true, title: tr('nav.mission_terrain') }}
             />
             <Stack.Screen
               name="MissionTracking"
               component={TrackingScreen}
-              options={{ headerShown: true, title: 'Suivi GPS' }}
+              options={{ headerShown: true, title: tr('nav.suivi_gps') }}
             />
             <Stack.Screen
               name="PresenceScan"
               component={PresenceScanScreen}
-              options={{ headerShown: true, title: 'Confirmer ma présence' }}
+              options={{ headerShown: true, title: tr('nav.confirmer_ma_presence') }}
             />
             <Stack.Screen
               name="StripeOnboarding"
               component={StripeOnboardingScreen}
-              options={{ headerShown: true, title: 'Stripe Connect' }}
+              options={{ headerShown: true, title: tr('nav.stripe_connect') }}
             />
             <Stack.Screen
               name="Availability"
               component={AvailabilityScreen}
-              options={{ headerShown: true, title: 'Disponibilités' }}
+              options={{ headerShown: true, title: tr('nav.disponibilites') }}
             />
             {/*
               « CE QUE JE FAIS, ET OÙ ».
@@ -610,17 +612,17 @@ export function RootNavigator() {
             <Stack.Screen
               name="TradesZones"
               component={TradesZonesScreen}
-              options={{ headerShown: true, title: 'Métiers et zones' }}
+              options={{ headerShown: true, title: tr('nav.metiers_et_zones') }}
             />
             <Stack.Screen
               name="Badges"
               component={BadgesScreen}
-              options={{ headerShown: true, title: 'Mes badges' }}
+              options={{ headerShown: true, title: tr('nav.mes_badges') }}
             />
             <Stack.Screen
               name="KYC"
               component={KYCScreen}
-              options={{ headerShown: true, title: 'Vérification identité' }}
+              options={{ headerShown: true, title: tr('nav.verification_identite') }}
             />
             {/*
               LE RETRAIT DU CONSENTEMENT AU CONTRÔLE FACIAL.
@@ -632,27 +634,27 @@ export function RootNavigator() {
             <Stack.Screen
               name="FaceConsent"
               component={FaceConsentScreen}
-              options={{ headerShown: true, title: 'Contrôle facial' }}
+              options={{ headerShown: true, title: tr('nav.controle_facial') }}
             />
             <Stack.Screen
               name="ProviderDisputeDetail"
               component={ProviderDisputeDetailScreen}
-              options={{ headerShown: true, title: 'Litige' }}
+              options={{ headerShown: true, title: tr('nav.litige') }}
             />
             <Stack.Screen
               name="ProviderDisputes"
               component={ProviderDisputesScreen}
-              options={{ headerShown: true, title: 'Litiges' }}
+              options={{ headerShown: true, title: tr('nav.litiges') }}
             />
             <Stack.Screen
               name="ProviderRatings"
               component={ProviderRatingsScreen}
-              options={{ headerShown: true, title: 'Avis reçus' }}
+              options={{ headerShown: true, title: tr('nav.avis_recus') }}
             />
             <Stack.Screen
               name="ProviderChatList"
               component={ProviderChatListScreen}
-              options={{ headerShown: true, title: 'Messagerie' }}
+              options={{ headerShown: true, title: tr('nav.messagerie') }}
             />
             <Stack.Screen
               name="ProviderChat"
@@ -662,12 +664,12 @@ export function RootNavigator() {
             <Stack.Screen
               name="ProviderNotifications"
               component={ProviderNotificationsScreen}
-              options={{ headerShown: true, title: 'Notifications' }}
+              options={{ headerShown: true, title: tr('nav.notifications') }}
             />
             <Stack.Screen
               name="ProviderNotificationDetail"
               component={ProviderNotificationDetailScreen}
-              options={{ headerShown: true, title: 'Notification' }}
+              options={{ headerShown: true, title: tr('nav.notification') }}
             />
             {/*
               L'espace société, servi par l'hôte WebView partagé. Le titre natif est posé par
@@ -682,97 +684,97 @@ export function RootNavigator() {
             <Stack.Screen
               name="CompanyMembers"
               component={CompanyMembersScreen}
-              options={{ headerShown: true, title: 'Équipe' }}
+              options={{ headerShown: true, title: tr('nav.equipe') }}
             />
             <Stack.Screen
               name="CompanyFieldTeams"
               component={CompanyFieldTeamsScreen}
-              options={{ headerShown: true, title: 'Équipes terrain' }}
+              options={{ headerShown: true, title: tr('nav.equipes_terrain') }}
             />
             <Stack.Screen
               name="CompanyTasks"
               component={CompanyTasksScreen}
-              options={{ headerShown: true, title: 'Tâches' }}
+              options={{ headerShown: true, title: tr('nav.taches') }}
             />
             <Stack.Screen
               name="CompanyDispatch"
               component={CompanyDispatchScreen}
-              options={{ headerShown: true, title: 'Répartition' }}
+              options={{ headerShown: true, title: tr('nav.repartition') }}
             />
             <Stack.Screen
               name="CompanyChannels"
               component={CompanyChannelsScreen}
-              options={{ headerShown: true, title: 'Canaux' }}
+              options={{ headerShown: true, title: tr('nav.canaux') }}
             />
             <Stack.Screen
               name="CompanySites"
               component={CompanySitesScreen}
-              options={{ headerShown: true, title: 'Sites desservis' }}
+              options={{ headerShown: true, title: tr('nav.sites_desservis') }}
             />
             <Stack.Screen
               name="CompanyRolePermissions"
               component={CompanyRolePermissionsScreen}
-              options={{ headerShown: true, title: 'Rôles et permissions' }}
+              options={{ headerShown: true, title: tr('nav.roles_et_permissions') }}
             />
             <Stack.Screen
               name="CompanyMissionDetail"
               component={CompanyMissionDetailScreen}
-              options={{ headerShown: true, title: 'Mission' }}
+              options={{ headerShown: true, title: tr('nav.mission') }}
             />
             <Stack.Screen
               name="CompanyAgencies"
               component={CompanyAgenciesScreen}
-              options={{ headerShown: true, title: 'Implantations' }}
+              options={{ headerShown: true, title: tr('nav.implantations') }}
             />
             <Stack.Screen
               name="CompanyPlanning"
               component={CompanyPlanningScreen}
-              options={{ headerShown: true, title: 'Planning et absences' }}
+              options={{ headerShown: true, title: tr('nav.planning_et_absences') }}
             />
             <Stack.Screen
               name="CompanyTimesheets"
               component={CompanyTimesheetsScreen}
-              options={{ headerShown: true, title: 'Heures et rentabilité' }}
+              options={{ headerShown: true, title: tr('nav.heures_et_rentabilite') }}
             />
             <Stack.Screen
               name="CompanyInventory"
               component={CompanyInventoryScreen}
-              options={{ headerShown: true, title: 'Consommables' }}
+              options={{ headerShown: true, title: tr('nav.consommables') }}
             />
             <Stack.Screen
               name="CompanyQuotes"
               component={CompanyQuotesScreen}
-              options={{ headerShown: true, title: 'Devis' }}
+              options={{ headerShown: true, title: tr('nav.devis') }}
             />
             <Stack.Screen
               name="CompanyRecruitment"
               component={CompanyRecruitmentScreen}
-              options={{ headerShown: true, title: 'Recrutement' }}
+              options={{ headerShown: true, title: tr('nav.recrutement') }}
             />
             <Stack.Screen
               name="CompanyQualityFleet"
               component={CompanyQualityFleetScreen}
-              options={{ headerShown: true, title: 'Qualité et matériel' }}
+              options={{ headerShown: true, title: tr('nav.qualite_et_materiel') }}
             />
             <Stack.Screen
               name="DailyRoute"
               component={DailyRouteScreen}
-              options={{ headerShown: true, title: 'Ma journée' }}
+              options={{ headerShown: true, title: tr('nav.ma_journee') }}
             />
             <Stack.Screen
               name="Safety"
               component={SafetyScreen}
-              options={{ headerShown: true, title: 'Sécurité' }}
+              options={{ headerShown: true, title: tr('nav.securite') }}
             />
             <Stack.Screen
               name="ChannelConversation"
               component={ChannelConversationScreen}
-              options={{ headerShown: true, title: 'Conversation' }}
+              options={{ headerShown: true, title: tr('nav.conversation') }}
             />
             <Stack.Screen
               name="Call"
               component={CallScreen}
-              options={{ headerShown: true, title: 'Appel' }}
+              options={{ headerShown: true, title: tr('nav.appel') }}
             />
             <Stack.Screen
               name="Legal"
@@ -786,23 +788,23 @@ export function RootNavigator() {
             <Stack.Screen
               name="NotificationPreferences"
               component={NotificationPreferencesScreen}
-              options={{ title: 'Préférences notifications', headerShown: true }}
+              options={{ title: tr('nav.preferences_notifications'), headerShown: true }}
             />
             <Stack.Screen
               name="Language"
               component={LanguageScreen}
-              options={{ title: 'Langue', headerShown: true }}
+              options={{ title: tr('nav.langue'), headerShown: true }}
             />
             <Stack.Screen
               name="Appearance"
               component={AppearanceScreen}
-              options={{ title: 'Apparence', headerShown: true }}
+              options={{ title: tr('nav.apparence'), headerShown: true }}
             />
           </>
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'Mot de passe oublié', headerShown: true }} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: tr('nav.mot_de_passe_oublie'), headerShown: true }} />
             <Stack.Screen name="Legal" component={LegalScreen} options={({ route }) => ({ title: route.params.type === 'terms' ? 'CGU' : 'Confidentialité', headerShown: true })} />
           </>
         )}

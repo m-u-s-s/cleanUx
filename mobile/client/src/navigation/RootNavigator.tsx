@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '@/auth';
+import { useTraduction } from '@/i18n';
 import { EcranConfirmationEmail } from '@/auth/EcranConfirmationEmail';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { OnboardingScreen, hasCompletedOnboarding } from '@/screens/OnboardingScreen';
@@ -63,6 +64,7 @@ import type { RootStackParamList } from './types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
+  const { t: tr } = useTraduction();
   const theme = useThemeColors();
   const { user, isAuthenticated, isLoading } = useAuth();
 
@@ -153,27 +155,27 @@ export function RootNavigator() {
           <Stack.Screen
             name="Modules"
             component={ModulesRoute}
-            options={{ headerShown: true, title: 'Modules' }}
+            options={{ headerShown: true, title: tr('nav.modules') }}
           />
           <Stack.Screen
             name="CompanyMembers"
             component={CompanyMembersScreen}
-            options={{ headerShown: true, title: 'Membres' }}
+            options={{ headerShown: true, title: tr('nav.membres') }}
           />
           <Stack.Screen
             name="CompanyContracts"
             component={CompanyContractsScreen}
-            options={{ headerShown: true, title: 'Contrats' }}
+            options={{ headerShown: true, title: tr('nav.contrats') }}
           />
           <Stack.Screen
             name="BookingDetail"
             component={BookingDetailScreen}
-            options={{ headerShown: true, title: 'Détail réservation' }}
+            options={{ headerShown: true, title: tr('nav.detail_reservation') }}
           />
           <Stack.Screen
             name="InvoiceDetail"
             component={InvoiceDetailScreen}
-            options={{ headerShown: true, title: 'Facture' }}
+            options={{ headerShown: true, title: tr('nav.facture') }}
           />
 
           {/*
@@ -197,32 +199,32 @@ export function RootNavigator() {
           <Stack.Screen
             name="PaymentCheckout"
             component={PaymentCheckoutScreen}
-            options={{ headerShown: true, title: 'Paiement' }}
+            options={{ headerShown: true, title: tr('nav.paiement') }}
           />
           <Stack.Screen
             name="MissionTracking"
             component={MissionTrackingScreen}
-            options={{ headerShown: true, title: 'Suivi' }}
+            options={{ headerShown: true, title: tr('nav.suivi') }}
           />
           <Stack.Screen
             name="QRScan"
             component={QRScanScreen}
-            options={{ headerShown: true, title: 'Code de présence' }}
+            options={{ headerShown: true, title: tr('nav.code_de_presence') }}
           />
           <Stack.Screen
             name="Rating"
             component={RatingScreen}
-            options={{ headerShown: true, title: 'Votre avis' }}
+            options={{ headerShown: true, title: tr('nav.votre_avis') }}
           />
           <Stack.Screen
             name="Tips"
             component={TipsScreen}
-            options={{ headerShown: true, title: 'Pourboire' }}
+            options={{ headerShown: true, title: tr('nav.pourboire') }}
           />
           <Stack.Screen
             name="CompanyGovernance"
             component={CompanyGovernanceScreen}
-            options={{ headerShown: true, title: 'Pilotage' }}
+            options={{ headerShown: true, title: tr('nav.pilotage') }}
           />
           {/*
             L'ISSUE VERS L'ESPACE PERSONNEL EST UN ONGLET, PAS UNE ROUTE DÉCLARÉE ICI.
@@ -258,7 +260,7 @@ export function RootNavigator() {
             <Stack.Screen
               name="Modules"
               component={ModulesRoute}
-              options={{ headerShown: true, title: 'Modules' }}
+              options={{ headerShown: true, title: tr('nav.modules') }}
             />
             {/*
               L'assistant de réservation en cinq étapes N'EST PLUS MONTÉ.
@@ -276,7 +278,7 @@ export function RootNavigator() {
             <Stack.Screen
               name="MissionTracking"
               component={MissionTrackingScreen}
-              options={{ title: 'Suivi mission' }}
+              options={{ title: tr('nav.suivi_mission') }}
             />
             {/*
               Le suivi CONTINUE après la sonnette. La carte s'arrête à l'arrivée ; cet écran
@@ -286,12 +288,12 @@ export function RootNavigator() {
             <Stack.Screen
               name="OnSite"
               component={OnSiteScreen}
-              options={{ title: 'Intervention en cours' }}
+              options={{ title: tr('nav.intervention_en_cours') }}
             />
             <Stack.Screen
               name="BookingDetail"
               component={BookingDetailScreen}
-              options={{ title: 'Détail réservation' }}
+              options={{ title: tr('nav.detail_reservation') }}
             />
             <Stack.Screen
               name="QRScan"
@@ -301,17 +303,17 @@ export function RootNavigator() {
             <Stack.Screen
               name="PaymentCheckout"
               component={PaymentCheckoutScreen}
-              options={{ title: 'Paiement', headerShown: true }}
+              options={{ title: tr('nav.paiement'), headerShown: true }}
             />
             <Stack.Screen
               name="SavedPaymentMethods"
               component={SavedPaymentMethodsScreen}
-              options={{ title: 'Moyens de paiement', headerShown: true }}
+              options={{ title: tr('nav.moyens_de_paiement'), headerShown: true }}
             />
             <Stack.Screen
               name="ChatList"
               component={ChatListScreen}
-              options={{ title: 'Messagerie', headerShown: true }}
+              options={{ title: tr('nav.messagerie'), headerShown: true }}
             />
             <Stack.Screen
               name="Chat"
@@ -321,79 +323,79 @@ export function RootNavigator() {
             <Stack.Screen
               name="Notifications"
               component={NotificationsScreen}
-              options={{ title: 'Notifications', headerShown: true }}
+              options={{ title: tr('nav.notifications'), headerShown: true }}
             />
             <Stack.Screen
               name="NotificationDetail"
               component={NotificationDetailScreen}
-              options={{ title: 'Notification', headerShown: true }}
+              options={{ title: tr('nav.notification'), headerShown: true }}
             />
             {/* Sprint 9 */}
             <Stack.Screen
               name="Rating"
               component={RatingScreen}
-              options={{ title: 'Évaluer', headerShown: true }}
+              options={{ title: tr('nav.evaluer'), headerShown: true }}
             />
             <Stack.Screen
               name="Loyalty"
               component={LoyaltyScreen}
-              options={{ title: 'Fidélité', headerShown: true }}
+              options={{ title: tr('nav.fidelite'), headerShown: true }}
             />
             <Stack.Screen
               name="ReceivedQuotes"
               component={ReceivedQuotesScreen}
-              options={{ title: 'Devis reçus', headerShown: true }}
+              options={{ title: tr('nav.devis_recus'), headerShown: true }}
             />
             <Stack.Screen
               name="Places"
               component={PlacesScreen}
-              options={{ title: 'Mes lieux', headerShown: true }}
+              options={{ title: tr('nav.mes_lieux'), headerShown: true }}
             />
             <Stack.Screen
               name="Budget"
               component={BudgetScreen}
-              options={{ title: 'Mon budget', headerShown: true }}
+              options={{ title: tr('nav.mon_budget'), headerShown: true }}
             />
             <Stack.Screen
               name="Protection"
               component={ProtectionScreen}
-              options={{ title: 'Ma protection', headerShown: true }}
+              options={{ title: tr('nav.ma_protection'), headerShown: true }}
             />
             <Stack.Screen
               name="Referral"
               component={ReferralScreen}
-              options={{ title: 'Parrainage', headerShown: true }}
+              options={{ title: tr('nav.parrainage'), headerShown: true }}
             />
             <Stack.Screen
               name="AiQuote"
               component={AiQuoteScreen}
-              options={{ title: 'Devis IA', headerShown: true }}
+              options={{ title: tr('nav.devis_ia'), headerShown: true }}
             />
             {/* Sprint 10 */}
             <Stack.Screen
               name="Disputes"
               component={DisputesScreen}
-              options={{ title: 'Litiges', headerShown: true }}
+              options={{ title: tr('nav.litiges'), headerShown: true }}
             />
             <Stack.Screen
               name="GDPR"
               component={GDPRScreen}
-              options={{ title: 'Mes données', headerShown: true }}
+              options={{ title: tr('nav.mes_donnees'), headerShown: true }}
             />
             <Stack.Screen
               name="ProfileEdit"
               component={ProfileEditScreen}
-              options={{ title: 'Modifier le profil', headerShown: true }}
+              options={{ title: tr('nav.modifier_le_profil'), headerShown: true }}
             />
             <Stack.Screen
               name="Tips"
               component={TipsScreen}
-              options={{ title: 'Pourboire', headerShown: true }}
+              options={{ title: tr('nav.pourboire'), headerShown: true }}
             />
             <Stack.Screen
               name="NPS"
               component={NPSScreen}
-              options={{ title: 'Votre avis', headerShown: true }}
+              options={{ title: tr('nav.votre_avis'), headerShown: true }}
             />
             <Stack.Screen
               name="Legal"
@@ -407,21 +409,21 @@ export function RootNavigator() {
             <Stack.Screen
               name="NotificationPreferences"
               component={NotificationPreferencesScreen}
-              options={{ title: 'Préférences notifications', headerShown: true }}
+              options={{ title: tr('nav.preferences_notifications'), headerShown: true }}
             />
             <Stack.Screen
               name="Language"
               component={LanguageScreen}
-              options={{ title: 'Langue', headerShown: true }}
+              options={{ title: tr('nav.langue'), headerShown: true }}
             />
             <Stack.Screen
               name="Appearance"
               component={AppearanceScreen}
-              options={{ title: 'Apparence', headerShown: true }}
+              options={{ title: tr('nav.apparence'), headerShown: true }}
             />
             {/* Invoices */}
-            <Stack.Screen name="Invoices" component={InvoicesScreen} options={{ headerShown: true, title: 'Factures' }} />
-            <Stack.Screen name="InvoiceDetail" component={InvoiceDetailScreen} options={{ headerShown: true, title: 'Facture' }} />
+            <Stack.Screen name="Invoices" component={InvoicesScreen} options={{ headerShown: true, title: tr('nav.factures') }} />
+            <Stack.Screen name="InvoiceDetail" component={InvoiceDetailScreen} options={{ headerShown: true, title: tr('nav.facture') }} />
             {/* Embedded web modules */}
             <Stack.Screen
               name="EmbeddedModule"
@@ -438,7 +440,7 @@ export function RootNavigator() {
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'Mot de passe oublié', headerShown: true }} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: tr('nav.mot_de_passe_oublie'), headerShown: true }} />
             <Stack.Screen name="Legal" component={LegalScreen} options={({ route }) => ({ title: route.params.type === 'terms' ? "CGU" : 'Confidentialité', headerShown: true })} />
           </>
         )}
