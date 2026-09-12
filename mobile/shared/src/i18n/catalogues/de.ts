@@ -2006,4 +2006,7 @@ export const de: Catalogue = {
   'commun.profil': 'Profil',
   'notification_preferences.obligatoire': 'Pflicht',
   'notification_preferences.categorie_par_canal': ':categorie über :canal',
+  // L'accueil dit ce qui est en cours.
+  'home.une_reservation_en_cours': '1 Buchung läuft',
+  'home.n_reservations_en_cours': ':n Buchungen laufen',
 };

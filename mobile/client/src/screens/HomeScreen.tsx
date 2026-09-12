@@ -3,13 +3,13 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type GorhomBottomSheet from '@gorhom/bottom-sheet';
-import { Screen, Button, Avatar, Badge, Skeleton, Icon } from '@/ui';
+import { Screen, Button, Avatar, Badge, Skeleton, Icon, CarteDeMission, GlassSurface, AnimatedListItem } from '@/ui';
 import { useAuth } from '@/auth';
 import { useBookings } from '@/booking';
 import { useLiveBookingIds } from '@/tracking';
 import { HomeActionsSheet } from '@/screens/components/HomeActionsSheet';
 import { HomeMissionMap } from '@/screens/components/HomeMissionMap';
-import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
+import { colors, spacing, typography, radius, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { formatAdresse, formatDateHeure, libelleStatut } from '@/lib/format';
 import type { RootStackParamList } from '@/navigation/types';
@@ -83,7 +83,22 @@ export function HomeScreen() {
               ? tr('commun.bonjour_prenom', { prenom: user.name.split(' ')[0] ?? '' })
               : tr('commun.bonjour')}
           </Text>
-          <Text style={styles.role}>{user?.email}</Text>
+          {/*
+              L'ADRESSE E-MAIL N'APPRENAIT RIEN À PERSONNE.
+
+              Elle occupait la ligne la plus lue de l'application pour redire ce que l'onglet
+              Profil dit déjà. À sa place, la seule chose qu'un client vient vérifier en ouvrant
+              l'accueil : combien d'interventions sont en cours. Rien pendant le chargement et
+              rien quand il n'y en a aucune — la carte en dessous le dit alors elle-même, et
+              deux fois la même phrase se lit comme un défaut.
+          */}
+          {!isLoading && activeBookings.length > 0 ? (
+            <Text style={styles.role}>
+              {activeBookings.length === 1
+                ? tr('home.une_reservation_en_cours')
+                : tr('home.n_reservations_en_cours', { n: activeBookings.length })}
+            </Text>
+          ) : null}
         </View>
         <Avatar name={user?.name ?? '?'} size={48} accessibilityLabel={user?.name ?? tr('commun.profil')} />
       </View>
@@ -92,16 +107,16 @@ export function HomeScreen() {
         {isLoading ? (
           <Skeleton width="100%" height={180} />
         ) : isFirstTime ? (
-          <View style={styles.welcomeCard} testID="home-welcome">
+          <GlassSurface strong radius={radius.lg} style={styles.welcomeCard} testID="home-welcome">
             <Icon name="home-outline" size={48} color={colors.brand[400]} />
             <Text style={styles.welcomeTitle}>{tr('home.bienvenue_sur_brio')}</Text>
             <Text style={styles.welcomeText}>
               {tr('home.reservez_votre_premier_service')}
             </Text>
-          </View>
+          </GlassSurface>
         ) : focus ? (
           <TouchableOpacity
-            style={styles.focusCard}
+            activeOpacity={0.85}
             onPress={() =>
               focusIsLive
                 ? navigation.navigate('MissionTracking', { bookingId: focus.id })
@@ -111,49 +126,65 @@ export function HomeScreen() {
             accessibilityLabel={`${focus.service_name} — ${focusIsLive ? tr('home.suivre_en_direct') : tr('home.voir_le_detail')}`}
             testID="home-focus-booking"
           >
-            <View style={styles.focusHeader}>
-              <Text style={styles.focusService}>{focus.service_name}</Text>
-              {/* Le statut technique de l'API ne s'affiche pas tel quel : « pending » n'est pas
-                  une promesse qu'on fait à un client. */}
-              <Badge label={libelleStatut(stateOf(focus))} variant={focusIsLive ? 'success' : 'brand'} />
-            </View>
-            {/* Pas de date connue, pas de ligne : `formatDateHeure` rend une chaîne vide quand
-                la réservation n'a pas encore d'horaire, et la carte affichait alors un blanc
-                entre le titre et l'adresse — un trou qui ressemble à un défaut d'affichage. */}
-            {formatDateHeure(focus.scheduled_date, focus.scheduled_time) ? (
-              <Text style={styles.focusDate}>
-                {formatDateHeure(focus.scheduled_date, focus.scheduled_time)}
-              </Text>
-            ) : null}
-            <Text style={styles.focusAddress}>
-              {formatAdresse(focus.address, focus.city)}
-            </Text>
+            {/*
+                LA PLAQUE DU PROJET, PAS UN APLAT À ELLE.
 
-            {/* La carte apparaît dès que le prestataire a pris la route : c'est là qu'il y a
-                quelque chose à situer, et c'est là qu'un client la regarde. L'attendre au démarrage
-                de l'intervention la faisait apparaître au moment où elle n'apprend plus rien. */}
-            {focusIsLive ? <HomeMissionMap bookingId={focus.id} /> : null}
+                Cette carte se peignait son propre fond — `t.card` et une ombre douce — alors que
+                tout le reste de l'application est en verre sur la toile nuit. Sur l'écran le plus
+                vu, c'était le seul morceau qui se lisait comme rapporté d'ailleurs.
 
-            {/* Le suivi en direct est la seule chose qui compte pendant une mission : on le dit
-                explicitement plutôt que de compter sur l'utilisateur pour tenter le tap. */}
-            <View style={styles.focusCta}>
-              <Icon
-                name={focusIsLive ? 'navigate-outline' : 'chevron-forward'}
-                size={18}
-                color={colors.brand[600]}
-              />
-              <Text style={styles.focusCtaText}>
-                {focusIsLive ? tr('home.suivre_en_direct_2') : tr('home.voir_le_detail_2')}
+                Le rail dit ce que la carte engage : `decision` quand le prestataire est en route,
+                parce que c'est là que le client a quelque chose à suivre.
+            */}
+            <CarteDeMission
+              ton={focusIsLive ? 'decision' : 'neutre'}
+              style={styles.carteSansMarge}
+              testID="home-focus-carte"
+            >
+              <View style={styles.focusHeader}>
+                <Text style={styles.focusService}>{focus.service_name}</Text>
+                {/* Le statut technique de l'API ne s'affiche pas tel quel : « pending » n'est pas
+                    une promesse qu'on fait à un client. */}
+                <Badge label={libelleStatut(stateOf(focus))} variant={focusIsLive ? 'success' : 'brand'} />
+              </View>
+              {/* Pas de date connue, pas de ligne : `formatDateHeure` rend une chaîne vide quand
+                  la réservation n'a pas encore d'horaire, et la carte affichait alors un blanc
+                  entre le titre et l'adresse — un trou qui ressemble à un défaut d'affichage. */}
+              {formatDateHeure(focus.scheduled_date, focus.scheduled_time) ? (
+                <Text style={styles.focusDate}>
+                  {formatDateHeure(focus.scheduled_date, focus.scheduled_time)}
+                </Text>
+              ) : null}
+              <Text style={styles.focusAddress}>
+                {formatAdresse(focus.address, focus.city)}
               </Text>
-            </View>
+
+              {/* La carte apparaît dès que le prestataire a pris la route : c'est là qu'il y a
+                  quelque chose à situer, et c'est là qu'un client la regarde. L'attendre au démarrage
+                  de l'intervention la faisait apparaître au moment où elle n'apprend plus rien. */}
+              {focusIsLive ? <HomeMissionMap bookingId={focus.id} /> : null}
+
+              {/* Le suivi en direct est la seule chose qui compte pendant une mission : on le dit
+                  explicitement plutôt que de compter sur l'utilisateur pour tenter le tap. */}
+              <View style={styles.focusCta}>
+                <Icon
+                  name={focusIsLive ? 'navigate-outline' : 'chevron-forward'}
+                  size={18}
+                  color={colors.brand[600]}
+                />
+                <Text style={styles.focusCtaText}>
+                  {focusIsLive ? tr('home.suivre_en_direct_2') : tr('home.voir_le_detail_2')}
+                </Text>
+              </View>
+            </CarteDeMission>
           </TouchableOpacity>
         ) : (
-          <View style={styles.welcomeCard} testID="home-no-active">
+          <GlassSurface strong radius={radius.lg} style={styles.welcomeCard} testID="home-no-active">
             <Icon name="calendar-outline" size={40} color={colors.brand[400]} />
             <Text style={styles.welcomeText}>
               {tr('home.aucune_reservation_en_cours')}
             </Text>
-          </View>
+          </GlassSurface>
         )}
 
         {/*
@@ -169,40 +200,50 @@ export function HomeScreen() {
                 ? tr('home.une_autre_en_cours')
                 : tr('home.n_autres_en_cours', { n: autresBookings.length })}</Text>
 
-            {autresBookings.map(b => (
-              <TouchableOpacity
-                key={b.id}
-                style={styles.otherCard}
-                onPress={() =>
-                  isLive(b)
-                    ? navigation.navigate('MissionTracking', { bookingId: b.id })
-                    : navigation.navigate('BookingDetail', { bookingId: b.id })
-                }
-                accessibilityRole="button"
-                accessibilityLabel={`${b.service_name} — ${isLive(b) ? tr('home.suivre_en_direct') : tr('home.voir_le_detail')}`}
-                testID={`home-other-booking-${b.id}`}
-              >
-                <View style={styles.otherText}>
-                  <Text style={styles.otherService} numberOfLines={1}>
-                    {b.service_name}
-                  </Text>
-                  {/* LE SÉPARATEUR NE S'AFFICHE QUE S'IL SÉPARE QUELQUE CHOSE.
+            {/* L'entrée décalée est celle des listes du projet — et elle disparaît d'elle-même
+                quand l'appareil a réduit les mouvements. */}
+            {autresBookings.map((b, i) => (
+              <AnimatedListItem key={b.id} index={i}>
+                <TouchableOpacity
+                  activeOpacity={0.85}
+                  onPress={() =>
+                    isLive(b)
+                      ? navigation.navigate('MissionTracking', { bookingId: b.id })
+                      : navigation.navigate('BookingDetail', { bookingId: b.id })
+                  }
+                  accessibilityRole="button"
+                  accessibilityLabel={`${b.service_name} — ${isLive(b) ? tr('home.suivre_en_direct') : tr('home.voir_le_detail')}`}
+                  testID={`home-other-booking-${b.id}`}
+                >
+                  <CarteDeMission
+                    ton={isLive(b) ? 'decision' : 'neutre'}
+                    style={styles.carteSecondaire}
+                  >
+                    <View style={styles.otherRow}>
+                      <View style={styles.otherText}>
+                        <Text style={styles.otherService} numberOfLines={1}>
+                          {b.service_name}
+                        </Text>
+                        {/* LE SÉPARATEUR NE S'AFFICHE QUE S'IL SÉPARE QUELQUE CHOSE.
 
-                      Écrit « {date} — {ville} » en dur, il restait seul quand ni l'une ni
-                      l'autre n'était connue : la carte se réduisait à un tiret au milieu du
-                      vide. On assemble ce qui existe, et on ne rend rien s'il n'y a rien. */}
-                  {ligneMeta(b) ? (
-                    <Text style={styles.otherMeta} numberOfLines={1}>
-                      {ligneMeta(b)}
-                    </Text>
-                  ) : null}
-                </View>
-                <Icon
-                  name={isLive(b) ? 'navigate-outline' : 'chevron-forward'}
-                  size={18}
-                  color={colors.brand[600]}
-                />
-              </TouchableOpacity>
+                            Écrit « {date} — {ville} » en dur, il restait seul quand ni l'une ni
+                            l'autre n'était connue : la carte se réduisait à un tiret au milieu du
+                            vide. On assemble ce qui existe, et on ne rend rien s'il n'y a rien. */}
+                        {ligneMeta(b) ? (
+                          <Text style={styles.otherMeta} numberOfLines={1}>
+                            {ligneMeta(b)}
+                          </Text>
+                        ) : null}
+                      </View>
+                      <Icon
+                        name={isLive(b) ? 'navigate-outline' : 'chevron-forward'}
+                        size={18}
+                        color={colors.brand[600]}
+                      />
+                    </View>
+                  </CarteDeMission>
+                </TouchableOpacity>
+              </AnimatedListItem>
             ))}
           </View>
         ) : null}
@@ -239,16 +280,14 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   greeting: { color: t.text, fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold },
   role: { color: t.textMuted, fontSize: typography.fontSize.sm, marginTop: 2 },
   focusWrap: { flex: 1, gap: spacing.sm },
-  focusCard: { backgroundColor: t.card,
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    gap: spacing.xs,
-    ...shadows.soft,
-  },
+  /* `CarteDeMission` porte sa marge haute pour le parcours mission ; sur l'accueil, c'est la
+     grille de l'écran qui espace, pas la carte. */
+  carteSansMarge: { marginTop: 0 },
+  carteSecondaire: { marginTop: 0 },
   focusHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  focusService: { color: t.text, fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, flex: 1 },
-  focusDate: { color: t.textSecondary, fontSize: typography.fontSize.sm, marginTop: spacing.xs },
-  focusAddress: { color: t.textMuted, fontSize: typography.fontSize.xs },
+  focusService: { color: t.textOnGlass, fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, flex: 1 },
+  focusDate: { color: t.textOnGlass, fontSize: typography.fontSize.sm },
+  focusAddress: { color: t.mutedOnGlass, fontSize: typography.fontSize.xs },
   focusCta: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.sm },
   focusCtaText: {
     fontSize: typography.fontSize.sm,
@@ -257,26 +296,17 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   moreLabel: { color: t.textMuted, fontSize: typography.fontSize.xs, textAlign: 'center' },
   othersWrap: { gap: spacing.xs },
-  otherCard: { backgroundColor: t.card,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    ...shadows.soft,
-  },
+  otherRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   otherText: { flex: 1 },
-  otherService: { color: t.text, fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold },
-  otherMeta: { color: t.textMuted, fontSize: typography.fontSize.xs, marginTop: 2 },
-  welcomeCard: { backgroundColor: t.card,
-    borderRadius: radius.md,
+  otherService: { color: t.textOnGlass, fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold },
+  otherMeta: { color: t.mutedOnGlass, fontSize: typography.fontSize.xs, marginTop: 2 },
+  /* Le fond vient de `GlassSurface` : un aplat posé ici le masquerait entièrement. */
+  welcomeCard: {
     padding: spacing.lg,
-    ...shadows.soft,
     alignItems: 'center',
     gap: spacing.sm,
   },
-  welcomeTitle: { color: t.text, fontSize: typography.fontSize.xl, fontWeight: typography.fontWeight.bold, textAlign: 'center' },
-  welcomeText: { color: t.textSecondary, fontSize: typography.fontSize.sm, textAlign: 'center', lineHeight: 20 },
+  welcomeTitle: { color: t.textOnGlass, fontSize: typography.fontSize.xl, fontWeight: typography.fontWeight.bold, textAlign: 'center' },
+  welcomeText: { color: t.mutedOnGlass, fontSize: typography.fontSize.sm, textAlign: 'center', lineHeight: 20 },
   floating: { position: 'absolute', left: spacing.md, right: spacing.md, bottom: spacing.lg, gap: spacing.sm },
 });

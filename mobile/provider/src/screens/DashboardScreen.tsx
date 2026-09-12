@@ -6,7 +6,7 @@ import { useAuth } from '@/auth';
 import { ProviderMap } from '@/screens/components/ProviderMap';
 import { PresencePill } from '@/screens/components/PresencePill';
 import { DashboardActionsSheet } from '@/screens/components/DashboardActionsSheet';
-import {spacing, typography } from '@/theme';
+import { radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useTraduction } from '@/i18n';
@@ -29,9 +29,8 @@ export function DashboardScreen() {
               ? tr('commun.bonjour_prenom', { prenom: user.name.split(' ')[0] ?? '' })
               : tr('commun.bonjour')}
           </Text>
-          <Text style={styles.role}>{user?.email}</Text>
         </View>
-        <Avatar name={user?.name ?? '?'} size={48} />
+        <Avatar name={user?.name ?? '?'} size={48} accessibilityLabel={user?.name ?? tr('commun.profil')} />
       </View>
 
       <View style={styles.mapWrap}>
@@ -52,7 +51,8 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   hero: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: spacing.md },
   heroLeft: { flex: 1 },
   greeting: { fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, color: t.text },
-  role: { fontSize: typography.fontSize.sm, color: t.textSecondary, marginTop: 2 },
-  mapWrap: { flex: 1, borderRadius: 12, overflow: 'hidden' },
+  /* L'adresse e-mail occupait une ligne sous la salutation pour redire ce que l'onglet Profil
+     dit deja. L'ecran est carte-first : la place rendue va a la carte. */
+  mapWrap: { flex: 1, borderRadius: radius.lg, overflow: 'hidden' },
   floating: { position: 'absolute', left: spacing.md, right: spacing.md, bottom: spacing.lg, gap: spacing.sm },
 });

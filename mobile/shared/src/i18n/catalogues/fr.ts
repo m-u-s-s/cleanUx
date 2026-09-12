@@ -2009,4 +2009,7 @@ export const fr: Catalogue = {
   'commun.profil': 'Profil',
   'notification_preferences.obligatoire': 'obligatoire',
   'notification_preferences.categorie_par_canal': ':categorie par :canal',
+  // L'accueil client dit ce qui est en cours, a la place de l'adresse e-mail.
+  'home.une_reservation_en_cours': '1 réservation en cours',
+  'home.n_reservations_en_cours': ':n réservations en cours',
 };

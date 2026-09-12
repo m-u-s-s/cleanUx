@@ -36,6 +36,11 @@ jest.mock('@/ui', () => {
   const { View, Text } = require('react-native');
   return {
     Screen: ({ children }: any) => <View>{children}</View>,
+    // Le verre du projet : `CarteDeMission` et `GlassSurface` remplacent les aplats de
+    // l'accueil, `AnimatedListItem` porte l'entree decalee de la liste.
+    CarteDeMission: ({ children }: any) => <View>{children}</View>,
+    GlassSurface: ({ children }: any) => <View>{children}</View>,
+    AnimatedListItem: ({ children }: any) => <View>{children}</View>,
     Button: ({ label, onPress }: any) => <Text onPress={onPress}>{label}</Text>,
     KPICard: ({ title, value }: any) => <View><Text>{title}</Text><Text>{String(value)}</Text></View>,
     Avatar: () => <View />,

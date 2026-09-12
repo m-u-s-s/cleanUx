@@ -73,6 +73,11 @@ jest.mock('@/ui', () => {
 
   return {
     Screen: ({ children }: any) => <View>{children}</View>,
+    // Le verre du projet : `CarteDeMission` et `GlassSurface` remplacent les aplats de
+    // l'accueil, `AnimatedListItem` porte l'entree decalee de la liste.
+    CarteDeMission: ({ children }: any) => <View>{children}</View>,
+    GlassSurface: ({ children }: any) => <View>{children}</View>,
+    AnimatedListItem: ({ children }: any) => <View>{children}</View>,
     Button: ({ label, onPress }: any) => (
       <TouchableOpacity onPress={onPress} accessibilityLabel={label}>
         <Text>{label}</Text>
