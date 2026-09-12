@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Provider;
 
 use App\Http\Controllers\Controller;
+use App\Support\Validation\LanguesAcceptees;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -18,7 +19,7 @@ class ProviderProfileController extends Controller
         $data = $request->validate([
             'name' => 'sometimes|string|max:255',
             'phone' => 'sometimes|nullable|string|max:30',
-            'locale' => 'sometimes|string|in:fr,nl,en',
+            'locale' => 'sometimes|string|'.LanguesAcceptees::regle(),
         ]);
 
         $request->user()->update($data);

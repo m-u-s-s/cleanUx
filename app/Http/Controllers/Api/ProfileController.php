@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\Auth\RevocationDesAcces;
+use App\Support\Validation\LanguesAcceptees;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -36,7 +37,7 @@ class ProfileController extends Controller
         $data = $request->validate([
             'name' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'locale' => ['nullable', 'string', 'in:fr,nl,en'],
+            'locale' => ['nullable', 'string', LanguesAcceptees::regle()],
             // Pour changer le password, exiger l'ancien
             'current_password' => ['nullable', 'required_with:password', 'string'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],

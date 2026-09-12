@@ -7,10 +7,20 @@ import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 
+/**
+ * Chaque langue s'écrit DANS SA LANGUE : un lecteur qui ne comprend pas l'interface
+ * courante doit reconnaître la sienne dans la liste.
+ *
+ * L'ordre suit celui du web. La liste est dérivée de `LANGUES` par un test : en ajouter
+ * une au type sans l'ajouter ici la rendrait choisissable par le serveur et invisible ici.
+ */
 const LANGUAGES: Array<{ code: Langue; label: string; flag: string }> = [
   { code: 'fr', label: 'Français', flag: '🇫🇷' },
   { code: 'nl', label: 'Nederlands', flag: '🇳🇱' },
   { code: 'en', label: 'English', flag: '🇬🇧' },
+  { code: 'es', label: 'Español', flag: '🇪🇸' },
+  { code: 'it', label: 'Italiano', flag: '🇮🇹' },
+  { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
 ];
 
 export function LanguageScreen({ navigation }: any) {

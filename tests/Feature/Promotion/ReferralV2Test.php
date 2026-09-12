@@ -93,13 +93,28 @@ class ReferralV2Test extends TestCase
         );
     }
 
+    /**
+     * « de » servait ici d'exemple de langue refusee. Elle est desormais ACTIVE — la plateforme
+     * en sert six — et ce test mesurait donc une limite de validation, pas une regle metier.
+     * Le refus se verifie sur un code qu'aucun catalogue ne porte.
+     */
     public function test_share_rejects_invalid_locale(): void
     {
         $user = User::factory()->client()->create();
 
         $this->actingAs($user, 'sanctum')
-            ->postJson('/api/client/referral/share', ['locale' => 'de'])
+            ->postJson('/api/client/referral/share', ['locale' => 'zz'])
             ->assertUnprocessable();
+    }
+
+    /** Le temoin : une langue active passe, sinon le refus ci-dessus ne prouverait rien. */
+    public function test_share_accepte_une_langue_active(): void
+    {
+        $user = User::factory()->client()->create();
+
+        $this->actingAs($user, 'sanctum')
+            ->postJson('/api/client/referral/share', ['locale' => 'de'])
+            ->assertSuccessful();
     }
 
     // ─── Registration hook tests ───────────────────────────────────────────

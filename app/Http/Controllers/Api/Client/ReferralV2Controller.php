@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Client;
 
 use App\Http\Controllers\Controller;
 use App\Services\Promotion\ReferralService;
+use App\Support\Validation\LanguesAcceptees;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -52,7 +53,7 @@ class ReferralV2Controller extends Controller
     public function share(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'locale' => ['sometimes', 'string', 'in:fr,nl,en'],
+            'locale' => ['sometimes', 'string', LanguesAcceptees::regle()],
         ]);
 
         $locale = $validated['locale'] ?? $request->user()->locale ?? 'fr';

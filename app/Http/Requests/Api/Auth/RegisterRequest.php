@@ -6,6 +6,7 @@ use App\Enums\OrganizationType;
 use App\Models\Trade;
 use App\Rules\NumeroDEntrepriseNonRevendique;
 use App\Rules\ValidBusinessNumber;
+use App\Support\Validation\LanguesAcceptees;
 use App\Support\Validation\TradeFormSchema;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -27,7 +28,7 @@ class RegisterRequest extends FormRequest
             // envoyé par le client — qui autorise à marquer le téléphone comme vérifié sur le
             // compte créé. Il est à usage unique côté service.
             'phone_verification_token' => ['nullable', 'string', 'max:512'],
-            'locale' => ['nullable', 'string', 'in:fr,nl,en'],
+            'locale' => ['nullable', 'string', LanguesAcceptees::regle()],
             'accept_terms' => ['required', 'accepted'],
             'device_name' => ['nullable', 'string', 'max:100'],
             'referral_code' => ['nullable', 'string', 'max:64'],
