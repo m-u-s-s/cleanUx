@@ -89,7 +89,7 @@ export function ProfileStep({ onDone, submitting, error }: StepProps) {
   return (
     <StepShell
       title={tr('steps.vos_coordonnees')}
-      hint="Votre numéro permet aux clients et au support de vous joindre pendant une mission."
+      hint={tr('provider_steps.numero_permet_de_vous_joindre')}
     >
       <TextInput
         label={tr('steps.telephone')}
@@ -101,7 +101,7 @@ export function ProfileStep({ onDone, submitting, error }: StepProps) {
       <StepError error={localError ?? error} />
       <Button
         label={tr('steps.continuer')}
-        onPress={() => (phone.trim() ? save.mutate() : setLocalError('Numéro requis'))}
+        onPress={() => (phone.trim() ? save.mutate() : setLocalError(tr('provider_steps.numero_requis')))}
         fullWidth
         size="lg"
         loading={save.isPending || submitting}
@@ -165,7 +165,7 @@ export function ContractStep({ onDone, submitting, error }: StepProps) {
 
   const submit = () => {
     if (!accepted) {
-      setLocalError('Vous devez accepter le contrat pour continuer.');
+      setLocalError(tr('provider_steps.contrat_a_accepter'));
 
       return;
     }
@@ -184,7 +184,7 @@ export function ContractStep({ onDone, submitting, error }: StepProps) {
       { documentId: document.id, signerName: user?.name ?? 'Prestataire' },
       {
         onSuccess: () => onDone({ template_code: CONTRACT_TEMPLATE_CODE }),
-        onError: () => setLocalError('La signature a échoué. Vérifiez votre connexion, puis réessayez.'),
+        onError: () => setLocalError(tr('provider_steps.signature_echouee')),
       },
     );
   };
@@ -192,7 +192,7 @@ export function ContractStep({ onDone, submitting, error }: StepProps) {
   return (
     <StepShell
       title={tr('steps.contrat_prestataire')}
-      hint={document ? 'Lisez le contrat, puis signez.' : `Version ${CONTRACT_VERSION}`}
+      hint={document ? tr('provider_steps.lisez_puis_signez') : tr('provider_steps.version', { version: CONTRACT_VERSION })}
     >
       <ScrollView style={styles.contractBox} nestedScrollEnabled testID="onboarding-contract-body">
         <Text style={styles.contractText}>
@@ -273,7 +273,7 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
       { verificationId: id },
       {
         onSuccess: () => void refetch(),
-        onError: () => setLocalError('Impossible de récupérer le résultat. Réessayez.'),
+        onError: () => setLocalError(tr('provider_steps.resultat_introuvable')),
       },
     );
   };
@@ -300,7 +300,7 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
 
       void refetch();
     },
-    onError: () => setLocalError('Impossible de démarrer la vérification. Réessayez.'),
+    onError: () => setLocalError(tr('provider_steps.verification_impossible')),
   });
 
   const verified = isKycVerified(status);
@@ -425,7 +425,7 @@ export function DocumentsStep({ onDone, submitting, error }: StepProps) {
       }
       setPending(prev => ({ ...prev, [type]: picked }));
     } catch (e) {
-      setLocalError(e instanceof Error ? e.message : 'Sélection impossible.');
+      setLocalError(e instanceof Error ? e.message : tr('provider_steps.selection_impossible'));
     }
   };
 
@@ -476,7 +476,7 @@ export function DocumentsStep({ onDone, submitting, error }: StepProps) {
   return (
     <StepShell
       title={tr('steps.vos_justificatifs')}
-      hint="Les pièces demandées dépendent de vos métiers. PDF, JPG ou PNG, 10 Mo maximum."
+      hint={tr('provider_steps.pieces_dependent_des_metiers')}
     >
       {requirements.map(requirement => {
         const picked = pending[requirement.type];
@@ -558,7 +558,7 @@ export function DocumentsStep({ onDone, submitting, error }: StepProps) {
 
       <StepError error={localError ?? error} />
       <Button
-        label={missing.length === 0 ? 'Continuer' : `${missing.length} pièce(s) manquante(s)`}
+        label={missing.length === 0 ? tr('provider_steps.continuer') : tr('provider_steps.pieces_manquantes', { n: missing.length })}
         onPress={() =>
           missing.length === 0
             ? onDone()
@@ -610,7 +610,7 @@ export function SkillsStep({ onDone, submitting, error }: StepProps) {
 
   const submit = () => {
     if (selected.length === 0) {
-      setLocalError('Choisissez au moins un métier.');
+      setLocalError(tr('provider_steps.choisissez_au_moins_un_metier'));
 
       return;
     }
@@ -628,7 +628,7 @@ export function SkillsStep({ onDone, submitting, error }: StepProps) {
   return (
     <StepShell
       title={tr('steps.vos_metiers')}
-      hint="Ils déterminent les missions qui vous seront proposées, et où."
+      hint={tr('provider_steps.metiers_determinent_les_missions')}
     >
       <View style={styles.tradeGrid}>
         {(trades ?? []).map(trade => {
@@ -737,7 +737,7 @@ export function VehicleStep({ onDone, submitting, error }: StepProps) {
     return (
       <StepShell
         title={tr('steps.votre_vehicule')}
-        hint="Aucun de vos métiers n’exige de véhicule déclaré. Vous pouvez passer cette étape."
+        hint={tr('provider_steps.aucun_vehicule_exige')}
       >
         <Button label={tr('steps.continuer')} onPress={() => onDone()} fullWidth size="lg" loading={submitting} />
       </StepShell>
@@ -748,13 +748,13 @@ export function VehicleStep({ onDone, submitting, error }: StepProps) {
     setLocalError(null);
 
     if (plate.trim().length < 4) {
-      setLocalError('Indiquez la plaque d’immatriculation du véhicule.');
+      setLocalError(tr('provider_steps.plaque_requise'));
 
       return;
     }
 
     if (!/^\d{4}-\d{2}-\d{2}$/.test(registeredAt.trim())) {
-      setLocalError('Indiquez la date de première immatriculation au format AAAA-MM-JJ (elle figure sur la carte grise).');
+      setLocalError(tr('provider_steps.date_immatriculation_requise'));
 
       return;
     }

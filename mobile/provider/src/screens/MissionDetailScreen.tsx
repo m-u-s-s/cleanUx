@@ -59,10 +59,10 @@ export function MissionDetailScreen({ route }: Props) {
         Alert.alert(
           tr('mission_detail.code_renvoye'),
           r?.sent_to
-            ? `Un nouveau code vient d’être envoyé au ${r.sent_to}. L’ancien n’est plus valide.`
-            : 'Un nouveau code vient d’être envoyé. L’ancien n’est plus valide.',
+            ? tr('mission_detail.nouveau_code_envoye_au', { destinataire: r.sent_to })
+            : tr('mission_detail.nouveau_code_envoye'),
         ),
-      onError: (e: any) => Alert.alert(tr('mission_detail.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
+      onError: (e: any) => Alert.alert(tr('mission_detail.impossible'), messageDErreur(e, tr('commun.reessayez_dans_un_instant'))),
     });
   };
   const arriveOnSite = useArriveOnSite(mission?.booking_id ?? null, missionId);
@@ -115,7 +115,7 @@ export function MissionDetailScreen({ route }: Props) {
               Alert.alert(tr('mission_detail.felicitations'), messageDeCloture(resultat?.payout));
             },
             onError: (e: any) =>
-              Alert.alert(tr('mission_detail.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
+              Alert.alert(tr('mission_detail.impossible'), messageDErreur(e, tr('commun.reessayez_dans_un_instant'))),
           }),
       },
     ]);
@@ -134,7 +134,7 @@ export function MissionDetailScreen({ route }: Props) {
 
     arriveOnSite.mutate(undefined, {
       onSuccess: (session) => navigation.navigate('PresenceScan', { sessionId: session.id }),
-      onError: (e: any) => Alert.alert(tr('mission_detail.impossible'), messageDErreur(e, 'Réessayez.')),
+      onError: (e: any) => Alert.alert(tr('mission_detail.impossible'), messageDErreur(e, tr('commun.reessayez'))),
     });
   };
 
@@ -298,7 +298,7 @@ export function MissionDetailScreen({ route }: Props) {
               style={styles.resendLink}
             >
               <Text style={styles.resendText}>
-                {resendCode.isPending ? 'Envoi…' : 'Le client n’a rien reçu ? Renvoyer le SMS'}
+                {resendCode.isPending ? 'Envoi…' : tr('mission_detail.client_n_a_rien_recu')}
               </Text>
             </TouchableOpacity>
             {/* `begin`, PAS `start` : `start` appelle setEnRoute côté serveur, et depuis
@@ -319,7 +319,7 @@ export function MissionDetailScreen({ route }: Props) {
                          * de deviner qu'il fallait redemander un code. Constaté à l'écran.
                          */
                         onError: (e: any) =>
-                          Alert.alert(tr('mission_detail.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
+                          Alert.alert(tr('mission_detail.impossible'), messageDErreur(e, tr('commun.reessayez_dans_un_instant'))),
                       },
                     )
                   : Alert.alert(tr('mission_detail.code_requis'), tr('mission_detail.demandez_au_client_le_code'))
@@ -390,7 +390,7 @@ export function MissionDetailScreen({ route }: Props) {
               style={styles.resendLink}
             >
               <Text style={styles.resendText}>
-                {resendCode.isPending ? 'Envoi…' : 'Le client n’a rien reçu ? Renvoyer le SMS'}
+                {resendCode.isPending ? 'Envoi…' : tr('mission_detail.client_n_a_rien_recu')}
               </Text>
             </TouchableOpacity>
           </>

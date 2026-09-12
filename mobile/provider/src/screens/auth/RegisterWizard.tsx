@@ -182,22 +182,22 @@ export function RegisterWizard() {
       case 'phone':
         return isPlausibleE164(toE164(draft.phone))
           ? null
-          : 'Numéro invalide. Exemple : 0470 12 34 56';
+          : tr('provider_register.numero_invalide');
       case 'otp':
-        return otp.length === OTP_LENGTH ? null : `Le code compte ${OTP_LENGTH} chiffres.`;
+        return otp.length === OTP_LENGTH ? null : tr('provider_register.code_compte_n_chiffres', { n: OTP_LENGTH });
       case 'identity':
-        if (!draft.firstName.trim()) return 'Votre prénom est requis.';
-        return draft.lastName.trim() ? null : 'Votre nom est requis.';
+        if (!draft.firstName.trim()) return tr('provider_register.prenom_requis');
+        return draft.lastName.trim() ? null : tr('provider_register.nom_requis');
       case 'email':
         return isPlausibleEmail(draft.email) ? null : 'Adresse email invalide.';
       case 'password':
         return password.length >= PASSWORD_MIN
           ? null
-          : `Le mot de passe doit compter au moins ${PASSWORD_MIN} caractères.`;
+          : tr('provider_register.mot_de_passe_trop_court', { n: PASSWORD_MIN });
       case 'kind':
-        return draft.providerKind ? null : 'Choisissez le type de compte.';
+        return draft.providerKind ? null : tr('provider_register.choisissez_le_type_de_compte');
       case 'company':
-        if (!draft.companyName.trim()) return 'La raison sociale est requise.';
+        if (!draft.companyName.trim()) return tr('provider_register.raison_sociale_requise');
         // Facultatif, mais s'il est saisi il doit être juste : c'est ce numéro que la
         // vérification d'entreprise soumettra aux registres officiels.
         if (draft.vatNumber.trim() && !isValidBusinessNumber(draft.vatNumber)) {
@@ -205,21 +205,21 @@ export function RegisterWizard() {
         }
         return null;
       case 'trade':
-        return draft.tradeId ? null : 'Choisissez votre métier.';
+        return draft.tradeId ? null : tr('provider_register.choisissez_votre_metier');
       case 'zones':
         return draft.zoneIds.length > 0
           ? null
-          : 'Choisissez au moins une zone : sans zone, aucune mission ne peut vous être proposée.';
+          : tr('provider_register.choisissez_au_moins_une_zone');
       case 'tradeQuestions': {
         const missing = (tradeFields ?? []).find(field => {
           if (!field.required || field.type === 'boolean') return false;
           const answer = draft.tradeAnswers[field.key];
           return answer === undefined || String(answer).trim() === '';
         });
-        return missing ? `« ${missing.label} » est requis.` : null;
+        return missing ? tr('provider_register.champ_requis', { champ: missing.label }) : null;
       }
       case 'terms':
-        return draft.acceptTerms ? null : 'Vous devez accepter les conditions pour continuer.';
+        return draft.acceptTerms ? null : tr('provider_register.conditions_a_accepter');
       default:
         return null;
     }
@@ -238,7 +238,7 @@ export function RegisterWizard() {
       }
     } catch {
       // Un registre injoignable ne bloque rien : la saisie manuelle reste ouverte.
-      setFormError('Recherche impossible pour le moment. Saisissez votre raison sociale.');
+      setFormError(tr('provider_register.recherche_impossible'));
     }
   };
 
@@ -247,7 +247,7 @@ export function RegisterWizard() {
     const phone = toE164(draft.phone);
 
     if (!isPlausibleE164(phone)) {
-      setFieldError('Numéro invalide. Exemple : 0470 12 34 56');
+      setFieldError(tr('provider_register.numero_invalide'));
       return;
     }
 
@@ -268,7 +268,7 @@ export function RegisterWizard() {
     setFormError(null);
 
     if (otp.length !== OTP_LENGTH) {
-      setFieldError(`Le code compte ${OTP_LENGTH} chiffres.`);
+      setFieldError(tr('provider_register.code_compte_n_chiffres', { n: OTP_LENGTH }));
       return;
     }
 
@@ -292,7 +292,7 @@ export function RegisterWizard() {
     // Le serveur refuse l'inscription sans jeton quand le captcha est actif : mieux vaut le dire
     // ici que laisser partir un appel voué à un 400.
     if (!captchaSkipped && !captchaToken) {
-      setFormError('Veuillez patienter, la vérification anti-robot est en cours.');
+      setFormError(tr('provider_register.verification_en_cours'));
       return;
     }
 
@@ -400,9 +400,9 @@ export function RegisterWizard() {
   );
 
   function primaryLabel(): string {
-    if (step === 'phone') return 'Recevoir le code';
+    if (step === 'phone') return tr('provider_register.recevoir_le_code');
     if (step === 'otp') return 'Vérifier';
-    if (isLast) return 'Créer mon compte';
+    if (isLast) return tr('provider_register.creer_mon_compte');
 
     return 'Continuer';
   }
@@ -439,7 +439,7 @@ export function RegisterWizard() {
         return (
           <Question
             title={tr('register_wizard.entrez_le_code_recu')}
-            hint={`Code à ${OTP_LENGTH} chiffres envoyé au ${draft.phone}.`}
+            hint={tr('provider_register.code_envoye_au', { n: OTP_LENGTH, numero: draft.phone })}
           >
             <TextInput
               label={tr('register_wizard.code_de_verification')}
@@ -463,7 +463,7 @@ export function RegisterWizard() {
 
       case 'identity':
         return (
-          <Question title={tr('register_wizard.comment_vous_appelez_vous')} hint="Ce nom sera visible par vos clients.">
+          <Question title={tr('register_wizard.comment_vous_appelez_vous')} hint={tr('provider_register.nom_visible_par_les_clients')}>
             <TextInput
               label={tr('register_wizard.prenom')}
               value={draft.firstName}
@@ -486,7 +486,7 @@ export function RegisterWizard() {
 
       case 'email':
         return (
-          <Question title={tr('register_wizard.votre_adresse_email')} hint="Elle sert à vous connecter et à recevoir vos documents.">
+          <Question title={tr('register_wizard.votre_adresse_email')} hint={tr('provider_register.email_sert_a')}>
             <TextInput
               label={tr('register_wizard.email')}
               value={draft.email}
@@ -505,7 +505,7 @@ export function RegisterWizard() {
         const strength = passwordStrength(password);
 
         return (
-          <Question title={tr('register_wizard.choisissez_un_mot_de_passe')} hint={`${PASSWORD_MIN} caractères minimum.`}>
+          <Question title={tr('register_wizard.choisissez_un_mot_de_passe')} hint={tr('provider_register.caracteres_minimum', { n: PASSWORD_MIN })}>
             <View style={kit.passwordWrapper}>
               <TextInput
                 label={tr('register_wizard.mot_de_passe')}
@@ -615,7 +615,7 @@ export function RegisterWizard() {
         return (
           <Question
             title={tr('register_wizard.quel_metier_exercez_vous')}
-            hint="Sans métier déclaré, aucune mission ne peut vous être proposée."
+            hint={tr('provider_register.sans_metier_aucune_mission')}
           >
             <TradePicker
               value={draft.tradeId}
@@ -633,7 +633,7 @@ export function RegisterWizard() {
         return (
           <Question
             title={tr('register_wizard.ou_intervenez_vous')}
-            hint="Vous ne recevrez que des missions situées dans les zones cochées."
+            hint={tr('provider_register.missions_dans_les_zones_cochees')}
           >
             <ZonePicker
               tradeId={draft.tradeId}
@@ -645,7 +645,7 @@ export function RegisterWizard() {
 
       case 'tradeQuestions':
         return (
-          <Question title={tr('register_wizard.quelques_precisions_sur_votre_metier')} hint="Elles servent à vous proposer les bonnes missions.">
+          <Question title={tr('register_wizard.quelques_precisions_sur_votre_metier')} hint={tr('provider_register.precisions_servent_a')}>
             <TradeQuestions
               fields={tradeFields ?? []}
               answers={draft.tradeAnswers}

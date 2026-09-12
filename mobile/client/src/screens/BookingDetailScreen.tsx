@@ -23,7 +23,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
 import { libelleStatut, formatDateHeure } from '@/lib/format';
 import { formatAdresse } from '@/format';
 import type { RootStackParamList } from '@/navigation/types';
-import { useTraduction } from '@/i18n';
+import { traduireMaintenant, useTraduction } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'BookingDetail'>;
 
@@ -43,13 +43,13 @@ function messageDeRefus(erreur: any): string {
 
   switch (erreur?.response?.status) {
     case 404:
-      return 'Aucun code n’est disponible pour le moment : le prestataire n’a pas encore démarré l’intervention.';
+      return traduireMaintenant('booking_detail.aucun_code_disponible');
     case 403:
-      return 'Ce code ne vous est pas destiné.';
+      return traduireMaintenant('booking_detail.code_pas_destine');
     case 429:
-      return 'Trop de demandes coup sur coup. Réessayez dans une minute.';
+      return traduireMaintenant('booking_detail.trop_de_demandes');
     default:
-      return 'Impossible d’obtenir le code pour le moment. Réessayez dans un instant.';
+      return traduireMaintenant('booking_detail.code_indisponible');
   }
 }
 
@@ -108,7 +108,7 @@ export function BookingDetailScreen({ route }: Props) {
     return (
       <Screen>
         <ErrorState
-          message="Impossible de charger cette réservation."
+          message={tr('booking_detail.reservation_illisible')}
           onRetry={() => void refetch()}
         />
       </Screen>

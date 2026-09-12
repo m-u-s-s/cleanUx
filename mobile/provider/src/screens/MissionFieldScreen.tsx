@@ -107,7 +107,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
           setExtraPrix('');
         },
         onError: (erreur: { message?: string }) =>
-          Alert.alert(tr('mission_field.impossible'), erreur.message ?? 'Le supplément n’a pas pu être proposé.'),
+          Alert.alert(tr('mission_field.impossible'), erreur.message ?? tr('mission_field.supplement_refuse')),
       },
     );
   }, [extraLabel, extraPrix, proposerUnExtra]);
@@ -344,7 +344,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
           // Le refus est dit, jamais une fiche vide : une fiche vide se lit comme une donnée
           // manquante et fait appeler le support pour rien.
           <Text style={styles.sectionHint} testID="fiche-acces-verrouillee">
-            {ficheDAcces?.message ?? 'Confirmez votre arrivée pour afficher les informations d’accès.'}
+            {ficheDAcces?.message ?? tr('mission_field.confirmez_votre_arrivee')}
           </Text>
         )}
       </View>
@@ -482,7 +482,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
             */}
             <Text style={styles.incidentMeta} testID={`extra-statut-${extra.id}`}>
               {extra.awaiting_client
-                ? 'En attente de réponse'
+                ? tr('mission_field.en_attente_de_reponse')
                 : extra.status === 'declined'
                   ? tr('mission_field.refuse_par_le_client')
                   : tr('mission_field.accepte_vous_pouvez_le_faire')}
