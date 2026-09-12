@@ -360,6 +360,13 @@
 
 @media (min-width: 900px) {
     .cx-bloc__entete { grid-template-columns: 5fr 6fr; gap: 3.5rem; }
+
+    /* Un bloc sur deux renverse l'ordre. `order` plutôt qu'un second gabarit :
+       le DOM garde l'image avant le texte, donc en une colonne elle reste
+       AU-DESSUS partout — l'inversion ne vaut qu'à deux colonnes. */
+    .cx-bloc__entete--inverse { grid-template-columns: 6fr 5fr; }
+    .cx-bloc__entete--inverse .cx-arg__image { order: 2; }
+    .cx-bloc__entete--inverse .cx-bloc__intro { order: 1; }
 }
 
 .cx-bloc__entete .cx-arg__image {

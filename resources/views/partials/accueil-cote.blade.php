@@ -57,10 +57,10 @@
              aria-labelledby="cx-bloc-{{ $cote }}-{{ $i }}">
         <div class="mx-auto max-w-7xl px-6">
 
-            {{-- L'en-tête du bloc : l'image à gauche, le titre à droite.
-                 Un bandeau pleine largeur écraserait le titre ; côte à côte, les deux
-                 se lisent d'un seul regard. --}}
-            <div class="cx-bloc__entete">
+            {{-- L'en-tête du bloc : l'image et le titre côte à côte — un bandeau pleine
+                 largeur écraserait le titre. L'image CHANGE DE CÔTÉ un bloc sur deux :
+                 trois en-têtes identiques d'affilée donnent une page qui piétine. --}}
+            <div class="cx-bloc__entete @if ($i % 2) cx-bloc__entete--inverse @endif">
                 <x-accueil.illustration :nom="$illustrations[$i] ?? $illustrations[0]" :alt="$bloc['titre']" />
                 <div class="cx-bloc__intro">
                     @if (! empty($bloc['surtitre']))
