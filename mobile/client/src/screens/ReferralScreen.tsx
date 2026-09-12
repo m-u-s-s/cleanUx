@@ -177,9 +177,7 @@ export function ReferralScreen() {
         <View style={[styles.tierCard, { backgroundColor: themeColors.card }]}>
           <Text style={styles.tierName}>{stats.current_tier.name}</Text>
           {remainingForNext != null && stats.next_tier != null && remainingForNext > 0 && (
-            <Text style={styles.tierNext}>
-              Encore {remainingForNext} parrainage(s) pour atteindre {stats.next_tier.name}
-            </Text>
+            <Text style={styles.tierNext}>{tr('referral.encore_n_parrainages_pour_atteindre', { n: remainingForNext, palier: stats.next_tier.name })}</Text>
           )}
         </View>
       )}
@@ -197,11 +195,11 @@ export function ReferralScreen() {
         */}
         <Step
           number={2}
-          text={`Ils obtiennent ${recompense(stats?.rewards?.referee_amount, stats?.rewards?.currency)} de réduction sur leur 1er service`}
+          text={tr('referral.filleul_obtient_reduction', { montant: recompense(stats?.rewards?.referee_amount, stats?.rewards?.currency) })}
         />
         <Step
           number={3}
-          text={`Vous recevez ${recompense(stats?.rewards?.referrer_amount, stats?.rewards?.currency)} de crédit quand ils réservent`}
+          text={tr('referral.vous_recevez_credit', { montant: recompense(stats?.rewards?.referrer_amount, stats?.rewards?.currency) })}
         />
       </View>
     </Screen>

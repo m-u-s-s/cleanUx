@@ -64,12 +64,12 @@ const BOOKING_MODES: BookingMode[] = [
   },
   {
     key: 'bundle',
-    title: 'Plusieurs services',
+    title: traduireMaintenant('home_actions.plusieurs_services'),
     hint: traduireMaintenant('home_actions.un_chantier_regroupant_plusieurs_metiers'),
     icon: 'layers-outline',
     navigate: go => go('EmbeddedModule', {
       path: '/commander?mode=bundle',
-      title: 'Chantier multi-services',
+      title: traduireMaintenant('home_actions.chantier_multi_services'),
     }),
   },
 ];

@@ -93,7 +93,7 @@ export function CompanyDispatchScreen() {
           text: e.name,
           onPress: () => assignerLEquipe.mutate({ missionId: mission.id, teamId: e.id }),
         })),
-        { text: 'Annuler', style: 'cancel' as const },
+        { text: tr('commun.annuler'), style: 'cancel' as const },
       ],
     );
   }
@@ -151,7 +151,7 @@ export function CompanyDispatchScreen() {
           >
             <Text style={styles.toggle}>
               {reglages?.auto_assign_enabled ? '✓ ' : '· '}
-              Assigner automatiquement chaque nouvelle mission
+              {tr('company_dispatch.assigner_automatiquement')}
             </Text>
           </Pressable>
         </View>
@@ -191,7 +191,7 @@ export function CompanyDispatchScreen() {
                 et le répartiteur choisissait à l'aveugle. Le détail montre qui est libre.
               */}
               <Button
-                label={item.lead ? 'Réassigner' : 'Assigner'}
+                label={item.lead ? tr('company_dispatch.reassigner') : tr('company_dispatch.assigner')}
                 size="sm"
                 variant="secondary"
                 onPress={() => navigation.navigate('CompanyMissionDetail', { missionId: item.id })}

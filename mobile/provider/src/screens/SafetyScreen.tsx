@@ -138,10 +138,7 @@ export function SafetyScreen() {
             testID="bouton-veille"
           />
 
-          <Text style={styles.note}>
-            En cas de danger immédiat, appelez d’abord les secours. Cette alerte prévient l’équipe
-            de la plateforme et, en cas d’urgence, votre contact d’urgence.
-          </Text>
+          <Text style={styles.note}>{tr('safety.en_cas_de_danger_immediat_appelez_d')}</Text>
         </View>
       )}
     </Screen>

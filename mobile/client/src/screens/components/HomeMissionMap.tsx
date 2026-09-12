@@ -53,7 +53,7 @@ export function HomeMissionMap({ bookingId }: { bookingId: number }) {
     ? 'Intervention en cours'
     : session?.status === 'arrived'
       ? tr('home_mission_map.votre_prestataire_est_arrive')
-      : eta != null ? `Arrivée dans ~${eta} min` : null;
+      : eta != null ? tr('home_mission_map.arrivee_dans_n_min', { n: eta }) : null;
 
   return (
     <View style={styles.wrap} testID="home-mission-map">

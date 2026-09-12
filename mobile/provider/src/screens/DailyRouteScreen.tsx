@@ -58,8 +58,8 @@ export function DailyRouteScreen() {
       <Text style={styles.title}>{tr('daily_route.ma_journee')}</Text>
       <Text style={styles.intro}>
         {tournee
-          ? `${tournee.missions_count} intervention(s) · ${tournee.total_travel_km} km de trajet`
-          : 'Chargement…'}
+          ? tr('daily_route.n_interventions_km_de_trajet', { n: tournee.missions_count, km: tournee.total_travel_km })
+          : tr('daily_route.chargement')}
       </Text>
 
       {(tournee?.tight_transitions ?? 0) > 0 && (
@@ -67,8 +67,7 @@ export function DailyRouteScreen() {
         // route.
         <View style={styles.avertissement} testID="enchainements-serres">
           <Text style={styles.avertissementTexte}>
-            {tournee?.tight_transitions} enchaînement(s) ne tiennent pas. Prévenez le client avant de
-            partir.
+            {tr('daily_route.enchainements_ne_tiennent_pas', { n: tournee?.tight_transitions ?? 0 })}
           </Text>
         </View>
       )}
@@ -86,8 +85,8 @@ export function DailyRouteScreen() {
                 ↓ {item.travel_km} km · {item.travel_minutes} min
                 {item.slack_minutes !== null &&
                   (item.slack_minutes >= 0
-                    ? ` · ${item.slack_minutes} min de battement`
-                    : ` · ${Math.abs(item.slack_minutes)} min de retard prévisible`)}
+                    ? ` · ${tr('daily_route.n_min_de_battement', { n: item.slack_minutes })}`
+                    : ` · ${tr('daily_route.n_min_de_retard_previsible', { n: Math.abs(item.slack_minutes) })}`)}
               </Text>
             )}
 
@@ -119,9 +118,7 @@ export function DailyRouteScreen() {
       {tournee && (
         // L'approximation est ANNONCÉE : prétendre à une durée exacte sans service de routage serait
         // mentir, et un temps sous-estimé ferait rater le rendez-vous suivant.
-        <Text style={styles.note}>
-          Trajets estimés à {tournee.assumed_speed_kmh} km/h en moyenne, à vol d'oiseau majoré.
-        </Text>
+        <Text style={styles.note}>{tr('daily_route.trajets_estimes_a_n_kmh', { n: tournee.assumed_speed_kmh })}</Text>
       )}
     </Screen>
   );

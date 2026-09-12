@@ -68,7 +68,7 @@ export function ProviderCompanyNavigator() {
         component={CompanyOverviewScreen}
         options={{
           title: traduireMaintenant('provider_company_navigator.ma_societe'),
-          tabBarLabel: 'Accueil',
+          tabBarLabel: traduireMaintenant('provider_company_navigator.accueil'),
           tabBarIcon: ({ color, size }) => <Icon name="business-outline" size={size} color={color} />,
         }}
       />
@@ -77,8 +77,8 @@ export function ProviderCompanyNavigator() {
           name="CompanyDispatchTab"
           component={CompanyDispatchScreen}
           options={{
-            title: 'Répartition',
-            tabBarLabel: 'Répartition',
+            title: traduireMaintenant('provider_company_navigator.repartition'),
+            tabBarLabel: traduireMaintenant('provider_company_navigator.repartition'),
             tabBarIcon: ({ color, size }) => <Icon name="git-branch-outline" size={size} color={color} />,
           }}
         />
@@ -89,7 +89,7 @@ export function ProviderCompanyNavigator() {
           component={CompanyFieldTeamsScreen}
           options={{
             title: traduireMaintenant('provider_company_navigator.equipes_terrain'),
-            tabBarLabel: 'Équipes',
+            tabBarLabel: traduireMaintenant('provider_company_navigator.equipes'),
             tabBarIcon: ({ color, size }) => <Icon name="people-outline" size={size} color={color} />,
           }}
         />
@@ -98,8 +98,8 @@ export function ProviderCompanyNavigator() {
         name="CompanyTasksTab"
         component={CompanyTasksScreen}
         options={{
-          title: 'Tâches',
-          tabBarLabel: 'Tâches',
+          title: traduireMaintenant('provider_company_navigator.taches'),
+          tabBarLabel: traduireMaintenant('provider_company_navigator.taches_2'),
           tabBarIcon: ({ color, size }) => <Icon name="checkbox-outline" size={size} color={color} />,
         }}
       />
@@ -107,8 +107,8 @@ export function ProviderCompanyNavigator() {
         name="CompanyChannelsTab"
         component={CompanyChannelsScreen}
         options={{
-          title: 'Canaux',
-          tabBarLabel: 'Canaux',
+          title: traduireMaintenant('provider_company_navigator.canaux'),
+          tabBarLabel: traduireMaintenant('provider_company_navigator.canaux_2'),
           tabBarIcon: ({ color, size }) => <Icon name="chatbubbles-outline" size={size} color={color} />,
         }}
       />
@@ -124,7 +124,7 @@ export function ProviderCompanyNavigator() {
         component={CompanyProfileScreen}
         options={{
           title: traduireMaintenant('provider_company_navigator.mon_compte'),
-          tabBarLabel: 'Profil',
+          tabBarLabel: traduireMaintenant('provider_company_navigator.profil'),
           tabBarIcon: ({ color, size }) => <Icon name="person-outline" size={size} color={color} />,
         }}
       />

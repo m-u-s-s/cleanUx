@@ -43,7 +43,7 @@ export function ProviderDisputesScreen() {
             <Pressable
               style={styles.card}
               accessibilityRole="button"
-              accessibilityLabel={`Ouvrir le litige ${item.id}`}
+              accessibilityLabel={tr('provider_disputes.ouvrir_le_litige_n', { id: item.id })}
               onPress={() => navigation.navigate('ProviderDisputeDetail', { disputeId: item.id })}
             >
               <Text style={styles.cardTitle}>Litige #{item.id}</Text>

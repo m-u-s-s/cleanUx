@@ -23,7 +23,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'OnSite'>;
 
@@ -141,9 +141,7 @@ export function OnSiteScreen({ route }: Props) {
         Le compteur se rend nul de lui-même sur toute prestation au forfait.
       */}
       {fil.estimated_end_at && (
-        <Text style={styles.finEstimee}>
-          Fin estimée vers {heure(fil.estimated_end_at)}
-        </Text>
+        <Text style={styles.finEstimee}>{tr('on_site.fin_estimee_vers', { heure: heure(fil.estimated_end_at) })}</Text>
       )}
 
       <MissionClockBar
@@ -156,16 +154,13 @@ export function OnSiteScreen({ route }: Props) {
           distrait sur un écran qu'on consulte d'une main.
         */
         onExtend={prolongation?.allowed ? () => setChoixOuvert((ouvert) => !ouvert) : undefined}
-        extendLabel={choixOuvert ? 'Fermer' : 'Prolonger'}
+        extendLabel={choixOuvert ? tr('commun.fermer') : 'Prolonger'}
       />
 
       {choixOuvert && prolongation?.allowed ? (
         <View style={styles.prolongation} testID="panneau-prolongation">
           <Text style={styles.prolongationTitre}>{tr('on_site.ajouter_du_temps')}</Text>
-          <Text style={styles.prolongationNote}>
-            Au tarif normal, sans majoration. Le montant s’ajoute à votre facture ; seules les
-            heures réellement prestées sont dues.
-          </Text>
+          <Text style={styles.prolongationNote}>{tr('on_site.au_tarif_normal_sans_majoration_le_montant')}</Text>
 
           <View style={styles.prolongationChoix}>
             {prolongation.options.map((option) => (
@@ -341,7 +336,7 @@ function BandeDePhotos({ legende, photos }: { legende: string; photos: OnSiteMed
             key={photo.id}
             source={{ uri: photo.url ?? undefined }}
             style={styles.vignette}
-            accessibilityLabel={`${photo.label} de votre intervention`}
+            accessibilityLabel={traduireMaintenant('on_site.photo_de_votre_intervention', { libelle: photo.label })}
           />
         ))}
       </ScrollView>

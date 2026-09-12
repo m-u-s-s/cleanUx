@@ -74,7 +74,7 @@ export const MissionSheet = forwardRef<GorhomBottomSheet, MissionSheetProps>(
               <Text style={styles.attenteTexte}>
                 {enAttente === 1
                   ? tr('mission.1_chose_attend_votre_reponse')
-                  : `${enAttente} choses attendent votre réponse`}
+                  : tr('mission.n_choses_attendent_votre_reponse', { n: enAttente })}
               </Text>
             </View>
           ) : null}
@@ -82,7 +82,7 @@ export const MissionSheet = forwardRef<GorhomBottomSheet, MissionSheetProps>(
           <View style={styles.resume}>
             {fil?.progress && fil.progress.total > 0 ? (
               <Badge
-                label={`${fil.progress.done}/${fil.progress.total} tâches`}
+                label={tr('mission.n_taches_sur_total', { faites: fil.progress.done, total: fil.progress.total })}
                 variant={fil.progress.percent === 100 ? 'success' : 'brand'}
               />
             ) : null}
@@ -90,7 +90,7 @@ export const MissionSheet = forwardRef<GorhomBottomSheet, MissionSheetProps>(
               <Text style={styles.resumeTexte}>
                 {tachesOuvertes === 1
                   ? tr('mission.1_tache_de_votre_liste_reste_a')
-                  : `${tachesOuvertes} tâches de votre liste restent à faire`}
+                  : tr('mission.n_taches_restent_a_faire', { n: tachesOuvertes })}
               </Text>
             ) : (
               <Text style={styles.resumeTexte}>{tr('mission.votre_liste_est_a_jour')}</Text>

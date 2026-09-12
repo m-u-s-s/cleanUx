@@ -104,9 +104,9 @@ export function MissionDetailScreen({ route }: Props) {
     const action = typeof payload === 'string' ? payload : payload.action;
 
     Alert.alert(label, `Confirmer "${label}" ?`, [
-      { text: 'Annuler', style: 'cancel' },
+      { text: tr('commun.annuler'), style: 'cancel' },
       {
-        text: 'Confirmer',
+        text: tr('commun.confirmer'),
         onPress: () =>
           lifecycle.mutate(payload, {
             onSuccess: (resultat) => {
@@ -166,19 +166,19 @@ export function MissionDetailScreen({ route }: Props) {
         colonnes={2}
         cases={[
           {
-            libelle: 'Date',
+            libelle: tr('mission_detail.date'),
             valeur: formatDateHeure(mission.scheduled_date, mission.scheduled_time),
             ton: 'accent',
           },
           ...(mission.engine === 'horaire' && mission.purchased_minutes
             ? [{
-                libelle: 'Achetées',
+                libelle: tr('mission_detail.achetees'),
                 valeur: formatHeuresAchetees(mission.purchased_minutes),
                 ton: 'accent' as const,
               }]
             : []),
           ...(mission.total_price != null
-            ? [{ libelle: 'Prix', valeur: formatMontant(mission.total_price), ton: 'bon' as const }]
+            ? [{ libelle: tr('mission_detail.prix'), valeur: formatMontant(mission.total_price), ton: 'bon' as const }]
             : []),
         ]}
         style={styles.grille}
@@ -191,11 +191,11 @@ export function MissionDetailScreen({ route }: Props) {
         pourtant elle qui dit si deborder d'un quart d'heure lui coute quelque chose.
       */}
       {mission.hourly_rule?.applies && mission.hourly_rule.hourly_rate_cents ? (
-        <Text style={[styles.regleHoraire, { color: themeColors.textSecondary }]} testID="regle-horaire">
-          {formatMontant(mission.hourly_rule.hourly_rate_cents / 100)} de l’heure ·{' '}
-          {mission.hourly_rule.grace_minutes} min de tolérance, puis ×
-          {String(mission.hourly_rule.overtime_multiplier).replace('.', ',')}
-        </Text>
+        <Text style={[styles.regleHoraire, { color: themeColors.textSecondary }]} testID="regle-horaire">{tr('mission_detail.tarif_horaire_et_tolerance', {
+                      montant: formatMontant(mission.hourly_rule.hourly_rate_cents / 100),
+                      grace: mission.hourly_rule.grace_minutes ?? 0,
+                      multiplicateur: String(mission.hourly_rule.overtime_multiplier).replace('.', ','),
+                    })}</Text>
       ) : null}
 
       <View style={[styles.card, { backgroundColor: themeColors.card }]}>
@@ -212,7 +212,7 @@ export function MissionDetailScreen({ route }: Props) {
           <>
             <Divider />
             <DetailRow
-              label="Destination"
+              label={tr('mission_detail.destination')}
               value={
                 mission.dropoff.distance_m
                   ? `${mission.dropoff.address} · ${(mission.dropoff.distance_m / 1000).toFixed(1)} km`
@@ -374,7 +374,7 @@ export function MissionDetailScreen({ route }: Props) {
                   // lorsqu'aucun code de fin n'est en attente, et la refuse sinon — avec un
                   // message désormais visible.
                   endCode.length === 6 ? { action: 'complete', code: endCode } : 'complete',
-                  'Terminer',
+                  tr('commun.terminer'),
                 )
               }
               variant="danger"
@@ -415,13 +415,13 @@ function messageDeCloture(payout?: MissionPayoutAnnouncement | null): string {
   const felicitations = traduireMaintenant('mission_detail.felicitations_vous_avez_fini_votre_mission');
 
   if (!payout) {
-    return `${felicitations} Le montant vous sera transféré selon votre calendrier de versement habituel.`;
+    return `${felicitations} ${traduireMaintenant('mission_detail.montant_transfere_calendrier_habituel')}`;
   }
 
   // Le serveur envoie `devise` depuis toujours ; l'ecran la jetait et comptait en euros.
   const montant = formatMontant(payout.montant_prestataire, payout.devise);
 
-  return `${felicitations} ${montant} seront transférés sur votre compte le ${dateFr(payout.date_transfert)}.`;
+  return `${felicitations} ${traduireMaintenant('mission_detail.montant_transfere_le', { montant, date: dateFr(payout.date_transfert) })}`;
 }
 
 /** « 2026-08-19 » → « 19/08/2026 ». Formatage manuel : Intl est incomplet sous Hermes/Android. */

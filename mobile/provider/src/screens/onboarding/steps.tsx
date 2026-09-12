@@ -202,7 +202,7 @@ export function ContractStep({ onDone, submitting, error }: StepProps) {
 
 Je reconnais intervenir en qualité d'indépendant ou pour le compte de ma société, et non comme salarié de la plateforme. Je reste responsable de mes obligations sociales et fiscales, ainsi que de la validité des assurances couvrant mon activité.
 
-Je mtr('steps.engage_a_ne_sous_traiter_aucune_mission')accède au domicile ou sur le site du client.`}
+Je m'engage à ne sous-traiter aucune mission sans accord préalable, et à respecter la confidentialité des informations auxquelles j'accède au domicile ou sur le site du client.`}
         </Text>
       </ScrollView>
 
@@ -333,11 +333,9 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
 
       {refused ? (
         <View style={styles.notice}>
-          <Text style={styles.noticeText} testID="kyc-refused">
-            Votre vérification n'a pas abouti
-            {status?.rejection_reason ? ` : ${status.rejection_reason}` : ''}. Vous pouvez la
-            relancer.
-          </Text>
+          <Text style={styles.noticeText} testID="kyc-refused">{tr('steps.verification_n_a_pas_abouti', {
+            motif: status?.rejection_reason ? ` : ${status.rejection_reason}` : '',
+          })}</Text>
         </View>
       ) : null}
 
@@ -513,9 +511,7 @@ export function DocumentsStep({ onDone, submitting, error }: StepProps) {
             {requirement.help ? <Text style={styles.documentHelp}>{requirement.help}</Text> : null}
 
             {rejected && document?.rejection_reason ? (
-              <Text style={styles.documentRejected} testID={`document-rejected-${requirement.type}`}>
-                Refusé : {document.rejection_reason}
-              </Text>
+              <Text style={styles.documentRejected} testID={`document-rejected-${requirement.type}`}>{tr('steps.refuse_motif', { motif: document.rejection_reason })}</Text>
             ) : null}
 
             {document && !rejected ? (
@@ -783,10 +779,7 @@ export function VehicleStep({ onDone, submitting, error }: StepProps) {
       ) : null}
 
       {data && !data.registration_document_uploaded ? (
-        <Text style={styles.stepHint}>
-          Pensez à déposer le certificat d’immatriculation à l’étape « justificatifs » : c’est lui qui
-          atteste la date.
-        </Text>
+        <Text style={styles.stepHint}>{tr('steps.pensez_a_deposer_le_certificat_d_immatriculation')}</Text>
       ) : null}
 
       <StepError error={localError ?? error} />

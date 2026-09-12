@@ -150,10 +150,7 @@ export function JourneyBuilderScreen() {
       */}
       {data?.trade.is_route_service ? (
         <View style={[styles.verdict, styles.verdictOk]}>
-          <Text style={styles.verdictTexte} testID="verdict-trajet">
-            Service de trajet : départ et arrivée posés. La mission se déroulera sans code, et le
-            prestataire devra fournir son permis de conduire.
-          </Text>
+          <Text style={styles.verdictTexte} testID="verdict-trajet">{tr('journey_builder.service_de_trajet_depart_et_arrivee_poses')}</Text>
         </View>
       ) : null}
 
@@ -269,8 +266,8 @@ function QuestionCard({
         <LigneActions
           sujet={question.label}
           actions={[
-            ...(premier ? [] : [{ cle: 'up', libelle: 'Monter', executer: onMonter }]),
-            ...(dernier ? [] : [{ cle: 'down', libelle: 'Descendre', executer: onDescendre }]),
+            ...(premier ? [] : [{ cle: 'up', libelle: tr('journey_builder.monter'), executer: onMonter }]),
+            ...(dernier ? [] : [{ cle: 'down', libelle: tr('journey_builder.descendre'), executer: onDescendre }]),
             { cle: 'remove', libelle: tr('journey_builder.retirer_du_parcours'), destructive: true, executer: onRetirer },
           ]}
         />
@@ -294,7 +291,7 @@ function QuestionCard({
               onChangeText={setNouvelleReponse}
               placeholder={tr('journey_builder.ajouter_une_reponse')}
               placeholderTextColor={colors.surface[400]}
-              accessibilityLabel={`Ajouter une réponse à ${question.label}`}
+              accessibilityLabel={tr('journey_builder.ajouter_une_reponse_a', { question: question.label })}
               style={styles.champReponse}
               onSubmitEditing={() => {
                 if (nouvelleReponse.trim() !== '') {
@@ -305,10 +302,7 @@ function QuestionCard({
             />
           </View>
 
-          <Text style={styles.aide}>
-            Le supplément d’une réponse ne s’ajoute que si le client la choisit. Un montant négatif
-            retire du prix.
-          </Text>
+          <Text style={styles.aide}>{tr('journey_builder.le_supplement_d_une_reponse_ne_s')}</Text>
         </View>
       ) : null}
     </View>
@@ -356,7 +350,7 @@ function ReponseLigne({
 
       <LigneActions
         sujet={option.label}
-        actions={[{ cle: 'remove', libelle: 'Retirer', destructive: true, executer: onRetirer }]}
+        actions={[{ cle: 'remove', libelle: tr('journey_builder.retirer'), destructive: true, executer: onRetirer }]}
       />
     </View>
   );

@@ -113,7 +113,7 @@ export function DisputesScreen() {
     <Screen>
       <View style={styles.headerRow}>
         <Text style={styles.title}>{tr('disputes.mes_litiges')}</Text>
-        <Button label={showForm ? 'Fermer' : tr('disputes.ouvrir_un_litige')} size="sm" onPress={() => setShowForm(v => !v)} />
+        <Button label={showForm ? tr('commun.fermer') : tr('disputes.ouvrir_un_litige')} size="sm" onPress={() => setShowForm(v => !v)} />
       </View>
 
       {showForm && (

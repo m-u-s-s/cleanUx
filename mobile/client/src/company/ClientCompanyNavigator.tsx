@@ -42,7 +42,7 @@ export function ClientCompanyNavigator() {
         component={CompanyOverviewScreen}
         options={{
           title: traduireMaintenant('client_company_navigator.mon_entreprise'),
-          tabBarLabel: 'Accueil',
+          tabBarLabel: traduireMaintenant('client_company_navigator.accueil'),
           tabBarIcon: ({ color, size }) => <Icon name="business-outline" size={size} color={color} />,
         }}
       />
@@ -51,7 +51,7 @@ export function ClientCompanyNavigator() {
         component={CompanySitesScreen}
         options={{
           title: traduireMaintenant('client_company_navigator.mes_locaux'),
-          tabBarLabel: 'Locaux',
+          tabBarLabel: traduireMaintenant('client_company_navigator.locaux'),
           tabBarIcon: ({ color, size }) => <Icon name="location-outline" size={size} color={color} />,
         }}
       />
@@ -68,8 +68,8 @@ export function ClientCompanyNavigator() {
         name="CompanyBillingTab"
         component={CompanyBillingScreen}
         options={{
-          title: 'Facturation',
-          tabBarLabel: 'Facturation',
+          title: traduireMaintenant('client_company_navigator.facturation'),
+          tabBarLabel: traduireMaintenant('client_company_navigator.facturation_2'),
           tabBarIcon: ({ color, size }) => <Icon name="receipt-outline" size={size} color={color} />,
         }}
       />
@@ -84,7 +84,7 @@ export function ClientCompanyNavigator() {
         component={CompanyProfileScreen}
         options={{
           title: traduireMaintenant('client_company_navigator.mon_compte'),
-          tabBarLabel: 'Profil',
+          tabBarLabel: traduireMaintenant('client_company_navigator.profil'),
           tabBarIcon: ({ color, size }) => <Icon name="person-outline" size={size} color={color} />,
         }}
       />

@@ -383,7 +383,7 @@ function SummaryBlock({ summary: { summary, payment_health } }: SummaryBlockProp
   const { currency_symbol: sym, outstanding_total, next_due_at } = summary;
 
   const nextDueLabel = next_due_at
-    ? `Prochaine échéance : ${next_due_at.substring(0, 10)}`
+    ? tr('invoices.prochaine_echeance', { date: next_due_at.substring(0, 10) })
     : undefined;
 
   return (
@@ -476,7 +476,7 @@ const InvoiceRow = React.memo(function InvoiceRow({ invoice, onPress }: InvoiceR
 
   const balanceDue =
     invoice.balance_due != null && invoice.balance_due > 0
-      ? `Solde dû : ${formatMontant(invoice.balance_due, invoice.currency)}`
+      ? traduireMaintenant('invoices.solde_du', { montant: formatMontant(invoice.balance_due, invoice.currency) })
       : null;
 
   const isOverdue = invoice.effective_status === 'overdue';
@@ -501,15 +501,13 @@ const InvoiceRow = React.memo(function InvoiceRow({ invoice, onPress }: InvoiceR
         </View>
 
         {invoice.due_at && (
-          <Text style={styles.dueAt}>Échéance : {invoice.due_at}</Text>
+          <Text style={styles.dueAt}>{traduireMaintenant('invoices.echeance_date', { date: invoice.due_at })}</Text>
         )}
 
         {/* 9. Overdue warning label */}
         {isOverdue && (
           <View style={styles.overdueWarning}>
-            <Text style={styles.overdueWarningText}>
-              ⚠ Cette facture est en retard de paiement
-            </Text>
+            <Text style={styles.overdueWarningText}>{traduireMaintenant('invoices.cette_facture_est_en_retard_de_paiement')}</Text>
           </View>
         )}
       </View>

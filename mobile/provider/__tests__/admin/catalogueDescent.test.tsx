@@ -98,7 +98,10 @@ describe('catalogue mobile — ce que les écrans promettent', () => {
 
     // Même exigence que sur le web : un écran exact mais pas branché doit le dire, sinon on croit
     // la fonctionnalité acquise. C'est le mode d'échec le plus probable, et il est silencieux.
-    expect(ecran).toContain('n’a pas encore d’effet sur ce que voit un client');
+    // Le bandeau vit desormais dans le catalogue : on verifie la cle ET ce qu'elle rend.
+    expect(ecran).toContain("tr('catalog_zone_trades.ouverture_sans_effet_sur_le_client')");
+    expect(fr['catalog_zone_trades.ouverture_sans_effet_sur_le_client'])
+      .toContain('n’a pas encore d’effet sur ce que voit un client');
   });
 
   it('le cloisonnement par pays passe par le filtre serveur', () => {
@@ -123,7 +126,8 @@ describe('catalogue mobile — ce que les écrans promettent', () => {
     // Le libellé vit désormais dans le catalogue : on vérifie la clé ET ce qu'elle rend.
     expect(ecran).toContain("tr('catalog_countries.ajouter_un_pays')");
     expect(fr['catalog_countries.ajouter_un_pays']).toBe('Ajouter un pays');
-    expect(ecran).toContain("libelle: 'Supprimer', destructive: true");
+    expect(ecran).toContain("traduireMaintenant('catalog_countries.supprimer'), destructive: true");
+    expect(fr['catalog_countries.supprimer']).toBe('Supprimer');
   });
 
   it('toute action destructive passe par une confirmation', () => {
@@ -186,7 +190,9 @@ describe('constructeur de parcours — mobile', () => {
     // La raison d'être de cet écran : un supplément qui ne s'applique que si le client choisit
     // cette réponse. Posé sur la question, il s'appliquerait aussi à « Non ».
     expect(ecran).toContain('price_modifier_euros');
-    expect(ecran).toContain('ne s’ajoute que si le client la choisit');
+    expect(ecran).toContain("tr('journey_builder.le_supplement_d_une_reponse_ne_s')");
+    expect(fr['journey_builder.le_supplement_d_une_reponse_ne_s'])
+      .toContain('ne s’ajoute que si le client la choisit');
   });
 
   it('le verdict de publication est affiché', () => {

@@ -32,7 +32,7 @@ export function CompanyContractsScreen() {
         <EmptyState
           title={tr('company_contracts.contrats_indisponibles')}
           message={tr('company_contracts.impossible_de_charger_les_contrats_de_votre')}
-          actionLabel="Réessayer"
+          actionLabel={tr('company_contracts.reessayer')}
           onAction={() => void refetch()}
         />
       </Screen>
@@ -56,7 +56,7 @@ export function CompanyContractsScreen() {
               </Text>
               <Text style={styles.detail} numberOfLines={1}>
                 {item.provider ?? tr('company_contracts.prestataire_non_renseigne')}
-                {item.effective_from ? ` · dès le ${item.effective_from}` : ''}
+                {item.effective_from ? ` · ${tr('company_contracts.des_le', { date: item.effective_from })}` : ''}
                 {item.payment_terms_days ? ` · paiement ${item.payment_terms_days} j` : ''}
               </Text>
             </View>

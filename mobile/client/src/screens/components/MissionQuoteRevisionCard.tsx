@@ -8,7 +8,7 @@ import type { QuoteRevision } from '@/booking/onsite';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 /**
  * LE NOUVEAU DEVIS, VU DU SALON.
@@ -74,7 +74,7 @@ export function MissionQuoteRevisionCard({ bookingId }: { bookingId: number }) {
         <View style={styles.choix} testID="revision-choix">
           <Text style={styles.choixTitre}>{tr('mission_quote_revision.que_voulez_vous_faire')}</Text>
           <Text style={styles.choixNote}>
-            Arrêter met fin à l’intervention. Le prestataire n’a pas commencé : vous ne payez rien.
+            {tr('mission_quote_revision.arreter_met_fin_a_l_intervention')}
           </Text>
 
           <Button
@@ -137,8 +137,8 @@ function RemiseAppliquee({
 
   return (
     <Text style={styles.remise} testID="revision-remise">
-      Votre code {promo.code} reste appliqué
-      {typeof promo.discount_cents === 'number' ? ` — ${formatCentimes(promo.discount_cents, devise)} de remise` : ''}.
+      {traduireMaintenant('mission_quote_revision.votre_code_reste_applique', { code: promo.code })}
+      {typeof promo.discount_cents === 'number' ? ` — ${traduireMaintenant('mission_quote_revision.n_de_remise', { montant: formatCentimes(promo.discount_cents, devise) })}` : ''}.
     </Text>
   );
 }

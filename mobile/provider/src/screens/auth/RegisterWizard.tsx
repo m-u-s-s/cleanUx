@@ -404,7 +404,7 @@ export function RegisterWizard() {
     if (step === 'otp') return 'Vérifier';
     if (isLast) return tr('provider_register.creer_mon_compte');
 
-    return 'Continuer';
+    return tr('commun.continuer');
   }
 
   function primaryAction(): () => void {
@@ -474,7 +474,7 @@ export function RegisterWizard() {
               testID="register-first-name"
             />
             <TextInput
-              label="Nom"
+              label={tr('register_wizard.nom')}
               value={draft.lastName}
               onChangeText={t => patch({ lastName: t })}
               autoComplete="family-name"
@@ -494,7 +494,7 @@ export function RegisterWizard() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
-              placeholder="votre@email.com"
+              placeholder={tr('auth.exemple_email')}
               autoFocus
               testID="register-email"
             />
@@ -670,11 +670,11 @@ export function RegisterWizard() {
             >
               <View style={[kit.checkbox, draft.acceptTerms && kit.checkboxChecked]} />
               <Text style={kit.termsText}>
-                J'accepte les{' '}
+                {tr('auth.j_accepte_les')}{' '}
                 <Text style={kit.termsLink} onPress={() => navigation.navigate('Legal', { type: 'terms' })}>
                   {tr('register_wizard.conditions_d_utilisation')}
                 </Text>
-                {' '}et la{' '}
+                {' '}{tr('auth.et_la')}{' '}
                 <Text style={kit.termsLink} onPress={() => navigation.navigate('Legal', { type: 'privacy' })}>
                   {tr('register_wizard.politique_de_confidentialite')}
                 </Text>

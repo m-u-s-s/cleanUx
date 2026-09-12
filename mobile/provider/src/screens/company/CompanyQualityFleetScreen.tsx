@@ -85,9 +85,10 @@ export function CompanyQualityFleetScreen() {
         <View style={styles.alerte} testID="echeances">
           <Text style={styles.alerteTitre}>{tr('company_quality_fleet.echeances')}</Text>
           {(flotte?.expiring ?? []).map((echeance) => (
-            <Text key={echeance.id} style={styles.alerteTexte}>
-              {echeance.certification_type} — expire le {echeance.expires_at ?? 'date inconnue'}
-            </Text>
+            <Text key={echeance.id} style={styles.alerteTexte}>{tr('company_quality_fleet.certification_expire_le', {
+                    type: echeance.certification_type,
+                    date: echeance.expires_at ?? tr('company_quality_fleet.date_inconnue'),
+                  })}</Text>
           ))}
         </View>
       )}
@@ -103,11 +104,11 @@ export function CompanyQualityFleetScreen() {
             <View style={styles.ligne} testID={`score-${item.user_id}`}>
               <View style={styles.identite}>
                 <Text style={styles.nom} numberOfLines={1}>
-                  {item.name ?? 'Sans nom'}
+                  {item.name ?? tr('company_quality_fleet.sans_nom')}
                 </Text>
                 <Text style={styles.detail} numberOfLines={1}>
-                  {item.missions_count} mission(s)
-                  {item.punctuality_score !== null ? ` · ponctualité ${item.punctuality_score} %` : ''}
+                  {tr('company_quality_fleet.n_missions', { n: item.missions_count })}
+                  {item.punctuality_score !== null ? ` · ${tr('company_quality_fleet.ponctualite_n', { n: item.punctuality_score })}` : ''}
                 </Text>
               </View>
 
@@ -138,7 +139,7 @@ export function CompanyQualityFleetScreen() {
             <View key={vehicule.id} style={styles.ligne} testID={`vehicule-${vehicule.id}`}>
               <View style={styles.identite}>
                 <Text style={styles.nom} numberOfLines={1}>
-                  {vehicule.plate ?? `Véhicule ${vehicule.id}`}
+                  {vehicule.plate ?? tr('company_quality_fleet.vehicule_n', { id: vehicule.id })}
                 </Text>
                 <Text style={styles.detail} numberOfLines={1}>
                   {[vehicule.brand, vehicule.model].filter(Boolean).join(' ') || tr('company_quality_fleet.modele_non_renseigne')}

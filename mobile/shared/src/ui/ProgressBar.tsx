@@ -3,10 +3,12 @@ import { View, Text, StyleSheet } from 'react-native';
 import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { useTraduction } from '@/i18n';
 
 interface ProgressBarProps { step: number; totalSteps: number; }
 
 export function ProgressBar({ step, totalSteps }: ProgressBarProps) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
   const progress = (step / totalSteps) * 100;
@@ -15,7 +17,7 @@ export function ProgressBar({ step, totalSteps }: ProgressBarProps) {
       <View style={styles.barBg}>
         <View style={[styles.barFill, { width: `${progress}%` }]} />
       </View>
-      <Text style={styles.label}>Étape {step} sur {totalSteps}</Text>
+      <Text style={styles.label}>{tr('progress_bar.etape_n_sur_total', { n: step, total: totalSteps })}</Text>
     </View>
   );
 }

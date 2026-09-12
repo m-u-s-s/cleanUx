@@ -72,7 +72,7 @@ export function CompanyInventoryScreen() {
     <Screen>
       <Text style={styles.title}>{tr('company_inventory.consommables')}</Text>
       <Text style={styles.intro}>
-        Ce qui reste, et ce que vous prélevez. Le compteur découle des mouvements, jamais l'inverse.
+        {tr('company_inventory.ce_qui_reste_et_ce_que_vous_prelevez')}
       </Text>
 
       <FlatList
@@ -101,7 +101,7 @@ export function CompanyInventoryScreen() {
                 <TextInput
                   value={quantites[item.id] ?? ''}
                   onChangeText={(v) => setQuantites((etat) => ({ ...etat, [item.id]: v }))}
-                  placeholder="Qté"
+                  placeholder={tr('company_inventory.qte')}
                   placeholderTextColor={styles.placeholder.color}
                   keyboardType="number-pad"
                   style={styles.champ}

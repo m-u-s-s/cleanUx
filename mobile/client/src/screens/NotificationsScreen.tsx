@@ -27,7 +27,7 @@ export function NotificationsScreen() {
 
   const handleRefresh = useCallback(() => {
     refetch().then(() => {
-      a11y.announce(`${notifs?.length ?? 0} notifications chargées`);
+      a11y.announce(tr('notifications.n_notifications_chargees', { n: notifs?.length ?? 0 }));
     });
   }, [refetch, notifs?.length]);
 

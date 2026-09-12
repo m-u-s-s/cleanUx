@@ -107,7 +107,7 @@ export function CompanyTimesheetsScreen() {
             <View key={correction.id} style={styles.ligne} testID={`correction-${correction.id}`}>
               <View style={styles.identite}>
                 <Text style={styles.nom} numberOfLines={1}>
-                  {correction.user_name ?? 'Sans nom'}
+                  {correction.user_name ?? tr('commun.sans_nom')}
                 </Text>
                 <Text style={styles.detail} numberOfLines={1}>
                   {correction.worked_minutes} min
@@ -134,9 +134,7 @@ export function CompanyTimesheetsScreen() {
       {peutVoirLaMarge && sansPointage > 0 && (
         // Annoncé, jamais masqué : une mission sans heures afficherait une marge de 100 %.
         <View style={styles.avertissement}>
-          <Text style={styles.avertissementTexte}>
-            {sansPointage} mission(s) sans pointage : leur marge n'est pas calculable.
-          </Text>
+          <Text style={styles.avertissementTexte}>{tr('company_timesheets.n_missions_sans_pointage', { n: sansPointage })}</Text>
         </View>
       )}
 
@@ -150,7 +148,7 @@ export function CompanyTimesheetsScreen() {
           <View style={styles.ligne} testID={`heures-${item.user_id}`}>
             <View style={styles.identite}>
               <Text style={styles.nom} numberOfLines={1}>
-                {item.name ?? 'Sans nom'}
+                {item.name ?? tr('commun.sans_nom')}
               </Text>
               <Text style={styles.detail}>
                 {item.entries_count} ligne(s) · {item.worked_minutes} min
@@ -176,12 +174,10 @@ export function CompanyTimesheetsScreen() {
                 <Text style={styles.nom} numberOfLines={1}>
                   {ligne.key ? `Site ${ligne.key}` : tr('company_timesheets.non_ventile')}
                 </Text>
-                <Text style={styles.detail}>
-                  {ligne.missions_count} mission(s)
-                  {ligne.missions_without_timesheet > 0
-                    ? ` · ${ligne.missions_without_timesheet} sans heures`
-                    : ''}
-                </Text>
+                <Text style={styles.detail}>{tr('company_timesheets.n_missions', { n: ligne.missions_count })}
+                {ligne.missions_without_timesheet > 0
+                  ? ` · ${tr('company_timesheets.n_sans_heures', { n: ligne.missions_without_timesheet })}`
+                  : ''}</Text>
               </View>
               <Badge
                 label={formatCentimes(ligne.margin_cents)}
@@ -190,9 +186,7 @@ export function CompanyTimesheetsScreen() {
             </View>
           ))}
           <Text style={styles.note}>
-            Le coût de main-d'œuvre s'appuie sur le taux horaire déclaré par votre société, à défaut{' '}
-            {formatCentimes(rentabilite?.meta?.default_hourly_rate_cents ?? 0)} — une
-            hypothèse prudente, pas un salaire connu de la plateforme.
+            {tr('company_timesheets.cout_de_main_d_oeuvre', { taux: formatCentimes(rentabilite?.meta?.default_hourly_rate_cents ?? 0) })}
           </Text>
         </View>
       )}

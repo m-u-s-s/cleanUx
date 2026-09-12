@@ -10,7 +10,7 @@ import { loadMapModule, isMapRenderable, OsmMap } from '@/maps';
 import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 /** Repli d'échelle pays centré sur Bruxelles, marché principal du projet. */
 export const FALLBACK_REGION = {
@@ -180,12 +180,14 @@ export function ProviderMap() {
         <View style={styles.overlay} pointerEvents="box-none">
           {permission === 'denied' && (
             <Text style={styles.notice} testID="map-permission-notice">
-              Position indisponible — autorise l'accès à ta localisation pour te voir sur la carte.
+              {traduireMaintenant('provider_map.position_indisponible')}
             </Text>
           )}
           {unlocatedCount > 0 && (
             <Text style={styles.notice}>
-              {unlocatedCount} mission{unlocatedCount > 1 ? 's' : ''} sans localisation
+              {unlocatedCount === 1
+              ? traduireMaintenant('provider_map.une_mission_sans_localisation')
+              : traduireMaintenant('provider_map.n_missions_sans_localisation', { n: unlocatedCount })}
             </Text>
           )}
           {!isError && located.length === 0 && (
@@ -246,12 +248,14 @@ export function ProviderMap() {
       <View style={styles.overlay} pointerEvents="box-none">
         {permission === 'denied' && (
           <Text style={styles.notice} testID="map-permission-notice">
-            Position indisponible — autorise l'accès à ta localisation pour te voir sur la carte.
+            {traduireMaintenant('provider_map.position_indisponible')}
           </Text>
         )}
         {unlocatedCount > 0 && (
           <Text style={styles.notice}>
-            {unlocatedCount} mission{unlocatedCount > 1 ? 's' : ''} sans localisation
+            {unlocatedCount === 1
+              ? traduireMaintenant('provider_map.une_mission_sans_localisation')
+              : traduireMaintenant('provider_map.n_missions_sans_localisation', { n: unlocatedCount })}
           </Text>
         )}
         {!isError && located.length === 0 && (

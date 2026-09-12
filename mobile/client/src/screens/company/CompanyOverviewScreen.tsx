@@ -64,10 +64,10 @@ export function CompanyOverviewScreen() {
   const RACCOURCIS: Array<{ label: string; screen: string }> = [
     { label: tr('company_sites.mes_locaux'), screen: 'CompanySitesTab' },
     { label: tr('company_bookings.reservations'), screen: 'CompanyBookingsTab' },
-    { label: 'Membres', screen: 'CompanyMembers' },
-    { label: 'Contrats', screen: 'CompanyContracts' },
-    { label: 'Facturation', screen: 'CompanyBillingTab' },
-    { label: 'Pilotage', screen: 'CompanyGovernance' },
+    { label: tr('company_overview.membres'), screen: 'CompanyMembers' },
+    { label: tr('company_overview.contrats'), screen: 'CompanyContracts' },
+    { label: tr('company_overview.facturation'), screen: 'CompanyBillingTab' },
+    { label: tr('company_overview.pilotage'), screen: 'CompanyGovernance' },
   ];
 
   if (isError) {
@@ -76,7 +76,7 @@ export function CompanyOverviewScreen() {
         <EmptyState
           title={tr('company_overview.espace_indisponible')}
           message={tr('company_overview.impossible_de_charger_votre_espace_entreprise_reessayez')}
-          actionLabel="Réessayer"
+          actionLabel={tr('company_overview.reessayer')}
           onAction={() => void refetch()}
         />
       </Screen>

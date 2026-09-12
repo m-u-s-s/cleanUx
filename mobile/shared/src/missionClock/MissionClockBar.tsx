@@ -101,10 +101,10 @@ export function MissionClockBar({
         <Text style={styles.detail}>{detail}</Text>
 
         {clock.phase === 'overtime' && facturees > 0 ? (
-          <Text testID={`${testID}-amount`} style={[styles.montant, { color: accent }]}>
-            {formatDureeCourte(facturees * 60)} facturé{facturees > 60 ? 'es' : 'e'} · {formatEuros(montant)}
-            {clock.server.capped ? ' · plafond atteint' : ''}
-          </Text>
+          <Text testID={`${testID}-amount`} style={[styles.montant, { color: accent }]}>{facturees > 60
+          ? tr('mission_clock_bar.n_facturees', { duree: formatDureeCourte(facturees * 60), montant: formatEuros(montant) })
+          : tr('mission_clock_bar.n_facturee', { duree: formatDureeCourte(facturees * 60), montant: formatEuros(montant) })}
+        {clock.server.capped ? ` · ${tr('mission_clock_bar.plafond_atteint')}` : ''}</Text>
         ) : null}
 
         {/*

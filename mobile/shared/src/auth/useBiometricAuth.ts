@@ -25,7 +25,7 @@ export async function authenticateWithBiometrics(): Promise<boolean> {
 
     const result = await LocalAuthentication.authenticateAsync({
       promptMessage: traduireMaintenant('use_biometric_auth.confirmer_votre_identite'),
-      cancelLabel: 'Annuler',
+      cancelLabel: traduireMaintenant('commun.annuler'),
       fallbackLabel: traduireMaintenant('use_biometric_auth.utiliser_le_mot_de_passe'),
     });
 

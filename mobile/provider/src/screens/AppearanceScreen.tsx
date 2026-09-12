@@ -7,10 +7,11 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useTraduction } from '@/i18n';
 
+/* Des CLES : traduite ici, la table garderait la langue du demarrage. */
 const OPTIONS = [
-  { mode: 'system' as const, label: 'Automatique', description: 'Suit le réglage du système' },
-  { mode: 'light' as const, label: 'Clair', description: 'Toujours en mode clair' },
-  { mode: 'dark' as const, label: 'Sombre', description: 'Toujours en mode sombre' },
+  { mode: 'system' as const, label: 'appearance.automatique_2', description: 'appearance.suit_le_reglage_du_systeme_2' },
+  { mode: 'light' as const, label: 'appearance.clair_2', description: 'appearance.toujours_en_mode_clair_2' },
+  { mode: 'dark' as const, label: 'appearance.sombre_2', description: 'appearance.toujours_en_mode_sombre_2' },
 ];
 
 export function AppearanceScreen() {
@@ -29,8 +30,8 @@ export function AppearanceScreen() {
           onPress={() => setMode(opt.mode)}
         >
           <View style={styles.rowContent}>
-            <Text style={styles.label}>{opt.label}</Text>
-            <Text style={styles.desc}>{opt.description}</Text>
+            <Text style={styles.label}>{tr(opt.label)}</Text>
+            <Text style={styles.desc}>{tr(opt.description)}</Text>
           </View>
           {mode === opt.mode && <Badge label="✓" variant="success" />}
         </TouchableOpacity>

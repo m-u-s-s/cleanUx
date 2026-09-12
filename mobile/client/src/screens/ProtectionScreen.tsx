@@ -74,7 +74,7 @@ export function ProtectionScreen() {
       <ScrollView>
         <Text style={styles.title}>{tr('protection.ma_protection')}</Text>
         <Text style={styles.intro}>
-          Ce qui vous couvre, ce que coûterait une annulation, et où en sont vos réclamations.
+          {tr('protection.ce_qui_vous_couvre')}
         </Text>
 
         <View style={styles.bloc} testID="assurance">
@@ -98,10 +98,7 @@ export function ProtectionScreen() {
           {(protection?.insurance.active_count ?? 0) === 0 && (
             // On le DIT : découvrir qu'on n'était pas couvert au moment du sinistre est exactement
             // ce que cette page doit éviter.
-            <Text style={styles.detail}>
-              Aucune intervention assurée en cours. L'assurance se souscrit au moment de la
-              réservation.
-            </Text>
+            <Text style={styles.detail}>{tr('protection.aucune_intervention_assuree_en_cours_l_assurance')}</Text>
           )}
         </View>
 
@@ -114,7 +111,7 @@ export function ProtectionScreen() {
                 <Text style={styles.nom} numberOfLines={1}>
                   {devis.booking_reference ?? 'Intervention'}
                 </Text>
-                <Text style={styles.detail}>dans {devis.hours_before} h</Text>
+                <Text style={styles.detail}>{tr('protection.dans_n_h', { n: devis.hours_before })}</Text>
               </View>
               <Badge
                 label={frais(devis) ? formatCentimes(frais(devis) ?? 0) : 'Sans frais'}
@@ -137,7 +134,7 @@ export function ProtectionScreen() {
                 <Text style={styles.nom} numberOfLines={1}>
                   {dossier.subject ?? dossier.reference}
                 </Text>
-                <Text style={styles.detail}>Ouverte le {dossier.opened_at}</Text>
+                <Text style={styles.detail}>{tr('protection.ouverte_le', { date: dossier.opened_at ?? '' })}</Text>
               </View>
               <Badge label={dossier.status} variant="neutral" />
             </View>

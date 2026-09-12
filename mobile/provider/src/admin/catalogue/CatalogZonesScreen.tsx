@@ -66,7 +66,7 @@ export function CatalogZonesScreen() {
           onPress={() =>
             navigation.navigate('AdminResourceForm', {
               resource: 'zones',
-              title: 'Nouvelle zone',
+              title: tr('catalog_zones.nouvelle_zone'),
               // Le pays vient du CONTEXTE : le redemander exposerait à créer la zone dans le
               // mauvais marché, erreur qu'on ne voit qu'en cherchant une zone disparue.
               prefill: { country_id: countryId },
@@ -138,7 +138,7 @@ function ZoneRow({
     <Pressable
       onPress={onOpen}
       accessibilityRole="button"
-      accessibilityLabel={`Ouvrir le catalogue de ${String(row.name)}`}
+      accessibilityLabel={tr('catalog_zones.ouvrir_le_catalogue_de', { zone: String(row.name) })}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
     >
       <View style={styles.rowTexte}>
@@ -155,13 +155,13 @@ function ZoneRow({
       <LigneActions
         sujet={String(row.name ?? tr('catalog_zones.cette_zone'))}
         actions={[
-          { cle: 'edit', libelle: 'Modifier', executer: onEdit },
+          { cle: 'edit', libelle: tr('catalog_zones.modifier'), executer: onEdit },
           {
             cle: 'toggle',
             libelle: reservable ? tr('catalog_zones.fermer_aux_reservations') : tr('catalog_zones.ouvrir_aux_reservations'),
             executer: onToggle,
           },
-          { cle: 'delete', libelle: 'Supprimer', destructive: true, executer: onDelete },
+          { cle: 'delete', libelle: tr('catalog_zones.supprimer'), destructive: true, executer: onDelete },
         ]}
       />
 

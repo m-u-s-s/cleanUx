@@ -59,7 +59,7 @@ export function CompanyBookingsScreen() {
         <EmptyState
           title={tr('company_bookings.reservations_indisponibles')}
           message={tr('company_bookings.impossible_de_charger_les_reservations_de_votre')}
-          actionLabel="Réessayer"
+          actionLabel={tr('company_bookings.reessayer')}
           onAction={() => void refetch()}
         />
       </Screen>

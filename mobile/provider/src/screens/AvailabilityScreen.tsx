@@ -134,10 +134,7 @@ export function AvailabilityScreen() {
   return (
     <Screen scroll>
       <Text style={styles.titre} accessibilityRole="header">{tr('availability.mes_disponibilites')}</Text>
-      <Text style={styles.sousTitre}>
-        Vous recevez des missions pendant ces plages. Fermer un jour précis se fait plus bas, sans
-        toucher à votre semaine.
-      </Text>
+      <Text style={styles.sousTitre}>{tr('availability.vous_recevez_des_missions_pendant_ces_plages')}</Text>
 
       <Text style={styles.sectionTitre}>{tr('availability.semaine_type')}</Text>
 
@@ -176,10 +173,10 @@ export function AvailabilityScreen() {
                     testID={`supprimer-${slot.id}`}
                     onPress={() => Alert.alert(
                       tr('availability.retirer_ce_creneau'),
-                      `${weekdayLabel(slot.weekday)} ${hhmm(slot.start_time)} — ${hhmm(slot.end_time)}, toutes les semaines.`,
+                      tr('availability.creneau_hebdomadaire', { jour: weekdayLabel(slot.weekday), debut: hhmm(slot.start_time), fin: hhmm(slot.end_time) }),
                       [
-                        { text: 'Annuler', style: 'cancel' },
-                        { text: 'Retirer', style: 'destructive', onPress: () => supprimer.mutate(slot.id) },
+                        { text: tr('commun.annuler'), style: 'cancel' },
+                        { text: tr('commun.retirer'), style: 'destructive', onPress: () => supprimer.mutate(slot.id) },
                       ],
                     )}
                   />

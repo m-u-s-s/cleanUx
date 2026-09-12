@@ -229,7 +229,7 @@ export function ClientRegisterWizard() {
       ) : null}
 
       <Button
-        label={isLast ? tr('client_register.creer_mon_compte') : 'Continuer'}
+        label={isLast ? tr('client_register.creer_mon_compte') : tr('commun.continuer')}
         onPress={goNext}
         fullWidth
         size="lg"
@@ -316,7 +316,7 @@ export function ClientRegisterWizard() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
-              placeholder="votre@email.com"
+              placeholder={tr('auth.exemple_email')}
               autoFocus
               testID="client-register-email"
             />
@@ -381,11 +381,11 @@ export function ClientRegisterWizard() {
             >
               <View style={[kit.checkbox, acceptTerms && kit.checkboxChecked]} />
               <Text style={kit.termsText}>
-                J'accepte les{' '}
+                {tr('auth.j_accepte_les')}{' '}
                 <Text style={kit.termsLink} onPress={() => navigation.navigate('Legal', { type: 'terms' })}>
                   {tr('client_register_wizard.conditions_d_utilisation')}
                 </Text>
-                {' '}et la{' '}
+                {' '}{tr('auth.et_la')}{' '}
                 <Text style={kit.termsLink} onPress={() => navigation.navigate('Legal', { type: 'privacy' })}>
                   {tr('client_register_wizard.politique_de_confidentialite')}
                 </Text>

@@ -51,7 +51,7 @@ export function BrowseProvidersScreen() {
         style={[styles.title, { color: themeColors.text }]}
         accessibilityRole="header"
       >
-        Explorer les prestataires
+        {tr('browse_providers.explorer_les_prestataires')}
       </Text>
       <View style={styles.filters}>
         <TextInput

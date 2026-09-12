@@ -57,7 +57,7 @@ export function TabNavigator() {
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarLabel: 'Accueil',
+          tabBarLabel: traduireMaintenant('tab_navigator.accueil'),
           tabBarIcon: ({ color, size }) => <Icon name="home-outline" size={size} color={color} />,
         }}
       />
@@ -65,7 +65,7 @@ export function TabNavigator() {
         name="Explore"
         component={BrowseProvidersScreen}
         options={{
-          tabBarLabel: 'Explorer',
+          tabBarLabel: traduireMaintenant('tab_navigator.explorer'),
           tabBarIcon: ({ color, size }) => <Icon name="search-outline" size={size} color={color} />,
         }}
       />
@@ -81,7 +81,7 @@ export function TabNavigator() {
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarLabel: 'Profil',
+          tabBarLabel: traduireMaintenant('tab_navigator.profil'),
           tabBarIcon: ({ color, size }) => <Icon name="person-outline" size={size} color={color} />,
           tabBarBadge: unreadCount,
           tabBarBadgeStyle: { backgroundColor: colors.danger[500], fontSize: 10 },

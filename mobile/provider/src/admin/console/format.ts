@@ -1,4 +1,5 @@
 import type { ColumnType } from './types';
+import { traduireMaintenant } from '@/i18n';
 
 /**
  * LA LOCALE DE LA CONSOLE, EN UN SEUL POINT.
@@ -54,7 +55,7 @@ export function formatCell(value: unknown, type: ColumnType, devise?: string | n
       return formatDate(value, true);
 
     case 'bool':
-      return value ? 'Oui' : 'Non';
+      return value ? traduireMaintenant('commun.oui') : traduireMaintenant('commun.non');
 
     default:
       return String(value);

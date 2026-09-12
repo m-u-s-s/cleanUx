@@ -57,7 +57,7 @@ export function MissionRetardCard({
   return (
     <CarteDeMission
       ton="attention"
-      titre={`${formatRetard(retard.minutes)} de retard`}
+      titre={tr('mission_retard.n_de_retard', { retard: formatRetard(retard.minutes) })}
       testID="retard-prestataire"
     >
 
@@ -65,13 +65,12 @@ export function MissionRetardCard({
         LA RÉPONSE DU PRESTATAIRE, ou son absence — et l'absence se dit.
         Laisser la ligne vide donnerait l'impression qu'on n'a pas demandé.
       */}
-      <Text style={styles.annonce}>
-        {retard.annonce?.arrivee_at
-          ? `Le prestataire annonce son arrivée vers ${new Date(retard.annonce.arrivee_at)
-              .toTimeString()
-              .slice(0, 5)}${retard.annonce.motif ? ` — ${retard.annonce.motif}` : ''}.`
-          : tr('mission_retard.le_prestataire_n_a_pas_encore_repondu')}
-      </Text>
+      <Text style={styles.annonce}>{retard.annonce?.arrivee_at
+        ? tr('mission_retard.prestataire_annonce_arrivee', {
+            heure: new Date(retard.annonce.arrivee_at).toTimeString().slice(0, 5),
+            motif: retard.annonce.motif ? ` — ${retard.annonce.motif}` : '',
+          })
+        : tr('mission_retard.le_prestataire_n_a_pas_encore_repondu')}</Text>
 
       <View style={styles.actions}>
         <Button

@@ -156,9 +156,7 @@ export function CompanyGovernanceScreen() {
                 <Text style={styles.nom}>{tr('company_governance.ponctualite')}</Text>
                 {/* Annoncées, jamais fondues : les compter comme des retards punirait un GPS
                     coupé ; comme des arrivées à l'heure, l'inverse. */}
-                <Text style={styles.detail}>
-                  {sla.meta.without_arrival_data} sans arrivée relevée
-                </Text>
+                <Text style={styles.detail}>{tr('company_governance.n_sans_arrivee_relevee', { n: sla.meta.without_arrival_data })}</Text>
               </View>
               <Badge
                 label={sla.meta.punctuality_rate !== null ? `${sla.meta.punctuality_rate} %` : '—'}
@@ -177,9 +175,7 @@ export function CompanyGovernanceScreen() {
                 <Text style={styles.nom} numberOfLines={1}>
                   {budget.site_name ?? tr('company_governance.toute_la_societe')}
                 </Text>
-                <Text style={styles.detail} numberOfLines={1}>
-                  {euros(budget.committed_cents)} sur {euros(budget.limit_cents)}
-                </Text>
+                <Text style={styles.detail} numberOfLines={1}>{tr('company_governance.montant_sur_limite', { engage: euros(budget.committed_cents), limite: euros(budget.limit_cents) })}</Text>
               </View>
               <Badge
                 label={`${budget.usage_percent} %`}

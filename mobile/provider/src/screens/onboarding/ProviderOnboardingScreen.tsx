@@ -191,10 +191,7 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
           <Icon name="checkmark-circle-outline" size={40} color={colors.success[600]} />
         </View>
         <Text style={styles.title}>{tr('provider_onboarding.dossier_complet')}</Text>
-        <Text style={styles.subtitle}>
-          Votre dossier est envoyé. Nous le validons sous peu — vous recevrez une notification dès
-          que votre compte sera actif.
-        </Text>
+        <Text style={styles.subtitle}>{tr('provider_onboarding.votre_dossier_est_envoye_nous_le_validons')}</Text>
         {onFinished ? <Button label={tr('provider_onboarding.continuer')} onPress={onFinished} fullWidth size="lg" /> : null}
       </ScrollView>
     );
@@ -204,14 +201,12 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
     <ScrollView contentContainerStyle={[styles.container, margeHaute]} keyboardShouldPersistTaps="handled">
       <View>
         <Text style={styles.title}>{tr('provider_onboarding.votre_dossier_de_verification')}</Text>
-        <Text style={styles.subtitle}>
-          {doneCount} sur {steps.length} — à compléter dans l'ordre que vous voulez.
-        </Text>
+        <Text style={styles.subtitle}>{tr('provider_onboarding.n_sur_total_a_completer', { n: doneCount, total: steps.length })}</Text>
       </View>
 
       <View
         style={styles.progressTrack}
-        accessibilityLabel={`Dossier complété à ${percent} pour cent`}
+        accessibilityLabel={tr('provider_onboarding.dossier_complete_a_n_pour_cent', { n: percent })}
         testID="onboarding-progress"
       >
         <View style={[styles.progressFill, { width: `${percent}%` }]} />
@@ -289,8 +284,7 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
                     // Une étape ajoutée au parcours sans écran correspondant ne doit pas bloquer
                     // le dossier sur une carte vide : on le dit, plutôt que de ne rien afficher.
                     <Text style={styles.errorHint}>
-                      Cette étape ({step.label}) ntr('provider_onboarding.est_pas_encore_disponible_dans_l')application.
-                      Contactez le support pour la compléter.
+                      {tr('provider_onboarding.etape_pas_encore_disponible', { etape: step.label })}
                     </Text>
                   )}
                 </View>

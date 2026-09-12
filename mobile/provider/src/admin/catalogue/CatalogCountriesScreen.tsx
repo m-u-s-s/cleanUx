@@ -9,7 +9,7 @@ import { messageDErreur } from './erreur';
 import { useResourceAction, useResourceDelete, useResourceIndex } from '../console/hooks';
 import type { ResourceRow } from '../console/types';
 import { LigneActions } from './LigneActions';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 /**
  * Premier niveau du catalogue : les pays.
@@ -65,7 +65,7 @@ export function CatalogCountriesScreen() {
 
         <Pressable
           onPress={() =>
-            navigation.navigate('AdminResourceForm', { resource: 'countries', title: 'Nouveau pays' })
+            navigation.navigate('AdminResourceForm', { resource: 'countries', title: tr('catalog_countries.nouveau_pays') })
           }
           accessibilityRole="button"
           accessibilityLabel={tr('catalog_countries.ajouter_un_pays')}
@@ -132,7 +132,7 @@ function CountryRow({
     <Pressable
       onPress={onOpen}
       accessibilityRole="button"
-      accessibilityLabel={`Ouvrir les zones de ${String(row.name)}`}
+      accessibilityLabel={traduireMaintenant('catalog_countries.ouvrir_les_zones_de', { pays: String(row.name) })}
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
     >
       <View style={styles.rowTexte}>
@@ -151,9 +151,9 @@ function CountryRow({
       <LigneActions
         sujet={String(row.name ?? 'ce pays')}
         actions={[
-          { cle: 'edit', libelle: 'Modifier', executer: onEdit },
+          { cle: 'edit', libelle: traduireMaintenant('catalog_countries.modifier'), executer: onEdit },
           { cle: 'toggle', libelle: actif ? 'Désactiver' : 'Activer', executer: onToggle },
-          { cle: 'delete', libelle: 'Supprimer', destructive: true, executer: onDelete },
+          { cle: 'delete', libelle: traduireMaintenant('catalog_countries.supprimer'), destructive: true, executer: onDelete },
         ]}
       />
 

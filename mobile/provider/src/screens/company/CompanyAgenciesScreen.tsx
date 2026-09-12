@@ -71,7 +71,7 @@ export function CompanyAgenciesScreen() {
     <Screen>
       <Text style={styles.title}>{tr('company_agencies.implantations')}</Text>
       <Text style={styles.intro}>
-        Vos propres dépôts et antennes — à distinguer des sites de vos clients, où vous intervenez.
+        {tr('company_agencies.vos_propres_depots_et_antennes')}
       </Text>
 
       {peutGerer && (

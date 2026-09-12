@@ -89,20 +89,20 @@ export function ProfileScreen() {
     { label: tr('safety.securite'), screen: 'Safety' },
     // E17 + E34 — elle se consulte le matin, en montant dans la voiture.
     { label: tr('daily_route.ma_journee'), screen: 'DailyRoute' },
-    { label: 'Modules', screen: 'Modules' },
+    { label: tr('profile.modules'), screen: 'Modules' },
     { label: tr('profile.disponibilites'), screen: 'Availability' },
     // Sans porte d'entrée, l'écran serait orphelin — le mode d'échec documenté de ce dépôt.
     { label: tr('profile.metiers_et_zones'), screen: 'TradesZones' },
-    { label: 'Badges', screen: 'Badges' },
+    { label: tr('profile.badges'), screen: 'Badges' },
     { label: tr('profile.verification_kyc'), screen: 'KYC' },
     { label: tr('face_consent.controle_facial'), screen: 'FaceConsent' },
-    { label: 'Litiges', screen: 'ProviderDisputes' },
+    { label: tr('profile.litiges'), screen: 'ProviderDisputes' },
     { label: tr('provider_ratings.avis_recus'), screen: 'ProviderRatings' },
-    { label: 'Messagerie', screen: 'ProviderChatList' },
-    { label: 'Notifications', screen: 'ProviderNotifications' },
+    { label: tr('profile.messagerie'), screen: 'ProviderChatList' },
+    { label: tr('profile.notifications'), screen: 'ProviderNotifications' },
     { label: tr('profile.preferences_notifications'), screen: 'NotificationPreferences' },
-    { label: 'Langue', screen: 'Language' },
-    { label: 'Apparence', screen: 'Appearance' },
+    { label: tr('profile.langue'), screen: 'Language' },
+    { label: tr('profile.apparence'), screen: 'Appearance' },
   ];
 
   /**
@@ -131,7 +131,7 @@ export function ProfileScreen() {
     { label: tr('company_members.equipe'), screen: 'CompanyMembers', permission: 'team.view' },
     { label: tr('company_field_teams.equipes_terrain'), screen: 'CompanyFieldTeams', permission: 'team.view' },
     { label: tr('company_sites.sites_desservis'), screen: 'CompanySites', permission: 'sites.view_all' },
-    { label: 'Implantations', screen: 'CompanyAgencies', permission: 'agencies.view' },
+    { label: tr('profile.implantations'), screen: 'CompanyAgencies', permission: 'agencies.view' },
     { label: tr('company_role_permissions.roles_et_permissions'), screen: 'CompanyRolePermissions', permission: 'members.manage_permissions' },
     { label: tr('company_planning.planning_et_absences'), screen: 'CompanyPlanning', permission: 'team.view' },
     { label: tr('company_timesheets.heures_et_rentabilite'), screen: 'CompanyTimesheets', permission: 'team.view' },
@@ -140,9 +140,9 @@ export function ProfileScreen() {
      * partir n'est pas commander. Aligner cette entrée sur `inventory.manage` fermerait l'écran à
      * ceux qui en ont le plus besoin — ceux qui sont devant la camionnette.
      */
-    { label: 'Consommables', screen: 'CompanyInventory', permission: 'inventory.view' },
-    { label: 'Devis', screen: 'CompanyQuotes', permission: 'quotes.view' },
-    { label: 'Recrutement', screen: 'CompanyRecruitment', permission: 'recruitment.view' },
+    { label: tr('profile.consommables'), screen: 'CompanyInventory', permission: 'inventory.view' },
+    { label: tr('profile.devis'), screen: 'CompanyQuotes', permission: 'quotes.view' },
+    { label: tr('profile.recrutement'), screen: 'CompanyRecruitment', permission: 'recruitment.view' },
     /*
      * DEUX PORTES POUR UN ÉCRAN. Il s'ouvre par `missions.quality` OU par `fleet.view` : le
      * répertoire annonce la seconde, la plus large des deux. Exiger les deux le fermerait à
@@ -150,7 +150,7 @@ export function ProfileScreen() {
      */
     { label: tr('company_quality_fleet.qualite_et_materiel'), screen: 'CompanyQualityFleet', permission: 'fleet.view' },
     { label: tr('company_tasks.taches'), screen: 'CompanyTasks', permission: null },
-    { label: 'Canaux', screen: 'CompanyChannels', permission: null },
+    { label: tr('profile.canaux'), screen: 'CompanyChannels', permission: null },
   ];
 
   const ecransSocieteAutorises = ECRANS_SOCIETE_NATIFS.filter(
@@ -198,7 +198,7 @@ export function ProfileScreen() {
           )}
           <Divider />
           <Button
-            label="Conditions d'utilisation"
+            label={tr('profile.conditions_d_utilisation_2')}
             onPress={() => navigation.navigate('Legal', { type: 'terms' })}
             variant="ghost"
             fullWidth
@@ -225,7 +225,7 @@ export function ProfileScreen() {
             label={tr('profile.se_deconnecter')}
             onPress={() =>
               Alert.alert(tr('profile.deconnexion'), tr('profile.voulez_vous_vous_deconnecter'), [
-                { text: 'Annuler', style: 'cancel' },
+                { text: tr('commun.annuler'), style: 'cancel' },
                 { text: tr('profile.deconnexion'), style: 'destructive', onPress: logout },
               ])
             }

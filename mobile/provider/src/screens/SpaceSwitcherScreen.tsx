@@ -32,10 +32,7 @@ export function SpaceSwitcherScreen({
     <Screen>
       <View testID="space-switcher" style={styles.container}>
         <Text style={styles.title}>{tr('space_switcher.ou_souhaitez_vous_travailler')}</Text>
-        <Text style={styles.subtitle}>
-          Votre compte donne accès à plusieurs espaces. Vous pourrez en changer à tout moment depuis
-          votre profil.
-        </Text>
+        <Text style={styles.subtitle}>{tr('space_switcher.votre_compte_donne_acces_a_plusieurs_espaces')}</Text>
 
         <Choice
           icon="speedometer-outline"

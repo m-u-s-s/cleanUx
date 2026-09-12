@@ -30,7 +30,7 @@ import { ApiError } from '@/api';
 import { colors, radius, shadows, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 export function KindChoice({
   value,
@@ -52,16 +52,16 @@ export function KindChoice({
   const options = [
     {
       kind: 'independent',
-      title: 'Indépendant',
-      hint: 'Je travaille seul',
+      title: traduireMaintenant('auth_kit.independant'),
+      hint: traduireMaintenant('auth_kit.je_travaille_seul'),
       icon: 'person-outline',
       accent: colors.warning[700],
       wash: colors.warning[50],
     },
     {
       kind: 'company',
-      title: 'Société',
-      hint: "J'ai une équipe",
+      title: traduireMaintenant('auth_kit.societe'),
+      hint: traduireMaintenant('auth_kit.j_ai_une_equipe'),
       icon: 'business-outline',
       accent: colors.brand[600],
       wash: colors.brand[50],
@@ -153,10 +153,7 @@ export function TradePicker({
     // PAS DE BOUTON « RÉESSAYER » ICI, et c'est le point : il n'y a rien à recharger. Le message
     // dit ce qui se passe réellement plutôt que de suggérer un geste sans effet.
     return (
-      <Text style={styles.fieldHint} testID="register-trades-empty">
-        Aucun métier n’est ouvert à l’inscription pour le moment. Notre équipe ouvre les métiers
-        zone par zone — réessayez plus tard ou contactez-nous.
-      </Text>
+      <Text style={styles.fieldHint} testID="register-trades-empty">{tr('kit.aucun_metier_n_est_ouvert_a_l')}</Text>
     );
   }
 
@@ -243,10 +240,7 @@ export function ZonePicker({
      * seul geste qui puisse débloquer — proposer « réessayer » ferait tourner en rond.
      */
     return (
-      <Text style={styles.fieldHint} testID="register-zones-empty">
-        Ce métier n’est ouvert dans aucune zone pour l’instant. Choisissez un autre métier, ou
-        revenez plus tard.
-      </Text>
+      <Text style={styles.fieldHint} testID="register-zones-empty">{tr('kit.ce_metier_n_est_ouvert_dans_aucune')}</Text>
     );
   }
 

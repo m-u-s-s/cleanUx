@@ -30,12 +30,13 @@ interface Ligne {
   total_cents: number;
 }
 
+/* Des CLES : traduite ici, la table garderait la langue du demarrage. */
 const LIBELLES: Record<string, string> = {
-  sent: traduireMaintenant('received_quotes.a_decider'),
-  accepted: 'Accepté',
-  declined: 'Refusé',
-  expired: 'Périmé',
-  cancelled: 'Annulé',
+  sent: 'received_quotes.a_decider',
+  accepted: 'received_quotes.statut_accepte',
+  declined: 'received_quotes.statut_refuse',
+  expired: 'received_quotes.statut_perime',
+  cancelled: 'received_quotes.statut_annule',
 };
 
 /**
@@ -84,7 +85,7 @@ export function ReceivedQuotesScreen() {
         // Accepter CRÉE le travail : le dire évite que le client croie n'avoir signé qu'un papier.
         Alert.alert(
           tr('received_quotes.devis_accepte'),
-          `${crees} rendez-vous créé(s). Le prestataire vous contactera pour les planifier.`,
+          tr('received_quotes.n_rendez_vous_crees', { n: crees }),
         );
       }
     },
@@ -117,7 +118,7 @@ export function ReceivedQuotesScreen() {
               </View>
 
               <Badge
-                label={LIBELLES[item.status] ?? item.status}
+                label={tr(LIBELLES[item.status] ?? item.status)}
                 variant={
                   item.status === 'accepted' ? 'success' : item.is_open ? 'info' : 'neutral'
                 }

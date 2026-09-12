@@ -43,9 +43,7 @@ export function BadgesScreen() {
               <Badge label={item.tier} variant={item.awarded_at ? 'success' : 'neutral'} />
               <Text style={styles.badgeDesc}>{item.description}</Text>
               {item.awarded_at && (
-                <Text style={styles.date}>
-                  Obtenu le {new Date(item.awarded_at).toLocaleDateString()}
-                </Text>
+                <Text style={styles.date}>{tr('badges.obtenu_le', { date: new Date(item.awarded_at).toLocaleDateString() })}</Text>
               )}
             </View>
           )}

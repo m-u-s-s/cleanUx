@@ -89,19 +89,16 @@ export function CatalogZoneTradesScreen() {
       <View style={styles.bandeau}>
         <Text style={styles.bandeauTexte}>
           <Text style={styles.bandeauFort}>{tr('catalog_zone_trades.reglage_preparatoire')} </Text>
-          L’ouverture d’un métier ici est bien enregistrée, mais elle n’a pas encore d’effet sur ce
-          que voit un client : le parcours de commande ne détermine pas encore la zone d’une adresse.
+          {tr('catalog_zone_trades.ouverture_sans_effet_sur_le_client')}
         </Text>
       </View>
 
       <View style={styles.entete}>
-        <Text style={styles.compte}>
-          {ouverts} métier(s) ouvert(s) sur {data?.trades.length ?? 0}
-        </Text>
+        <Text style={styles.compte}>{tr('catalog_zone_trades.n_metiers_ouverts_sur_total', { n: ouverts, total: data?.trades.length ?? 0 })}</Text>
 
         <Pressable
           onPress={() =>
-            navigation.navigate('AdminResourceForm', { resource: 'trades', title: 'Nouveau métier' })
+            navigation.navigate('AdminResourceForm', { resource: 'trades', title: tr('catalog_zone_trades.nouveau_metier') })
           }
           accessibilityRole="button"
           accessibilityLabel={tr('catalog_zone_trades.ajouter_un_metier')}
@@ -229,9 +226,9 @@ function FormulaireTarifDistance({
       <View style={styles.modalFond}>
         <View style={styles.modalCarte}>
           <ScrollView keyboardShouldPersistTaps="handled">
-            <Text style={styles.modalTitre}>Prix au kilomètre — {metier.name}</Text>
+            <Text style={styles.modalTitre}>{tr('catalog_zone_trades.prix_au_kilometre_metier', { metier: metier.name })}</Text>
             <Text style={styles.modalAide}>
-              Montants en CENTIMES. Laisser vide « c/km » revient à ne pas facturer la distance.
+              {tr('catalog_zone_trades.montants_en_centimes')}
             </Text>
 
             <View style={styles.modalLigne}>
@@ -379,7 +376,7 @@ function TradeRow({
       <Switch
         value={metier.is_open}
         onValueChange={onToggle}
-        accessibilityLabel={`${metier.is_open ? 'Fermer' : 'Ouvrir'} ${metier.name} dans cette zone`}
+        accessibilityLabel={`${metier.is_open ? tr('commun.fermer') : 'Ouvrir'} ${metier.name} dans cette zone`}
         trackColor={{ true: colors.brand[500], false: colors.surface[300] }}
       />
     </View>

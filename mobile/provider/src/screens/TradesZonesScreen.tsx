@@ -103,10 +103,7 @@ export function TradesZonesScreen() {
     <Screen testID="trades-zones-screen">
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>{tr('trades_zones.mes_metiers_et_mes_zones')}</Text>
-        <Text style={styles.intro}>
-          Vous ne recevez que des missions du métier et de la zone que vous avez choisis. Rien
-          d’autre ne vous sera proposé.
-        </Text>
+        <Text style={styles.intro}>{tr('trades_zones.vous_ne_recevez_que_des_missions_du')}</Text>
 
         <Text style={styles.section}>{tr('trades_zones.metiers')}</Text>
         {secteurs.length === 0 ? (
@@ -121,7 +118,7 @@ export function TradesZonesScreen() {
                 <View key={metier.id} style={styles.ligne}>
                   <Text style={styles.ligneTexte}>{metier.name}</Text>
                   <Button
-                    label={tradeIds.includes(metier.id) ? 'Retirer' : 'Ajouter'}
+                    label={tradeIds.includes(metier.id) ? tr('commun.retirer') : tr('commun.ajouter')}
                     variant={tradeIds.includes(metier.id) ? 'secondary' : 'ghost'}
                     onPress={() => basculer(tradeIds, metier.id, setTradeIds)}
                   />
@@ -138,7 +135,7 @@ export function TradesZonesScreen() {
           <View key={zone.id} style={styles.ligne}>
             <Text style={styles.ligneTexte}>{zone.name}</Text>
             <Button
-              label={zoneIds.includes(zone.id) ? 'Retirer' : 'Ajouter'}
+              label={zoneIds.includes(zone.id) ? tr('commun.retirer') : tr('commun.ajouter')}
               variant={zoneIds.includes(zone.id) ? 'secondary' : 'ghost'}
               onPress={() => basculer(zoneIds, zone.id, setZoneIds)}
             />
@@ -150,10 +147,7 @@ export function TradesZonesScreen() {
         {!peutEnregistrer && (
           // La raison du refus est DITE, pas déduite d'un bouton grisé : un bouton inerte sans
           // explication se lit comme une panne.
-          <Text style={styles.avertissement}>
-            Choisissez au moins un métier ET une zone : sans les deux, aucune mission ne peut vous
-            être proposée.
-          </Text>
+          <Text style={styles.avertissement}>{tr('trades_zones.choisissez_au_moins_un_metier_et_une')}</Text>
         )}
 
         <View style={styles.actions}>

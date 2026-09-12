@@ -68,7 +68,7 @@ export function PresenceScanScreen({ route }: Props) {
             ];
 
         Alert.alert(title, message, [
-          { text: 'Continuer', onPress: () => navigation.goBack() },
+          { text: tr('commun.continuer'), onPress: () => navigation.goBack() },
         ]);
       },
       onError: (e: any) => {

@@ -4,7 +4,7 @@ import { Screen, KPICard, Badge, Button, Skeleton, EmptyState } from '@/ui';
 import { useLoyaltyAccount, useLoyaltyRewards, useRedeemReward } from '@/loyalty';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 export function LoyaltyScreen() {
   const { t: tr } = useTraduction();
@@ -17,7 +17,7 @@ export function LoyaltyScreen() {
 
   const handleRedeem = (rewardId: number, rewardName: string) => {
     Alert.alert(tr('loyalty.echanger_cette_recompense'), rewardName, [
-      { text: 'Annuler', style: 'cancel' },
+      { text: tr('commun.annuler'), style: 'cancel' },
       {
         text: tr('loyalty.echanger'),
         onPress: () =>
@@ -26,7 +26,7 @@ export function LoyaltyScreen() {
               Alert.alert(
                 tr('loyalty.echange_confirme'),
                 result.voucher_code
-                  ? `Votre code : ${result.voucher_code}`
+                  ? traduireMaintenant('loyalty.votre_code', { code: result.voucher_code })
                   : tr('loyalty.votre_recompense_est_en_cours_de_traitement'),
               ),
             onError: () => Alert.alert(tr('loyalty.echec'), tr('loyalty.l_echange_n_a_pas')),

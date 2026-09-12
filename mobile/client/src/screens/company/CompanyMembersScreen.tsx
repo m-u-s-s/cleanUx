@@ -16,15 +16,16 @@ import { useTraduction, traduireMaintenant } from '@/i18n';
  * gestionnaire serait lui montrer une clé de base de données. Un rôle inconnu retombe sur sa
  * valeur brute plutôt que de disparaître — un membre sans rôle affiché serait plus trompeur.
  */
+/* Des CLES, pas des libelles : traduits ici, ils garderaient la langue du demarrage. */
 const LIBELLE_ROLE: Record<string, string> = {
-  owner: traduireMaintenant('company_members.proprietaire'),
-  manager: 'Gestionnaire',
-  site_manager: traduireMaintenant('company_members.responsable_de_site'),
-  finance: 'Finance',
-  requester: 'Demandeur',
-  operations_manager: "Responsable d'exploitation",
-  worker: 'Intervenant',
-  viewer: 'Lecture seule',
+  owner: 'company_members.proprietaire',
+  manager: 'company_members.role_gestionnaire',
+  site_manager: 'company_members.responsable_de_site',
+  finance: 'company_members.role_finance',
+  requester: 'company_members.role_demandeur',
+  operations_manager: 'company_members.role_responsable_exploitation',
+  worker: 'company_members.role_intervenant',
+  viewer: 'company_members.role_lecture_seule',
 };
 
 export function CompanyMembersScreen() {
@@ -42,7 +43,7 @@ export function CompanyMembersScreen() {
         <EmptyState
           title={tr('company_members.membres_indisponibles')}
           message={tr('company_members.impossible_de_charger_l_equipe_de_votre')}
-          actionLabel="Réessayer"
+          actionLabel={tr('company_members.reessayer')}
           onAction={() => void refetch()}
         />
       </Screen>
@@ -69,7 +70,7 @@ export function CompanyMembersScreen() {
                 {item.name ?? tr('company_members.compte_supprime')}
               </Text>
               <Text style={styles.detail} numberOfLines={1}>
-                {item.email ?? '—'} · {LIBELLE_ROLE[item.role] ?? item.role}
+                {item.email ?? '—'} · {tr(LIBELLE_ROLE[item.role] ?? item.role)}
               </Text>
             </View>
 

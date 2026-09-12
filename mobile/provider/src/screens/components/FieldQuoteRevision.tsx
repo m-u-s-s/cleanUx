@@ -73,10 +73,7 @@ export function FieldQuoteRevision({
       <View style={styles.section} testID="revision-en-attente">
         <Text style={styles.titre}>{tr('field_quote_revision.nouveau_devis_envoye')}</Text>
         <Text style={styles.montant}>{euros(revision.revised_total_cents, revision.currency)}</Text>
-        <Text style={styles.note}>
-          Le client répond depuis son téléphone. Son devis d’origine était de{' '}
-          {euros(revision.original_total_cents, revision.currency)}.
-        </Text>
+        <Text style={styles.note}>{tr('field_quote_revision.devis_d_origine_etait_de', { montant: euros(revision.original_total_cents, revision.currency) })}</Text>
         <Button
           label={tr('field_quote_revision.retirer_ma_proposition')}
           variant="secondary"
@@ -186,15 +183,12 @@ export function FieldQuoteRevision({
   return (
     <View style={styles.section} testID="revision-formulaire">
       <Text style={styles.titre}>{tr('field_quote_revision.nouveau_devis')}</Text>
-      <Text style={styles.note}>
-        À faire maintenant, avant de commencer. Un imprévu découvert en travaillant se propose en
-        supplément.
-      </Text>
+      <Text style={styles.note}>{tr('field_quote_revision.a_faire_maintenant_avant_de_commencer_un')}</Text>
 
       <TextInput
         /* Le symbole etait ecrit en dur : un prestataire marocain annoncait un prix
            dans une monnaie que son client ne paiera pas. */
-        label={`Ce que vaut la prestation (${symboleDeLaDevise(fenetre?.currency)})`}
+        label={tr('field_quote_revision.ce_que_vaut_la_prestation', { devise: symboleDeLaDevise(fenetre?.currency) })}
         value={prix}
         onChangeText={setPrix}
         placeholder="300"

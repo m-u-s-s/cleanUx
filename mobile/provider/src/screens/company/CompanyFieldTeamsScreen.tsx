@@ -157,7 +157,7 @@ export function CompanyFieldTeamsScreen() {
                 </Text>
                 <Text style={styles.detail} numberOfLines={1}>
                   {item.zone ?? tr('company_field_teams.aucune_zone')} · {item.lead ?? 'Sans responsable'}
-                  {item.max_concurrent_missions ? ` · ${item.max_concurrent_missions} en parallèle` : ''}
+                  {item.max_concurrent_missions ? ` · ${tr('company_field_teams.n_en_parallele', { n: item.max_concurrent_missions })}` : ''}
                 </Text>
               </View>
 

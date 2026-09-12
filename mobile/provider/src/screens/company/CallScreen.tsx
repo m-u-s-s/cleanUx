@@ -113,10 +113,7 @@ export function CallScreen() {
         </Text>
 
         {etat === 'indisponible' && (
-          <Text style={styles.aide}>
-            La fonction dtr('call.appel_demande_une_version_de_l')application reconstruite avec le module
-            audio. Utilisez une note vocale en attendant.
-          </Text>
+          <Text style={styles.aide}>{tr('call.appel_demande_une_version_reconstruite')}</Text>
         )}
 
         <View style={styles.actions}>

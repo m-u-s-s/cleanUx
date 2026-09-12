@@ -4,7 +4,7 @@ import { Screen } from '@/ui';
 import {spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { traduireMaintenant } from '@/i18n';
+import { useTraduction } from '@/i18n';
 
 /**
  * Filet de sécurité du lot A.
@@ -15,18 +15,16 @@ import { traduireMaintenant } from '@/i18n';
  * vérité plutôt que de faire tomber l'application sur une route inconnue.
  */
 export function AdminResourceScreen({ route }: { route: { params?: { title?: string } } }) {
+  const { t: tr } = useTraduction();
   const styles = stylesFor(useThemeColors());
 
-  const title = route.params?.title ?? traduireMaintenant('admin_resource.ce_module');
+  const title = route.params?.title ?? tr('admin_resource.ce_module');
 
   return (
     <Screen>
       <View style={styles.container}>
-        <Text style={styles.title}>{title} n’est pas encore servi ici</Text>
-        <Text style={styles.body}>
-          Le module est déclaré couvert dans le registre, mais l’écran qui doit le rendre n’est pas
-          encore livré. Il reste disponible sur le web en attendant.
-        </Text>
+        <Text style={styles.title}>{tr('admin_resource.titre_pas_encore_servi', { titre: title })}</Text>
+        <Text style={styles.body}>{tr('admin_resource.le_module_est_declare_couvert_dans_le')}</Text>
       </View>
     </Screen>
   );

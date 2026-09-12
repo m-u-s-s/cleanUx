@@ -59,12 +59,10 @@ export function MissionTodoCard({ bookingId }: { bookingId: number }) {
 
   return (
     <CarteDeMission titre={tr('mission_todo.ma_liste_de_taches')} testID="ma-todo-list">
-      <Text style={styles.avertissement}>
-        Le prestataire ne pourra pas terminer tant que ces tâches ne sont pas faites.
+      <Text style={styles.avertissement}>{tr('mission_todo.le_prestataire_ne_pourra_pas_terminer')}
         {fenetre.open && fenetre.minutes_left !== null
-          ? ` Vous pouvez modifier cette liste pendant encore ${fenetre.minutes_left} min.`
-          : ''}
-      </Text>
+          ? ` ${tr('mission_todo.fenetre_de_modification', { n: fenetre.minutes_left })}`
+          : ''}</Text>
 
       {liste.items.map((item) => (
         <View key={item.id} style={styles.ligne}>

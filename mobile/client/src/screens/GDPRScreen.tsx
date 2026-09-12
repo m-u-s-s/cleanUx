@@ -27,9 +27,9 @@ export function GDPRScreen() {
 
   const handleErase = () => {
     Alert.alert(tr('g_d_p_r.suppression_des_donnees'), tr('g_d_p_r.cette_action_est_irreversible_continuer'), [
-      { text: 'Annuler', style: 'cancel' },
+      { text: tr('commun.annuler'), style: 'cancel' },
       {
-        text: 'Supprimer',
+        text: tr('commun.supprimer'),
         style: 'destructive',
         onPress: () =>
           eraseData.mutate(undefined, {

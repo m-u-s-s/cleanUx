@@ -134,7 +134,7 @@ export function CompanyPlanningScreen() {
           <View style={styles.ligne} testID={`creneau-${item.id}`}>
             <View style={styles.identite}>
               <Text style={styles.nom} numberOfLines={1}>
-                {item.user_name ?? 'Sans nom'}
+                {item.user_name ?? tr('commun.sans_nom')}
               </Text>
               <Text style={styles.detail} numberOfLines={1}>
                 {formaterCreneau(item.starts_at, item.ends_at)}
@@ -191,7 +191,7 @@ export function CompanyPlanningScreen() {
             <View key={absence.id} style={styles.ligne} testID={`absence-${absence.id}`}>
               <View style={styles.identite}>
                 <Text style={styles.nom} numberOfLines={1}>
-                  {absence.user_name ?? 'Sans nom'}
+                  {absence.user_name ?? tr('commun.sans_nom')}
                 </Text>
                 <Text style={styles.detail} numberOfLines={1}>
                   {absence.starts_on} → {absence.ends_on}

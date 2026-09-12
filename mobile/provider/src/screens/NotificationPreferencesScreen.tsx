@@ -5,7 +5,7 @@ import { apiClient } from '@/api';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 // Hors composant : les deux textes portent leur CLE, l'ecran traduit au rendu.
 const CATEGORIES = [
@@ -16,9 +16,11 @@ const CATEGORIES = [
   { key: 'system', libelleCle: 'notification_preferences.systeme', descriptionCle: 'notification_preferences.mises_a_jour_maintenance' },
 ];
 
+/* Des CLES : traduite ici, la table garderait la langue du demarrage.
+   Le sigle SMS ne se traduit pas. */
 const CHANNELS = [
-  { key: 'push', label: 'Push' },
-  { key: 'email', label: 'Email' },
+  { key: 'push', label: 'notification_preferences.push' },
+  { key: 'email', label: 'notification_preferences.email' },
   { key: 'sms', label: 'SMS' },
 ];
 
@@ -70,7 +72,7 @@ export function NotificationPreferencesScreen() {
           <View style={styles.channels}>
             {CHANNELS.map(ch => (
               <View key={ch.key} style={styles.channelRow}>
-                <Text style={styles.channelLabel}>{ch.label}</Text>
+                <Text style={styles.channelLabel}>{tr(ch.label)}</Text>
                 <Switch
                   value={prefs[cat.key]?.[ch.key] !== false}
                   onValueChange={() => toggle(cat.key, ch.key)}

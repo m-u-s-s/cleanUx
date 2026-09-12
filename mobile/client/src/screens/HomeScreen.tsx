@@ -94,7 +94,7 @@ export function HomeScreen() {
             <Icon name="home-outline" size={48} color={colors.brand[400]} />
             <Text style={styles.welcomeTitle}>{tr('home.bienvenue_sur_brio')}</Text>
             <Text style={styles.welcomeText}>
-              Réservez votre premier service et découvrez une nouvelle façon de gérer votre maison.
+              {tr('home.reservez_votre_premier_service')}
             </Text>
           </View>
         ) : focus ? (
@@ -163,9 +163,9 @@ export function HomeScreen() {
         */}
         {autresBookings.length > 0 ? (
           <View style={styles.othersWrap} testID="home-other-bookings">
-            <Text style={styles.moreLabel}>
-              {autresBookings.length} autre{autresBookings.length > 1 ? 's' : ''} en cours
-            </Text>
+            <Text style={styles.moreLabel}>{autresBookings.length === 1
+                ? tr('home.une_autre_en_cours')
+                : tr('home.n_autres_en_cours', { n: autresBookings.length })}</Text>
 
             {autresBookings.map(b => (
               <TouchableOpacity

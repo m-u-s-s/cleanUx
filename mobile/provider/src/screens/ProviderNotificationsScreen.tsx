@@ -23,7 +23,7 @@ export function ProviderNotificationsScreen() {
 
   const handleRefresh = useCallback(() => {
     refetch().then(() => {
-      a11y.announce(`${notifs?.length ?? 0} notifications chargées`);
+      a11y.announce(tr('provider_notifications.n_notifications_chargees', { n: notifs?.length ?? 0 }));
     });
   }, [refetch, notifs?.length]);
 

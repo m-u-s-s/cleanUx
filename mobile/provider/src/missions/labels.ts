@@ -26,17 +26,21 @@ import { traduireMaintenant } from '@/i18n';
  * `MissionsStatutsAlignesTest` interdit désormais toute réapparition : cette table doit rester un
  * miroir de `MissionStatus::all()`.
  */
+/* La table porte la CLE, jamais le libelle : traduite ici, elle figerait la langue du
+   chargement du module, et le changement de langue ne la rattraperait plus. */
 export const MISSION_STATUS_LABELS: Record<string, string> = {
-  planned: 'Planifiée',
-  assigned: 'Assignée',
-  en_route: 'En route',
-  arrived: traduireMaintenant('labels.sur_place'),
-  started: 'En cours',
-  paused: 'En pause',
-  completed: 'Terminée',
-  cancelled: 'Annulée',
+  planned: 'labels.statut_planifiee',
+  assigned: 'labels.statut_assignee',
+  en_route: 'labels.statut_en_route',
+  arrived: 'labels.sur_place',
+  started: 'labels.statut_en_cours',
+  paused: 'labels.statut_en_pause',
+  completed: 'labels.statut_terminee',
+  cancelled: 'labels.statut_annulee',
 };
 
 export function missionStatusLabel(status: string): string {
-  return MISSION_STATUS_LABELS[status] ?? status;
+  const cle = MISSION_STATUS_LABELS[status];
+
+  return cle ? traduireMaintenant(cle) : status;
 }

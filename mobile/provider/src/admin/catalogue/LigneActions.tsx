@@ -4,6 +4,7 @@ import { Icon } from '@/ui';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { traduireMaintenant } from '@/i18n';
 
 export interface ActionDeLigne {
   cle: string;
@@ -45,9 +46,9 @@ export function LigneActions({ sujet, actions }: Props) {
 
     Alert.alert(
       action.libelle,
-      `${sujet} — cette action ne s’annule pas.`,
+      traduireMaintenant('ligne_actions.action_irreversible', { sujet }),
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: traduireMaintenant('commun.annuler'), style: 'cancel' },
         { text: action.libelle, style: 'destructive', onPress: () => void action.executer() },
       ],
     );
@@ -58,7 +59,7 @@ export function LigneActions({ sujet, actions }: Props) {
       <Pressable
         onPress={() => setOuvert((o) => !o)}
         accessibilityRole="button"
-        accessibilityLabel={`Actions sur ${sujet}`}
+        accessibilityLabel={traduireMaintenant('ligne_actions.actions_sur', { sujet })}
         accessibilityState={{ expanded: ouvert }}
         hitSlop={8}
         style={styles.declencheur}

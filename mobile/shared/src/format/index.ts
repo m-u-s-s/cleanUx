@@ -43,10 +43,13 @@ export function libelleStatut(statut: string | null | undefined): string {
   return cle ? traduireMaintenant(cle) : statut;
 }
 
-const MOIS = [
-  'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-  'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
-];
+/* Les noms de mois se lisent A L'APPEL. Un tableau de libelles, evalue au chargement du
+   module, garderait la langue du demarrage pour toute la session. */
+function moisLisible(index: number): string | undefined {
+  return index >= 0 && index < 12
+    ? traduireMaintenant(`format.mois_${index + 1}`)
+    : undefined;
+}
 
 /**
  * « 20 août 2026 à 11h00 » à partir d'une date ISO et d'une heure.
@@ -66,14 +69,14 @@ export function formatDateHeure(date?: string | null, heure?: string | null): st
   const parties = date.slice(0, 10).split('-');
 
   if (parties.length !== 3) {
-    return heure ? `${date} à ${heure}` : date;
+    return heure ? traduireMaintenant('format.date_a_heure', { date, heure }) : date;
   }
 
   const [annee, mois, jour] = parties;
-  const nomDuMois = MOIS[Number(mois) - 1];
+  const nomDuMois = moisLisible(Number(mois) - 1);
 
   if (!nomDuMois) {
-    return heure ? `${date} à ${heure}` : date;
+    return heure ? traduireMaintenant('format.date_a_heure', { date, heure }) : date;
   }
 
   const lisible = `${Number(jour)} ${nomDuMois} ${annee}`;
@@ -272,7 +275,7 @@ export function formatHeureDuFil(iso: string | null | undefined, maintenant: Dat
     return lu.hhmm;
   }
 
-  return `${lu.d.getDate()} ${MOIS[lu.d.getMonth()] ?? '?'} à ${lu.hhmm}`;
+  return traduireMaintenant('format.date_a_heure', { date: `${lu.d.getDate()} ${moisLisible(lu.d.getMonth()) ?? '?'}`, heure: lu.hhmm });
 }
 
 /**
@@ -322,9 +325,9 @@ export function formatDateIso(iso: string | null | undefined, avecHeure = false)
     return '';
   }
 
-  const jour = `${lu.d.getDate()} ${MOIS[lu.d.getMonth()] ?? '?'} ${lu.d.getFullYear()}`;
+  const jour = `${lu.d.getDate()} ${moisLisible(lu.d.getMonth()) ?? '?'} ${lu.d.getFullYear()}`;
 
-  return avecHeure ? `${jour} à ${lu.hhmm}` : jour;
+  return avecHeure ? traduireMaintenant('format.date_a_heure', { date: jour, heure: lu.hhmm }) : jour;
 }
 
 /**

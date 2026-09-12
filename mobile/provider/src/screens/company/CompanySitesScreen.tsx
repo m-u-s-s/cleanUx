@@ -84,7 +84,7 @@ export function CompanySitesScreen() {
         <EmptyState
           title={tr('company_sites.sites_indisponibles')}
           message={tr('company_sites.impossible_de_charger_les_sites_desservis_par')}
-          actionLabel="Réessayer"
+          actionLabel={tr('company_sites.reessayer_2')}
           onAction={() => void refetch()}
         />
       </Screen>

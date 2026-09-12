@@ -10,6 +10,7 @@ import { AdminDirectoryScreen } from './AdminDirectoryScreen';
 import { AdminProfileScreen } from './AdminProfileScreen';
 import { CatalogCountriesScreen } from './catalogue/CatalogCountriesScreen';
 import type { AdminTabParamList } from './types';
+import { traduireMaintenant } from '@/i18n';
 
 const Tab = createBottomTabNavigator<AdminTabParamList>();
 
@@ -42,8 +43,8 @@ export function AdminNavigator() {
           name="AdminHome"
           component={AdminHomeScreen}
           options={{
-            title: 'Vue d’ensemble',
-            tabBarLabel: 'Accueil',
+            title: traduireMaintenant('admin_navigator.vue_d_ensemble'),
+            tabBarLabel: traduireMaintenant('admin_navigator.accueil'),
             tabBarIcon: ({ color, size }) => <Icon name="speedometer-outline" size={size} color={color} />,
           }}
         />
@@ -51,8 +52,8 @@ export function AdminNavigator() {
           name="AdminDirectory"
           component={AdminDirectoryScreen}
           options={{
-            title: 'Modules',
-            tabBarLabel: 'Modules',
+            title: traduireMaintenant('admin_navigator.modules'),
+            tabBarLabel: traduireMaintenant('admin_navigator.modules_2'),
             tabBarIcon: ({ color, size }) => <Icon name="grid-outline" size={size} color={color} />,
           }}
         />
@@ -60,8 +61,8 @@ export function AdminNavigator() {
           name="AdminCatalog"
           component={CatalogCountriesScreen}
           options={{
-            title: 'Catalogue',
-            tabBarLabel: 'Catalogue',
+            title: traduireMaintenant('admin_navigator.catalogue'),
+            tabBarLabel: traduireMaintenant('admin_navigator.catalogue_2'),
             tabBarIcon: ({ color, size }) => <Icon name="sparkles-outline" size={size} color={color} />,
           }}
         />
@@ -69,8 +70,8 @@ export function AdminNavigator() {
           name="AdminProfile"
           component={AdminProfileScreen}
           options={{
-            title: 'Profil',
-            tabBarLabel: 'Profil',
+            title: traduireMaintenant('admin_navigator.profil'),
+            tabBarLabel: traduireMaintenant('admin_navigator.profil_2'),
             tabBarIcon: ({ color, size }) => <Icon name="person-outline" size={size} color={color} />,
           }}
         />

@@ -70,7 +70,7 @@ export function CompanyProfileScreen() {
         <Row
           icon="swap-horizontal-outline"
           label={tr('company_profile.changer_despace')}
-          hint="Revenir au choix d’espace"
+          hint={tr('company_profile.revenir_au_choix_d_espace')}
           onPress={() => void clear()}
         />
       ) : null}

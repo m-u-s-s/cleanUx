@@ -1,10 +1,11 @@
 import React from 'react';
 import { Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { PulseDot } from '@/ui';
-import { usePresence, PRESENCE_LABELS, PRESENCE_VARIANTS } from '@/presence';
+import { usePresence, presenceLabel, PRESENCE_VARIANTS } from '@/presence';
 import {spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { traduireMaintenant } from '@/i18n';
 
 /**
  * Affichage seul : la pilule n'écrit jamais le statut, le seul chemin d'écriture reste
@@ -27,10 +28,10 @@ export function PresencePill({ onPress }: { onPress: () => void }) {
       onPress={onPress}
       testID="presence-pill"
       accessibilityRole="button"
-      accessibilityLabel={`Statut de présence : ${PRESENCE_LABELS[status]}. Toucher pour ouvrir les actions.`}
+      accessibilityLabel={traduireMaintenant('presence.statut_toucher_pour_ouvrir', { statut: presenceLabel(status) })}
     >
       {status !== 'offline' && <PulseDot variant={PRESENCE_VARIANTS[status]} />}
-      <Text style={styles.label}>{PRESENCE_LABELS[status]}</Text>
+      <Text style={styles.label}>{presenceLabel(status)}</Text>
     </TouchableOpacity>
   );
 }

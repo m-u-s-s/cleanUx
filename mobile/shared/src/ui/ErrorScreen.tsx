@@ -18,7 +18,7 @@ export function ErrorScreen({
   title = traduireMaintenant('error.une_erreur_est_survenue'),
   message = traduireMaintenant('error.verifiez_votre_connexion_et_reessayez'),
   onRetry,
-  retryLabel = 'Réessayer',
+  retryLabel = traduireMaintenant('commun.reessayer'),
 }: ErrorScreenProps) {
   const styles = stylesFor(useThemeColors());
 

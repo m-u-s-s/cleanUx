@@ -196,12 +196,12 @@ export function CompanyMissionDetailScreen() {
           colonnes={2}
           cases={[
             {
-              libelle: 'Etat',
+              libelle: tr('company_mission_detail.etat'),
               valeur: missionStatusLabel(mission.status),
               ton: tonDuStatut(mission.status),
             },
             {
-              libelle: 'Creneau',
+              libelle: tr('company_mission_detail.creneau'),
               valeur: mission.planned_start_at
                 ? new Date(mission.planned_start_at).toLocaleString('fr-FR', {
                     weekday: 'short',
@@ -213,18 +213,18 @@ export function CompanyMissionDetailScreen() {
                 : 'Non planifiee',
               ton: mission.planned_start_at ? 'accent' : 'attention',
             },
-            { libelle: 'Lieu', valeur: mission.city ?? '—' },
+            { libelle: tr('company_mission_detail.lieu'), valeur: mission.city ?? '—' },
             {
-              libelle: 'Responsable',
+              libelle: tr('company_mission_detail.responsable'),
               valeur: mission.lead ?? 'Non assignee',
               ton: mission.lead ? 'bon' : 'attention',
             },
             ...(peutRepartir
               ? [
                   {
-                    libelle: 'Libres',
+                    libelle: tr('company_mission_detail.libres'),
                     valeur: (dispos ?? []).filter((x) => x.is_free).length,
-                    note: `sur ${(dispos ?? []).length} propose(s)`,
+                    note: tr('company_mission_detail.sur_n_proposes', { n: (dispos ?? []).length }),
                     ton: (dispos ?? []).some((x) => x.is_free) ? ('bon' as const) : ('alerte' as const),
                   },
                 ]

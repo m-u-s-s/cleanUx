@@ -90,7 +90,7 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
     return (
       <Screen>
         <ErrorState
-          message={`« ${title} » n’a pas pu être chargé.`}
+          message={tr('admin_console.titre_non_charge', { titre: title })}
           onRetry={() => {
             void refetch();
           }}
@@ -135,8 +135,8 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
 
     if (action.confirm) {
       Alert.alert(action.label, action.confirm, [
-        { text: 'Annuler', style: 'cancel' },
-        { text: 'Confirmer', style: 'destructive', onPress: () => lancer(action) },
+        { text: tr('commun.annuler'), style: 'cancel' },
+        { text: tr('commun.confirmer'), style: 'destructive', onPress: () => lancer(action) },
       ]);
 
       return;

@@ -1,4 +1,5 @@
 import { colors } from '@/theme';
+import { traduireMaintenant } from '@/i18n';
 import type { NotificationSeverity } from './hooks';
 import { formatDateIso } from '../format';
 
@@ -57,15 +58,17 @@ export function severityAccent(severity: NotificationSeverity, bordureParDefaut:
  * sont rendues telles quelles plutôt que masquées — une clé ajoutée demain doit rester visible.
  */
 const LIBELLES: Record<string, string> = {
-  rdv_id: 'Mission',
-  invoice_number: 'Facture',
-  zone: 'Zone',
-  service: 'Service',
-  google_email: 'Compte Google',
+  rdv_id: 'presentation.contexte_mission',
+  invoice_number: 'presentation.contexte_facture',
+  zone: 'presentation.contexte_zone',
+  service: 'presentation.contexte_service',
+  google_email: 'presentation.contexte_compte_google',
 };
 
 export function contextLabel(cle: string): string {
-  return LIBELLES[cle] ?? cle;
+  const traduction = LIBELLES[cle];
+
+  return traduction ? traduireMaintenant(traduction) : cle;
 }
 
 /**

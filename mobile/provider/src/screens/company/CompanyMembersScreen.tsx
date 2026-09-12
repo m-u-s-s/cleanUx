@@ -18,18 +18,19 @@ interface Membre {
   status: string;
 }
 
+/* Des CLES, pas des libelles : traduits ici, ils garderaient la langue du demarrage. */
 const LIBELLES_ROLE: Record<string, string> = {
-  owner: traduireMaintenant('company_members.proprietaire_2'),
-  operations_manager: 'Responsable exploitation',
-  manager: 'Gestionnaire',
-  dispatcher: 'Répartiteur',
-  site_manager: traduireMaintenant('company_members.responsable_de_site_2'),
-  team_lead: "Chef d'équipe",
-  quality_manager: 'Qualité',
-  finance: 'Finance',
-  requester: 'Demandeur',
-  worker: 'Employé',
-  viewer: 'Lecture seule',
+  owner: 'company_members.proprietaire_2',
+  operations_manager: 'company_members.role_responsable_exploitation_2',
+  manager: 'company_members.role_gestionnaire_2',
+  dispatcher: 'company_members.role_repartiteur',
+  site_manager: 'company_members.responsable_de_site_2',
+  team_lead: 'company_members.role_chef_d_equipe',
+  quality_manager: 'company_members.role_qualite',
+  finance: 'company_members.role_finance_2',
+  requester: 'company_members.role_demandeur_2',
+  worker: 'company_members.role_employe',
+  viewer: 'company_members.role_lecture_seule_2',
 };
 
 /**
@@ -129,9 +130,9 @@ export function CompanyMembersScreen() {
       tr('company_members.retirer_ce_membre'),
       `${membre.name ?? tr('company_members.ce_compte')} perdra l'accès, ses missions à venir retourneront à la répartition et il quittera les canaux de la société. Son historique est conservé.`,
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: tr('commun.annuler'), style: 'cancel' },
         {
-          text: 'Retirer',
+          text: tr('commun.retirer'),
           style: 'destructive',
           onPress: () =>
             executer.mutate(() => apiClient.delete(`/provider/company/members/${membre.id}`)),
@@ -167,7 +168,7 @@ export function CompanyMembersScreen() {
               </View>
 
               <Badge
-                label={LIBELLES_ROLE[item.role] ?? item.role}
+                label={tr(LIBELLES_ROLE[item.role] ?? item.role)}
                 variant={item.status === 'active' ? 'brand' : 'neutral'}
               />
             </Pressable>
@@ -180,7 +181,7 @@ export function CompanyMembersScreen() {
                     {ROLES_ATTRIBUABLES.filter((role) => role !== item.role).map((role) => (
                       <View key={role} style={styles.action}>
                         <Button
-                          label={LIBELLES_ROLE[role] ?? role}
+                          label={tr(LIBELLES_ROLE[role] ?? role)}
                           variant="secondary"
                           fullWidth
                           onPress={() => changerLeRole(item, role)}

@@ -149,9 +149,7 @@ export function OfferModal({ offer, onDismiss }: Props) {
                 division mentale ; sous la minute, les secondes restent la bonne unité, c'est là
                 qu'elles pressent.
               */}
-              <Text style={styles.timerText} testID="offer-countdown">
-                {formatDelai(secondsLeft)} pour répondre
-              </Text>
+              <Text style={styles.timerText} testID="offer-countdown">{tr('offer_modal.n_pour_repondre', { delai: formatDelai(secondsLeft) })}</Text>
             </View>
           ) : null}
 

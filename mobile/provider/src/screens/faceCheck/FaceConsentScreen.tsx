@@ -40,12 +40,11 @@ export function FaceConsentScreen() {
   const demanderLeRetrait = () => {
     Alert.alert(
       tr('face_consent.retirer_votre_consentement'),
-      tr('face_consent.votre_visage_de_reference_sera')
-        + "qui exigent un contrôle dtr('face_consent.identite_tant_que_vous_ne_l')aurez pas ré-enregistré.",
+      tr('face_consent.retrait_du_consentement_consequence'),
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: tr('commun.annuler'), style: 'cancel' },
         {
-          text: 'Retirer',
+          text: tr('commun.retirer'),
           style: 'destructive',
           onPress: () => {
             retrait.mutate(undefined, {
@@ -66,10 +65,7 @@ export function FaceConsentScreen() {
       <ScrollView contentContainerStyle={styles.corps}>
         <Text style={styles.titre}>{tr('face_consent.controle_facial')}</Text>
 
-        <Text style={styles.texte}>
-          Votre visage de référence sert à vérifier, au moment d’une intervention, que la personne
-          qui se présente est bien celle qui a accepté la mission.
-        </Text>
+        <Text style={styles.texte}>{tr('face_consent.votre_visage_de_reference_sert_a_verifier')}</Text>
 
         {statut?.consent_text ? (
           <Text style={styles.texte}>{statut.consent_text}</Text>
@@ -85,7 +81,7 @@ export function FaceConsentScreen() {
         </View>
 
         {statut?.consent_version ? (
-          <Text style={styles.precision}>Version du consentement : {statut.consent_version}</Text>
+          <Text style={styles.precision}>{tr('face_consent.version_du_consentement', { version: statut.consent_version })}</Text>
         ) : null}
 
         <Divider />
@@ -93,20 +89,14 @@ export function FaceConsentScreen() {
         {retire ? (
           <View style={styles.encart}>
             <Text style={styles.encartTitre}>{tr('face_consent.consentement_retire')}</Text>
-            <Text style={styles.encartTexte}>
-              Votre visage de référence a été supprimé. Vous ne pourrez plus intervenir sur les
-              métiers qui exigent un contrôle d’identité tant que vous ne l’aurez pas ré-enregistré.
-            </Text>
+            <Text style={styles.encartTexte}>{tr('face_consent.votre_visage_de_reference_a_ete_supprime')}</Text>
             <View style={styles.action}>
               <Button label={tr('face_consent.retour')} onPress={() => navigation.goBack()} variant="secondary" fullWidth />
             </View>
           </View>
         ) : (
           <>
-            <Text style={styles.avertissement}>
-              Retirer votre consentement vous empêchera d’intervenir sur les métiers qui exigent
-              ce contrôle, jusqu’à un nouvel enregistrement.
-            </Text>
+            <Text style={styles.avertissement}>{tr('face_consent.retirer_votre_consentement_vous_empechera_d_intervenir')}</Text>
 
             <View style={styles.action}>
               <Button

@@ -29,18 +29,18 @@ export function MissionInboxScreen() {
   const position = useCurrentPosition(useIsFocused());
 
   const handleAccept = useCallback((a: MissionAssignment) => {
-    Alert.alert(tr('mission_inbox.accepter'), `Accepter la mission ${a.service_name} ?`, [
-      { text: 'Annuler', style: 'cancel' },
-      { text: 'Accepter', onPress: () => {
+    Alert.alert(tr('mission_inbox.accepter'), tr('mission_inbox.accepter_la_mission_service', { service: a.service_name ?? '' }), [
+      { text: tr('commun.annuler'), style: 'cancel' },
+      { text: tr('commun.accepter'), onPress: () => {
         accept.mutate(a.id);
-        a11y.announce(`Mission ${a.service_name} acceptée`);
+        a11y.announce(tr('mission_inbox.mission_service_acceptee', { service: a.service_name ?? '' }));
       }},
     ]);
   }, [accept]);
 
   const handleDecline = useCallback((a: MissionAssignment) => {
     Alert.alert(tr('mission_inbox.decliner'), tr('mission_inbox.decliner_cette_mission'), [
-      { text: 'Annuler', style: 'cancel' },
+      { text: tr('commun.annuler'), style: 'cancel' },
       { text: tr('mission_inbox.decliner'), style: 'destructive', onPress: () => {
         decline.mutate(a.id);
         a11y.announce(tr('mission_inbox.mission_declinee'));

@@ -25,16 +25,17 @@ import { useTraduction, traduireMaintenant } from '@/i18n';
  */
 type Purpose = 'presence' | 'completion';
 
+/* Des CLES : traduite ici, la table garderait la langue du demarrage. */
 const WORDING: Record<Purpose, { title: string; hint: string; tag: string }> = {
   presence: {
-    title: traduireMaintenant('presence_code.confirmez_la_presence'),
-    hint: "Montrez ce code à votre prestataire. Il le scanne pour attester qu'il est bien chez vous.",
+    title: 'presence_code.confirmez_la_presence',
+    hint: 'presence_code.montrez_ce_code_a_votre_prestataire',
     tag: 'brio.presence',
   },
   // La clôture encaisse le paiement pré-autorisé : le client doit comprendre ce qu'il valide.
   completion: {
-    title: traduireMaintenant('presence_code.validez_la_fin_de_la_prestation'),
-    hint: traduireMaintenant('presence_code.montrez_ce_code_une_fois_le_travail'),
+    title: 'presence_code.validez_la_fin_de_la_prestation',
+    hint: 'presence_code.montrez_ce_code_une_fois_le_travail',
     tag: 'brio.completion',
   },
 };
@@ -79,8 +80,8 @@ export function PresenceCodeCard({
 
   return (
     <View style={styles.card} testID="presence-code-card">
-      <Text style={styles.title}>{wording.title}</Text>
-      <Text style={styles.hint}>{wording.hint}</Text>
+      <Text style={styles.title}>{tr(wording.title)}</Text>
+      <Text style={styles.hint}>{tr(wording.hint)}</Text>
 
       {isPending ? (
         <View style={styles.placeholder} testID="presence-code-loading">

@@ -12,6 +12,7 @@ import { TripTrackingHost } from '@/tracking';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { TabParamList } from './types';
+import { traduireMaintenant } from '@/i18n';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -53,7 +54,7 @@ export function TabNavigator() {
         name="Dashboard"
         component={DashboardScreen}
         options={{
-          tabBarLabel: 'Accueil',
+          tabBarLabel: traduireMaintenant('tab_navigator.accueil_2'),
           tabBarIcon: ({ color, size }) => <Icon name="grid-outline" size={size} color={color} />,
         }}
       />
@@ -61,7 +62,7 @@ export function TabNavigator() {
         name="Missions"
         component={MissionsScreen}
         options={{
-          tabBarLabel: 'Missions',
+          tabBarLabel: traduireMaintenant('tab_navigator.missions'),
           tabBarIcon: ({ color, size }) => <Icon name="briefcase-outline" size={size} color={color} />,
         }}
       />
@@ -85,7 +86,7 @@ export function TabNavigator() {
         name="Earnings"
         component={WalletScreen}
         options={{
-          tabBarLabel: 'Revenus',
+          tabBarLabel: traduireMaintenant('tab_navigator.revenus'),
           tabBarIcon: ({ color, size }) => <Icon name="wallet-outline" size={size} color={color} />,
         }}
       />
@@ -93,7 +94,7 @@ export function TabNavigator() {
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarLabel: 'Profil',
+          tabBarLabel: traduireMaintenant('tab_navigator.profil_2'),
           tabBarIcon: ({ color, size }) => <Icon name="person-outline" size={size} color={color} />,
         }}
       />

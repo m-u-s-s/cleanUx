@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { PulseDot, Badge } from '@/ui';
-import { usePresence, PRESENCE_LABELS, PRESENCE_VARIANTS } from '@/presence';
+import { usePresence, presenceLabel, PRESENCE_VARIANTS } from '@/presence';
 import type { PresenceStatus } from '@/presence/types';
 import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -17,7 +17,7 @@ export function PresenceToggle() {
     <View style={styles.container}>
       <View style={styles.header}>
         {status !== 'offline' && <PulseDot variant={PRESENCE_VARIANTS[status]} />}
-        <Text style={styles.label}>{PRESENCE_LABELS[status]}</Text>
+        <Text style={styles.label}>{presenceLabel(status)}</Text>
       </View>
       <View style={styles.buttons}>
         {statuses.map(s => (
@@ -31,7 +31,7 @@ export function PresenceToggle() {
             onPress={() => setPresenceStatus(s)}
           >
             <Text style={[styles.btnText, status === s && styles.btnTextActive]}>
-              {PRESENCE_LABELS[s]}
+              {presenceLabel(s)}
             </Text>
           </TouchableOpacity>
         ))}

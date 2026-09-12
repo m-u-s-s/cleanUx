@@ -63,9 +63,9 @@ export function WalletScreen() {
       tr('wallet.confirmer_le_versement'),
       tr('wallet.confirmer_le_virement', { montant: formatMontant(amount, balance?.currency) }),
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: tr('commun.annuler'), style: 'cancel' },
         {
-          text: 'Confirmer',
+          text: tr('commun.confirmer'),
           onPress: () =>
             withdraw.mutate(
               { amount },
@@ -129,7 +129,7 @@ export function WalletScreen() {
       ) : balanceQuery.isError ? (
         <ErrorState
           compact
-          message="Solde indisponible."
+          message={tr('wallet.solde_indisponible')}
           onRetry={() => void balanceQuery.refetch()}
         />
       ) : balance ? (

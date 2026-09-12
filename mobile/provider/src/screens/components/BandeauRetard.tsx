@@ -40,7 +40,7 @@ export function BandeauRetard({ missionId }: { missionId: number }) {
     annoncer.mutate(
       { minutes, reason: motif.trim() === '' ? undefined : motif.trim() },
       {
-        onSuccess: () => Alert.alert(tr('bandeau_retard.client_prevenu'), `Votre arrivée est annoncée dans ${minutes} min.`),
+        onSuccess: () => Alert.alert(tr('bandeau_retard.client_prevenu'), tr('bandeau_retard.arrivee_annoncee_dans_n_min', { n: minutes })),
         onError: (e: { message?: string }) =>
           Alert.alert(tr('bandeau_retard.impossible'), e.message ?? tr('bandeau_retard.l_annonce_n_est_pas_partie')),
       },
@@ -53,7 +53,7 @@ export function BandeauRetard({ missionId }: { missionId: number }) {
   return (
     <CarteDeMission
       ton="attention"
-      titre={`${formatRetard(retard.minutes)} de retard`}
+      titre={tr('bandeau_retard.n_de_retard', { retard: formatRetard(retard.minutes) })}
       testID="bandeau-retard"
     >
 
@@ -63,15 +63,13 @@ export function BandeauRetard({ missionId }: { missionId: number }) {
       */}
       <Text style={styles.etat}>
         {retard.prevenu_at
-          ? `Le client a été prévenu à ${new Date(retard.prevenu_at).toTimeString().slice(0, 5)}.`
+          ? tr('bandeau_retard.client_prevenu_a', { heure: new Date(retard.prevenu_at).toTimeString().slice(0, 5) })
           : tr('bandeau_retard.le_client_n_a_pas_encore_ete')}
-        {retard.annulation_gratuite ? ' Il peut annuler sans frais.' : ''}
+        {retard.annulation_gratuite ? ` ${tr('bandeau_retard.il_peut_annuler_sans_frais')}` : ''}
       </Text>
 
       {heureAnnoncee ? (
-        <Text style={styles.etat} testID="retard-deja-annonce">
-          Vous avez annoncé votre arrivée vers {heureAnnoncee}.
-        </Text>
+        <Text style={styles.etat} testID="retard-deja-annonce">{tr('bandeau_retard.vous_avez_annonce_votre_arrivee_vers', { heure: heureAnnoncee })}</Text>
       ) : null}
 
       <TextInput

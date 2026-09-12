@@ -61,10 +61,9 @@ export function QRScanScreen({ route, navigation }: Props) {
     return (
       <View style={styles.container}>
         <Text style={styles.title}>{tr('q_r_scan.acces_camera_requis')}</Text>
-        <Text style={styles.subtitle}>
-          Scannez le QR code du prestataire pour{' '}
-          {action === 'start' ? 'démarrer' : 'terminer'} la mission
-        </Text>
+        <Text style={styles.subtitle}>{action === 'start'
+            ? tr('qrscan.scannez_pour_demarrer')
+            : tr('qrscan.scannez_pour_terminer')}</Text>
         <Button label={tr('q_r_scan.autoriser_la_camera')} onPress={requestPermission} />
       </View>
     );

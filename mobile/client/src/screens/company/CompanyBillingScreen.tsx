@@ -48,7 +48,7 @@ export function CompanyBillingScreen() {
         <EmptyState
           title={tr('company_billing.facturation_indisponible')}
           message={tr('company_billing.votre_role_ne_permet_peut_etre_pas')}
-          actionLabel="Réessayer"
+          actionLabel={tr('company_billing.reessayer')}
           onAction={() => void refetch()}
         />
       </Screen>

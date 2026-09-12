@@ -21,12 +21,13 @@ type Props = NativeStackScreenProps<RootStackParamList, 'MissionTracking'>;
  * Le statut de session est un identifiant technique anglais ; l'application est en français.
  * Il s'affichait tel quel dans la pastille, faute de traduction.
  */
+/* Des CLES : traduite ici, la table garderait la langue du demarrage. */
 const STATUS_LABELS: Record<string, string> = {
-  enroute: 'En route',
-  arrived: traduireMaintenant('mission_tracking.sur_place'),
-  in_mission: 'En cours',
-  ended: 'Terminée',
-  cancelled: 'Annulée',
+  enroute: 'mission_tracking.statut_en_route',
+  arrived: 'mission_tracking.sur_place',
+  in_mission: 'mission_tracking.statut_en_cours',
+  ended: 'mission_tracking.statut_terminee',
+  cancelled: 'mission_tracking.statut_annulee',
 };
 
 /*
@@ -208,13 +209,13 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
                 id: bookingId,
                 latitude: currentPos.latitude,
                 longitude: currentPos.longitude,
-                title: 'Prestataire',
+                title: tr('mission_tracking.prestataire'),
               }] : []),
               ...(session?.destination ? [{
                 id: -bookingId,
                 latitude: session.destination.latitude,
                 longitude: session.destination.longitude,
-                title: 'Destination',
+                title: tr('mission_tracking.destination'),
               }] : []),
             ]}
             position={currentPos ? { latitude: currentPos.latitude, longitude: currentPos.longitude } : null}
@@ -283,7 +284,7 @@ export function MissionTrackingScreen({ route, navigation }: Props) {
               </View>
               {session?.status && (
                 <Badge
-                  label={STATUS_LABELS[session.status] ?? session.status}
+                  label={tr(STATUS_LABELS[session.status] ?? session.status)}
                   variant={session.status === 'in_mission' ? 'success' : 'brand'}
                 />
               )}

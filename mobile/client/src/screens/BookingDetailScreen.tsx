@@ -180,12 +180,12 @@ export function BookingDetailScreen({ route }: Props) {
         style={styles.grille}
         cases={[
           {
-            libelle: 'Heure',
+            libelle: tr('booking_detail.heure'),
             valeur: booking.scheduled_time ? booking.scheduled_time.slice(0, 5) : '—',
             ton: 'accent',
           },
           ...(booking.estimated_price != null
-            ? [{ libelle: 'Prix', valeur: formatMontant(booking.estimated_price, booking.currency), ton: 'bon' as const }]
+            ? [{ libelle: tr('booking_detail.prix'), valeur: formatMontant(booking.estimated_price, booking.currency), ton: 'bon' as const }]
             : []),
         ]}
       />
@@ -241,10 +241,7 @@ export function BookingDetailScreen({ route }: Props) {
             </>
           ) : (
             <>
-              <Text style={styles.codeAide}>
-                Le prestataire a besoin de six chiffres pour clôturer. Affichez-les au moment où il
-                vous les demande : ils ne restent valables que vingt minutes.
-              </Text>
+              <Text style={styles.codeAide}>{tr('booking_detail.le_prestataire_a_besoin_de_six_chiffres')}</Text>
               <Button
                 label={tr('booking_detail.afficher_mon_code_de_fin')}
                 onPress={demanderLeCode}

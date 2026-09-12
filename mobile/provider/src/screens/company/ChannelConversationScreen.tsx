@@ -14,7 +14,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import { enregistrerNoteVocale } from '@/company/voiceRecorder';
 import { jouerNoteVocale } from '@/company/voicePlayer';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 interface MessageCanal {
   id: number;
@@ -156,7 +156,7 @@ export function ChannelConversationScreen() {
     onError: (erreur: any) =>
       Alert.alert(
         tr('channel_conversation.appel_impossible'),
-        erreur?.data?.message ?? "Les appels ne sont pas disponibles sur cette instance.",
+        erreur?.data?.message ?? traduireMaintenant('channel_conversation.appels_indisponibles'),
       ),
   });
 
@@ -324,7 +324,7 @@ export function ChannelConversationScreen() {
               <Pressable
                 onPress={() => ecouter(item)}
                 accessibilityRole="button"
-                accessibilityLabel={`Écouter la note vocale de ${item.sender}`}
+                accessibilityLabel={tr('channel_conversation.ecouter_la_note_vocale_de', { expediteur: item.sender })}
                 testID={`note-vocale-${item.id}`}
                 style={styles.noteVocale}
               >

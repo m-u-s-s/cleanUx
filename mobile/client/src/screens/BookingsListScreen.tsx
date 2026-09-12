@@ -26,7 +26,7 @@ export function BookingsListScreen() {
 
   const handleRefresh = useCallback(() => {
     refetch().then(() => {
-      a11y.announce(`${bookings?.length ?? 0} réservations chargées`);
+      a11y.announce(tr('bookings_list.n_reservations_chargees', { n: bookings?.length ?? 0 }));
     });
   }, [refetch, bookings?.length]);
 
@@ -50,7 +50,7 @@ export function BookingsListScreen() {
         style={styles.title}
         accessibilityRole="header"
       >
-        Mes réservations
+        {tr('bookings_list.mes_reservations')}
       </Text>
       {isLoading ? (
         <View style={styles.skeletons}>
@@ -65,7 +65,7 @@ export function BookingsListScreen() {
             getItemLayout={getItemLayout}
             contentContainerStyle={styles.list}
             accessibilityLabel={tr('bookings_list.liste_des_reservations')}
-            ListEmptyComponent={<EmptyState title={tr('bookings_list.pas_encore_de_reservation')} message={tr('bookings_list.reservez_votre_premier_service_pour_commencer')} icon="calendar-outline" actionLabel="Réserver" onAction={() => navigation.navigate('EmbeddedModule', { path: '/commander', title: 'Commander' })} />}
+            ListEmptyComponent={<EmptyState title={tr('bookings_list.pas_encore_de_reservation')} message={tr('bookings_list.reservez_votre_premier_service_pour_commencer')} icon="calendar-outline" actionLabel={tr('bookings_list.reserver')} onAction={() => navigation.navigate('EmbeddedModule', { path: '/commander', title: tr('bookings_list.commander') })} />}
             refreshControl={
               <RefreshControl
                 refreshing={isRefetching}

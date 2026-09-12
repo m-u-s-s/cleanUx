@@ -160,10 +160,7 @@ export function PlacesScreen() {
           testID="bouton-ajouter-lieu"
         />
 
-        <Text style={styles.note}>
-          Les consignes dtr('places.acces_ne_sont_montrees_au_professionnel_qu')une fois son arrivée confirmée
-          sur place.
-        </Text>
+        <Text style={styles.note}>{tr('places.consignes_d_acces_apres_arrivee')}</Text>
       </View>
 
       <FlatList

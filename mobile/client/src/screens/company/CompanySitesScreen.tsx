@@ -56,7 +56,7 @@ export function CompanySitesScreen() {
         <EmptyState
           title={tr('company_sites.locaux_indisponibles')}
           message={tr('company_sites.votre_role_ne_permet_peut_etre_pas')}
-          actionLabel="Réessayer"
+          actionLabel={tr('company_sites.reessayer')}
           onAction={() => void refetch()}
         />
       </Screen>

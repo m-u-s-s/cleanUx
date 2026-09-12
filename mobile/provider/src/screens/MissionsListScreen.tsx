@@ -59,7 +59,7 @@ export function MissionsListScreen() {
         <TouchableOpacity
           style={[styles.card, { backgroundColor: themeColors.card }]}
           onPress={() => navigation.navigate('MissionDetail', { missionId: item.id })}
-          accessibilityLabel={`Mission ${item.service_name} — ${missionStatusLabel(item.status)}`}
+          accessibilityLabel={tr('missions_list.mission_service_statut', { service: item.service_name, statut: missionStatusLabel(item.status) })}
           accessibilityRole="button"
         >
           <View style={styles.cardHeader}>

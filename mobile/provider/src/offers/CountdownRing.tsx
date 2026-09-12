@@ -4,6 +4,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { typography, colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { formatDelai } from '@brio/shared/format';
+import { traduireMaintenant } from '@/i18n';
 
 const TAILLE = 56;
 const EPAISSEUR = 5;
@@ -35,7 +36,7 @@ export function AnneauDeDecompte({ ratio, secondes }: { ratio: number; secondes:
     <View
       style={styles.conteneur}
       accessibilityRole="progressbar"
-      accessibilityLabel={`${formatDelai(secondes)} pour répondre`}
+      accessibilityLabel={traduireMaintenant('countdown_ring.n_pour_repondre', { delai: formatDelai(secondes) })}
       testID="offer-countdown-ring"
     >
       <Svg width={TAILLE} height={TAILLE}>

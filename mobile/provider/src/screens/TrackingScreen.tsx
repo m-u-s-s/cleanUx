@@ -73,7 +73,7 @@ export function TrackingScreen({ route }: Props) {
       id: 1,
       latitude: Number(lat),
       longitude: Number(lng),
-      title: 'Destination',
+      title: tr('tracking.destination'),
       subtitle: mission ? formatAdresse(mission.address, mission.city) : null,
     };
   }, [session, mission]);
@@ -219,9 +219,7 @@ export function TrackingScreen({ route }: Props) {
           variant={isNearDestination ? 'primary' : 'secondary'}
         />
         {!isNearDestination && (
-          <Text style={styles.geofenceHint}>
-            Le bouton devient actif dans les {GEOFENCE_METERS} m de la destination
-          </Text>
+          <Text style={styles.geofenceHint}>{tr('tracking.bouton_actif_dans_n_m', { n: GEOFENCE_METERS })}</Text>
         )}
       </View>
     </Screen>

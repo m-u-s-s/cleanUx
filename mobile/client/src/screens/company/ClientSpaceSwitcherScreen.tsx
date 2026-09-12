@@ -28,10 +28,7 @@ export function ClientSpaceSwitcherScreen({
     <Screen>
       <View testID="client-space-switcher" style={styles.container}>
         <Text style={styles.title}>{tr('client_space_switcher.que_souhaitez_vous_gerer')}</Text>
-        <Text style={styles.subtitle}>
-          Votre compte donne accès aux deux espaces. Vous pourrez en changer à tout moment depuis
-          votre profil.
-        </Text>
+        <Text style={styles.subtitle}>{tr('client_space_switcher.votre_compte_donne_acces_aux_deux_espaces')}</Text>
 
         <Choice
           icon="business-outline"

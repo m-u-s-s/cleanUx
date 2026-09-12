@@ -43,10 +43,10 @@ export function SavedPaymentMethodsScreen() {
   };
 
   const handleDelete = (method: PaymentMethod) => {
-    Alert.alert(tr('saved_payment_methods.supprimer'), `Supprimer la carte •••• ${method.last4} ?`, [
-      { text: 'Annuler', style: 'cancel' },
+    Alert.alert(tr('saved_payment_methods.supprimer'), tr('saved_payment_methods.supprimer_la_carte', { fin: method.last4 }), [
+      { text: tr('commun.annuler'), style: 'cancel' },
       {
-        text: 'Supprimer',
+        text: tr('commun.supprimer'),
         style: 'destructive',
         onPress: () => deleteMethod.mutate(method.id),
       },

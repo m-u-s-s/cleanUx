@@ -73,11 +73,7 @@ export function CompanyRolePermissionsScreen() {
     <Screen>
       <ScrollView>
         <Text style={styles.title}>{tr('company_role_permissions.roles_et_permissions')}</Text>
-        <Text style={styles.intro}>
-          Ce que chaque rôle peut faire chez vous. Un changement s'applique immédiatement à toutes
-          les personnes portant ce rôle. Le rôle Propriétaire n'est pas réglable : il porte le droit
-          d'ouvrir cet écran.
-        </Text>
+        <Text style={styles.intro}>{tr('company_role_permissions.ce_que_chaque_role_peut_faire_chez')}</Text>
 
         {(data?.roles ?? []).map((role) => (
           <View key={role.value}>

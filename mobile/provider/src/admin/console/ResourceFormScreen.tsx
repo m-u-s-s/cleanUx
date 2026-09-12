@@ -117,7 +117,7 @@ export function ResourceFormScreen({ route }: { route: { params: Params } }) {
     <Screen>
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <Text style={styles.heading}>
-          {id ? `Modifier — ${title}` : `Créer — ${title}`}
+          {id ? traduireMaintenant('admin_console.modifier_titre', { titre: title }) : traduireMaintenant('admin_console.creer_titre', { titre: title })}
         </Text>
 
         {descripteur.form.map((field) => (
@@ -134,7 +134,7 @@ export function ResourceFormScreen({ route }: { route: { params: Params } }) {
 
         <View style={{ paddingVertical: spacing.md }}>
           <Button
-            label={id ? 'Enregistrer' : 'Créer'}
+            label={id ? traduireMaintenant('commun.enregistrer') : 'Créer'}
             onPress={soumettre}
             loading={enregistrer.isPending}
             fullWidth

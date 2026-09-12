@@ -21,13 +21,14 @@ interface Devis {
   is_open: boolean;
 }
 
+/* Des CLES : traduite ici, la table garderait la langue du demarrage. */
 const LIBELLES: Record<string, string> = {
-  draft: 'Brouillon',
-  sent: 'Envoyé',
-  accepted: 'Accepté',
-  declined: 'Refusé',
-  expired: 'Périmé',
-  cancelled: 'Annulé',
+  draft: 'company_quotes.statut_brouillon',
+  sent: 'company_quotes.statut_envoye',
+  accepted: 'company_quotes.statut_accepte',
+  declined: 'company_quotes.statut_refuse',
+  expired: 'company_quotes.statut_perime',
+  cancelled: 'company_quotes.statut_annule',
 };
 
 /**
@@ -122,7 +123,7 @@ export function CompanyQuotesScreen() {
             </View>
 
             <Badge
-              label={LIBELLES[item.status] ?? item.status}
+              label={tr(LIBELLES[item.status] ?? item.status)}
               variant={
                 item.status === 'accepted'
                   ? 'success'

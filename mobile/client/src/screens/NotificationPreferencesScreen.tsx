@@ -167,7 +167,7 @@ export function NotificationPreferencesScreen() {
       })}
 
       <Button
-        label={hasChanges ? 'Enregistrer' : tr('notification_preferences.aucune_modification')}
+        label={hasChanges ? tr('commun.enregistrer') : tr('notification_preferences.aucune_modification')}
         onPress={() => save.mutate()}
         disabled={!hasChanges}
         fullWidth

@@ -30,7 +30,7 @@ import type { RootStackParamList } from '@/navigation/types';
 import { formatAdresse, messageDErreur } from '@brio/shared/format';
 import { MissionClockBar, useMissionClock, AnnulerLaMissionSheet, BoutonAppelMasque } from '@brio/shared';
 import { FieldQuoteRevision } from '@/screens/components/FieldQuoteRevision';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionField'>;
 
@@ -241,10 +241,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
       {/* ── ÉTAT DES LIEUX ─────────────────────────────────────────────── */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{tr('mission_field.etat_des_lieux')}</Text>
-        <Text style={styles.sectionHint}>
-          Chaque photo est horodatée et géolocalisée. C’est elle qui vous protège si le client
-          conteste plus tard.
-        </Text>
+        <Text style={styles.sectionHint}>{tr('mission_field.chaque_photo_est_horodatee_et_geolocalisee_c')}</Text>
 
         <BandeDePhotos photos={avant} legende="Avant" />
         <BandeDePhotos photos={apres} legende="Après" />
@@ -287,7 +284,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
             ) : null}
 
             {ficheDAcces.floor ? (
-              <Text style={styles.sectionHint}>Étage : {ficheDAcces.floor}</Text>
+              <Text style={styles.sectionHint}>{tr('mission_field.etage', { etage: ficheDAcces.floor })}</Text>
             ) : null}
             {ficheDAcces.access_instructions ? (
               <Text style={styles.sectionHint} testID="fiche-acces-consignes">
@@ -295,7 +292,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
               </Text>
             ) : null}
             {ficheDAcces.access_window ? (
-              <Text style={styles.sectionHint}>Accès {ficheDAcces.access_window}</Text>
+              <Text style={styles.sectionHint}>{tr('mission_field.acces_fenetre', { fenetre: ficheDAcces.access_window })}</Text>
             ) : null}
             {/*
               L'alarme demande une manœuvre chronométrée : le prestataire doit le lire AVANT
@@ -322,18 +319,18 @@ export function MissionFieldScreen({ route, navigation }: Props) {
                 style={styles.contraintes}
                 cases={[
                   {
-                    libelle: 'Materiel',
+                    libelle: tr('mission_field.materiel'),
                     valeur: ficheDAcces.constraints.equipment_provided ? 'Fourni' : 'A apporter',
                     ton: ficheDAcces.constraints.equipment_provided ? 'bon' : 'attention',
                   },
                   {
-                    libelle: 'Animaux',
-                    valeur: ficheDAcces.constraints.pets_on_site ? 'Oui' : 'Non',
+                    libelle: tr('mission_field.animaux'),
+                    valeur: ficheDAcces.constraints.pets_on_site ? tr('commun.oui') : tr('commun.non'),
                     ton: ficheDAcces.constraints.pets_on_site ? 'attention' : 'neutre',
                   },
                   {
-                    libelle: 'Parking',
-                    valeur: ficheDAcces.constraints.parking_available ? 'Oui' : 'Non',
+                    libelle: tr('mission_field.parking'),
+                    valeur: ficheDAcces.constraints.parking_available ? tr('commun.oui') : tr('commun.non'),
                     ton: ficheDAcces.constraints.parking_available ? 'bon' : 'attention',
                   },
                 ]}
@@ -354,10 +351,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
       {/* ── IMPRÉVUS ───────────────────────────────────────────────────── */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{tr('mission_field.signaler_un_imprevu')}</Text>
-        <Text style={styles.sectionHint}>
-          Le client est prévenu tout de suite, et le dossier de litige est pré-rempli s’il en ouvre
-          un.
-        </Text>
+        <Text style={styles.sectionHint}>{tr('mission_field.le_client_est_prevenu_tout_de_suite')}</Text>
 
         <View style={styles.chipRow}>
           {INCIDENT_TYPES.map((categorie) => {
@@ -443,10 +437,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
       {moteur !== 'vehicule' && (
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{tr('mission_field.proposer_un_supplement')}</Text>
-        <Text style={styles.sectionHint}>
-          Le client répond depuis son téléphone. Son devis d’origine ne bouge pas : le supplément
-          est une ligne à part.
-        </Text>
+        <Text style={styles.sectionHint}>{tr('mission_field.le_client_repond_depuis_son_telephone_son')}</Text>
 
         <TextInput
           label={tr('mission_field.ce_que_vous_proposez')}
@@ -512,7 +503,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
             <Text style={styles.blocageAvis} testID="checklist-blocage">
               {checklist.required_pending === 1
                 ? tr('mission_field.une_tache_obligatoire_reste_a_cocher_la')
-                : `${checklist.required_pending} tâches obligatoires restent à cocher : la mission ne peut pas être clôturée avant.`}
+                : tr('mission_field.n_taches_obligatoires_restent', { n: checklist.required_pending })}
             </Text>
           ) : (
             <Text style={styles.blocageLeve}>
@@ -721,9 +712,9 @@ export function MissionFieldScreen({ route, navigation }: Props) {
                   tr('mission_field.client_absent'),
                   tr('mission_field.la_course_sera_close_et'),
                   [
-                    { text: 'Annuler', style: 'cancel' },
+                    { text: tr('commun.annuler'), style: 'cancel' },
                     {
-                      text: 'Confirmer',
+                      text: tr('commun.confirmer'),
                       style: 'destructive',
                       onPress: () =>
                         declarerAbsence.mutate(undefined, {
@@ -740,9 +731,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
           ) : (
             // Le décompte VIENT DU SERVEUR : un minuteur local se remettrait à zéro d'un
             // rechargement, et il suffirait de quitter l'écran pour déclarer une absence immédiate.
-            <Text style={styles.gpsLabel} testID="attente-client">
-              Attente du client — encore {minutesAvantAbsence} min avant de pouvoir déclarer son absence.
-            </Text>
+            <Text style={styles.gpsLabel} testID="attente-client">{tr('mission_field.attente_du_client_n_min', { n: minutesAvantAbsence })}</Text>
           )
         )}
 
@@ -810,7 +799,7 @@ function BandeDePhotos({ photos, legende }: { photos: MissionMediaItem[]; legend
             key={photo.id}
             source={{ uri: photo.url ?? undefined }}
             style={styles.vignette}
-            accessibilityLabel={`${photo.label} de l’intervention`}
+            accessibilityLabel={traduireMaintenant('mission_field.photo_de_l_intervention', { libelle: photo.label })}
           />
         ))}
       </ScrollView>

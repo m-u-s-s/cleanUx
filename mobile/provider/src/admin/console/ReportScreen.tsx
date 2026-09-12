@@ -7,6 +7,7 @@ import {spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { formatCell } from './format';
+import { traduireMaintenant } from '@/i18n';
 
 interface Params {
   report: string;
@@ -74,7 +75,7 @@ export function ReportScreen({ route }: { route: { params: Params } }) {
     return (
       <Screen>
         <ErrorState
-          message={`« ${title} » n’a pas pu être chargé.`}
+          message={traduireMaintenant('admin_console.titre_non_charge', { titre: title })}
           onRetry={() => {
             void refetch();
           }}

@@ -88,7 +88,7 @@ export default function FaceCheckScreen() {
       return;
     }
 
-    ouvrir.mutateAsync().then(setControle).catch(() => setErreur(MESSAGE_RESEAU));
+    ouvrir.mutateAsync().then(setControle).catch(() => setErreur(messageReseau()));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enrolement, bloque, enAttenteDuVerdict]);
 
@@ -106,7 +106,7 @@ export default function FaceCheckScreen() {
      * personne.
      */
     if (enrolement && !consentementDonne) {
-      setErreur(texteDuRefusDeConsentement);
+      setErreur(texteDuRefusDeConsentement());
 
       return;
     }
@@ -132,7 +132,7 @@ export default function FaceCheckScreen() {
       }
 
       if (controle === null) {
-        setErreur(MESSAGE_RESEAU);
+        setErreur(messageReseau());
 
         return;
       }
@@ -159,7 +159,7 @@ export default function FaceCheckScreen() {
       // Il reste des essais : on le dit franchement plutôt que de laisser recommencer à l'aveugle.
       setErreur(messageDEchec(resultat));
     } catch {
-      setErreur(MESSAGE_RESEAU);
+      setErreur(messageReseau());
     } finally {
       setEnCours(false);
     }
@@ -182,13 +182,9 @@ export default function FaceCheckScreen() {
           <Text style={styles.emoji}>⛔</Text>
           <Text style={styles.titre}>{tr('face_check.compte_suspendu')}</Text>
           <Text style={styles.texte}>
-            {statut?.message ??
-              "Un contrôle dtr('face_check.identite_n')a pas abouti. Un administrateur doit lever la suspension."}
+            {statut?.message ?? tr('face_check.controle_d_identite_non_abouti')}
           </Text>
-          <Text style={styles.precision}>
-            Signaler un problème ne lève pas la suspension : cela ouvre un dossier qu'un
-            administrateur traitera.
-          </Text>
+          <Text style={styles.precision}>{tr('face_check.signaler_un_probleme_ne_leve_pas_la')}</Text>
 
           <View style={styles.actions}>
             <Button label={tr('face_check.signaler_un_probleme')} variant="glass" onPress={() => setSignalementOuvert(true)} fullWidth />
@@ -226,10 +222,7 @@ export default function FaceCheckScreen() {
         <ScrollView contentContainerStyle={styles.centre}>
           <Text style={styles.emoji}>📷</Text>
           <Text style={styles.titre}>{tr('face_check.acces_a_la_camera')}</Text>
-          <Text style={styles.texte}>
-            La vérification dtr('face_check.identite_a_besoin_de_la_camera_frontale')est partagée
-            avec vos clients.
-          </Text>
+          <Text style={styles.texte}>{tr('face_check.verification_a_besoin_de_la_camera')}</Text>
           <View style={styles.actions}>
             <Button label={tr('face_check.autoriser_la_camera')} onPress={demanderPermission} fullWidth />
             <Button label={tr('face_check.ca_ne_marche_pas')} variant="ghost" onPress={() => setSignalementOuvert(true)} fullWidth />
@@ -404,10 +397,7 @@ function FeuilleDeSignalement({
         {envoye ? (
           <>
             <Text style={styles.titreClair}>{tr('face_check.dossier_ouvert')}</Text>
-            <Text style={styles.texteClair}>
-              Un administrateur a été prévenu. Votre compte reste en attente de vérification : ce
-              signalement ne le débloque pas.
-            </Text>
+            <Text style={styles.texteClair}>{tr('face_check.un_administrateur_a_ete_prevenu_votre_compte')}</Text>
             <View style={styles.actions}>
               <Button label={tr('face_check.fermer')} onPress={onFermer} fullWidth />
             </View>
@@ -422,10 +412,7 @@ function FeuilleDeSignalement({
               onChangeText={setMessage}
               multiline
             />
-            <Text style={styles.precisionClaire}>
-              Ce signalement ne débloque pas votre compte. Il ouvre un dossier horodaté avec les
-              informations techniques de votre téléphone.
-            </Text>
+            <Text style={styles.precisionClaire}>{tr('face_check.ce_signalement_ne_debloque_pas_votre_compte')}</Text>
             <View style={styles.actions}>
               <Button
                 label={tr('face_check.envoyer')}
@@ -443,14 +430,16 @@ function FeuilleDeSignalement({
   );
 }
 
-const MESSAGE_RESEAU = traduireMaintenant('face_check.connexion_perdue_verifiez_votre_reseau_et_reessayez');
+/* Une fonction, pas une constante : lue au chargement du module, elle figerait la langue. */
+const messageReseau = () =>
+  traduireMaintenant('face_check.connexion_perdue_verifiez_votre_reseau_et_reessayez');
 
-const texteDuRefusDeConsentement =
+const texteDuRefusDeConsentement = () =>
   traduireMaintenant('face_check.lisez_et_acceptez_l_enregistrement_de_votre');
 
 function messageDEchec(controle: FaceCheck): string {
   if (controle.liveness_result === 'fail') {
-    return `Photo d’écran détectée. Prenez la photo en direct. Essai ${controle.attempt_number} sur ${controle.attempt_number + controle.attempts_left - 1}.`;
+    return traduireMaintenant('face_check.photo_d_ecran_detectee', { essai: controle.attempt_number, total: controle.attempt_number + controle.attempts_left - 1 });
   }
 
   return `Nous ne vous avons pas reconnu. Placez-vous face à la lumière. Il vous reste ${controle.attempts_left} essai${controle.attempts_left > 1 ? 's' : ''}.`;

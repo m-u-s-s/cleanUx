@@ -50,7 +50,7 @@ export function CompanyOverviewScreen() {
         <EmptyState
           title={tr('company_overview.espace_indisponible')}
           message={tr('company_overview.impossible_de_charger_le_resume_de_votre')}
-          actionLabel="Réessayer"
+          actionLabel={tr('company_overview.reessayer_2')}
           onAction={() => void refetch()}
         />
       </Screen>

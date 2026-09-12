@@ -104,7 +104,7 @@ export function AsapOffersScreen() {
             </View>
 
             <Text style={styles.meta}>
-              {offer.distance_km != null ? `à ${formatKm(offer.distance_km)} km` : 'distance inconnue'}
+              {offer.distance_km != null ? tr('asap_offers.a_n_km', { km: formatKm(offer.distance_km) }) : tr('asap_offers.distance_inconnue')}
             </Text>
 
             {/* Le montant que le CLIENT a déjà accepté : c'est le chiffre qui engagera le

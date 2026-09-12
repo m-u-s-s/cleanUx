@@ -172,7 +172,7 @@ function LoginForm() {
           keyboardType="email-address"
           autoCapitalize="none"
           autoComplete="email"
-          placeholder="votre@email.com"
+          placeholder={tr('auth.exemple_email')}
           autoFocus
           returnKeyType="next"
           onSubmitEditing={() => passwordRef.current?.focus()}
@@ -204,7 +204,7 @@ function LoginForm() {
         <Stagger index={2}>
           <TextInput
             ref={codeRef}
-            label="Code d'authentification"
+            label={tr('login.code_d_authentification_2')}
             value={twoFactorCode}
             onChangeText={(t) => { setTwoFactorCode(t); setErrors(prev => ({ ...prev, twoFactorCode: undefined })); }}
             error={errors.twoFactorCode}

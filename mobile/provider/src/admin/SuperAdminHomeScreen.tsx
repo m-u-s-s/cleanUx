@@ -80,7 +80,7 @@ export function SuperAdminHomeScreen() {
                 <Icon name={role.icone as never} size={20} color={colors.brand[500]} />
                 <Text style={styles.carteLabel}>{tr(role.libelleCle)}</Text>
                 <Text style={styles.carteNote}>
-                  {role.sousRoles > 0 ? `${role.sousRoles} sous-rôles` : tr('super_admin_home.pas_de_sous_role')}
+                  {role.sousRoles > 0 ? tr('super_admin_home.n_sous_roles', { n: role.sousRoles }) : tr('super_admin_home.pas_de_sous_role')}
                 </Text>
               </View>
             ))}

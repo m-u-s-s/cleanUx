@@ -105,7 +105,7 @@ export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
     }
 
     Alert.alert(a.label, a.confirm ?? '', [
-      { text: 'Annuler', style: 'cancel' },
+      { text: tr('commun.annuler'), style: 'cancel' },
       { text: a.label, style: 'destructive', onPress: executer },
     ]);
   };
@@ -226,9 +226,9 @@ export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
               loading={suppression.isPending}
               onPress={() =>
                 Alert.alert(tr('resource_detail.supprimer'), tr('resource_detail.cet_element_sera_definitivement_retire'), [
-                  { text: 'Annuler', style: 'cancel' },
+                  { text: tr('commun.annuler'), style: 'cancel' },
                   {
-                    text: 'Supprimer',
+                    text: tr('commun.supprimer'),
                     style: 'destructive',
                     onPress: () =>
                       suppression.mutate(id, {

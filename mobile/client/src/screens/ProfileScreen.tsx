@@ -198,7 +198,7 @@ export function ProfileScreen() {
         />
         <Divider />
         <Button
-          label="Conditions d'utilisation"
+          label={tr('profile.conditions_d_utilisation')}
           onPress={() => navigation.navigate('Legal', { type: 'terms' })}
           variant="ghost"
           fullWidth
@@ -214,7 +214,7 @@ export function ProfileScreen() {
           label={tr('profile.se_deconnecter')}
           onPress={() =>
             Alert.alert(tr('profile.deconnexion'), tr('profile.voulez_vous_vous_deconnecter'), [
-              { text: 'Annuler', style: 'cancel' },
+              { text: tr('commun.annuler'), style: 'cancel' },
               { text: tr('profile.deconnexion'), style: 'destructive', onPress: logout },
             ])
           }

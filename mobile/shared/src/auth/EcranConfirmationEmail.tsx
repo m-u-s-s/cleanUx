@@ -79,8 +79,8 @@ export function EcranConfirmationEmail() {
             <Text style={styles.titre}>{tr('ecran_confirmation_email.confirmez_votre_adresse_e_mail')}</Text>
 
             <Text style={styles.corps}>
-              {tr('ecran_confirmation_email.nous_avons_envoye_un_lien')} <Text style={styles.adresse}>{user?.email ?? tr('ecran_confirmation_email.votre_adresse')}</Text>.
-              Ouvrez-le pour activer votre compte, puis revenez ici.
+              {tr('ecran_confirmation_email.nous_avons_envoye_un_lien')} <Text style={styles.adresse}>{user?.email ?? tr('ecran_confirmation_email.votre_adresse')}</Text>.{' '}
+              {tr('ecran_confirmation_email.ouvrez_le_pour_activer_votre_compte')}
             </Text>
 
             {annonce ? (
@@ -117,7 +117,7 @@ export function EcranConfirmationEmail() {
               />
 
               <Button
-                label="Renvoyer l'e-mail"
+                label={tr('ecran_confirmation_email.renvoyer_l_e_mail')}
                 variant="outline"
                 onPress={renvoyer}
                 loading={renvoi.isPending}
