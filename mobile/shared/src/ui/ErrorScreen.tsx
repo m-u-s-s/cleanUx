@@ -5,6 +5,7 @@ import { Icon } from './Icon';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { traduireMaintenant } from '@/i18n';
 
 interface ErrorScreenProps {
   title?: string;
@@ -14,8 +15,8 @@ interface ErrorScreenProps {
 }
 
 export function ErrorScreen({
-  title = 'Une erreur est survenue',
-  message = 'Vérifiez votre connexion et réessayez.',
+  title = traduireMaintenant('error.une_erreur_est_survenue'),
+  message = traduireMaintenant('error.verifiez_votre_connexion_et_reessayez'),
   onRetry,
   retryLabel = 'Réessayer',
 }: ErrorScreenProps) {

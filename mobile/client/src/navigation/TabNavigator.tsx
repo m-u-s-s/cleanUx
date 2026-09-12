@@ -10,6 +10,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import { creerBarreOnglets } from '@/ui/BarreOnglets';
 import { useNotifications } from '@/notifications';
 import type { TabParamList } from './types';
+import { traduireMaintenant } from '@/i18n';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -72,7 +73,7 @@ export function TabNavigator() {
         name="Bookings"
         component={BookingsListScreen}
         options={{
-          tabBarLabel: 'Réservations',
+          tabBarLabel: traduireMaintenant('tab_navigator.reservations'),
           tabBarIcon: ({ color, size }) => <Icon name="calendar-outline" size={size} color={color} />,
         }}
       />

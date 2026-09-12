@@ -7,7 +7,7 @@ import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { MembreSociete } from './types';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 /**
  * Les rôles tels que l'organisation les nomme, traduits pour l'écran.
@@ -17,9 +17,9 @@ import { useTraduction } from '@/i18n';
  * valeur brute plutôt que de disparaître — un membre sans rôle affiché serait plus trompeur.
  */
 const LIBELLE_ROLE: Record<string, string> = {
-  owner: 'Propriétaire',
+  owner: traduireMaintenant('company_members.proprietaire'),
   manager: 'Gestionnaire',
-  site_manager: 'Responsable de site',
+  site_manager: traduireMaintenant('company_members.responsable_de_site'),
   finance: 'Finance',
   requester: 'Demandeur',
   operations_manager: "Responsable d'exploitation",
@@ -41,7 +41,7 @@ export function CompanyMembersScreen() {
       <Screen>
         <EmptyState
           title={tr('company_members.membres_indisponibles')}
-          message="Impossible de charger l'équipe de votre société."
+          message={tr('company_members.impossible_de_charger_l_equipe_de_votre')}
           actionLabel="Réessayer"
           onAction={() => void refetch()}
         />
@@ -66,7 +66,7 @@ export function CompanyMembersScreen() {
                 et une ligne sans nom passerait pour un bogue d'affichage.
               */}
               <Text style={styles.nom} numberOfLines={1}>
-                {item.name ?? 'Compte supprimé'}
+                {item.name ?? tr('company_members.compte_supprime')}
               </Text>
               <Text style={styles.detail} numberOfLines={1}>
                 {item.email ?? '—'} · {LIBELLE_ROLE[item.role] ?? item.role}
@@ -82,7 +82,7 @@ export function CompanyMembersScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('company_members.aucun_membre')}
-            message="Invitez vos collègues depuis l'espace entreprise sur le web."
+            message={tr('company_members.invitez_vos_collegues_depuis_l_espace_entreprise')}
           />
         }
       />

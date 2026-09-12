@@ -38,7 +38,7 @@ export function CompanyProfileScreen() {
   return (
     <Screen testID="profil-societe-cliente">
       <View style={styles.identity}>
-        <Text style={styles.name}>{user?.name ?? 'Mon compte'}</Text>
+        <Text style={styles.name}>{user?.name ?? tr('company_profile.mon_compte')}</Text>
         <Text style={styles.email}>{user?.email}</Text>
       </View>
 
@@ -53,7 +53,7 @@ export function CompanyProfileScreen() {
       <Row
         icon="swap-horizontal-outline"
         label={tr('company_profile.changer_despace')}
-        hint="Revenir à mon espace personnel"
+        hint={tr('company_profile.revenir_a_mon_espace_personnel')}
         onPress={() => void clear()}
       />
 
@@ -61,7 +61,7 @@ export function CompanyProfileScreen() {
       <Row
         icon="grid-outline"
         label={tr('company_profile.modules')}
-        hint="Tout ce que cet espace sait faire"
+        hint={tr('company_profile.tout_ce_que_cet_espace_sait_faire')}
         onPress={() => navigation.navigate('Modules')}
       />
 

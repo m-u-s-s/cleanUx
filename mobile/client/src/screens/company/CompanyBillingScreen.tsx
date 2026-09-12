@@ -47,7 +47,7 @@ export function CompanyBillingScreen() {
       <Screen>
         <EmptyState
           title={tr('company_billing.facturation_indisponible')}
-          message="Votre rôle ne permet peut-être pas de consulter la facturation de la société."
+          message={tr('company_billing.votre_role_ne_permet_peut_etre_pas')}
           actionLabel="Réessayer"
           onAction={() => void refetch()}
         />
@@ -94,7 +94,7 @@ export function CompanyBillingScreen() {
                 {item.invoice_number ?? `Facture ${item.id}`}
               </Text>
               <Text style={styles.detail} numberOfLines={1}>
-                {item.issued_at ?? 'Non émise'} · {formatMontant(item.total_amount, item.currency)}
+                {item.issued_at ?? tr('company_billing.non_emise')} · {formatMontant(item.total_amount, item.currency)}
                 {item.balance_due > 0 ? ` · ${formatMontant(item.balance_due, item.currency)} dus` : ''}
               </Text>
             </View>
@@ -120,7 +120,7 @@ export function CompanyBillingScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('company_billing.aucune_facture')}
-            message="Les factures de votre société apparaîtront ici dès la première intervention facturée."
+            message={tr('company_billing.les_factures_de_votre_societe_apparaitront_ici')}
           />
         }
       />

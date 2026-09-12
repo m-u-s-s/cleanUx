@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { isRunningInExpoGo } from 'expo';
+import { traduireMaintenant } from '@/i18n';
 
 let didWarn = false;
 
@@ -36,8 +37,8 @@ export function isPushModuleAvailable(): boolean {
   if (inExpoGo && __DEV__ && !didWarn) {
     didWarn = true;
     console.info(
-      '[push] Notifications désactivées : Expo Go Android ne supporte plus expo-notifications (SDK 53+). ' +
-        'Utilise un development build (`npx expo run:android`) pour tester le push.',
+      traduireMaintenant('availability.push_notifications_desactivees_expo_go_android_ne') +
+        traduireMaintenant('availability.utilise_un_development_build_npx_expo_run'),
     );
   }
 

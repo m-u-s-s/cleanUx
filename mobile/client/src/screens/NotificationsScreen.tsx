@@ -102,7 +102,7 @@ export function NotificationsScreen() {
                 colors={[colors.brand[500]]}
               />
             }
-            ListEmptyComponent={<EmptyState title={tr('notifications.aucune_notification')} message="Vous êtes à jour !" icon="notifications-outline" />}
+            ListEmptyComponent={<EmptyState title={tr('notifications.aucune_notification')} message={tr('notifications.vous_etes_a_jour')} icon="notifications-outline" />}
           />
         </Animated.View>
       )}

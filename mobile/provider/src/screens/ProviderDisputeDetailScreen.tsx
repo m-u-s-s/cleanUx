@@ -10,7 +10,7 @@ import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 /** Le serveur plafonne à cinq (`PreuvesDeLitige::NOMBRE_MAX`) et n'accepte que des images. */
 const MAX_PREUVES = 5;
@@ -133,7 +133,7 @@ export function ProviderDisputeDetailScreen() {
   if (isError) {
     return (
       <Screen>
-        <ErrorState message="Impossible de charger ce litige." onRetry={refetch} />
+        <ErrorState message={tr('provider_dispute_detail.impossible_de_charger_ce_litige')} onRetry={refetch} />
       </Screen>
     );
   }
@@ -243,7 +243,7 @@ function PiecesRecues({
           key={piece.path}
           source={{ uri: piece.url as string }}
           style={styles.preuveImage}
-          accessibilityLabel={piece.original_name ?? 'Pièce jointe'}
+          accessibilityLabel={piece.original_name ?? traduireMaintenant('provider_dispute_detail.piece_jointe')}
         />
       ))}
     </View>

@@ -73,7 +73,7 @@ export const MissionSheet = forwardRef<GorhomBottomSheet, MissionSheetProps>(
               <Icon name="alert-circle-outline" size={18} color={t.text} />
               <Text style={styles.attenteTexte}>
                 {enAttente === 1
-                  ? '1 chose attend votre réponse'
+                  ? tr('mission.1_chose_attend_votre_reponse')
                   : `${enAttente} choses attendent votre réponse`}
               </Text>
             </View>
@@ -89,7 +89,7 @@ export const MissionSheet = forwardRef<GorhomBottomSheet, MissionSheetProps>(
             {tachesOuvertes > 0 ? (
               <Text style={styles.resumeTexte}>
                 {tachesOuvertes === 1
-                  ? '1 tâche de votre liste reste à faire'
+                  ? tr('mission.1_tache_de_votre_liste_reste_a')
                   : `${tachesOuvertes} tâches de votre liste restent à faire`}
               </Text>
             ) : (

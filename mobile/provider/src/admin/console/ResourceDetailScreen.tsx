@@ -64,7 +64,7 @@ export function ResourceDetailScreen({ route }: { route: { params: Params } }) {
     return (
       <Screen>
         <ErrorState
-          message="Cet élément n’a pas pu être chargé."
+          message={tr('resource_detail.cet_element_n_a_pas_pu_etre')}
           onRetry={() => {
             void refetch();
           }}

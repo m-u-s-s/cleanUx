@@ -69,7 +69,7 @@ export function CompanySitesScreen() {
     onError: (erreur: any) =>
       Alert.alert(
         tr('company_sites.action_refusee'),
-        erreur?.data?.message ?? 'Votre rôle ne permet pas de désigner un référent.',
+        erreur?.data?.message ?? tr('company_sites.votre_role_ne_permet_pas_de_designer'),
       ),
   });
 
@@ -83,7 +83,7 @@ export function CompanySitesScreen() {
       <Screen>
         <EmptyState
           title={tr('company_sites.sites_indisponibles')}
-          message="Impossible de charger les sites desservis par votre société."
+          message={tr('company_sites.impossible_de_charger_les_sites_desservis_par')}
           actionLabel="Réessayer"
           onAction={() => void refetch()}
         />
@@ -114,12 +114,12 @@ export function CompanySitesScreen() {
                   {item.name}
                 </Text>
                 <Text style={styles.detail} numberOfLines={1}>
-                  {[item.city, item.postal_code].filter(Boolean).join(' ') || 'Adresse non renseignée'}
+                  {[item.city, item.postal_code].filter(Boolean).join(' ') || tr('company_sites.adresse_non_renseignee_2')}
                 </Text>
                 <Text style={styles.detail} numberOfLines={1}>
                   {item.referents.length > 0
-                    ? item.referents.map((r) => r.name ?? 'Compte supprimé').join(', ')
-                    : 'Aucun référent désigné'}
+                    ? item.referents.map((r) => r.name ?? tr('company_sites.compte_supprime')).join(', ')
+                    : tr('company_sites.aucun_referent_designe')}
                 </Text>
               </View>
 
@@ -137,7 +137,7 @@ export function CompanySitesScreen() {
                 {item.referents.map((referent) => (
                   <View key={referent.id} style={styles.ligneReferent}>
                     <Text style={styles.nomReferent} numberOfLines={1}>
-                      {referent.name ?? 'Compte supprimé'} · {referent.role}
+                      {referent.name ?? tr('company_sites.compte_supprime')} · {referent.role}
                     </Text>
                     <Button
                       label={tr('company_sites.retirer')}
@@ -181,7 +181,7 @@ export function CompanySitesScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('company_sites.aucun_site_desservi')}
-            message="Les sites apparaîtront dès votre première mission ou votre premier contrat-cadre."
+            message={tr('company_sites.les_sites_apparaitront_des_votre_premiere_mission')}
           />
         }
       />

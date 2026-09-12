@@ -83,10 +83,10 @@ export function TradesZonesScreen() {
       await apiClient.put('/provider/coverage', { trade_ids: tradeIds, zone_ids: zoneIds });
     },
     onSuccess: () => {
-      setMessage('Enregistré. Les missions correspondantes vous seront proposées dès maintenant.');
+      setMessage(tr('trades_zones.enregistre_les_missions_correspondantes_vous_seront_proposees'));
       void queryClient.invalidateQueries({ queryKey: ['provider', 'coverage'] });
     },
-    onError: () => setMessage('Enregistrement impossible. Réessayez dans un instant.'),
+    onError: () => setMessage(tr('trades_zones.enregistrement_impossible_reessayez_dans_un_instant')),
   });
 
   const secteurs = useMemo(() => options.data?.sectors ?? [], [options.data]);

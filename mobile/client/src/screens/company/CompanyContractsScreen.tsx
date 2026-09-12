@@ -31,7 +31,7 @@ export function CompanyContractsScreen() {
       <Screen>
         <EmptyState
           title={tr('company_contracts.contrats_indisponibles')}
-          message="Impossible de charger les contrats de votre société."
+          message={tr('company_contracts.impossible_de_charger_les_contrats_de_votre')}
           actionLabel="Réessayer"
           onAction={() => void refetch()}
         />
@@ -55,7 +55,7 @@ export function CompanyContractsScreen() {
                 {item.reference ?? `Contrat ${item.id}`}
               </Text>
               <Text style={styles.detail} numberOfLines={1}>
-                {item.provider ?? 'Prestataire non renseigné'}
+                {item.provider ?? tr('company_contracts.prestataire_non_renseigne')}
                 {item.effective_from ? ` · dès le ${item.effective_from}` : ''}
                 {item.payment_terms_days ? ` · paiement ${item.payment_terms_days} j` : ''}
               </Text>
@@ -70,7 +70,7 @@ export function CompanyContractsScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('company_contracts.aucun_contrat')}
-            message="Vos contrats-cadres négociés apparaîtront ici."
+            message={tr('company_contracts.vos_contrats_cadres_negocies_apparaitront_ici')}
           />
         }
       />

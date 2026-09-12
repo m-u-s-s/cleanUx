@@ -68,7 +68,7 @@ export async function pickImage(source: 'camera' | 'library'): Promise<PickedFil
   if (!permission?.granted) {
     throw new Error(
       source === 'camera'
-        ? "Autorisez l'accès à l'appareil photo pour prendre votre pièce en photo."
+        ? "Autorisez ltraduireMaintenant('document_picker.acces_a_l')appareil photo pour prendre votre pièce en photo."
         : "Autorisez l'accès à vos photos pour choisir votre pièce.",
     );
   }

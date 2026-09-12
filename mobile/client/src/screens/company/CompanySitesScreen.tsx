@@ -55,7 +55,7 @@ export function CompanySitesScreen() {
       <Screen>
         <EmptyState
           title={tr('company_sites.locaux_indisponibles')}
-          message="Votre rôle ne permet peut-être pas de consulter le parc, ou le service est momentanément injoignable."
+          message={tr('company_sites.votre_role_ne_permet_peut_etre_pas')}
           actionLabel="Réessayer"
           onAction={() => void refetch()}
         />
@@ -104,7 +104,7 @@ export function CompanySitesScreen() {
                 {item.name}
               </Text>
               <Text style={styles.detail} numberOfLines={1}>
-                {[item.city, item.postal_code].filter(Boolean).join(' ') || 'Adresse non renseignée'}
+                {[item.city, item.postal_code].filter(Boolean).join(' ') || tr('company_sites.adresse_non_renseignee')}
                 {item.surface_m2 ? ` · ${item.surface_m2} m²` : ''}
                 {item.active_bookings_count > 0
                   ? ` · ${item.active_bookings_count} en cours`
@@ -122,7 +122,7 @@ export function CompanySitesScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('company_sites.aucun_local')}
-            message="Ajoutez vos sites pour rattacher chaque intervention à une adresse."
+            message={tr('company_sites.ajoutez_vos_sites_pour_rattacher_chaque_intervention')}
           />
         }
       />

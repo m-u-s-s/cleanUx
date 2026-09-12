@@ -43,7 +43,7 @@ export function MissionInboxScreen() {
       { text: 'Annuler', style: 'cancel' },
       { text: tr('mission_inbox.decliner'), style: 'destructive', onPress: () => {
         decline.mutate(a.id);
-        a11y.announce('Mission déclinée');
+        a11y.announce(tr('mission_inbox.mission_declinee'));
       }},
     ]);
   }, [decline]);
@@ -112,7 +112,7 @@ export function MissionInboxScreen() {
                 colors={[colors.brand[500]]}
               />
             }
-            ListEmptyComponent={<EmptyState title={tr('mission_inbox.aucune_mission_en_attente')} message="Les nouvelles missions vous seront proposées ici." />}
+            ListEmptyComponent={<EmptyState title={tr('mission_inbox.aucune_mission_en_attente')} message={tr('mission_inbox.les_nouvelles_missions_vous_seront_proposees_ici')} />}
           />
         </Animated.View>
       )}

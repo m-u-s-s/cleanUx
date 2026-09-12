@@ -79,7 +79,7 @@ export function EcranConfirmationEmail() {
             <Text style={styles.titre}>{tr('ecran_confirmation_email.confirmez_votre_adresse_e_mail')}</Text>
 
             <Text style={styles.corps}>
-              {tr('ecran_confirmation_email.nous_avons_envoye_un_lien')} <Text style={styles.adresse}>{user?.email ?? 'votre adresse'}</Text>.
+              {tr('ecran_confirmation_email.nous_avons_envoye_un_lien')} <Text style={styles.adresse}>{user?.email ?? tr('ecran_confirmation_email.votre_adresse')}</Text>.
               Ouvrez-le pour activer votre compte, puis revenez ici.
             </Text>
 
@@ -108,7 +108,7 @@ export function EcranConfirmationEmail() {
 
             <View style={styles.actions}>
               <Button
-                label="J'ai confirmé"
+                label={tr('ecran_confirmation_email.j_ai_confirme')}
                 onPress={relire}
                 loading={relecture.isPending}
                 disabled={renvoi.isPending}

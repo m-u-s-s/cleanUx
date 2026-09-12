@@ -57,7 +57,7 @@ export function ProviderChatListScreen() {
           )}
           onRefresh={refetch}
           refreshing={isRefetching}
-          ListEmptyComponent={<EmptyState title={tr('provider_chat_list.aucune_conversation')} message="Vos échanges avec les clients apparaîtront ici." />}
+          ListEmptyComponent={<EmptyState title={tr('provider_chat_list.aucune_conversation')} message={tr('provider_chat_list.vos_echanges_avec_les_clients_apparaitront_ici')} />}
         />
       )}
     </Screen>

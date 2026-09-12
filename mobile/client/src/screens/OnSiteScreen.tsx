@@ -71,7 +71,7 @@ export function OnSiteScreen({ route }: Props) {
     prolonge.mutate(minutes, {
       onSuccess: () => setChoixOuvert(false),
       onError: (erreur: { message?: string }) =>
-        Alert.alert(tr('on_site.impossible'), erreur.message ?? 'La prolongation n’a pas pu être enregistrée.'),
+        Alert.alert(tr('on_site.impossible'), erreur.message ?? tr('on_site.la_prolongation_n_a_pas_pu_etre')),
     });
   };
 
@@ -90,7 +90,7 @@ export function OnSiteScreen({ route }: Props) {
       { extraId, accepte },
       {
         onError: (erreur: { message?: string }) =>
-          Alert.alert(tr('on_site.impossible'), erreur.message ?? 'Votre réponse n’a pas pu être enregistrée.'),
+          Alert.alert(tr('on_site.impossible'), erreur.message ?? tr('on_site.votre_reponse_n_a_pas_pu_etre')),
       },
     );
   };
@@ -110,7 +110,7 @@ export function OnSiteScreen({ route }: Props) {
         <EmptyState
           icon="time-outline"
           title={tr('on_site.lintervention_na_pas_encore_commence')}
-          message="Vous verrez ici l’avancement, les photos et tout imprévu dès que le prestataire sera sur place."
+          message={tr('on_site.vous_verrez_ici_l_avancement_les_photos')}
         />
       </Screen>
     );

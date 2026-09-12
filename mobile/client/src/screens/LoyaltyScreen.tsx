@@ -27,7 +27,7 @@ export function LoyaltyScreen() {
                 tr('loyalty.echange_confirme'),
                 result.voucher_code
                   ? `Votre code : ${result.voucher_code}`
-                  : 'Votre récompense est en cours de traitement.',
+                  : tr('loyalty.votre_recompense_est_en_cours_de_traitement'),
               ),
             onError: () => Alert.alert(tr('loyalty.echec'), tr('loyalty.l_echange_n_a_pas')),
           }),
@@ -43,12 +43,12 @@ export function LoyaltyScreen() {
       ) : account ? (
         <View style={[styles.tierCard, { backgroundColor: themeColors.card }]}>
           {/* Pas encore de palier — l'état normal d'un compte neuf — se dit en toutes lettres. */}
-          <Badge label={account.tier?.name ?? 'Aucun palier'} variant="brand" />
+          <Badge label={account.tier?.name ?? tr('loyalty.aucun_palier')} variant="brand" />
           <View style={styles.kpiRow}>
             <KPICard
               title={tr('loyalty.points')}
               value={account.redeemable_points ?? '—'}
-              hint="Échangeables"
+              hint={tr('loyalty.echangeables')}
               tone="success"
             />
             <KPICard title={tr('loyalty.ce_mois')} value={account.period_points} />
@@ -65,7 +65,7 @@ export function LoyaltyScreen() {
           keyExtractor={item => String(item.id)}
           onRefresh={refetchRewards}
           refreshing={isRefetchingRewards}
-          ListEmptyComponent={<EmptyState title={tr('loyalty.aucune_recompense')} message="Les récompenses disponibles apparaîtront ici." icon="gift-outline" />}
+          ListEmptyComponent={<EmptyState title={tr('loyalty.aucune_recompense')} message={tr('loyalty.les_recompenses_disponibles_apparaitront_ici')} icon="gift-outline" />}
           renderItem={({ item }) => (
             <View style={styles.rewardCard}>
               <View style={styles.rewardInfo}>

@@ -35,7 +35,7 @@ const config: Config = {
   transformIgnorePatterns: [
     // @shopify/react-native-skia est publié en modules ES (`main: lib/module/index.js`) :
     // sans cette exception, Jest le lit tel quel et échoue sur le premier `import`.
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|@shopify/react-native-skia|expo-secure-store|expo-constants|expo-status-bar|@gorhom)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|@shopify/react-native-skia|expo-secure-store|expo-constants|expo-status-bar|@gorhom|decode-uri-component)',
   ],
   // Allow Jest to find node_modules from the provider dir when processing shared/ files
   modulePaths: [

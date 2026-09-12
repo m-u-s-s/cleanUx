@@ -84,7 +84,7 @@ export function CompanyGovernanceScreen() {
     },
     onError: (erreur: any) =>
       // « Une demande ne s'approuve pas soi-même » est une règle à LIRE, pas une panne.
-      Alert.alert(tr('company_governance.decision_refusee'), erreur?.data?.message ?? 'La demande n’a pas pu être traitée.'),
+      Alert.alert(tr('company_governance.decision_refusee'), erreur?.data?.message ?? tr('company_governance.la_demande_n_a_pas_pu_etre')),
   });
 
   return (
@@ -106,7 +106,7 @@ export function CompanyGovernanceScreen() {
                   {demande.trade_name ? ` — ${demande.trade_name}` : ''}
                 </Text>
                 <Text style={styles.detail} numberOfLines={1}>
-                  {demande.requested_by ?? 'un membre'} · {euros(demande.estimated_cents)}
+                  {demande.requested_by ?? tr('company_governance.un_membre')} · {euros(demande.estimated_cents)}
                 </Text>
               </View>
 
@@ -175,7 +175,7 @@ export function CompanyGovernanceScreen() {
             <View key={budget.budget_id} style={styles.ligne} testID={`budget-${budget.budget_id}`}>
               <View style={styles.identite}>
                 <Text style={styles.nom} numberOfLines={1}>
-                  {budget.site_name ?? 'Toute la société'}
+                  {budget.site_name ?? tr('company_governance.toute_la_societe')}
                 </Text>
                 <Text style={styles.detail} numberOfLines={1}>
                   {euros(budget.committed_cents)} sur {euros(budget.limit_cents)}

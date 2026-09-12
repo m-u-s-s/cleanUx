@@ -107,13 +107,13 @@ export function DisputesScreen() {
 
   const canSubmit = subject.trim().length >= 3 && description.trim().length >= 10 && !!category && !create.isPending;
 
-  if (isError) return <Screen><ErrorState message="Impossible de charger vos litiges." onRetry={refetch} /></Screen>;
+  if (isError) return <Screen><ErrorState message={tr('disputes.impossible_de_charger_vos_litiges')} onRetry={refetch} /></Screen>;
 
   return (
     <Screen>
       <View style={styles.headerRow}>
         <Text style={styles.title}>{tr('disputes.mes_litiges')}</Text>
-        <Button label={showForm ? 'Fermer' : 'Ouvrir un litige'} size="sm" onPress={() => setShowForm(v => !v)} />
+        <Button label={showForm ? 'Fermer' : tr('disputes.ouvrir_un_litige')} size="sm" onPress={() => setShowForm(v => !v)} />
       </View>
 
       {showForm && (
@@ -180,7 +180,7 @@ export function DisputesScreen() {
           )}
           onRefresh={refetch}
           refreshing={isRefetching}
-          ListEmptyComponent={<EmptyState title={tr('disputes.aucun_litige')} message="Vous n'avez aucun litige en cours." icon="shield-outline" />}
+          ListEmptyComponent={<EmptyState title={tr('disputes.aucun_litige')} message={tr('disputes.vous_n_avez_aucun_litige_en_cours')} icon="shield-outline" />}
         />
       )}
     </Screen>

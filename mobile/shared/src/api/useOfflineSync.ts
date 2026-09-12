@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { AppState, Alert } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { offlineQueue } from '../lib/offlineQueue';
+import { traduireMaintenant } from '@/i18n';
 
 async function flushIfOnline(): Promise<void> {
   const netState = await NetInfo.fetch();
@@ -30,10 +31,10 @@ async function flushIfOnline(): Promise<void> {
 
     if (abandons.length > 0) {
       const lignes = abandons
-        .map((a) => `• ${a.label ?? 'Une action'} — ${a.reason}`)
+        .map((a) => `• ${a.label ?? traduireMaintenant('use_offline_sync.une_action')} — ${a.reason}`)
         .join(String.fromCharCode(10));
 
-      Alert.alert('Certaines actions n’ont pas pu être enregistrées', lignes);
+      Alert.alert(traduireMaintenant('use_offline_sync.certaines_actions_n_ont_pas_pu_etre'), lignes);
     }
   }
 }

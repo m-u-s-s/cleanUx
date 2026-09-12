@@ -51,7 +51,7 @@ export function BadgesScreen() {
           )}
           onRefresh={refetch}
           refreshing={isRefetching}
-          ListEmptyComponent={<EmptyState title={tr('badges.aucun_badge')} message="Complétez des missions pour débloquer des badges." />}
+          ListEmptyComponent={<EmptyState title={tr('badges.aucun_badge')} message={tr('badges.completez_des_missions_pour_debloquer_des_badges')} />}
         />
       )}
     </Screen>

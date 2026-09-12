@@ -8,6 +8,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
 import { readServerErrors, useResourceDetail, useResourceIndex, useResourceSave } from './hooks';
 import { FieldInput } from './FieldInput';
 import type { ResourceField } from './types';
+import { traduireMaintenant } from '@/i18n';
 
 interface Params {
   resource: string;
@@ -84,7 +85,7 @@ export function ResourceFormScreen({ route }: { route: { params: Params } }) {
   if (isError || !descripteur) {
     return (
       <Screen>
-        <ErrorState message="Le formulaire n’a pas pu être chargé." />
+        <ErrorState message={traduireMaintenant('resource_form.le_formulaire_n_a_pas_pu_etre')} />
       </Screen>
     );
   }

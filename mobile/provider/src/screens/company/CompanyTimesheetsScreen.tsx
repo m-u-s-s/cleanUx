@@ -88,7 +88,7 @@ export function CompanyTimesheetsScreen() {
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['company', 'timesheets'] }),
     onError: (erreur: any) =>
-      Alert.alert(tr('company_timesheets.decision_refusee'), erreur?.data?.message ?? 'Votre rôle ne permet pas cette action.'),
+      Alert.alert(tr('company_timesheets.decision_refusee'), erreur?.data?.message ?? tr('company_timesheets.votre_role_ne_permet_pas_cette_action')),
   });
 
   const sansPointage = rentabilite?.meta?.missions_without_timesheet ?? 0;
@@ -162,7 +162,7 @@ export function CompanyTimesheetsScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('company_timesheets.aucune_heure_retenue')}
-            message="Une correction en attente ne compte pas : payer avant approbation reviendrait à ne jamais approuver."
+            message={tr('company_timesheets.une_correction_en_attente_ne_compte_pas')}
           />
         }
       />
@@ -174,7 +174,7 @@ export function CompanyTimesheetsScreen() {
             <View key={String(ligne.key)} style={styles.ligne} testID={`marge-${ligne.key}`}>
               <View style={styles.identite}>
                 <Text style={styles.nom} numberOfLines={1}>
-                  {ligne.key ? `Site ${ligne.key}` : 'Non ventilé'}
+                  {ligne.key ? `Site ${ligne.key}` : tr('company_timesheets.non_ventile')}
                 </Text>
                 <Text style={styles.detail}>
                   {ligne.missions_count} mission(s)

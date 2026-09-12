@@ -187,7 +187,7 @@ export function ReferralScreen() {
       {/* How it works */}
       <View style={styles.howItWorks}>
         <Text style={styles.sectionTitle}>{tr('referral.comment_ca_marche')}</Text>
-        <Step number={1} text="Partagez votre code avec vos amis" />
+        <Step number={1} text={tr('referral.partagez_votre_code_avec_vos_amis')} />
         {/*
           LES MONTANTS PROMIS VIENNENT DU SERVEUR.
 

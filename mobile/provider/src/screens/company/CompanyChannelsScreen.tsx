@@ -124,7 +124,7 @@ export function CompanyChannelsScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('company_channels.aucune_conversation')}
-            message="Ouvrez-en une pour coordonner vos interventions sans passer par WhatsApp."
+            message={tr('company_channels.ouvrez_en_une_pour_coordonner_vos_interventions')}
           />
         }
       />

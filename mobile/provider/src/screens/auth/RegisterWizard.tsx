@@ -420,7 +420,7 @@ export function RegisterWizard() {
         return (
           <Question
             title={tr('register_wizard.votre_numero_de_telephone')}
-            hint="Nous vous envoyons un code par SMS. C'est par ce numéro que vos clients vous joindront."
+            hint={tr('register_wizard.nous_vous_envoyons_un_code_par_sms')}
           >
             <TextInput
               label={tr('register_wizard.telephone')}
@@ -551,7 +551,7 @@ export function RegisterWizard() {
         return (
           <Question
             title={tr('register_wizard.vous_travaillez_seul_ou_en')}
-            hint="Ce choix détermine les documents qui vous seront demandés."
+            hint={tr('register_wizard.ce_choix_determine_les_documents_qui_vous')}
           >
             <KindChoice value={draft.providerKind} onChange={kind => patch({ providerKind: kind })} />
           </Question>
@@ -561,10 +561,10 @@ export function RegisterWizard() {
         return (
           <Question
             title={tr('register_wizard.votre_societe')}
-            hint="Saisissez votre numéro d'entreprise : nous retrouvons votre raison sociale."
+            hint={tr('register_wizard.saisissez_votre_numero_d_entreprise_nous_retrouvons')}
           >
             <TextInput
-              label="Numéro d'entreprise"
+              label={tr('register_wizard.numero_d_entreprise')}
               value={draft.vatNumber}
               onChangeText={t => { patch({ vatNumber: t }); lookup.reset(); }}
               autoCapitalize="characters"
@@ -659,13 +659,13 @@ export function RegisterWizard() {
 
       case 'terms':
         return (
-          <Question title={tr('register_wizard.derniere_etape')} hint="Votre dossier de vérification s'ouvrira juste après.">
+          <Question title={tr('register_wizard.derniere_etape')} hint={tr('register_wizard.votre_dossier_de_verification_s_ouvrira_juste')}>
             <TouchableOpacity
               style={kit.termsRow}
               onPress={() => patch({ acceptTerms: !draft.acceptTerms })}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: draft.acceptTerms }}
-              accessibilityLabel="J'accepte les conditions d'utilisation et la politique de confidentialité"
+              accessibilityLabel={tr('register_wizard.j_accepte_les_conditions_d_utilisation_et')}
               testID="register-accept-terms"
             >
               <View style={[kit.checkbox, draft.acceptTerms && kit.checkboxChecked]} />

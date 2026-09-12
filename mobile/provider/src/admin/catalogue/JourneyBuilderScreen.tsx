@@ -78,7 +78,7 @@ export function JourneyBuilderScreen() {
     return (
       <Screen>
         <ErrorState
-          message={messageDErreur(error, 'Impossible de charger le parcours.')}
+          message={messageDErreur(error, tr('journey_builder.impossible_de_charger_le_parcours'))}
           onRetry={() => refetch()}
         />
       </Screen>
@@ -123,7 +123,7 @@ export function JourneyBuilderScreen() {
       { type: 'publish' },
       {
         onError: (erreur) =>
-          Alert.alert(tr('journey_builder.publication_refusee'), messageDErreur(erreur, 'Le parcours n’est pas prêt.')),
+          Alert.alert(tr('journey_builder.publication_refusee'), messageDErreur(erreur, tr('journey_builder.le_parcours_n_est_pas_pret'))),
         onSuccess: () => Alert.alert(tr('journey_builder.publie'), tr('journey_builder.les_commandes_en_cours_citeront')),
       },
     );
@@ -188,7 +188,7 @@ export function JourneyBuilderScreen() {
       {(data?.data ?? []).length === 0 ? (
         <EmptyState
           title={tr('journey_builder.aucune_question')}
-          message="Commencez par la plus déterminante pour le prix — la surface, le type d’intervention."
+          message={tr('journey_builder.commencez_par_la_plus_determinante_pour_le')}
         />
       ) : null}
 

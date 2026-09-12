@@ -73,7 +73,7 @@ export function PlacesScreen() {
     },
     onError: (erreur: any) =>
       // « Votre carnet contient déjà 25 lieux » est une réponse, pas une panne.
-      Alert.alert(tr('places.ajout_refuse'), erreur?.data?.message ?? 'Le lieu n’a pas pu être enregistré.'),
+      Alert.alert(tr('places.ajout_refuse'), erreur?.data?.message ?? tr('places.le_lieu_n_a_pas_pu_etre')),
   });
 
   const definirParDefaut = useMutation({
@@ -140,7 +140,7 @@ export function PlacesScreen() {
         <TextInput
           value={consignes}
           onChangeText={setConsignes}
-          placeholder="Consignes d'accès (digicode, boîte à clés…)"
+          placeholder={tr('places.consignes_d_acces_digicode_boite_a_cles')}
           placeholderTextColor={styles.placeholder.color}
           style={styles.champ}
           testID="champ-consignes-lieu"
@@ -161,7 +161,7 @@ export function PlacesScreen() {
         />
 
         <Text style={styles.note}>
-          Les consignes d'accès ne sont montrées au professionnel qu'une fois son arrivée confirmée
+          Les consignes dtr('places.acces_ne_sont_montrees_au_professionnel_qu')une fois son arrivée confirmée
           sur place.
         </Text>
       </View>
@@ -213,7 +213,7 @@ export function PlacesScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('places.aucun_lieu')}
-            message="Le premier lieu que vous ajoutez devient votre lieu par défaut."
+            message={tr('places.le_premier_lieu_que_vous_ajoutez_devient')}
           />
         }
       />

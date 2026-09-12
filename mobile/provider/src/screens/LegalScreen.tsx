@@ -6,6 +6,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
+import { traduireMaintenant } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Legal'>;
 
@@ -15,10 +16,10 @@ const CONTENT = {
     body: `Dernière mise à jour : Juillet 2026
 
 1. OBJET
-Les présentes CGU régissent l'utilisation de l'application brio, marketplace de services à domicile multi-métiers.
+Les présentes CGU régissent ltraduireMaintenant('legal.utilisation_de_l_2')application brio, marketplace de services à domicile multi-métiers.
 
 2. INSCRIPTION
-L'utilisateur doit être majeur et fournir des informations exactes lors de l'inscription.
+LtraduireMaintenant('legal.utilisateur_doit_etre_majeur_et_fournir_des_2')inscription.
 
 3. SERVICES
 brio met en relation des clients avec des prestataires de services. brio n'est pas prestataire des services proposés.
@@ -27,7 +28,7 @@ brio met en relation des clients avec des prestataires de services. brio n'est p
 Les paiements sont traités via Stripe. Le montant est pré-autorisé à la réservation et capturé à la fin de la mission.
 
 5. ANNULATION
-Les conditions d'annulation varient selon le délai. Consultez la politique d'annulation dans l'application.
+Les conditions dtraduireMaintenant('legal.annulation_varient_selon_le_delai_consultez_la_2')annulation dans l'application.
 
 6. RESPONSABILITÉ
 brio agit en tant qu'intermédiaire. La responsabilité des prestations incombe aux prestataires.
@@ -39,7 +40,7 @@ Voir notre Politique de Confidentialité.
 support@brio.com`,
   },
   privacy: {
-    title: 'Politique de Confidentialité',
+    title: traduireMaintenant('legal.politique_de_confidentialite_2'),
     body: `Dernière mise à jour : Mai 2026
 
 1. DONNÉES COLLECTÉES

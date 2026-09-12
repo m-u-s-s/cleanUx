@@ -59,7 +59,7 @@ export function CompanyInventoryScreen() {
       qc.invalidateQueries({ queryKey: ['company', 'inventory'] });
     },
     onError: (erreur: any) =>
-      Alert.alert(tr('company_inventory.mouvement_refuse'), erreur?.data?.message ?? 'Le stock n’a pas pu être modifié.'),
+      Alert.alert(tr('company_inventory.mouvement_refuse'), erreur?.data?.message ?? tr('company_inventory.le_stock_n_a_pas_pu_etre')),
   });
 
   const quantiteDe = (id: number): number => {
@@ -133,7 +133,7 @@ export function CompanyInventoryScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('company_inventory.aucun_consommable')}
-            message="Déclarez vos articles depuis l'espace société pour suivre ce qui reste."
+            message={tr('company_inventory.declarez_vos_articles_depuis_l_espace_societe')}
           />
         }
       />

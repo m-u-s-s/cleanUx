@@ -3,6 +3,7 @@ import { apiClient, ApiError } from '@/api';
 import NetInfo from '@react-native-community/netinfo';
 import { useChannel } from '@/realtime';
 import type { MissionAssignment, Mission, MissionLifecycleAction } from './types';
+import { traduireMaintenant } from '@/i18n';
 
 // `enabled` par défaut à `true` : aucun appelant existant (DashboardScreen, MissionInboxScreen,
 // ProviderMap) n'a besoin de changer. DashboardActionsSheet le passe à `false` tant
@@ -146,7 +147,7 @@ export function useMissionLifecycle(missionId: number) {
           throw new ApiError(
             0,
             'offline',
-            'Clôturer demande une connexion : le code de fin ne peut être validé hors-ligne. Vos tâches cochées, elles, sont enregistrées et partiront toutes seules.',
+            traduireMaintenant('hooks.cloturer_demande_une_connexion_le_code_de'),
           );
         }
       }

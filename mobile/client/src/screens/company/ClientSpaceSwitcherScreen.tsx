@@ -36,13 +36,13 @@ export function ClientSpaceSwitcherScreen({
         <Choice
           icon="business-outline"
           label={tr('client_space_switcher.mon_entreprise')}
-          hint="Locaux, réservations, contrats, facturation"
+          hint={tr('client_space_switcher.locaux_reservations_contrats_facturation')}
           onPress={() => onChoose('clientCompany')}
         />
         <Choice
           icon="person-outline"
           label={tr('client_space_switcher.mes_services_perso')}
-          hint="Mes réservations à titre personnel"
+          hint={tr('client_space_switcher.mes_reservations_a_titre_personnel')}
           onPress={() => onChoose('personal')}
         />
       </View>

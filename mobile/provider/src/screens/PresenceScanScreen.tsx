@@ -59,9 +59,9 @@ export function PresenceScanScreen({ route }: Props) {
         // commencée, prestataire non rattaché — sans que la présence en souffre. Annoncer
         // « mission démarrée » dans ce cas serait un mensonge.
         const [title, message] = isCompletion
-          ? ['Mission clôturée', 'Le client a validé la fin de la prestation.']
+          ? [tr('presence_scan.mission_cloturee'), tr('presence_scan.le_client_a_valide_la_fin_de')]
           : [
-              'Présence confirmée',
+              tr('presence_scan.presence_confirmee'),
               result?.mission_started
                 ? tr('presence_scan.l_intervention_a_demarre_le')
                 : tr('presence_scan.le_client_a_bien_ete'),
@@ -83,7 +83,7 @@ export function PresenceScanScreen({ route }: Props) {
         // HTTP, et « Request failed with status code 422 » s'affichait tel quel dans cette alerte.
         Alert.alert(
           position ? tr('presence_scan.position_refusee') : tr('presence_scan.code_refuse'),
-          position ?? errors.code?.[0] ?? messageDErreur(e, 'Ce code n’est pas valide.'),
+          position ?? errors.code?.[0] ?? messageDErreur(e, tr('presence_scan.ce_code_n_est_pas_valide')),
         );
         setScanned(false);
       },

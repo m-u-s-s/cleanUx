@@ -7,7 +7,7 @@ import { useAuth, can } from '@/auth';
 import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 interface Creneau {
   id: number;
@@ -72,7 +72,7 @@ export function CompanyPlanningScreen() {
     onError: (erreur: any) =>
       Alert.alert(
         tr('company_planning.publication_refusee'),
-        erreur?.data?.message ?? 'Votre rôle ne permet pas de publier le planning.',
+        erreur?.data?.message ?? tr('company_planning.votre_role_ne_permet_pas_de_publier'),
       ),
   });
 
@@ -90,7 +90,7 @@ export function CompanyPlanningScreen() {
     onError: (erreur: any) =>
       // Un refus du domaine — dates qui se chevauchent, fin avant début — est une réponse, pas une
       // panne : on affiche la règle plutôt qu'« une erreur est survenue ».
-      Alert.alert(tr('company_planning.demande_refusee'), erreur?.data?.message ?? 'Vérifiez les dates saisies.'),
+      Alert.alert(tr('company_planning.demande_refusee'), erreur?.data?.message ?? tr('company_planning.verifiez_les_dates_saisies')),
   });
 
   const statuer = useMutation({
@@ -101,7 +101,7 @@ export function CompanyPlanningScreen() {
       qc.invalidateQueries({ queryKey: ['company', 'shifts'] });
     },
     onError: (erreur: any) =>
-      Alert.alert(tr('company_planning.decision_refusee'), erreur?.data?.message ?? 'Votre rôle ne permet pas cette action.'),
+      Alert.alert(tr('company_planning.decision_refusee'), erreur?.data?.message ?? tr('company_planning.votre_role_ne_permet_pas_cette_action')),
   });
 
   const enAttente = (absences ?? []).filter((a) => a.status === 'pending');
@@ -151,7 +151,7 @@ export function CompanyPlanningScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('company_planning.aucun_creneau')}
-            message="Tant qu'aucun planning n'est publié, la répartition fonctionne comme avant."
+            message={tr('company_planning.tant_qu_aucun_planning_n_est_publie')}
           />
         }
       />
@@ -219,7 +219,7 @@ export function CompanyPlanningScreen() {
 
 /** Une plage lisible d'un coup d'œil : le jour, puis les deux heures. */
 function formaterCreneau(debut: string | null, fin: string | null): string {
-  if (!debut) return 'Horaire non renseigné';
+  if (!debut) return traduireMaintenant('company_planning.horaire_non_renseigne');
 
   const d = new Date(debut);
   const f = fin ? new Date(fin) : null;

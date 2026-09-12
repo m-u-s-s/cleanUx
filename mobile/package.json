@@ -7,6 +7,8 @@
     "provider"
   ],
   "scripts": {
+    "postinstall": "patch-package --error-on-fail",
+    "test:security": "node --test security/*.test.cjs",
     "start": "echo \"Pick an app: npm run start:client or npm run start:provider (expo start must run inside client/ or provider/, not here)\" && exit 1",
     "start:client": "npm run start --workspace client",
     "start:provider": "npm run start --workspace provider",
@@ -15,7 +17,16 @@
     "ios:client": "npm run ios --workspace client",
     "ios:provider": "npm run ios --workspace provider"
   },
+  "overrides": {
+    "query-string": {
+      "decode-uri-component": "0.5.0"
+    },
+    "xcode": {
+      "uuid": "11.1.1"
+    }
+  },
   "devDependencies": {
+    "patch-package": "8.0.1",
     "typescript": "~6.0.3",
     "ts-node": "^10.9.2"
   }

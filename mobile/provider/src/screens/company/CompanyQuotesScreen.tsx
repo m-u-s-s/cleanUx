@@ -63,7 +63,7 @@ export function CompanyQuotesScreen() {
       qc.invalidateQueries({ queryKey: ['company', 'quotes'] });
     },
     onError: (erreur: any) =>
-      Alert.alert(tr('company_quotes.creation_refusee'), erreur?.data?.message ?? 'Votre rôle ne permet pas de chiffrer.'),
+      Alert.alert(tr('company_quotes.creation_refusee'), erreur?.data?.message ?? tr('company_quotes.votre_role_ne_permet_pas_de_chiffrer')),
   });
 
   const envoyer = useMutation({
@@ -72,7 +72,7 @@ export function CompanyQuotesScreen() {
     onError: (erreur: any) =>
       // « Un devis sans ligne n'a rien à proposer » est une règle à LIRE : la remplacer par « une
       // erreur est survenue » ferait recommencer la saisie.
-      Alert.alert(tr('company_quotes.envoi_refuse'), erreur?.data?.message ?? 'Le devis n’a pas pu être envoyé.'),
+      Alert.alert(tr('company_quotes.envoi_refuse'), erreur?.data?.message ?? tr('company_quotes.le_devis_n_a_pas_pu_etre')),
   });
 
   return (
@@ -146,7 +146,7 @@ export function CompanyQuotesScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('company_quotes.aucun_devis')}
-            message="Jusqu'ici, seul un administrateur pouvait en saisir un pour vous."
+            message={tr('company_quotes.jusqu_ici_seul_un_administrateur_pouvait_en')}
           />
         }
       />

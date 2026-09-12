@@ -163,7 +163,7 @@ export function OfferModal({ offer, onDismiss }: Props) {
           <View style={styles.details}>
             <View style={styles.row}>
               {/* Sur une course, dire DE QUELLE distance on parle. */}
-              <Text style={styles.label}>{offer.is_ride ? 'Pour aller le chercher' : 'Distance'}</Text>
+              <Text style={styles.label}>{offer.is_ride ? tr('offer_modal.pour_aller_le_chercher') : 'Distance'}</Text>
               <Text style={styles.value} testID="offer-distance">
                 {offer.distance_km != null ? `${offer.distance_km} km` : '—'}
               </Text>
@@ -203,7 +203,7 @@ export function OfferModal({ offer, onDismiss }: Props) {
               <Text style={styles.value} testID="offer-payout">
                 {offer.payout_cents != null
                   ? formatCentimes(offer.payout_cents)
-                  : 'À confirmer'}
+                  : tr('offer_modal.a_confirmer')}
               </Text>
             </View>
             {offer.estimated_duration_minutes != null && (

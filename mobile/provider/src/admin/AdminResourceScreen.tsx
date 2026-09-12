@@ -4,6 +4,7 @@ import { Screen } from '@/ui';
 import {spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
+import { traduireMaintenant } from '@/i18n';
 
 /**
  * Filet de sécurité du lot A.
@@ -16,7 +17,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
 export function AdminResourceScreen({ route }: { route: { params?: { title?: string } } }) {
   const styles = stylesFor(useThemeColors());
 
-  const title = route.params?.title ?? 'Ce module';
+  const title = route.params?.title ?? traduireMaintenant('admin_resource.ce_module');
 
   return (
     <Screen>

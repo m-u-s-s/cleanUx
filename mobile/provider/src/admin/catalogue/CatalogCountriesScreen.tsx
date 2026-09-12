@@ -51,7 +51,7 @@ export function CatalogCountriesScreen() {
   if (isError) {
     return (
       <Screen>
-        <ErrorState message={messageDErreur(error, 'Impossible de charger les pays.')} onRetry={() => refetch()} />
+        <ErrorState message={messageDErreur(error, tr('catalog_countries.impossible_de_charger_les_pays'))} onRetry={() => refetch()} />
       </Screen>
     );
   }
@@ -103,7 +103,7 @@ export function CatalogCountriesScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('catalog_countries.aucun_pays')}
-            message="Ajoutez un pays depuis l’administration web pour commencer."
+            message={tr('catalog_countries.ajoutez_un_pays_depuis_l_administration_web')}
           />
         }
       />

@@ -62,7 +62,7 @@ export function AdminDirectoryScreen() {
     return (
       <Screen>
         <ErrorState
-          message="L’annuaire n’a pas pu être chargé."
+          message={tr('admin_directory.l_annuaire_n_a_pas_pu_etre')}
           onRetry={() => {
             void refetch();
           }}

@@ -72,7 +72,7 @@ export function CompanyDispatchScreen() {
     onError: (erreur: any) =>
       Alert.alert(
         tr('company_dispatch.assignation_refusee'),
-        erreur?.data?.message ?? 'Votre rôle ne permet pas de répartir les missions.',
+        erreur?.data?.message ?? tr('company_dispatch.votre_role_ne_permet_pas_de_repartir'),
       ),
   });
 
@@ -120,7 +120,7 @@ export function CompanyDispatchScreen() {
         tr('company_dispatch.les_missions_sans_personne_sont'),
       ),
     onError: (erreur: any) =>
-      Alert.alert(tr('company_dispatch.lancement_refuse'), erreur?.data?.message ?? 'Votre rôle ne le permet pas.'),
+      Alert.alert(tr('company_dispatch.lancement_refuse'), erreur?.data?.message ?? tr('company_dispatch.votre_role_ne_le_permet_pas')),
   });
 
   const basculerModeContinu = useMutation({
@@ -128,7 +128,7 @@ export function CompanyDispatchScreen() {
       apiClient.put('/provider/company/auto-assign/settings', { auto_assign_enabled: actif }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['company', 'auto-assign', 'settings'] }),
     onError: (erreur: any) =>
-      Alert.alert(tr('company_dispatch.reglage_refuse'), erreur?.data?.message ?? 'Votre rôle ne le permet pas.'),
+      Alert.alert(tr('company_dispatch.reglage_refuse'), erreur?.data?.message ?? tr('company_dispatch.votre_role_ne_le_permet_pas')),
   });
 
   return (
@@ -177,9 +177,9 @@ export function CompanyDispatchScreen() {
                       hour: '2-digit',
                       minute: '2-digit',
                     })
-                  : 'Non planifiée'}
+                  : tr('company_dispatch.non_planifiee')}
               </Text>
-              <Badge label={item.lead ?? 'Non assignée'} variant={item.lead ? 'brand' : 'neutral'} />
+              <Badge label={item.lead ?? tr('company_dispatch.non_assignee')} variant={item.lead ? 'brand' : 'neutral'} />
             </View>
 
             <View style={styles.actions}>
@@ -206,7 +206,7 @@ export function CompanyDispatchScreen() {
           </View>
         )}
         ListEmptyComponent={
-          <EmptyState title={tr('company_dispatch.aucune_mission')} message="Les missions confiées à votre société apparaîtront ici." />
+          <EmptyState title={tr('company_dispatch.aucune_mission')} message={tr('company_dispatch.les_missions_confiees_a_votre_societe_apparaitront')} />
         }
       />
     </Screen>

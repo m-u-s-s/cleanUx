@@ -6,6 +6,7 @@ import { parseBridgeMessage, INJECTED_BRIDGE_JS } from './bridge';
 import { ErrorState } from '@/ui';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
+import { traduireMaintenant } from '@/i18n';
 
 export interface EmbeddedModuleScreenProps {
   /** Internal web path to render (e.g. '/admin/audit'). */
@@ -113,7 +114,7 @@ export function EmbeddedModuleScreen({
     return (
       <View testID="embedded-error" style={{ flex: 1 }}>
         <ErrorState
-          message="Cette section nécessite une connexion. Réessayez."
+          message={traduireMaintenant('embedded_module.cette_section_necessite_une_connexion_reessayez')}
           onRetry={manualRetry}
         />
       </View>

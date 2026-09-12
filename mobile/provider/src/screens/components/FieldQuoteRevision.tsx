@@ -83,7 +83,7 @@ export function FieldQuoteRevision({
           onPress={() =>
             retirer.mutate(revision.id, {
               onError: (e: { message?: string }) =>
-                Alert.alert(tr('field_quote_revision.impossible'), e.message ?? 'La proposition n’a pas pu être retirée.'),
+                Alert.alert(tr('field_quote_revision.impossible'), e.message ?? tr('field_quote_revision.la_proposition_n_a_pas_pu_etre')),
             })
           }
           loading={retirer.isPending}
@@ -98,7 +98,7 @@ export function FieldQuoteRevision({
       <View style={styles.section} testID="revision-fermee">
         <Text style={styles.titre}>{tr('field_quote_revision.nouveau_devis')}</Text>
         {/* LE MOTIF, PAS UN FORMULAIRE GRISÉ : il dit quel geste employer à la place. */}
-        <Text style={styles.note}>{fenetre?.reason ?? 'Indisponible sur cette mission.'}</Text>
+        <Text style={styles.note}>{fenetre?.reason ?? tr('field_quote_revision.indisponible_sur_cette_mission')}</Text>
       </View>
     );
   }
@@ -135,7 +135,7 @@ export function FieldQuoteRevision({
           setMotif('');
         },
         onError: (e: { message?: string }) =>
-          Alert.alert(tr('field_quote_revision.impossible'), e.message ?? 'La révision n’a pas pu être envoyée.'),
+          Alert.alert(tr('field_quote_revision.impossible'), e.message ?? tr('field_quote_revision.la_revision_n_a_pas_pu_etre')),
       },
     );
   };
@@ -155,7 +155,7 @@ export function FieldQuoteRevision({
           Alert.alert(tr('field_quote_revision.renfort_demande'), tr('field_quote_revision.votre_demande_est_ouverte_quelquun'));
         },
         onError: (e: { message?: string }) =>
-          Alert.alert(tr('field_quote_revision.impossible'), e.message ?? 'La demande n’a pas pu être ouverte.'),
+          Alert.alert(tr('field_quote_revision.impossible'), e.message ?? tr('field_quote_revision.la_demande_n_a_pas_pu_etre')),
       },
     );
   };
@@ -179,7 +179,7 @@ export function FieldQuoteRevision({
           `${euros(quote.total_cents, fenetre?.currency ?? '')} — remises du client réappliquées.`,
         ),
       onError: (e: { message?: string }) =>
-        Alert.alert(tr('field_quote_revision.impossible'), e.message ?? 'La simulation a échoué.'),
+        Alert.alert(tr('field_quote_revision.impossible'), e.message ?? tr('field_quote_revision.la_simulation_a_echoue')),
     });
   };
 
@@ -213,7 +213,7 @@ export function FieldQuoteRevision({
 
       <Text style={styles.preuve}>
         {photosAvant.length === 0
-          ? 'Aucune photo « avant » : ajoutez-en une plus haut, elle est obligatoire.'
+          ? tr('field_quote_revision.aucune_photo_avant_ajoutez_en_une_plus')
           : `${photosAvant.length} photo(s) « avant » jointe(s).`}
       </Text>
 

@@ -99,7 +99,7 @@ export function ProviderNotificationsScreen() {
               colors={[colors.brand[500]]}
             />
           }
-          ListEmptyComponent={<EmptyState title={tr('provider_notifications.aucune_notification')} message="Vous êtes à jour !" />}
+          ListEmptyComponent={<EmptyState title={tr('provider_notifications.aucune_notification')} message={tr('provider_notifications.vous_etes_a_jour')} />}
         />
       )}
     </Screen>

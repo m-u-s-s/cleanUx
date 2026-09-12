@@ -13,7 +13,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionTracking'>;
 
@@ -23,7 +23,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'MissionTracking'>;
  */
 const STATUS_LABELS: Record<string, string> = {
   enroute: 'En route',
-  arrived: 'Sur place',
+  arrived: traduireMaintenant('mission_tracking.sur_place'),
   in_mission: 'En cours',
   ended: 'Terminée',
   cancelled: 'Annulée',

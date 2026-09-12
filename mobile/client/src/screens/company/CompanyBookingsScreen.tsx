@@ -58,7 +58,7 @@ export function CompanyBookingsScreen() {
       <Screen>
         <EmptyState
           title={tr('company_bookings.reservations_indisponibles')}
-          message="Impossible de charger les réservations de votre société."
+          message={tr('company_bookings.impossible_de_charger_les_reservations_de_votre')}
           actionLabel="Réessayer"
           onAction={() => void refetch()}
         />
@@ -94,7 +94,7 @@ export function CompanyBookingsScreen() {
                 {item.site ?? 'Sans local'}
               </Text>
               <Text style={styles.detail} numberOfLines={1}>
-                {item.provider ?? 'Prestataire à confirmer'}
+                {item.provider ?? tr('company_bookings.prestataire_a_confirmer')}
                 {item.estimated_price !== null ? ` · ${formatMontant(item.estimated_price)}` : ''}
               </Text>
             </View>
@@ -116,7 +116,7 @@ export function CompanyBookingsScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('company_bookings.aucune_reservation')}
-            message="Les interventions demandées par les membres de votre société apparaîtront ici."
+            message={tr('company_bookings.les_interventions_demandees_par_les_membres_de')}
           />
         }
       />

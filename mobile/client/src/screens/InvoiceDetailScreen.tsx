@@ -77,7 +77,7 @@ export function InvoiceDetailScreen({ route, navigation }: Props) {
       }
     } catch {
       // Graceful fallback — never crash the UI
-      Alert.alert('PDF', 'Téléchargement indisponible. Réessayez.');
+      Alert.alert('PDF', tr('invoice_detail.telechargement_indisponible_reessayez'));
     }
   }, [invoice]);
 
@@ -85,7 +85,7 @@ export function InvoiceDetailScreen({ route, navigation }: Props) {
     return (
       <Screen>
         <ErrorState
-          message="Impossible de charger cette facture."
+          message={tr('invoice_detail.impossible_de_charger_cette_facture')}
           onRetry={() => {
             setError(false);
             setLoading(true);

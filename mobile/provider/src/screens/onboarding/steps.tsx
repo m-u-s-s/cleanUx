@@ -202,7 +202,7 @@ export function ContractStep({ onDone, submitting, error }: StepProps) {
 
 Je reconnais intervenir en qualité d'indépendant ou pour le compte de ma société, et non comme salarié de la plateforme. Je reste responsable de mes obligations sociales et fiscales, ainsi que de la validité des assurances couvrant mon activité.
 
-Je m'engage à ne sous-traiter aucune mission sans accord préalable, et à respecter la confidentialité des informations auxquelles j'accède au domicile ou sur le site du client.`}
+Je mtr('steps.engage_a_ne_sous_traiter_aucune_mission')accède au domicile ou sur le site du client.`}
         </Text>
       </ScrollView>
 
@@ -211,7 +211,7 @@ Je m'engage à ne sous-traiter aucune mission sans accord préalable, et à resp
         onPress={() => { setAccepted(v => !v); setLocalError(null); }}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: accepted }}
-        accessibilityLabel="J'accepte le contrat prestataire"
+        accessibilityLabel={tr('steps.j_accepte_le_contrat_prestataire')}
         testID="onboarding-accept-contract"
       >
         <View style={[styles.checkbox, accepted && styles.checkboxChecked]} />
@@ -310,8 +310,8 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
 
   return (
     <StepShell
-      title="Vérification d'identité"
-      hint="Selfie et pièce d'identité, contrôlés automatiquement. Environ trois minutes."
+      title={tr('steps.verification_d_identite')}
+      hint={tr('steps.selfie_et_piece_d_identite_controles_automatiquement')}
     >
       {verified ? (
         <View style={styles.notice}>
@@ -361,7 +361,7 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
         // nouvelle vérification. En mode simulé comme avant l'arrivée du webhook, c'est le seul
         // moyen de faire avancer l'étape — sans quoi elle reste « en cours » indéfiniment.
         <Button
-          label="J'ai terminé, vérifier"
+          label={tr('steps.j_ai_termine_verifier')}
           onPress={() => refreshDecision()}
           fullWidth
           size="lg"
@@ -765,7 +765,7 @@ export function VehicleStep({ onDone, submitting, error }: StepProps) {
   return (
     <StepShell
       title={tr('steps.votre_vehicule')}
-      hint={`Exigé pour : ${(data?.trades ?? []).join(', ') || 'vos métiers de transport'}. Le véhicule doit avoir moins de ${data?.max_age_years ?? 4} ans.`}
+      hint={`Exigé pour : ${(data?.trades ?? []).join(', ') || tr('steps.vos_metiers_de_transport')}. Le véhicule doit avoir moins de ${data?.max_age_years ?? 4} ans.`}
     >
       <TextInput label={tr('steps.plaque_dimmatriculation')} value={plate} onChangeText={setPlate} autoCapitalize="characters" />
       <TextInput label={tr('steps.marque')} value={brand} onChangeText={setBrand} />

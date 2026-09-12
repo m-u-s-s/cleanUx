@@ -295,7 +295,7 @@ export function ResourceListScreen({ route }: { route: { params: Params } }) {
         ListEmptyComponent={
           <EmptyState
             title={tr('resource_list.aucun_resultat')}
-            message="Aucune ligne ne correspond à ce que vous cherchez."
+            message={tr('resource_list.aucune_ligne_ne_correspond_a_ce_que')}
             icon="search-outline"
           />
         }

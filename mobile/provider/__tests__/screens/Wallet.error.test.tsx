@@ -133,7 +133,7 @@ describe('WalletScreen failure paths', () => {
     render(<WalletScreen />, { wrapper: makeWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByText(/aucun portefeuille n'y est rattaché/)).toBeTruthy();
+      expect(screen.getByText(/aucun portefeuille n['’]y est rattaché/)).toBeTruthy();
     });
     // The old behaviour: "0.00 EUR" + the empty-list state, as if the wallet were simply empty.
     expect(screen.queryByText('Aucune transaction')).toBeNull();

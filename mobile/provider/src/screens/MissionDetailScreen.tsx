@@ -21,7 +21,7 @@ import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
 import { formatAdresse, formatDateHeure, messageDErreur } from '@brio/shared/format';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'MissionDetail'>;
 
@@ -412,7 +412,7 @@ export function MissionDetailScreen({ route }: Props) {
  * exactement l'impression de panne que ce chantier corrige.
  */
 function messageDeCloture(payout?: MissionPayoutAnnouncement | null): string {
-  const felicitations = 'Félicitations, vous avez fini votre mission.';
+  const felicitations = traduireMaintenant('mission_detail.felicitations_vous_avez_fini_votre_mission');
 
   if (!payout) {
     return `${felicitations} Le montant vous sera transféré selon votre calendrier de versement habituel.`;

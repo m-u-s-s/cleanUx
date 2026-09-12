@@ -183,7 +183,7 @@ export function ChannelConversationScreen() {
           }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['company', 'channel-members', canalId] }),
     onError: (erreur: any) =>
-      Alert.alert(tr('channel_conversation.action_refusee'), erreur?.data?.message ?? 'Vous ne gérez pas ce canal.'),
+      Alert.alert(tr('channel_conversation.action_refusee'), erreur?.data?.message ?? tr('channel_conversation.vous_ne_gerez_pas_ce_canal')),
   });
 
   const envoyerLaNote = useMutation({
@@ -212,7 +212,7 @@ export function ChannelConversationScreen() {
   if (canalId === null) {
     return (
       <Screen>
-        <EmptyState title={tr('channel_conversation.conversation_introuvable')} message="Ce canal n'existe plus." />
+        <EmptyState title={tr('channel_conversation.conversation_introuvable')} message={tr('channel_conversation.ce_canal_n_existe_plus')} />
       </Screen>
     );
   }
@@ -339,7 +339,7 @@ export function ChannelConversationScreen() {
           </View>
         )}
         ListEmptyComponent={
-          <EmptyState title={tr('channel_conversation.aucun_message')} message="Ouvrez la conversation en écrivant un mot." />
+          <EmptyState title={tr('channel_conversation.aucun_message')} message={tr('channel_conversation.ouvrez_la_conversation_en_ecrivant_un_mot')} />
         }
       />
 

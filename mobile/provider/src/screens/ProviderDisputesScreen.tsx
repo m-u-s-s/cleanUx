@@ -28,7 +28,7 @@ export function ProviderDisputesScreen() {
     queryFn: async () => (await apiClient.get('/provider/disputes')).data.data ?? [],
   });
 
-  if (isError) return <Screen><ErrorState message="Impossible de charger vos litiges." onRetry={refetch} /></Screen>;
+  if (isError) return <Screen><ErrorState message={tr('provider_disputes.impossible_de_charger_vos_litiges')} onRetry={refetch} /></Screen>;
 
   return (
     <Screen>
@@ -55,7 +55,7 @@ export function ProviderDisputesScreen() {
           )}
           onRefresh={refetch}
           refreshing={isRefetching}
-          ListEmptyComponent={<EmptyState title={tr('provider_disputes.aucun_litige')} message="Vous n'avez aucun litige en cours." />}
+          ListEmptyComponent={<EmptyState title={tr('provider_disputes.aucun_litige')} message={tr('provider_disputes.vous_n_avez_aucun_litige_en_cours')} />}
         />
       )}
     </Screen>

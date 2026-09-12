@@ -52,7 +52,7 @@ export function HomeMissionMap({ bookingId }: { bookingId: number }) {
   const pillText = session?.status === 'in_mission'
     ? 'Intervention en cours'
     : session?.status === 'arrived'
-      ? 'Votre prestataire est arrivé'
+      ? tr('home_mission_map.votre_prestataire_est_arrive')
       : eta != null ? `Arrivée dans ~${eta} min` : null;
 
   return (
@@ -81,7 +81,7 @@ export function HomeMissionMap({ bookingId }: { bookingId: number }) {
             id: bookingId,
             latitude: current.latitude,
             longitude: current.longitude,
-            title: 'Votre prestataire',
+            title: tr('home_mission_map.votre_prestataire'),
           }]}
           position={{ latitude: current.latitude, longitude: current.longitude }}
           fallbackCenter={{ latitude: current.latitude, longitude: current.longitude, zoom: 14 }}

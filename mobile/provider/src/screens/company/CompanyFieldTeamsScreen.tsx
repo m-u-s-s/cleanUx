@@ -113,7 +113,7 @@ export function CompanyFieldTeamsScreen() {
     onError: (erreur: any) =>
       Alert.alert(
         tr('company_field_teams.action_refusee'),
-        erreur?.data?.message ?? 'Votre rôle ne permet pas de composer les équipes.',
+        erreur?.data?.message ?? tr('company_field_teams.votre_role_ne_permet_pas_de_composer'),
       ),
   });
 
@@ -125,7 +125,7 @@ export function CompanyFieldTeamsScreen() {
         <TextInput
           value={nom}
           onChangeText={setNom}
-          placeholder="Nom de l'agence"
+          placeholder={tr('company_field_teams.nom_de_l_agence')}
           placeholderTextColor={styles.placeholder.color}
           style={styles.champ}
           testID="champ-nom-equipe"
@@ -156,7 +156,7 @@ export function CompanyFieldTeamsScreen() {
                   {item.name}
                 </Text>
                 <Text style={styles.detail} numberOfLines={1}>
-                  {item.zone ?? 'Aucune zone'} · {item.lead ?? 'Sans responsable'}
+                  {item.zone ?? tr('company_field_teams.aucune_zone')} · {item.lead ?? 'Sans responsable'}
                   {item.max_concurrent_missions ? ` · ${item.max_concurrent_missions} en parallèle` : ''}
                 </Text>
               </View>
@@ -186,7 +186,7 @@ export function CompanyFieldTeamsScreen() {
                 {(composition?.members ?? []).map((membre) => (
                   <View key={membre.id} style={styles.ligneMembre}>
                     <Text style={styles.nomMembre} numberOfLines={1}>
-                      {membre.name ?? 'Utilisateur supprimé'}
+                      {membre.name ?? tr('company_field_teams.utilisateur_supprime')}
                       {membre.is_team_lead ? ' · responsable' : ''}
                     </Text>
                     {peutComposer && (
@@ -238,7 +238,7 @@ export function CompanyFieldTeamsScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('company_field_teams.aucune_agence')}
-            message="Créez une équipe terrain pour organiser vos interventions par zone."
+            message={tr('company_field_teams.creez_une_equipe_terrain_pour_organiser_vos')}
           />
         }
       />

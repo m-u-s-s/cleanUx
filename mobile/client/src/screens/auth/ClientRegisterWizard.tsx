@@ -270,7 +270,7 @@ export function ClientRegisterWizard() {
               testID="client-register-company-name"
             />
             <TextInput
-              label="Numéro d'entreprise (optionnel)"
+              label={tr('client_register_wizard.numero_d_entreprise_optionnel')}
               value={vatNumber}
               onChangeText={t => { setVatNumber(t); setFieldError(null); }}
               autoCapitalize="characters"

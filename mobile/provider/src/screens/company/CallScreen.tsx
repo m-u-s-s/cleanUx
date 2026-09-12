@@ -98,7 +98,7 @@ export function CallScreen() {
   if (callId === null) {
     return (
       <Screen>
-        <EmptyState title={tr('call.appel_introuvable')} message="Cet appel n'existe plus." />
+        <EmptyState title={tr('call.appel_introuvable')} message={tr('call.cet_appel_n_existe_plus')} />
       </Screen>
     );
   }
@@ -109,12 +109,12 @@ export function CallScreen() {
         <Text style={styles.etat}>
           {etat === 'connexion' && 'Connexion…'}
           {etat === 'en_cours' && (avecVideo ? tr('call.appel_video_en_cours') : tr('call.appel_en_cours'))}
-          {etat === 'indisponible' && 'Appel indisponible sur cet appareil'}
+          {etat === 'indisponible' && tr('call.appel_indisponible_sur_cet_appareil')}
         </Text>
 
         {etat === 'indisponible' && (
           <Text style={styles.aide}>
-            La fonction d'appel demande une version de l'application reconstruite avec le module
+            La fonction dtr('call.appel_demande_une_version_de_l')application reconstruite avec le module
             audio. Utilisez une note vocale en attendant.
           </Text>
         )}

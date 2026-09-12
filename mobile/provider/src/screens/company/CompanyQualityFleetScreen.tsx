@@ -124,7 +124,7 @@ export function CompanyQualityFleetScreen() {
           ListEmptyComponent={
             <EmptyState
               title={tr('company_quality_fleet.aucun_score')}
-              message="Trois sources existantes, aucune nouvelle collecte. Ce score ne sort pas de votre société."
+              message={tr('company_quality_fleet.trois_sources_existantes_aucune_nouvelle_collecte_ce')}
             />
           }
         />
@@ -141,7 +141,7 @@ export function CompanyQualityFleetScreen() {
                   {vehicule.plate ?? `Véhicule ${vehicule.id}`}
                 </Text>
                 <Text style={styles.detail} numberOfLines={1}>
-                  {[vehicule.brand, vehicule.model].filter(Boolean).join(' ') || 'Modèle non renseigné'}
+                  {[vehicule.brand, vehicule.model].filter(Boolean).join(' ') || tr('company_quality_fleet.modele_non_renseigne')}
                   {vehicule.current_provider_name ? ` · ${vehicule.current_provider_name}` : ''}
                 </Text>
               </View>

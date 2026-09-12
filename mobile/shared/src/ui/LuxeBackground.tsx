@@ -12,6 +12,7 @@ import {
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { useReducedMotion } from './a11y';
+import { traduireMaintenant } from '@/i18n';
 
 /** Réglages validés sur l'aperçu : 28 gouttes, lueur à 0.30. */
 const NOMBRE_DE_GOUTTES = 28;
@@ -121,7 +122,7 @@ export function LuxeBackground() {
       // écran, sans qu'aucune information ne suive.
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      accessibilityLabel={mouvementReduit ? 'Fond décoratif, sans animation' : 'Fond décoratif'}
+      accessibilityLabel={mouvementReduit ? traduireMaintenant('luxe_background.fond_decoratif_sans_animation') : traduireMaintenant('luxe_background.fond_decoratif')}
     >
       <Canvas style={StyleSheet.absoluteFill}>
         {/* Le dégradé nuit, en diagonale douce. */}

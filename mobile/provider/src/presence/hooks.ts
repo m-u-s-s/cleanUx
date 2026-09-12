@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient, ApiError } from '@/api';
 import type { PresenceStatus } from './types';
+import { traduireMaintenant } from '@/i18n';
 
 const HEARTBEAT_INTERVAL = 30000; // 30s
 
@@ -47,7 +48,7 @@ type PresenceResponse = {
  * message, and only then a generic French fallback.
  */
 function humanizeError(e: unknown): string {
-  const fallback = 'Changement de statut impossible. Réessaie.';
+  const fallback = traduireMaintenant('hooks.changement_de_statut_impossible_reessaie');
   if (!(e instanceof ApiError)) return fallback;
 
   const firstFieldError = Object.values(e.errors ?? {})[0]?.[0];

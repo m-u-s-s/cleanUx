@@ -14,7 +14,7 @@ import {
 import { Button, GlassSurface, SuccessOverlay, TextInput, useReducedMotion } from '@/ui';
 import { colors } from '@/theme';
 import { useThemeColors, type ThemeTokens } from '@/theme/useThemeColors';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 /**
  * LE CONTRÔLE D'IDENTITÉ, PLEIN ÉCRAN.
@@ -183,7 +183,7 @@ export default function FaceCheckScreen() {
           <Text style={styles.titre}>{tr('face_check.compte_suspendu')}</Text>
           <Text style={styles.texte}>
             {statut?.message ??
-              "Un contrôle d'identité n'a pas abouti. Un administrateur doit lever la suspension."}
+              "Un contrôle dtr('face_check.identite_n')a pas abouti. Un administrateur doit lever la suspension."}
           </Text>
           <Text style={styles.precision}>
             Signaler un problème ne lève pas la suspension : cela ouvre un dossier qu'un
@@ -227,7 +227,7 @@ export default function FaceCheckScreen() {
           <Text style={styles.emoji}>📷</Text>
           <Text style={styles.titre}>{tr('face_check.acces_a_la_camera')}</Text>
           <Text style={styles.texte}>
-            La vérification d'identité a besoin de la caméra frontale. Aucune image n'est partagée
+            La vérification dtr('face_check.identite_a_besoin_de_la_camera_frontale')est partagée
             avec vos clients.
           </Text>
           <View style={styles.actions}>
@@ -270,8 +270,8 @@ export default function FaceCheckScreen() {
             </Text>
             <Text style={styles.texteClair}>
               {enrolement
-                ? 'Cette photo servira de référence. Elle reste privée : ni vos clients ni votre société ne la voient.'
-                : 'Regardez l’objectif, sans lunettes de soleil ni masque. Aucun client ne verra cette photo.'}
+                ? tr('face_check.cette_photo_servira_de_reference_elle_reste')
+                : tr('face_check.regardez_l_objectif_sans_lunettes_de_soleil')}
             </Text>
 
             {statut?.liveness_required ? (
@@ -443,10 +443,10 @@ function FeuilleDeSignalement({
   );
 }
 
-const MESSAGE_RESEAU = 'Connexion perdue. Vérifiez votre réseau et réessayez.';
+const MESSAGE_RESEAU = traduireMaintenant('face_check.connexion_perdue_verifiez_votre_reseau_et_reessayez');
 
 const texteDuRefusDeConsentement =
-  'Lisez et acceptez l’enregistrement de votre visage avant de prendre la photo.';
+  traduireMaintenant('face_check.lisez_et_acceptez_l_enregistrement_de_votre');
 
 function messageDEchec(controle: FaceCheck): string {
   if (controle.liveness_result === 'fail') {

@@ -121,8 +121,8 @@ function LoginForm() {
     const e: typeof errors = {};
     if (!email) e.email = 'Email requis';
     else if (!email.includes('@')) e.email = 'Email invalide';
-    if (!password) e.password = 'Mot de passe requis';
-    else if (password.length < 6) e.password = 'Min. 6 caractères';
+    if (!password) e.password = tr('login.mot_de_passe_requis_2');
+    else if (password.length < 6) e.password = tr('login.min_6_caracteres_2');
     if (secondFacteurAttendu && !twoFactorCode) e.twoFactorCode = 'Code requis';
     setErrors(e);
     return Object.keys(e).length === 0;

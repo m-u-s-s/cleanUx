@@ -8,7 +8,7 @@ import { apiClient } from '@/api';
 import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 interface Devis {
   id: number;
@@ -31,7 +31,7 @@ interface Ligne {
 }
 
 const LIBELLES: Record<string, string> = {
-  sent: 'À décider',
+  sent: traduireMaintenant('received_quotes.a_decider'),
   accepted: 'Accepté',
   declined: 'Refusé',
   expired: 'Périmé',
@@ -90,7 +90,7 @@ export function ReceivedQuotesScreen() {
     },
     onError: (erreur: any) =>
       // « Ce devis n'est plus valable » est une réponse, pas une panne.
-      Alert.alert(tr('received_quotes.action_refusee'), erreur?.data?.message ?? 'Le devis n’a pas pu être traité.'),
+      Alert.alert(tr('received_quotes.action_refusee'), erreur?.data?.message ?? tr('received_quotes.le_devis_n_a_pas_pu_etre')),
   });
 
   return (
@@ -165,7 +165,7 @@ export function ReceivedQuotesScreen() {
               ))}
           </View>
         )}
-        ListEmptyComponent={<EmptyState title={tr('received_quotes.aucun_devis')} message="Vous n'avez reçu aucun devis." />}
+        ListEmptyComponent={<EmptyState title={tr('received_quotes.aucun_devis')} message={tr('received_quotes.vous_n_avez_recu_aucun_devis')} />}
       />
     </Screen>
   );

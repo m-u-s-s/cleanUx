@@ -41,7 +41,7 @@ export function FaceConsentScreen() {
     Alert.alert(
       tr('face_consent.retirer_votre_consentement'),
       tr('face_consent.votre_visage_de_reference_sera')
-        + "qui exigent un contrôle d'identité tant que vous ne l'aurez pas ré-enregistré.",
+        + "qui exigent un contrôle dtr('face_consent.identite_tant_que_vous_ne_l')aurez pas ré-enregistré.",
       [
         { text: 'Annuler', style: 'cancel' },
         {
@@ -52,7 +52,7 @@ export function FaceConsentScreen() {
               onSuccess: () => setRetire(true),
               onError: (e: unknown) => Alert.alert(
                 tr('face_consent.retrait_impossible'),
-                e instanceof Error ? e.message : 'Réessayez dans un instant.',
+                e instanceof Error ? e.message : tr('face_consent.reessayez_dans_un_instant'),
               ),
             });
           },
@@ -79,8 +79,8 @@ export function FaceConsentScreen() {
           <Text style={styles.encartTitre}>{tr('face_consent.donnee_biometrique')}</Text>
           <Text style={styles.encartTexte}>
             {statut?.consent_legal_note
-              ?? 'Catégorie particulière au sens de l’article 9 du RGPD. Vous pouvez retirer votre '
-                + 'consentement à tout moment, et l’image de référence est alors supprimée.'}
+              ?? tr('face_consent.categorie_particuliere_au_sens_de_l_article')
+                + tr('face_consent.consentement_a_tout_moment_et_l_image')}
           </Text>
         </View>
 

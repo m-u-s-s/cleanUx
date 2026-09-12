@@ -56,7 +56,7 @@ export function ProviderRatingsScreen() {
           )}
           onRefresh={refetch}
           refreshing={isRefetching}
-          ListEmptyComponent={<EmptyState title={tr('provider_ratings.aucun_avis')} message="Vos avis clients apparaîtront ici après vos missions." />}
+          ListEmptyComponent={<EmptyState title={tr('provider_ratings.aucun_avis')} message={tr('provider_ratings.vos_avis_clients_apparaitront_ici_apres_vos')} />}
         />
       )}
     </Screen>

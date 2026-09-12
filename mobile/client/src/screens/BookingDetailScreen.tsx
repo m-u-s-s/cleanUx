@@ -120,7 +120,7 @@ export function BookingDetailScreen({ route }: Props) {
       <Screen>
         <EmptyState
           title={tr('booking_detail.reservation_introuvable')}
-          message="Cette réservation n'existe plus ou n'est pas accessible."
+          message={tr('booking_detail.cette_reservation_n_existe_plus_ou_n')}
         />
       </Screen>
     );

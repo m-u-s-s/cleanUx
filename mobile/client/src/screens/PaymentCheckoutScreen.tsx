@@ -42,12 +42,12 @@ export function PaymentCheckoutScreen({ route, navigation }: Props) {
         defaultBillingDetails: { email: '' },
       });
       if (sheetError) {
-        setError(sheetError.message ?? 'Impossible de préparer le paiement.');
+        setError(sheetError.message ?? tr('payment_checkout.impossible_de_preparer_le_paiement'));
       } else {
         setReady(true);
       }
     } catch (e: any) {
-      setError(e?.message ?? 'Impossible de préparer le paiement. Vérifiez votre connexion.');
+      setError(e?.message ?? tr('payment_checkout.impossible_de_preparer_le_paiement_verifiez_votre'));
     } finally {
       setInitializing(false);
     }

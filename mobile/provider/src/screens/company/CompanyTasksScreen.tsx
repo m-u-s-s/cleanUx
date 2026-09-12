@@ -118,7 +118,7 @@ export function CompanyTasksScreen() {
           );
         }}
         ListEmptyComponent={
-          <EmptyState title={tr('company_tasks.aucune_tache')} message="Ajoutez une tâche pour organiser le travail de l'équipe." />
+          <EmptyState title={tr('company_tasks.aucune_tache')} message={tr('company_tasks.ajoutez_une_tache_pour_organiser_le_travail')} />
         }
       />
     </Screen>

@@ -126,7 +126,7 @@ export function AvailabilityScreen() {
   if (isError) {
     return (
       <Screen>
-        <ErrorState message="Impossible de charger vos disponibilités." onRetry={() => refetch()} />
+        <ErrorState message={tr('availability.impossible_de_charger_vos_disponibilites')} onRetry={() => refetch()} />
       </Screen>
     );
   }

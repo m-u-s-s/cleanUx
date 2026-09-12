@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient, ApiError, offlineAwareMutation } from '@/api';
 import { readScanPosition } from '@/tracking';
 import { pickImage } from '@/screens/onboarding/documentPicker';
+import { traduireMaintenant } from '@/i18n';
 
 /**
  * LE KIT « SUR PLACE » — état des lieux, imprévus, fil de l'intervention.
@@ -251,7 +252,7 @@ export function useToggleMissionChecklistItem(missionId: number) {
         `/provider/missions/${missionId}/checklist/${itemId}`,
         'POST',
         { status: done ? 'done' : 'pending' },
-        done ? 'Cocher une tâche' : 'Décocher une tâche',
+        done ? traduireMaintenant('onsite.cocher_une_tache') : traduireMaintenant('onsite.decocher_une_tache'),
       );
 
       if (resultat.queued) {

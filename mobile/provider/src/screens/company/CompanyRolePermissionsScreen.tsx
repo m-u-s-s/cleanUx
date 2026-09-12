@@ -63,7 +63,7 @@ export function CompanyRolePermissionsScreen() {
       <Screen>
         <EmptyState
           title={tr('company_role_permissions.reglages_indisponibles')}
-          message="Seul le propriétaire de la société peut régler les rôles."
+          message={tr('company_role_permissions.seul_le_proprietaire_de_la_societe_peut')}
         />
       </Screen>
     );

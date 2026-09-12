@@ -13,7 +13,7 @@ import { colors, radius, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { ContractStep, DocumentsStep, KycStep, ProfileStep, SkillsStep, VehicleStep, type StepProps } from './steps';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 /**
  * Cockpit de vérification : le dossier du prestataire, carte par carte.
@@ -84,7 +84,7 @@ function stepErrorMessage(error: unknown): string {
     const first = error.errors ? Object.values(error.errors)[0] : undefined;
     const message = Array.isArray(first) ? first[0] : first;
     if (typeof message === 'string' && message) return message;
-    if (error.status === 0) return 'Connexion perdue. Vérifiez votre réseau, puis réessayez.';
+    if (error.status === 0) return traduireMaintenant('provider_onboarding.connexion_perdue_verifiez_votre_reseau_puis_reessayez');
   }
 
   return "Cette étape n'a pas pu être validée. Réessayez.";
@@ -289,7 +289,7 @@ export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => vo
                     // Une étape ajoutée au parcours sans écran correspondant ne doit pas bloquer
                     // le dossier sur une carte vide : on le dit, plutôt que de ne rien afficher.
                     <Text style={styles.errorHint}>
-                      Cette étape ({step.label}) n'est pas encore disponible dans l'application.
+                      Cette étape ({step.label}) ntr('provider_onboarding.est_pas_encore_disponible_dans_l')application.
                       Contactez le support pour la compléter.
                     </Text>
                   )}

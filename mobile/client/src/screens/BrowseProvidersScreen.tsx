@@ -82,9 +82,9 @@ export function BrowseProvidersScreen() {
             contentContainerStyle={styles.list}
             accessibilityLabel={tr('browse_providers.liste_des_prestataires')}
             ListEmptyComponent={uneRechercheEstLancee ? (
-              <EmptyState title={tr('browse_providers.aucun_prestataire_trouve')} message="Essayez avec d'autres critères de recherche." icon="search-outline" />
+              <EmptyState title={tr('browse_providers.aucun_prestataire_trouve')} message={tr('browse_providers.essayez_avec_d_autres_criteres_de_recherche')} icon="search-outline" />
             ) : (
-              <EmptyState title={tr('browse_providers.trouvez_un_prestataire')} message="Renseignez un métier ou un code postal pour lancer la recherche." icon="search-outline" />
+              <EmptyState title={tr('browse_providers.trouvez_un_prestataire')} message={tr('browse_providers.renseignez_un_metier_ou_un_code_postal')} icon="search-outline" />
             )}
             refreshControl={
               <RefreshControl

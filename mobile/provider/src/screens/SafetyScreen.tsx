@@ -88,8 +88,8 @@ export function SafetyScreen() {
           <Text style={styles.etat}>
             {alerte.acknowledged_at
               ? // Ce que la personne sur place attend de savoir en premier.
-                'Un membre de l’équipe sécurité suit votre situation.'
-              : 'Alerte transmise. Nous cherchons quelqu’un pour la prendre en charge.'}
+                tr('safety.un_membre_de_l_equipe_securite_suit')
+              : tr('safety.alerte_transmise_nous_cherchons_quelqu_un_pour')}
           </Text>
 
           {alerte.contact_notified && (

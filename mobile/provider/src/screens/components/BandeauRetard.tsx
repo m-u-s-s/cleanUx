@@ -42,7 +42,7 @@ export function BandeauRetard({ missionId }: { missionId: number }) {
       {
         onSuccess: () => Alert.alert(tr('bandeau_retard.client_prevenu'), `Votre arrivée est annoncée dans ${minutes} min.`),
         onError: (e: { message?: string }) =>
-          Alert.alert(tr('bandeau_retard.impossible'), e.message ?? 'L’annonce n’est pas partie.'),
+          Alert.alert(tr('bandeau_retard.impossible'), e.message ?? tr('bandeau_retard.l_annonce_n_est_pas_partie')),
       },
     );
 
@@ -64,7 +64,7 @@ export function BandeauRetard({ missionId }: { missionId: number }) {
       <Text style={styles.etat}>
         {retard.prevenu_at
           ? `Le client a été prévenu à ${new Date(retard.prevenu_at).toTimeString().slice(0, 5)}.`
-          : 'Le client n’a pas encore été prévenu.'}
+          : tr('bandeau_retard.le_client_n_a_pas_encore_ete')}
         {retard.annulation_gratuite ? ' Il peut annuler sans frais.' : ''}
       </Text>
 

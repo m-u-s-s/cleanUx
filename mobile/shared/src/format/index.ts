@@ -169,7 +169,7 @@ export function formatRetard(minutes: number | null | undefined): string {
  * L'ordre suit ce qui est le plus informé : le message du serveur, puis ses erreurs de validation,
  * puis le code HTTP traduit, puis un repli fourni par l'appelant qui sait de quel geste il parle.
  */
-export function messageDErreur(erreur: any, repli = 'Une erreur est survenue. Réessayez dans un instant.'): string {
+export function messageDErreur(erreur: any, repli = traduireMaintenant('index.une_erreur_est_survenue_reessayez_dans_un')): string {
   /*
    * DEUX FORMES D'ERREUR COHABITENT, et ne pas le savoir rend cette aide inopérante.
    *

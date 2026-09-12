@@ -50,7 +50,7 @@ export function CatalogZonesScreen() {
   if (isError) {
     return (
       <Screen>
-        <ErrorState message={messageDErreur(error, 'Impossible de charger les zones.')} onRetry={() => refetch()} />
+        <ErrorState message={messageDErreur(error, tr('catalog_zones.impossible_de_charger_les_zones'))} onRetry={() => refetch()} />
       </Screen>
     );
   }
@@ -108,7 +108,7 @@ export function CatalogZonesScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('catalog_zones.aucune_zone')}
-            message="Ce pays n’a pas encore de zone. Créez-en une depuis l’administration web."
+            message={tr('catalog_zones.ce_pays_n_a_pas_encore_de')}
           />
         }
       />
@@ -153,7 +153,7 @@ function ZoneRow({
         variant={reservable ? 'success' : 'neutral'}
       />
       <LigneActions
-        sujet={String(row.name ?? 'cette zone')}
+        sujet={String(row.name ?? tr('catalog_zones.cette_zone'))}
         actions={[
           { cle: 'edit', libelle: 'Modifier', executer: onEdit },
           {

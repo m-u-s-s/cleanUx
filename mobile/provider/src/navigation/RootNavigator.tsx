@@ -351,7 +351,7 @@ export function RootNavigator() {
             name="Legal"
             component={LegalScreen}
             options={({ route }) => ({
-              title: route.params.type === 'terms' ? 'CGU' : 'Confidentialité',
+              title: route.params.type === 'terms' ? 'CGU' : tr('root_navigator.confidentialite_2'),
               headerShown: true,
             })}
           />
@@ -519,7 +519,7 @@ export function RootNavigator() {
             name="Legal"
             component={LegalScreen}
             options={({ route }) => ({
-              title: route.params.type === 'terms' ? 'CGU' : 'Confidentialité',
+              title: route.params.type === 'terms' ? 'CGU' : tr('root_navigator.confidentialite_2'),
               headerShown: true,
             })}
           />
@@ -780,7 +780,7 @@ export function RootNavigator() {
               name="Legal"
               component={LegalScreen}
               options={({ route }) => ({
-                title: route.params.type === 'terms' ? 'CGU' : 'Confidentialité',
+                title: route.params.type === 'terms' ? 'CGU' : tr('root_navigator.confidentialite_2'),
                 headerShown: true,
               })}
             />
@@ -805,7 +805,7 @@ export function RootNavigator() {
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
             <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: tr('nav.mot_de_passe_oublie'), headerShown: true }} />
-            <Stack.Screen name="Legal" component={LegalScreen} options={({ route }) => ({ title: route.params.type === 'terms' ? 'CGU' : 'Confidentialité', headerShown: true })} />
+            <Stack.Screen name="Legal" component={LegalScreen} options={({ route }) => ({ title: route.params.type === 'terms' ? 'CGU' : tr('root_navigator.confidentialite_2'), headerShown: true })} />
           </>
         )}
       </Stack.Navigator>

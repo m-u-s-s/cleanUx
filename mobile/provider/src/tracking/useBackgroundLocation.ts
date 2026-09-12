@@ -1,6 +1,7 @@
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import { apiClient } from '@/api';
+import { traduireMaintenant } from '@/i18n';
 
 const TASK_NAME = 'BRIO_BG_LOCATION';
 
@@ -48,7 +49,7 @@ export async function startBackgroundLocation(): Promise<boolean> {
     showsBackgroundLocationIndicator: true,
     foregroundService: {
       notificationTitle: 'brio Pro',
-      notificationBody: 'Suivi GPS actif pendant la mission',
+      notificationBody: traduireMaintenant('use_background_location.suivi_gps_actif_pendant_la_mission'),
     },
   });
   return true;

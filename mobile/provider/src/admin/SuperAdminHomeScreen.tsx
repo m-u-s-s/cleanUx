@@ -80,7 +80,7 @@ export function SuperAdminHomeScreen() {
                 <Icon name={role.icone as never} size={20} color={colors.brand[500]} />
                 <Text style={styles.carteLabel}>{tr(role.libelleCle)}</Text>
                 <Text style={styles.carteNote}>
-                  {role.sousRoles > 0 ? `${role.sousRoles} sous-rôles` : 'Pas de sous-rôle'}
+                  {role.sousRoles > 0 ? `${role.sousRoles} sous-rôles` : tr('super_admin_home.pas_de_sous_role')}
                 </Text>
               </View>
             ))}
@@ -122,7 +122,7 @@ export function SuperAdminHomeScreen() {
           <Ligne
             icone="construct-outline"
             label={tr('super_admin_home.espace_terrain')}
-            indice="Mes missions, ma présence"
+            indice={tr('super_admin_home.mes_missions_ma_presence')}
             onPress={() => void choose('provider')}
           />
         ) : null}
@@ -131,7 +131,7 @@ export function SuperAdminHomeScreen() {
         <Ligne
           icone="grid-outline"
           label={tr('super_admin_home.modules')}
-          indice="Tout ce que cet espace sait faire"
+          indice={tr('super_admin_home.tout_ce_que_cet_espace_sait_faire')}
           onPress={() => navigation.navigate('Modules')}
         />
 

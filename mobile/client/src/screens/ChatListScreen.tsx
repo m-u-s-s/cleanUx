@@ -81,7 +81,7 @@ export function ChatListScreen() {
           }}
           onRefresh={refetch}
           refreshing={isRefetching}
-          ListEmptyComponent={<EmptyState title={tr('chat_list.aucune_conversation')} message="Vos échanges avec les prestataires apparaîtront ici." icon="chatbubble-outline" />}
+          ListEmptyComponent={<EmptyState title={tr('chat_list.aucune_conversation')} message={tr('chat_list.vos_echanges_avec_les_prestataires_apparaitront_ici')} icon="chatbubble-outline" />}
         />
       )}
     </Screen>

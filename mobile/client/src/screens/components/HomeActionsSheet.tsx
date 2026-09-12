@@ -6,7 +6,7 @@ import { BottomSheet, KPICard, Skeleton, Divider, Icon } from '@/ui';
 import { useBookings } from '@/booking';
 import { colors, spacing, typography, radius, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 /**
  * Actions secondaires de l'accueil client, sur le modèle du tableau de bord prestataire.
@@ -44,28 +44,28 @@ type BookingMode = {
 const BOOKING_MODES: BookingMode[] = [
   {
     key: 'asap',
-    title: 'Intervention immédiate',
-    hint: 'Un prestataire disponible maintenant',
+    title: traduireMaintenant('home_actions.intervention_immediate'),
+    hint: traduireMaintenant('home_actions.un_prestataire_disponible_maintenant'),
     icon: 'flash-outline',
     navigate: go => go('EmbeddedModule', {
       path: '/commander?mode=asap',
-      title: 'Intervention immédiate',
+      title: traduireMaintenant('home_actions.intervention_immediate'),
     }),
   },
   {
     key: 'scheduled',
-    title: 'Prendre rendez-vous',
-    hint: 'Choisissez votre date et votre heure',
+    title: traduireMaintenant('home_actions.prendre_rendez_vous'),
+    hint: traduireMaintenant('home_actions.choisissez_votre_date_et_votre_heure'),
     icon: 'calendar-outline',
     navigate: go => go('EmbeddedModule', {
       path: '/commander?mode=scheduled',
-      title: 'Prendre rendez-vous',
+      title: traduireMaintenant('home_actions.prendre_rendez_vous'),
     }),
   },
   {
     key: 'bundle',
     title: 'Plusieurs services',
-    hint: 'Un chantier regroupant plusieurs métiers',
+    hint: traduireMaintenant('home_actions.un_chantier_regroupant_plusieurs_metiers'),
     icon: 'layers-outline',
     navigate: go => go('EmbeddedModule', {
       path: '/commander?mode=bundle',

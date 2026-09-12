@@ -79,7 +79,7 @@ export function CompanyAgenciesScreen() {
           <TextInput
             value={nom}
             onChangeText={setNom}
-            placeholder="Nom de l'implantation"
+            placeholder={tr('company_agencies.nom_de_l_implantation')}
             placeholderTextColor={styles.placeholder.color}
             style={styles.champ}
             testID="champ-nom-agence"
@@ -114,7 +114,7 @@ export function CompanyAgenciesScreen() {
                 {item.name}
               </Text>
               <Text style={styles.detail} numberOfLines={1}>
-                {[item.city, item.address].filter(Boolean).join(' · ') || 'Adresse non renseignée'}
+                {[item.city, item.address].filter(Boolean).join(' · ') || tr('company_agencies.adresse_non_renseignee')}
               </Text>
             </View>
 
@@ -135,7 +135,7 @@ export function CompanyAgenciesScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('company_agencies.aucune_implantation')}
-            message="Une société mono-site n'en a pas besoin : la répartition fonctionne sans."
+            message={tr('company_agencies.une_societe_mono_site_n_en_a')}
           />
         }
       />

@@ -6,7 +6,7 @@ import { usePresenceCode, useCompletionCode } from '@/tracking';
 import { colors, spacing, typography, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 /**
  * Preuve de présence du prestataire, à montrer sur place.
@@ -27,14 +27,14 @@ type Purpose = 'presence' | 'completion';
 
 const WORDING: Record<Purpose, { title: string; hint: string; tag: string }> = {
   presence: {
-    title: 'Confirmez la présence',
+    title: traduireMaintenant('presence_code.confirmez_la_presence'),
     hint: "Montrez ce code à votre prestataire. Il le scanne pour attester qu'il est bien chez vous.",
     tag: 'brio.presence',
   },
   // La clôture encaisse le paiement pré-autorisé : le client doit comprendre ce qu'il valide.
   completion: {
-    title: 'Validez la fin de la prestation',
-    hint: 'Montrez ce code une fois le travail terminé. Il clôture la mission et déclenche le paiement.',
+    title: traduireMaintenant('presence_code.validez_la_fin_de_la_prestation'),
+    hint: traduireMaintenant('presence_code.montrez_ce_code_une_fois_le_travail'),
     tag: 'brio.completion',
   },
 };

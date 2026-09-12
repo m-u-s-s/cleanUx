@@ -46,7 +46,7 @@ export function MissionRetardCard({
     reprogrammer.mutate(quand, {
       onSuccess: () => Alert.alert(tr('mission_retard.cest_decale'), tr('mission_retard.votre_intervention_a_ete_replanifiee')),
       onError: (e: { message?: string }) =>
-        Alert.alert(tr('mission_retard.impossible'), e.message ?? 'Le créneau n’a pas pu être déplacé.'),
+        Alert.alert(tr('mission_retard.impossible'), e.message ?? tr('mission_retard.le_creneau_n_a_pas_pu_etre')),
     });
 
   const dansDeuxHeures = new Date(Date.now() + 2 * 60 * 60 * 1000);
@@ -70,7 +70,7 @@ export function MissionRetardCard({
           ? `Le prestataire annonce son arrivée vers ${new Date(retard.annonce.arrivee_at)
               .toTimeString()
               .slice(0, 5)}${retard.annonce.motif ? ` — ${retard.annonce.motif}` : ''}.`
-          : 'Le prestataire n’a pas encore répondu.'}
+          : tr('mission_retard.le_prestataire_n_a_pas_encore_repondu')}
       </Text>
 
       <View style={styles.actions}>

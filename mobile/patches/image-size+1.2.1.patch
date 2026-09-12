@@ -1,0 +1,12 @@
+diff --git a/node_modules/image-size/dist/index.js b/node_modules/image-size/dist/index.js
+--- a/node_modules/image-size/dist/index.js
++++ b/node_modules/image-size/dist/index.js
+@@ -15,7 +15,7 @@
+ const queue = new queue_1.default({ concurrency: 100, autostart: true });
+ const globalOptions = {
+     disabledFS: false,
+-    disabledTypes: [],
++    disabledTypes: ['icns', 'heif', 'jxl', 'jxl-stream'],
+ };
+ /**
+  * Return size information based on an Uint8Array

@@ -49,7 +49,7 @@ export function CompanyOverviewScreen() {
       <Screen>
         <EmptyState
           title={tr('company_overview.espace_indisponible')}
-          message="Impossible de charger le résumé de votre société."
+          message={tr('company_overview.impossible_de_charger_le_resume_de_votre')}
           actionLabel="Réessayer"
           onAction={() => void refetch()}
         />
@@ -62,7 +62,7 @@ export function CompanyOverviewScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.contenu} testID="company-overview">
-        <Text style={styles.title}>{data?.organization.name ?? 'Ma société'}</Text>
+        <Text style={styles.title}>{data?.organization.name ?? tr('company_overview.ma_societe')}</Text>
 
         <View style={styles.grille}>
           <View style={styles.kpi}>

@@ -9,6 +9,8 @@
  * disparaître derrière un libellé vide, sans quoi un état non prévu deviendrait indiscernable
  * d'une absence de statut.
  */
+import { traduireMaintenant } from '@/i18n';
+
 /**
  * LE VOCABULAIRE DES STATUTS DE MISSION — exactement celui du serveur, ni plus ni moins.
  *
@@ -28,7 +30,7 @@ export const MISSION_STATUS_LABELS: Record<string, string> = {
   planned: 'Planifiée',
   assigned: 'Assignée',
   en_route: 'En route',
-  arrived: 'Sur place',
+  arrived: traduireMaintenant('labels.sur_place'),
   started: 'En cours',
   paused: 'En pause',
   completed: 'Terminée',

@@ -142,8 +142,8 @@ function LoginForm() {
     const e: typeof errors = {};
     if (!email) e.email = 'Email requis';
     else if (!email.includes('@')) e.email = 'Email invalide';
-    if (!password) e.password = 'Mot de passe requis';
-    else if (password.length < 6) e.password = 'Min. 6 caractères';
+    if (!password) e.password = tr('login.mot_de_passe_requis');
+    else if (password.length < 6) e.password = tr('login.min_6_caracteres');
     if (secondFacteurAttendu && !twoFactorCode) e.twoFactorCode = 'Code requis';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -159,7 +159,7 @@ function LoginForm() {
         twoFactorCode: twoFactorCode || undefined,
       });
       setUser(result.user);
-      a11y.announce('Connexion réussie');
+      a11y.announce(tr('login.connexion_reussie'));
     } catch (e: unknown) {
       if (e instanceof ApiError && e.errorCode === SECOND_FACTEUR_REQUIS) {
         setSecondFacteurAttendu(true);

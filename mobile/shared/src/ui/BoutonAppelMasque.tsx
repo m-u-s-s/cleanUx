@@ -47,7 +47,7 @@ export function BoutonAppelMasque({
     if (!ligne?.available || !ligne.proxy_number) {
       Alert.alert(
         tr('bouton_appel_masque.appel_indisponible'),
-        ligne?.message ?? 'La ligne n’est pas encore ouverte pour cette intervention.',
+        ligne?.message ?? tr('bouton_appel_masque.la_ligne_n_est_pas_encore_ouverte'),
       );
 
       return;

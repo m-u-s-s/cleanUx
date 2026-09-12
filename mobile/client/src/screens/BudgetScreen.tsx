@@ -143,7 +143,7 @@ export function BudgetScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('budget.rien_a_afficher')}
-            message="Vos interventions apparaîtront ici au fur et à mesure."
+            message={tr('budget.vos_interventions_apparaitront_ici_au_fur_et')}
           />
         }
       />

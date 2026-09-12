@@ -9,7 +9,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useAsapOffers, useAcceptAsapOffer, useDeclineAsapOffer } from './hooks';
 import type { AsapOffer } from './types';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 /**
  * Les courses immédiates proposées à ce prestataire.
@@ -68,7 +68,7 @@ export function AsapOffersScreen() {
   const handleDecline = (offer: AsapOffer) => {
     setNotice(null);
     decline.mutate({ requestId: offer.asap_dispatch_request_id }, {
-      onError: () => setNotice('Impossible d’enregistrer votre refus. Réessayez.'),
+      onError: () => setNotice(tr('asap_offers.impossible_d_enregistrer_votre_refus_reessayez')),
     });
   };
 
@@ -90,7 +90,7 @@ export function AsapOffersScreen() {
           <EmptyState
             icon="flash-outline"
             title={tr('asap_offers.aucune_course_pour_linstant')}
-            message="Restez en ligne : les demandes urgentes arrivent ici dès qu’un client en lance une près de vous."
+            message={tr('asap_offers.restez_en_ligne_les_demandes_urgentes_arrivent')}
           />
         ) : null}
 
@@ -132,7 +132,7 @@ function formatRange(offer: AsapOffer): string {
   const max = offer.estimate_max_cents;
 
   if (min == null && max == null) {
-    return 'Montant à confirmer';
+    return traduireMaintenant('asap_offers.montant_a_confirmer');
   }
   if (min != null && max != null && min !== max) {
     return `${euros(min)} – ${euros(max)}`;

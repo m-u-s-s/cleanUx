@@ -6,7 +6,7 @@ import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useNotification, useMarkRead } from './hooks';
 import { severityVariant, contextLabel, formatNotificationDate } from './presentation';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 /**
  * LA FICHE D'UNE NOTIFICATION, PARTAGÉE PAR LES DEUX APPLICATIONS.
@@ -69,7 +69,7 @@ export function NotificationDetailView({ id, onOpenPath }: NotificationDetailVie
     return (
       <Screen>
         <ErrorState
-          message="Notification introuvable. Elle a peut-être été supprimée."
+          message={tr('notification_detail_view.notification_introuvable_elle_a_peut_etre_ete')}
           onRetry={() => refetch()}
         />
       </Screen>
@@ -149,7 +149,7 @@ function severityLabel(severity: string): string {
     case 'danger':
       return 'Urgent';
     case 'warning':
-      return 'À surveiller';
+      return traduireMaintenant('notification_detail_view.a_surveiller');
     case 'success':
       return 'Bonne nouvelle';
     case 'info':

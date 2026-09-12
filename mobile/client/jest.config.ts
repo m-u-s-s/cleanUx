@@ -44,7 +44,7 @@ const config: Config = {
     path.resolve(__dirname, '../shared/src'),
   ],
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|expo-secure-store|expo-constants|expo-status-bar|@gorhom|@shopify/react-native-skia)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|expo-secure-store|expo-constants|expo-status-bar|@gorhom|@shopify/react-native-skia|decode-uri-component)',
   ],
   // Allow Jest to find node_modules from the client dir when processing shared/ files
   modulePaths: [

@@ -113,7 +113,7 @@ export function CompanyMissionDetailScreen() {
     onError: (erreur: any) =>
       Alert.alert(
         tr('company_mission_detail.assignation_refusee'),
-        erreur?.data?.message ?? 'Votre rôle ne permet pas de répartir cette mission.',
+        erreur?.data?.message ?? tr('company_mission_detail.votre_role_ne_permet_pas_de_repartir'),
       ),
   });
 
@@ -171,7 +171,7 @@ export function CompanyMissionDetailScreen() {
       <Screen>
         <EmptyState
           title={tr('company_mission_detail.mission_introuvable')}
-          message="Elle a peut-être été annulée ou confiée à une autre société."
+          message={tr('company_mission_detail.elle_a_peut_etre_ete_annulee_ou')}
         />
       </Screen>
     );
@@ -247,7 +247,7 @@ export function CompanyMissionDetailScreen() {
               onPress={() => setFormulaireOuvert(!formulaireOuvert)}
             >
               <Text style={styles.section}>
-                {formulaireOuvert ? '− Déplacer l’intervention' : '+ Déplacer l’intervention'}
+                {formulaireOuvert ? tr('company_mission_detail.deplacer_l_intervention') : tr('company_mission_detail.deplacer_l_intervention_2')}
               </Text>
             </Pressable>
 
@@ -315,7 +315,7 @@ export function CompanyMissionDetailScreen() {
                     supplémentaire consentie. L'outil l'informe ; il ne décide pas à sa place.
                   */}
                   <Text style={personne.is_free ? styles.libre : styles.pris}>
-                    {personne.is_free ? 'libre' : 'déjà pris'}
+                    {personne.is_free ? 'libre' : tr('company_mission_detail.deja_pris')}
                   </Text>
                 </View>
 

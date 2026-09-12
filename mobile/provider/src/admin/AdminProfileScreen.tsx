@@ -41,7 +41,7 @@ export function AdminProfileScreen() {
         <Row
           icon="swap-horizontal-outline"
           label={tr('admin_profile.changer_despace')}
-          hint="Revenir à l’espace prestataire"
+          hint={tr('admin_profile.revenir_a_l_espace_prestataire')}
           onPress={() => void clear()}
         />
       ) : null}
@@ -53,7 +53,7 @@ export function AdminProfileScreen() {
       <Row
         icon="grid-outline"
         label={tr('admin_profile.modules')}
-        hint="Tout ce que cet espace sait faire"
+        hint={tr('admin_profile.tout_ce_que_cet_espace_sait_faire')}
         onPress={() => navigation.navigate('Modules')}
       />
 

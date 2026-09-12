@@ -75,7 +75,7 @@ export function CompanyOverviewScreen() {
       <Screen>
         <EmptyState
           title={tr('company_overview.espace_indisponible')}
-          message="Impossible de charger votre espace entreprise. Réessayez dans un instant."
+          message={tr('company_overview.impossible_de_charger_votre_espace_entreprise_reessayez')}
           actionLabel="Réessayer"
           onAction={() => void refetch()}
         />
@@ -138,7 +138,7 @@ export function CompanyOverviewScreen() {
                 {r.site ?? 'Sans local'}
               </Text>
               <Text style={styles.detail} numberOfLines={1}>
-                {r.status} · {r.provider ?? 'Prestataire à confirmer'}
+                {r.status} · {r.provider ?? tr('company_overview.prestataire_a_confirmer')}
               </Text>
             </View>
           ))

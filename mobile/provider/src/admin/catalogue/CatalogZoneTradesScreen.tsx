@@ -77,7 +77,7 @@ export function CatalogZoneTradesScreen() {
   if (isError) {
     return (
       <Screen>
-        <ErrorState message={messageDErreur(error, 'Impossible de charger le catalogue.')} onRetry={() => refetch()} />
+        <ErrorState message={messageDErreur(error, tr('catalog_zone_trades.impossible_de_charger_le_catalogue'))} onRetry={() => refetch()} />
       </Screen>
     );
   }
@@ -147,7 +147,7 @@ export function CatalogZoneTradesScreen() {
           />
         )}
         ListEmptyComponent={
-          <EmptyState title={tr('catalog_zone_trades.aucun_metier')} message="Le catalogue de la plateforme est vide." />
+          <EmptyState title={tr('catalog_zone_trades.aucun_metier')} message={tr('catalog_zone_trades.le_catalogue_de_la_plateforme_est_vide')} />
         }
       />
 
@@ -164,7 +164,7 @@ export function CatalogZoneTradesScreen() {
                 // Le refus du serveur — métier fermé dans la zone, compte en lecture seule —
                 // doit s'afficher : sans cela, le bouton semble ne rien faire.
                 onError: (erreur) =>
-                  Alert.alert(tr('catalog_zone_trades.impossible'), messageDErreur(erreur, 'Le tarif n’a pas été enregistré.')),
+                  Alert.alert(tr('catalog_zone_trades.impossible'), messageDErreur(erreur, tr('catalog_zone_trades.le_tarif_n_a_pas_ete_enregistre'))),
               },
             )
           }
@@ -326,7 +326,7 @@ function TradeRow({
             D'où vient ce tarif : de la zone, ou du métier faute de mieux. Sans cette distinction,
             un prix hérité passerait pour une décision prise pour cette zone.
           */}
-          {metier.has_zone_price ? ' · tarif de la zone' : ' · tarif du métier'}
+          {metier.has_zone_price ? tr('catalog_zone_trades.tarif_de_la_zone') : tr('catalog_zone_trades.tarif_du_metier')}
         </Text>
 
         {/*
@@ -346,8 +346,8 @@ function TradeRow({
                   ? ` + ${formatCentimes(metier.price_per_km_cents, devise)}/km`
                   : '')
                 + ((metier.included_km ?? 0) > 0 ? ` (${metier.included_km} km inclus)` : '')
-              : 'Trajet · aucun prix au kilomètre — facturé au forfait'}
-            {metier.taxi_rules ? ' · règles taxi' : ''}
+              : tr('catalog_zone_trades.trajet_aucun_prix_au_kilometre_facture_au')}
+            {metier.taxi_rules ? tr('catalog_zone_trades.regles_taxi') : ''}
           </Text>
         ) : null}
       </View>

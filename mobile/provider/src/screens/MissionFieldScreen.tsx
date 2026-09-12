@@ -185,7 +185,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
             tr('mission_field.elle_est_horodatee_geolocalisee_et'),
           ),
         onError: (e: any) =>
-          Alert.alert(tr('mission_field.envoi_impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
+          Alert.alert(tr('mission_field.envoi_impossible'), messageDErreur(e, tr('mission_field.reessayez_dans_un_instant'))),
       },
     );
   };
@@ -206,7 +206,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
           Alert.alert(tr('mission_field.signale'), tr('mission_field.le_client_vient_detre_prevenu'));
         },
         onError: (e: any) =>
-          Alert.alert(tr('mission_field.signalement_impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
+          Alert.alert(tr('mission_field.signalement_impossible'), messageDErreur(e, tr('mission_field.reessayez_dans_un_instant'))),
       },
     );
   };
@@ -511,7 +511,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
           {checklist.blocks_completion ? (
             <Text style={styles.blocageAvis} testID="checklist-blocage">
               {checklist.required_pending === 1
-                ? 'Une tâche obligatoire reste à cocher : la mission ne peut pas être clôturée avant.'
+                ? tr('mission_field.une_tache_obligatoire_reste_a_cocher_la')
                 : `${checklist.required_pending} tâches obligatoires restent à cocher : la mission ne peut pas être clôturée avant.`}
             </Text>
           ) : (
@@ -541,7 +541,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
                         { itemId: item.id, done: v },
                         {
                           onError: (e: any) =>
-                            Alert.alert(tr('mission_field.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
+                            Alert.alert(tr('mission_field.impossible'), messageDErreur(e, tr('mission_field.reessayez_dans_un_instant'))),
                         },
                       )
                     }
@@ -703,7 +703,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
             onPress={() =>
               lifecycle.mutate('ride/start', {
                 onError: (e: any) =>
-                  Alert.alert(tr('mission_field.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
+                  Alert.alert(tr('mission_field.impossible'), messageDErreur(e, tr('mission_field.reessayez_dans_un_instant'))),
               })
             }
             fullWidth
@@ -728,7 +728,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
                       onPress: () =>
                         declarerAbsence.mutate(undefined, {
                           onError: (e: any) =>
-                            Alert.alert(tr('mission_field.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
+                            Alert.alert(tr('mission_field.impossible'), messageDErreur(e, tr('mission_field.reessayez_dans_un_instant'))),
                         }),
                     },
                   ],
@@ -752,7 +752,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
             onPress={() =>
               lifecycle.mutate('ride/complete', {
                 onError: (e: any) =>
-                  Alert.alert(tr('mission_field.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
+                  Alert.alert(tr('mission_field.impossible'), messageDErreur(e, tr('mission_field.reessayez_dans_un_instant'))),
               })
             }
             variant="danger"
@@ -773,7 +773,7 @@ export function MissionFieldScreen({ route, navigation }: Props) {
             onPress={() =>
               lifecycle.mutate('complete', {
                 onError: (e: any) =>
-                  Alert.alert(tr('mission_field.impossible'), messageDErreur(e, 'Réessayez dans un instant.')),
+                  Alert.alert(tr('mission_field.impossible'), messageDErreur(e, tr('mission_field.reessayez_dans_un_instant'))),
               })
             }
             variant="danger"

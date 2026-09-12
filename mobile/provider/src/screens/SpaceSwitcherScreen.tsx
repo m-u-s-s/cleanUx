@@ -40,21 +40,21 @@ export function SpaceSwitcherScreen({
         <Choice
           icon="speedometer-outline"
           label={tr('space_switcher.administration')}
-          hint="Piloter la plateforme"
+          hint={tr('space_switcher.piloter_la_plateforme')}
           onPress={() => onChoose('admin')}
         />
         {peutPiloterLaSociete ? (
           <Choice
             icon="business-outline"
             label={tr('space_switcher.ma_societe')}
-            hint="Répartir les missions et gérer mes équipes"
+            hint={tr('space_switcher.repartir_les_missions_et_gerer_mes_equipes')}
             onPress={() => onChoose('providerCompany')}
           />
         ) : null}
         <Choice
           icon="briefcase-outline"
           label={tr('space_switcher.terrain')}
-          hint="Mes missions et mes revenus"
+          hint={tr('space_switcher.mes_missions_et_mes_revenus')}
           onPress={() => onChoose('provider')}
         />
       </View>

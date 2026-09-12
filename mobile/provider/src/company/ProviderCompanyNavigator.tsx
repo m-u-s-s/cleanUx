@@ -12,6 +12,7 @@ import { apparenceDeBarre } from '@/ui/glassBars';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ProviderCompanyTabParamList } from '@/navigation/types';
+import { traduireMaintenant } from '@/i18n';
 
 const Tab = createBottomTabNavigator<ProviderCompanyTabParamList>();
 
@@ -66,7 +67,7 @@ export function ProviderCompanyNavigator() {
         name="CompanyOverviewTab"
         component={CompanyOverviewScreen}
         options={{
-          title: 'Ma société',
+          title: traduireMaintenant('provider_company_navigator.ma_societe'),
           tabBarLabel: 'Accueil',
           tabBarIcon: ({ color, size }) => <Icon name="business-outline" size={size} color={color} />,
         }}
@@ -87,7 +88,7 @@ export function ProviderCompanyNavigator() {
           name="CompanyFieldTeamsTab"
           component={CompanyFieldTeamsScreen}
           options={{
-            title: 'Équipes terrain',
+            title: traduireMaintenant('provider_company_navigator.equipes_terrain'),
             tabBarLabel: 'Équipes',
             tabBarIcon: ({ color, size }) => <Icon name="people-outline" size={size} color={color} />,
           }}
@@ -122,7 +123,7 @@ export function ProviderCompanyNavigator() {
         name="CompanyProfileTab"
         component={CompanyProfileScreen}
         options={{
-          title: 'Mon compte',
+          title: traduireMaintenant('provider_company_navigator.mon_compte'),
           tabBarLabel: 'Profil',
           tabBarIcon: ({ color, size }) => <Icon name="person-outline" size={size} color={color} />,
         }}

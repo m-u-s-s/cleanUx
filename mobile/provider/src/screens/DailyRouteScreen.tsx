@@ -103,7 +103,7 @@ export function DailyRouteScreen() {
                   · {item.booking_reference ?? `Mission ${item.mission_id}`}
                 </Text>
                 <Text style={styles.detail} numberOfLines={1}>
-                  {item.address ?? 'Adresse non renseignée'}
+                  {item.address ?? tr('daily_route.adresse_non_renseignee')}
                 </Text>
               </View>
 
@@ -112,7 +112,7 @@ export function DailyRouteScreen() {
           </View>
         )}
         ListEmptyComponent={
-          <EmptyState title="Aucune intervention aujourd'hui" message="Votre journée est libre." />
+          <EmptyState title={tr('daily_route.aucune_intervention_aujourd_hui')} message={tr('daily_route.votre_journee_est_libre')} />
         }
       />
 

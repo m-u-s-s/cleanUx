@@ -42,7 +42,7 @@ export function AdminHomeScreen() {
     return (
       <Screen>
         <ErrorState
-          message="Les indicateurs n’ont pas pu être chargés."
+          message={tr('admin_home.les_indicateurs_n_ont_pas_pu_etre')}
           onRetry={() => {
             void refetch();
           }}

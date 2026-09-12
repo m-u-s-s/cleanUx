@@ -70,7 +70,7 @@ export function CompanyRecruitmentScreen() {
       qc.invalidateQueries({ queryKey: ['company', 'job-postings'] });
     },
     onError: (erreur: any) =>
-      Alert.alert(tr('company_recruitment.decision_refusee'), erreur?.data?.message ?? 'Votre rôle ne permet pas cette action.'),
+      Alert.alert(tr('company_recruitment.decision_refusee'), erreur?.data?.message ?? tr('company_recruitment.votre_role_ne_permet_pas_cette_action')),
   });
 
   return (
@@ -92,7 +92,7 @@ export function CompanyRecruitmentScreen() {
                 {item.title}
               </Text>
               <Text style={styles.detail} numberOfLines={1}>
-                {item.trade_name ?? 'Tous métiers'} · {item.applications_count} candidature(s)
+                {item.trade_name ?? tr('company_recruitment.tous_metiers')} · {item.applications_count} candidature(s)
               </Text>
             </View>
 
@@ -113,7 +113,7 @@ export function CompanyRecruitmentScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('company_recruitment.aucune_offre')}
-            message="Jusqu'ici, tout le recrutement se faisait hors de la plateforme."
+            message={tr('company_recruitment.jusqu_ici_tout_le_recrutement_se_faisait')}
           />
         }
       />

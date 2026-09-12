@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiClient } from '../api/client';
 import { ApiError } from '../api/types';
+import { traduireMaintenant } from '@/i18n';
 
 export interface QueuedAction {
   id: string;
@@ -102,7 +103,7 @@ export const offlineQueue = {
     for (const action of queue) {
       // Trop vieille : on ne rejoue pas un geste dont le contexte a disparu.
       if (maintenant - action.createdAt > AGE_MAX_MS) {
-        abandonnees.push({ ...action, reason: 'Trop ancienne pour être renvoyée.' });
+        abandonnees.push({ ...action, reason: traduireMaintenant('offline_queue.trop_ancienne_pour_etre_renvoyee') });
         continue;
       }
 

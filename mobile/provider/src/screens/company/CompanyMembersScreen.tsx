@@ -7,7 +7,7 @@ import { useAuth, can } from '@/auth';
 import { spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 interface Membre {
   id: number;
@@ -19,11 +19,11 @@ interface Membre {
 }
 
 const LIBELLES_ROLE: Record<string, string> = {
-  owner: 'Propriétaire',
+  owner: traduireMaintenant('company_members.proprietaire_2'),
   operations_manager: 'Responsable exploitation',
   manager: 'Gestionnaire',
   dispatcher: 'Répartiteur',
-  site_manager: 'Responsable de site',
+  site_manager: traduireMaintenant('company_members.responsable_de_site_2'),
   team_lead: "Chef d'équipe",
   quality_manager: 'Qualité',
   finance: 'Finance',
@@ -127,7 +127,7 @@ export function CompanyMembersScreen() {
   const retirer = (membre: Membre) =>
     Alert.alert(
       tr('company_members.retirer_ce_membre'),
-      `${membre.name ?? 'Ce compte'} perdra l'accès, ses missions à venir retourneront à la répartition et il quittera les canaux de la société. Son historique est conservé.`,
+      `${membre.name ?? tr('company_members.ce_compte')} perdra l'accès, ses missions à venir retourneront à la répartition et il quittera les canaux de la société. Son historique est conservé.`,
       [
         { text: 'Annuler', style: 'cancel' },
         {
@@ -159,7 +159,7 @@ export function CompanyMembersScreen() {
             >
               <View style={styles.identite}>
                 <Text style={styles.nom} numberOfLines={1}>
-                  {item.name ?? 'Utilisateur supprimé'}
+                  {item.name ?? tr('company_members.utilisateur_supprime')}
                 </Text>
                 <Text style={styles.email} numberOfLines={1}>
                   {item.email ?? '—'}
@@ -219,7 +219,7 @@ export function CompanyMembersScreen() {
         ListEmptyComponent={
           <EmptyState
             title={tr('company_members.aucun_membre')}
-            message="Invitez vos collaborateurs depuis l'espace société."
+            message={tr('company_members.invitez_vos_collaborateurs_depuis_l_espace_societe')}
           />
         }
       />

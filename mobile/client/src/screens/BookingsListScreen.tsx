@@ -42,7 +42,7 @@ export function BookingsListScreen() {
     index,
   }), []);
 
-  if (isError) return <Screen><ErrorState message="Impossible de charger vos réservations." onRetry={refetch} /></Screen>;
+  if (isError) return <Screen><ErrorState message={tr('bookings_list.impossible_de_charger_vos_reservations')} onRetry={refetch} /></Screen>;
 
   return (
     <Screen>
@@ -65,7 +65,7 @@ export function BookingsListScreen() {
             getItemLayout={getItemLayout}
             contentContainerStyle={styles.list}
             accessibilityLabel={tr('bookings_list.liste_des_reservations')}
-            ListEmptyComponent={<EmptyState title={tr('bookings_list.pas_encore_de_reservation')} message="Réservez votre premier service pour commencer." icon="calendar-outline" actionLabel="Réserver" onAction={() => navigation.navigate('EmbeddedModule', { path: '/commander', title: 'Commander' })} />}
+            ListEmptyComponent={<EmptyState title={tr('bookings_list.pas_encore_de_reservation')} message={tr('bookings_list.reservez_votre_premier_service_pour_commencer')} icon="calendar-outline" actionLabel="Réserver" onAction={() => navigation.navigate('EmbeddedModule', { path: '/commander', title: 'Commander' })} />}
             refreshControl={
               <RefreshControl
                 refreshing={isRefetching}

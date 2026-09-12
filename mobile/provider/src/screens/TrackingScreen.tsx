@@ -210,7 +210,7 @@ export function TrackingScreen({ route }: Props) {
       {/* Arrived button — enabled when within geofence */}
       <View style={styles.actions}>
         <Button
-          label={isNearDestination ? 'Je suis arrivé' : `Je suis arrivé (${distanceMeters !== null ? formatDistance(distanceMeters) : '?'} restants)`}
+          label={isNearDestination ? tr('tracking.je_suis_arrive') : `Je suis arrivé (${distanceMeters !== null ? formatDistance(distanceMeters) : '?'} restants)`}
           onPress={handleArrived}
           fullWidth
           size="lg"

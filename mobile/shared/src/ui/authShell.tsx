@@ -79,13 +79,13 @@ export function authErrorMessage(error: unknown, action: 'login' | 'register'): 
   }
 
   if (error.status === 0) {
-    return 'Impossible de joindre brio. Vérifiez votre connexion internet, puis réessayez.';
+    return traduireMaintenant('auth_shell.impossible_de_joindre_brio_verifiez_votre_connexion');
   }
   if (error.status === 429) {
-    return 'Trop de tentatives. Patientez une minute avant de réessayer.';
+    return traduireMaintenant('auth_shell.trop_de_tentatives_patientez_une_minute_avant');
   }
   if (error.status >= 500) {
-    return 'Le service est momentanément indisponible. Réessayez dans un instant.';
+    return traduireMaintenant('auth_shell.le_service_est_momentanement_indisponible_reessayez_dans');
   }
   if (action === 'login' && (error.status === 401 || error.status === 422)) {
     return 'Identifiants incorrects.';

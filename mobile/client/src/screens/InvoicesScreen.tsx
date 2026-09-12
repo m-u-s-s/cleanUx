@@ -20,7 +20,7 @@ import {
 import { colors, spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -207,7 +207,7 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
     return (
       <Screen>
         <ErrorState
-          message="Impossible de charger vos factures."
+          message={tr('invoices.impossible_de_charger_vos_factures')}
           onRetry={() => loadList(status, sort, search)}
         />
       </Screen>
@@ -355,7 +355,7 @@ export function InvoicesScreen({ navigation }: InvoicesScreenProps) {
             <View testID="invoices-empty">
               <EmptyState
                 title={tr('invoices.aucune_facture')}
-                message="Vos factures apparaîtront ici une fois votre première réservation terminée."
+                message={tr('invoices.vos_factures_apparaitront_ici_une_fois_votre')}
                 icon="receipt-outline"
               />
             </View>
@@ -481,8 +481,8 @@ const InvoiceRow = React.memo(function InvoiceRow({ invoice, onPress }: InvoiceR
 
   const isOverdue = invoice.effective_status === 'overdue';
 
-  // 8. service_name (fallback provided by API as 'Service non précisé')
-  const serviceName = invoice.service_name ?? 'Service non précisé';
+  // 8. service_name (fallback provided by API as tr('invoices.service_non_precise'))
+  const serviceName = invoice.service_name ?? traduireMaintenant('invoices.service_non_precise');
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>

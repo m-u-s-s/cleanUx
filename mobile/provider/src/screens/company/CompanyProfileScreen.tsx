@@ -51,7 +51,7 @@ export function CompanyProfileScreen() {
   return (
     <Screen testID="profil-societe-prestataire">
       <View style={styles.identity}>
-        <Text style={styles.name}>{user?.name ?? 'Mon compte'}</Text>
+        <Text style={styles.name}>{user?.name ?? tr('company_profile.mon_compte_2')}</Text>
         <Text style={styles.email}>{user?.email}</Text>
       </View>
 
@@ -61,7 +61,7 @@ export function CompanyProfileScreen() {
         <Row
           icon="construct-outline"
           label={tr('company_profile.aller_a_lespace_terrain')}
-          hint="Mes missions, ma présence, mes revenus"
+          hint={tr('company_profile.mes_missions_ma_presence_mes_revenus')}
           onPress={() => void choose('provider')}
         />
       ) : null}
@@ -91,7 +91,7 @@ export function CompanyProfileScreen() {
       <Row
         icon="grid-outline"
         label={tr('company_profile.modules')}
-        hint="Tout ce que cet espace sait faire"
+        hint={tr('company_profile.tout_ce_que_cet_espace_sait_faire_2')}
         onPress={() => navigation.navigate('Modules')}
       />
 

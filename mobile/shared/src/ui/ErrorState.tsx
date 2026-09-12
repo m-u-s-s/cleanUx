@@ -4,7 +4,7 @@ import { Button } from './Button';
 import { colors, spacing, typography } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
-import { useTraduction } from '@/i18n';
+import { useTraduction, traduireMaintenant } from '@/i18n';
 
 interface ErrorStateProps {
   message?: string;
@@ -17,7 +17,7 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  message = 'Une erreur est survenue.',
+  message = traduireMaintenant('error_state.une_erreur_est_survenue'),
   onRetry,
   compact = false,
 }: ErrorStateProps) {

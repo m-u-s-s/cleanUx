@@ -51,7 +51,7 @@ export function ModulesScreen({
     return (
       <Screen>
         <ErrorState
-          message="Le catalogue des modules n’a pas pu être chargé."
+          message={tr('modules.le_catalogue_des_modules_n_a_pas')}
           onRetry={() => {
             void refetch();
           }}

@@ -10,6 +10,7 @@ import { apparenceDeBarre } from '@/ui/glassBars';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ClientCompanyTabParamList } from '@/navigation/types';
+import { traduireMaintenant } from '@/i18n';
 
 const Tab = createBottomTabNavigator<ClientCompanyTabParamList>();
 
@@ -40,7 +41,7 @@ export function ClientCompanyNavigator() {
         name="CompanyOverviewTab"
         component={CompanyOverviewScreen}
         options={{
-          title: 'Mon entreprise',
+          title: traduireMaintenant('client_company_navigator.mon_entreprise'),
           tabBarLabel: 'Accueil',
           tabBarIcon: ({ color, size }) => <Icon name="business-outline" size={size} color={color} />,
         }}
@@ -49,7 +50,7 @@ export function ClientCompanyNavigator() {
         name="CompanySitesTab"
         component={CompanySitesScreen}
         options={{
-          title: 'Mes locaux',
+          title: traduireMaintenant('client_company_navigator.mes_locaux'),
           tabBarLabel: 'Locaux',
           tabBarIcon: ({ color, size }) => <Icon name="location-outline" size={size} color={color} />,
         }}
@@ -58,8 +59,8 @@ export function ClientCompanyNavigator() {
         name="CompanyBookingsTab"
         component={CompanyBookingsScreen}
         options={{
-          title: 'Réservations',
-          tabBarLabel: 'Réservations',
+          title: traduireMaintenant('client_company_navigator.reservations'),
+          tabBarLabel: traduireMaintenant('client_company_navigator.reservations'),
           tabBarIcon: ({ color, size }) => <Icon name="calendar-outline" size={size} color={color} />,
         }}
       />
@@ -82,7 +83,7 @@ export function ClientCompanyNavigator() {
         name="CompanyProfileTab"
         component={CompanyProfileScreen}
         options={{
-          title: 'Mon compte',
+          title: traduireMaintenant('client_company_navigator.mon_compte'),
           tabBarLabel: 'Profil',
           tabBarIcon: ({ color, size }) => <Icon name="person-outline" size={size} color={color} />,
         }}
