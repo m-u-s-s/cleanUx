@@ -546,3 +546,42 @@
     text-wrap: balance;
     color: var(--cx-arg-encre);
 }
+
+/* ══════════════════════════════════════ LE CARROUSEL DES MÉTIERS */
+
+/* Des panneaux pleine largeur demandaient 5 760 px de defilement — six ecrans et
+   demi pour cinq panneaux, dont on ne voyait jamais le suivant arriver. A 62 vw,
+   la course tombe de moitie et le panneau voisin depasse : le lecteur sait qu'il
+   y a une suite, et il n'a plus l'impression d'etre bloque.
+   Regle SCOPEE a l'accueil : la demo /premium-scroll garde ses panneaux entiers. */
+@media (min-width: 768px) {
+    #metiers [data-scroll-panel] { flex-basis: 62vw; }
+}
+
+@media (min-width: 1600px) {
+    #metiers [data-scroll-panel] { flex-basis: 54vw; }
+}
+
+/* Le contenu se perdait au centre d'un panneau de 900 px : une carte lui donne
+   un bord, et le panneau voisin reste lisible derriere. */
+#metiers [data-scroll-panel-inner] {
+    width: min(30rem, 84%);
+    padding: 3rem 2.25rem;
+    border-radius: 1.5rem;
+    border: 1px solid var(--cx-arg-ligne, rgba(15, 23, 42, 0.1));
+    background: color-mix(in srgb, var(--cx-arg-fond, #fff) 82%, transparent);
+    backdrop-filter: blur(10px) saturate(130%);
+    box-shadow: 0 24px 60px -32px color-mix(in srgb, var(--brio-encre, #0f172a) 50%, transparent);
+}
+
+/* Le dernier panneau est deja une surface sombre : il n'a pas besoin d'une carte. */
+#metiers .cx-metier__panneau--fin [data-scroll-panel-inner] {
+    border-color: rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* Sur mobile le scroll est natif et l'apercu du panneau suivant vient de
+   `flex-basis: 88vw` : la carte se contente d'aerer. */
+@media (max-width: 767.98px) {
+    #metiers [data-scroll-panel-inner] { padding: 2.25rem 1.5rem; }
+}

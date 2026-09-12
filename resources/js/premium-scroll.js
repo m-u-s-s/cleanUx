@@ -50,13 +50,31 @@ function pageUsesEngine() {
 
 let engine = null; // état courant (singleton) ; null = inactif
 
+/* VERROU SYNCHRONE. `boot()` est asynchrone : entre son entrée et l'affectation de
+   `engine`, il attend ses imports dynamiques. Livewire émet `livewire:navigated` au
+   PREMIER chargement aussi — un second `boot()` passait donc le garde `if (engine)`
+   pendant que le premier attendait, et montait un deuxième jeu de ScrollTriggers.
+   Sur la home, le pin-spacer du carrousel valait 12 420 px pour une course de 5 760 :
+   la section restait 5 760 px sous l'écran, et il fallait scroller le double. */
+let demarrageEnCours = false;
+
 /* ----------------------------------------------------------------------------
    Démarrage (asynchrone : charge gsap/ScrollTrigger/lenis à la demande)
    ------------------------------------------------------------------------- */
 async function boot() {
-    if (engine) return; // déjà actif
+    if (engine || demarrageEnCours) return; // déjà actif, ou en train de démarrer
     if (!pageUsesEngine()) return; // page non opt-in -> rien
 
+    demarrageEnCours = true;
+    try {
+        await demarrer();
+    } finally {
+        demarrageEnCours = false;
+    }
+}
+
+/** Le vrai demarrage, appele une seule fois sous le verrou. */
+async function demarrer() {
     const root = document.documentElement;
     root.classList.add('has-premium-scroll'); // arme les gardes CSS (will-change, etc.)
 
