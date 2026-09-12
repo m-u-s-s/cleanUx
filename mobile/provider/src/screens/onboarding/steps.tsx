@@ -83,7 +83,7 @@ export function ProfileStep({ onDone, submitting, error }: StepProps) {
   const save = useMutation({
     mutationFn: () => apiClient.put('/provider/profile', { phone }),
     onSuccess: () => onDone(),
-    onError: () => setLocalError("Impossible d'enregistrer votre numéro. Réessayez."),
+    onError: () => setLocalError(tr('steps.impossible_d_enregistrer_votre_numero_reessayez')),
   });
 
   return (
@@ -294,7 +294,7 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
         try {
           await Linking.openURL(data.hosted_flow_url);
         } catch {
-          setLocalError("Impossible d'ouvrir la vérification. Vérifiez votre navigateur, puis réessayez.");
+          setLocalError(tr('steps.impossible_d_ouvrir_la_verification_verifiez_votre'));
         }
       }
 
@@ -325,8 +325,8 @@ export function KycStep({ onDone, submitting, error }: StepProps) {
         <View style={styles.notice}>
           <Text style={styles.noticeText} testID="kyc-pending">
             {underReview
-              ? "Votre dossier est examiné par une personne de notre équipe. Vous n'avez rien à faire de plus."
-              : "Vérification en cours. Elle se validera toute seule dès que votre identité sera confirmée — vous pouvez fermer l'application et revenir plus tard."}
+              ? tr('steps.votre_dossier_est_examine_par_une_personne')
+              : tr('steps.verification_en_cours_elle_se_validera_toute')}
           </Text>
         </View>
       ) : null}
@@ -451,7 +451,7 @@ export function DocumentsStep({ onDone, submitting, error }: StepProps) {
       });
       void refetch();
     },
-    onError: () => setLocalError("L'envoi a échoué. Vérifiez votre connexion, puis réessayez."),
+    onError: () => setLocalError(tr('steps.l_envoi_a_echoue_verifiez_votre_connexion')),
   });
 
   /**
@@ -601,7 +601,7 @@ export function SkillsStep({ onDone, submitting, error }: StepProps) {
         service_zone_ids: selectedZones,
       }),
     onSuccess: () => onDone({ trade_codes: selected }),
-    onError: () => setLocalError("Impossible d'enregistrer vos métiers. Réessayez."),
+    onError: () => setLocalError(tr('steps.impossible_d_enregistrer_vos_metiers_reessayez')),
   });
 
   const submit = () => {
@@ -612,7 +612,7 @@ export function SkillsStep({ onDone, submitting, error }: StepProps) {
     }
 
     if (selectedZones.length === 0) {
-      setLocalError("Choisissez au moins une zone d'intervention.");
+      setLocalError(tr('steps.choisissez_au_moins_une_zone_d_intervention'));
 
       return;
     }
@@ -718,7 +718,7 @@ export function VehicleStep({ onDone, submitting, error }: StepProps) {
         registered_at: registeredAt || null,
       }),
     onSuccess: () => { void refetch(); onDone(); },
-    onError: () => setLocalError("L'enregistrement a échoué. Vérifiez la plaque et la date, puis réessayez."),
+    onError: () => setLocalError(tr('steps.l_enregistrement_a_echoue_verifiez_la_plaque')),
   });
 
   if (isLoading) {

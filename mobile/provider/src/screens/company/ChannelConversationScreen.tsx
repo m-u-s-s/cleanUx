@@ -171,7 +171,7 @@ export function ChannelConversationScreen() {
       apiClient.post(`/provider/company/channels/${canalId}/read`).catch(() => undefined);
     },
     onError: (erreur: any) =>
-      Alert.alert(tr('channel_conversation.envoi_refuse'), erreur?.data?.message ?? "Le message n'a pas pu être envoyé."),
+      Alert.alert(tr('channel_conversation.envoi_refuse'), erreur?.data?.message ?? tr('channel_conversation.le_message_n_a_pas_pu_etre')),
   });
 
   const gererParticipant = useMutation({
@@ -205,7 +205,7 @@ export function ChannelConversationScreen() {
     onError: (erreur: any) =>
       Alert.alert(
         tr('channel_conversation.note_vocale_impossible'),
-        erreur?.data?.message ?? "L'enregistrement n'a pas pu être envoyé.",
+        erreur?.data?.message ?? tr('channel_conversation.l_enregistrement_n_a_pas_pu_etre'),
       ),
   });
 

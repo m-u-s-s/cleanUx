@@ -118,7 +118,7 @@ export default function FaceCheckScreen() {
       const photo = await camera.current.takePictureAsync({ quality: 0.7, skipProcessing: true });
 
       if (!photo?.uri) {
-        setErreur("La caméra n'a rien renvoyé. Réessayez.");
+        setErreur(tr('face_check.la_camera_n_a_rien_renvoye_reessayez'));
 
         return;
       }
@@ -149,7 +149,7 @@ export default function FaceCheckScreen() {
 
       if (resultat.status === 'failed') {
         setErreur(
-          "Nous n'avons pas pu vous reconnaître. Un administrateur va examiner votre dossier.",
+          tr('face_check.nous_n_avons_pas_pu_vous_reconnaitre'),
         );
         await refetch();
 

@@ -201,7 +201,7 @@ export function RegisterWizard() {
         // Facultatif, mais s'il est saisi il doit être juste : c'est ce numéro que la
         // vérification d'entreprise soumettra aux registres officiels.
         if (draft.vatNumber.trim() && !isValidBusinessNumber(draft.vatNumber)) {
-          return "Numéro d'entreprise invalide. Exemples : BE0202239951, 44306184100047.";
+          return tr('register_wizard.numero_d_entreprise_invalide_exemples_be0202239951_44306184100047');
         }
         return null;
       case 'trade':

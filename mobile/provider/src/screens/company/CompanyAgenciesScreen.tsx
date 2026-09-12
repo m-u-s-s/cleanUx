@@ -56,7 +56,7 @@ export function CompanyAgenciesScreen() {
     onError: (erreur: any) =>
       Alert.alert(
         tr('company_agencies.creation_refusee'),
-        erreur?.data?.message ?? "Votre rôle ne permet pas d'ouvrir une implantation.",
+        erreur?.data?.message ?? tr('company_agencies.votre_role_ne_permet_pas_d_ouvrir'),
       ),
   });
 

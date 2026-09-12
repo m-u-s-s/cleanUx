@@ -104,7 +104,7 @@ export function CompanyMembersScreen() {
     onError: (erreur: any) => {
       Alert.alert(
         tr('company_members.action_impossible'),
-        erreur?.data?.message ?? erreur?.message ?? "L'action n'a pas pu être effectuée.",
+        erreur?.data?.message ?? erreur?.message ?? tr('company_members.l_action_n_a_pas_pu_etre'),
       );
     },
   });

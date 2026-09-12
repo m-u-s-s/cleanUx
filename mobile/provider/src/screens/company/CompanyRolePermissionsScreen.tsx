@@ -54,7 +54,7 @@ export function CompanyRolePermissionsScreen() {
     onError: (erreur: any) =>
       Alert.alert(
         tr('company_role_permissions.reglage_impossible'),
-        erreur?.data?.message ?? "Ce réglage n'a pas pu être enregistré.",
+        erreur?.data?.message ?? tr('company_role_permissions.ce_reglage_n_a_pas_pu_etre'),
       ),
   });
 

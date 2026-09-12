@@ -25,7 +25,7 @@ const CHANNEL_LABELS: Record<string, string> = {
   email: 'Email',
   sms: 'SMS',
   push: 'Push',
-  inapp: "Dans l'application",
+  inapp: 'notification_preferences.dans_l_application',
   webhook: 'Webhook',
 };
 
@@ -146,15 +146,20 @@ export function NotificationPreferencesScreen() {
                 return (
                   <View key={channel} style={styles.channelRow}>
                     <Text style={styles.channelLabel}>
-                      {CHANNEL_LABELS[channel] ?? channel}
-                      {isForced ? ' — obligatoire' : ''}
+                      {tr(CHANNEL_LABELS[channel] ?? channel)}
+                      {isForced ? ` — ${tr('notification_preferences.obligatoire')}` : ''}
                     </Text>
                     <Switch
                       value={valueFor(channel, category)}
                       disabled={isForced}
                       onValueChange={v => setEdits(prev => ({ ...prev, [key]: v }))}
                       trackColor={{ true: colors.brand[500] }}
-                      accessibilityLabel={`${CATEGORY_LABELS[category] ? tr(CATEGORY_LABELS[category].libelleCle) : category} par ${CHANNEL_LABELS[channel] ?? channel}`}
+                      accessibilityLabel={tr('notification_preferences.categorie_par_canal', {
+                        categorie: CATEGORY_LABELS[category]
+                          ? tr(CATEGORY_LABELS[category].libelleCle)
+                          : category,
+                        canal: tr(CHANNEL_LABELS[channel] ?? channel),
+                      })}
                       testID={`preference-switch-${channel}-${category}`}
                     />
                   </View>

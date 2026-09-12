@@ -87,7 +87,7 @@ function stepErrorMessage(error: unknown): string {
     if (error.status === 0) return traduireMaintenant('provider_onboarding.connexion_perdue_verifiez_votre_reseau_puis_reessayez');
   }
 
-  return "Cette étape n'a pas pu être validée. Réessayez.";
+  return traduireMaintenant('provider_onboarding.cette_etape_n_a_pas_pu_etre');
 }
 
 export function ProviderOnboardingScreen({ onFinished }: { onFinished?: () => void }) {

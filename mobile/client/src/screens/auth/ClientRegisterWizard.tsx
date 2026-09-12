@@ -106,7 +106,7 @@ export function ClientRegisterWizard() {
       case 'company':
         if (!companyName.trim()) return tr('client_register.raison_sociale_requise');
         if (vatNumber.trim() && !isValidBusinessNumber(vatNumber)) {
-          return "Numéro d'entreprise invalide. Exemples : BE0202239951, 44306184100047.";
+          return tr('client_register_wizard.numero_d_entreprise_invalide_exemples_be0202239951_44306184100047');
         }
         return null;
       case 'identity':

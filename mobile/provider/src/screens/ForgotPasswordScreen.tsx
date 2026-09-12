@@ -29,7 +29,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (e: any) {
-      Alert.alert(tr('forgot_password.erreur'), messageDErreur(e, "Impossible d'envoyer le lien."));
+      Alert.alert(tr('forgot_password.erreur'), messageDErreur(e, tr('forgot_password.impossible_d_envoyer_le_lien_2')));
     }
   };
 

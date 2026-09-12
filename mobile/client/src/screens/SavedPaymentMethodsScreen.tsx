@@ -38,7 +38,7 @@ export function SavedPaymentMethodsScreen() {
         Alert.alert(tr('saved_payment_methods.carte_ajoutee'), tr('saved_payment_methods.votre_moyen_de_paiement_a'));
       }
     } catch (e: any) {
-      Alert.alert(tr('saved_payment_methods.erreur'), e.message ?? "Impossible d'ajouter la carte.");
+      Alert.alert(tr('saved_payment_methods.erreur'), e.message ?? tr('saved_payment_methods.impossible_d_ajouter_la_carte'));
     }
   };
 

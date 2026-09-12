@@ -57,7 +57,7 @@ export async function pickImage(source: 'camera' | 'library'): Promise<PickedFil
   const picker = loadImagePicker();
 
   if (!picker) {
-    throw new Error("L'appareil photo n'est pas disponible sur cet appareil.");
+    throw new Error(traduireMaintenant('document_picker.l_appareil_photo_n_est_pas_disponible'));
   }
 
   const permission =
@@ -101,7 +101,7 @@ export async function pickDocument(): Promise<PickedFile | null> {
   const picker = loadDocumentPicker();
 
   if (!picker) {
-    throw new Error("La sélection de fichier n'est pas disponible sur cet appareil.");
+    throw new Error(traduireMaintenant('document_picker.la_selection_de_fichier_n_est_pas'));
   }
 
   const result = await picker.getDocumentAsync({

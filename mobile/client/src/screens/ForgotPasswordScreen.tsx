@@ -30,7 +30,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
       ]);
     } catch (e: any) {
       // JAMAIS `e.message` : c'est le texte interne d'axios, en anglais.
-      Alert.alert(tr('forgot_password.erreur'), messageDErreur(e, "Impossible d'envoyer le lien."));
+      Alert.alert(tr('forgot_password.erreur'), messageDErreur(e, tr('forgot_password.impossible_d_envoyer_le_lien')));
     }
   };
 

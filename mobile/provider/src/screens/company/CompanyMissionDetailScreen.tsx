@@ -148,7 +148,7 @@ export function CompanyMissionDetailScreen() {
     onError: (erreur: any) =>
       Alert.alert(
         tr('company_mission_detail.deplacement_refuse'),
-        erreur?.data?.message ?? "L'intervention n'a pas pu être déplacée.",
+        erreur?.data?.message ?? tr('company_mission_detail.l_intervention_n_a_pas_pu_etre'),
       ),
   });
 
@@ -163,7 +163,7 @@ export function CompanyMissionDetailScreen() {
       rechargerDispos();
     },
     onError: (erreur: any) =>
-      Alert.alert(tr('company_mission_detail.action_refusee'), erreur?.data?.message ?? "L'action n'a pas pu être effectuée."),
+      Alert.alert(tr('company_mission_detail.action_refusee'), erreur?.data?.message ?? tr('company_mission_detail.l_action_n_a_pas_pu_etre')),
   });
 
   if (mission === null) {

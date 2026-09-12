@@ -79,11 +79,13 @@ export function HomeScreen() {
       <View style={styles.hero}>
         <View style={styles.heroLeft}>
           <Text style={styles.greeting}>
-            Bonjour{user?.name ? `, ${user.name.split(' ')[0]}` : ''}
+            {user?.name
+              ? tr('commun.bonjour_prenom', { prenom: user.name.split(' ')[0] ?? '' })
+              : tr('commun.bonjour')}
           </Text>
           <Text style={styles.role}>{user?.email}</Text>
         </View>
-        <Avatar name={user?.name ?? '?'} size={48} accessibilityLabel={user?.name ?? 'Profil'} />
+        <Avatar name={user?.name ?? '?'} size={48} accessibilityLabel={user?.name ?? tr('commun.profil')} />
       </View>
 
       <View style={styles.focusWrap}>

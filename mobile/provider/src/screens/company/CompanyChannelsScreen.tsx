@@ -67,7 +67,7 @@ export function CompanyChannelsScreen() {
     onError: (erreur: any) =>
       Alert.alert(
         tr('company_channels.creation_refusee'),
-        erreur?.data?.message ?? "Votre rôle ne permet pas d'ouvrir un canal.",
+        erreur?.data?.message ?? tr('company_channels.votre_role_ne_permet_pas_d_ouvrir'),
       ),
   });
 
