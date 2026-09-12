@@ -13,7 +13,7 @@ import type { AudienceAnnulation, OptionDAnnulation } from '../cancellation';
 import { spacing, typography, radius } from '../theme';
 import { useThemeColors } from '../theme/useThemeColors';
 import type { ThemeTokens } from '../theme/useThemeColors';
-import { useTraduction } from '@/i18n';
+import {useTraduction, traduireMaintenant } from '@/i18n';
 
 /**
  * ANNULER, SUR MOBILE — le même questionnaire que le web, la même règle.
@@ -73,7 +73,7 @@ export function AnnulerLaMissionSheet({
       {
         onSuccess: onAnnulee,
         onError: (e: { message?: string }) =>
-          Alert.alert(tr('annuler_la_mission.impossible'), e.message ?? 'L’annulation n’a pas pu être enregistrée.'),
+          Alert.alert(tr('annuler_la_mission.impossible'), e.message ?? tr('annulation.echec')),
       },
     );
   };
@@ -160,13 +160,13 @@ export function AnnulerLaMissionSheet({
 function messageDAiguillage(issue: string): string {
   switch (issue) {
     case 'redirect_requote':
-      return 'Ce n’est pas une annulation : proposez un nouveau devis depuis votre page terrain. Le client accepte ou refuse, et vous gardez la mission.';
+      return traduireMaintenant('annulation.redirige_vers_un_devis');
     case 'redirect_reinforcement':
-      return 'Ce n’est pas une annulation : demandez du renfort. Un collègue vient, et l’intervention se fait.';
+      return traduireMaintenant('annulation.redirige_vers_du_renfort');
     case 'redirect_noshow':
-      return 'Ce n’est pas une annulation : déclarez l’absence du client depuis votre page terrain, une fois le délai écoulé. Vous y gagnez l’indemnité qu’une annulation vous ferait perdre.';
+      return traduireMaintenant('annulation.redirige_vers_une_absence');
     default:
-      return 'Cette réponse demande un examen : notre équipe vous répond.';
+      return traduireMaintenant('annulation.demande_un_examen');
   }
 }
 

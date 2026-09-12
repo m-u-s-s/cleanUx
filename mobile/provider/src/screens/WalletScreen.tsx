@@ -10,7 +10,7 @@ import { ApiError } from '@/api';
 import { colors, spacing, typography, radius, shadows, useThemeColors } from '@/theme';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import type { RootStackParamList } from '@/navigation/types';
-import { useTraduction } from '@/i18n';
+import {useTraduction, traduireMaintenant } from '@/i18n';
 
 /**
  * CE QU'ON DIT QUAND LE PORTEFEUILLE NE RÉPOND PAS.
@@ -23,10 +23,10 @@ import { useTraduction } from '@/i18n';
  */
 function messageDErreurPortefeuille(error: unknown): string {
   if (error instanceof ApiError && error.status === 403) {
-    return "Ce compte n'a pas de profil prestataire, aucun portefeuille n'y est rattaché.";
+    return traduireMaintenant('wallet.pas_de_profil_prestataire');
   }
 
-  return 'Impossible de charger vos revenus.';
+  return traduireMaintenant('wallet.revenus_illisibles');
 }
 
 export function WalletScreen() {
@@ -56,12 +56,12 @@ export function WalletScreen() {
       return;
     }
     if (balance && amount > balance.available) {
-      Alert.alert(tr('wallet.solde_insuffisant'), `Vous ne pouvez retirer que ${formatMontant(balance.available, balance.currency)}.`);
+      Alert.alert(tr('wallet.solde_insuffisant'), tr('wallet.retrait_plafonne', { montant: formatMontant(balance.available, balance.currency) }));
       return;
     }
     Alert.alert(
       tr('wallet.confirmer_le_versement'),
-      `Virer ${formatMontant(amount, balance?.currency)} vers votre compte bancaire ?`,
+      tr('wallet.confirmer_le_virement', { montant: formatMontant(amount, balance?.currency) }),
       [
         { text: 'Annuler', style: 'cancel' },
         {
@@ -200,7 +200,7 @@ export function WalletScreen() {
       ) : txQuery.isError ? (
         <ErrorState
           compact
-          message="Impossible de charger vos transactions."
+          message={tr('wallet.transactions_illisibles')}
           onRetry={() => void txQuery.refetch()}
         />
       ) : (
@@ -229,7 +229,7 @@ export function WalletScreen() {
           )}
           ItemSeparatorComponent={() => <Divider />}
           ListEmptyComponent={
-            <EmptyState title={tr('wallet.aucune_transaction')} message="Vos mouvements financiers apparaîtront ici." />
+            <EmptyState title={tr('wallet.aucune_transaction')} message={tr('wallet.aucun_mouvement')} />
           }
         />
       )}

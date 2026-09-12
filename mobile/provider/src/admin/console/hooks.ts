@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 import { apiClient } from '@/api';
 import type { FilterValues, ResourcePage, ResourceRow } from './types';
+import { traduireMaintenant } from '@/i18n';
 
 /**
  * La liste d'un domaine, page par page.
@@ -175,17 +176,19 @@ export function readServerErrors(error: unknown): {
     }
   }
 
+  /* La table porte la CLE : le message se traduit au moment ou il s'affiche, pas au
+     chargement du module — qui fige la langue de la premiere ouverture. */
   const known: Record<string, string> = {
-    validation_failed: 'Certains champs doivent être corrigés.',
-    unknown_resource: 'Ce module n’est pas servi par la console.',
-    unknown_action: 'Cette action n’existe pas.',
-    read_only_resource: 'Ce module est en lecture seule.',
-    not_found: 'Cet élément n’existe plus.',
-    forbidden_not_admin: 'Votre compte n’a pas les droits d’administration.',
-    invalid_sort: 'Ce tri n’est pas autorisé sur ce module.',
-    invalid_direction: 'Ce sens de tri n’est pas valide.',
-    forbidden_readonly: 'Votre compte est en lecture seule : la consultation reste ouverte.',
-    delete_refused: 'Cet élément ne peut pas être supprimé.',
+    validation_failed: 'admin_console.validation_failed',
+    unknown_resource: 'admin_console.unknown_resource',
+    unknown_action: 'admin_console.unknown_action',
+    read_only_resource: 'admin_console.read_only_resource',
+    not_found: 'admin_console.not_found',
+    forbidden_not_admin: 'admin_console.forbidden_not_admin',
+    invalid_sort: 'admin_console.invalid_sort',
+    invalid_direction: 'admin_console.invalid_direction',
+    forbidden_readonly: 'admin_console.forbidden_readonly',
+    delete_refused: 'admin_console.delete_refused',
   };
 
   const code =
@@ -199,7 +202,7 @@ export function readServerErrors(error: unknown): {
    * information qui permette d'agir, et renvoie l'administrateur au poste de travail pour
    * apprendre ce que le serveur vient de dire.
    */
-  const base = known[code] ?? 'Une erreur est survenue.';
+  const base = traduireMaintenant(known[code] ?? 'admin_console.erreur_generique');
   const raisons = raisonsDuRefus(normalisee?.payload ?? brute);
 
   if (raisons.length === 0) {

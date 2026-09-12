@@ -1,4 +1,5 @@
 import { ApiError } from '@/api';
+import { traduireMaintenant } from '@/i18n';
 
 /**
  * Ce qu'on affiche quand un écran du catalogue ne charge pas.
@@ -21,12 +22,12 @@ export function messageDErreur(erreur: unknown, defaut: string): string {
    * qu'une phrase rassurante qui ne dit rien.
    */
   const connus: Record<string, string> = {
-    invalid_sort: 'Tri non pris en charge par le serveur.',
-    invalid_direction: 'Sens de tri non pris en charge.',
-    unknown_resource: 'Ce module n’est pas servi par le serveur.',
-    forbidden_not_admin: 'Votre compte n’a pas accès à l’administration.',
-    forbidden_readonly: 'Votre compte est en lecture seule.',
-    session_expired: 'Session expirée. Reconnectez-vous.',
+    invalid_sort: traduireMaintenant('admin_catalogue.tri_non_supporte'),
+    invalid_direction: traduireMaintenant('admin_catalogue.sens_non_supporte'),
+    unknown_resource: traduireMaintenant('admin_catalogue.module_non_servi'),
+    forbidden_not_admin: traduireMaintenant('admin_catalogue.pas_d_acces'),
+    forbidden_readonly: traduireMaintenant('admin_catalogue.lecture_seule'),
+    session_expired: traduireMaintenant('admin_catalogue.session_expiree'),
   };
 
   const connu = connus[erreur.errorCode];
