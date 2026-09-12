@@ -20,6 +20,9 @@ export default defineConfig({
                 // fiche d'une voiture qui porte un modele, et three.js n'arrive qu'a l'entree en
                 // vue -- le catalogue peut montrer vingt voitures sans payer un octet de WebGL.
                 'resources/js/rental-3d.js',
+                // Bascule client / prestataire de l'accueil : pilote toute la page
+                // sous le heros, et rafraichit le carrousel epingle au changement.
+                'resources/js/accueil-cotes.js',
                 'resources/js/journey-film.js',
                 // Home luxury hero : GSAP entrance + Motion scroll effects.
                 'resources/js/luxury-hero.js',

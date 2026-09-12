@@ -18,7 +18,22 @@
             'zones' => \App\Support\Vitrine\ChiffresDeLaVitrine::zonesOuvertes(),
         ];
         $h = fn (string $cle) => __('vitrine.accueil.hero.'.$cle, $chiffresHero);
-        $versCommande = Route::has('order.journey')? route('order.journey'): route('booking.create');
+        $versCommande = Route::has('order.journey') ? route('order.journey') : route('booking.create');
+        $versInscription = route('register');
+
+        // Les textes du carrousel partent au navigateur : la bascule les echange sans
+        // recharger la page, et ils restent traduisibles depuis /admin/traductions.
+        $textesDuCarrousel = ['metiers' => []];
+        foreach (['client', 'prestataire'] as $cote) {
+            $textesDuCarrousel['metiers'][$cote] = [
+                'surtitre' => __('vitrine.accueil.metiers.'.$cote.'.surtitre'),
+                'titre' => __('vitrine.accueil.metiers.'.$cote.'.titre', $chiffresHero),
+                'texte' => __('vitrine.accueil.metiers.'.$cote.'.texte', $chiffresHero),
+                'finTitre' => __('vitrine.accueil.metiers.'.$cote.'.fin_titre'),
+                'finTexte' => __('vitrine.accueil.metiers.'.$cote.'.fin_texte'),
+                'bouton' => __('vitrine.accueil.metiers.'.$cote.'.bouton'),
+            ];
+        }
     @endphp
 
     {{-- ============================================================
@@ -104,127 +119,100 @@
         </x-slot:media>
     </x-hero.luxury>
 
-    {{-- L'ACCROCHE, reprise mot pour mot du hero : elle tient la page. --}}
-    <section class="cx-arg border-y py-10" style="border-color: var(--cx-arg-ligne)">
-        <div class="mx-auto max-w-7xl px-6">
-            <ul class="mx-auto grid max-w-4xl gap-3 sm:grid-cols-3">
-                @foreach ((array) __('vitrine.accueil.hero.puces') as $i => $puce)
-                    <li class="flex gap-2 text-sm" data-cx-reveal data-cx-delay="{{ $i * 80 }}"
-                        style="color: var(--cx-arg-doux)">
-                        <x-ui.icon name="check" class="cx-arg__coche" />
-                        <span>{{ $puce }}</span>
-                    </li>
+    {{-- ============================================================
+         TOUTE LA PAGE SOUS LE HÉROS BASCULE : côté client, ou côté prestataire.
+
+         Le choix survit au rechargement et se partage par lien (#client,
+         #prestataire) : un artisan à qui l'on envoie la page doit arriver
+         sur son côté.
+
+         LE FILM EST COMMUN AUX DEUX et reste hors de toute bascule : son
+         moteur épingle la scène au défilement, et un ScrollTrigger monté
+         dans un conteneur masqué mesure une hauteur nulle.
+         ============================================================ --}}
+    <div class="cx-accueil" x-data="cotesBrio()" x-init="demarrer()">
+
+        @include('partials.accueil-bascule')
+
+        {{-- MÉTIERS — galerie horizontale épinglée (moteur premium-scroll).
+             UN SEUL slider, dont les textes basculent : deux sliders superposés
+             feraient calculer le pin sur un panneau masqué, donc sur du vide. --}}
+        <section id="metiers" class="scroll-mt-20" data-scroll-horizontal
+                 aria-label="{{ __('vitrine.accueil.metiers.libelle') }}">
+            <div data-scroll-track>
+                <article class="cx-metier__panneau cx-metier__panneau--intro" data-scroll-panel>
+                    <div class="mx-auto max-w-xl px-6 text-center" data-scroll-panel-inner>
+                        <span class="cx-subhead" x-text="textes.metiers[cote].surtitre">{{ __('vitrine.accueil.metiers.client.surtitre') }}</span>
+                        <h3 class="cx-metier__titre cx-headline cx-balance"
+                            x-html="textes.metiers[cote].titre">{!! __('vitrine.accueil.metiers.client.titre', $chiffresHero) !!}</h3>
+                        <p class="cx-metier__texte cx-body-readable mx-auto"
+                           x-text="textes.metiers[cote].texte">{{ __('vitrine.accueil.metiers.client.texte', $chiffresHero) }}</p>
+                        <p class="cx-metier__defiler">
+                            {{ __('vitrine.accueil.metiers.defiler') }} <span aria-hidden="true">&rarr;</span>
+                        </p>
+                    </div>
+                </article>
+
+                @foreach ((array) __('vitrine.accueil.metiers.secteurs') as $i => $secteur)
+                    <article class="cx-metier__panneau cx-metier__panneau--{{ $i + 1 }}" data-scroll-panel>
+                        <div class="mx-auto max-w-md px-6 text-center" data-scroll-panel-inner>
+                            <div class="cx-metier__pastille">
+                                <x-ui.icon :name="$secteur['icone']" class="w-8 h-8" />
+                            </div>
+                            <h4 class="cx-metier__secteur">{{ $secteur['titre'] }}</h4>
+                            <p class="cx-metier__liste">{{ $secteur['metiers'] }}</p>
+                            @php($angles = ['client' => $secteur['client'], 'prestataire' => $secteur['prestataire']])
+                            <p class="cx-metier__angle" x-text="{{ Js::from($angles) }}[cote]">
+                                {{ $secteur['client'] }}
+                            </p>
+                        </div>
+                    </article>
                 @endforeach
-            </ul>
-        </div>
-    </section>
 
-    {{-- MÉTIERS — galerie horizontale épinglée (moteur premium-scroll).
-         [data-scroll-horizontal] : pin + scale/translateX/fade par panneau sur desktop ;
-         scroll natif tactile sur mobile. PAS de [data-premium-scroll] : on n'active pas
-         Lenis global, le cleanup reste isolé du ScrollTrigger du film. --}}
-    <section id="metiers" class="scroll-mt-20" data-scroll-horizontal aria-label="Les métiers ouverts">
-        <div data-scroll-track>
-            <article class="flex items-center justify-center bg-white dark:bg-slate-900" data-scroll-panel>
-                <div class="mx-auto max-w-xl px-6 text-center" data-scroll-panel-inner>
-                    <span class="cx-subhead">Ce que vous pouvez commander</span>
-                    <h3 class="mt-2 text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100 cx-headline cx-balance">
-                        {{ \App\Support\Vitrine\ChiffresDeLaVitrine::metiersOuverts() }} métiers.<br><span class="text-brand-600 dark:text-brand-300">Six secteurs.</span>
-                    </h3>
-                    <p class="mt-5 text-base text-slate-600 dark:text-slate-400 cx-body-readable mx-auto">
-                        Ce chiffre est celui du catalogue, lu au moment où vous chargez cette page. Il monte quand un métier ouvre, et il descend quand un métier ferme.
-                    </p>
-                    <p class="mt-8 inline-flex items-center gap-2 text-sm font-medium text-slate-400">
-                        Faites défiler <span aria-hidden="true">→</span>
-                    </p>
-                </div>
-            </article>
-
-            <article class="flex items-center justify-center bg-brand-50 dark:bg-slate-800" data-scroll-panel>
-                <div class="mx-auto max-w-md px-6 text-center" data-scroll-panel-inner>
-                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-brand-600 ring-1 ring-brand-200 shadow-soft-md">
-                        <x-ui.icon name="sparkles" class="w-8 h-8" />
+                <article class="cx-metier__panneau cx-metier__panneau--fin" data-scroll-panel>
+                    <div class="mx-auto max-w-md px-6 text-center" data-scroll-panel-inner>
+                        <div class="cx-metier__pastille cx-metier__pastille--fin">
+                            <x-ui.icon name="cube" class="w-8 h-8" />
+                        </div>
+                        <h4 class="cx-metier__fin-titre" x-text="textes.metiers[cote].finTitre">
+                            {{ __('vitrine.accueil.metiers.client.fin_titre') }}
+                        </h4>
+                        <p class="cx-metier__fin-texte" x-text="textes.metiers[cote].finTexte">
+                            {{ __('vitrine.accueil.metiers.client.fin_texte') }}
+                        </p>
+                        <div class="mt-8">
+                            @php($cibles = ['client' => $versCommande, 'prestataire' => $versInscription])
+                            <a class="cx-metier__bouton" href="{{ $versCommande }}"
+                               :href="{{ Js::from($cibles) }}[cote]"
+                               x-text="textes.metiers[cote].bouton">{{ $h('bouton') }}</a>
+                        </div>
                     </div>
-                    <h4 class="mt-6 text-2xl font-bold text-slate-900 dark:text-slate-100">Maison &amp; ménage</h4>
-                    <p class="mt-3 text-base text-slate-600 dark:text-slate-400">Nettoyage à domicile, vitres, fin de chantier.</p>
-                    <p class="mt-5 text-sm font-semibold text-brand-600 dark:text-brand-300">Le nettoyage à domicile accepte l’intervention immédiate</p>
-                </div>
-            </article>
-
-            <article class="flex items-center justify-center bg-amber-50 dark:bg-slate-800" data-scroll-panel>
-                <div class="mx-auto max-w-md px-6 text-center" data-scroll-panel-inner>
-                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-amber-600 ring-1 ring-amber-200 shadow-soft-md">
-                        <x-ui.icon name="wrench" class="w-8 h-8" />
-                    </div>
-                    <h4 class="mt-6 text-2xl font-bold text-slate-900 dark:text-slate-100">Travaux &amp; rénovation</h4>
-                    <p class="mt-3 text-base text-slate-600 dark:text-slate-400">Peinture, plomberie, bâtiment, rénovation.</p>
-                    <p class="mt-5 text-sm font-semibold text-amber-700 dark:text-amber-300">Commandés ensemble, ils se suivent dans le bon ordre</p>
-                </div>
-            </article>
-
-            <article class="flex items-center justify-center bg-emerald-50 dark:bg-slate-800" data-scroll-panel>
-                <div class="mx-auto max-w-md px-6 text-center" data-scroll-panel-inner>
-                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-emerald-600 ring-1 ring-emerald-200 shadow-soft-md">
-                        <x-ui.icon name="bolt" class="w-8 h-8" />
-                    </div>
-                    <h4 class="mt-6 text-2xl font-bold text-slate-900 dark:text-slate-100">Extérieur &amp; technique</h4>
-                    <p class="mt-3 text-base text-slate-600 dark:text-slate-400">Électricité, jardinage, toiture, élagage.</p>
-                    <p class="mt-5 text-sm font-semibold text-emerald-700 dark:text-emerald-300">La toiture et l’élagage passent par un devis, et le disent d’entrée</p>
-                </div>
-            </article>
-
-            <article class="flex items-center justify-center bg-brand-600" data-scroll-panel>
-                <div class="mx-auto max-w-md px-6 text-center" data-scroll-panel-inner>
-                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 text-white ring-1 ring-white/20">
-                        <x-ui.icon name="cube" class="w-8 h-8" />
-                    </div>
-                    <h4 class="mt-6 text-3xl font-bold text-white sm:text-4xl">Et le reste du catalogue.</h4>
-                    <p class="mt-4 text-base text-white/80">Garde d’enfants, déménagement, levage, gardiennage, courses d’un point à un autre.</p>
-                    <div class="mt-8">
-                        <x-ui.button :href="$versCommande" variant="amber" icon="arrow-right" iconPosition="right">
-                            {{ $h('bouton') }}
-                        </x-ui.button>
-                    </div>
-                </div>
-            </article>
-        </div>
-    </section>
-
-    {{-- PARCOURS D'UNE MISSION (le film, scrollytelling cinématique) --}}
-    @include('partials.journey')
-
-    {{-- L'ARGUMENTAIRE : deux portes (je commande / je gagne), puis ce qui protège
-         les deux côtés, les entreprises, et quatre questions. --}}
-    @include('partials.accueil-argumentaire')
-
-    {{-- CTA FINAL --}}
-    <section class="cx-cta-animated relative isolate overflow-hidden py-24">
-        <div class="mx-auto max-w-4xl px-6 text-center">
-            <h3 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                {{ __('vitrine.accueil.final.titre') }}
-            </h3>
-            <p class="mt-4 text-base leading-7 text-brand-100">
-                {{ __('vitrine.accueil.final.sous_titre') }}
-            </p>
-            <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-                <span class="cx-magnetic" data-cx-magnetic="0.3">
-                    <a href="{{ $versCommande }}"
-                       class="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-semibold text-brand-700 shadow-soft-md hover:bg-brand-50 transition">
-                        {{ $h('bouton') }}
-                        <x-ui.icon name="arrow-right" class="w-5 h-5" />
-                    </a>
-                </span>
-                <span class="cx-magnetic" data-cx-magnetic="0.22">
-                    <a href="#commencer"
-                       class="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-base font-semibold text-white backdrop-blur hover:bg-white/20 transition">
-                        {{ __('vitrine.accueil.final.bouton_secondaire') }}
-                    </a>
-                </span>
+                </article>
             </div>
+        </section>
+
+        {{-- LE FILM — commun aux deux côtés, hors de toute bascule. --}}
+        @include('partials.journey')
+
+        {{-- LES DEUX CÔTÉS. --}}
+        <div id="cx-cote-client" role="tabpanel" aria-labelledby="cx-bascule-client"
+             x-show="cote === 'client'">
+            @include('partials.accueil-cote', ['cote' => 'client'])
         </div>
-    </section>
+
+        <div id="cx-cote-prestataire" role="tabpanel" aria-labelledby="cx-bascule-prestataire"
+             x-show="cote === 'prestataire'" x-cloak>
+            @include('partials.accueil-cote', ['cote' => 'prestataire'])
+        </div>
+    </div>
 
     @push('scripts')
+        {{-- Les textes du carrousel passent par ici : ils doivent rester traduisibles
+             depuis /admin/traductions, donc ils ne peuvent pas vivre dans le module JS. --}}
+        <script>
+            window.brioTextes = {!! Js::from($textesDuCarrousel) !!};
+        </script>
+        @vite('resources/js/accueil-cotes.js')
         @vite('resources/js/journey-film.js')
         @vite('resources/js/luxury-hero.js')
         @vite('resources/js/hero-r3f.jsx')

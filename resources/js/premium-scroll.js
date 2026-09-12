@@ -346,6 +346,12 @@ if (document.readyState === 'loading') {
 } else {
     boot();
 }
+/* La bascule client / prestataire change la hauteur des panneaux epingles : sans ce
+   rafraichissement, le pin garde les mesures de l'autre cote et le defilement saute. */
+window.addEventListener('brio:cote', () => {
+    if (engine && engine.ScrollTrigger) requestAnimationFrame(() => engine.ScrollTrigger.refresh());
+});
+
 document.addEventListener('livewire:navigating', teardown);
 document.addEventListener('livewire:navigated', boot);
 window.addEventListener('pagehide', teardown);

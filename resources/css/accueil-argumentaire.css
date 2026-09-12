@@ -6,7 +6,17 @@
  * ressortirait blanche sur blanc.
  */
 
-.cx-arg {
+/* `.cx-starfield` est en `position: fixed; z-index: 0` avec un fond OPAQUE : il est
+   donc peint apres tout element statique, et masque tout ce qui ne se positionne pas.
+   Une seule couche au-dessus suffit — la poser sur chaque section serait a refaire
+   au prochain bloc ajoute. */
+.cx-accueil {
+    position: relative;
+    z-index: 1;
+}
+
+.cx-arg,
+.cx-accueil {
     --cx-arg-fond: var(--brio-fond, #ffffff);
     --cx-arg-pose: color-mix(in srgb, var(--brio-encre, #0f172a) 3%, transparent);
     --cx-arg-surface: color-mix(in srgb, var(--brio-encre, #0f172a) 2%, transparent);
@@ -19,7 +29,8 @@
     color: var(--cx-arg-encre);
 }
 
-:root.dark .cx-arg {
+:root.dark .cx-arg,
+:root.dark .cx-accueil {
     --cx-arg-fond: var(--brio-fond, #0b1120);
     --cx-arg-pose: color-mix(in srgb, #ffffff 4%, transparent);
     --cx-arg-surface: color-mix(in srgb, #ffffff 5%, transparent);
@@ -32,68 +43,6 @@
 .cx-arg--pose {
     background: linear-gradient(180deg, var(--cx-arg-fond), var(--cx-arg-pose));
 }
-
-/* ─────────────────────────────────────────────── Les deux portes */
-
-/* Le visiteur declare son camp avant de lire : la page ne lui montre que sa moitie. */
-.cx-arg__portes {
-    display: grid;
-    gap: 1rem;
-    max-width: 64rem;
-    margin: 3rem auto 0;
-}
-
-@media (min-width: 700px) {
-    .cx-arg__portes { grid-template-columns: 1fr 1fr; }
-}
-
-.cx-arg__porte {
-    display: grid;
-    gap: 0.5rem;
-    padding: 1.75rem;
-    border: 1px solid var(--cx-arg-ligne);
-    border-radius: 1.125rem;
-    background: var(--cx-arg-surface);
-    text-align: left;
-    cursor: pointer;
-    transition: border-color var(--cx-duree, 220ms) var(--cx-courbe, cubic-bezier(0.2, 0.8, 0.2, 1)),
-                background-color var(--cx-duree, 220ms) var(--cx-courbe, cubic-bezier(0.2, 0.8, 0.2, 1)),
-                transform var(--cx-duree, 220ms) var(--cx-courbe, cubic-bezier(0.2, 0.8, 0.2, 1));
-}
-
-.cx-arg__porte:hover { transform: translateY(-2px); }
-
-.cx-arg__porte.is-choisie {
-    border-color: var(--brio-accent, #f59e0b);
-    background: color-mix(in srgb, var(--brio-accent, #f59e0b) 9%, var(--cx-arg-surface));
-}
-
-.cx-arg__porte-titre {
-    font-size: 1.375rem;
-    font-weight: 700;
-    line-height: 1.2;
-    color: var(--cx-arg-encre);
-}
-
-.cx-arg__porte-phrase {
-    font-size: 0.9375rem;
-    line-height: 1.6;
-    color: var(--cx-arg-doux);
-}
-
-.cx-arg__porte-lien {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    margin-top: 0.25rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--brio-accent-texte, #b45309);
-}
-
-/* ─────────────────────────────────────────────────── Les volets */
-
-.cx-arg__volet { margin-top: 4rem; }
 
 [x-cloak] { display: none !important; }
 
@@ -279,4 +228,321 @@
     .cx-arg__croix { transition: none; }
 
     .cx-arg__carte:hover { transform: none; }
+}
+
+/* ═══════════════════════════════════════════ LA BASCULE DES DEUX CÔTÉS */
+
+/* Elle pilote toute la page sous le héros, et elle COLLE : un lecteur arrivé au
+   milieu doit changer de côté sans remonter. */
+.cx-bascule {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    padding: 0.875rem 1.5rem 1rem;
+    background: color-mix(in srgb, var(--cx-arg-fond) 88%, transparent);
+    backdrop-filter: saturate(140%) blur(14px);
+    border-bottom: 1px solid var(--cx-arg-ligne);
+    text-align: center;
+}
+
+.cx-bascule__piste {
+    position: relative;
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 0.25rem;
+    border: 1px solid var(--cx-arg-ligne);
+    border-radius: 999px;
+    background: var(--cx-arg-surface);
+}
+
+/* Le curseur GLISSE : le mouvement dit le changement mieux qu'une couleur. */
+.cx-bascule__curseur {
+    position: absolute;
+    top: 0.25rem;
+    left: 0.25rem;
+    width: calc(50% - 0.25rem);
+    height: calc(100% - 0.5rem);
+    border-radius: 999px;
+    background: var(--brio-accent, #f59e0b);
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--brio-accent, #f59e0b) 40%, transparent);
+    transition: transform 320ms var(--cx-courbe, cubic-bezier(0.2, 0.8, 0.2, 1));
+}
+
+.cx-bascule__onglet {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0 1.5rem;
+    border-radius: 999px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--cx-arg-doux);
+    cursor: pointer;
+    transition: color 220ms var(--cx-courbe, cubic-bezier(0.2, 0.8, 0.2, 1));
+}
+
+/* L'ambre de marque porte du texte SOMBRE : en clair comme en sombre, l'onglet
+   choisi s'écrit sur la pastille, pas sur le fond de la page. */
+.cx-bascule__onglet.is-choisi { color: #1f1300; }
+
+.cx-bascule__aide {
+    margin-top: 0.625rem;
+    font-size: 0.8125rem;
+    color: var(--cx-arg-tenu);
+}
+
+@media (max-width: 560px) {
+    .cx-bascule__onglet { padding: 0 0.875rem; font-size: 0.875rem; }
+    .cx-bascule__aide { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cx-bascule__curseur { transition: none; }
+}
+
+/* ═══════════════════════════════════════ L'ACCROCHE ET L'APPEL D'UN CÔTÉ */
+
+.cx-cote__final {
+    padding: 5rem 0;
+    background: linear-gradient(160deg,
+        color-mix(in srgb, var(--brio-accent, #f59e0b) 12%, var(--cx-arg-fond)),
+        var(--cx-arg-fond) 70%);
+    border-top: 1px solid var(--cx-arg-ligne);
+}
+
+.cx-cote__final-titre {
+    font-size: clamp(1.625rem, 1.2rem + 1.8vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.2;
+    text-wrap: balance;
+    color: var(--cx-arg-encre);
+}
+
+.cx-cote__final-texte {
+    max-width: 60ch;
+    margin: 1rem auto 0;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--cx-arg-doux);
+}
+
+.cx-cote__bascule-lien {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0 1.25rem;
+    border: 1px solid var(--cx-arg-ligne);
+    border-radius: 0.875rem;
+    background: transparent;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--cx-arg-encre);
+    cursor: pointer;
+    transition: border-color 220ms var(--cx-courbe, cubic-bezier(0.2, 0.8, 0.2, 1));
+}
+
+.cx-cote__bascule-lien:hover { border-color: var(--brio-accent, #f59e0b); }
+
+/* ═══════════════════════════════════════════ L'EN-TÊTE D'UN BLOC */
+
+/* L'image ouvre le bloc à côté du titre : en bandeau pleine largeur elle
+   écraserait le titre, et le lecteur lirait deux choses au lieu d'une. */
+.cx-bloc__entete {
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+}
+
+@media (min-width: 900px) {
+    .cx-bloc__entete { grid-template-columns: 5fr 6fr; gap: 3.5rem; }
+}
+
+.cx-bloc__entete .cx-arg__image {
+    border-radius: 1.125rem;
+    box-shadow: 0 18px 48px -24px color-mix(in srgb, var(--brio-encre, #0f172a) 45%, transparent);
+}
+
+.cx-bloc__intro { text-align: left; }
+
+@media (max-width: 899px) {
+    .cx-bloc__intro { text-align: center; }
+}
+
+/* ═══════════════════════════════════════════ LE CARROUSEL DES MÉTIERS */
+
+.cx-metier__panneau {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cx-arg-fond);
+}
+
+.cx-metier__panneau--1 { background: color-mix(in srgb, #3b82f6 8%, var(--cx-arg-fond)); }
+.cx-metier__panneau--2 { background: color-mix(in srgb, #f59e0b 10%, var(--cx-arg-fond)); }
+.cx-metier__panneau--3 { background: color-mix(in srgb, #10b981 9%, var(--cx-arg-fond)); }
+.cx-metier__panneau--fin { background: linear-gradient(150deg, #1d4ed8, #0f172a 75%); }
+
+.cx-metier__titre {
+    margin-top: 0.5rem;
+    font-size: clamp(2rem, 1.4rem + 2.6vw, 3rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--cx-arg-encre);
+}
+
+.cx-metier__texte {
+    margin-top: 1.25rem;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--cx-arg-doux);
+}
+
+.cx-metier__defiler {
+    margin-top: 2rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--cx-arg-tenu);
+}
+
+.cx-metier__pastille {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    margin: 0 auto;
+    border-radius: 1.25rem;
+    border: 1px solid var(--cx-arg-ligne);
+    background: var(--cx-arg-fond);
+    color: var(--brio-accent-texte, #b45309);
+    box-shadow: 0 10px 28px -16px color-mix(in srgb, var(--brio-encre, #0f172a) 55%, transparent);
+}
+
+.cx-metier__pastille--fin {
+    border-color: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.cx-metier__secteur {
+    margin-top: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--cx-arg-encre);
+}
+
+.cx-metier__liste {
+    margin-top: 0.75rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--cx-arg-doux);
+}
+
+/* L'angle : la MÊME famille de métiers, vue du côté client ou du côté pro. */
+.cx-metier__angle {
+    margin-top: 1.25rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--brio-accent-texte, #b45309);
+}
+
+.cx-metier__fin-titre {
+    margin-top: 1.5rem;
+    font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.15;
+    color: #ffffff;
+}
+
+.cx-metier__fin-texte {
+    margin-top: 1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.cx-metier__bouton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0 1.5rem;
+    border-radius: 0.875rem;
+    background: var(--brio-accent, #f59e0b);
+    font-size: 0.9375rem;
+    font-weight: 650;
+    color: #1f1300;
+    transition: transform 220ms var(--cx-courbe, cubic-bezier(0.2, 0.8, 0.2, 1));
+}
+
+.cx-metier__bouton:hover { transform: translateY(-2px); }
+
+@media (prefers-reduced-motion: reduce) {
+    .cx-metier__bouton:hover { transform: none; }
+}
+
+/* ═══════════════════════════════════════════════ LA GRILLE À TROIS */
+
+.cx-arg__grille--trois { margin-top: 3.5rem; }
+
+@media (min-width: 1100px) {
+    .cx-arg__grille--trois { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ══════════════════════════════════════════ L'OUVERTURE D'UN CÔTÉ */
+
+/* La photographie A CÔTÉ du texte, jamais dessous : un voile assez opaque pour
+   garantir le contraste tue la photographie, et un voile plus léger ne garantit
+   rien. Deux colonnes règlent les deux problèmes d'un coup. */
+.cx-cote__accroche {
+    display: grid;
+    align-items: stretch;
+    background: var(--cx-arg-pose);
+    border-bottom: 1px solid var(--cx-arg-ligne);
+}
+
+@media (min-width: 880px) {
+    .cx-cote__accroche { grid-template-columns: 1fr 1fr; }
+}
+
+.cx-cote__bandeau {
+    aspect-ratio: 16 / 9;
+    order: 2;
+}
+
+@media (min-width: 880px) {
+    .cx-cote__bandeau { aspect-ratio: auto; min-height: 24rem; }
+}
+
+.cx-cote__bandeau img { height: 100%; object-position: center 40%; }
+
+.cx-cote__accroche-corps {
+    display: flex;
+    align-items: center;
+    order: 1;
+    padding: 3.5rem 0;
+}
+
+@media (min-width: 880px) {
+    .cx-cote__accroche-corps { padding: 4rem 0; }
+}
+
+.cx-cote__accroche-texte {
+    max-width: 30ch;
+    font-size: clamp(1.5rem, 1.05rem + 1.9vw, 2.375rem);
+    font-weight: 650;
+    line-height: 1.28;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    color: var(--cx-arg-encre);
 }
