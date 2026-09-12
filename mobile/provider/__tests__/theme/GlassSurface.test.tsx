@@ -1,16 +1,18 @@
 /**
  * La surface de verre — cartes, panneaux, barres.
  *
- * CE QUE CES TESTS PROTÈGENT. Deux régressions probables, et une seule est visible à l'œil.
+ * CE QUE CES TESTS PROTÈGENT.
  *
- * La première : quelqu'un applique le verre partout, y compris en mode clair, et le mode clair
- * change. C'est la contrainte la plus facile à casser sans s'en apercevoir, parce qu'on développe
- * en sombre quand on travaille sur le sombre.
+ * Le flou disparaît sur un appareil qui ne le gère pas, et il ne reste RIEN — un panneau invisible
+ * avec du texte flottant dans le vide. Le voile doit tenir seul. C'est le test qu'on n'écrit pas
+ * spontanément, parce que sur la machine du développeur le flou marche toujours.
  *
- * La seconde : le flou disparaît sur un appareil qui ne le gère pas, et il ne reste RIEN — un
- * panneau invisible sur un fond nuit, avec du texte flottant dans le vide. Le voile doit tenir
- * seul. C'est le test qu'on n'écrit pas spontanément, parce que sur la machine du développeur le
- * flou marche toujours.
+ * CE QUE CE FICHIER GARDAIT AVANT, ET QUI A ÉTÉ RENVERSÉ. Le premier test exigeait que le mode
+ * clair reste opaque — « le mode clair n'est pas touché par ce chantier ». Le passage à « Verre
+ * givré » inverse cette décision : le verre existe des deux côtés, seule sa teinte change. Le
+ * garde-fou correspondant est désormais le contraste (`lisibilite.test.ts`), qui mesure le texte
+ * contre le voile composé sur le point le plus sombre du maillage — la vraie contrainte, dont
+ * l'opacité n'était qu'une approximation prudente.
  */
 import React from 'react';
 import { Text } from 'react-native';
@@ -19,6 +21,17 @@ import { render, screen } from '@testing-library/react-native';
 const mockScheme = { colorScheme: 'dark' as 'dark' | 'light', mode: 'dark', setMode: jest.fn() };
 
 jest.mock('@/theme/useColorScheme', () => ({ useColorScheme: () => mockScheme }));
+
+/*
+ * Le vrai `BlurView` est un composant de classe qui rend une `View` : `tint` reste sur l'instance
+ * et n'atteint jamais le nœud interrogé. Ce faux le laisse passer, sans quoi la teinte du flou
+ * n'est vérifiable que sur un appareil.
+ */
+jest.mock('expo-blur', () => {
+  const { View } = require('react-native');
+
+  return { BlurView: (props: Record<string, unknown>) => <View {...props} /> };
+});
 
 import { GlassSurface } from '@/ui/GlassSurface';
 
@@ -30,7 +43,26 @@ describe('GlassSurface', () => {
     mockScheme.colorScheme = 'dark';
   });
 
-  it('reste une surface pleine et opaque en mode clair', () => {
+  it('floute ce qu’il y a derrière dans les DEUX thèmes', () => {
+    render(
+      <GlassSurface>
+        <Text>contenu</Text>
+      </GlassSurface>,
+    );
+    expect(screen.getByTestId('glass-blur', MASQUE).props.tint).toBe('dark');
+
+    mockScheme.colorScheme = 'light';
+    render(
+      <GlassSurface>
+        <Text>contenu clair</Text>
+      </GlassSurface>,
+    );
+
+    // La teinte suit le thème : un flou sombre sur fond clair salit la carte au lieu de l'éclairer.
+    expect(screen.getAllByTestId('glass-blur', MASQUE).at(-1)?.props.tint).toBe('light');
+  });
+
+  it('garde un voile OPAQUE À 72 % AU MOINS en clair', () => {
     mockScheme.colorScheme = 'light';
 
     render(
@@ -39,19 +71,15 @@ describe('GlassSurface', () => {
       </GlassSurface>,
     );
 
-    // Pas de flou en clair : le mode clair n'est pas touché par ce chantier.
-    expect(screen.queryByTestId('glass-blur')).toBeNull();
-    expect(aplat(screen.getByTestId('glass-surface').props.style).backgroundColor).toBe('#ffffff');
-  });
-
-  it('floute ce qu’il y a derrière en mode sombre', () => {
-    render(
-      <GlassSurface>
-        <Text>contenu</Text>
-      </GlassSurface>,
-    );
-
-    expect(screen.getByTestId('glass-blur', MASQUE)).toBeTruthy();
+    /*
+     * LE PLANCHER DU VOILE EST CE QUI REND LE VERRE CLAIR LISIBLE.
+     *
+     * `lisibilite.test.ts` calcule le contraste du texte contre le voile composé à 0,72. Descendre
+     * sous cette valeur invaliderait ce calcul en silence : le test de contraste continuerait de
+     * passer en mesurant une surface plus claire que celle qui est réellement peinte.
+     */
+    expect(opacite(aplat(screen.getByTestId('glass-veil', MASQUE).props.style).backgroundColor))
+      .toBeGreaterThanOrEqual(0.72);
   });
 
   it('pose un voile qui tient même sans flou', () => {

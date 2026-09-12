@@ -10,16 +10,21 @@ import { colors } from './colors';
  * un jeton pour la plupart des besoins, et inventer une couleur était plus court que d'en
  * chercher une. Le jeu ci-dessous vise à ne laisser aucune raison d'inventer.
  *
- * LES TEINTES DE NUIT VIENNENT DE `colors.mode.showcase`, la palette du travail éditorial. En
- * introduire une seconde ferait diverger deux définitions du même noir.
+ * LES DEUX THÈMES SONT LE MÊME MONDE, VU DES DEUX CÔTÉS DE LA SURFACE DE L'EAU. En clair on est
+ * au-dessus : maillage pâle qui dérive, verre blanc dépoli. En sombre on est en dessous : la
+ * lumière tombe du haut en caustiques et s'éteint vers le bas. Voir `colors.mode.maree`.
  *
- * LE MODE CLAIR N'EST PAS TOUCHÉ par le traitement verre : un prestataire en plein soleil a
- * besoin de contraste, pas de translucidité.
+ * CE QUE CE CHANGEMENT ANNULE. Le commentaire d'origine disait « le mode clair n'est pas touché
+ * par le traitement verre : un prestataire en plein soleil a besoin de contraste, pas de
+ * translucidité ». La règle reste vraie, la conclusion ne l'était pas : un voile blanc à 0,72
+ * posé sur le maillage rend #f5f7fb, soit 14,8:1 sous le texte. Le verre clair ne coûte pas de
+ * contraste — il en coûtait tant qu'on le croyait gris.
  */
 export function useThemeColors() {
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === 'dark';
-  const nuit = colors.mode.showcase;
+  const nuit = colors.mode.maree.profondeur;
+  const jour = colors.mode.maree.givre;
 
   return {
     /**
@@ -29,7 +34,7 @@ export function useThemeColors() {
     isDark,
 
     // ── Surfaces et texte ───────────────────────────────────────────────────────────────────
-    bg: isDark ? nuit.night : colors.surface[50],
+    bg: isDark ? nuit.abysse : jour.page,
 
     /**
      * Le fond d'un conteneur PLEINE PAGE — et rien d'autre.
@@ -41,9 +46,9 @@ export function useThemeColors() {
      *
      * En clair il vaut `bg`, à l'identique de ce qui existait.
      */
-    page: isDark ? 'transparent' : colors.surface[50],
+    page: isDark ? 'transparent' : jour.page,
 
-    card: isDark ? nuit.panel : '#ffffff',
+    card: isDark ? nuit.panneau : '#ffffff',
 
     /**
      * La carte DISCRÈTE — celle qui, en clair, se confond presque avec la page.
@@ -53,13 +58,15 @@ export function useThemeColors() {
      * exactement de la couleur du fond : un rectangle invisible. Ce jeton garde le clair identique
      * et relève le sombre au panneau.
      */
-    cardSubtle: isDark ? nuit.panel : colors.surface[50],
-    cardElevated: isDark ? nuit.nightSoft : '#ffffff',
-    text: isDark ? nuit.text : colors.surface[900],
-    textSecondary: isDark ? nuit.muted : colors.surface[600],
-    textMuted: isDark ? 'rgba(147, 164, 198, 0.72)' : colors.surface[400],
-    border: isDark ? 'rgba(232, 238, 252, 0.10)' : colors.surface[200],
-    inputBg: isDark ? 'rgba(232, 238, 252, 0.06)' : colors.surface[50],
+    cardSubtle: isDark ? nuit.panneau : jour.page,
+    cardElevated: isDark ? nuit.panneauHaut : '#ffffff',
+    text: isDark ? nuit.texte : jour.texte,
+    textSecondary: isDark ? nuit.muted : jour.muted,
+    /* Opaque des deux cotes : un rgba se compose avec ce qu'il y a dessous, et le
+       garde-fou mesurait alors une couleur que personne n'affiche. */
+    textMuted: isDark ? '#8fb4bd' : '#567082',
+    border: isDark ? 'rgba(232, 246, 246, 0.12)' : 'rgba(22, 36, 43, 0.10)',
+    inputBg: isDark ? 'rgba(232, 246, 246, 0.07)' : 'rgba(255, 255, 255, 0.66)',
 
     // ── La matière verre ────────────────────────────────────────────────────────────────────
     /*
@@ -70,11 +77,11 @@ export function useThemeColors() {
      * dès que quelque chose de clair défile derrière — et ça n'arrive qu'en usage réel, jamais
      * sur une maquette au fond fixe.
      */
-    glass: isDark ? 'rgba(232, 238, 252, 0.06)' : 'rgba(255, 255, 255, 0.72)',
-    glassStrong: isDark ? 'rgba(232, 238, 252, 0.10)' : 'rgba(255, 255, 255, 0.86)',
-    glassBorder: isDark ? 'rgba(232, 238, 252, 0.14)' : 'rgba(15, 23, 42, 0.08)',
-    textOnGlass: isDark ? nuit.text : colors.surface[900],
-    mutedOnGlass: isDark ? nuit.muted : colors.surface[600],
+    glass: isDark ? 'rgba(47, 217, 197, 0.07)' : 'rgba(255, 255, 255, 0.72)',
+    glassStrong: isDark ? 'rgba(47, 217, 197, 0.11)' : 'rgba(255, 255, 255, 0.86)',
+    glassBorder: isDark ? 'rgba(232, 246, 246, 0.16)' : 'rgba(91, 127, 166, 0.18)',
+    textOnGlass: isDark ? nuit.texte : jour.texte,
+    mutedOnGlass: isDark ? nuit.muted : jour.muted,
 
     /**
      * Le texte posé SUR la couleur de marque — un bouton plein, un badge.
@@ -101,45 +108,32 @@ export function useThemeColors() {
     textOnAccent: '#241603',
 
     /*
-     * LES STATUTS EN COULEUR PLEINE.
+     * LES STATUTS EN COULEUR PLEINE. `tint.*` sont des VOILES a poser en fond ; ceux-ci
+     * portent du texte, et le cran differe par theme parce que la surface differe.
      *
-     * `tint.*` existait deja, mais ce sont des VOILES a poser en fond : les employer pour
-     * du texte donne un vert a 20 % d'opacite, illisible. Ces trois-la sont les memes que
-     * `--brio-success/warning/danger` du web, et un test compare les deux fichiers.
+     * LE ROUGE A CHANGE DE CRAN EN PASSANT A PROFONDEUR : le panneau teal est plus clair que
+     * l'ancien panneau indigo, `danger.500` y tombe a 3,98. Le 400 rend 5,41.
      *
-     * LE RAISONNEMENT A LONGTEMPS MANQUE DE SA MOITIE CLAIRE. Il ne portait que sur la
-     * nuit — « `success.600` sur un fond de nuit passe sous le seuil, `success.500` le
-     * tient » — et personne n'avait fait le calcul dans l'autre sens. Sur le blanc des
-     * cartes, `success.600` rend 3,77 et `warning.600` rend 3,18 : sous le seuil, du
-     * mauvais cote. Le cran descend donc AUSSI en clair.
-     *
-     *   sur #ffffff        avant          apres
-     *   success            3,77  (600)    5,48  (700)
-     *   warning            3,18  (600)    5,02  (700)
-     *   danger             4,83  (600)    inchange, il passait deja
-     *
-     *   sur #111a2e (panneau de nuit) : 6,84 / 8,07 / 4,61 — les trois passent.
+     *   sur #f5f7fb (le verre clair, pire cas)   5,11 / 4,68 / 4,50
+     *   sur #082a3a (le panneau de Profondeur)   5,90 / 6,97 / 5,41
      */
     success: isDark ? colors.success[500] : colors.success[700],
     warning: isDark ? colors.warning[500] : colors.warning[700],
-    danger: isDark ? colors.danger[500] : colors.danger[600],
+    danger: isDark ? colors.danger[400] : colors.danger[600],
 
     /*
-     * LA MARQUE, QUAND ELLE PORTE DU TEXTE.
+     * LA MARQUE, QUAND ELLE PORTE DU TEXTE. Aucun indigo unique ne tient sur les deux fonds :
+     * `brand.500` echoue des deux cotes. Ce jeton double `brand`, il ne le remplace pas.
      *
-     * `brand` est volontairement identique dans les deux themes — un bouton plein garde son
-     * indigo. Mais AUCUN indigo unique ne tient sur les deux fonds quand il devient du
-     * texte : `brand.500` rend 4,47 sur le blanc et 3,88 sur le panneau de nuit. Il echoue
-     * des DEUX cotes, ce qui est la signature d'une valeur figee sur un fond qui bouge.
-     *
-     *   sur #ffffff   brand.600 = 6,29        sur #111a2e   brand.400 = 5,81
-     *
-     * Ce jeton ne remplace pas `brand` : il le double pour le seul cas du texte.
+     *   sur #f5f7fb   brand.600 = 5,86        sur #082a3a   brand.400 = 5,02
      */
     brandText: isDark ? colors.brand[400] : colors.brand[600],
 
-    /** La lueur de marque du fond nuit. Absente en clair : elle n'y aurait aucun sens. */
-    glow: isDark ? 'rgba(99, 102, 241, 0.30)' : 'transparent',
+    /** La lumiere dans l'eau. Absente en clair : on est deja au-dessus de la surface. */
+    glow: isDark ? 'rgba(47, 217, 197, 0.26)' : 'transparent',
+
+    /** La couleur de la lumiere dans l'eau : traces vivants, caustiques, etats en cours. */
+    caustique: isDark ? nuit.caustique : '#2f8fa6',
 
     /*
      * LES TEINTES — des voiles sémantiques, à poser en FOND.

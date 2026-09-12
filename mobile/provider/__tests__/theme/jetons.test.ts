@@ -13,6 +13,7 @@ jest.mock('@/theme/useColorScheme', () => ({
   useColorScheme: () => mockScheme,
 }));
 
+import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 
 const enSombre = () => {
@@ -61,18 +62,27 @@ describe('jetons de thème', () => {
     expect(opacite).toBeGreaterThanOrEqual(0.05);
   });
 
-  it('le fond sombre adopte la palette nuit du projet', () => {
-    // Et non un gris neutre : c'est cette palette qui porte l'ambiance validée, et en introduire
-    // une seconde ferait diverger deux définitions du même noir.
-    expect(enSombre().bg).toBe('#070b14');
+  it('le fond sombre adopte la palette Profondeur', () => {
+    // Et non un gris neutre : c'est cette palette qui porte la direction retenue, et en
+    // introduire une seconde ferait diverger deux definitions du meme fond.
+    expect(enSombre().bg).toBe(colors.mode.maree.profondeur.abysse);
   });
 
-  it('ne touche pas au mode clair', () => {
+  it('le mode clair garde un fond TEINTE, jamais blanc', () => {
     const t = enClair();
 
-    // Un prestataire en plein soleil a besoin de contraste, pas de translucidité.
-    expect(t.bg).toBe('#fafafa');
-    expect(t.card).toBe('#ffffff');
+    /*
+     * C'EST LA CONDITION D'EXISTENCE DU VERRE CLAIR, pas une preference.
+     *
+     * Une plaque translucide posee sur un aplat uni est indiscernable d'une plaque opaque : sans
+     * teinte a filtrer, tout le traitement disparait en mode clair sans qu'aucun test ne tombe.
+     * Le fond doit donc rester colore, et distinct du blanc des cartes.
+     */
+    expect(t.bg).toBe(colors.mode.maree.givre.page);
+    expect(t.bg).not.toBe('#ffffff');
+    expect(t.bg).not.toBe(t.card);
+
+    // La lumiere dans l'eau n'a aucun sens au-dessus de la surface.
     expect(t.glow).toBe('transparent');
   });
 });

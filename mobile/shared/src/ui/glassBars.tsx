@@ -5,8 +5,7 @@ import { GlassSurface } from './GlassSurface';
 
 interface ApparenceDeBarre {
   tabBarStyle: ViewStyle;
-  /** Absent en mode clair : la barre garde son fond plein. */
-  tabBarBackground?: () => React.ReactElement;
+  tabBarBackground: () => React.ReactElement;
 }
 
 /**
@@ -24,18 +23,11 @@ interface ApparenceDeBarre {
  * haut par défaut ; le rendre transparent sans annuler sa largeur laisse une bande d'un pixel qui
  * masque le fond au lieu de le laisser passer.
  *
- * EN CLAIR, RIEN NE CHANGE : fond plein et liseré du thème, exactement comme avant.
+ * LE CLAIR A LA MÊME BARRE DEPUIS « VERRE GIVRÉ ». Il gardait un fond plein tant que le verre
+ * était réservé au sombre ; le conserver maintenant donnerait des cartes en verre posées dans un
+ * châssis opaque — l'incohérence se voit tout de suite, en bas de chaque écran.
  */
-export function apparenceDeBarre(theme: ThemeTokens): ApparenceDeBarre {
-  if (!theme.isDark) {
-    return {
-      tabBarStyle: {
-        backgroundColor: theme.bg,
-        borderTopColor: theme.border,
-      },
-    };
-  }
-
+export function apparenceDeBarre(_theme: ThemeTokens): ApparenceDeBarre {
   return {
     tabBarStyle: {
       backgroundColor: 'transparent',
@@ -62,7 +54,9 @@ export function apparenceDeBarre(theme: ThemeTokens): ApparenceDeBarre {
  * l'écran, où il n'y a presque rien à flouter.
  */
 export function fondDeFeuille(theme: ThemeTokens): ViewStyle {
-  return theme.isDark
-    ? { backgroundColor: theme.glassStrong, borderWidth: StyleSheet.hairlineWidth, borderColor: theme.glassBorder }
-    : { backgroundColor: theme.bg };
+  return {
+    backgroundColor: theme.glassStrong,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: theme.glassBorder,
+  };
 }

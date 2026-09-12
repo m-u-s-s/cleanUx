@@ -1,18 +1,21 @@
 /**
- * AUCUNE COULEUR SEMANTIQUE NE DOIT TOMBER SOUS LE SEUIL — dans l'un OU l'autre theme.
+ * AUCUNE COULEUR DE TEXTE NE DOIT TOMBER SOUS LE SEUIL — dans l'un OU l'autre theme.
  *
  * Le raisonnement d'origine ne portait que sur la nuit : « success.600 sur un fond de nuit
  * passe sous le seuil, success.500 le tient ». Personne n'avait fait le calcul dans l'autre
  * sens, et sur le blanc des cartes `success.600` rendait 3,77 et `warning.600` 3,18.
  *
- * Ce test refait les deux calculs a chaque execution : une palette qui derive se signale ici,
- * pas sur l'ecran d'un utilisateur.
+ * LES SURFACES NE SONT PLUS RECOPIEES ICI. Elles etaient ecrites en dur — `#111a2e` — et
+ * personne ne les mettait a jour en meme temps que la palette : le passage a Profondeur les a
+ * rendues fausses d'un coup, et le test aurait continue de passer en mesurant un fond qui
+ * n'existe plus. Elles viennent maintenant de `surfacesDeReference`, avec la palette.
+ *
+ * En clair, la surface de reference n'est PAS le blanc : c'est le voile de verre le plus fin
+ * pose sur le point le plus sombre du maillage. C'est la que le texte a le moins de marge.
  */
-import { colors } from '../colors';
+import { colors, surfacesDeReference } from '../colors';
 
-// Les surfaces reelles, lues dans useThemeColors : la plus dure de chaque theme.
-const JOUR = '#ffffff';          // `card` en clair
-const NUIT = '#111a2e';          // `cardSubtle` en sombre, plus clair que le fond de page
+const { jour: JOUR, nuit: NUIT } = surfacesDeReference;
 
 const SEUIL = 4.5;
 
@@ -33,21 +36,35 @@ const contraste = (a: string, b: string): number => {
   return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
 };
 
-// Ce que `useThemeColors` rend pour chaque jeton, dans chaque theme.
+const maree = colors.mode.maree;
+
+// Ce que `useThemeColors` rend pour chaque jeton : [nom, valeur en clair, valeur en sombre].
 const JETONS: Array<[string, string, string]> = [
+  ['text', maree.givre.texte, maree.profondeur.texte],
+  ['textSecondary', maree.givre.muted, maree.profondeur.muted],
+  ['textMuted', '#567082', '#8fb4bd'],
   ['success', colors.success[700], colors.success[500]],
   ['warning', colors.warning[700], colors.warning[500]],
-  ['danger', colors.danger[600], colors.danger[500]],
+  ['danger', colors.danger[600], colors.danger[400]],
   ['brandText', colors.brand[600], colors.brand[400]],
+  ['accent', '#241603', '#ffb648'],
 ];
 
 describe('les couleurs de texte du theme', () => {
-  it.each(JETONS)('%s tient le seuil dans les deux themes', (nom, clair, sombre) => {
-    expect({ nom, theme: 'jour', ratio: contraste(clair, JOUR) })
-      .toMatchObject({ ratio: expect.any(Number) });
-
+  it.each(JETONS)('%s tient le seuil dans les deux themes', (_nom, clair, sombre) => {
     expect(contraste(clair, JOUR)).toBeGreaterThanOrEqual(SEUIL);
     expect(contraste(sombre, NUIT)).toBeGreaterThanOrEqual(SEUIL);
+  });
+
+  /**
+   * L'AMBRE EN CLAIR NE SE POSE PAS SUR DU VERRE — il se pose SOUS du texte sombre.
+   *
+   * `accent` ci-dessus est teste avec `textOnAccent` du cote clair, ce qui n'est pas une faute
+   * de recopie : sur fond clair l'ambre est un FOND, jamais une couleur de texte. Le sens de la
+   * mesure suit l'emploi reel.
+   */
+  it('l’ambre porte son texte sombre', () => {
+    expect(contraste('#241603', '#ffb648')).toBeGreaterThanOrEqual(SEUIL);
   });
 
   /*
@@ -55,12 +72,31 @@ describe('les couleurs de texte du theme', () => {
    * nombre — il mesurerait alors sa propre panne, pas la palette.
    */
   it('temoin : le calcul sait reconnaitre un couple illisible', () => {
-    // Les valeurs qui ont motive la correction : elles DOIVENT echouer.
+    // Les valeurs ecartees, et la raison de chaque cran. Elles DOIVENT echouer.
     expect(contraste(colors.success[600], JOUR)).toBeLessThan(SEUIL);
     expect(contraste(colors.warning[600], JOUR)).toBeLessThan(SEUIL);
     expect(contraste(colors.brand[500], NUIT)).toBeLessThan(SEUIL);
+    expect(contraste(colors.danger[500], NUIT)).toBeLessThan(SEUIL);
 
     // Et un couple evident doit passer, sinon le calcul est casse dans l'autre sens.
     expect(contraste('#000000', '#ffffff')).toBeCloseTo(21, 0);
+  });
+
+  /**
+   * LE PIRE CAS DU VERRE CLAIR SE CALCULE, il ne se decrete pas.
+   *
+   * `surfacesDeReference.jour` affirme qu'un voile blanc a 0,72 pose sur le maillage le plus
+   * sombre rend #f5f7fb. Si le maillage s'assombrit un jour, cette valeur ment et tout le reste
+   * du fichier mesure une surface plus claire que la vraie.
+   */
+  it('la surface de reference du clair est bien le voile pose sur le maillage', () => {
+    const voile = 0.72;
+    const fond = maree.givre.maillageSombre.replace('#', '');
+    const compose = [0, 2, 4]
+      .map(i => Math.round(parseInt(fond.slice(i, i + 2), 16) * (1 - voile) + 255 * voile))
+      .map(v => v.toString(16).padStart(2, '0'))
+      .join('');
+
+    expect(`#${compose}`).toBe(JOUR);
   });
 });

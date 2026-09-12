@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import {
+  BlurMask,
   Canvas,
   Circle,
   Group,
@@ -9,54 +10,89 @@ import {
   Rect,
   vec,
 } from '@shopify/react-native-skia';
+import { Easing, useDerivedValue, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import { useReducedMotion } from './a11y';
 import { traduireMaintenant } from '@/i18n';
 
-/** Réglages validés sur l'aperçu : 28 gouttes, lueur à 0.30. */
-const NOMBRE_DE_GOUTTES = 28;
-const LUEUR = 0.3;
-
 /**
- * Le fond nuit des écrans en mode sombre.
+ * MARÉE — le même monde, vu des deux côtés de la surface de l'eau.
  *
- * TROIS COUCHES, une seule toile. Un dégradé nuit, une lueur de marque diffuse en haut, et des
- * gouttes d'eau. Skia ne dessine QUE ce fond : les cartes et les boutons sont rendus par
- * `expo-blur`, parce qu'ils floutent ce qu'il y a derrière eux — ce que Skia ne fait pas, il
- * redessinerait.
+ * EN SOMBRE ON EST DESSOUS. La lumière tombe du haut en caustiques, s'éteint vers le bas, et
+ * quelques bulles remontent. La hiérarchie devient physique : ce qui compte est près de la
+ * lumière.
  *
- * SEULES LES GROSSES GOUTTES GLISSENT. Sur une vitre, les petites tiennent par tension
- * superficielle ; les faire toutes descendre donne « des cercles qui tombent », pas de l'eau.
- * C'est le détail qui sépare l'effet de sa caricature.
+ * EN CLAIR ON EST DESSUS. Un maillage pâle dérive lentement. Il n'est pas décoratif : sans
+ * quelque chose à filtrer, une plaque de verre posée sur un aplat uni est indiscernable d'une
+ * plaque opaque, et tout le traitement disparaît.
  *
- * EN MODE CLAIR, IL REND UN FOND SOBRE — et c'est un ajout mesuré, pas un revirement.
+ * UNE SEULE HORLOGE, DES HARMONIQUES ENTIÈRES. Chaque élément lit la même phase 0→1 multipliée
+ * par un entier : la boucle se referme donc exactement, sans saut. Deux minuteurs indépendants
+ * finiraient par battre l'un contre l'autre, et le raccord se verrait toutes les quelques
+ * minutes — le genre de défaut qu'on ne reproduit jamais quand on le cherche.
  *
- * La règle d'origine disait « rien en clair : un prestataire en plein soleil a besoin de
- * contraste, pas de translucidité ». Elle reste vraie, et ce fond ne la contredit pas : trois
- * auras très diffuses, AUCUNE goutte, aucun mouvement. Leur opacité maximale est de 0,10 —
- * un texte posé dessus perd moins d'un dixième de point de contraste.
- *
- * Sans elles, le verre clair n'a rien à filtrer : une surface translucide posée sur un aplat
- * uni est indiscernable d'une surface opaque, et tout le traitement disparaît.
+ * MOUVEMENT RÉDUIT : l'animation n'est pas ralentie, elle n'est jamais lancée. La phase reste à
+ * zéro et tout le fichier rend son image de repos, qui est une composition valide.
  *
  * CE QU'IL FAUT SAVOIR AVANT DE LE REGARDER : Skia s'installe par des liaisons natives. Il ne
  * tourne donc pas dans Expo Go — il faut un development build (`npx expo run:android` ou
  * `run:ios`) pour voir ce fond sur un appareil.
  */
+
+/** Un tour complet. Tout le reste en est un multiple entier. */
+const PERIODE = 24000;
+
+const NOMBRE_DE_BULLES = 9;
+const NOMBRE_DE_CAUSTIQUES = 5;
+
+/** Jusqu'où descend la lumière. Sous cette fraction de l'écran, il n'y a plus de caustiques. */
+const BANDE_ECLAIREE = 0.42;
+
 export function LuxeBackground() {
   const { isDark } = useThemeColors();
   const mouvementReduit = useReducedMotion();
   const { width, height } = useWindowDimensions();
 
   /*
-   * Les gouttes sont semées une fois, de façon DÉTERMINISTE.
-   *
-   * Un tirage aléatoire à chaque rendu les ferait sauter d'une position à l'autre à chaque
-   * changement d'état de l'écran — un scintillement permanent, et impossible à reproduire pour
-   * qui voudrait le corriger.
+   * La phase court de 0 à 1 sans fin. `Easing.linear` est indispensable : la moindre courbe
+   * d'accélération rend le raccord visible, parce que la vitesse à l'arrivée diffère de celle
+   * au départ.
    */
-  const gouttes = useMemo(() => semer(width, height), [width, height]);
+  const phase = useSharedValue(0);
+
+  useEffect(() => {
+    if (mouvementReduit) {
+      phase.value = 0;
+
+      return;
+    }
+
+    phase.value = withRepeat(
+      withTiming(1, { duration: PERIODE, easing: Easing.linear }),
+      -1,
+      false,
+    );
+  }, [mouvementReduit, phase]);
+
+  const eau = colors.mode.maree.profondeur;
+  const givre = colors.mode.maree.givre;
+
+  /*
+   * Le ruban est une CHAÎNE DE CERCLES FLOUTÉS, pas un chemin.
+   *
+   * Un `Skia.Path` construit au rendu coûterait plus cher que tout le reste du fond réuni, et
+   * n'existe pas hors appareil : le paquet ne fournit sa géométrie que derrière les liaisons
+   * natives. Une dizaine de cercles noyés dans un flou de 10 px se lisent comme une nappe de
+   * lumière, et se déplacent en bloc.
+   *
+   * Il déborde de l'écran des deux côtés pour que la translation ne découvre jamais son bout.
+   */
+  const perles = useMemo(() => semerLesPerles(width), [width]);
+
+  const bulles = useMemo(() => semerLesBulles(width), [width]);
+  const caustiques = useMemo(() => semerLesCaustiques(height), [height]);
+  const auras = useMemo(() => semerLesAuras(width, height), [width, height]);
 
   if (!isDark) {
     return (
@@ -66,48 +102,26 @@ export function LuxeBackground() {
         pointerEvents="none"
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
+        accessibilityLabel={
+          mouvementReduit
+            ? traduireMaintenant('luxe_background.fond_decoratif_sans_animation')
+            : traduireMaintenant('luxe_background.fond_decoratif')
+        }
       >
         <Canvas style={StyleSheet.absoluteFill}>
-          {/* Le voile bleuté : le fond n'est jamais blanc pur, sans quoi le verre posé
-              dessus ne se voit pas. Les mêmes valeurs que `--brio-bg` du web. */}
+          {/* Le maillage : jamais blanc pur, sans quoi le verre posé dessus ne se voit pas. */}
           <Rect x={0} y={0} width={width} height={height}>
             <LinearGradient
               start={vec(0, 0)}
               end={vec(width * 0.4, height)}
-              colors={['#f3f5fb', '#eef1f8', '#e6ebf5']}
-              positions={[0, 0.5, 1]}
+              colors={[givre.maillageClair, givre.page, givre.maillageSombre]}
+              positions={[0, 0.52, 1]}
             />
           </Rect>
 
-          {/* Trois auras, aux mêmes places que `body::before` du web : deux en haut, une
-              en bas. Leur opacité plafonne à 0,10 — assez pour donner de la matière au
-              verre, trop peu pour peser sur la lisibilité. */}
-          <Rect x={0} y={0} width={width} height={height}>
-            <RadialGradient
-              c={vec(width * 0.12, height * 0.08)}
-              r={height * 0.55}
-              colors={['rgba(120, 160, 255, 0.10)', 'rgba(120, 160, 255, 0.03)', 'rgba(120, 160, 255, 0)']}
-              positions={[0, 0.5, 1]}
-            />
-          </Rect>
-
-          <Rect x={0} y={0} width={width} height={height}>
-            <RadialGradient
-              c={vec(width * 0.9, height * 0.14)}
-              r={height * 0.5}
-              colors={['rgba(255, 182, 72, 0.09)', 'rgba(255, 182, 72, 0.03)', 'rgba(255, 182, 72, 0)']}
-              positions={[0, 0.5, 1]}
-            />
-          </Rect>
-
-          <Rect x={0} y={0} width={width} height={height}>
-            <RadialGradient
-              c={vec(width * 0.6, height * 0.94)}
-              r={height * 0.6}
-              colors={['rgba(139, 123, 255, 0.08)', 'rgba(139, 123, 255, 0.02)', 'rgba(139, 123, 255, 0)']}
-              positions={[0, 0.5, 1]}
-            />
-          </Rect>
+          {auras.map((aura, index) => (
+            <AuraQuiDerive key={aura.cle} aura={aura} phase={phase} index={index} />
+          ))}
         </Canvas>
       </View>
     );
@@ -122,106 +136,238 @@ export function LuxeBackground() {
       // écran, sans qu'aucune information ne suive.
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      accessibilityLabel={mouvementReduit ? traduireMaintenant('luxe_background.fond_decoratif_sans_animation') : traduireMaintenant('luxe_background.fond_decoratif')}
+      accessibilityLabel={
+        mouvementReduit
+          ? traduireMaintenant('luxe_background.fond_decoratif_sans_animation')
+          : traduireMaintenant('luxe_background.fond_decoratif')
+      }
     >
       <Canvas style={StyleSheet.absoluteFill}>
-        {/* Le dégradé nuit, en diagonale douce. */}
+        {/* La colonne d'eau : claire à la surface, éteinte au fond. */}
         <Rect x={0} y={0} width={width} height={height}>
           <LinearGradient
             start={vec(0, 0)}
-            end={vec(width * 0.35, height)}
-            colors={[
-              colors.mode.showcase.nightSoft,
-              '#080d18',
-              colors.mode.showcase.night,
-            ]}
-            positions={[0, 0.55, 1]}
+            end={vec(0, height)}
+            colors={[eau.eau, '#03202c', eau.abysse]}
+            positions={[0, 0.46, 1]}
           />
         </Rect>
 
-        {/*
-          La lueur de marque : haute et diffuse. Elle situe la marque sans éclairer l'écran —
-          une lueur trop basse ou trop dense passerait sous le contenu et le rendrait gris.
-        */}
+        {/* La lumière qui entre par la surface, très diffuse. */}
         <Rect x={0} y={0} width={width} height={height}>
           <RadialGradient
-            c={vec(width * 0.72, height * 0.06)}
-            r={height * 0.62}
+            c={vec(width * 0.5, -height * 0.05)}
+            r={height * 0.72}
             colors={[
-              `rgba(99, 102, 241, ${LUEUR * 0.55})`,
-              `rgba(99, 102, 241, ${LUEUR * 0.14})`,
-              'rgba(99, 102, 241, 0)',
+              'rgba(47, 217, 197, 0.20)',
+              'rgba(47, 217, 197, 0.06)',
+              'rgba(47, 217, 197, 0)',
             ]}
             positions={[0, 0.45, 1]}
           />
         </Rect>
 
-        {gouttes.map((goutte) => (
-          <Group key={goutte.cle}>
-            {/* Le corps : plus clair en haut à gauche, comme une lentille éclairée d'en haut. */}
-            <Circle cx={goutte.x} cy={goutte.y} r={goutte.r}>
-              <RadialGradient
-                c={vec(goutte.x - goutte.r * 0.3, goutte.y - goutte.r * 0.35)}
-                r={goutte.r * 1.4}
-                colors={[
-                  'rgba(232, 238, 252, 0.20)',
-                  'rgba(160, 180, 220, 0.07)',
-                  'rgba(10, 16, 30, 0.20)',
-                ]}
-                positions={[0, 0.55, 1]}
-              />
-            </Circle>
+        {caustiques.map((caustique, index) => (
+          <CaustiqueQuiOndule
+            key={caustique.cle}
+            caustique={caustique}
+            perles={perles}
+            phase={phase}
+            index={index}
+          />
+        ))}
 
-            {/* L'éclat spéculaire — le point qui fait lire « eau » et non « cercle ». */}
-            {goutte.r > 3.2 ? (
-              <Circle
-                cx={goutte.x - goutte.r * 0.34}
-                cy={goutte.y - goutte.r * 0.38}
-                r={goutte.r * 0.17}
-                color="rgba(255, 255, 255, 0.42)"
-              />
-            ) : null}
-          </Group>
+        {bulles.map((bulle, index) => (
+          <BulleQuiMonte key={bulle.cle} bulle={bulle} phase={phase} index={index} hauteur={height} />
         ))}
       </Canvas>
     </View>
   );
 }
 
-interface Goutte {
-  cle: string;
-  x: number;
-  y: number;
-  r: number;
-}
+/* ── Les trois éléments animés ─────────────────────────────────────────────────────────────── */
+
+interface Caustique { cle: string; y: number; opacite: number; amplitude: number; epaisseur: number }
 
 /**
- * Sème les gouttes de façon déterministe.
+ * Un ruban de lumière qui glisse.
  *
- * Le générateur est un mélangeur entier trivial plutôt que `Math.random` : à dimensions égales,
- * la même vitre. Une goutte qui change de place entre deux rendus se remarque immédiatement.
- *
- * La distribution des rayons est biaisée vers le petit (puissance 2,2) : sur une vitre, les
- * grosses gouttes sont rares. Une répartition uniforme donnerait une bulle de savon.
+ * Il ne fait qu'un aller-retour sinusoïdal : une translation continue exigerait de gérer le
+ * bouclage, et un ruban qui revient sur ses pas est exactement ce que fait la lumière sur l'eau.
  */
-function semer(largeur: number, hauteur: number): Goutte[] {
-  const gouttes: Goutte[] = [];
-  let graine = 1337;
+function CaustiqueQuiOndule({
+  caustique,
+  perles,
+  phase,
+  index,
+}: {
+  caustique: Caustique;
+  perles: Perle[];
+  phase: { value: number };
+  index: number;
+}) {
+  const harmonique = 1 + (index % 3);
+  const decalage = index * 0.21;
 
-  const suivant = () => {
-    graine = (graine * 1664525 + 1013904223) % 4294967296;
+  const transformation = useDerivedValue(() => [
+    { translateX: Math.sin((phase.value * harmonique + decalage) * Math.PI * 2) * caustique.amplitude },
+    { translateY: caustique.y },
+  ]);
 
-    return graine / 4294967296;
+  return (
+    <Group transform={transformation} opacity={caustique.opacite}>
+      {/* Le flou est ce qui fait lire « nappe de lumière » et non « rangée de points ». */}
+      <BlurMask blur={11} style="normal" />
+
+      {perles.map((perle) => (
+        <Circle
+          key={perle.cle}
+          cx={perle.x}
+          cy={perle.y}
+          r={caustique.epaisseur * perle.taille}
+          color={colors.mode.maree.profondeur.caustique}
+        />
+      ))}
+    </Group>
+  );
+}
+
+interface Bulle { cle: string; x: number; r: number; depart: number }
+
+/** Une bulle qui remonte, s'efface aux deux bouts, et recommence. */
+function BulleQuiMonte({
+  bulle,
+  phase,
+  index,
+  hauteur,
+}: {
+  bulle: Bulle;
+  phase: { value: number };
+  index: number;
+  hauteur: number;
+}) {
+  const harmonique = 1 + (index % 2);
+
+  const transformation = useDerivedValue(() => {
+    const montee = (phase.value * harmonique + bulle.depart) % 1;
+
+    return [{ translateY: hauteur - montee * hauteur * 1.1 }];
+  });
+
+  /*
+   * L'opacité s'éteint aux deux extrémités du trajet. Sans cela, la bulle disparaît d'un coup
+   * en haut et réapparaît d'un coup en bas — le seul endroit où le bouclage se verrait.
+   */
+  const opacite = useDerivedValue(() => {
+    const montee = (phase.value * harmonique + bulle.depart) % 1;
+
+    return Math.sin(montee * Math.PI) * 0.5;
+  });
+
+  return (
+    <Group transform={transformation} opacity={opacite}>
+      <Circle cx={bulle.x} cy={0} r={bulle.r} color="rgba(200, 240, 238, 0.55)" />
+      <Circle cx={bulle.x - bulle.r * 0.3} cy={-bulle.r * 0.3} r={bulle.r * 0.28} color="rgba(255, 255, 255, 0.7)" />
+    </Group>
+  );
+}
+
+interface Aura { cle: string; x: number; y: number; r: number; couleur: string; course: number }
+
+/** Une aura pâle qui dérive sur une trajectoire fermée. */
+function AuraQuiDerive({ aura, phase, index }: { aura: Aura; phase: { value: number }; index: number }) {
+  const harmonique = 1 + (index % 2);
+  const decalage = index * 0.27;
+
+  const transformation = useDerivedValue(() => {
+    const angle = (phase.value * harmonique + decalage) * Math.PI * 2;
+
+    // Une figure de Lissajous : la trajectoire se referme sur elle-même, donc jamais de saut.
+    return [
+      { translateX: Math.cos(angle) * aura.course },
+      { translateY: Math.sin(angle * 2) * aura.course * 0.55 },
+    ];
+  });
+
+  return (
+    <Group transform={transformation}>
+      <Circle cx={aura.x} cy={aura.y} r={aura.r}>
+        <RadialGradient
+          c={vec(aura.x, aura.y)}
+          r={aura.r}
+          colors={[aura.couleur, 'rgba(255, 255, 255, 0)']}
+          positions={[0, 1]}
+        />
+      </Circle>
+    </Group>
+  );
+}
+
+/* ── Les semis, déterministes ──────────────────────────────────────────────────────────────── */
+
+/**
+ * Le générateur est un mélangeur entier trivial plutôt que `Math.random` : à dimensions égales,
+ * la même eau. Un élément qui change de place entre deux rendus se remarque immédiatement.
+ */
+function tirage(graine: number) {
+  let etat = graine;
+
+  return () => {
+    etat = (etat * 1664525 + 1013904223) % 4294967296;
+
+    return etat / 4294967296;
   };
+}
 
-  for (let i = 0; i < NOMBRE_DE_GOUTTES; i++) {
-    gouttes.push({
-      cle: `goutte-${i}`,
-      x: suivant() * largeur,
-      y: suivant() * hauteur,
-      r: 2 + Math.pow(suivant(), 2.2) * 13,
+function semerLesCaustiques(hauteur: number): Caustique[] {
+  const suivant = tirage(4242);
+
+  return Array.from({ length: NOMBRE_DE_CAUSTIQUES }, (_, i) => ({
+    cle: `caustique-${i}`,
+    // Elles se resserrent près de la surface : c'est là que la lumière est la plus vive.
+    y: hauteur * BANDE_ECLAIREE * Math.pow(suivant(), 1.6),
+    opacite: 0.26 - i * 0.035,
+    amplitude: 26 + suivant() * 34,
+    epaisseur: 2 + suivant() * 2.5,
+  }));
+}
+
+interface Perle { cle: string; x: number; y: number; taille: number }
+
+/** Les cercles qui composent une nappe : posés sur une double sinusoïde, jamais alignés. */
+function semerLesPerles(largeur: number): Perle[] {
+  const perles: Perle[] = [];
+  const pas = 26;
+
+  for (let x = -largeur, i = 0; x <= largeur * 2; x += pas, i++) {
+    perles.push({
+      cle: `perle-${i}`,
+      x,
+      y: Math.sin(x / 54) * 10 + Math.sin(x / 21) * 4.5,
+      taille: 0.8 + Math.abs(Math.sin(x / 37)) * 0.7,
     });
   }
 
-  return gouttes;
+  return perles;
+}
+
+function semerLesBulles(largeur: number): Bulle[] {
+  const suivant = tirage(1337);
+
+  return Array.from({ length: NOMBRE_DE_BULLES }, (_, i) => ({
+    cle: `bulle-${i}`,
+    x: suivant() * largeur,
+    // Biaisé vers le petit : une répartition uniforme donne des ballons, pas des bulles.
+    r: 1.5 + Math.pow(suivant(), 2.4) * 5,
+    depart: suivant(),
+  }));
+}
+
+function semerLesAuras(largeur: number, hauteur: number): Aura[] {
+  return [
+    { cle: 'aura-bleue', x: largeur * 0.14, y: hauteur * 0.1, r: hauteur * 0.44, couleur: 'rgba(120, 160, 255, 0.13)', course: largeur * 0.09 },
+    { cle: 'aura-ambre', x: largeur * 0.9, y: hauteur * 0.16, r: hauteur * 0.4, couleur: 'rgba(255, 182, 72, 0.11)', course: largeur * 0.07 },
+    { cle: 'aura-menthe', x: largeur * 0.62, y: hauteur * 0.92, r: hauteur * 0.48, couleur: 'rgba(47, 217, 197, 0.10)', course: largeur * 0.11 },
+    { cle: 'aura-ardoise', x: largeur * 0.06, y: hauteur * 0.78, r: hauteur * 0.38, couleur: 'rgba(91, 127, 166, 0.10)', course: largeur * 0.08 },
+  ];
 }

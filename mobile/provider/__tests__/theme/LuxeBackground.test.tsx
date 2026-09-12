@@ -23,6 +23,19 @@ jest.mock('@/ui/a11y', () => ({
   a11y: {},
 }));
 
+/*
+ * On garde tout Reanimated, on n'espionne que `withRepeat` : c'est le seul appel qui décide si
+ * une boucle infinie démarre. Le remplacer par un faux complet ferait échouer le rendu, et
+ * mesurer l'absence de boucle sur un composant qui ne rend pas ne prouverait rien.
+ */
+jest.mock('react-native-reanimated', () => {
+  const vrai = jest.requireActual('react-native-reanimated');
+
+  return { ...vrai, withRepeat: jest.fn((...args: unknown[]) => vrai.withRepeat(...args)) };
+});
+
+import { withRepeat } from 'react-native-reanimated';
+
 import { LuxeBackground } from '@/ui/LuxeBackground';
 
 /**
@@ -36,18 +49,16 @@ describe('LuxeBackground', () => {
   beforeEach(() => {
     mockScheme.colorScheme = 'dark';
     mockMouvementReduit = false;
+    (withRepeat as jest.Mock).mockClear();
   });
 
   /*
-   * CE TEST DISAIT « ne rend rien en mode clair », ET LA DÉCISION A CHANGÉ.
+   * CE TEST A CHANGÉ DEUX FOIS. Il disait « ne rend rien en mode clair », puis « rend un fond
+   * sobre, sans mouvement ». Avec « Verre givré », le maillage clair dérive lui aussi.
    *
-   * La raison d'origine reste vraie : un prestataire au soleil a besoin de contraste, pas de
-   * translucidité. Le fond clair ne la contredit pas — trois auras très diffuses, AUCUNE
-   * goutte, aucun mouvement, opacité plafonnée à 0,10.
-   *
-   * Ce qui l'a rendu nécessaire : sans quelque chose à filtrer, une surface de verre posée sur
-   * un aplat uni est indiscernable d'une surface opaque. Tout le traitement disparaissait en
-   * mode clair.
+   * Ce qui reste vrai à chaque révision : sans quelque chose à filtrer, une plaque de verre
+   * posée sur un aplat uni est indiscernable d'une plaque opaque. Le fond clair n'est pas une
+   * décoration, c'est ce qui rend le verre visible.
    */
   it('rend un fond sobre en mode clair', () => {
     mockScheme.colorScheme = 'light';
@@ -104,6 +115,34 @@ describe('LuxeBackground', () => {
     expect(screen.getByTestId('luxe-background', MASQUE).props.accessibilityLabel).toContain(
       'sans animation',
     );
+  });
+
+  /**
+   * L'ÉTIQUETTE NE PROUVE RIEN — c'est la boucle qu'il faut mesurer.
+   *
+   * Le test au-dessus vérifie ce que le fond ANNONCE. Un fond qui annonce « sans animation » et
+   * continue de tourner passerait au vert, en consommant la batterie d'un prestataire toute la
+   * journée. Ici on regarde si la boucle infinie est seulement lancée.
+   */
+  it('ne lance AUCUNE boucle quand le mouvement est réduit', () => {
+    mockMouvementReduit = true;
+
+    render(<LuxeBackground />);
+
+    expect(withRepeat).not.toHaveBeenCalled();
+  });
+
+  /** TÉMOIN : sans lui, un `withRepeat` cassé rendrait le test précédent vert pour rien. */
+  it('témoin : la boucle est bien lancée quand le mouvement est permis', () => {
+    render(<LuxeBackground />);
+
+    expect(withRepeat).toHaveBeenCalled();
+
+    // Répétition sans fin, et sans aller-retour : la phase doit repartir de zéro, pas revenir.
+    const [, repetitions, allerRetour] = (withRepeat as jest.Mock).mock.calls[0] ?? [];
+
+    expect(repetitions).toBe(-1);
+    expect(allerRetour).toBe(false);
   });
 
   it('garde le même point de montage quel que soit le rendu', () => {

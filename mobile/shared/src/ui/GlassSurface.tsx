@@ -32,8 +32,14 @@ interface GlassSurfaceProps {
  * LA LUMIÈRE VIENT D'EN HAUT. L'arête haute est nettement plus claire que la basse. Une bordure
  * uniforme lit « rectangle avec bordure » ; c'est l'asymétrie qui fait lire « plaque ».
  *
- * EN MODE CLAIR, RIEN DE TOUT ÇA. Une `View` ordinaire avec le fond de carte du thème. Le verre
- * est un traitement du sombre ; en plein soleil un prestataire a besoin de contraste.
+ * LE MODE CLAIR A LE VERRE, LUI AUSSI — depuis « Verre givré ». Il rendait auparavant une `View`
+ * opaque, au motif qu'« en plein soleil un prestataire a besoin de contraste, pas de
+ * translucidité ». La règle était juste, la conclusion ne l'était pas : un voile blanc à 0,72
+ * posé sur le point le plus sombre du maillage compose #f5f7fb, soit 14,8:1 sous le texte. Le
+ * verre clair ne coûte pas de contraste tant que le voile tient son plancher.
+ *
+ * Ce qui change avec le thème, ce n'est donc plus la PRÉSENCE du verre, c'est sa teinte et la
+ * couleur de ses arêtes.
  */
 export function GlassSurface({
   children,
@@ -44,15 +50,8 @@ export function GlassSurface({
 }: GlassSurfaceProps) {
   const theme = useThemeColors();
 
-  if (!theme.isDark) {
-    return (
-      <View testID={testID} style={[{ backgroundColor: theme.card, borderRadius: radius }, style]}>
-        {children}
-      </View>
-    );
-  }
-
   const voile = strong ? theme.glassStrong : theme.glass;
+  const arete = theme.isDark ? ARETES.nuit : ARETES.jour;
 
   return (
     <View
@@ -72,15 +71,15 @@ export function GlassSurface({
         <BlurView
           testID="glass-blur"
           intensity={FLOU}
-          tint="dark"
+          tint={theme.isDark ? 'dark' : 'light'}
           style={[StyleSheet.absoluteFill, { borderRadius: radius }]}
         />
         <View
           testID="glass-veil"
           style={[StyleSheet.absoluteFill, { backgroundColor: voile, borderRadius: radius }]}
         />
-        <View testID="glass-edge-top" style={[styles.areteHaute, { backgroundColor: LUMIERE_HAUTE }]} />
-        <View testID="glass-edge-bottom" style={[styles.areteBasse, { backgroundColor: LUMIERE_BASSE }]} />
+        <View testID="glass-edge-top" style={[styles.areteHaute, { backgroundColor: arete.haute }]} />
+        <View testID="glass-edge-bottom" style={[styles.areteBasse, { backgroundColor: arete.basse }]} />
       </View>
 
       {children}
@@ -89,12 +88,16 @@ export function GlassSurface({
 }
 
 /*
- * Les deux arêtes ne passent pas par le thème : elles n'existent qu'en mode sombre, où le
- * traitement est fixe. Un jeton de plus dans `useThemeColors` pour deux valeurs employées une
- * seule fois ferait grossir la fabrique sans rien rendre configurable.
+ * LA LUMIÈRE VIENT D'EN HAUT DANS LES DEUX THÈMES, mais pas de la même façon : sur la nuit
+ * l'arête haute est un reflet blanc, sur le jour c'est un blanc franc et la base devient une
+ * ombre d'ardoise. Une arête blanche en bas sur fond clair ne se verrait pas.
+ *
+ * Elles restent hors de `useThemeColors` : quatre valeurs employées à un seul endroit.
  */
-const LUMIERE_HAUTE = 'rgba(255, 255, 255, 0.22)';
-const LUMIERE_BASSE = 'rgba(255, 255, 255, 0.05)';
+const ARETES = {
+  nuit: { haute: 'rgba(255, 255, 255, 0.22)', basse: 'rgba(255, 255, 255, 0.05)' },
+  jour: { haute: 'rgba(255, 255, 255, 0.85)', basse: 'rgba(91, 127, 166, 0.14)' },
+} as const;
 
 const styles = StyleSheet.create({
   plaque: {

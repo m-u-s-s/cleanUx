@@ -45,15 +45,22 @@ describe('apparenceDeBarre', () => {
     expect(screen.getByTestId('glass-bar', { includeHiddenElements: true })).toBeTruthy();
   });
 
-  it('garde en clair exactement la barre d’avant', () => {
+  it('donne la MÊME barre de verre en clair', () => {
     mockScheme.colorScheme = 'light';
-    const theme = jetons();
-    const { tabBarStyle, tabBarBackground } = apparenceDeBarre(theme);
+    const { tabBarStyle, tabBarBackground } = apparenceDeBarre(jetons());
 
-    // Le mode clair n'est pas touché : fond plein, liseré du thème, aucune plaque.
-    expect(tabBarStyle.backgroundColor).toBe(theme.bg);
-    expect(tabBarStyle.borderTopColor).toBe(theme.border);
-    expect(tabBarBackground).toBeUndefined();
+    /*
+     * Le clair gardait une barre pleine tant que le verre etait reserve au sombre. Depuis
+     * « Verre givre », des cartes en verre dans un chassis opaque se voient immediatement en bas
+     * de chaque ecran. La teinte du verre suit le theme ; sa presence, non.
+     */
+    expect(tabBarStyle.backgroundColor).toBe('transparent');
+    expect(tabBarStyle.borderTopWidth).toBe(0);
+    expect(tabBarBackground).toBeDefined();
+
+    render(<>{tabBarBackground()}</>);
+
+    expect(screen.getByTestId('glass-bar', { includeHiddenElements: true })).toBeTruthy();
   });
 
   it('donne une plaque à angles droits', () => {
