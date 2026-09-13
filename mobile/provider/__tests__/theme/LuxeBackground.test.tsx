@@ -17,24 +17,13 @@ const mockScheme = { colorScheme: 'dark' as 'dark' | 'light', mode: 'dark', setM
 let mockMouvementReduit = false;
 
 jest.mock('@/theme/useColorScheme', () => ({ useColorScheme: () => mockScheme }));
+
+
 jest.mock('@/ui/a11y', () => ({
   useReducedMotion: () => mockMouvementReduit,
   useScreenReader: () => false,
   a11y: {},
 }));
-
-/*
- * On garde tout Reanimated, on n'espionne que `withRepeat` : c'est le seul appel qui décide si
- * une boucle infinie démarre. Le remplacer par un faux complet ferait échouer le rendu, et
- * mesurer l'absence de boucle sur un composant qui ne rend pas ne prouverait rien.
- */
-jest.mock('react-native-reanimated', () => {
-  const vrai = jest.requireActual('react-native-reanimated');
-
-  return { ...vrai, withRepeat: jest.fn((...args: unknown[]) => vrai.withRepeat(...args)) };
-});
-
-import { withRepeat } from 'react-native-reanimated';
 
 import { LuxeBackground } from '@/ui/LuxeBackground';
 
@@ -49,7 +38,6 @@ describe('LuxeBackground', () => {
   beforeEach(() => {
     mockScheme.colorScheme = 'dark';
     mockMouvementReduit = false;
-    (withRepeat as jest.Mock).mockClear();
   });
 
   /*
@@ -124,30 +112,39 @@ describe('LuxeBackground', () => {
    * continue de tourner passerait au vert, en consommant la batterie d'un prestataire toute la
    * journée. Ici on regarde si la boucle infinie est seulement lancée.
    */
-  it('ne lance AUCUNE boucle quand le mouvement est réduit', () => {
+  /**
+   * LE MOUVEMENT N'EST PLUS UNE BOUCLE, C'EST UNE VIDEO — et l'interrupteur a change avec lui.
+   *
+   * L'iceberg tourne : une image ne tourne pas, un maillage n'y arrivait pas. Ce qui doit s'arreter
+   * sous mouvement reduit n'est donc plus un `withRepeat` mais le LECTEUR lui-meme. Ne pas le
+   * mettre en pause suffirait a l'ecran, pas a la batterie : c'est la SOURCE qu'on annule, de sorte
+   * qu'aucun lecteur ne soit monte et qu'aucun fichier ne soit decode.
+   */
+  /**
+   * LE MOUVEMENT N'EST PLUS UNE BOUCLE, C'EST UNE IMAGE ANIMÉE — et l'interrupteur a suivi.
+   *
+   * Ce qui doit s'arrêter sous mouvement réduit n'est pas l'affichage mais le DÉCODAGE : la source
+   * passée à Skia devient nulle, de sorte qu'aucune image n'est décodée. Le composant l'annonce
+   * dans son étiquette, et c'est ce que ce test lit — la seule trace observable, une image Skia
+   * n'étant pas un nœud que Testing Library sait interroger.
+   */
+  it('annonce un fond sans animation quand le mouvement est réduit', () => {
     mockMouvementReduit = true;
 
     render(<LuxeBackground />);
 
-    expect(withRepeat).not.toHaveBeenCalled();
+    expect(screen.getByTestId('luxe-background', MASQUE).props.accessibilityLabel).toContain(
+      'sans animation',
+    );
   });
 
-  /** TÉMOIN : sans lui, un `withRepeat` cassé rendrait le test précédent vert pour rien. */
-  it('témoin : la boucle est bien lancée quand le mouvement est permis', () => {
+  /** TÉMOIN : sans lui, une étiquette figée sur « sans animation » passerait le test ci-dessus. */
+  it('témoin : le fond animé ne s annonce PAS comme figé', () => {
     render(<LuxeBackground />);
 
-    expect(withRepeat).toHaveBeenCalled();
-
-    /*
-     * SANS FIN, ET EN ALLER-RETOUR. C'était l'inverse tant que le fond était un maillage : il
-     * TOURNAIT, et une phase qui revient sur ses pas aurait fait tourner l'objet à l'envers une
-     * fois sur deux. Le fond est maintenant le rendu de la planche, qui ne tourne pas — il
-     * respire. Une respiration qui repartirait de zéro se verrait sauter à chaque cycle.
-     */
-    const [, repetitions, allerRetour] = (withRepeat as jest.Mock).mock.calls[0] ?? [];
-
-    expect(repetitions).toBe(-1);
-    expect(allerRetour).toBe(true);
+    expect(screen.getByTestId('luxe-background', MASQUE).props.accessibilityLabel).not.toContain(
+      'sans animation',
+    );
   });
 
   it('garde le même point de montage quel que soit le rendu', () => {

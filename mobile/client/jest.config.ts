@@ -20,6 +20,7 @@ const config: Config = {
     // Bindings », y compris les écrans qui ne dessinent rien : le fond nuit est exporté depuis la
     // barrique `@/ui`, donc importé par transitivité.
     require.resolve('@shopify/react-native-skia/jestSetup.js'),
+    path.resolve(__dirname, '../shared/src/testing/skiaImageAnimee.js'),
   ],
   // react-test-renderer (used by @testing-library/react-native) is deprecated
   // under React 19 and leaves an async operation pending at the end of a run
