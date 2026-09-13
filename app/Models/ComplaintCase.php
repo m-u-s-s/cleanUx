@@ -25,6 +25,7 @@ use Illuminate\Support\Carbon;
  * @property ?string $reference
  * @property string $severity
  * @property ?int $provider_user_id
+ * @property ?int $assigned_to
  * @property ?int $booking_id
  */
 class ComplaintCase extends Model

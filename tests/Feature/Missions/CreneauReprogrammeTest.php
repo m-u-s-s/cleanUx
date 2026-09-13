@@ -12,19 +12,36 @@ use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-/** CINQ COLONNES POUR UNE SEULE HEURE, ET LA REPROGRAMMATION N'EN DÉPLAÇAIT QUE DEUX. */
+/**
+ * CINQ COLONNES POUR UNE SEULE HEURE, ET LA REPROGRAMMATION N'EN DÉPLAÇAIT QUE DEUX.
+ *
+ * AUCUNE DATE EN DUR ICI. `reschedule()` refuse tout créneau à moins de 30 minutes
+ * (BookingRescheduleService:101) : une date écrite en dur devient un échec le jour où elle passe.
+ */
 class CreneauReprogrammeTest extends TestCase
 {
     use RefreshDatabase;
 
+    private function creneauInitial(): Carbon
+    {
+        return Carbon::now()->addDays(10)->setTime(10, 0);
+    }
+
+    private function creneauCible(): Carbon
+    {
+        return Carbon::now()->addDays(12)->setTime(14, 0);
+    }
+
     private function reservation(User $client, array $ecrasements = []): Booking
     {
+        $creneau = $this->creneauInitial();
+
         return Booking::create(array_merge([
             'booking_reference' => 'CUX-'.strtoupper(Str::random(6)),
             'customer_user_id' => $client->id,
             'client_id' => $client->id,
-            'scheduled_date' => '2026-09-10',
-            'scheduled_time' => '10:00:00',
+            'scheduled_date' => $creneau->toDateString(),
+            'scheduled_time' => $creneau->format('H:i:s'),
             'status' => 'confirme',
             'currency' => 'EUR',
             'priority' => 'normal',
@@ -37,12 +54,13 @@ class CreneauReprogrammeTest extends TestCase
     public function la_creation_remplit_les_cinq_colonnes_du_premier_coup(): void
     {
         $client = User::factory()->create();
+        $creneau = $this->creneauInitial();
 
         $booking = $this->reservation($client)->fresh();
 
-        $this->assertSame('2026-09-10', $booking->date?->toDateString());
+        $this->assertSame($creneau->toDateString(), $booking->date?->toDateString());
         $this->assertStringStartsWith('10:00', (string) $booking->heure);
-        $this->assertSame('2026-09-10 10:00:00', $booking->scheduled_at?->toDateTimeString());
+        $this->assertSame($creneau->toDateTimeString(), $booking->scheduled_at?->toDateTimeString());
     }
 
     /** Le cœur du défaut : la reprogrammation doit déplacer TOUT le créneau. */
@@ -51,15 +69,16 @@ class CreneauReprogrammeTest extends TestCase
     {
         $client = User::factory()->create();
         $booking = $this->reservation($client);
+        $cible = $this->creneauCible();
 
-        app(BookingRescheduleService::class)->reschedule($client, $booking, Carbon::parse('2026-09-12'), '14:00');
+        app(BookingRescheduleService::class)->reschedule($client, $booking, $cible->copy(), '14:00');
 
         $apres = $booking->fresh();
 
-        $this->assertSame('2026-09-12', $apres->date?->toDateString());
+        $this->assertSame($cible->toDateString(), $apres->date?->toDateString());
         $this->assertStringStartsWith('14:00', (string) $apres->heure);
-        $this->assertSame('2026-09-12 14:00:00', $apres->scheduled_at?->toDateTimeString());
-        $this->assertSame('2026-09-12', $apres->scheduled_date?->toDateString());
+        $this->assertSame($cible->toDateTimeString(), $apres->scheduled_at?->toDateTimeString());
+        $this->assertSame($cible->toDateString(), $apres->scheduled_date?->toDateString());
     }
 
     /** LA CONSÉQUENCE QUI SE VOIT DE L'EXTÉRIEUR. */
@@ -92,13 +111,14 @@ class CreneauReprogrammeTest extends TestCase
     public function ecrire_les_deux_cotes_ensemble_reste_respecte(): void
     {
         $client = User::factory()->create();
+        $creneau = $this->creneauInitial();
 
         $booking = $this->reservation($client, [
-            'date' => '2026-09-10',
+            'date' => $creneau->toDateString(),
             'heure' => '10:00:00',
         ])->fresh();
 
-        $this->assertSame('2026-09-10', $booking->date?->toDateString());
-        $this->assertSame('2026-09-10', $booking->scheduled_date?->toDateString());
+        $this->assertSame($creneau->toDateString(), $booking->date?->toDateString());
+        $this->assertSame($creneau->toDateString(), $booking->scheduled_date?->toDateString());
     }
 }

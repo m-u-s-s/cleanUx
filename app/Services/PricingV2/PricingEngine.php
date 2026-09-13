@@ -4,6 +4,7 @@ namespace App\Services\PricingV2;
 
 use App\Models\AbPricingExperiment;
 use App\Models\OrganizationContract;
+use App\Models\OrganizationMember;
 use App\Models\PriceQuote;
 use App\Models\PricingRule;
 use App\Models\ServiceCatalogV2;
@@ -87,6 +88,9 @@ class PricingEngine
         // Lu depuis les variables ORIGINALES (cf. capture avant sanitize).
         if ($contractId) {
             $contract = OrganizationContract::find((int) $contractId);
+            if ($contract && ! $this->contratLisiblePar($user, $contract)) {
+                $contract = null;
+            }
             if ($contract) {
                 $serviceCatalogId = $contractServiceCatalogId !== null ? (int) $contractServiceCatalogId : null;
                 $before = $currentPrice;
@@ -128,6 +132,32 @@ class PricingEngine
         ]);
 
         return $row;
+    }
+
+    /**
+     * LE CONTRAT NE SE DÉSIGNE PAS PAR SON NUMÉRO. `/v2/pricing/quote` est une route PUBLIQUE :
+     * sans cette garde, itérer `__contract_id` rendait la grille négociée de chaque grand compte.
+     */
+    protected function contratLisiblePar(?User $user, OrganizationContract $contract): bool
+    {
+        if ($user === null) {
+            return false;
+        }
+
+        $organisations = array_filter([
+            $contract->organization_account_id,
+            $contract->provider_organization_id,
+        ]);
+
+        if ($organisations === []) {
+            return false;
+        }
+
+        return OrganizationMember::query()
+            ->whereIn('organization_account_id', $organisations)
+            ->where('user_id', $user->id)
+            ->where('status', 'active')
+            ->exists();
     }
 
     /** Pure compute : preview without persistence. Useful for "live price" UI. */
