@@ -174,6 +174,7 @@ export type RootStackParamList = {
 };
 
 export type TabParamList = {
+  Messages: undefined;
   Dashboard: undefined;
   Missions: undefined;
   Earnings: undefined;

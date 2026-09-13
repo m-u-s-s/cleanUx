@@ -60,7 +60,7 @@ jest.mock('@/ui', () => {
 jest.mock('@/theme', () => ({
   colors: { brand: { 500: '#6366f1' }, surface: { 200: '#e2e8f0', 500: '#64748b', 600: '#475569', 900: '#0f172a' } },
   spacing: { xs: 4, sm: 8, md: 16, lg: 24 },
-  typography: { fontSize: { xs: 12, sm: 14, base: 16, lg: 18, '2xl': 24 }, fontWeight: { bold: '700' } },
+  typography: { fontSize: { xs: 12, sm: 14, base: 16, lg: 18, '2xl': 24 }, fontWeight: { bold: '700' }, letterSpacing: { tight: -0.5, normal: 0, wide: 1 } },
   radius: { md: 14 },
   shadows: { xs: {} },
 }));

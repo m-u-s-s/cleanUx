@@ -1,20 +1,41 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 
 /*
- * Le catalogue de modules est une requete reseau : ces suites montent l'accueil SANS
- * `QueryClientProvider`, et toutes les autres sources y sont deja bouchonnees. Un catalogue vide
- * signifie « ce compte n'a pas le module de location » — les deux cases ne s'affichent pas, ce que
- * `HomeMiseEnLocation.test.tsx` verifie de son cote avec un vrai client.
+ * LE CATALOGUE EST BOUCHONNE, PAS LE CHOIX DES CASES.
+ *
+ * `modulesChoisis` est la vraie fonction : ce qui est simule ici, c'est la reponse du serveur.
+ * Bouchonner aussi le choix ferait passer ce test meme si l'ecran cherchait les mauvaises cles.
  */
+const mockPlein = {
+  context: 'client',
+  groups: [
+    {
+      category: 'croissance',
+      label: 'Croissance',
+      modules: [
+        { key: 'client:peer.owner.vehicles', label: 'Mes vehicules en location', icon: '🅿️', path: '/mes-vehicules' },
+        { key: 'client:peer.owner.stays', label: 'Mes logements en location', icon: '🏠', path: '/mes-logements' },
+      ],
+    },
+  ],
+};
+
+const mockVide = { context: 'client', groups: [] as unknown[] };
+
+/* Reaffectable : le temoin bascule le catalogue sans recharger les modules — `isolateModules`
+   donnerait un second React, et les hooks tombent avant meme le rendu. */
+let mockReponse: unknown = null;
+
 jest.mock('@/modules', () => ({
-  useModuleCatalogue: () => ({ data: undefined }),
-  modulesChoisis: () => [],
-  CLES_LOCATION: { mesVehicules: [], mesLogements: [] },
+  ...jest.requireActual('@/modules'),
+  useModuleCatalogue: () => ({ data: mockReponse }),
 }));
 
+const mockNavigate = jest.fn();
+
 jest.mock('@react-navigation/native', () => ({
-  useNavigation: () => ({ navigate: jest.fn() }),
+  useNavigation: () => ({ navigate: mockNavigate }),
   useRoute: () => ({ params: {} }),
 }));
 
@@ -82,26 +103,46 @@ jest.mock('@/tracking', () => ({
 
 import { HomeScreen } from '../../src/screens/HomeScreen';
 
-describe('HomeScreen', () => {
-  it('renders without crashing', () => {
-    const tree = render(<HomeScreen />);
-    expect(tree.toJSON()).not.toBeNull();
+describe('Mise en location depuis l’accueil', () => {
+  beforeEach(() => {
+    mockNavigate.mockClear();
+    mockReponse = mockPlein;
   });
 
-  it('shows greeting with user name', () => {
-    const { getByText } = render(<HomeScreen />);
-    expect(getByText(/Bonjour/)).toBeTruthy();
+  it('affiche les deux cases quand le compte a les deux modules', () => {
+    const { getByTestId, getByText } = render(<HomeScreen />);
+
+    expect(getByTestId('home-mise-en-location')).toBeTruthy();
+    expect(getByText('Mettre ma voiture en location')).toBeTruthy();
+    expect(getByText('Mettre mon logement en location')).toBeTruthy();
   });
 
-  it('shows quick action buttons', () => {
-    const { getByText } = render(<HomeScreen />);
-    expect(getByText('Mes réservations')).toBeTruthy();
-    expect(getByText('Messagerie')).toBeTruthy();
-    expect(getByText('Fidélité')).toBeTruthy();
+  it('chaque case ouvre le module par SON chemin, celui du serveur', () => {
+    const { getByTestId } = render(<HomeScreen />);
+
+    fireEvent.press(getByTestId('home-louer-vehicule'));
+    expect(mockNavigate).toHaveBeenCalledWith('EmbeddedModule', {
+      path: '/mes-vehicules',
+      title: 'Mes vehicules en location',
+    });
+
+    fireEvent.press(getByTestId('home-louer-logement'));
+    expect(mockNavigate).toHaveBeenCalledWith('EmbeddedModule', {
+      path: '/mes-logements',
+      title: 'Mes logements en location',
+    });
   });
 
-  it('shows completed bookings KPI', () => {
-    const { getByText } = render(<HomeScreen />);
-    expect(getByText('Terminées')).toBeTruthy();
+  /*
+   * TEMOIN — et c'est la moitie qui compte. Les quatre autres suites de l'accueil rendent un
+   * catalogue VIDE et n'attendent aucune case : sans ce controle, elles seraient vertes meme si
+   * les cases n'existaient plus du tout.
+   */
+  it('temoin : un compte sans ces modules ne voit aucune case', () => {
+    mockReponse = mockVide;
+
+    const { queryByTestId } = render(<HomeScreen />);
+
+    expect(queryByTestId('home-mise-en-location')).toBeNull();
   });
 });

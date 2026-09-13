@@ -12,6 +12,18 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react-native';
 
+/*
+ * Le catalogue de modules est une requete reseau : ces suites montent l'accueil SANS
+ * `QueryClientProvider`, et toutes les autres sources y sont deja bouchonnees. Un catalogue vide
+ * signifie « ce compte n'a pas le module de location » — les deux cases ne s'affichent pas, ce que
+ * `HomeMiseEnLocation.test.tsx` verifie de son cote avec un vrai client.
+ */
+jest.mock('@/modules', () => ({
+  useModuleCatalogue: () => ({ data: undefined }),
+  modulesChoisis: () => [],
+  CLES_LOCATION: { mesVehicules: [], mesLogements: [] },
+}));
+
 jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn().mockResolvedValue(null),
   setItemAsync: jest.fn().mockResolvedValue(undefined),
@@ -96,6 +108,7 @@ jest.mock('@/theme', () => ({
   typography: {
     fontSize: { xs: 12, sm: 14, base: 16, lg: 18, '2xl': 24 },
     fontWeight: { semibold: '600', bold: '700' },
+    letterSpacing: { tight: -0.5, normal: 0, wide: 1 },
   },
   radius: { md: 14, pill: 999 },
   shadows: { soft: {}, xs: {} },

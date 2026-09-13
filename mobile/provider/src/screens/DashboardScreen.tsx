@@ -1,7 +1,7 @@
 import React, { useCallback, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import type GorhomBottomSheet from '@gorhom/bottom-sheet';
-import { Screen, Avatar, Button } from '@/ui';
+import { Screen, Avatar, Button, GlassSurface } from '@/ui';
 import { useAuth } from '@/auth';
 import { ProviderMap } from '@/screens/components/ProviderMap';
 import { PresencePill } from '@/screens/components/PresencePill';
@@ -23,7 +23,9 @@ export function DashboardScreen() {
   return (
     // `toile` : le tableau de bord est une carte plein ecran, rien n'y est pose a nu.
     <Screen testID="dashboard-screen" toile>
-      <View style={styles.hero}>
+      {/* Meme raison que cote client : l'eau touche le haut de l'ecran, la salutation a besoin
+          d'une plaque sous elle — c'est le seul texte de cet ecran qui ne soit pas deja sur du verre. */}
+      <GlassSurface strong radius={radius.lg} style={styles.hero}>
         <View style={styles.heroLeft}>
           <Text style={styles.greeting}>
             {user?.name
@@ -32,7 +34,7 @@ export function DashboardScreen() {
           </Text>
         </View>
         <Avatar name={user?.name ?? '?'} size={48} accessibilityLabel={user?.name ?? tr('commun.profil')} />
-      </View>
+      </GlassSurface>
 
       <View style={styles.mapWrap}>
         <ProviderMap />
@@ -49,7 +51,10 @@ export function DashboardScreen() {
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
-  hero: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: spacing.md },
+  hero: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    marginVertical: spacing.md, paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
+  },
   heroLeft: { flex: 1 },
   greeting: { fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold, color: t.text },
   /* L'adresse e-mail occupait une ligne sous la salutation pour redire ce que l'onglet Profil

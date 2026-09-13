@@ -70,7 +70,7 @@ jest.mock('@/ui', () => {
 jest.mock('@/theme', () => ({
   colors: { surface: { 600: '#475569', 900: '#0f172a' } },
   spacing: { md: 16, lg: 24 },
-  typography: { fontSize: { sm: 14, base: 16, xl: 20 }, fontWeight: { bold: '700', semibold: '600' } },
+  typography: { fontSize: { sm: 14, base: 16, xl: 20 }, fontWeight: { bold: '700', semibold: '600' }, letterSpacing: { tight: -0.5, normal: 0, wide: 1 } },
   radius: { md: 14 },
 }));
 

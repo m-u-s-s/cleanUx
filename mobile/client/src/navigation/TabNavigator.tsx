@@ -1,9 +1,10 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { HomeScreen } from '@/screens/HomeScreen';
-import { BrowseProvidersScreen } from '@/screens/BrowseProvidersScreen';
+import { RentalHubScreen } from '@/screens/RentalHubScreen';
 import { BookingsListScreen } from '@/screens/BookingsListScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
+import { ChatListScreen } from '@/screens/ChatListScreen';
 import { Icon } from '@/ui';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -15,9 +16,8 @@ import { traduireMaintenant } from '@/i18n';
 const Tab = createBottomTabNavigator<TabParamList>();
 
 /* La barre est construite UNE fois : passee en ligne a `tabBar`, React Navigation
-   la verrait comme un composant neuf a chaque rendu et la demonterait. `Home` prend
-   la place centrale — c'est l'accueil. */
-const barreOnglets = creerBarreOnglets({ routeCentrale: 'Home' });
+   la verrait comme un composant neuf a chaque rendu et la demonterait. */
+const barreOnglets = creerBarreOnglets();
 
 function useUnreadCount(): number | undefined {
   try {
@@ -36,6 +36,14 @@ export function TabNavigator() {
 
   return (
     <Tab.Navigator
+      /*
+       * L'ACCUEIL EST DÉCLARÉ TROISIÈME, IL RESTE L'ÉCRAN D'OUVERTURE.
+       *
+       * La barre « Remontée » n'a plus de place centrale : l'ordre de déclaration EST l'ordre
+       * affiché, et l'accueil se met au milieu des cinq. Sans `initialRouteName`, React Navigation
+       * ouvrirait alors sur « Explorer » — un déplacement de rang qui change l'écran de démarrage.
+       */
+      initialRouteName="Home"
       tabBar={barreOnglets}
       screenOptions={{
         headerShown: false,
@@ -53,20 +61,19 @@ export function TabNavigator() {
         On ne renomme PAS les routes : elles sont typées dans `TabParamList` et citées par tous les
         `navigate(...)` de l'app. Le libellé est de l'affichage, le nom est une adresse.
       */}
+      {/*
+        « EXPLORER » A CEDE SA PLACE A LA LOCATION.
+
+        La recherche de prestataires n'a pas disparu : elle passe sur la pile et garde une entree
+        dans le profil. Retirer un onglet sans rouvrir de porte a l'ecran qu'il montait est le
+        defaut que ce depot a paye sept fois.
+      */}
       <Tab.Screen
-        name="Home"
-        component={HomeScreen}
+        name="Location"
+        component={RentalHubScreen}
         options={{
-          tabBarLabel: traduireMaintenant('tab_navigator.accueil'),
-          tabBarIcon: ({ color, size }) => <Icon name="home-outline" size={size} color={color} />,
-        }}
-      />
-      <Tab.Screen
-        name="Explore"
-        component={BrowseProvidersScreen}
-        options={{
-          tabBarLabel: traduireMaintenant('tab_navigator.explorer'),
-          tabBarIcon: ({ color, size }) => <Icon name="search-outline" size={size} color={color} />,
+          tabBarLabel: traduireMaintenant('location.onglet'),
+          tabBarIcon: ({ color, size }) => <Icon name="key-outline" size={size} color={color} />,
         }}
       />
       <Tab.Screen
@@ -75,6 +82,27 @@ export function TabNavigator() {
         options={{
           tabBarLabel: traduireMaintenant('tab_navigator.reservations'),
           tabBarIcon: ({ color, size }) => <Icon name="calendar-outline" size={size} color={color} />,
+        }}
+      />
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          tabBarLabel: traduireMaintenant('tab_navigator.accueil'),
+          tabBarIcon: ({ color, size }) => <Icon name="home-outline" size={size} color={color} />,
+        }}
+      />
+      {/*
+        LE CINQUIÈME ONGLET. La messagerie n'était atteignable que par une entrée du profil, à
+        deux gestes d'un message reçu. Elle garde son entrée là-bas : la barre ne remplace pas le
+        profil, elle raccourcit le chemin.
+      */}
+      <Tab.Screen
+        name="Messages"
+        component={ChatListScreen}
+        options={{
+          tabBarLabel: traduireMaintenant('nav.messagerie'),
+          tabBarIcon: ({ color, size }) => <Icon name="chatbubble-outline" size={size} color={color} />,
         }}
       />
       <Tab.Screen

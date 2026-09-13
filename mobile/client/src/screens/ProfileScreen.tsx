@@ -97,6 +97,13 @@ export function ProfileScreen() {
           variant="secondary"
           fullWidth
         />
+        {/* « Explorer » a quitte la barre d'onglets : sa porte est ici. */}
+        <Button
+          label={tr('profile.explorer_les_prestataires')}
+          onPress={() => navigation.navigate('Explore')}
+          variant="secondary"
+          fullWidth
+        />
         <Button
           label={tr('profile.messagerie')}
           onPress={() => navigation.navigate('ChatList')}

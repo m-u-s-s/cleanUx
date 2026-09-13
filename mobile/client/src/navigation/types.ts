@@ -59,6 +59,9 @@ export type RootStackParamList = {
   InvoiceDetail: { id: number };
   // Embedded web modules
   EmbeddedModule: { path: string; title: string };
+  /* `Explore` a quitte la barre d'onglets pour la location : il lui faut une porte sur la pile,
+     sans quoi l'ecran de recherche de prestataires devient orphelin. */
+  Explore: undefined;
   /** Le répertoire des modules du rôle — catalogue servi par `/api/modules`. */
   Modules: undefined;
   /*
@@ -96,8 +99,9 @@ export type RootStackParamList = {
 
 export type TabParamList = {
   Home: undefined;
-  Explore: undefined;
+  Location: undefined;
   Bookings: undefined;
+  Messages: undefined;
   Profile: undefined;
 };
 

@@ -53,7 +53,7 @@ jest.mock('@/ui', () => {
 jest.mock('@/theme', () => ({
   colors: { surface: { 200: '#e2e8f0' }, mode: { tool: { ink: '#0f172a' } } },
   spacing: { xs: 4, sm: 8, md: 16 },
-  typography: { fontSize: { sm: 14 }, fontWeight: { semibold: '600' } },
+  typography: { fontSize: { sm: 14 }, fontWeight: { semibold: '600' }, letterSpacing: { tight: -0.5, normal: 0, wide: 1 } },
   radius: { md: 14, pill: 999 },
 }));
 

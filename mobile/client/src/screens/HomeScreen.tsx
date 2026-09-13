@@ -14,6 +14,7 @@ import type { ThemeTokens } from '@/theme/useThemeColors';
 import { formatAdresse, formatDateHeure, libelleStatut } from '@/lib/format';
 import type { RootStackParamList } from '@/navigation/types';
 import { useTraduction } from '@/i18n';
+import { CLES_LOCATION, modulesChoisis, useModuleCatalogue } from '@/modules';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -71,13 +72,25 @@ export function HomeScreen() {
   const autresBookings = activeBookings.filter(b => b.id !== focus?.id);
 
   /** Date et ville, assemblées : le tiret n'apparaît que s'il sépare deux morceaux réels. */
+  /* Le catalogue est deja en cache : `ModulesScreen` le lit avec la meme cle de requete. */
+  const { data: catalogue } = useModuleCatalogue();
+  const [caseVehicule] = modulesChoisis(catalogue, CLES_LOCATION.mesVehicules);
+  const [caseLogement] = modulesChoisis(catalogue, CLES_LOCATION.mesLogements);
+
   const ligneMeta = (b: { scheduled_date?: string; scheduled_time?: string; city?: string }) =>
     [formatDateHeure(b.scheduled_date, b.scheduled_time), b.city].filter(Boolean).join(' — ');
 
   return (
     // `toile` : tout le contenu de l'accueil est deja sur du verre, l'iceberg peut respirer.
     <Screen testID="home-screen" toile>
-      <View style={styles.hero}>
+      {/*
+        LA SALUTATION EST SUR UNE PLAQUE, comme tout le reste.
+
+        L'accueil est le seul écran sans plaque de fond — c'est là que l'iceberg respire. Mais
+        l'eau touche le haut de l'écran en sombre, et la salutation tombait pile sur les
+        caustiques : le seul texte de l'application à ne rien avoir sous lui.
+      */}
+      <GlassSurface strong radius={radius.lg} style={styles.hero}>
         <View style={styles.heroLeft}>
           <Text style={styles.greeting}>
             {user?.name
@@ -102,7 +115,7 @@ export function HomeScreen() {
           ) : null}
         </View>
         <Avatar name={user?.name ?? '?'} size={48} accessibilityLabel={user?.name ?? tr('commun.profil')} />
-      </View>
+      </GlassSurface>
 
       <View style={styles.focusWrap}>
         {isLoading ? (
@@ -250,6 +263,60 @@ export function HomeScreen() {
         ) : null}
       </View>
 
+      {/*
+        CE QUE LE CLIENT POSSÈDE DÉJÀ PEUT RAPPORTER.
+
+        Les deux cases n'apparaissent QUE si le compte a les modules correspondants : le catalogue
+        du serveur décide, pas une condition écrite ici. Un compte sans le module de location ne
+        voit rien plutôt qu'une case qui mène à un refus.
+      */}
+      {caseVehicule || caseLogement ? (
+        <View style={styles.locationWrap} testID="home-mise-en-location">
+          <Text style={styles.locationTitre}>{tr('home.mettre_en_location_titre')}</Text>
+          <View style={styles.locationCases}>
+            {caseVehicule ? (
+              <TouchableOpacity
+                activeOpacity={0.85}
+                style={styles.locationCase}
+                accessibilityRole="button"
+                testID="home-louer-vehicule"
+                onPress={() =>
+                  navigation.navigate('EmbeddedModule', {
+                    path: caseVehicule.path,
+                    title: caseVehicule.label,
+                  })
+                }
+              >
+                <GlassSurface strong radius={radius.lg} style={styles.locationPlaque}>
+                  <Icon name="car-outline" size={26} color={themeColors.action} />
+                  <Text style={styles.locationLibelle}>{tr('home.mettre_ma_voiture')}</Text>
+                </GlassSurface>
+              </TouchableOpacity>
+            ) : null}
+
+            {caseLogement ? (
+              <TouchableOpacity
+                activeOpacity={0.85}
+                style={styles.locationCase}
+                accessibilityRole="button"
+                testID="home-louer-logement"
+                onPress={() =>
+                  navigation.navigate('EmbeddedModule', {
+                    path: caseLogement.path,
+                    title: caseLogement.label,
+                  })
+                }
+              >
+                <GlassSurface strong radius={radius.lg} style={styles.locationPlaque}>
+                  <Icon name="home-outline" size={26} color={themeColors.action} />
+                  <Text style={styles.locationLibelle}>{tr('home.mettre_mon_logement')}</Text>
+                </GlassSurface>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        </View>
+      ) : null}
+
       {/* Commandes en surimpression, comme la pastille de présence et le bouton d'actions du
           tableau de bord prestataire : l'action principale reste atteignable au pouce, quel que
           soit le contenu affiché au-dessus. */}
@@ -276,6 +343,8 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     alignItems: 'center',
     marginTop: spacing.md,
     marginBottom: spacing.lg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
   heroLeft: { flex: 1 },
   greeting: { color: t.text, fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold },
@@ -295,9 +364,19 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
     color: t.brandText,
   },
-  /* `text` et non `textMuted` : ce libelle est POSE SUR LA TOILE, pas sur du verre. Sur la
-     couronne de l'iceberg, le gris de sourdine rendait 1,00 — il avait purement disparu. */
-  moreLabel: { color: t.text, fontSize: typography.fontSize.xs, textAlign: 'center' },
+  /* LE SEUL LIBELLE DE L'ACCUEIL POSE A NU, et l'accueil est le seul ecran sans plaque : il
+     porte donc la sienne. Sans elle il tombait sur les caustiques et disparaissait. */
+  moreLabel: {
+    color: t.text,
+    fontSize: typography.fontSize.xs,
+    textAlign: 'center',
+    alignSelf: 'center',
+    backgroundColor: t.glassStrong,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+  },
   othersWrap: { gap: spacing.xs },
   otherRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   otherText: { flex: 1 },
@@ -311,5 +390,31 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   welcomeTitle: { color: t.textOnGlass, fontSize: typography.fontSize.xl, fontWeight: typography.fontWeight.bold, textAlign: 'center' },
   welcomeText: { color: t.mutedOnGlass, fontSize: typography.fontSize.sm, textAlign: 'center', lineHeight: 20 },
+  /* Les deux cases de mise en location : au ras du bouton flottant, jamais dessous. */
+  locationWrap: { gap: spacing.xs, marginBottom: 76 },
+  /* Meme pastille que « n autres en cours » : ce titre est pose A NU sur la toile, et la quille
+     est sombre dans les DEUX themes — le gris de sourdine y disparaissait en clair. */
+  locationTitre: {
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.semibold,
+    letterSpacing: typography.letterSpacing.wide,
+    textTransform: 'uppercase',
+    color: t.text,
+    alignSelf: 'flex-start',
+    backgroundColor: t.glassStrong,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+  },
+  locationCases: { flexDirection: 'row', gap: spacing.sm },
+  locationCase: { flex: 1 },
+  locationPlaque: { alignItems: 'center', gap: spacing.xs, paddingVertical: spacing.md, paddingHorizontal: spacing.sm },
+  locationLibelle: {
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.semibold,
+    color: t.textOnGlass,
+    textAlign: 'center',
+  },
   floating: { position: 'absolute', left: spacing.md, right: spacing.md, bottom: spacing.lg, gap: spacing.sm },
 });

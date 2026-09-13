@@ -57,7 +57,7 @@ jest.mock('@/ui', () => {
 jest.mock('@/theme', () => ({
   colors: { brand: { 500: '#6366f1' }, surface: { 400: '#94a3b8', 500: '#64748b', 900: '#0f172a' } },
   spacing: { xs: 4, sm: 8, md: 16, xl: 32 },
-  typography: { fontSize: { xs: 12, sm: 14, base: 16, xl: 20 }, fontWeight: { bold: '700', semibold: '600', medium: '500' } },
+  typography: { fontSize: { xs: 12, sm: 14, base: 16, xl: 20 }, fontWeight: { bold: '700', semibold: '600', medium: '500' }, letterSpacing: { tight: -0.5, normal: 0, wide: 1 } },
   radius: { md: 14 },
   shadows: { xs: {}, soft: {} },
   // Le thème réel plutôt qu'un objet partiel écrit à la main : il n'a aucun effet de bord,

@@ -89,6 +89,19 @@ export function useThemeColors() {
     glass: isDark ? 'rgba(7, 25, 42, 0.90)' : 'rgba(255, 255, 255, 0.94)',
     glassStrong: isDark ? 'rgba(7, 25, 42, 0.94)' : 'rgba(255, 255, 255, 0.96)',
     glassBorder: isDark ? 'rgba(200, 232, 250, 0.30)' : 'rgba(74, 107, 132, 0.20)',
+
+    /*
+     * LA REMONTÉE — les trois arrêts du dégradé de la barre d'onglets.
+     *
+     * Ce n'est pas une décoration : c'est la GARDE DE LISIBILITÉ de la barre, sous une autre forme
+     * que la plaque. L'arrêt du milieu vaut exactement l'opacité de `glass`, et il est placé
+     * au-dessus des icônes : tout ce qui porte du texte se trouve donc sur une surface au moins
+     * aussi dense que du verre. Baisser ces valeurs rend les libellés illisibles dès que
+     * l'iceberg défile derrière — et la panne ne se voit que sur l'appareil.
+     */
+    remonteeHaut: isDark ? 'rgba(4, 16, 28, 0)' : 'rgba(255, 255, 255, 0)',
+    remonteeMilieu: isDark ? 'rgba(4, 16, 28, 0.90)' : 'rgba(255, 255, 255, 0.94)',
+    remonteeBas: isDark ? 'rgba(4, 16, 28, 0.995)' : 'rgba(255, 255, 255, 0.995)',
     textOnGlass: isDark ? nuit.texte : jour.texte,
     mutedOnGlass: isDark ? nuit.muted : jour.muted,
 

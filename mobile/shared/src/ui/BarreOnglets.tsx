@@ -1,6 +1,8 @@
-import React from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BlurMask, Canvas, Circle, LinearGradient, Rect, vec } from '@shopify/react-native-skia';
+import { Easing, useDerivedValue, useSharedValue, withTiming } from 'react-native-reanimated';
 
 /*
  * LE CONTRAT DE LA BARRE, DECRIT ICI.
@@ -36,69 +38,101 @@ export interface BottomTabBarProps {
   };
 }
 import { useThemeColors, type ThemeTokens } from '@/theme/useThemeColors';
-import { GlassSurface } from './GlassSurface';
+import { useReducedMotion } from './a11y';
 
 /**
- * LA BARRE D'ONGLETS À BOUTON CENTRAL.
+ * LA BARRE « REMONTÉE ».
  *
- * « Mettre la page d'accueil en évidence dans la nav, au milieu, avec un beau décor. »
+ * PAS DE PLAQUE, PAS D'ARÊTE. La matière monte du bas en dégradé, comme l'abysse qui remonte :
+ * aucune ligne horizontale ne vient couper le rendu de fond. C'est la seule des six propositions
+ * qui pose sa garde de lisibilité sans dessiner de bord.
  *
- * L'accueil quitte la file et devient un disque surélevé au centre, posé à cheval sur la
- * barre. Les autres onglets se répartissent autour de lui.
+ * LE DÉGRADÉ EST UNE GARDE, PAS UNE DÉCORATION. Le fond de l'application est une image qui va du
+ * noir de la quille au blanc des caustiques : sous les libellés, il faut atteindre l'opacité du
+ * verre du thème, sinon un onglet devient illisible dès que l'iceberg défile derrière. D'où les
+ * arrêts : transparent en haut, `glass` à mi-hauteur, presque plein sous le texte.
  *
- * POURQUOI UNE BARRE ENTIÈREMENT DESSINÉE plutôt que des options passées au navigateur :
- * un onglet surélevé déborde de la barre, et `tabBarStyle` ne sait pas laisser déborder
- * son contenu. Il faut rendre la barre soi-même pour que le disque sorte du cadre.
+ * LA LUEUR SOURD DU BAS. L'onglet actif est marqué par un halo diffus qui monte du bord inférieur,
+ * écho du puits de lumière de la scène nuit. Il GLISSE d'un onglet à l'autre — et ne pulse jamais :
+ * un point lumineux qui clignote sous le pouce fatigue en deux minutes.
  *
- * L'ENCART DU BAS EST LU, PAS SUPPOSÉ. Sur un appareil à barre gestuelle, une valeur
- * codée en dur pose la barre sous la poignée du système ou laisse un vide sous elle.
+ * PLUS DE DISQUE CENTRAL. L'accueil redevient un onglet parmi cinq, ce qui rend l'ambre à l'argent :
+ * elle était la seule couleur chaude du thème, et un bouton de navigation la portait.
  */
 export interface BarreOngletsOptions {
-  /** Le nom de route qui prend la place centrale. Absent : barre ordinaire. */
+  /**
+   * Conservé pour les appelants — la barre n'a plus de place centrale.
+   *
+   * Le retirer d'un coup obligerait à toucher les deux navigateurs dans le même commit que le
+   * dessin ; le laisser inerte les découple. Il ne fait plus rien, et c'est écrit.
+   */
   routeCentrale?: string;
 }
 
-export function creerBarreOnglets({ routeCentrale }: BarreOngletsOptions = {}) {
+/**
+ * La hauteur au-dessus des icônes où le dégradé est encore translucide.
+ *
+ * ELLE SE DÉDUIT DE L'ARRÊT DU MILIEU, elle ne se choisit pas à l'œil. Le dégradé atteint la
+ * densité du verre à 24 % de la hauteur de la barre : il faut donc que la première icône tombe
+ * plus bas que ça, quel que soit l'encart du bas. À 26 px elle tombait pile dessus, et le libellé
+ * de sourdine rendait 4,20 en clair — mesuré sur l'appareil, pas déduit.
+ */
+const REMONTEE = 34;
+
+export function creerBarreOnglets(_options: BarreOngletsOptions = {}) {
   return function BarreOnglets(props: BottomTabBarProps) {
-    return <Barre {...props} routeCentrale={routeCentrale} />;
+    return <Barre {...props} />;
   };
 }
 
-function Barre({ state, descriptors, navigation, routeCentrale }: BottomTabBarProps & BarreOngletsOptions) {
+function Barre({ state, descriptors, navigation }: BottomTabBarProps) {
   const theme = useThemeColors();
   const insets = useSafeAreaInsets();
+  const mouvementReduit = useReducedMotion();
   const styles = feuille(theme);
 
-  const indexCentral = routeCentrale
-    ? state.routes.findIndex((r: OngletRoute) => r.name === routeCentrale)
-    : -1;
+  /*
+   * LA TAILLE EST MESURÉE, PAS SUPPOSÉE. La lueur doit tomber au centre de l'onglet actif ; une
+   * largeur d'écran devinée la décale sur chaque appareil, et le décalage ne se voit qu'en main.
+   */
+  const [taille, setTaille] = useState({ largeur: 0, hauteur: 0 });
 
-  const lateraux = state.routes
-    .map((route: OngletRoute, index: number) => ({ route, index }))
-    .filter(({ index }: { index: number }) => index !== indexCentral);
+  const nombre = state.routes.length;
+  const pas = nombre > 0 ? taille.largeur / nombre : 0;
+  const cible = pas * (state.index + 0.5);
 
-  const milieu = Math.ceil(lateraux.length / 2);
-  const gauche = lateraux.slice(0, milieu);
-  const droite = lateraux.slice(milieu);
+  const x = useSharedValue(cible);
 
-  const presser = (index: number, nomRoute: string, estActif: boolean) => {
-    const cible = state.routes[index];
+  useEffect(() => {
+    if (mouvementReduit || x.value === 0) {
+      x.value = cible;
 
-    if (!cible) {
       return;
     }
 
-    const evenement = navigation.emit({ type: 'tabPress', target: cible.key, canPreventDefault: true });
+    x.value = withTiming(cible, { duration: 260, easing: Easing.out(Easing.cubic) });
+  }, [cible, mouvementReduit, x]);
+
+  const centreDeLaLueur = useDerivedValue(() => x.value);
+
+  const presser = (index: number, nomRoute: string, estActif: boolean) => {
+    const cibleRoute = state.routes[index];
+
+    if (!cibleRoute) {
+      return;
+    }
+
+    const evenement = navigation.emit({ type: 'tabPress', target: cibleRoute.key, canPreventDefault: true });
 
     if (!estActif && !evenement.defaultPrevented) {
       navigation.navigate(nomRoute as never);
     }
   };
 
-  const rendreOnglet = ({ route, index }: { route: (typeof state.routes)[number]; index: number }) => {
+  const rendreOnglet = (route: OngletRoute, index: number) => {
     const options = descriptors[route.key]?.options ?? {};
     const estActif = state.index === index;
-    const teinte = estActif ? theme.accent : theme.textMuted;
+    const teinte = estActif ? theme.action : theme.textMuted;
     const libelle =
       typeof options.tabBarLabel === 'string' ? options.tabBarLabel : (options.title ?? route.name);
 
@@ -110,50 +144,55 @@ function Barre({ state, descriptors, navigation, routeCentrale }: BottomTabBarPr
         accessibilityLabel={libelle}
         onPress={() => presser(index, route.name, estActif)}
         style={styles.onglet}
-        android_ripple={{ color: theme.glassBorder, borderless: true, radius: 28 }}
+        android_ripple={{ color: theme.glassBorder, borderless: true, radius: 30 }}
       >
         {options.tabBarIcon?.({ focused: estActif, color: teinte, size: 22 })}
         <Text numberOfLines={1} style={[styles.libelle, { color: teinte }]}>
           {libelle}
         </Text>
-        {estActif ? <View style={styles.pastille} /> : null}
       </Pressable>
     );
   };
 
-  const centre = indexCentral >= 0 ? (state.routes[indexCentral] ?? null) : null;
-  const centreActif = indexCentral >= 0 && state.index === indexCentral;
-  const optionsCentre = centre ? (descriptors[centre.key]?.options ?? null) : null;
+  const basDeSecurite = Math.max(insets.bottom, 10);
 
   return (
-    <View style={[styles.socle, { paddingBottom: Math.max(insets.bottom, 10) }]}>
-      {/* Le verre est la matiere de la barre dans LES DEUX themes : l'iceberg passe dessous. */}
-      <GlassSurface style={StyleSheet.absoluteFill} strong radius={0} />
+    <View
+      testID="barre-onglets"
+      style={[styles.socle, { paddingBottom: basDeSecurite }]}
+      onLayout={e =>
+        setTaille({ largeur: e.nativeEvent.layout.width, hauteur: e.nativeEvent.layout.height })
+      }
+    >
+      {taille.hauteur > 0 ? (
+        <Canvas style={StyleSheet.absoluteFill} pointerEvents="none">
+          {/*
+            LA LUEUR EST DESSOUS, LE DÉGRADÉ PAR-DESSUS. Posée au-dessus, elle éclaircirait la
+            surface qui porte le libellé actif et lui mangerait son contraste. Dessous, le dégradé
+            la tamise exactement là où le texte se pose, et la laisse respirer plus haut.
+          */}
+          <Circle
+            cx={centreDeLaLueur}
+            cy={taille.hauteur}
+            r={taille.hauteur * 0.72}
+            color={theme.action}
+            opacity={0.85}
+          >
+            <BlurMask blur={taille.hauteur * 0.4} style="normal" />
+          </Circle>
 
-      <View style={styles.rangee}>
-        <View style={styles.cote}>{gauche.map(rendreOnglet)}</View>
+          <Rect x={0} y={0} width={taille.largeur} height={taille.hauteur}>
+            <LinearGradient
+              start={vec(0, 0)}
+              end={vec(0, taille.hauteur)}
+              colors={[theme.remonteeHaut, theme.remonteeMilieu, theme.remonteeBas]}
+              positions={[0, 0.24, 1]}
+            />
+          </Rect>
+        </Canvas>
+      ) : null}
 
-        {centre ? (
-          <View style={styles.creux}>
-            <Pressable
-              accessibilityRole="tab"
-              accessibilityState={{ selected: centreActif }}
-              accessibilityLabel={
-                typeof optionsCentre?.tabBarLabel === 'string' ? optionsCentre.tabBarLabel : centre.name
-              }
-              onPress={() => presser(indexCentral, centre.name, centreActif)}
-              style={({ pressed }) => [styles.disque, pressed && styles.disquePresse]}
-            >
-              {/* Le halo : c'est lui qui fait « le beau décor ». Il ne pulse pas —
-                  un point lumineux qui clignote sous le pouce fatigue en deux minutes. */}
-              <View style={styles.halo} pointerEvents="none" />
-              {optionsCentre?.tabBarIcon?.({ focused: centreActif, color: theme.textOnAccent, size: 26 })}
-            </Pressable>
-          </View>
-        ) : null}
-
-        <View style={styles.cote}>{droite.map(rendreOnglet)}</View>
-      </View>
+      <View style={styles.rangee}>{state.routes.map(rendreOnglet)}</View>
     </View>
   );
 }
@@ -161,17 +200,11 @@ function Barre({ state, descriptors, navigation, routeCentrale }: BottomTabBarPr
 const feuille = (theme: ThemeTokens) =>
   StyleSheet.create({
     socle: {
-      paddingTop: 30,
+      paddingTop: REMONTEE,
     },
     rangee: {
       flexDirection: 'row',
       alignItems: 'flex-end',
-      paddingHorizontal: 8,
-    },
-    cote: {
-      flex: 1,
-      flexDirection: 'row',
-      justifyContent: 'space-evenly',
     },
     onglet: {
       flex: 1,
@@ -185,52 +218,5 @@ const feuille = (theme: ThemeTokens) =>
       fontSize: 10,
       fontWeight: '600',
       letterSpacing: 0.1,
-    },
-    pastille: {
-      position: 'absolute',
-      top: 0,
-      width: 4,
-      height: 4,
-      borderRadius: 2,
-      backgroundColor: theme.accent,
-    },
-    /* Le creux réserve la largeur du disque : sans lui, les onglets latéraux
-       glissent sous le bouton et deviennent intouchables. */
-    creux: {
-      width: 76,
-      alignItems: 'center',
-    },
-    disque: {
-      position: 'absolute',
-      bottom: 6,
-      width: 60,
-      height: 60,
-      borderRadius: 30,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: theme.accent,
-      borderWidth: 4,
-      borderColor: theme.glassStrong,
-      ...Platform.select({
-        ios: {
-          shadowColor: theme.accent,
-          shadowOpacity: 0.45,
-          shadowRadius: 14,
-          shadowOffset: { width: 0, height: 6 },
-        },
-        android: { elevation: 10 },
-        default: {},
-      }),
-    },
-    disquePresse: {
-      transform: [{ scale: 0.94 }],
-    },
-    halo: {
-      position: 'absolute',
-      width: 88,
-      height: 88,
-      borderRadius: 44,
-      backgroundColor: theme.accent,
-      opacity: 0.16,
     },
   });

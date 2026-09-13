@@ -130,7 +130,7 @@ jest.mock('@/theme', () => ({
     surface: { 200: '#e5e5e5', 500: '#737373', 900: '#171717' },
   },
   spacing: { xs: 4, sm: 8, md: 16, lg: 24 },
-  typography: { fontSize: { xs: 12, sm: 14, base: 16, xl: 20, '2xl': 24 }, fontWeight: { semibold: '600', bold: '700' } },
+  typography: { fontSize: { xs: 12, sm: 14, base: 16, xl: 20, '2xl': 24 }, fontWeight: { semibold: '600', bold: '700' }, letterSpacing: { tight: -0.5, normal: 0, wide: 1 } },
   radius: { md: 14, pill: 999 },
   shadows: { md: {}, soft: {} },
 }));

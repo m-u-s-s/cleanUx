@@ -4,6 +4,7 @@ import { DashboardScreen } from '@/screens/DashboardScreen';
 import { MissionsScreen } from '@/screens/MissionsScreen';
 import { WalletScreen } from '@/screens/WalletScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
+import { ProviderChatListScreen } from '@/screens/ProviderChatListScreen';
 import { Icon } from '@/ui';
 import { creerBarreOnglets } from '@/ui/BarreOnglets';
 import { usePresenceHeartbeat } from '@/presence';
@@ -17,9 +18,8 @@ import { traduireMaintenant } from '@/i18n';
 const Tab = createBottomTabNavigator<TabParamList>();
 
 /* La barre est construite UNE fois : passee en ligne a `tabBar`, React Navigation
-   la verrait comme un composant neuf a chaque rendu et la demonterait. `Dashboard` prend
-   la place centrale — c'est l'accueil. */
-const barreOnglets = creerBarreOnglets({ routeCentrale: 'Dashboard' });
+   la verrait comme un composant neuf a chaque rendu et la demonterait. */
+const barreOnglets = creerBarreOnglets();
 
 export function TabNavigator() {
   const theme = useThemeColors();
@@ -32,6 +32,14 @@ export function TabNavigator() {
   return (
     <>
     <Tab.Navigator
+      /*
+       * LE TABLEAU DE BORD EST DÉCLARÉ TROISIÈME, IL RESTE L'ÉCRAN D'OUVERTURE.
+       *
+       * La barre « Remontée » n'a plus de place centrale : l'ordre de déclaration EST l'ordre
+       * affiché. Sans `initialRouteName`, un prestataire ouvrirait son application sur la liste
+       * des missions au lieu de sa carte.
+       */
+      initialRouteName="Dashboard"
       tabBar={barreOnglets}
       screenOptions={{
         headerShown: false,
@@ -50,14 +58,6 @@ export function TabNavigator() {
         On ne renomme PAS les routes : elles sont typées dans `TabParamList` et citées par tous les
         `navigate(...)`. Le libellé est de l'affichage, le nom est une adresse.
       */}
-      <Tab.Screen
-        name="Dashboard"
-        component={DashboardScreen}
-        options={{
-          tabBarLabel: traduireMaintenant('tab_navigator.accueil_2'),
-          tabBarIcon: ({ color, size }) => <Icon name="grid-outline" size={size} color={color} />,
-        }}
-      />
       <Tab.Screen
         name="Missions"
         component={MissionsScreen}
@@ -88,6 +88,26 @@ export function TabNavigator() {
         options={{
           tabBarLabel: traduireMaintenant('tab_navigator.revenus'),
           tabBarIcon: ({ color, size }) => <Icon name="wallet-outline" size={size} color={color} />,
+        }}
+      />
+      <Tab.Screen
+        name="Dashboard"
+        component={DashboardScreen}
+        options={{
+          tabBarLabel: traduireMaintenant('tab_navigator.accueil_2'),
+          tabBarIcon: ({ color, size }) => <Icon name="grid-outline" size={size} color={color} />,
+        }}
+      />
+      {/*
+        LE CINQUIÈME ONGLET. Même raison que côté client : la messagerie ne vivait que dans une
+        liste du profil, alors qu'un prestataire en mission y répond plusieurs fois par jour.
+      */}
+      <Tab.Screen
+        name="Messages"
+        component={ProviderChatListScreen}
+        options={{
+          tabBarLabel: traduireMaintenant('nav.messagerie'),
+          tabBarIcon: ({ color, size }) => <Icon name="chatbubble-outline" size={size} color={color} />,
         }}
       />
       <Tab.Screen

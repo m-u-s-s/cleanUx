@@ -58,6 +58,7 @@ import { useClientSpacePreference } from '@/company/useClientSpacePreference';
 import { ClientCompanyNavigator } from '@/company/ClientCompanyNavigator';
 import { ClientSpaceSwitcherScreen } from '@/screens/company/ClientSpaceSwitcherScreen';
 import { ModulesRoute } from '@/screens/ModulesRoute';
+import { BrowseProvidersScreen } from '@/screens/BrowseProvidersScreen';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { RootStackParamList } from './types';
@@ -315,6 +316,12 @@ export function RootNavigator() {
               name="ChatList"
               component={ChatListScreen}
               options={{ title: tr('nav.messagerie'), headerShown: true }}
+            />
+            {/* La porte de repli d'« Explorer », qui a quitte la barre d'onglets. */}
+            <Stack.Screen
+              name="Explore"
+              component={BrowseProvidersScreen}
+              options={{ title: tr('profile.explorer_les_prestataires'), headerShown: true }}
             />
             <Stack.Screen
               name="Chat"
