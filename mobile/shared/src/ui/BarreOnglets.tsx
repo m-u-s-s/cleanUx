@@ -26,6 +26,8 @@ interface OngletOptions {
   title?: string;
   tabBarLabel?: unknown;
   tabBarIcon?: (props: OngletIconeProps) => React.ReactNode;
+  /** Le compteur de l'onglet — un nombre, ou le texte deja mis en forme par l'appelant. */
+  tabBarBadge?: number | string;
   [autre: string]: unknown;
 }
 
@@ -37,6 +39,7 @@ export interface BottomTabBarProps {
     navigate: (...args: never[]) => void;
   };
 }
+import { colors } from '@/theme';
 import { useThemeColors, type ThemeTokens } from '@/theme/useThemeColors';
 import { useReducedMotion } from './a11y';
 
@@ -146,7 +149,23 @@ function Barre({ state, descriptors, navigation }: BottomTabBarProps) {
         style={styles.onglet}
         android_ripple={{ color: theme.glassBorder, borderless: true, radius: 30 }}
       >
-        {options.tabBarIcon?.({ focused: estActif, color: teinte, size: 22 })}
+        <View>
+          {options.tabBarIcon?.({ focused: estActif, color: teinte, size: 22 })}
+          {/*
+            LA PASTILLE ETAIT DECLAREE ET N'EXISTAIT PAS.
+
+            `tabBarBadge` est rendu par la barre par defaut de React Navigation ; une barre dessinee
+            a la main doit le faire elle-meme. L'onglet Profil du client la declarait depuis des
+            mois — le nombre de messages non lus n'a jamais paru a l'ecran.
+          */}
+          {options.tabBarBadge ? (
+            <View style={styles.pastille} testID={`onglet-pastille-${route.name}`}>
+              <Text numberOfLines={1} style={styles.pastilleTexte}>
+                {options.tabBarBadge}
+              </Text>
+            </View>
+          ) : null}
+        </View>
         <Text numberOfLines={1} style={[styles.libelle, { color: teinte }]}>
           {libelle}
         </Text>
@@ -218,5 +237,24 @@ const feuille = (theme: ThemeTokens) =>
       fontSize: 10,
       fontWeight: '600',
       letterSpacing: 0.1,
+    },
+    /* Le 600 et non le 500 : sous du blanc, le 500 rend 3,84 — la pastille est petite, elle n'a
+       pas droit au seuil des grands textes. */
+    pastille: {
+      position: 'absolute',
+      top: -5,
+      left: 12,
+      minWidth: 16,
+      height: 16,
+      paddingHorizontal: 4,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.danger[600],
+    },
+    pastilleTexte: {
+      color: theme.textOnDanger,
+      fontSize: 9,
+      fontWeight: '700',
     },
   });

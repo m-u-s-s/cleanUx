@@ -116,6 +116,16 @@ export function useThemeColors() {
     textOnBrand: '#ffffff',
 
     /*
+     * Le texte posé SUR un aplat de danger — une pastille de compteur, un bandeau d'alerte.
+     *
+     * IDENTIQUE DANS LES DEUX THÈMES, comme `textOnBrand` et pour la même raison : le rouge ne
+     * change pas d'un mode à l'autre, donc ce qui se pose dessus non plus. Le cran est le 600 et
+     * non le 500 : sous du blanc, le 500 rend 3,84 — une pastille est un petit texte, elle n'a pas
+     * droit au seuil des grands. Le 600 rend 5,23.
+     */
+    textOnDanger: '#ffffff',
+
+    /*
      * L'ACCENT DE MARQUE — l'ambre, la meme valeur que `--cx-amber` du web.
      *
      * Le natif employait `colors.brand[500]`, un indigo, la ou le web porte l'ambre depuis

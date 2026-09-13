@@ -43,7 +43,7 @@ export { LuxeBackground } from './LuxeBackground';
 export { GlassSurface } from './GlassSurface';
 export { AnnulerLaMissionSheet } from './AnnulerLaMissionSheet';
 export { NightShell, themeDeNavigation, useThemeDeNavigation } from './NightShell';
-export { apparenceDeBarre, apparenceDEnTete, fondDeFeuille } from './glassBars';
+export { apparenceDEnTete, fondDeFeuille } from './glassBars';
 export type { OsmMarker } from './OsmMap';
 export type { MapModule } from './mapModule';
 export { creerBarreOnglets } from './BarreOnglets';

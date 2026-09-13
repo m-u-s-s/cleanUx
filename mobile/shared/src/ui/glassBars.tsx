@@ -3,48 +3,14 @@ import { StyleSheet, type ViewStyle } from 'react-native';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { GlassSurface } from './GlassSurface';
 
-interface ApparenceDeBarre {
-  tabBarStyle: ViewStyle;
-  tabBarBackground: () => React.ReactElement;
-}
-
-/**
- * L'apparence d'une barre d'onglets pour le thème courant.
+/*
+ * `apparenceDeBarre` A ETE RETIREE D'ICI.
  *
- * POURQUOI UNE FONCTION ET NON UN COMPOSANT. Les deux navigateurs — celui du prestataire et celui
- * de la console d'administration — construisent leurs `screenOptions` séparément. Une fonction
- * partagée garantit qu'ils ne divergeront pas ; deux copies du même objet de style, si.
- *
- * EN SOMBRE, LA BARRE S'EFFACE. Fond transparent, liseré à zéro, et une plaque de verre en
- * arrière-plan. Une barre opaque couperait le fond nuit d'un trait plat en bas de chaque écran,
- * et les gouttes s'arrêteraient net sur une ligne.
- *
- * `borderTopWidth: 0` EST AUSSI IMPORTANT que la transparence. React Navigation pose un liseré
- * haut par défaut ; le rendre transparent sans annuler sa largeur laisse une bande d'un pixel qui
- * masque le fond au lieu de le laisser passer.
- *
- * LE CLAIR A LA MÊME BARRE DEPUIS « VERRE GIVRÉ ». Il gardait un fond plein tant que le verre
- * était réservé au sombre ; le conserver maintenant donnerait des cartes en verre posées dans un
- * châssis opaque — l'incohérence se voit tout de suite, en bas de chaque écran.
+ * Elle habillait la barre par defaut de React Navigation d'une plaque de verre, pour les espaces
+ * societe et la console d'administration. Ces trois navigateurs montent desormais la meme barre
+ * « Remontee » que les deux accueils : deux habillages differents se voyaient des qu'on passait
+ * d'un espace a l'autre, et le second n'avait plus de raison d'exister.
  */
-export function apparenceDeBarre(_theme: ThemeTokens): ApparenceDeBarre {
-  return {
-    tabBarStyle: {
-      backgroundColor: 'transparent',
-      borderTopWidth: 0,
-      // Sans cela, l'ombre portée d'iOS dessine sous la barre un halo qui trahit sa présence.
-      elevation: 0,
-      shadowOpacity: 0,
-    },
-    tabBarBackground: () => (
-      /*
-       * `radius={0}` : une barre d'onglets touche les trois bords de l'écran. Le rayon par défaut
-       * de la plaque arrondirait ses coins bas et laisserait deux encoches sur le fond nuit.
-       */
-      <GlassSurface testID="glass-bar" radius={0} strong style={StyleSheet.absoluteFill} />
-    ),
-  };
-}
 
 /**
  * L'apparence d'un EN-TÊTE, pour la même raison que la barre d'onglets.

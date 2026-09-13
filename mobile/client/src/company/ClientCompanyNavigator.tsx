@@ -6,9 +6,7 @@ import { CompanyBookingsScreen } from '@/screens/company/CompanyBookingsScreen';
 import { CompanyBillingScreen } from '@/screens/company/CompanyBillingScreen';
 import { CompanyProfileScreen } from '@/screens/company/CompanyProfileScreen';
 import { Icon, apparenceDEnTete } from '@/ui';
-import { apparenceDeBarre } from '@/ui/glassBars';
-import { colors } from '@/theme';
-import { useThemeColors } from '@/theme/useThemeColors';
+import { creerBarreOnglets } from '@/ui/BarreOnglets';
 import type { ClientCompanyTabParamList } from '@/navigation/types';
 import { traduireMaintenant } from '@/i18n';
 
@@ -25,16 +23,18 @@ const Tab = createBottomTabNavigator<ClientCompanyTabParamList>();
  * la composition de l'équipe et les contrats-cadres se consultent, ils ne se surveillent pas tous
  * les matins, et une barre à six onglets devient illisible.
  */
+/* UNE SEULE BARRE POUR TOUTE LA PLATEFORME. Ces espaces avaient leur propre habillage — une
+   plaque de verre derriere la barre par defaut de React Navigation — et la difference se voyait
+   des qu'on passait d'un espace a l'autre. C'est la meme barre « Remontee » que l'accueil. */
+const barreOnglets = creerBarreOnglets();
+
 export function ClientCompanyNavigator() {
-  const theme = useThemeColors();
 
   return (
     <Tab.Navigator
+      tabBar={barreOnglets}
       screenOptions={{
         headerShown: true,
-        tabBarActiveTintColor: colors.brand[500],
-        tabBarInactiveTintColor: theme.textMuted,
-        ...apparenceDeBarre(theme),
         ...apparenceDEnTete(),
       }}
     >

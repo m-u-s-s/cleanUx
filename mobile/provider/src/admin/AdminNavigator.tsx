@@ -2,9 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Icon } from '@/ui';
-import { apparenceDeBarre } from '@/ui/glassBars';
-import { colors } from '@/theme';
-import { useThemeColors } from '@/theme/useThemeColors';
+import { creerBarreOnglets } from '@/ui/BarreOnglets';
 import { AdminHomeScreen } from './AdminHomeScreen';
 import { AdminDirectoryScreen } from './AdminDirectoryScreen';
 import { AdminProfileScreen } from './AdminProfileScreen';
@@ -27,17 +25,17 @@ const Tab = createBottomTabNavigator<AdminTabParamList>();
  * c'est le seul domaine qu'on vient ouvrir ou fermer en déplacement, et le chercher dans une
  * liste de quatre-vingts modules à chaque fois n'a aucun sens.
  */
+/* UNE SEULE BARRE POUR TOUTE LA PLATEFORME. Ces espaces avaient leur propre habillage — une
+   plaque de verre derriere la barre par defaut de React Navigation — et la difference se voyait
+   des qu'on passait d'un espace a l'autre. C'est la meme barre « Remontee » que l'accueil. */
+const barreOnglets = creerBarreOnglets();
+
 export function AdminNavigator() {
-  const theme = useThemeColors();
   return (
     <View testID="admin-navigator" style={{ flex: 1 }}>
       <Tab.Navigator
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: colors.brand[500],
-          tabBarInactiveTintColor: theme.textMuted,
-          ...apparenceDeBarre(theme),
-        }}
+        tabBar={barreOnglets}
+        screenOptions={{ headerShown: false }}
       >
         <Tab.Screen
           name="AdminHome"

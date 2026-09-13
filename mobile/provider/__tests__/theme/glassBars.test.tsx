@@ -19,64 +19,69 @@ const mockScheme = { colorScheme: 'dark' as 'dark' | 'light', mode: 'dark', setM
 jest.mock('@/theme/useColorScheme', () => ({ useColorScheme: () => mockScheme }));
 
 import { useThemeColors } from '@/theme/useThemeColors';
-import { apparenceDeBarre } from '@/ui/glassBars';
 
-describe('apparenceDeBarre', () => {
+
+describe('la remontee de la barre d onglets', () => {
   beforeEach(() => {
     mockScheme.colorScheme = 'dark';
   });
 
-  it('efface la barre en mode sombre pour laisser passer le fond', () => {
-    const { tabBarStyle } = apparenceDeBarre(jetons());
+  /**
+   * LE DEGRADE EST UNE GARDE, PAS UNE DECORATION.
+   *
+   * La barre n'a plus de plaque : c'est son degrade qui porte la lisibilite. Son arret du MILIEU
+   * doit valoir au moins l'opacite de `glass` — c'est la densite sur laquelle tout le garde-fou de
+   * contraste est calcule. Le baisser rend les libellés illisibles des que l'iceberg defile
+   * derriere, et la panne ne se voit que sur l'appareil.
+   */
+  it.each(['dark', 'light'] as const)('atteint la densite du verre a mi-hauteur (%s)', schema => {
+    mockScheme.colorScheme = schema;
+    const t = jetons();
 
-    // Transparente ET sans liseré : un `borderTopWidth` oublié suffit à tracer la ligne qu'on
-    // cherche justement à supprimer.
-    expect(tabBarStyle.backgroundColor).toBe('transparent');
-    expect(tabBarStyle.borderTopWidth).toBe(0);
+    expect(opacite(t.remonteeMilieu)).toBeGreaterThanOrEqual(opacite(t.glass));
   });
 
-  it('pose une plaque de verre derrière la barre en mode sombre', () => {
-    const { tabBarBackground } = apparenceDeBarre(jetons());
+  /** Transparent en haut, plein en bas : sans cela il n'y a plus de remontee, mais une plaque. */
+  it.each(['dark', 'light'] as const)('part de rien et finit plein (%s)', schema => {
+    mockScheme.colorScheme = schema;
+    const t = jetons();
 
-    expect(tabBarBackground).toBeDefined();
-
-    render(<>{tabBarBackground?.()}</>);
-
-    expect(screen.getByTestId('glass-bar', { includeHiddenElements: true })).toBeTruthy();
+    expect(opacite(t.remonteeHaut)).toBe(0);
+    expect(opacite(t.remonteeBas)).toBeGreaterThan(0.98);
   });
 
-  it('donne la MÊME barre de verre en clair', () => {
-    mockScheme.colorScheme = 'light';
-    const { tabBarStyle, tabBarBackground } = apparenceDeBarre(jetons());
+  /**
+   * LA BARRE N'INTRODUIT PAS UNE TROISIEME COULEUR. Les trois arrets portent le SOL du theme —
+   * l'abysse en nuit, le blanc en jour. Un bleu choisi a l'oeil ici ferait un bandeau qu'on
+   * distingue du fond des qu'il n'y a rien derriere.
+   */
+  it.each(['dark', 'light'] as const)('porte le sol du theme, et lui seul (%s)', schema => {
+    mockScheme.colorScheme = schema;
+    const t = jetons();
+    const attendu = schema === 'dark' ? '4, 16, 28' : '255, 255, 255';
 
-    /*
-     * Le clair gardait une barre pleine tant que le verre etait reserve au sombre. Depuis
-     * « Verre givre », des cartes en verre dans un chassis opaque se voient immediatement en bas
-     * de chaque ecran. La teinte du verre suit le theme ; sa presence, non.
-     */
-    expect(tabBarStyle.backgroundColor).toBe('transparent');
-    expect(tabBarStyle.borderTopWidth).toBe(0);
-    expect(tabBarBackground).toBeDefined();
-
-    render(<>{tabBarBackground()}</>);
-
-    expect(screen.getByTestId('glass-bar', { includeHiddenElements: true })).toBeTruthy();
+    for (const arret of [t.remonteeHaut, t.remonteeMilieu, t.remonteeBas]) {
+      expect(arret).toContain(attendu);
+    }
   });
 
-  it('donne une plaque à angles droits', () => {
-    const { tabBarBackground } = apparenceDeBarre(jetons());
-
-    render(<>{tabBarBackground?.()}</>);
-
-    /*
-     * Une barre d'onglets touche les trois bords de l'écran. Le rayon par défaut de GlassSurface
-     * (20) arrondirait ses coins bas, laissant deux encoches sur le fond nuit.
-     */
-    const style = aplat(screen.getByTestId('glass-bar', { includeHiddenElements: true }).props.style);
-
-    expect(style.borderRadius).toBe(0);
+  /*
+   * TEMOIN. Sans lui, `opacite()` pourrait rendre 1 pour tout et les deux premiers tests
+   * passeraient en mesurant leur propre panne.
+   */
+  it('temoin : la lecture d opacite sait distinguer deux voiles', () => {
+    expect(opacite('rgba(4, 16, 28, 0)')).toBe(0);
+    expect(opacite('rgba(4, 16, 28, 0.9)')).toBeCloseTo(0.9, 5);
+    expect(opacite('rgba(4, 16, 28, 0.995)')).toBeCloseTo(0.995, 5);
   });
 });
+
+/** L'opacite d'un `rgba(...)`. Une couleur opaque sans canal alpha vaut 1. */
+function opacite(couleur: string): number {
+  const m = /rgba\([^)]*,\s*([0-9.]+)\s*\)/.exec(couleur);
+
+  return m ? Number(m[1]) : 1;
+}
 
 /** Rend le hook accessible hors composant, via un montage jetable. */
 function jetons() {
