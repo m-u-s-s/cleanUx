@@ -139,6 +139,31 @@ describe('les couleurs de texte du theme', () => {
   });
 
   /**
+   * LE TEXTE POSE A NU SUR LA TOILE N'A PAS DE VOILE POUR LE PROTEGER.
+   *
+   * Tout le reste de ce fichier mesure le texte sur du VERRE. Un titre d'ecran, une etiquette de
+   * section, une salutation : ceux-la touchent la scene directement, et la couronne de l'iceberg
+   * est ce qu'elle a de plus clair. Le plafond de la scene est CHOISI pour ce cas — c'est lui qui
+   * l'a fixe, pas le verre.
+   *
+   * LA REGLE QUI EN DECOULE : sur la toile, seul `text` est admis. Les crans de sourdine n'y
+   * tiennent a aucune luminosite qui laisse la glace lumineuse — voir le temoin ci-dessous.
+   */
+  it('le texte de plein contraste tient a nu sur la couronne', () => {
+    expect(contraste(iceberg.immerge.texte, iceberg.immerge.plafond)).toBeGreaterThanOrEqual(SEUIL);
+  });
+
+  /*
+   * TEMOIN — et il porte une decision, pas un simple controle : les crans de sourdine NE TIENNENT
+   * PAS a nu. Si l'un d'eux venait a passer, c'est que le plafond a ete baisse au point d'eteindre
+   * la glace, et il faut le savoir avant de le decouvrir a l'ecran.
+   */
+  it('temoin : les crans de sourdine ne tiennent PAS a nu sur la couronne', () => {
+    expect(contraste(iceberg.immerge.muted, iceberg.immerge.plafond)).toBeLessThan(SEUIL);
+    expect(contraste('#84a4ba', iceberg.immerge.plafond)).toBeLessThan(SEUIL);
+  });
+
+  /**
    * TEMOIN — LE PLAFOND EST BIEN PLUS DUR QUE LE PANNEAU.
    *
    * La nuit a longtemps pris le panneau pour reference. Y revenir redonnerait du vert a des

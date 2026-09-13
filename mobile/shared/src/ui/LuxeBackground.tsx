@@ -70,23 +70,17 @@ export function LuxeBackground() {
         accessibilityLabel={etiquette}
       >
         <Canvas style={StyleSheet.absoluteFill}>
-          {/* Le ciel : jamais blanc pur, sans quoi le verre posé dessus n'a rien à filtrer. */}
+          {/*
+            LE CIEL DESCEND VERS LE BLANC, et non l'inverse. Le dégradé partait du blanc en haut
+            pour finir bleu en bas : la banquise se retrouvait dans le ciel. Le froid est en haut,
+            le champ de glace en bas — et c'est ce blanc franc qui détache la quille.
+          */}
           <Rect x={0} y={0} width={width} height={height}>
             <LinearGradient
               start={vec(0, 0)}
-              end={vec(width * 0.3, height)}
-              colors={[ciel.maillageClair, ciel.page, ciel.maillageSombre]}
-              positions={[0, 0.45, 1]}
-            />
-          </Rect>
-
-          {/* Le halo du jour, haut et très diffus — la lumière rasante des hautes latitudes. */}
-          <Rect x={0} y={0} width={width} height={height}>
-            <RadialGradient
-              c={vec(width * 0.68, height * 0.06)}
-              r={height * 0.6}
-              colors={['rgba(255, 255, 255, 0.85)', 'rgba(255, 255, 255, 0.25)', 'rgba(255, 255, 255, 0)']}
-              positions={[0, 0.45, 1]}
+              end={vec(width * 0.22, height)}
+              colors={[ciel.maillageSombre, ciel.page, ciel.maillageClair]}
+              positions={[0, 0.42, 1]}
             />
           </Rect>
 
@@ -108,25 +102,31 @@ export function LuxeBackground() {
       accessibilityLabel={etiquette}
     >
       <Canvas style={StyleSheet.absoluteFill}>
-        {/* La colonne d'eau. Les arrêts sont écartés : trop proches, le bas se lit « vide ». */}
+        {/* La colonne d'eau s'éteint VITE : sous la surface il ne reste presque rien. */}
         <Rect x={0} y={0} width={width} height={height}>
           <LinearGradient
             start={vec(0, 0)}
             end={vec(0, height)}
-            colors={['#0d2b41', glace.eau, '#061826', glace.abysse]}
-            positions={[0, 0.28, 0.68, 1]}
+            colors={[glace.eau, glace.abysse]}
+            positions={[0.08, 0.62]}
           />
         </Rect>
 
-        {/* La surface vue de dessous : la seule vraie source de lumière de cet écran. */}
-        <Rect x={0} y={0} width={width} height={height}>
-          <RadialGradient
-            c={vec(width * 0.5, -height * 0.04)}
-            r={height * 0.55}
-            colors={['rgba(127, 196, 232, 0.30)', 'rgba(127, 196, 232, 0.08)', 'rgba(127, 196, 232, 0)']}
-            positions={[0, 0.42, 1]}
-          />
-        </Rect>
+        {/*
+          LA SURFACE VUE DE DESSOUS — la seule source de lumière de cet écran, et il faut qu'elle
+          se voie. Elle porte exactement la couleur du PLAFOND de la scène : plus claire, elle
+          emporterait le texte posé dessus ; plus sombre, on ne saurait plus d'où vient le jour.
+        */}
+        <Group opacity={0.62}>
+          <Rect x={0} y={0} width={width} height={height}>
+            <RadialGradient
+              c={vec(width * 0.5, -height * 0.03)}
+              r={height * 0.3}
+              colors={[glace.plafond, `${glace.plafond}47`, `${glace.plafond}00`]}
+              positions={[0, 0.5, 1]}
+            />
+          </Rect>
+        </Group>
 
         {/* L'objet entier, quille comprise — c'est la vue qu'on n'a jamais de la surface. */}
         <IcebergVolumetrique phase={phase} largeur={width} hauteur={height} sombre />

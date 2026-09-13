@@ -62,12 +62,12 @@ export const colors = {
          * `emerge.plancher`. Ici le danger est inverse : un texte clair devient illisible sur une
          * facette trop lumineuse. `IcebergVolumetrique` l'applique comme PLAFOND.
          */
-        plafond: '#4c768b',
+        plafond: '#4a7287',
       },
       emerge: {
         page: '#f4f8fb',
-        /** Les deux extremes du ciel. */
-        maillageClair: '#fbfdfe',
+        /** Les deux extremes du ciel : le bleu froid en haut, le blanc franc en bas. */
+        maillageClair: '#ffffff',
         maillageSombre: '#d9e8f3',
         texte: '#0b1a24',
         muted: '#4a6b84',
@@ -101,5 +101,5 @@ export const colors = {
  */
 export const surfacesDeReference = {
   jour: '#e9f3fc',
-  nuit: '#1c3547',
+  nuit: '#1b3446',
 } as const;

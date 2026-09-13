@@ -294,7 +294,9 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     fontWeight: typography.fontWeight.semibold,
     color: t.brandText,
   },
-  moreLabel: { color: t.textMuted, fontSize: typography.fontSize.xs, textAlign: 'center' },
+  /* `text` et non `textMuted` : ce libelle est POSE SUR LA TOILE, pas sur du verre. Sur la
+     couronne de l'iceberg, le gris de sourdine rendait 1,00 — il avait purement disparu. */
+  moreLabel: { color: t.text, fontSize: typography.fontSize.xs, textAlign: 'center' },
   othersWrap: { gap: spacing.xs },
   otherRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   otherText: { flex: 1 },
