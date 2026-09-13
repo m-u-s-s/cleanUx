@@ -41,7 +41,28 @@ describe('NightShell', () => {
     expect(screen.getByText('application')).toBeTruthy();
   });
 
-  it('ne monte aucune toile en mode clair', () => {
+  /*
+   * LE CLAIR A SA TOILE, LUI AUSSI — depuis Iceberg.
+   *
+   * Ce test disait « ne monte aucune toile en mode clair » et interrogeait `luxe-background`. Il
+   * est resté vert quand le clair s'est mis à rendre, parce que la toile claire porte un AUTRE
+   * point de montage : il mesurait un renommage, plus une absence.
+   */
+  it('monte la toile claire sous ses enfants', () => {
+    mockScheme.colorScheme = 'light';
+
+    render(
+      <NightShell>
+        <Text>application</Text>
+      </NightShell>,
+    );
+
+    expect(screen.getByTestId('luxe-background-clair', MASQUE)).toBeTruthy();
+    expect(screen.getByText('application')).toBeTruthy();
+  });
+
+  /** TÉMOIN : les deux toiles ne se confondent pas — le clair ne monte pas celle de la nuit. */
+  it('la toile claire n est pas celle de la nuit', () => {
     mockScheme.colorScheme = 'light';
 
     render(
@@ -51,7 +72,6 @@ describe('NightShell', () => {
     );
 
     expect(screen.queryByTestId('luxe-background', MASQUE)).toBeNull();
-    expect(screen.getByText('application')).toBeTruthy();
   });
 });
 
@@ -68,11 +88,26 @@ describe('themeDeNavigation', () => {
     expect(t.colors.card).toBe('transparent');
   });
 
-  it('laisse le thème clair intact', () => {
+  /*
+   * LE MÊME PIÈGE DU CÔTÉ CLAIR. Ce test exigeait l'inverse — « laisse le thème clair intact » —
+   * ce qui était juste tant que le clair n'avait rien à laisser voir. Depuis Iceberg, un fond
+   * opaque ici rend la page uniformément #f4f8fb : l'iceberg est dessiné et ne se voit nulle part.
+   */
+  it('rend le conteneur de navigation transparent en clair aussi', () => {
     const t = themeDeNavigation(false);
 
-    expect(t.colors.background).not.toBe('transparent');
-    expect(t.dark).toBe(false);
+    expect(t.colors.background).toBe('transparent');
+    expect(t.colors.card).toBe('transparent');
+  });
+
+  /** TÉMOIN : transparent des deux côtés ne veut pas dire identique — le reste suit le thème. */
+  it('les deux thèmes restent distincts', () => {
+    const clair = themeDeNavigation(false);
+    const sombre = themeDeNavigation(true);
+
+    expect(clair.dark).toBe(false);
+    expect(sombre.dark).toBe(true);
+    expect(clair.colors.text).not.toBe(sombre.colors.text);
   });
 });
 

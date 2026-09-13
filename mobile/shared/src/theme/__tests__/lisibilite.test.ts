@@ -6,8 +6,9 @@
  * sens, et sur le blanc des cartes `success.600` rendait 3,77 et `warning.600` 3,18.
  *
  * LES SURFACES NE SONT PLUS RECOPIEES ICI. Elles etaient ecrites en dur — `#111a2e` — et
- * personne ne les mettait a jour en meme temps que la palette : le passage a Profondeur les a
- * rendues fausses d'un coup, et le test aurait continue de passer en mesurant un fond qui
+ * personne ne les mettait a jour en meme temps que la palette : chaque changement de palette les a
+ * rendues fausses d'un coup a chaque changement de palette, et le test aurait continue de passer
+ * en mesurant un fond qui
  * n'existe plus. Elles viennent maintenant de `surfacesDeReference`, avec la palette.
  *
  * En clair, la surface de reference n'est PAS le blanc : c'est le voile de verre le plus fin
@@ -36,16 +37,16 @@ const contraste = (a: string, b: string): number => {
   return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
 };
 
-const maree = colors.mode.maree;
+const iceberg = colors.mode.iceberg;
 
 // Ce que `useThemeColors` rend pour chaque jeton : [nom, valeur en clair, valeur en sombre].
 const JETONS: Array<[string, string, string]> = [
-  ['text', maree.givre.texte, maree.profondeur.texte],
-  ['textSecondary', maree.givre.muted, maree.profondeur.muted],
-  ['textMuted', '#567082', '#8fb4bd'],
+  ['text', iceberg.emerge.texte, iceberg.immerge.texte],
+  ['textSecondary', iceberg.emerge.muted, iceberg.immerge.muted],
+  ['textMuted', '#4e6e85', '#84a4ba'],
   ['success', colors.success[700], colors.success[500]],
-  ['warning', colors.warning[700], colors.warning[500]],
-  ['danger', colors.danger[600], colors.danger[400]],
+  ['warning', colors.warning[800], colors.warning[500]],
+  ['danger', colors.danger[700], colors.danger[400]],
   ['brandText', colors.brand[600], colors.brand[400]],
   ['accent', '#241603', '#ffb648'],
 ];
@@ -106,18 +107,59 @@ describe('les couleurs de texte du theme', () => {
   /**
    * LE PIRE CAS DU VERRE CLAIR SE CALCULE, il ne se decrete pas.
    *
-   * `surfacesDeReference.jour` affirme qu'un voile blanc a 0,72 pose sur le maillage le plus
-   * sombre rend #f5f7fb. Si le maillage s'assombrit un jour, cette valeur ment et tout le reste
-   * du fichier mesure une surface plus claire que la vraie.
+   * `surfacesDeReference.jour` affirme qu'un voile blanc a 0,72 pose sur le point le plus sombre
+   * de la scene claire rend cette valeur. Si la scene s'assombrit, elle ment, et tout le reste du
+   * fichier mesure une surface plus claire que la vraie.
    */
-  it('la surface de reference du clair est bien le voile pose sur le maillage', () => {
+  it('la surface de reference du clair est bien le voile pose sur le plancher', () => {
     const voile = 0.72;
-    const fond = maree.givre.maillageSombre.replace('#', '');
+    const fond = iceberg.emerge.plancher.replace('#', '');
     const compose = [0, 2, 4]
       .map(i => Math.round(parseInt(fond.slice(i, i + 2), 16) * (1 - voile) + 255 * voile))
       .map(v => v.toString(16).padStart(2, '0'))
       .join('');
 
     expect(`#${compose}`).toBe(JOUR);
+  });
+
+  /**
+   * LA SURFACE DE NUIT SE CALCULE AUSSI, et par la meme regle : le voile le plus fin pose sur le
+   * point de la scene qui laisse le moins de marge. En nuit c'est le point le plus CLAIR.
+   */
+  it('la surface de reference de la nuit est bien le voile pose sur le plafond', () => {
+    const voile = 0.7;
+    const encre = [7, 25, 42];
+    const fond = iceberg.immerge.plafond.replace('#', '');
+    const compose = [0, 2, 4]
+      .map((i, k) => Math.round(parseInt(fond.slice(i, i + 2), 16) * (1 - voile) + encre[k]! * voile))
+      .map(v => v.toString(16).padStart(2, '0'))
+      .join('');
+
+    expect(`#${compose}`).toBe(NUIT);
+  });
+
+  /**
+   * TEMOIN — LE PLAFOND EST BIEN PLUS DUR QUE LE PANNEAU.
+   *
+   * La nuit a longtemps pris le panneau pour reference. Y revenir redonnerait du vert a des
+   * couples que la couronne de l'iceberg ne tient plus.
+   */
+  it('temoin : le plafond de la scene est plus clair que le panneau', () => {
+    expect(contraste('#000000', iceberg.immerge.plafond)).toBeGreaterThan(
+      contraste('#000000', iceberg.immerge.panneau),
+    );
+  });
+
+  /**
+   * TEMOIN — LE PLANCHER EST BIEN PLUS DUR QUE LE CIEL.
+   *
+   * Le test au-dessus resterait vert si `plancher` valait `maillageSombre` : il ne verifie qu'une
+   * composition. Or c'est exactement la regression a craindre — revenir a la surface d'avant
+   * l'iceberg, plus claire, et redonner du vert a des couples qui ne tiennent plus.
+   */
+  it('temoin : le plancher de la scene est plus sombre que le ciel', () => {
+    expect(contraste('#ffffff', iceberg.emerge.plancher)).toBeGreaterThan(
+      contraste('#ffffff', iceberg.emerge.maillageSombre),
+    );
   });
 });

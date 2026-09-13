@@ -5,7 +5,7 @@ import { CompanySitesScreen } from '@/screens/company/CompanySitesScreen';
 import { CompanyBookingsScreen } from '@/screens/company/CompanyBookingsScreen';
 import { CompanyBillingScreen } from '@/screens/company/CompanyBillingScreen';
 import { CompanyProfileScreen } from '@/screens/company/CompanyProfileScreen';
-import { Icon } from '@/ui';
+import { Icon, apparenceDEnTete } from '@/ui';
 import { apparenceDeBarre } from '@/ui/glassBars';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -35,6 +35,7 @@ export function ClientCompanyNavigator() {
         tabBarActiveTintColor: colors.brand[500],
         tabBarInactiveTintColor: theme.textMuted,
         ...apparenceDeBarre(theme),
+        ...apparenceDEnTete(),
       }}
     >
       <Tab.Screen

@@ -123,6 +123,39 @@ describe('couleurs codées en dur', () => {
     expect(fautifs).toEqual([]);
   });
 
+  /**
+   * AUCUN VOILE NE PORTE UNE ANCIENNE COULEUR DE MARQUE.
+   *
+   * Le test au-dessus laisse passer les `rgba(…)` — un voile prend la couleur de ce qu'il
+   * recouvre, et c'est vrai de son OPACITÉ, jamais de sa TEINTE. L'écran Apparence du prestataire
+   * a gardé `rgba(99, 102, 241, 0.16)` — l'indigo — à travers deux refontes de palette : la seule
+   * trace visible de l'ancienne marque, et personne pour la signaler.
+   *
+   * Les teintes retirées se listent ici au fur et à mesure. Une rampe abandonnée ne disparaît pas
+   * des fichiers toute seule.
+   */
+  const MARQUES_RETIREES: Array<[string, RegExp]> = [
+    ['indigo', /(99,\s*102,\s*241)|#6366f1/i],
+    ['teal de Marée', /(18,\s*168,\s*151)|#12a897/i],
+  ];
+
+  it.each(MARQUES_RETIREES)('aucun composant ne garde le %s', (_nom, motif) => {
+    const fautifs = CIBLES.filter(chemin => motif.test(fs.readFileSync(chemin, 'utf8'))).map(c =>
+      path.relative(RACINE, c).split(path.sep).join('/'),
+    );
+
+    expect(fautifs).toEqual([]);
+  });
+
+  /*
+   * TÉMOIN. Sans lui, le test au-dessus passerait au vert si `CIBLES` était vide ou si les motifs
+   * ne compilaient pas — il mesurerait sa propre panne.
+   */
+  it('temoin : le motif reconnait bien une marque retiree', () => {
+    expect(MARQUES_RETIREES[0]![1].test("backgroundColor: 'rgba(99, 102, 241, 0.16)'")).toBe(true);
+    expect(MARQUES_RETIREES[0]![1].test("backgroundColor: t.tint.brand")).toBe(false);
+  });
+
   it('chaque exception porte une raison écrite', () => {
     for (const [fichier, raison] of Object.entries(EXCEPTIONS)) {
       // Une exception sans raison est une exception qu'on ne saura pas relire dans six mois.

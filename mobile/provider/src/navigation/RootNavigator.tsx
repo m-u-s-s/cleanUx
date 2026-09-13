@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { apparenceDEnTete } from '@/ui';
 import { useAuth } from '@/auth';
 import { useTraduction } from '@/i18n';
 import { EcranConfirmationEmail } from '@/auth/EcranConfirmationEmail';
@@ -212,7 +213,7 @@ export function RootNavigator() {
   if (space === 'providerCompany') {
     return (
       <View testID="root-navigator" style={{ flex: 1 }}>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Navigator screenOptions={{ headerShown: false, ...apparenceDEnTete() }}>
           <Stack.Screen name="ProviderCompanySpace" component={ProviderCompanyNavigator} />
           <Stack.Screen
             name="Modules"
@@ -373,7 +374,7 @@ export function RootNavigator() {
   if (space === 'superAdmin') {
     return (
       <View testID="root-navigator" style={{ flex: 1 }}>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Navigator screenOptions={{ headerShown: false, ...apparenceDEnTete() }}>
           <Stack.Screen name="SuperAdminSpace" component={SuperAdminHomeScreen} />
           <Stack.Screen
             name="Modules"
@@ -417,7 +418,7 @@ export function RootNavigator() {
   if (space === 'admin') {
     return (
       <View testID="root-navigator" style={{ flex: 1 }}>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Navigator screenOptions={{ headerShown: false, ...apparenceDEnTete() }}>
           <Stack.Screen name="AdminSpace" component={AdminNavigator} />
           <Stack.Screen
             name="Modules"
@@ -530,7 +531,7 @@ export function RootNavigator() {
 
   return (
     <View testID="root-navigator" style={{ flex: 1 }}>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator screenOptions={{ headerShown: false, ...apparenceDEnTete() }}>
         {space === 'providerOnboarding' ? (
           // Dossier incomplet : rien d'autre n'est atteignable. Une ERREUR de chargement laisse
           // en revanche passer — mieux vaut un dashboard partiellement bloqué par le serveur

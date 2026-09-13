@@ -3,8 +3,8 @@ import { colors, spacing, radius, typography, shadows, animation } from '@/theme
 describe('Design tokens', () => {
   describe('colors', () => {
     it('has brand palette with 500 as primary', () => {
-      // La rampe primaire est teal depuis Maree : l'indigo n'appartenait a aucun des deux mondes.
-      expect(colors.brand[500]).toBe('#12a897');
+      // La rampe primaire est bleu de glace depuis Iceberg. Elle a ete teal (Maree), indigo avant.
+      expect(colors.brand[500]).toBe('#2b87ba');
     });
     it('has surface neutral palette', () => {
       expect(colors.surface[50]).toBe('#fafafa');

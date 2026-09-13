@@ -14,9 +14,9 @@ import { LuxeBackground } from './LuxeBackground';
  * racine, sous la navigation, donne un fond continu : c'est le contenu qui glisse dessus, comme
  * derrière une vitre.
  *
- * Elle enveloppe le conteneur de navigation, pas l'inverse. Les barres et les écrans deviennent
- * transparents en sombre et laissent voir cette toile ; en clair elle ne rend rien et les fonds
- * pleins d'origine reprennent la main.
+ * Elle enveloppe le conteneur de navigation, pas l'inverse. Les barres et les écrans sont
+ * transparents DANS LES DEUX THÈMES et laissent voir cette toile : depuis l'iceberg, le clair a lui
+ * aussi quelque chose à montrer.
  */
 export function NightShell({ children }: { children: React.ReactNode }) {
   return (
@@ -28,29 +28,26 @@ export function NightShell({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Le thème de React Navigation, accordé au fond nuit.
+ * Le thème de React Navigation, accordé à la toile.
  *
- * `background: 'transparent'` EST LE POINT ESSENTIEL. Le conteneur de navigation peint son propre
- * fond sous chaque écran ; laissé opaque, il masquerait entièrement la toile et le travail des
- * gouttes ne se verrait nulle part. C'est le genre de couche qu'on oublie parce qu'elle n'apparaît
- * dans aucun de nos fichiers.
- *
- * En clair, le thème par défaut est rendu tel quel.
+ * `background: 'transparent'` EST LE POINT ESSENTIEL, ET DANS LES DEUX THÈMES. Le conteneur de
+ * navigation peint son propre fond sous chaque écran ; laissé opaque, il masque entièrement la
+ * toile. C'est le genre de couche qu'on oublie parce qu'elle n'apparaît dans aucun de nos fichiers :
+ * le clair est resté un aplat uniforme tant qu'on a rendu ici le thème par défaut.
  */
 export function themeDeNavigation(isDark: boolean): Theme {
-  if (!isDark) {
-    return DefaultTheme;
-  }
+  const base = isDark ? DarkTheme : DefaultTheme;
+  const glace = colors.mode.iceberg;
 
   return {
-    ...DarkTheme,
+    ...base,
     colors: {
-      ...DarkTheme.colors,
-      primary: colors.brand[500],
+      ...base.colors,
+      primary: isDark ? colors.brand[300] : colors.brand[600],
       background: 'transparent',
       card: 'transparent',
-      text: colors.mode.showcase.text,
-      border: 'rgba(232, 238, 252, 0.14)',
+      text: isDark ? glace.immerge.texte : glace.emerge.texte,
+      border: isDark ? 'rgba(234, 243, 249, 0.14)' : 'rgba(11, 26, 36, 0.10)',
     },
   };
 }

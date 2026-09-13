@@ -127,7 +127,8 @@ function Barre({ state, descriptors, navigation, routeCentrale }: BottomTabBarPr
 
   return (
     <View style={[styles.socle, { paddingBottom: Math.max(insets.bottom, 10) }]}>
-      {theme.isDark ? <GlassSurface style={StyleSheet.absoluteFill} /> : null}
+      {/* Le verre est la matiere de la barre dans LES DEUX themes : l'iceberg passe dessous. */}
+      <GlassSurface style={StyleSheet.absoluteFill} strong radius={0} />
 
       <View style={styles.rangee}>
         <View style={styles.cote}>{gauche.map(rendreOnglet)}</View>
@@ -161,9 +162,6 @@ const feuille = (theme: ThemeTokens) =>
   StyleSheet.create({
     socle: {
       paddingTop: 30,
-      backgroundColor: theme.isDark ? 'transparent' : theme.glassStrong,
-      borderTopWidth: theme.isDark ? 0 : StyleSheet.hairlineWidth,
-      borderTopColor: theme.glassBorder,
     },
     rangee: {
       flexDirection: 'row',
@@ -212,7 +210,7 @@ const feuille = (theme: ThemeTokens) =>
       justifyContent: 'center',
       backgroundColor: theme.accent,
       borderWidth: 4,
-      borderColor: theme.isDark ? theme.bg : theme.glassStrong,
+      borderColor: theme.glassStrong,
       ...Platform.select({
         ios: {
           shadowColor: theme.accent,

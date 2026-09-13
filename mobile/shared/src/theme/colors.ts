@@ -1,6 +1,6 @@
 export const colors = {
   /**
-   * LA RAMPE PRIMAIRE EST TEAL DEPUIS MAREE, et non plus indigo.
+   * LA RAMPE PRIMAIRE EST LA GLACE DEPUIS ICEBERG, et non plus indigo.
    *
    * Repointer la rampe plutot que corriger les appels : l'indigo ne vivait pas dans les jetons
    * mais dans 89 lectures directes de `colors.brand` reparties dans les ecrans. Un bouton indigo
@@ -10,13 +10,13 @@ export const colors = {
    * Elle se comporte comme une rampe doit se comporter : les crans clairs tiennent sur la nuit,
    * les crans sombres tiennent sur le jour.
    *
-   *   sur #f5f7fb (jour)   400 = 1,65   600 = 4,66   800 = 6,61
-   *   sur #082a3a (nuit)   400 = 8,45   600 = 3,00   800 = 2,11
+   *   sur #f4f9fc (jour)   400 = 2,48   600 = 5,51   800 = 9,42
+   *   sur #0c2a3e (nuit)   400 = 5,65   600 = 2,54   800 = 1,48
    */
   brand: {
-    50: '#e8fbf8', 100: '#c6f5ee', 200: '#93ebe0', 300: '#57dccd',
-    400: '#2fd9c5', 500: '#12a897', 600: '#0b7d75', 700: '#0a6a63',
-    800: '#08554f', 900: '#06423e', 950: '#032826',
+    50: '#eff7fd', 100: '#d9ecf9', 200: '#b6dbf3', 300: '#7fc4e8',
+    400: '#4fa9d8', 500: '#2b87ba', 600: '#1c6b96', 700: '#185878',
+    800: '#17475f', 900: '#163b4e', 950: '#0c2434',
   },
   surface: {
     50: '#fafafa', 100: '#f5f5f5', 200: '#e5e5e5', 300: '#d4d4d4',
@@ -24,7 +24,9 @@ export const colors = {
     800: '#262626', 900: '#171717', 950: '#0a0a0a',
   },
   success: { 50: '#ecfdf5', 500: '#10b981', 600: '#059669', 700: '#047857' },
-  warning: { 50: '#fffbeb', 500: '#f59e0b', 600: '#d97706', 700: '#b45309' },
+  /* Le 800 existe pour le seul ambre en TEXTE sur le verre clair : depuis que la scene claire
+     porte l'iceberg, le 700 y rend 4,47 — sous le seuil de trois centiemes. */
+  warning: { 50: '#fffbeb', 500: '#f59e0b', 600: '#d97706', 700: '#b45309', 800: '#92400e' },
   /* Le 400 existe pour le seul cas du rouge en TEXTE sur le panneau de Profondeur : le 500 y
      rend 3,98, sous le seuil. Le panneau teal est plus clair que l'ancien panneau indigo. */
   danger:  { 50: '#fef2f2', 400: '#f87171', 500: '#ef4444', 600: '#dc2626', 700: '#b91c1c' },
@@ -34,35 +36,50 @@ export const colors = {
     showcase: { night: '#070b14', nightSoft: '#0c1322', panel: '#111a2e', text: '#e8eefc', muted: '#93a4c6' },
 
     /**
-     * MARÉE — un seul système, vu des deux côtés de la surface de l'eau.
+     * ICEBERG — le meme objet, vu de deux profondeurs.
      *
-     * Le thème clair est AU-DESSUS : un maillage pâle qui dérive, du verre blanc dépoli posé
-     * dessus. Le thème sombre est EN DESSOUS : la lumière tombe du haut en caustiques, s'éteint
-     * vers le bas, et le verre prend la teinte de l'eau.
+     * Le theme CLAIR est la partie emergee : dix pour cent, sous un ciel blanc. Le theme SOMBRE
+     * est la masse immergee : la meme glace, en entier, dans l'eau noire. Basculer ne change pas
+     * le decor — ca change l'endroit d'ou l'on regarde.
      *
-     * Ce ne sont pas deux palettes voisines, c'est la même idée retournée — d'où l'ambre commun :
-     * la seule couleur chaude, des deux côtés, réservée à l'argent.
+     * L'ambre traverse les deux, seule couleur chaude, reservee a l'argent. Sur de la glace, elle
+     * est encore plus seule qu'ailleurs.
      */
-    maree: {
-      profondeur: {
-        /** Le fond de page : `eau` en haut, `abysse` en bas. La lumière vient du dessus. */
-        eau: '#04222e',
-        abysse: '#01121a',
-        /** Le panneau. Sa clarté est CONTRAINTE : plus sombre, l'ambre écrase ; plus clair, le rouge tombe. */
-        panneau: '#082a3a',
-        panneauHaut: '#0c3646',
-        texte: '#e8f6f6',
-        muted: '#9dc0c9',
-        /** La couleur de la lumière dans l'eau — les caustiques, les tracés, les états vivants. */
-        caustique: '#2fd9c5',
+    iceberg: {
+      immerge: {
+        /** Le fond de page : `eau` pres de la surface, `abysse` en bas. */
+        eau: '#0a2033',
+        abysse: '#04101c',
+        /** Le panneau. Sa clarte est CONTRAINTE : tous les jetons semantiques doivent y tenir. */
+        panneau: '#0c2a3e',
+        panneauHaut: '#103850',
+        texte: '#eaf3f9',
+        muted: '#9fbdd1',
+        /** La glace eclairee — l'action, les traces vivants, la couronne du modele. */
+        glace: '#7fc4e8',
+        /**
+         * LE POINT LE PLUS CLAIR QUE LA SCENE NUIT PUISSE PRODUIRE — le pendant exact de
+         * `emerge.plancher`. Ici le danger est inverse : un texte clair devient illisible sur une
+         * facette trop lumineuse. `IcebergVolumetrique` l'applique comme PLAFOND.
+         */
+        plafond: '#4c768b',
       },
-      givre: {
-        page: '#eef2f7',
-        /** Les deux extrêmes du maillage. Le plus sombre est le pire cas du contraste. */
-        maillageClair: '#f6f8fc',
-        maillageSombre: '#dbe4f2',
-        texte: '#16242b',
-        muted: '#4a6b8f',
+      emerge: {
+        page: '#f4f8fb',
+        /** Les deux extremes du ciel. */
+        maillageClair: '#fbfdfe',
+        maillageSombre: '#d9e8f3',
+        texte: '#0b1a24',
+        muted: '#4a6b84',
+        /**
+         * LE POINT LE PLUS SOMBRE QUE LA SCENE CLAIRE PUISSE PRODUIRE.
+         *
+         * Ce n'etait le maillage que tant que la scene n'avait pas d'objet. L'iceberg descend
+         * plus bas : sa facette la moins eclairee, juste au-dessus de la flottaison, vaut cette
+         * valeur — et `IcebergVolumetrique` l'applique comme PLANCHER, si bien que la borne est
+         * exacte et non estimee. C'est elle que le verre clair doit rendre lisible.
+         */
+        plancher: '#b0d5f3',
       },
     },
   },
@@ -75,10 +92,14 @@ export const colors = {
  * temps que la palette : un thème pouvait dériver sans que le test s'en aperçoive. Ici la
  * définition est unique, et `lisibilite.test.ts` la lit.
  *
- * En clair, ce n'est PAS le blanc : c'est le voile de verre le plus fin (0,72) posé sur le point
- * le plus sombre du maillage. C'est là que le texte a le moins de marge.
+ * DANS LES DEUX THÈMES : le voile de verre le plus FIN posé sur le point de la scène qui laisse
+ * le moins de marge. En clair c'est le point le plus SOMBRE (`emerge.plancher`), en nuit le point
+ * le plus CLAIR (`immerge.plafond`) — le texte y est clair, c'est la lumière qui le mange.
+ *
+ * En nuit, ce fut longtemps le panneau lui-même : c'était vrai tant que rien de plus clair ne
+ * passait derrière une carte. L'iceberg a changé cela.
  */
 export const surfacesDeReference = {
-  jour: '#f5f7fb',
-  nuit: colors.mode.maree.profondeur.panneau,
+  jour: '#e9f3fc',
+  nuit: '#1c3547',
 } as const;

@@ -62,10 +62,10 @@ describe('jetons de thème', () => {
     expect(opacite).toBeGreaterThanOrEqual(0.05);
   });
 
-  it('le fond sombre adopte la palette Profondeur', () => {
+  it('le fond sombre adopte la palette immergee', () => {
     // Et non un gris neutre : c'est cette palette qui porte la direction retenue, et en
     // introduire une seconde ferait diverger deux definitions du meme fond.
-    expect(enSombre().bg).toBe(colors.mode.maree.profondeur.abysse);
+    expect(enSombre().bg).toBe(colors.mode.iceberg.immerge.abysse);
   });
 
   it('le mode clair garde un fond TEINTE, jamais blanc', () => {
@@ -78,7 +78,7 @@ describe('jetons de thème', () => {
      * teinte a filtrer, tout le traitement disparait en mode clair sans qu'aucun test ne tombe.
      * Le fond doit donc rester colore, et distinct du blanc des cartes.
      */
-    expect(t.bg).toBe(colors.mode.maree.givre.page);
+    expect(t.bg).toBe(colors.mode.iceberg.emerge.page);
     expect(t.bg).not.toBe('#ffffff');
     expect(t.bg).not.toBe(t.card);
 

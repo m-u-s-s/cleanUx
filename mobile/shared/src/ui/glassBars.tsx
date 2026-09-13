@@ -47,6 +47,28 @@ export function apparenceDeBarre(_theme: ThemeTokens): ApparenceDeBarre {
 }
 
 /**
+ * L'apparence d'un EN-TÊTE, pour la même raison que la barre d'onglets.
+ *
+ * `@react-navigation/native-stack` rend un en-tête NATIF : il ne lit pas `colors.card` du thème de
+ * navigation comme le fait la pile JavaScript, et retombe sur la surface par défaut d'Android —
+ * un aplat blanc en clair, un gris-bleu en sombre. Résultat : une barre pleine en haut de chaque
+ * écran à en-tête, qui coupe l'iceberg net et n'apparaît dans aucun de nos fichiers de style.
+ *
+ * On ne passe pas par `headerTransparent` : il ferait passer le contenu SOUS l'en-tête et
+ * décalerait tous les écrans concernés. Un fond transparent suffit, la mise en page ne bouge pas.
+ */
+export function apparenceDEnTete(): {
+  headerStyle: { backgroundColor: string };
+  headerShadowVisible: boolean;
+} {
+  return {
+    headerStyle: { backgroundColor: 'transparent' },
+    // L'ombre portée redessinerait la ligne que la transparence vient d'effacer.
+    headerShadowVisible: false,
+  };
+}
+
+/**
  * Le fond d'une feuille modale — même matière que les barres, coins arrondis en haut seulement.
  *
  * `@gorhom/bottom-sheet` attend un style d'arrière-plan, pas un composant : il n'y a donc pas de

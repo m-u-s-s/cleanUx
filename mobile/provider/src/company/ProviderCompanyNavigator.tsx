@@ -6,7 +6,7 @@ import { CompanyFieldTeamsScreen } from '@/screens/company/CompanyFieldTeamsScre
 import { CompanyTasksScreen } from '@/screens/company/CompanyTasksScreen';
 import { CompanyChannelsScreen } from '@/screens/company/CompanyChannelsScreen';
 import { CompanyProfileScreen } from '@/screens/company/CompanyProfileScreen';
-import { Icon } from '@/ui';
+import { Icon, apparenceDEnTete } from '@/ui';
 import { useAuth, can } from '@/auth';
 import { apparenceDeBarre } from '@/ui/glassBars';
 import { colors } from '@/theme';
@@ -55,6 +55,7 @@ export function ProviderCompanyNavigator() {
         tabBarActiveTintColor: colors.brand[500],
         tabBarInactiveTintColor: theme.textMuted,
         ...apparenceDeBarre(theme),
+        ...apparenceDEnTete(),
       }}
     >
       {/*

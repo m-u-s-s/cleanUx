@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Screen, Badge } from '@/ui';
 import { useColorScheme } from '@/theme/useColorScheme';
-import { colors, spacing, typography, radius } from '@/theme';
+import { spacing, typography, radius } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
 import type { ThemeTokens } from '@/theme/useThemeColors';
 import { useTraduction } from '@/i18n';
@@ -56,9 +56,9 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     borderRadius: radius.md,
     marginBottom: spacing.xs,
   },
-  // Teinte de marque TRANSLUCIDE, et non `brand[50]` : cet aplat quasi-blanc rendait le texte
-  // clair invisible en mode sombre. Un voile se pose sur les deux fonds.
-  rowActive: { backgroundColor: 'rgba(99, 102, 241, 0.16)' },
+  // Le VOILE de marque du theme, et non un rgba fige : celui d'avant etait reste indigo, seule
+  // trace visible de l'ancienne palette apres deux refontes.
+  rowActive: { backgroundColor: t.tint.brand },
   rowContent: { flex: 1 },
   label: {
     fontSize: typography.fontSize.base,

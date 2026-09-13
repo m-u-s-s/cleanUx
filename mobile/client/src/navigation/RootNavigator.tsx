@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { apparenceDEnTete } from '@/ui';
 import { useAuth } from '@/auth';
 import { useTraduction } from '@/i18n';
 import { EcranConfirmationEmail } from '@/auth/EcranConfirmationEmail';
@@ -150,7 +151,7 @@ export function RootNavigator() {
   if (space === 'clientCompany') {
     return (
       <View testID="root-navigator" style={{ flex: 1 }}>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Navigator screenOptions={{ headerShown: false, ...apparenceDEnTete() }}>
           <Stack.Screen name="ClientCompanySpace" component={ClientCompanyNavigator} />
           <Stack.Screen
             name="Modules"
@@ -253,7 +254,7 @@ export function RootNavigator() {
 
   return (
     <View testID="root-navigator" style={{ flex: 1 }}>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator screenOptions={{ headerShown: false, ...apparenceDEnTete() }}>
         {isAuthenticated ? (
           <>
             <Stack.Screen name="MainTabs" component={TabNavigator} />
