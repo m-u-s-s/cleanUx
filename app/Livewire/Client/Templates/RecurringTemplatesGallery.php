@@ -78,12 +78,16 @@ class RecurringTemplatesGallery extends Component
 
         $user = Auth::user();
 
+        // L'AUTORISATION SE POSE AVANT LE `try`. Le `catch (\Throwable)` plus bas avale tout —
+        // y compris le 403 d'un `abort_unless`, qu'il transformerait en simple message d'erreur.
+        $siteId = $this->siteAutorise();
+
         try {
             $series = app(ApplyRecurringTemplateService::class)->apply(
                 $user,
                 $template,
                 [
-                    'organization_site_id' => $this->selectedSiteId,
+                    'organization_site_id' => $siteId,
                     'starts_at' => $this->applyStartsAt,
                     'ends_at' => $this->applyEndsAt,
                     'occurrence_count' => $this->applyOccurrenceCount,
@@ -100,6 +104,29 @@ class RecurringTemplatesGallery extends Component
             report($e);
             $this->flash('Une erreur est survenue.', 'error');
         }
+    }
+
+    /**
+     * LA LISTE DU `render()` EST UN FILTRE D'AFFICHAGE, PAS UNE GARDE D'ÉCRITURE. Sans ceci, une
+     * série récurrente entière partait à l'adresse d'une autre société, occurrence après occurrence.
+     */
+    protected function siteAutorise(): ?int
+    {
+        if ($this->selectedSiteId === null) {
+            return null;
+        }
+
+        $orgId = Auth::user()?->organization_account_id;
+
+        abort_unless(
+            $orgId !== null && OrganizationAccount::query()
+                ->whereKey($orgId)
+                ->whereHas('sites', fn ($q) => $q->whereKey($this->selectedSiteId))
+                ->exists(),
+            403,
+        );
+
+        return $this->selectedSiteId;
     }
 
     public function clearFlash(): void

@@ -12,6 +12,7 @@ use App\Services\Assistant\Tools\AssistantToolDispatcher;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -26,8 +27,15 @@ class AssistantWidget extends Component
 
     public bool $useStreaming = true; // si false, fallback Phase 5 sync
 
+    /**
+     * VERROUILLÉE : jamais liée à une saisie, et le widget vit dans TOUTES les pages des espaces
+     * société. `$wire.set('conversationId', 7)` puis un `Livewire.dispatch` rendait l'historique
+     * d'assistant d'un autre compte, et permettait d'y écrire.
+     */
+    #[Locked]
     public ?int $conversationId = null;
 
+    /** Pas verrouillée : état d'affichage. L'autorisation vit dans `confirmAndExecute($user, $id)`. */
     public ?int $pendingActionId = null;
 
     /** @var array<int, array{sender:string, content:string, time:string, message_id?:int}> */

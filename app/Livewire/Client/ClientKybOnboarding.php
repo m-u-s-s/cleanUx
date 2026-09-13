@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -20,6 +21,12 @@ class ClientKybOnboarding extends Component
 
     public int $step = 1;
 
+    /**
+     * VERROUILLÉE : le navigateur peut retourner une propriété publique par `$set`.
+     * Sans cela, `$wire.set('entityId', 42)` rendait le dossier KYB d'une autre société — statut,
+     * score de risque, motif de rejet — et y déposait des pièces.
+     */
+    #[Locked]
     public ?int $entityId = null;
 
     // Step 1 fields

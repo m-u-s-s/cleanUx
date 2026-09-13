@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Employe;
 
+use App\Models\FieldTeamMember;
 use App\Models\Mission;
 use App\Models\MissionBatch;
 use App\Models\MissionReinforcementRequest;
@@ -56,6 +57,11 @@ class TeamLeadOperationsCenter extends Component
         $this->selectedSegmentId = $this->currentSegments()->value('id');
     }
 
+    /**
+     * LE PÉRIMÈTRE DU CHEF D'ÉQUIPE, ÉCRIT UNE SEULE FOIS et réutilisé en sous-requête par les
+     * gardes ci-dessous. `EnsureFieldTeamLead` vérifie qu'on est chef d'UNE équipe, jamais de
+     * laquelle : c'est ici que la question se pose.
+     */
     protected function managedBatches()
     {
         return MissionBatch::query()
@@ -68,6 +74,37 @@ class TeamLeadOperationsCenter extends Component
             })
             ->with(['days.segments'])
             ->latest('start_date');
+    }
+
+    /**
+     * L'IDENTIFIANT VIENT DU CLIENT, comme pour `updateSelectedMemberStatus` : il se résout DANS le
+     * périmètre, jamais par un `findOrFail` nu — sinon on affecte le segment d'un concurrent.
+     */
+    protected function segmentGere(?int $segmentId): MissionTaskSegment
+    {
+        $segment = MissionTaskSegment::query()
+            ->whereIn('mission_batch_id', $this->managedBatches()->select('mission_batches.id'))
+            ->find($segmentId);
+
+        abort_if($segment === null, 403);
+
+        return $segment;
+    }
+
+    /** On n'affecte pas n'importe qui : l'intervenant doit être un membre actif de CETTE équipe. */
+    protected function membreDeLEquipe(MissionTaskSegment $segment, ?int $userId): User
+    {
+        $estMembre = $segment->field_team_id !== null
+            && $userId !== null
+            && FieldTeamMember::query()
+                ->where('field_team_id', $segment->field_team_id)
+                ->where('user_id', $userId)
+                ->where('is_active', true)
+                ->exists();
+
+        abort_unless($estMembre, 403);
+
+        return User::findOrFail($userId);
     }
 
     protected function currentSegments()
@@ -86,8 +123,8 @@ class TeamLeadOperationsCenter extends Component
 
     public function assignSelectedSegment(): void
     {
-        $segment = MissionTaskSegment::findOrFail($this->selectedSegmentId);
-        $user = User::findOrFail($this->selectedAssigneeId);
+        $segment = $this->segmentGere($this->selectedSegmentId);
+        $user = $this->membreDeLEquipe($segment, $this->selectedAssigneeId);
 
         $this->operations->assignSegment($segment, $user, [
             'assigned_by_user_id' => Auth::id(),
@@ -125,7 +162,7 @@ class TeamLeadOperationsCenter extends Component
 
     public function requestReinforcement(): void
     {
-        $segment = MissionTaskSegment::findOrFail($this->selectedSegmentId);
+        $segment = $this->segmentGere($this->selectedSegmentId);
 
         $this->operations->requestReinforcement($segment, Auth::user(), [
             'field_team_id' => $segment->field_team_id,
@@ -140,7 +177,15 @@ class TeamLeadOperationsCenter extends Component
 
     public function closeSelectedBatchMission(int $missionId): void
     {
-        $mission = Mission::findOrFail($missionId);
+        $mission = Mission::query()
+            ->whereIn('id', MissionTaskSegment::query()
+                ->whereIn('mission_batch_id', $this->managedBatches()->select('mission_batches.id'))
+                ->select('mission_id')
+            )
+            ->find($missionId);
+
+        abort_if($mission === null, 403);
+
         $this->operations->closeInterventionGlobally($mission, Auth::user());
 
         $this->dispatch('toast', 'Clôture globale exécutée.', 'success');
