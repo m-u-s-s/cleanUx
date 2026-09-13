@@ -60,11 +60,21 @@ export function apparenceDeBarre(_theme: ThemeTokens): ApparenceDeBarre {
 export function apparenceDEnTete(): {
   headerStyle: { backgroundColor: string };
   headerShadowVisible: boolean;
+  headerBackground: () => React.ReactElement;
 } {
   return {
     headerStyle: { backgroundColor: 'transparent' },
     // L'ombre portée redessinerait la ligne que la transparence vient d'effacer.
     headerShadowVisible: false,
+    /*
+     * ET UNE PLAQUE DERRIÈRE, parce que la toile est un RENDU et non un aplat.
+     *
+     * Transparent seul suffisait tant que le fond était une nuance sage. Le fond est maintenant
+     * l'image de la planche : elle va du noir de la quille au blanc des caustiques, et le titre
+     * d'un écran tombait pile sur ces caustiques — illisible. Le verre porte le titre, comme il
+     * porte tout le reste.
+     */
+    headerBackground: () => <GlassSurface testID="glass-header" radius={0} strong style={StyleSheet.absoluteFill} />,
   };
 }
 

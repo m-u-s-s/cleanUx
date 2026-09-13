@@ -149,6 +149,39 @@ describe('Screen', () => {
       'transparent',
     );
   });
+
+  /**
+   * L'ÉCRAN POSE UNE PLAQUE — ce n'est pas la même chose qu'un aplat.
+   *
+   * La toile porte le RENDU de la planche : elle va du noir de la quille au blanc des caustiques.
+   * Aucune couleur de texte ne tient sur les deux, donc rien ne se pose à nu dessus. La plaque est
+   * posée une fois ici plutôt que deux cent soixante-quatorze fois dans les écrans.
+   */
+  it('pose une plaque de verre derriere son contenu', () => {
+    render(
+      <Screen>
+        <Text>contenu</Text>
+      </Screen>,
+    );
+
+    expect(screen.getByTestId('screen-plaque', { includeHiddenElements: true })).toBeTruthy();
+  });
+
+  /**
+   * TÉMOIN — et c'est une porte, pas un contrôle : `toile` est ce qui laisse voir l'iceberg.
+   *
+   * Sans ce test, retirer la propriété rendrait le test précédent vert pour tout le monde et
+   * l'accueil perdrait son fond sans que rien ne tombe.
+   */
+  it('temoin : `toile` retire la plaque et laisse voir le rendu', () => {
+    render(
+      <Screen toile>
+        <Text>contenu</Text>
+      </Screen>,
+    );
+
+    expect(screen.queryByTestId('screen-plaque', { includeHiddenElements: true })).toBeNull();
+  });
 });
 
 /** Réduit un style React Native — objet, tableau, imbriqué — à un seul objet. */

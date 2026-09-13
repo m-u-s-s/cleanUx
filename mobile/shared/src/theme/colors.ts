@@ -59,10 +59,11 @@ export const colors = {
         glace: '#7fc4e8',
         /**
          * LE POINT LE PLUS CLAIR QUE LA SCENE NUIT PUISSE PRODUIRE — le pendant exact de
-         * `emerge.plancher`. Ici le danger est inverse : un texte clair devient illisible sur une
-         * facette trop lumineuse. `IcebergVolumetrique` l'applique comme PLAFOND.
+         * `emerge.plancher`. Depuis que le fond est le RENDU de la planche et non un maillage,
+         * il n'est plus borne par le code : les caustiques de la surface vont jusqu'au blanc pur.
+         * Cette valeur est MESUREE sur l'image, elle n'est plus decidee.
          */
-        plafond: '#4a7287',
+        plafond: '#ffffff',
       },
       emerge: {
         page: '#f4f8fb',
@@ -74,12 +75,11 @@ export const colors = {
         /**
          * LE POINT LE PLUS SOMBRE QUE LA SCENE CLAIRE PUISSE PRODUIRE.
          *
-         * Ce n'etait le maillage que tant que la scene n'avait pas d'objet. L'iceberg descend
-         * plus bas : sa facette la moins eclairee, juste au-dessus de la flottaison, vaut cette
-         * valeur — et `IcebergVolumetrique` l'applique comme PLANCHER, si bien que la borne est
-         * exacte et non estimee. C'est elle que le verre clair doit rendre lisible.
+         * La quille du rendu est presque noire. Le maillage d'avant s'arretait ou on le lui
+         * disait ; une image, non. C'est donc le VOILE DU VERRE qui porte desormais toute la
+         * lisibilite, et il est dense en consequence.
          */
-        plancher: '#b0d5f3',
+        plancher: '#000000',
       },
     },
   },
@@ -100,6 +100,6 @@ export const colors = {
  * passait derrière une carte. L'iceberg a changé cela.
  */
 export const surfacesDeReference = {
-  jour: '#e9f3fc',
-  nuit: '#1b3446',
+  jour: '#f0f0f0',
+  nuit: '#20303f',
 } as const;

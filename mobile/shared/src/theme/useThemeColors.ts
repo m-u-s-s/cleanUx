@@ -81,11 +81,13 @@ export function useThemeColors() {
      * rien, et ne tenait que parce que la toile d'alors était sombre partout. L'iceberg passe
      * maintenant derrière les cartes, et sur sa couronne `textMuted` tombait à 1,39. Le voile
      * fonce dans les deux thèmes désormais — blanc sur le jour, encre sur la nuit — et laisse
-     * encore passer près d'un tiers de la scène — l'opacité exacte se déduit du plafond de la
-     * scène : plus le voile est dense, plus l'iceberg a le droit d'être lumineux derrière.
+     * L'OPACITÉ SE DÉDUIT DE LA SCÈNE, elle ne se choisit pas. Le fond est maintenant un rendu
+     * photoréaliste qui va du noir de la quille au blanc des caustiques : le voile doit tenir sur
+     * ces deux extrêmes-là. C'est le prix du rendu de la planche, et c'est aussi ce que montre la
+     * planche elle-même — ses cartes sont des plaques givrées denses, pas des vitres.
      */
-    glass: isDark ? 'rgba(7, 25, 42, 0.70)' : 'rgba(255, 255, 255, 0.72)',
-    glassStrong: isDark ? 'rgba(7, 25, 42, 0.82)' : 'rgba(255, 255, 255, 0.86)',
+    glass: isDark ? 'rgba(7, 25, 42, 0.90)' : 'rgba(255, 255, 255, 0.94)',
+    glassStrong: isDark ? 'rgba(7, 25, 42, 0.94)' : 'rgba(255, 255, 255, 0.96)',
     glassBorder: isDark ? 'rgba(200, 232, 250, 0.30)' : 'rgba(74, 107, 132, 0.20)',
     textOnGlass: isDark ? nuit.texte : jour.texte,
     mutedOnGlass: isDark ? nuit.muted : jour.muted,

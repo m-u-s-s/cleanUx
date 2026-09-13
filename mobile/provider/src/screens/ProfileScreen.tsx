@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button, Divider } from '@/ui';
+import { Button, Divider, GlassSurface } from '@/ui';
 import { useAuth, can } from '@/auth';
 import {typography, spacing, radius, shadows } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -160,6 +160,9 @@ export function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container} testID="profile-screen">
+      {/* Le SEUL ecran a ne pas passer par `Screen` : il pose donc sa plaque lui-meme, sans quoi
+          ses quinze libelles tombent a nu sur la quille noire du rendu. */}
+      <GlassSurface testID="screen-plaque" radius={0} strong style={StyleSheet.absoluteFill} />
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>{tr('profile.profil')}</Text>
         <View style={styles.grid}>

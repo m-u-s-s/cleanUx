@@ -75,7 +75,8 @@ export function HomeScreen() {
     [formatDateHeure(b.scheduled_date, b.scheduled_time), b.city].filter(Boolean).join(' — ');
 
   return (
-    <Screen testID="home-screen">
+    // `toile` : tout le contenu de l'accueil est deja sur du verre, l'iceberg peut respirer.
+    <Screen testID="home-screen" toile>
       <View style={styles.hero}>
         <View style={styles.heroLeft}>
           <Text style={styles.greeting}>

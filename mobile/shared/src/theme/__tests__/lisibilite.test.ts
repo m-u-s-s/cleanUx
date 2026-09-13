@@ -112,7 +112,7 @@ describe('les couleurs de texte du theme', () => {
    * fichier mesure une surface plus claire que la vraie.
    */
   it('la surface de reference du clair est bien le voile pose sur le plancher', () => {
-    const voile = 0.72;
+    const voile = 0.94;
     const fond = iceberg.emerge.plancher.replace('#', '');
     const compose = [0, 2, 4]
       .map(i => Math.round(parseInt(fond.slice(i, i + 2), 16) * (1 - voile) + 255 * voile))
@@ -127,7 +127,7 @@ describe('les couleurs de texte du theme', () => {
    * point de la scene qui laisse le moins de marge. En nuit c'est le point le plus CLAIR.
    */
   it('la surface de reference de la nuit est bien le voile pose sur le plafond', () => {
-    const voile = 0.7;
+    const voile = 0.9;
     const encre = [7, 25, 42];
     const fond = iceberg.immerge.plafond.replace('#', '');
     const compose = [0, 2, 4]
@@ -146,21 +146,23 @@ describe('les couleurs de texte du theme', () => {
    * est ce qu'elle a de plus clair. Le plafond de la scene est CHOISI pour ce cas — c'est lui qui
    * l'a fixe, pas le verre.
    *
-   * LA REGLE QUI EN DECOULE : sur la toile, seul `text` est admis. Les crans de sourdine n'y
-   * tiennent a aucune luminosite qui laisse la glace lumineuse — voir le temoin ci-dessous.
+   * LA REGLE QUI EN DECOULE : RIEN NE SE POSE A NU SUR LA TOILE. Le fond va du noir de la quille
+   * au blanc des caustiques ; aucune couleur de texte ne tient sur les deux. Tout texte s'assoit
+   * sur une plaque de verre — c'est ce que fait la planche, et c'est ce que le balayage impose.
    */
-  it('le texte de plein contraste tient a nu sur la couronne', () => {
-    expect(contraste(iceberg.immerge.texte, iceberg.immerge.plafond)).toBeGreaterThanOrEqual(SEUIL);
+  it('AUCUN texte ne tient a nu sur la scene, dans aucun des deux themes', () => {
+    // Les deux extremes du rendu. Aucune couleur de texte ne survit a l'un ET a l'autre.
+    expect(contraste(iceberg.immerge.texte, iceberg.immerge.plafond)).toBeLessThan(SEUIL);
+    expect(contraste(iceberg.emerge.texte, iceberg.emerge.plancher)).toBeLessThan(SEUIL);
   });
 
   /*
-   * TEMOIN — et il porte une decision, pas un simple controle : les crans de sourdine NE TIENNENT
-   * PAS a nu. Si l'un d'eux venait a passer, c'est que le plafond a ete baisse au point d'eteindre
-   * la glace, et il faut le savoir avant de le decouvrir a l'ecran.
+   * TEMOIN. Le test ci-dessus serait vert si `contraste()` rendait toujours un petit nombre. Les
+   * memes couleurs, posees sur la surface de reference de LEUR theme, doivent tenir largement.
    */
-  it('temoin : les crans de sourdine ne tiennent PAS a nu sur la couronne', () => {
-    expect(contraste(iceberg.immerge.muted, iceberg.immerge.plafond)).toBeLessThan(SEUIL);
-    expect(contraste('#84a4ba', iceberg.immerge.plafond)).toBeLessThan(SEUIL);
+  it('temoin : ces memes couleurs tiennent sur le verre', () => {
+    expect(contraste(iceberg.immerge.texte, NUIT)).toBeGreaterThanOrEqual(SEUIL);
+    expect(contraste(iceberg.emerge.texte, JOUR)).toBeGreaterThanOrEqual(SEUIL);
   });
 
   /**

@@ -138,11 +138,16 @@ describe('LuxeBackground', () => {
 
     expect(withRepeat).toHaveBeenCalled();
 
-    // Répétition sans fin, et sans aller-retour : la phase doit repartir de zéro, pas revenir.
+    /*
+     * SANS FIN, ET EN ALLER-RETOUR. C'était l'inverse tant que le fond était un maillage : il
+     * TOURNAIT, et une phase qui revient sur ses pas aurait fait tourner l'objet à l'envers une
+     * fois sur deux. Le fond est maintenant le rendu de la planche, qui ne tourne pas — il
+     * respire. Une respiration qui repartirait de zéro se verrait sauter à chaque cycle.
+     */
     const [, repetitions, allerRetour] = (withRepeat as jest.Mock).mock.calls[0] ?? [];
 
     expect(repetitions).toBe(-1);
-    expect(allerRetour).toBe(false);
+    expect(allerRetour).toBe(true);
   });
 
   it('garde le même point de montage quel que soit le rendu', () => {

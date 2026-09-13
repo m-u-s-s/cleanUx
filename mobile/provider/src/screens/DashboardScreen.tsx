@@ -21,7 +21,8 @@ export function DashboardScreen() {
   const openSheet = useCallback(() => sheetRef.current?.expand(), []);
 
   return (
-    <Screen testID="dashboard-screen">
+    // `toile` : le tableau de bord est une carte plein ecran, rien n'y est pose a nu.
+    <Screen testID="dashboard-screen" toile>
       <View style={styles.hero}>
         <View style={styles.heroLeft}>
           <Text style={styles.greeting}>
