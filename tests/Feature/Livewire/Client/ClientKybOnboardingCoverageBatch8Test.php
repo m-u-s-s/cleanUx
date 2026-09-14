@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -151,8 +152,9 @@ class ClientKybOnboardingCoverageBatch8Test extends TestCase
         Storage::fake('local');
 
         Livewire::actingAs($user)
+            // `mount()` retrouve l'entite du proprietaire : `entityId` est verrouillee, et ce
+            // `set` n'etait de toute facon qu'un raccourci de montage.
             ->test(ClientKybOnboarding::class)
-            ->set('entityId', $entity->id)
             ->set('documentType', 'kbis')
             ->set('documentFile', UploadedFile::fake()->create('doc.txt', 100, 'text/plain'))
             ->call('uploadDocument')
@@ -168,8 +170,9 @@ class ClientKybOnboardingCoverageBatch8Test extends TestCase
         Storage::fake('local');
 
         Livewire::actingAs($user)
+            // `mount()` retrouve l'entite du proprietaire : `entityId` est verrouillee, et ce
+            // `set` n'etait de toute facon qu'un raccourci de montage.
             ->test(ClientKybOnboarding::class)
-            ->set('entityId', $entity->id)
             ->set('documentType', 'kbis')
             ->set('documentFile', UploadedFile::fake()->create('kbis.pdf', 120, 'application/pdf'))
             ->call('uploadDocument')
@@ -194,18 +197,22 @@ class ClientKybOnboardingCoverageBatch8Test extends TestCase
             ->assertSet('step', 1);
     }
 
+    /**
+     * LA GARDE A MONTE D'UN CRAN. `triggerVerifications` verifiait le proprietaire ; c'etait la
+     * seule des quatre methodes a le faire. `entityId` est desormais VERROUILLEE : le navigateur
+     * ne peut plus designer le dossier d'autrui du tout, donc la question ne se pose plus.
+     */
     public function test_trigger_verifications_ignores_entity_of_another_owner(): void
     {
         $user = User::factory()->client()->create();
         $other = User::factory()->client()->create();
         $entity = $this->makeEntity($other, BusinessEntity::STATUS_PENDING);
 
+        $this->expectException(CannotUpdateLockedPropertyException::class);
+
         Livewire::actingAs($user)
             ->test(ClientKybOnboarding::class)
-            ->set('entityId', $entity->id)
-            ->set('step', 2)
-            ->call('triggerVerifications')
-            ->assertSet('step', 2);
+            ->set('entityId', $entity->id);
     }
 
     public function test_trigger_verifications_runs_for_owner_and_advances(): void
@@ -215,7 +222,6 @@ class ClientKybOnboardingCoverageBatch8Test extends TestCase
 
         Livewire::actingAs($user)
             ->test(ClientKybOnboarding::class)
-            ->set('entityId', $entity->id)
             ->set('step', 2)
             ->call('triggerVerifications')
             ->assertSet('step', 3)

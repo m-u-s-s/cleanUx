@@ -5,8 +5,10 @@ namespace Tests\Feature\Relations;
 use App\Models\ContractRateCard;
 use App\Models\OrganizationAccount;
 use App\Models\OrganizationContract;
+use App\Models\OrganizationMember;
 use App\Models\ServiceCatalog;
 use App\Models\ServiceCatalogV2;
+use App\Models\User;
 use App\Services\Contracts\ContractPricingResolver;
 use App\Services\PricingV2\PricingEngine;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -98,10 +100,22 @@ class ContractPricingResolverTest extends TestCase
             'version' => 1,
         ]);
 
+        /*
+         * LE CONTRAT NE SE DESIGNE PLUS PAR SON NUMERO SEUL. `/v2/pricing/quote` est PUBLIQUE :
+         * ce test passait sans aucun porteur, et exercait donc exactement la fuite — iterer
+         * `__contract_id` rendait la grille negociee de chaque grand compte.
+         */
+        $membre = User::factory()->create();
+        OrganizationMember::factory()->create([
+            'organization_account_id' => $contract->organization_account_id,
+            'user_id' => $membre->id,
+            'status' => 'active',
+        ]);
+
         $quote = app(PricingEngine::class)->quote($serviceV2->code, [
             '__contract_id' => $contract->id,
             '__service_catalog_id' => $service->id,
-        ]);
+        ], $membre);
 
         $rules = collect((array) $quote->applied_rules);
         $this->assertTrue($rules->contains('code', 'contract:rate_card'));
