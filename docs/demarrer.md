@@ -27,6 +27,10 @@ cp .env.example .env
 php artisan key:generate
 ```
 
+`npm install` installe aussi le hook Git de pré-commit (husky puis lint-staged) : Pint, ESLint,
+Prettier et le typecheck mobile passent sur les fichiers indexés avant chaque commit. Sur un clone
+existant, relancez `npm install` une fois pour l'activer.
+
 Ouvrez `.env` et renseignez la base :
 
 ```dotenv
