@@ -3,6 +3,7 @@
 namespace App\Services\Booking;
 
 use App\Models\Booking;
+use App\Models\BookingFavorite;
 use App\Models\User;
 use App\Services\Geo\GeoDistanceService;
 use App\Services\Safety\UserSafetyService;
@@ -210,41 +211,28 @@ class SmartDispatchService
         };
     }
 
+    /**
+     * LA TABLE DES FAVORIS S'APPELLE `booking_favorites`.
+     *
+     * `client_provider_preferences` n'existe dans aucune migration : `Schema::hasTable` rendait
+     * faux, et ce bonus — le PLUS LOURD du barème, devant `asapScore` (150) et `qualityScore`
+     * (~200) — ne tombait jamais. Le favori du client ne pesait rien.
+     *
+     * Deux variables mortes vivaient aussi ici, `$rendezVous` et `$booking` : le `??` les avalait
+     * en silence, et PHPStan ne voit pas au travers (piège documenté du dépôt).
+     */
     protected function favoriteScore(User $employee, Booking $rdv): int
     {
         if (! $rdv->client_id) {
             return 0;
         }
 
-        $isFavorite = false;
+        $estFavori = BookingFavorite::query()
+            ->where('client_user_id', $rdv->client_id)
+            ->where('preferred_provider_user_id', $employee->id)
+            ->exists();
 
-        if (Schema::hasTable('client_provider_preferences')) {
-            $clientId = $rendezVous->client_id
-                ?? $rdv->client_id
-                ?? $booking->client_id
-                ?? null;
-
-            if ($clientId) {
-                $favoriteQuery = DB::table('client_provider_preferences')
-                    ->where('provider_user_id', $employee->id);
-
-                if (Schema::hasColumn('client_provider_preferences', 'client_user_id')) {
-                    $favoriteQuery->where('client_user_id', $clientId);
-                } elseif (Schema::hasColumn('client_provider_preferences', 'client_id')) {
-                    $favoriteQuery->where('client_id', $clientId);
-                } else {
-                    $favoriteQuery = null;
-                }
-
-                if ($favoriteQuery && Schema::hasColumn('client_provider_preferences', 'is_favorite')) {
-                    $favoriteQuery->where('is_favorite', true);
-                }
-
-                $isFavorite = $favoriteQuery ? $favoriteQuery->exists() : false;
-            }
-        }
-
-        return $isFavorite ? 300 : 0;
+        return $estFavori ? 300 : 0;
     }
 
     protected function qualityScore(User $employee): int

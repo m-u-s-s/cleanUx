@@ -171,22 +171,20 @@ trait HasProviderFeatures
         return $this->activeLedFieldTeams()->exists();
     }
 
-    /** @return BelongsToMany<self, $this> */
+    /**
+     * LES CLIENTS QUI ONT CE PRESTATAIRE EN FAVORI.
+     *
+     * La table pivot s'appelle `booking_favorites` ; `client_provider_preferences` n'existe dans
+     * aucune migration, et le repli `whereRaw('1 = 0')` était donc la seule branche jamais prise.
+     *
+     * @return BelongsToMany<self, $this>
+     */
     public function preferredByClients(): BelongsToMany
     {
-        if (! Schema::hasTable('client_provider_preferences')) {
-            return $this->belongsToMany(
-                self::class,
-                'client_provider_preferences',
-                'provider_user_id',
-                'client_user_id'
-            )->whereRaw('1 = 0');
-        }
-
         return $this->belongsToMany(
             self::class,
-            'client_provider_preferences',
-            'provider_user_id',
+            'booking_favorites',
+            'preferred_provider_user_id',
             'client_user_id'
         )->withTimestamps();
     }

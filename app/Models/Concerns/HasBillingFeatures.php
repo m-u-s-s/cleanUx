@@ -2,8 +2,7 @@
 
 namespace App\Models\Concerns;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use App\Models\CustomerCredit;
 
 trait HasBillingFeatures
 {
@@ -35,14 +34,23 @@ trait HasBillingFeatures
             || $this->isEntreprise();
     }
 
+    /**
+     * LA TABLE S'APPELLE `customer_credits`, ET LA COLONNE `client_id`.
+     *
+     * `Schema::hasTable('client_credits')` était toujours faux : cette table n'existe dans aucune
+     * migration. La méthode rendait donc 0.0 en permanence, et la garde de `CreateBookingAction`
+     * fermait DÉFINITIVEMENT l'unique appel à `applyAvailableCredits()` — les avoirs étaient
+     * accordés, stockés, affichés, et jamais déduits d'une réservation.
+     *
+     * Le prédicat est celui de `CustomerCreditApplicationService` : promettre un solde que le
+     * service ne saurait pas consommer serait le même défaut dans l'autre sens.
+     */
     public function activeCreditBalance(): float
     {
-        if (! Schema::hasTable('client_credits')) {
-            return 0.0;
-        }
-
-        return (float) DB::table('client_credits')
-            ->where('user_id', $this->id)
+        return (float) CustomerCredit::query()
+            ->where('client_id', $this->id)
+            ->where('status', 'active')
+            ->where('remaining_amount', '>', 0)
             ->where(function ($query) {
                 $query->whereNull('expires_at')
                     ->orWhere('expires_at', '>', now());

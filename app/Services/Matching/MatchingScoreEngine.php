@@ -3,10 +3,10 @@
 namespace App\Services\Matching;
 
 use App\Models\Booking;
+use App\Models\BookingFavorite;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 class MatchingScoreEngine
 {
@@ -189,25 +189,12 @@ class MatchingScoreEngine
             return 50.0;
         }
 
-        $favoriteBonus = 0.0;
-        if (Schema::hasTable('client_provider_preferences')) {
-            $query = DB::table('client_provider_preferences')
-                ->where('provider_user_id', $provider->id);
-
-            if (Schema::hasColumn('client_provider_preferences', 'client_user_id')) {
-                $query->where('client_user_id', $clientId);
-            } elseif (Schema::hasColumn('client_provider_preferences', 'client_id')) {
-                $query->where('client_id', $clientId);
-            }
-
-            if (Schema::hasColumn('client_provider_preferences', 'is_favorite')) {
-                $query->where('is_favorite', true);
-            }
-
-            if ($query->exists()) {
-                $favoriteBonus = 50.0;
-            }
-        }
+        // LA TABLE DES FAVORIS S'APPELLE `booking_favorites` ; `client_provider_preferences`
+        // n'existe dans aucune migration, et ce bonus ne tombait donc jamais.
+        $favoriteBonus = BookingFavorite::query()
+            ->where('client_user_id', $clientId)
+            ->where('preferred_provider_user_id', $provider->id)
+            ->exists() ? 50.0 : 0.0;
 
         // « Ce client a déjà travaillé avec cette personne » — donc celle qui EST VENUE, pas celle
         // qui figurait sur la commande. Le modèle plutôt que `DB::table` : c'est lui qui porte la

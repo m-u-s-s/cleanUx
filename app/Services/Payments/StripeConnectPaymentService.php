@@ -115,7 +115,9 @@ class StripeConnectPaymentService
 
         return ProviderPayout::create([
             'provider_user_id' => $providerUserId,
-            'provider_organization_id' => optional($mission->lead_provider_user)->current_organization_id,
+            // LA RELATION S'APPELLE `leadProvider`. `lead_provider_user` n'est ni une colonne ni une
+            // relation : chaque versement Connect naissait donc SANS societe de rattachement.
+            'provider_organization_id' => $mission->leadProvider?->current_organization_id,
             'amount' => $amount,
             'currency' => $currency,
             'status' => ProviderPayout::STATUS_PENDING,

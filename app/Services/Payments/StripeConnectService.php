@@ -23,8 +23,7 @@ class StripeConnectService
             return $user->stripe_connect_account_id;
         }
 
-        $rawCountry = $user->country ?? $user->business_country ?? config('services.stripe.connect_country', 'BE');
-        $country = $this->countryConfig->getStripeCountry($rawCountry);
+        $country = $this->countryConfig->getStripeCountry($this->paysDuPorteur($user));
         $account = Account::create([
             'type' => 'express',
             'country' => $country,
@@ -46,6 +45,26 @@ class StripeConnectService
         ]);
 
         return $account->id;
+    }
+
+    /**
+     * LE PAYS DU PORTEUR, ET IL N'EST PAS SUR `users`.
+     *
+     * `$user->country ?? $user->business_country` lisait DEUX colonnes qui n'existent sur aucune
+     * migration : le `??` rend `null` sans bruit, PHPStan ne voit pas au travers, et TOUT compte
+     * Connect s'ouvrait en Belgique — y compris pour un prestataire marocain ou français.
+     *
+     * L'ordre est celui de `CountryMarketResolver::resolveCountry` : la société d'abord, puis la
+     * zone d'intervention, et le défaut configuré en dernier recours.
+     */
+    protected function paysDuPorteur(User $user): string
+    {
+        $user->loadMissing(['organizationAccount.country', 'primaryServiceZone.country']);
+
+        $iso = $user->organizationAccount?->country?->iso_code
+            ?: $user->primaryServiceZone?->country?->iso_code;
+
+        return (string) ($iso ?: config('services.stripe.connect_country', 'BE'));
     }
 
     public function onboardingLink(User $user): string
