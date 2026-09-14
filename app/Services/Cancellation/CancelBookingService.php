@@ -70,7 +70,7 @@ class CancelBookingService
         $feePercent = (int) config('cancellation.no_show.client_fee_percent', 100);
         $feeAmount = round($bookingPrice * ($feePercent / 100), 2);
 
-        return DB::transaction(function () use ($booking, $reportedBy, $feeAmount, $feePercent) {
+        DB::transaction(function () use ($booking, $reportedBy, $feeAmount, $feePercent) {
             $booking->update([
                 'status' => 'annule',
                 'cancelled_at' => now(),
@@ -85,16 +85,17 @@ class CancelBookingService
             ]);
 
             $this->consignerLesFrais($booking, (float) $feeAmount, (int) $feePercent);
-
-            // Capture totale du paiement (le client paie 100%)
-            $this->tryCaptureFull($booking);
-
-            return [
-                'ok' => true,
-                'fee_amount' => $feeAmount,
-                'type' => 'client_no_show',
-            ];
         });
+
+        // LA CAPTURE EST HORS TRANSACTION : elle prend 100 % du montant sur la carte du client, et
+        // un rollback ne la rendrait pas — la base dirait alors que rien n'a été annulé ni facturé.
+        $this->tryCaptureFull($booking);
+
+        return [
+            'ok' => true,
+            'fee_amount' => $feeAmount,
+            'type' => 'client_no_show',
+        ];
     }
 
     // ──────────────────────────────────────────────

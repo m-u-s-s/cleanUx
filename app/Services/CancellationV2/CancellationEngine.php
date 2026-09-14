@@ -146,6 +146,19 @@ class CancellationEngine
         }
         $refundAmount = max(0, $amount - $feeAmount);
 
+        /*
+         * LES FRAIS D'UN ACTEUR NE SE PRENNENT PAS SUR LA CARTE D'UN AUTRE.
+         *
+         * `POST /api/v2/provider/bookings/{id}/cancel` fait passer un DÉSISTEMENT PRESTATAIRE par
+         * ce moteur. `BaremeDeRepli::pour('provider', …)` rend une pénalité forfaitaire, et rien
+         * ici ne testait `actorRole` : elle était déduite du remboursement du client, puis capturée
+         * sur SON empreinte. Le client est désormais remboursé intégralement ; la pénalité reste
+         * consignée dans `fee_amount_cents` pour le registre, à la charge de celui qui se désiste.
+         */
+        if ($actorRole !== 'client') {
+            $refundAmount = $amount;
+        }
+
         $tierLabel = $tier?->description
             ?? ($tier ? sprintf('≥%dh : %.0f%%', $tier->min_hours_before, (float) $tier->fee_percent) : $libelleRepli);
 

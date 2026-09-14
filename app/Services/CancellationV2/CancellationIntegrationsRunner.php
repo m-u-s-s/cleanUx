@@ -135,6 +135,12 @@ class CancellationIntegrationsRunner
             return null;
         }
 
+        // L'EMPREINTE EST CELLE DU CLIENT. La pénalité d'un prestataire qui se désiste n'a rien à
+        // y faire : elle est à sa charge, pas à celle de la personne qui subit le désistement.
+        if ($row->actor_role !== 'client') {
+            return null;
+        }
+
         $booking = Booking::query()->find($row->booking_id);
 
         if (! $booking || $booking->payment_status !== 'authorized' || ! $booking->stripe_payment_intent_id) {

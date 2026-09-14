@@ -155,7 +155,10 @@ class CancellationEngineTest extends TestCase
 
         // Provider <2h tier: fee_flat=3000c + fee_percent=25% × 10000 = 2500 → total 5500
         $this->assertSame(5500, $quote->feeAmountCents);
-        $this->assertSame(4500, $quote->refundAmountCents);
+
+        // LA PÉNALITÉ EST CONSIGNÉE, ELLE N'EST PAS PRISE AU CLIENT. Ce test affirmait l'inverse
+        // (4500) : le client subissait le désistement ET en payait la pénalité.
+        $this->assertSame(10000, $quote->refundAmountCents);
     }
 
     public function test_execute_persists_cancellation_and_updates_booking_status(): void
