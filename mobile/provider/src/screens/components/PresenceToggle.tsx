@@ -81,7 +81,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     color: t.textSecondary,
   },
   btnTextActive: {
-    color: t.card,
+    color: t.textOnBrand,
     fontWeight: typography.fontWeight.semibold,
   },
   error: {

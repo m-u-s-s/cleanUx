@@ -45,6 +45,7 @@ import { WalkthroughScreen, hasCompletedWalkthrough } from '@/screens/Walkthroug
 import '@/sentry/init';
 import { useOfflineSync, bindAppStateToQueryFocus } from '@/api';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
+import { routagePushPrestataire } from '@/navigation/routagePush';
 
 // Relie React Query au cycle de vie de l'application : sans ce pont, aucune requête n'est
 // rejouée au retour au premier plan et l'écran reste figé sur des données périmées.
@@ -62,7 +63,8 @@ const queryClient = new QueryClient({
  * NavigationContainer?" and took the whole app down with a render error.
  */
 function NavigationEffects(): null {
-  useNotificationRouting();
+  // La table de routage vit dans l'application : `shared` ne connait pas cette pile.
+  useNotificationRouting(routagePushPrestataire);
   return null;
 }
 

@@ -30,6 +30,8 @@ const EXCEPTIONS: Record<string, string> = {
     'même famille que authShell : il compose authStyles sur le même canevas clair, hors thème',
   'provider/src/screens/PresenceScanScreen.tsx':
     'fond de viseur caméra : le noir n’est pas une couleur d’interface mais l’absence d’image',
+  'client/src/screens/QRScanScreen.tsx':
+    'même viseur, même raison : `t.text` y rendait un plein écran BLANC en mode sombre',
 };
 
 /**

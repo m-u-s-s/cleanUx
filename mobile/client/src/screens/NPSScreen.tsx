@@ -80,7 +80,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     fontSize: typography.fontSize.sm,
     color: t.textSecondary,
   },
-  scoreActive: { backgroundColor: colors.brand[500], color: t.card },
+  scoreActive: { backgroundColor: colors.brand[500], color: t.textOnBrand },
   labels: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.xl },
   labelText: { fontSize: typography.fontSize.xs, color: t.textMuted },
 });

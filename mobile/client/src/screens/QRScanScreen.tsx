@@ -101,7 +101,10 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: t.text,
+    // PAS `t.text` : en sombre il vaut #eaf3f9, soit un PLEIN ECRAN BLANC autour du viseur.
+    // Le noir d'un viseur n'est pas une couleur d'interface, c'est l'absence d'image — meme
+    // choix, meme raison, que `PresenceScanScreen` cote prestataire.
+    backgroundColor: '#000',
   },
   loadingText: {
     color: t.card,
@@ -133,7 +136,9 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   subtitle: {
     fontSize: typography.fontSize.sm,
-    color: t.border,
+    // `t.border` est un voile a 10-12 % d'alpha : compose, il rendait exactement la couleur du
+    // fond — 1,00:1 dans les deux themes. Ce sous-titre n'a jamais ete lisible.
+    color: t.card,
     textAlign: 'center',
     marginBottom: spacing.lg,
     paddingHorizontal: spacing.lg,

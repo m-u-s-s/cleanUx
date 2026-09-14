@@ -59,7 +59,8 @@ export type { MissionClock, MissionClockPhase, LiveMissionClock, ClockAudience }
 // Push
 export { useRegisterPushToken } from './push';
 export { setupForegroundNotifications } from './push/foreground';
-export { useNotificationRouting } from './push/useNotificationRouting';
+export { useNotificationRouting, destinationDe } from './push/useNotificationRouting';
+export type { ChargeUtilePush, DestinationPush, RouteurDePush } from './push/useNotificationRouting';
 
 // Realtime
 export { RealtimeProvider, useRealtime, useChannel, useSocketConfig } from './realtime';

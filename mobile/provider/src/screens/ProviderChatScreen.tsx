@@ -96,7 +96,10 @@ export function ProviderChatScreen({ route }: Props) {
 }
 
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
-  flex: { flex: 1, backgroundColor: t.page },
+  // PAS `t.page` : il vaut 'transparent'. Pose a nu, le fil tombait tantot sur la
+  // quille noire, tantot sur les caustiques blanches. `glassStrong` est la meme
+  // surface que la plaque de `Screen`, que ces deux ecrans n'utilisent pas.
+  flex: { flex: 1, backgroundColor: t.glassStrong },
   list: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   bubble: {
     maxWidth: '80%',
@@ -113,7 +116,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     marginBottom: 2,
   },
   messageText: { fontSize: typography.fontSize.sm, color: t.text },
-  messageTextMe: { color: t.card },
+  messageTextMe: { color: t.textOnBrand },
   time: { fontSize: 10, color: t.textMuted, marginTop: 2, alignSelf: 'flex-end' },
   inputRow: {
     flexDirection: 'row',

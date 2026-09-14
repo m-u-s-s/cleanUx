@@ -226,7 +226,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   },
   chipActive: { backgroundColor: colors.brand[500], borderColor: colors.brand[500] },
   chipText: { fontSize: typography.fontSize.xs, color: t.text },
-  chipTextActive: { color: t.card, fontWeight: typography.fontWeight.semibold },
+  chipTextActive: { color: t.textOnBrand, fontWeight: typography.fontWeight.semibold },
   card: {
     padding: spacing.md,
     backgroundColor: t.card,

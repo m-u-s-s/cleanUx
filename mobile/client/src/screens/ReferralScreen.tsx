@@ -320,7 +320,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.bold,
     fontFamily: typography.fontFamily.bodyBold,
-    color: t.card,
+    color: t.textOnBrand,
   },
   stepText: {
     flex: 1,

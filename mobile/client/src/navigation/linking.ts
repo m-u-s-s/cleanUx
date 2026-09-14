@@ -5,14 +5,22 @@ export const linking: LinkingOptions<RootStackParamList> = {
   prefixes: ['brio://', 'https://app.brio.com'],
   config: {
     screens: {
+      /*
+        LES CINQ ONGLETS, ET SEULEMENT EUX. `Explore` a cédé sa place à `Location` quand la barre
+        est passée à cinq portes : l'entrée était restée ici, donc `brio://explore` retombait sur
+        l'accueil, et `Location` comme `Messages` n'étaient joignables par aucun lien.
+      */
       MainTabs: {
         screens: {
           Home: '',
-          Explore: 'explore',
+          Location: 'location',
           Bookings: 'bookings',
+          Messages: 'messages',
           Profile: 'profile',
         },
       },
+      // `brio://explore` existe dans la nature : l'ecran a quitte la barre, pas l'application.
+      Explore: 'explore',
       Login: 'login',
       ForgotPassword: 'forgot-password',
       BookingDetail: 'booking/:bookingId',

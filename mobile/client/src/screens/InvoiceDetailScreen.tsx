@@ -278,7 +278,9 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     color: t.textMuted,
   },
   pdfButton: {
-    backgroundColor: colors.brand[600] ?? colors.brand[500] ?? '#4f46e5',
+    // La chaine `??` etait morte — `brand[600]` est toujours vrai — et l'indigo retire passait
+    // au travers du garde-fou par sa sortie semantique anticipee.
+    backgroundColor: colors.brand[600],
     borderRadius: radius.md,
     paddingVertical: spacing.sm,
     alignItems: 'center',
@@ -287,6 +289,6 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   pdfButtonText: {
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.semibold,
-    color: t.card,
+    color: t.textOnBrand,
   },
 });
