@@ -16,7 +16,7 @@ Copy `.env.example` to `.env` and fill in:
 
 | Variable | Required | Description |
 |---|---|---|
-| `EXPO_PUBLIC_API_URL` | Yes | Laravel API base URL |
+| `EXPO_PUBLIC_API_URL` | No (dev) | Laravel API base URL. Leave unset in development: the app targets the machine serving Metro on port 8000 (see `.env.example`). Set it to target another server. |
 | `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Yes | Stripe publishable key (pk_test_* or pk_live_*) |
 | `EXPO_PUBLIC_SENTRY_DSN` | No | Sentry DSN for crash reporting |
 
