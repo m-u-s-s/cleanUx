@@ -45,6 +45,19 @@ return [
     |
     */
 
+    /*
+     * DEUX RÉGLAGES QUI NE SE VOIENT QU'EN PRODUCTION, et que la suite ne peut pas exercer : elle
+     * tourne en `sync`, le développement en `database`, seule la production est en `redis`.
+     *
+     * `retry_after` DOIT DÉPASSER LE PLUS LONG `--timeout` DE WORKER de la connexion. Il valait 90
+     * face à des workers en `--timeout=120` (et 600 pour l'antivirus) : tout job plus long était
+     * remis en file et exécuté UNE SECONDE FOIS EN PARALLÈLE de la première — des SMS marketing
+     * facturés en double, un appariement facial refacturé. 660 couvre le plus long des deux.
+     *
+     * `after_commit` à faux faisait partir un job enfilé DANS une transaction avant son commit : le
+     * worker lisait une ligne qui n'existait pas encore, ou livrait un webhook que le rollback
+     * annulait ensuite. Trois sites en dépendaient sans le savoir.
+     */
     'connections' => [
 
         'sync' => [
@@ -55,17 +68,17 @@ return [
             'driver' => 'database',
             'table' => 'jobs',
             'queue' => 'default',
-            'retry_after' => 90,
-            'after_commit' => false,
+            'retry_after' => 660,
+            'after_commit' => true,
         ],
 
         'beanstalkd' => [
             'driver' => 'beanstalkd',
             'host' => 'localhost',
             'queue' => 'default',
-            'retry_after' => 90,
+            'retry_after' => 660,
             'block_for' => 0,
-            'after_commit' => false,
+            'after_commit' => true,
         ],
 
         'sqs' => [
@@ -76,16 +89,16 @@ return [
             'queue' => env('SQS_QUEUE', 'default'),
             'suffix' => env('SQS_SUFFIX'),
             'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
-            'after_commit' => false,
+            'after_commit' => true,
         ],
 
         'redis' => [
             'driver' => 'redis',
             'connection' => 'default',
             'queue' => env('REDIS_QUEUE', 'default'),
-            'retry_after' => 90,
+            'retry_after' => 660,
             'block_for' => null,
-            'after_commit' => false,
+            'after_commit' => true,
         ],
 
     ],

@@ -25,8 +25,24 @@ class CancellationIntegrationsRunner
         $integrationsCfg = (array) Config::get('cancellation_v2.integrations', []);
         $log = (array) ($row->integrations_log ?? []);
 
-        // Stripe refund (best-effort)
-        if (! empty($integrationsCfg['stripe_refund']) && $row->refund_amount_cents > 0 && $row->refund_method === 'stripe') {
+        /*
+         * LES FRAIS SE PRENNENT MÊME QUAND IL N'Y A RIEN À REMBOURSER.
+         *
+         * La capture sur l'empreinte n'était atteignable QUE depuis `tryStripeRefund`, lui-même
+         * gardé par `refund_amount_cents > 0 && refund_method === 'stripe'`. Or dès que les frais
+         * valent 100 %, le remboursement vaut 0 et la méthode devient `none` : la garde était
+         * fausse deux fois, et le cas le PLUS coûteux était exactement celui qui n'encaissait rien.
+         */
+        if (! empty($integrationsCfg['stripe_refund']) && ($capture = $this->capturerSurLEmpreinte($row))) {
+            $log['stripe_fee_capture'] = $capture;
+            CancellationAudit::create([
+                'cancellation_id' => $row->id,
+                'actor_user_id' => $row->cancelled_by_user_id,
+                'action' => CancellationAudit::ACTION_REFUNDED,
+                'after_state' => $capture,
+                'occurred_at' => now(),
+            ]);
+        } elseif (! empty($integrationsCfg['stripe_refund']) && $row->refund_amount_cents > 0 && $row->refund_method === 'stripe') {
             try {
                 $log['stripe_refund'] = $this->tryStripeRefund($row);
                 CancellationAudit::create([
@@ -142,10 +158,8 @@ class CancellationIntegrationsRunner
 
     protected function tryStripeRefund(BookingCancellationV2 $row): array
     {
-        if ($capture = $this->capturerSurLEmpreinte($row)) {
-            return $capture;
-        }
-
+        // La capture sur empreinte est traitée par `run()`, AVANT cette branche : les deux cas
+        // restent exclusifs (on ne rembourse pas une empreinte, on y prend les frais).
         if ($row->refund_amount_cents <= 0) {
             return ['status' => 'no_refund', 'refund_amount_cents' => 0];
         }
@@ -180,16 +194,26 @@ class CancellationIntegrationsRunner
             // Idempotency key sur (cancellation_id, refund_amount) pour éviter double-refund
             $idempotencyKey = 'cancel_v2_'.$row->id.'_'.$row->refund_amount_cents;
 
-            $refund = Refund::create([
+            $parametres = [
                 'payment_intent' => $paymentIntentId,
                 'amount' => (int) $row->refund_amount_cents,
                 'reason' => 'requested_by_customer',
+                // Stripe stocke les métadonnées en CHAÎNES : on convertit ici plutôt que de
+                // laisser l'API le faire, comme `MissionPaymentService` le fait déjà.
                 'metadata' => [
-                    'cancellation_id' => $row->id,
-                    'booking_id' => $row->booking_id,
-                    'cancellation_reason' => $row->reason ?? '',
+                    'cancellation_id' => (string) $row->id,
+                    'booking_id' => (string) $row->booking_id,
+                    'cancellation_reason' => (string) ($row->reason ?? ''),
                 ],
-            ], [
+            ];
+
+            // La contrepartie réelle du clawback écrit vingt lignes plus bas : sans elle, le
+            // remboursement sort du solde de la plateforme et le prestataire garde sa part.
+            if ($booking->provider_amount_cents !== null) {
+                $parametres['reverse_transfer'] = true;
+            }
+
+            $refund = Refund::create($parametres, [
                 'idempotency_key' => $idempotencyKey,
             ]);
 

@@ -158,6 +158,23 @@ class StripeConnectPaymentService
             'payment_intent' => $booking->stripe_payment_intent_id,
         ];
 
+        /*
+         * LA CONTREPARTIE RÉELLE DU CLAWBACK DÉCRIT PLUS BAS.
+         *
+         * Le modèle est la charge à destination (`MissionPaymentService` pose toujours
+         * `transfer_data.destination`) : sans `reverse_transfer`, le remboursement sort du solde
+         * de la PLATEFORME et le prestataire garde sa part. Le clawback ne baissait qu'un miroir
+         * en base — la plateforme perdait la part prestataire à chaque remboursement.
+         *
+         * Stripe reverse le transfert AU PRORATA du montant remboursé, exactement la formule du
+         * clawback. La commission n'est pas réclamée au prestataire : c'est la décision du dépôt
+         * (clawback prestataire proportionnel), et elle laisse la plateforme à zéro sur un
+         * remboursement total — un service qui n'a pas eu lieu ne rapporte rien.
+         */
+        if ($booking->provider_amount_cents !== null) {
+            $refundParams['reverse_transfer'] = true;
+        }
+
         if ($amountCents !== null) {
             $refundParams['amount'] = $amountCents;
         }

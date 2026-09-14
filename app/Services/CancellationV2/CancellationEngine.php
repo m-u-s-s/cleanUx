@@ -190,7 +190,13 @@ class CancellationEngine
         $statusBefore = $bookingMeta['status'] ?? null;
         $statusAfter = (string) Config::get("cancellation_v2.booking_status_after_cancel.{$actorRole}", 'annule');
 
-        return DB::transaction(function () use ($bookingId, $actor, $actorRole, $reasonCode, $reasonText, $idempotencyKey, $quote, $statusBefore, $statusAfter) {
+        /*
+         * LES EFFETS EXTERNES SORTENT DE LA TRANSACTION, ce que le docblock du runner affirmait
+         * déjà — « side-effects AFTER a cancellation is committed » — alors qu'il était appelé
+         * avant. La chaîne descend jusqu'à `PaymentIntent->capture()`, `Refund::create()` et la
+         * résiliation de police chez l'assureur : un rollback n'annule aucun des trois.
+         */
+        $row = DB::transaction(function () use ($bookingId, $actor, $actorRole, $reasonCode, $reasonText, $idempotencyKey, $quote, $statusBefore, $statusAfter) {
             $row = BookingCancellationV2::create([
                 'booking_id' => $bookingId,
                 'cancelled_by_user_id' => $actor->id,
@@ -265,18 +271,20 @@ class CancellationEngine
                 'occurred_at' => now(),
             ]);
 
-            // Dispatch integrations (best-effort, soft-fail)
-            $row = $this->integrations->run($row);
-
-            ActivityLogger::log('cancellation_v2.executed', $row, [
-                'booking_id' => $bookingId,
-                'actor_role' => $actorRole,
-                'fee_amount_cents' => $row->fee_amount_cents,
-                'refund_amount_cents' => $row->refund_amount_cents,
-            ]);
-
-            return $row->fresh();
+            return $row;
         });
+
+        // Dispatch integrations (best-effort, soft-fail) — HORS transaction, l'argent est réel.
+        $row = $this->integrations->run($row);
+
+        ActivityLogger::log('cancellation_v2.executed', $row, [
+            'booking_id' => $bookingId,
+            'actor_role' => $actorRole,
+            'fee_amount_cents' => $row->fee_amount_cents,
+            'refund_amount_cents' => $row->refund_amount_cents,
+        ]);
+
+        return $row->fresh();
     }
 
     public function override(BookingCancellationV2 $cancellation, User $admin, string $reason): BookingCancellationV2

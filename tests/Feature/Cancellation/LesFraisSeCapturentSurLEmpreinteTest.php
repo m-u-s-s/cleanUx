@@ -30,8 +30,12 @@ class LesFraisSeCapturentSurLEmpreinteTest extends TestCase
         Config::set('services.stripe.secret', '');
     }
 
-    private function annulation(string $statutDePaiement, int $fraisCents, int $remboursementCents): BookingCancellationV2
-    {
+    private function annulation(
+        string $statutDePaiement,
+        int $fraisCents,
+        int $remboursementCents,
+        string $methode = 'stripe',
+    ): BookingCancellationV2 {
         $client = User::factory()->client()->create();
         $quand = now()->addDays(2);
 
@@ -56,7 +60,7 @@ class LesFraisSeCapturentSurLEmpreinteTest extends TestCase
             'fee_amount_cents' => $fraisCents,
             'refund_amount_cents' => $remboursementCents,
             'currency' => 'EUR',
-            'refund_method' => 'stripe',
+            'refund_method' => $methode,
             'idempotency_key' => 'test_'.uniqid(),
             'cancelled_at' => now(),
             'integrations_log' => [],
@@ -74,7 +78,29 @@ class LesFraisSeCapturentSurLEmpreinteTest extends TestCase
 
         $ligne = app(CancellationIntegrationsRunner::class)->run($this->annulation('authorized', 2500, 7500));
 
-        $this->assertSame('fee_captured', $ligne->fresh()->integrations_log['stripe_refund']['status'] ?? null);
+        // La capture a sa PROPRE clé de journal : elle n'est pas un remboursement, et elle ne
+        // dépend plus de la garde de remboursement pour être atteinte.
+        $this->assertSame('fee_captured', $ligne->fresh()->integrations_log['stripe_fee_capture']['status'] ?? null);
+    }
+
+    /**
+     * LE CAS QUI N'ENCAISSAIT RIEN, ET C'ETAIT LE PLUS COUTEUX. Frais a 100 % : le remboursement
+     * vaut 0 et la methode devient `none` — la garde d'avant etait fausse deux fois.
+     */
+    public function test_des_frais_a_cent_pour_cent_se_capturent_quand_meme(): void
+    {
+        $this->mock(MissionPaymentService::class, function ($mock) {
+            $mock->shouldReceive('capturerLesFraisDAnnulation')
+                ->once()
+                ->withArgs(fn (Booking $b, int $cents) => $cents === 15000)
+                ->andReturnNull();
+        });
+
+        $ligne = app(CancellationIntegrationsRunner::class)->run(
+            $this->annulation('authorized', 15000, 0, 'none'),
+        );
+
+        $this->assertSame('fee_captured', $ligne->fresh()->integrations_log['stripe_fee_capture']['status'] ?? null);
     }
 
     /**
@@ -89,7 +115,7 @@ class LesFraisSeCapturentSurLEmpreinteTest extends TestCase
 
         $ligne = app(CancellationIntegrationsRunner::class)->run($this->annulation('captured', 2500, 7500));
 
-        $this->assertNotSame('fee_captured', $ligne->fresh()->integrations_log['stripe_refund']['status'] ?? null);
+        $this->assertNotSame('fee_captured', $ligne->fresh()->integrations_log['stripe_fee_capture']['status'] ?? null);
     }
 
     /** Aucun frais a prendre : rien a capturer, on laisse le remboursement faire son travail. */
@@ -101,7 +127,7 @@ class LesFraisSeCapturentSurLEmpreinteTest extends TestCase
 
         $ligne = app(CancellationIntegrationsRunner::class)->run($this->annulation('authorized', 0, 10000));
 
-        $this->assertNotSame('fee_captured', $ligne->fresh()->integrations_log['stripe_refund']['status'] ?? null);
+        $this->assertNotSame('fee_captured', $ligne->fresh()->integrations_log['stripe_fee_capture']['status'] ?? null);
     }
 
     protected function tearDown(): void
