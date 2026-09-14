@@ -145,6 +145,17 @@ class HourlySettlementService
             $fraisPlateforme = $reglement->amount_due_cents
                 - ($partPrestataire - $commission['platform_fee_cents']);
 
+            /*
+             * LA CLÉ EST DÉTERMINISTE, ET CE N'EST PAS UN CONFORT.
+             *
+             * Ce règlement est REJOUÉ : `temps:reprendre-les-reglements` tourne toutes les heures
+             * et retente jusqu'à trois fois. Si Stripe débite puis que la réponse se perd — un
+             * simple délai réseau —, le `catch` plus bas note l'échec et la reprise recommence :
+             * le client était débité jusqu'à trois fois pour un seul dépassement. Avec la clé,
+             * Stripe rend la MÊME intention au lieu d'en créer une seconde.
+             *
+             * `ProcessProviderPayouts:228` fait déjà exactement cela, et l'explique.
+             */
             $intent = PaymentIntent::create([
                 'amount' => $reglement->amount_due_cents,
                 'currency' => strtolower($reglement->currency),
@@ -163,6 +174,8 @@ class HourlySettlementService
                     'extension_minutes' => (string) $reglement->extension_minutes,
                     'overtime_minutes' => (string) $reglement->overtime_minutes,
                 ],
+            ], [
+                'idempotency_key' => 'time_settlement:'.$reglement->id.':'.$reglement->amount_due_cents,
             ]);
 
             if (($intent->status ?? null) !== 'succeeded') {

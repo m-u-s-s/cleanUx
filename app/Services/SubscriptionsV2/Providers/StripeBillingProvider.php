@@ -62,6 +62,11 @@ class StripeBillingProvider implements BillingProviderContract
                     'subscription_code' => $sub->code,
                 ],
                 'capture_method' => (string) config('subscriptions_v2.stripe.capture_method', 'automatic'),
+            ], [
+                // MÊME RAISON QU'AU RÈGLEMENT DU TEMPS : `BillingProcessor` marque `past_due`
+                // explicitement rechargeable et retente jusqu'à quatre fois. Sans cette clé, une
+                // réponse perdue faisait payer le cycle autant de fois qu'il était retenté.
+                'idempotency_key' => 'sub_cycle:'.$cycle->id.':'.$cycle->planned_amount_cents,
             ]);
 
             if (in_array($intent->status, ['succeeded', 'requires_capture'], true)) {

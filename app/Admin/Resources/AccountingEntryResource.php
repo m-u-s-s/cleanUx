@@ -8,6 +8,7 @@ use App\Admin\Console\EloquentResource;
 use App\Admin\Console\Field;
 use App\Models\AccountingEntry;
 use App\Services\AccountingV2\PeriodCloser;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Le grand livre comptable. LECTURE SEULE, et c’est le point le plus important de tout ce moteur.
@@ -19,6 +20,22 @@ class AccountingEntryResource extends EloquentResource
     public function key(): string
     {
         return 'accounting';
+    }
+
+    /**
+     * « LECTURE SEULE » ÉTAIT UNE INTENTION, PAS UNE GARDE.
+     *
+     * Le `PATCH` était bien refusé en 405, mais le descripteur n'override pas
+     * `reasonsToRefuseDelete()` : le défaut du trait rend `[]`, et `DELETE` détruisait
+     * PHYSIQUEMENT une écriture — pas de `SoftDeletes` sur le modèle, aucun contrôle de période
+     * fermée. Supprimer une ligne d'un batch clôturé le déséquilibre définitivement, et
+     * `PeriodCloser::close()` refuse ensuite toute clôture.
+     *
+     * @return list<string>
+     */
+    public function reasonsToRefuseDelete(Model $model): array
+    {
+        return ['Le grand livre ne se corrige pas par suppression : passez une écriture inverse.'];
     }
 
     protected function model(): string
