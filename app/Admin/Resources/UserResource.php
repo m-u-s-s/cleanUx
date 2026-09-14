@@ -4,6 +4,7 @@ namespace App\Admin\Resources;
 
 use App\Admin\Console\Action;
 use App\Admin\Console\AdminResource;
+use App\Admin\Console\AutoriseParUnePolicy;
 use App\Admin\Console\Column;
 use App\Admin\Console\DefaultsResourceWrites;
 use App\Admin\Console\Field;
@@ -17,13 +18,29 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @implements AdminResource<User>
  */
-class UserResource implements AdminResource
+class UserResource implements AdminResource, AutoriseParUnePolicy
 {
     use DefaultsResourceWrites;
 
     public function key(): string
     {
         return 'users';
+    }
+
+    /**
+     * LA CONSOLE EXIGE CE QUE L'ÉCRAN WEB EXIGE. `GestionUtilisateurs` passe par `Gate::authorize`
+     * et donc par les quatre verrous de `UserPolicy` ; ce descripteur n'en appliquait aucun, et
+     * `module_gate` ne retient qu'une capacité — jamais la LIGNE visée.
+     */
+    public function policyAbilities(): array
+    {
+        return [
+            'create' => 'manage',
+            'update' => 'updateRole',
+            'delete' => 'delete',
+            'action:suspend' => 'toggleActivation',
+            'action:reactivate' => 'toggleActivation',
+        ];
     }
 
     /** @return Builder<User> */

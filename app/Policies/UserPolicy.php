@@ -28,6 +28,15 @@ class UserPolicy
             && $user->id !== $target->id;
     }
 
+    /** Détruire un compte est au moins aussi grave que changer son rôle : mêmes quatre verrous. */
+    public function delete(User $user, User $target): bool
+    {
+        return $user->canPerformCriticalAdminActions()
+            && $user->canAccessAdminModule('manage-users')
+            && AdminScope::canAccessUser($user, $target)
+            && $user->id !== $target->id;
+    }
+
     public function updateAdminSecurity(User $user, User $target): bool
     {
         return $user->canPerformCriticalAdminActions()

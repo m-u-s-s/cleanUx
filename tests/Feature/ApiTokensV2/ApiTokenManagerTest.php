@@ -72,7 +72,8 @@ class ApiTokenManagerTest extends TestCase
 
     public function test_create_allows_admin_scope_for_admin_role(): void
     {
-        $user = User::factory()->create();
+        // Un porteur REELLEMENT administrateur : le role du jeton ne se declare plus dans le corps.
+        $user = User::factory()->create(['platform_role' => 'admin']);
         $new = app(ApiTokenManager::class)->createForUser($user, [
             'name' => 'Admin token',
             'scopes' => ['admin:everything'],
@@ -151,7 +152,7 @@ class ApiTokenManagerTest extends TestCase
         Config::set('api_tokens_v2.default_rate_limit_per_minute', 120);
         Config::set('api_tokens_v2.admin_rate_limit_per_minute', 600);
 
-        $user = User::factory()->create();
+        $user = User::factory()->create(['platform_role' => 'admin']);
         $token = app(ApiTokenManager::class)->createForUser($user, [
             'name' => 'Default rate', 'scopes' => ['read:bookings'],
         ])->accessToken;

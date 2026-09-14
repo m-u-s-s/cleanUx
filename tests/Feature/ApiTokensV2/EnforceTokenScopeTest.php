@@ -57,7 +57,7 @@ class EnforceTokenScopeTest extends TestCase
 
     public function test_admin_everything_wildcard_grants_any_scope(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['platform_role' => 'admin']);
         $new = app(ApiTokenManager::class)->createForUser($user, [
             'name' => 'wild', 'scopes' => ['admin:everything'], 'owner_role' => 'admin',
         ]);

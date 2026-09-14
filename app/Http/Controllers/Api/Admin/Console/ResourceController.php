@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Api\Admin\Console;
 
 use App\Admin\Console\Action;
 use App\Admin\Console\AdminResource;
+use App\Admin\Console\AutoriseParUnePolicy;
 use App\Admin\Console\ResourceRegistry;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 
 /** Le moteur de console : un contrôleur, tous les domaines. Il ne sait rien d'aucun métier. */
@@ -46,6 +48,32 @@ class ResourceController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * LA CONSOLE HONORE LA MÊME POLICY QUE LE WEB, quand le descripteur en réclame une.
+     *
+     * `module_gate` retient une CAPACITÉ ; il ne dit rien de la LIGNE visée. Sans cette porte, un
+     * administrateur borné à une zone rétrogradait le titulaire du siège depuis le mobile.
+     *
+     * @param  AdminResource<Model>  $descripteur
+     * @param  Model|class-string<Model>  $cible
+     */
+    private function refusPolicy(AdminResource $descripteur, string $operation, Model|string $cible): ?JsonResponse
+    {
+        if (! $descripteur instanceof AutoriseParUnePolicy) {
+            return null;
+        }
+
+        $capacite = $descripteur->policyAbilities()[$operation] ?? null;
+
+        if ($capacite === null) {
+            return null;
+        }
+
+        return Gate::forUser(request()->user())->allows($capacite, $cible)
+            ? null
+            : $this->refus('forbidden_policy', 403);
     }
 
     public function index(Request $request, string $resource): JsonResponse
@@ -140,6 +168,10 @@ class ResourceController extends Controller
             return $this->refus('read_only_resource', 405);
         }
 
+        if ($refus = $this->refusPolicy($descripteur, 'create', $descripteur->query()->getModel()::class)) {
+            return $refus;
+        }
+
         $data = $this->validated($request, $descripteur);
 
         if ($data instanceof JsonResponse) {
@@ -177,6 +209,10 @@ class ResourceController extends Controller
             return $this->refus('not_found', 404);
         }
 
+        if ($refus = $this->refusPolicy($descripteur, 'update', $model)) {
+            return $refus;
+        }
+
         // Édition partielle : seules les règles des champs REÇUS s'appliquent. Valider tout le
         // formulaire obligerait à renvoyer des champs qu'on ne modifie pas.
         $data = $this->validated($request, $descripteur, partial: true);
@@ -206,6 +242,10 @@ class ResourceController extends Controller
 
         if (! $model instanceof Model) {
             return $this->refus('not_found', 404);
+        }
+
+        if ($refus = $this->refusPolicy($descripteur, 'delete', $model)) {
+            return $refus;
         }
 
         // On DEMANDE au descripteur avant de détruire.
@@ -303,6 +343,10 @@ class ResourceController extends Controller
 
         if (! $model instanceof Model) {
             return $this->refus('not_found', 404);
+        }
+
+        if ($refus = $this->refusPolicy($descripteur, 'action:'.$action, $model)) {
+            return $refus;
         }
 
         // Les valeurs exigées par l'action sont validées ICI, avec ses propres règles.

@@ -36,6 +36,16 @@ class ApiTokenManager
         if (! in_array($role, (array) config('api_tokens_v2.owner_roles', []), true)) {
             throw ValidationException::withMessages(['owner_role' => ['Rôle owner invalide.']]);
         }
+
+        // LE RÔLE DU JETON NE SE DÉCLARE PAS DANS LE CORPS DE LA REQUÊTE. `admin` est le seul des
+        // cinq à ouvrir des scopes (`ScopeRegistry` : « admin peut tout détenir ») : un client
+        // ordinaire s'en délivrait un depuis /me/tokens, et l'inventaire des jetons mentait.
+        if ($role === 'admin' && ! $user->isAdmin()) {
+            throw ValidationException::withMessages([
+                'owner_role' => ['Vous ne pouvez pas émettre un jeton au nom de ce rôle.'],
+            ]);
+        }
+
         $requested = array_values((array) ($payload['scopes'] ?? []));
         $filtered = $this->scopes->filterForRole($requested, $role);
         if (! empty($filtered['invalid'])) {
@@ -43,7 +53,10 @@ class ApiTokenManager
                 'scopes' => ['Scopes invalides ou non autorisés pour ce rôle : '.implode(', ', $filtered['invalid'])],
             ]);
         }
-        $abilities = $filtered['valid'] ?: ['*'];
+
+        // AUCUN SCOPE DEMANDÉ NE VAUT PAS LAISSEZ-PASSER. `EnforceTokenScope` traite `*` comme un
+        // contournement complet : un POST sans `scopes` délivrait donc un jeton sans limite.
+        $abilities = $filtered['valid'];
 
         $expiresInDays = $payload['expires_in_days'] ?? (int) config('api_tokens_v2.default_expiry_days', 365);
         $expiresAt = $expiresInDays > 0 ? now()->addDays((int) $expiresInDays) : null;
