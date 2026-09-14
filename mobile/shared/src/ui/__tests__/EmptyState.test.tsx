@@ -12,15 +12,20 @@ describe('EmptyState', () => {
     expect(screen.getByText('Try adding something.')).toBeTruthy();
   });
 
+  /*
+    `includeHiddenElements` N'EST PAS UN CONTOURNEMENT, C'EST LE SUJET.
+    Une icone decorative est desormais MASQUEE aux technologies d'assistance — elle n'epelle plus
+    son nom Ionicons anglais —, et les requetes de RNTL excluent par defaut ce qui l'est. Le test
+    verifie qu'elle est RENDUE, pas qu'elle est annoncee : meme geste que `LuxeBackground`.
+  */
   it('renders icon when provided', () => {
     render(<EmptyState title="No results" message="Empty." icon="search-outline" />);
-    // Icon renders as Text with testID icon-<name>
-    expect(screen.getByTestId('icon-search-outline')).toBeTruthy();
+    expect(screen.getByTestId('icon-search-outline', { includeHiddenElements: true })).toBeTruthy();
   });
 
   it('does not render icon when omitted', () => {
     render(<EmptyState title="Empty" message="No data." />);
-    expect(screen.queryByTestId(/^icon-/)).toBeNull();
+    expect(screen.queryByTestId(/^icon-/, { includeHiddenElements: true })).toBeNull();
   });
 
   it('renders action button when actionLabel and onAction are provided', () => {
