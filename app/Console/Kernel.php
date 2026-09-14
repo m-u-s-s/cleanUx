@@ -109,6 +109,12 @@ class Kernel extends ConsoleKernel
         // M9 — re-dispatch transiently-failed Stripe webhook events that are due for retry.
         $schedule->command('stripe:retry-failed-webhooks')->hourly()->withoutOverlapping();
 
+        // Webhooks SORTANTS : `next_retry_at` etait ecrit fidelement et relu par personne.
+        // Toutes les cinq minutes : le premier palier de reprise est de 30 secondes.
+        $schedule->command('webhooks:rejouer-les-livraisons')
+            ->everyFiveMinutes()
+            ->withoutOverlapping(10);
+
         // Audit v2 — purge old events selon retention policies
         if (class_exists(PurgeAuditEventsJob::class)) {
             $schedule->job(new PurgeAuditEventsJob)->dailyAt('03:15')->withoutOverlapping();

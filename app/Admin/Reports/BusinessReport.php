@@ -45,7 +45,11 @@ class BusinessReport implements AdminReport
                     ReportTile::make(
                         'commission',
                         'Commission cumulée',
-                        fn () => (float) Mission::where('status', 'completed')->sum('platform_commission'),
+                        // LA COMMISSION VIT SUR LA RÉSERVATION, EN CENTIMES. `missions.platform_commission`
+                        // existe, n'est écrite nulle part, et cette tuile affichait donc 0,00 € à vie.
+                        fn () => (float) Booking::query()
+                            ->whereHas('missions', fn ($m) => $m->where('status', 'completed'))
+                            ->sum('platform_fee_cents') / 100,
                         format: 'money',
                     ),
                 ],

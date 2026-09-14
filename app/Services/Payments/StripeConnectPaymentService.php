@@ -104,10 +104,18 @@ class StripeConnectPaymentService
         }
 
         // Montant en euros (decimal:2)
+        /*
+         * LE REPLI NE LISAIT PAS UNE COMMISSION, IL LISAIT ZÉRO.
+         *
+         * `missions.platform_commission` existe en base et n'est écrite NULLE PART — ni dans
+         * `app/`, ni en fabrique, ni en seeder. `client_price − 0` versait donc au prestataire le
+         * PRIX CLIENT ENTIER dès que `provider_amount_cents` était nul. La commission de la
+         * réservation, elle, est écrite par `CommissionService`.
+         */
         $amount = $booking->provider_amount_cents !== null
             ? round((float) $booking->provider_amount_cents / 100, 2)
             : round(
-                (float) ($mission->client_price ?? 0) - (float) ($mission->platform_commission ?? 0),
+                (float) ($mission->client_price ?? 0) - (float) ($booking->platform_fee_cents ?? 0) / 100,
                 2
             );
 
