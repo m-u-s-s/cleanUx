@@ -97,8 +97,29 @@ class MissionPaymentServiceTest extends TestCase
             }
         }
 
-        $this->assertSame(1000, (int) $feeSent, 'application_fee_amount must come from CommissionService (10% negotiated), not the env-based 20%.');
-        $this->assertSame(1000, (int) $booking->fresh()->platform_fee_cents);
+        /*
+         * LA RETENUE STRIPE N'EST PAS LA COMMISSION — elle porte AUSSI la TVA que la plateforme
+         * reverse. Le prix du service est hors taxe : 100,00 EUR HT, commission negociee 10 %,
+         * TVA 21 % par defaut, donc 1000 + 2100 = 3100 retenus sur 12100 encaisses.
+         *
+         * Ce que ce test garde, et qui etait tout son objet : la COMMISSION vient bien du
+         * CommissionService (10 % negocie) et non du 20 % de configuration.
+         */
+        $montantEncaisse = null;
+        foreach ($stripe->requests() as $req) {
+            if ($req['key'] === 'POST /v1/payment_intents') {
+                $montantEncaisse = $req['params']['amount'] ?? null;
+                break;
+            }
+        }
+
+        $this->assertSame(12100, (int) $montantEncaisse, 'le client paie le TTC : 100,00 HT + 21 %');
+        $this->assertSame(3100, (int) $feeSent, 'retenue = commission (1000) + TVA (2100)');
+
+        // LA COMMISSION SEULE, telle que la comptabilite et le rapport d'activite la lisent.
+        $this->assertSame(1000, (int) $booking->fresh()->platform_fee_cents, 'application_fee_amount must come from CommissionService (10% negotiated), not the env-based 20%.');
+
+        // ET LA PART DU PRESTATAIRE NE BOUGE PAS D'UN CENTIME AVEC LA TVA.
         $this->assertSame(9000, (int) $booking->fresh()->provider_amount_cents);
     }
 }

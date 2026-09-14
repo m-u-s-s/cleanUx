@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Services\Commission\ContexteDeCommission;
 use App\Services\Commission\ResolveurDeCommission;
+use App\Services\Finance\TaxeDeLaCommande;
 
 class CommissionService
 {
@@ -98,6 +99,9 @@ class CommissionService
         $platformFeeCents = min($platformFeeCents, $totalCents);
 
         return [
+            // `total_cents` EST HORS TAXE : c'est le prix du service, et c'est lui qui se partage.
+            // La TVA ne se partage pas — elle est ajoutée par `calculateForBooking`, qui connaît
+            // la réservation et donc le pays.
             'total_cents' => $totalCents,
             'platform_fee_cents' => $platformFeeCents,
             'provider_payout_cents' => $totalCents - $platformFeeCents,
@@ -120,7 +124,12 @@ class CommissionService
     }
 
     /**
-     * Le partage commission / reversement pour une réservation.
+     * Le partage commission / reversement pour une réservation, TVA comprise.
+     *
+     * TROIS MONTANTS, PARCE QU'IL Y A TROIS QUESTIONS. `total_cents` est le prix du service, HORS
+     * TAXE, et c'est lui qui se partage ; `charge_cents` est ce que le client paie ;
+     * `platform_fee_with_tax_cents` est ce que Stripe retient — la commission PLUS la TVA que la
+     * plateforme reverse. La part du prestataire ne dépend d'aucune des deux dernières.
      *
      * @return array{
      * total_cents: int,
@@ -131,7 +140,11 @@ class CommissionService
      * minimum_applied: bool,
      * currency: string,
      * commission_rule_id: int|null,
-     * commission_origin: string
+     * commission_origin: string,
+     * tax_rate: float,
+     * tax_cents: int,
+     * charge_cents: int,
+     * platform_fee_with_tax_cents: int
      * }
      */
     public function calculateForBooking(Booking $booking): array
@@ -153,12 +166,31 @@ class CommissionService
 
         // LA MÊME RÈGLE, APPELÉE — PAS RECOPIÉE. Le metier et la zone viennent de la
         // reservation : les deviner ailleurs les ferait diverger au premier ecran de plus.
-        return $this->calculateForAmount(
+        $partage = $this->calculateForAmount(
             $totalCents,
             $provider,
             $booking->currency,
             null,
             ContexteDeCommission::pourUneReservation($booking),
         );
+
+        /*
+         * LE PRIX DU SERVICE EST HORS TAXE ; LA TVA S'AJOUTE PAR-DESSUS.
+         *
+         * `charge_cents` est ce que le client paie, `total_cents` ce qui se partage. Sans cette
+         * distinction, Stripe encaissait le HT et la facture reclamait le TTC : le solde de TVA
+         * restait du a vie, et un rappel partait tous les jours a 9 h.
+         *
+         * LA TVA VA A LA PLATEFORME, QUI LA REVERSE : elle s'ajoute donc a
+         * `application_fee_amount`, et la part du prestataire reste exactement HT − commission.
+         */
+        $taxe = app(TaxeDeLaCommande::class)->pourLaReservation($booking, $totalCents);
+
+        return $partage + [
+            'tax_rate' => $taxe['taux'],
+            'tax_cents' => $taxe['tva_cents'],
+            'charge_cents' => $taxe['ttc_cents'],
+            'platform_fee_with_tax_cents' => $partage['platform_fee_cents'] + $taxe['tva_cents'],
+        ];
     }
 }

@@ -38,9 +38,23 @@ class MissionPaymentService
         // Stripe-charge ↔ compta (ex-bug : calcul env dupliqué ici).
         $commission = $this->commissionService->calculateForBooking($rendezVous);
 
-        $amount = $commission['total_cents'];
+        /*
+         * ON ENCAISSE LE TTC, ON PARTAGE LE HT.
+         *
+         * Le prix du service est hors taxe ; la TVA s'ajoute au taux du pays, fige au devis. Elle
+         * revient a la plateforme, qui la reverse : elle entre donc dans `application_fee_amount`,
+         * et le prestataire recoit exactement `HT - commission`, inchange.
+         *
+         * Avant, `amount` valait le HT : le client payait 100 EUR contre une facture de 121 EUR.
+         */
+        $amount = $commission['charge_cents'];
         $platformFee = $commission['platform_fee_cents'];
         $providerAmount = $commission['provider_payout_cents'];
+
+        // CE QUE STRIPE RETIENT N'EST PAS LA COMMISSION. `platform_fee_cents` reste la commission
+        // SEULE — le rapport d'activite et la comptabilite la lisent —, et c'est seulement
+        // `application_fee_amount` qui porte en plus la TVA que la plateforme reverse.
+        $retenueStripe = $commission['platform_fee_with_tax_cents'];
 
         $intent = PaymentIntent::create([
             'amount' => $amount,
@@ -55,7 +69,7 @@ class MissionPaymentService
             'payment_method' => $paymentMethodId,
             'confirm' => true,
             'capture_method' => 'manual',
-            'application_fee_amount' => $platformFee,
+            'application_fee_amount' => $retenueStripe,
             'transfer_data' => [
                 'destination' => $employee->stripe_connect_account_id,
             ],
@@ -121,9 +135,23 @@ class MissionPaymentService
         // Même source de vérité que le web : le split alimente ensuite le ledger à la complétion.
         $commission = $this->commissionService->calculateForBooking($rendezVous);
 
-        $amount = $commission['total_cents'];
+        /*
+         * ON ENCAISSE LE TTC, ON PARTAGE LE HT.
+         *
+         * Le prix du service est hors taxe ; la TVA s'ajoute au taux du pays, fige au devis. Elle
+         * revient a la plateforme, qui la reverse : elle entre donc dans `application_fee_amount`,
+         * et le prestataire recoit exactement `HT - commission`, inchange.
+         *
+         * Avant, `amount` valait le HT : le client payait 100 EUR contre une facture de 121 EUR.
+         */
+        $amount = $commission['charge_cents'];
         $platformFee = $commission['platform_fee_cents'];
         $providerAmount = $commission['provider_payout_cents'];
+
+        // CE QUE STRIPE RETIENT N'EST PAS LA COMMISSION. `platform_fee_cents` reste la commission
+        // SEULE — le rapport d'activite et la comptabilite la lisent —, et c'est seulement
+        // `application_fee_amount` qui porte en plus la TVA que la plateforme reverse.
+        $retenueStripe = $commission['platform_fee_with_tax_cents'];
 
         $intent = PaymentIntent::create([
             'amount' => $amount,
@@ -139,7 +167,7 @@ class MissionPaymentService
             // automatique prendrait l'argent avant que le travail soit fait, et rendrait toute
             // annulation plus coûteuse qu'un simple relâchement d'empreinte.
             'capture_method' => 'manual',
-            'application_fee_amount' => $platformFee,
+            'application_fee_amount' => $retenueStripe,
             'transfer_data' => [
                 'destination' => $compteDestinataire,
             ],

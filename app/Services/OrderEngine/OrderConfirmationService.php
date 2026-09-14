@@ -10,6 +10,7 @@ use App\Models\OrganizationSite;
 use App\Models\ServiceZone;
 use App\Models\User;
 use App\Services\Dispatch\DispatchEngine;
+use App\Services\Finance\TaxeDeLaCommande;
 use App\Services\International\CountryMarketResolver;
 use App\Services\Payments\MissionPaymentService;
 use App\Support\Domain\BookingStatus;
@@ -263,6 +264,7 @@ class OrderConfirmationService
         PriceBreakdown $quote,
     ): Booking {
         $scheduledAt = $item->scheduled_at ?? $draft->scheduled_at;
+        $tauxDeTva = app(TaxeDeLaCommande::class)->tauxPourLeBrouillon($draft);
 
         $booking = Booking::create(array_filter([
             'booking_reference' => $this->uniqueReference(),
@@ -320,6 +322,9 @@ class OrderConfirmationService
                 // LE NOM DU MÉTIER, FIGÉ AVEC LE RESTE.
                 'service_name' => $item->trade?->name,
                 'currency' => $draft->currency ?? 'EUR',
+                // LE TAUX DE TVA SE FIGE AU DEVIS, comme le prix. Le prix du service est HORS
+                // TAXE ; changer le réglage du pays ne doit pas rouvrir une facture déjà émise.
+                'tax_rate' => $tauxDeTva,
                 'min_cents' => $quote->minCents,
                 'max_cents' => $quote->maxCents,
                 'quote_only' => $quote->quoteOnly,

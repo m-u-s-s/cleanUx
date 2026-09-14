@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\OrderDraft;
 use App\Models\Trade;
 use App\Models\User;
+use App\Services\Finance\TaxeDeLaCommande;
 use App\Services\OrderEngine\BundleComposer;
 use App\Services\OrderEngine\OrderConfirmationService;
 use App\Services\OrderEngine\OrderDraftManager;
@@ -95,6 +96,32 @@ class OrderConfirmation extends Component
         $draft = $this->draft;
 
         return $draft ? app(BundleComposer::class)->consolidatedQuote($draft) : null;
+    }
+
+    /**
+     * LA TVA, ANNONCÉE AVANT DE CONFIRMER.
+     *
+     * Le prix du service est HORS TAXE : le client doit voir ce qu'il va réellement payer, et à
+     * quel taux. Le taux est celui que le super-administrateur ou le comptable a réglé pour le
+     * pays, et c'est le lieu de l'intervention qui désigne ce pays.
+     *
+     * Rendu `null` sur un devis « sur demande » : il n'y a pas encore de montant à taxer.
+     *
+     * @return array{taux: float, ht_cents: int, tva_cents: int, ttc_cents: int}|null
+     */
+    #[Computed]
+    public function taxe(): ?array
+    {
+        $draft = $this->draft;
+        $devis = $this->quote['order'] ?? null;
+
+        if (! $draft || ! $devis || $devis->quoteOnly) {
+            return null;
+        }
+
+        $taxes = app(TaxeDeLaCommande::class);
+
+        return $taxes->decoupage((int) $devis->minCents, $taxes->tauxPourLeBrouillon($draft));
     }
 
     /**

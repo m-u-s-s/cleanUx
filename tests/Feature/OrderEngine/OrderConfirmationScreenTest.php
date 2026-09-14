@@ -38,13 +38,21 @@ class OrderConfirmationScreenTest extends TestCase
         parent::tearDown();
     }
 
-    /** LA loi du parcours : le prix avant l'identité. */
+    /**
+     * LA loi du parcours : le prix avant l'identité.
+     *
+     * Et « le prix » veut dire LE PRIX COMPLET : le service est vendu HORS TAXE, la TVA s'y
+     * ajoute au taux du pays. L'écran n'en montrait aucune trace — le visiteur découvrait le
+     * vrai montant au moment de payer.
+     */
     public function test_a_visitor_without_an_account_sees_the_full_price(): void
     {
         $this->prepareBasket();
 
         Livewire::test(OrderConfirmation::class)
-            ->assertSee('Total estimé')
+            ->assertSee('Sous-total hors taxe')
+            ->assertSee('TVA')
+            ->assertSee('Total à payer, TVA comprise')
             ->assertSee('Créer un compte')
             // Et le détail par métier, pas seulement un total opaque.
             ->assertSee($this->peinture()->name);

@@ -326,7 +326,8 @@ class OrderEngineQualityTest extends TestCase
         // 3. Le client crée son compte au dernier moment, et retrouve son panier.
         $client = User::factory()->client()->create();
         $confirmation = Livewire::actingAs($client)->test(OrderConfirmation::class);
-        $confirmation->assertSee('Total estimé');
+        // Le service est vendu HORS TAXE : le total annonce est celui qu'on paiera.
+        $confirmation->assertSee('Total à payer, TVA comprise');
 
         // 4. Il confirme : la commande devient une réservation.
         $confirmation->call('confirm');

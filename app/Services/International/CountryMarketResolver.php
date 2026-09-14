@@ -138,8 +138,24 @@ class CountryMarketResolver
         return $deduite ?? strtoupper((string) config('fx.base_currency', 'EUR'));
     }
 
+    /**
+     * LE TAUX GELÉ AU DEVIS L'EMPORTE SUR LE RÉGLAGE DU JOUR.
+     *
+     * Le prix du service est HORS TAXE et la TVA s'y ajoute à la demande ; le taux retenu est
+     * donc figé dans `pricing_snapshot`. Sans cette priorité, changer le réglage du pays
+     * rouvrirait toutes les factures déjà émises — et une facture cesserait de correspondre au
+     * montant réellement encaissé.
+     */
     public function effectiveTaxRate(array $context, ?Booking $rendezVous = null): float
     {
+        $gele = $rendezVous !== null
+            ? data_get((array) $rendezVous->pricing_snapshot, 'tax_rate')
+            : null;
+
+        if ($gele !== null && $gele !== '') {
+            return round((float) $gele, 2);
+        }
+
         $accountMetadata = (array) ($rendezVous?->organizationAccount?->metadata ?? []);
 
         return round((float) (

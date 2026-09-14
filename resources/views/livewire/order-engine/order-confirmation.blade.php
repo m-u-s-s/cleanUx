@@ -134,19 +134,46 @@
                         @endforeach
                     </div>
 
-                    <div class="mt-5 flex items-baseline justify-between border-t border-slate-200 pt-4">
-                        <span class="text-sm font-medium text-slate-900">Total estimé</span>
-                        <span class="text-2xl font-semibold tabular-nums text-slate-900">
-                            @if ($this->quote['order']->quoteOnly)
-                                Sur devis
-                            @elseif ($this->quote['order']->isExact())
-                                <x-money :amount="(float) ($this->quote['order']->minCents / 100)" :decimals="0" />
-                            @else
-                                {{ number_format($this->quote['order']->minCents / 100, 0, ',', ' ') }}
-                                – <x-money :amount="(float) ($this->quote['order']->maxCents / 100)" :decimals="0" />
-                            @endif
-                        </span>
-                    </div>
+                    {{--
+                        LE PRIX DU SERVICE EST HORS TAXE, ET LE CLIENT DOIT LE SAVOIR AVANT DE
+                        CONFIRMER. Le taux est celui que le super-administrateur ou le comptable a
+                        réglé pour le pays ; le lieu de l'intervention désigne ce pays.
+                    --}}
+                    @if ($this->taxe)
+                        <div class="mt-5 space-y-1.5 border-t border-slate-200 pt-4 text-sm">
+                            <div class="flex items-baseline justify-between gap-3">
+                                <span class="text-slate-600">Sous-total hors taxe</span>
+                                <span class="shrink-0 tabular-nums text-slate-700">
+                                    <x-money :amount="(float) ($this->taxe['ht_cents'] / 100)" />
+                                </span>
+                            </div>
+                            <div class="flex items-baseline justify-between gap-3">
+                                <span class="text-slate-600">
+                                    TVA ({{ rtrim(rtrim(number_format($this->taxe['taux'], 2, ',', ' '), '0'), ',') }} %)
+                                </span>
+                                <span class="shrink-0 tabular-nums text-slate-700">
+                                    <x-money :amount="(float) ($this->taxe['tva_cents'] / 100)" />
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 flex items-baseline justify-between border-t border-slate-200 pt-3">
+                            <span class="text-sm font-medium text-slate-900">Total à payer, TVA comprise</span>
+                            <span class="text-2xl font-semibold tabular-nums text-slate-900">
+                                @if ($this->quote['order']->isExact())
+                                    <x-money :amount="(float) ($this->taxe['ttc_cents'] / 100)" />
+                                @else
+                                    {{ number_format($this->taxe['ttc_cents'] / 100, 2, ',', ' ') }}
+                                    – <x-money :amount="(float) (round($this->quote['order']->maxCents * (1 + $this->taxe['taux'] / 100)) / 100)" />
+                                @endif
+                            </span>
+                        </div>
+                    @else
+                        <div class="mt-5 flex items-baseline justify-between border-t border-slate-200 pt-4">
+                            <span class="text-sm font-medium text-slate-900">Total estimé</span>
+                            <span class="text-2xl font-semibold tabular-nums text-slate-900">Sur devis</span>
+                        </div>
+                    @endif
 
                     @unless ($this->quote['order']->isExact() || $this->quote['order']->quoteOnly)
                         <p class="mt-2 text-xs text-slate-500">

@@ -3,6 +3,7 @@
 namespace App\Livewire\Client;
 
 use App\Models\Booking;
+use App\Services\Finance\TaxeDeLaCommande;
 use App\Services\Payments\MissionPaymentService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -100,6 +101,9 @@ class BookingCheckout extends Component
 
         return view('livewire.client.booking-checkout', [
             'booking' => $booking,
+            // LE PRIX DU SERVICE EST HORS TAXE. Cet écran annonçait « TVA incluse » sur le HT,
+            // alors que c'est le TTC qui est encaissé : il montre desormais le découpage.
+            'taxe' => $booking ? app(TaxeDeLaCommande::class)->pourLaReservation($booking) : null,
         ])->layout('layouts.app');
     }
 }

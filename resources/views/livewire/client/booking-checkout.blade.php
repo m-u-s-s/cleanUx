@@ -44,13 +44,21 @@
                 <h1 class="text-xl font-bold tracking-tight text-slate-900">Paiement de votre mission</h1>
                 <p class="text-xs text-slate-500 mt-1">Mission #{{ $booking->id }}</p>
 
-                <div class="mt-4 inline-flex items-baseline gap-1">
-                    <span class="text-3xl font-bold text-slate-900">
-                        {{ number_format(((float) ($booking->devis_estime ?? 0)), 2, ',', ' ') }}
-                    </span>
-                    <span class="text-lg font-semibold text-slate-500">€</span>
+                {{--
+                    LE PRIX DU SERVICE EST HORS TAXE. Cet écran affichait le HT sous la mention
+                    « TVA incluse » — et c'est bien le TTC qui est encaissé.
+                --}}
+                {{-- Le symbole vient de la DEVISE du montant, jamais du gabarit : une mission
+                     marocaine se règle en dirhams, et un « € » écrit ici le nierait. --}}
+                <div class="mt-4 text-3xl font-bold text-slate-900">
+                    <x-money :amount="(float) (($taxe['ttc_cents'] ?? 0) / 100)" :currency="$booking->currency" />
                 </div>
-                <p class="text-xs text-slate-500 mt-1">Total estimé · TVA incluse</p>
+                <p class="text-xs text-slate-500 mt-1">
+                    <x-money :amount="(float) (($taxe['ht_cents'] ?? 0) / 100)" :currency="$booking->currency" />
+                    hors taxe · TVA
+                    {{ rtrim(rtrim(number_format((float) ($taxe['taux'] ?? 0), 2, ',', ' '), '0'), ',') }} %
+                    (<x-money :amount="(float) (($taxe['tva_cents'] ?? 0) / 100)" :currency="$booking->currency" />)
+                </p>
             </div>
 
             @if ($error)
