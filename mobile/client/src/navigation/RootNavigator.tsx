@@ -58,6 +58,7 @@ import { useClientSpacePreference } from '@/company/useClientSpacePreference';
 import { ClientCompanyNavigator } from '@/company/ClientCompanyNavigator';
 import { ClientSpaceSwitcherScreen } from '@/screens/company/ClientSpaceSwitcherScreen';
 import { ModulesRoute } from '@/screens/ModulesRoute';
+import { CatalogueScreen } from '@/screens/catalogue/CatalogueScreen';
 import { BrowseProvidersScreen } from '@/screens/BrowseProvidersScreen';
 import { colors } from '@/theme';
 import { useThemeColors } from '@/theme/useThemeColors';
@@ -263,6 +264,16 @@ export function RootNavigator() {
               name="Modules"
               component={ModulesRoute}
               options={{ headerShown: true, title: tr('nav.modules') }}
+            />
+            <Stack.Screen
+              name="Catalogue"
+              component={CatalogueScreen}
+              options={({ route }) => ({
+                headerShown: true,
+                title: route.params.mode === 'asap'
+                  ? tr('home_actions.intervention_immediate')
+                  : tr('home_actions.prendre_rendez_vous'),
+              })}
             />
             {/*
               L'assistant de réservation en cinq étapes N'EST PLUS MONTÉ.

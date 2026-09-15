@@ -6,8 +6,8 @@
  *  - Tap "Messagerie" (feuille d'actions) -> navigate('ChatList')
  *  - Tap "Fidélité" (feuille d'actions) -> navigate('Loyalty')
  *  - Tap "Réserver un service" ouvre la feuille, qui pose le choix du mode
- *  - Tap "Intervention immédiate" -> navigate('EmbeddedModule', /commander?mode=asap)
- *    (les trois cartes ouvrent le MÊME parcours ; l'ancien assistant natif n'est plus joignable)
+ *  - Tap "Intervention immédiate" -> navigate('Catalogue', { mode: 'asap' })
+ *    (immédiat et rendez-vous passent par le catalogue natif ; « Plusieurs services » reste web)
  *  - Tap active booking card -> navigate('BookingDetail', { bookingId })
  */
 import React from 'react';
@@ -194,29 +194,22 @@ describe('HomeScreen interactions', () => {
   });
 
   /**
-   * Les trois cartes ouvrent toutes le moteur de commande, avec leur intention dans l'URL.
+   * Immédiat et rendez-vous ouvrent le CATALOGUE NATIF, avec leur mode.
    *
-   * L'ancien parcours en cinq etapes ne connaissait ni secteur, ni question propre au metier, ni
-   * devis explicable ligne par ligne. Sans le parametre `mode`, les trois cartes arriveraient sur
-   * le meme ecran planifie et le choix d'entree deviendrait decoratif : le client demanderait
-   * « immediat » puis devrait le redemander.
+   * Le catalogue ne montre que ce que le moteur de commande accepte dans ce mode, puis ouvre le
+   * moteur sur le métier choisi : le mode voyage jusqu'à la commande. Sans lui, le client
+   * demanderait « immédiat » et devrait le redemander.
    */
-  it('le mode immediat ouvre le moteur de commande en urgence', () => {
+  it('le mode immédiat ouvre le catalogue natif en immédiat', () => {
     render(<HomeScreen />);
     fireEvent.press(screen.getByTestId('booking-mode-asap'));
-    expect(mockNavigate).toHaveBeenCalledWith('EmbeddedModule', {
-      path: '/commander?mode=asap',
-      title: 'Intervention immédiate',
-    });
+    expect(mockNavigate).toHaveBeenCalledWith('Catalogue', { mode: 'asap' });
   });
 
-  it('le mode rendez-vous laisse choisir la date', () => {
+  it('le mode rendez-vous ouvre le catalogue natif en rendez-vous', () => {
     render(<HomeScreen />);
     fireEvent.press(screen.getByTestId('booking-mode-scheduled'));
-    expect(mockNavigate).toHaveBeenCalledWith('EmbeddedModule', {
-      path: '/commander?mode=scheduled',
-      title: 'Prendre rendez-vous',
-    });
+    expect(mockNavigate).toHaveBeenCalledWith('Catalogue', { mode: 'scheduled' });
   });
 
   /**
@@ -262,10 +255,7 @@ describe('HomeScreen — first-time user', () => {
     });
 
     fireEvent.press(screen.getByTestId('booking-mode-scheduled'));
-    expect(mockNavigate).toHaveBeenCalledWith('EmbeddedModule', {
-      path: '/commander?mode=scheduled',
-      title: 'Prendre rendez-vous',
-    });
+    expect(mockNavigate).toHaveBeenCalledWith('Catalogue', { mode: 'scheduled' });
   });
 });
 
