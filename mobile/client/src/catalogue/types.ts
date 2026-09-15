@@ -8,7 +8,7 @@ export interface MetierDuCatalogue {
   short_description: string | null;
   /** Hors taxe. `null` : aucun prix plancher, le prix sort des réponses au questionnaire. */
   floor_price_cents: number | null;
-  /** Le montant se lit par heure. */
+  /** Le plancher est le prix d'une heure : il se lit par heure. */
   hourly: boolean;
 }
 

@@ -66,8 +66,18 @@ describe('cheminDeCommande', () => {
     expect(cheminDeCommande(premier!, 'asap')).toBe('/commander/batiment/peinture?mode=asap');
   });
 
-  it("encode un slug inattendu plutôt que de casser l'URL", () => {
-    const [bizarre] = construireLaSonde([{ ...secteurs[0]!, slug: 'a b', name: secteurs[0]!.name, trades: [metier('c/d')] }]);
-    expect(cheminDeCommande(bizarre!, 'scheduled')).toBe('/commander/a%20b/c%2Fd?mode=scheduled');
+  const repere = (slugSecteur: string, slugMetier: string) =>
+    construireLaSonde([{ ...secteurs[0]!, slug: slugSecteur, trades: [metier(slugMetier)] }])[0]!;
+
+  it('un slug inattendu ouvre le moteur sans présélection plutôt qu’un chemin douteux', () => {
+    expect(cheminDeCommande(repere('a b', 'c/d'), 'scheduled')).toBe('/commander?mode=scheduled');
+    expect(cheminDeCommande(repere('batiment', '..'), 'asap')).toBe('/commander?mode=asap');
+    expect(cheminDeCommande(repere('..', 'peinture'), 'asap')).toBe('/commander?mode=asap');
+    expect(cheminDeCommande(repere('', 'peinture'), 'scheduled')).toBe('/commander?mode=scheduled');
+    expect(cheminDeCommande(repere('batiment', ''), 'asap')).toBe('/commander?mode=asap');
+  });
+
+  it('témoin : minuscules, chiffres et tirets gardent la présélection', () => {
+    expect(cheminDeCommande(repere('gros-oeuvre-2', 'toiture-3'), 'asap')).toBe('/commander/gros-oeuvre-2/toiture-3?mode=asap');
   });
 });

@@ -44,6 +44,12 @@ describe('FeuilleDuMetier', () => {
     expect(ecran.queryByText('Fuites, débouchages')).toBeNull();
   });
 
+  it('le nom du métier s’annonce au lecteur d’écran quand la sélection change', () => {
+    const ecran = render(<FeuilleDuMetier repere={sonde[1]!} libellePrix="dès 85 € hors taxe" onCommander={jest.fn()} />);
+
+    expect(ecran.getByTestId('feuille-titre').props.accessibilityLiveRegion).toBe('polite');
+  });
+
   it('commande au toucher du bouton', () => {
     const onCommander = jest.fn();
     const ecran = render(<FeuilleDuMetier repere={sonde[2]!} libellePrix="Prix selon vos réponses" onCommander={onCommander} />);
@@ -62,11 +68,14 @@ describe('FeuilleDuMetier', () => {
       .spyOn(require('react-native-safe-area-context'), 'useSafeAreaInsets')
       .mockReturnValue({ top: 0, right: 0, bottom: 34, left: 0 });
 
-    const ecran = render(<FeuilleDuMetier repere={sonde[0]!} libellePrix="dès 120 € hors taxe" onCommander={jest.fn()} />);
-    const style = StyleSheet.flatten(ecran.getByTestId('feuille-du-metier').props.style);
+    // Restauré même si une assertion échoue : sinon la marge forcée fuirait dans les tests suivants.
+    try {
+      const ecran = render(<FeuilleDuMetier repere={sonde[0]!} libellePrix="dès 120 € hors taxe" onCommander={jest.fn()} />);
+      const style = StyleSheet.flatten(ecran.getByTestId('feuille-du-metier').props.style);
 
-    expect(style.paddingBottom).toBe(spacing.md + 34);
-
-    espion.mockRestore();
+      expect(style.paddingBottom).toBe(spacing.md + 34);
+    } finally {
+      espion.mockRestore();
+    }
   });
 });

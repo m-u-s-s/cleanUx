@@ -25,7 +25,8 @@ import { useTraduction, traduireMaintenant } from '@/i18n';
  *
  * Immédiat et rendez-vous passent d'abord par le CATALOGUE NATIF, qui ne montre que ce que le
  * moteur de commande accepte dans ce mode, puis ouvre ce moteur sur le métier choisi. « Plusieurs
- * services » ouvre directement le moteur, servi par la vue embarquée. L'ancien assistant natif en cinq étapes ne connaît ni secteur,
+ * services » ouvre directement le moteur, servi par la vue embarquée.
+ * L'ancien assistant natif en cinq étapes ne connaît ni secteur,
  * ni question propre au métier, ni instantané de réponse : deux parcours écrivant la même table
  * par des chemins différents produiraient des devis explicables ou non selon la porte empruntée.
  *

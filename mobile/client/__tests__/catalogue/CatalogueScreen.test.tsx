@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScrollView } from 'react-native';
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, within } from '@testing-library/react-native';
 
 const mockNavigate = jest.fn();
 const mockReplace = jest.fn();
@@ -150,6 +150,17 @@ describe('CatalogueScreen', () => {
     expect(ecran.getByTestId('feuille-titre').props.children).toBe('Plomberie');
   });
 
+  it('toucher le repère déjà centré ne fige pas le défilement qui suit', () => {
+    const ecran = render(<CatalogueScreen />);
+
+    // Peinture est déjà au centre, au décalage 0 : aucun défilement programmé ne viendra lever
+    // une cible posée là — le défilement suivant, sans geste de doigt, doit être suivi.
+    fireEvent.press(ecran.getByTestId('repere-peinture'));
+    defiler(1 * 88, ecran);
+
+    expect(ecran.getByTestId('feuille-titre').props.children).toBe('Plomberie');
+  });
+
   it('en mouvement réduit, le recentrage ne s’anime pas', () => {
     mockReduit = true;
     const recentrer = jest.spyOn(ScrollView.prototype as unknown as { scrollTo: (o: unknown) => void }, 'scrollTo');
@@ -201,6 +212,31 @@ describe('CatalogueScreen', () => {
     mockResultat = { data: undefined, isLoading: true, isError: false, refetch };
 
     expect(render(<CatalogueScreen />).getAllByTestId('squelette').length).toBeGreaterThan(0);
+  });
+
+  it('les squelettes des repères changent de côté comme eux, et la feuille a le sien', () => {
+    mockResultat = { data: undefined, isLoading: true, isError: false, refetch };
+    const ecran = render(<CatalogueScreen />);
+
+    expect(ecran.getByTestId('catalogue-chargement')).toBeTruthy();
+
+    const cases = ecran.getAllByTestId(/^squelette-case-/);
+    expect(cases.some(c => String(c.props.testID).startsWith('squelette-case-droite-'))).toBe(true);
+    expect(cases.some(c => String(c.props.testID).startsWith('squelette-case-gauche-'))).toBe(true);
+
+    expect(ecran.getByTestId('squelette-feuille')).toBeTruthy();
+  });
+
+  it('témoin : aucune barre de squelette n’est posée à nu sur la scène', () => {
+    mockResultat = { data: undefined, isLoading: true, isError: false, refetch };
+    const ecran = render(<CatalogueScreen />);
+
+    // Chaque barre vit dans une case de verre ou dans la feuille : leur somme est le total.
+    const verres = [...ecran.getAllByTestId(/^squelette-case-/), ecran.getByTestId('squelette-feuille')];
+    const posees = verres.reduce((somme, verre) => somme + within(verre).getAllByTestId('squelette').length, 0);
+
+    expect(posees).toBeGreaterThan(0);
+    expect(posees).toBe(ecran.getAllByTestId('squelette').length);
   });
 
   it('en erreur, dit que le catalogue n’a pas pu être chargé et permet de réessayer', () => {

@@ -4,16 +4,27 @@ import { join } from 'node:path';
 const RACINE = join(__dirname, '..', '..');
 const lire = (chemin: string): string => readFileSync(join(RACINE, chemin), 'utf8');
 
-/** La pile personnelle commence à ses onglets : tout ce qui suit y est monté. */
+/**
+ * La pile personnelle va de ses onglets à la branche déconnectée (`) : (`) : seul ce qui est
+ * entre les deux y est monté. Sans la borne de fin, `Login` et `ForgotPassword` y passeraient.
+ */
 const racine = lire('navigation/RootNavigator.tsx');
-const pilePersonnelle = racine.slice(racine.indexOf('component={TabNavigator}'));
+const debut = racine.indexOf('component={TabNavigator}');
+const fin = racine.indexOf(') : (', debut);
+const pilePersonnelle = racine.slice(debut, fin);
 const montees = new Set([...pilePersonnelle.matchAll(/name="([A-Za-z]+)"/g)].map(m => m[1]));
 
 describe('le catalogue natif est joignable depuis la pile personnelle', () => {
   it('témoin : le découpage voit la pile personnelle', () => {
-    expect(racine.indexOf('component={TabNavigator}')).toBeGreaterThan(-1);
+    expect(debut).toBeGreaterThan(-1);
+    expect(fin).toBeGreaterThan(debut);
     expect(montees.has('Modules')).toBe(true);
     expect(montees.has('EmbeddedModule')).toBe(true);
+  });
+
+  it("témoin : Login n'est pas dans la pile personnelle", () => {
+    expect(racine).toContain('name="Login"');
+    expect(montees.has('Login')).toBe(false);
   });
 
   it('la route Catalogue y est montée', () => {

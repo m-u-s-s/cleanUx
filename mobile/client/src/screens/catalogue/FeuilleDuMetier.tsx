@@ -1,12 +1,15 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, GlassSurface, Icon } from '@/ui';
+import { Button, GlassSurface, Icon, Skeleton } from '@/ui';
 import { radius, spacing, typography } from '@/theme';
 import { useThemeColors, type ThemeTokens } from '@/theme/useThemeColors';
 import { useTraduction } from '@/i18n';
 import { iconeDuMetier } from '@/catalogue';
 import type { RepereDeSonde } from '@/catalogue';
+
+/** La hauteur du bouton principal `lg` : son remplissage vertical deux fois (Button.tsx), et sa ligne de texte. */
+const HAUTEUR_DU_BOUTON = typography.fontSize.lg + 2 * (spacing.sm + 6);
 
 export interface FeuilleDuMetierProps {
   repere: RepereDeSonde;
@@ -39,7 +42,10 @@ export function FeuilleDuMetier({ repere, libellePrix, onCommander }: FeuilleDuM
           <Icon name={iconeDuMetier(metier.icon)} size={22} color={theme.action} />
         </View>
         <View style={styles.textes}>
-          <Text style={styles.titre} numberOfLines={1} testID="feuille-titre">{metier.name}</Text>
+          {/* Le métier change sous le doigt sans que le focus bouge : le lecteur d'écran l'annonce. */}
+          <Text style={styles.titre} numberOfLines={1} testID="feuille-titre" accessibilityLiveRegion="polite">
+            {metier.name}
+          </Text>
           <Text style={styles.position} numberOfLines={1} testID="feuille-position">
             {tr('catalogue.position', { secteur: secteur.name, rang, total })}
           </Text>
@@ -62,6 +68,37 @@ export function FeuilleDuMetier({ repere, libellePrix, onCommander }: FeuilleDuM
   );
 }
 
+/**
+ * LA FEUILLE EN ATTENTE DU CATALOGUE — le même panneau de verre, à la même place, ses lignes en
+ * squelette. Le catalogue arrivé, rien ne saute : seul le contenu se remplit.
+ */
+export function FeuilleDuMetierSquelette() {
+  const theme = useThemeColors();
+  const insets = useSafeAreaInsets();
+  const styles = stylesFor(theme);
+
+  return (
+    <GlassSurface
+      strong
+      radius={radius.lg}
+      style={[styles.feuille, { paddingBottom: spacing.md + insets.bottom }]}
+      testID="squelette-feuille"
+    >
+      <View style={styles.entete}>
+        <View style={styles.pastilleIcone} />
+        <View style={[styles.textes, styles.lignesEnAttente]}>
+          <Skeleton width="55%" height={typography.fontSize.lg} />
+          <Skeleton width="35%" height={typography.fontSize.xs} />
+        </View>
+      </View>
+
+      <Skeleton width="30%" height={typography.fontSize.base} />
+
+      <Skeleton width="100%" height={HAUTEUR_DU_BOUTON} borderRadius={radius.md} />
+    </GlassSurface>
+  );
+}
+
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   feuille: {
     borderBottomLeftRadius: 0,
@@ -76,6 +113,7 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', backgroundColor: t.tint.brand,
   },
   textes: { flex: 1 },
+  lignesEnAttente: { gap: spacing.xs },
   titre: { fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, color: t.textOnGlass },
   position: { fontSize: typography.fontSize.xs, color: t.mutedOnGlass },
   description: { fontSize: typography.fontSize.xs, color: t.mutedOnGlass },

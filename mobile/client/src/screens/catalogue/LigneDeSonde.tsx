@@ -41,11 +41,21 @@ export function LigneDeSonde({ reperes, index, onIndex, libelleDuRepere, mouveme
    */
   const cibleDuRecentrage = useRef<number | null>(null);
 
+  /*
+   * LE DERNIER DÉCALAGE CONNU.
+   *
+   * Toucher le repère déjà centré ne fait rien défiler : aucun `onScroll` n'arriverait pour lever
+   * une cible posée sur la position courante, et le défilement suivant serait ignoré jusqu'au
+   * prochain geste du doigt. Une cible ne se pose donc que s'il y a un trajet à parcourir.
+   */
+  const dernierDecalage = useRef(0);
+
   const marge = Math.max(0, (hauteur - HAUTEUR_DE_REPERE) / 2);
   const longueurDuTrait = Math.max(0, (reperes.length - 1) * HAUTEUR_DE_REPERE);
 
   const suivre = (evenement: NativeSyntheticEvent<NativeScrollEvent>) => {
     const y = evenement.nativeEvent.contentOffset.y;
+    dernierDecalage.current = y;
 
     if (cibleDuRecentrage.current !== null) {
       if (Math.abs(y - cibleDuRecentrage.current) < 1) {
@@ -63,8 +73,13 @@ export function LigneDeSonde({ reperes, index, onIndex, libelleDuRepere, mouveme
   };
 
   const choisir = (suivant: number) => {
-    cibleDuRecentrage.current = decalageDeIndex(suivant);
-    defilement.current?.scrollTo({ y: decalageDeIndex(suivant), animated: !mouvementReduit });
+    const cible = decalageDeIndex(suivant);
+
+    if (Math.abs(dernierDecalage.current - cible) >= 1) {
+      cibleDuRecentrage.current = cible;
+    }
+
+    defilement.current?.scrollTo({ y: cible, animated: !mouvementReduit });
 
     if (suivant !== index) {
       onIndex(suivant);

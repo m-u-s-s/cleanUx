@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
-import { GlassSurface, useReducedMotion } from '@/ui';
+import { GlassSurface, Skeleton, useReducedMotion } from '@/ui';
 import { animation, radius, spacing, typography } from '@/theme';
 import { useThemeColors, type ThemeTokens } from '@/theme/useThemeColors';
 import { useTraduction } from '@/i18n';
 import { HAUTEUR_DE_REPERE } from '@/catalogue';
-import type { RepereDeSonde as Repere } from '@/catalogue';
+import type { Cote, RepereDeSonde as Repere } from '@/catalogue';
 
 /** La largeur de l'axe central : le pointillé de `LigneDeSonde` passe en son milieu. */
 const AXE = spacing.xl;
@@ -101,8 +101,44 @@ export function RepereDeSonde({ repere, choisi, libellePrix, onChoisir }: Repere
   );
 }
 
+/**
+ * UN REPÈRE EN ATTENTE DU CATALOGUE — la même rangée, le même axe, la même case de verre.
+ *
+ * Les barres reposent sur du verre, comme le texte qu'elles annoncent : posées à nu sur l'iceberg,
+ * elles se liraient comme des rayures du fond, et l'arrivée des vrais repères déplacerait tout.
+ */
+export function RepereDeSondeSquelette({ cote, testID }: { cote: Cote; testID: string }) {
+  const theme = useThemeColors();
+  const styles = stylesFor(theme);
+
+  const laCase = (
+    <View style={cote === 'droite' ? styles.contreAxeDroit : styles.contreAxeGauche}>
+      {cote === 'droite' ? <View style={[styles.fil, styles.filEnAttente]} /> : null}
+      <GlassSurface radius={radius.md} style={[styles.case, styles.caseEnAttente]} testID={testID}>
+        <Skeleton width="80%" height={typography.fontSize.sm} />
+        <Skeleton width="50%" height={typography.fontSize.xs} />
+      </GlassSurface>
+      {cote === 'gauche' ? <View style={[styles.fil, styles.filEnAttente]} /> : null}
+    </View>
+  );
+
+  return (
+    <View style={styles.rangee}>
+      <View style={styles.moitie}>{cote === 'gauche' ? laCase : null}</View>
+      <View style={styles.axe}>
+        <View style={[styles.noeud, styles.noeudEnAttente]} />
+      </View>
+      <View style={styles.moitie}>{cote === 'droite' ? laCase : null}</View>
+    </View>
+  );
+}
+
 const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   rangee: { height: HAUTEUR_DE_REPERE, flexDirection: 'row', alignItems: 'center' },
+  // L'attente reprend la géométrie des repères, dans la couleur des bordures plutôt que de l'action.
+  caseEnAttente: { width: '72%' },
+  filEnAttente: { backgroundColor: t.border, opacity: 1 },
+  noeudEnAttente: { borderColor: t.border },
   moitie: { flex: 1, height: '100%', justifyContent: 'center' },
   contreAxeDroit: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', paddingRight: spacing.md },
   contreAxeGauche: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', paddingLeft: spacing.md },

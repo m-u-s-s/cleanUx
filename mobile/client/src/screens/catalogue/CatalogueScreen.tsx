@@ -2,17 +2,24 @@ import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button, ErrorState, GlassSurface, Screen, Skeleton, useReducedMotion } from '@/ui';
+import { Button, ErrorState, GlassSurface, Screen, useReducedMotion } from '@/ui';
 import { radius, spacing, typography } from '@/theme';
 import { useThemeColors, type ThemeTokens } from '@/theme/useThemeColors';
 import { useTraduction } from '@/i18n';
 import { DEVISE_PAR_DEFAUT } from '@/format/money';
-import { HAUTEUR_DE_REPERE, cheminDeCommande, construireLaSonde, useCatalogue } from '@/catalogue';
-import type { RepereDeSonde } from '@/catalogue';
+import { cheminDeCommande, construireLaSonde, useCatalogue } from '@/catalogue';
+import type { Cote, RepereDeSonde } from '@/catalogue';
 import type { RootStackParamList } from '@/navigation/types';
-import { FeuilleDuMetier } from './FeuilleDuMetier';
+import { FeuilleDuMetier, FeuilleDuMetierSquelette } from './FeuilleDuMetier';
 import { LigneDeSonde } from './LigneDeSonde';
+import { RepereDeSondeSquelette } from './RepereDeSonde';
 import { libelleDuPrix } from './libelleDuPrix';
+
+/**
+ * L'ATTENTE A DÉJÀ LA FORME DE LA SONDE : deux repères d'un côté puis deux de l'autre, comme deux
+ * secteurs de deux métiers, et la feuille à sa place en bas.
+ */
+const COTES_EN_ATTENTE: Cote[] = ['droite', 'droite', 'gauche', 'gauche'];
 
 /**
  * LE CATALOGUE NATIF — la ligne de sonde sur l'iceberg.
@@ -36,12 +43,14 @@ export function CatalogueScreen() {
 
   if (isLoading) {
     return (
-      <Screen toile testID="catalogue-chargement">
+      <Screen toile testID="catalogue-chargement" edges={['left', 'right']} style={styles.contenu}>
         <View style={styles.squelettes}>
-          {[0, 1, 2, 3].map(k => (
-            <Skeleton key={k} width="100%" height={HAUTEUR_DE_REPERE - spacing.md} borderRadius={radius.md} />
+          {COTES_EN_ATTENTE.map((cote, k) => (
+            <RepereDeSondeSquelette key={k} cote={cote} testID={`squelette-case-${cote}-${k}`} />
           ))}
         </View>
+
+        <FeuilleDuMetierSquelette />
       </Screen>
     );
   }
@@ -115,7 +124,8 @@ const stylesFor = (t: ThemeTokens) => StyleSheet.create({
   // La feuille va bord à bord : on retire la marge latérale que `Screen` pose par défaut.
   contenu: { paddingHorizontal: 0 },
   colonne: { flex: 1 },
-  squelettes: { paddingTop: spacing.md, gap: spacing.sm },
+  // Les repères d'attente se groupent autour du centre, là où le premier vrai repère se posera.
+  squelettes: { flex: 1, justifyContent: 'center' },
   vide: { marginTop: spacing.lg, padding: spacing.lg, gap: spacing.md, alignItems: 'center' },
   videTexte: { fontSize: typography.fontSize.sm, color: t.textOnGlass, textAlign: 'center' },
 });

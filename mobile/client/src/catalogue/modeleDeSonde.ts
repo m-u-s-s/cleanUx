@@ -52,7 +52,22 @@ export function decalageDeIndex(index: number): number {
   return index * HAUTEUR_DE_REPERE;
 }
 
-/** Le moteur de commande web, ouvert sur le métier : `OrderJourney::mount($sector, $trade)` lit ces slugs. */
+/** Un slug tel que le serveur les forge : minuscules, chiffres et tirets. */
+const SLUG = /^[a-z0-9-]+$/;
+
+/**
+ * Le moteur de commande web, ouvert sur le métier : `OrderJourney::mount($sector, $trade)` lit ces slugs.
+ *
+ * Un slug inattendu — vide, `..`, espace, barre oblique — n'entre pas dans le chemin : le moteur
+ * s'ouvre alors sans présélection, dans le bon mode, plutôt que sur une URL dont on ne sait pas où
+ * elle mène.
+ */
 export function cheminDeCommande(repere: RepereDeSonde, mode: ModeCatalogue): string {
-  return `/commander/${encodeURIComponent(repere.secteur.slug)}/${encodeURIComponent(repere.metier.slug)}?mode=${mode}`;
+  const { secteur, metier } = repere;
+
+  if (!SLUG.test(secteur.slug) || !SLUG.test(metier.slug)) {
+    return `/commander?mode=${mode}`;
+  }
+
+  return `/commander/${secteur.slug}/${metier.slug}?mode=${mode}`;
 }

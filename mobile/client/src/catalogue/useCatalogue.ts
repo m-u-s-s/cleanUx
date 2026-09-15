@@ -1,16 +1,22 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/api';
+import { useTraduction } from '@/i18n';
 import type { ModeCatalogue, ReponseCatalogue } from './types';
 
 /**
  * LE CATALOGUE NE SE DÉCIDE PAS ICI.
  *
- * Le serveur applique le filtre du moteur de commande (mode, zone du lieu par défaut) : une liste
- * tenue en dur dans l'application proposerait des métiers que la commande refuserait ensuite.
+ * Le serveur applique le filtre du moteur de commande (mode, zone du panier ouvert ou du lieu par
+ * défaut) : une liste tenue en dur dans l'application proposerait des métiers que la commande
+ * refuserait ensuite.
  */
 export function useCatalogue(mode: ModeCatalogue) {
+  // Les libellés arrivent traduits par le serveur : sans la langue dans la clé, une réponse gardée
+  // en cache resterait affichée dans l'ancienne langue.
+  const { langue } = useTraduction();
+
   return useQuery<ReponseCatalogue>({
-    queryKey: ['catalogue', mode],
+    queryKey: ['catalogue', mode, langue],
     queryFn: async () => {
       const { data } = await apiClient.get<ReponseCatalogue>('/client/catalogue', { params: { mode } });
 

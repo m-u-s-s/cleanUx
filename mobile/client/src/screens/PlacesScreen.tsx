@@ -50,6 +50,14 @@ export function PlacesScreen() {
     queryFn: async () => (await apiClient.get('/client/places')).data.data ?? [],
   });
 
+  /*
+   * LE CATALOGUE NATIF PREND SA ZONE DU LIEU PAR DÉFAUT (à défaut d'un panier ouvert avec adresse) :
+   * un carnet qui change peut changer les métiers proposés et leurs prix. Sans ce signal, la réponse
+   * gardée cinq minutes en cache les montrerait encore. Non attendu : la mutation reste terminée
+   * dès que le carnet est relu, comme avant.
+   */
+  const rafraichirLeCatalogue = () => void qc.invalidateQueries({ queryKey: ['catalogue'] });
+
   const ajouter = useMutation({
     mutationFn: async () =>
       apiClient.post('/client/places', {
@@ -70,6 +78,7 @@ export function PlacesScreen() {
       setConsignes('');
       setAlarme(false);
       qc.invalidateQueries({ queryKey: ['client', 'places'] });
+      rafraichirLeCatalogue();
     },
     onError: (erreur: any) =>
       // « Votre carnet contient déjà 25 lieux » est une réponse, pas une panne.
@@ -78,12 +87,20 @@ export function PlacesScreen() {
 
   const definirParDefaut = useMutation({
     mutationFn: async (id: number) => apiClient.post(`/client/places/${id}/default`, {}),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['client', 'places'] }),
+    onSuccess: () => {
+      rafraichirLeCatalogue();
+
+      return qc.invalidateQueries({ queryKey: ['client', 'places'] });
+    },
   });
 
   const archiver = useMutation({
     mutationFn: async (id: number) => apiClient.delete(`/client/places/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['client', 'places'] }),
+    onSuccess: () => {
+      rafraichirLeCatalogue();
+
+      return qc.invalidateQueries({ queryKey: ['client', 'places'] });
+    },
   });
 
   return (
