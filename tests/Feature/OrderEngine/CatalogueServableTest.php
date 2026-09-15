@@ -42,11 +42,13 @@ class CatalogueServableTest extends TestCase
             'priority' => 10, 'coverage_type' => 'city_cluster',
         ]);
 
-        // Create in REVERSE order of sort_order to ensure ordering tests measure sort_order, not insertion order.
+        // Ordre inverse de sort_order : les assertions sur les clauses de tri (pas juste l'ordre des resultats)
+        // detectent un orderBy manquant. SQLite retourne les lignes triées via l'index (is_active, sort_order),
+        // donc les résultats sont corrects même sans la clause; on teste la clause elle-même.
         $this->lent = Sector::create(['name' => 'Gros œuvre', 'slug' => 'gros-oeuvre-sonde', 'is_active' => true, 'sort_order' => 2]);
         $this->urgent = Sector::create(['name' => 'Dépannage', 'slug' => 'depannage-sonde', 'is_active' => true, 'sort_order' => 1]);
 
-        // Create trades in reverse order too: sanitaire (2) before plomberie (1) in the urgent sector.
+        // Les métiers aussi, en ordre inverse : sanitaire (2) avant plomberie (1).
         $this->sanitaire = Trade::create([
             'sector_id' => $this->urgent->id, 'slug' => 'sanitaire-sonde', 'code' => 'SAN-SD', 'name' => 'Sanitaire',
             'is_active' => true, 'sort_order' => 2, 'allows_scheduled' => true, 'allows_asap' => false, 'allows_bundle' => true,
@@ -70,10 +72,14 @@ class CatalogueServableTest extends TestCase
     #[Test]
     public function en_rendez_vous_tous_les_secteurs_actifs_sont_servables(): void
     {
+        $query = $this->catalogue()->secteurs(OrderMode::SCHEDULED, null);
         $this->assertSame(
             [$this->urgent->id, $this->lent->id],
-            $this->catalogue()->secteurs(OrderMode::SCHEDULED, null)->pluck('id')->all(),
+            $query->pluck('id')->all(),
         );
+        // L'index (is_active, sort_order) retourne les lignes triées même sans la clause;
+        // on teste que la clause est explicitement présente (Sector::ordered() = orderBy sort_order, name).
+        $this->assertSame(['sort_order', 'name'], array_column($query->getQuery()->orders ?? [], 'column'));
     }
 
     #[Test]
@@ -86,10 +92,15 @@ class CatalogueServableTest extends TestCase
     #[Test]
     public function les_metiers_suivent_le_mode_et_leur_ordre(): void
     {
+        $query = $this->catalogue()->metiers($this->urgent->id, OrderMode::SCHEDULED, null);
         $this->assertSame(
             [$this->plomberie->id, $this->sanitaire->id],
-            $this->catalogue()->metiers($this->urgent->id, OrderMode::SCHEDULED, null)->pluck('id')->all(),
+            $query->pluck('id')->all(),
         );
+        // L'index (is_active, sort_order) retourne les lignes triées même sans la clause;
+        // on teste que la clause est explicitement présente.
+        $this->assertSame(['sort_order'], array_column($query->getQuery()->orders ?? [], 'column'));
+
         $this->assertSame(
             [$this->plomberie->id],
             $this->catalogue()->metiers($this->urgent->id, OrderMode::ASAP, null)->pluck('id')->all(),
