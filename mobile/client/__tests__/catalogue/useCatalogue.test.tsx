@@ -38,7 +38,7 @@ describe('useCatalogue', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(mockGet).toHaveBeenCalledWith('/client/catalogue', { params: { mode: 'asap' } });
+    expect(mockGet).toHaveBeenCalledWith('/client/catalogue', { params: { mode: 'asap', lang: 'fr' } });
     expect(result.current.data).toEqual(reponse);
   });
 
@@ -47,7 +47,7 @@ describe('useCatalogue', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(mockGet).toHaveBeenCalledWith('/client/catalogue', { params: { mode: 'scheduled' } });
+    expect(mockGet).toHaveBeenCalledWith('/client/catalogue', { params: { mode: 'scheduled', lang: 'fr' } });
   });
 
   it('changer de langue redemande le catalogue, rangé sous la nouvelle langue', async () => {
@@ -64,5 +64,20 @@ describe('useCatalogue', () => {
 
     await waitFor(() => expect(mockGet).toHaveBeenCalledTimes(2));
     expect(client.getQueryCache().find({ queryKey: ['catalogue', 'asap', 'nl'], exact: true })).toBeDefined();
+  });
+
+  it('la nouvelle langue voyage avec la requête, sans attendre le compte', async () => {
+    // `choisirLaLangue` prévient l'écran AVANT d'enregistrer la langue sur le compte : sans la
+    // langue dans la requête, le serveur répondrait encore dans l'ancienne, rangée sous la nouvelle.
+    const client = nouveauClient();
+    const { result } = renderHook(() => useCatalogue('asap'), { wrapper: enveloppePour(client) });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(mockGet).toHaveBeenLastCalledWith('/client/catalogue', { params: { mode: 'asap', lang: 'fr' } });
+
+    act(() => adopterLaLangueDuCompte('nl'));
+
+    await waitFor(() => expect(mockGet).toHaveBeenCalledTimes(2));
+    expect(mockGet).toHaveBeenLastCalledWith('/client/catalogue', { params: { mode: 'asap', lang: 'nl' } });
   });
 });

@@ -203,6 +203,22 @@ class CatalogueApiTest extends TestCase
     }
 
     #[Test]
+    public function la_langue_demandee_par_l_application_passe_avant_celle_du_compte(): void
+    {
+        // L'application envoie la langue qu'elle affiche : quand le client vient d'en changer, le
+        // compte n'est pas encore à jour, et la réponse doit déjà parler la nouvelle langue.
+        $this->plomberie->setTranslation('name', 'nl', 'Loodgieter');
+        $client = $this->client('fr');
+
+        $this->actingAs($client, 'sanctum')->getJson('/api/client/catalogue?mode=asap&lang=nl')
+            ->assertOk()->assertJsonPath('sectors.0.trades.0.name', 'Loodgieter');
+
+        // Témoin : une langue inconnue ne s'impose pas, la langue du compte reprend la main.
+        $this->actingAs($client, 'sanctum')->getJson('/api/client/catalogue?mode=asap&lang=xx')
+            ->assertOk()->assertJsonPath('sectors.0.trades.0.name', 'Plomberie');
+    }
+
+    #[Test]
     public function l_application_voit_exactement_ce_que_propose_le_web(): void
     {
         $client = $this->client();
