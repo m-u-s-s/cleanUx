@@ -42,17 +42,19 @@ class CatalogueServableTest extends TestCase
             'priority' => 10, 'coverage_type' => 'city_cluster',
         ]);
 
-        $this->urgent = Sector::create(['name' => 'Dépannage', 'slug' => 'depannage-sonde', 'is_active' => true, 'sort_order' => 1]);
+        // Create in REVERSE order of sort_order to ensure ordering tests measure sort_order, not insertion order.
         $this->lent = Sector::create(['name' => 'Gros œuvre', 'slug' => 'gros-oeuvre-sonde', 'is_active' => true, 'sort_order' => 2]);
+        $this->urgent = Sector::create(['name' => 'Dépannage', 'slug' => 'depannage-sonde', 'is_active' => true, 'sort_order' => 1]);
 
+        // Create trades in reverse order too: sanitaire (2) before plomberie (1) in the urgent sector.
+        $this->sanitaire = Trade::create([
+            'sector_id' => $this->urgent->id, 'slug' => 'sanitaire-sonde', 'code' => 'SAN-SD', 'name' => 'Sanitaire',
+            'is_active' => true, 'sort_order' => 2, 'allows_scheduled' => true, 'allows_asap' => false, 'allows_bundle' => true,
+        ]);
         $this->plomberie = Trade::create([
             'sector_id' => $this->urgent->id, 'slug' => 'plomberie-sonde', 'code' => 'PLB-SD', 'name' => 'Plomberie',
             'is_active' => true, 'sort_order' => 1, 'allows_scheduled' => true, 'allows_asap' => true, 'allows_bundle' => true,
             'base_price_cents' => 8500,
-        ]);
-        $this->sanitaire = Trade::create([
-            'sector_id' => $this->urgent->id, 'slug' => 'sanitaire-sonde', 'code' => 'SAN-SD', 'name' => 'Sanitaire',
-            'is_active' => true, 'sort_order' => 2, 'allows_scheduled' => true, 'allows_asap' => false, 'allows_bundle' => true,
         ]);
         $this->ravalement = Trade::create([
             'sector_id' => $this->lent->id, 'slug' => 'ravalement-sonde', 'code' => 'RAV-SD', 'name' => 'Ravalement',
@@ -146,6 +148,22 @@ class CatalogueServableTest extends TestCase
 
         // Sans ligne non plus.
         $this->assertSame(8500, $this->catalogue()->prixPlancherCents($this->plomberie, null));
+    }
+
+    #[Test]
+    public function un_tarif_de_zone_a_zero_replie_sur_le_prix_du_metier(): void
+    {
+        $ligne = TradeZonePricing::create([
+            'trade_id' => $this->plomberie->id, 'service_zone_id' => $this->zone->id,
+            'base_rate_cents' => 0, 'surge_multiplier' => '1.00', 'is_active' => true, 'asap_enabled' => true,
+        ]);
+
+        // Refus : un tarif de zone à 0 ne cache pas le prix du métier.
+        $this->assertSame(8500, $this->catalogue()->prixPlancherCents($this->plomberie, $ligne));
+
+        // Témoin : un tarif de zone > 0 passe avant.
+        $ligne->update(['base_rate_cents' => 9900]);
+        $this->assertSame(9900, $this->catalogue()->prixPlancherCents($this->plomberie, $ligne->fresh()));
     }
 
     #[Test]
