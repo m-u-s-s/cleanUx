@@ -16,16 +16,28 @@ class HourlyRateResolver
             return null;
         }
 
-        if ($serviceZoneId !== null) {
-            $surcharge = TradeZonePricing::query()
-                ->where('trade_id', $trade->id)
-                ->where('service_zone_id', $serviceZoneId)
-                ->value('price_per_hour_cents');
+        // La ligne (métier, zone) telle qu'elle est en base, active ou non — la lecture d'origine.
+        $ligne = $serviceZoneId === null ? null : TradeZonePricing::query()
+            ->where('trade_id', $trade->id)
+            ->where('service_zone_id', $serviceZoneId)
+            ->first();
 
-            // `!== null` et non `filled()` : une zone peut délibérément poser 0 — « une heure est offerte ici ».
-            if ($surcharge !== null) {
-                return (int) $surcharge;
-            }
+        return $this->tarifDeLaLigne($trade, $ligne);
+    }
+
+    /** Le même tarif, pour une ligne DÉJÀ CHARGÉE — sans aucune requête. */
+    public function tarifDeLaLigne(Trade $trade, ?TradeZonePricing $ligne): ?int
+    {
+        if (! $trade->hourly_billing) {
+            return null;
+        }
+
+        // Valeur brute : la colonne n'est délibérément pas castée sur le modèle.
+        $surcharge = $ligne?->getAttribute('price_per_hour_cents');
+
+        // `!== null` et non `filled()` : une zone peut délibérément poser 0 — « une heure est offerte ici ».
+        if ($surcharge !== null) {
+            return (int) $surcharge;
         }
 
         $reference = $trade->default_hourly_rate;

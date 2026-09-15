@@ -64,6 +64,11 @@ export type RootStackParamList = {
   Explore: undefined;
   /** Le répertoire des modules du rôle — catalogue servi par `/api/modules`. */
   Modules: undefined;
+  /**
+   * Le catalogue natif — ouvert par « Intervention immédiate » et « Prendre rendez-vous ».
+   * « Plusieurs services » n'y passe pas : il reste servi par la vue web.
+   */
+  Catalogue: { mode: 'asap' | 'scheduled' };
   /*
    * L'ESPACE SOCIÉTÉ CLIENTE, EN NATIF.
    *

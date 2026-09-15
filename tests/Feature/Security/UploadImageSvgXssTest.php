@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Livewire\Features\SupportFileUploads\FileUploadConfiguration;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -119,7 +120,7 @@ class UploadImageSvgXssTest extends TestCase
 
         FileUploadConfiguration::storage()->put(FileUploadConfiguration::path($nom), $contenu);
 
-        return $nom;
+        return TemporaryUploadedFile::signPath($nom);
     }
 
     // ---------------------------------------------------------------------

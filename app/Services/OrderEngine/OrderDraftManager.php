@@ -78,7 +78,7 @@ class OrderDraftManager
         $existing = null;
 
         if ($client) {
-            $existing = OrderDraft::query()->open()->where('client_id', $client->id)->latest('id')->first();
+            $existing = $this->dernierPanierOuvert($client);
         }
 
         if (! $existing && $sessionToken) {
@@ -102,6 +102,17 @@ class OrderDraftManager
             'status' => OrderDraftStatus::DRAFT,
             'source' => 'web',
         ]);
+    }
+
+    /**
+     * Le dernier panier ENCORE OUVERT de ce client — lu, jamais créé.
+     *
+     * C'est lui que `resumeOrCreate` reprend en premier ; le catalogue natif le lit aussi pour
+     * retenir la même zone que le parcours web.
+     */
+    public function dernierPanierOuvert(User $client): ?OrderDraft
+    {
+        return OrderDraft::query()->open()->where('client_id', $client->id)->latest('id')->first();
     }
 
     /** Une ligne par métier. Idempotent : rouvrir le même métier ne crée pas un doublon. */

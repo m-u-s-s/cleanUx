@@ -4,6 +4,7 @@ namespace Tests\Feature\Client;
 
 use App\Models\Booking;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -26,7 +27,15 @@ class DateLisiblePourLeClientTest extends TestCase
         $reponse = $this->actingAs($client)->get('/dashboard/client/rendez-vous');
 
         $reponse->assertSuccessful();
-        $reponse->assertSee('20/09/2026 à 08:30', escape: false);
+
+        // LA DATE LISIBLE EST CELLE DU FORMATEUR, PAS UN FORMAT ÉCRIT EN DUR : `LocaleFormatter`
+        // passe par `IntlDateFormatter` quand l'extension intl est chargée (« 20 sept. 2026 ») et
+        // retombe sur `d/m/Y` sinon (« 20/09/2026 »). Coder l'un des deux faisait dépendre le test de
+        // la machine : vert sans intl, rouge en CI. Calculée APRÈS la requête, dans la langue qu'elle
+        // a posée.
+        $dateLisible = locale_date(Carbon::parse('2026-09-20'));
+        $this->assertNotSame('2026-09-20', $dateLisible);
+        $reponse->assertSee($dateLisible.' à 08:30', escape: false);
 
         // LE TEMOIN DU DEFAUT : ni la seconde inutile, ni le minuit d'une date sans heure.
         $reponse->assertDontSee('2026-09-20 00:00:00', escape: false);

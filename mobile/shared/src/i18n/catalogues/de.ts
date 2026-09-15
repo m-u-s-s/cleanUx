@@ -2020,4 +2020,14 @@ export const de: Catalogue = {
   // L'accueil dit ce qui est en cours.
   'home.une_reservation_en_cours': '1 Buchung läuft',
   'home.n_reservations_en_cours': ':n Buchungen laufen',
+  'catalogue.des_montant': 'ab :montant zzgl. MwSt.',
+  'catalogue.des_montant_par_heure': 'ab :montant/Std. zzgl. MwSt.',
+  'catalogue.prix_selon_vos_reponses': 'Preis je nach Ihren Antworten',
+  'catalogue.commander': 'Bestellen',
+  'catalogue.position': ':secteur · :rang von :total',
+  'catalogue.repere_accessible': ':metier, :prix',
+  'catalogue.aucun_metier_immediat': 'Kein Gewerk nimmt an Ihrer Adresse einen Soforteinsatz an.',
+  'catalogue.prendre_rendez_vous_plutot': 'Einen Termin vereinbaren',
+  'catalogue.chargement_impossible': 'Der Katalog konnte nicht geladen werden.',
+  'catalogue.aucun_metier': 'Derzeit wird kein Gewerk angeboten.',
 };

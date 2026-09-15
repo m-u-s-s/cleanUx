@@ -2020,4 +2020,14 @@ export const es: Catalogue = {
   // L'accueil dit ce qui est en cours.
   'home.une_reservation_en_cours': '1 reserva en curso',
   'home.n_reservations_en_cours': ':n reservas en curso',
+  'catalogue.des_montant': 'desde :montant sin impuestos',
+  'catalogue.des_montant_par_heure': 'desde :montant/h sin impuestos',
+  'catalogue.prix_selon_vos_reponses': 'Precio según sus respuestas',
+  'catalogue.commander': 'Pedir',
+  'catalogue.position': ':secteur · :rang de :total',
+  'catalogue.repere_accessible': ':metier, :prix',
+  'catalogue.aucun_metier_immediat': 'Ningún oficio acepta una intervención inmediata en su dirección.',
+  'catalogue.prendre_rendez_vous_plutot': 'Pedir cita',
+  'catalogue.chargement_impossible': 'No se ha podido cargar el catálogo.',
+  'catalogue.aucun_metier': 'No hay ningún oficio disponible por el momento.',
 };

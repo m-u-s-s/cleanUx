@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Client\AiQuoteController;
 use App\Http\Controllers\Api\Client\BookingEstimateController;
 use App\Http\Controllers\Api\Client\BookingFavoriteController;
 use App\Http\Controllers\Api\Client\BookingPaymentController;
+use App\Http\Controllers\Api\Client\CatalogueController;
 use App\Http\Controllers\Api\Client\ClientBookingController;
 use App\Http\Controllers\Api\Client\ClientProfileController;
 use App\Http\Controllers\Api\Client\CompanyController as ClientCompanyController;
@@ -404,6 +405,8 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('client')->group(functio
     // Sous drapeau : coupé, ce point répond 404 plutôt qu'une interprétation vide que
     // l'application lirait comme « l'assistant n'a rien compris ».
     Route::post('/order-intent', [HomeInsightsController::class, 'interpret']);
+    // Le catalogue natif (immédiat, rendez-vous) — le même filtre que le parcours web.
+    Route::get('/catalogue', CatalogueController::class)->name('api.client.catalogue');
 });
 
 // ─────────────────────────────────────────────
