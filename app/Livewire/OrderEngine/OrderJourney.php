@@ -32,6 +32,7 @@ use App\Support\Domain\OrderMode;
 use App\Support\Domain\TradeRouteRules;
 use App\Support\Validation\ImagesTeleversees;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -465,7 +466,7 @@ class OrderJourney extends Component
         $sectors = $catalogue->secteurs($this->intendedMode, $this->serviceZoneId)
             // Les traductions viennent AVEC, comme celles des questions plus bas.
             ->with('translations')
-            ->withCount(['trades' => fn ($q) => $catalogue->contraindreLesMetiers($q, $this->intendedMode, $this->serviceZoneId)])
+            ->withCount(['trades' => fn (Builder $q) => $catalogue->contraindreLesMetiers($q, $this->intendedMode, $this->serviceZoneId)])
             ->get();
 
         // Le signal vivant des cartes.

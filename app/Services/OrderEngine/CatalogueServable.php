@@ -38,7 +38,18 @@ class CatalogueServable
             ->orderBy('sort_order');
     }
 
-    /** La contrainte seule, pour un `withCount` ou un `whereHas`. */
+    /**
+     * La contrainte seule, pour un `withCount` ou un `whereHas`.
+     *
+     * Générique : la requête d'une relation arrive typée `Builder<Model>` (le modèle lié d'une relation
+     * nommée par une chaîne ne se déduit pas), celle de `metiers()` en `Builder<Trade>` ; chacune
+     * repart avec son propre type.
+     *
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query
+     * @return Builder<TModel>
+     */
     public function contraindreLesMetiers(Builder $query, ?string $mode, ?int $zoneId): Builder
     {
         return $query->where('is_active', true)->servableEnMode($mode, $zoneId);

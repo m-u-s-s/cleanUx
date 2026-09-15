@@ -9,6 +9,7 @@ use App\Models\TradeZonePricing;
 use App\Services\I18n\LocaleResolver;
 use App\Services\OrderEngine\CatalogueServable;
 use App\Support\Domain\OrderMode;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -35,7 +36,7 @@ class CatalogueController extends Controller
             ->with([
                 'translations',
                 // Contrainte d'un chargement anticipé : la fermeture reçoit la RELATION.
-                'trades' => fn ($relation) => $catalogue
+                'trades' => fn (Relation $relation) => $catalogue
                     ->contraindreLesMetiers($relation->getQuery(), $mode, $zoneId)
                     ->orderBy('sort_order')
                     ->with('translations'),
