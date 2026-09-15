@@ -102,7 +102,6 @@ export function LigneDeSonde({ reperes, index, onIndex, libelleDuRepere, mouveme
             repere={repere}
             choisi={i === index}
             libellePrix={libelleDuRepere(repere)}
-            mouvementReduit={mouvementReduit}
             onChoisir={() => choisir(i)}
           />
         ))}

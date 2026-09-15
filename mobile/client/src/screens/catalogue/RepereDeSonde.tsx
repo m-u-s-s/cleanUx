@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
-import { GlassSurface } from '@/ui';
+import { GlassSurface, useReducedMotion } from '@/ui';
 import { animation, radius, spacing, typography } from '@/theme';
 import { useThemeColors, type ThemeTokens } from '@/theme/useThemeColors';
 import { useTraduction } from '@/i18n';
@@ -17,7 +17,6 @@ export interface RepereDeSondeProps {
   repere: Repere;
   choisi: boolean;
   libellePrix: string;
-  mouvementReduit: boolean;
   onChoisir: () => void;
 }
 
@@ -27,9 +26,10 @@ export interface RepereDeSondeProps {
  * Les cases d'un secteur restent du même côté et le secteur suivant passe de l'autre ; son nom se
  * pose en face, sur la moitié libre. Toute la rangée est la cible tactile : 88 pt de haut.
  */
-export function RepereDeSonde({ repere, choisi, libellePrix, mouvementReduit, onChoisir }: RepereDeSondeProps) {
+export function RepereDeSonde({ repere, choisi, libellePrix, onChoisir }: RepereDeSondeProps) {
   const { t: tr } = useTraduction();
   const theme = useThemeColors();
+  const reducedMotion = useReducedMotion();
   const styles = stylesFor(theme);
   const { metier, cote, etiquetteSecteur } = repere;
 
@@ -40,10 +40,10 @@ export function RepereDeSonde({ repere, choisi, libellePrix, mouvementReduit, on
   const echelle = useSharedValue(1);
 
   useEffect(() => {
-    echelle.value = choisi && !mouvementReduit
+    echelle.value = choisi && !reducedMotion
       ? withRepeat(withTiming(1.8, { duration: animation.duration.slow * 3 }), -1, true)
       : 1;
-  }, [choisi, mouvementReduit, echelle]);
+  }, [choisi, reducedMotion, echelle]);
 
   const halo = useAnimatedStyle(() => ({ transform: [{ scale: echelle.value }] }));
 
