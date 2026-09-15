@@ -258,7 +258,8 @@ Tout test de refus a son témoin positif.
 
 ## Amendement — revue finale (2026-09-15)
 
-Ce qui suit remplace §3.2 et §3.3 (et la ligne `hourly` de l'exemple §4).
+Ce qui suit remplace §3.2, §3.3 et §3.5, les valeurs `floor_price_cents` et `hourly` de l'exemple §4,
+et les points 5 et 8 des tests serveur de §9.
 
 ### Pourquoi
 
@@ -272,7 +273,10 @@ dernier panier ouvert du client.
 ### Prix plancher — le minimum du moteur
 
 - Le plancher est `PricingEngine::quoteItem($trade, collect(), [], $contexte)->minCents` : le devis
-  du moteur SANS AUCUNE RÉPONSE, soit exactement ce que le web affiche avant la première question.
+  du moteur SANS AUCUNE RÉPONSE, pour le mode et la zone du client. C'est le bas du premier devis web
+  tant que le panier n'apporte ni réponses enregistrées, ni heures choisies, ni trajet mesuré ; dans
+  ces cas le web part de ces données et les deux montants diffèrent (voir « Écarts connus avec le
+  web »).
 - Le contexte est celui du web : le mode demandé, et `ZonePricingResolver::contexteDeLaLigne` sur la
   ligne de zone ACTIVE (une ligne inactive vaut une absence de ligne, comme `lineFor`) — tarif de
   zone, coefficient, plancher et plafond de zone, tarif horaire. La majoration de l'immédiat entre
@@ -290,3 +294,55 @@ dernier panier ouvert du client.
   porte une adresse non vide, sa `service_zone_id` fait foi — `null` compris.
 - Sinon, la zone du lieu par défaut, comme avant.
 - Le panier est lu, jamais créé.
+
+### Libellés — la langue affichée
+
+- L'application envoie la langue qu'elle affiche : `GET /api/client/catalogue?mode=…&lang=…`
+  (`useCatalogue`), et la range dans la clé de cache `['catalogue', mode, langue]`.
+- `LocaleResolver::resolveFromRequest` lit `?lang` en premier, puis la langue du compte (l'API n'a pas
+  de session). Juste après un changement de langue, la réponse parle donc déjà la nouvelle langue, même
+  si le compte n'est pas encore enregistré (`choisirLaLangue` prévient l'écran avant d'enregistrer).
+- Une langue inconnue ou désactivée (`isSupported` : code exact parmi les locales activées de
+  `config/i18n.php`) ne s'impose pas : la langue du compte reprend la main.
+- Traductions toujours chargées d'avance, via `translate('name')` et `translate('short_description')`.
+
+### Exemple §4 — valeurs corrigées
+
+`GET /api/client/catalogue?mode=asap&lang=fr`, plomberie à 85 € sans ligne de zone : `floor_price_cents`
+vaut `11050` (8500 × 1,30, la majoration de l'immédiat), `hourly` vaut `false`. En rendez-vous, sans
+majoration, `floor_price_cents` vaut `8500`.
+
+### Tests — remplacent §9 serveur, points 5 et 8
+
+- **Parité avec le moteur** (`CatalogueServableTest`) : pour chaque cas, le plancher égale
+  `quoteItem(...)->minCents` calculé avec `pricingContext` — (a) rendez-vous sans zone, (b) immédiat
+  avec une ligne de zone active (tarif, coefficient, plancher de zone), (c) métier au devis obligatoire
+  → `null`, (d) métier horaire au tarif de sa zone → une heure, (e) métier horaire sans zone → une heure
+  au tarif de référence, (f) ligne inactive = absence de ligne ; témoin : le même métier donne deux
+  planchers différents en immédiat et en rendez-vous (le mode atteint le moteur) ; sans aucun prix
+  positif → `null`.
+- **Parité avec le web** (`CatalogueApiTest`) : les slugs, ET le plancher d'un métier au forfait égal à
+  `OrderJourney::quote()->minCents` pour le même client, la même zone, le même mode, sans réponse.
+- **Zone** : un panier ouvert avec adresse dans une autre zone impose sa zone, comme le montage
+  d'`OrderJourney` ; témoin : panier ouvert sans adresse → lieu par défaut ; témoin : panier qui n'est
+  plus ouvert → ignoré, et aucun panier n'est créé.
+- **Langue** : compte en français + `lang=nl` → libellé néerlandais ; témoin : `lang=xx` → langue du
+  compte. Côté mobile, la requête qui suit un changement de langue porte la nouvelle.
+
+### Écarts connus avec le web (antérieurs à cette branche, non corrigés ici)
+
+- **Métier horaire.** Tant que le client n'a pas choisi de durée, `OrderJourney::quote()` reçoit
+  `purchased_minutes` nul (`OrderJourney.php:705`, `heuresEnMinutes` :1689-1696 ; `heuresChoisies` part
+  de `null` et n'est posé que par `choisirLesHeures`) : le premier devis web est le forfait, alors que la
+  même vue affiche déjà le tarif « de l'heure » et une durée par défaut (`hours.blade.php:20-32`). Le
+  catalogue, lui, annonce le prix d'une heure. `OrderDraftManager::reprice` (:204-216) ne transmet pas
+  non plus les heures achetées.
+- **Tarif horaire d'une ligne inactive.** `OrderJourney::tarifHoraireCents` (:1677-1686) passe par
+  `HourlyRateResolver::tarifCatalogue`, qui ne filtre pas `is_active` : le web peut afficher un tarif
+  horaire que ni son devis ni l'application n'appliquent.
+- **Réponses enregistrées et trajet mesuré.** Le web recharge les réponses du panier
+  (`loadAnswers`, :1761-1766) et ajoute le trajet mesuré quand la zone facture au kilomètre
+  (`ZonePricingResolver::pricingContext` :66-70, `PricingEngine::quoteItem` :94-128) ; le catalogue
+  calcule sans réponse et sans trajet.
+- **Adresse saisie dans la vue web.** Elle met à jour le panier ouvert sans prévenir l'application : le
+  catalogue garde l'ancienne zone jusqu'à la fin de son cache (5 minutes).
