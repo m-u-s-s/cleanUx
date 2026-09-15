@@ -4,14 +4,18 @@ namespace Tests\Feature\Api\Client;
 
 use App\Livewire\OrderEngine\OrderJourney;
 use App\Models\ClientPlace;
+use App\Models\Country;
+use App\Models\OrderDraft;
 use App\Models\Sector;
 use App\Models\ServiceZone;
 use App\Models\Trade;
 use App\Models\TradeZonePricing;
 use App\Models\User;
+use App\Support\Domain\OrderDraftStatus;
 use App\Support\Domain\OrderMode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -74,6 +78,31 @@ class CatalogueApiTest extends TestCase
         ClientPlace::factory()->parDefaut()->create(['user_id' => $client->id, 'service_zone_id' => $this->zone->id]);
     }
 
+    /** Une seconde zone, dans un autre pays : sa devise suffit à dire quelle zone l'API a lue. */
+    private function zoneDuPanier(): ServiceZone
+    {
+        $maroc = Country::factory()->create(['currency_code' => 'MAD']);
+
+        return ServiceZone::create([
+            'name' => 'Zone du panier', 'slug' => 'zone-panier-api', 'code' => 'ZPN',
+            'status' => 'active', 'is_bookable' => true, 'is_visible' => true,
+            'priority' => 20, 'coverage_type' => 'city_cluster', 'country_id' => $maroc->id,
+        ]);
+    }
+
+    /** @param  array<string, mixed>  $attributs */
+    private function panier(User $client, array $attributs): OrderDraft
+    {
+        return OrderDraft::create($attributs + [
+            'reference' => OrderDraft::generateReference(),
+            'client_id' => $client->id,
+            'session_token' => Str::random(48),
+            'mode' => OrderMode::SCHEDULED,
+            'status' => OrderDraftStatus::DRAFT,
+            'source' => 'web',
+        ]);
+    }
+
     #[Test]
     public function sans_jeton_la_route_refuse(): void
     {
@@ -117,7 +146,8 @@ class CatalogueApiTest extends TestCase
                     'name' => 'Plomberie',
                     'icon' => 'wrench',
                     'short_description' => 'Fuites, débouchages, sanitaires',
-                    'floor_price_cents' => 8500,
+                    // Le minimum du moteur en immédiat : 8500 × 1,30.
+                    'floor_price_cents' => 11050,
                     'hourly' => false,
                 ]],
             ]],
@@ -137,7 +167,8 @@ class CatalogueApiTest extends TestCase
         $this->actingAs($client, 'sanctum')->getJson('/api/client/catalogue?mode=asap')
             ->assertOk()
             ->assertJsonPath('zone_known', true)
-            ->assertJsonPath('sectors.0.trades.0.floor_price_cents', 9900);
+            // Le tarif de la zone, majoré de l'immédiat : 9900 × 1,30.
+            ->assertJsonPath('sectors.0.trades.0.floor_price_cents', 12870);
     }
 
     #[Test]
@@ -201,6 +232,134 @@ class CatalogueApiTest extends TestCase
                 );
             }
         }
+    }
+
+    #[Test]
+    public function le_plancher_annonce_est_le_minimum_du_devis_web_avant_toute_reponse(): void
+    {
+        $client = $this->client();
+        $this->lieuParDefaut($client);
+        TradeZonePricing::create([
+            'trade_id' => $this->plomberie->id, 'service_zone_id' => $this->zone->id,
+            'base_rate_cents' => 9900, 'surge_multiplier' => '1.00', 'is_active' => true, 'asap_enabled' => true,
+        ]);
+
+        foreach ([OrderMode::ASAP => 12870, OrderMode::SCHEDULED => 9900] as $mode => $attendu) {
+            // L'API d'abord : le montage du parcours web écrit le lieu par défaut sur le panier.
+            $metier = $this->actingAs($client, 'sanctum')->getJson('/api/client/catalogue?mode='.$mode)
+                ->assertOk()
+                ->assertJsonPath('sectors.0.trades.0.slug', 'plomberie-api')
+                ->json('sectors.0.trades.0');
+
+            $web = Livewire::actingAs($client)->test(OrderJourney::class)
+                ->call('chooseIntent', $mode)
+                ->call('selectTrade', $this->plomberie->id);
+
+            // Témoins : le web chiffre bien CE métier, dans CE mode, dans CETTE zone, sans réponse.
+            $this->assertSame($mode, $web->get('mode'));
+            $this->assertSame($this->zone->id, $web->get('serviceZoneId'));
+            $this->assertSame([], $web->get('answers'));
+            $devis = $web->instance()->quote;
+            $this->assertNotNull($devis);
+            $this->assertFalse($devis->quoteOnly);
+
+            $this->assertSame($devis->minCents, $metier['floor_price_cents'], "Plancher divergent du devis web en mode $mode");
+            $this->assertSame($attendu, $metier['floor_price_cents']);
+            $this->assertFalse($metier['hourly']);
+        }
+    }
+
+    #[Test]
+    public function un_panier_ouvert_avec_son_adresse_fixe_la_zone_comme_sur_le_web(): void
+    {
+        $client = $this->client();
+        $this->lieuParDefaut($client);
+        // Dans la zone du lieu par défaut, la plomberie accepte l'immédiat…
+        TradeZonePricing::create([
+            'trade_id' => $this->plomberie->id, 'service_zone_id' => $this->zone->id,
+            'base_rate_cents' => 9900, 'surge_multiplier' => '1.00', 'is_active' => true, 'asap_enabled' => true,
+        ]);
+        // … et dans celle du panier, non — à un autre tarif, dans une autre devise.
+        $zoneDuPanier = $this->zoneDuPanier();
+        TradeZonePricing::create([
+            'trade_id' => $this->plomberie->id, 'service_zone_id' => $zoneDuPanier->id,
+            'base_rate_cents' => 7700, 'surge_multiplier' => '1.00', 'is_active' => true, 'asap_enabled' => false,
+        ]);
+        $this->panier($client, ['address' => '12 rue du Panier', 'service_zone_id' => $zoneDuPanier->id]);
+
+        $immediat = $this->actingAs($client, 'sanctum')->getJson('/api/client/catalogue?mode=asap')
+            ->assertOk()
+            ->assertJsonPath('zone_known', true)
+            ->assertJsonPath('currency', 'MAD')
+            ->assertJsonPath('sectors', [])
+            ->json('sectors');
+        $rendezVous = $this->actingAs($client, 'sanctum')->getJson('/api/client/catalogue?mode=scheduled')
+            ->assertOk()
+            ->assertJsonPath('currency', 'MAD')
+            ->assertJsonPath('sectors.0.trades.0.floor_price_cents', 7700)
+            ->json('sectors');
+
+        // L'API lit le panier, elle n'en ouvre aucun.
+        $this->assertSame(1, OrderDraft::query()->count());
+
+        // Le web, pour ce même client, reprend ce même panier — et donc cette même zone.
+        $web = Livewire::actingAs($client)->test(OrderJourney::class);
+        $this->assertSame($zoneDuPanier->id, $web->get('serviceZoneId'));
+
+        foreach ([OrderMode::ASAP => $immediat, OrderMode::SCHEDULED => $rendezVous] as $mode => $api) {
+            $web->call('chooseIntent', $mode);
+            $this->assertSame(
+                $web->instance()->sectors->pluck('slug')->all(),
+                array_column($api, 'slug'),
+                "Secteurs divergents en mode $mode",
+            );
+        }
+    }
+
+    #[Test]
+    public function temoin_un_panier_ouvert_sans_adresse_laisse_la_zone_au_lieu_par_defaut(): void
+    {
+        $client = $this->client();
+        $this->lieuParDefaut($client);
+        TradeZonePricing::create([
+            'trade_id' => $this->plomberie->id, 'service_zone_id' => $this->zone->id,
+            'base_rate_cents' => 9900, 'surge_multiplier' => '1.00', 'is_active' => true, 'asap_enabled' => true,
+        ]);
+        // Une zone sans adresse n'est pas une adresse saisie : le web pré-remplit alors depuis le carnet.
+        $this->panier($client, ['address' => null, 'service_zone_id' => $this->zoneDuPanier()->id]);
+
+        $this->actingAs($client, 'sanctum')->getJson('/api/client/catalogue?mode=asap')
+            ->assertOk()
+            ->assertJsonPath('zone_known', true)
+            ->assertJsonPath('currency', 'EUR')
+            ->assertJsonPath('sectors.0.trades.0.floor_price_cents', 12870);
+
+        $this->assertSame($this->zone->id, Livewire::actingAs($client)->test(OrderJourney::class)->get('serviceZoneId'));
+    }
+
+    #[Test]
+    public function temoin_un_panier_qui_n_est_plus_ouvert_est_ignore(): void
+    {
+        $client = $this->client();
+        $this->lieuParDefaut($client);
+        TradeZonePricing::create([
+            'trade_id' => $this->plomberie->id, 'service_zone_id' => $this->zone->id,
+            'base_rate_cents' => 9900, 'surge_multiplier' => '1.00', 'is_active' => true, 'asap_enabled' => true,
+        ]);
+        $zoneDuPanier = $this->zoneDuPanier();
+        $this->panier($client, ['address' => '12 rue du Panier', 'service_zone_id' => $zoneDuPanier->id, 'status' => OrderDraftStatus::CONVERTED]);
+        $this->panier($client, ['address' => '14 rue du Panier', 'service_zone_id' => $zoneDuPanier->id, 'status' => OrderDraftStatus::ABANDONED]);
+
+        $this->actingAs($client, 'sanctum')->getJson('/api/client/catalogue?mode=asap')
+            ->assertOk()
+            ->assertJsonPath('zone_known', true)
+            ->assertJsonPath('currency', 'EUR')
+            ->assertJsonPath('sectors.0.trades.0.floor_price_cents', 12870);
+
+        // Aucun panier ouvert : l'API n'en crée pas pour autant.
+        $this->assertSame(0, OrderDraft::query()->open()->count());
+
+        $this->assertSame($this->zone->id, Livewire::actingAs($client)->test(OrderJourney::class)->get('serviceZoneId'));
     }
 
     #[Test]

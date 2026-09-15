@@ -69,15 +69,50 @@ class ZonePricingResolver
             'route_duration_s' => $draft->route_duration_s,
         ];
 
+        $trade = Trade::query()->find($tradeId);
+
+        // Un métier introuvable n'a pas de tarif horaire ; le reste du contexte ne dépend que de la ligne.
+        if ($trade === null) {
+            return $route + $this->contexteDeZone($line) + ['hourly_rate_cents' => null];
+        }
+
+        return $route + $this->contexteDeLaLigne($trade, $line);
+    }
+
+    /**
+     * Le contexte de prix d'une ligne DÉJÀ CHARGÉE — sans aucune requête.
+     *
+     * `pricingContext` y ajoute la route du panier. Le catalogue natif l'appelle directement pour
+     * chaque métier, avec les lignes de zone lues en une seule fois : le même contexte, écrit à un
+     * seul endroit, sans une requête par métier.
+     *
+     * @param  TradeZonePricing|null  $ligneActive  La ligne ACTIVE du métier dans la zone, ou `null`.
+     *                                              Écarter une ligne inactive revient à l'appelant,
+     *                                              comme `lineFor` le fait pour `pricingContext`.
+     * @return array<string, mixed>
+     */
+    public function contexteDeLaLigne(Trade $trade, ?TradeZonePricing $ligneActive): array
+    {
+        return $this->contexteDeZone($ligneActive) + [
+            // Sans ligne de zone, le tarif horaire du METIER fait foi ; avec elle, sa surcharge.
+            'hourly_rate_cents' => app(HourlyRateResolver::class)->tarifDeLaLigne($trade, $ligneActive),
+        ];
+    }
+
+    /**
+     * Ce que la ligne apporte au moteur, hors tarif horaire.
+     *
+     * @return array<string, mixed>
+     */
+    protected function contexteDeZone(?TradeZonePricing $line): array
+    {
         if (! $line) {
-            return $route + [
+            return [
                 'zone_multiplier' => 1.0,
                 'zone_base_cents' => null,
                 'zone_min_cents' => null,
                 'zone_max_cents' => null,
                 'distance_pricing_enabled' => false,
-                // Sans ligne de zone, le tarif horaire du METIER fait foi.
-                'hourly_rate_cents' => $this->tarifHoraire($tradeId, null),
             ];
         }
 
@@ -89,7 +124,7 @@ class ZonePricingResolver
         $parKm = $line->getRawOriginal('price_per_km_cents');
         $parMinute = $line->getRawOriginal('price_per_minute_cents');
 
-        return $route + [
+        return [
             'zone_multiplier' => (float) ($line->surge_multiplier ?: 1.0),
             'zone_base_cents' => (int) $line->base_rate_cents,
             'zone_min_cents' => $min === null ? null : (int) $min,
@@ -99,24 +134,7 @@ class ZonePricingResolver
             'price_per_km_cents' => $parKm === null ? null : (int) $parKm,
             'price_per_minute_cents' => $parMinute === null ? null : (int) $parMinute,
             'included_km' => (int) $line->included_km,
-            'hourly_rate_cents' => $this->tarifHoraire($tradeId, $zoneId),
         ];
-    }
-
-    /** Le tarif horaire applicable, delegue a la source unique. */
-    protected function tarifHoraire(?int $tradeId, ?int $zoneId): ?int
-    {
-        if ($tradeId === null) {
-            return null;
-        }
-
-        $trade = Trade::query()->find($tradeId);
-
-        if ($trade === null) {
-            return null;
-        }
-
-        return app(HourlyRateResolver::class)->tarifCatalogue($trade, $zoneId);
     }
 
     /** LA ZONE DU PANIER, RÉSOLUE UNE BONNE FOIS — et écrite dessus. */

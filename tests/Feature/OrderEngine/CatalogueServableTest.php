@@ -10,7 +10,10 @@ use App\Models\Trade;
 use App\Models\TradeZonePricing;
 use App\Models\User;
 use App\Services\OrderEngine\CatalogueServable;
+use App\Services\OrderEngine\PricingEngine;
+use App\Services\OrderEngine\ZonePricingResolver;
 use App\Support\Domain\OrderMode;
+use App\Support\Domain\PricingUnit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -143,47 +146,179 @@ class CatalogueServableTest extends TestCase
         $this->assertSame($this->zone->id, $this->catalogue()->zoneDuClient($client->fresh()));
     }
 
+    /*
+     * LE PLANCHER ANNONCÉ EST LE MINIMUM DU MOTEUR — mesuré ici contre le moteur lui-même.
+     *
+     * La référence est calculée comme le parcours web la calcule avant toute réponse : le contexte
+     * de `ZonePricingResolver::pricingContext` (celui que lit `OrderJourney::quote`), le mode, et une
+     * heure achetée pour un métier horaire. Chaque cas porte AUSSI son montant écrit en clair : si le
+     * moteur changeait, la parité seule ne dirait pas que le chiffre annoncé a bougé.
+     */
+
     #[Test]
-    public function le_tarif_de_zone_passe_avant_le_prix_du_metier(): void
+    public function parite_a_en_rendez_vous_sans_zone_le_plancher_est_le_minimum_du_moteur(): void
     {
-        $ligne = TradeZonePricing::create([
-            'trade_id' => $this->plomberie->id, 'service_zone_id' => $this->zone->id,
-            'base_rate_cents' => 9900, 'surge_multiplier' => '1.00', 'is_active' => true, 'asap_enabled' => true,
-        ]);
+        $plancher = $this->catalogue()->plancher($this->plomberie, null, OrderMode::SCHEDULED);
 
-        $this->assertSame(9900, $this->catalogue()->prixPlancherCents($this->plomberie, $ligne));
-
-        // Une ligne inactive ne compte pas : repli sur le prix du métier.
-        $ligne->update(['is_active' => false]);
-        $this->assertSame(8500, $this->catalogue()->prixPlancherCents($this->plomberie, $ligne->fresh()));
-
-        // Sans ligne non plus.
-        $this->assertSame(8500, $this->catalogue()->prixPlancherCents($this->plomberie, null));
+        $this->assertSame($this->minimumDuMoteur($this->plomberie, null, OrderMode::SCHEDULED), $plancher['cents']);
+        $this->assertSame(8500, $plancher['cents']);
+        $this->assertFalse($plancher['horaire']);
     }
 
     #[Test]
-    public function un_tarif_de_zone_a_zero_replie_sur_le_prix_du_metier(): void
+    public function parite_b_en_immediat_la_ligne_de_zone_active_entre_dans_le_calcul(): void
     {
         $ligne = TradeZonePricing::create([
             'trade_id' => $this->plomberie->id, 'service_zone_id' => $this->zone->id,
-            'base_rate_cents' => 0, 'surge_multiplier' => '1.00', 'is_active' => true, 'asap_enabled' => true,
+            'base_rate_cents' => 9900, 'surge_multiplier' => '1.20', 'min_price_cents' => 15000,
+            'is_active' => true, 'asap_enabled' => true,
         ]);
 
-        // Refus : un tarif de zone à 0 ne cache pas le prix du métier.
-        $this->assertSame(8500, $this->catalogue()->prixPlancherCents($this->plomberie, $ligne));
+        $plancher = $this->catalogue()->plancher($this->plomberie, $ligne->fresh(), OrderMode::ASAP);
 
-        // Témoin : un tarif de zone > 0 passe avant.
-        $ligne->update(['base_rate_cents' => 9900]);
-        $this->assertSame(9900, $this->catalogue()->prixPlancherCents($this->plomberie, $ligne->fresh()));
+        $this->assertSame($this->minimumDuMoteur($this->plomberie, $this->zone->id, OrderMode::ASAP), $plancher['cents']);
+        // 9900 × 1,30 (immédiat) × 1,20 (zone) = 15444, au-dessus du plancher de zone de 15000.
+        $this->assertSame(15444, $plancher['cents']);
+        $this->assertFalse($plancher['horaire']);
+
+        // En rendez-vous, 9900 × 1,20 = 11880 : c'est le plancher de ZONE qui tient, comme au devis.
+        $enRendezVous = $this->catalogue()->plancher($this->plomberie, $ligne->fresh(), OrderMode::SCHEDULED);
+        $this->assertSame($this->minimumDuMoteur($this->plomberie, $this->zone->id, OrderMode::SCHEDULED), $enRendezVous['cents']);
+        $this->assertSame(15000, $enRendezVous['cents']);
+    }
+
+    #[Test]
+    public function parite_c_un_metier_au_devis_obligatoire_n_annonce_aucun_prix(): void
+    {
+        $surDevis = Trade::create([
+            'sector_id' => $this->urgent->id, 'slug' => 'toiture-sonde', 'code' => 'TOI-SD', 'name' => 'Toiture',
+            'is_active' => true, 'sort_order' => 3, 'allows_scheduled' => true, 'allows_asap' => false, 'allows_bundle' => true,
+            // Un prix de base existe, et il ne doit PAS être annoncé : le moteur ne l'annoncerait pas.
+            'base_price_cents' => 12000, 'pricing_unit' => PricingUnit::QUOTE_ONLY,
+        ]);
+
+        $plancher = $this->catalogue()->plancher($surDevis, null, OrderMode::SCHEDULED);
+
+        $this->assertNull($this->minimumDuMoteur($surDevis, null, OrderMode::SCHEDULED));
+        $this->assertNull($plancher['cents']);
+        $this->assertFalse($plancher['horaire']);
+    }
+
+    #[Test]
+    public function parite_d_un_metier_horaire_annonce_une_heure_au_tarif_de_sa_zone(): void
+    {
+        $menage = $this->metierHoraire('menage-sonde', 'MEN-SD', 45.00);
+        $ligne = TradeZonePricing::create([
+            'trade_id' => $menage->id, 'service_zone_id' => $this->zone->id,
+            'base_rate_cents' => 0, 'surge_multiplier' => '1.00', 'price_per_hour_cents' => 6000,
+            'is_active' => true, 'asap_enabled' => true,
+        ]);
+
+        $plancher = $this->catalogue()->plancher($menage, $ligne->fresh(), OrderMode::SCHEDULED);
+
+        $this->assertSame($this->minimumDuMoteur($menage, $this->zone->id, OrderMode::SCHEDULED), $plancher['cents']);
+        // Une heure à 60 € : ni le tarif de référence du métier (45 €), ni son forfait (85 €).
+        $this->assertSame(6000, $plancher['cents']);
+        $this->assertTrue($plancher['horaire']);
+    }
+
+    #[Test]
+    public function parite_e_un_metier_horaire_sans_zone_annonce_une_heure_a_son_tarif_de_reference(): void
+    {
+        $menage = $this->metierHoraire('menage-sonde', 'MEN-SD', 45.00);
+
+        $enRendezVous = $this->catalogue()->plancher($menage, null, OrderMode::SCHEDULED);
+        $this->assertSame($this->minimumDuMoteur($menage, null, OrderMode::SCHEDULED), $enRendezVous['cents']);
+        $this->assertSame(4500, $enRendezVous['cents']);
+        $this->assertTrue($enRendezVous['horaire']);
+
+        // L'immédiat majore l'heure aussi : 4500 × 1,30.
+        $enImmediat = $this->catalogue()->plancher($menage, null, OrderMode::ASAP);
+        $this->assertSame($this->minimumDuMoteur($menage, null, OrderMode::ASAP), $enImmediat['cents']);
+        $this->assertSame(5850, $enImmediat['cents']);
+        $this->assertTrue($enImmediat['horaire']);
+
+        // Témoin : sans aucun tarif horaire, le moteur retombe sur le forfait — et le prix ne se lit plus par heure.
+        $sansTarif = $this->metierHoraire('repassage-sonde', 'REP-SD', null);
+        $forfait = $this->catalogue()->plancher($sansTarif, null, OrderMode::SCHEDULED);
+        $this->assertSame($this->minimumDuMoteur($sansTarif, null, OrderMode::SCHEDULED), $forfait['cents']);
+        $this->assertSame(8500, $forfait['cents']);
+        $this->assertFalse($forfait['horaire']);
+    }
+
+    #[Test]
+    public function parite_f_une_ligne_inactive_vaut_une_absence_de_ligne(): void
+    {
+        $ligne = TradeZonePricing::create([
+            'trade_id' => $this->plomberie->id, 'service_zone_id' => $this->zone->id,
+            'base_rate_cents' => 9900, 'surge_multiplier' => '1.50', 'min_price_cents' => 20000,
+            'is_active' => false, 'asap_enabled' => true,
+        ]);
+
+        $plancher = $this->catalogue()->plancher($this->plomberie, $ligne->fresh(), OrderMode::ASAP);
+
+        $this->assertSame($this->minimumDuMoteur($this->plomberie, $this->zone->id, OrderMode::ASAP), $plancher['cents']);
+        $this->assertSame($this->catalogue()->plancher($this->plomberie, null, OrderMode::ASAP), $plancher);
+        // 8500 × 1,30 : ni la grille, ni la majoration, ni le plancher de la ligne inactive.
+        $this->assertSame(11050, $plancher['cents']);
+
+        // Même règle pour le tarif horaire posé sur une ligne inactive.
+        $menage = $this->metierHoraire('menage-sonde', 'MEN-SD', 45.00);
+        $ligneHoraire = TradeZonePricing::create([
+            'trade_id' => $menage->id, 'service_zone_id' => $this->zone->id,
+            'base_rate_cents' => 0, 'surge_multiplier' => '1.00', 'price_per_hour_cents' => 9000,
+            'is_active' => false, 'asap_enabled' => true,
+        ]);
+
+        $horaire = $this->catalogue()->plancher($menage, $ligneHoraire->fresh(), OrderMode::SCHEDULED);
+        $this->assertSame($this->minimumDuMoteur($menage, $this->zone->id, OrderMode::SCHEDULED), $horaire['cents']);
+        $this->assertSame(4500, $horaire['cents']);
+        $this->assertTrue($horaire['horaire']);
+    }
+
+    #[Test]
+    public function temoin_le_mode_atteint_le_moteur(): void
+    {
+        $enImmediat = $this->catalogue()->plancher($this->plomberie, null, OrderMode::ASAP);
+        $enRendezVous = $this->catalogue()->plancher($this->plomberie, null, OrderMode::SCHEDULED);
+
+        // Le même métier, sans zone : seul le mode change, et le plancher avec lui.
+        $this->assertNotSame($enRendezVous['cents'], $enImmediat['cents']);
+        $this->assertSame($this->minimumDuMoteur($this->plomberie, null, OrderMode::ASAP), $enImmediat['cents']);
+        $this->assertSame($this->minimumDuMoteur($this->plomberie, null, OrderMode::SCHEDULED), $enRendezVous['cents']);
     }
 
     #[Test]
     public function sans_aucun_prix_positif_le_plancher_est_inconnu(): void
     {
-        $this->assertNull($this->catalogue()->prixPlancherCents($this->sanitaire, null));
+        $this->assertNull($this->catalogue()->plancher($this->sanitaire, null, OrderMode::SCHEDULED)['cents']);
 
         $this->sanitaire->update(['base_price_cents' => 0]);
-        $this->assertNull($this->catalogue()->prixPlancherCents($this->sanitaire->fresh(), null));
+        $this->assertNull($this->catalogue()->plancher($this->sanitaire->fresh(), null, OrderMode::SCHEDULED)['cents']);
+    }
+
+    /** Le minimum que le moteur rend au parcours web avant toute réponse, `null` quand il n'annonce rien. */
+    private function minimumDuMoteur(Trade $trade, ?int $zoneId, string $mode): ?int
+    {
+        $contexte = ['mode' => $mode] + app(ZonePricingResolver::class)->pricingContext((int) $trade->id, $zoneId);
+
+        if ($trade->hourly_billing && $contexte['hourly_rate_cents'] !== null) {
+            $contexte += ['purchased_minutes' => 60];
+        }
+
+        $devis = app(PricingEngine::class)->quoteItem($trade, collect(), [], $contexte);
+
+        return $devis->quoteOnly || $devis->minCents <= 0 ? null : $devis->minCents;
+    }
+
+    /** Un métier facturé à l'heure, avec un forfait de 85 € que l'heure doit remplacer. */
+    private function metierHoraire(string $slug, string $code, ?float $tarifDeReference): Trade
+    {
+        return Trade::create([
+            'sector_id' => $this->urgent->id, 'slug' => $slug, 'code' => $code, 'name' => ucfirst(explode('-', $slug)[0]),
+            'is_active' => true, 'sort_order' => 5, 'allows_scheduled' => true, 'allows_asap' => true, 'allows_bundle' => true,
+            'base_price_cents' => 8500, 'hourly_billing' => true, 'default_hourly_rate' => $tarifDeReference,
+        ]);
     }
 
     #[Test]

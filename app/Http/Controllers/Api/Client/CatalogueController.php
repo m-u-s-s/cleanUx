@@ -59,14 +59,19 @@ class CatalogueController extends Controller
                 'slug' => $secteur->slug,
                 'name' => $secteur->translate('name', $langue),
                 'icon' => $secteur->icon,
-                'trades' => $secteur->trades->map(fn (Trade $metier) => [
-                    'slug' => $metier->slug,
-                    'name' => $metier->translate('name', $langue),
-                    'icon' => $metier->icon,
-                    'short_description' => $metier->translate('short_description', $langue),
-                    'floor_price_cents' => $catalogue->prixPlancherCents($metier, $lignes->get($metier->id)),
-                    'hourly' => (bool) $metier->hourly_billing,
-                ])->values()->all(),
+                'trades' => $secteur->trades->map(function (Trade $metier) use ($catalogue, $lignes, $langue, $mode) {
+                    $plancher = $catalogue->plancher($metier, $lignes->get($metier->id), $mode);
+
+                    return [
+                        'slug' => $metier->slug,
+                        'name' => $metier->translate('name', $langue),
+                        'icon' => $metier->icon,
+                        'short_description' => $metier->translate('short_description', $langue),
+                        'floor_price_cents' => $plancher['cents'],
+                        // Par heure quand le plancher EST le prix d'une heure — pas selon le seul drapeau du métier.
+                        'hourly' => $plancher['horaire'],
+                    ];
+                })->values()->all(),
             ])->values()->all(),
         ]);
     }

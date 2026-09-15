@@ -255,3 +255,38 @@ Tout test de refus a son témoin positif.
 - **Zone inconnue** : en `asap` sans lieu par défaut, un métier peut être proposé puis refusé par le
   moteur après saisie de l'adresse — c'est déjà le comportement du web ; la réponse expose
   `zone_known` pour que l'écran puisse le dire plus tard si besoin.
+
+## Amendement — revue finale (2026-09-15)
+
+Ce qui suit remplace §3.2 et §3.3 (et la ligne `hourly` de l'exemple §4).
+
+### Pourquoi
+
+§1 promet que l'écran « ne peut pas annoncer […] un prix que la commande contredirait ensuite ».
+Mesuré sur l'appareil : la plomberie était annoncée « dès 85 € hors taxe » en natif, pendant que le
+parcours web ouvert par « Commander » l'estimait à 111–127 € en immédiat (8500 × 1,30 = 11050 ;
+× 1,15 = 12707). La règle de §3.3 (tarif de zone > 0, sinon prix du métier) était plus simple que le
+moteur, et le contredisait. Et l'API prenait la zone du lieu par défaut, là où le web la prend du
+dernier panier ouvert du client.
+
+### Prix plancher — le minimum du moteur
+
+- Le plancher est `PricingEngine::quoteItem($trade, collect(), [], $contexte)->minCents` : le devis
+  du moteur SANS AUCUNE RÉPONSE, soit exactement ce que le web affiche avant la première question.
+- Le contexte est celui du web : le mode demandé, et `ZonePricingResolver::contexteDeLaLigne` sur la
+  ligne de zone ACTIVE (une ligne inactive vaut une absence de ligne, comme `lineFor`) — tarif de
+  zone, coefficient, plancher et plafond de zone, tarif horaire. La majoration de l'immédiat entre
+  donc dans le prix annoncé.
+- Métier horaire avec un tarif horaire connu : le plancher est le prix d'UNE heure
+  (`purchased_minutes = 60`), et `hourly = true` (« dès X/h »). `hourly` ne recopie plus le drapeau
+  `hourly_billing` : un métier horaire sans tarif horaire retombe sur son forfait, `hourly = false`.
+- Métier au devis obligatoire (`QUOTE_ONLY`), ou minimum ≤ 0 : `null` (« Prix selon vos réponses »).
+- Toujours hors taxe ; `service_catalogs` n'est toujours pas lu. Les lignes de zone restent chargées
+  en une requête : le calcul ne fait aucune requête par métier.
+
+### Zone — l'ordre du web
+
+- `OrderDraftManager::dernierPanierOuvert($client)` (le panier que `resumeOrCreate` reprend) : s'il
+  porte une adresse non vide, sa `service_zone_id` fait foi — `null` compris.
+- Sinon, la zone du lieu par défaut, comme avant.
+- Le panier est lu, jamais créé.
