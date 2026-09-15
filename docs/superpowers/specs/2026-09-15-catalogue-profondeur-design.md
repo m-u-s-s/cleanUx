@@ -11,8 +11,11 @@ du moteur de commande web par un écran natif de catalogue : l'iceberg en fond, 
 verticale dont seule la colonne de repères défile, le repère centré sélectionné, et une feuille fixe
 qui montre le vrai prix plancher du métier et un bouton pour commander.
 
-L'écran ne propose QUE ce que le moteur de commande accepte : même filtre, même zone, même prix
-plancher. Il ne peut pas annoncer un métier ni un prix que la commande contredirait ensuite.
+L'écran ne propose QUE ce que le moteur de commande accepte : même filtre, même zone, même calcul de
+prix. Le prix annoncé est le minimum que le moteur calcule sans réponse. Ses limites connues sont
+écrites : la zone inconnue (§11), et les cas où le premier devis web part d'autres données — durée
+choisie, réponses enregistrées, trajet mesuré, zone du panier changée depuis le web — et peut donc
+différer (« Écarts connus avec le web », en fin de document).
 
 ## 2. Parcours
 
@@ -73,13 +76,15 @@ Traduits dans la langue de la requête (`SetLocale` / `LocaleResolver`) via
 
 ## 4. API
 
-`GET /api/client/catalogue?mode=asap|scheduled`
+`GET /api/client/catalogue?mode=asap|scheduled&lang=fr|nl|en|es|it|de`
 
 - Groupe `Route::middleware(['auth:sanctum', 'verified'])->prefix('client')` de
   `routes/api/client.php` (celui de `budget`, `protection`, `order-intent`) : pas de filtre de
   rôle, un contact d'entreprise commande aussi pour lui-même.
 - `mode` obligatoire, `in:asap,scheduled` ; `bundle` ou valeur inconnue → 422.
 - Non authentifié → 401.
+- `lang` facultatif : la langue affichée par l'application ; inconnue ou désactivée, elle est ignorée
+  et la langue du compte s'applique (voir l'amendement, « Libellés »).
 
 Réponse 200 :
 
@@ -114,8 +119,17 @@ Réponse 200 :
   - `secteurs(?string $mode, ?int $zoneId): Builder` — secteurs actifs ordonnés ayant au moins un
     métier servable ;
   - `metiers(int $sectorId, ?string $mode, ?int $zoneId): Builder` — métiers servables du secteur ;
-  - `zoneDuClient(User $client): ?int` ;
-  - `prixPlancherCents(Trade $trade, ?int $zoneId): ?int`.
+  - `contraindreLesMetiers(Builder $query, ?string $mode, ?int $zoneId): Builder` — la contrainte
+    seule, pour un `withCount` ou un `whereHas` ;
+  - `zoneDuClient(User $client): ?int` — zone du dernier panier ouvert s'il porte une adresse, sinon
+    du lieu par défaut ;
+  - `plancher(Trade $trade, ?TradeZonePricing $ligne, string $mode): array{cents: ?int, horaire: bool}`
+    — le minimum du moteur sans réponse ;
+  - `devise(?int $zoneId): string`.
+- **Extraits sans requête, pour que le plancher lise la même source que le web** :
+  `ZonePricingResolver::contexteDeLaLigne` (depuis `pricingContext`), `HourlyRateResolver::tarifDeLaLigne`
+  (depuis `tarifCatalogue`), `OrderDraftManager::dernierPanierOuvert` (depuis `resumeOrCreate`) ; les
+  méthodes d'origine gardent leur signature et leur résultat.
 - **`OrderJourney::sectors()` et `OrderJourney::trades()`** passent par `CatalogueServable` et
   gardent ce qui leur est propre (`withCount`, `active_providers_count`, traductions). Leur
   comportement est figé par un test **avant** la modification.
@@ -129,7 +143,7 @@ Tous les écrans et styles passent par le système de design : `useThemeColors`,
 `typography`, `GlassSurface`, `Screen toile`, `Button`, `Icon`, `formatMontant`. Aucune couleur ni
 espacement en dur ; nuit et jour traités ; `useReducedMotion` respecté.
 
-- **`mobile/client/src/catalogue/useCatalogue.ts`** : hook react-query, clé `['catalogue', mode]`,
+- **`mobile/client/src/catalogue/useCatalogue.ts`** : hook react-query, clé `['catalogue', mode, langue]` (requête avec `lang`),
   `staleTime` 5 min, types de la réponse.
 - **`mobile/client/src/catalogue/iconeDuMetier.ts`** : correspondance des noms d'icônes du serveur
   vers Ionicons, avec repli `briefcase-outline` (le repli du modèle `Trade` est `briefcase`).
@@ -259,7 +273,8 @@ Tout test de refus a son témoin positif.
 ## Amendement — revue finale (2026-09-15)
 
 Ce qui suit remplace §3.2, §3.3 et §3.5, les valeurs `floor_price_cents` et `hourly` de l'exemple §4,
-et les points 5 et 8 des tests serveur de §9.
+et les points 5 et 8 des tests serveur de §9. Les descriptions de §1, §4, §5 et §6 sont corrigées en
+place pour ne plus contredire le code.
 
 ### Pourquoi
 
@@ -344,5 +359,7 @@ majoration, `floor_price_cents` vaut `8500`.
   (`loadAnswers`, :1761-1766) et ajoute le trajet mesuré quand la zone facture au kilomètre
   (`ZonePricingResolver::pricingContext` :66-70, `PricingEngine::quoteItem` :94-128) ; le catalogue
   calcule sans réponse et sans trajet.
-- **Adresse saisie dans la vue web.** Elle met à jour le panier ouvert sans prévenir l'application : le
-  catalogue garde l'ancienne zone jusqu'à la fin de son cache (5 minutes).
+- **Zone du panier changée depuis le web.** Une adresse saisie dans la vue web (`updatedAddress`), ou le
+  rattachement au local d'une société (`rattacherAuLocalDeLaSociete`, :255-285, avec `?site=`), met à
+  jour le panier ouvert sans prévenir l'application : le catalogue garde l'ancienne zone jusqu'à la fin
+  de son cache (5 minutes).
