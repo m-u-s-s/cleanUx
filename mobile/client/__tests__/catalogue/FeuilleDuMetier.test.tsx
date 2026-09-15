@@ -1,6 +1,7 @@
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { spacing } from '@/theme';
 
 jest.mock('@/ui', () => {
   const { View, Text } = require('react-native');
@@ -27,23 +28,9 @@ const sonde = construireLaSonde([
   ] },
 ]);
 
-/**
- * `useSafeAreaInsets` exige un `SafeAreaProvider` monté au-dessus — `App.tsx` en pose un en vrai,
- * aucun test du dépôt ne le simule et le préréglage `jest-expo` non plus. On rend donc sous le
- * vrai fournisseur, avec des métriques figées, plutôt que de contourner le composant.
- */
-const afficherFeuille = (ui: React.ReactElement) =>
-  render(
-    <SafeAreaProvider
-      initialMetrics={{ frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } }}
-    >
-      {ui}
-    </SafeAreaProvider>,
-  );
-
 describe('FeuilleDuMetier', () => {
   it('dit le métier, sa place dans la liste et son prix', () => {
-    const ecran = afficherFeuille(<FeuilleDuMetier repere={sonde[1]!} libellePrix="dès 85 € hors taxe" onCommander={jest.fn()} />);
+    const ecran = render(<FeuilleDuMetier repere={sonde[1]!} libellePrix="dès 85 € hors taxe" onCommander={jest.fn()} />);
 
     expect(ecran.getByTestId('feuille-titre').props.children).toBe('Plomberie');
     expect(ecran.getByTestId('feuille-position').props.children).toBe('Bâtiment · 2 sur 3');
@@ -53,17 +40,33 @@ describe('FeuilleDuMetier', () => {
   });
 
   it('témoin : sans description, aucune ligne vide', () => {
-    const ecran = afficherFeuille(<FeuilleDuMetier repere={sonde[0]!} libellePrix="dès 120 € hors taxe" onCommander={jest.fn()} />);
+    const ecran = render(<FeuilleDuMetier repere={sonde[0]!} libellePrix="dès 120 € hors taxe" onCommander={jest.fn()} />);
     expect(ecran.queryByText('Fuites, débouchages')).toBeNull();
   });
 
   it('commande au toucher du bouton', () => {
     const onCommander = jest.fn();
-    const ecran = afficherFeuille(<FeuilleDuMetier repere={sonde[2]!} libellePrix="Prix selon vos réponses" onCommander={onCommander} />);
+    const ecran = render(<FeuilleDuMetier repere={sonde[2]!} libellePrix="Prix selon vos réponses" onCommander={onCommander} />);
 
     fireEvent.press(ecran.getByTestId('feuille-commander'));
 
     expect(onCommander).toHaveBeenCalledTimes(1);
     expect(ecran.getByTestId('feuille-commander').props.children).toBe('Commander');
+  });
+
+  it('la feuille laisse la place de la barre du bas de l’appareil', () => {
+    // Sous jest, `react-native-safe-area-context` est substitué par le double du dépôt
+    // (jest.config.ts:83), dont les marges valent toutes 0 (mock, ligne 4). On force ici une
+    // marge basse non nulle pour prouver qu'elle s'ajoute bien au padding de la feuille.
+    const espion = jest
+      .spyOn(require('react-native-safe-area-context'), 'useSafeAreaInsets')
+      .mockReturnValue({ top: 0, right: 0, bottom: 34, left: 0 });
+
+    const ecran = render(<FeuilleDuMetier repere={sonde[0]!} libellePrix="dès 120 € hors taxe" onCommander={jest.fn()} />);
+    const style = StyleSheet.flatten(ecran.getByTestId('feuille-du-metier').props.style);
+
+    expect(style.paddingBottom).toBe(spacing.md + 34);
+
+    espion.mockRestore();
   });
 });
