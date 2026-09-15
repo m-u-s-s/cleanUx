@@ -17,6 +17,7 @@ use App\Services\GeolocationV2\AddressSuggestion;
 use App\Services\GeolocationV2\GeocodingService;
 use App\Services\OrderEngine\AvailabilitySnapshot;
 use App\Services\OrderEngine\BundleComposer;
+use App\Services\OrderEngine\CatalogueServable;
 use App\Services\OrderEngine\ConditionEvaluator;
 use App\Services\OrderEngine\HourlyRateResolver;
 use App\Services\OrderEngine\OrderDraftManager;
@@ -458,16 +459,13 @@ class OrderJourney extends Component
     #[Computed]
     public function sectors()
     {
-        $sectors = Sector::query()
-            ->active()
-            ->ordered()
-            // Les traductions viennent AVEC, comme celles des questions plus bas (ligne 655).
+        // LE FILTRE VIT DANS `CatalogueServable` : l'application native lit le même.
+        $catalogue = app(CatalogueServable::class);
+
+        $sectors = $catalogue->secteurs($this->intendedMode, $this->serviceZoneId)
+            // Les traductions viennent AVEC, comme celles des questions plus bas.
             ->with('translations')
-            ->withCount(['trades' => fn ($q) => $q->where('is_active', true)
-                ->servableEnMode($this->intendedMode, $this->serviceZoneId)])
-            // UN SECTEUR SANS AUCUN MÉTIER SERVABLE N'EST PAS PROPOSÉ.
-            ->whereHas('trades', fn ($q) => $q->where('is_active', true)
-                ->servableEnMode($this->intendedMode, $this->serviceZoneId))
+            ->withCount(['trades' => fn ($q) => $catalogue->contraindreLesMetiers($q, $this->intendedMode, $this->serviceZoneId)])
             ->get();
 
         // Le signal vivant des cartes.
@@ -510,11 +508,8 @@ class OrderJourney extends Component
             return collect();
         }
 
-        return Trade::query()
-            ->where('sector_id', $this->sectorId)
-            ->where('is_active', true)
-            ->servableEnMode($this->intendedMode, $this->serviceZoneId)
-            ->orderBy('sort_order')
+        return app(CatalogueServable::class)
+            ->metiers($this->sectorId, $this->intendedMode, $this->serviceZoneId)
             ->with('translations')
             ->get();
     }
