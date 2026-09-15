@@ -49,6 +49,7 @@ const JETONS: Array<[string, string, string]> = [
   ['danger', colors.danger[700], colors.danger[400]],
   ['brandText', colors.brand[600], colors.brand[400]],
   ['accent', '#241603', '#ffb648'],
+  ['argent', colors.warning[800], colors.accent.amber],
 ];
 
 describe('les couleurs de texte du theme', () => {

@@ -2020,4 +2020,14 @@ export const it: Catalogue = {
   // L'accueil dit ce qui est en cours.
   'home.une_reservation_en_cours': '1 prenotazione in corso',
   'home.n_reservations_en_cours': ':n prenotazioni in corso',
+  'catalogue.des_montant': 'da :montant IVA esclusa',
+  'catalogue.des_montant_par_heure': 'da :montant/h IVA esclusa',
+  'catalogue.prix_selon_vos_reponses': 'Prezzo in base alle Sue risposte',
+  'catalogue.commander': 'Ordinare',
+  'catalogue.position': ':secteur · :rang su :total',
+  'catalogue.repere_accessible': ':metier, :prix',
+  'catalogue.aucun_metier_immediat': 'Nessun mestiere accetta un intervento immediato al Suo indirizzo.',
+  'catalogue.prendre_rendez_vous_plutot': 'Prendere appuntamento',
+  'catalogue.chargement_impossible': 'Non è stato possibile caricare il catalogo.',
+  'catalogue.aucun_metier': 'Al momento non è disponibile alcun mestiere.',
 };

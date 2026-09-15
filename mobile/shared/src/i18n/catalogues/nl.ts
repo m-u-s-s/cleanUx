@@ -2017,4 +2017,14 @@ export const nl: Catalogue = {
   // L'accueil dit ce qui est en cours.
   'home.une_reservation_en_cours': '1 reservatie loopt',
   'home.n_reservations_en_cours': ':n reservaties lopen',
+  'catalogue.des_montant': 'vanaf :montant excl. btw',
+  'catalogue.des_montant_par_heure': 'vanaf :montant/u excl. btw',
+  'catalogue.prix_selon_vos_reponses': 'Prijs volgens uw antwoorden',
+  'catalogue.commander': 'Bestellen',
+  'catalogue.position': ':secteur · :rang van :total',
+  'catalogue.repere_accessible': ':metier, :prix',
+  'catalogue.aucun_metier_immediat': 'Geen enkel vak aanvaardt een onmiddellijke interventie op uw adres.',
+  'catalogue.prendre_rendez_vous_plutot': 'Een afspraak maken',
+  'catalogue.chargement_impossible': 'De catalogus kon niet worden geladen.',
+  'catalogue.aucun_metier': 'Er wordt momenteel geen enkel vak aangeboden.',
 };

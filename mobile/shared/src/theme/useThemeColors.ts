@@ -140,6 +140,15 @@ export function useThemeColors() {
     textOnAccent: '#241603',
 
     /*
+     * L'ARGENT EN TEXTE — la seule couleur chaude, et elle ne sert qu'aux montants.
+     *
+     * `accent` garde le même ambre dans les deux thèmes : lisible sur la nuit, il tombe sous 2:1
+     * sur le verre clair. Le jour prend le cran 800, que `colors.warning` réserve déjà à « l'ambre
+     * en texte sur le verre clair ». `lisibilite.test.ts` tient les deux valeurs.
+     */
+    argent: isDark ? colors.accent.amber : colors.warning[800],
+
+    /*
      * LES STATUTS EN COULEUR PLEINE. `tint.*` sont des VOILES a poser en fond ; ceux-ci
      * portent du texte, et le cran differe par theme parce que la surface differe.
      *

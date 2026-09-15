@@ -2017,4 +2017,14 @@ export const en: Catalogue = {
   // L'accueil dit ce qui est en cours.
   'home.une_reservation_en_cours': '1 booking in progress',
   'home.n_reservations_en_cours': ':n bookings in progress',
+  'catalogue.des_montant': 'from :montant excl. tax',
+  'catalogue.des_montant_par_heure': 'from :montant/h excl. tax',
+  'catalogue.prix_selon_vos_reponses': 'Price based on your answers',
+  'catalogue.commander': 'Order',
+  'catalogue.position': ':secteur · :rang of :total',
+  'catalogue.repere_accessible': ':metier, :prix',
+  'catalogue.aucun_metier_immediat': 'No trade accepts an immediate call-out at your address.',
+  'catalogue.prendre_rendez_vous_plutot': 'Book an appointment',
+  'catalogue.chargement_impossible': 'The catalogue could not be loaded.',
+  'catalogue.aucun_metier': 'No trade is available right now.',
 };
