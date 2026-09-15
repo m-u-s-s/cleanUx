@@ -143,8 +143,8 @@ Tous les écrans et styles passent par le système de design : `useThemeColors`,
 `typography`, `GlassSurface`, `Screen toile`, `Button`, `Icon`, `formatMontant`. Aucune couleur ni
 espacement en dur ; nuit et jour traités ; `useReducedMotion` respecté.
 
-- **`mobile/client/src/catalogue/useCatalogue.ts`** : hook react-query, clé `['catalogue', mode, langue]` (requête avec `lang`),
-  `staleTime` 5 min, types de la réponse.
+- **`mobile/client/src/catalogue/useCatalogue.ts`** : hook react-query, clé
+  `['catalogue', mode, langue]` (requête avec `lang`), `staleTime` 5 min, types de la réponse.
 - **`mobile/client/src/catalogue/iconeDuMetier.ts`** : correspondance des noms d'icônes du serveur
   vers Ionicons, avec repli `briefcase-outline` (le repli du modèle `Trade` est `briefcase`).
   Correspondance de départ, dont chaque cible est vérifiée par un test contre `Ionicons.glyphMap` :
