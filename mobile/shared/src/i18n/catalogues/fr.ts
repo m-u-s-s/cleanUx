@@ -2021,17 +2021,17 @@ export const fr: Catalogue = {
   'notification_preferences.obligatoire': 'obligatoire',
   'notification_preferences.categorie_par_canal': ':categorie par :canal',
   // L'accueil client dit ce qui est en cours, a la place de l'adresse e-mail.
-  'home.une_reservation_en_cours': '1 reservation en cours',
-  'home.n_reservations_en_cours': ':n reservations en cours',
-  // Le catalogue natif (immediat, rendez-vous).
-  'catalogue.des_montant': 'des :montant hors taxe',
-  'catalogue.des_montant_par_heure': 'des :montant/h hors taxe',
-  'catalogue.prix_selon_vos_reponses': 'Prix selon vos reponses',
+  'home.une_reservation_en_cours': '1 réservation en cours',
+  'home.n_reservations_en_cours': ':n réservations en cours',
+  // Le catalogue natif (immédiat, rendez-vous).
+  'catalogue.des_montant': 'dès :montant hors taxe',
+  'catalogue.des_montant_par_heure': 'dès :montant/h hors taxe',
+  'catalogue.prix_selon_vos_reponses': 'Prix selon vos réponses',
   'catalogue.commander': 'Commander',
-  'catalogue.position': ':secteur - :rang sur :total',
+  'catalogue.position': ':secteur · :rang sur :total',
   'catalogue.repere_accessible': ':metier, :prix',
-  'catalogue.aucun_metier_immediat': 'Aucun metier n\'accepte l\'intervention immediate pour votre adresse.',
+  'catalogue.aucun_metier_immediat': 'Aucun métier n’accepte l’intervention immédiate pour votre adresse.',
   'catalogue.prendre_rendez_vous_plutot': 'Prendre rendez-vous',
-  'catalogue.chargement_impossible': 'Le catalogue n\'a pas pu etre charge.',
-  'catalogue.aucun_metier': 'Aucun metier n\'est propose pour le moment.',
+  'catalogue.chargement_impossible': 'Le catalogue n’a pas pu être chargé.',
+  'catalogue.aucun_metier': 'Aucun métier n’est proposé pour le moment.',
 };
